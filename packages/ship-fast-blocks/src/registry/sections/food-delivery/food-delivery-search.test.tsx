@@ -32,10 +32,6 @@ type FoodStateRow = {
 const navigate = vi.fn()
 const lakebedRef: { current: FoodDeliveryLakebed | null } = { current: null }
 
-vi.mock('#/lib/use-navigate.tsx', () => ({
-  useNavigate: () => navigate,
-}))
-
 vi.mock('#/lib/img.tsx', () => ({
   Image: ({ alt, className }: { alt?: string; className?: string }) => (
     <img alt={alt} className={className} />

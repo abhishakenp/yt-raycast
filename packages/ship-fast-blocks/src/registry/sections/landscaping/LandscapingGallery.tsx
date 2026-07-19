@@ -2,8 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
@@ -13,6 +11,7 @@ import {
   GalleryTileImage,
   GalleryTileCaption,
 } from '#/section-kit/GalleryGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * LandscapingGallery — a centered-header selected-projects portfolio grid for a
@@ -20,7 +19,7 @@ import {
  * responsive 1/2/3-column grid of rounded image tiles; each tile zooms its photo
  * on hover and reveals a bottom gradient overlay with a location eyebrow and a
  * project title. A centered outlined pill CTA closes the section. Tiles and the
- * CTA route through useNavigate; all imagery uses the alt-driven Image component.
+ * CTA route through section-kit route links; all imagery uses the alt-driven Image component.
  * Calm, organic and premium on the card surface. Use to showcase completed work
  * for landscapers, garden designers, hardscaping contractors or grounds-keeping
  * companies. Renders fully with no props via baked-in six-project defaults.
@@ -28,7 +27,7 @@ import {
 export const LandscapingGallery = defineCapsule({
   name: 'LandscapingGallery',
   description:
-    'Centered-header selected-projects portfolio grid for a landscaping / outdoor-design company: a heading + description introduce a responsive 1/2/3-column grid of rounded image tiles; each tile zooms its photo on hover and reveals a bottom gradient overlay with a location eyebrow and a project title, with a centered outlined pill CTA closing the section. Tiles and the CTA route through useNavigate and imagery uses the alt-driven Image component. Calm, organic and premium on the card surface. Use to showcase completed work for landscapers, garden designers, hardscaping contractors or grounds-keeping companies.',
+    'Centered-header selected-projects portfolio grid for a landscaping / outdoor-design company: a heading + description introduce a responsive 1/2/3-column grid of rounded image tiles; each tile zooms its photo on hover and reveals a bottom gradient overlay with a location eyebrow and a project title, with a centered outlined pill CTA closing the section. Tiles and the CTA route through section-kit route links and imagery uses the alt-driven Image component. Calm, organic and premium on the card surface. Use to showcase completed work for landscapers, garden designers, hardscaping contractors or grounds-keeping companies.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -45,7 +44,6 @@ export const LandscapingGallery = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Selected projects'
     const description =
       props.description ??
@@ -130,13 +128,12 @@ export const LandscapingGallery = defineCapsule({
             </GalleryGridItems>
           </GalleryGrid>
           <div className="mt-12 text-center">
-            <button
-              type="button"
-              onClick={() => go(cta)}
+            <NavbarRouteLink
               className="inline-flex items-center rounded-full border border-border bg-muted px-8 py-4 text-base font-medium text-primary transition-colors hover:bg-accent"
+              href={cta}
             >
               {cta}
-            </button>
+            </NavbarRouteLink>
           </div>
         </Container>
       </section>

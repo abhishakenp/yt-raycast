@@ -9,7 +9,7 @@ import { cn } from '#/lib/utils.ts'
  * surfaces while the highlighted tier inverts to a dark foreground card with a
  * corner "Most Popular" ribbon. Each card shows an uppercase tier name, a big
  * thin price with optional suffix, a short description, a check-marked feature
- * list, and a full-width CTA button that routes through useNavigate. Use to
+ * list, and a full-width CTA button that routes through section-kit route links. Use to
  * present project-scope packages (concept-to-delivery production services) for
  * filmmakers, directors, DPs, or video production houses.
  */
@@ -31,7 +31,7 @@ import {
 export const FilmDirectorPricing = defineCapsule({
   name: 'FilmDirectorPricing',
   description:
-    'Investment pricing table for a film director or cinematographer: on a muted band, a centered header (thin heading + muted lede) above a 3-column grid of tier cards where standard tiers are bordered card surfaces while the highlighted tier inverts to a dark foreground card with a corner Most-Popular ribbon. Each card shows an uppercase tier name, a big thin price with optional suffix, a short description, a check-marked feature list, and a full-width CTA button routed through useNavigate. Use to present project-scope packages (concept-to-delivery production services) for filmmakers, directors, DPs, or video production houses.',
+    'Investment pricing table for a film director or cinematographer: on a muted band, a centered header (thin heading + muted lede) above a 3-column grid of tier cards where standard tiers are bordered card surfaces while the highlighted tier inverts to a dark foreground card with a corner Most-Popular ribbon. Each card shows an uppercase tier name, a big thin price with optional suffix, a short description, a check-marked feature list, and a full-width CTA button routed through section-kit route links. Use to present project-scope packages (concept-to-delivery production services) for filmmakers, directors, DPs, or video production houses.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),

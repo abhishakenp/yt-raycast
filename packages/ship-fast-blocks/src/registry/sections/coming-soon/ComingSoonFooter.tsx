@@ -17,14 +17,14 @@ import {
  * pre-launch landing page. A bordered-top footer with two rows (stack on mobile):
  * the top row has the brand name + launch note on the left and social links on the
  * right; the bottom row has the copyright on the left and legal links on the right.
- * Every brand button, social, and legal link routes through useNavigate. Use as the
+ * Every brand button, social, and legal link routes through section-kit route links. Use as the
  * closing site footer for SaaS waitlists, app pre-launch pages, beta sign-ups, or
  * any minimal coming-soon page. Renders fully with no props via baked-in defaults.
  */
 export const ComingSoonFooter = defineCapsule({
   name: 'ComingSoonFooter',
   description:
-    "Slim two-row footer for a 'launching soon' / waitlist pre-launch landing page: bordered-top footer with two rows (stacks on mobile). Top row has brand name + launch note on the left and social links on the right; bottom row has copyright on the left and legal links on the right. Every brand button, social, and legal link routes through useNavigate. Use as the closing site footer for SaaS waitlists, app pre-launch pages, beta sign-ups, or minimal coming-soon pages.",
+    "Slim two-row footer for a 'launching soon' / waitlist pre-launch landing page: bordered-top footer with two rows (stacks on mobile). Top row has brand name + launch note on the left and social links on the right; bottom row has copyright on the left and legal links on the right. Every brand button, social, and legal link routes through section-kit route links. Use as the closing site footer for SaaS waitlists, app pre-launch pages, beta sign-ups, or minimal coming-soon pages.",
   props: z.object({
     /** Brand / product name shown in the footer. */
     brand: z.string().optional(),

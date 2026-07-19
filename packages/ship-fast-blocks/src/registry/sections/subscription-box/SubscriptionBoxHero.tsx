@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroHeading,
@@ -21,6 +20,7 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * SubscriptionBoxHero — bespoke split hero for a subscription-box brand built
@@ -29,7 +29,7 @@ import {
  * copy, a primary "Build your box" CTA paired with a secondary "How it works"
  * link, and a row of small delight badges (free shipping, cancel anytime). The
  * right column frames a single alt-driven Image of a curated box unboxing in a
- * rounded, shadowed card. Theme-token only and fully routable via useNavigate.
+ * rounded, shadowed card. Theme-token only and fully routable via section-kit route links.
  * Renders complete with no props.
  */
 export const SubscriptionBoxHero = defineCapsule({
@@ -53,7 +53,6 @@ export const SubscriptionBoxHero = defineCapsule({
   }),
   lakebed: commerceCartLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'New boxes every month'
     const headline = props.headline ?? 'A little box of joy, delivered to'
     const headlineAccent = props.headlineAccent ?? 'your door'
@@ -110,18 +109,18 @@ export const SubscriptionBoxHero = defineCapsule({
                 variant="primary"
                 className="rounded-full px-7 py-3.5 text-sm font-semibold shadow-sm"
               >
-                <button type="button" onClick={() => go(primaryCta)}>
+                <NavbarRouteLink href={primaryCta}>
                   {primaryCta}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
               <HeroCta
                 asChild
                 variant="outline"
                 className="rounded-full bg-background px-7 py-3.5 text-sm font-semibold"
               >
-                <button type="button" onClick={() => go(secondaryCta)}>
+                <NavbarRouteLink href={secondaryCta}>
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
               <CommerceAddItemButton
                 lakebed={lakebed}

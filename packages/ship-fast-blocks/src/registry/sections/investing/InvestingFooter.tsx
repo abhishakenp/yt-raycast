@@ -8,7 +8,7 @@ import { cn } from '#/lib/utils.ts'
  * tagline, and a row of social-initial buttons) beside a responsive grid of
  * link columns, above a divider row carrying an auto-updating copyright line and
  * a small FINRA/SIPC-style legal disclosure. The brand button, social buttons
- * and every link route through useNavigate. Use as the closing site footer for
+ * and every link route through section-kit route links. Use as the closing site footer for
  * a brokerage, trading app, robo-advisor or crypto exchange. Renders fully with
  * no props via baked-in "Vestora" defaults.
  */
@@ -30,7 +30,7 @@ import {
 export const InvestingFooter = defineCapsule({
   name: 'InvestingFooter',
   description:
-    'Rich multi-column footer for an investing / fintech site: a muted bordered-top footer with a brand block (trend-line logo tile + name, tagline, and a row of social-initial buttons) beside a responsive grid of link columns, above a divider row carrying an auto-updating copyright line and a small FINRA/SIPC-style legal disclosure. The brand button, social buttons and every link route through useNavigate. Use as the closing site footer for a brokerage, trading app, robo-advisor or crypto exchange.',
+    'Rich multi-column footer for an investing / fintech site: a muted bordered-top footer with a brand block (trend-line logo tile + name, tagline, and a row of social-initial buttons) beside a responsive grid of link columns, above a divider row carrying an auto-updating copyright line and a small FINRA/SIPC-style legal disclosure. The brand button, social buttons and every link route through section-kit route links. Use as the closing site footer for a brokerage, trading app, robo-advisor or crypto exchange.',
   props: z.object({
     /** Brand / platform name shown beside the logo tile. */
     brand: z.string().optional(),

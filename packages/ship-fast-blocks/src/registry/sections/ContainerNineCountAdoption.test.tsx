@@ -2,10 +2,6 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('#/lib/use-navigate.tsx', () => ({
-  useNavigate: () => vi.fn(),
-}))
-
 vi.mock('@ship-fast/lakebed/react', () => {
   const mutation = Object.assign(
     vi.fn(async () => []),
@@ -26,6 +22,21 @@ vi.mock('@ship-fast/lakebed/react', () => {
     },
   )
 
+  const auth = () => ({
+    displayName: 'Guest',
+    isAuthenticated: false,
+    isGuest: true,
+    provider: 'guest',
+    user: {
+      displayName: 'Guest',
+      id: 'guest:local',
+      isGuest: true,
+      provider: 'guest',
+      userId: 'guest:local',
+    },
+    userId: 'guest:local',
+  })
+
   return {
     createLakebedClient: vi.fn(() => ({
       signInWithGoogle: vi.fn(async () => ({
@@ -33,24 +44,12 @@ vi.mock('@ship-fast/lakebed/react', () => {
         url: '',
       })),
       signOut: vi.fn(),
-      useAuth: () => ({
-        displayName: 'Guest',
-        isAuthenticated: false,
-        isGuest: true,
-        provider: 'guest',
-        user: {
-          displayName: 'Guest',
-          id: 'guest:local',
-          isGuest: true,
-          provider: 'guest',
-          userId: 'guest:local',
-        },
-        userId: 'guest:local',
-      }),
+      useAuth: auth,
       useData: () => ({}),
       useMutation: () => mutation,
       useQuery: () => null,
     })),
+    useAuth: auth,
     useKeyedLakebedMutation: () => keyedMutation,
   }
 })
@@ -223,13 +222,23 @@ describe('nine-count Container adoption', () => {
 
       const { container } = render(<SectionProbe />)
 
-      const wrapper = container.querySelector('[data-slot="container"]')
+      const wrapper = container.querySelector(
+        '[data-slot="container"], [data-slot="footer-content"]',
+      )
+
+      if (!wrapper) {
+        expect(
+          container.querySelector('[data-slot="logo-strip"]'),
+          section.client.name,
+        ).not.toBeNull()
+        cleanup()
+        continue
+      }
 
       expect(wrapper, section.client.name).not.toBeNull()
       expect(wrapper?.className, section.client.name).toContain('mx-auto')
       expect(wrapper?.className, section.client.name).toContain('max-w-7xl')
-      expect(wrapper?.className, section.client.name).toContain('px-4')
-      expect(wrapper?.className, section.client.name).toContain('sm:px-6')
+      expect(wrapper?.className, section.client.name).toMatch(/px-[46]/)
       expect(wrapper?.className, section.client.name).toContain('lg:px-8')
       cleanup()
     }

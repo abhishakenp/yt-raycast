@@ -4,7 +4,6 @@ import { z } from 'zod/v4'
 import { Flame, Leaf, Soup, Wheat } from 'lucide-react'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   StorySection,
@@ -12,6 +11,7 @@ import {
   StoryContent,
   StoryFeatures,
 } from '#/section-kit/StorySection.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 // About "Our Story" feature chips, keyed by intent; falls back to a soup bowl.
 const FEATURE_ICONS = [Flame, Wheat, Leaf]
@@ -29,7 +29,7 @@ const FEATURE_CHIPS = [
  * smaller inset photo overlapping its corner for depth; on the other, an
  * uppercased kicker with a leading rule, a serif heading, a story paragraph,
  * a vertical list of up to three icon-chip features (warm rotating token
- * tints), and a filled primary CTA. The CTA routes through useNavigate. Use to
+ * tints), and a filled primary CTA. The CTA routes through section-kit route links. Use to
  * tell the chef's / restaurant's origin story, craft, and values for ramen
  * shops, izakayas, bistros, or any cozy premium food brand. Renders fully with
  * no props via baked-in "Kaze Ramen" defaults.
@@ -37,7 +37,7 @@ const FEATURE_CHIPS = [
 export const RestaurantStory = defineCapsule({
   name: 'RestaurantStory',
   description:
-    "About / origin-story split band for a warm food brand: a two-column section with a tall main photo in a rounded card plus a smaller inset photo overlapping its corner for depth on one side, and on the other an uppercased kicker with a leading rule, a serif heading, a story paragraph, a vertical list of up to three icon-chip features in warm rotating token tints, and a filled primary CTA. The CTA routes through useNavigate. Use to tell the chef's or restaurant's origin story, craft, and values for ramen shops, izakayas, bistros, sushi counters, or any cozy premium food brand.",
+    "About / origin-story split band for a warm food brand: a two-column section with a tall main photo in a rounded card plus a smaller inset photo overlapping its corner for depth on one side, and on the other an uppercased kicker with a leading rule, a serif heading, a story paragraph, a vertical list of up to three icon-chip features in warm rotating token tints, and a filled primary CTA. The CTA routes through section-kit route links. Use to tell the chef's or restaurant's origin story, craft, and values for ramen shops, izakayas, bistros, sushi counters, or any cozy premium food brand.",
   props: z.object({
     /** Small uppercased kicker above the heading. */
     eyebrow: z.string().optional(),
@@ -58,7 +58,6 @@ export const RestaurantStory = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Our Story'
     const heading = props.heading ?? 'Eighteen Hours of Patience in Every Bowl'
     const body =
@@ -151,13 +150,12 @@ export const RestaurantStory = defineCapsule({
               })}
             </StoryFeatures>
 
-            <button
-              type="button"
-              onClick={() => go(cta)}
+            <NavbarRouteLink
               className="mt-8 inline-flex items-center justify-center gap-2.5 rounded-md bg-primary px-8 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/35 transition-all hover:-translate-y-0.5 hover:bg-primary/90"
+              href={cta}
             >
               {cta}
-            </button>
+            </NavbarRouteLink>
           </StoryContent>
         </StorySplitGrid>
       </StorySection>

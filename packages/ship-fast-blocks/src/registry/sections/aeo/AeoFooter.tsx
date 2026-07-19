@@ -23,7 +23,7 @@ import {
  * SaaS. Thin configuration over the shared SiteFooter composite: a citation-spark
  * brand block with tagline, a social row, link columns (Product, Resources,
  * Company, Legal), a bottom note, and legal links. All links route through
- * useNavigate. Use as the closing footer on AEO, generative-search visibility,
+ * section-kit route links. Use as the closing footer on AEO, generative-search visibility,
  * or brand-citation analytics sites. Renders fully with no props.
  */
 const BrandMark = () => (
@@ -49,7 +49,7 @@ const BrandMark = () => (
 export const AeoFooter = defineCapsule({
   name: 'AeoFooter',
   description:
-    'Multi-column site footer for an Answer-Engine-Optimization (AEO) product built on the shared SiteFooter composite: a citation-spark brand block with tagline and social row, link columns (Product, Resources, Company, Legal), a bottom note, and legal links. All links route through useNavigate. Use as the closing footer on AEO, generative-search visibility, or brand-citation analytics sites.',
+    'Multi-column site footer for an Answer-Engine-Optimization (AEO) product built on the shared SiteFooter composite: a citation-spark brand block with tagline and social row, link columns (Product, Resources, Company, Legal), a bottom note, and legal links. All links route through section-kit route links. Use as the closing footer on AEO, generative-search visibility, or brand-citation analytics sites.',
   props: z.object({
     brand: z.string().optional(),
     tagline: z.string().optional(),

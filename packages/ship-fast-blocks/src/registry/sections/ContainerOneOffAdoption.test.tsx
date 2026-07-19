@@ -2,10 +2,6 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('#/lib/use-navigate.tsx', () => ({
-  useNavigate: () => vi.fn(),
-}))
-
 const { cleanup, render } = await import('@testing-library/react')
 const { MarketplaceAuthors } =
   await import('./marketplace/MarketplaceAuthors.tsx')

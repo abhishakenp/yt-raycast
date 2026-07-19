@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 /**
@@ -9,17 +8,19 @@ import { Image } from '#/lib/img.tsx'
  * fashion store. A centered eyebrow + serif heading above a responsive 1-to-4
  * column grid of tall portrait category cards, each a full-bleed image with a
  * darkening scrim that deepens on hover and an overlaid serif category name +
- * piece count. Every card routes through useNavigate and imagery uses the
+ * piece count. Every card routes through section-kit route links and imagery uses the
  * alt-driven Image component. Use to let shoppers browse by department for
  * clothing brands, boutiques, or apparel and accessories shops.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { CollectionGrid } from '#/section-kit/CollectionGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const FashionStoreCollections = defineCapsule({
   name: 'FashionStoreCollections',
   description:
-    'Shop-by-Category collection grid for a minimalist fashion store: a centered eyebrow + serif heading above a responsive 1-to-4 column grid of tall portrait category cards, each a full-bleed image with a darkening scrim that deepens on hover and an overlaid serif category name + piece count. Every card routes through useNavigate and imagery uses the alt-driven Image component. Use to let shoppers browse by department or collection for clothing brands, boutiques, or apparel and accessories shops.',
+    'Shop-by-Category collection grid for a minimalist fashion store: a centered eyebrow + serif heading above a responsive 1-to-4 column grid of tall portrait category cards, each a full-bleed image with a darkening scrim that deepens on hover and an overlaid serif category name + piece count. Every card routes through section-kit route links and imagery uses the alt-driven Image component. Use to let shoppers browse by department or collection for clothing brands, boutiques, or apparel and accessories shops.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -35,7 +36,6 @@ export const FashionStoreCollections = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const collectionsEyebrow = props.eyebrow ?? 'Shop By Category'
     const collectionsHeading = props.heading ?? 'The Collections'
     const collectionItems = props.items?.length
@@ -82,11 +82,10 @@ export const FashionStoreCollections = defineCapsule({
 
           <CollectionGrid className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {collectionItems.map((c) => (
-              <button
+              <NavbarRouteLink
                 key={c.name}
-                type="button"
-                onClick={() => go(c.name)}
                 className="group block text-left"
+                href={c.name}
               >
                 <div className="relative aspect-[4/5] overflow-hidden bg-muted">
                   <Image
@@ -102,7 +101,7 @@ export const FashionStoreCollections = defineCapsule({
                     <p className="text-sm text-background/80">{c.count}</p>
                   </div>
                 </div>
-              </button>
+              </NavbarRouteLink>
             ))}
           </CollectionGrid>
         </Container>

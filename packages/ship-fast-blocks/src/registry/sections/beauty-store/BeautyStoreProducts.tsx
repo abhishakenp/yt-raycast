@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   ProductCard,
@@ -23,6 +22,7 @@ import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { StarRating } from '#/section-kit/StarRating.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * BeautyStoreProducts — shoppable bestsellers product grid for a beauty / skincare /
@@ -32,7 +32,7 @@ import { StarRating } from '#/section-kit/StarRating.tsx'
  * optional status badge (Bestseller / Clean / New mapped to primary / secondary /
  * accent), a floating add-to-cart button that appears on hover, the brand name,
  * product title, star rating strip + review count, and price. Add-to-cart writes
- * to the shared Lakebed cart; view-all routes through useNavigate. Use on beauty store homepages, product showcase
+ * to the shared Lakebed cart; view-all routes through section-kit route links. Use on beauty store homepages, product showcase
  * sections, skincare shop grids, makeup bestsellers, or any e-commerce product
  * listing. Renders fully with no props via 8 clean-beauty baked-in defaults.
  */
@@ -63,7 +63,6 @@ export const BeautyStoreProducts = defineCapsule({
   }),
   lakebed: commerceCartLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Most Loved'
     const heading = props.heading ?? 'Bestsellers'
     const viewAll = props.viewAll ?? 'View All Products'
@@ -191,14 +190,13 @@ export const BeautyStoreProducts = defineCapsule({
               eyebrowClassName="mb-2 block text-xs font-semibold uppercase tracking-widest text-primary"
               titleClassName="font-serif text-3xl font-semibold text-foreground sm:text-4xl"
             />
-            <button
-              type="button"
-              onClick={() => go(viewAll)}
+            <NavbarRouteLink
               className="flex items-center gap-1 text-sm font-medium text-foreground transition-colors hover:text-primary"
+              href={viewAll}
             >
               {viewAll}
               <ArrowRight className="size-4" />
-            </button>
+            </NavbarRouteLink>
           </div>
 
           <ResponsiveGrid cols="2-lg-4" className="sm:gap-6 lg:gap-8 gap-4">

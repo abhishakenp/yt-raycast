@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   HeroSection,
@@ -10,20 +9,21 @@ import {
   HeroHeading,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * ConstructionHero — full-bleed dark hero section for a construction / general
  * contractor landing page. A large left-aligned headline over a faded jobsite
  * photo with a left-to-right scrim, a pulsing "now booking" status pill, dual
  * CTAs (primary filled + secondary outlined), and a trust strip with check
- * badges beneath. Every CTA routes through useNavigate. Use as the opening
+ * badges beneath. Every CTA routes through section-kit route links. Use as the opening
  * hero for construction companies, contractors, builders, or design-build
  * firms. Renders fully with no props via baked-in defaults.
  */
 export const ConstructionHero = defineCapsule({
   name: 'ConstructionHero',
   description:
-    "Full-bleed dark hero section for a construction / general contractor landing page: a large left-aligned headline over a faded jobsite photo with a left-to-right scrim, a pulsing 'now booking' status pill, dual CTAs (primary filled + secondary outlined), and a trust strip with check badges beneath. CTAs route through useNavigate. Use as the opening hero for construction firms, contractors, builders, or design-build firms.",
+    "Full-bleed dark hero section for a construction / general contractor landing page: a large left-aligned headline over a faded jobsite photo with a left-to-right scrim, a pulsing 'now booking' status pill, dual CTAs (primary filled + secondary outlined), and a trust strip with check badges beneath. CTAs route through section-kit route links. Use as the opening hero for construction firms, contractors, builders, or design-build firms.",
   props: z.object({
     /** Status pill text. */
     badge: z.string().optional(),
@@ -44,7 +44,6 @@ export const ConstructionHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const badge = props.badge ?? 'Now booking projects for Q3 2026'
     const headingTop = props.headingTop ?? 'Building excellence'
     const headingBottom = props.headingBottom ?? 'since 1987'
@@ -129,21 +128,19 @@ export const ConstructionHero = defineCapsule({
                 {subheading}
               </p>
               <div className="flex flex-col gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
+                <NavbarRouteLink
                   className="inline-flex items-center justify-center gap-2 rounded-lg bg-background px-6 py-3.5 font-semibold text-foreground transition-colors hover:bg-background/90"
+                  href={primaryCta}
                 >
                   {primaryCta}
                   <ArrowRight />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
+                </NavbarRouteLink>
+                <NavbarRouteLink
                   className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-background/10 px-6 py-3.5 font-semibold text-background backdrop-blur-sm transition-colors hover:bg-background/20"
+                  href={secondaryCta}
                 >
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </div>
               <div className="mt-12 flex flex-wrap items-center gap-6 text-sm text-background/60">
                 {trust.map((item) => (

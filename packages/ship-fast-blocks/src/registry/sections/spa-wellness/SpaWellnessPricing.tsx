@@ -24,14 +24,14 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * + intro above a responsive 3-column grid of membership cards (name, price +
  * billing period, checkmark perk bullets, and a CTA). The highlighted tier gets
  * a primary border, shadow, and a floating "Most popular" pill, and every CTA
- * routes through useNavigate. Use to present spa memberships, treatment
+ * routes through section-kit route links. Use to present spa memberships, treatment
  * packages, or wellness bundles. Renders fully with no props via baked-in
  * defaults.
  */
 export const SpaWellnessPricing = defineCapsule({
   name: 'SpaWellnessPricing',
   description:
-    'Membership & package tiers for a day-spa / wellness page built on the shared PricingGrid composite: a centered heading + intro above a responsive 3-column grid of membership cards (name, price + billing period, checkmark perk bullets, and a CTA). The highlighted tier gets a primary border, shadow, and a floating pill, and every CTA routes through useNavigate. Use to present spa memberships, treatment packages, or wellness bundles.',
+    'Membership & package tiers for a day-spa / wellness page built on the shared PricingGrid composite: a centered heading + intro above a responsive 3-column grid of membership cards (name, price + billing period, checkmark perk bullets, and a CTA). The highlighted tier gets a primary border, shadow, and a floating pill, and every CTA routes through section-kit route links. Use to present spa memberships, treatment packages, or wellness bundles.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),

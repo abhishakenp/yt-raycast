@@ -49,7 +49,7 @@ function Masthead({ className }: { className?: string }) {
 export const NewsFooter = defineCapsule({
   name: 'NewsFooter',
   description:
-    'Fat multi-column closing footer for a news / editorial publication built on the shared SiteFooter composite: a brand block (bold wordmark + newspaper-glyph mark + tagline + social row) alongside link columns (Sections / Company / Support / Legal), with a bordered-top bottom bar carrying an auto-updating copyright line and a row of legal links. Every brand, social and column link routes through useNavigate. Use as the closing footer of a newspaper, magazine or publication homepage.',
+    'Fat multi-column closing footer for a news / editorial publication built on the shared SiteFooter composite: a brand block (bold wordmark + newspaper-glyph mark + tagline + social row) alongside link columns (Sections / Company / Support / Legal), with a bordered-top bottom bar carrying an auto-updating copyright line and a row of legal links. Every brand, social and column link routes through section-kit route links. Use as the closing footer of a newspaper, magazine or publication homepage.',
   props: z.object({
     /** Publication / masthead name shown beside the logo. */
     brand: z.string().optional(),

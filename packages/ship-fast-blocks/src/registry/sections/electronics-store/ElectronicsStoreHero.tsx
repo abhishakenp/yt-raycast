@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
@@ -20,6 +19,7 @@ import {
   HeroStatBadgeSubtitle,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * ElectronicsStoreHero — split storefront hero for a premium electronics /
@@ -28,13 +28,13 @@ import { Container } from '#/section-kit/Container.tsx'
  * Shop Now with arrow + outlined View Deals) and a bordered inline KPI strip
  * (Happy Customers / Free Shipping / Easy Returns); right shows a square product
  * image with a floating best-seller product card (star icon + title + rating
- * meta). CTAs route through useNavigate. Use as the opening hero for electronics
+ * meta). CTAs route through section-kit route links. Use as the opening hero for electronics
  * stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.
  */
 export const ElectronicsStoreHero = defineCapsule({
   name: 'ElectronicsStoreHero',
   description:
-    'Split storefront hero for a premium electronics / gadgets shop on a soft muted band: a two-column layout where the left carries a pill badge, large headline, supporting paragraph, dual CTAs (filled primary Shop Now with an arrow + outlined View Deals) and a bordered inline KPI strip (e.g. 50K+ Happy Customers / 2-Day Free Shipping / 30-Day Easy Returns); the right shows a square product image with a floating best-seller product card (star icon + product title + rating meta). CTAs route through useNavigate; imagery is alt-driven. Use as the opening hero for electronics stores, gadget shops, consumer-tech retailers, audio/headphone shops, or camera/drone storefronts.',
+    'Split storefront hero for a premium electronics / gadgets shop on a soft muted band: a two-column layout where the left carries a pill badge, large headline, supporting paragraph, dual CTAs (filled primary Shop Now with an arrow + outlined View Deals) and a bordered inline KPI strip (e.g. 50K+ Happy Customers / 2-Day Free Shipping / 30-Day Easy Returns); the right shows a square product image with a floating best-seller product card (star icon + product title + rating meta). CTAs route through section-kit route links; imagery is alt-driven. Use as the opening hero for electronics stores, gadget shops, consumer-tech retailers, audio/headphone shops, or camera/drone storefronts.',
   props: z.object({
     /** Pill badge above the headline. */
     badge: z.string().optional(),
@@ -62,7 +62,6 @@ export const ElectronicsStoreHero = defineCapsule({
   }),
   lakebed: commerceCartLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const badge = props.badge ?? 'New Collection 2025'
     const heading =
       props.heading ?? 'Premium Audio & Tech for the Modern Lifestyle'
@@ -148,13 +147,12 @@ export const ElectronicsStoreHero = defineCapsule({
                   {primaryCta}
                   <ArrowRight />
                 </CommerceAddItemButton>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
+                <NavbarRouteLink
                   className="inline-flex items-center justify-center rounded-lg border border-border px-6 py-3 font-medium text-foreground transition-colors hover:bg-accent"
+                  href={secondaryCta}
                 >
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </div>
               <div className="mt-10 flex items-center gap-8 border-t border-border pt-8">
                 {stats.map((s) => (

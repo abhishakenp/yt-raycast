@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   FaqAccordion,
   FaqAnswer,
@@ -12,6 +11,7 @@ import {
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * FashionStoreFaq — native disclosure FAQ accordion for a minimalist fashion
@@ -19,14 +19,14 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * heading above a stack of bordered <details> cards (question summary with a
  * chevron that rotates on open, revealing one or more body paragraphs), closed
  * by a centered footer note and an underlined "Contact Customer Care" link.
- * The footer link routes through useNavigate. Use to answer shipping, returns,
+ * The footer link routes through section-kit route links. Use to answer shipping, returns,
  * sizing and materials questions for clothing brands, boutiques, or apparel
  * shops.
  */
 export const FashionStoreFaq = defineCapsule({
   name: 'FashionStoreFaq',
   description:
-    "Native disclosure FAQ accordion for a minimalist fashion store: a subtle muted-band, narrow centered section with an eyebrow + serif heading above a stack of bordered <details> cards (question summary with a chevron that rotates on open, revealing one or more body paragraphs), closed by a centered footer note and an underlined 'Contact Customer Care' link that routes through useNavigate. Use to answer shipping, returns, sizing and materials questions for clothing brands, boutiques, or apparel and accessories shops.",
+    "Native disclosure FAQ accordion for a minimalist fashion store: a subtle muted-band, narrow centered section with an eyebrow + serif heading above a stack of bordered <details> cards (question summary with a chevron that rotates on open, revealing one or more body paragraphs), closed by a centered footer note and an underlined 'Contact Customer Care' link that routes through section-kit route links. Use to answer shipping, returns, sizing and materials questions for clothing brands, boutiques, or apparel and accessories shops.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -38,7 +38,6 @@ export const FashionStoreFaq = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const faqEyebrow = props.eyebrow ?? 'Questions'
     const faqHeading = props.heading ?? 'Common Inquiries'
 
@@ -147,13 +146,12 @@ export const FashionStoreFaq = defineCapsule({
 
           <div className="mt-12 text-center">
             <p className="mb-4 text-muted-foreground">{faqFooterNote}</p>
-            <button
-              type="button"
-              onClick={() => go(faqFooterCta)}
+            <NavbarRouteLink
               className="inline-flex items-center border-b border-foreground pb-1 text-sm font-medium text-foreground transition-colors hover:border-muted-foreground hover:text-muted-foreground"
+              href={faqFooterCta}
             >
               {faqFooterCta}
-            </button>
+            </NavbarRouteLink>
           </div>
         </Container>
       </section>

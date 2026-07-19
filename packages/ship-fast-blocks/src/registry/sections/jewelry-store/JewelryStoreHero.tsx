@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
@@ -12,6 +11,7 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * JewelryStoreHero — full-bleed cinematic hero for a luxury fine-jewelry
@@ -43,7 +43,6 @@ export const JewelryStoreHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Est. 1892 • Paris'
     const headingTop = props.headingTop ?? 'The Art of'
     const headingBottom = props.headingBottom ?? 'Timeless Elegance'
@@ -98,20 +97,18 @@ export const JewelryStoreHero = defineCapsule({
               {subheading}
             </p>
             <div className="flex flex-col gap-4 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => go(primaryCta)}
+              <NavbarRouteLink
                 className="inline-flex items-center justify-center bg-primary px-8 py-4 text-sm font-medium uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary/90"
+                href={primaryCta}
               >
                 {primaryCta}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(secondaryCta)}
+              </NavbarRouteLink>
+              <NavbarRouteLink
                 className="inline-flex items-center justify-center border border-border px-8 py-4 text-sm font-medium uppercase tracking-widest text-foreground transition-colors hover:border-primary hover:text-primary"
+                href={secondaryCta}
               >
                 {secondaryCta}
-              </button>
+              </NavbarRouteLink>
             </div>
           </div>
         </HeroContent>

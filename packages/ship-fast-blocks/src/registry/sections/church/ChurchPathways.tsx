@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   PathwayGrid,
@@ -14,12 +13,13 @@ import {
   PathwayCardCta,
 } from '#/section-kit/PathwayGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * ChurchPathways — a 3-up "next step" pathways grid for a church or faith-community
  * site. Heading + description on the left, then a responsive grid of photo-card
  * articles with image, title, description, and a text CTA with arrow. Each card
- * image lazily loads and subtly scales on hover. CTAs route through useNavigate.
+ * image lazily loads and subtly scales on hover. CTAs route through section-kit route links.
  * Use for small-groups, kids/youth, serve-together, or any multi-pathway onboarding
  * flow for churches, ministries, or community organizations. Renders fully with no
  * props via baked-in defaults.
@@ -27,7 +27,7 @@ import { Container } from '#/section-kit/Container.tsx'
 export const ChurchPathways = defineCapsule({
   name: 'ChurchPathways',
   description:
-    '3-up next-step pathways grid for a church or faith-community site: heading + description on the left, then a responsive grid of photo-card articles with image, title, description, and a text CTA with arrow. Each image lazily loads and subtly scales on hover. CTAs route through useNavigate. Use for small-groups, kids/youth, serve-together, or any multi-pathway onboarding flow for churches, ministries, or community organizations.',
+    '3-up next-step pathways grid for a church or faith-community site: heading + description on the left, then a responsive grid of photo-card articles with image, title, description, and a text CTA with arrow. Each image lazily loads and subtly scales on hover. CTAs route through section-kit route links. Use for small-groups, kids/youth, serve-together, or any multi-pathway onboarding flow for churches, ministries, or community organizations.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -47,7 +47,6 @@ export const ChurchPathways = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Everyone has a next step'
     const description =
       props.description ??
@@ -108,18 +107,11 @@ export const ChurchPathways = defineCapsule({
                   <PathwayCardDescription>
                     {item.description}
                   </PathwayCardDescription>
-                  <PathwayCardCta
-                    asChild
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      go(item.cta)
-                    }}
-                  >
-                    <button type="button">
+                  <PathwayCardCta asChild>
+                    <NavbarRouteLink href={item.cta}>
                       {item.cta}
                       <span aria-hidden="true">→</span>
-                    </button>
+                    </NavbarRouteLink>
                   </PathwayCardCta>
                 </PathwayCardBody>
               </PathwayCard>

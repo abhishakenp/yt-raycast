@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 /**
@@ -10,7 +9,7 @@ import { Image } from '#/lib/img.tsx'
  * (colored symbol badge, company name + exchange, price, green/red change, and
  * an up/down mini sparkline), followed by a dark global-indices band pairing a
  * 2x2 grid of index cards (value + percent change) with a full-bleed trading
- * floor photo. Quote tiles route through useNavigate. Use to surface real-time
+ * floor photo. Quote tiles route through section-kit route links. Use to surface real-time
  * market quotes and world indices on a brokerage or trading-app home page.
  * Renders fully with no props.
  */
@@ -25,10 +24,12 @@ import {
   MarketIndicator,
 } from '#/section-kit/MarketTable.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const InvestingMarkets = defineCapsule({
   name: 'InvestingMarkets',
   description:
-    'Live market-data section for an investing / fintech page: a centered heading + lead above a responsive 4-up grid of clickable quote tiles (colored symbol badge, company name + exchange, price, green/red change and an up/down mini sparkline), followed by a dark global-indices band pairing a 2x2 grid of index cards (value + percent change) with a full-bleed trading-floor photo. Quote tiles route through useNavigate. Use to surface real-time market quotes and world indices on a brokerage or trading-app home page.',
+    'Live market-data section for an investing / fintech page: a centered heading + lead above a responsive 4-up grid of clickable quote tiles (colored symbol badge, company name + exchange, price, green/red change and an up/down mini sparkline), followed by a dark global-indices band pairing a 2x2 grid of index cards (value + percent change) with a full-bleed trading-floor photo. Quote tiles route through section-kit route links. Use to surface real-time market quotes and world indices on a brokerage or trading-app home page.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -67,7 +68,6 @@ export const InvestingMarkets = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Live market data at your fingertips'
     const description =
       props.description ??
@@ -178,7 +178,7 @@ export const InvestingMarkets = defineCapsule({
                     key={q.symbol}
                     className="rounded-xl border border-border bg-muted/50 p-6 text-left transition-shadow hover:shadow-lg"
                   >
-                    <button type="button" onClick={() => go(q.symbol)}>
+                    <NavbarRouteLink href={q.symbol}>
                       <div className="mb-4 flex items-center gap-3">
                         <div
                           className={cn(
@@ -226,7 +226,7 @@ export const InvestingMarkets = defineCapsule({
                           />
                         </svg>
                       </MarketChart>
-                    </button>
+                    </NavbarRouteLink>
                   </MarketRow>
                 ))}
               </div>

@@ -3,7 +3,7 @@ import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from './SiteNav.tsx'
 
 const pricingTierVariants = cva(
   'relative flex h-full min-w-0 flex-col gap-6 rounded-2xl border bg-card p-5 shadow-sm sm:p-6 lg:p-7',
@@ -209,18 +209,15 @@ const PricingTierFeature = React.forwardRef<
 PricingTierFeature.displayName = 'PricingTierFeature'
 
 const PricingTierCta = React.forwardRef<
-  HTMLButtonElement,
-  React.ComponentProps<'button'> & {
-    asChild?: boolean
-    target?: string
-  }
->(({ className, asChild = false, target, onClick, ...props }, ref) => {
-  const go = useNavigate()
-  const Comp = asChild ? Slot : 'button'
-  function handleClick(event: React.MouseEvent<HTMLButtonElement>) {
-    if (!asChild && target) {
-      go(target)
+  HTMLElement,
+  Omit<React.ComponentProps<'a'>, 'type'> &
+    Pick<React.ComponentProps<'button'>, 'disabled' | 'type'> & {
+      asChild?: boolean
+      target?: string
     }
+>(({ className, asChild = false, target, onClick, type, ...props }, ref) => {
+  const Comp = asChild ? Slot : target ? NavbarRouteLink : 'button'
+  function handleClick(event: React.MouseEvent<HTMLElement>) {
     onClick?.(event)
   }
 
@@ -228,6 +225,8 @@ const PricingTierCta = React.forwardRef<
     <Comp
       ref={ref}
       data-slot="pricing-tier-cta"
+      href={target}
+      type={target ? undefined : (type ?? 'button')}
       className={cn(
         'mt-auto inline-flex min-h-11 w-full items-center justify-center rounded-lg px-5 py-2.5 text-sm font-medium transition-colors',
         className,

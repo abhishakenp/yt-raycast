@@ -3,8 +3,6 @@ import { z } from 'zod/v4'
 import { useKeyedLakebedMutation } from '@ship-fast/lakebed/react'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import {
@@ -18,6 +16,7 @@ import {
   dashboardLakebed,
   type DashboardOrderRecord,
 } from './dashboard-lakebed.ts'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 type DashboardDisplayRow = {
   amount?: string
@@ -44,7 +43,7 @@ type DashboardDisplayRow = {
  * gradient initial avatar, product, date, amount, a colored status pill with a
  * matching dot, and a row-actions kebab) and a pagination footer (summary text +
  * Prev / numbered / Next buttons, with "1" active and "Prev" disabled). Toolbar
- * buttons and pagination route through useNavigate; Lakebed-backed row actions
+ * buttons and pagination route through section-kit route links; Lakebed-backed row actions
  * update order status in the shared dashboard state. Use below the
  * KPI / chart band to list latest transactions, orders, invoices or any recent
  * records. Renders fully with no props via baked-in default orders.
@@ -52,7 +51,7 @@ type DashboardDisplayRow = {
 export const DashboardOrdersTable = defineCapsule({
   name: 'DashboardOrdersTable',
   description:
-    "A recent-orders data table card for a SaaS admin dashboard: a bordered card with a header (title + subtitle and toolbar buttons whose icon is chosen from the label — download for Export, funnel otherwise), a responsive table (order id, customer cell with a gradient initial avatar, product, date, amount, a colored status pill with a matching dot, and a row-actions kebab) and a pagination footer (summary text + Prev / numbered / Next buttons, '1' active, 'Prev' disabled). Toolbar buttons and pagination route through useNavigate; Lakebed-backed row actions update order status in shared dashboard state. Use below the KPI / chart band to list latest transactions, orders, invoices or any recent records.",
+    "A recent-orders data table card for a SaaS admin dashboard: a bordered card with a header (title + subtitle and toolbar buttons whose icon is chosen from the label — download for Export, funnel otherwise), a responsive table (order id, customer cell with a gradient initial avatar, product, date, amount, a colored status pill with a matching dot, and a row-actions kebab) and a pagination footer (summary text + Prev / numbered / Next buttons, '1' active, 'Prev' disabled). Toolbar buttons and pagination route through section-kit route links; Lakebed-backed row actions update order status in shared dashboard state. Use below the KPI / chart band to list latest transactions, orders, invoices or any recent records.",
   props: z.object({
     /** Table heading. */
     title: z.string().optional(),
@@ -91,7 +90,6 @@ export const DashboardOrdersTable = defineCapsule({
   }),
   lakebed: dashboardLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const storedOrders = (lakebed.useQuery('orders') ??
       []) as DashboardOrderRecord[]
     const setOrderStatus = useKeyedLakebedMutation(lakebed, 'setOrderStatus')
@@ -208,11 +206,10 @@ export const DashboardOrdersTable = defineCapsule({
           />
           <div className="flex gap-2">
             {actions.map((action) => (
-              <button
+              <NavbarRouteLink
                 key={action}
-                type="button"
-                onClick={() => go(action)}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-medium text-muted-foreground transition hover:bg-muted"
+                href={action}
               >
                 <svg
                   width="14"
@@ -237,7 +234,7 @@ export const DashboardOrdersTable = defineCapsule({
                   )}
                 </svg>
                 {action}
-              </button>
+              </NavbarRouteLink>
             ))}
           </div>
         </div>
@@ -286,11 +283,8 @@ export const DashboardOrdersTable = defineCapsule({
                     const rowActionKey = `complete:${row.dbId || id}`
                     const rowPending = setOrderStatus.isPending(rowActionKey)
                     return (
-                      <DataRow asChild>
-                        <tr
-                          key={id}
-                          className="transition-colors hover:bg-muted/60"
-                        >
+                      <DataRow key={id} asChild>
+                        <tr className="transition-colors hover:bg-muted/60">
                           <DataTableCell className="font-medium text-foreground">
                             {id}
                           </DataTableCell>
@@ -330,41 +324,60 @@ export const DashboardOrdersTable = defineCapsule({
                             </span>
                           </DataTableCell>
                           <DataTableCell className="text-right">
-                            <button
-                              type="button"
-                              aria-label={`Actions for ${id}`}
-                              aria-busy={rowPending}
-                              disabled={rowPending}
-                              onClick={() => {
-                                if (!row.dbId) {
-                                  go(rowTarget)
-                                  return
-                                }
-
-                                void setOrderStatus.run(rowActionKey, {
-                                  id: row.dbId,
-                                  status: 'Completed',
-                                  statusTone: 'emerald',
-                                })
-                              }}
-                              className="text-muted-foreground transition-colors hover:text-foreground"
-                            >
-                              <svg
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                aria-hidden="true"
+                            {row.dbId ? (
+                              <button
+                                type="button"
+                                aria-label={`Actions for ${id}`}
+                                aria-busy={rowPending}
+                                disabled={rowPending}
+                                onClick={() => {
+                                  void setOrderStatus.run(rowActionKey, {
+                                    id: row.dbId ?? '',
+                                    status: 'Completed',
+                                    statusTone: 'emerald',
+                                  })
+                                }}
+                                className="text-muted-foreground transition-colors hover:text-foreground"
                               >
-                                <circle cx="12" cy="12" r="1" />
-                                <circle cx="19" cy="12" r="1" />
-                                <circle cx="5" cy="12" r="1" />
-                              </svg>
-                            </button>
+                                <svg
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  aria-hidden="true"
+                                >
+                                  <circle cx="12" cy="12" r="1" />
+                                  <circle cx="19" cy="12" r="1" />
+                                  <circle cx="5" cy="12" r="1" />
+                                </svg>
+                              </button>
+                            ) : (
+                              <NavbarRouteLink
+                                href={rowTarget}
+                                aria-label={`Actions for ${id}`}
+                                className="text-muted-foreground transition-colors hover:text-foreground"
+                              >
+                                <svg
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  aria-hidden="true"
+                                >
+                                  <circle cx="12" cy="12" r="1" />
+                                  <circle cx="19" cy="12" r="1" />
+                                  <circle cx="5" cy="12" r="1" />
+                                </svg>
+                              </NavbarRouteLink>
+                            )}
                           </DataTableCell>
                         </tr>
                       </DataRow>
@@ -381,23 +394,30 @@ export const DashboardOrdersTable = defineCapsule({
             {pages.map((label) => {
               const isActive = label === '1'
               const disabled = label.toLowerCase() === 'prev'
-              return (
-                <button
+              return disabled ? (
+                <span
                   key={label}
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => go(rowTarget)}
+                  aria-disabled="true"
+                  className={cn(
+                    'rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors',
+                    'cursor-not-allowed border-border bg-card text-muted-foreground/50',
+                  )}
+                >
+                  {label}
+                </span>
+              ) : (
+                <NavbarRouteLink
+                  key={label}
                   className={cn(
                     'rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors',
                     isActive
                       ? 'border-primary/20 bg-primary/10 text-primary'
-                      : disabled
-                        ? 'cursor-not-allowed border-border bg-card text-muted-foreground/50'
-                        : 'border-border bg-card text-muted-foreground hover:bg-muted',
+                      : 'border-border bg-card text-muted-foreground hover:bg-muted',
                   )}
+                  href={rowTarget}
                 >
                   {label}
-                </button>
+                </NavbarRouteLink>
               )
             })}
           </div>

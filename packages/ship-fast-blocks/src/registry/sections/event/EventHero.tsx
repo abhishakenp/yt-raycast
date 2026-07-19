@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroContent,
@@ -14,20 +13,21 @@ import {
   EventMutationSpinner,
 } from './event-interactions.tsx'
 import { eventLakebed } from './event-lakebed.ts'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * EventHero — centered, editorial hero for a conference / event landing page. A
  * date + city uppercase eyebrow, a large two-line headline, a supporting
  * paragraph, dual primary/secondary CTAs (register / view agenda), and an inline
  * event-stat strip (attendees / speakers / hours) beneath. Generous vertical
- * padding on a neutral canvas. Register records a Lakebed event action; agenda routes through useNavigate. Use as the
+ * padding on a neutral canvas. Register records a Lakebed event action; agenda routes through section-kit route links. Use as the
  * opening hero for tech conferences, summits, meetups, workshops, festivals, or
  * any ticketed event.
  */
 export const EventHero = defineCapsule({
   name: 'EventHero',
   description:
-    'Centered, editorial hero for a conference / event landing page: a date + city uppercase eyebrow, a large two-line headline, a supporting paragraph, dual primary/secondary CTAs (register / view agenda), and an inline event-stat strip (attendees / speakers / hours of content) beneath. Generous vertical padding on a neutral canvas, content centered in a narrow column. Register records a Lakebed event action while agenda routes through useNavigate. Use as the opening hero for tech conferences, summits, meetups, workshops, festivals, webinars, or any ticketed event landing page.',
+    'Centered, editorial hero for a conference / event landing page: a date + city uppercase eyebrow, a large two-line headline, a supporting paragraph, dual primary/secondary CTAs (register / view agenda), and an inline event-stat strip (attendees / speakers / hours of content) beneath. Generous vertical padding on a neutral canvas, content centered in a narrow column. Register records a Lakebed event action while agenda routes through section-kit route links. Use as the opening hero for tech conferences, summits, meetups, workshops, festivals, webinars, or any ticketed event landing page.',
   props: z.object({
     /** Date + location eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -47,7 +47,6 @@ export const EventHero = defineCapsule({
   }),
   lakebed: eventLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'September 12–13, 2024 • San Francisco'
     const headingTop = props.headingTop ?? 'Where design meets'
     const headingBottom = props.headingBottom ?? 'engineering excellence'
@@ -92,13 +91,12 @@ export const EventHero = defineCapsule({
               >
                 {primaryCta}
               </EventActionButton>
-              <button
-                type="button"
-                onClick={() => go(secondaryCta)}
+              <NavbarRouteLink
                 className="inline-flex items-center justify-center rounded-lg border border-border bg-background px-6 py-3 font-medium text-foreground transition-colors hover:bg-muted"
+                href={secondaryCta}
               >
                 {secondaryCta}
-              </button>
+              </NavbarRouteLink>
             </div>
             <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
               {stats.map((stat) => (

@@ -1,9 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { FilterChip } from '#/section-kit/index.ts'
+import { FilterChip, NavbarRouteLink } from '#/section-kit/index.ts'
 import {
   ProductCard,
   ProductCardImage,
@@ -28,7 +27,7 @@ import {
  * square image with an optional corner badge and a floating round add-to-cart
  * button, then title, subtitle, price and a star rating. A centered outlined
  * "View All" button closes the section. Add-to-cart writes to the shared
- * Lakebed cart; chips and view-all route through useNavigate. Use as the main catalog grid on electronics or gadget storefronts.
+ * Lakebed cart; chips and view-all route through section-kit route links. Use as the main catalog grid on electronics or gadget storefronts.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -36,7 +35,7 @@ import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const ElectronicsStoreProducts = defineCapsule({
   name: 'ElectronicsStoreProducts',
   description:
-    'Trending Products catalog grid on a muted band for an electronics storefront: a header row pairs a heading with filter chips (first chip primary-active), above a 1-to-4 column grid of product cards — square image with an optional corner badge (Best Seller / New) and a floating round add-to-cart button that writes to the shared Lakebed cart, then title, subtitle, price and a star rating. A centered outlined View All button closes the section. Chips and view-all route through useNavigate; imagery is alt-driven. Use as the main catalog grid on electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.',
+    'Trending Products catalog grid on a muted band for an electronics storefront: a header row pairs a heading with filter chips (first chip primary-active), above a 1-to-4 column grid of product cards — square image with an optional corner badge (Best Seller / New) and a floating round add-to-cart button that writes to the shared Lakebed cart, then title, subtitle, price and a star rating. A centered outlined View All button closes the section. Chips and view-all route through section-kit route links; imagery is alt-driven. Use as the main catalog grid on electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -61,7 +60,6 @@ export const ElectronicsStoreProducts = defineCapsule({
   }),
   lakebed: commerceCartLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Trending Products'
     const filters = props.filters?.length
       ? props.filters
@@ -200,9 +198,9 @@ export const ElectronicsStoreProducts = defineCapsule({
                   active={i === 0}
                   variant={i === 0 ? 'default' : 'outline'}
                   className="rounded-lg"
-                  onClick={() => go(f)}
+                  asChild
                 >
-                  {f}
+                  <NavbarRouteLink href={f}>{f}</NavbarRouteLink>
                 </FilterChip>
               ))}
             </div>
@@ -284,14 +282,13 @@ export const ElectronicsStoreProducts = defineCapsule({
           </ResponsiveGrid>
 
           <div className="mt-12 text-center">
-            <button
-              type="button"
-              onClick={() => go(viewAll)}
+            <NavbarRouteLink
               className="inline-flex items-center justify-center rounded-lg border border-border bg-card px-6 py-3 font-medium text-card-foreground transition-colors hover:bg-accent"
+              href={viewAll}
             >
               {viewAll}
               <ArrowRight />
-            </button>
+            </NavbarRouteLink>
           </div>
         </Container>
       </section>

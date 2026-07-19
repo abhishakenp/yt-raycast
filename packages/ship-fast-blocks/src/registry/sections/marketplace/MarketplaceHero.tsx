@@ -3,7 +3,6 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
@@ -21,6 +20,7 @@ import {
   HeroStatBadgeSubtitle,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * MarketplaceHero — a split, two-column marketplace hero. The left column stacks
@@ -30,14 +30,14 @@ import { Container } from '#/section-kit/Container.tsx'
  * trust row (secure-payments / fast-shipping / buyer-protection with inline
  * icons); the right column is a staggered 4-image product collage in rounded
  * tiles with a floating "Verified Seller" badge card. Clean, neutral, light
- * e-commerce aesthetic. CTAs route through useNavigate; collage uses alt-driven
+ * e-commerce aesthetic. CTAs route through section-kit route links; collage uses alt-driven
  * Image. Use as the top hero for online marketplaces, multi-vendor or
  * maker/artisan platforms, and shopping destinations.
  */
 export const MarketplaceHero = defineCapsule({
   name: 'MarketplaceHero',
   description:
-    "Split, two-column marketplace hero: the left column stacks a live 'products added this week' status pill with a pulsing dot, a large tracking-tight headline with a muted-color highlight phrase, a supporting paragraph, dual CTAs (filled Explore-Products + outlined Start-Selling), and a trust row (secure-payments / fast-shipping / buyer-protection with inline icons); the right column is a staggered 4-image product collage in rounded tiles with a floating 'Verified Seller' badge card. Clean, neutral, light e-commerce aesthetic. CTAs route through useNavigate; the collage uses the alt-driven Image component. Use as the top hero for online marketplaces, multi-vendor or maker/artisan platforms, and shopping destinations.",
+    "Split, two-column marketplace hero: the left column stacks a live 'products added this week' status pill with a pulsing dot, a large tracking-tight headline with a muted-color highlight phrase, a supporting paragraph, dual CTAs (filled Explore-Products + outlined Start-Selling), and a trust row (secure-payments / fast-shipping / buyer-protection with inline icons); the right column is a staggered 4-image product collage in rounded tiles with a floating 'Verified Seller' badge card. Clean, neutral, light e-commerce aesthetic. CTAs route through section-kit route links; the collage uses the alt-driven Image component. Use as the top hero for online marketplaces, multi-vendor or maker/artisan platforms, and shopping destinations.",
   props: z.object({
     badge: z.string().optional(),
     /** Heading lead rendered in full-strength text. */
@@ -63,7 +63,6 @@ export const MarketplaceHero = defineCapsule({
   }),
   lakebed: commerceCartLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const heroBadge = props.badge ?? '12,847 products added this week'
     const headingLead = props.headingLead ?? 'Discover unique products from'
     const heroHighlight = props.highlight ?? 'verified sellers'
@@ -206,21 +205,19 @@ export const MarketplaceHero = defineCapsule({
                 {heroSub}
               </p>
               <div className="flex flex-col gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(heroPrimary)}
+                <NavbarRouteLink
                   className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3.5 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  href={heroPrimary}
                 >
                   <span>{heroPrimary}</span>
                   <ArrowRight />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(heroSecondary)}
+                </NavbarRouteLink>
+                <NavbarRouteLink
                   className="inline-flex items-center justify-center gap-2 rounded-lg border border-input px-6 py-3.5 font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                  href={heroSecondary}
                 >
                   <span>{heroSecondary}</span>
-                </button>
+                </NavbarRouteLink>
                 <CommerceAddItemButton
                   lakebed={lakebed}
                   item={{

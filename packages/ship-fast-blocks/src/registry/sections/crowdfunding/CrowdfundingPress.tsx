@@ -2,8 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 import { Container } from '#/section-kit/Container.tsx'
 import {
   LogoStrip,
@@ -12,27 +10,27 @@ import {
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
 import { PressList } from '#/section-kit/PressList.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * CrowdfundingPress — a compact "Featured in" press-logo strip for a
  * crowdfunding / campaign landing page. A border-y card band with a small
  * uppercase eyebrow heading centered above a wrapped, dimmed row of
  * wordmark-style publication names rendered as muted text buttons that brighten
- * on hover. Each name routes through useNavigate. Use directly beneath a
+ * on hover. Each name routes through section-kit route links. Use directly beneath a
  * campaign hero to establish press credibility, or as a lightweight "as seen
  * in" logo bar on any launch, fundraiser, or product page.
  */
 export const CrowdfundingPress = defineCapsule({
   name: 'CrowdfundingPress',
   description:
-    "A compact 'Featured in' press-logo strip for a crowdfunding / campaign landing page: a border-y card band with a small uppercase eyebrow heading centered above a wrapped, dimmed row of wordmark-style publication names rendered as muted text buttons that brighten on hover. Each name routes through useNavigate. Use directly beneath a campaign hero to establish press credibility, or as a lightweight 'as seen in' logo bar on any launch, fundraiser, or product page.",
+    "A compact 'Featured in' press-logo strip for a crowdfunding / campaign landing page: a border-y card band with a small uppercase eyebrow heading centered above a wrapped, dimmed row of wordmark-style publication names rendered as muted text buttons that brighten on hover. Each name routes through section-kit route links. Use directly beneath a campaign hero to establish press credibility, or as a lightweight 'as seen in' logo bar on any launch, fundraiser, or product page.",
   props: z.object({
     heading: z.string().optional(),
     logos: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const pressHeading = props.heading ?? 'Featured in'
     const pressLogos = props.logos?.length
       ? props.logos
@@ -59,9 +57,7 @@ export const CrowdfundingPress = defineCapsule({
                     className="text-xl opacity-60 tracking-normal"
                     asChild
                   >
-                    <button onClick={() => ((logo) => go(logo))(logo)}>
-                      {logo}
-                    </button>
+                    <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
                   </LogoStripItem>
                 ))}
               </LogoStripItems>

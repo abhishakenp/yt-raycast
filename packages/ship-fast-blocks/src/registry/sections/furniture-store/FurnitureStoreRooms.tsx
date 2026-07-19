@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 /**
@@ -10,7 +9,7 @@ import { Image } from '#/lib/img.tsx'
  * right) above a responsive 1/2/3-column grid of tall 4:5 image tiles; each tile
  * zooms on hover under a bottom-anchored foreground-to-transparent gradient with
  * the room name and a product count. Tiles and the view-all link route through
- * useNavigate. A baked-in alt-text lookup supplies rich photo descriptions for the
+ * section-kit route links. A baked-in alt-text lookup supplies rich photo descriptions for the
  * default room names, falling back to a generated alt for custom names. Use to
  * present room/category inspiration for furniture, home-decor, or interiors
  * brands. Renders fully with no props via baked-in "Haven & Home" defaults.
@@ -18,10 +17,12 @@ import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { RoomGrid, RoomCard } from '#/section-kit/RoomGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const FurnitureStoreRooms = defineCapsule({
   name: 'FurnitureStoreRooms',
   description:
-    "'Shop by room' inspiration gallery on a soft muted band: a header row (eyebrow + heading left, arrow 'view all' link right) above a responsive 1/2/3-column grid of tall 4:5 image tiles; each tile zooms on hover under a bottom-anchored foreground-to-transparent gradient with the room name and product count; tiles and view-all route through useNavigate. A baked-in alt-text lookup supplies rich photo descriptions for default room names. Use to present room/category inspiration for furniture, home-decor, or interiors brands.",
+    "'Shop by room' inspiration gallery on a soft muted band: a header row (eyebrow + heading left, arrow 'view all' link right) above a responsive 1/2/3-column grid of tall 4:5 image tiles; each tile zooms on hover under a bottom-anchored foreground-to-transparent gradient with the room name and product count; tiles and view-all route through section-kit route links. A baked-in alt-text lookup supplies rich photo descriptions for default room names. Use to present room/category inspiration for furniture, home-decor, or interiors brands.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -37,7 +38,6 @@ export const FurnitureStoreRooms = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Room Inspiration'
     const heading = props.heading ?? 'Shop by room'
     const viewAll = props.viewAll ?? 'View all rooms'
@@ -117,23 +117,21 @@ export const FurnitureStoreRooms = defineCapsule({
                 titleClassName="text-3xl font-medium lg:text-4xl"
               />
             </div>
-            <button
-              type="button"
-              onClick={() => go(viewAll)}
+            <NavbarRouteLink
               className="inline-flex items-center text-sm font-medium text-foreground transition-colors hover:text-muted-foreground"
+              href={viewAll}
             >
               {viewAll}
               <ArrowRight className="ml-1 size-4" />
-            </button>
+            </NavbarRouteLink>
           </div>
 
           <RoomGrid cols="1-2-3" className="gap-6">
             {items.map((room) => (
               <RoomCard key={room.name} asChild>
-                <button
-                  type="button"
-                  onClick={() => go(room.name)}
+                <NavbarRouteLink
                   className="group relative block aspect-[4/5] overflow-hidden rounded-lg text-left"
+                  href={room.name}
                 >
                   <Image
                     alt={
@@ -155,7 +153,7 @@ export const FurnitureStoreRooms = defineCapsule({
                     </h3>
                     <p className="text-sm text-background/80">{room.count}</p>
                   </div>
-                </button>
+                </NavbarRouteLink>
               </RoomCard>
             ))}
           </RoomGrid>

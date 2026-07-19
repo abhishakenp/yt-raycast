@@ -1,12 +1,4 @@
-import {
-  createContext,
-  useContext,
-  type Dispatch,
-  type SetStateAction,
-} from 'react'
-import { useStateField } from '@openuidev/react-lang'
-import { signInWithGoogle, signOut } from '@ship-fast/lakebed/react'
-import { PreviewUrlBridgeContext } from './preview-url-bridge.tsx'
+import { createContext, type Dispatch, type SetStateAction } from 'react'
 
 export type RouteTarget = {
   type: 'page' | 'section'
@@ -31,21 +23,6 @@ export const RoutesContext = createContext<RoutesContextValue>({
   pendingSectionId: null,
   setPendingSectionId: () => {},
 })
-
-export const scrollToPageTop = () => {
-  if (typeof window === 'undefined') return
-  requestAnimationFrame(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  })
-}
-
-// Auth-intent labels — any button/CTA routing to one of these triggers the REAL
-// Shoo/lakebed auth instead of a page switch, so a generated "Sign in"/"Sign up"/
-// "Log out" control authenticates for real across EVERY family (kit or inline),
-// hero, footer, anywhere — because every block routes through useNavigate.
-const SIGN_OUT_INTENT = /\b(sign\s*-?\s*out|log\s*-?\s*out|logout)\b/i
-const SIGN_IN_INTENT =
-  /\b(sign\s*-?\s*in|log\s*-?\s*in|login|signin|sign\s*-?\s*up|signup|my\s*account|create\s*(?:a\s*|an\s*|your\s*|free\s*)?account)\b/i
 
 function normalizeTarget(value: string): string {
   return value.trim().toLowerCase()
@@ -170,6 +147,10 @@ function routePath(page: string, routes: string[]): string {
   return page === routes[0] ? '/' : `/${slugifyRoute(page)}`
 }
 
+function fallbackHref(target: string): string {
+  return target.startsWith('/') ? target : `#${slugifyRoute(target)}`
+}
+
 function previewBasePath(currentPathname: string, currentPage: string): string {
   const pageSlug = slugifyRoute(currentPage)
   if (!pageSlug || !currentPathname.endsWith(`/${pageSlug}`)) {
@@ -196,17 +177,17 @@ export function resolveRouteHref(
   ) {
     return rawTarget
   }
-  if (!routes.length) return rawTarget.startsWith('/') ? rawTarget : undefined
+  if (!routes.length) return fallbackHref(rawTarget)
 
   const resolved = resolveRouteTarget(rawTarget, routes, targetMap)
-  if (!resolved) return rawTarget.startsWith('/') ? rawTarget : undefined
+  if (!resolved) return fallbackHref(rawTarget)
 
   function isResolvedPage(route: string) {
     return normalizeTarget(route) === normalizeTarget(resolved.page)
   }
 
   const page = routes.find(isResolvedPage) ?? resolved.page
-  if (!page || !routes.includes(page)) return undefined
+  if (!page || !routes.includes(page)) return fallbackHref(rawTarget)
 
   const path = routePath(page, routes)
   const hash =
@@ -220,112 +201,4 @@ export function resolveRouteHref(
   const base = previewBasePath(currentPathname, currentPage)
   if (path === '/') return `${base}${hash}`
   return `${base.replace(/\/$/, '')}${path}${hash}`
-}
-
-export function useRouteHref(target: string | undefined): string | undefined {
-  const routing = useContext(RoutesContext)
-  const urlBridge = useContext(PreviewUrlBridgeContext)
-  return resolveRouteHref(target, routing.routes, routing.targetMap, {
-    currentPage: routing.currentPage,
-    currentPathname:
-      typeof window === 'undefined' ? undefined : window.location.pathname,
-    previewBase: urlBridge.navigateToPage !== null,
-  })
-}
-
-export function useIsActiveRoute(): (target: string | undefined) => boolean {
-  const routing = useContext(RoutesContext)
-  const urlBridge = useContext(PreviewUrlBridgeContext)
-
-  function isActiveRoute(target: string | undefined) {
-    if (typeof window === 'undefined') return false
-    const href = resolveRouteHref(target, routing.routes, routing.targetMap, {
-      currentPage: routing.currentPage,
-      currentPathname: window.location.pathname,
-      previewBase: urlBridge.navigateToPage !== null,
-    })
-    return (
-      typeof href === 'string' &&
-      new URL(href, window.location.href).href === window.location.href
-    )
-  }
-
-  return isActiveRoute
-}
-
-export function useNavigate() {
-  const routing = useContext(RoutesContext)
-  const page = useStateField<string>('page')
-  const urlBridge = useContext(PreviewUrlBridgeContext)
-  function navigate(target?: string) {
-    const rawTarget = (target ?? '').trim()
-    const t = rawTarget.toLowerCase()
-    // Real auth takes precedence over page routing.
-    if (SIGN_OUT_INTENT.test(t)) {
-      signOut()
-      return
-    }
-    if (SIGN_IN_INTENT.test(t)) {
-      void signInWithGoogle({
-        returnTo:
-          typeof window !== 'undefined'
-            ? window.location.pathname +
-              window.location.search +
-              window.location.hash
-            : undefined,
-      })
-      return
-    }
-    if (!routing.routes.length) return
-
-    const resolved = resolveRouteTarget(
-      rawTarget,
-      routing.routes,
-      routing.targetMap,
-    )
-    if (!resolved) {
-      console.warn(`[ShipFast] Unresolved navigation target: ${target ?? ''}`)
-      return
-    }
-
-    function isResolvedPage(route: string) {
-      return normalizeTarget(route) === normalizeTarget(resolved.page)
-    }
-
-    const nextPage = routing.routes.find(isResolvedPage) ?? resolved.page
-    if (!nextPage || !routing.routes.includes(nextPage)) {
-      console.warn(`[ShipFast] Unresolved navigation page: ${resolved.page}`)
-      return
-    }
-
-    routing.setPendingSectionId(
-      resolved.type === 'section' ? (resolved.sectionId ?? null) : null,
-    )
-    routing.setCurrentPage(nextPage)
-    page.setValue(nextPage)
-    // Push the page slug to the host URL router so the browser URL reflects
-    // the active page (mirrors the deployed site's URL structure).
-    // Home page (routes[0]) → null → base URL, matching both export builders
-    // where index 0 maps to '/'. Other pages → slugifyRoute(label).
-    const isHome = nextPage === routing.routes[0]
-    urlBridge.navigateToPage?.(isHome ? null : slugifyRoute(nextPage))
-    if (resolved.type === 'section' && resolved.sectionId) {
-      if (typeof window !== 'undefined')
-        window.history.replaceState(
-          null,
-          '',
-          `${window.location.pathname}${window.location.search}#${resolved.sectionId}`,
-        )
-    } else if (typeof window !== 'undefined') {
-      if (window.location.hash) {
-        window.history.replaceState(
-          null,
-          '',
-          window.location.pathname + window.location.search,
-        )
-      }
-      scrollToPageTop()
-    }
-  }
-  return navigate
 }

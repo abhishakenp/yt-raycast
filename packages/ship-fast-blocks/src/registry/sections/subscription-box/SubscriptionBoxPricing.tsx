@@ -5,6 +5,8 @@ import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
+  CommerceAddItemButton,
+  CommerceMutationSpinner,
   commerceProduct,
   useCommerceFilteredProducts,
   useSyncCommerceCatalog,
@@ -20,7 +22,6 @@ import {
   PricingTierPeriod,
   PricingTierFeatures,
   PricingTierFeature,
-  PricingTierCta,
 } from '#/section-kit/PricingGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
@@ -228,11 +229,28 @@ export const SubscriptionBoxPricing = defineCapsule({
                         ))}
                       </PricingTierFeatures>
                     )}
-                    {t.cta && (
-                      <PricingTierCta target={t.ctaTarget}>
-                        {t.cta}
-                      </PricingTierCta>
-                    )}
+                    <CommerceAddItemButton
+                      lakebed={lakebed}
+                      item={{
+                        label: `${t.name} box`,
+                        price: `${t.price}${t.period ?? ''}`,
+                      }}
+                      aria-label={`Add ${t.name} box to cart`}
+                      pendingChildren={
+                        <>
+                          <CommerceMutationSpinner className="size-4" />
+                          {props.addingLabel ?? 'Adding'}
+                        </>
+                      }
+                      className={cn(
+                        'mt-auto inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
+                        t.highlighted || t.featured || t.popular
+                          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                          : 'border border-border bg-background text-foreground hover:bg-muted',
+                      )}
+                    >
+                      {t.cta ?? 'Get started'}
+                    </CommerceAddItemButton>
                   </PricingTier>
                 )
               })}

@@ -3,7 +3,6 @@ import { z } from 'zod/v4'
 
 import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { docsLakebed, type DocsArticleRecord } from './docs-lakebed.ts'
 import { useDocsSearch, useSyncDocsCatalog } from './docs-interactions.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
@@ -16,6 +15,7 @@ import {
   SearchFieldHint,
 } from '#/section-kit/SearchForm.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * DocsHero — search-forward hero band for a developer DOCUMENTATION / API-reference
@@ -26,7 +26,7 @@ import { Container } from '#/section-kit/Container.tsx'
  * and a row of two CTA pill buttons — a primary "Read the docs" and an outline
  * "Quickstart" — plus an optional ⌘K keyboard hint chip. The search form writes shared
  * Lakebed search state and renders matching docs articles inline; CTA buttons route
- * through useNavigate (never a dead "#"), and labels match site routes so PageSwitch
+ * through section-kit route links (never a dead "#"), and labels match site routes so PageSwitch
  * can swap pages. Use as the lead band for docs homes, API references, SDK guides,
  * developer portals, or knowledge bases. Renders fully with no props via baked-in
  * "StackForge" defaults.
@@ -34,7 +34,7 @@ import { Container } from '#/section-kit/Container.tsx'
 export const DocsHero = defineCapsule({
   name: 'DocsHero',
   description:
-    "Search-forward centered hero band for a developer DOCUMENTATION / API-reference home: an uppercase 'Documentation' eyebrow pill in accent, a large semibold headline, a muted supporting paragraph, a prominent search bar with an inline magnifier glyph and a real type='search' input whose form submit queries a shared Lakebed docs catalog and surfaces matching articles inline, and a row of two CTA pill buttons (primary 'Read the docs' + outline 'Quickstart') with an optional ⌘K keyboard hint chip. The search form writes shared Lakebed search state and renders matching docs articles inline; CTA buttons route through useNavigate for page-switching. Use as the lead band for docs homes, API references, SDK guides, developer portals, or knowledge bases. Clean developer-docs aesthetic, theme tokens only.",
+    "Search-forward centered hero band for a developer DOCUMENTATION / API-reference home: an uppercase 'Documentation' eyebrow pill in accent, a large semibold headline, a muted supporting paragraph, a prominent search bar with an inline magnifier glyph and a real type='search' input whose form submit queries a shared Lakebed docs catalog and surfaces matching articles inline, and a row of two CTA pill buttons (primary 'Read the docs' + outline 'Quickstart') with an optional ⌘K keyboard hint chip. The search form writes shared Lakebed search state and renders matching docs articles inline; CTA buttons route through section-kit route links for page-switching. Use as the lead band for docs homes, API references, SDK guides, developer portals, or knowledge bases. Clean developer-docs aesthetic, theme tokens only.",
   props: z.object({
     /** Uppercase eyebrow pill label above the headline. */
     eyebrow: z.string().optional(),
@@ -69,7 +69,6 @@ export const DocsHero = defineCapsule({
   }),
   lakebed: docsLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const docsSearch = useDocsSearch(lakebed)
     const eyebrow = props.eyebrow ?? 'Documentation'
     const heading =
@@ -290,10 +289,9 @@ export const DocsHero = defineCapsule({
               <ul className="max-h-72 overflow-y-auto">
                 {matchingArticles.map((article) => (
                   <li key={article.slug}>
-                    <button
-                      type="button"
-                      onClick={() => go(article.title)}
+                    <NavbarRouteLink
                       className="flex w-full flex-col gap-0.5 rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted"
+                      href={article.title}
                     >
                       <span className="text-sm font-medium text-foreground">
                         {article.title}
@@ -301,7 +299,7 @@ export const DocsHero = defineCapsule({
                       <span className="text-xs text-muted-foreground">
                         {article.category}
                       </span>
-                    </button>
+                    </NavbarRouteLink>
                   </li>
                 ))}
                 {!matchingArticles.length ? (
@@ -314,20 +312,18 @@ export const DocsHero = defineCapsule({
           ) : null}
 
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-            <button
-              type="button"
-              onClick={() => go(primaryTarget)}
+            <NavbarRouteLink
               className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              href={primaryTarget}
             >
               {primaryCta}
-            </button>
-            <button
-              type="button"
-              onClick={() => go(secondaryTarget)}
+            </NavbarRouteLink>
+            <NavbarRouteLink
               className="rounded-full border border-border bg-background px-6 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+              href={secondaryTarget}
             >
               {secondaryCta}
-            </button>
+            </NavbarRouteLink>
           </div>
         </Container>
       </HeroSection>

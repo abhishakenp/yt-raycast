@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   HeroSection,
@@ -13,6 +12,7 @@ import {
   HeroCta,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * ChurchHero — centered, image-backed hero section for a church or faith-community
@@ -20,13 +20,13 @@ import { Container } from '#/section-kit/Container.tsx'
  * established-since eyebrow, a two-tone headline, supporting paragraph, dual pill
  * CTAs (filled primary + outlined secondary), and an inline service-time + address
  * strip beneath. Warm, inviting, and conversion-focused. CTAs route through
- * useNavigate. Use as the opening hero for churches, worship centers, ministries,
+ * section-kit route links. Use as the opening hero for churches, worship centers, ministries,
  * or religious nonprofits. Renders fully with no props via baked-in defaults.
  */
 export const ChurchHero = defineCapsule({
   name: 'ChurchHero',
   description:
-    'Centered, image-backed hero section for a church or faith-community landing page: generous top padding over a soft background photo with gradient overlay, an established-since eyebrow, a two-tone headline (primary + muted accent line), supporting paragraph, dual pill CTAs (filled primary + outlined secondary), and an inline service-time + address strip beneath. Warm, inviting, and conversion-focused; CTAs route through useNavigate. Use as the opening hero for churches, worship centers, ministries, or religious nonprofits.',
+    'Centered, image-backed hero section for a church or faith-community landing page: generous top padding over a soft background photo with gradient overlay, an established-since eyebrow, a two-tone headline (primary + muted accent line), supporting paragraph, dual pill CTAs (filled primary + outlined secondary), and an inline service-time + address strip beneath. Warm, inviting, and conversion-focused; CTAs route through section-kit route links. Use as the opening hero for churches, worship centers, ministries, or religious nonprofits.',
   props: z.object({
     /** Small uppercase eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -49,7 +49,6 @@ export const ChurchHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Est. 1987 • Portland, Oregon'
     const headingTop = props.headingTop ?? 'A place to belong,'
     const headingBottom = props.headingBottom ?? 'believe, and become.'
@@ -97,16 +96,16 @@ export const ChurchHero = defineCapsule({
                 variant="primary"
                 className="rounded-full px-8 py-4"
               >
-                <button type="button" onClick={() => go(primaryCta)}>
+                <NavbarRouteLink href={primaryCta}>
                   {primaryCta}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
               <HeroCta
                 asChild
                 variant="outline"
                 className="rounded-full border-border bg-card px-8 py-4 text-card-foreground hover:bg-accent"
               >
-                <button type="button" onClick={() => go(secondaryCta)}>
+                <NavbarRouteLink href={secondaryCta}>
                   <svg
                     className="mr-2 size-4"
                     fill="currentColor"
@@ -116,7 +115,7 @@ export const ChurchHero = defineCapsule({
                     <path d="M8 5v14l11-7z" />
                   </svg>
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
             </HeroActions>
             <div className="mt-16 flex items-center justify-center gap-8 text-sm text-muted-foreground">

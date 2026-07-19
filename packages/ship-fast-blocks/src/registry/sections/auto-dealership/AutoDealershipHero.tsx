@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroHeading,
@@ -17,6 +16,7 @@ import {
   AutoMutationSpinner,
 } from './auto-dealership-interactions.tsx'
 import { autoDealershipLakebed } from './auto-dealership-lakebed.ts'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * AutoDealershipHero — split, two-column hero for an auto dealership / used-car
@@ -24,7 +24,7 @@ import { autoDealershipLakebed } from './auto-dealership-lakebed.ts'
  * headline, a lead paragraph, dual CTAs (solid primary + outlined secondary),
  * and an inline KPI strip with divider rules (inventory count / starting APR /
  * Google rating). Right column: a large rounded showroom hero photo with a deep
- * shadow. Inventory CTA routes through useNavigate; test-drive CTA writes a
+ * shadow. Inventory CTA routes through section-kit route links; test-drive CTA writes a
  * Lakebed lead intent. Use as the top hero for car
  * dealerships, used-car lots, certified pre-owned sellers, or EV/hybrid
  * showrooms. Renders fully with no props via baked-in defaults.
@@ -54,7 +54,6 @@ export const AutoDealershipHero = defineCapsule({
   }),
   lakebed: autoDealershipLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Premium Pre-Owned Vehicles'
     const heading = props.heading ?? 'Find Your Perfect Drive'
     const subheading =
@@ -95,9 +94,9 @@ export const AutoDealershipHero = defineCapsule({
                   variant="primary"
                   className="rounded-md px-6 py-3 text-base"
                 >
-                  <button type="button" onClick={() => go(primaryCta)}>
+                  <NavbarRouteLink href={primaryCta}>
                     {primaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
                 <AutoLeadActionButton
                   lakebed={lakebed}
@@ -133,7 +132,6 @@ export const AutoDealershipHero = defineCapsule({
                 alt={imageAlt}
                 w={800}
                 h={600}
-
                 className="aspect-[4/3] w-full rounded-lg shadow-2xl rounded-xl"
               />
             </div>

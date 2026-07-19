@@ -26,7 +26,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * centered heading + subheading above a 3-column grid of plan cards. The
  * featured plan inverts to the dark brand surface, lifts upward, and shows a
  * floating badge; each card lists a name, blurb, large price + period,
- * check-marked feature list, and a full-width CTA routing through useNavigate.
+ * check-marked feature list, and a full-width CTA routing through section-kit route links.
  * Use to present subscription tiers for cybersecurity vendors, SOC/MDR
  * providers, or any B2B security SaaS. Renders fully with no props via baked-in
  * Starter / Professional / Enterprise defaults.

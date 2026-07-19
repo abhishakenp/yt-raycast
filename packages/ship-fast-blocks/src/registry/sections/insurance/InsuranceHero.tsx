@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   HeroSection,
@@ -16,6 +15,7 @@ import {
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { StarRating } from '#/section-kit/StarRating.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * InsuranceHero — two-column hero band for an insurance / fintech landing page.
@@ -24,14 +24,14 @@ import { StarRating } from '#/section-kit/StarRating.tsx'
  * primary + outline secondary), and an inline trust checklist; a right column
  * with a tilted gradient panel behind a rounded family photo, plus a floating
  * social-proof card (overlapping avatars, happy-customer count, star rating).
- * All links route through useNavigate; imagery is alt-driven <Image>. Use as the
+ * All links route through section-kit route links; imagery is alt-driven <Image>. Use as the
  * top-of-page hero for insurance carriers, insurtech, brokers, or financial-
  * protection products. Renders fully with no props via baked-in defaults.
  */
 export const InsuranceHero = defineCapsule({
   name: 'InsuranceHero',
   description:
-    'Two-column hero band for an insurance / fintech landing page on a soft muted canvas: a left column with a star rating pill, a bold headline with one brand-accent highlighted word, a lede paragraph, dual CTAs (solid primary + outline secondary with a play icon), and an inline trust checklist; a right column with a tilted gradient panel behind a rounded family photo plus a floating social-proof card (overlapping customer avatars, happy-customer count, star rating). Links route through useNavigate; imagery is alt-driven Image. Use as the top-of-page hero for insurance carriers, insurtech startups, brokers, or financial-protection products.',
+    'Two-column hero band for an insurance / fintech landing page on a soft muted canvas: a left column with a star rating pill, a bold headline with one brand-accent highlighted word, a lede paragraph, dual CTAs (solid primary + outline secondary with a play icon), and an inline trust checklist; a right column with a tilted gradient panel behind a rounded family photo plus a floating social-proof card (overlapping customer avatars, happy-customer count, star rating). Links route through section-kit route links; imagery is alt-driven Image. Use as the top-of-page hero for insurance carriers, insurtech startups, brokers, or financial-protection products.',
   props: z.object({
     /** Star rating pill above the headline. */
     ratingPill: z.string().optional(),
@@ -62,7 +62,6 @@ export const InsuranceHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const ratingPill = props.ratingPill ?? 'Rated 4.9/5 by 12,000+ customers'
     const headingBefore = props.headingBefore ?? 'Insurance that actually'
     const highlight = props.highlight ?? 'protects'
@@ -160,17 +159,17 @@ export const InsuranceHero = defineCapsule({
                   variant="primary"
                   className="gap-2 rounded-xl px-8 py-4 text-base font-semibold shadow-lg shadow-primary/25 transition-all"
                 >
-                  <button type="button" onClick={() => go(primaryCta)}>
+                  <NavbarRouteLink href={primaryCta}>
                     {primaryCta}
                     <ArrowRight />
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
                 <HeroCta
                   asChild
                   variant="outline"
                   className="gap-2 rounded-xl px-8 py-4 text-base font-semibold transition-all"
                 >
-                  <button type="button" onClick={() => go(secondaryCta)}>
+                  <NavbarRouteLink href={secondaryCta}>
                     <svg
                       className="size-5 text-primary"
                       width="20"
@@ -187,7 +186,7 @@ export const InsuranceHero = defineCapsule({
                       <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     {secondaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
               <HeroSocialProof className="mt-0 gap-6">

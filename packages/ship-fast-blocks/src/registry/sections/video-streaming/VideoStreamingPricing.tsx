@@ -24,14 +24,14 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * heading + intro above a responsive 3-column grid of plan cards (name, big
  * monthly price, checkmark feature bullets, and a CTA). The highlighted middle
  * tier (Standard) gets a primary border, shadow, and a floating "Most popular"
- * pill, and every CTA routes through useNavigate. Use to present subscription
+ * pill, and every CTA routes through section-kit route links. Use to present subscription
  * tiers — Basic, Standard, Premium — for a streaming service. Renders fully
  * with no props via baked-in defaults.
  */
 export const VideoStreamingPricing = defineCapsule({
   name: 'VideoStreamingPricing',
   description:
-    "A 3-tier plan band for a video-streaming landing page built on the shared PricingGrid composite: a centered heading + intro above a responsive 3-column grid of plan cards (name, big monthly price, checkmark feature bullets, and a CTA). The highlighted middle tier (Standard) gets a primary border, shadow, and a 'Most popular' pill, and every CTA routes through useNavigate. Use to present subscription tiers — Basic, Standard, Premium — for a streaming service or OTT app.",
+    "A 3-tier plan band for a video-streaming landing page built on the shared PricingGrid composite: a centered heading + intro above a responsive 3-column grid of plan cards (name, big monthly price, checkmark feature bullets, and a CTA). The highlighted middle tier (Standard) gets a primary border, shadow, and a 'Most popular' pill, and every CTA routes through section-kit route links. Use to present subscription tiers — Basic, Standard, Premium — for a streaming service or OTT app.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),

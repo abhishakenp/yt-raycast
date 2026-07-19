@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   OverviewSection,
   OverviewGrid,
@@ -19,6 +17,7 @@ import {
   OverviewStatLabel,
   OverviewMediaPanel,
 } from '#/section-kit/OverviewSection.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 export const ShopOverview = defineCapsule({
   name: 'ShopOverview',
@@ -39,7 +38,6 @@ export const ShopOverview = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Shop'
     const eyebrow = props.eyebrow ?? 'Shop section'
     const heading = props.heading ?? 'Shop experience, ready to customize'
@@ -87,20 +85,18 @@ export const ShopOverview = defineCapsule({
               ))}
             </OverviewFeatures>
             <OverviewCta>
-              <button
-                type="button"
-                onClick={() => go(primaryCta)}
+              <NavbarRouteLink
                 className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+                href={primaryCta}
               >
                 {primaryCta}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(secondaryCta)}
+              </NavbarRouteLink>
+              <NavbarRouteLink
                 className="rounded-full border border-border bg-background px-6 py-3 text-sm font-semibold text-foreground transition hover:bg-muted"
+                href={secondaryCta}
               >
                 {secondaryCta}
-              </button>
+              </NavbarRouteLink>
             </OverviewCta>
             <OverviewStats>
               {stats.map((stat: { value: string; label: string }) => (

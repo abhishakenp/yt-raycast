@@ -25,7 +25,7 @@ import {
  * that lift softly on hover. Right: link columns with uppercase tracked
  * titles and links that slide subtly on hover. The bottom bar carries the
  * auto-updating copyright and a back-to-top pill. Every brand, social, and
- * column link routes through useNavigate. Renders fully with no props via
+ * column link routes through section-kit route links. Renders fully with no props via
  * baked-in "Northside" defaults. Use as the site-wide footer for coworking
  * spaces, shared offices, flex-office providers, or business centers.
  */
@@ -43,7 +43,7 @@ function BrandTile({ letter }: { letter: string }) {
 export const CoworkingFooter = defineCapsule({
   name: 'CoworkingFooter',
   description:
-    'Deep, quiet closing footer for a coworking or shared-workspace site: a giant watermark wordmark behind the content under a primary-tinted seam hairline, a gradient brand tile with wordmark + tagline + social pills that lift on hover, link columns with uppercase tracked titles and slide-on-hover links, and a bottom bar with auto-updating copyright and a back-to-top pill. Every brand, social, and column link routes through useNavigate. Use as the site-wide footer for coworking spaces, shared offices, flex-office providers, or business centers.',
+    'Deep, quiet closing footer for a coworking or shared-workspace site: a giant watermark wordmark behind the content under a primary-tinted seam hairline, a gradient brand tile with wordmark + tagline + social pills that lift on hover, link columns with uppercase tracked titles and slide-on-hover links, and a bottom bar with auto-updating copyright and a back-to-top pill. Every brand, social, and column link routes through section-kit route links. Use as the site-wide footer for coworking spaces, shared offices, flex-office providers, or business centers.',
   props: z.object({
     /** Brand / workspace name shown beside the logo tile. */
     brand: z.string().optional(),

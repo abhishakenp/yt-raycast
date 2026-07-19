@@ -11,7 +11,6 @@ import {
 } from 'lucide-react'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   Carousel,
   CarouselContent,
@@ -23,6 +22,7 @@ import {
   StatItem,
   StatValue,
   StatLabel,
+  NavbarRouteLink,
 } from '#/section-kit/index.ts'
 import { Card } from '#/section-kit/Card.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
@@ -72,7 +72,6 @@ export const GovPortalHero = defineCapsule({
   }),
   lakebed: govPortalLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const { lang } = useGovLang(lakebed as GovPortalLakebed)
     const [api, setApi] = useState<CarouselApi | null>(null)
     const videos = props.videos?.length ? props.videos : HERO_VIDEOS
@@ -173,21 +172,19 @@ export const GovPortalHero = defineCapsule({
                 {subtitle}
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  onClick={() => go('Tenders')}
+                <NavbarRouteLink
                   className="inline-flex items-center gap-2 rounded-lg bg-background px-5 py-3 text-sm font-semibold text-foreground shadow-lg transition-colors hover:bg-background/90"
+                  href={'Tenders'}
                 >
                   {primaryCta}
                   <ArrowRightIcon className="size-4" aria-hidden />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go('The Company')}
+                </NavbarRouteLink>
+                <NavbarRouteLink
                   className="inline-flex items-center gap-2 rounded-lg border border-primary-foreground/40 bg-primary-foreground/10 px-5 py-3 text-sm font-semibold text-primary-foreground backdrop-blur transition-colors hover:bg-primary-foreground/20"
+                  href={'The Company'}
                 >
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </div>
             </div>
           </div>
@@ -222,7 +219,6 @@ export const GovPortalQuickLinks = defineCapsule({
   }),
   lakebed: govPortalLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const { lang } = useGovLang(lakebed as GovPortalLakebed)
     const heading = pickLang(
       lang,
@@ -286,10 +282,7 @@ export const GovPortalQuickLinks = defineCapsule({
                   variant="default"
                   className="group flex flex-col items-start gap-3 text-left transition-all hover:border-primary/40 hover:shadow-lg"
                 >
-                  <button
-                    type="button"
-                    onClick={() => go(item.target ?? 'Home')}
-                  >
+                  <NavbarRouteLink href={item.target ?? 'Home'}>
                     <span className="flex size-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
                       <Icon className="size-6" aria-hidden />
                     </span>
@@ -305,7 +298,7 @@ export const GovPortalQuickLinks = defineCapsule({
                       {openLabel}
                       <ArrowRightIcon className="size-3.5 transition-transform group-hover:translate-x-0.5" />
                     </span>
-                  </button>
+                  </NavbarRouteLink>
                 </Card>
               )
             })}

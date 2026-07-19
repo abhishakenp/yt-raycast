@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   StepTimeline,
@@ -12,6 +11,7 @@ import {
   StepConnector,
 } from '#/section-kit/StepTimeline.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * MentalHealthSteps — a "how it works" / approach flow for a therapy practice.
@@ -20,13 +20,13 @@ import { Container } from '#/section-kit/Container.tsx'
  * primary-tinted help band pairing a "not sure where to start?" prompt with a
  * phone CTA + secondary booking button on the left and a divided pair of help
  * stats on the right. Calm, reassuring wellness aesthetic. CTAs route through
- * useNavigate. Use to explain the onboarding process for therapists, counselors,
+ * section-kit route links. Use to explain the onboarding process for therapists, counselors,
  * psychologists or wellness centers.
  */
 export const MentalHealthSteps = defineCapsule({
   name: 'MentalHealthSteps',
   description:
-    "'How it works' / approach flow for a therapy practice: a centered eyebrow + heading + intro above a numbered 3-step row (filled primary circular badges with dashed connectors on desktop), then a primary-tinted help band pairing a 'not sure where to start?' prompt with a phone CTA + secondary booking button on the left and a divided pair of help stats on the right. Calm, reassuring wellness aesthetic. CTAs route through useNavigate. Use to explain the onboarding process for therapists, counselors, psychologists or wellness centers.",
+    "'How it works' / approach flow for a therapy practice: a centered eyebrow + heading + intro above a numbered 3-step row (filled primary circular badges with dashed connectors on desktop), then a primary-tinted help band pairing a 'not sure where to start?' prompt with a phone CTA + secondary booking button on the left and a divided pair of help stats on the right. Calm, reassuring wellness aesthetic. CTAs route through section-kit route links. Use to explain the onboarding process for therapists, counselors, psychologists or wellness centers.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -46,7 +46,6 @@ export const MentalHealthSteps = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'How It Works'
     const heading = props.heading ?? 'Beginning therapy is simple'
     const description =
@@ -152,21 +151,19 @@ export const MentalHealthSteps = defineCapsule({
                   {helpDescription}
                 </p>
                 <div className="flex flex-col gap-4 sm:flex-row">
-                  <button
-                    type="button"
-                    onClick={() => go(bookLabel)}
+                  <NavbarRouteLink
                     className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                    href={bookLabel}
                   >
                     <Phone className="size-5" />
                     {helpPhone}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => go(bookLabel)}
+                  </NavbarRouteLink>
+                  <NavbarRouteLink
                     className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-background px-6 py-3 font-medium text-foreground transition-colors hover:bg-accent"
+                    href={bookLabel}
                   >
                     {helpCta}
-                  </button>
+                  </NavbarRouteLink>
                 </div>
               </div>
               <div className="flex items-center justify-center gap-8 text-center">

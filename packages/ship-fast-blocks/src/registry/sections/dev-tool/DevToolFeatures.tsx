@@ -18,14 +18,14 @@ import {
  * grid of bordered cards, each with a tinted square icon tile, a title, a
  * description, and a "Learn more" chevron link. Icons rotate through a built-in
  * developer set (auth, database, real-time, serverless, edge, observability).
- * Every card link routes through useNavigate. Use to showcase platform
+ * Every card link routes through section-kit route links. Use to showcase platform
  * capabilities for developer tools, API platforms, backend-as-a-service, or
  * technical SaaS.
  */
 export const DevToolFeatures = defineCapsule({
   name: 'DevToolFeatures',
   description:
-    "6-up product features grid for a developer tool / API platform: a centered heading + intro paragraph above a responsive 1/2/3-column grid of bordered cards, each with a tinted square icon tile, title, description, and a 'Learn more' chevron link. Built-in developer icon set (auth, database, real-time, serverless, edge, observability) rotates across cards. Card links route through useNavigate. Use to showcase platform capabilities for developer tools, API platforms, backend-as-a-service, or technical SaaS.",
+    "6-up product features grid for a developer tool / API platform: a centered heading + intro paragraph above a responsive 1/2/3-column grid of bordered cards, each with a tinted square icon tile, title, description, and a 'Learn more' chevron link. Built-in developer icon set (auth, database, real-time, serverless, edge, observability) rotates across cards. Card links route through section-kit route links. Use to showcase platform capabilities for developer tools, API platforms, backend-as-a-service, or technical SaaS.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),

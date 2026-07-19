@@ -8,20 +8,20 @@ import {
   CtaBandSubtitle,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * CryptoContactCta — inverted dark final call-to-action band for a crypto /
  * DeFi landing page. A centered `bg-foreground` section with a large
  * headline, supporting paragraph, dual buttons (filled light primary +
  * outlined secondary), and trust chips with check-circle icons beneath.
- * All buttons route through useNavigate. Use as a closing conversion action
+ * All buttons route through section-kit route links. Use as a closing conversion action
  * for protocols, chains, DeFi platforms, or Web3 infrastructure sites.
  */
 export const CryptoContactCta = defineCapsule({
   name: 'CryptoContactCta',
   description:
-    'Inverted dark final call-to-action band for a crypto / DeFi landing page: centered bg-foreground section with a large headline, supporting paragraph, dual buttons (filled light primary + outlined secondary), and trust chips with check-circle icons beneath. All buttons route through useNavigate. Use as a closing conversion action for protocols, chains, DeFi platforms, or Web3 infrastructure sites.',
+    'Inverted dark final call-to-action band for a crypto / DeFi landing page: centered bg-foreground section with a large headline, supporting paragraph, dual buttons (filled light primary + outlined secondary), and trust chips with check-circle icons beneath. All buttons route through section-kit route links. Use as a closing conversion action for protocols, chains, DeFi platforms, or Web3 infrastructure sites.',
   props: z.object({
     /** Headline text. */
     heading: z.string().optional(),
@@ -36,7 +36,6 @@ export const CryptoContactCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Start building on NexusChain today'
     const description =
       props.description ??
@@ -79,16 +78,18 @@ export const CryptoContactCta = defineCapsule({
               variant="primary"
               invert
               className="rounded-lg px-8 py-3 font-medium"
-              onClick={() => go(primaryCta)}
+              asChild
             >
-              {primaryCta}
+              <NavbarRouteLink href={primaryCta}>{primaryCta}</NavbarRouteLink>
             </CtaAction>
             <CtaAction
               variant="outline"
               className="rounded-lg border-background/40 px-8 py-3 font-medium text-background hover:bg-background/10"
-              onClick={() => go(secondaryCta)}
+              asChild
             >
-              {secondaryCta}
+              <NavbarRouteLink href={secondaryCta}>
+                {secondaryCta}
+              </NavbarRouteLink>
             </CtaAction>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-primary-foreground/60">

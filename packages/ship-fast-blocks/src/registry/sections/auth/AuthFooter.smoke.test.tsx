@@ -3,10 +3,6 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
-vi.mock('#/lib/use-navigate.tsx', () => ({
-  useNavigate: () => vi.fn(),
-}))
-
 const { AuthFooter } = await import('./AuthFooter.tsx')
 
 describe('AuthFooter smoke', () => {

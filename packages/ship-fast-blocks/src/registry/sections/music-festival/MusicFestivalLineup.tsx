@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 /**
@@ -10,7 +9,7 @@ import { Image } from '#/lib/img.tsx'
  * photo cards (each with a gradient-overlaid day label, name and genre), a
  * featured-artist grid of bordered name/genre cards, and a centered "more
  * artists" pill button. Headliner cards, featured cards and the more button all
- * route through useNavigate; photos use the alt-driven Image component. Use to
+ * route through section-kit route links; photos use the alt-driven Image component. Use to
  * showcase performers on music festivals, arts festivals, concert series, or
  * any multi-day live-music event.
  */
@@ -22,10 +21,12 @@ import {
   ArtistTier,
 } from '#/section-kit/LineupGrid.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const MusicFestivalLineup = defineCapsule({
   name: 'MusicFestivalLineup',
   description:
-    "Lineup section for a music / arts festival landing page: a centered eyebrow + heading + intro paragraph, then a row of three headliner photo cards (each with a dark gradient overlay carrying a day label, artist name and genre), a featured-artist grid of bordered name/genre cards (2/4/6-up responsive), and a centered 'more artists' pill button. Headliner cards, featured cards and the more button all route through useNavigate; photos use the alt-driven Image component. Use to showcase performers on music festivals, arts festivals, concert series, raves, or any multi-day live-music event.",
+    "Lineup section for a music / arts festival landing page: a centered eyebrow + heading + intro paragraph, then a row of three headliner photo cards (each with a dark gradient overlay carrying a day label, artist name and genre), a featured-artist grid of bordered name/genre cards (2/4/6-up responsive), and a centered 'more artists' pill button. Headliner cards, featured cards and the more button all route through section-kit route links; photos use the alt-driven Image component. Use to showcase performers on music festivals, arts festivals, concert series, raves, or any multi-day live-music event.",
   props: z.object({
     /** Eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -62,7 +63,6 @@ export const MusicFestivalLineup = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'The Artists'
     const heading = props.heading ?? '2025 Lineup'
     const description =
@@ -168,7 +168,7 @@ export const MusicFestivalLineup = defineCapsule({
             <LineupGrid className="grid gap-6 md:grid-cols-3">
               {headliners.map((h) => (
                 <ArtistCard asChild key={h.name}>
-                  <button type="button" onClick={() => go(h.name)}>
+                  <NavbarRouteLink href={h.name}>
                     <Image
                       alt={h.imageAlt}
                       w={800}
@@ -184,7 +184,7 @@ export const MusicFestivalLineup = defineCapsule({
                       </h4>
                       <p className="text-sm text-background/70">{h.genre}</p>
                     </div>
-                  </button>
+                  </NavbarRouteLink>
                 </ArtistCard>
               ))}
             </LineupGrid>
@@ -197,22 +197,21 @@ export const MusicFestivalLineup = defineCapsule({
             <ResponsiveGrid cols="2-3-6" className="gap-4">
               {featured.map((a) => (
                 <ArtistTier asChild key={a.name}>
-                  <button type="button" onClick={() => go(a.name)}>
+                  <NavbarRouteLink href={a.name}>
                     <p className="font-semibold">{a.name}</p>
                     <p className="mt-1 text-sm text-card-foreground/60">
                       {a.genre}
                     </p>
-                  </button>
+                  </NavbarRouteLink>
                 </ArtistTier>
               ))}
             </ResponsiveGrid>
           </div>
 
           <div className="text-center">
-            <button
-              type="button"
-              onClick={() => go(more)}
+            <NavbarRouteLink
               className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3 font-medium transition-colors hover:bg-accent"
+              href={more}
             >
               {more}
               <svg
@@ -228,7 +227,7 @@ export const MusicFestivalLineup = defineCapsule({
               >
                 <path d="M19 9l-7 7-7-7" />
               </svg>
-            </button>
+            </NavbarRouteLink>
           </div>
         </Container>
       </section>

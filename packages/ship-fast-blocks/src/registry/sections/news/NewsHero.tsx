@@ -2,9 +2,9 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * NewsHero — print-style newspaper masthead hero for a news outlet. A bespoke,
@@ -13,14 +13,14 @@ import { Container } from '#/section-kit/Container.tsx'
  * border-y hairline rules, a centered serif display wordmark, and a top
  * headline / lead-story line with a short standfirst beneath. Newspaper feel
  * with serif display type, hairline rules, uppercase tracking and generous
- * whitespace. The wordmark and headline route through useNavigate. Use as the
+ * whitespace. The wordmark and headline route through section-kit route links. Use as the
  * front-page masthead hero for newspapers, news outlets, gazettes, dailies,
  * print-inspired publications or editorial sites. Renders fully with no props.
  */
 export const NewsHero = defineCapsule({
   name: 'NewsHero',
   description:
-    "Print-style newspaper masthead hero for a news outlet: a clean front-page top band with a thin uppercase edition strip (volume/issue left, date center, 'Late Edition' right) bracketed by border-y hairline rules, a centered serif display masthead wordmark, and a top headline / lead-story line with a short standfirst beneath. Newspaper aesthetic with serif display type, hairline rules, uppercase tracking and generous whitespace. The wordmark and headline route through useNavigate. Use as the front-page masthead hero for newspapers, news outlets, gazettes, dailies, print-inspired publications or editorial content sites.",
+    "Print-style newspaper masthead hero for a news outlet: a clean front-page top band with a thin uppercase edition strip (volume/issue left, date center, 'Late Edition' right) bracketed by border-y hairline rules, a centered serif display masthead wordmark, and a top headline / lead-story line with a short standfirst beneath. Newspaper aesthetic with serif display type, hairline rules, uppercase tracking and generous whitespace. The wordmark and headline route through section-kit route links. Use as the front-page masthead hero for newspapers, news outlets, gazettes, dailies, print-inspired publications or editorial content sites.",
   props: z.object({
     /** Masthead wordmark rendered in a prominent centered serif. */
     brand: z.string().optional(),
@@ -35,7 +35,6 @@ export const NewsHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'The Chronicle'
     const edition = props.edition ?? 'VOL. CXLVII · No. 12,847'
     const date = props.date ?? 'Sunday, June 22, 2026'
@@ -64,29 +63,24 @@ export const NewsHero = defineCapsule({
 
             {/* Masthead wordmark */}
             <div className="py-8 text-center sm:py-10">
-              <button
-                type="button"
-                onClick={() => go(brand)}
+              <NavbarRouteLink
                 className="font-serif text-5xl font-bold tracking-tight text-foreground transition-colors hover:text-muted-foreground sm:text-6xl lg:text-7xl"
+                href={brand}
               >
                 {brand}
-              </button>
+              </NavbarRouteLink>
             </div>
 
             {/* Top headline + standfirst */}
             <div className="border-t border-border pt-8 text-center sm:pt-10">
-              <button
-                type="button"
-                onClick={() => go(headline)}
-                className="group block w-full"
-              >
+              <NavbarRouteLink className="group block w-full" href={headline}>
                 <h1
                   id="news-hero-heading"
                   className="mx-auto max-w-4xl font-serif text-3xl font-bold leading-[1.1] tracking-tight text-foreground transition-colors group-hover:text-muted-foreground sm:text-4xl lg:text-5xl"
                 >
                   {headline}
                 </h1>
-              </button>
+              </NavbarRouteLink>
               <p className="mx-auto mt-5 max-w-2xl font-serif text-lg italic leading-relaxed text-muted-foreground sm:text-xl">
                 {dek}
               </p>

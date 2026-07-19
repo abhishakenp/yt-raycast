@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { ArticleGrid } from '#/section-kit/ArticleGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { StoryGrid } from '#/section-kit/StoryGrid.tsx'
@@ -19,19 +18,20 @@ import {
 } from '#/section-kit/StoryCard.tsx'
 import { useSyncPublicationArticles } from './publication-interactions.tsx'
 import { publicationLakebed } from './publication-lakebed.ts'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * BlogStoryGrid — responsive story-grid for an editorial blog / publication.
  * A section header with a heading and a "view all" arrow-link above a 1/2/3-column
  * grid of story cards. Each card has a tagged cover image that zooms on hover, a
  * title, clamped excerpt, and an author/date footer. Cards and the view-all link
- * route through useNavigate. Use as the story grid / latest-stories / article-listing
+ * route through section-kit route links. Use as the story grid / latest-stories / article-listing
  * section on blog homepages, magazine indexes, or editorial landing pages.
  */
 export const BlogStoryGrid = defineCapsule({
   name: 'BlogStoryGrid',
   description:
-    "Responsive story-grid section for an editorial blog or publication: a section header with a heading and a 'view all' arrow-link above a 1/2/3-column grid of story cards. Each card has a tagged cover image that zooms on hover, a title, clamped excerpt, and an author/date footer. Cards and the view-all link route through useNavigate. Use as the story grid / latest-stories / article-listing section on blog homepages, magazine indexes, or editorial landing pages.",
+    "Responsive story-grid section for an editorial blog or publication: a section header with a heading and a 'view all' arrow-link above a 1/2/3-column grid of story cards. Each card has a tagged cover image that zooms on hover, a title, clamped excerpt, and an author/date footer. Cards and the view-all link route through section-kit route links. Use as the story grid / latest-stories / article-listing section on blog homepages, magazine indexes, or editorial landing pages.",
   props: z.object({
     /** Section heading text. */
     title: z.string().optional(),
@@ -59,7 +59,6 @@ export const BlogStoryGrid = defineCapsule({
   }),
   lakebed: publicationLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const title = props.title ?? 'Latest stories'
     const viewAll = props.viewAll ?? 'View all'
     const viewAllTarget = props.viewAllTarget ?? 'View all'
@@ -165,54 +164,59 @@ export const BlogStoryGrid = defineCapsule({
               className="gap-0"
               titleClassName="font-serif text-2xl font-bold tracking-tight text-foreground"
             />
-            <button
-              type="button"
-              onClick={() => go(viewAllTarget)}
+            <NavbarRouteLink
               className="group inline-flex items-center gap-2 text-[0.85rem] font-semibold text-primary"
+              href={viewAllTarget}
             >
               {viewAll}
               <Arrow />
-            </button>
+            </NavbarRouteLink>
           </div>
 
           <ArticleGrid cols="1-2-3">
             {posts.map((post) => (
-              <StoryCard onClick={() => go(postTarget)} variant="bordered">
-                <StoryCardImageContainer>
-                  <StoryCardImage
-                    alt={post.alt}
-                    w={800}
-                    h={500}
-                    className="h-[12.5rem]"
-                    variant="bordered"
-                  />
-                  <StoryCardMeta>
-                    {
-                      <span className="absolute left-3 top-3 rounded-full bg-background/90 px-2.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.06em] text-foreground shadow-sm backdrop-blur">
-                        {post.tag}
-                      </span>
-                    }
-                  </StoryCardMeta>
-                </StoryCardImageContainer>
-                <StoryCardBody>
-                  <StoryCardTitle>{post.title}</StoryCardTitle>
-                  <StoryCardExcerpt>{post.excerpt}</StoryCardExcerpt>
-                  <StoryCardFooter>
-                    {
-                      <div className="mt-4 flex items-center justify-between border-t border-border pt-3.5">
-                        <span className="inline-flex items-center gap-2.5 text-[0.82rem] font-semibold text-foreground">
-                          <span className="grid size-7 place-items-center rounded-full bg-gradient-to-br from-primary to-accent text-[0.625rem] font-bold text-primary-foreground">
-                            {post.author.charAt(0)}
+              <StoryCard
+                key={`${post.tag}:${post.title}`}
+                variant="bordered"
+                asChild
+              >
+                <NavbarRouteLink href={postTarget}>
+                  <StoryCardImageContainer>
+                    <StoryCardImage
+                      alt={post.alt}
+                      w={800}
+                      h={500}
+                      className="h-[12.5rem]"
+                      variant="bordered"
+                    />
+                    <StoryCardMeta>
+                      {
+                        <span className="absolute left-3 top-3 rounded-full bg-background/90 px-2.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.06em] text-foreground shadow-sm backdrop-blur">
+                          {post.tag}
+                        </span>
+                      }
+                    </StoryCardMeta>
+                  </StoryCardImageContainer>
+                  <StoryCardBody>
+                    <StoryCardTitle>{post.title}</StoryCardTitle>
+                    <StoryCardExcerpt>{post.excerpt}</StoryCardExcerpt>
+                    <StoryCardFooter>
+                      {
+                        <div className="mt-4 flex items-center justify-between border-t border-border pt-3.5">
+                          <span className="inline-flex items-center gap-2.5 text-[0.82rem] font-semibold text-foreground">
+                            <span className="grid size-7 place-items-center rounded-full bg-gradient-to-br from-primary to-accent text-[0.625rem] font-bold text-primary-foreground">
+                              {post.author.charAt(0)}
+                            </span>
+                            {post.author}
                           </span>
-                          {post.author}
-                        </span>
-                        <span className="text-[0.78rem] text-muted-foreground">
-                          {post.date}
-                        </span>
-                      </div>
-                    }
-                  </StoryCardFooter>
-                </StoryCardBody>
+                          <span className="text-[0.78rem] text-muted-foreground">
+                            {post.date}
+                          </span>
+                        </div>
+                      }
+                    </StoryCardFooter>
+                  </StoryCardBody>
+                </NavbarRouteLink>
               </StoryCard>
             ))}
           </ArticleGrid>

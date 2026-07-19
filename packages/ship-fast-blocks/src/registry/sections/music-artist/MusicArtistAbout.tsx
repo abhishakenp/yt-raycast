@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   AboutSection,
@@ -15,13 +14,14 @@ import {
   AboutImageTile,
 } from '#/section-kit/AboutSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * MusicArtistAbout — split about-the-band section for a music artist / band
  * page. On the left: an eyebrow, a thin heading, several biography paragraphs,
  * and a row of social-link buttons. On the right: a pair of staggered portrait
  * (3:4) member photos. Warm, airy, editorial indie-folk aesthetic on a soft
- * neutral canvas. Each social routes through useNavigate; photos use the
+ * neutral canvas. Each social routes through section-kit route links; photos use the
  * alt-driven Image component. Use as the band-story / about section for
  * musicians, bands, or artist EPK pages. Renders fully with no props via
  * baked-in defaults.
@@ -29,7 +29,7 @@ import { Container } from '#/section-kit/Container.tsx'
 export const MusicArtistAbout = defineCapsule({
   name: 'MusicArtistAbout',
   description:
-    'Split about-the-band section for a music artist / band page: on the left an eyebrow, a thin heading, several biography paragraphs, and a row of social-link buttons; on the right a pair of staggered portrait (3:4) member photos. Warm, airy editorial indie-folk aesthetic on a soft neutral canvas. Each social routes through useNavigate; photos use the alt-driven Image component. Use as the band-story / about section for musicians, singers, bands, or artist EPK pages.',
+    'Split about-the-band section for a music artist / band page: on the left an eyebrow, a thin heading, several biography paragraphs, and a row of social-link buttons; on the right a pair of staggered portrait (3:4) member photos. Warm, airy editorial indie-folk aesthetic on a soft neutral canvas. Each social routes through section-kit route links; photos use the alt-driven Image component. Use as the band-story / about section for musicians, singers, bands, or artist EPK pages.',
   props: z.object({
     /** Small uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -46,7 +46,6 @@ export const MusicArtistAbout = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'About the Band'
     const heading = props.heading ?? 'Velvet Echo'
     const paragraphs = props.paragraphs?.length
@@ -89,15 +88,14 @@ export const MusicArtistAbout = defineCapsule({
               </AboutBody>
               <div className="mt-8 flex gap-6">
                 {socials.map((social) => (
-                  <button
+                  <NavbarRouteLink
                     key={social}
-                    type="button"
                     aria-label={social}
-                    onClick={() => go(social)}
                     className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                    href={social}
                   >
                     {social}
-                  </button>
+                  </NavbarRouteLink>
                 ))}
               </div>
             </AboutContent>

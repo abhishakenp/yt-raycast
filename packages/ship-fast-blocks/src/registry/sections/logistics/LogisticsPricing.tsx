@@ -9,7 +9,7 @@ import { cn } from '#/lib/utils.ts'
  * carry a floating "Popular" badge. Each card lists name, tagline, a large price
  * with unit, a check-marked feature list and a full-width CTA, with a centered
  * footnote below. Clean and corporate on a light surface with a deep slate
- * primary; every CTA routes through useNavigate. Use to present shipping service
+ * primary; every CTA routes through section-kit route links. Use to present shipping service
  * tiers (Standard / Priority / Express) for logistics, freight-forwarding,
  * shipping, courier or cargo/transport companies. Renders fully with no props.
  */
@@ -31,7 +31,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 export const LogisticsPricing = defineCapsule({
   name: 'LogisticsPricing',
   description:
-    "Three-tier service-pricing table for a global-logistics / freight-forwarding company: a centered heading + lede over a 1 → 3 column grid of pricing cards, with the featured tier inverted to a solid primary surface and an optional floating 'Popular' badge. Each card lists name, tagline, a large price with unit, a check-marked feature list and a full-width CTA, plus a centered footnote below. Clean and corporate on a light surface with a deep slate primary; every CTA routes through useNavigate. Use to present shipping service tiers (Standard / Priority / Express) for logistics, freight-forwarding, shipping, courier, supply-chain or cargo/transport companies.",
+    "Three-tier service-pricing table for a global-logistics / freight-forwarding company: a centered heading + lede over a 1 → 3 column grid of pricing cards, with the featured tier inverted to a solid primary surface and an optional floating 'Popular' badge. Each card lists name, tagline, a large price with unit, a check-marked feature list and a full-width CTA, plus a centered footnote below. Clean and corporate on a light surface with a deep slate primary; every CTA routes through section-kit route links. Use to present shipping service tiers (Standard / Priority / Express) for logistics, freight-forwarding, shipping, courier, supply-chain or cargo/transport companies.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),

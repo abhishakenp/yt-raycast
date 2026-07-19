@@ -10,13 +10,13 @@ import {
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Drift, Glow } from '#/section-kit/motion.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
 } from '../saas/saas-interactions.tsx'
 import { saasLakebed } from '../saas/saas-lakebed.ts'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * AuthCta — inverted closing conversion band for Authly, a developer
@@ -27,14 +27,14 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * high-contrast "Start Free" action plus an outlined "Read the Docs" route.
  * The right column is a terminal "action panel" console echoing the chosen
  * CTAs as key/value log lines with dotted leaders. Primary actions record
- * Lakebed intent; docs route through useNavigate. Use near the bottom of an
+ * Lakebed intent; docs route through section-kit route links. Use near the bottom of an
  * auth platform, identity API, or login SDK page to drive sign-ups. Renders
  * fully with no props.
  */
 export const AuthCta = defineCapsule({
   name: 'AuthCta',
   description:
-    "Inverted closing conversion band for a developer-auth product backed by shared Lakebed conversion state: a dark band with a drifting primary glow, a mono eyebrow chip, a large tight-tracked headline ('Add auth in minutes'), a short developer-focused subtitle, and paired CTAs beside a terminal 'action panel' console that echoes the chosen actions as key/value log lines. Primary sign-up/sales actions record fullstack intent with scoped loading; secondary documentation actions still route through useNavigate. Use near the bottom of an auth platform, identity API, or login SDK page to drive sign-ups.",
+    "Inverted closing conversion band for a developer-auth product backed by shared Lakebed conversion state: a dark band with a drifting primary glow, a mono eyebrow chip, a large tight-tracked headline ('Add auth in minutes'), a short developer-focused subtitle, and paired CTAs beside a terminal 'action panel' console that echoes the chosen actions as key/value log lines. Primary sign-up/sales actions record fullstack intent with scoped loading; secondary documentation actions still route through section-kit route links. Use near the bottom of an auth platform, identity API, or login SDK page to drive sign-ups.",
   props: z.object({
     /** Small eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -54,7 +54,6 @@ export const AuthCta = defineCapsule({
   }),
   lakebed: saasLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Get started'
     const headline = props.headline ?? 'Add auth in minutes'
     const subheading =
@@ -116,9 +115,11 @@ export const AuthCta = defineCapsule({
                 <CtaAction
                   variant="outline"
                   className="min-h-12 rounded-xl border-background/25 px-7 py-3 text-sm font-semibold text-background transition-[background-color,border-color,transform] duration-150 ease-out hover:border-background/50 hover:bg-background/10 active:scale-[0.98] motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background/70 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground"
-                  onClick={() => go(secondaryTarget)}
+                  asChild
                 >
-                  {secondaryCta}
+                  <NavbarRouteLink href={secondaryTarget}>
+                    {secondaryCta}
+                  </NavbarRouteLink>
                 </CtaAction>
               ) : (
                 <SaasPlanActionButton

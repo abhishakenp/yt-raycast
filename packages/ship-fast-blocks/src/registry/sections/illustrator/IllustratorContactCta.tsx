@@ -8,21 +8,21 @@ import {
   CtaBandSubtitle,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * IllustratorContactCta — a centered closing contact call-to-action for an
  * illustrator / visual-artist portfolio. A large serif heading and supporting
  * paragraph sit above dual CTAs (a filled primary email button with a mail icon
  * + an outlined secondary action) and a centered row of text social links.
- * Every button and social link routes through useNavigate. Use as the final
+ * Every button and social link routes through section-kit route links. Use as the final
  * "let's work together" band before the footer. Renders fully with no props via
  * baked-in defaults.
  */
 export const IllustratorContactCta = defineCapsule({
   name: 'IllustratorContactCta',
   description:
-    "Centered closing contact call-to-action for an illustrator / visual-artist portfolio: a large serif heading and supporting paragraph above dual CTAs (a filled primary email button with a mail icon + an outlined secondary action) and a centered row of text social links, all routing through useNavigate. Use as the final 'let's work together' band before the footer.",
+    "Centered closing contact call-to-action for an illustrator / visual-artist portfolio: a large serif heading and supporting paragraph above dual CTAs (a filled primary email button with a mail icon + an outlined secondary action) and a centered row of text social links, all routing through section-kit route links. Use as the final 'let's work together' band before the footer.",
   props: z.object({
     /** Serif heading. */
     heading: z.string().optional(),
@@ -37,7 +37,6 @@ export const IllustratorContactCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? "Let's create something beautiful together"
     const description =
       props.description ??
@@ -59,43 +58,46 @@ export const IllustratorContactCta = defineCapsule({
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
             <CtaAction
               className="gap-2 rounded-full bg-foreground px-8 py-4 text-sm font-medium text-background hover:bg-muted-foreground"
-              onClick={() => go(email)}
+              asChild
             >
-              <svg
-                className="size-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="1.5"
-                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                />
-              </svg>
-              {email}
+              <NavbarRouteLink href={email}>
+                <svg
+                  className="size-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1.5"
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  />
+                </svg>
+                {email}
+              </NavbarRouteLink>
             </CtaAction>
             <CtaAction
               variant="outline"
               className="rounded-full border-foreground px-8 py-4 text-sm font-medium hover:bg-foreground hover:text-background"
-              onClick={() => go(secondaryCta)}
+              asChild
             >
-              {secondaryCta}
+              <NavbarRouteLink href={secondaryCta}>
+                {secondaryCta}
+              </NavbarRouteLink>
             </CtaAction>
           </div>
           <div className="flex justify-center gap-6">
             {socials.map((social) => (
-              <button
+              <NavbarRouteLink
                 key={social}
-                type="button"
                 aria-label={social}
-                onClick={() => go(social)}
                 className="text-muted-foreground transition-colors hover:text-foreground"
+                href={social}
               >
                 {social}
-              </button>
+              </NavbarRouteLink>
             ))}
           </div>
         </CtaBandInner>

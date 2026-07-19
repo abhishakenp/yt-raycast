@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 /**
@@ -9,16 +8,18 @@ import { Image } from '#/lib/img.tsx'
  * electronics storefront. A left-aligned heading above a 2-to-4 column grid of
  * clickable 4:3 tiles, each a full-bleed image under a bottom-up foreground
  * gradient with the category name and product count overlaid. Tiles route
- * through useNavigate. Use to surface department navigation on electronics
+ * through section-kit route links. Use to surface department navigation on electronics
  * stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { CategoryGrid, CategoryCard } from '#/section-kit/CategoryGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const ElectronicsStoreCategories = defineCapsule({
   name: 'ElectronicsStoreCategories',
   description:
-    'Shop by Category image-tile grid for an electronics storefront: a left-aligned heading above a 2-to-4 column grid of clickable 4:3 tiles, each a full-bleed image under a bottom-up foreground gradient with the category name and product count overlaid. Tiles route through useNavigate; imagery is alt-driven. Use to surface department navigation (Headphones, Smartwatches, Laptops, Cameras, Gaming, Smart Home, Accessories, etc.) on electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.',
+    'Shop by Category image-tile grid for an electronics storefront: a left-aligned heading above a 2-to-4 column grid of clickable 4:3 tiles, each a full-bleed image under a bottom-up foreground gradient with the category name and product count overlaid. Tiles route through section-kit route links; imagery is alt-driven. Use to surface department navigation (Headphones, Smartwatches, Laptops, Cameras, Gaming, Smart Home, Accessories, etc.) on electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -35,7 +36,6 @@ export const ElectronicsStoreCategories = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Shop by Category'
     const items = props.items?.length
       ? props.items
@@ -99,10 +99,9 @@ export const ElectronicsStoreCategories = defineCapsule({
           <CategoryGrid cols="2-lg-4" className="gap-4">
             {items.map((c) => (
               <CategoryCard asChild key={c.name}>
-                <button
-                  type="button"
-                  onClick={() => go(c.name)}
+                <NavbarRouteLink
                   className="group relative aspect-[4/3] overflow-hidden rounded-xl bg-muted text-left"
+                  href={c.name}
                 >
                   <Image
                     alt={c.imageAlt}
@@ -119,7 +118,7 @@ export const ElectronicsStoreCategories = defineCapsule({
                     <h3 className="font-semibold">{c.name}</h3>
                     <p className="text-sm text-background/80">{c.count}</p>
                   </div>
-                </button>
+                </NavbarRouteLink>
               </CategoryCard>
             ))}
           </CategoryGrid>

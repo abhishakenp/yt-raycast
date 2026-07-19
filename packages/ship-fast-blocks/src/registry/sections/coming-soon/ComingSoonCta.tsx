@@ -7,23 +7,23 @@ import {
   CtaBandTitle,
   CtaBandSubtitle,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * ComingSoonCta — final email-capture CTA band for a "launching soon" / waitlist
  * pre-launch landing page. A centered heading and supporting paragraph above an
  * inline email-capture form with a primary submit button, followed by a contact
  * email line below. Form submit writes to the shared Lakebed subscriber list and
- * the contact email link routes through useNavigate. Use as the closing conversion push on SaaS waitlists, app pre-launch
+ * the contact email link routes through section-kit route links. Use as the closing conversion push on SaaS waitlists, app pre-launch
  * pages, beta sign-ups, or any "notify me" / early-access landing page. Renders
  * fully with no props via baked-in defaults.
  */
 export const ComingSoonCta = defineCapsule({
   name: 'ComingSoonCta',
   description:
-    "Final email-capture CTA band for a 'launching soon' / waitlist pre-launch landing page: centered heading and supporting paragraph above an inline email-capture form with a primary submit button, followed by a contact email line below. Form submit writes to the shared Lakebed subscriber list and the contact email link routes through useNavigate. Use as the closing conversion push on SaaS waitlists, app pre-launch pages, beta sign-ups, or 'notify me' / early-access landing pages.",
+    "Final email-capture CTA band for a 'launching soon' / waitlist pre-launch landing page: centered heading and supporting paragraph above an inline email-capture form with a primary submit button, followed by a contact email line below. Form submit writes to the shared Lakebed subscriber list and the contact email link routes through section-kit route links. Use as the closing conversion push on SaaS waitlists, app pre-launch pages, beta sign-ups, or 'notify me' / early-access landing pages.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -41,7 +41,6 @@ export const ComingSoonCta = defineCapsule({
   }),
   lakebed: newsletterLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Ready to transform how your team works?'
     const description =
       props.description ??
@@ -77,13 +76,12 @@ export const ComingSoonCta = defineCapsule({
           />
           <p className="mt-8 text-xs text-muted-foreground">
             {contactPrefix}{' '}
-            <button
-              type="button"
-              onClick={() => go(contactEmail)}
+            <NavbarRouteLink
               className="underline transition-colors hover:text-foreground"
+              href={contactEmail}
             >
               {contactEmail}
-            </button>
+            </NavbarRouteLink>
           </p>
         </CtaBandInner>
       </CtaBand>

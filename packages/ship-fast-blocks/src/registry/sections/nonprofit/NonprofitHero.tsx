@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import {
@@ -12,6 +11,7 @@ import {
   HeroStatBadgeSubtitle,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * NonprofitHero — warm 2-column hero band for a nonprofit / charity landing
@@ -20,14 +20,14 @@ import { Container } from '#/section-kit/Container.tsx'
  * paragraph, dual pill CTAs (filled Donate + outlined Explore), and a row of
  * check-marked trust badges; on the right, a rounded hero photo with a floating
  * quote card overlapping its bottom-left corner. Editorial, compassionate,
- * donor-focused. CTAs route through useNavigate. Use as the opening hero for
+ * donor-focused. CTAs route through section-kit route links. Use as the opening hero for
  * nonprofits, charities, NGOs, foundations, or humanitarian campaigns. Renders
  * fully with no props via baked-in "Roots of Hope" defaults.
  */
 export const NonprofitHero = defineCapsule({
   name: 'NonprofitHero',
   description:
-    'Warm 2-column hero band for a nonprofit / charity landing page on a light neutral canvas: a left column with an uppercase eyebrow, a large headline with one highlighted phrase in the brand color, a supporting paragraph, dual pill CTAs (filled Donate + outlined Explore), and a row of check-marked trust badges; on the right a rounded hero photo with a floating quote card overlapping its bottom-left corner. Editorial, compassionate and donor-focused; CTAs route through useNavigate. Use as the opening hero for nonprofits, charities, NGOs, foundations, or humanitarian campaigns.',
+    'Warm 2-column hero band for a nonprofit / charity landing page on a light neutral canvas: a left column with an uppercase eyebrow, a large headline with one highlighted phrase in the brand color, a supporting paragraph, dual pill CTAs (filled Donate + outlined Explore), and a row of check-marked trust badges; on the right a rounded hero photo with a floating quote card overlapping its bottom-left corner. Editorial, compassionate and donor-focused; CTAs route through section-kit route links. Use as the opening hero for nonprofits, charities, NGOs, foundations, or humanitarian campaigns.',
   props: z.object({
     /** Uppercase eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -52,7 +52,6 @@ export const NonprofitHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Established 2008 • Global Impact'
     const headingBefore = props.headingBefore ?? 'Planting seeds of change for'
     const highlight = props.highlight ?? 'brighter tomorrows'
@@ -126,21 +125,19 @@ export const NonprofitHero = defineCapsule({
                 {subheading}
               </p>
               <div className="flex flex-col gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
+                <NavbarRouteLink
                   className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+                  href={primaryCta}
                 >
                   {primaryCta}
                   <ArrowRight className="ml-2 size-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
+                </NavbarRouteLink>
+                <NavbarRouteLink
                   className="inline-flex items-center justify-center rounded-full border border-border bg-card px-8 py-4 text-base font-medium text-foreground transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+                  href={secondaryCta}
                 >
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </div>
               <div className="mt-10 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
                 {badges.map((badge) => (

@@ -15,13 +15,13 @@ import {
  * wide brand column (serif wordmark, bio blurb, copyright) beside two link
  * columns (navigation + information), with a hairline-divided bottom row
  * holding two small notes. Every link and the wordmark route through
- * useNavigate. Use as the closing footer for illustrator and creative
+ * section-kit route links. Use as the closing footer for illustrator and creative
  * portfolios. Renders fully with no props via baked-in "Mira Chen" defaults.
  */
 export const IllustratorFooter = defineCapsule({
   name: 'IllustratorFooter',
   description:
-    'Multi-column dark site footer for an illustrator / visual-artist portfolio: a foreground-colored band with inverted type holding a wide brand column (serif wordmark, bio blurb, copyright) beside two link columns (navigation + information), with a hairline-divided bottom row of two small notes. Links and the wordmark route through useNavigate. Use as the closing footer for illustrator and creative portfolios.',
+    'Multi-column dark site footer for an illustrator / visual-artist portfolio: a foreground-colored band with inverted type holding a wide brand column (serif wordmark, bio blurb, copyright) beside two link columns (navigation + information), with a hairline-divided bottom row of two small notes. Links and the wordmark route through section-kit route links. Use as the closing footer for illustrator and creative portfolios.',
   props: z.object({
     /** Artist / brand name shown as the serif wordmark. */
     brand: z.string().optional(),

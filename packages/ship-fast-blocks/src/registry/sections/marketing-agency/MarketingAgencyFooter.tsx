@@ -6,7 +6,7 @@ import { z } from 'zod/v4'
  * surface: a brand column (layered-diamond glyph + name + short about blurb)
  * beside three link columns of titled lists, with a divider rule above a bottom
  * bar holding an auto-year copyright line and a row of legal links. Every link
- * routes through useNavigate; the brand returns to the home target. Use as the
+ * routes through section-kit route links; the brand returns to the home target. Use as the
  * closing footer for a marketing / growth agency, SaaS, or B2B services site.
  * Renders fully with no props.
  */
@@ -27,7 +27,7 @@ import {
 export const MarketingAgencyFooter = defineCapsule({
   name: 'MarketingAgencyFooter',
   description:
-    '4-column site footer: a bordered footer on the page surface with a brand column (layered-diamond glyph + name + short about blurb) beside three titled link-list columns, plus a divider rule above a bottom bar holding an auto-year copyright line and a row of legal links. Every link routes through useNavigate; the brand returns to the home target. Use as the closing footer for a marketing / growth agency, SaaS, or B2B services site.',
+    '4-column site footer: a bordered footer on the page surface with a brand column (layered-diamond glyph + name + short about blurb) beside three titled link-list columns, plus a divider rule above a bottom bar holding an auto-year copyright line and a row of legal links. Every link routes through section-kit route links; the brand returns to the home target. Use as the closing footer for a marketing / growth agency, SaaS, or B2B services site.',
   props: z.object({
     /** Agency / brand name shown beside the logo glyph. */
     brand: z.string().optional(),

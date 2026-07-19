@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroBadge,
@@ -21,6 +20,7 @@ import {
   SaasPlanActionButton,
 } from '../saas/saas-interactions.tsx'
 import { saasLakebed } from '../saas/saas-lakebed.ts'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * AuthHero — the opening spread of the "clearance dossier" hero for Authly, an
@@ -32,7 +32,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * column is EXHIBIT A: a tilt-reactive code window inside a dashed evidence
  * frame, wearing a rotated exhibit tag, a TLS tag, a session status strip,
  * and a floating "session verified" chip. Graph-paper grid and one drifting
- * token glow light the section. CTAs route through useNavigate; nothing in
+ * token glow light the section. CTAs route through section-kit route links; nothing in
  * the exhibit is interactive. Use as the opening hero for auth platforms,
  * identity APIs, login SDKs, or any developer-first SaaS. Renders fully with
  * no props.
@@ -69,7 +69,6 @@ export const AuthHero = defineCapsule({
   }),
   lakebed: saasLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Auth-as-a-service'
     const heading = props.heading ?? 'Authentication for developers'
     const subheading =
@@ -158,9 +157,9 @@ export const AuthHero = defineCapsule({
                 variant="outline"
                 className="min-h-12 rounded-xl bg-background/70 px-7 py-3 text-sm font-semibold backdrop-blur transition-[background-color,border-color,transform] duration-150 ease-out hover:border-foreground/25 active:scale-[0.98] motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
-                <button type="button" onClick={() => go(secondaryTarget)}>
+                <NavbarRouteLink href={secondaryTarget}>
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
             </HeroActions>
 

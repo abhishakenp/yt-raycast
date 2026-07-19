@@ -3,10 +3,10 @@ import { z } from 'zod/v4'
 
 import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * FintechHero — split hero for a fintech / neobank / digital-banking landing
@@ -16,14 +16,14 @@ import { Container } from '#/section-kit/Container.tsx'
  * ghost link with a play glyph), and a row of compliance trust badges ("FDIC
  * insured", "256-bit encryption", "SOC 2"). The right column frames a banking
  * app dashboard image inside a bordered card with a soft primary glow. Both
- * CTAs route through useNavigate. Premium, trustworthy, conversion-focused; use
+ * CTAs route through section-kit route links. Premium, trustworthy, conversion-focused; use
  * as the opening hero for banking apps, wallets, payments, or lending products.
  * Renders fully with no props via baked-in "Vault" defaults.
  */
 export const FintechHero = defineCapsule({
   name: 'FintechHero',
   description:
-    "Split hero for a fintech / neobank / digital-banking landing page: a two-column band with a left column carrying a rounded trust badge pill, a large headline with one phrase in the primary highlight color, a supporting paragraph, dual CTAs ('Open an Account' primary pill + a ghost 'See how' link), and a row of compliance trust badges (FDIC insured, 256-bit encryption, SOC 2). The right column frames a banking app dashboard image inside a bordered card with a soft primary glow. CTAs route through useNavigate. Premium, trustworthy and conversion-focused; use as the opening hero for banking apps, wallets, payments, or lending products.",
+    "Split hero for a fintech / neobank / digital-banking landing page: a two-column band with a left column carrying a rounded trust badge pill, a large headline with one phrase in the primary highlight color, a supporting paragraph, dual CTAs ('Open an Account' primary pill + a ghost 'See how' link), and a row of compliance trust badges (FDIC insured, 256-bit encryption, SOC 2). The right column frames a banking app dashboard image inside a bordered card with a soft primary glow. CTAs route through section-kit route links. Premium, trustworthy and conversion-focused; use as the opening hero for banking apps, wallets, payments, or lending products.",
   props: z.object({
     /** Trust badge pill text above the headline. */
     badge: z.string().optional(),
@@ -48,7 +48,6 @@ export const FintechHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const badge = props.badge ?? 'Banking reimagined for the modern world'
     const heading = props.heading ?? 'Money that moves at'
     const highlight = props.highlight ?? 'the speed of you'
@@ -92,17 +91,15 @@ export const FintechHero = defineCapsule({
               {subheading}
             </p>
             <div className="flex flex-wrap items-center gap-4">
-              <button
-                type="button"
-                onClick={() => go(primaryTarget)}
+              <NavbarRouteLink
                 className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                href={primaryTarget}
               >
                 {primaryCta}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(secondaryTarget)}
+              </NavbarRouteLink>
+              <NavbarRouteLink
                 className="inline-flex items-center gap-2 rounded-full px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                href={secondaryTarget}
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -113,7 +110,7 @@ export const FintechHero = defineCapsule({
                   <path d="M8 5v14l11-7z" />
                 </svg>
                 {secondaryCta}
-              </button>
+              </NavbarRouteLink>
             </div>
             <ul className="flex flex-wrap items-center gap-x-6 gap-y-3 pt-2">
               {trustBadges.map((label) => (

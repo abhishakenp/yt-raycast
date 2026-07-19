@@ -10,7 +10,7 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * ResumeCvCta — a focused closing call-to-action band for a personal resume /
@@ -20,14 +20,14 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * pill CTAs — a high-contrast "Get in Touch" button (variant "primary",
  * auto-inverted to a light pill on the primary band) plus an outlined "Download
  * CV" button (variant "outline"). Both actions navigate through the kit's
- * useNavigate so neither is a dead link. Use near the bottom of a personal
+ * section-kit route links so neither is a dead link. Use near the bottom of a personal
  * portfolio, online résumé, or professional profile page to drive contact and
  * CV downloads. Renders fully with no props via baked-in defaults.
  */
 export const ResumeCvCta = defineCapsule({
   name: 'ResumeCvCta',
   description:
-    "Focused closing call-to-action band for a personal resume / CV / portfolio site: a full-width primary-colored band with an availability eyebrow, a warm 'Let's work together' headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Get in Touch' button plus an outlined 'Download CV' button). Both CTAs route through useNavigate. Use near the bottom of a personal portfolio, online résumé, or professional profile page to drive contact and CV downloads.",
+    "Focused closing call-to-action band for a personal resume / CV / portfolio site: a full-width primary-colored band with an availability eyebrow, a warm 'Let's work together' headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Get in Touch' button plus an outlined 'Download CV' button). Both CTAs route through section-kit route links. Use near the bottom of a personal portfolio, online résumé, or professional profile page to drive contact and CV downloads.",
   props: z.object({
     /** Availability line shown as the band eyebrow. */
     eyebrow: z.string().optional(),
@@ -46,7 +46,6 @@ export const ResumeCvCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Available for work'
     const headline = props.headline ?? "Let's work together"
     const subheading =
@@ -64,11 +63,15 @@ export const ResumeCvCta = defineCapsule({
           <CtaBandTitle>{headline}</CtaBandTitle>
           <CtaBandSubtitle>{subheading}</CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction variant="primary" onClick={() => go(primaryTarget)}>
-              {primaryCta}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={primaryTarget}>
+                {primaryCta}
+              </NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" onClick={() => go(secondaryTarget)}>
-              {secondaryCta}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={secondaryTarget}>
+                {secondaryCta}
+              </NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

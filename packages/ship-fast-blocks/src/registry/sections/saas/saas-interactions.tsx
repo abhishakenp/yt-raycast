@@ -21,6 +21,7 @@ import {
   CommandSearchList,
   CommandSearchEmpty,
   CommandSearchGroup,
+  NavbarRouteLink,
 } from '#/section-kit/index.ts'
 import {
   Sheet,
@@ -32,7 +33,7 @@ import {
   SheetTrigger,
 } from '#/components/ui/sheet.tsx'
 import { cn } from '#/lib/utils.ts'
-import { useIsActiveRoute, useRouteHref } from '#/lib/use-navigate.tsx'
+import { useIsActiveSectionKitNavHref } from '#/section-kit/nav-href.tsx'
 import type { SaasPlanInput, saasLakebed } from './saas-lakebed.ts'
 
 type SaasLakebedRuntime = LakebedClientRuntime<typeof saasLakebed>
@@ -189,7 +190,6 @@ export function SaasSearchButton({
   lakebed: SaasLakebed
   label?: string
 }) {
-  const go = useNavigate()
   const selectPlan = lakebed.useMutation('selectPlan')
   const plans = lakebed.useQuery('planCatalog') ?? []
 
@@ -200,13 +200,13 @@ export function SaasSearchButton({
         getKey: (plan) => plan.id,
         getValue: (plan) =>
           `${plan.name} ${plan.price} ${plan.period} ${plan.summary}`,
+        getHref: (plan) => plan.name,
         onSelect: (plan) => {
           void selectPlan({
             label: `Selected ${plan.name}`,
             plan: plan.name,
             source: 'search',
           })
-          go(plan.name)
         },
       }}
     >
@@ -397,10 +397,7 @@ export function SaasAccountButton({
           <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-5 py-4">
             {sessions.length ? (
               sessions.map((session) => (
-                <Card
-                  key={session.id}
-                  className="p-3 rounded-lg p-4"
-                >
+                <Card key={session.id} className="p-3 rounded-lg p-4">
                   <p className="truncate text-sm font-semibold text-card-foreground">
                     {session.displayName || session.email}
                   </p>
@@ -473,8 +470,7 @@ export function SaasMobileMenu({
   nav: string[]
 }) {
   const [open, setOpen] = useState(false)
-  const homeHref = useRouteHref(homeTarget ?? 'Home')
-  const isActiveRoute = useIsActiveRoute()
+  const isActiveRoute = useIsActiveSectionKitNavHref()
   const normalizedHomeLabel = 'home'
   const targetHome = homeTarget ?? 'Home'
   const links = nav.filter((item) => {
@@ -502,8 +498,8 @@ export function SaasMobileMenu({
           </SheetDescription>
         </SheetHeader>
         <div className="flex flex-col gap-1 px-3 py-4">
-          <a
-            href={homeHref}
+          <NavbarRouteLink
+            href={targetHome}
             onClick={closeMenu}
             aria-current={isActiveRoute(targetHome) ? 'page' : undefined}
             className={cn(
@@ -512,7 +508,7 @@ export function SaasMobileMenu({
             )}
           >
             Home
-          </a>
+          </NavbarRouteLink>
           {links.map((item) => (
             <SaasMobileMenuLink key={item} item={item} onNavigate={closeMenu} />
           ))}
@@ -529,11 +525,10 @@ function SaasMobileMenuLink({
   item: string
   onNavigate: () => void
 }) {
-  const href = useRouteHref(item)
-  const isActive = useIsActiveRoute()(item)
+  const isActive = useIsActiveSectionKitNavHref()(item)
   return (
-    <a
-      href={href}
+    <NavbarRouteLink
+      href={item}
       onClick={onNavigate}
       aria-current={isActive ? 'page' : undefined}
       className={cn(
@@ -542,6 +537,6 @@ function SaasMobileMenuLink({
       )}
     >
       {item}
-    </a>
+    </NavbarRouteLink>
   )
 }

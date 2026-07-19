@@ -2,10 +2,6 @@ import { describe, expect, it, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 
 const navigate = vi.fn()
-vi.mock('#/lib/use-navigate.tsx', () => ({
-  useNavigate: () => navigate,
-}))
-
 const { FashionStoreCollections } = await import('./FashionStoreCollections')
 
 describe('FashionStoreCollections', () => {

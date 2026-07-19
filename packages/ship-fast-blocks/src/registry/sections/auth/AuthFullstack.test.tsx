@@ -78,10 +78,6 @@ const navigate = vi.fn()
 const lakebedRef: { current: SaasLakebed | null } = { current: null }
 type TestAuthValue = ReturnType<SaasLakebed['useAuth']>
 
-vi.mock('#/lib/use-navigate.tsx', () => ({
-  useNavigate: () => navigate,
-}))
-
 vi.mock('@ship-fast/lakebed/react', async () => {
   const actual = await vi.importActual<
     typeof import('@ship-fast/lakebed/react')
@@ -669,9 +665,8 @@ describe('auth fullstack generated section behavior', () => {
 
     render(<AuthProbe />)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Authly' }))
-    expect(navigate).toHaveBeenCalledWith('Home')
-    navigate.mockReset()
+    const brandLink = screen.getByRole('link', { name: 'Authly' })
+    expect(brandLink.getAttribute('href')).toBe('#home')
 
     await waitFor(() => {
       expect(state().plans).toEqual([
@@ -695,7 +690,6 @@ describe('auth fullstack generated section behavior', () => {
     fireEvent.click(within(searchDialog).getByText('Pro'))
 
     await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith('Pro')
       expect(state().intents.at(-1)).toEqual({
         label: 'Selected Pro',
         plan: 'Pro',
@@ -709,11 +703,16 @@ describe('auth fullstack generated section behavior', () => {
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
-    expect(screen.getByRole('dialog')).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'Pricing' }))
+    const menuDialog = screen.getByRole('dialog')
+    expect(menuDialog).toBeTruthy()
+    const pricingLink = within(menuDialog).getByRole('link', {
+      name: 'Pricing',
+    })
+    expect(pricingLink.getAttribute('href')).toBe('#pricing')
+    fireEvent.click(pricingLink)
 
     await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith('Pricing')
+      expect(screen.queryByRole('dialog')).toBeNull()
     })
   })
 
@@ -836,7 +835,7 @@ describe('auth fullstack generated section behavior', () => {
 
     render(<AuthProbe />)
 
-    const brandButton = screen.getByRole('button', {
+    const brandButton = screen.getByRole('link', {
       name: 'Very Long Authentication Platform',
     })
     const logo = brandButton.querySelector('[data-slot="logo"]')
@@ -880,7 +879,8 @@ describe('auth fullstack generated section behavior', () => {
     expect(grid?.className).toContain('items-center')
     expect(codeWindow?.className).toContain('rounded-2xl')
     expect(screen.getByRole('button', { name: 'Start Building' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Docs' })).toBeTruthy()
+    const docsLink = screen.getByRole('link', { name: 'Docs' })
+    expect(docsLink.getAttribute('href')).toBe('#docs')
   })
 
   it('renders AuthPricing as one responsive grid with plan actions', async () => {
@@ -959,7 +959,7 @@ describe('auth fullstack generated section behavior', () => {
       .closest('[data-slot="feature-card"]')
     const stepCard = screen
       .getByRole('heading', { name: 'Install the SDK' })
-      .closest('[data-slot="card"]')
+      .closest('[data-slot="step-item"]')
     const statItem = screen
       .getByText('signal 01')
       .closest('[data-slot="stat-item"]')
@@ -1071,7 +1071,7 @@ describe('auth fullstack generated section behavior', () => {
       expect(proButton.getAttribute('aria-busy')).toBe('false')
     })
 
-    fireEvent.click(screen.getByRole('button', { name: 'Docs' }))
-    expect(navigate).toHaveBeenCalledWith('Docs')
+    const docsLink = screen.getByRole('link', { name: 'Docs' })
+    expect(docsLink.getAttribute('href')).toBe('#docs')
   })
 })

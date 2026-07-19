@@ -3,7 +3,6 @@ import { z } from 'zod/v4'
 
 import { Image } from '#/lib/img.tsx'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroHeading,
@@ -14,6 +13,7 @@ import {
 import { Card } from '#/section-kit/Card.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * MarketingHero — split product hero for a SaaS / product-marketing landing page.
@@ -23,13 +23,13 @@ import { Container } from '#/section-kit/Container.tsx'
  * footnote) with a right 3D-tilted browser mockup: traffic-light dots, an
  * address bar, an app rail with the brand initial, an animated sprint-velocity
  * bar chart, and a task checklist. Clean premium indigo-on-light aesthetic;
- * CTAs route through useNavigate. Use as the top hero for B2B SaaS,
+ * CTAs route through section-kit route links. Use as the top hero for B2B SaaS,
  * team/project-management, productivity, or developer-platform landing pages.
  */
 export const MarketingHero = defineCapsule({
   name: 'MarketingHero',
   description:
-    "Split product hero for a SaaS / product-marketing landing page: a soft top-down indigo gradient section pairing a left content column (a check-pill badge, a bold balanced headline, a supporting paragraph, dual CTAs — filled primary + outline 'watch demo' with a play glyph — and a trust footnote) with a right 3D-tilted browser mockup of a live product dashboard (traffic-light dots, address bar, an app rail with the brand initial, an animated sprint-velocity bar chart, and a task checklist). Clean premium indigo-on-light aesthetic; CTAs route through useNavigate. Use as the top hero for B2B SaaS, team/project-management, productivity, or developer-platform landing pages.",
+    "Split product hero for a SaaS / product-marketing landing page: a soft top-down indigo gradient section pairing a left content column (a check-pill badge, a bold balanced headline, a supporting paragraph, dual CTAs — filled primary + outline 'watch demo' with a play glyph — and a trust footnote) with a right 3D-tilted browser mockup of a live product dashboard (traffic-light dots, address bar, an app rail with the brand initial, an animated sprint-velocity bar chart, and a task checklist). Clean premium indigo-on-light aesthetic; CTAs route through section-kit route links. Use as the top hero for B2B SaaS, team/project-management, productivity, or developer-platform landing pages.",
   props: z.object({
     /** Brand initial shown in the mockup app rail. */
     brand: z.string().optional(),
@@ -52,7 +52,6 @@ export const MarketingHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Flowstate'
     const badge = props.badge ?? 'Now with AI-powered insights'
     const heading =
@@ -116,7 +115,7 @@ export const MarketingHero = defineCapsule({
                 variant="primary"
                 className="gap-2 rounded-xl px-7 py-3.5 text-base font-semibold shadow-[0_4px_14px_rgba(79,70,229,0.35)] transition-all hover:-translate-y-px"
               >
-                <button type="button" onClick={() => go(primaryCta)}>
+                <NavbarRouteLink href={primaryCta}>
                   {primaryCta}
                   <svg
                     width="16"
@@ -131,14 +130,14 @@ export const MarketingHero = defineCapsule({
                   >
                     <polyline points="9 18 15 12 9 6" />
                   </svg>
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
               <HeroCta
                 asChild
                 variant="outline"
                 className="gap-2 rounded-xl bg-muted/50 px-7 py-3.5 text-base font-semibold transition-colors hover:bg-muted"
               >
-                <button type="button" onClick={() => go(secondaryCta)}>
+                <NavbarRouteLink href={secondaryCta}>
                   <svg
                     width="16"
                     height="16"
@@ -154,7 +153,7 @@ export const MarketingHero = defineCapsule({
                     <polygon points="10 8 16 12 10 16 10 8" />
                   </svg>
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
             </HeroActions>
             <p className="mt-4 text-sm text-muted-foreground">{note}</p>
@@ -214,10 +213,7 @@ export const MarketingHero = defineCapsule({
                   </Card>
                   <ResponsiveGrid cols="1-2" className="gap-4">
                     {/* Chart widget */}
-                    <Card
-                      variant="outline"
-                      className="bg-muted/40 p-4"
-                    >
+                    <Card variant="outline" className="bg-muted/40 p-4">
                       <div className="mb-3 text-[0.7rem] font-semibold uppercase tracking-wider text-muted-foreground">
                         {chartTitle}
                       </div>
@@ -232,10 +228,7 @@ export const MarketingHero = defineCapsule({
                       </div>
                     </Card>
                     {/* Tasks widget */}
-                    <Card
-                      variant="outline"
-                      className="bg-muted/40 p-4"
-                    >
+                    <Card variant="outline" className="bg-muted/40 p-4">
                       <div className="mb-3 text-[0.7rem] font-semibold uppercase tracking-wider text-muted-foreground">
                         {tasksTitle}
                       </div>

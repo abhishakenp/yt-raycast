@@ -3,18 +3,17 @@ import { z } from 'zod/v4'
 import { useKeyedLakebedMutation } from '@ship-fast/lakebed/react'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { PageHeader, PageHeaderActions } from '#/section-kit/PageHeader.tsx'
 import { dashboardLakebed } from './dashboard-lakebed.ts'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * DashboardHeader — a page-title header row for a SaaS admin dashboard. A
  * responsive flex band with a bold title + muted subtitle on the left and two
  * action buttons on the right: an outline secondary action and a gradient indigo
  * primary action (prefixed with a "+"). The primary action writes a shared
- * Lakebed order and the secondary action routes through useNavigate.
+ * Lakebed order and the secondary action routes through section-kit route links.
  * Use as the heading row at the top of a dashboard content area — above KPI
  * cards, tables or charts — to label the view and surface its key actions.
  * Renders fully with no props via baked-in "Dashboard" defaults.
@@ -22,7 +21,7 @@ import { dashboardLakebed } from './dashboard-lakebed.ts'
 export const DashboardHeader = defineCapsule({
   name: 'DashboardHeader',
   description:
-    "A page-title header row for a SaaS admin dashboard: a responsive flex band with a bold title + muted subtitle on the left and two action buttons on the right — an outline secondary action and a gradient indigo primary action (prefixed with a '+'). The primary action writes a shared Lakebed order and the secondary action routes through useNavigate. Use as the heading row at the top of a dashboard content area, above KPI cards, tables or charts, to label the view and surface its key actions.",
+    "A page-title header row for a SaaS admin dashboard: a responsive flex band with a bold title + muted subtitle on the left and two action buttons on the right — an outline secondary action and a gradient indigo primary action (prefixed with a '+'). The primary action writes a shared Lakebed order and the secondary action routes through section-kit route links. Use as the heading row at the top of a dashboard content area, above KPI cards, tables or charts, to label the view and surface its key actions.",
   props: z.object({
     /** Page-header heading. */
     title: z.string().optional(),
@@ -36,7 +35,6 @@ export const DashboardHeader = defineCapsule({
   }),
   lakebed: dashboardLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const addOrder = useKeyedLakebedMutation(lakebed, 'addOrder')
     const title = props.title ?? 'Dashboard'
     const subtitle =
@@ -65,13 +63,12 @@ export const DashboardHeader = defineCapsule({
             className="gap-1"
           />
           <PageHeaderActions className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => go(secondaryAction)}
+            <NavbarRouteLink
               className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition hover:bg-muted"
+              href={secondaryAction}
             >
               {secondaryAction}
-            </button>
+            </NavbarRouteLink>
             <button
               type="button"
               aria-busy={newOrderPending}

@@ -22,7 +22,7 @@ import {
  * + paragraph above a responsive 3-column grid of steps, each with a large
  * near-black rounded numbered tile, a title, and a description, connected by a
  * faint vertical rule on desktop, with a centered near-black CTA button below.
- * The CTA routes through useNavigate. Use to explain a simple sign-up-to-value
+ * The CTA routes through section-kit route links. Use to explain a simple sign-up-to-value
  * flow for AI tools, SaaS apps, or any product with quick onboarding. Renders
  * fully with no props via a built-in 3-step flow.
  */

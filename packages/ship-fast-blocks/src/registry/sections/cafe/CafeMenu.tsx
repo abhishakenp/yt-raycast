@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   MenuCategoryHeader,
   MenuCategoryIcon,
@@ -34,6 +33,7 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * CafeMenu — printed-style food and drink menu for a neighborhood cafe /
@@ -102,7 +102,6 @@ export const CafeMenu = defineCapsule({
   }),
   lakebed: commerceCartLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const cap = props.cap ?? 'Our Offerings'
     const heading = props.heading ?? 'Crafted with intention'
     const description =
@@ -331,12 +330,14 @@ export const CafeMenu = defineCapsule({
                   </MenuCategoryHeader>
                   <div className="space-y-6">
                     {(col.items ?? []).map((item) => (
-                      <MenuItemRow>
+                      <MenuItemRow key={`${col.title}:${item.name}`}>
                         <MenuItemContent>
                           <MenuItemBody>
                             <MenuItemNameRow>
-                              <MenuItemName onClick={() => go(menuTarget)}>
-                                {item.name}
+                              <MenuItemName asChild>
+                                <NavbarRouteLink href={menuTarget}>
+                                  {item.name}
+                                </NavbarRouteLink>
                               </MenuItemName>
                             </MenuItemNameRow>
                             <MenuItemRowDescription>

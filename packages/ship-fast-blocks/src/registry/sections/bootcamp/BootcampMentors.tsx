@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   PersonCard,
@@ -12,7 +11,7 @@ import {
 /**
  * BootcampMentors — world-class mentors gallery for a coding bootcamp / career-
  * school landing page. A centered eyebrow, heading and description above a
- * responsive grid of headshot cards; each card is clickable via useNavigate
+ * responsive grid of headshot cards; each card is clickable via section-kit route links
  * and features an alt-driven square portrait with a bottom company overlay,
  * plus name and role beneath. Below the cards sits a 3-column row of classroom
  * photos. Use to showcase instructor credibility for bootcamps, academies, or
@@ -21,10 +20,12 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const BootcampMentors = defineCapsule({
   name: 'BootcampMentors',
   description:
-    'World-class mentors gallery for a coding bootcamp / career-school landing page: centered eyebrow, heading and description above a responsive grid of clickable headshot cards. Each card features an alt-driven square portrait with a bottom company overlay, plus name and role beneath. Below the cards sits a 3-column row of classroom photos. Cards route through useNavigate. Use to showcase instructor credibility for bootcamps, academies, or cohort-based education programs.',
+    'World-class mentors gallery for a coding bootcamp / career-school landing page: centered eyebrow, heading and description above a responsive grid of clickable headshot cards. Each card features an alt-driven square portrait with a bottom company overlay, plus name and role beneath. Below the cards sits a 3-column row of classroom photos. Cards route through section-kit route links. Use to showcase instructor credibility for bootcamps, academies, or cohort-based education programs.',
   props: z.object({
     /** Section eyebrow label. */
     eyebrow: z.string().optional(),
@@ -47,7 +48,6 @@ export const BootcampMentors = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const mentorsEyebrow = props.eyebrow ?? 'World-Class Mentors'
     const mentorsHeading =
       props.heading ?? 'Learn from engineers at top tech companies'
@@ -99,12 +99,13 @@ export const BootcampMentors = defineCapsule({
           />
           <ResponsiveGrid cols="1-2-4" className="gap-6">
             {mentorItems.map((m) => (
-              <PersonCard key={m.name} asChild variant="bare" className="rounded-none">
-                <button
-                  type="button"
-                  onClick={() => go(m.name)}
-                  className="group text-left"
-                >
+              <PersonCard
+                key={m.name}
+                asChild
+                variant="bare"
+                className="rounded-none"
+              >
+                <NavbarRouteLink className="group text-left" href={m.name}>
                   <div className="relative mb-4 overflow-hidden rounded-2xl">
                     <Image
                       alt={`professional headshot of ${m.name}, ${m.role} at ${m.company}`}
@@ -121,7 +122,7 @@ export const BootcampMentors = defineCapsule({
                   </div>
                   <PersonCardName>{m.name}</PersonCardName>
                   <PersonCardRole>{m.role}</PersonCardRole>
-                </button>
+                </NavbarRouteLink>
               </PersonCard>
             ))}
           </ResponsiveGrid>

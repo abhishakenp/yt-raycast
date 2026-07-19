@@ -9,12 +9,12 @@ import {
   CtaBandSubtitle,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   RestaurantMutationSpinner,
   RestaurantReservationButton,
 } from './restaurant-interactions.tsx'
 import { restaurantLakebed } from './restaurant-lakebed.ts'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * RestaurantCta — a bold, centered reservation band for a restaurant home page.
@@ -23,7 +23,7 @@ import { restaurantLakebed } from './restaurant-lakebed.ts'
  * centered row of two routable pill CTAs — a high-contrast "Reserve Now" button
  * (variant "primary", auto-inverted to a light pill on the primary band) plus an
  * outlined "Call Us" button (variant "outline") that routes to contact. Both
- * actions navigate through the kit's useNavigate so neither is a dead link. Use
+ * actions navigate through the kit's section-kit route links so neither is a dead link. Use
  * near the bottom of a restaurant, bistro, ramen shop, sushi counter, or cafe
  * page to drive table reservations and calls. Renders fully with no props via
  * warm, appetizing baked-in defaults.
@@ -31,7 +31,7 @@ import { restaurantLakebed } from './restaurant-lakebed.ts'
 export const RestaurantCta = defineCapsule({
   name: 'RestaurantCta',
   description:
-    "Bold, centered reservation band for a restaurant home page: a full-width section wrapping a strong primary-colored card with a serif headline, a short supporting subheading, a centered row of two pill CTAs (a high-contrast 'Reserve Now' button plus an outlined 'Call Us' button), and a small hours-and-phone strip beneath. Both CTAs route through useNavigate. Use near the bottom of a restaurant, bistro, ramen shop, sushi counter, or cafe page to drive table reservations and phone calls.",
+    "Bold, centered reservation band for a restaurant home page: a full-width section wrapping a strong primary-colored card with a serif headline, a short supporting subheading, a centered row of two pill CTAs (a high-contrast 'Reserve Now' button plus an outlined 'Call Us' button), and a small hours-and-phone strip beneath. Both CTAs route through section-kit route links. Use near the bottom of a restaurant, bistro, ramen shop, sushi counter, or cafe page to drive table reservations and phone calls.",
   props: z.object({
     /** Reservation headline (maps to CtaBand title). */
     headline: z.string().optional(),
@@ -51,7 +51,6 @@ export const RestaurantCta = defineCapsule({
   }),
   lakebed: restaurantLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const headline = props.headline ?? 'Join us for an unforgettable evening'
     const subheading =
       props.subheading ??
@@ -86,9 +85,11 @@ export const RestaurantCta = defineCapsule({
             <CtaAction
               variant="outline"
               className="min-h-12 min-w-36 rounded-full border-primary-foreground/35 px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary-foreground/10"
-              onClick={() => go(secondaryTarget)}
+              asChild
             >
-              {secondaryCta}
+              <NavbarRouteLink href={secondaryTarget}>
+                {secondaryCta}
+              </NavbarRouteLink>
             </CtaAction>
           </div>
         </CtaBandInner>

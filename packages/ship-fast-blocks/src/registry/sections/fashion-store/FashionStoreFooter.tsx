@@ -6,7 +6,7 @@ import { z } from 'zod/v4'
  * wordmark + tagline + text social links) beside four link columns (Shop,
  * Company, Customer Care, Legal), closed by a bottom bar with a dynamic-year
  * copyright and a "We accept" row of small payment-mark chips. Every link,
- * social and the brand logo route through useNavigate. Use as the closing
+ * social and the brand logo route through section-kit route links. Use as the closing
  * footer for clothing brands, boutiques, apparel and accessories shops, or any
  * premium minimalist retail storefront.
  */
@@ -28,7 +28,7 @@ import {
 export const FashionStoreFooter = defineCapsule({
   name: 'FashionStoreFooter',
   description:
-    "Rich multi-column dark footer for a minimalist fashion store: a foreground-colored closing section with a brand block (serif wordmark + tagline + text social links) beside four link columns (Shop, Company, Customer Care, Legal), closed by a bottom bar with a dynamic-year copyright and a 'We accept' row of small payment-mark chips. Every link, social and the brand logo route through useNavigate. Use as the closing footer for clothing brands, boutiques, apparel and accessories shops, or any premium minimalist retail storefront.",
+    "Rich multi-column dark footer for a minimalist fashion store: a foreground-colored closing section with a brand block (serif wordmark + tagline + text social links) beside four link columns (Shop, Company, Customer Care, Legal), closed by a bottom bar with a dynamic-year copyright and a 'We accept' row of small payment-mark chips. Every link, social and the brand logo route through section-kit route links. Use as the closing footer for clothing brands, boutiques, apparel and accessories shops, or any premium minimalist retail storefront.",
   props: z.object({
     /** Brand / store name shown as the serif wordmark. */
     brand: z.string().optional(),

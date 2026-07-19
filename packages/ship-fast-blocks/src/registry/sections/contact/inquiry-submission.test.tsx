@@ -28,10 +28,6 @@ type InquiryComponent = ComponentType<{
 const navigate = vi.fn()
 const lakebedRef: { current: InquiryLakebed | null } = { current: null }
 
-vi.mock('#/lib/use-navigate.tsx', () => ({
-  useNavigate: () => navigate,
-}))
-
 vi.mock('@ship-fast/lakebed/react', () => ({
   createLakebedClient: vi.fn(() => {
     if (!lakebedRef.current) throw new Error('Missing test Lakebed client')

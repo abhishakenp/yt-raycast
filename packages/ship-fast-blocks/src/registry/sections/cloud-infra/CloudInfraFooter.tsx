@@ -5,7 +5,7 @@ import { cn } from '#/lib/utils.ts'
  * CloudInfraFooter — fat multi-column footer for a cloud-infrastructure / developer-
  * platform SaaS landing page. A bordered-top footer with a 5-column grid: the first
  * two columns show a brand logo tile + name, tagline, and social icons; the remaining
- * columns list link groups (title + links). Every button routes through useNavigate.
+ * columns list link groups (title + links). Every button routes through section-kit route links.
  * Tokens-only. Renders fully on zero arguments.
  */
 import {
@@ -26,7 +26,7 @@ import {
 export const CloudInfraFooter = defineCapsule({
   name: 'CloudInfraFooter',
   description:
-    'Fat multi-column footer for a cloud-infrastructure / developer-platform SaaS landing page: a bordered-top footer with a 5-column grid. The first two columns show a brand logo tile plus name, a tagline paragraph, and social icon buttons; the remaining columns list link groups (title + routable links). Every button routes through useNavigate. Use as the site footer for cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',
+    'Fat multi-column footer for a cloud-infrastructure / developer-platform SaaS landing page: a bordered-top footer with a 5-column grid. The first two columns show a brand logo tile plus name, a tagline paragraph, and social icon buttons; the remaining columns list link groups (title + routable links). Every button routes through section-kit route links. Use as the site footer for cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',
   props: z.object({
     /** Brand / product name shown beside the logo tile. */
     brand: z.string().optional(),

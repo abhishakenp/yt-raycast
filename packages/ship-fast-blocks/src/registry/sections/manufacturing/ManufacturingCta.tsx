@@ -10,21 +10,21 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * ManufacturingCta — a dark closing call-to-action band for a precision-
  * manufacturing site. On a foreground-colored, centered block: a large heading,
  * a supporting paragraph, dual CTAs (a solid background-on-foreground button plus
  * an outlined button) and a small note line beneath. Both CTAs route through
- * useNavigate. Bold, industrial, conversion-focused. Use as the final
+ * section-kit route links. Bold, industrial, conversion-focused. Use as the final
  * conversion prompt before the footer on machine-shop, fabricator or contract-
  * manufacturer pages. Renders fully with no props via baked-in defaults.
  */
 export const ManufacturingCta = defineCapsule({
   name: 'ManufacturingCta',
   description:
-    'A dark closing call-to-action band for a precision-manufacturing site: on a foreground-colored centered block, a large heading, a supporting paragraph, dual CTAs (a solid background-on-foreground button plus an outlined button) and a small note line beneath. Both CTAs route through useNavigate. Bold, industrial, conversion-focused. Use as the final conversion prompt before the footer on machine-shop, fabricator or contract-manufacturer pages.',
+    'A dark closing call-to-action band for a precision-manufacturing site: on a foreground-colored centered block, a large heading, a supporting paragraph, dual CTAs (a solid background-on-foreground button plus an outlined button) and a small note line beneath. Both CTAs route through section-kit route links. Bold, industrial, conversion-focused. Use as the final conversion prompt before the footer on machine-shop, fabricator or contract-manufacturer pages.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -34,7 +34,6 @@ export const ManufacturingCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Ready to Start Your Project?'
     const description =
       props.description ??
@@ -55,11 +54,13 @@ export const ManufacturingCta = defineCapsule({
           <CtaBandTitle>{heading}</CtaBandTitle>
           <CtaBandSubtitle>{description}</CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction variant="primary" onClick={() => go(primaryCta)}>
-              {primaryCta}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={primaryCta}>{primaryCta}</NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" onClick={() => go(secondaryCta)}>
-              {secondaryCta}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={secondaryCta}>
+                {secondaryCta}
+              </NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

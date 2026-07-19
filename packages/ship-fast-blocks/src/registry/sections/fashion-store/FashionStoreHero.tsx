@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
@@ -12,6 +11,7 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * FashionStoreHero — full-bleed editorial image hero for a minimalist fashion
@@ -19,14 +19,14 @@ import {
  * centered over it a wide uppercase tracked season eyebrow, an oversized serif
  * two-line display headline, a light supporting paragraph, and dual CTAs
  * (a solid light primary button + an outlined ghost button). Both CTAs route
- * through useNavigate and the background uses the alt-driven Image component.
+ * through section-kit route links and the background uses the alt-driven Image component.
  * Use as the opening hero for clothing brands, boutiques, lookbook commerce,
  * or any premium quiet-luxury storefront.
  */
 export const FashionStoreHero = defineCapsule({
   name: 'FashionStoreHero',
   description:
-    'Full-bleed editorial image hero for a minimalist fashion store: a tall (85vh) background photograph with a subtle foreground scrim, centered over it a wide uppercase tracked season eyebrow, an oversized serif two-line display headline, a light supporting paragraph, and dual CTAs (a solid light primary button + an outlined ghost button). Both CTAs route through useNavigate and the background uses the alt-driven Image component. Use as the opening hero for clothing brands, boutiques, apparel shops, lookbook commerce, or any premium quiet-luxury storefront.',
+    'Full-bleed editorial image hero for a minimalist fashion store: a tall (85vh) background photograph with a subtle foreground scrim, centered over it a wide uppercase tracked season eyebrow, an oversized serif two-line display headline, a light supporting paragraph, and dual CTAs (a solid light primary button + an outlined ghost button). Both CTAs route through section-kit route links and the background uses the alt-driven Image component. Use as the opening hero for clothing brands, boutiques, apparel shops, lookbook commerce, or any premium quiet-luxury storefront.',
   lakebed: commerceCartLakebed,
   props: z.object({
     eyebrow: z.string().optional(),
@@ -43,7 +43,6 @@ export const FashionStoreHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const heroEyebrow = props.eyebrow ?? 'Spring/Summer 2025'
     const heroTop = props.headingTop ?? 'The Quiet'
     const heroBottom = props.headingBottom ?? 'Luxury Edit'
@@ -98,20 +97,18 @@ export const FashionStoreHero = defineCapsule({
                 {heroSub}
               </p>
               <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(heroPrimary)}
+                <NavbarRouteLink
                   className="bg-background px-8 py-4 text-sm font-medium tracking-wide text-foreground transition-colors hover:bg-muted"
+                  href={heroPrimary}
                 >
                   {heroPrimary}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(heroSecondary)}
+                </NavbarRouteLink>
+                <NavbarRouteLink
                   className="border border-background px-8 py-4 text-sm font-medium tracking-wide text-background transition-colors hover:bg-background hover:text-foreground"
+                  href={heroSecondary}
                 >
                   {heroSecondary}
-                </button>
+                </NavbarRouteLink>
               </div>
               <CommerceAddItemButton
                 lakebed={lakebed}

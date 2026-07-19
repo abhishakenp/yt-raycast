@@ -8,7 +8,7 @@ import {
 import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
- * CleaningServiceServices — a 6-up cleaning-services capabilities grid for a home-cleaning / maid-service landing page. A centered section heading + lead paragraph above a responsive 1/2/3-column grid of clickable service cards; each card has a rounded icon tile (cycling through inline line-icons), a title, a description, and a from-price line. Cards gain a border highlight and lift shadow on hover, and each routes through useNavigate on click. Use for "what we do" / services blocks for residential cleaning companies, maid services, housekeeping platforms, or local home-service brands. Renders fully with no props via six baked-in default services.
+ * CleaningServiceServices — a 6-up cleaning-services capabilities grid for a home-cleaning / maid-service landing page. A centered section heading + lead paragraph above a responsive 1/2/3-column grid of clickable service cards; each card has a rounded icon tile (cycling through inline line-icons), a title, a description, and a from-price line. Cards gain a border highlight and lift shadow on hover, and each routes through section-kit route links on click. Use for "what we do" / services blocks for residential cleaning companies, maid services, housekeeping platforms, or local home-service brands. Renders fully with no props via six baked-in default services.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -22,7 +22,7 @@ import {
 export const CleaningServiceServices = defineCapsule({
   name: 'CleaningServiceServices',
   description:
-    "A 6-up cleaning-services capabilities grid for a home-cleaning / maid-service landing page: centered heading and lead paragraph above a responsive 1/2/3-column grid of clickable service cards, each with a rounded icon tile (cycling inline line-icons), title, description, and from-price line. Cards gain border highlight and lift shadow on hover; each routes through useNavigate on click. Use for 'what we do' services blocks for residential cleaning, maid services, housekeeping, or local home-service brands.",
+    "A 6-up cleaning-services capabilities grid for a home-cleaning / maid-service landing page: centered heading and lead paragraph above a responsive 1/2/3-column grid of clickable service cards, each with a rounded icon tile (cycling inline line-icons), title, description, and from-price line. Cards gain border highlight and lift shadow on hover; each routes through section-kit route links on click. Use for 'what we do' services blocks for residential cleaning, maid services, housekeeping, or local home-service brands.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),

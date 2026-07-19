@@ -18,14 +18,14 @@ import {
  * centered heading + subheading above a responsive 2-to-3 column grid of
  * bordered, shadowed cards. Each card is a clickable tile with an alt-driven
  * screenshot image (zooms on hover) over a title + short caption, routing
- * through useNavigate. Use to showcase product surfaces / dashboards for
+ * through section-kit route links. Use to showcase product surfaces / dashboards for
  * cybersecurity vendors, SOC/MDR providers, or any visual B2B security SaaS.
  * Renders fully with no props via baked-in platform-view defaults.
  */
 export const CybersecurityGallery = defineCapsule({
   name: 'CybersecurityGallery',
   description:
-    'Platform-screenshot gallery: a light section with a centered heading + subheading above a responsive 2-to-3 column grid of bordered, shadowed clickable cards, each with an alt-driven screenshot image (zooms on hover) over a title + short caption, routing through useNavigate. Use to showcase product surfaces / dashboards for cybersecurity vendors, SOC/MDR providers, or any visual B2B security SaaS.',
+    'Platform-screenshot gallery: a light section with a centered heading + subheading above a responsive 2-to-3 column grid of bordered, shadowed clickable cards, each with an alt-driven screenshot image (zooms on hover) over a title + short caption, routing through section-kit route links. Use to showcase product surfaces / dashboards for cybersecurity vendors, SOC/MDR providers, or any visual B2B security SaaS.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),

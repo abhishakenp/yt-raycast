@@ -16,14 +16,14 @@ import {
  * EventPlannerFooter — inverted four-column site footer. A foreground-colored band
  * with a brand column (thin clock-glyph logo + light brand name + tagline) beside
  * link columns of grouped navigation buttons, then a top-bordered bottom bar with
- * a copyright line and legal links. Every link routes through useNavigate. Use as
+ * a copyright line and legal links. Every link routes through section-kit route links. Use as
  * the closing footer for event/wedding planners, agencies, or premium service
  * businesses.
  */
 export const EventPlannerFooter = defineCapsule({
   name: 'EventPlannerFooter',
   description:
-    'Inverted four-column site footer: a foreground-colored band with a brand column (thin clock-glyph logo + light brand name + tagline) beside link columns of grouped navigation buttons, then a top-bordered bottom bar with a copyright line and legal links. Every link routes through useNavigate. Use as the closing footer for event/wedding planners, agencies, or premium service businesses.',
+    'Inverted four-column site footer: a foreground-colored band with a brand column (thin clock-glyph logo + light brand name + tagline) beside link columns of grouped navigation buttons, then a top-bordered bottom bar with a copyright line and legal links. Every link routes through section-kit route links. Use as the closing footer for event/wedding planners, agencies, or premium service businesses.',
   props: z.object({
     /** Brand / studio name shown beside the footer logo. */
     brand: z.string().optional(),

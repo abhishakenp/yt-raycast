@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   PortfolioGrid,
@@ -18,16 +17,18 @@ import {
  * project cards each with an overlaid darkening scrim, a centered circular play
  * button that brightens on hover, and bottom-anchored category tag / title /
  * role captions, plus a centered outlined load-more button. Cards, filters, and
- * the load-more route through useNavigate; imagery uses the Image component. Use
+ * the load-more route through section-kit route links; imagery uses the Image component. Use
  * as a cinematic portfolio / reel showcase for directors, cinematographers, DPs,
  * or production houses.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const FilmDirectorWork = defineCapsule({
   name: 'FilmDirectorWork',
   description:
-    "Inverted, near-black 'Selected Work' reel grid for a film director / cinematographer portfolio: on a dark foreground band, a header row pairing a thin heading + muted lede with a set of filter pill buttons (first outlined/active), a responsive 1/2/3-column grid of 16:9 project cards each with an overlaid darkening scrim, a centered circular play button that brightens on hover, and bottom-anchored category tag / title / role captions, plus a centered outlined load-more button. Cards, filters, and load-more route through useNavigate; imagery uses the Image component. Use as a cinematic portfolio / reel showcase for directors, cinematographers, DPs, or production houses.",
+    "Inverted, near-black 'Selected Work' reel grid for a film director / cinematographer portfolio: on a dark foreground band, a header row pairing a thin heading + muted lede with a set of filter pill buttons (first outlined/active), a responsive 1/2/3-column grid of 16:9 project cards each with an overlaid darkening scrim, a centered circular play button that brightens on hover, and bottom-anchored category tag / title / role captions, plus a centered outlined load-more button. Cards, filters, and load-more route through section-kit route links; imagery uses the Image component. Use as a cinematic portfolio / reel showcase for directors, cinematographers, DPs, or production houses.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -46,7 +47,6 @@ export const FilmDirectorWork = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const workHeading = props.heading ?? 'Selected Work'
     const workDesc =
       props.description ??
@@ -155,19 +155,18 @@ export const FilmDirectorWork = defineCapsule({
             />
             <div className="mt-6 flex gap-4 text-sm md:mt-0">
               {workFilters.map((f, i) => (
-                <button
+                <NavbarRouteLink
                   key={f}
-                  type="button"
-                  onClick={() => go(f)}
                   className={cn(
                     'rounded-md px-4 py-2 transition-colors',
                     i === 0
                       ? 'border border-background hover:bg-background hover:text-foreground'
                       : 'text-background/70 hover:text-background',
                   )}
+                  href={f}
                 >
                   {f}
-                </button>
+                </NavbarRouteLink>
               ))}
             </div>
           </div>
@@ -176,48 +175,48 @@ export const FilmDirectorWork = defineCapsule({
             {workItems.map((proj) => (
               <PortfolioItem
                 key={proj.title}
-                type="button"
-                onClick={() => go(proj.title)}
                 className="group block w-full cursor-pointer text-left"
+                asChild
               >
-                <PortfolioMedia aspect="16-9" className="rounded-md bg-muted">
-                  <Image
-                    alt={proj.imageAlt}
-                    w={800}
-                    h={450}
-                    loading="lazy"
-                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-foreground/60 transition-colors group-hover:bg-foreground/40" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="grid size-16 place-items-center rounded-full bg-background/20 transition-colors group-hover:bg-background/30">
-                      <PlayIcon className="ml-1 size-8 text-background" />
+                <NavbarRouteLink href={proj.title}>
+                  <PortfolioMedia aspect="16-9" className="rounded-md bg-muted">
+                    <Image
+                      alt={proj.imageAlt}
+                      w={800}
+                      h={450}
+                      loading="lazy"
+                      className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-foreground/60 transition-colors group-hover:bg-foreground/40" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="grid size-16 place-items-center rounded-full bg-background/20 transition-colors group-hover:bg-background/30">
+                        <PlayIcon className="ml-1 size-8 text-background" />
+                      </div>
                     </div>
-                  </div>
-                  <PortfolioCaption className="absolute inset-x-4 bottom-4">
-                    <span className="text-xs uppercase tracking-wider text-background/70">
-                      {proj.tag}
-                    </span>
-                    <h3 className="mt-1 text-lg font-medium text-background">
-                      {proj.title}
-                    </h3>
-                    <p className="mt-1 text-sm text-background/70">
-                      {proj.role}
-                    </p>
-                  </PortfolioCaption>
-                </PortfolioMedia>
+                    <PortfolioCaption className="absolute inset-x-4 bottom-4">
+                      <span className="text-xs uppercase tracking-wider text-background/70">
+                        {proj.tag}
+                      </span>
+                      <h3 className="mt-1 text-lg font-medium text-background">
+                        {proj.title}
+                      </h3>
+                      <p className="mt-1 text-sm text-background/70">
+                        {proj.role}
+                      </p>
+                    </PortfolioCaption>
+                  </PortfolioMedia>
+                </NavbarRouteLink>
               </PortfolioItem>
             ))}
           </PortfolioGrid>
 
           <div className="mt-12 text-center">
-            <button
-              type="button"
-              onClick={() => go(workLoadMore)}
+            <NavbarRouteLink
               className="rounded-md border border-border px-6 py-3 text-sm transition-colors hover:border-background"
+              href={workLoadMore}
             >
               {workLoadMore}
-            </button>
+            </NavbarRouteLink>
           </div>
         </Container>
       </section>

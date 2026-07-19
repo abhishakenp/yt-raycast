@@ -22,14 +22,14 @@ import {
  * and round initial-letter social buttons) leads a set of link columns
  * (collections, services) and a plain-text contact column, above a bottom row
  * with an auto-updating copyright line and legal links. The wordmark and every
- * link route through useNavigate. Use as the closing footer for fine jewelers,
+ * link route through section-kit route links. Use as the closing footer for fine jewelers,
  * diamond houses, engagement-ring boutiques, or high-jewelry maisons. Renders
  * fully with no props via baked-in "Maison Noir" defaults.
  */
 export const JewelryStoreFooter = defineCapsule({
   name: 'JewelryStoreFooter',
   description:
-    'Rich five-column footer for a luxury jewelry maison on a bordered near-black band: a wide brand block (serif gold wordmark, blurb, round initial-letter social buttons) leads link columns (collections, services) and a plain-text contact column, above a bottom row with an auto-updating copyright line and legal links. The wordmark and every link route through useNavigate. Use as the closing footer for fine jewelers, diamond houses, engagement-ring boutiques, or high-jewelry maisons.',
+    'Rich five-column footer for a luxury jewelry maison on a bordered near-black band: a wide brand block (serif gold wordmark, blurb, round initial-letter social buttons) leads link columns (collections, services) and a plain-text contact column, above a bottom row with an auto-updating copyright line and legal links. The wordmark and every link route through section-kit route links. Use as the closing footer for fine jewelers, diamond houses, engagement-ring boutiques, or high-jewelry maisons.',
   props: z.object({
     /** Maison / brand name shown as the wordmark. */
     brand: z.string().optional(),

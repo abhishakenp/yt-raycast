@@ -9,24 +9,24 @@ import {
   CtaBandSubtitle,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { propertyListingLakebed } from './property-listing-lakebed.ts'
 import {
   PropertyListingInquiryButton,
   PropertyListingMutationSpinner,
 } from './property-listing-interactions.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * PropertyListingCta — a closing call-to-action band for a property portal. A
  * rounded card surface centers an eyebrow, a bold headline, a supporting line,
  * and dual CTAs (filled "Start Searching" + outlined "Post a Listing") with a
- * small reassurance note beneath. Search navigation routes through useNavigate;
+ * small reassurance note beneath. Search navigation routes through section-kit route links;
  * seller/contact intent records a shared Lakebed inquiry.
  */
 export const PropertyListingCta = defineCapsule({
   name: 'PropertyListingCta',
   description:
-    'Closing call-to-action band for a property portal: a rounded card surface centering an eyebrow, a bold headline, a supporting line, and dual CTAs. The search CTA keeps page navigation through useNavigate, while the seller/contact CTA records a shared Lakebed inquiry instead of faking navigation.',
+    'Closing call-to-action band for a property portal: a rounded card surface centering an eyebrow, a bold headline, a supporting line, and dual CTAs. The search CTA keeps page navigation through section-kit route links, while the seller/contact CTA records a shared Lakebed inquiry instead of faking navigation.',
   props: z.object({
     /** Small uppercase eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -48,7 +48,6 @@ export const PropertyListingCta = defineCapsule({
   }),
   lakebed: propertyListingLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Your search starts here'
     const heading = props.heading ?? 'Find your next place'
     const subheading =
@@ -77,9 +76,11 @@ export const PropertyListingCta = defineCapsule({
               variant="primary"
               invert
               className="rounded-full bg-primary-foreground px-6 py-3 text-sm font-semibold text-primary hover:bg-primary-foreground/90"
-              onClick={() => go(primaryTarget)}
+              asChild
             >
-              {primaryCta}
+              <NavbarRouteLink href={primaryTarget}>
+                {primaryCta}
+              </NavbarRouteLink>
             </CtaAction>
             <PropertyListingInquiryButton
               lakebed={lakebed}

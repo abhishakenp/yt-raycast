@@ -12,7 +12,6 @@ import {
   SheetTrigger,
 } from '#/components/ui/sheet.tsx'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   AccountDropdown,
   AccountDropdownTrigger,
@@ -28,6 +27,7 @@ import {
   CommandSearchList,
   CommandSearchEmpty,
   CommandSearchGroup,
+  NavbarRouteLink,
 } from '#/section-kit/index.ts'
 import type {
   LocalServiceItemInput,
@@ -171,7 +171,6 @@ export function LocalServiceSearchButton({
   lakebed: LocalServiceLakebed
   label?: string
 }) {
-  const go = useNavigate()
   const requestBooking = lakebed.useMutation('requestBooking')
   const services = lakebed.useQuery('serviceCatalog') ?? []
 
@@ -182,8 +181,8 @@ export function LocalServiceSearchButton({
         getKey: (service) => service.id,
         getValue: (service) =>
           `${service.name} ${service.price} ${service.summary}`,
+        getHref: (service) => service.name,
         onSelect: (service) => {
-          go(service.name)
           return requestBooking({
             label: `Selected ${service.name}`,
             service: service.name,
@@ -260,16 +259,6 @@ export function LocalServiceMobileMenu({
   nav: string[]
 }) {
   const [open, setOpen] = useState(false)
-  const go = useNavigate()
-
-  const navigate = useCallback(
-    (target: string) => {
-      setOpen(false)
-      go(target)
-    },
-    [go],
-  )
-
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
@@ -288,22 +277,22 @@ export function LocalServiceMobileMenu({
           </SheetDescription>
         </SheetHeader>
         <div className="flex flex-col gap-1 px-3 py-4">
-          <button
-            type="button"
-            onClick={() => navigate(homeTarget ?? nav[0])}
+          <NavbarRouteLink
             className="rounded-lg px-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            href={homeTarget ?? nav[0]}
+            onClick={() => setOpen(false)}
           >
             Home
-          </button>
+          </NavbarRouteLink>
           {nav.map((item) => (
-            <button
+            <NavbarRouteLink
               key={item}
-              type="button"
-              onClick={() => navigate(item)}
               className="rounded-lg px-3 py-3 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              href={item}
+              onClick={() => setOpen(false)}
             >
               {item}
-            </button>
+            </NavbarRouteLink>
           ))}
         </div>
       </SheetContent>

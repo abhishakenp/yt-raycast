@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { ImageTile } from '#/section-kit/ImageTile.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -11,6 +10,7 @@ import {
   CollectionGrid,
   CollectionCard,
 } from '#/section-kit/CollectionGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * JewelryStoreCollections — curated collections grid for a luxury jewelry
@@ -18,14 +18,14 @@ import {
  * responsive grid (1/2/3 cols) of clickable collection cards: each a tall
  * 4:5 image that zooms on hover, a wide letter-spaced gold tag, a serif
  * title, and a muted meta line (count • from price). Every card routes
- * through useNavigate. Use to showcase distinct jewelry collections (Bridal,
+ * through section-kit route links. Use to showcase distinct jewelry collections (Bridal,
  * Daily Luxury, Statement, Heritage) for fine jewelers, diamond houses, or
  * engagement-ring boutiques. Renders fully with no props via baked-in defaults.
  */
 export const JewelryStoreCollections = defineCapsule({
   name: 'JewelryStoreCollections',
   description:
-    'Curated collections grid for a luxury jewelry boutique: a centered gold eyebrow + serif heading + description introduce a responsive grid (1/2/3 cols) of clickable collection cards, each a tall 4:5 image that zooms on hover, a wide letter-spaced gold tag, a serif title, and a muted meta line (piece count • from price). Every card routes through useNavigate. Use to showcase distinct jewelry collections (Bridal, Daily Luxury, Statement, Heritage) for fine jewelers, diamond houses, or engagement-ring boutiques.',
+    'Curated collections grid for a luxury jewelry boutique: a centered gold eyebrow + serif heading + description introduce a responsive grid (1/2/3 cols) of clickable collection cards, each a tall 4:5 image that zooms on hover, a wide letter-spaced gold tag, a serif title, and a muted meta line (piece count • from price). Every card routes through section-kit route links. Use to showcase distinct jewelry collections (Bridal, Daily Luxury, Statement, Heritage) for fine jewelers, diamond houses, or engagement-ring boutiques.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -43,7 +43,6 @@ export const JewelryStoreCollections = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Curated Collections'
     const heading = props.heading ?? 'Extraordinary by Design'
     const description =
@@ -112,10 +111,9 @@ export const JewelryStoreCollections = defineCapsule({
           <CollectionGrid cols="1-md-2-3">
             {items.map((c) => (
               <CollectionCard asChild key={c.title}>
-                <button
-                  type="button"
-                  onClick={() => go(c.title)}
+                <NavbarRouteLink
                   className="group block w-full cursor-pointer text-left"
+                  href={c.title}
                 >
                   <ImageTile treatment="4-5-xl-muted" className="mb-6">
                     <Image
@@ -133,7 +131,7 @@ export const JewelryStoreCollections = defineCapsule({
                     {c.title}
                   </h3>
                   <p className="text-sm text-muted-foreground">{c.meta}</p>
-                </button>
+                </NavbarRouteLink>
               </CollectionCard>
             ))}
           </CollectionGrid>

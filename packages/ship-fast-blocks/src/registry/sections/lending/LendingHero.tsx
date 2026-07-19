@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
@@ -11,6 +10,7 @@ import {
   FormFieldLabel,
   FormFieldControl,
 } from '#/section-kit/FormField.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * LendingHero — split, conversion-focused hero for a personal-lending / loan
@@ -20,14 +20,14 @@ import {
  * and a row of check-marked trust pills. On the right: a raised white
  * loan-calculator card with a titled header, a $-prefixed amount input, a credit
  * score select, a 3-up loan-term toggle, an Est. APR / monthly-payment summary,
- * and a full-width CTA button. All controls route through useNavigate. Use as the
+ * and a full-width CTA button. All controls route through section-kit route links. Use as the
  * top section of personal-loan, debt-consolidation, or fintech-financing landing
  * pages. Renders fully with no props via baked-in "ClearLoan" defaults.
  */
 export const LendingHero = defineCapsule({
   name: 'LendingHero',
   description:
-    "Split conversion hero for a personal-lending / loan marketing page: left column has a two-tone headline (lead + muted-accent highlight), supporting subheading, dual CTAs (solid primary 'check your rate' pill with arrow + soft play-style secondary) and check-marked trust pills; right column is a raised white loan-calculator card with a $-prefixed amount input, credit-score select, 3-up loan-term toggle, Est. APR / monthly-payment summary and a full-width CTA. Controls route through useNavigate. Use as the top section of personal-loan, debt-consolidation, BNPL, or fintech-financing landing pages.",
+    "Split conversion hero for a personal-lending / loan marketing page: left column has a two-tone headline (lead + muted-accent highlight), supporting subheading, dual CTAs (solid primary 'check your rate' pill with arrow + soft play-style secondary) and check-marked trust pills; right column is a raised white loan-calculator card with a $-prefixed amount input, credit-score select, 3-up loan-term toggle, Est. APR / monthly-payment summary and a full-width CTA. Controls route through section-kit route links. Use as the top section of personal-loan, debt-consolidation, BNPL, or fintech-financing landing pages.",
   props: z.object({
     headingLead: z.string().optional(),
     /** Phrase rendered in the muted accent tone. */
@@ -52,7 +52,6 @@ export const LendingHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heroLead = props.headingLead ?? 'Personal loans made'
     const heroHighlight = props.headingHighlight ?? 'refreshingly simple'
     const heroSub =
@@ -136,18 +135,16 @@ export const LendingHero = defineCapsule({
                 {heroSub}
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => go(heroPrimary)}
+                <NavbarRouteLink
                   className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-4 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  href={heroPrimary}
                 >
                   {heroPrimary}
                   <ArrowRight className="size-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(heroSecondary)}
+                </NavbarRouteLink>
+                <NavbarRouteLink
                   className="inline-flex items-center gap-2 rounded-xl px-6 py-4 text-base font-medium text-foreground transition-colors hover:bg-accent"
+                  href={heroSecondary}
                 >
                   <svg
                     viewBox="0 0 24 24"
@@ -163,7 +160,7 @@ export const LendingHero = defineCapsule({
                     <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   {heroSecondary}
-                </button>
+                </NavbarRouteLink>
               </div>
               <div className="mt-10 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
                 {heroTrust.map((t) => (
@@ -234,19 +231,18 @@ export const LendingHero = defineCapsule({
                     </FormFieldLabel>
                     <div className="grid grid-cols-3 gap-3">
                       {heroTerms.map((term, i) => (
-                        <button
+                        <NavbarRouteLink
                           key={term}
-                          type="button"
-                          onClick={() => go(`${heroTermLabel}: ${term}`)}
                           className={cn(
                             'rounded-lg px-4 py-3 text-sm font-medium transition-colors',
                             i === 1
                               ? 'border-2 border-primary bg-muted text-foreground'
                               : 'border border-border text-muted-foreground hover:border-primary hover:text-foreground',
                           )}
+                          href={`${heroTermLabel}: ${term}`}
                         >
                           {term}
-                        </button>
+                        </NavbarRouteLink>
                       ))}
                     </div>
                   </FormField>
@@ -268,13 +264,12 @@ export const LendingHero = defineCapsule({
                       </span>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => go(heroCardCta)}
+                  <NavbarRouteLink
                     className="w-full rounded-xl bg-primary py-4 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                    href={heroCardCta}
                   >
                     {heroCardCta}
-                  </button>
+                  </NavbarRouteLink>
                 </div>
               </Card>
             </div>

@@ -120,6 +120,8 @@ declare module '@ship-fast/blocks/generated' {
   export const componentSpecBase64: string
   export const componentSpecEncoding: string
   export function findSimilarCapsules(name: string, limit?: number): string[]
+  export const lakebedExportDepsBase64: string
+  export const lakebedExportDepsEncoding: string
   export const reactExportSourcesBase64: string
   export const reactExportSourcesEncoding: string
   export const vendorSourceFilesBase64: string

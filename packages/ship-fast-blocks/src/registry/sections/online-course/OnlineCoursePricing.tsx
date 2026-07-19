@@ -24,14 +24,14 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * heading + intro above a responsive 3-column grid of plan cards (name, price,
  * checkmark feature bullets, and a CTA). The middle "Pro" tier is highlighted
  * with a primary border, shadow, and a "Most popular" pill, and every CTA
- * routes through useNavigate. Use to present enrollment options — Free Audit,
+ * routes through section-kit route links. Use to present enrollment options — Free Audit,
  * Pro, Team — on an e-learning, bootcamp, or academy landing page. Renders
  * fully with no props via baked-in defaults.
  */
 export const OnlineCoursePricing = defineCapsule({
   name: 'OnlineCoursePricing',
   description:
-    "A 3-tier enrollment-plan band for an online-course page built on the shared PricingGrid composite: a centered heading + intro above a responsive 3-column grid of plan cards (name, price, checkmark feature bullets, and a CTA). The middle 'Pro' tier is highlighted with a primary border, shadow, and a 'Most popular' pill, and every CTA routes through useNavigate. Use to present enrollment options — Free Audit, Pro, Team — on an e-learning, bootcamp, or academy landing page.",
+    "A 3-tier enrollment-plan band for an online-course page built on the shared PricingGrid composite: a centered heading + intro above a responsive 3-column grid of plan cards (name, price, checkmark feature bullets, and a CTA). The middle 'Pro' tier is highlighted with a primary border, shadow, and a 'Most popular' pill, and every CTA routes through section-kit route links. Use to present enrollment options — Free Audit, Pro, Team — on an e-learning, bootcamp, or academy landing page.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),

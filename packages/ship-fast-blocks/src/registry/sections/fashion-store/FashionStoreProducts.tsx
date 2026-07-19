@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
@@ -18,7 +17,7 @@ import {
  * responsive 2-to-4 column grid of portrait product cards, each with a hover
  * Quick-Add button overlay, optional New/Best Seller/Limited corner badge,
  * product name, price and variant label, closed by an underlined "View All"
- * link with an arrow. Every card and link routes through useNavigate and all
+ * link with an arrow. Every card and link routes through section-kit route links and all
  * imagery uses the alt-driven Image component. Use to showcase a curated
  * product drop for clothing brands, boutiques, or apparel shops.
  */
@@ -34,10 +33,12 @@ import {
   ProductCardPrice,
 } from '#/section-kit/ProductCard.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const FashionStoreProducts = defineCapsule({
   name: 'FashionStoreProducts',
   description:
-    "New Arrivals product grid for a minimalist fashion store: a centered eyebrow + serif heading + description intro above a responsive 2-to-4 column grid of portrait product cards, each with a hover Quick-Add button overlay, optional New/Best Seller/Limited corner badge, product name, price and variant label, closed by an underlined 'View All' link with an arrow. Every card and link routes through useNavigate and all imagery uses the alt-driven Image component. Use to showcase a curated product drop for clothing brands, boutiques, apparel and accessories shops.",
+    "New Arrivals product grid for a minimalist fashion store: a centered eyebrow + serif heading + description intro above a responsive 2-to-4 column grid of portrait product cards, each with a hover Quick-Add button overlay, optional New/Best Seller/Limited corner badge, product name, price and variant label, closed by an underlined 'View All' link with an arrow. Every card and link routes through section-kit route links and all imagery uses the alt-driven Image component. Use to showcase a curated product drop for clothing brands, boutiques, apparel and accessories shops.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -59,7 +60,6 @@ export const FashionStoreProducts = defineCapsule({
   }),
   lakebed: commerceCartLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const productsEyebrow = props.eyebrow ?? 'Just Dropped'
     const productsHeading = props.heading ?? 'New Arrivals'
     const productsDesc =
@@ -244,14 +244,13 @@ export const FashionStoreProducts = defineCapsule({
           </ResponsiveGrid>
 
           <div className="mt-12 text-center">
-            <button
-              type="button"
-              onClick={() => go(productsViewAll)}
+            <NavbarRouteLink
               className="inline-flex items-center border-b border-foreground pb-1 text-sm font-medium text-foreground transition-colors hover:border-muted-foreground hover:text-muted-foreground"
+              href={productsViewAll}
             >
               {productsViewAll}
               <ArrowRight className="ml-2 size-4" />
-            </button>
+            </NavbarRouteLink>
           </div>
         </Container>
       </section>

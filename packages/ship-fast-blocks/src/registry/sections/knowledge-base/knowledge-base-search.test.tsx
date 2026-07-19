@@ -23,10 +23,6 @@ type KbStateRow = {
 const navigate = vi.fn()
 const lakebedRef: { current: KnowledgeBaseLakebed | null } = { current: null }
 
-vi.mock('#/lib/use-navigate.tsx', () => ({
-  useNavigate: () => navigate,
-}))
-
 vi.mock('#/lib/img.tsx', () => ({
   Image: ({ alt, className }: { alt?: string; className?: string }) => (
     <img alt={alt} className={className} />

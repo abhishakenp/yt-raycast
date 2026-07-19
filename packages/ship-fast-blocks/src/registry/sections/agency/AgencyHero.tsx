@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroContent,
@@ -16,6 +15,7 @@ import {
   HeroStatLabel,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * AgencyHero — bold full-bleed hero band for a creative digital-agency landing
@@ -24,14 +24,14 @@ import { Container } from '#/section-kit/Container.tsx'
  * dot), a huge multi-line headline with one phrase rendered in an indigo-violet
  * gradient highlight, a supporting paragraph, dual pill CTAs (filled primary +
  * outlined secondary), and an inline KPI strip beneath. Cinematic, premium,
- * conversion-focused. CTAs route through useNavigate. Use as the opening hero
+ * conversion-focused. CTAs route through section-kit route links. Use as the opening hero
  * for agencies, design studios, branding shops, or production houses. Renders
  * fully with no props via baked-in "Studio Rise" defaults.
  */
 export const AgencyHero = defineCapsule({
   name: 'AgencyHero',
   description:
-    'Bold full-bleed hero band for a creative digital-agency landing page: near-full-viewport centered section over a soft token gradient with pulsing blurred glow orbs, an availability pill with a pulsing dot, a huge multi-line headline with one phrase in an indigo-violet gradient highlight, a supporting paragraph, dual pill CTAs (filled primary + outlined secondary), and an inline KPI/stats strip beneath. Cinematic, premium and conversion-focused; CTAs route through useNavigate. Use as the opening hero for agencies, design studios, branding shops, or production houses.',
+    'Bold full-bleed hero band for a creative digital-agency landing page: near-full-viewport centered section over a soft token gradient with pulsing blurred glow orbs, an availability pill with a pulsing dot, a huge multi-line headline with one phrase in an indigo-violet gradient highlight, a supporting paragraph, dual pill CTAs (filled primary + outlined secondary), and an inline KPI/stats strip beneath. Cinematic, premium and conversion-focused; CTAs route through section-kit route links. Use as the opening hero for agencies, design studios, branding shops, or production houses.',
   props: z.object({
     /** Availability / status pill text. */
     badge: z.string().optional(),
@@ -54,7 +54,6 @@ export const AgencyHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const badge = props.badge ?? 'Available for new projects'
     const headingTop = props.headingTop ?? 'We craft digital'
     const highlight = props.highlight ?? 'experiences'
@@ -116,21 +115,19 @@ export const AgencyHero = defineCapsule({
             </HeroHeading>
             <HeroSubheading variant="large">{subheading}</HeroSubheading>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => go(primaryCta)}
+              <NavbarRouteLink
                 className="flex items-center gap-2 rounded-full bg-primary px-8 py-4 font-bold text-primary-foreground transition-all hover:bg-primary/90"
+                href={primaryCta}
               >
                 {primaryCta}
                 <ArrowRight />
-              </button>
-              <button
-                type="button"
-                onClick={() => go(secondaryCta)}
+              </NavbarRouteLink>
+              <NavbarRouteLink
                 className="rounded-full border border-border bg-accent/50 px-8 py-4 font-medium text-foreground transition-all hover:bg-accent"
+                href={secondaryCta}
               >
                 {secondaryCta}
-              </button>
+              </NavbarRouteLink>
             </div>
 
             <HeroStats>

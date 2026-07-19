@@ -26,14 +26,14 @@ import {
  * otherwise an RSS-style glyph), then link columns of grouped routes; a bottom
  * bar separates an auto-year copyright line from inline legal links. Warm, calm,
  * literary mood inverted to close the page. Brand, social buttons, every link and
- * legal item route through useNavigate. Use as the site footer for newsletters,
+ * legal item route through section-kit route links. Use as the site footer for newsletters,
  * publications, blogs, or content creators. Renders fully with no props via
  * baked-in defaults.
  */
 export const NewsletterFooter = defineCapsule({
   name: 'NewsletterFooter',
   description:
-    'Inverted multi-column footer for an editorial newsletter: a full-width dark foreground band with a wide left brand column (serif initial-mark logo + name, a short tagline, and round social icon buttons — a Twitter glyph, otherwise an RSS-style glyph), then link columns of grouped routes; a bottom bar separates an auto-year copyright line from inline legal links. Warm, calm, literary mood inverted to close the page. Brand, social buttons, every link and legal item route through useNavigate. Use as the site footer for newsletters, publications, blogs, essayists, or content creators.',
+    'Inverted multi-column footer for an editorial newsletter: a full-width dark foreground band with a wide left brand column (serif initial-mark logo + name, a short tagline, and round social icon buttons — a Twitter glyph, otherwise an RSS-style glyph), then link columns of grouped routes; a bottom bar separates an auto-year copyright line from inline legal links. Warm, calm, literary mood inverted to close the page. Brand, social buttons, every link and legal item route through section-kit route links. Use as the site footer for newsletters, publications, blogs, essayists, or content creators.',
   props: z.object({
     /** Brand / publication name shown beside the serif logo mark. */
     brand: z.string().optional(),

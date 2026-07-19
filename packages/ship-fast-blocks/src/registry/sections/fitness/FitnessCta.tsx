@@ -7,22 +7,22 @@ import {
   CtaBandTitle,
   CtaBandSubtitle,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * FitnessCta — bold primary-filled email-capture call-to-action for a gym or fitness
  * studio. A centered heading + supporting paragraph over an inline email input +
  * submit button, a "questions?" line with click-to-call phone and email buttons, and
  * a footer row of a pin-icon location and a clock-icon hours. The form writes to
- * the shared Lakebed subscriber list and contact links route through useNavigate. Use as the closing trial / sign-up banner above
+ * the shared Lakebed subscriber list and contact links route through section-kit route links. Use as the closing trial / sign-up banner above
  * the footer on gyms, fitness studios, yoga / pilates / boxing / spin studios.
  */
 export const FitnessCta = defineCapsule({
   name: 'FitnessCta',
   description:
-    "Bold primary-filled email-capture call-to-action for a gym or fitness studio: a centered heading and supporting paragraph over an inline email input + submit button, a 'questions?' line with click-to-call phone and email buttons, and a footer row of a pin-icon location and a clock-icon hours. The form submit writes to the shared Lakebed subscriber list and contact links route through useNavigate. Use as the closing free-trial / sign-up conversion banner above the footer on gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing or spin / cycle studios.",
+    "Bold primary-filled email-capture call-to-action for a gym or fitness studio: a centered heading and supporting paragraph over an inline email input + submit button, a 'questions?' line with click-to-call phone and email buttons, and a footer row of a pin-icon location and a clock-icon hours. The form submit writes to the shared Lakebed subscriber list and contact links route through section-kit route links. Use as the closing free-trial / sign-up conversion banner above the footer on gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing or spin / cycle studios.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -36,7 +36,6 @@ export const FitnessCta = defineCapsule({
   }),
   lakebed: newsletterLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const ctaHeading = props.heading ?? 'Start your 7-day free trial'
     const ctaDesc =
       props.description ??
@@ -69,21 +68,19 @@ export const FitnessCta = defineCapsule({
 
           <p className="text-sm text-primary-foreground/60">
             Questions? Call us at{' '}
-            <button
-              type="button"
-              onClick={() => go(ctaPhone)}
+            <NavbarRouteLink
               className="text-primary-foreground/80 transition-colors hover:text-primary-foreground"
+              href={ctaPhone}
             >
               {ctaPhone}
-            </button>{' '}
+            </NavbarRouteLink>{' '}
             or email{' '}
-            <button
-              type="button"
-              onClick={() => go(ctaEmail)}
+            <NavbarRouteLink
               className="text-primary-foreground/80 transition-colors hover:text-primary-foreground"
+              href={ctaEmail}
             >
               {ctaEmail}
-            </button>
+            </NavbarRouteLink>
           </p>
 
           <div className="mt-12 flex flex-wrap justify-center gap-8 text-sm text-primary-foreground/70">

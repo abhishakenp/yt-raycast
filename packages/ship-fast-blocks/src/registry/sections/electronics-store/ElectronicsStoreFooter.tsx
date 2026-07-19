@@ -5,7 +5,7 @@ import { z } from 'zod/v4'
  * storefront. A wide brand column (bolt logo mark + name, description, social
  * icon buttons) sits beside link columns of store/support/company links, over a
  * bottom bar with a copyright line and legal links. Every link and icon routes
- * through useNavigate. Use as the closing footer for electronics stores, gadget
+ * through section-kit route links. Use as the closing footer for electronics stores, gadget
  * shops, consumer-tech retailers, or audio/camera storefronts.
  */
 import {
@@ -27,7 +27,7 @@ import {
 export const ElectronicsStoreFooter = defineCapsule({
   name: 'ElectronicsStoreFooter',
   description:
-    'Multi-column site footer for an electronics storefront: a wide brand column (bolt logo mark + name, description, social icon buttons) beside link columns of store/support/company links, over a bottom bar with a copyright line and legal links. Every link and icon routes through useNavigate. Use as the closing footer for electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.',
+    'Multi-column site footer for an electronics storefront: a wide brand column (bolt logo mark + name, description, social icon buttons) beside link columns of store/support/company links, over a bottom bar with a copyright line and legal links. Every link and icon routes through section-kit route links. Use as the closing footer for electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.',
   props: z.object({
     /** Brand / store name shown in the footer. */
     brand: z.string().optional(),

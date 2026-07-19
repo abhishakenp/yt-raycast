@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   PricingTier,
   PricingTierBadge,
@@ -15,6 +14,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { newsletterLakebed } from './newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from './newsletter-interactions.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * NewsletterPricing — two-tier Free vs Paid pricing comparison for a newsletter.
@@ -26,14 +26,14 @@ import { NewsletterSubscribeForm } from './newsletter-interactions.tsx'
  * capture + submit, and a small note. A centered footnote with an inline link
  * (e.g. team/enterprise contact) closes the section. Each form submit writes to
  * the shared Lakebed subscriber list and the footnote link routes through
- * useNavigate. Use for free/paid subscription tiers on newsletters,
+ * section-kit route links. Use for free/paid subscription tiers on newsletters,
  * publications, blogs, or content creators. Renders fully with no props via
  * baked-in defaults.
  */
 export const NewsletterPricing = defineCapsule({
   name: 'NewsletterPricing',
   description:
-    "Two-tier Free vs Paid pricing comparison for a newsletter on a muted band bordered top and bottom: a centered serif heading + lede over a 2-up grid. The Free card is a light bordered panel with a serif price, tagline, a check-marked feature list, and its own inline email capture + solid submit; the Paid card is an inverted foreground panel with a 'Most Popular' badge, a serif price + period, tagline, a check-marked feature list, an inverted email capture + submit, and a small note. A centered footnote with an inline link (e.g. team/enterprise contact) closes the section. Each form submit writes to the shared Lakebed subscriber list and the footnote link routes through useNavigate. Use for free/paid subscription tiers on newsletters, publications, blogs, or content creators.",
+    "Two-tier Free vs Paid pricing comparison for a newsletter on a muted band bordered top and bottom: a centered serif heading + lede over a 2-up grid. The Free card is a light bordered panel with a serif price, tagline, a check-marked feature list, and its own inline email capture + solid submit; the Paid card is an inverted foreground panel with a 'Most Popular' badge, a serif price + period, tagline, a check-marked feature list, an inverted email capture + submit, and a small note. A centered footnote with an inline link (e.g. team/enterprise contact) closes the section. Each form submit writes to the shared Lakebed subscriber list and the footnote link routes through section-kit route links. Use for free/paid subscription tiers on newsletters, publications, blogs, or content creators.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -72,7 +72,6 @@ export const NewsletterPricing = defineCapsule({
   }),
   lakebed: newsletterLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Choose Your Experience'
     const description =
       props.description ?? "Free to start. Upgrade when you're ready for more."
@@ -225,13 +224,12 @@ export const NewsletterPricing = defineCapsule({
 
           <p className="mt-8 text-center text-sm text-muted-foreground">
             {footnotePrefix}
-            <button
-              type="button"
-              onClick={() => go(footnoteLink)}
+            <NavbarRouteLink
               className="text-foreground underline hover:no-underline"
+              href={footnoteLink}
             >
               {footnoteLink}
-            </button>
+            </NavbarRouteLink>
             {footnoteSuffix}
           </p>
         </Container>

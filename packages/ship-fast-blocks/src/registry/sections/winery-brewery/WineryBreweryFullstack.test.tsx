@@ -24,10 +24,6 @@ type TestLakebed = ReturnType<typeof createWineryBreweryLakebedStub>['lakebed']
 const navigate = vi.fn()
 const lakebedRef: { current: TestLakebed | null } = { current: null }
 
-vi.mock('#/lib/use-navigate.tsx', () => ({
-  useNavigate: () => navigate,
-}))
-
 vi.mock('@ship-fast/lakebed/react', async () => {
   const actual = await vi.importActual<
     typeof import('@ship-fast/lakebed/react')
@@ -374,13 +370,17 @@ describe('Winery/brewery fullstack commerce behavior', () => {
     fireEvent.click(within(searchDialog).getByText('Old-Vine Zinfandel'))
     expect(navigate).not.toHaveBeenCalledWith('Old-Vine Zinfandel')
 
-    fireEvent.click(screen.getByRole('button', { name: 'Visit' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Visit Us' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Our Wines' }))
-    await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith('Visit')
-      expect(navigate).toHaveBeenCalledWith('Wines')
-    })
+    expect(
+      screen.getByRole('link', { name: 'Visit' }).getAttribute('href'),
+    ).toBe('#visit')
+    expect(
+      screen.getByRole('link', { name: 'Visit Us' }).getAttribute('href'),
+    ).toBe('#visit')
+    expect(
+      screen.getByRole('link', { name: 'Our Wines' }).getAttribute('href'),
+    ).toBe('#wines')
+    expect(navigate).not.toHaveBeenCalledWith('Visit')
+    expect(navigate).not.toHaveBeenCalledWith('Wines')
 
     fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
@@ -430,10 +430,11 @@ describe('Winery/brewery fullstack commerce behavior', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
     const menuDrawer = await screen.findByRole('dialog')
     expect(within(menuDrawer).getByText('Cask Room')).toBeTruthy()
-    fireEvent.click(within(menuDrawer).getByRole('button', { name: 'Events' }))
-
-    await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith('Events')
-    })
+    expect(
+      within(menuDrawer)
+        .getByRole('link', { name: 'Events' })
+        .getAttribute('href'),
+    ).toBe('#events')
+    expect(navigate).not.toHaveBeenCalledWith('Events')
   })
 })

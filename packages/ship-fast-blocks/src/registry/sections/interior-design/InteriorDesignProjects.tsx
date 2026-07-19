@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   PortfolioGrid,
@@ -13,6 +12,7 @@ import {
 } from '#/section-kit/PortfolioGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * InteriorDesignProjects — filterable project portfolio gallery for an upscale
@@ -21,7 +21,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * active), above a responsive 2/3-column grid of tall project cards — each a
  * zoom-on-hover photo over an uppercase tag, a medium title and a location/year
  * meta line — followed by a centered outlined "view all" button. Editorial and
- * gallery-like; filters, cards and the button route through useNavigate, and
+ * gallery-like; filters, cards and the button route through section-kit route links, and
  * photos use the alt-driven Image component. Use to showcase a body of work for
  * interior designers, design studios or architecture firms. Renders fully with
  * no props via baked-in defaults.
@@ -29,7 +29,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 export const InteriorDesignProjects = defineCapsule({
   name: 'InteriorDesignProjects',
   description:
-    "Filterable project portfolio gallery for an upscale interior-design / architecture studio: a header row pairing an uppercase eyebrow + light-weight heading with underline-style filter tabs (first active), above a responsive 2/3-column grid of tall project cards — each a zoom-on-hover photo over an uppercase tag, a medium title and a location/year meta line — and a centered outlined 'view all' button. Editorial and gallery-like; filters, cards and button route through useNavigate and photos use the alt-driven Image component. Use to showcase a body of work for interior designers, design studios or architecture firms.",
+    "Filterable project portfolio gallery for an upscale interior-design / architecture studio: a header row pairing an uppercase eyebrow + light-weight heading with underline-style filter tabs (first active), above a responsive 2/3-column grid of tall project cards — each a zoom-on-hover photo over an uppercase tag, a medium title and a location/year meta line — and a centered outlined 'view all' button. Editorial and gallery-like; filters, cards and button route through section-kit route links and photos use the alt-driven Image component. Use to showcase a body of work for interior designers, design studios or architecture firms.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -47,7 +47,6 @@ export const InteriorDesignProjects = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Portfolio'
     const heading = props.heading ?? 'Selected projects'
     const filters = props.filters?.length
@@ -108,19 +107,18 @@ export const InteriorDesignProjects = defineCapsule({
             />
             <div className="flex gap-4">
               {filters.map((filter, i) => (
-                <button
+                <NavbarRouteLink
                   key={filter}
-                  type="button"
-                  onClick={() => go(filter)}
                   className={cn(
                     'px-4 py-2 text-sm font-medium transition-colors',
                     i === 0
                       ? 'border-b-2 border-foreground text-foreground'
                       : 'text-muted-foreground hover:text-foreground',
                   )}
+                  href={filter}
                 >
                   {filter}
-                </button>
+                </NavbarRouteLink>
               ))}
             </div>
           </div>
@@ -129,41 +127,42 @@ export const InteriorDesignProjects = defineCapsule({
             {items.map((project) => (
               <PortfolioItem
                 key={project.title}
-                onClick={() => go(project.title)}
                 className="block w-full cursor-pointer"
+                asChild
               >
-                <PortfolioMedia aspect="4-5" className="mb-5">
-                  <Image
-                    alt={`${project.title} — ${project.tag} interior design project`}
-                    w={800}
-                    h={1000}
-                    loading="lazy"
-                    className="h-80 w-full object-cover transition-transform duration-700 group-hover:scale-105 md:h-96"
-                  />
-                </PortfolioMedia>
-                <PortfolioCaption>
-                  <PortfolioTag className="mb-2 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                    {project.tag}
-                  </PortfolioTag>
-                  <h3 className="mb-1 text-xl font-medium text-foreground">
-                    {project.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {project.meta}
-                  </p>
-                </PortfolioCaption>
+                <NavbarRouteLink href={project.title}>
+                  <PortfolioMedia aspect="4-5" className="mb-5">
+                    <Image
+                      alt={`${project.title} — ${project.tag} interior design project`}
+                      w={800}
+                      h={1000}
+                      loading="lazy"
+                      className="h-80 w-full object-cover transition-transform duration-700 group-hover:scale-105 md:h-96"
+                    />
+                  </PortfolioMedia>
+                  <PortfolioCaption>
+                    <PortfolioTag className="mb-2 text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                      {project.tag}
+                    </PortfolioTag>
+                    <h3 className="mb-1 text-xl font-medium text-foreground">
+                      {project.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {project.meta}
+                    </p>
+                  </PortfolioCaption>
+                </NavbarRouteLink>
               </PortfolioItem>
             ))}
           </PortfolioGrid>
 
           <div className="mt-16 text-center">
-            <button
-              type="button"
-              onClick={() => go(viewAll)}
+            <NavbarRouteLink
               className="inline-flex items-center border border-border px-8 py-4 text-sm font-medium text-foreground transition-colors hover:border-foreground hover:bg-foreground hover:text-background"
+              href={viewAll}
             >
               {viewAll}
-            </button>
+            </NavbarRouteLink>
           </div>
         </Container>
       </section>

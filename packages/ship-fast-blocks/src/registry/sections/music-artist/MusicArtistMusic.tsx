@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Card } from '#/section-kit/Card.tsx'
@@ -13,6 +12,7 @@ import {
   MusicPlayer,
 } from '#/section-kit/MusicList.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * MusicArtistMusic — latest-release track grid for a music artist / band page.
@@ -20,7 +20,7 @@ import { Container } from '#/section-kit/Container.tsx'
  * track cards (square cover thumbnail, title, duration, and a small "Listen"
  * play button), with a trailing "view all tracks" link with an arrow. Warm,
  * airy, editorial indie-folk aesthetic on a soft neutral canvas. Each track's
- * Listen button and the view-all link route through useNavigate; cover
+ * Listen button and the view-all link route through section-kit route links; cover
  * thumbnails use the alt-driven Image component. Use as the discography /
  * latest-release showcase for musicians, bands, or album-release pages. Renders
  * fully with no props via baked-in defaults.
@@ -28,7 +28,7 @@ import { Container } from '#/section-kit/Container.tsx'
 export const MusicArtistMusic = defineCapsule({
   name: 'MusicArtistMusic',
   description:
-    "Latest-release track grid for a music artist / band page: a centered eyebrow, thin heading and lead, then a responsive grid of bordered track cards (square cover thumbnail, title, duration, and a small 'Listen' play button), with a trailing 'view all tracks' link with an arrow. Warm, airy editorial indie-folk aesthetic on a soft neutral canvas. Each track's Listen button and the view-all link route through useNavigate; cover thumbnails use the alt-driven Image component. Use as the discography / latest-release showcase for musicians, singers, bands, or album-release pages.",
+    "Latest-release track grid for a music artist / band page: a centered eyebrow, thin heading and lead, then a responsive grid of bordered track cards (square cover thumbnail, title, duration, and a small 'Listen' play button), with a trailing 'view all tracks' link with an arrow. Warm, airy editorial indie-folk aesthetic on a soft neutral canvas. Each track's Listen button and the view-all link route through section-kit route links; cover thumbnails use the alt-driven Image component. Use as the discography / latest-release showcase for musicians, singers, bands, or album-release pages.",
   props: z.object({
     /** Small uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -51,7 +51,6 @@ export const MusicArtistMusic = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Latest Release'
     const heading = props.heading ?? 'Northbound'
     const description =
@@ -147,9 +146,7 @@ export const MusicArtistMusic = defineCapsule({
             className="mb-16 gap-6 lg:mb-24"
           />
 
-          <MusicList
-            className="mb-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
-          >
+          <MusicList className="mb-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {tracks.map((track) => (
               <MusicItem asChild key={track.title}>
                 <Card
@@ -174,13 +171,14 @@ export const MusicArtistMusic = defineCapsule({
                         {track.duration}
                       </p>
                       <MusicPlayer
-                        type="button"
                         aria-label={`Play ${track.title}`}
-                        onClick={() => go(track.title)}
                         className="mt-3 gap-1 rounded-none text-xs text-muted-foreground hover:text-foreground justify-start"
+                        asChild
                       >
-                        <PlayIcon />
-                        Listen
+                        <NavbarRouteLink href={track.title}>
+                          <PlayIcon />
+                          Listen
+                        </NavbarRouteLink>
                       </MusicPlayer>
                     </div>
                   </MusicTrack>
@@ -190,14 +188,13 @@ export const MusicArtistMusic = defineCapsule({
           </MusicList>
 
           <div className="text-center">
-            <button
-              type="button"
-              onClick={() => go(viewAll)}
+            <NavbarRouteLink
               className="inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-foreground"
+              href={viewAll}
             >
               {viewAll}
               <ArrowRight className="ml-1 size-4" />
-            </button>
+            </NavbarRouteLink>
           </div>
         </Container>
       </section>

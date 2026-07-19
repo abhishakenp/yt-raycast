@@ -1,14 +1,12 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 /**
  * CorporateLogos — client logo trust bar for an enterprise / corporate B2B
  * homepage. A single-row section with a centered muted heading above a
  * responsive grid of text-logo placeholders (2 on mobile, 4 on tablet, 6 on
  * desktop) at reduced opacity. Every logo is a clickable button that routes
- * through useNavigate. Use beneath the hero to establish credibility for SaaS
+ * through section-kit route links. Use beneath the hero to establish credibility for SaaS
  * platforms, consultancies, or any B2B offering.
  */
 import {
@@ -17,10 +15,12 @@ import {
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const CorporateLogos = defineCapsule({
   name: 'CorporateLogos',
   description:
-    'Client logo trust bar for an enterprise / corporate B2B homepage: centered muted heading above a responsive grid of text-logo placeholders at reduced opacity with a thin top border, each clickable via useNavigate. Use beneath the hero to establish credibility for SaaS platforms, consultancies, or any B2B offering.',
+    'Client logo trust bar for an enterprise / corporate B2B homepage: centered muted heading above a responsive grid of text-logo placeholders at reduced opacity with a thin top border, each clickable via section-kit route links. Use beneath the hero to establish credibility for SaaS platforms, consultancies, or any B2B offering.',
   props: z.object({
     /** Heading above the logo grid. */
     heading: z.string().optional(),
@@ -29,7 +29,6 @@ export const CorporateLogos = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Trusted by leading enterprises worldwide'
     const items = props.items?.length
       ? props.items
@@ -45,7 +44,7 @@ export const CorporateLogos = defineCapsule({
         <LogoStripItems layout="flex" className="mt-8">
           {items.filter(Boolean).map((logo) => (
             <LogoStripItem key={logo} variant="opacity-hover" asChild>
-              <button onClick={() => go(logo)}>{logo}</button>
+              <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
             </LogoStripItem>
           ))}
         </LogoStripItems>

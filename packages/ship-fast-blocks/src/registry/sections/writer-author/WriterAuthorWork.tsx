@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
@@ -11,20 +10,21 @@ import {
   PortfolioCaption,
 } from '#/section-kit/PortfolioGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * WriterAuthorWork — a "Selected works" books grid for a literary author site.
  * Opens with a centered SectionHeading (uppercase "Books" eyebrow over a serif
  * title) and lays out a responsive grid of book cards, each pairing a tall
  * 2:3 cover image with the title, publication year, and a "Buy" link button
- * that routes through useNavigate. Tuned for novelists, essayists, poets, and
+ * that routes through section-kit route links. Tuned for novelists, essayists, poets, and
  * memoirists who want to showcase a backlist with quiet, elegant typography.
  * Ships with five baked-in titles so it renders fully with no props.
  */
 export const WriterAuthorWork = defineCapsule({
   name: 'WriterAuthorWork',
   description:
-    "A 'Selected works' books grid for a literary author website: a centered SectionHeading (uppercase 'Books' eyebrow over a serif title) above a responsive grid of book cards. Each card pairs a tall 2:3 cover image with the book title, publication year, and a 'Buy' link button that routes through useNavigate. Built for novelists, essayists, poets, and memoirists presenting a backlist with restrained, elegant serif typography. Renders fully with no props via five baked-in titles.",
+    "A 'Selected works' books grid for a literary author website: a centered SectionHeading (uppercase 'Books' eyebrow over a serif title) above a responsive grid of book cards. Each card pairs a tall 2:3 cover image with the book title, publication year, and a 'Buy' link button that routes through section-kit route links. Built for novelists, essayists, poets, and memoirists presenting a backlist with restrained, elegant serif typography. Renders fully with no props via five baked-in titles.",
   props: z.object({
     /** Serif title rendered in the heading block. */
     heading: z.string().optional(),
@@ -46,7 +46,6 @@ export const WriterAuthorWork = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const buyLabel = props.buyLabel ?? 'Buy'
     const books = props.books ?? [
       {
@@ -117,13 +116,12 @@ export const WriterAuthorWork = defineCapsule({
                     {book.title}
                   </h3>
                   <p className="text-sm text-muted-foreground">{book.year}</p>
-                  <button
-                    type="button"
-                    onClick={() => go(book.target ?? 'Books')}
+                  <NavbarRouteLink
                     className="mt-2 self-start text-sm font-medium text-primary hover:underline"
+                    href={book.target ?? 'Books'}
                   >
                     {buyLabel}
-                  </button>
+                  </NavbarRouteLink>
                 </PortfolioCaption>
               </div>
             ))}

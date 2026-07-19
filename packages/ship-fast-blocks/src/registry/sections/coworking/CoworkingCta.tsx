@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { GridField } from '#/section-kit/motion.tsx'
 import {
   CtaBand,
@@ -11,6 +9,7 @@ import {
   CtaBandSubtitle,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * CoworkingCta — luminous closing band for a coworking or shared-workspace
@@ -18,14 +17,14 @@ import {
  * faint oversized ring outlines. Content is centered: an uppercase eyebrow,
  * a display headline, a short supporting line, and two CTAs — an inverted
  * pill with a shimmer sweep on hover beside a translucent outline pill. Both
- * route through useNavigate. Renders fully with no props via baked-in
+ * route through section-kit route links. Renders fully with no props via baked-in
  * defaults. Use near the bottom of a coworking, shared-office, or flex-office
  * page to drive tour bookings.
  */
 export const CoworkingCta = defineCapsule({
   name: 'CoworkingCta',
   description:
-    'Luminous closing CTA band for a coworking or shared-workspace page: a full-bleed rounded panel on a deep primary gradient, framed by faint oversized ring outlines — with an uppercase eyebrow, display headline, short supporting line, and two CTAs (inverted shimmer-sweep pill + translucent outline pill), both routed through useNavigate. Use near the bottom of a coworking, shared-office, or flex-office page to drive tour bookings and pricing views.',
+    'Luminous closing CTA band for a coworking or shared-workspace page: a full-bleed rounded panel on a deep primary gradient, framed by faint oversized ring outlines — with an uppercase eyebrow, display headline, short supporting line, and two CTAs (inverted shimmer-sweep pill + translucent outline pill), both routed through section-kit route links. Use near the bottom of a coworking, shared-office, or flex-office page to drive tour bookings and pricing views.',
   props: z.object({
     /** Small eyebrow label above the headline. */
     eyebrow: z.string().optional(),
@@ -44,7 +43,6 @@ export const CoworkingCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow =
       typeof props.eyebrow === 'string' && props.eyebrow
         ? props.eyebrow
@@ -95,23 +93,24 @@ export const CoworkingCta = defineCapsule({
             className="pointer-events-none absolute -bottom-32 -left-16 size-[26rem] rounded-full border border-primary-foreground/10"
           />
           <div className="relative mt-5 flex flex-col gap-4 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => go(props.primaryTarget ?? primaryCta)}
+            <NavbarRouteLink
               className="group relative inline-flex items-center justify-center overflow-hidden rounded-2xl bg-background px-8 py-4 text-base font-semibold text-foreground shadow-lg transition-shadow duration-300 hover:shadow-xl"
+              href={props.primaryTarget ?? primaryCta}
             >
               <span
                 aria-hidden="true"
                 className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-foreground/10 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full"
               />
               <span className="relative">{primaryCta}</span>
-            </button>
+            </NavbarRouteLink>
             <CtaAction
               variant="outline"
-              onClick={() => go(props.secondaryTarget ?? secondaryCta)}
               className="inline-flex items-center justify-center rounded-2xl border border-primary-foreground/30 px-8 py-4 text-base font-medium text-primary-foreground transition-colors duration-300 hover:bg-primary-foreground/10"
+              asChild
             >
-              {secondaryCta}
+              <NavbarRouteLink href={props.secondaryTarget ?? secondaryCta}>
+                {secondaryCta}
+              </NavbarRouteLink>
             </CtaAction>
           </div>
         </CtaBandInner>

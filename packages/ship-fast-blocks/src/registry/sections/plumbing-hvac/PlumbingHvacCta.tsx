@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   CtaBand,
   CtaBandInner,
@@ -11,6 +9,7 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * PlumbingHvacCta — a full-width conversion band for the bottom of a plumbing &
@@ -18,14 +17,14 @@ import {
  * tone="primary": a centered headline + supporting line over a primary surface,
  * a high-contrast "Schedule Service" pill (auto-inverted on the primary band),
  * an outlined "Call Now" pill, and a small reassurance note carried in the
- * eyebrow. Both CTAs route through useNavigate. Use as the closing
+ * eyebrow. Both CTAs route through section-kit route links. Use as the closing
  * call-to-action for plumber, HVAC, or other home-service pages. Renders fully
  * with no props via baked-in defaults.
  */
 export const PlumbingHvacCta = defineCapsule({
   name: 'PlumbingHvacCta',
   description:
-    "Full-width conversion band for the bottom of a plumbing & HVAC trade site built on the shared CtaBand composite at tone='primary': a centered headline + supporting line over a primary surface, a high-contrast 'Schedule Service' pill (auto-inverted on the primary band), an outlined 'Call Now' pill, and a small reassurance note in the eyebrow. Both CTAs route through useNavigate. Use as the closing call-to-action for plumber, HVAC, or other home-service pages.",
+    "Full-width conversion band for the bottom of a plumbing & HVAC trade site built on the shared CtaBand composite at tone='primary': a centered headline + supporting line over a primary surface, a high-contrast 'Schedule Service' pill (auto-inverted on the primary band), an outlined 'Call Now' pill, and a small reassurance note in the eyebrow. Both CTAs route through section-kit route links. Use as the closing call-to-action for plumber, HVAC, or other home-service pages.",
   props: z.object({
     /** Centered headline on the band. */
     heading: z.string().optional(),
@@ -44,7 +43,6 @@ export const PlumbingHvacCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Schedule your service today'
     const subheading =
       props.subheading ??
@@ -62,12 +60,16 @@ export const PlumbingHvacCta = defineCapsule({
           <CtaBandTitle>{heading}</CtaBandTitle>
           <CtaBandSubtitle>{subheading}</CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction variant="primary" onClick={() => go(primaryTarget)}>
-              {primaryCta}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={primaryTarget}>
+                {primaryCta}
+              </NavbarRouteLink>
             </CtaAction>
             {secondaryCta && (
-              <CtaAction variant="outline" onClick={() => go(secondaryTarget)}>
-                {secondaryCta}
+              <CtaAction variant="outline" asChild>
+                <NavbarRouteLink href={secondaryTarget}>
+                  {secondaryCta}
+                </NavbarRouteLink>
               </CtaAction>
             )}
           </CtaBandActions>

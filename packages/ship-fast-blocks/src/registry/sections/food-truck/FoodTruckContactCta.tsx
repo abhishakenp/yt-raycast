@@ -10,19 +10,19 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * FoodTruckContactCta — a dark, inverted closing contact CTA band. A foreground-filled,
  * centered section with a bold heading, a supporting paragraph, a pair of pill buttons
  * (a filled email CTA + an outlined phone CTA) and a small response-time note beneath.
- * Both buttons route through useNavigate. Use as the final call-to-action / get-in-touch
+ * Both buttons route through section-kit route links. Use as the final call-to-action / get-in-touch
  * band for food trucks, caterers or street-food vendors prompting bookings and enquiries.
  */
 export const FoodTruckContactCta = defineCapsule({
   name: 'FoodTruckContactCta',
   description:
-    'Dark, inverted closing contact CTA band: a foreground-filled, centered section with a bold heading, a supporting paragraph, a pair of pill buttons (a filled email CTA and an outlined phone CTA) and a small response-time note beneath. Both buttons route through useNavigate. Use as the final call-to-action / get-in-touch band for food trucks, caterers, street-food vendors or restaurants prompting catering bookings and enquiries.',
+    'Dark, inverted closing contact CTA band: a foreground-filled, centered section with a bold heading, a supporting paragraph, a pair of pill buttons (a filled email CTA and an outlined phone CTA) and a small response-time note beneath. Both buttons route through section-kit route links. Use as the final call-to-action / get-in-touch band for food trucks, caterers, street-food vendors or restaurants prompting catering bookings and enquiries.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -32,7 +32,6 @@ export const FoodTruckContactCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const ctaHeading = props.heading ?? 'Ready to book the truck?'
     const ctaDesc =
       props.description ??
@@ -51,11 +50,11 @@ export const FoodTruckContactCta = defineCapsule({
           <CtaBandTitle>{ctaHeading}</CtaBandTitle>
           <CtaBandSubtitle>{ctaDesc}</CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction variant="primary" onClick={() => go(ctaEmail)}>
-              {ctaEmail}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={ctaEmail}>{ctaEmail}</NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" onClick={() => go(ctaPhone)}>
-              {ctaPhone}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={ctaPhone}>{ctaPhone}</NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

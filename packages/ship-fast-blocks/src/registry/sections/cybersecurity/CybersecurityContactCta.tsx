@@ -17,7 +17,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * CybersecurityContactCta — dark final demo call-to-action band. A full-bleed
  * brand-surface section, centered: a large heading, a wide supporting
  * paragraph, dual CTAs (solid inverted primary + outlined secondary), and a
- * small reassurance note underneath. Both CTAs route through useNavigate. Use as
+ * small reassurance note underneath. Both CTAs route through section-kit route links. Use as
  * the closing conversion band above the footer for cybersecurity vendors,
  * SOC/MDR providers, or any B2B security SaaS. Renders fully with no props via
  * baked-in demo-CTA defaults.

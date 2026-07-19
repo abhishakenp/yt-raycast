@@ -10,7 +10,7 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 export const TravelAgencyCta = defineCapsule({
   name: 'TravelAgencyCta',
@@ -27,7 +27,6 @@ export const TravelAgencyCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     return (
       <CtaBand tone="primary" className={props.className}>
         <CtaBandInner>
@@ -42,17 +41,15 @@ export const TravelAgencyCta = defineCapsule({
               "Tell us where you're dreaming of going and we'll craft a journey tailored just for you — no obligation, no pressure."}
           </CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction
-              variant="primary"
-              onClick={() => go(props.primaryTarget ?? 'Plan a Trip')}
-            >
-              {props.primaryLabel ?? 'Plan a Trip'}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={props.primaryTarget ?? 'Plan a Trip'}>
+                {props.primaryLabel ?? 'Plan a Trip'}
+              </NavbarRouteLink>
             </CtaAction>
-            <CtaAction
-              variant="outline"
-              onClick={() => go(props.secondaryTarget ?? 'Contact')}
-            >
-              {props.secondaryLabel ?? 'Talk to an advisor'}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={props.secondaryTarget ?? 'Contact'}>
+                {props.secondaryLabel ?? 'Talk to an advisor'}
+              </NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

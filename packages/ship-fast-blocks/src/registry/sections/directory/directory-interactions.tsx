@@ -12,7 +12,6 @@ import {
   SheetTrigger,
 } from '#/components/ui/sheet.tsx'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   AccountDropdown,
   AccountDropdownTrigger,
@@ -28,6 +27,7 @@ import {
   CommandSearchList,
   CommandSearchEmpty,
   CommandSearchGroup,
+  NavbarRouteLink,
 } from '#/section-kit/index.ts'
 
 import type {
@@ -282,13 +282,6 @@ export function DirectoryMobileMenu({
   nav: string[]
 }) {
   const [open, setOpen] = useState(false)
-  const go = useNavigate()
-
-  const navigate = (target?: string) => {
-    setOpen(false)
-    go(target)
-  }
-
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
@@ -307,22 +300,22 @@ export function DirectoryMobileMenu({
           </SheetDescription>
         </SheetHeader>
         <div className="flex flex-col gap-1 px-3 py-4">
-          <button
-            type="button"
-            onClick={() => navigate(homeTarget ?? nav[0])}
+          <NavbarRouteLink
             className="rounded-lg px-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            href={homeTarget ?? nav[0]}
+            onClick={() => setOpen(false)}
           >
             Home
-          </button>
+          </NavbarRouteLink>
           {nav.map((item) => (
-            <button
+            <NavbarRouteLink
               key={item}
-              type="button"
-              onClick={() => navigate(item)}
               className="rounded-lg px-3 py-3 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              href={item}
+              onClick={() => setOpen(false)}
             >
               {item}
-            </button>
+            </NavbarRouteLink>
           ))}
         </div>
       </SheetContent>

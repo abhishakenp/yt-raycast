@@ -2,25 +2,25 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   LogoStrip,
   LogoStripLabel,
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * CommunityForumLogos — logo trust strip for a community-platform / discussion-forum
  * landing page. A centered section heading over a muted band, with a horizontal row
- * of faux-logos (initial-letter icon + name) that route through useNavigate on click.
+ * of faux-logos (initial-letter icon + name) that route through section-kit route links on click.
  * Use as a social-proof / trusted-by section for community platforms, SaaS products,
  * or online forums.
  */
 export const CommunityForumLogos = defineCapsule({
   name: 'CommunityForumLogos',
   description:
-    'Logo trust strip for a community-platform / discussion-forum landing page: a centered section heading over a muted band with a horizontal row of faux-logos (initial-letter icon + name) that route through useNavigate on click. Use as a social-proof / trusted-by section for community platforms, SaaS products, or online forums.',
+    'Logo trust strip for a community-platform / discussion-forum landing page: a centered section heading over a muted band with a horizontal row of faux-logos (initial-letter icon + name) that route through section-kit route links on click. Use as a social-proof / trusted-by section for community platforms, SaaS products, or online forums.',
   props: z.object({
     /** Section heading text. */
     heading: z.string().optional(),
@@ -29,7 +29,6 @@ export const CommunityForumLogos = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Trusted by teams at innovative companies'
     const items = props.items?.length
       ? props.items
@@ -53,7 +52,7 @@ export const CommunityForumLogos = defineCapsule({
               className="text-foreground/80"
               asChild
             >
-              <button onClick={() => ((logo) => go(logo))(logo)}>{logo}</button>
+              <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
             </LogoStripItem>
           ))}
         </LogoStripItems>

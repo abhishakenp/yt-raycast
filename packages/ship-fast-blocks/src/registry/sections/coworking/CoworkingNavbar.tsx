@@ -10,6 +10,7 @@ import {
   NavbarBrand,
   NavbarCta,
   NavbarNav,
+  NavbarNavLink,
   SiteNav,
 } from '#/section-kit/index.ts'
 

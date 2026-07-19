@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroHeading,
@@ -14,13 +13,14 @@ import {
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * ConsultingHero — two-column hero section for a management-consulting firm
  * landing page. An eyebrow pill, a large headline with a muted-highlight phrase,
  * a supporting paragraph, dual CTAs (filled primary + outlined secondary),
  * inline trust stats with check icons, and a hero photo with a floating
- * client-retention stat card. CTAs route through useNavigate. Use as the
+ * client-retention stat card. CTAs route through section-kit route links. Use as the
  * opening hero for consulting firms, strategy advisories, professional-services
  * groups, or corporate B2B landing pages. Renders fully with no props via
  * baked-in "Nexus Strategy Partners" defaults.
@@ -28,7 +28,7 @@ import { Container } from '#/section-kit/Container.tsx'
 export const ConsultingHero = defineCapsule({
   name: 'ConsultingHero',
   description:
-    'Two-column hero section for a management-consulting firm landing page: an eyebrow pill, a large headline with one phrase rendered in muted highlight, a supporting paragraph, dual CTAs (filled primary and outlined secondary), inline trust stats with check icons, and a hero photo with a floating client-retention stat card. CTAs route through useNavigate. Use as the opening hero for consulting firms, strategy advisories, professional-services groups, or corporate B2B landing pages.',
+    'Two-column hero section for a management-consulting firm landing page: an eyebrow pill, a large headline with one phrase rendered in muted highlight, a supporting paragraph, dual CTAs (filled primary and outlined secondary), inline trust stats with check icons, and a hero photo with a floating client-retention stat card. CTAs route through section-kit route links. Use as the opening hero for consulting firms, strategy advisories, professional-services groups, or corporate B2B landing pages.',
   props: z.object({
     /** Eyebrow pill text above the headline. */
     eyebrow: z.string().optional(),
@@ -55,7 +55,6 @@ export const ConsultingHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Global Management Consulting'
     const heading =
       props.heading ?? 'Transforming Strategy into Sustainable Results'
@@ -128,18 +127,18 @@ export const ConsultingHero = defineCapsule({
                   variant="primary"
                   className="rounded-md px-6 py-3 text-base shadow-lg transition-all"
                 >
-                  <button type="button" onClick={() => go(primaryCta)}>
+                  <NavbarRouteLink href={primaryCta}>
                     {primaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
                 <HeroCta
                   asChild
                   variant="outline"
                   className="rounded-md px-6 py-3 text-base transition-all"
                 >
-                  <button type="button" onClick={() => go(secondaryCta)}>
+                  <NavbarRouteLink href={secondaryCta}>
                     {secondaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
               <HeroSocialProof className="mt-0 gap-8 pt-4">
@@ -160,7 +159,6 @@ export const ConsultingHero = defineCapsule({
                 alt={imageAlt}
                 w={800}
                 h={600}
-
                 className="relative aspect-[4/3] w-full shadow-2xl rounded-xl"
               />
               <div className="absolute -bottom-6 -left-6 max-w-xs rounded-lg bg-card p-4 shadow-xl">

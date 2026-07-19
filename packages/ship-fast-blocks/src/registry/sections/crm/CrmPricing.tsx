@@ -10,7 +10,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * grid of plan cards: name, blurb, large price + unit, a checklist of included
  * features (green checks) plus optional crossed-out excluded features, and a
  * full-width CTA; the featured plan inverts to a filled primary surface with a
- * floating "Most Popular" badge. CTAs route through useNavigate. Use to present
+ * floating "Most Popular" badge. CTAs route through section-kit route links. Use to present
  * tiered subscription pricing for CRM, sales-pipeline or B2B SaaS products.
  * Renders fully with no props.
  */

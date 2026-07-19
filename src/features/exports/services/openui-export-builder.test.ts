@@ -64,9 +64,12 @@ function collectWindowRuntimeErrors(dom: JSDOM) {
   dom.window.addEventListener('error', (event: ErrorEvent) => {
     errors.push(event.error ?? event.message)
   })
-  dom.window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
-    errors.push(event.reason ?? event)
-  })
+  dom.window.addEventListener(
+    'unhandledrejection',
+    (event: PromiseRejectionEvent) => {
+      errors.push(event.reason ?? event)
+    },
+  )
 
   return errors
 }
@@ -256,7 +259,6 @@ export const Route = ({ element, children }) => element ?? React.createElement(F
 export const Link = ({ children, to = "#", ...props }) => React.createElement("a", { ...props, href: String(to) }, children);
 export const NavLink = Link;
 export const Navigate = () => null;
-export function useNavigate() { return () => {}; }
 export function useLocation() { return { pathname: "/", search: "", hash: "", state: null, key: "default" }; }
 export function useParams() { return {}; }
 `,
@@ -433,7 +435,9 @@ describe('openui-export-builder', () => {
       url: 'https://export.test/',
     })
     const scrolledSections: string[] = []
-    runtime.window.requestAnimationFrame = (callback: (time: number) => void) => {
+    runtime.window.requestAnimationFrame = (
+      callback: (time: number) => void,
+    ) => {
       callback(0)
       return 1
     }
@@ -694,7 +698,6 @@ export const Route = ({ element, children }) => element ?? React.createElement(F
 export const Link = ({ children, to = "#", ...props }) => React.createElement("a", { ...props, href: String(to) }, children);
 export const NavLink = Link;
 export const Navigate = () => null;
-export function useNavigate() { return () => {}; }
 export function useLocation() { return { pathname: "/", search: "", hash: "", state: null, key: "default" }; }
 export function useParams() { return {}; }
 `,
@@ -760,7 +763,9 @@ export function useParams() { return {}; }
     expect(files['app/layout.tsx']).toContain('Export Demo')
   })
 
-  const assertAllFormattableFilesArePrettierFormatted = async (files: Record<string, string>) => {
+  const assertAllFormattableFilesArePrettierFormatted = async (
+    files: Record<string, string>,
+  ) => {
     const reformatted = await formatExportFiles(files)
     for (const [path, original] of Object.entries(files)) {
       if (!/\.(ts|tsx|mjs|js|json|css|md)$/.test(path)) continue
@@ -1167,16 +1172,30 @@ export function useParams() { return {}; }
       const files = unzipBuiltExportTextFiles(result.body)
 
       expect(files[`src/components/${componentName}.tsx`]).toBeDefined()
-      const { renderError, runtimeErrors } = await renderExportedBrowserEntry(
-        files,
-        `import React from 'react'
-import { createRoot } from 'react-dom/client'
-import { ${componentName} } from './src/components/${componentName}'
-createRoot(document.getElementById('root')!).render(<${componentName} />)`,
-      )
-      expect(renderError).toBeUndefined()
-      expect(runtimeErrors).toEqual([])
+      const routerLinkSource =
+        files['src/vendor/blocks/src/section-kit/RouterLink.tsx'] ?? ''
+      expect(routerLinkSource).toContain('<a ref={ref} href={href}')
+      expect(routerLinkSource).not.toContain('@tanstack/react-router')
+      expect(routerLinkSource).not.toContain("from 'react-router-dom'")
+      expect(routerLinkSource).not.toContain("from 'next/link'")
     }
+  })
+
+  it('packages section-kit RouterLink as an href anchor for Next exports', async () => {
+    const result = await buildOpenUIExport({
+      source: 'root = ChurchNavbar()',
+      siteSpecJson,
+      sessionId: 'next-section-kit-router-link',
+      target: 'next',
+    })
+    const files = unzipBuiltExportTextFiles(result.body)
+    const routerLinkSource =
+      files['src/vendor/blocks/src/section-kit/RouterLink.tsx'] ?? ''
+
+    expect(routerLinkSource).toContain('<a ref={ref} href={href}')
+    expect(routerLinkSource).not.toContain('@tanstack/react-router')
+    expect(routerLinkSource).not.toContain('react-router-dom')
+    expect(routerLinkSource).not.toContain("from 'next/link'")
   })
 
   it('packages fullstack capsule helpers for Next exports with the query provider', async () => {

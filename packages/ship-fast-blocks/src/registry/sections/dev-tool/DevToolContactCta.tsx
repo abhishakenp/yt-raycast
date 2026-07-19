@@ -17,7 +17,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * DevToolContactCta — a dark closing call-to-action band for a developer tool /
  * API platform. A centered rounded inverted panel (dark foreground surface) with
  * a bold headline, a supporting paragraph, dual CTAs (filled primary + outline-
- * on-dark secondary), and a small footnote. Both CTAs route through useNavigate.
+ * on-dark secondary), and a small footnote. Both CTAs route through section-kit route links.
  * Use as the final conversion section before the footer for developer tools,
  * API platforms, backend-as-a-service, or technical SaaS.
  */

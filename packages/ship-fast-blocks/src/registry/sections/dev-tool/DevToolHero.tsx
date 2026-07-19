@@ -5,7 +5,6 @@ import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { ContentCard } from '#/section-kit/ContentCard.tsx'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   SaasMutationSpinner,
@@ -13,6 +12,7 @@ import {
 } from '../saas/saas-interactions.tsx'
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * DevToolHero — two-column product hero for a developer tool / API platform.
@@ -22,7 +22,7 @@ import { HeroSection } from '#/section-kit/HeroSection.tsx'
  * card footnote) beside a right dark code-window mockup (traffic-light dots,
  * filename tab, syntax-spaced SDK snippet) with a floating developer-avatar
  * social-proof card. Clean light slate-and-blue aesthetic. All CTAs route
- * through useNavigate. Use as the top hero for developer tools, API platforms,
+ * through section-kit route links. Use as the top hero for developer tools, API platforms,
  * backend-as-a-service, or technical SaaS landing pages.
  */
 export const DevToolHero = defineCapsule({
@@ -50,7 +50,6 @@ export const DevToolHero = defineCapsule({
   }),
   lakebed: saasLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const badge = props.badge ?? 'v2.4 Now Available'
     const headingTop =
       props.headingTop ?? 'Build faster with developer APIs that'
@@ -146,13 +145,12 @@ await ds.storage.set(\`user:\${user.id}\`, {
                   {primaryCta}
                   <ArrowRight />
                 </SaasPlanActionButton>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
+                <NavbarRouteLink
                   className="inline-flex items-center justify-center rounded-lg border border-border bg-background px-6 py-3 font-semibold text-foreground transition-colors hover:bg-muted"
+                  href={secondaryCta}
                 >
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </div>
               <p className="text-sm text-muted-foreground">{footnote}</p>
             </div>

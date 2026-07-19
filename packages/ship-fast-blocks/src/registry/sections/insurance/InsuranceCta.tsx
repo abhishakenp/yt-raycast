@@ -8,13 +8,13 @@ import {
   CtaBandSubtitle,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * InsuranceCta — full-bleed closing call-to-action panel for an insurance page.
  * A rounded brand-colored panel with a subtle dotted overlay, centered heading
  * and lede, dual CTAs (a solid get-a-quote button and an outline phone button),
- * and a small footnote of trust points. Both CTAs route through useNavigate.
+ * and a small footnote of trust points. Both CTAs route through section-kit route links.
  * Use as the final conversion push near the footer for insurance carriers,
  * insurtech, brokers, or financial-protection products. Renders fully with no
  * props via baked-in defaults.
@@ -22,7 +22,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 export const InsuranceCta = defineCapsule({
   name: 'InsuranceCta',
   description:
-    'Full-bleed closing call-to-action panel for an insurance page: a rounded brand-colored panel with a subtle dotted overlay, centered heading and lede, dual CTAs (a solid get-a-quote button and an outline call/phone button), and a small footnote of trust points. Both CTAs route through useNavigate. Use as the final conversion push near the footer for insurance carriers, insurtech startups, brokers, or financial-protection products.',
+    'Full-bleed closing call-to-action panel for an insurance page: a rounded brand-colored panel with a subtle dotted overlay, centered heading and lede, dual CTAs (a solid get-a-quote button and an outline call/phone button), and a small footnote of trust points. Both CTAs route through section-kit route links. Use as the final conversion push near the footer for insurance carriers, insurtech startups, brokers, or financial-protection products.',
   props: z.object({
     /** Panel heading. */
     heading: z.string().optional(),
@@ -39,7 +39,6 @@ export const InsuranceCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Ready to protect what matters?'
     const description =
       props.description ??
@@ -109,18 +108,22 @@ export const InsuranceCta = defineCapsule({
                   variant="primary"
                   invert
                   className="gap-2 rounded-xl px-8 py-4 text-base font-semibold text-primary shadow-lg hover:bg-muted"
-                  onClick={() => go(primaryCta)}
+                  asChild
                 >
-                  {primaryCta}
-                  <ArrowRight />
+                  <NavbarRouteLink href={primaryCta}>
+                    {primaryCta}
+                    <ArrowRight />
+                  </NavbarRouteLink>
                 </CtaAction>
                 <CtaAction
                   variant="outline"
                   className="gap-2 rounded-xl border-primary-foreground/30 bg-primary px-8 py-4 text-base font-semibold text-primary-foreground hover:bg-primary-foreground/10"
-                  onClick={() => go(phone)}
+                  asChild
                 >
-                  <Phone className="size-5" />
-                  {phoneCta}
+                  <NavbarRouteLink href={phone}>
+                    <Phone className="size-5" />
+                    {phoneCta}
+                  </NavbarRouteLink>
                 </CtaAction>
               </div>
               <p className="mt-6 text-sm text-primary-foreground/70">

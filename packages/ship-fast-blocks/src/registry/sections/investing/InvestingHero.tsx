@@ -3,7 +3,6 @@ import { z } from 'zod/v4'
 
 import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import {
@@ -12,6 +11,7 @@ import {
   StatValue,
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * InvestingHero — split hero for a modern investing / fintech brokerage landing
@@ -27,7 +27,7 @@ import {
 export const InvestingHero = defineCapsule({
   name: 'InvestingHero',
   description:
-    "Split hero for a modern investing / fintech brokerage landing page: bold conversion copy (AI-insights pill badge, large headline, lead paragraph, dual primary/secondary CTAs, green-checked trust ticks) on the left paired with a floating live portfolio-value card on the right showing portfolio value + today's change, 1D/1W/1M range tabs, an area-fill sparkline with an S&P 500 ticker chip, and a three-up buying-power/dividends/YTD-return stat row, over soft blurred accent blobs. All CTAs route through useNavigate. Use as the opening hero for stock brokerages, trading apps, robo-advisors or crypto exchanges.",
+    "Split hero for a modern investing / fintech brokerage landing page: bold conversion copy (AI-insights pill badge, large headline, lead paragraph, dual primary/secondary CTAs, green-checked trust ticks) on the left paired with a floating live portfolio-value card on the right showing portfolio value + today's change, 1D/1W/1M range tabs, an area-fill sparkline with an S&P 500 ticker chip, and a three-up buying-power/dividends/YTD-return stat row, over soft blurred accent blobs. All CTAs route through section-kit route links. Use as the opening hero for stock brokerages, trading apps, robo-advisors or crypto exchanges.",
   props: z.object({
     /** AI-insights pill badge above the headline. */
     badge: z.string().optional(),
@@ -55,7 +55,6 @@ export const InvestingHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const badge = props.badge ?? 'Now with AI-powered insights'
     const heading = props.heading ?? 'Invest with clarity and confidence'
     const subheading =
@@ -116,20 +115,18 @@ export const InvestingHero = defineCapsule({
                 {subheading}
               </p>
               <div className="mb-8 flex flex-col gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
+                <NavbarRouteLink
                   className="inline-flex items-center justify-center rounded-xl bg-primary px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  href={primaryCta}
                 >
                   {primaryCta}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
+                </NavbarRouteLink>
+                <NavbarRouteLink
                   className="inline-flex items-center justify-center rounded-xl border border-input bg-background px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted"
+                  href={secondaryCta}
                 >
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </div>
               <div className="flex items-center gap-6 text-sm text-muted-foreground">
                 {trust.map((t) => (
@@ -150,9 +147,7 @@ export const InvestingHero = defineCapsule({
                 aria-hidden="true"
                 className="absolute -bottom-8 -left-8 -z-10 size-72 rounded-full bg-chart-1/15 opacity-60 blur-3xl"
               />
-              <Card
-                className="relative text-card-foreground rounded-2xl shadow-2xl"
-              >
+              <Card className="relative text-card-foreground rounded-2xl shadow-2xl">
                 <div className="mb-6 flex items-center justify-between">
                   <div>
                     <p className="mb-1 text-sm text-muted-foreground">
@@ -165,19 +160,18 @@ export const InvestingHero = defineCapsule({
                   </div>
                   <div className="flex gap-2">
                     {['1D', '1W', '1M'].map((range, i) => (
-                      <button
+                      <NavbarRouteLink
                         key={range}
-                        type="button"
-                        onClick={() => go(`${range} chart`)}
                         className={cn(
                           'rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
                           i === 1
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-muted text-muted-foreground hover:bg-accent',
                         )}
+                        href={`${range} chart`}
                       >
                         {range}
-                      </button>
+                      </NavbarRouteLink>
                     ))}
                   </div>
                 </div>
@@ -207,7 +201,6 @@ export const InvestingHero = defineCapsule({
                 </div>
                 <StatGrid
                   columns={3}
-
                   className="mt-6 border-t border-border pt-6 gap-6"
                 >
                   {cardStats.map((s, i) => (

@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 /**
@@ -10,17 +9,19 @@ import { Image } from '#/lib/img.tsx'
  * (first active), then a 1-to-3 column grid of 4:3 thumbnail cards with
  * hover-zoom images and a gradient overlay that reveals a tinted category tag,
  * title, and description on hover, finished by a "view all" text link with
- * arrow. Every chip, card, and link route through useNavigate. Use as the
+ * arrow. Every chip, card, and link route through section-kit route links. Use as the
  * template marketplace / gallery section for a no-code builder or theme
  * marketplace. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { TemplateGrid, TemplateCard } from '#/section-kit/TemplateGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const NoCodeTemplates = defineCapsule({
   name: 'NoCodeTemplates',
   description:
-    "Filterable templates GALLERY on a bright canvas: a centered header (eyebrow, heading, paragraph) above a row of pill filter chips (first active), then a 1-to-3 column grid of 4:3 thumbnail cards with hover-zoom images and a gradient overlay revealing a tinted category tag, title, and description on hover, finished by a 'view all' text link with arrow. Chips, cards, and link route through useNavigate. Use as the template marketplace / gallery section for a no-code / website-builder product or theme marketplace.",
+    "Filterable templates GALLERY on a bright canvas: a centered header (eyebrow, heading, paragraph) above a row of pill filter chips (first active), then a 1-to-3 column grid of 4:3 thumbnail cards with hover-zoom images and a gradient overlay revealing a tinted category tag, title, and description on hover, finished by a 'view all' text link with arrow. Chips, cards, and link route through section-kit route links. Use as the template marketplace / gallery section for a no-code / website-builder product or theme marketplace.",
   props: z.object({
     /** Muted uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -46,7 +47,6 @@ export const NoCodeTemplates = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Templates Gallery'
     const heading = props.heading ?? 'Start with a proven design'
     const description =
@@ -147,29 +147,27 @@ export const NoCodeTemplates = defineCapsule({
             />
             <div className="flex flex-wrap justify-center gap-3">
               {filters.map((f, i) => (
-                <button
+                <NavbarRouteLink
                   key={f}
-                  type="button"
-                  onClick={() => go(f)}
                   className={cn(
                     'rounded-full px-4 py-2 text-sm font-medium transition-colors',
                     i === 0
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground',
                   )}
+                  href={f}
                 >
                   {f}
-                </button>
+                </NavbarRouteLink>
               ))}
             </div>
           </div>
           <TemplateGrid className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((tpl, i) => (
               <TemplateCard asChild key={tpl.title}>
-                <button
-                  type="button"
-                  onClick={() => go(tpl.title)}
+                <NavbarRouteLink
                   className="group relative block w-full overflow-hidden rounded-2xl border border-border text-left transition-all hover:shadow-xl"
+                  href={tpl.title}
                 >
                   <div className="aspect-[4/3] bg-muted">
                     <Image
@@ -195,19 +193,18 @@ export const NoCodeTemplates = defineCapsule({
                       {tpl.description}
                     </p>
                   </div>
-                </button>
+                </NavbarRouteLink>
               </TemplateCard>
             ))}
           </TemplateGrid>
           <div className="mt-12 text-center">
-            <button
-              type="button"
-              onClick={() => go(viewAll)}
+            <NavbarRouteLink
               className="inline-flex items-center gap-2 font-medium text-foreground transition-colors hover:text-muted-foreground"
+              href={viewAll}
             >
               {viewAll}
               <ArrowRight className="size-4" />
-            </button>
+            </NavbarRouteLink>
           </div>
         </Container>
       </section>

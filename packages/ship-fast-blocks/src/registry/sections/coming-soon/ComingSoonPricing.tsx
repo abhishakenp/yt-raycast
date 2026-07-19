@@ -24,14 +24,14 @@ import { Container } from '#/section-kit/Container.tsx'
  * composite: a centered heading and lead paragraph above a responsive grid of
  * plan cards — each with a name, price + period, a feature checklist, and a CTA
  * button. The featured plan is highlighted with a "Most popular" pill. All CTA
- * buttons route through useNavigate. Use as the pricing / plans section on SaaS
+ * buttons route through section-kit route links. Use as the pricing / plans section on SaaS
  * waitlists, app pre-launch pages, or beta sign-up landers. Renders fully with
  * no props via three baked-in default plans.
  */
 export const ComingSoonPricing = defineCapsule({
   name: 'ComingSoonPricing',
   description:
-    "Three-tier pricing table for a 'launching soon' / waitlist pre-launch landing page: centered heading and lead above a responsive 1/3-column grid of plan cards with name, tagline, price + period, feature checklist with check icons, and a CTA button. The featured plan gets a primary-colored background, shadow, and floating badge. CTAs route through useNavigate. Use as the pricing / plans section on SaaS waitlists, app pre-launch pages, or beta sign-up landers.",
+    "Three-tier pricing table for a 'launching soon' / waitlist pre-launch landing page: centered heading and lead above a responsive 1/3-column grid of plan cards with name, tagline, price + period, feature checklist with check icons, and a CTA button. The featured plan gets a primary-colored background, shadow, and floating badge. CTAs route through section-kit route links. Use as the pricing / plans section on SaaS waitlists, app pre-launch pages, or beta sign-up landers.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),

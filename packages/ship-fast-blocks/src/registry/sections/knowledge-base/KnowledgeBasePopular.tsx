@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
@@ -13,6 +12,7 @@ import {
   PopularCard,
   PopularMeta,
 } from '#/section-kit/PopularList.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * KnowledgeBasePopular — popular-articles list beside a sticky-style support
@@ -22,14 +22,14 @@ import {
  * "view all" link; a one-third aside stacks a muted "Trending Topics" panel
  * (title + percent-change rows) and a bordered "Need more help?" card of
  * chat/contact links. Calm, light, editorial. Every article, trending row and
- * help link routes through useNavigate. Use as the browse-popular section of a
+ * help link routes through section-kit route links. Use as the browse-popular section of a
  * knowledge base or support portal. Renders fully with no props via baked-in
  * defaults.
  */
 export const KnowledgeBasePopular = defineCapsule({
   name: 'KnowledgeBasePopular',
   description:
-    "Popular-articles list beside a support sidebar for a help center: a two-thirds column lists the most-viewed articles as full-width row buttons (eye-icon tile, title, description, view-count + updated meta, trailing chevron) under a heading + description with a 'view all' link; a one-third aside stacks a muted 'Trending Topics' panel (title + percent-change rows) and a bordered 'Need more help?' card of chat/contact links. Calm, light, editorial; every article, trending row and help link routes through useNavigate. Use as the browse-popular section of a knowledge base, support portal or docs site.",
+    "Popular-articles list beside a support sidebar for a help center: a two-thirds column lists the most-viewed articles as full-width row buttons (eye-icon tile, title, description, view-count + updated meta, trailing chevron) under a heading + description with a 'view all' link; a one-third aside stacks a muted 'Trending Topics' panel (title + percent-change rows) and a bordered 'Need more help?' card of chat/contact links. Calm, light, editorial; every article, trending row and help link routes through section-kit route links. Use as the browse-popular section of a knowledge base, support portal or docs site.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -53,7 +53,6 @@ export const KnowledgeBasePopular = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Popular Articles'
     const description =
       props.description ??
@@ -213,7 +212,7 @@ export const KnowledgeBasePopular = defineCapsule({
                       asChild
                       className="group w-full items-start rounded-lg border-0 bg-transparent hover:bg-muted"
                     >
-                      <button type="button" onClick={() => go(art.title)}>
+                      <NavbarRouteLink href={art.title}>
                         <span className="grid size-10 flex-shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground transition-colors group-hover:bg-accent">
                           <EyeIcon />
                         </span>
@@ -235,20 +234,19 @@ export const KnowledgeBasePopular = defineCapsule({
                           </PopularMeta>
                         </span>
                         <ChevronRight className="size-5 flex-shrink-0 text-muted-foreground transition-colors group-hover:text-foreground" />
-                      </button>
+                      </NavbarRouteLink>
                     </PopularCard>
                   </PopularItem>
                 ))}
               </div>
               <div className="mt-8">
-                <button
-                  type="button"
-                  onClick={() => go(viewAll)}
+                <NavbarRouteLink
                   className="inline-flex items-center gap-2 text-sm font-medium text-foreground transition-colors hover:text-muted-foreground"
+                  href={viewAll}
                 >
                   {viewAll}
                   <ArrowRight className="size-4" />
-                </button>
+                </NavbarRouteLink>
               </div>
             </div>
 
@@ -262,11 +260,10 @@ export const KnowledgeBasePopular = defineCapsule({
                 </h3>
                 <div className="space-y-3">
                   {trending.map((t) => (
-                    <button
+                    <NavbarRouteLink
                       key={t.title}
-                      type="button"
-                      onClick={() => go(t.title)}
                       className="group block w-full text-left"
+                      href={t.title}
                     >
                       <span className="block text-sm font-medium text-secondary-foreground transition-colors group-hover:text-foreground">
                         {t.title}
@@ -274,7 +271,7 @@ export const KnowledgeBasePopular = defineCapsule({
                       <PopularMeta asChild>
                         <span className="mt-0.5 block">{t.change}</span>
                       </PopularMeta>
-                    </button>
+                    </NavbarRouteLink>
                   ))}
                 </div>
               </div>
@@ -286,14 +283,13 @@ export const KnowledgeBasePopular = defineCapsule({
                 <PopularList className="space-y-3">
                   {helpLinks.map((link) => (
                     <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
+                      <NavbarRouteLink
                         className="flex items-center gap-3 text-sm text-secondary-foreground transition-colors hover:text-foreground"
+                        href={link}
                       >
                         <ChatIcon className="size-5 text-muted-foreground" />
                         {link}
-                      </button>
+                      </NavbarRouteLink>
                     </li>
                   ))}
                 </PopularList>

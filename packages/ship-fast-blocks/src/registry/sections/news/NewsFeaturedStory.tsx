@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
@@ -13,6 +12,7 @@ import {
   FeaturedArticleMeta,
 } from '#/section-kit/FeaturedArticle.tsx'
 import { StorySection } from '#/section-kit/StorySection.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * NewsFeaturedStory — featured big lead story band for a news / editorial
@@ -23,14 +23,14 @@ import { StorySection } from '#/section-kit/StorySection.tsx'
  * and a stacked rail of secondary headlines on the right (each with a category
  * label in a rotating accent tone, headline, excerpt, timestamp and a small
  * square thumbnail, divided by rules). Every story and the breaking headline
- * route through useNavigate. Use directly below the masthead as the lead/
+ * route through section-kit route links. Use directly below the masthead as the lead/
  * featured big-story band of a newspaper, magazine or publication homepage.
  * Renders fully with no props via baked-in defaults.
  */
 export const NewsFeaturedStory = defineCapsule({
   name: 'NewsFeaturedStory',
   description:
-    'Featured big lead story band for a news / editorial outlet on a card surface: a top breaking-news banner (uppercase badge + clickable headline + timestamp), then a 12-column grid anchored by one large lead article on the left (wide photo with overlaid tag, big headline, excerpt and author/date/read-time byline) and a stacked rail of secondary headlines on the right (each with a rotating-accent category label, headline, excerpt, timestamp and small square thumbnail, divided by rules). Stories and the breaking headline route through useNavigate. Use directly below the masthead as the lead/featured big-story band of a newspaper, magazine or publication homepage.',
+    'Featured big lead story band for a news / editorial outlet on a card surface: a top breaking-news banner (uppercase badge + clickable headline + timestamp), then a 12-column grid anchored by one large lead article on the left (wide photo with overlaid tag, big headline, excerpt and author/date/read-time byline) and a stacked rail of secondary headlines on the right (each with a rotating-accent category label, headline, excerpt, timestamp and small square thumbnail, divided by rules). Stories and the breaking headline route through section-kit route links. Use directly below the masthead as the lead/featured big-story band of a newspaper, magazine or publication homepage.',
   props: z.object({
     /** Breaking-news badge label. */
     breakingBadge: z.string().optional(),
@@ -67,7 +67,6 @@ export const NewsFeaturedStory = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const breakingBadge = props.breakingBadge ?? 'Breaking'
     const breakingHeadline =
       props.breakingHeadline ??
@@ -146,13 +145,12 @@ export const NewsFeaturedStory = defineCapsule({
             <span className="rounded bg-destructive px-3 py-1 text-xs font-semibold uppercase tracking-wider text-destructive-foreground">
               {breakingBadge}
             </span>
-            <button
-              type="button"
-              onClick={() => go(breakingHeadline)}
+            <NavbarRouteLink
               className="text-left text-sm font-medium text-foreground hover:underline lg:text-base"
+              href={breakingHeadline}
             >
               {breakingHeadline}
-            </button>
+            </NavbarRouteLink>
             <span className="ml-auto whitespace-nowrap text-xs text-muted-foreground">
               {breakingTime}
             </span>
@@ -162,11 +160,7 @@ export const NewsFeaturedStory = defineCapsule({
           <div className="grid gap-6 lg:grid-cols-12 lg:gap-8">
             {/* Lead story */}
             <article className="group lg:col-span-8">
-              <button
-                type="button"
-                onClick={() => go(title)}
-                className="block w-full text-left"
-              >
+              <NavbarRouteLink className="block w-full text-left" href={title}>
                 <FeaturedArticleMedia className="relative aspect-[16/9] overflow-hidden rounded-lg bg-muted lg:aspect-[21/9]">
                   <Image
                     alt={imageAlt}
@@ -195,7 +189,7 @@ export const NewsFeaturedStory = defineCapsule({
                     <span>{readTime}</span>
                   </FeaturedArticleMeta>
                 </FeaturedArticleContent>
-              </button>
+              </NavbarRouteLink>
             </article>
 
             {/* Secondary rail */}
@@ -203,10 +197,9 @@ export const NewsFeaturedStory = defineCapsule({
               {secondary.map((story, i) => (
                 <div key={story.title}>
                   <article className="group">
-                    <button
-                      type="button"
-                      onClick={() => go(story.title)}
+                    <NavbarRouteLink
                       className="flex w-full gap-4 text-left"
+                      href={story.title}
                     >
                       <div className="flex-1">
                         <Eyebrow
@@ -237,7 +230,7 @@ export const NewsFeaturedStory = defineCapsule({
                           className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
                         />
                       </div>
-                    </button>
+                    </NavbarRouteLink>
                   </article>
                   {i < secondary.length - 1 && (
                     <hr className="mt-6 border-border" />

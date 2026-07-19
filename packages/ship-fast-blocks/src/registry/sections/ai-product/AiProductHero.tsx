@@ -26,7 +26,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * play glyph), and a trust microcopy row with check marks. On the right: a
  * mocked AI chat/editor preview card with a macOS-style title bar, skeleton
  * message rows, and a highlighted AI suggestion block with action chips, framed
- * by soft blurred glow orbs. CTAs and chips route through useNavigate. Use as
+ * by soft blurred glow orbs. CTAs and chips route through section-kit route links. Use as
  * the opening hero for AI writing assistants, AI copilots, or generative-AI
  * tools. Renders fully with no props.
  */

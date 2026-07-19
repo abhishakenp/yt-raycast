@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 /**
@@ -10,7 +9,7 @@ import { Image } from '#/lib/img.tsx'
  * each with a cover image (zooming on hover) carrying a rotating colored category
  * tag, a client name, a short summary, and a dual result-metric row split by a
  * divider. Category tags rotate through the chart token palette. Links route
- * through useNavigate. Use to showcase client outcomes for a marketing / growth
+ * through section-kit route links. Use to showcase client outcomes for a marketing / growth
  * agency. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
@@ -22,10 +21,12 @@ import {
   PortfolioCaption,
   PortfolioTag,
 } from '#/section-kit/PortfolioGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const MarketingAgencyCases = defineCapsule({
   name: 'MarketingAgencyCases',
   description:
-    '6-up case-study gallery: a centered eyebrow + heading + description above a responsive grid (1/2/3 columns) of clickable card buttons, each with a cover image (zooming on hover) carrying a rotating colored category tag, a client name, a short summary, and a dual result-metric row split by a divider. Category tags rotate through the chart token palette. Links route through useNavigate. Use to showcase client outcomes and results for a marketing / growth / performance agency across SaaS, e-commerce, fintech, and B2B services.',
+    '6-up case-study gallery: a centered eyebrow + heading + description above a responsive grid (1/2/3 columns) of clickable card buttons, each with a cover image (zooming on hover) carrying a rotating colored category tag, a client name, a short summary, and a dual result-metric row split by a divider. Category tags rotate through the chart token palette. Links route through section-kit route links. Use to showcase client outcomes and results for a marketing / growth / performance agency across SaaS, e-commerce, fintech, and B2B services.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -46,7 +47,6 @@ export const MarketingAgencyCases = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Case Studies'
     const heading = props.heading ?? 'Results That Speak'
     const description =
@@ -140,54 +140,55 @@ export const MarketingAgencyCases = defineCapsule({
             {items.map((c, i) => (
               <PortfolioItem
                 key={c.name}
-                type="button"
-                onClick={() => go(c.name)}
                 className="group block w-full overflow-hidden rounded-xl bg-card text-left shadow-sm transition-shadow hover:shadow-lg"
+                asChild
               >
-                <PortfolioMedia aspect="3-2" className="h-48">
-                  <Image
-                    alt={`${c.name} ${c.tag} marketing case study`}
-                    w={600}
-                    h={400}
-                    loading="lazy"
-                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <PortfolioTag
-                    className={cn(
-                      'absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-medium',
-                      tagTones[i % tagTones.length],
-                    )}
-                  >
-                    {c.tag}
-                  </PortfolioTag>
-                </PortfolioMedia>
-                <PortfolioCaption className="p-6">
-                  <h3 className="mb-2 text-lg font-semibold text-card-foreground">
-                    {c.name}
-                  </h3>
-                  <p className="mb-4 text-sm text-muted-foreground">
-                    {c.summary}
-                  </p>
-                  <div className="flex items-center gap-4 border-t border-border pt-4">
-                    <div>
-                      <p className="text-2xl font-bold text-card-foreground">
-                        {c.metricA}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {c.labelA}
-                      </p>
+                <NavbarRouteLink href={c.name}>
+                  <PortfolioMedia aspect="3-2" className="h-48">
+                    <Image
+                      alt={`${c.name} ${c.tag} marketing case study`}
+                      w={600}
+                      h={400}
+                      loading="lazy"
+                      className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <PortfolioTag
+                      className={cn(
+                        'absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-medium',
+                        tagTones[i % tagTones.length],
+                      )}
+                    >
+                      {c.tag}
+                    </PortfolioTag>
+                  </PortfolioMedia>
+                  <PortfolioCaption className="p-6">
+                    <h3 className="mb-2 text-lg font-semibold text-card-foreground">
+                      {c.name}
+                    </h3>
+                    <p className="mb-4 text-sm text-muted-foreground">
+                      {c.summary}
+                    </p>
+                    <div className="flex items-center gap-4 border-t border-border pt-4">
+                      <div>
+                        <p className="text-2xl font-bold text-card-foreground">
+                          {c.metricA}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {c.labelA}
+                        </p>
+                      </div>
+                      <div className="h-8 w-px bg-border" />
+                      <div>
+                        <p className="text-2xl font-bold text-card-foreground">
+                          {c.metricB}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {c.labelB}
+                        </p>
+                      </div>
                     </div>
-                    <div className="h-8 w-px bg-border" />
-                    <div>
-                      <p className="text-2xl font-bold text-card-foreground">
-                        {c.metricB}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {c.labelB}
-                      </p>
-                    </div>
-                  </div>
-                </PortfolioCaption>
+                  </PortfolioCaption>
+                </NavbarRouteLink>
               </PortfolioItem>
             ))}
           </PortfolioGrid>

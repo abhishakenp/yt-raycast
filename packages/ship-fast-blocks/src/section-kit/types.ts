@@ -6,7 +6,7 @@
 
 /**
  * A routable action rendered as a pill button. `target` (falling back to
- * `label`) is passed to `useNavigate()`'s `go()` so any label resolves to the
+ * `label`) is rendered through section-kit route links so any label resolves to the
  * best site route. `variant` selects the pill styling.
  */
 export type KitAction = {

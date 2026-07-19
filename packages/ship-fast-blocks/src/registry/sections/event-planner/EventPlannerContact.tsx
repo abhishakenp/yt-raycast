@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   ContactForm,
@@ -18,6 +17,7 @@ import { Container } from '#/section-kit/Container.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * EventPlannerContact — dark split contact section with a full inquiry form. A
@@ -25,14 +25,14 @@ import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
  * light heading, lede, and click-to-email / click-to-call buttons plus an address
  * row with inline icons) beside a right rounded card form (first/last name, email,
  * event-type + guest-count selects, event date, vision textarea, and a full-width
- * primary submit pill). Contact buttons route through useNavigate; submit writes
+ * primary submit pill). Contact buttons route through section-kit route links; submit writes
  * a Lakebed inquiry. Use as the booking/inquiry section above the footer for
  * event/wedding planners or premium service businesses.
  */
 export const EventPlannerContact = defineCapsule({
   name: 'EventPlannerContact',
   description:
-    'Dark split contact section with a full Lakebed inquiry form: a primary-colored two-column band with a left details column (uppercase eyebrow, thin light heading, lede, click-to-email / click-to-call buttons and an address row with inline icons) beside a right rounded card form (first/last name, email, event-type and guest-count selects, event date, vision textarea, and a full-width primary submit pill). Contact buttons route through useNavigate; submit writes a shared inquiry record. Use as the booking/inquiry section above the footer for event/wedding planners, gala organizers, or premium service businesses.',
+    'Dark split contact section with a full Lakebed inquiry form: a primary-colored two-column band with a left details column (uppercase eyebrow, thin light heading, lede, click-to-email / click-to-call buttons and an address row with inline icons) beside a right rounded card form (first/last name, email, event-type and guest-count selects, event date, vision textarea, and a full-width primary submit pill). Contact buttons route through section-kit route links; submit writes a shared inquiry record. Use as the booking/inquiry section above the footer for event/wedding planners, gala organizers, or premium service businesses.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -47,7 +47,6 @@ export const EventPlannerContact = defineCapsule({
   }),
   lakebed: inquiryLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const contactEyebrow = props.eyebrow ?? 'Start Your Journey'
     const contactHeading = props.heading ?? "Let's Create Something Beautiful"
     const contactDesc =
@@ -109,10 +108,9 @@ export const EventPlannerContact = defineCapsule({
                 className="mb-8 gap-4"
               />
               <div className="space-y-4 text-primary-foreground/80">
-                <button
-                  type="button"
-                  onClick={() => go(contactEmail)}
+                <NavbarRouteLink
                   className="flex items-center gap-4 text-left transition-colors hover:text-primary-foreground"
+                  href={contactEmail}
                 >
                   <svg
                     className="size-5 text-primary-foreground/70"
@@ -129,11 +127,10 @@ export const EventPlannerContact = defineCapsule({
                     />
                   </svg>
                   <span>{contactEmail}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(contactPhone)}
+                </NavbarRouteLink>
+                <NavbarRouteLink
                   className="flex items-center gap-4 text-left transition-colors hover:text-primary-foreground"
+                  href={contactPhone}
                 >
                   <svg
                     className="size-5 text-primary-foreground/70"
@@ -150,7 +147,7 @@ export const EventPlannerContact = defineCapsule({
                     />
                   </svg>
                   <span>{contactPhone}</span>
-                </button>
+                </NavbarRouteLink>
                 <div className="flex items-center gap-4">
                   <svg
                     className="size-5 shrink-0 text-primary-foreground/70"

@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroBackgroundImage,
@@ -13,6 +11,7 @@ import {
   HeroCta,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 export const SalonBarberHero = defineCapsule({
   name: 'SalonBarberHero',
@@ -31,7 +30,6 @@ export const SalonBarberHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Est. 2012 · Downtown'
     const heading = props.heading ?? 'Sharp cuts. Clean fades. Every time.'
     const subheading =
@@ -74,18 +72,18 @@ export const SalonBarberHero = defineCapsule({
                 variant="primary"
                 className="rounded-full px-8 py-3 font-semibold"
               >
-                <button type="button" onClick={() => go(primaryTarget)}>
+                <NavbarRouteLink href={primaryTarget}>
                   {primaryCta}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
               <HeroCta
                 asChild
                 variant="outline"
                 className="rounded-full border-border bg-card/10 px-8 py-3 font-semibold text-background hover:bg-card/20"
               >
-                <button type="button" onClick={() => go(secondaryTarget)}>
+                <NavbarRouteLink href={secondaryTarget}>
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
             </HeroActions>
 

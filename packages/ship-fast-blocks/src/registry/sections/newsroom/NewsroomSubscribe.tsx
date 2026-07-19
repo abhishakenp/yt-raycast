@@ -38,14 +38,14 @@ import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
  * membership plan cards (the featured middle plan inverts to a filled primary
  * surface with a "Most Popular" badge), closing with a fine-print trust footnote.
  * email submit writes to the shared Lakebed subscriber list and plan CTAs route
- * through useNavigate. Use to convert readers into paying subscribers /
+ * through section-kit route links. Use to convert readers into paying subscribers /
  * newsletter members for a news, magazine or publication site. Renders fully
  * with no props.
  */
 export const NewsroomSubscribe = defineCapsule({
   name: 'NewsroomSubscribe',
   description:
-    'Editorial subscription / membership band for a digital newsroom or magazine: a bold centered intro with a serif heading and a muted supporting paragraph, a short benefits checklist, a styled email-capture row with a Subscribe button, and a responsive 3-up grid of tiered membership plan cards where the featured middle plan inverts to a filled primary surface with a Most-Popular badge, closing with a fine-print trust footnote. Combines newsletter sign-up and tiered paid subscription plans; email submit writes to the shared Lakebed subscriber list and plan CTAs route through useNavigate. Use to convert readers into paying subscribers or newsletter members for a news, magazine or publication site. Renders fully with no props.',
+    'Editorial subscription / membership band for a digital newsroom or magazine: a bold centered intro with a serif heading and a muted supporting paragraph, a short benefits checklist, a styled email-capture row with a Subscribe button, and a responsive 3-up grid of tiered membership plan cards where the featured middle plan inverts to a filled primary surface with a Most-Popular badge, closing with a fine-print trust footnote. Combines newsletter sign-up and tiered paid subscription plans; email submit writes to the shared Lakebed subscriber list and plan CTAs route through section-kit route links. Use to convert readers into paying subscribers or newsletter members for a news, magazine or publication site. Renders fully with no props.',
   props: z.object({
     /** Serif section heading. */
     heading: z.string().optional(),

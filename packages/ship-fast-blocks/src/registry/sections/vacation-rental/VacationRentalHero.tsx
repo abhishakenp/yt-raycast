@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroBackgroundImage,
@@ -12,6 +11,7 @@ import {
   HeroSubheading,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * VacationRentalHero — a full-bleed, immersive getaway hero for a vacation-rental
@@ -20,14 +20,14 @@ import { Container } from '#/section-kit/Container.tsx'
  * sit an eyebrow, a large airy headline, a supporting line, a location/rating
  * row, and a glassy inline booking bar with "Check in", "Check out", and "Guests"
  * cells plus a "Check Availability" button. Every action routes through
- * useNavigate. Inviting and conversion-focused. Use as the opening hero for
+ * section-kit route links. Inviting and conversion-focused. Use as the opening hero for
  * vacation rentals, beach houses, cabins, villas, or boutique short-stays.
  * Renders fully with no props via baked-in "Azure Cove Retreats" defaults.
  */
 export const VacationRentalHero = defineCapsule({
   name: 'VacationRentalHero',
   description:
-    'Full-bleed, immersive getaway hero for a vacation-rental listing page: a beautiful property photo rendered through the alt-driven Image component fills the band beneath a soft token-dark overlay; centered over it are an eyebrow, a large airy headline, a supporting line, a location/rating row, and a glassy inline booking bar with Check in, Check out, and Guests cells plus a Check Availability button. Actions route through useNavigate. Inviting and conversion-focused; use as the opening hero for vacation rentals, beach houses, cabins, villas, or boutique short-stays.',
+    'Full-bleed, immersive getaway hero for a vacation-rental listing page: a beautiful property photo rendered through the alt-driven Image component fills the band beneath a soft token-dark overlay; centered over it are an eyebrow, a large airy headline, a supporting line, a location/rating row, and a glassy inline booking bar with Check in, Check out, and Guests cells plus a Check Availability button. Actions route through section-kit route links. Inviting and conversion-focused; use as the opening hero for vacation rentals, beach houses, cabins, villas, or boutique short-stays.',
   props: z.object({
     /** Small eyebrow label above the headline. */
     eyebrow: z.string().optional(),
@@ -48,7 +48,6 @@ export const VacationRentalHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Your seaside escape awaits'
     const heading = props.heading ?? 'A bright, breezy home by the water'
     const subheading =
@@ -146,10 +145,9 @@ export const VacationRentalHero = defineCapsule({
                     </span>
                   </div>
                 ))}
-                <button
-                  type="button"
-                  onClick={() => go(ctaTarget)}
+                <NavbarRouteLink
                   className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:py-[3.25rem]"
+                  href={ctaTarget}
                 >
                   <svg
                     width="18"
@@ -166,7 +164,7 @@ export const VacationRentalHero = defineCapsule({
                     <path d="m21 21-4.3-4.3" />
                   </svg>
                   {ctaLabel}
-                </button>
+                </NavbarRouteLink>
               </div>
             </div>
           </HeroContent>

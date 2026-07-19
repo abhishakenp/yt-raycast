@@ -10,7 +10,7 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * NutritionCta — full-width primary call-to-action band for a nutrition-coaching
@@ -37,7 +37,6 @@ export const NutritionCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Your fresh start'
     const headline = props.headline ?? 'Start your plan'
     const subheading =
@@ -55,11 +54,15 @@ export const NutritionCta = defineCapsule({
           <CtaBandTitle>{headline}</CtaBandTitle>
           <CtaBandSubtitle>{subheading}</CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction variant="primary" onClick={() => go(primaryTarget)}>
-              {primaryCta}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={primaryTarget}>
+                {primaryCta}
+              </NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" onClick={() => go(secondaryTarget)}>
-              {secondaryCta}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={secondaryTarget}>
+                {secondaryCta}
+              </NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

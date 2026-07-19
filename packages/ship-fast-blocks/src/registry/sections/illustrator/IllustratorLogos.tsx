@@ -2,19 +2,19 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   LogoStrip,
   LogoStripLabel,
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * IllustratorLogos — a low-key "trusted by" publications / brands strip on a
  * subtle muted band with hairline top and bottom borders. A small uppercase
  * caption sits above a centered, wrapping row of serif publication names
- * rendered at reduced opacity; each name routes through useNavigate. Use
+ * rendered at reduced opacity; each name routes through section-kit route links. Use
  * directly beneath an illustrator or creative hero to establish credibility
  * with the magazines, publishers, and brands the artist has worked with.
  * Renders fully with no props via baked-in publication defaults.
@@ -22,7 +22,7 @@ import {
 export const IllustratorLogos = defineCapsule({
   name: 'IllustratorLogos',
   description:
-    "Low-key 'trusted by' publications / brands strip on a subtle muted band with hairline top and bottom borders: a small uppercase caption above a centered, wrapping row of serif publication names at reduced opacity, each routing through useNavigate. Use directly beneath an illustrator or creative hero to establish credibility with the magazines, publishers, and brands the artist has worked with.",
+    "Low-key 'trusted by' publications / brands strip on a subtle muted band with hairline top and bottom borders: a small uppercase caption above a centered, wrapping row of serif publication names at reduced opacity, each routing through section-kit route links. Use directly beneath an illustrator or creative hero to establish credibility with the magazines, publishers, and brands the artist has worked with.",
   props: z.object({
     /** Small uppercase caption above the names row. */
     heading: z.string().optional(),
@@ -31,7 +31,6 @@ export const IllustratorLogos = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Trusted by leading publications & brands'
     const names = props.names?.length
       ? props.names
@@ -54,7 +53,7 @@ export const IllustratorLogos = defineCapsule({
         <LogoStripItems layout="flex" className="mt-8">
           {names.filter(Boolean).map((logo) => (
             <LogoStripItem key={logo} variant="opacity-hover" asChild>
-              <button onClick={() => go(logo)}>{logo}</button>
+              <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
             </LogoStripItem>
           ))}
         </LogoStripItems>

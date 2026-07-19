@@ -4,13 +4,13 @@ import { z } from 'zod/v4'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ProgramGrid, ProgramCard } from '#/section-kit/ProgramGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { cn } from '#/lib/utils.ts'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 export const UniversityPrograms = defineCapsule({
   name: 'UniversityPrograms',
   description:
-    "Bespoke degree-program showcase for the University page family with a prestigious, collegiate aesthetic. Opens with a SectionHeading, then lays out a responsive grid of program cards — each naming a school, a degree, and a short blurb, with a per-card 'Explore program' link routed via useNavigate. Card and border tokens give each program a refined, catalog-style frame. Use to summarize flagship academic offerings across colleges on a university homepage.",
+    "Bespoke degree-program showcase for the University page family with a prestigious, collegiate aesthetic. Opens with a SectionHeading, then lays out a responsive grid of program cards — each naming a school, a degree, and a short blurb, with a per-card 'Explore program' link routed via section-kit route links. Card and border tokens give each program a refined, catalog-style frame. Use to summarize flagship academic offerings across colleges on a university homepage.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -29,7 +29,6 @@ export const UniversityPrograms = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Academics'
     const heading = props.heading ?? 'Programs that shape leaders'
     const subheading =
@@ -107,14 +106,13 @@ export const UniversityPrograms = defineCapsule({
                 <p className="mt-3 flex-1 text-sm leading-6 text-muted-foreground">
                   {program.blurb}
                 </p>
-                <button
-                  type="button"
-                  onClick={() => go(linkTarget)}
+                <NavbarRouteLink
                   className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-primary transition hover:gap-2"
+                  href={linkTarget}
                 >
                   {linkLabel}
                   <span aria-hidden="true">→</span>
-                </button>
+                </NavbarRouteLink>
               </ProgramCard>
             ))}
           </ProgramGrid>

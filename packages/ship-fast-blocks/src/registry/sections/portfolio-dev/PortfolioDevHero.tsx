@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroHeading,
@@ -15,11 +14,12 @@ import {
   HeroCodeWindowBody,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 export const PortfolioDevHero = defineCapsule({
   name: 'PortfolioDevHero',
   description:
-    'A split developer-intro hero. The left column leads with a mono `$ whoami` eyebrow, a large name plus a Full-Stack Developer headline, a short intro paragraph, and dual CTAs (a filled View Work and an outlined Resume) that route via useNavigate, followed by a mono tech-tag row. The right column is a faux terminal/code card with window-chrome dots, a filename, and mono pseudo-code lines. Everything is theme-token only with mono accents — ideal for developer, engineer, and freelancer portfolios.',
+    'A split developer-intro hero. The left column leads with a mono `$ whoami` eyebrow, a large name plus a Full-Stack Developer headline, a short intro paragraph, and dual CTAs (a filled View Work and an outlined Resume) that route via section-kit route links, followed by a mono tech-tag row. The right column is a faux terminal/code card with window-chrome dots, a filename, and mono pseudo-code lines. Everything is theme-token only with mono accents — ideal for developer, engineer, and freelancer portfolios.',
   props: z.object({
     eyebrow: z.string().optional(),
     name: z.string().optional(),
@@ -33,7 +33,6 @@ export const PortfolioDevHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? '$ whoami'
     const name = props.name ?? 'Alex Chen'
     const role = props.role ?? 'Full-Stack Developer'
@@ -73,16 +72,18 @@ export const PortfolioDevHero = defineCapsule({
                 variant="primary"
                 className="rounded-md px-6 py-3 text-sm font-semibold"
               >
-                <button onClick={() => go(primaryTarget)}>{primaryCta}</button>
+                <NavbarRouteLink href={primaryTarget}>
+                  {primaryCta}
+                </NavbarRouteLink>
               </HeroCta>
               <HeroCta
                 asChild
                 variant="outline"
                 className="rounded-md px-6 py-3 text-sm font-semibold"
               >
-                <button onClick={() => go(secondaryTarget)}>
+                <NavbarRouteLink href={secondaryTarget}>
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
             </HeroActions>
             <div className="mt-8 flex flex-wrap gap-2">

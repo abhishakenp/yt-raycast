@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   HeroSection,
@@ -14,6 +13,7 @@ import {
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * DatingAppHero — bright, romantic split hero for a dating / matchmaking app. A
@@ -23,14 +23,14 @@ import { Container } from '#/section-kit/Container.tsx'
  * (filled "Download Free" + outlined "See How It Works"), and stacked overlapping
  * avatar social proof; on the right a tall rounded photo with an overlaid online
  * profile card and a floating "It's a Match!" verified badge. Buttons route through
- * useNavigate and all imagery is alt-driven. Use as the top hero for dating apps,
+ * section-kit route links and all imagery is alt-driven. Use as the top hero for dating apps,
  * matchmaking services, singles or relationship platforms. Renders fully with no
  * props via baked-in "HeartLink" defaults.
  */
 export const DatingAppHero = defineCapsule({
   name: 'DatingAppHero',
   description:
-    "Bright, romantic split hero for a dating / matchmaking app: a soft rose/primary-to-muted gradient canvas, two columns — left has a live-matches pulse pill, a large 'find someone who [highlight]' headline with the accent phrase in primary, a supporting paragraph, dual CTAs (filled 'Download Free' + outlined 'See How It Works'), and stacked overlapping avatar social proof; right has a tall rounded photo with an overlaid online profile card and a floating 'It's a Match!' verified badge. Buttons route through useNavigate; all imagery is alt-driven <Image>. Use as the top hero for dating apps, matchmaking services, singles or relationship platforms.",
+    "Bright, romantic split hero for a dating / matchmaking app: a soft rose/primary-to-muted gradient canvas, two columns — left has a live-matches pulse pill, a large 'find someone who [highlight]' headline with the accent phrase in primary, a supporting paragraph, dual CTAs (filled 'Download Free' + outlined 'See How It Works'), and stacked overlapping avatar social proof; right has a tall rounded photo with an overlaid online profile card and a floating 'It's a Match!' verified badge. Buttons route through section-kit route links; all imagery is alt-driven <Image>. Use as the top hero for dating apps, matchmaking services, singles or relationship platforms.",
   props: z.object({
     badge: z.string().optional(),
     /** Heading words before the highlighted phrase. */
@@ -54,7 +54,6 @@ export const DatingAppHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heroBadge = props.badge ?? '2.1M+ matches made this month'
     const headingPre = props.headingPre ?? 'Find someone who'
     const heroHighlight = props.highlight ?? 'gets you'
@@ -151,7 +150,7 @@ export const DatingAppHero = defineCapsule({
                   variant="primary"
                   className="gap-2 rounded-xl px-6 py-4 text-base font-semibold shadow-lg shadow-primary/20 transition-all"
                 >
-                  <button type="button" onClick={() => go(heroPrimary)}>
+                  <NavbarRouteLink href={heroPrimary}>
                     <svg
                       viewBox="0 0 20 20"
                       fill="currentColor"
@@ -161,17 +160,17 @@ export const DatingAppHero = defineCapsule({
                       <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" />
                     </svg>
                     {heroPrimary}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
                 <HeroCta
                   asChild
                   variant="outline"
                   className="gap-2 rounded-xl bg-card px-6 py-4 text-base font-semibold transition-all hover:bg-accent"
                 >
-                  <button type="button" onClick={() => go(heroSecondary)}>
+                  <NavbarRouteLink href={heroSecondary}>
                     {heroSecondary}
                     <ChevronDown className="size-5" />
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -195,7 +194,6 @@ export const DatingAppHero = defineCapsule({
                   alt={heroImageAlt}
                   w={800}
                   h={1000}
-
                   className="aspect-[4/5] w-full shadow-2xl shadow-primary/10"
                 />
                 <div className="absolute inset-x-4 bottom-4 rounded-xl bg-card/95 p-4 shadow-lg backdrop-blur-sm">

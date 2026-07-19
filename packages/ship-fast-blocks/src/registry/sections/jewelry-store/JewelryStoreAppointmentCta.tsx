@@ -5,8 +5,8 @@ import { AppointmentBand } from '#/section-kit/AppointmentBand.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { CtaAction } from '#/section-kit/CtaBand.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * JewelryStoreAppointmentCta — private-appointment closing CTA for a luxury
@@ -14,14 +14,14 @@ import { Image } from '#/lib/img.tsx'
  * bottom-up fade-to-background gradient, fronting a centered column: a gold
  * eyebrow, an oversized serif headline, a relaxed subheading, and dual CTAs
  * (solid gold primary + bordered ghost). A bottom row lists boutique locations
- * (city + address) in up to three columns. Both CTAs route through useNavigate.
+ * (city + address) in up to three columns. Both CTAs route through section-kit route links.
  * Use as the conversion-focused booking band for fine jewelers, diamond houses,
  * engagement-ring boutiques, or high-jewelry maisons. Renders fully with no props.
  */
 export const JewelryStoreAppointmentCta = defineCapsule({
   name: 'JewelryStoreAppointmentCta',
   description:
-    'Private-appointment closing CTA for a luxury jewelry maison: a muted band with a dimmed full-cover background image and a bottom-up fade-to-background gradient, fronting a centered column with a gold eyebrow, an oversized serif headline, a relaxed subheading, and dual CTAs (solid gold primary + bordered ghost). A bottom row lists boutique locations (city + address) in up to three columns. Both CTAs route through useNavigate. Use as the conversion-focused booking band for fine jewelers, diamond houses, engagement-ring boutiques, or high-jewelry maisons.',
+    'Private-appointment closing CTA for a luxury jewelry maison: a muted band with a dimmed full-cover background image and a bottom-up fade-to-background gradient, fronting a centered column with a gold eyebrow, an oversized serif headline, a relaxed subheading, and dual CTAs (solid gold primary + bordered ghost). A bottom row lists boutique locations (city + address) in up to three columns. Both CTAs route through section-kit route links. Use as the conversion-focused booking band for fine jewelers, diamond houses, engagement-ring boutiques, or high-jewelry maisons.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -35,7 +35,6 @@ export const JewelryStoreAppointmentCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Begin Your Journey'
     const heading = props.heading ?? 'Experience Maison Noir'
     const description =
@@ -85,23 +84,21 @@ export const JewelryStoreAppointmentCta = defineCapsule({
           <CtaAction
             variant="primary"
             className="rounded-none px-10 py-4 text-sm font-medium uppercase tracking-widest"
-            onClick={() => go(primaryCta)}
+            asChild
           >
-            {primaryCta}
+            <NavbarRouteLink href={primaryCta}>{primaryCta}</NavbarRouteLink>
           </CtaAction>
           <CtaAction
             variant="outline"
             className="rounded-none px-10 py-4 text-sm font-medium uppercase tracking-widest hover:border-primary hover:text-primary"
-            onClick={() => go(secondaryCta)}
+            asChild
           >
-            {secondaryCta}
+            <NavbarRouteLink href={secondaryCta}>
+              {secondaryCta}
+            </NavbarRouteLink>
           </CtaAction>
         </div>
-        <ResponsiveGrid
-          cols="1-3"
-
-          className="mx-auto max-w-3xl text-center"
-        >
+        <ResponsiveGrid cols="1-3" className="mx-auto max-w-3xl text-center">
           {locations.map((loc) => (
             <div key={loc.city}>
               <p className="mb-1 font-medium text-foreground">{loc.city}</p>

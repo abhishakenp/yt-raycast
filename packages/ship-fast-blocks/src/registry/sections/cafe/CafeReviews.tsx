@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -13,20 +12,21 @@ import {
 } from '#/section-kit/TestimonialGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * CafeReviews — 3-up customer-review wall for a cozy cafe / coffee shop page.
  * A centered cap and serif heading above a responsive card grid. Each card
  * shows a 5-star rating row, a quoted testimonial, and an attribution row with
  * a round avatar, name, and role. Below the grid, a text link with an arrow
- * icon routes to a "more reviews" destination via useNavigate. Use for
+ * icon routes to a "more reviews" destination via section-kit route links. Use for
  * social-proof on cafes, bakeries, tea houses, or any local service business.
  * Renders fully with no props via baked-in defaults.
  */
 export const CafeReviews = defineCapsule({
   name: 'CafeReviews',
   description:
-    "3-up customer-review wall for a cozy cafe page: centered cap and serif heading above a responsive card grid. Each card shows a 5-star rating row, a quoted testimonial, and an attribution row with a round avatar, name, and role. Below the grid, a text link with an arrow routes to a 'more reviews' destination via useNavigate. Use for social-proof on cafes, bakeries, tea houses, or local service businesses.",
+    "3-up customer-review wall for a cozy cafe page: centered cap and serif heading above a responsive card grid. Each card shows a 5-star rating row, a quoted testimonial, and an attribution row with a round avatar, name, and role. Below the grid, a text link with an arrow routes to a 'more reviews' destination via section-kit route links. Use for social-proof on cafes, bakeries, tea houses, or local service businesses.",
   props: z.object({
     /** Eyebrow / cap text. */
     cap: z.string().optional(),
@@ -50,7 +50,6 @@ export const CafeReviews = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const cap = props.cap ?? 'What People Say'
     const heading = props.heading ?? 'Loved by the neighborhood'
     const moreLink = props.moreLink ?? 'Read 247 more reviews on Google'
@@ -125,10 +124,9 @@ export const CafeReviews = defineCapsule({
           </TestimonialGrid>
 
           <div className="mt-12 text-center">
-            <button
-              type="button"
-              onClick={() => go(moreTarget)}
+            <NavbarRouteLink
               className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              href={moreTarget}
             >
               {moreLink}
               <svg
@@ -145,7 +143,7 @@ export const CafeReviews = defineCapsule({
                   d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
                 />
               </svg>
-            </button>
+            </NavbarRouteLink>
           </div>
         </Container>
       </section>

@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   CtaBand,
   CtaBandInner,
@@ -30,6 +29,7 @@ import {
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * InteriorDesignContactCta — split contact section pairing studio details with a
@@ -39,7 +39,7 @@ import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
  * phone) each with a circular muted line icon; on the right a bordered inquiry
  * form (first/last name, email, project-type + budget selects, message
  * textarea) with a filled submit button and a footnote. Editorial and
- * conversion-focused. The email and phone route through useNavigate; submit
+ * conversion-focused. The email and phone route through section-kit route links; submit
  * writes a Lakebed inquiry. Use as the closing contact / lead-capture block for
  * interior designers, design studios or architecture firms. Renders fully with
  * no props via baked-in defaults.
@@ -47,7 +47,7 @@ import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 export const InteriorDesignContactCta = defineCapsule({
   name: 'InteriorDesignContactCta',
   description:
-    'Split contact section pairing studio details with a real Lakebed inquiry form for an upscale interior-design / architecture studio: two-column layout with an uppercase eyebrow, light-weight heading, supporting paragraph and a stack of contact rows (studio address, email, phone) each with a circular muted line icon on the left, and a bordered inquiry form (first/last name, email, project-type + budget selects, message textarea) with a filled submit button and footnote on the right. Editorial and conversion-focused; email and phone route through useNavigate, while submit writes a shared inquiry record. Use as the closing contact / lead-capture block for interior designers, design studios or architecture firms.',
+    'Split contact section pairing studio details with a real Lakebed inquiry form for an upscale interior-design / architecture studio: two-column layout with an uppercase eyebrow, light-weight heading, supporting paragraph and a stack of contact rows (studio address, email, phone) each with a circular muted line icon on the left, and a bordered inquiry form (first/last name, email, project-type + budget selects, message textarea) with a filled submit button and footnote on the right. Editorial and conversion-focused; email and phone route through section-kit route links, while submit writes a shared inquiry record. Use as the closing contact / lead-capture block for interior designers, design studios or architecture firms.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -66,7 +66,6 @@ export const InteriorDesignContactCta = defineCapsule({
   }),
   lakebed: inquiryLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Start Your Project'
     const heading = props.heading ?? "Let's create something beautiful together"
     const description =
@@ -183,13 +182,12 @@ export const InteriorDesignContactCta = defineCapsule({
                         {emailLabel}
                       </p>
                     </FeatureListItemTitle>
-                    <button
-                      type="button"
-                      onClick={() => go(email)}
+                    <NavbarRouteLink
                       className="text-muted-foreground transition-colors hover:text-foreground"
+                      href={email}
                     >
                       {email}
-                    </button>
+                    </NavbarRouteLink>
                   </FeatureListItemBody>
                 </FeatureListItem>
 
@@ -215,13 +213,12 @@ export const InteriorDesignContactCta = defineCapsule({
                         {phoneLabel}
                       </p>
                     </FeatureListItemTitle>
-                    <button
-                      type="button"
-                      onClick={() => go(phone)}
+                    <NavbarRouteLink
                       className="text-muted-foreground transition-colors hover:text-foreground"
+                      href={phone}
                     >
                       {phone}
-                    </button>
+                    </NavbarRouteLink>
                   </FeatureListItemBody>
                 </FeatureListItem>
               </div>

@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { ArticleGrid } from '#/section-kit/ArticleGrid.tsx'
@@ -16,6 +15,7 @@ import {
   StoryCardFooter,
   StoryCardBody,
 } from '#/section-kit/StoryCard.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * NewsletterIssues — recent-issues archive grid for an editorial newsletter.
@@ -25,13 +25,13 @@ import {
  * trailing arrow; a centered outlined "View all" button closes the section.
  * Warm, calm, literary mood on a paper-toned surface. Covers use the alt-driven
  * Image component; titles, read links, and the view-all button route through
- * useNavigate. Use to showcase a back-catalog for newsletters, publications,
+ * section-kit route links. Use to showcase a back-catalog for newsletters, publications,
  * blogs, or content creators. Renders fully with no props via baked-in defaults.
  */
 export const NewsletterIssues = defineCapsule({
   name: 'NewsletterIssues',
   description:
-    "Recent-issues archive grid for an editorial newsletter: a centered serif heading + lede over a 1/2/3-column grid of bordered article cards, each with a 16:10 cover photo that zooms on hover, an issue-number-and-date meta line, a serif title, a short blurb, and a 'Read issue' link with a trailing arrow; a centered outlined 'View all' button closes the section. Warm, calm, literary mood on a paper-toned surface. Covers use the alt-driven Image component; titles, read links, and the view-all button route through useNavigate. Use to showcase a back-catalog for newsletters, publications, blogs, or content creators.",
+    "Recent-issues archive grid for an editorial newsletter: a centered serif heading + lede over a 1/2/3-column grid of bordered article cards, each with a 16:10 cover photo that zooms on hover, an issue-number-and-date meta line, a serif title, a short blurb, and a 'Read issue' link with a trailing arrow; a centered outlined 'View all' button closes the section. Warm, calm, literary mood on a paper-toned surface. Covers use the alt-driven Image component; titles, read links, and the view-all button route through section-kit route links. Use to showcase a back-catalog for newsletters, publications, blogs, or content creators.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -56,7 +56,6 @@ export const NewsletterIssues = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Recent Issues'
     const description =
       props.description ??
@@ -154,53 +153,55 @@ export const NewsletterIssues = defineCapsule({
           <ArticleGrid cols="1-md-2-3" className="lg:gap-8">
             {items.map((issue) => (
               <StoryCard
-                onClick={() => go(issue.title)}
+                key={`${issue.number}:${issue.title}`}
                 variant="bordered"
                 className="rounded-2xl text-card-foreground transition-colors hover:border-muted-foreground/40 hover:shadow-none hover:translate-y-0"
+                asChild
               >
-                <StoryCardImageContainer>
-                  <StoryCardImage
-                    alt={issue.imageAlt}
-                    w={600}
-                    h={375}
-                    className="aspect-[16/10]"
-                    variant="bordered"
-                  />
-                  <StoryCardMeta>
-                    {
-                      <div className="mb-3 flex items-center gap-3 text-sm text-muted-foreground">
-                        <span>{issue.number}</span>
-                        <span className="size-1 rounded-full bg-muted-foreground/50" />
-                        <span>{issue.date}</span>
-                      </div>
-                    }
-                  </StoryCardMeta>
-                </StoryCardImageContainer>
-                <StoryCardBody className="p-6">
-                  <StoryCardTitle>{issue.title}</StoryCardTitle>
-                  <StoryCardExcerpt>{issue.blurb}</StoryCardExcerpt>
-                  <StoryCardFooter>
-                    {
-                      <span className="mt-4 inline-flex items-center text-sm font-medium text-foreground transition-colors group-hover:text-muted-foreground">
-                        {readLabel}
-                        <ArrowRight className="ml-1 size-4" />
-                      </span>
-                    }
-                  </StoryCardFooter>
-                </StoryCardBody>
+                <NavbarRouteLink href={issue.title}>
+                  <StoryCardImageContainer>
+                    <StoryCardImage
+                      alt={issue.imageAlt}
+                      w={600}
+                      h={375}
+                      className="aspect-[16/10]"
+                      variant="bordered"
+                    />
+                    <StoryCardMeta>
+                      {
+                        <div className="mb-3 flex items-center gap-3 text-sm text-muted-foreground">
+                          <span>{issue.number}</span>
+                          <span className="size-1 rounded-full bg-muted-foreground/50" />
+                          <span>{issue.date}</span>
+                        </div>
+                      }
+                    </StoryCardMeta>
+                  </StoryCardImageContainer>
+                  <StoryCardBody className="p-6">
+                    <StoryCardTitle>{issue.title}</StoryCardTitle>
+                    <StoryCardExcerpt>{issue.blurb}</StoryCardExcerpt>
+                    <StoryCardFooter>
+                      {
+                        <span className="mt-4 inline-flex items-center text-sm font-medium text-foreground transition-colors group-hover:text-muted-foreground">
+                          {readLabel}
+                          <ArrowRight className="ml-1 size-4" />
+                        </span>
+                      }
+                    </StoryCardFooter>
+                  </StoryCardBody>
+                </NavbarRouteLink>
               </StoryCard>
             ))}
           </ArticleGrid>
 
           <div className="mt-12 text-center">
-            <button
-              type="button"
-              onClick={() => go(viewAll)}
+            <NavbarRouteLink
               className="inline-flex items-center justify-center rounded-lg border border-border px-6 py-3 font-medium text-foreground transition-colors hover:border-foreground hover:text-foreground"
+              href={viewAll}
             >
               {viewAll}
               <ArrowRight className="ml-2 size-4" />
-            </button>
+            </NavbarRouteLink>
           </div>
         </Container>
       </section>

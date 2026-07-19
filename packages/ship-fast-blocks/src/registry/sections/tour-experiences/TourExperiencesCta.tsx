@@ -10,7 +10,7 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * TourExperiencesCta — closing call-to-action band for an adventure /
@@ -43,7 +43,6 @@ export const TourExperiencesCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     return (
       <CtaBand tone="primary" className={props.className}>
         <CtaBandInner>
@@ -56,17 +55,15 @@ export const TourExperiencesCta = defineCapsule({
               'Lock in your spot on a small-group tour led by local experts. Free cancellation up to 48 hours before you go.'}
           </CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction
-              variant="primary"
-              onClick={() => go(props.primaryTarget ?? 'Book a Tour')}
-            >
-              {props.primaryCta ?? 'Book a Tour'}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={props.primaryTarget ?? 'Book a Tour'}>
+                {props.primaryCta ?? 'Book a Tour'}
+              </NavbarRouteLink>
             </CtaAction>
-            <CtaAction
-              variant="outline"
-              onClick={() => go(props.secondaryTarget ?? 'Contact')}
-            >
-              {props.secondaryCta ?? 'Talk to a guide'}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={props.secondaryTarget ?? 'Contact'}>
+                {props.secondaryCta ?? 'Talk to a guide'}
+              </NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

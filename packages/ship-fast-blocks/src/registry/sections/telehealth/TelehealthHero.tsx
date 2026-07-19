@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   HeroSection,
@@ -13,6 +12,7 @@ import {
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 export const TelehealthHero = defineCapsule({
   name: 'TelehealthHero',
@@ -31,7 +31,6 @@ export const TelehealthHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const badge = props.badge ?? 'Virtual care, on your schedule'
     const heading = props.heading ?? 'See a doctor in minutes'
     const subheading =
@@ -73,20 +72,18 @@ export const TelehealthHero = defineCapsule({
                 {subheading}
               </HeroSubheading>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(primaryTarget)}
+                <NavbarRouteLink
                   className="inline-flex items-center justify-center rounded-full bg-primary px-7 py-3.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+                  href={primaryTarget}
                 >
                   {primaryCta}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryTarget)}
+                </NavbarRouteLink>
+                <NavbarRouteLink
                   className="inline-flex items-center justify-center rounded-full border border-border bg-background px-7 py-3.5 text-sm font-semibold text-foreground transition hover:bg-muted"
+                  href={secondaryTarget}
                 >
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </div>
               <div className="mt-10 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
                 {trustItems.map((item, i) => (

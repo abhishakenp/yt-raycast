@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
@@ -14,6 +13,7 @@ import {
   PortfolioMedia,
   PortfolioCaption,
 } from '#/section-kit/PortfolioGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * ConsultingCaseStudies — 6-up case-study gallery with industry tags and
@@ -22,14 +22,14 @@ import {
  * clickable project cards; each card has an alt-driven image that zooms on
  * hover, a category tag chip overlaid on the image, a title, description, and
  * duration/period meta. Every card and the view-all link route through
- * useNavigate. Use to showcase consulting case studies, client success stories,
+ * section-kit route links. Use to showcase consulting case studies, client success stories,
  * or industry-specific engagements. Renders fully with no props via six
  * baked-in default case studies.
  */
 export const ConsultingCaseStudies = defineCapsule({
   name: 'ConsultingCaseStudies',
   description:
-    "6-up case-study gallery with industry tags and engagement metrics for a management-consulting firm page: a heading and lead paragraph on the left with a 'View All' link on the right, above a 3-column grid of clickable project cards. Each card has an alt-driven image that zooms on hover, a category tag chip overlaid on the image, a title, a description, and duration/period meta. Cards and the view-all link route through useNavigate. Use to showcase consulting case studies, client success stories, or industry-specific engagements.",
+    "6-up case-study gallery with industry tags and engagement metrics for a management-consulting firm page: a heading and lead paragraph on the left with a 'View All' link on the right, above a 3-column grid of clickable project cards. Each card has an alt-driven image that zooms on hover, a category tag chip overlaid on the image, a title, a description, and duration/period meta. Cards and the view-all link route through section-kit route links. Use to showcase consulting case studies, client success stories, or industry-specific engagements.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -53,7 +53,6 @@ export const ConsultingCaseStudies = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Featured Case Studies'
     const description =
       props.description ??
@@ -153,14 +152,13 @@ export const ConsultingCaseStudies = defineCapsule({
               titleClassName="mb-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
               subtitleClassName="max-w-2xl text-lg text-muted-foreground"
             />
-            <button
-              type="button"
-              onClick={() => go(viewAll)}
+            <NavbarRouteLink
               className="inline-flex items-center gap-2 text-sm font-semibold text-foreground transition-colors hover:text-muted-foreground"
+              href={viewAll}
             >
               {viewAll}
               <ArrowRight />
-            </button>
+            </NavbarRouteLink>
           </div>
           <PortfolioGrid cols="1-2-3">
             {items.map((item) => (
@@ -170,34 +168,36 @@ export const ConsultingCaseStudies = defineCapsule({
                 variant="elevated"
                 className="group block w-full cursor-pointer overflow-hidden text-left transition-all hover:shadow-xl p-0"
               >
-                <PortfolioItem type="button" onClick={() => go(item.title)}>
-                  <PortfolioMedia aspect="3-2" className="h-56">
-                    <Image
-                      alt={item.imageAlt}
-                      w={600}
-                      h={400}
-                      loading="lazy"
-                      className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <div className="absolute left-4 top-4">
-                      <span className="rounded-full bg-background/95 px-3 py-1 text-xs font-semibold text-foreground">
-                        {item.tag}
-                      </span>
-                    </div>
-                  </PortfolioMedia>
-                  <PortfolioCaption className="p-6">
-                    <h3 className="mb-2 text-lg font-semibold text-card-foreground transition-colors group-hover:text-muted-foreground">
-                      {item.title}
-                    </h3>
-                    <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
-                      {item.description}
-                    </p>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>{item.duration}</span>
-                      <span className="h-4 w-px bg-border" />
-                      <span>{item.period}</span>
-                    </div>
-                  </PortfolioCaption>
+                <PortfolioItem asChild>
+                  <NavbarRouteLink href={item.title}>
+                    <PortfolioMedia aspect="3-2" className="h-56">
+                      <Image
+                        alt={item.imageAlt}
+                        w={600}
+                        h={400}
+                        loading="lazy"
+                        className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute left-4 top-4">
+                        <span className="rounded-full bg-background/95 px-3 py-1 text-xs font-semibold text-foreground">
+                          {item.tag}
+                        </span>
+                      </div>
+                    </PortfolioMedia>
+                    <PortfolioCaption className="p-6">
+                      <h3 className="mb-2 text-lg font-semibold text-card-foreground transition-colors group-hover:text-muted-foreground">
+                        {item.title}
+                      </h3>
+                      <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+                        {item.description}
+                      </p>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span>{item.duration}</span>
+                        <span className="h-4 w-px bg-border" />
+                        <span>{item.period}</span>
+                      </div>
+                    </PortfolioCaption>
+                  </NavbarRouteLink>
                 </PortfolioItem>
               </Card>
             ))}

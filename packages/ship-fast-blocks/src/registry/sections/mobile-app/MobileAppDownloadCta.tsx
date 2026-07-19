@@ -19,7 +19,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * large headline over a relaxed supporting paragraph, a centered pair of
  * iOS / Android download buttons (with Apple / Play glyphs), and a wrapping row
  * of small check-marked trust badges beneath. Download buttons route through
- * useNavigate; no imagery. Use as the closing conversion band before the footer
+ * section-kit route links; no imagery. Use as the closing conversion band before the footer
  * on a habit tracker, fitness / wellness app, productivity or to-do app, or any
  * consumer app landing page. Renders fully with no props via baked-in defaults.
  */

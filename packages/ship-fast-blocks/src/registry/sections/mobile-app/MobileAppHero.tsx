@@ -15,7 +15,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * download buttons (with Apple / Play glyphs), and an overlapping avatar
  * social-proof row. The right column floats a phone mockup (soft blurred glow
  * behind it) with two floating UI chips: a check-in "done" card and a streak
- * counter. Download buttons route through useNavigate; all imagery is alt-driven
+ * counter. Download buttons route through section-kit route links; all imagery is alt-driven
  * via <Image>. Use as the opening hero for a habit tracker, fitness / wellness /
  * meditation app, productivity or to-do app, or any consumer app-download page.
  * Renders fully with no props via baked-in "DailyFlow" defaults.

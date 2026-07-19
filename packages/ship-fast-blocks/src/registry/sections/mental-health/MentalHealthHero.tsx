@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroHeading,
@@ -20,6 +19,7 @@ import {
   LocalServiceMutationSpinner,
 } from '../local-service/local-service-interactions.tsx'
 import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * MentalHealthHero — a split, two-column hero for a therapy / counseling
@@ -28,13 +28,13 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
  * outline), and a row of licensed-clinician trust checks; on the right a calming
  * therapy-office photo with a floating "Next Available" appointment card. Sits on
  * a soft primary-tinted gradient canvas. Calm, warm, sage-and-sand wellness
- * aesthetic. CTAs route through useNavigate. Use as the top hero for therapists,
+ * aesthetic. CTAs route through section-kit route links. Use as the top hero for therapists,
  * counselors, psychologists, wellness centers, or telehealth practices.
  */
 export const MentalHealthHero = defineCapsule({
   name: 'MentalHealthHero',
   description:
-    "Split, two-column hero for a therapy / counseling practice: a large two-line headline (second line in the primary accent color), a reassuring sub-paragraph, dual rounded CTAs (filled primary + outline), and a row of licensed-clinician trust checks on the left; a calming therapy-office photo with a floating 'Next Available' appointment card on the right. Sits on a soft primary-tinted gradient canvas with a calm, warm, sage-and-sand wellness aesthetic. CTAs route through useNavigate. Use as the top hero for therapists, counselors, psychologists, wellness centers, or telehealth practices.",
+    "Split, two-column hero for a therapy / counseling practice: a large two-line headline (second line in the primary accent color), a reassuring sub-paragraph, dual rounded CTAs (filled primary + outline), and a row of licensed-clinician trust checks on the left; a calming therapy-office photo with a floating 'Next Available' appointment card on the right. Sits on a soft primary-tinted gradient canvas with a calm, warm, sage-and-sand wellness aesthetic. CTAs route through section-kit route links. Use as the top hero for therapists, counselors, psychologists, wellness centers, or telehealth practices.",
   props: z.object({
     headingTop: z.string().optional(),
     /** Phrase rendered in the primary accent color (second headline line). */
@@ -52,7 +52,6 @@ export const MentalHealthHero = defineCapsule({
   }),
   lakebed: localServiceLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const headingTop = props.headingTop ?? 'Find your calm.'
     const highlight = props.highlight ?? 'Begin healing.'
     const subheading =
@@ -127,9 +126,9 @@ export const MentalHealthHero = defineCapsule({
                   variant="outline"
                   className="rounded-full bg-background px-8 py-4 text-center font-medium hover:bg-accent"
                 >
-                  <button type="button" onClick={() => go(secondaryCta)}>
+                  <NavbarRouteLink href={secondaryCta}>
                     {secondaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
               <HeroSocialProof className="mt-8 justify-center gap-6 lg:justify-start">
@@ -146,7 +145,6 @@ export const MentalHealthHero = defineCapsule({
                 alt={imageAlt}
                 w={800}
                 h={600}
-
                 className="h-[400px] w-full shadow-2xl lg:h-[500px]"
               />
               <div className="absolute -bottom-6 -left-6 max-w-[200px] rounded-xl bg-card p-4 shadow-xl">

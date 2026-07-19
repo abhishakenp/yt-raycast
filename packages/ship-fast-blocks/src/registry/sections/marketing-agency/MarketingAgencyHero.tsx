@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroHeading,
@@ -15,6 +14,7 @@ import {
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * MarketingAgencyHero — split, conversion-focused hero for a growth / marketing
@@ -23,13 +23,13 @@ import { Container } from '#/section-kit/Container.tsx'
  * supporting paragraph, dual rounded-pill CTAs (filled primary with arrow +
  * outlined secondary), and inline trust checkmarks; right column shows a rounded
  * team photo with a floating ROI stat card overlapping its lower-left corner.
- * Links route through useNavigate. Use as the top hero for marketing / growth
+ * Links route through section-kit route links. Use as the top hero for marketing / growth
  * agencies, SEO / paid-ads shops, or B2B SaaS growth firms. Renders with no props.
  */
 export const MarketingAgencyHero = defineCapsule({
   name: 'MarketingAgencyHero',
   description:
-    'Split, conversion-focused hero for a growth / marketing agency: a two-column layout on a light neutral canvas with a small eyebrow, a large semibold headline featuring a muted-highlight phrase, a supporting paragraph, dual rounded-pill CTAs (filled primary with arrow + outlined secondary), and inline trust checkmarks on the left; a rounded team photo with a floating ROI stat card overlapping its lower-left corner on the right. Links route through useNavigate. Use as the top hero for marketing / growth agencies, SEO / paid-ads shops, lead-gen consultancies, or B2B SaaS growth firms.',
+    'Split, conversion-focused hero for a growth / marketing agency: a two-column layout on a light neutral canvas with a small eyebrow, a large semibold headline featuring a muted-highlight phrase, a supporting paragraph, dual rounded-pill CTAs (filled primary with arrow + outlined secondary), and inline trust checkmarks on the left; a rounded team photo with a floating ROI stat card overlapping its lower-left corner on the right. Links route through section-kit route links. Use as the top hero for marketing / growth agencies, SEO / paid-ads shops, lead-gen consultancies, or B2B SaaS growth firms.',
   props: z.object({
     eyebrow: z.string().optional(),
     headingBefore: z.string().optional(),
@@ -47,7 +47,6 @@ export const MarketingAgencyHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Growth Marketing Agency'
     const headingBefore = props.headingBefore ?? 'Turn Visitors Into'
     const highlight = props.highlight ?? 'Loyal Customers'
@@ -123,19 +122,19 @@ export const MarketingAgencyHero = defineCapsule({
                   variant="primary"
                   className="rounded-full px-6 py-3 font-medium transition-all"
                 >
-                  <button type="button" onClick={() => go(primaryCta)}>
+                  <NavbarRouteLink href={primaryCta}>
                     {primaryCta}
                     <ArrowRight className="ml-2 size-4" />
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
                 <HeroCta
                   asChild
                   variant="outline"
                   className="rounded-full px-6 py-3 font-medium transition-all hover:border-foreground/40"
                 >
-                  <button type="button" onClick={() => go(secondaryCta)}>
+                  <NavbarRouteLink href={secondaryCta}>
                     {secondaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
               <HeroSocialProof className="mt-10 gap-6">
@@ -152,7 +151,6 @@ export const MarketingAgencyHero = defineCapsule({
                 alt={imageAlt}
                 w={800}
                 h={600}
-
                 className="w-full shadow-lg rounded-xl"
               />
               <div className="absolute -bottom-6 -left-6 rounded-xl bg-card p-4 shadow-lg">

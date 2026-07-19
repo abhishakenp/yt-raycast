@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   HeroSection,
@@ -13,6 +12,7 @@ import {
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * WriterAuthorHero — elegant two-column author hero for a literary author site.
@@ -21,14 +21,14 @@ import { Container } from '#/section-kit/Container.tsx'
  * outlined "Read Excerpt"). The right column overlaps two images — a large
  * author headshot portrait with a smaller latest-book cover floating over its
  * lower-left corner, separated with rounded corners, a token border, and a soft
- * shadow. CTAs route through useNavigate. Use as the opening hero for novelists,
+ * shadow. CTAs route through section-kit route links. Use as the opening hero for novelists,
  * poets, essayists, and literary author landing pages. Renders fully with no
  * props via baked-in defaults.
  */
 export const WriterAuthorHero = defineCapsule({
   name: 'WriterAuthorHero',
   description:
-    "Elegant two-column author hero for a literary author landing page. The left column composes a small uppercase serif eyebrow, a large serif headline, an author/book intro paragraph, and dual CTAs (filled 'Buy Now' + outlined 'Read Excerpt'). The right column overlaps two images — a large author headshot portrait with a smaller latest-book cover floating over its lower-left corner, separated with rounded corners, a token border, and a soft shadow. CTAs route through useNavigate. Use as the opening hero for novelists, poets, essayists, memoirists, and literary author sites where a serif, book-forward introduction is wanted.",
+    "Elegant two-column author hero for a literary author landing page. The left column composes a small uppercase serif eyebrow, a large serif headline, an author/book intro paragraph, and dual CTAs (filled 'Buy Now' + outlined 'Read Excerpt'). The right column overlaps two images — a large author headshot portrait with a smaller latest-book cover floating over its lower-left corner, separated with rounded corners, a token border, and a soft shadow. CTAs route through section-kit route links. Use as the opening hero for novelists, poets, essayists, memoirists, and literary author sites where a serif, book-forward introduction is wanted.",
   props: z.object({
     /** Small uppercase serif eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -51,7 +51,6 @@ export const WriterAuthorHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heroEyebrow = props.eyebrow ?? 'New Novel'
     const heroHeading = props.heading ?? 'The Lantern Keeper'
     const heroIntro =
@@ -87,18 +86,18 @@ export const WriterAuthorHero = defineCapsule({
                 variant="primary"
                 className="rounded-full px-8 py-4 font-medium"
               >
-                <button type="button" onClick={() => go(heroPrimaryTarget)}>
+                <NavbarRouteLink href={heroPrimaryTarget}>
                   {heroPrimary}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
               <HeroCta
                 asChild
                 variant="outline"
                 className="rounded-full px-8 py-4 font-medium"
               >
-                <button type="button" onClick={() => go(heroSecondaryTarget)}>
+                <NavbarRouteLink href={heroSecondaryTarget}>
                   {heroSecondary}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
             </HeroActions>
           </div>
@@ -108,7 +107,6 @@ export const WriterAuthorHero = defineCapsule({
               alt={heroPortraitAlt}
               w={640}
               h={800}
-
               className="aspect-[4/5] border border-border shadow-xl rounded-3xl"
             />
             <Image

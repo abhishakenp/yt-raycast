@@ -18,7 +18,7 @@ import {
  * centered heading + supporting paragraph above a responsive 2-to-3 column grid
  * of bordered cards. Each card has a rounded icon tile (cycling through a set of
  * security glyphs that invert color on hover), a bold title, a descriptive
- * paragraph, and an arrowed "Learn more" link that routes through useNavigate.
+ * paragraph, and an arrowed "Learn more" link that routes through section-kit route links.
  * Use to lay out core platform capabilities for cybersecurity vendors,
  * SOC/MDR/XDR providers, zero-trust, cloud-security, or compliance-automation
  * products. Renders fully with no props via baked-in capability defaults.
@@ -26,7 +26,7 @@ import {
 export const CybersecurityFeatures = defineCapsule({
   name: 'CybersecurityFeatures',
   description:
-    "Security-capability grid: a light section with a centered heading + supporting paragraph above a responsive 2-to-3 column grid of bordered cards, each with a rounded icon tile (cycling security glyphs that invert color on hover), a bold title, a description, and an arrowed 'Learn more' link routing through useNavigate. Use to lay out core platform capabilities for cybersecurity vendors, SOC/MDR/XDR providers, zero-trust, cloud-security, or compliance-automation products.",
+    "Security-capability grid: a light section with a centered heading + supporting paragraph above a responsive 2-to-3 column grid of bordered cards, each with a rounded icon tile (cycling security glyphs that invert color on hover), a bold title, a description, and an arrowed 'Learn more' link routing through section-kit route links. Use to lay out core platform capabilities for cybersecurity vendors, SOC/MDR/XDR providers, zero-trust, cloud-security, or compliance-automation products.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),

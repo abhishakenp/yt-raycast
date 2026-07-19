@@ -7,7 +7,7 @@ import { cn } from '#/lib/utils.ts'
  * site. A dark inverted section with a 5-column grid: a brand logo + about
  * paragraph + social icons on the left (spanning 2 columns), followed by three
  * link columns, and a bottom copyright / legal bar. Every brand button, link,
- * and social icon routes through useNavigate. Use as the closing site footer for
+ * and social icon routes through section-kit route links. Use as the closing site footer for
  * enterprise software vendors, SaaS platforms, consultancies, or any corporate
  * site with extensive navigation.
  */
@@ -30,7 +30,7 @@ import {
 export const CorporateFooter = defineCapsule({
   name: 'CorporateFooter',
   description:
-    'Fat multi-column footer for an enterprise / corporate B2B site: dark inverted section with a 5-column grid of brand logo + about paragraph + social icons on the left (spanning 2 columns), followed by three titled link columns, plus a bottom copyright/legal bar. Every brand button, link, and social icon routes through useNavigate. Use as the closing site footer for enterprise software, SaaS, consultancies, or any corporate site.',
+    'Fat multi-column footer for an enterprise / corporate B2B site: dark inverted section with a 5-column grid of brand logo + about paragraph + social icons on the left (spanning 2 columns), followed by three titled link columns, plus a bottom copyright/legal bar. Every brand button, link, and social icon routes through section-kit route links. Use as the closing site footer for enterprise software, SaaS, consultancies, or any corporate site.',
   props: z.object({
     /** Brand / company name shown in the footer. */
     brand: z.string().optional(),

@@ -10,7 +10,7 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * PhotographyCta — a warm, centered booking band for a fine-art / wedding
@@ -19,14 +19,14 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * supporting subheading, and a centered row of two routable pill CTAs — a
  * high-contrast "Book your session" button (variant "primary", auto-inverted to
  * a light pill on the primary band) plus an outlined "View Pricing" button. Both
- * actions route through useNavigate so neither is a dead link. Use near the
+ * actions route through section-kit route links so neither is a dead link. Use near the
  * bottom of a photographer, studio, or elopement page to drive bookings.
  * Renders fully with no props via baked-in defaults.
  */
 export const PhotographyCta = defineCapsule({
   name: 'PhotographyCta',
   description:
-    "Warm, centered booking band for a fine-art / wedding photographer site built on the shared CtaBand composite at tone='primary': an availability eyebrow, a serif headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Book your session' button plus an outlined 'View Pricing' button). Both CTAs route through useNavigate. Use near the bottom of a photographer, studio, or elopement page to drive session bookings.",
+    "Warm, centered booking band for a fine-art / wedding photographer site built on the shared CtaBand composite at tone='primary': an availability eyebrow, a serif headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Book your session' button plus an outlined 'View Pricing' button). Both CTAs route through section-kit route links. Use near the bottom of a photographer, studio, or elopement page to drive session bookings.",
   props: z.object({
     /** Booking headline (maps to CtaBand title). */
     headline: z.string().optional(),
@@ -45,7 +45,6 @@ export const PhotographyCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const headline = props.headline ?? "Let's tell your story, beautifully"
     const subheading =
       props.subheading ??
@@ -63,11 +62,15 @@ export const PhotographyCta = defineCapsule({
           <CtaBandTitle>{headline}</CtaBandTitle>
           <CtaBandSubtitle>{subheading}</CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction variant="primary" onClick={() => go(primaryTarget)}>
-              {primaryCta}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={primaryTarget}>
+                {primaryCta}
+              </NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" onClick={() => go(secondaryTarget)}>
-              {secondaryCta}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={secondaryTarget}>
+                {secondaryCta}
+              </NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

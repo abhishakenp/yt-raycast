@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   CtaBand,
   CtaBandInner,
@@ -22,6 +21,7 @@ import {
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * AgencyContactCta — contact CTA + real inquiry form for a creative
@@ -29,14 +29,14 @@ import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
  * functional inquiry form (name, email, project-type select, message, submit
  * button with a send icon), and a footer row with an email link on the left and
  * social links on the right. Form submit writes a Lakebed inquiry; the email
- * link and each social link route through useNavigate. Use as the closing
+ * link and each social link route through section-kit route links. Use as the closing
  * "get in touch" / start-a-project conversion section for agencies, studios,
  * or any service business. Renders fully with no props via baked-in defaults.
  */
 export const AgencyContactCta = defineCapsule({
   name: 'AgencyContactCta',
   description:
-    "Contact CTA with a real Lakebed inquiry form for a creative digital-agency page: a centered heading and lead over a soft blurred glow, a functional form (name, email, project-type select, message, submit button with a send icon), and a footer row with an email link on the left and social links on the right. Form submit writes a shared inquiry record; the email link and each social link route through useNavigate. Use as the closing 'get in touch' / start-a-project conversion section for agencies, studios, or any service business.",
+    "Contact CTA with a real Lakebed inquiry form for a creative digital-agency page: a centered heading and lead over a soft blurred glow, a functional form (name, email, project-type select, message, submit button with a send icon), and a footer row with an email link on the left and social links on the right. Form submit writes a shared inquiry record; the email link and each social link route through section-kit route links. Use as the closing 'get in touch' / start-a-project conversion section for agencies, studios, or any service business.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -58,7 +58,6 @@ export const AgencyContactCta = defineCapsule({
   }),
   lakebed: inquiryLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const heading = props.heading ?? "Let's build something great together."
     const description =
       props.description ??
@@ -199,25 +198,23 @@ export const AgencyContactCta = defineCapsule({
               <div className="mb-1 text-sm text-muted-foreground">
                 {emailLabel}
               </div>
-              <button
-                type="button"
-                onClick={() => go(contactTarget)}
+              <NavbarRouteLink
                 className="text-lg font-medium transition-colors hover:text-primary"
+                href={contactTarget}
               >
                 {email}
-              </button>
+              </NavbarRouteLink>
             </div>
             <div className="flex items-center gap-6">
               {socials.map((social) => (
-                <button
+                <NavbarRouteLink
                   key={social}
-                  type="button"
                   aria-label={social}
-                  onClick={() => go(social)}
                   className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  href={social}
                 >
                   {social}
-                </button>
+                </NavbarRouteLink>
               ))}
             </div>
           </div>

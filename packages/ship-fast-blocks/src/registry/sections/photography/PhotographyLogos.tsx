@@ -2,19 +2,19 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   LogoStrip,
   LogoStripLabel,
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * PhotographyLogos — a "Featured In" publication logo strip for a fine-art /
  * wedding photographer portfolio. A muted card band with a centered uppercase
  * tracked label above a faded responsive grid of serif publication wordmarks
- * (2 up on mobile, up to 6 on desktop), each routing through useNavigate. Use
+ * (2 up on mobile, up to 6 on desktop), each routing through section-kit route links. Use
  * as social-proof / press credibility band beneath a hero for photographers,
  * studios, and editorial creatives. Renders fully with no props via baked-in
  * wedding-press defaults.
@@ -22,7 +22,7 @@ import {
 export const PhotographyLogos = defineCapsule({
   name: 'PhotographyLogos',
   description:
-    "A 'Featured In' publication logo strip for a fine-art / wedding photographer portfolio: a muted card band with a centered uppercase tracked label above a faded responsive grid of serif publication wordmarks (2 up on mobile, up to 6 on desktop), each routing through useNavigate. Use as a social-proof / press credibility band beneath a hero for photographers, studios, and editorial creatives.",
+    "A 'Featured In' publication logo strip for a fine-art / wedding photographer portfolio: a muted card band with a centered uppercase tracked label above a faded responsive grid of serif publication wordmarks (2 up on mobile, up to 6 on desktop), each routing through section-kit route links. Use as a social-proof / press credibility band beneath a hero for photographers, studios, and editorial creatives.",
   props: z.object({
     /** Uppercase tracked label above the logos. */
     label: z.string().optional(),
@@ -31,7 +31,6 @@ export const PhotographyLogos = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const label = props.label ?? 'Featured In'
     const items = props.items?.length
       ? props.items
@@ -55,7 +54,7 @@ export const PhotographyLogos = defineCapsule({
         <LogoStripItems layout="flex" className="mt-8">
           {items.filter(Boolean).map((logo) => (
             <LogoStripItem key={logo} variant="opacity-hover" asChild>
-              <button onClick={() => go(logo)}>{logo}</button>
+              <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
             </LogoStripItem>
           ))}
         </LogoStripItems>

@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 /**
@@ -10,7 +9,7 @@ import { Image } from '#/lib/img.tsx'
  * heading, paragraph, a numbered 3-step process list (each step a circular index
  * chip + title + caption) and an inverted CTA button; a right column with a tall
  * image and a floating card pinned to its corner showing a stat callout (label,
- * big value, caption). The CTA routes through useNavigate. Use to promote a
+ * big value, caption). The CTA routes through section-kit route links. Use to promote a
  * complimentary / paid interior-design or consultation service for furniture,
  * home-decor, or interiors brands. Renders fully with no props via baked-in
  * "Haven & Home" defaults.
@@ -18,10 +17,12 @@ import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { SplitStory } from '#/section-kit/SplitStory.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const FurnitureStoreDesign = defineCapsule({
   name: 'FurnitureStoreDesign',
   description:
-    'Dark primary-background design-service band: a two-column section (stacks on mobile) with a left copy column (eyebrow, heading, paragraph, numbered 3-step process list of circular index chip + title + caption, and an inverted CTA button) beside a right column with a tall image and a floating corner card showing a stat callout (label, big value, caption); CTA routes through useNavigate. Use to promote a complimentary or paid interior-design / consultation service for furniture, home-decor, or interiors brands.',
+    'Dark primary-background design-service band: a two-column section (stacks on mobile) with a left copy column (eyebrow, heading, paragraph, numbered 3-step process list of circular index chip + title + caption, and an inverted CTA button) beside a right column with a tall image and a floating corner card showing a stat callout (label, big value, caption); CTA routes through section-kit route links. Use to promote a complimentary or paid interior-design / consultation service for furniture, home-decor, or interiors brands.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -42,7 +43,6 @@ export const FurnitureStoreDesign = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Complimentary Design Service'
     const heading = props.heading ?? "Not sure where to start? We'll help."
     const description =
@@ -129,14 +129,13 @@ export const FurnitureStoreDesign = defineCapsule({
                 ))}
               </div>
 
-              <button
-                type="button"
-                onClick={() => go(cta)}
+              <NavbarRouteLink
                 className="mt-8 inline-flex items-center rounded-md bg-primary-foreground px-6 py-3 text-sm font-medium text-primary transition-colors hover:bg-primary-foreground/90"
+                href={cta}
               >
                 {cta}
                 <ArrowLong className="ml-2 size-4" />
-              </button>
+              </NavbarRouteLink>
             </div>
 
             <div className="relative">

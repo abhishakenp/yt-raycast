@@ -26,14 +26,14 @@ import {
  * an auto-updating copyright line, legal links (Privacy, Terms, Cookies) and a
  * subtle "Back to top" affordance. The newsletter capture writes to the shared
  * Lakebed subscriber list, while the wordmark and every link route through
- * useNavigate. Use as the closing footer for newspapers, magazines, publishing
+ * section-kit route links. Use as the closing footer for newspapers, magazines, publishing
  * houses or any editorial publication. Renders fully with no props via baked-in
  * "The Daily Ledger" defaults.
  */
 export const NewsroomFooter = defineCapsule({
   name: 'NewsroomFooter',
   description:
-    'Refined editorial newspaper-style footer for a digital newsroom or online magazine: a large serif wordmark and a one-line tagline above a wide multi-column set of link groups (Sections, Company, Help, Legal, Follow) — each a heading plus several routed links — an optional slim newsletter mini-capture line, and a divided bottom bar with social handles, an auto-updating copyright line, legal links (Privacy, Terms, Cookies) and a subtle Back-to-top affordance. The newsletter capture writes to the shared Lakebed subscriber list, while the wordmark and every link route through useNavigate. Use as the closing footer for newspapers, magazines, publishing houses or any editorial publication.',
+    'Refined editorial newspaper-style footer for a digital newsroom or online magazine: a large serif wordmark and a one-line tagline above a wide multi-column set of link groups (Sections, Company, Help, Legal, Follow) — each a heading plus several routed links — an optional slim newsletter mini-capture line, and a divided bottom bar with social handles, an auto-updating copyright line, legal links (Privacy, Terms, Cookies) and a subtle Back-to-top affordance. The newsletter capture writes to the shared Lakebed subscriber list, while the wordmark and every link route through section-kit route links. Use as the closing footer for newspapers, magazines, publishing houses or any editorial publication.',
   props: z.object({
     /** Large serif wordmark / publication name. */
     brand: z.string().optional(),

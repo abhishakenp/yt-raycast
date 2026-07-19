@@ -50,7 +50,7 @@ function WingMark({ className }: { className?: string }) {
 export const FlightSimulatorFooter = defineCapsule({
   name: 'FlightSimulatorFooter',
   description:
-    'Rich, multi-column closing footer for a flight-simulator site built on the shared SiteFooter composite: a bold wordmark + inline winged-plane mark, an aviation tagline, a social row, and a responsive grid of link columns (Product, Editions, Community, Support), with an auto-updating copyright line in the bottom bar. Every brand, social, and column link routes through useNavigate. Use as the site-wide footer for flight simulators, airliner / combat sims, or aviation titles.',
+    'Rich, multi-column closing footer for a flight-simulator site built on the shared SiteFooter composite: a bold wordmark + inline winged-plane mark, an aviation tagline, a social row, and a responsive grid of link columns (Product, Editions, Community, Support), with an auto-updating copyright line in the bottom bar. Every brand, social, and column link routes through section-kit route links. Use as the site-wide footer for flight simulators, airliner / combat sims, or aviation titles.',
   props: z.object({
     /** Product / brand name shown as the wordmark. */
     brand: z.string().optional(),

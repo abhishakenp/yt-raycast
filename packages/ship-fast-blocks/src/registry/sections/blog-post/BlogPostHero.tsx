@@ -2,15 +2,15 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * BlogPostHero — bespoke single-article masthead for an editorial blog post
  * detail page. A narrow reading column with a small category/eyebrow kicker,
- * a large editorial headline (routable via useNavigate), an optional dek, and
+ * a large editorial headline (routable via section-kit route links), an optional dek, and
  * a byline row (author avatar + name, publish date, and reading-time, separated
  * by dots), followed by a wide rounded cover image that folds into the hero.
  * Uses semantic tokens only. Use as the article masthead for blogs, journals,
@@ -19,7 +19,7 @@ import { Container } from '#/section-kit/Container.tsx'
 export const BlogPostHero = defineCapsule({
   name: 'BlogPostHero',
   description:
-    'Bespoke single-article hero for an editorial blog post detail page: a narrow reading column with an uppercase category/eyebrow kicker, a large editorial headline (routable via useNavigate), an optional dek/subtitle, and a byline row showing an author avatar, name, publication date, and reading-time separated by dots, followed by a wide rounded cover image. Use as the article masthead for blogs, journals, magazines, or editorial reading pages.',
+    'Bespoke single-article hero for an editorial blog post detail page: a narrow reading column with an uppercase category/eyebrow kicker, a large editorial headline (routable via section-kit route links), an optional dek/subtitle, and a byline row showing an author avatar, name, publication date, and reading-time separated by dots, followed by a wide rounded cover image. Use as the article masthead for blogs, journals, magazines, or editorial reading pages.',
   props: z.object({
     /** Category / topic eyebrow kicker label. */
     kicker: z.string().optional(),
@@ -40,7 +40,6 @@ export const BlogPostHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const kicker = props.kicker ?? 'Engineering'
     const title = props.title ?? 'The Quiet Art of Writing Software That Lasts'
     const dek =
@@ -67,13 +66,9 @@ export const BlogPostHero = defineCapsule({
               {kicker}
             </p>
             <h1 className="mb-6 font-serif text-4xl font-semibold leading-tight tracking-tight text-foreground md:text-5xl lg:text-6xl">
-              <button
-                type="button"
-                onClick={() => go(title)}
-                className="text-left"
-              >
+              <NavbarRouteLink className="text-left" href={title}>
                 {title}
-              </button>
+              </NavbarRouteLink>
             </h1>
             <p className="mb-8 text-lg leading-relaxed text-muted-foreground md:text-xl">
               {dek}

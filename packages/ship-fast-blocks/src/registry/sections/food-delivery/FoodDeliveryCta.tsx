@@ -18,14 +18,14 @@ import {
  * restaurant-marketplace site. A centered rounded foreground-on-background dark
  * card with a heading, a supporting paragraph, and two app-store buttons (Apple
  * App Store + Google Play, each with its brand glyph) on a light surface. Both
- * buttons route through useNavigate. Use as a final conversion push to drive app
+ * buttons route through section-kit route links. Use as a final conversion push to drive app
  * installs for food-delivery apps, restaurant aggregators, or online-ordering
  * platforms. Renders fully with no props via baked-in defaults.
  */
 export const FoodDeliveryCta = defineCapsule({
   name: 'FoodDeliveryCta',
   description:
-    'Inverted app-download CTA panel for a food-delivery / restaurant-marketplace site: a centered rounded foreground-on-background dark card with a heading, a supporting paragraph, and two app-store buttons (Apple App Store + Google Play, each with its brand glyph) on a light surface. Both buttons route through useNavigate. Use as a final conversion push to drive app installs for food-delivery apps, restaurant aggregators, online-ordering platforms, or takeout services.',
+    'Inverted app-download CTA panel for a food-delivery / restaurant-marketplace site: a centered rounded foreground-on-background dark card with a heading, a supporting paragraph, and two app-store buttons (Apple App Store + Google Play, each with its brand glyph) on a light surface. Both buttons route through section-kit route links. Use as a final conversion push to drive app installs for food-delivery apps, restaurant aggregators, online-ordering platforms, or takeout services.',
   props: z.object({
     /** CTA heading. */
     heading: z.string().optional(),

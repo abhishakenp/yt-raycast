@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
@@ -13,13 +12,14 @@ import {
   PortfolioTag,
 } from '#/section-kit/PortfolioGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * ResumeCvProjects — selected-work grid for a personal resume / CV / portfolio
  * site. A left-aligned `SectionHeading` ("Projects" / "Selected work") leads
  * into a responsive grid of project cards, each with a rounded thumbnail photo,
  * a title, a short description, a row of token tag chips, and a routable "Case
- * study" link. Every card link navigates through useNavigate so none is a dead
+ * study" link. Every card link navigates through section-kit route links so none is a dead
  * link. Clean, minimal, and portfolio-style. Use on a personal portfolio,
  * online résumé, or professional profile page to showcase recent work. Renders
  * fully with no props via baked-in defaults.
@@ -27,7 +27,7 @@ import { Container } from '#/section-kit/Container.tsx'
 export const ResumeCvProjects = defineCapsule({
   name: 'ResumeCvProjects',
   description:
-    "Selected-work grid for a personal resume / CV / portfolio site: a left-aligned SectionHeading ('Projects' / 'Selected work') leads into a responsive grid of project cards, each with a rounded thumbnail photo, a title, a short description, a row of token tag chips, and a routable 'Case study' link. Every card link navigates through useNavigate. Clean, minimal, portfolio-style. Use on a personal portfolio, online résumé, or professional profile page to showcase recent work.",
+    "Selected-work grid for a personal resume / CV / portfolio site: a left-aligned SectionHeading ('Projects' / 'Selected work') leads into a responsive grid of project cards, each with a rounded thumbnail photo, a title, a short description, a row of token tag chips, and a routable 'Case study' link. Every card link navigates through section-kit route links. Clean, minimal, portfolio-style. Use on a personal portfolio, online résumé, or professional profile page to showcase recent work.",
   props: z.object({
     /** Small eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -51,7 +51,6 @@ export const ResumeCvProjects = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const projects = props.projects?.length
       ? props.projects
       : [
@@ -143,14 +142,13 @@ export const ResumeCvProjects = defineCapsule({
                       </div>
                     ) : null}
                     <div className="mt-6 pt-2">
-                      <button
-                        type="button"
-                        onClick={() => go(project.target ?? 'Projects')}
+                      <NavbarRouteLink
                         className="inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-colors hover:text-primary/80"
+                        href={project.target ?? 'Projects'}
                       >
                         {project.linkLabel ?? 'Case study'}
                         <span aria-hidden="true">&rarr;</span>
-                      </button>
+                      </NavbarRouteLink>
                     </div>
                   </PortfolioCaption>
                 </article>

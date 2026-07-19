@@ -10,7 +10,7 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * SubscriptionBoxCta — closing conversion band for a subscription-box brand
@@ -33,7 +33,6 @@ export const SubscriptionBoxCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Ready when you are'
     const title = props.title ?? 'Start your subscription'
     const subtitle =
@@ -49,11 +48,11 @@ export const SubscriptionBoxCta = defineCapsule({
           <CtaBandTitle>{title}</CtaBandTitle>
           <CtaBandSubtitle>{subtitle}</CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction variant="primary" onClick={() => go('Pricing')}>
-              {primaryCta}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={'Pricing'}>{primaryCta}</NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" onClick={() => go('Pricing')}>
-              {secondaryCta}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={'Pricing'}>{secondaryCta}</NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

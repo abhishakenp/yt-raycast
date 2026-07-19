@@ -2,10 +2,10 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { TourList, TourItem } from '#/section-kit/TourList.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * MusicArtistTour — long tour-date list for a music artist / band page. A
@@ -13,14 +13,14 @@ import { Container } from '#/section-kit/Container.tsx'
  * list of date rows (month/day block, venue + city, price/status, and a "Get
  * Tickets" pill that disables for sold-out shows), with a trailing "view all"
  * link with an arrow. Warm, airy, editorial indie-folk aesthetic. Each ticket
- * link and the view-all link route through useNavigate. Use as the live-dates /
+ * link and the view-all link route through section-kit route links. Use as the live-dates /
  * tour schedule section for musicians, bands, or tour-promotion pages. Renders
  * fully with no props via baked-in defaults.
  */
 export const MusicArtistTour = defineCapsule({
   name: 'MusicArtistTour',
   description:
-    "Long tour-date list for a music artist / band page: a centered eyebrow, thin heading and lead over a soft muted band, then a stacked list of date rows (month/day block, venue and city, price/status, and a 'Get Tickets' pill that disables for sold-out shows), with a trailing 'view all' link with an arrow. Warm, airy editorial indie-folk aesthetic. Each ticket link and the view-all link route through useNavigate. Use as the live-dates / tour schedule section for musicians, bands, indie/folk acts, or tour-promotion pages.",
+    "Long tour-date list for a music artist / band page: a centered eyebrow, thin heading and lead over a soft muted band, then a stacked list of date rows (month/day block, venue and city, price/status, and a 'Get Tickets' pill that disables for sold-out shows), with a trailing 'view all' link with an arrow. Warm, airy editorial indie-folk aesthetic. Each ticket link and the view-all link route through section-kit route links. Use as the live-dates / tour schedule section for musicians, bands, indie/folk acts, or tour-promotion pages.",
   props: z.object({
     /** Small uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -46,7 +46,6 @@ export const MusicArtistTour = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'On Tour'
     const heading = props.heading ?? 'Tour Dates 2026'
     const description =
@@ -196,13 +195,12 @@ export const MusicArtistTour = defineCapsule({
                         Get Tickets
                       </button>
                     ) : (
-                      <button
-                        type="button"
-                        onClick={() => go(`Tickets ${date.venue}`)}
+                      <NavbarRouteLink
                         className="rounded-full border border-muted-foreground/40 px-5 py-2 text-sm text-foreground/80 transition-colors hover:border-foreground hover:bg-primary hover:text-primary-foreground"
+                        href={`Tickets ${date.venue}`}
                       >
                         Get Tickets
-                      </button>
+                      </NavbarRouteLink>
                     )}
                   </div>
                 </div>
@@ -211,14 +209,13 @@ export const MusicArtistTour = defineCapsule({
           </TourList>
 
           <div className="mt-12 text-center">
-            <button
-              type="button"
-              onClick={() => go(viewAll)}
+            <NavbarRouteLink
               className="inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-foreground"
+              href={viewAll}
             >
               {viewAll}
               <ArrowRight className="ml-1 size-4" />
-            </button>
+            </NavbarRouteLink>
           </div>
         </Container>
       </section>

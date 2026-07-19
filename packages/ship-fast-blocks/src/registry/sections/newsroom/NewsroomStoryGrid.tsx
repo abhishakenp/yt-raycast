@@ -3,7 +3,6 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { useSyncPublicationArticles } from '../blog/publication-interactions.tsx'
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
@@ -17,6 +16,7 @@ import {
   ArticleContent,
   ArticleMeta,
 } from '#/section-kit/ArticleGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * NewsroomStoryGrid — a dense editorial "Latest Stories" grid for a digital
@@ -25,13 +25,13 @@ import {
  * Below it, a responsive 1/2/3-column grid of magazine story cards: each card has
  * a 16:9 cover image, a small colored category tag, a serif headline, a 1-2 line
  * excerpt, and a meta line (author • date • read time). Every card routes through
- * useNavigate. Use for the main feed of a news site, publication, blog index, or
+ * section-kit route links. Use for the main feed of a news site, publication, blog index, or
  * magazine homepage. Renders fully with no props.
  */
 export const NewsroomStoryGrid = defineCapsule({
   name: 'NewsroomStoryGrid',
   description:
-    "Dense editorial 'Latest Stories' grid for a digital newsroom or online magazine: a section header row with a serif heading and a 'View all' link on the right above a hairline rule, then a responsive 1/2/3-up grid of magazine story cards. Each card has a 16:9 cover image, a small colored category tag, a serif headline, a 1-2 line excerpt and a meta line (author • date • read time); cards route through useNavigate. Use for the main feed of a news site, publication, blog index, or magazine homepage.",
+    "Dense editorial 'Latest Stories' grid for a digital newsroom or online magazine: a section header row with a serif heading and a 'View all' link on the right above a hairline rule, then a responsive 1/2/3-up grid of magazine story cards. Each card has a 16:9 cover image, a small colored category tag, a serif headline, a 1-2 line excerpt and a meta line (author • date • read time); cards route through section-kit route links. Use for the main feed of a news site, publication, blog index, or magazine homepage.",
   props: z.object({
     /** Section heading shown on the left of the header row. */
     heading: z.string().optional(),
@@ -55,7 +55,6 @@ export const NewsroomStoryGrid = defineCapsule({
   }),
   lakebed: publicationLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Latest Stories'
     const viewAllCta = props.viewAllCta ?? 'View all'
     const stories = props.stories?.length
@@ -170,13 +169,12 @@ export const NewsroomStoryGrid = defineCapsule({
               titleId="newsroom-grid-heading"
               titleClassName="font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
             />
-            <button
-              type="button"
-              onClick={() => go(viewAllCta)}
+            <NavbarRouteLink
               className="shrink-0 text-sm font-semibold text-accent hover:underline"
+              href={viewAllCta}
             >
               {viewAllCta} &rarr;
-            </button>
+            </NavbarRouteLink>
           </div>
           <div className="mt-6 border-t border-border" />
           <ArticleGrid cols="1-2-3" className="mt-10 gap-x-8 gap-y-12">
@@ -187,7 +185,7 @@ export const NewsroomStoryGrid = defineCapsule({
                 className="rounded-none"
               >
                 <ArticleMedia aspect="16-9" className="block w-full rounded-lg">
-                  <button type="button" onClick={() => go(story.title)}>
+                  <NavbarRouteLink href={story.title}>
                     <Image
                       alt={story.imageAlt}
                       w={800}
@@ -195,20 +193,19 @@ export const NewsroomStoryGrid = defineCapsule({
                       loading="lazy"
                       className="aspect-[16/9] h-auto w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
-                  </button>
+                  </NavbarRouteLink>
                 </ArticleMedia>
                 <ArticleContent className="mt-4">
                   <span className="inline-flex w-fit items-center rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-primary-foreground">
                     {story.tag}
                   </span>
                   <h3 className="mt-3 font-serif text-xl font-bold leading-snug text-foreground">
-                    <button
-                      type="button"
-                      onClick={() => go(story.title)}
+                    <NavbarRouteLink
                       className="text-left transition-colors hover:text-accent"
+                      href={story.title}
                     >
                       {story.title}
-                    </button>
+                    </NavbarRouteLink>
                   </h3>
                   <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
                     {story.excerpt}

@@ -7,7 +7,7 @@ import { cn } from '#/lib/utils.ts'
  * grid of plan cards; the highlighted "Most Popular" tier inverts to a filled
  * primary surface with a floating badge, while others use bordered cards. Each
  * card shows name, tagline, big price + period, a check/cross feature list, and
- * a full-width CTA button routed through useNavigate. Use to present subscription
+ * a full-width CTA button routed through section-kit route links. Use to present subscription
  * tiers for a brokerage, trading app or robo-advisor. Renders fully with no
  * props via Essential / Pro / Elite defaults.
  */
@@ -29,7 +29,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 export const InvestingPricing = defineCapsule({
   name: 'InvestingPricing',
   description:
-    "3-tier pricing table for an investing / fintech page: a muted section band with a centered heading + lead above a responsive 3-column grid of plan cards; the highlighted 'Most Popular' tier inverts to a filled primary surface with a floating badge while others use bordered cards. Each card shows name, tagline, big price + period, a check/cross feature list, and a full-width CTA button routed through useNavigate. Use to present subscription tiers for a brokerage, trading app or robo-advisor.",
+    "3-tier pricing table for an investing / fintech page: a muted section band with a centered heading + lead above a responsive 3-column grid of plan cards; the highlighted 'Most Popular' tier inverts to a filled primary surface with a floating badge while others use bordered cards. Each card shows name, tagline, big price + period, a check/cross feature list, and a full-width CTA button routed through section-kit route links. Use to present subscription tiers for a brokerage, trading app or robo-advisor.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),

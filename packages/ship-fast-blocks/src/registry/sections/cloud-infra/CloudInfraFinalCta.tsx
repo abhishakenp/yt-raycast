@@ -18,7 +18,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * infrastructure / developer-platform SaaS landing page. A centered heading + description
  * on a primary background with primary-foreground text, followed by dual CTAs
  * (dark filled primary + ghost outlined secondary) and a row of trust checkmarks.
- * CTAs route through useNavigate. Renders fully on zero arguments.
+ * CTAs route through section-kit route links. Renders fully on zero arguments.
  */
 export const CloudInfraFinalCta = defineCapsule({
   name: 'CloudInfraFinalCta',

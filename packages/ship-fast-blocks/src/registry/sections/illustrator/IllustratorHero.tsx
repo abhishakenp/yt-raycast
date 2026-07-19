@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   HeroSection,
@@ -19,6 +18,7 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * IllustratorHero — split-layout hero section for an illustrator / visual-artist
@@ -26,7 +26,7 @@ import {
  * headline with two color-highlighted phrases, a supporting paragraph, and dual
  * rounded CTAs (filled primary with arrow + outlined secondary). Right side: a
  * tall 4:5 portrait photo with two soft blurred pastel accent orbs floating at
- * the corners. Every CTA routes through useNavigate. Use as the opening hero
+ * the corners. Every CTA routes through section-kit route links. Use as the opening hero
  * for illustrators, painters, picture-book artists, editorial illustrators, or
  * any warm, editorial creative portfolio. Renders fully with no props via
  * baked-in "Mira Chen" defaults.
@@ -34,7 +34,7 @@ import {
 export const IllustratorHero = defineCapsule({
   name: 'IllustratorHero',
   description:
-    'Split-layout hero section for an illustrator / visual-artist portfolio: left side with an uppercase accent eyebrow label, large serif headline with two color-highlighted phrases, supporting paragraph, and dual rounded CTAs (filled primary with arrow + outlined secondary); right side has a tall 4:5 portrait photo with two soft blurred pastel accent orbs at the corners. CTAs route through useNavigate. Use as the opening hero for illustrators, painters, picture-book artists, editorial illustrators, or warm editorial creative portfolios.',
+    'Split-layout hero section for an illustrator / visual-artist portfolio: left side with an uppercase accent eyebrow label, large serif headline with two color-highlighted phrases, supporting paragraph, and dual rounded CTAs (filled primary with arrow + outlined secondary); right side has a tall 4:5 portrait photo with two soft blurred pastel accent orbs at the corners. CTAs route through section-kit route links. Use as the opening hero for illustrators, painters, picture-book artists, editorial illustrators, or warm editorial creative portfolios.',
   props: z.object({
     /** Uppercase accent eyebrow label. */
     eyebrow: z.string().optional(),
@@ -62,7 +62,6 @@ export const IllustratorHero = defineCapsule({
   }),
   lakebed: commerceCartLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Illustrator & Visual Artist'
     const headingStart = props.headingStart ?? 'Creating worlds through'
     const highlightOne = props.highlightOne ?? 'color'
@@ -134,19 +133,19 @@ export const IllustratorHero = defineCapsule({
                   asChild
                   className="gap-2 rounded-full bg-foreground px-8 py-4 text-sm font-medium text-background hover:bg-muted-foreground"
                 >
-                  <button type="button" onClick={() => go(primaryCta)}>
+                  <NavbarRouteLink href={primaryCta}>
                     {primaryCta}
                     <ArrowRight className="size-4" />
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
                 <HeroCta
                   asChild
                   variant="outline"
                   className="rounded-full border-foreground px-8 py-4 text-sm font-medium hover:bg-foreground hover:text-background"
                 >
-                  <button type="button" onClick={() => go(secondaryCta)}>
+                  <NavbarRouteLink href={secondaryCta}>
                     {secondaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
                 <CommerceAddItemButton
                   lakebed={lakebed}

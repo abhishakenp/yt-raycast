@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   HeroSection,
@@ -18,6 +17,7 @@ import {
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 export const WebinarHero = defineCapsule({
   name: 'WebinarHero',
@@ -40,7 +40,6 @@ export const WebinarHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Live online masterclass'
     const title = props.title ?? 'Scaling SaaS in 2026'
     const dateTime = props.dateTime ?? 'Thursday, July 17 · 11:00 AM PT'
@@ -93,13 +92,12 @@ export const WebinarHero = defineCapsule({
             </HeroSubheading>
 
             <div className="mt-8 flex flex-col items-center gap-3">
-              <button
-                type="button"
-                onClick={() => go(primaryTarget)}
+              <NavbarRouteLink
                 className="rounded-full bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+                href={primaryTarget}
               >
                 {primaryCta}
-              </button>
+              </NavbarRouteLink>
               <p className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
                 {note}
               </p>
@@ -125,11 +123,7 @@ export const WebinarHero = defineCapsule({
               </HeroStatBadgeContent>
             </HeroStatBadge>
 
-            <ResponsiveGrid
-              cols="4"
-
-              className="mx-auto mt-12 max-w-md gap-4"
-            >
+            <ResponsiveGrid cols="4" className="mx-auto mt-12 max-w-md gap-4">
               {countdown.map((unit, i) => (
                 <HeroStatBadge
                   key={`${unit.label}-${i}`}

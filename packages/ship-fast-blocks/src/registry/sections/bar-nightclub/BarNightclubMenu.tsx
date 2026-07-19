@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -31,6 +30,7 @@ import {
 } from '#/section-kit/MenuItemRow.tsx'
 import { MenuList } from '#/section-kit/MenuList.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * BarNightclubMenu — two-column drinks menu for a cocktail-bar / nightclub
@@ -39,7 +39,7 @@ import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
  * premium); each column has an underlined uppercase header and a list of items
  * showing a name, muted description, right-aligned price, and scoped
  * add-to-cart control that writes to the shared Lakebed cart. Rows seed command
- * search, and the footnote link still routes through useNavigate. Use to
+ * search, and the footnote link still routes through section-kit route links. Use to
  * present a cocktail / drinks list for bars, lounges, speakeasies, or
  * restaurants.
  */
@@ -81,7 +81,6 @@ export const BarNightclubMenu = defineCapsule({
   }),
   lakebed: commerceCartLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Drinks Menu'
     const heading = props.heading ?? 'Signature Cocktails'
     const description =
@@ -223,7 +222,7 @@ export const BarNightclubMenu = defineCapsule({
                   </MenuCategoryHeader>
                   <div className="space-y-6">
                     {(col.items ?? []).map((drink) => (
-                      <MenuItemRow>
+                      <MenuItemRow key={`${col.title}:${drink.name}`}>
                         <MenuItemContent>
                           <MenuItemBody>
                             <MenuItemNameRow>
@@ -269,13 +268,12 @@ export const BarNightclubMenu = defineCapsule({
 
             <div className="mt-16 border border-border p-8 text-center">
               <p className="mb-4 text-muted-foreground">{footnote}</p>
-              <button
-                type="button"
-                onClick={() => go(footnoteCta)}
+              <NavbarRouteLink
                 className="border-b border-muted-foreground pb-1 text-sm tracking-wide transition-colors hover:border-foreground hover:text-foreground"
+                href={footnoteCta}
               >
                 {footnoteCta}
-              </button>
+              </NavbarRouteLink>
             </div>
           </MenuList>
         </Container>

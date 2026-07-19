@@ -8,26 +8,26 @@ import {
   CtaBandSubtitle,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { directoryLakebed } from './directory-lakebed.ts'
 import {
   DirectoryLeadButton,
   DirectoryMutationSpinner,
 } from './directory-interactions.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * DirectoryCta — dark inverted conversion CTA band for a local-business
  * directory. A foreground-on-background inverted section with a large centered
  * headline, a supporting paragraph in muted inverted text, and a centered pair
  * of CTAs (a filled background-surface primary button + an outlined secondary
- * button). Both CTAs route through useNavigate. Use as the closing
+ * button). Both CTAs route through section-kit route links. Use as the closing
  * list-your-business / sign-up conversion band on local directories,
  * marketplaces, or find-a-service platforms.
  */
 export const DirectoryCta = defineCapsule({
   name: 'DirectoryCta',
   description:
-    'Dark inverted conversion CTA band for a local-business DIRECTORY: a foreground-on-background inverted section with a large centered headline, a supporting paragraph in muted inverted text, and a centered pair of CTAs (a filled background-surface primary button plus an outlined secondary button). Both CTAs route through useNavigate. Use as the closing list-your-business or sign-up conversion band on local directories, business-listing marketplaces, find-a-service platforms, or review-and-discovery sites.',
+    'Dark inverted conversion CTA band for a local-business DIRECTORY: a foreground-on-background inverted section with a large centered headline, a supporting paragraph in muted inverted text, and a centered pair of CTAs (a filled background-surface primary button plus an outlined secondary button). Both CTAs route through section-kit route links. Use as the closing list-your-business or sign-up conversion band on local directories, business-listing marketplaces, find-a-service platforms, or review-and-discovery sites.',
   props: z.object({
     /** CTA heading. */
     heading: z.string().optional(),
@@ -41,7 +41,6 @@ export const DirectoryCta = defineCapsule({
   }),
   lakebed: directoryLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Ready to Grow Your Business?'
     const description =
       props.description ??
@@ -70,9 +69,11 @@ export const DirectoryCta = defineCapsule({
             <CtaAction
               variant="outline"
               className="rounded-lg border-background/40 px-8 py-4 font-medium text-background hover:border-background/70"
-              onClick={() => go(secondaryCta)}
+              asChild
             >
-              {secondaryCta}
+              <NavbarRouteLink href={secondaryCta}>
+                {secondaryCta}
+              </NavbarRouteLink>
             </CtaAction>
           </div>
         </CtaBandInner>

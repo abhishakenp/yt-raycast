@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroBackgroundImage,
@@ -14,6 +12,7 @@ import {
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * RealEstateHero — full-bleed property hero for a premium brokerage. A striking
@@ -21,14 +20,14 @@ import { Container } from '#/section-kit/Container.tsx'
  * so light text reads cleanly. Centered content stacks an uppercase eyebrow, a
  * large serif headline, a supporting paragraph, dual CTAs ("Search Homes" +
  * "Talk to an Agent"), and a search-bar affordance card (location / type /
- * price inputs with a search button) that routes through useNavigate. Use as
+ * price inputs with a search button) that routes through section-kit route links. Use as
  * the opening hero for real-estate brokerages, agent sites, and listing portals.
  * Renders fully with no props via baked-in defaults.
  */
 export const RealEstateHero = defineCapsule({
   name: 'RealEstateHero',
   description:
-    "Full-bleed property hero for a premium brokerage: a striking home photo fills the band under a token-based dark overlay so light text reads cleanly. Centered content has an uppercase eyebrow, a large serif headline, a supporting paragraph, dual CTAs ('Search Homes' filled + 'Talk to an Agent' outlined), and a search-bar affordance card with location / type / price inputs and a search button. CTAs and search route through useNavigate. Use as the opening hero for real-estate brokerages, agent sites, and listing portals.",
+    "Full-bleed property hero for a premium brokerage: a striking home photo fills the band under a token-based dark overlay so light text reads cleanly. Centered content has an uppercase eyebrow, a large serif headline, a supporting paragraph, dual CTAs ('Search Homes' filled + 'Talk to an Agent' outlined), and a search-bar affordance card with location / type / price inputs and a search button. CTAs and search route through section-kit route links. Use as the opening hero for real-estate brokerages, agent sites, and listing portals.",
   props: z.object({
     /** Small uppercase eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -59,7 +58,6 @@ export const RealEstateHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Trusted since 1998'
     const heading = props.heading ?? 'Find the home that fits your life'
     const subheading =
@@ -101,18 +99,18 @@ export const RealEstateHero = defineCapsule({
                 variant="primary"
                 className="rounded-full px-8 py-4 font-medium"
               >
-                <button type="button" onClick={() => go(primaryTarget)}>
+                <NavbarRouteLink href={primaryTarget}>
                   {primaryCta}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
               <HeroCta
                 asChild
                 variant="outline"
                 className="rounded-full border-border bg-card/10 px-8 py-4 font-medium text-background backdrop-blur-sm hover:bg-card/20"
               >
-                <button type="button" onClick={() => go(secondaryTarget)}>
+                <NavbarRouteLink href={secondaryTarget}>
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
             </HeroActions>
 
@@ -130,13 +128,12 @@ export const RealEstateHero = defineCapsule({
                 <div className="rounded-xl bg-muted px-4 py-3 text-left text-sm text-muted-foreground sm:w-36">
                   {pricePlaceholder}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => go(searchTarget)}
+                <NavbarRouteLink
                   className="inline-flex items-center justify-center rounded-xl bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  href={searchTarget}
                 >
                   {searchLabel}
-                </button>
+                </NavbarRouteLink>
               </div>
             </Card>
           </HeroContent>

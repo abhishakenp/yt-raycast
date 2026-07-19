@@ -24,13 +24,13 @@ import { Container } from '#/section-kit/Container.tsx'
  * composite: a bold heading + supporting line over a responsive grid of bordered
  * plan cards — name, big price + period, a checkmarked feature list, and a
  * full-width CTA; the "most popular" plan gets a primary ring + a floating
- * "Most popular" badge and a filled CTA. CTAs route through useNavigate. Use as
+ * "Most popular" badge and a filled CTA. CTAs route through section-kit route links. Use as
  * the pricing section for B2B SaaS, productivity, or developer-platform pages.
  */
 export const MarketingPricing = defineCapsule({
   name: 'MarketingPricing',
   description:
-    "Centered-header 3-tier pricing table for a SaaS / product-marketing landing page: a bold heading + supporting line over a responsive 1/2/3-column grid of bordered plan cards (name, big price + period, description, a checkmarked feature list, and a full-width CTA); the 'most popular' plan gets a primary ring, a floating 'most popular' badge and a filled CTA, and cards lift slightly on hover. Clean premium indigo-on-light aesthetic; CTAs route through useNavigate. Use as the pricing section for B2B SaaS, productivity, or developer-platform pages.",
+    "Centered-header 3-tier pricing table for a SaaS / product-marketing landing page: a bold heading + supporting line over a responsive 1/2/3-column grid of bordered plan cards (name, big price + period, description, a checkmarked feature list, and a full-width CTA); the 'most popular' plan gets a primary ring, a floating 'most popular' badge and a filled CTA, and cards lift slightly on hover. Clean premium indigo-on-light aesthetic; CTAs route through section-kit route links. Use as the pricing section for B2B SaaS, productivity, or developer-platform pages.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),

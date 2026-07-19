@@ -7,7 +7,7 @@ import { z } from 'zod/v4'
  * column, and a Contact column with address / phone / email rows (each with an
  * icon), all above a bordered bottom row pairing an auto-updating copyright line
  * with legal links. The brand button, socials, links, phone and email route
- * through useNavigate. Use as the closing site footer for doctors' offices,
+ * through section-kit route links. Use as the closing site footer for doctors' offices,
  * primary-care practices, telehealth or urgent-care clinics, hospitals or
  * medical groups. Renders fully with no props via baked-in clinic defaults.
  */
@@ -27,7 +27,7 @@ import {
 export const HealthcareFooter = defineCapsule({
   name: 'HealthcareFooter',
   description:
-    "Rich multi-column footer for a medical-clinic page: a dark foreground-colored band with a brand column (heart-in-tile mark + clinic name, tagline, social buttons), a Services links column, a Company links column, and a Contact column with icon-prefixed address / phone / email rows, all above a bordered bottom row pairing an auto-updating copyright line with legal links. The brand button, socials, links, phone and email route through useNavigate. Use as the closing site footer for doctors' offices, primary-care practices, telehealth or urgent-care clinics, hospitals or medical groups.",
+    "Rich multi-column footer for a medical-clinic page: a dark foreground-colored band with a brand column (heart-in-tile mark + clinic name, tagline, social buttons), a Services links column, a Company links column, and a Contact column with icon-prefixed address / phone / email rows, all above a bordered bottom row pairing an auto-updating copyright line with legal links. The brand button, socials, links, phone and email route through section-kit route links. Use as the closing site footer for doctors' offices, primary-care practices, telehealth or urgent-care clinics, hospitals or medical groups.",
   props: z.object({
     /** Clinic / practice name shown beside the brand mark. */
     brand: z.string().optional(),

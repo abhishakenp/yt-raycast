@@ -23,10 +23,6 @@ import { FashionStoreFaq } from './FashionStoreFaq.tsx'
 
 const navigate = vi.fn()
 
-vi.mock('#/lib/use-navigate.tsx', () => ({
-  useNavigate: () => navigate,
-}))
-
 vi.mock('@ship-fast/lakebed/react', () => ({
   createLakebedClient: () => ({
     useAuth: () => ({

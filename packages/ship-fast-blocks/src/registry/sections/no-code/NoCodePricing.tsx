@@ -2,7 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { useState } from 'react'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { saasPlan, useSyncSaasPlans } from '../saas/saas-interactions.tsx'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+  saasPlan,
+  useSyncSaasPlans,
+} from '../saas/saas-interactions.tsx'
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
@@ -12,7 +17,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * rendered on the inverse foreground surface with a floating "Most Popular"
  * badge, each card has a name, tagline, big price + period, a full-width CTA,
  * and a checkmarked feature list. Every CTA and the toggle route through
- * useNavigate. Use as the pricing section for a no-code builder, SaaS, or any
+ * section-kit route links. Use as the pricing section for a no-code builder, SaaS, or any
  * subscription product. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
@@ -27,7 +32,6 @@ import {
   PricingTierPeriod,
   PricingTierFeatures,
   PricingTierFeature,
-  PricingTierCta,
 } from '#/section-kit/PricingGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 export const NoCodePricing = defineCapsule({
@@ -268,9 +272,27 @@ export const NoCodePricing = defineCapsule({
                     </PricingTierFeatures>
                   )}
                   {t.cta && (
-                    <PricingTierCta target={t.ctaTarget}>
+                    <SaasPlanActionButton
+                      lakebed={lakebed}
+                      intentLabel={t.cta}
+                      plan={t.name}
+                      source={`pricing-${billing}`}
+                      aria-label={`${t.cta} for ${t.name}`}
+                      pendingChildren={
+                        <>
+                          <SaasMutationSpinner className="size-4" />
+                          Selecting
+                        </>
+                      }
+                      className={cn(
+                        'mt-auto inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
+                        t.highlighted || t.featured || t.popular
+                          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                          : 'bg-foreground text-background hover:bg-foreground/90',
+                      )}
+                    >
                       {t.cta}
-                    </PricingTierCta>
+                    </SaasPlanActionButton>
                   )}
                 </PricingTier>
               )

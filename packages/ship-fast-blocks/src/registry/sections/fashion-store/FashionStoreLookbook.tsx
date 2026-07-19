@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   LookbookGrid,
@@ -16,16 +15,18 @@ import {
  * mixed-span 2-to-3 column masonry grid of look tiles — each a portrait image
  * with an overlaid uppercase look label and optional serif title, sized as
  * feature (2x2), wide (2-wide) or small — closed by an outlined "Explore Full
- * Lookbook" CTA. Every tile and CTA routes through useNavigate and imagery
+ * Lookbook" CTA. Every tile and CTA routes through section-kit route links and imagery
  * uses the alt-driven Image component. Use to present a seasonal editorial
  * lookbook for clothing brands, boutiques, or lifestyle commerce.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const FashionStoreLookbook = defineCapsule({
   name: 'FashionStoreLookbook',
   description:
-    "Editorial Lookbook masonry gallery for a minimalist fashion store: a subtle muted-band section with a split intro (eyebrow + serif heading on the left, right-aligned description on the right) above a mixed-span 2-to-3 column masonry grid of look tiles — each a portrait image with an overlaid uppercase look label and optional serif title, sized as feature (2x2), wide (2-wide) or small — closed by an outlined 'Explore Full Lookbook' CTA. Every tile and CTA routes through useNavigate and imagery uses the alt-driven Image component. Use to present a seasonal editorial lookbook for clothing brands, boutiques, or lifestyle commerce.",
+    "Editorial Lookbook masonry gallery for a minimalist fashion store: a subtle muted-band section with a split intro (eyebrow + serif heading on the left, right-aligned description on the right) above a mixed-span 2-to-3 column masonry grid of look tiles — each a portrait image with an overlaid uppercase look label and optional serif title, sized as feature (2x2), wide (2-wide) or small — closed by an outlined 'Explore Full Lookbook' CTA. Every tile and CTA routes through section-kit route links and imagery uses the alt-driven Image component. Use to present a seasonal editorial lookbook for clothing brands, boutiques, or lifestyle commerce.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -45,7 +46,6 @@ export const FashionStoreLookbook = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const lookbookEyebrow = props.eyebrow ?? 'Spring/Summer 2025'
     const lookbookHeading = props.heading ?? 'The Lookbook'
     const lookbookDesc =
@@ -138,14 +138,13 @@ export const FashionStoreLookbook = defineCapsule({
           >
             {lookbookItems.map((item) => (
               <LookbookCard asChild key={item.look}>
-                <button
+                <NavbarRouteLink
                   key={item.look}
-                  type="button"
-                  onClick={() => go(item.title ?? item.look)}
                   className={cn(
                     'group relative overflow-hidden text-left',
                     lookbookSpan(item.size),
                   )}
+                  href={item.title ?? item.look}
                 >
                   <Image
                     alt={item.imageAlt}
@@ -168,19 +167,18 @@ export const FashionStoreLookbook = defineCapsule({
                       <p className="mt-1 font-serif text-xl">{item.title}</p>
                     ) : null}
                   </LookbookCaption>
-                </button>
+                </NavbarRouteLink>
               </LookbookCard>
             ))}
           </LookbookGrid>
 
           <div className="mt-12 text-center">
-            <button
-              type="button"
-              onClick={() => go(lookbookCta)}
+            <NavbarRouteLink
               className="inline-flex items-center border border-foreground px-8 py-4 text-sm font-medium tracking-wide text-foreground transition-colors hover:bg-foreground hover:text-background"
+              href={lookbookCta}
             >
               {lookbookCta}
-            </button>
+            </NavbarRouteLink>
           </div>
         </Container>
       </section>

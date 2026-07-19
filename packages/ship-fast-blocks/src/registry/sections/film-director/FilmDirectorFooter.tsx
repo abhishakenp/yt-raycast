@@ -5,7 +5,7 @@ import { z } from 'zod/v4'
  * cinematographer portfolio. A dark foreground band with muted text: a single
  * row (stacking on mobile) pairing a dynamic-year copyright line (brand + note)
  * on the left with a small set of inline text links on the right that brighten
- * on hover. Links route through useNavigate. Use as the closing site footer for
+ * on hover. Links route through section-kit route links. Use as the closing site footer for
  * filmmakers, directors, DPs, or production houses.
  */
 import {
@@ -19,7 +19,7 @@ import {
 export const FilmDirectorFooter = defineCapsule({
   name: 'FilmDirectorFooter',
   description:
-    'Slim, inverted footer for a film director or cinematographer portfolio: a dark foreground band with muted text holding a single row (stacking on mobile) that pairs a dynamic-year copyright line (brand + note) on the left with a small set of inline text links on the right that brighten on hover. Links route through useNavigate. Use as the closing site footer for filmmakers, directors, DPs, or production houses.',
+    'Slim, inverted footer for a film director or cinematographer portfolio: a dark foreground band with muted text holding a single row (stacking on mobile) that pairs a dynamic-year copyright line (brand + note) on the left with a small set of inline text links on the right that brighten on hover. Links route through section-kit route links. Use as the closing site footer for filmmakers, directors, DPs, or production houses.',
   props: z.object({
     /** Director / studio name shown in the copyright line. */
     brand: z.string().optional(),

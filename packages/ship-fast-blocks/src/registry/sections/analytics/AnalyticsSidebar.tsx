@@ -3,11 +3,11 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { NavSidebar } from '#/section-kit/NavSidebar.tsx'
 import { Image } from '#/lib/img.tsx'
 import { analyticsAdminLakebed } from './analytics-admin-lakebed.ts'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * AnalyticsSidebar — fixed left dashboard sidebar for a SaaS analytics / admin
@@ -15,7 +15,7 @@ import { analyticsAdminLakebed } from './analytics-admin-lakebed.ts'
  * header (solid token logo tile + product name), a primary nav list with
  * line-icons, an active first item, and a count badge on the Notifications item,
  * plus a bottom user profile card (avatar, name, role). Nav items route through
- * useNavigate; notification count and profile auth use shared Lakebed state. Use as
+ * section-kit route links; notification count and profile auth use shared Lakebed state. Use as
  * the persistent left rail for analytics dashboards, admin panels, BI consoles,
  * or any data-product control surface. Renders fully with no props via baked-in
  * "DataFlow" defaults.
@@ -23,7 +23,7 @@ import { analyticsAdminLakebed } from './analytics-admin-lakebed.ts'
 export const AnalyticsSidebar = defineCapsule({
   name: 'AnalyticsSidebar',
   description:
-    'Fixed left dashboard sidebar for a SaaS analytics / admin product: a full-height bordered card column (hidden below lg) with a brand header (solid token logo tile + product name), a primary nav list with line-icons and an active first item, a shared Lakebed count badge on the Notifications item, and a bottom Shoo/Lakebed profile card. Nav items route through useNavigate for page-switching. Use as the persistent left rail for analytics dashboards, admin panels, business-intelligence consoles, or any data-product control surface.',
+    'Fixed left dashboard sidebar for a SaaS analytics / admin product: a full-height bordered card column (hidden below lg) with a brand header (solid token logo tile + product name), a primary nav list with line-icons and an active first item, a shared Lakebed count badge on the Notifications item, and a bottom Shoo/Lakebed profile card. Nav items route through section-kit route links for page-switching. Use as the persistent left rail for analytics dashboards, admin panels, business-intelligence consoles, or any data-product control surface.',
   props: z.object({
     /** Brand / product name shown in the sidebar header. */
     brand: z.string().optional(),
@@ -43,7 +43,6 @@ export const AnalyticsSidebar = defineCapsule({
   }),
   lakebed: analyticsAdminLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const auth = lakebed.useAuth()
     const unreadCount = (lakebed.useQuery('unreadNotificationCount') ??
       0) as number
@@ -151,16 +150,15 @@ export const AnalyticsSidebar = defineCapsule({
           {nav.map((label, i) => {
             const active = i === 0
             return (
-              <button
+              <NavbarRouteLink
                 key={label}
-                type="button"
-                onClick={() => go(label)}
                 className={cn(
                   'flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors',
                   active
                     ? 'bg-accent text-accent-foreground'
                     : 'text-muted-foreground hover:bg-muted',
                 )}
+                href={label}
               >
                 {navIcons[label] ?? navIcons.Dashboard}
                 <span>{label}</span>
@@ -169,7 +167,7 @@ export const AnalyticsSidebar = defineCapsule({
                     {notificationCount}
                   </span>
                 ) : null}
-              </button>
+              </NavbarRouteLink>
             )
           })}
         </nav>

@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroBackgroundImage,
@@ -13,6 +11,7 @@ import {
   HeroCta,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * YogaStudioHero — calm, full-bleed hero for a yoga-studio landing page. A warm
@@ -20,13 +19,13 @@ import { Container } from '#/section-kit/Container.tsx'
  * overlay so light text reads cleanly. Centered content stacks an uppercase
  * eyebrow, a large headline, a grounding supporting paragraph, and dual CTAs
  * (filled "Try a Class" + outlined "See Schedule"). CTAs route through
- * useNavigate. Use as the opening hero for yoga studios, movement spaces,
+ * section-kit route links. Use as the opening hero for yoga studios, movement spaces,
  * pilates studios, and mindfulness centers. Renders fully with no props.
  */
 export const YogaStudioHero = defineCapsule({
   name: 'YogaStudioHero',
   description:
-    "Calm full-bleed hero for a yoga-studio landing page: a warm movement or studio-space photo fills the band under a soft token-based overlay so light text stays readable. Centered content has an uppercase eyebrow, a large headline, a grounding supporting paragraph, and dual CTAs (filled 'Try a Class' + outlined 'See Schedule'). CTAs route through useNavigate. Use as the opening hero for yoga studios, movement spaces, pilates studios, and mindfulness centers.",
+    "Calm full-bleed hero for a yoga-studio landing page: a warm movement or studio-space photo fills the band under a soft token-based overlay so light text stays readable. Centered content has an uppercase eyebrow, a large headline, a grounding supporting paragraph, and dual CTAs (filled 'Try a Class' + outlined 'See Schedule'). CTAs route through section-kit route links. Use as the opening hero for yoga studios, movement spaces, pilates studios, and mindfulness centers.",
   props: z.object({
     /** Small uppercase eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -47,7 +46,6 @@ export const YogaStudioHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Move · Breathe · Belong'
     const heading = props.heading ?? 'Find your flow, on and off the mat'
     const subheading =
@@ -85,18 +83,18 @@ export const YogaStudioHero = defineCapsule({
                 variant="primary"
                 className="rounded-full px-8 py-4 font-medium"
               >
-                <button type="button" onClick={() => go(primaryTarget)}>
+                <NavbarRouteLink href={primaryTarget}>
                   {primaryCta}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
               <HeroCta
                 asChild
                 variant="outline"
                 className="rounded-full border-border bg-card/10 px-8 py-4 font-medium text-background backdrop-blur-sm hover:bg-card/20"
               >
-                <button type="button" onClick={() => go(secondaryTarget)}>
+                <NavbarRouteLink href={secondaryTarget}>
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
             </HeroActions>
           </HeroContent>

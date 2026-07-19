@@ -19,13 +19,13 @@ import {
  * an indigo brand-initial logo tile + product name on the left, a wrapping row
  * of muted text links in the middle, and a copyright line on the right. Clean
  * premium indigo-on-light aesthetic; brand button + links route through
- * useNavigate. Use as the closing footer for B2B SaaS, productivity, or
+ * section-kit route links. Use as the closing footer for B2B SaaS, productivity, or
  * developer-platform pages.
  */
 export const MarketingFooter = defineCapsule({
   name: 'MarketingFooter',
   description:
-    'Slim single-row footer for a SaaS / product-marketing landing page: a border-top band laying out, on one row (stacking on mobile), an indigo brand-initial logo tile + product name on the left, a wrapping row of muted text links in the middle, and a copyright line on the right. Clean premium indigo-on-light aesthetic; brand button + links route through useNavigate. Use as the closing footer for B2B SaaS, productivity, or developer-platform pages.',
+    'Slim single-row footer for a SaaS / product-marketing landing page: a border-top band laying out, on one row (stacking on mobile), an indigo brand-initial logo tile + product name on the left, a wrapping row of muted text links in the middle, and a copyright line on the right. Clean premium indigo-on-light aesthetic; brand button + links route through section-kit route links. Use as the closing footer for B2B SaaS, productivity, or developer-platform pages.',
   props: z.object({
     /** Brand / product name shown beside the logo tile. */
     brand: z.string().optional(),

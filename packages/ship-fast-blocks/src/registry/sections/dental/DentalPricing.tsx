@@ -13,7 +13,7 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
  * the featured plan is filled in the primary color with an optional corner badge
  * while the others are bordered muted cards. Each plan shows a name, tagline,
  * big price + period, a check-marked feature list, and a full-width CTA button,
- * with a small reassurance note under the grid. CTAs route through useNavigate.
+ * with a small reassurance note under the grid. CTAs route through section-kit route links.
  * Use to present exam fees, membership tiers, or treatment packages for
  * dentists, dental offices, or clinics.
  */
@@ -35,7 +35,7 @@ import {
 export const DentalPricing = defineCapsule({
   name: 'DentalPricing',
   description:
-    'Transparent pricing / in-house membership block for a dental practice site: a centered eyebrow + heading + lede above a 3-up plan grid where the featured plan is filled in the primary color with an optional corner badge and the others are bordered muted cards. Each plan shows a name, tagline, big price + period, a check-marked feature list, and a full-width CTA button, with a small reassurance note under the grid. CTAs route through useNavigate. Use to present exam fees, membership tiers, or treatment packages for dentists, dental offices, or clinics.',
+    'Transparent pricing / in-house membership block for a dental practice site: a centered eyebrow + heading + lede above a 3-up plan grid where the featured plan is filled in the primary color with an optional corner badge and the others are bordered muted cards. Each plan shows a name, tagline, big price + period, a check-marked feature list, and a full-width CTA button, with a small reassurance note under the grid. CTAs route through section-kit route links. Use to present exam fees, membership tiers, or treatment packages for dentists, dental offices, or clinics.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),

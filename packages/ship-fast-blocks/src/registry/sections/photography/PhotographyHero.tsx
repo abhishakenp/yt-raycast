@@ -2,10 +2,10 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * PhotographyHero — full-bleed, image-overlay hero for a fine-art / wedding
@@ -13,7 +13,7 @@ import { Container } from '#/section-kit/Container.tsx'
  * photo under a soft dark scrim; content is bottom-anchored: an uppercase
  * tracked kicker, a large serif display headline, a supporting paragraph, and
  * dual CTAs (a solid light button + an outlined ghost button), with an animated
- * scroll cue at the bottom. Both CTAs route through useNavigate. Use as the
+ * scroll cue at the bottom. Both CTAs route through section-kit route links. Use as the
  * opening hero for wedding photographers, portrait studios, elopement shooters,
  * or any gallery-first visual creative. Renders fully with no props via baked-in
  * defaults.
@@ -21,7 +21,7 @@ import { Container } from '#/section-kit/Container.tsx'
 export const PhotographyHero = defineCapsule({
   name: 'PhotographyHero',
   description:
-    'Full-bleed image-overlay hero for a fine-art / wedding photographer portfolio: a full-height section with an edge-to-edge background photo under a soft dark scrim, bottom-anchored content with an uppercase tracked kicker, a large serif display headline, a supporting paragraph, dual CTAs (solid light button + outlined ghost button), and an animated scroll cue. Both CTAs route through useNavigate. Use as the opening hero for wedding photographers, portrait studios, elopement shooters, or gallery-first visual creatives.',
+    'Full-bleed image-overlay hero for a fine-art / wedding photographer portfolio: a full-height section with an edge-to-edge background photo under a soft dark scrim, bottom-anchored content with an uppercase tracked kicker, a large serif display headline, a supporting paragraph, dual CTAs (solid light button + outlined ghost button), and an animated scroll cue. Both CTAs route through section-kit route links. Use as the opening hero for wedding photographers, portrait studios, elopement shooters, or gallery-first visual creatives.',
   props: z.object({
     /** Uppercase tracked kicker above the headline. */
     kicker: z.string().optional(),
@@ -38,7 +38,6 @@ export const PhotographyHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const kicker = props.kicker ?? 'Fine Art Photography'
     const heading =
       props.heading ?? 'Capturing authentic moments that last forever'
@@ -82,20 +81,18 @@ export const PhotographyHero = defineCapsule({
                 {subheading}
               </p>
               <div className="flex flex-col gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
+                <NavbarRouteLink
                   className="inline-flex items-center justify-center bg-background px-8 py-4 text-sm font-medium tracking-wide text-foreground transition-colors hover:bg-muted"
+                  href={primaryCta}
                 >
                   {primaryCta}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
+                </NavbarRouteLink>
+                <NavbarRouteLink
                   className="inline-flex items-center justify-center border border-background px-8 py-4 text-sm font-medium tracking-wide text-background transition-colors hover:bg-background/10"
+                  href={secondaryCta}
                 >
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </div>
             </div>
           </HeroContent>

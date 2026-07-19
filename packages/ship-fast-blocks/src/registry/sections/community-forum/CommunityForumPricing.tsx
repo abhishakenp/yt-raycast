@@ -23,13 +23,13 @@ import { Container } from '#/section-kit/Container.tsx'
  * landing page. Thin configuration over the shared `PricingGrid` composite: a centered
  * heading + description above a responsive 3-column grid of pricing cards on a muted band;
  * one tier can be highlighted. Each card shows a name, price, cadence, feature list with
- * checkmarks, and a CTA button. All buttons route through useNavigate. Use as the pricing
+ * checkmarks, and a CTA button. All buttons route through section-kit route links. Use as the pricing
  * section for SaaS community-platform products, subscription services, or membership tools.
  */
 export const CommunityForumPricing = defineCapsule({
   name: 'CommunityForumPricing',
   description:
-    '3-tier pricing table for a community-platform / discussion-forum landing page: a centered heading and description above a responsive 3-column grid of bordered pricing cards on a muted band, with one tier highlighted (dark foreground theme). Each card shows a badge, name, price, cadence, description, feature list with checkmarks, and a CTA button; all buttons route through useNavigate. Use as the pricing section for SaaS community-platform products, subscription services, or membership tools.',
+    '3-tier pricing table for a community-platform / discussion-forum landing page: a centered heading and description above a responsive 3-column grid of bordered pricing cards on a muted band, with one tier highlighted (dark foreground theme). Each card shows a badge, name, price, cadence, description, feature list with checkmarks, and a CTA button; all buttons route through section-kit route links. Use as the pricing section for SaaS community-platform products, subscription services, or membership tools.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),

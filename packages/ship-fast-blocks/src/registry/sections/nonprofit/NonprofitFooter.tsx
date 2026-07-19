@@ -23,7 +23,7 @@ import {
  * composite: a layered sprout-glyph logo mark beside the organization name, a
  * tagline, a social row, and a responsive grid of link columns (Get Involved,
  * About, Resources, Contact). The bottom bar carries an auto-updating copyright
- * line plus a note. Every link routes through useNavigate. Use as the site-wide
+ * line plus a note. Every link routes through section-kit route links. Use as the site-wide
  * footer for nonprofits, charities, NGOs, foundations, or humanitarian
  * organizations. Renders fully with no props via baked-in "Roots of Hope"
  * defaults.
@@ -50,7 +50,7 @@ function SproutMark({ className }: { className?: string }) {
 export const NonprofitFooter = defineCapsule({
   name: 'NonprofitFooter',
   description:
-    'Warm, mission-driven closing footer for a nonprofit / charity / NGO site built on the shared SiteFooter composite: a layered sprout-glyph logo mark + organization name, a tagline, a social row, and a responsive grid of link columns (Get Involved, About, Resources, Contact), with an auto-updating copyright line and note in the bottom bar. Every link routes through useNavigate. Use as the site-wide footer for nonprofits, charities, NGOs, foundations, or humanitarian organizations.',
+    'Warm, mission-driven closing footer for a nonprofit / charity / NGO site built on the shared SiteFooter composite: a layered sprout-glyph logo mark + organization name, a tagline, a social row, and a responsive grid of link columns (Get Involved, About, Resources, Contact), with an auto-updating copyright line and note in the bottom bar. Every link routes through section-kit route links. Use as the site-wide footer for nonprofits, charities, NGOs, foundations, or humanitarian organizations.',
   props: z.object({
     /** Organization / brand name shown beside the logo mark. */
     brand: z.string().optional(),

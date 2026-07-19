@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   LocalServiceBookingButton,
@@ -18,6 +17,7 @@ import {
   HeroStatBadgeSubtitle,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * HealthcareHero — split hero for a primary-care / medical-clinic landing page.
@@ -64,7 +64,6 @@ export const HealthcareHero = defineCapsule({
   }),
   lakebed: localServiceLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const badge = props.badge ?? 'Now accepting new patients'
     const headingBefore = props.headingBefore ?? 'Healthcare that puts '
     const highlight = props.highlight ?? 'you'
@@ -161,13 +160,12 @@ export const HealthcareHero = defineCapsule({
                   {primaryCta}
                   <ArrowRight className="ml-2" />
                 </LocalServiceBookingButton>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
+                <NavbarRouteLink
                   className="inline-flex items-center justify-center rounded-xl border-2 border-border bg-background px-8 py-4 font-semibold text-foreground transition-all hover:border-input hover:bg-muted"
+                  href={secondaryCta}
                 >
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </div>
               <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
                 {trust.map((t) => (

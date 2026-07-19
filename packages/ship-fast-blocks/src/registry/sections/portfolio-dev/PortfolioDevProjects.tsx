@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
@@ -13,11 +12,12 @@ import {
   PortfolioTag,
 } from '#/section-kit/PortfolioGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 export const PortfolioDevProjects = defineCapsule({
   name: 'PortfolioDevProjects',
   description:
-    'A selected-work project grid for a modern developer portfolio. Renders a SectionHeading (Work / Selected projects) above a responsive grid of project cards, each with an alt-driven thumbnail Image, a title, a short description, a mono tech-tag pill row, and Live / Code links that route via useNavigate. Token-only styling with mono accents, no hardcoded colors. Ideal for developer, engineer, and freelancer portfolios showcasing shipped projects.',
+    'A selected-work project grid for a modern developer portfolio. Renders a SectionHeading (Work / Selected projects) above a responsive grid of project cards, each with an alt-driven thumbnail Image, a title, a short description, a mono tech-tag pill row, and Live / Code links that route via section-kit route links. Token-only styling with mono accents, no hardcoded colors. Ideal for developer, engineer, and freelancer portfolios showcasing shipped projects.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -37,7 +37,6 @@ export const PortfolioDevProjects = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Work'
     const heading = props.heading ?? 'Selected projects'
     const subheading =
@@ -126,20 +125,18 @@ export const PortfolioDevProjects = defineCapsule({
                       </div>
                     ) : null}
                     <div className="mt-auto flex gap-4 pt-2">
-                      <button
-                        type="button"
-                        onClick={() => go(project.liveTarget ?? 'Work')}
+                      <NavbarRouteLink
                         className="text-sm font-semibold text-primary hover:underline"
+                        href={project.liveTarget ?? 'Work'}
                       >
                         Live
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => go(project.codeTarget ?? 'Work')}
+                      </NavbarRouteLink>
+                      <NavbarRouteLink
                         className="text-sm font-semibold text-muted-foreground hover:text-foreground"
+                        href={project.codeTarget ?? 'Work'}
                       >
                         Code
-                      </button>
+                      </NavbarRouteLink>
                     </div>
                   </PortfolioCaption>
                 </article>

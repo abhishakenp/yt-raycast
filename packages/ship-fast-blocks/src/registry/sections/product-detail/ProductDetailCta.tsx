@@ -9,7 +9,6 @@ import {
   CtaBandSubtitle,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { kitActionClasses } from '#/section-kit/types.ts'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
@@ -17,6 +16,7 @@ import {
   CommerceMutationSpinner,
 } from '../commerce/commerce-interactions.tsx'
 import { isProductPurchaseIntent } from './product-purchase-intent.ts'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 export const ProductDetailCta = defineCapsule({
   name: 'ProductDetailCta',
@@ -41,7 +41,6 @@ export const ProductDetailCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Ready when you are'
     const title = props.title ?? 'Get yours today'
     const subtitle =
@@ -102,11 +101,11 @@ export const ProductDetailCta = defineCapsule({
                   variant={action.variant}
                   invert={isInvert}
                   className="gap-2 disabled:pointer-events-none disabled:opacity-70"
-                  onClick={() => {
-                    go(action.target ?? action.label)
-                  }}
+                  asChild
                 >
-                  {action.label}
+                  <NavbarRouteLink href={action.target ?? action.label}>
+                    {action.label}
+                  </NavbarRouteLink>
                 </CtaAction>
               )
             })}

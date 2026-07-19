@@ -24,13 +24,13 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * intro above a responsive 3-column grid of membership cards (name, price +
  * billing period, checkmark perk bullets, and a CTA). The highlighted tier gets
  * a primary border, shadow, and a floating "Most popular" pill, and every CTA
- * routes through useNavigate. Use to present drop-in, monthly, and annual
+ * routes through section-kit route links. Use to present drop-in, monthly, and annual
  * membership options. Renders fully with no props via baked-in defaults.
  */
 export const YogaStudioPricing = defineCapsule({
   name: 'YogaStudioPricing',
   description:
-    'Membership-tier band for a yoga-studio page built on the shared PricingGrid composite: a centered heading + intro above a responsive 3-column grid of membership cards (name, price + billing period, checkmark perk bullets, and a CTA). The highlighted tier gets a primary border, shadow, and a floating pill, and every CTA routes through useNavigate. Use to present drop-in, monthly, and annual membership options.',
+    'Membership-tier band for a yoga-studio page built on the shared PricingGrid composite: a centered heading + intro above a responsive 3-column grid of membership cards (name, price + billing period, checkmark perk bullets, and a CTA). The highlighted tier gets a primary border, shadow, and a floating pill, and every CTA routes through section-kit route links. Use to present drop-in, monthly, and annual membership options.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),

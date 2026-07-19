@@ -21,13 +21,13 @@ import {
  * columns, with a bottom bar showing a copyright line and legal links. Warm,
  * airy, editorial indie-folk aesthetic on a soft neutral canvas with a top
  * border. The brand, email, every column link and legal link route through
- * useNavigate. Use as the closing site footer for musicians, bands, or artist
+ * section-kit route links. Use as the closing site footer for musicians, bands, or artist
  * EPK pages. Renders fully with no props via baked-in defaults.
  */
 export const MusicArtistFooter = defineCapsule({
   name: 'MusicArtistFooter',
   description:
-    'Multi-column closing footer for a music artist / band page: a wide brand block (thin wordmark, blurb, and a booking/press contact line with a routable email) spanning two columns, alongside several link columns, with a bottom bar showing a copyright line and legal links. Warm, airy editorial indie-folk aesthetic on a soft neutral canvas with a top border. The brand, email, every column link and legal link route through useNavigate. Use as the closing site footer for musicians, singers, bands, or artist EPK pages.',
+    'Multi-column closing footer for a music artist / band page: a wide brand block (thin wordmark, blurb, and a booking/press contact line with a routable email) spanning two columns, alongside several link columns, with a bottom bar showing a copyright line and legal links. Warm, airy editorial indie-folk aesthetic on a soft neutral canvas with a top border. The brand, email, every column link and legal link route through section-kit route links. Use as the closing site footer for musicians, singers, bands, or artist EPK pages.',
   props: z.object({
     /** Artist / band name shown as the brand wordmark. */
     brand: z.string().optional(),

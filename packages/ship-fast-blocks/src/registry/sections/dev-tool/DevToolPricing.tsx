@@ -26,7 +26,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * 3-column grid of plan cards (name, tagline, big price + period, a checklist of
  * features with brand checkmarks, and a CTA button). The featured tier gets a
  * brand-colored border, shadow, and a floating "Most Popular" pill. Every CTA
- * routes through useNavigate. Use to present subscription tiers for developer
+ * routes through section-kit route links. Use to present subscription tiers for developer
  * tools, API platforms, backend-as-a-service, or technical SaaS.
  */
 export const DevToolPricing = defineCapsule({

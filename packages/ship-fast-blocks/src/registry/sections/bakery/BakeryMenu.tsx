@@ -278,7 +278,7 @@ export const BakeryMenu = defineCapsule({
                 </MenuCategoryHeader>
                 <div className="space-y-6">
                   {breads.map((item) => (
-                    <MenuItemRow>
+                    <MenuItemRow key={`${breadsTitle}:${item.name}`}>
                       <MenuItemContent>
                         <MenuItemBody>
                           <MenuItemNameRow>
@@ -320,7 +320,7 @@ export const BakeryMenu = defineCapsule({
                 </MenuCategoryHeader>
                 <div className="space-y-6">
                   {pastries.map((item) => (
-                    <MenuItemRow>
+                    <MenuItemRow key={`${pastriesTitle}:${item.name}`}>
                       <MenuItemContent>
                         <MenuItemBody>
                           <MenuItemNameRow>
@@ -363,7 +363,7 @@ export const BakeryMenu = defineCapsule({
               </MenuCategoryHeader>
               <ResponsiveGrid cols="1-md-3" className="gap-6">
                 {cakes.map((item) => (
-                  <MenuItemRow>
+                  <MenuItemRow key={`${cakesTitle}:${item.name}`}>
                     <MenuItemContent>
                       <MenuItemBody>
                         <MenuItemNameRow>

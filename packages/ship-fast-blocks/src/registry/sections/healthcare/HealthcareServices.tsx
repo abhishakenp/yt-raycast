@@ -11,7 +11,7 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
  * HealthcareServices — medical services grid for a clinic / primary-care page.
  * A centered eyebrow chip, heading and intro above a responsive 1/2/3-column
  * grid of bordered cards; each card has a soft accent-tinted icon tile, a
- * title, a description, and a chevron "book" link routing through useNavigate.
+ * title, a description, and a chevron "book" link routing through section-kit route links.
  * Cards lift on hover. A built-in set of medical icons (shield, video, heart,
  * smiley, chart, beaker) rotates across the cards. Use for a services / "what
  * we treat" section of a doctors' office, family-medicine, women's-health,
@@ -29,7 +29,7 @@ import {
 export const HealthcareServices = defineCapsule({
   name: 'HealthcareServices',
   description:
-    "Medical services grid for a clinic / primary-care page: a centered eyebrow chip, heading and intro above a responsive 1/2/3-column grid of bordered cards, each with a soft accent-tinted icon tile, title, description, and a chevron 'book' link routing through useNavigate. Cards lift on hover and a built-in set of medical icons (shield, video, heart, smiley, chart, beaker) rotates across them. Use for a services / 'what we treat' section of a doctors' office, family-medicine, women's-health, pediatric, mental-health or telehealth clinic.",
+    "Medical services grid for a clinic / primary-care page: a centered eyebrow chip, heading and intro above a responsive 1/2/3-column grid of bordered cards, each with a soft accent-tinted icon tile, title, description, and a chevron 'book' link routing through section-kit route links. Cards lift on hover and a built-in set of medical icons (shield, video, heart, smiley, chart, beaker) rotates across them. Use for a services / 'what we treat' section of a doctors' office, family-medicine, women's-health, pediatric, mental-health or telehealth clinic.",
   props: z.object({
     /** Eyebrow chip text above the heading. */
     eyebrow: z.string().optional(),

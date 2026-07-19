@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroBackgroundImage,
@@ -13,6 +11,7 @@ import {
   HeroCta,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 export const WeddingHero = defineCapsule({
   name: 'WeddingHero',
@@ -32,7 +31,6 @@ export const WeddingHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? "We're getting married"
     const coupleNames = props.coupleNames ?? 'Ava & Liam'
     const date = props.date ?? 'September 14, 2025'
@@ -81,18 +79,18 @@ export const WeddingHero = defineCapsule({
                 variant="primary"
                 className="rounded-full px-8 py-3 text-sm font-semibold"
               >
-                <button type="button" onClick={() => go(primaryTarget)}>
+                <NavbarRouteLink href={primaryTarget}>
                   {primaryCta}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
               <HeroCta
                 asChild
                 variant="outline"
                 className="rounded-full border-border bg-card/10 px-8 py-3 text-sm font-semibold text-background backdrop-blur-sm hover:bg-card/20"
               >
-                <button type="button" onClick={() => go(secondaryTarget)}>
+                <NavbarRouteLink href={secondaryTarget}>
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
             </HeroActions>
           </HeroContent>

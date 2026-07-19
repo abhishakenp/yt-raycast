@@ -9,7 +9,7 @@ import { cn } from '#/lib/utils.ts'
  * plan inverts to a dark surface, lifts on desktop, and shows a floating badge.
  * Each card lists name, tagline, price + period, a checkmarked feature list, and
  * a full-width pill CTA, with a reassurance note centered below. CTAs route
- * through useNavigate. Use for subscription tiers on kids-education startups,
+ * through section-kit route links. Use for subscription tiers on kids-education startups,
  * children's e-learning platforms, tutoring services, and family learning apps.
  * Renders fully with no props via baked-in defaults.
  */
@@ -31,7 +31,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 export const KidsEducationPricing = defineCapsule({
   name: 'KidsEducationPricing',
   description:
-    "Friendly 3-tier pricing table for a kids / family learning platform: a centered eyebrow + heading + description intro above a responsive 3-up grid of rounded plan cards; the highlighted 'Most Popular' plan inverts to a dark surface, lifts on desktop, and shows a floating badge. Each card lists name, tagline, price + period, a checkmarked feature list, and a full-width pill CTA, with a reassurance note centered below. CTAs route through useNavigate. Use for subscription tiers on kids-education startups, children's e-learning platforms, tutoring services, and family learning apps.",
+    "Friendly 3-tier pricing table for a kids / family learning platform: a centered eyebrow + heading + description intro above a responsive 3-up grid of rounded plan cards; the highlighted 'Most Popular' plan inverts to a dark surface, lifts on desktop, and shows a floating badge. Each card lists name, tagline, price + period, a checkmarked feature list, and a full-width pill CTA, with a reassurance note centered below. CTAs route through section-kit route links. Use for subscription tiers on kids-education startups, children's e-learning platforms, tutoring services, and family learning apps.",
   props: z.object({
     /** Uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),

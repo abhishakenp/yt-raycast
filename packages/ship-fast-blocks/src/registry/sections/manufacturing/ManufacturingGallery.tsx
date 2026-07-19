@@ -8,7 +8,7 @@ import { cn } from '#/lib/utils.ts'
  * an eyebrow + heading with a right-aligned description, above a responsive
  * three-column grid of project tiles, each an alt-driven photo that zooms on
  * hover plus a title and material/spec caption, the whole tile routing through
- * useNavigate. Bold, industrial, gallery-like. Use to showcase recently
+ * section-kit route links. Bold, industrial, gallery-like. Use to showcase recently
  * machined parts on machine-shop or fabricator pages. Renders fully with no
  * props via baked-in defaults.
  */
@@ -24,7 +24,7 @@ import {
 export const ManufacturingGallery = defineCapsule({
   name: 'ManufacturingGallery',
   description:
-    'A dark portfolio / recent-projects gallery for a precision-manufacturing site: on a foreground-colored band, a header row pairs an eyebrow + heading with a right-aligned description, above a responsive three-column grid of project tiles, each an alt-driven photo that zooms on hover plus a title and material/spec caption, the whole tile routing through useNavigate. Bold, industrial, gallery-like. Use to showcase recently machined parts on machine-shop or fabricator pages.',
+    'A dark portfolio / recent-projects gallery for a precision-manufacturing site: on a foreground-colored band, a header row pairs an eyebrow + heading with a right-aligned description, above a responsive three-column grid of project tiles, each an alt-driven photo that zooms on hover plus a title and material/spec caption, the whole tile routing through section-kit route links. Bold, industrial, gallery-like. Use to showcase recently machined parts on machine-shop or fabricator pages.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),

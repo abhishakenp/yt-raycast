@@ -13,10 +13,6 @@ import type { CommerceLakebed } from './commerce-interactions.tsx'
 
 const navigate = vi.fn()
 
-vi.mock('#/lib/use-navigate.tsx', () => ({
-  useNavigate: () => navigate,
-}))
-
 if (typeof document === 'undefined') {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',

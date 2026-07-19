@@ -10,7 +10,7 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 export const TelehealthCta = defineCapsule({
   name: 'TelehealthCta',
@@ -27,7 +27,6 @@ export const TelehealthCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Ready when you are'
     const headline = props.headline ?? 'Talk to a doctor now'
     const subheading =
@@ -45,11 +44,15 @@ export const TelehealthCta = defineCapsule({
           <CtaBandTitle>{headline}</CtaBandTitle>
           <CtaBandSubtitle>{subheading}</CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction variant="primary" onClick={() => go(primaryTarget)}>
-              {primaryCta}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={primaryTarget}>
+                {primaryCta}
+              </NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" onClick={() => go(secondaryTarget)}>
-              {secondaryCta}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={secondaryTarget}>
+                {secondaryCta}
+              </NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

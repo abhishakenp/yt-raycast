@@ -3,9 +3,8 @@ import { useState, type ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { Card, ResponsiveGrid } from '#/section-kit/index.ts'
+import { Card, ResponsiveGrid, NavbarRouteLink } from '#/section-kit/index.ts'
 import { DashboardChart } from '#/section-kit/DashboardChart.tsx'
 
 /**
@@ -16,14 +15,14 @@ import { DashboardChart } from '#/section-kit/DashboardChart.tsx'
  * right a recent-activity feed card with a "View all" link and a list of items,
  * each a tone-tinted round icon + a sentence (with an optional bolded phrase) +
  * a relative timestamp. The range toggles are interactive; "View all" routes
- * through useNavigate. Use below the KPI row to pair a trend chart with a live
+ * through section-kit route links. Use below the KPI row to pair a trend chart with a live
  * activity stream. Renders fully with no props via baked-in revenue + activity
  * defaults.
  */
 export const DashboardChartActivity = defineCapsule({
   name: 'DashboardChartActivity',
   description:
-    "A two-column analytics band for a SaaS admin dashboard: on the left (2/3 width) a revenue panel with title/subtitle, range-toggle buttons and a smooth inline SVG area chart (indigo gradient fill, gridlines, end-point marker, axis-label strip); on the right a recent-activity feed card with a 'View all' link and tone-tinted round-icon items (sentence + optional bold phrase + timestamp). Range toggles are interactive; 'View all' routes through useNavigate. Use below the KPI row to pair a trend chart with a live activity stream.",
+    "A two-column analytics band for a SaaS admin dashboard: on the left (2/3 width) a revenue panel with title/subtitle, range-toggle buttons and a smooth inline SVG area chart (indigo gradient fill, gridlines, end-point marker, axis-label strip); on the right a recent-activity feed card with a 'View all' link and tone-tinted round-icon items (sentence + optional bold phrase + timestamp). Range toggles are interactive; 'View all' routes through section-kit route links. Use below the KPI row to pair a trend chart with a live activity stream.",
   props: z.object({
     /** Revenue chart panel: titles, range toggles and the plotted series. */
     chart: z
@@ -61,8 +60,6 @@ export const DashboardChartActivity = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
-
     const chartTitle = props.chart?.title ?? 'Revenue Overview'
     const chartSubtitle = props.chart?.subtitle ?? 'Monthly revenue performance'
     const chartRanges = props.chart?.ranges?.length
@@ -332,13 +329,12 @@ export const DashboardChartActivity = defineCapsule({
                 <h2 className="text-base font-semibold text-foreground">
                   {activityTitle}
                 </h2>
-                <button
-                  type="button"
-                  onClick={() => go(activityViewAll)}
+                <NavbarRouteLink
                   className="text-xs font-medium text-primary hover:text-primary/80"
+                  href={activityViewAll}
                 >
                   {activityViewAll}
-                </button>
+                </NavbarRouteLink>
               </div>
               <div className="space-y-4">
                 {activityItems.map((item, i) => {

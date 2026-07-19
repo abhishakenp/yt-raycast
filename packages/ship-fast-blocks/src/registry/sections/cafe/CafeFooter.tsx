@@ -17,14 +17,14 @@ import {
  * links, and plain-text contact lines. A bottom row holds an auto-updating
  * copyright line + legal links. The brand mark is an inline owl SVG (currentColor
  * → token), copied locally so the footer is self-contained. Every link routes
- * through useNavigate. Use as the closing footer for cafes, bakeries, tea
+ * through section-kit route links. Use as the closing footer for cafes, bakeries, tea
  * houses, or any warm food-and-drink small business. Renders fully with no props
  * via baked-in defaults.
  */
 export const CafeFooter = defineCapsule({
   name: 'CafeFooter',
   description:
-    'Rich multi-column footer for a cozy cafe page on a dark inverted band: four columns with brand mark + blurb, quick links, business links, and plain-text contact lines. A bottom row holds an auto-updating copyright line and legal links. The owl brand mark is an inline SVG (currentColor → token), copied locally so the footer is self-contained. Every link routes through useNavigate. Use as the closing footer for cafes, bakeries, tea houses, or warm food-and-drink small businesses.',
+    'Rich multi-column footer for a cozy cafe page on a dark inverted band: four columns with brand mark + blurb, quick links, business links, and plain-text contact lines. A bottom row holds an auto-updating copyright line and legal links. The owl brand mark is an inline SVG (currentColor → token), copied locally so the footer is self-contained. Every link routes through section-kit route links. Use as the closing footer for cafes, bakeries, tea houses, or warm food-and-drink small businesses.',
   props: z.object({
     /** Cafe / brand name shown with the owl mark. */
     brand: z.string().optional(),

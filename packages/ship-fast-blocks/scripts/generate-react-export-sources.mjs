@@ -341,6 +341,21 @@ const importRequestsFromSource = (path, source) => {
     }
   }
 
+  const visit = (node) => {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === 'require'
+    ) {
+      const [argument] = node.arguments
+      if (argument && ts.isStringLiteral(argument)) {
+        requests.push({ moduleName: argument.text, names: null })
+      }
+    }
+    ts.forEachChild(node, visit)
+  }
+  visit(sourceFile)
+
   return requests
 }
 

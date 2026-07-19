@@ -28,13 +28,13 @@ import {
  * soft internal glow, a "Most popular" pill, and a shimmer-sweep primary CTA.
  * A reassurance chip row closes the section, and the backdrop continues the
  * page's light-field (hairline rails, seam hairline). Any tier count renders
- * cleanly. CTAs route through useNavigate. Use to convert prospective members
+ * cleanly. CTAs route through section-kit route links. Use to convert prospective members
  * for coworking spaces, shared offices, or flex-office providers.
  */
 export const CoworkingPricing = defineCapsule({
   name: 'CoworkingPricing',
   description:
-    "Calm dimensional membership pricing for a coworking or shared-workspace page: centered header (eyebrow chip + display heading + supporting line) above frosted glass tier cards — gradient hairlines, large tracked prices, check-tile benefit lists, full-width CTAs. The highlighted tier is elevated with a primary ring, internal glow, 'Most popular' pill, and shimmer-sweep primary CTA; a reassurance chip row (no setup fees, month-to-month, cancel anytime) closes the section over a connected light-field backdrop. CTAs route through useNavigate. Use to convert prospective members for coworking spaces, shared offices, or flex-office providers.",
+    "Calm dimensional membership pricing for a coworking or shared-workspace page: centered header (eyebrow chip + display heading + supporting line) above frosted glass tier cards — gradient hairlines, large tracked prices, check-tile benefit lists, full-width CTAs. The highlighted tier is elevated with a primary ring, internal glow, 'Most popular' pill, and shimmer-sweep primary CTA; a reassurance chip row (no setup fees, month-to-month, cancel anytime) closes the section over a connected light-field backdrop. CTAs route through section-kit route links. Use to convert prospective members for coworking spaces, shared offices, or flex-office providers.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),

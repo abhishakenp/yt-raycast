@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroBackgroundImage,
@@ -13,6 +11,7 @@ import {
   HeroCta,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * PlumbingHvacHero — full-bleed, image-forward hero for a local plumbing & HVAC
@@ -22,14 +21,14 @@ import { Container } from '#/section-kit/Container.tsx'
  * an uppercase "24/7 Emergency Service" eyebrow pill, a large headline, a
  * supporting paragraph, dual CTAs (filled "Call Now" + outlined translucent
  * "Book Online"), and a trust-badge row (Licensed, Insured, years in business,
- * star rating). CTAs route through useNavigate. Use as the opening hero for
+ * star rating). CTAs route through section-kit route links. Use as the opening hero for
  * plumbers, HVAC contractors, drain/sewer pros, and water-heater installers.
  * Renders fully with no props via baked-in defaults.
  */
 export const PlumbingHvacHero = defineCapsule({
   name: 'PlumbingHvacHero',
   description:
-    "Full-bleed image-forward hero for a local plumbing & HVAC trade site built around the 24/7 emergency angle: a photo of a uniformed technician at work fills the band edge to edge under a token-based dark overlay so light text stays readable. Content has an uppercase '24/7 Emergency Service' eyebrow pill, a large headline, a supporting paragraph, dual CTAs (filled 'Call Now' + outlined translucent 'Book Online'), and a trust-badge row (Licensed, Insured, years in business, star rating). CTAs route through useNavigate. Use as the opening hero for plumbers, HVAC contractors, drain/sewer pros, and water-heater installers.",
+    "Full-bleed image-forward hero for a local plumbing & HVAC trade site built around the 24/7 emergency angle: a photo of a uniformed technician at work fills the band edge to edge under a token-based dark overlay so light text stays readable. Content has an uppercase '24/7 Emergency Service' eyebrow pill, a large headline, a supporting paragraph, dual CTAs (filled 'Call Now' + outlined translucent 'Book Online'), and a trust-badge row (Licensed, Insured, years in business, star rating). CTAs route through section-kit route links. Use as the opening hero for plumbers, HVAC contractors, drain/sewer pros, and water-heater installers.",
   props: z.object({
     /** Small uppercase eyebrow pill above the headline. */
     eyebrow: z.string().optional(),
@@ -52,7 +51,6 @@ export const PlumbingHvacHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? '24/7 Emergency Service'
     const heading =
       props.heading ?? 'Fast, reliable plumbing & HVAC — any hour, any day'
@@ -105,18 +103,18 @@ export const PlumbingHvacHero = defineCapsule({
                 variant="primary"
                 className="rounded-full px-8 py-4 font-semibold"
               >
-                <button type="button" onClick={() => go(primaryTarget)}>
+                <NavbarRouteLink href={primaryTarget}>
                   {primaryCta}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
               <HeroCta
                 asChild
                 variant="outline"
                 className="rounded-full border-border bg-card/10 px-8 py-4 font-semibold text-background backdrop-blur-sm hover:bg-card/20"
               >
-                <button type="button" onClick={() => go(secondaryTarget)}>
+                <NavbarRouteLink href={secondaryTarget}>
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
             </HeroActions>
 

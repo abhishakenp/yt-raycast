@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { ArticleGrid } from '#/section-kit/ArticleGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { StoryGrid } from '#/section-kit/StoryGrid.tsx'
@@ -18,20 +17,21 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 import { useSyncPublicationArticles } from '../blog/publication-interactions.tsx'
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * BlogPostStoryGrid — related-articles cards grid for an editorial blog post
  * detail page. A muted-background band with a left-aligned "Related reading"
  * heading above a responsive 1/2/3-column grid of article cards; each card has
  * a hover-zoom cover image, category/date meta, a bold title, and a short
- * excerpt. All cards are clickable and route through useNavigate. Use as the
+ * excerpt. All cards are clickable and route through section-kit route links. Use as the
  * "related reading" / "more stories" section below the body on blogs,
  * magazines, journals, or editorial reading pages.
  */
 export const BlogPostStoryGrid = defineCapsule({
   name: 'BlogPostStoryGrid',
   description:
-    "Related-articles cards grid for an editorial blog post detail page: a muted-background band with a left-aligned 'Related reading' heading above a responsive 1/2/3-column grid of article cards, each with a hover-zoom cover image, category/date meta, a bold title, and a short excerpt. All cards are clickable and route through useNavigate. Use as the 'related reading' / 'more stories' section below the body on blogs, magazines, journals, or editorial reading pages.",
+    "Related-articles cards grid for an editorial blog post detail page: a muted-background band with a left-aligned 'Related reading' heading above a responsive 1/2/3-column grid of article cards, each with a hover-zoom cover image, category/date meta, a bold title, and a short excerpt. All cards are clickable and route through section-kit route links. Use as the 'related reading' / 'more stories' section below the body on blogs, magazines, journals, or editorial reading pages.",
   props: z.object({
     /** Section heading above the grid. */
     heading: z.string().optional(),
@@ -51,7 +51,6 @@ export const BlogPostStoryGrid = defineCapsule({
   }),
   lakebed: publicationLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Related reading'
     const items = props.items?.length
       ? props.items
@@ -109,23 +108,29 @@ export const BlogPostStoryGrid = defineCapsule({
           />
           <ArticleGrid cols="1-md-2-3">
             {items.map((post) => (
-              <StoryCard onClick={() => go(post.title)} variant="simple">
-                <StoryCardFigure>
-                  <StoryCardImage alt={post.imageAlt} w={600} h={400} />
-                </StoryCardFigure>
-                <StoryCardBody>
-                  <StoryCardMeta>
-                    {
-                      <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
-                        <span>{post.category}</span>
-                        <span aria-hidden="true">•</span>
-                        <time>{post.date}</time>
-                      </div>
-                    }
-                  </StoryCardMeta>
-                  <StoryCardTitle>{post.title}</StoryCardTitle>
-                  <StoryCardExcerpt>{post.excerpt}</StoryCardExcerpt>
-                </StoryCardBody>
+              <StoryCard
+                key={`${post.category}:${post.title}`}
+                variant="simple"
+                asChild
+              >
+                <NavbarRouteLink href={post.title}>
+                  <StoryCardFigure>
+                    <StoryCardImage alt={post.imageAlt} w={600} h={400} />
+                  </StoryCardFigure>
+                  <StoryCardBody>
+                    <StoryCardMeta>
+                      {
+                        <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>{post.category}</span>
+                          <span aria-hidden="true">•</span>
+                          <time>{post.date}</time>
+                        </div>
+                      }
+                    </StoryCardMeta>
+                    <StoryCardTitle>{post.title}</StoryCardTitle>
+                    <StoryCardExcerpt>{post.excerpt}</StoryCardExcerpt>
+                  </StoryCardBody>
+                </NavbarRouteLink>
               </StoryCard>
             ))}
           </ArticleGrid>

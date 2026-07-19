@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   HeroSection,
@@ -14,6 +13,7 @@ import {
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { StarRating } from '#/section-kit/StarRating.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * LandscapingHero — calm, premium two-column hero for a landscaping / outdoor-
@@ -22,7 +22,7 @@ import { StarRating } from '#/section-kit/StarRating.tsx'
  * star-rated social-proof row with overlapping customer avatars. Right: a tall
  * rounded garden photo with a floating "projects completed" stat card overlapping
  * its lower-left corner. Sage-green accent, amber stars, generous whitespace and
- * soft shadows. CTAs route through useNavigate; all imagery uses the alt-driven
+ * soft shadows. CTAs route through section-kit route links; all imagery uses the alt-driven
  * Image component. Use as the opening hero for landscapers, lawn-care and garden
  * design services. Renders fully with no props via baked-in "Earth & Edge"
  * defaults.
@@ -30,7 +30,7 @@ import { StarRating } from '#/section-kit/StarRating.tsx'
 export const LandscapingHero = defineCapsule({
   name: 'LandscapingHero',
   description:
-    'Calm, premium two-column hero for a landscaping / outdoor-design company on a warm stone band: left column with a large headline, supporting paragraph, dual pill CTAs (filled primary like Request Free Consultation + outlined secondary like View Our Work), and a star-rated social-proof row with overlapping customer avatars; right column with a tall rounded garden photo and a floating projects-completed stat card overlapping its lower-left corner. Sage-green accent, amber stars, generous whitespace and soft shadows; CTAs route through useNavigate and imagery uses the alt-driven Image component. Use as the opening hero for landscapers, lawn-care and yard-maintenance services, garden designers or hardscaping contractors.',
+    'Calm, premium two-column hero for a landscaping / outdoor-design company on a warm stone band: left column with a large headline, supporting paragraph, dual pill CTAs (filled primary like Request Free Consultation + outlined secondary like View Our Work), and a star-rated social-proof row with overlapping customer avatars; right column with a tall rounded garden photo and a floating projects-completed stat card overlapping its lower-left corner. Sage-green accent, amber stars, generous whitespace and soft shadows; CTAs route through section-kit route links and imagery uses the alt-driven Image component. Use as the opening hero for landscapers, lawn-care and yard-maintenance services, garden designers or hardscaping contractors.',
   props: z.object({
     heading: z.string().optional(),
     subheading: z.string().optional(),
@@ -45,7 +45,6 @@ export const LandscapingHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading =
       props.heading ?? 'Transform your outdoor space into a living sanctuary'
     const subheading =
@@ -80,18 +79,18 @@ export const LandscapingHero = defineCapsule({
                   variant="primary"
                   className="rounded-full px-8 py-4 text-base shadow-sm"
                 >
-                  <button type="button" onClick={() => go(primaryCta)}>
+                  <NavbarRouteLink href={primaryCta}>
                     {primaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
                 <HeroCta
                   asChild
                   variant="outline"
                   className="rounded-full bg-background px-8 py-4 text-base text-primary hover:bg-accent"
                 >
-                  <button type="button" onClick={() => go(secondaryCta)}>
+                  <NavbarRouteLink href={secondaryCta}>
                     {secondaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
               <div className="flex items-center gap-6 pt-4">
@@ -119,7 +118,6 @@ export const LandscapingHero = defineCapsule({
                 alt={imageAlt}
                 w={800}
                 h={600}
-
                 className="h-[400px] w-full shadow-xl lg:h-[500px] rounded-xl"
               />
               <div className="absolute -bottom-6 -left-6 hidden rounded-xl bg-card p-6 shadow-lg sm:block">

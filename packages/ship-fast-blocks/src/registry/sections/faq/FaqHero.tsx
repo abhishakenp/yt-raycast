@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import {
@@ -11,7 +10,9 @@ import {
   SearchFieldIcon,
   SearchFieldInput,
   SearchFieldHint,
+  SearchSubmit,
 } from '#/section-kit/SearchForm.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * FaqHero — calm centered search hero for a help-center / FAQ / knowledge-base page.
@@ -19,13 +20,13 @@ import {
  * heading, a supporting lead paragraph, a wide rounded search input with a leading
  * magnifier icon and a trailing ⌘K keyboard-shortcut hint, and a row of "Popular:"
  * keyword chips below. Submitting the search and tapping chips route through
- * useNavigate. Use as the top search section for SaaS knowledge bases, help centers,
+ * section-kit route links. Use as the top search section for SaaS knowledge bases, help centers,
  * documentation landings, or support pages. Renders fully with no props.
  */
 export const FaqHero = defineCapsule({
   name: 'FaqHero',
   description:
-    "Calm centered search hero for a help-center / FAQ / knowledge-base page with a light, documentation-style band (no big marketing imagery): large centered heading, a supporting lead paragraph, a wide rounded search input with a leading magnifier icon and a trailing ⌘K keyboard-shortcut hint, and a row of 'Popular:' keyword chips below. Search submit and chip taps route through useNavigate. Use as the top search section for SaaS knowledge bases, help centers, documentation landings, or support pages.",
+    "Calm centered search hero for a help-center / FAQ / knowledge-base page with a light, documentation-style band (no big marketing imagery): large centered heading, a supporting lead paragraph, a wide rounded search input with a leading magnifier icon and a trailing ⌘K keyboard-shortcut hint, and a row of 'Popular:' keyword chips below. Search submit and chip taps route through section-kit route links. Use as the top search section for SaaS knowledge bases, help centers, documentation landings, or support pages.",
   props: z.object({
     /** Hero heading. */
     heading: z.string().optional(),
@@ -42,7 +43,6 @@ export const FaqHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'How can we help you?'
     const subheading =
       props.subheading ??
@@ -73,13 +73,7 @@ export const FaqHero = defineCapsule({
               {subheading}
             </p>
 
-            <SearchForm
-              className="mx-auto max-w-2xl"
-              onSubmit={(e) => {
-                e.preventDefault()
-                go(searchTarget)
-              }}
-            >
+            <SearchForm className="mx-auto max-w-2xl">
               <SearchField>
                 <SearchFieldIcon>
                   <svg
@@ -101,12 +95,17 @@ export const FaqHero = defineCapsule({
                   type="search"
                   placeholder={searchPlaceholder}
                   aria-label="Search help articles"
-                  className="pr-16 focus:border-transparent focus:ring-ring"
+                  className="pr-24 focus:border-transparent focus:ring-ring"
                 />
                 <SearchFieldHint>
-                  <kbd className="hidden items-center rounded border border-border bg-muted px-2 py-1 text-xs font-medium text-muted-foreground sm:inline-flex">
-                    ⌘K
-                  </kbd>
+                  <SearchSubmit
+                    asChild
+                    className="rounded-lg px-3 py-1.5 text-xs"
+                  >
+                    <NavbarRouteLink href={searchTarget}>
+                      Search
+                    </NavbarRouteLink>
+                  </SearchSubmit>
                 </SearchFieldHint>
               </SearchField>
             </SearchForm>
@@ -116,14 +115,13 @@ export const FaqHero = defineCapsule({
                 {popularLabel}
               </span>
               {popular.map((chip) => (
-                <button
+                <NavbarRouteLink
                   key={chip}
-                  type="button"
-                  onClick={() => go(chip)}
                   className="inline-flex items-center rounded-full bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                  href={chip}
                 >
                   {chip}
-                </button>
+                </NavbarRouteLink>
               ))}
             </div>
           </HeroContent>

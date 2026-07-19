@@ -17,14 +17,14 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * centered serif header sits above a responsive 1/2/3-column grid of property
  * cards. Each card has an alt-driven photo with an optional corner badge (e.g.
  * "New" / "Open House"), a bold price, a beds / baths / sqft spec row, the
- * address, and a "View" link that routes through useNavigate. Use to showcase
+ * address, and a "View" link that routes through section-kit route links. Use to showcase
  * featured or recently listed homes on a brokerage or agent site. Renders fully
  * with no props via baked-in defaults (six listings).
  */
 export const RealEstateGallery = defineCapsule({
   name: 'RealEstateGallery',
   description:
-    "Featured-listings grid for a premium brokerage: a centered serif header above a responsive 1/2/3-column grid of property cards. Each card has an alt-driven photo with an optional corner badge, a bold price, a beds / baths / sqft spec row, the address, and a 'View' link that routes through useNavigate. Use to showcase featured or recently listed homes on a brokerage or agent site.",
+    "Featured-listings grid for a premium brokerage: a centered serif header above a responsive 1/2/3-column grid of property cards. Each card has an alt-driven photo with an optional corner badge, a bold price, a beds / baths / sqft spec row, the address, and a 'View' link that routes through section-kit route links. Use to showcase featured or recently listed homes on a brokerage or agent site.",
   props: z.object({
     /** Section heading (serif, large). */
     heading: z.string().optional(),

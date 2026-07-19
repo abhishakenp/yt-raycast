@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 /**
@@ -10,17 +9,19 @@ import { Image } from '#/lib/img.tsx'
  * (large numbered primary tiles with connecting lines on desktop), followed by a
  * muted rounded panel pairing a portfolio-transfer headline + paragraph and an
  * arrow link with a supporting dashboard photo. The transfer link routes through
- * useNavigate. Use to explain how to get started — create account, fund,
+ * section-kit route links. Use to explain how to get started — create account, fund,
  * trade — on a brokerage or trading-app page. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { StepTimeline, StepItem } from '#/section-kit/StepTimeline.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const InvestingSteps = defineCapsule({
   name: 'InvestingSteps',
   description:
-    'Onboarding timeline + transfer CTA for an investing / fintech page: a centered heading + lead above a responsive 3-step horizontal timeline (large numbered primary tiles with connecting lines on desktop), followed by a muted rounded panel pairing a portfolio-transfer headline + paragraph and an arrow link with a supporting dashboard photo. The transfer link routes through useNavigate. Use to explain how to get started (create account, fund, trade) on a brokerage or trading-app page.',
+    'Onboarding timeline + transfer CTA for an investing / fintech page: a centered heading + lead above a responsive 3-step horizontal timeline (large numbered primary tiles with connecting lines on desktop), followed by a muted rounded panel pairing a portfolio-transfer headline + paragraph and an arrow link with a supporting dashboard photo. The transfer link routes through section-kit route links. Use to explain how to get started (create account, fund, trade) on a brokerage or trading-app page.',
   props: z.object({
     /** Brand / platform name woven into the transfer copy. */
     brand: z.string().optional(),
@@ -48,7 +49,6 @@ export const InvestingSteps = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Vestora'
     const heading = props.heading ?? 'Start investing in minutes'
     const description =
@@ -141,14 +141,13 @@ export const InvestingSteps = defineCapsule({
                 <p className="mb-6 leading-relaxed text-muted-foreground">
                   {transferDescription}
                 </p>
-                <button
-                  type="button"
-                  onClick={() => go(transferCta)}
+                <NavbarRouteLink
                   className="group inline-flex items-center gap-2 font-medium text-foreground transition-all hover:gap-3"
+                  href={transferCta}
                 >
                   {transferCta}
                   <ArrowRight className="size-5" />
-                </button>
+                </NavbarRouteLink>
               </div>
               <div className="relative h-64 overflow-hidden rounded-xl lg:h-80">
                 <Image

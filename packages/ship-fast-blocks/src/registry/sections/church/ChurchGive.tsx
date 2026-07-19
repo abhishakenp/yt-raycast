@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   FeatureListItem,
@@ -16,20 +15,21 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { DonationBand } from '#/section-kit/DonationBand.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * ChurchGive — generosity / give split section for a church or faith-community site.
  * Left column: eyebrow, heading, description, icon-accented giving-method list, and
  * dual pill CTAs. Right column: a staggered 2-column photo collage with two images
  * and two stat cards (one on muted bg, one on primary bg). Warm, mission-focused,
- * and action-oriented. CTAs route through useNavigate. Use as the giving / donate
+ * and action-oriented. CTAs route through section-kit route links. Use as the giving / donate
  * section for churches, worship centers, ministries, or religious nonprofits.
  * Renders fully with no props via baked-in defaults.
  */
 export const ChurchGive = defineCapsule({
   name: 'ChurchGive',
   description:
-    'Generosity / give split section for a church or faith-community site: left column with eyebrow, heading, description, icon-accented giving-method list, and dual pill CTAs; right column with a staggered 2-column photo collage and two stat cards (one on muted bg, one on primary bg). Warm, mission-focused, and action-oriented. CTAs route through useNavigate. Use as the giving / donate section for churches, worship centers, ministries, or religious nonprofits.',
+    'Generosity / give split section for a church or faith-community site: left column with eyebrow, heading, description, icon-accented giving-method list, and dual pill CTAs; right column with a staggered 2-column photo collage and two stat cards (one on muted bg, one on primary bg). Warm, mission-focused, and action-oriented. CTAs route through section-kit route links. Use as the giving / donate section for churches, worship centers, ministries, or religious nonprofits.',
   props: z.object({
     /** Small uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -56,7 +56,6 @@ export const ChurchGive = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Generosity'
     const heading = props.heading ?? 'Give with purpose'
     const description =
@@ -157,7 +156,7 @@ export const ChurchGive = defineCapsule({
                 />
                 <div className="mb-10 space-y-4">
                   {points.map((point, i) => (
-                    <FeatureListItem>
+                    <FeatureListItem key={point.title}>
                       <FeatureListItemIcon shape="circle">
                         {giveIcons[i % giveIcons.length]}
                       </FeatureListItemIcon>
@@ -173,20 +172,18 @@ export const ChurchGive = defineCapsule({
                   ))}
                 </div>
                 <div className="flex flex-col gap-4 sm:flex-row">
-                  <button
-                    type="button"
-                    onClick={() => go(primaryCta)}
+                  <NavbarRouteLink
                     className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                    href={primaryCta}
                   >
                     {primaryCta}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => go(secondaryCta)}
+                  </NavbarRouteLink>
+                  <NavbarRouteLink
                     className="inline-flex items-center justify-center rounded-full border border-border bg-card px-8 py-4 text-sm font-medium text-card-foreground transition-colors hover:bg-accent"
+                    href={secondaryCta}
                   >
                     {secondaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </div>
               </div>
               <ResponsiveGrid cols="2" className="gap-4">

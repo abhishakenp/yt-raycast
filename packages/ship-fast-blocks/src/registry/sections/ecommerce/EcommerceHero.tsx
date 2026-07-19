@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroBadge,
@@ -22,6 +21,7 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * EcommerceHero — promotional split hero for a general online store. A two-column
@@ -29,7 +29,7 @@ import {
  * headline, a supporting subheading, dual CTAs (a solid primary "Shop now" + an
  * outlined "Explore"), and a small trust row (free shipping · easy returns · secure
  * checkout); on the right a large hero product Image in a rounded muted card with a
- * floating price/discount badge overlay. Every CTA routes through useNavigate and the
+ * floating price/discount badge overlay. Every CTA routes through section-kit route links and the
  * product photo uses the alt-driven Image component. Use as the opening hero for
  * general retail storefronts, marketplaces, deal/sale landing pages, or any
  * promotional online shop that wants a balanced text + product-photo split rather
@@ -38,7 +38,7 @@ import {
 export const EcommerceHero = defineCapsule({
   name: 'EcommerceHero',
   description:
-    "Promotional split hero for a general online store: a two-column (lg:grid-cols-2) layout with a sale eyebrow pill, an oversized bold sans headline, a supporting subheading, dual CTAs (a solid primary 'Shop now' + an outlined 'Explore'), and a small trust row on the left, plus a large hero product Image in a rounded muted card with a floating price/discount badge overlay on the right. Every CTA routes through useNavigate and the product photo uses the alt-driven Image component. Use as the opening hero for general retail storefronts, marketplaces, deal/sale landing pages, or any promotional online shop that wants a balanced text + product-photo split rather than a full-bleed editorial image.",
+    "Promotional split hero for a general online store: a two-column (lg:grid-cols-2) layout with a sale eyebrow pill, an oversized bold sans headline, a supporting subheading, dual CTAs (a solid primary 'Shop now' + an outlined 'Explore'), and a small trust row on the left, plus a large hero product Image in a rounded muted card with a floating price/discount badge overlay on the right. Every CTA routes through section-kit route links and the product photo uses the alt-driven Image component. Use as the opening hero for general retail storefronts, marketplaces, deal/sale landing pages, or any promotional online shop that wants a balanced text + product-photo split rather than a full-bleed editorial image.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -56,7 +56,6 @@ export const EcommerceHero = defineCapsule({
   }),
   lakebed: commerceCartLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const heroEyebrow = props.eyebrow ?? 'Summer Sale — Up to 50% Off'
     const heroHeading = props.heading ?? 'Everything you love, now for less'
     const heroSub =
@@ -107,18 +106,18 @@ export const EcommerceHero = defineCapsule({
                 variant="primary"
                 className="w-full rounded-lg px-8 py-4 text-sm font-semibold tracking-wide transition-opacity hover:opacity-90 sm:w-auto"
               >
-                <button type="button" onClick={() => go(heroPrimary)}>
+                <NavbarRouteLink href={heroPrimary}>
                   {heroPrimary}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
               <HeroCta
                 asChild
                 variant="outline"
                 className="w-full rounded-lg px-8 py-4 text-sm font-semibold tracking-wide transition-colors hover:bg-muted sm:w-auto"
               >
-                <button type="button" onClick={() => go(heroSecondary)}>
+                <NavbarRouteLink href={heroSecondary}>
                   {heroSecondary}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
               <CommerceAddItemButton
                 lakebed={lakebed}
@@ -151,7 +150,6 @@ export const EcommerceHero = defineCapsule({
               alt={heroImageAlt}
               w={1200}
               h={1200}
-
               className="bg-muted"
             />
             <div className="absolute right-4 top-4 rounded-xl bg-background px-4 py-2 text-sm font-semibold text-foreground shadow-lg sm:right-6 sm:top-6">

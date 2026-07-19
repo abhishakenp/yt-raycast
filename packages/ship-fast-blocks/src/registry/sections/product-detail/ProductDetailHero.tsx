@@ -3,7 +3,6 @@ import { z } from 'zod/v4'
 
 import { useState } from 'react'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { HeroSection, HeroMediaPanel } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
@@ -14,6 +13,7 @@ import {
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
 import { isProductPurchaseIntent } from './product-purchase-intent.ts'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 export const ProductDetailHero = defineCapsule({
   name: 'ProductDetailHero',
@@ -34,7 +34,6 @@ export const ProductDetailHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const [sel, setSel] = useState(0)
     const title = props.title ?? 'Aurora Pro Headphones'
     const price = props.price ?? '$299'
@@ -82,7 +81,6 @@ export const ProductDetailHero = defineCapsule({
               alt={imageAlt}
               w={800}
               h={800}
-
               className="aspect-square border border-border rounded-xl"
             />
           </div>
@@ -155,13 +153,12 @@ export const ProductDetailHero = defineCapsule({
                   {primaryCta}
                 </CommerceAddItemButton>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
+                <NavbarRouteLink
                   className="flex-1 rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground transition hover:bg-primary/90"
+                  href={primaryCta}
                 >
                   {primaryCta}
-                </button>
+                </NavbarRouteLink>
               )}
               {isProductPurchaseIntent(secondaryCta) ? (
                 <CommerceAddItemButton
@@ -178,13 +175,12 @@ export const ProductDetailHero = defineCapsule({
                   {secondaryCta}
                 </CommerceAddItemButton>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
+                <NavbarRouteLink
                   className="flex-1 rounded-full border border-border bg-background px-6 py-3 font-semibold text-foreground transition hover:bg-muted"
+                  href={secondaryCta}
                 >
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               )}
             </div>
           </div>

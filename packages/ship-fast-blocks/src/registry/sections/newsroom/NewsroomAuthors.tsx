@@ -3,7 +3,6 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   PersonCard,
   PersonCardName,
@@ -14,6 +13,7 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * NewsroomAuthors — editorial "meet our columnists" block for a digital
@@ -21,14 +21,14 @@ import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
  * 1/2/3/4-up grid of contributor cards, each with a round alt-driven avatar, a
  * serif name, a primary-colored beat/role, a one-to-two-line bio, the linked
  * title of their latest column, and small social handles. Links route through
- * useNavigate; avatars use the Image component. Renders fully with no props.
+ * section-kit route links; avatars use the Image component. Renders fully with no props.
  * Use to introduce columnists, correspondents, and contributors for a news,
  * magazine, or publication site.
  */
 export const NewsroomAuthors = defineCapsule({
   name: 'NewsroomAuthors',
   description:
-    "Editorial 'meet our columnists' block for a digital newsroom or magazine: a serif heading + supporting lede above a responsive 1/2/3/4-up grid of contributor cards, each with a round alt-driven avatar, a serif name, a primary-colored beat/role, a one-to-two-line bio, the linked title of their latest column, and small social handles. Links route through useNavigate; avatars use the Image component. Use to introduce columnists, correspondents, and contributors for a news, magazine, or publication site.",
+    "Editorial 'meet our columnists' block for a digital newsroom or magazine: a serif heading + supporting lede above a responsive 1/2/3/4-up grid of contributor cards, each with a round alt-driven avatar, a serif name, a primary-colored beat/role, a one-to-two-line bio, the linked title of their latest column, and small social handles. Links route through section-kit route links; avatars use the Image component. Use to introduce columnists, correspondents, and contributors for a news, magazine, or publication site.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -49,7 +49,6 @@ export const NewsroomAuthors = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Meet our columnists'
     const subheading =
       props.subheading ??
@@ -138,7 +137,6 @@ export const NewsroomAuthors = defineCapsule({
               <PersonCard
                 key={a.name}
                 variant="outlined"
-
                 className="p-6 rounded-2xl"
               >
                 <Image
@@ -161,31 +159,28 @@ export const NewsroomAuthors = defineCapsule({
                   <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     Latest column
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => go(a.latest)}
+                  <NavbarRouteLink
                     className="text-left text-sm font-semibold text-accent underline-offset-4 hover:underline"
+                    href={a.latest}
                   >
                     {a.latest}
-                  </button>
+                  </NavbarRouteLink>
                   <div className="mt-4 flex items-center gap-3 border-t border-border pt-4 text-xs text-muted-foreground">
-                    <button
-                      type="button"
+                    <NavbarRouteLink
                       aria-label={`Follow ${a.name} on X`}
-                      onClick={() => go(`${a.name} on X`)}
                       className="transition-colors hover:text-foreground"
+                      href={`${a.name} on X`}
                     >
                       @{a.name.split(' ')[0]?.toLowerCase()}
-                    </button>
+                    </NavbarRouteLink>
                     <span aria-hidden="true">·</span>
-                    <button
-                      type="button"
+                    <NavbarRouteLink
                       aria-label={`Email ${a.name}`}
-                      onClick={() => go(`Email ${a.name}`)}
                       className="transition-colors hover:text-foreground"
+                      href={`Email ${a.name}`}
                     >
                       Email
-                    </button>
+                    </NavbarRouteLink>
                   </div>
                 </div>
               </PersonCard>

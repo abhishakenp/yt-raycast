@@ -25,7 +25,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * (solid primary + outlined secondary), and a row of check-marked trust proofs.
  * Right column shows a security command-center photo on a rotated gradient
  * backdrop with a floating "Threat Blocked" alert card overlapping its corner.
- * Both CTAs and the trust chips route through useNavigate. Use as the opening
+ * Both CTAs and the trust chips route through section-kit route links. Use as the opening
  * hero for cybersecurity vendors, SOC/MDR/XDR providers, threat-detection,
  * zero-trust, or cloud-security SaaS. Renders fully with no props via baked-in
  * "SentinelGuard" defaults.
@@ -160,7 +160,6 @@ export const CybersecurityHero = defineCapsule({
                 alt={imageAlt}
                 w={800}
                 h={600}
-
                 className="relative aspect-[4/3] w-full shadow-2xl"
               />
               <div className="absolute -bottom-6 -left-6 max-w-xs rounded-xl bg-card p-4 shadow-xl sm:p-6">

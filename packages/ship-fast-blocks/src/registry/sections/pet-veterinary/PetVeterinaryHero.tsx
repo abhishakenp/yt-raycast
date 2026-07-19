@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   HeroSection,
@@ -15,6 +14,7 @@ import {
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * PetVeterinaryHero — split, two-column hero for a veterinary clinic / pet
@@ -24,14 +24,14 @@ import { Container } from '#/section-kit/Container.tsx'
  * primary "Schedule a Visit" CTA plus an outlined "Explore Services" button, and
  * a social-proof row of overlapping staff avatars + a star-rating note; the right
  * column shows a rounded clinic photo with two floating info chips ("same-day
- * appointments" / "open 7 days"). CTAs route through useNavigate; imagery uses
+ * appointments" / "open 7 days"). CTAs route through section-kit route links; imagery uses
  * the alt-driven Image component. Use as the top hero for veterinary clinics,
  * animal hospitals, pet healthcare practices, or emergency animal care.
  */
 export const PetVeterinaryHero = defineCapsule({
   name: 'PetVeterinaryHero',
   description:
-    'Split two-column hero for a veterinary clinic / pet healthcare landing page on a soft primary-tinted gradient band: a left text column with a pulsing now-accepting-new-patients pill, a big headline with an accented trailing phrase, a lede paragraph, a filled primary Schedule-a-Visit CTA plus an outlined Explore-Services button, and a social-proof row of overlapping staff avatars and a star-rating note; a right column with a rounded clinic photo and two floating info chips (same-day appointments / open 7 days). CTAs route through useNavigate; imagery uses the Image component. Use as the top hero for veterinary clinics, animal hospitals, pet healthcare practices, or emergency animal care.',
+    'Split two-column hero for a veterinary clinic / pet healthcare landing page on a soft primary-tinted gradient band: a left text column with a pulsing now-accepting-new-patients pill, a big headline with an accented trailing phrase, a lede paragraph, a filled primary Schedule-a-Visit CTA plus an outlined Explore-Services button, and a social-proof row of overlapping staff avatars and a star-rating note; a right column with a rounded clinic photo and two floating info chips (same-day appointments / open 7 days). CTAs route through section-kit route links; imagery uses the Image component. Use as the top hero for veterinary clinics, animal hospitals, pet healthcare practices, or emergency animal care.',
   props: z.object({
     badge: z.string().optional(),
     headingTop: z.string().optional(),
@@ -58,7 +58,6 @@ export const PetVeterinaryHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heroBadge = props.badge ?? 'Now accepting new patients'
     const heroHeadingTop = props.headingTop ?? 'Expert care for your'
     const heroHighlight = props.highlight ?? 'beloved companions'
@@ -170,19 +169,19 @@ export const PetVeterinaryHero = defineCapsule({
                   variant="primary"
                   className="gap-2 rounded-xl px-8 py-4 text-base font-semibold transition-all hover:-translate-y-0.5 hover:shadow-xl"
                 >
-                  <button type="button" onClick={() => go(heroPrimary)}>
+                  <NavbarRouteLink href={heroPrimary}>
                     {heroPrimary}
                     <ArrowRight />
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
                 <HeroCta
                   asChild
                   variant="outline"
                   className="rounded-xl border-2 border-border bg-card px-8 py-4 text-base font-semibold transition-all hover:border-primary/40 hover:bg-primary/5"
                 >
-                  <button type="button" onClick={() => go(heroSecondary)}>
+                  <NavbarRouteLink href={heroSecondary}>
                     {heroSecondary}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
               <div className="flex flex-wrap items-center gap-8 text-sm">

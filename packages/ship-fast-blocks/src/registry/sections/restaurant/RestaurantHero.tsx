@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroBackgroundImage,
@@ -20,6 +18,7 @@ import {
   RestaurantReservationButton,
 } from './restaurant-interactions.tsx'
 import { restaurantLakebed } from './restaurant-lakebed.ts'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * RestaurantHero — full-bleed, image-forward hero for a restaurant landing page.
@@ -28,14 +27,14 @@ import { restaurantLakebed } from './restaurant-lakebed.ts'
  * Centered content stacks an uppercase eyebrow pill, a large serif headline, a
  * supporting paragraph, dual CTAs (filled "Reserve a Table" + outlined "View
  * Menu"), and a divider-separated hours / location / phone strip beneath. CTAs
- * route through useNavigate. Use as the opening hero for casual or upscale
+ * route through section-kit route links. Use as the opening hero for casual or upscale
  * restaurants, bistros, eateries, fine-dining rooms, and chef-driven venues.
  * Renders fully with no props via baked-in defaults.
  */
 export const RestaurantHero = defineCapsule({
   name: 'RestaurantHero',
   description:
-    "Full-bleed image-forward hero for a restaurant landing page: one appetizing food / dining-room photo fills the band edge to edge under a token-based dark overlay so light serif text stays readable. Centered content has an uppercase eyebrow pill, a large serif headline, a supporting paragraph, dual CTAs (filled 'Reserve a Table' + outlined translucent 'View Menu'), and a divider-separated hours / location / phone strip. CTAs route through useNavigate. Use as the opening hero for casual or upscale restaurants, bistros, eateries, fine-dining rooms, and chef-driven venues.",
+    "Full-bleed image-forward hero for a restaurant landing page: one appetizing food / dining-room photo fills the band edge to edge under a token-based dark overlay so light serif text stays readable. Centered content has an uppercase eyebrow pill, a large serif headline, a supporting paragraph, dual CTAs (filled 'Reserve a Table' + outlined translucent 'View Menu'), and a divider-separated hours / location / phone strip. CTAs route through section-kit route links. Use as the opening hero for casual or upscale restaurants, bistros, eateries, fine-dining rooms, and chef-driven venues.",
   props: z.object({
     /** Small uppercase eyebrow pill above the headline. */
     eyebrow: z.string().optional(),
@@ -63,7 +62,6 @@ export const RestaurantHero = defineCapsule({
   }),
   lakebed: restaurantLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const heroEyebrow = props.eyebrow ?? 'Farm-to-table · Est. 2014'
     const heroHeading =
       props.heading ?? 'Seasonal plates, unforgettable evenings'
@@ -112,9 +110,9 @@ export const RestaurantHero = defineCapsule({
                 asChild
                 className="inline-flex items-center justify-center rounded-full border border-border bg-card/10 px-8 py-4 font-medium text-background backdrop-blur-sm transition-colors hover:bg-card/20"
               >
-                <button type="button" onClick={() => go(heroSecondaryTarget)}>
+                <NavbarRouteLink href={heroSecondaryTarget}>
                   {heroSecondary}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
             </HeroActions>
 

@@ -1,11 +1,10 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
-
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * LinkInBioHero — the opening hero of a minimal "link in bio" / link-hub page,
@@ -15,7 +14,7 @@ import { Container } from '#/section-kit/Container.tsx'
  * bio. Below sits a compact set of headline (primary) link buttons — each with
  * a leading icon tile, a title + subtitle, and a trailing open-link arrow or a
  * 'New' pill — followed by a centered row of round social icon buttons. Every
- * link and social routes through useNavigate; the avatar photo uses the
+ * link and social routes through section-kit route links; the avatar photo uses the
  * alt-driven Image component. Use as the opening hero of a Linktree/Bento style
  * personal landing page, creator/influencer link hub, freelancer bio link, or
  * social-profile splash — the full big-link list lives in a companion
@@ -66,7 +65,6 @@ export const LinkInBioHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Sarah Chen'
 
     const avatarAlt =
@@ -291,11 +289,10 @@ export const LinkInBioHero = defineCapsule({
           {/* Primary links */}
           <nav aria-label="Primary links" className="mb-10 space-y-3">
             {links.map((link, i) => (
-              <button
+              <NavbarRouteLink
                 key={link.title}
-                type="button"
-                onClick={() => go(linkTargets[i] ?? link.title)}
                 className="group flex w-full items-center justify-between rounded-xl border border-border/60 bg-card px-5 py-4 text-left shadow-sm transition-all duration-200 hover:border-border hover:shadow-md"
+                href={linkTargets[i] ?? link.title}
               >
                 <span className="flex items-center gap-3">
                   <span className="grid size-10 place-items-center rounded-lg bg-muted text-muted-foreground">
@@ -319,22 +316,21 @@ export const LinkInBioHero = defineCapsule({
                     <ExternalArrow />
                   </span>
                 )}
-              </button>
+              </NavbarRouteLink>
             ))}
           </nav>
 
           {/* Socials */}
           <div className="flex justify-center gap-3">
             {socials.map((social) => (
-              <button
+              <NavbarRouteLink
                 key={social.label}
-                type="button"
                 aria-label={social.label}
-                onClick={() => go(social.label)}
                 className="grid size-12 place-items-center rounded-full border border-border/60 bg-card text-muted-foreground transition-all duration-200 hover:border-border hover:text-foreground hover:shadow-sm"
+                href={social.label}
               >
                 {socialIcons[social.icon]}
-              </button>
+              </NavbarRouteLink>
             ))}
           </div>
         </HeroSection>

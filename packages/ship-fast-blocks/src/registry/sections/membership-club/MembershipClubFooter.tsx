@@ -22,14 +22,14 @@ import {
  * concentric "compass" club mark + light club name + an about paragraph) beside
  * link columns of text buttons, then a bottom row with a dynamic-year copyright on
  * the left and inline legal links on the right. Brand mark and every link route
- * through useNavigate. Use as the closing footer for members clubs, founders/social
+ * through section-kit route links. Use as the closing footer for members clubs, founders/social
  * clubs, professional networks, curated communities or paid community
  * subscriptions. Renders fully with no props.
  */
 export const MembershipClubFooter = defineCapsule({
   name: 'MembershipClubFooter',
   description:
-    "Multi-column site footer for a private membership club / exclusive community page: a muted, border-topped band with a wide brand column (thin concentric 'compass' club mark + light club name + an about paragraph) beside link columns of text buttons, then a bottom row with a dynamic-year copyright on the left and inline legal links on the right. Brand mark and every link route through useNavigate. Use as the closing footer for members clubs, founders/social clubs, professional networks, curated communities or paid community subscriptions.",
+    "Multi-column site footer for a private membership club / exclusive community page: a muted, border-topped band with a wide brand column (thin concentric 'compass' club mark + light club name + an about paragraph) beside link columns of text buttons, then a bottom row with a dynamic-year copyright on the left and inline legal links on the right. Brand mark and every link route through section-kit route links. Use as the closing footer for members clubs, founders/social clubs, professional networks, curated communities or paid community subscriptions.",
   props: z.object({
     /** Brand / club name shown beside the logo mark. */
     brand: z.string().optional(),

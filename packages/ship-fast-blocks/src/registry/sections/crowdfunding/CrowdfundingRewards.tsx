@@ -2,12 +2,11 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { RewardList, RewardItem } from '#/section-kit/RewardList.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * CrowdfundingRewards — a 4-tier REWARDS / pledge grid with a stretch-goals
@@ -18,14 +17,14 @@ import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
  * tier wearing a primary border, tinted fill and a floating badge. Below sits a
  * muted stretch-goals panel listing unlocked goals (check icon, card surface)
  * and dimmed in-progress goals (question-mark icon, secondary surface) with a
- * status label each. All buttons route through useNavigate. Use as the pricing
+ * status label each. All buttons route through section-kit route links. Use as the pricing
  * / pledge tiers for a Kickstarter/Indiegogo-style raise, pre-order, or
  * fundraiser where reward levels and stretch goals must be front and center.
  */
 export const CrowdfundingRewards = defineCapsule({
   name: 'CrowdfundingRewards',
   description:
-    "A 4-tier REWARDS / pledge grid with a stretch-goals checklist for a crowdfunding / campaign landing page on a card surface: a centered eyebrow + heading + intro above a responsive 1/2/4-column grid of bordered pledge cards (claimed-count meta, tier name, big price, description, check-marked perk list, and a select CTA), with one highlighted 'Best Value' tier wearing a primary border, tinted fill and a floating badge. Below sits a muted stretch-goals panel listing unlocked goals (check icon, card surface) and dimmed in-progress goals (question-mark icon, secondary surface) with a status label each. All buttons route through useNavigate. Use as the pricing / pledge tiers for a Kickstarter/Indiegogo-style raise, pre-order, or fundraiser where reward levels and stretch goals must be front and center.",
+    "A 4-tier REWARDS / pledge grid with a stretch-goals checklist for a crowdfunding / campaign landing page on a card surface: a centered eyebrow + heading + intro above a responsive 1/2/4-column grid of bordered pledge cards (claimed-count meta, tier name, big price, description, check-marked perk list, and a select CTA), with one highlighted 'Best Value' tier wearing a primary border, tinted fill and a floating badge. Below sits a muted stretch-goals panel listing unlocked goals (check icon, card surface) and dimmed in-progress goals (question-mark icon, secondary surface) with a status label each. All buttons route through section-kit route links. Use as the pricing / pledge tiers for a Kickstarter/Indiegogo-style raise, pre-order, or fundraiser where reward levels and stretch goals must be front and center.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -60,7 +59,6 @@ export const CrowdfundingRewards = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const rewardsEyebrow = props.eyebrow ?? 'Rewards'
     const rewardsHeading = props.heading ?? 'Choose Your Reward'
     const rewardsDesc =
@@ -220,18 +218,17 @@ export const CrowdfundingRewards = defineCapsule({
                     </RewardItem>
                   ))}
                 </RewardList>
-                <button
-                  type="button"
-                  onClick={() => go(tier.name)}
+                <NavbarRouteLink
                   className={cn(
                     'w-full rounded-lg py-3 font-medium transition-colors',
                     tier.featured
                       ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                       : 'border-2 border-foreground text-foreground hover:bg-foreground hover:text-background',
                   )}
+                  href={tier.name}
                 >
                   {tier.cta}
-                </button>
+                </NavbarRouteLink>
               </div>
             ))}
           </ResponsiveGrid>

@@ -2,10 +2,10 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * ArchitectureFirmHero — split editorial hero for an architecture-studio /
@@ -14,7 +14,7 @@ import { Container } from '#/section-kit/Container.tsx'
  * two-line light headline, a relaxed lead paragraph and dual CTAs (solid
  * primary + outline secondary), beside a full-height facade photograph anchored
  * to the right edge on large screens. Generous whitespace, light type weights,
- * quiet monochrome contrast. CTAs route through useNavigate. Use as the opening
+ * quiet monochrome contrast. CTAs route through section-kit route links. Use as the opening
  * hero for architecture firms, design studios, interior designers, landscape
  * architects or any premium built-environment portfolio site. Renders fully
  * with no props.
@@ -22,7 +22,7 @@ import { Container } from '#/section-kit/Container.tsx'
 export const ArchitectureFirmHero = defineCapsule({
   name: 'ArchitectureFirmHero',
   description:
-    'Split editorial hero for an architecture-studio / design-practice landing page: a left-aligned content column with a wide letter-spaced eyebrow label, a serene two-line light headline, a relaxed lead paragraph and dual CTAs (solid primary + outline secondary), beside a full-height facade photograph anchored to the right edge on large screens. Calm Scandinavian-minimalist aesthetic with generous whitespace, light type weights and quiet monochrome contrast. CTAs route through useNavigate. Use as the opening hero for architecture firms, design studios, interior designers, landscape architects, urban planners or premium built-environment portfolio sites.',
+    'Split editorial hero for an architecture-studio / design-practice landing page: a left-aligned content column with a wide letter-spaced eyebrow label, a serene two-line light headline, a relaxed lead paragraph and dual CTAs (solid primary + outline secondary), beside a full-height facade photograph anchored to the right edge on large screens. Calm Scandinavian-minimalist aesthetic with generous whitespace, light type weights and quiet monochrome contrast. CTAs route through section-kit route links. Use as the opening hero for architecture firms, design studios, interior designers, landscape architects, urban planners or premium built-environment portfolio sites.',
   props: z.object({
     /** Wide letter-spaced eyebrow label above the headline. */
     eyebrow: z.string().optional(),
@@ -41,7 +41,6 @@ export const ArchitectureFirmHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Architecture Studio — Copenhagen'
     const headingLine1 = props.headingLine1 ?? 'Spaces that breathe,'
     const headingLine2 = props.headingLine2 ?? 'structures that endure'
@@ -81,20 +80,18 @@ export const ArchitectureFirmHero = defineCapsule({
                 {subheading}
               </p>
               <div className="flex flex-wrap gap-4">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
+                <NavbarRouteLink
                   className="inline-flex items-center bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  href={primaryCta}
                 >
                   {primaryCta}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
+                </NavbarRouteLink>
+                <NavbarRouteLink
                   className="inline-flex items-center border border-border px-6 py-3 text-sm font-medium text-foreground transition-colors hover:border-foreground/40"
+                  href={secondaryCta}
                 >
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </div>
             </div>
           </HeroContent>

@@ -2,25 +2,25 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   LogoStrip,
   LogoStripLabel,
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * CryptoLogos — trusted-by protocol logo strip for a crypto / DeFi landing
  * page. A bordered card band with a centered heading and a responsive grid
  * of text-based logo buttons (2-up mobile, 3-up tablet, 6-up desktop). Each
- * logo button routes through useNavigate. Use to display protocol partners,
+ * logo button routes through section-kit route links. Use to display protocol partners,
  * institutional backers, integrated chains, or ecosystem partners.
  */
 export const CryptoLogos = defineCapsule({
   name: 'CryptoLogos',
   description:
-    'Trusted-by protocol logo strip for a crypto / DeFi landing page: a bordered card band with centered heading and responsive grid of text-based logo buttons (2-up mobile, 3-up tablet, 6-up desktop). Each logo routes through useNavigate. Use to display protocol partners, institutional backers, integrated chains, or ecosystem partners.',
+    'Trusted-by protocol logo strip for a crypto / DeFi landing page: a bordered card band with centered heading and responsive grid of text-based logo buttons (2-up mobile, 3-up tablet, 6-up desktop). Each logo routes through section-kit route links. Use to display protocol partners, institutional backers, integrated chains, or ecosystem partners.',
   props: z.object({
     /** Heading above the logo grid. */
     heading: z.string().optional(),
@@ -29,7 +29,6 @@ export const CryptoLogos = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading =
       props.heading ?? 'Trusted by leading protocols and institutions'
     const items = props.items?.length
@@ -44,7 +43,7 @@ export const CryptoLogos = defineCapsule({
         <LogoStripItems layout="flex" className="mt-8">
           {items.filter(Boolean).map((logo) => (
             <LogoStripItem key={logo} variant="text-bold" asChild>
-              <button onClick={() => go(logo)}>{logo}</button>
+              <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
             </LogoStripItem>
           ))}
         </LogoStripItems>

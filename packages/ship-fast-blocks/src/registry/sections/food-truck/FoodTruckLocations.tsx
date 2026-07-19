@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
@@ -12,6 +11,7 @@ import {
   LocationItem,
   LocationCard,
 } from '#/section-kit/LocationList.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * FoodTruckLocations — a weekly LOCATIONS schedule section for a food-truck site. On a
@@ -19,13 +19,13 @@ import {
  * grid of day cards, each with a rotating chart-tinted initial tile, the day name +
  * neighborhood, and a key/value list of address, times and notes. A full-width inverted
  * banner beneath promotes private-events availability with an info icon and a pill CTA
- * that routes through useNavigate. Use as the schedule/where-to-find-us section for food
+ * that routes through section-kit route links. Use as the schedule/where-to-find-us section for food
  * trucks, street-food vendors or pop-up kitchens that rotate locations.
  */
 export const FoodTruckLocations = defineCapsule({
   name: 'FoodTruckLocations',
   description:
-    'Weekly LOCATIONS schedule section for a food-truck site: on a subtle muted band, a centered eyebrow + heading + intro above a 3-up responsive grid of day cards, each with a rotating chart-tinted initial tile, the day name + neighborhood, and a key/value list of address, times and notes; a full-width inverted banner beneath promotes private-events availability with an info icon and a pill CTA that routes through useNavigate. Use as the schedule / where-to-find-us section for food trucks, street-food vendors, taco trucks or pop-up kitchens that rotate locations across a city.',
+    'Weekly LOCATIONS schedule section for a food-truck site: on a subtle muted band, a centered eyebrow + heading + intro above a 3-up responsive grid of day cards, each with a rotating chart-tinted initial tile, the day name + neighborhood, and a key/value list of address, times and notes; a full-width inverted banner beneath promotes private-events availability with an info icon and a pill CTA that routes through section-kit route links. Use as the schedule / where-to-find-us section for food trucks, street-food vendors, taco trucks or pop-up kitchens that rotate locations across a city.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -46,7 +46,6 @@ export const FoodTruckLocations = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const locEyebrow = props.eyebrow ?? 'Weekly Schedule'
     const locHeading = props.heading ?? 'Find the Truck'
     const locDesc =
@@ -210,13 +209,12 @@ export const FoodTruckLocations = defineCapsule({
                   <p className="text-sm text-background/70">{locBannerNote}</p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => go(locBannerCta)}
+              <NavbarRouteLink
                 className="rounded-full bg-background px-6 py-2 font-medium text-foreground transition-colors hover:bg-background/90"
+                href={locBannerCta}
               >
                 {locBannerCta}
-              </button>
+              </NavbarRouteLink>
             </div>
           </Container>
         </LocationList>

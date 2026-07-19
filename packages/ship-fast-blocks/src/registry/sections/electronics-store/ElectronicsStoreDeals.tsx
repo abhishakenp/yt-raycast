@@ -25,7 +25,7 @@ import {
  * countdown timer (hrs / min / sec tiles), above a responsive 1-to-4 grid of
  * clickable product cards: square image with a destructive discount badge, then
  * title, subtitle, current price and a struck-through original price. Cards
- * route through useNavigate. Use to spotlight limited-time offers on electronics
+ * route through section-kit route links. Use to spotlight limited-time offers on electronics
  * stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.
  */
 import { Container } from '#/section-kit/Container.tsx'
@@ -34,7 +34,7 @@ import { DealsGrid } from '#/section-kit/DealsGrid.tsx'
 export const ElectronicsStoreDeals = defineCapsule({
   name: 'ElectronicsStoreDeals',
   description:
-    'Dark inverted Flash Deals band for an electronics storefront: a header row pairs a heading + muted description with a boxed countdown timer (hrs / min / sec tiles), above a responsive 1-to-4 grid of clickable product cards — square image with a destructive discount badge, then title, subtitle, current price and a struck-through original price. Cards route through useNavigate; imagery is alt-driven. Use to spotlight limited-time offers on electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.',
+    'Dark inverted Flash Deals band for an electronics storefront: a header row pairs a heading + muted description with a boxed countdown timer (hrs / min / sec tiles), above a responsive 1-to-4 grid of clickable product cards — square image with a destructive discount badge, then title, subtitle, current price and a struck-through original price. Cards route through section-kit route links; imagery is alt-driven. Use to spotlight limited-time offers on electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.',
   props: z.object({
     /** Band heading. */
     heading: z.string().optional(),

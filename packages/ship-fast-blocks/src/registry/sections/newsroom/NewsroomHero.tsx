@@ -2,12 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { useSyncPublicationArticles } from '../blog/publication-interactions.tsx'
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * NewsroomHero — front-page lead-story hero for a digital newsroom / magazine.
@@ -18,14 +18,14 @@ import { publicationLakebed } from '../blog/publication-lakebed.ts'
  * beside a slim right-hand rail of secondary "also in the news" headlines
  * (small tag + title) separated by hairline rules. Magazine feel with serif
  * display type, muted contrast and generous whitespace. The CTA routes through
- * useNavigate. Use as the masthead / front-page hero for online newspapers,
+ * section-kit route links. Use as the masthead / front-page hero for online newspapers,
  * digital magazines, longform publications, investigative outlets or editorial
  * content sites. Renders fully with no props.
  */
 export const NewsroomHero = defineCapsule({
   name: 'NewsroomHero',
   description:
-    "Front-page lead-story hero for a digital newsroom / magazine: a small uppercase category kicker, a huge serif display headline, a standfirst/dek paragraph, a byline (author avatar + name + role) carrying date and read time, a wide lead photograph with a small italic caption and a 'Read the full story' CTA, beside a slim right-hand rail of secondary 'also in the news' headlines (small tag + title) separated by hairline rules. Editorial, print-inspired magazine aesthetic with serif display type, muted contrast and generous whitespace. The CTA routes through useNavigate. Use as the masthead / front-page hero for online newspapers, digital magazines, longform publications, investigative outlets or editorial content sites.",
+    "Front-page lead-story hero for a digital newsroom / magazine: a small uppercase category kicker, a huge serif display headline, a standfirst/dek paragraph, a byline (author avatar + name + role) carrying date and read time, a wide lead photograph with a small italic caption and a 'Read the full story' CTA, beside a slim right-hand rail of secondary 'also in the news' headlines (small tag + title) separated by hairline rules. Editorial, print-inspired magazine aesthetic with serif display type, muted contrast and generous whitespace. The CTA routes through section-kit route links. Use as the masthead / front-page hero for online newspapers, digital magazines, longform publications, investigative outlets or editorial content sites.",
   props: z.object({
     /** Small uppercase category label above the headline (e.g. "INVESTIGATION"). */
     kicker: z.string().optional(),
@@ -64,7 +64,6 @@ export const NewsroomHero = defineCapsule({
   }),
   lakebed: publicationLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const kicker = props.kicker ?? 'Investigation'
     const headline =
       props.headline ??
@@ -180,13 +179,12 @@ export const NewsroomHero = defineCapsule({
                   </figcaption>
                 </figure>
 
-                <button
-                  type="button"
-                  onClick={() => go(cta)}
+                <NavbarRouteLink
                   className="inline-flex items-center bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                  href={cta}
                 >
                   {cta}
-                </button>
+                </NavbarRouteLink>
               </article>
 
               {/* Also in the news rail */}
@@ -197,10 +195,9 @@ export const NewsroomHero = defineCapsule({
                 <ul className="divide-y divide-border">
                   {sideStories.map((story, i) => (
                     <li key={i} className="py-4 first:pt-0">
-                      <button
-                        type="button"
-                        onClick={() => go(story.title ?? '')}
+                      <NavbarRouteLink
                         className="group block w-full text-left"
+                        href={story.title ?? ''}
                       >
                         <span className="mb-1 block text-xs font-semibold uppercase tracking-widest text-accent">
                           {story.tag}
@@ -208,7 +205,7 @@ export const NewsroomHero = defineCapsule({
                         <span className="block font-serif text-lg font-medium leading-snug text-foreground transition-colors group-hover:text-muted-foreground">
                           {story.title}
                         </span>
-                      </button>
+                      </NavbarRouteLink>
                     </li>
                   ))}
                 </ul>

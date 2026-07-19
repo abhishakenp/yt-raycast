@@ -18,7 +18,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * foreground surface. A centered, narrow column with a large heading, a muted
  * supporting paragraph, dual CTAs (a filled background-surface primary with
  * arrow + an outlined secondary with play icon), and a small reassurance note
- * beneath. CTAs route through useNavigate. Use as the final conversion band
+ * beneath. CTAs route through section-kit route links. Use as the final conversion band
  * before the footer on a no-code builder, SaaS, or product landing page.
  * Renders fully with no props.
  */

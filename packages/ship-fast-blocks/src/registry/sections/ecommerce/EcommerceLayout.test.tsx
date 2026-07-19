@@ -2,10 +2,6 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('#/lib/use-navigate.tsx', () => ({
-  useNavigate: () => vi.fn(),
-}))
-
 const guestAuth = {
   isAuthenticated: false,
   isGuest: true,

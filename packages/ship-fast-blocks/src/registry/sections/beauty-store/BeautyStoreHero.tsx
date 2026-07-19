@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   HeroSection,
@@ -22,6 +21,7 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * BeautyStoreHero — split editorial hero for a beauty / skincare / cosmetics
@@ -30,14 +30,14 @@ import {
  * in the primary accent color, a supporting paragraph, dual rounded CTAs (filled
  * primary + outlined secondary), and a social-proof strip (overlapping customer
  * avatar stack + star rating + rating count); right side shows a tall 4:5 product
- * image with a floating cruelty-free badge. CTAs route through useNavigate.
+ * image with a floating cruelty-free badge. CTAs route through section-kit route links.
  * Use as the opening hero for beauty stores, skincare shops, cosmetics brands,
  * clean beauty retailers, or premium personal-care DTC storefronts.
  */
 export const BeautyStoreHero = defineCapsule({
   name: 'BeautyStoreHero',
   description:
-    'Split editorial hero for a beauty / skincare / cosmetics e-commerce storefront: a soft token-gradient background with a two-column layout. Left side has an eyebrow badge, large serif headline with one phrase in the primary accent, supporting paragraph, dual rounded CTAs (filled primary + outlined secondary), and a social-proof strip with overlapping customer avatars, star rating and rating count. Right side has a tall 4:5 product image with a floating cruelty-free badge. CTAs route through useNavigate. Use as the opening hero for beauty stores, skincare shops, cosmetics brands, or premium personal-care DTC storefronts.',
+    'Split editorial hero for a beauty / skincare / cosmetics e-commerce storefront: a soft token-gradient background with a two-column layout. Left side has an eyebrow badge, large serif headline with one phrase in the primary accent, supporting paragraph, dual rounded CTAs (filled primary + outlined secondary), and a social-proof strip with overlapping customer avatars, star rating and rating count. Right side has a tall 4:5 product image with a floating cruelty-free badge. CTAs route through section-kit route links. Use as the opening hero for beauty stores, skincare shops, cosmetics brands, or premium personal-care DTC storefronts.',
   lakebed: commerceCartLakebed,
   props: z.object({
     /** Eyebrow / collection label above the headline. */
@@ -71,7 +71,6 @@ export const BeautyStoreHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'New Collection'
     const headingTop = props.headingTop ?? 'Radiant Beauty,'
     const highlight = props.highlight ?? 'Naturally Yours'
@@ -132,18 +131,18 @@ export const BeautyStoreHero = defineCapsule({
                   asChild
                   className="rounded-full bg-foreground px-8 py-4 font-medium text-background hover:bg-foreground/90"
                 >
-                  <button type="button" onClick={() => go(primaryCta)}>
+                  <NavbarRouteLink href={primaryCta}>
                     {primaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
                 <HeroCta
                   asChild
                   variant="outline"
                   className="rounded-full px-8 py-4 font-medium hover:border-foreground"
                 >
-                  <button type="button" onClick={() => go(secondaryCta)}>
+                  <NavbarRouteLink href={secondaryCta}>
                     {secondaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
               <div className="flex items-center gap-6 pt-4">
@@ -175,7 +174,6 @@ export const BeautyStoreHero = defineCapsule({
                 alt={imageAlt}
                 w={800}
                 h={1000}
-
                 className="aspect-[4/5] shadow-2xl rounded-xl"
               />
               <div className="absolute -bottom-6 -left-6 hidden rounded-xl bg-card p-4 shadow-xl sm:block">

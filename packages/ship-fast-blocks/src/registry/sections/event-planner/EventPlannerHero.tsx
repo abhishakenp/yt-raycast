@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   HeroSection,
@@ -22,6 +21,7 @@ import {
   InquiryActionButton,
   InquiryMutationSpinner,
 } from '../contact/inquiry-interactions.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * EventPlannerHero — calm editorial split hero for a luxury event-planning agency.
@@ -30,13 +30,13 @@ import {
  * a tall rounded hero photo on the right that carries a floating planner-team card
  * (stacked avatar circles, lead-planner name/role and an italic quote). Primary
  * CTA records a real Lakebed contact action, secondary CTA routes through
- * useNavigate, and imagery is alt-driven. Use as the opening hero for
+ * section-kit route links, and imagery is alt-driven. Use as the opening hero for
  * wedding/event planners, gala and celebration organizers, or premium hospitality.
  */
 export const EventPlannerHero = defineCapsule({
   name: 'EventPlannerHero',
   description:
-    'Calm editorial split hero for a luxury event-planning agency: a two-column layout pairing a left text column (uppercase eyebrow, large thin light headline, relaxed lede, dual pill CTAs and a top-bordered KPI/stats strip) with a tall rounded hero photo on the right carrying a floating planner-team card (stacked avatar circles, lead-planner name/role and an italic quote). Primary CTA records a real Lakebed contact action, secondary CTA routes through useNavigate, and all imagery is alt-driven. Use as the opening hero for wedding/event planners, party, gala and celebration organizers, corporate-event companies, or premium hospitality services.',
+    'Calm editorial split hero for a luxury event-planning agency: a two-column layout pairing a left text column (uppercase eyebrow, large thin light headline, relaxed lede, dual pill CTAs and a top-bordered KPI/stats strip) with a tall rounded hero photo on the right carrying a floating planner-team card (stacked avatar circles, lead-planner name/role and an italic quote). Primary CTA records a real Lakebed contact action, secondary CTA routes through section-kit route links, and all imagery is alt-driven. Use as the opening hero for wedding/event planners, party, gala and celebration organizers, corporate-event companies, or premium hospitality services.',
   lakebed: inquiryLakebed,
   props: z.object({
     eyebrow: z.string().optional(),
@@ -55,7 +55,6 @@ export const EventPlannerHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const heroEyebrow = props.eyebrow ?? 'Est. 2012 • San Francisco'
     const heroHeading = props.heading ?? 'Crafting Moments That Last Forever'
     const heroSub =
@@ -125,9 +124,9 @@ export const EventPlannerHero = defineCapsule({
                   variant="outline"
                   className="rounded-full px-8 py-4 font-medium"
                 >
-                  <button type="button" onClick={() => go(heroSecondary)}>
+                  <NavbarRouteLink href={heroSecondary}>
                     {heroSecondary}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
               <HeroStats className="mt-12 flex items-center gap-8 pt-8">
@@ -147,7 +146,6 @@ export const EventPlannerHero = defineCapsule({
                   alt={heroImageAlt}
                   w={800}
                   h={1000}
-
                   className="h-[500px] w-full lg:h-[700px]"
                 />
                 <div className="absolute -bottom-6 -left-6 max-w-xs rounded-xl bg-card p-6 shadow-xl">

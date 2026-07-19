@@ -26,10 +26,6 @@ type TestLakebed = ReturnType<
 const navigate = vi.fn()
 const lakebedRef: { current: TestLakebed | null } = { current: null }
 
-vi.mock('#/lib/use-navigate.tsx', () => ({
-  useNavigate: () => navigate,
-}))
-
 vi.mock('@ship-fast/lakebed/react', async () => {
   const actual = await vi.importActual<
     typeof import('@ship-fast/lakebed/react')
@@ -398,18 +394,16 @@ describe('Subscription-box fullstack commerce behavior', () => {
     })
     expect(navigate).not.toHaveBeenCalledWith('Classic box')
 
-    const pricingButtons = screen.getAllByRole('button', { name: 'Pricing' })
-    fireEvent.click(pricingButtons[0])
-    fireEvent.click(pricingButtons[1])
-    const howItWorksButtons = screen.getAllByRole('button', {
+    const pricingLinks = screen.getAllByRole('link', { name: 'Pricing' })
+    expect(pricingLinks[0]?.getAttribute('href')).toBe('#pricing')
+    expect(pricingLinks[1]?.getAttribute('href')).toBe('#pricing')
+    const howItWorksLinks = screen.getAllByRole('link', {
       name: 'How it works',
     })
-    fireEvent.click(howItWorksButtons[0])
-    fireEvent.click(howItWorksButtons[1])
-    await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith('Pricing')
-      expect(navigate).toHaveBeenCalledWith('How it works')
-    })
+    expect(howItWorksLinks[0]?.getAttribute('href')).toBe('#how-it-works')
+    expect(howItWorksLinks[1]?.getAttribute('href')).toBe('#how-it-works')
+    expect(navigate).not.toHaveBeenCalledWith('Pricing')
+    expect(navigate).not.toHaveBeenCalledWith('How it works')
 
     fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
@@ -459,10 +453,9 @@ describe('Subscription-box fullstack commerce behavior', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
     const menuDrawer = await screen.findByRole('dialog')
     expect(within(menuDrawer).getByText('BoxJoy')).toBeTruthy()
-    fireEvent.click(within(menuDrawer).getByRole('button', { name: 'Pricing' }))
-
-    await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith('Pricing')
+    const mobilePricingLink = within(menuDrawer).getByRole('link', {
+      name: 'Pricing',
     })
+    expect(mobilePricingLink.getAttribute('href')).toBe('#pricing')
   })
 })

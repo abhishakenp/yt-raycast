@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { StoryGrid } from '#/section-kit/StoryGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
@@ -11,6 +10,7 @@ import {
   ArticleCard,
   ArticleContent,
 } from '#/section-kit/ArticleGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * DocsStoryGrid — bespoke, token-styled "popular guides" cards grid for a
@@ -19,7 +19,7 @@ import {
  * responsive grid of text-forward guide cards (no cover images). Each card is a
  * routable button: a small category pill, a bold guide title, a one-line
  * description, and a footer meta row with read-time plus an arrow that slides on
- * group-hover. Every card routes through useNavigate(go) so PageSwitch can swap
+ * group-hover. Every card routes through section-kit route links so PageSwitch can swap
  * pages, keyed on the guide title. Use as the "most-read guides" / "popular
  * docs" band on docs homes, API references, SDK guides, developer portals, or
  * knowledge bases. Renders fully with no props via baked-in defaults.
@@ -27,7 +27,7 @@ import {
 export const DocsStoryGrid = defineCapsule({
   name: 'DocsStoryGrid',
   description:
-    "Bespoke, token-styled 'popular guides' cards grid for a developer DOCUMENTATION site. Opens with a SectionHeading ('Popular' eyebrow + 'Popular guides' title + subtitle), then a responsive grid of clean, text-forward guide cards (no cover images): each card is a routable button with a small category pill, a bold guide title, a one-line description, and a footer meta row showing read-time plus an arrow that slides on hover. Every card routes through useNavigate keyed on its title so PageSwitch can swap pages. Use as the 'most-read guides' / 'popular docs' band on docs homes, API references, SDK guides, developer portals, or knowledge bases.",
+    "Bespoke, token-styled 'popular guides' cards grid for a developer DOCUMENTATION site. Opens with a SectionHeading ('Popular' eyebrow + 'Popular guides' title + subtitle), then a responsive grid of clean, text-forward guide cards (no cover images): each card is a routable button with a small category pill, a bold guide title, a one-line description, and a footer meta row showing read-time plus an arrow that slides on hover. Every card routes through section-kit route links keyed on its title so PageSwitch can swap pages. Use as the 'most-read guides' / 'popular docs' band on docs homes, API references, SDK guides, developer portals, or knowledge bases.",
   props: z.object({
     /** Eyebrow label above the title. */
     eyebrow: z.string().optional(),
@@ -37,7 +37,7 @@ export const DocsStoryGrid = defineCapsule({
     subtitle: z.string().optional(),
     /** Heading alignment. */
     align: z.enum(['center', 'left']).optional(),
-    /** Guide cards. Each routes through useNavigate keyed on its title. */
+    /** Guide cards. Each routes through section-kit route links keyed on its title. */
     guides: z
       .array(
         z.object({
@@ -51,7 +51,6 @@ export const DocsStoryGrid = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Popular'
     const title = props.title ?? 'Popular guides'
     const subtitle = props.subtitle ?? 'The guides developers reach for most.'
@@ -120,7 +119,7 @@ export const DocsStoryGrid = defineCapsule({
                 variant="default"
                 className="text-left transition hover:shadow-md"
               >
-                <button type="button" onClick={() => go(guide.title)}>
+                <NavbarRouteLink href={guide.title}>
                   <ArticleContent className="p-6">
                     <span className="text-xs font-medium uppercase tracking-wide text-primary">
                       {guide.category}
@@ -149,7 +148,7 @@ export const DocsStoryGrid = defineCapsule({
                       </svg>
                     </div>
                   </ArticleContent>
-                </button>
+                </NavbarRouteLink>
               </ArticleCard>
             ))}
           </ArticleGrid>

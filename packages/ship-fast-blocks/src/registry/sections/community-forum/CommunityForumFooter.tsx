@@ -20,13 +20,13 @@ import {
  * CommunityForumFooter — rich multi-column footer for a community-platform / discussion-forum
  * landing page. A top-bordered section with a brand column (logo + tagline + social icon buttons)
  * plus a grid of link columns, and a bottom bar with copyright and legal links. Every link and the
- * brand button route through useNavigate. Use as the closing site footer for community platforms,
+ * brand button route through section-kit route links. Use as the closing site footer for community platforms,
  * SaaS products, or online forum services.
  */
 export const CommunityForumFooter = defineCapsule({
   name: 'CommunityForumFooter',
   description:
-    'Rich multi-column footer for a community-platform / discussion-forum landing page: a top-bordered section with a brand column (logo + tagline + social icon buttons) plus a grid of link columns, and a bottom bar with copyright and legal links. Every link and the brand button route through useNavigate. Use as the closing site footer for community platforms, SaaS products, or online forum services.',
+    'Rich multi-column footer for a community-platform / discussion-forum landing page: a top-bordered section with a brand column (logo + tagline + social icon buttons) plus a grid of link columns, and a bottom bar with copyright and legal links. Every link and the brand button route through section-kit route links. Use as the closing site footer for community platforms, SaaS products, or online forum services.',
   props: z.object({
     /** Brand / product name shown in the logo and copyright. */
     brand: z.string().optional(),

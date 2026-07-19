@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   PortfolioGrid,
@@ -13,6 +12,7 @@ import {
 
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * ArchitectureFirmWork — selected-work / project gallery for an
@@ -21,7 +21,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * responsive 1/2/3-column grid of tall 4:5 portrait project cards; each card
  * has an image-zoom-on-hover photo, a project title with typology/year meta and
  * a right-aligned location caption. Calm, editorial, monochrome. Each card
- * routes through useNavigate. Use as a portfolio / selected-projects / case-study
+ * routes through section-kit route links. Use as a portfolio / selected-projects / case-study
  * gallery for architecture firms, design studios, interior designers, landscape
  * architects or any project-forward built-environment site. Renders fully with
  * no props via six baked-in project defaults.
@@ -29,7 +29,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 export const ArchitectureFirmWork = defineCapsule({
   name: 'ArchitectureFirmWork',
   description:
-    'Selected-work / project gallery for an architecture-studio / design-practice page: a heading row (eyebrow + light title on the left, a short descriptive paragraph on the right) above a responsive 1/2/3-column grid of tall 4:5 portrait project cards, each with an image-zoom-on-hover photo, a project title with typology/year meta and a right-aligned location caption. Calm, editorial, monochrome. Cards route through useNavigate. Use as a portfolio / selected-projects / case-study gallery for architecture firms, design studios, interior designers, landscape architects or any project-forward built-environment site.',
+    'Selected-work / project gallery for an architecture-studio / design-practice page: a heading row (eyebrow + light title on the left, a short descriptive paragraph on the right) above a responsive 1/2/3-column grid of tall 4:5 portrait project cards, each with an image-zoom-on-hover photo, a project title with typology/year meta and a right-aligned location caption. Calm, editorial, monochrome. Cards route through section-kit route links. Use as a portfolio / selected-projects / case-study gallery for architecture firms, design studios, interior designers, landscape architects or any project-forward built-environment site.',
   props: z.object({
     /** Wide letter-spaced eyebrow label. */
     eyebrow: z.string().optional(),
@@ -51,7 +51,6 @@ export const ArchitectureFirmWork = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Selected Work'
     const heading = props.heading ?? 'Projects'
     const description =
@@ -127,33 +126,31 @@ export const ArchitectureFirmWork = defineCapsule({
 
           <PortfolioGrid cols="1-md-2-3">
             {items.map((proj) => (
-              <PortfolioItem
-                key={proj.title}
-                onClick={() => go(proj.title)}
-                className="block w-full"
-              >
-                <PortfolioMedia aspect="4-5" className="mb-5 bg-muted">
-                  <Image
-                    alt={proj.imageAlt}
-                    w={800}
-                    h={1000}
-                    loading="lazy"
-                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </PortfolioMedia>
-                <PortfolioCaption className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-lg font-medium text-foreground">
-                      {proj.title}
-                    </h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {proj.meta}
-                    </p>
-                  </div>
-                  <span className="text-xs text-muted-foreground">
-                    {proj.location}
-                  </span>
-                </PortfolioCaption>
+              <PortfolioItem key={proj.title} className="block w-full" asChild>
+                <NavbarRouteLink href={proj.title}>
+                  <PortfolioMedia aspect="4-5" className="mb-5 bg-muted">
+                    <Image
+                      alt={proj.imageAlt}
+                      w={800}
+                      h={1000}
+                      loading="lazy"
+                      className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </PortfolioMedia>
+                  <PortfolioCaption className="flex items-start justify-between">
+                    <div>
+                      <h3 className="text-lg font-medium text-foreground">
+                        {proj.title}
+                      </h3>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {proj.meta}
+                      </p>
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {proj.location}
+                    </span>
+                  </PortfolioCaption>
+                </NavbarRouteLink>
               </PortfolioItem>
             ))}
           </PortfolioGrid>

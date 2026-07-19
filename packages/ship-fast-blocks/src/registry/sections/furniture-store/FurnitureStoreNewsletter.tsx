@@ -3,20 +3,20 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { NewsletterCtaFineprint } from '#/section-kit/NewsletterCta.tsx'
 import { SubscribeBand } from '#/section-kit/SubscribeBand.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * FurnitureStoreNewsletter — a centered newsletter subscribe CTA on a soft muted
  * band. A narrow column with a heading + description, an inline email form (label
  * is screen-reader-only, primary submit button, stacks on mobile), a fine-print
  * note, and a centered row of social icon buttons. The form submit and each
- * social route through useNavigate; baked-in Instagram / Pinterest / Facebook
+ * social route through section-kit route links; baked-in Instagram / Pinterest / Facebook
  * glyphs are matched by name, with any unknown social rendered as its text label.
  * Use as a closing email-capture / follow-us CTA for furniture, home-decor, or
  * any retail brand. Renders fully with no props via baked-in "Haven & Home"
@@ -25,7 +25,7 @@ import { Container } from '#/section-kit/Container.tsx'
 export const FurnitureStoreNewsletter = defineCapsule({
   name: 'FurnitureStoreNewsletter',
   description:
-    'Centered newsletter subscribe CTA on a soft muted band: a narrow column with heading + description, an inline email form (screen-reader-only label, primary submit button, stacks on mobile), a fine-print note, and a centered row of social icon buttons; form submit writes to the shared Lakebed subscriber list and socials route through useNavigate, with baked-in Instagram / Pinterest / Facebook glyphs matched by name and unknown socials shown as text. Use as a closing email-capture / follow-us CTA for furniture, home-decor, or any retail brand.',
+    'Centered newsletter subscribe CTA on a soft muted band: a narrow column with heading + description, an inline email form (screen-reader-only label, primary submit button, stacks on mobile), a fine-print note, and a centered row of social icon buttons; form submit writes to the shared Lakebed subscriber list and socials route through section-kit route links, with baked-in Instagram / Pinterest / Facebook glyphs matched by name and unknown socials shown as text. Use as a closing email-capture / follow-us CTA for furniture, home-decor, or any retail brand.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -37,7 +37,6 @@ export const FurnitureStoreNewsletter = defineCapsule({
   }),
   lakebed: newsletterLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Join the Haven & Home family'
     const description =
       props.description ??
@@ -118,17 +117,16 @@ export const FurnitureStoreNewsletter = defineCapsule({
 
           <div className="mt-8 flex justify-center gap-6">
             {socials.map((social) => (
-              <button
+              <NavbarRouteLink
                 key={social}
-                type="button"
-                onClick={() => go(social)}
                 className="text-muted-foreground transition-colors hover:text-foreground"
                 aria-label={social}
+                href={social}
               >
                 {socialIcons[social] ?? (
                   <span className="text-sm font-medium">{social}</span>
                 )}
-              </button>
+              </NavbarRouteLink>
             ))}
           </div>
         </Container>

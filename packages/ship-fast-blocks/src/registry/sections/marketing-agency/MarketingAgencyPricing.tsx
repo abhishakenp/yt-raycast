@@ -9,7 +9,7 @@ import { cn } from '#/lib/utils.ts'
  * check, excluded rows render muted/struck with a cross), and a rounded pill CTA;
  * the featured plan inverts to the primary surface and shows a floating "Most
  * Popular" badge, with a reassurance note centered below. Links route through
- * useNavigate. Use to present retainer / service tiers for a marketing agency.
+ * section-kit route links. Use to present retainer / service tiers for a marketing agency.
  * Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
@@ -30,7 +30,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 export const MarketingAgencyPricing = defineCapsule({
   name: 'MarketingAgencyPricing',
   description:
-    "3-tier pricing table: a centered eyebrow + heading + description above a responsive 3-up grid of plan cards, each with a name, audience line, large price + period, a feature list (included rows get a primary check, excluded rows render muted/struck with a cross), and a rounded pill CTA; the featured plan inverts to the primary surface and shows a floating 'Most Popular' badge, with a reassurance note centered below. Links route through useNavigate. Use to present retainer / service tiers for a marketing or growth agency.",
+    "3-tier pricing table: a centered eyebrow + heading + description above a responsive 3-up grid of plan cards, each with a name, audience line, large price + period, a feature list (included rows get a primary check, excluded rows render muted/struck with a cross), and a rounded pill CTA; the featured plan inverts to the primary surface and shows a floating 'Most Popular' badge, with a reassurance note centered below. Links route through section-kit route links. Use to present retainer / service tiers for a marketing or growth agency.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),

@@ -5,7 +5,7 @@ import { z } from 'zod/v4'
  * landing page. A full-width footer on a foreground-colored band: left column
  * shows a brand-initial logo tile + academy name + tagline + social links;
  * remaining columns show titled link lists. Every link and the brand button
- * route through useNavigate. Use as the closing site footer for coding
+ * route through section-kit route links. Use as the closing site footer for coding
  * bootcamps, dev academies, or any cohort-based education brand.
  */
 import {
@@ -26,7 +26,7 @@ import {
 export const BootcampFooter = defineCapsule({
   name: 'BootcampFooter',
   description:
-    '4-column dark footer for a coding bootcamp / career-school landing page: full-width footer on a foreground-colored band. Left column shows a brand-initial logo tile + academy name + tagline + social links; remaining columns show titled link lists. Every link and the brand button route through useNavigate. Use as the closing site footer for coding bootcamps, dev academies, or cohort-based education brands.',
+    '4-column dark footer for a coding bootcamp / career-school landing page: full-width footer on a foreground-colored band. Left column shows a brand-initial logo tile + academy name + tagline + social links; remaining columns show titled link lists. Every link and the brand button route through section-kit route links. Use as the closing site footer for coding bootcamps, dev academies, or cohort-based education brands.',
   props: z.object({
     /** Brand / academy name shown beside the logo tile. */
     brand: z.string().optional(),

@@ -2,26 +2,26 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   LogoStrip,
   LogoStripLabel,
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * FintechLogos — trusted-by logo strip for a fintech / neobank landing page. A
  * single muted band bordered top and bottom with a heading label above a
  * responsive 2/4/6-column grid of clickable partner/brand text logos. Each logo
- * routes through useNavigate for page-switching. Use as social-proof for
+ * routes through section-kit route links for page-switching. Use as social-proof for
  * digital-banking, payments, SaaS or any trust-forward product page.
  * Renders fully with no props via baked-in defaults.
  */
 export const FintechLogos = defineCapsule({
   name: 'FintechLogos',
   description:
-    'Trusted-by logo strip for a fintech / neobank landing page: a single muted band bordered top and bottom with a heading label above a responsive 2/4/6-column grid of clickable partner/brand text logos. Each logo routes through useNavigate for page-switching. Use as social-proof for digital-banking, payments, SaaS or any trust-forward product page.',
+    'Trusted-by logo strip for a fintech / neobank landing page: a single muted band bordered top and bottom with a heading label above a responsive 2/4/6-column grid of clickable partner/brand text logos. Each logo routes through section-kit route links for page-switching. Use as social-proof for digital-banking, payments, SaaS or any trust-forward product page.',
   props: z.object({
     /** Heading label above the logo grid. */
     label: z.string().optional(),
@@ -30,7 +30,6 @@ export const FintechLogos = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const label =
       props.label ?? 'Trusted by over 50,000 businesses and individuals'
     const items = props.items?.length
@@ -54,7 +53,7 @@ export const FintechLogos = defineCapsule({
               className="text-lg font-bold tracking-tight text-foreground opacity-60 transition-opacity hover:opacity-100"
               asChild
             >
-              <button onClick={() => ((logo) => go(logo))(logo)}>{logo}</button>
+              <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
             </LogoStripItem>
           ))}
         </LogoStripItems>

@@ -19,6 +19,7 @@ export {
   navbarCtaVariants,
 } from './SiteNav.tsx'
 export type { SiteNavProps } from './SiteNav.tsx'
+export { RouterLink } from './RouterLink.tsx'
 export {
   SiteFooter,
   FooterContent,

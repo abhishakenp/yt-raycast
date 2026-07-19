@@ -10,21 +10,21 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * CrowdfundingCta — a full-width closing CTA band for a crowdfunding / campaign
  * landing page. A bold primary-colored, center-aligned section with a large
  * heading, a supporting subhead, a dual button group (a solid background-filled
  * "Back This Project" primary plus an outlined "Share" secondary), and a small
- * deadline / ship-date note beneath. Buttons route through useNavigate. Use as
+ * deadline / ship-date note beneath. Buttons route through section-kit route links. Use as
  * the final conversion push before the footer on any Kickstarter/Indiegogo-
  * style raise, pre-order, fundraiser, or product launch page.
  */
 export const CrowdfundingCta = defineCapsule({
   name: 'CrowdfundingCta',
   description:
-    "A full-width closing CTA band for a crowdfunding / campaign landing page: a bold primary-colored, center-aligned section with a large heading, a supporting subhead, a dual button group (a solid background-filled 'Back This Project' primary plus an outlined 'Share' secondary), and a small deadline / ship-date note beneath. Buttons route through useNavigate. Use as the final conversion push before the footer on any Kickstarter/Indiegogo-style raise, pre-order, fundraiser, or product launch page.",
+    "A full-width closing CTA band for a crowdfunding / campaign landing page: a bold primary-colored, center-aligned section with a large heading, a supporting subhead, a dual button group (a solid background-filled 'Back This Project' primary plus an outlined 'Share' secondary), and a small deadline / ship-date note beneath. Buttons route through section-kit route links. Use as the final conversion push before the footer on any Kickstarter/Indiegogo-style raise, pre-order, fundraiser, or product launch page.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -36,7 +36,6 @@ export const CrowdfundingCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const ctaHeading = props.heading ?? 'Be Part of the Solution'
     const ctaDesc =
       props.description ??
@@ -55,11 +54,15 @@ export const CrowdfundingCta = defineCapsule({
           <CtaBandTitle>{ctaHeading}</CtaBandTitle>
           <CtaBandSubtitle>{ctaDesc}</CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction variant="primary" onClick={() => go(rewardsTarget)}>
-              {ctaPrimary}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={rewardsTarget}>
+                {ctaPrimary}
+              </NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" onClick={() => go(ctaSecondary)}>
-              {ctaSecondary}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={ctaSecondary}>
+                {ctaSecondary}
+              </NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

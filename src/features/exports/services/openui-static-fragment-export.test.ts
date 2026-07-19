@@ -95,7 +95,6 @@ describe('static HTML fragment exports', () => {
 export function Routes({ children }) { return children; }
 export function Route({ element }) { return element ?? null; }
 export function Navigate() { return null; }
-export function useNavigate() { return () => {}; }
 `,
                   loader: 'tsx',
                 }),

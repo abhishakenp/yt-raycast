@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   ProductCard,
@@ -21,6 +20,7 @@ import {
   useCommerceFilteredProducts,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * IllustratorShop — an art-print shop section for an illustrator / visual-artist
@@ -29,13 +29,13 @@ import {
  * product image that zooms on hover, a serif title, a small meta line, and a
  * price beside a pill "add to cart" button, with a centered outlined
  * "visit full shop" CTA beneath. Add-to-cart writes to the shared commerce
- * Lakebed cart/catalog while the shop CTA routes through useNavigate. Use to sell limited-edition prints, greeting cards, and
+ * Lakebed cart/catalog while the shop CTA routes through section-kit route links. Use to sell limited-edition prints, greeting cards, and
  * illustrated goods. Renders fully with no props via baked-in defaults.
  */
 export const IllustratorShop = defineCapsule({
   name: 'IllustratorShop',
   description:
-    "Art-print shop section for an illustrator / visual-artist portfolio: a centered uppercase accent eyebrow + serif heading + paragraph above a responsive 4-up grid of product cards, each with a square product image that zooms on hover, a serif title, small meta line, and a price beside a pill 'add to cart' button, plus a centered outlined 'visit full shop' CTA beneath. Add-to-cart writes to the shared commerce Lakebed cart/catalog while the shop CTA routes through useNavigate. Use to sell limited-edition prints, greeting cards, and illustrated goods.",
+    "Art-print shop section for an illustrator / visual-artist portfolio: a centered uppercase accent eyebrow + serif heading + paragraph above a responsive 4-up grid of product cards, each with a square product image that zooms on hover, a serif title, small meta line, and a price beside a pill 'add to cart' button, plus a centered outlined 'visit full shop' CTA beneath. Add-to-cart writes to the shared commerce Lakebed cart/catalog while the shop CTA routes through section-kit route links. Use to sell limited-edition prints, greeting cards, and illustrated goods.",
   lakebed: commerceCartLakebed,
   props: z.object({
     /** Uppercase accent eyebrow label. */
@@ -61,7 +61,6 @@ export const IllustratorShop = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Art Shop'
     const heading = props.heading ?? 'Prints & Products'
     const description =
@@ -197,14 +196,13 @@ export const IllustratorShop = defineCapsule({
             ))}
           </ShopGrid>
           <div className="mt-12 text-center">
-            <button
-              type="button"
-              onClick={() => go(cta)}
+            <NavbarRouteLink
               className="inline-flex items-center gap-2 rounded-full border border-foreground px-8 py-4 text-sm font-medium text-foreground transition-colors hover:bg-foreground hover:text-background"
+              href={cta}
             >
               {cta}
               <ArrowRight className="size-4" />
-            </button>
+            </NavbarRouteLink>
           </div>
         </Container>
       </section>

@@ -8,7 +8,7 @@ import { cn } from '#/lib/utils.ts'
  * grid of plan cards (name, tagline, big monthly price + period, an included/
  * excluded feature checklist with check or cross icons, and a CTA button). The
  * "Most Popular" plan is highlighted with a brand border, lift and a top badge.
- * CTAs route through useNavigate. Use as the pricing section for insurance
+ * CTAs route through section-kit route links. Use as the pricing section for insurance
  * carriers, insurtech, brokers, or financial-protection products. Renders fully
  * with no props via baked-in defaults.
  */
@@ -30,7 +30,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 export const InsurancePricing = defineCapsule({
   name: 'InsurancePricing',
   description:
-    "3-tier transparent pricing table for an insurance page on a soft muted canvas: a centered eyebrow chip + heading + lede above a 3-column grid of plan cards (name, tagline, big monthly price + period, an included/excluded feature checklist with check or cross icons, and a CTA button). The 'Most Popular' plan is highlighted with a brand border, upward lift and a top badge. CTAs route through useNavigate. Use as the pricing section for insurance carriers, insurtech startups, brokers, or financial-protection products.",
+    "3-tier transparent pricing table for an insurance page on a soft muted canvas: a centered eyebrow chip + heading + lede above a 3-column grid of plan cards (name, tagline, big monthly price + period, an included/excluded feature checklist with check or cross icons, and a CTA button). The 'Most Popular' plan is highlighted with a brand border, upward lift and a top badge. CTAs route through section-kit route links. Use as the pricing section for insurance carriers, insurtech startups, brokers, or financial-protection products.",
   props: z.object({
     /** Eyebrow chip above the heading. */
     eyebrow: z.string().optional(),

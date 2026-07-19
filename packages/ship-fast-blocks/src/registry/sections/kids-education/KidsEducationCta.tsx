@@ -10,14 +10,14 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * KidsEducationCta — dark closing call-to-action band for a kids / family
  * learning platform. A full-width dark (foreground) section with soft gradient
  * wash and blurred glow orbs behind a centered headline, supporting paragraph,
  * dual rounded CTAs (filled primary with arrow + outlined play-icon secondary),
- * and a small reassurance note. Every CTA routes through useNavigate. Use as the
+ * and a small reassurance note. Every CTA routes through section-kit route links. Use as the
  * final conversion band before the footer for kids-education startups, children's
  * e-learning platforms, tutoring services, and family learning apps. Renders
  * fully with no props via baked-in defaults.
@@ -25,7 +25,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 export const KidsEducationCta = defineCapsule({
   name: 'KidsEducationCta',
   description:
-    "Dark closing call-to-action band for a kids / family learning platform: a full-width dark (foreground) section with soft gradient wash and blurred glow orbs behind a centered headline, supporting paragraph, dual rounded CTAs (filled primary with arrow + outlined play-icon secondary), and a small reassurance note. CTAs route through useNavigate. Use as the final conversion band before the footer for kids-education startups, children's e-learning platforms, tutoring services, and family learning apps.",
+    "Dark closing call-to-action band for a kids / family learning platform: a full-width dark (foreground) section with soft gradient wash and blurred glow orbs behind a centered headline, supporting paragraph, dual rounded CTAs (filled primary with arrow + outlined play-icon secondary), and a small reassurance note. CTAs route through section-kit route links. Use as the final conversion band before the footer for kids-education startups, children's e-learning platforms, tutoring services, and family learning apps.",
   props: z.object({
     /** Section headline. */
     heading: z.string().optional(),
@@ -40,7 +40,6 @@ export const KidsEducationCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Ready to Start the Adventure?'
     const description =
       props.description ??
@@ -60,11 +59,13 @@ export const KidsEducationCta = defineCapsule({
           <CtaBandTitle>{heading}</CtaBandTitle>
           <CtaBandSubtitle>{description}</CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction variant="primary" onClick={() => go(primaryCta)}>
-              {primaryCta}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={primaryCta}>{primaryCta}</NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" onClick={() => go(secondaryCta)}>
-              {secondaryCta}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={secondaryCta}>
+                {secondaryCta}
+              </NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

@@ -10,7 +10,7 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * WineryBreweryCta — a bold, centered visit-and-join band for a winery or
@@ -20,14 +20,14 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * high-contrast "Plan Your Visit" button (variant "primary", auto-inverted on
  * the primary band) plus an outlined "Join the Wine Club" button (variant
  * "outline") that routes to membership. Both actions navigate through the kit's
- * useNavigate so neither is a dead link. Use near the bottom of a winery,
+ * section-kit route links so neither is a dead link. Use near the bottom of a winery,
  * vineyard, cellar door, brewery, taproom, or cidery page to drive visits and
  * memberships. Renders fully with no props via warm baked-in defaults.
  */
 export const WineryBreweryCta = defineCapsule({
   name: 'WineryBreweryCta',
   description:
-    "Bold, centered visit-and-join band for a winery or brewery home page: a full-width section wrapping a strong primary-colored card with an hours eyebrow, a serif headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Plan Your Visit' button plus an outlined 'Join the Wine Club' button). Both CTAs route through useNavigate. Use near the bottom of a winery, vineyard, cellar door, brewery, taproom, or cidery page to drive visits and memberships.",
+    "Bold, centered visit-and-join band for a winery or brewery home page: a full-width section wrapping a strong primary-colored card with an hours eyebrow, a serif headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Plan Your Visit' button plus an outlined 'Join the Wine Club' button). Both CTAs route through section-kit route links. Use near the bottom of a winery, vineyard, cellar door, brewery, taproom, or cidery page to drive visits and memberships.",
   props: z.object({
     /** Visit headline (maps to CtaBand title). */
     headline: z.string().optional(),
@@ -46,7 +46,6 @@ export const WineryBreweryCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const headline = props.headline ?? 'Come taste the seasons with us'
     const subheading =
       props.subheading ??
@@ -64,11 +63,15 @@ export const WineryBreweryCta = defineCapsule({
           <CtaBandTitle>{headline}</CtaBandTitle>
           <CtaBandSubtitle>{subheading}</CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction variant="primary" onClick={() => go(primaryTarget)}>
-              {primaryCta}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={primaryTarget}>
+                {primaryCta}
+              </NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" onClick={() => go(secondaryTarget)}>
-              {secondaryCta}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={secondaryTarget}>
+                {secondaryCta}
+              </NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

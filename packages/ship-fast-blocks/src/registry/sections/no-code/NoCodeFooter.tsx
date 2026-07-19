@@ -8,7 +8,7 @@ import { cn } from '#/lib/utils.ts'
  * brand name, a short description, and round social-initial buttons) beside
  * several link columns, then a bordered bottom row with an auto-updating
  * copyright line and a set of legal links. The brand button and every link
- * route through useNavigate. Use as the closing site footer for a no-code
+ * route through section-kit route links. Use as the closing site footer for a no-code
  * builder, SaaS, or product landing page. Renders fully with no props.
  */
 import {
@@ -30,7 +30,7 @@ import {
 export const NoCodeFooter = defineCapsule({
   name: 'NoCodeFooter',
   description:
-    'Rich multi-column footer on a card surface with a top border: a 2-to-5 column grid with a wide brand column (inverse cube-glyph logo tile + brand name, a short description, and round social-initial buttons) beside several link columns, then a bordered bottom row with an auto-updating copyright line and a set of legal links. The brand button and every link route through useNavigate. Use as the closing site footer for a no-code / app-builder SaaS or product landing page.',
+    'Rich multi-column footer on a card surface with a top border: a 2-to-5 column grid with a wide brand column (inverse cube-glyph logo tile + brand name, a short description, and round social-initial buttons) beside several link columns, then a bordered bottom row with an auto-updating copyright line and a set of legal links. The brand button and every link route through section-kit route links. Use as the closing site footer for a no-code / app-builder SaaS or product landing page.',
   props: z.object({
     /** Brand / product name shown beside the logo tile. */
     brand: z.string().optional(),

@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroHeading,
@@ -13,6 +12,7 @@ import {
 } from '#/section-kit/HeroSection.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * ResumeCvHero — clean two-column opening hero for a personal resume / CV /
@@ -20,7 +20,7 @@ import { Container } from '#/section-kit/Container.tsx'
  * name in a large sans headline, their role / title, a short pitch paragraph,
  * and dual CTAs (filled "Download CV" + outlined "Contact"); the right column
  * holds a rounded professional headshot photo. Token surfaces, crisp spacing,
- * and a minimal, professional feel. Both CTAs route through useNavigate. Use as
+ * and a minimal, professional feel. Both CTAs route through section-kit route links. Use as
  * the opening hero for personal portfolios, online résumés, designer/developer
  * profiles, or any individual's professional landing page. Renders fully with
  * no props via baked-in "Jordan Avery" defaults.
@@ -28,7 +28,7 @@ import { Container } from '#/section-kit/Container.tsx'
 export const ResumeCvHero = defineCapsule({
   name: 'ResumeCvHero',
   description:
-    "Clean two-column opening hero for a personal resume / CV / portfolio site: the left column stacks an availability eyebrow, the person's name in a large sans headline, their role / title, a short pitch paragraph, and dual CTAs (filled 'Download CV' + outlined 'Contact'); the right column holds a rounded professional headshot photo. Token surfaces, crisp spacing, minimal professional feel. Both CTAs route through useNavigate. Use as the opening hero for personal portfolios, online résumés, designer or developer profiles, or any individual's professional landing page.",
+    "Clean two-column opening hero for a personal resume / CV / portfolio site: the left column stacks an availability eyebrow, the person's name in a large sans headline, their role / title, a short pitch paragraph, and dual CTAs (filled 'Download CV' + outlined 'Contact'); the right column holds a rounded professional headshot photo. Token surfaces, crisp spacing, minimal professional feel. Both CTAs route through section-kit route links. Use as the opening hero for personal portfolios, online résumés, designer or developer profiles, or any individual's professional landing page.",
   props: z.object({
     /** Small eyebrow above the name (e.g. availability). */
     eyebrow: z.string().optional(),
@@ -51,7 +51,6 @@ export const ResumeCvHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Available for new projects'
     const name = props.name ?? 'Jordan Avery'
     const role = props.role ?? 'Senior Product Designer'
@@ -97,18 +96,18 @@ export const ResumeCvHero = defineCapsule({
                 variant="primary"
                 className="rounded-full px-8 py-3.5 font-medium"
               >
-                <button type="button" onClick={() => go(primaryTarget)}>
+                <NavbarRouteLink href={primaryTarget}>
                   {primaryCta}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
               <HeroCta
                 asChild
                 variant="outline"
                 className="rounded-full bg-background px-8 py-3.5 font-medium"
               >
-                <button type="button" onClick={() => go(secondaryTarget)}>
+                <NavbarRouteLink href={secondaryTarget}>
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
             </HeroActions>
           </div>
@@ -118,7 +117,6 @@ export const ResumeCvHero = defineCapsule({
               alt={imageAlt}
               w={720}
               h={840}
-
               className="border border-border bg-muted aspect-[6/7]"
             />
           </div>

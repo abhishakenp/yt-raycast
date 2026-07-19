@@ -10,7 +10,7 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * NonprofitCta — a warm, centered donation band for a nonprofit / charity / NGO
@@ -19,14 +19,14 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * and a centered row of two routable pill CTAs — a high-contrast "Donate Today"
  * button (variant "primary", auto-inverted to a light pill on the primary band)
  * plus an outlined "Become a Volunteer" button. Both actions navigate through
- * useNavigate so neither is a dead link. Use near the bottom of a nonprofit,
+ * section-kit route links so neither is a dead link. Use near the bottom of a nonprofit,
  * foundation, or humanitarian page to drive donations and sign-ups. Renders
  * fully with no props via baked-in "Roots of Hope" defaults.
  */
 export const NonprofitCta = defineCapsule({
   name: 'NonprofitCta',
   description:
-    "Warm, centered donation band for a nonprofit / charity / NGO page built on the shared CtaBand composite at tone='primary': an eyebrow, a strong appeal headline, a short supporting line, and a centered row of two routable pill CTAs — a high-contrast 'Donate Today' button plus an outlined 'Become a Volunteer' button. Both CTAs route through useNavigate. Use near the bottom of a nonprofit, foundation, or humanitarian page to drive donations and volunteer sign-ups.",
+    "Warm, centered donation band for a nonprofit / charity / NGO page built on the shared CtaBand composite at tone='primary': an eyebrow, a strong appeal headline, a short supporting line, and a centered row of two routable pill CTAs — a high-contrast 'Donate Today' button plus an outlined 'Become a Volunteer' button. Both CTAs route through section-kit route links. Use near the bottom of a nonprofit, foundation, or humanitarian page to drive donations and volunteer sign-ups.",
   props: z.object({
     /** Small uppercase eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -45,7 +45,6 @@ export const NonprofitCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Be the reason'
     const headline = props.headline ?? 'Your gift changes a life today'
     const subheading =
@@ -63,11 +62,15 @@ export const NonprofitCta = defineCapsule({
           <CtaBandTitle>{headline}</CtaBandTitle>
           <CtaBandSubtitle>{subheading}</CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction variant="primary" onClick={() => go(primaryTarget)}>
-              {primaryCta}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={primaryTarget}>
+                {primaryCta}
+              </NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" onClick={() => go(secondaryTarget)}>
-              {secondaryCta}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={secondaryTarget}>
+                {secondaryCta}
+              </NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

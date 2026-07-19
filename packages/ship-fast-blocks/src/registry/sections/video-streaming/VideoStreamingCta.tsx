@@ -10,7 +10,7 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * VideoStreamingCta — a bold, centered free-trial band for a video-streaming
@@ -18,14 +18,14 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * tone="primary": a "No commitment · Cancel anytime" eyebrow, a strong "Start
  * your free trial" headline, a short supporting subheading, and a centered row
  * of two routable pill CTAs — a high-contrast "Start Free Trial" button plus an
- * outlined "See all plans" button. Both actions route through useNavigate. Use
+ * outlined "See all plans" button. Both actions route through section-kit route links. Use
  * near the bottom of a streaming-service or OTT page to drive signups. Renders
  * fully with no props via baked-in defaults.
  */
 export const VideoStreamingCta = defineCapsule({
   name: 'VideoStreamingCta',
   description:
-    "Bold, centered free-trial band for a video-streaming home page built on the shared CtaBand composite at tone='primary': a 'No commitment · Cancel anytime' eyebrow, a strong 'Start your free trial' headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Start Free Trial' button plus an outlined 'See all plans' button). Both CTAs route through useNavigate. Use near the bottom of a streaming-service or OTT page to drive signups.",
+    "Bold, centered free-trial band for a video-streaming home page built on the shared CtaBand composite at tone='primary': a 'No commitment · Cancel anytime' eyebrow, a strong 'Start your free trial' headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Start Free Trial' button plus an outlined 'See all plans' button). Both CTAs route through section-kit route links. Use near the bottom of a streaming-service or OTT page to drive signups.",
   props: z.object({
     /** Reassurance eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -44,7 +44,6 @@ export const VideoStreamingCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'No commitment · Cancel anytime'
     const headline = props.headline ?? 'Start your free trial'
     const subheading =
@@ -62,11 +61,15 @@ export const VideoStreamingCta = defineCapsule({
           <CtaBandTitle>{headline}</CtaBandTitle>
           <CtaBandSubtitle>{subheading}</CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction variant="primary" onClick={() => go(primaryTarget)}>
-              {primaryCta}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={primaryTarget}>
+                {primaryCta}
+              </NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" onClick={() => go(secondaryTarget)}>
-              {secondaryCta}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={secondaryTarget}>
+                {secondaryCta}
+              </NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

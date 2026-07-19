@@ -8,21 +8,21 @@ import {
   CtaBandSubtitle,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * MarketingAgencyContactCta — a high-contrast dark closing call-to-action band. A
  * centered block on the primary surface with a large heading, a supporting
  * paragraph, dual rounded-pill CTAs (a filled booking button with a calendar icon
  * + an outlined email/contact button), and a row of inline reassurance checkmarks
- * below. Links route through useNavigate; the email button routes to a separate
+ * below. Links route through section-kit route links; the email button routes to a separate
  * contactTarget. Use as the final conversion band before the footer on a
  * marketing / growth agency or B2B services page. Renders fully with no props.
  */
 export const MarketingAgencyContactCta = defineCapsule({
   name: 'MarketingAgencyContactCta',
   description:
-    'High-contrast dark closing call-to-action band on the primary surface: a centered block with a large heading, a supporting paragraph, dual rounded-pill CTAs (a filled booking button with a calendar icon + an outlined email/contact button), and a row of inline reassurance checkmarks below. Links route through useNavigate; the email button routes to a separate contactTarget. Use as the final conversion band before the footer on a marketing / growth agency or B2B services landing page.',
+    'High-contrast dark closing call-to-action band on the primary surface: a centered block with a large heading, a supporting paragraph, dual rounded-pill CTAs (a filled booking button with a calendar icon + an outlined email/contact button), and a row of inline reassurance checkmarks below. Links route through section-kit route links; the email button routes to a separate contactTarget. Use as the final conversion band before the footer on a marketing / growth agency or B2B services landing page.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -35,7 +35,6 @@ export const MarketingAgencyContactCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Ready to Scale Your Growth?'
     const description =
       props.description ??
@@ -72,28 +71,30 @@ export const MarketingAgencyContactCta = defineCapsule({
               variant="primary"
               invert
               className="rounded-full px-8 py-4 font-medium"
-              onClick={() => go(primaryCta)}
+              asChild
             >
-              {primaryCta}
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="ml-2 size-5"
-                aria-hidden="true"
-              >
-                <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
+              <NavbarRouteLink href={primaryCta}>
+                {primaryCta}
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="ml-2 size-5"
+                  aria-hidden="true"
+                >
+                  <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </NavbarRouteLink>
             </CtaAction>
             <CtaAction
               variant="outline"
               className="rounded-full border-primary-foreground/40 px-8 py-4 font-medium text-primary-foreground hover:border-primary-foreground/70"
-              onClick={() => go(contactTarget)}
+              asChild
             >
-              {email}
+              <NavbarRouteLink href={contactTarget}>{email}</NavbarRouteLink>
             </CtaAction>
           </div>
           <div className="flex flex-wrap justify-center gap-8 text-sm text-primary-foreground/70">

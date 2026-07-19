@@ -21,7 +21,7 @@ import {
  * (layered-diamond mark + wordmark above a short tagline) sits beside a wrapping
  * row of footer links; a bordered sub-bar below carries an auto-updating
  * copyright line. Stacks centered on mobile, spreads on desktop. The brand button
- * and every link route through useNavigate. Calm, organic and premium with a
+ * and every link route through section-kit route links. Calm, organic and premium with a
  * sage-green accent. Use as the closing site footer for landscapers, lawn-care
  * services, garden designers, hardscaping contractors or grounds-keeping
  * companies. Renders fully with no props via baked-in "Earth & Edge" defaults.
@@ -29,7 +29,7 @@ import {
 export const LandscapingFooter = defineCapsule({
   name: 'LandscapingFooter',
   description:
-    'Slim, calm closing footer for a landscaping / outdoor-design company on the card surface: a bordered-top band with a left brand column (layered-diamond mark + wordmark above a short tagline) beside a wrapping row of footer links, and a bordered sub-bar below carrying an auto-updating copyright line. Stacks centered on mobile, spreads on desktop; the brand button and every link route through useNavigate. Calm, organic and premium with a sage-green accent. Use as the closing site footer for landscapers, lawn-care services, garden designers, hardscaping contractors or grounds-keeping companies.',
+    'Slim, calm closing footer for a landscaping / outdoor-design company on the card surface: a bordered-top band with a left brand column (layered-diamond mark + wordmark above a short tagline) beside a wrapping row of footer links, and a bordered sub-bar below carrying an auto-updating copyright line. Stacks centered on mobile, spreads on desktop; the brand button and every link route through section-kit route links. Calm, organic and premium with a sage-green accent. Use as the closing site footer for landscapers, lawn-care services, garden designers, hardscaping contractors or grounds-keeping companies.',
   props: z.object({
     /** Brand / company name shown beside the mark. */
     brand: z.string().optional(),

@@ -52,7 +52,7 @@ function SparkMark({ className }: { className?: string }) {
 export const LinkInBioFooter = defineCapsule({
   name: 'LinkInBioFooter',
   description:
-    'Bold, mobile-first closing footer for a LINK-IN-BIO / single-page link hub (Linktree / Bento style personal landing): a creator wordmark beside an inline spark mark, a short tagline, a social row (Twitter, Instagram, GitHub, LinkedIn), and a couple of compact link columns (Links, More) in a responsive grid; a bordered-top bottom bar holds an auto-updating copyright line plus legal links. Every brand, social, and column link routes through useNavigate. Use to close a creator/influencer link hub, freelancer bio link, or personal landing page.',
+    'Bold, mobile-first closing footer for a LINK-IN-BIO / single-page link hub (Linktree / Bento style personal landing): a creator wordmark beside an inline spark mark, a short tagline, a social row (Twitter, Instagram, GitHub, LinkedIn), and a couple of compact link columns (Links, More) in a responsive grid; a bordered-top bottom bar holds an auto-updating copyright line plus legal links. Every brand, social, and column link routes through section-kit route links. Use to close a creator/influencer link hub, freelancer bio link, or personal landing page.',
   props: z.object({
     /** Creator / person name shown as the wordmark. */
     brand: z.string().optional(),

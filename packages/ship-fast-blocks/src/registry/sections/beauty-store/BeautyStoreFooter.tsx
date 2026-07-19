@@ -15,13 +15,13 @@ import {
  * storefront. A single bordered-top row (stacks on mobile): serif brand name on
  * the left, an auto-updating copyright line in the center, and a row of legal /
  * utility links on the right. The brand button and every link route through
- * useNavigate. Use as the closing site footer for beauty stores, skincare shops,
+ * section-kit route links. Use as the closing site footer for beauty stores, skincare shops,
  * cosmetics brands, or any clean e-commerce landing page.
  */
 export const BeautyStoreFooter = defineCapsule({
   name: 'BeautyStoreFooter',
   description:
-    'Slim bottom footer for a beauty / skincare / cosmetics storefront: a single bordered-top row (stacks on mobile) with a serif brand name on the left, an auto-updating copyright line in the center, and a row of legal / utility links on the right. The brand button and every link route through useNavigate. Use as the closing site footer for beauty stores, skincare shops, cosmetics brands, or any clean e-commerce landing page.',
+    'Slim bottom footer for a beauty / skincare / cosmetics storefront: a single bordered-top row (stacks on mobile) with a serif brand name on the left, an auto-updating copyright line in the center, and a row of legal / utility links on the right. The brand button and every link route through section-kit route links. Use as the closing site footer for beauty stores, skincare shops, cosmetics brands, or any clean e-commerce landing page.',
   props: z.object({
     /** Brand / store name shown in the footer. */
     brand: z.string().optional(),

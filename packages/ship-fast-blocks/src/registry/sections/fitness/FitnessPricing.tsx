@@ -7,7 +7,7 @@ import { cn } from '#/lib/utils.ts'
  * centered heading + lead paragraph above a 3-column grid of plan cards (the
  * "popular" tier inverted to a primary-filled card with a corner ribbon), each with
  * a name, tagline, big price + period, a check/cross feature list, and a full-width
- * CTA button, plus a centered footnote underneath. CTAs route through useNavigate.
+ * CTA button, plus a centered footnote underneath. CTAs route through section-kit route links.
  * Use for membership tiers / plans on gyms, fitness studios, yoga or boxing studios.
  */
 import { Container } from '#/section-kit/Container.tsx'
@@ -28,7 +28,7 @@ import {
 export const FitnessPricing = defineCapsule({
   name: 'FitnessPricing',
   description:
-    "Three-tier membership pricing block for a gym or fitness studio: a centered heading and lead paragraph above a 3-column grid of plan cards (the 'popular' tier inverted to a primary-filled card with a corner ribbon), each with a name, tagline, big price plus period, a check / cross feature list and a full-width CTA button, plus a centered footnote underneath. CTAs route through useNavigate. Use for membership tiers, plans or pricing on gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing or spin / cycle studios.",
+    "Three-tier membership pricing block for a gym or fitness studio: a centered heading and lead paragraph above a 3-column grid of plan cards (the 'popular' tier inverted to a primary-filled card with a corner ribbon), each with a name, tagline, big price plus period, a check / cross feature list and a full-width CTA button, plus a centered footnote underneath. CTAs route through section-kit route links. Use for membership tiers, plans or pricing on gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing or spin / cycle studios.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),

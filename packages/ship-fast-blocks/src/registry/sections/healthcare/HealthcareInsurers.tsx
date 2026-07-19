@@ -1,13 +1,11 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 /**
  * HealthcareInsurers — accepted-insurance logo strip for a medical-clinic page.
  * A slim bordered band: a small uppercase caption centered above a responsive
  * 2/3/6-column grid of insurer wordmarks rendered as muted, lightly-faded
- * buttons that brighten on hover. Each routes through useNavigate. Use as a
+ * buttons that brighten on hover. Each routes through section-kit route links. Use as a
  * trust / social-proof strip under the hero of a doctors' office, primary-care
  * practice, telehealth or urgent-care clinic to show accepted insurance plans.
  * Renders fully with no props via baked-in major-insurer defaults.
@@ -18,10 +16,12 @@ import {
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const HealthcareInsurers = defineCapsule({
   name: 'HealthcareInsurers',
   description:
-    "Accepted-insurance logo strip for a medical-clinic page: a slim bordered band with a small uppercase caption centered above a responsive 2/3/6-column grid of insurer wordmarks rendered as muted, lightly-faded buttons that brighten on hover. Each routes through useNavigate. Use as a trust / social-proof strip under the hero of a doctors' office, primary-care practice, telehealth or urgent-care clinic to show accepted insurance plans.",
+    "Accepted-insurance logo strip for a medical-clinic page: a slim bordered band with a small uppercase caption centered above a responsive 2/3/6-column grid of insurer wordmarks rendered as muted, lightly-faded buttons that brighten on hover. Each routes through section-kit route links. Use as a trust / social-proof strip under the hero of a doctors' office, primary-care practice, telehealth or urgent-care clinic to show accepted insurance plans.",
   props: z.object({
     /** Uppercase caption above the logo grid. */
     label: z.string().optional(),
@@ -30,7 +30,6 @@ export const HealthcareInsurers = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const label = props.label ?? 'Accepted insurance plans'
     const items = props.items?.length
       ? props.items
@@ -46,7 +45,7 @@ export const HealthcareInsurers = defineCapsule({
         <LogoStripItems layout="grid" className="mt-8">
           {items.filter(Boolean).map((logo) => (
             <LogoStripItem key={logo} variant="opacity-hover" asChild>
-              <button onClick={() => go(logo)}>{logo}</button>
+              <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
             </LogoStripItem>
           ))}
         </LogoStripItems>

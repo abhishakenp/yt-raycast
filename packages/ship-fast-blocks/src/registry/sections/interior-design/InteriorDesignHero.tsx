@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroHeading,
@@ -14,6 +13,7 @@ import {
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * InteriorDesignHero — refined split hero band for an upscale interior-design /
@@ -22,7 +22,7 @@ import { Container } from '#/section-kit/Container.tsx'
  * word, a supporting paragraph, dual square CTAs (filled + outlined) and a row
  * of award badges with small icons; on the right a tall featured-project photo
  * with an overlaid translucent caption card (eyebrow + title + meta). Editorial,
- * airy and gallery-like. CTAs route through useNavigate; the photo uses the alt-
+ * airy and gallery-like. CTAs route through section-kit route links; the photo uses the alt-
  * driven Image component. Use as the opening hero for interior designers, design
  * studios, architecture firms, home staging or renovation businesses. Renders
  * fully with no props via baked-in "Atelier Studio" defaults.
@@ -30,7 +30,7 @@ import { Container } from '#/section-kit/Container.tsx'
 export const InteriorDesignHero = defineCapsule({
   name: 'InteriorDesignHero',
   description:
-    'Refined split hero band for an upscale interior-design / architecture studio landing page: two-column layout with an uppercase tracked eyebrow, a large light-weight headline featuring an italic accent word, a supporting paragraph, dual square CTAs (filled + outlined) and a row of award badges with icons on the left, and a tall featured-project photo with an overlaid translucent caption card (eyebrow + title + meta) on the right. Editorial, airy and gallery-like; CTAs route through useNavigate and the photo uses the alt-driven Image component. Use as the opening hero for interior designers, design studios, architecture firms, home staging or renovation businesses.',
+    'Refined split hero band for an upscale interior-design / architecture studio landing page: two-column layout with an uppercase tracked eyebrow, a large light-weight headline featuring an italic accent word, a supporting paragraph, dual square CTAs (filled + outlined) and a row of award badges with icons on the left, and a tall featured-project photo with an overlaid translucent caption card (eyebrow + title + meta) on the right. Editorial, airy and gallery-like; CTAs route through section-kit route links and the photo uses the alt-driven Image component. Use as the opening hero for interior designers, design studios, architecture firms, home staging or renovation businesses.',
   props: z.object({
     eyebrow: z.string().optional(),
     /** First heading line. */
@@ -50,7 +50,6 @@ export const InteriorDesignHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Est. 2014 — San Francisco'
     const headingTop = props.headingTop ?? 'Spaces that'
     const headingItalic = props.headingItalic ?? 'inspire'
@@ -99,18 +98,18 @@ export const InteriorDesignHero = defineCapsule({
                   asChild
                   className="bg-foreground px-8 py-4 text-sm font-medium text-background hover:bg-foreground/90"
                 >
-                  <button type="button" onClick={() => go(primaryCta)}>
+                  <NavbarRouteLink href={primaryCta}>
                     {primaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
                 <HeroCta
                   asChild
                   variant="outline"
                   className="px-8 py-4 text-sm font-medium hover:border-foreground hover:bg-foreground hover:text-background"
                 >
-                  <button type="button" onClick={() => go(secondaryCta)}>
+                  <NavbarRouteLink href={secondaryCta}>
                     {secondaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
               <HeroSocialProof className="mt-0 gap-8 pt-4">
@@ -151,7 +150,6 @@ export const InteriorDesignHero = defineCapsule({
                 alt={imageAlt}
                 w={1200}
                 h={800}
-
                 className="h-[400px] w-full rounded-none md:h-[500px] lg:h-[600px]"
               />
               <div className="absolute inset-x-6 bottom-6 bg-card/95 p-6 backdrop-blur-sm md:p-8">

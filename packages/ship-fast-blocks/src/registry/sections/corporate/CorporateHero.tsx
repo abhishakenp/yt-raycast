@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   HeroSection,
@@ -13,6 +12,7 @@ import {
   HeroStatBadgeSubtitle,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * CorporateHero — split-layout enterprise hero section for a corporate B2B
@@ -21,14 +21,14 @@ import { Container } from '#/section-kit/Container.tsx'
  * paragraph, dual CTAs (filled primary + outlined secondary), and SOC 2 / ISO
  * compliance check-marks; right side shows a showcase photo with a floating
  * ROI stat card. Clean, authoritative, and conversion-focused. All CTAs route
- * through useNavigate. Use as the opening hero for enterprise software, cloud
+ * through section-kit route links. Use as the opening hero for enterprise software, cloud
  * infrastructure, IT consultancies, or any corporate site that needs Fortune 500
  * credibility.
  */
 export const CorporateHero = defineCapsule({
   name: 'CorporateHero',
   description:
-    'Split-layout enterprise hero section for a corporate B2B marketing page: left side with a live trust badge (pulsing dot), authoritative headline, supporting paragraph, dual CTAs, and SOC 2 / ISO compliance check-marks; right side with a showcase office photo and a floating ROI stat card. Clean, trustworthy, conversion-focused. CTAs route through useNavigate. Use as the opening hero for enterprise software, cloud infrastructure, IT consultancies, or any corporate site.',
+    'Split-layout enterprise hero section for a corporate B2B marketing page: left side with a live trust badge (pulsing dot), authoritative headline, supporting paragraph, dual CTAs, and SOC 2 / ISO compliance check-marks; right side with a showcase office photo and a floating ROI stat card. Clean, trustworthy, conversion-focused. CTAs route through section-kit route links. Use as the opening hero for enterprise software, cloud infrastructure, IT consultancies, or any corporate site.',
   props: z.object({
     /** Trust badge text above the headline. */
     badge: z.string().optional(),
@@ -51,7 +51,6 @@ export const CorporateHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heroBadge = props.badge ?? 'Trusted by 500+ Enterprise Clients'
     const heroHeading =
       props.heading ?? 'Enterprise infrastructure for the modern economy'
@@ -107,20 +106,18 @@ export const CorporateHero = defineCapsule({
                 {heroSub}
               </p>
               <div className="flex flex-col gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(heroPrimary)}
+                <NavbarRouteLink
                   className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  href={heroPrimary}
                 >
                   {heroPrimary}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(heroSecondary)}
+                </NavbarRouteLink>
+                <NavbarRouteLink
                   className="inline-flex items-center justify-center rounded-lg border border-border bg-background px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted"
+                  href={heroSecondary}
                 >
                   {heroSecondary}
-                </button>
+                </NavbarRouteLink>
               </div>
               <div className="flex flex-wrap items-center gap-6 pt-4 text-sm text-muted-foreground">
                 {heroBadges.map((b) => (

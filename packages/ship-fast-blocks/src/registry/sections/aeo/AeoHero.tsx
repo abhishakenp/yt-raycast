@@ -23,7 +23,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * headline about getting cited in AI answers, a supporting paragraph, dual pill
  * CTAs (filled "Start Free" + outlined "Book demo"), a trust-row of supported
  * engines, and a large rounded dashboard screenshot below. CTAs route through
- * useNavigate; the screenshot uses the alt-driven Image component. Use as the
+ * section-kit route links; the screenshot uses the alt-driven Image component. Use as the
  * opening section for AEO platforms, generative-search visibility tools, or
  * brand-citation analytics products.
  */
@@ -131,10 +131,7 @@ export const AeoHero = defineCapsule({
           </HeroContent>
         </Container>
         <div className="mx-auto max-w-5xl px-4 pb-20 sm:px-6 lg:px-8">
-          <Card
-            variant="default"
-            className="overflow-hidden shadow-2xl p-0"
-          >
+          <Card variant="default" className="overflow-hidden shadow-2xl p-0">
             <Image
               alt={imageAlt}
               w={1600}

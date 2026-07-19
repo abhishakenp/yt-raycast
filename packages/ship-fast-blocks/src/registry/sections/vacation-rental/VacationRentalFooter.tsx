@@ -24,7 +24,7 @@ import {
  * brand mark + wordmark, a warm tagline, a social row, and a responsive grid of
  * link columns (Explore / Amenities / Support / Legal); below, a bordered-top
  * bottom bar with an auto-updating copyright line and legal links. The brand,
- * every column link, and each social link route through useNavigate. Theme-token
+ * every column link, and each social link route through section-kit route links. Theme-token
  * only. Use as the closing footer for a vacation rental, beach house, cabin,
  * villa, or boutique short-stay site. Renders fully with no props via baked-in
  * "Azure Cove Retreats" defaults.
@@ -55,7 +55,7 @@ function PalmMark({ className }: { className?: string }) {
 export const VacationRentalFooter = defineCapsule({
   name: 'VacationRentalFooter',
   description:
-    'Multi-column site footer for a vacation-rental listing page built on the shared SiteFooter composite: a palm-and-sun brand mark + wordmark, a warm tagline, a social row, and a responsive grid of link columns (Explore / Amenities / Support / Legal); below, a bordered-top bottom bar with an auto-updating copyright line and legal links. The brand, every column link, and each social link route through useNavigate. Theme-token only. Use as the closing footer for a vacation rental, beach house, cabin, villa, or boutique short-stay site.',
+    'Multi-column site footer for a vacation-rental listing page built on the shared SiteFooter composite: a palm-and-sun brand mark + wordmark, a warm tagline, a social row, and a responsive grid of link columns (Explore / Amenities / Support / Legal); below, a bordered-top bottom bar with an auto-updating copyright line and legal links. The brand, every column link, and each social link route through section-kit route links. Theme-token only. Use as the closing footer for a vacation rental, beach house, cabin, villa, or boutique short-stay site.',
   props: z.object({
     /** Property / brand name shown beside the brand mark. */
     brand: z.string().optional(),

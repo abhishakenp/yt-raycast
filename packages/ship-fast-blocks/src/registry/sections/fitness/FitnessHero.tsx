@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 /**
@@ -10,15 +9,17 @@ import { Image } from '#/lib/img.tsx'
  * highlight phrase in muted), a supporting paragraph, dual CTAs (a filled primary
  * pill with an arrow icon + an outlined secondary), and a row of check-marked
  * member-proof points on the left, with a tall rounded showcase photo carrying a
- * floating member-quote card on the right. CTAs route through useNavigate. Use as
+ * floating member-quote card on the right. CTAs route through section-kit route links. Use as
  * the top hero for gyms, fitness studios, yoga / pilates / boxing / spin studios.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const FitnessHero = defineCapsule({
   name: 'FitnessHero',
   description:
-    'Warm, editorial split hero for a gym / fitness-studio landing page: a two-column layout pairing a large two-tone headline (lead in foreground, highlight phrase in muted), a supporting paragraph, dual CTAs (a filled primary pill with an arrow icon and an outlined secondary), and a row of check-marked member-proof points on the left, with a tall rounded showcase photo carrying a floating member-quote card on the right. CTAs route through useNavigate; the photo uses the alt-driven Image component. Use as the top hero for gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing or spin / cycle studios.',
+    'Warm, editorial split hero for a gym / fitness-studio landing page: a two-column layout pairing a large two-tone headline (lead in foreground, highlight phrase in muted), a supporting paragraph, dual CTAs (a filled primary pill with an arrow icon and an outlined secondary), and a row of check-marked member-proof points on the left, with a tall rounded showcase photo carrying a floating member-quote card on the right. CTAs route through section-kit route links; the photo uses the alt-driven Image component. Use as the top hero for gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing or spin / cycle studios.',
   props: z.object({
     /** Heading lead text rendered in foreground. */
     headingLead: z.string().optional(),
@@ -34,7 +35,6 @@ export const FitnessHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heroLead = props.headingLead ?? 'Strength through'
     const heroHighlight = props.headingHighlight ?? 'movement'
     const heroSub =
@@ -85,10 +85,9 @@ export const FitnessHero = defineCapsule({
                 {heroSub}
               </p>
               <div className="flex flex-wrap gap-4">
-                <button
-                  type="button"
-                  onClick={() => go(heroPrimary)}
+                <NavbarRouteLink
                   className="inline-flex items-center rounded-sm bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  href={heroPrimary}
                 >
                   {heroPrimary}
                   <svg
@@ -105,14 +104,13 @@ export const FitnessHero = defineCapsule({
                       d="M17 8l4 4m0 0l-4 4m4-4H3"
                     />
                   </svg>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(heroSecondary)}
+                </NavbarRouteLink>
+                <NavbarRouteLink
                   className="inline-flex items-center rounded-sm border border-input px-6 py-3 text-sm font-medium text-foreground transition-colors hover:border-border"
+                  href={heroSecondary}
                 >
                   {heroSecondary}
-                </button>
+                </NavbarRouteLink>
               </div>
               <div className="flex items-center gap-6 pt-4 text-sm text-muted-foreground">
                 {heroProof.map((proof) => (

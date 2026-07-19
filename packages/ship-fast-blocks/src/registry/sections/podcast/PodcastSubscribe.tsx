@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import {
@@ -10,11 +9,12 @@ import {
   SubscribeForm,
   SubscribeInput,
 } from '#/section-kit/SubscribeBand.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 export const PodcastSubscribe = defineCapsule({
   name: 'PodcastSubscribe',
   description:
-    'Subscribe-everywhere call-to-action band for a podcast site, set on a warm accent-tinted background. It centers a heading and subtitle above a wrapping row of platform pill buttons (Apple Podcasts, Spotify, Overcast, RSS, YouTube) that route via useNavigate. Use it to convert listeners by sending them to the show on whichever podcast app they already use.',
+    'Subscribe-everywhere call-to-action band for a podcast site, set on a warm accent-tinted background. It centers a heading and subtitle above a wrapping row of platform pill buttons (Apple Podcasts, Spotify, Overcast, RSS, YouTube) that route via section-kit route links. Use it to convert listeners by sending them to the show on whichever podcast app they already use.',
   props: z.object({
     /** Small uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -29,7 +29,6 @@ export const PodcastSubscribe = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Listen anywhere'
     const heading = props.heading ?? 'Subscribe everywhere you listen'
     const subheading =
@@ -60,14 +59,13 @@ export const PodcastSubscribe = defineCapsule({
           />
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
             {platforms.map((platform, i) => (
-              <button
+              <NavbarRouteLink
                 key={`${platform.label}-${i}`}
-                type="button"
-                onClick={() => go(platform.target)}
                 className="rounded-full border border-border bg-card px-5 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                href={platform.target}
               >
                 {platform.label}
-              </button>
+              </NavbarRouteLink>
             ))}
           </div>
           <SubscribeForm className="mx-auto mt-8 flex w-full max-w-md flex-col items-stretch gap-3 sm:flex-row">

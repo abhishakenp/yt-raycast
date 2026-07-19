@@ -10,7 +10,7 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * WebinarCta — a bold, centered registration band for a webinar landing page.
@@ -18,14 +18,14 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * a date-and-seats urgency eyebrow, a strong "Reserve your spot — free"
  * headline, a short reassuring subheading, and a centered row of two routable
  * pill CTAs — a high-contrast "Save my seat" button plus an outlined "Add to
- * calendar" button. Both actions navigate through the kit's useNavigate so
+ * calendar" button. Both actions navigate through the kit's section-kit route links so
  * neither is a dead link. Use near the bottom of a webinar, summit, or virtual
  * event page to drive registrations. Renders fully with no props.
  */
 export const WebinarCta = defineCapsule({
   name: 'WebinarCta',
   description:
-    "Bold, centered registration band for a webinar landing page built on the shared CtaBand composite at tone='primary': a date-and-seats urgency eyebrow, a strong 'Reserve your spot — free' headline, a short reassuring subheading, and a centered row of two pill CTAs (a high-contrast 'Save my seat' button plus an outlined 'Add to calendar' button). Both CTAs route through useNavigate. Use near the bottom of a webinar, summit, or virtual-event page to drive registrations.",
+    "Bold, centered registration band for a webinar landing page built on the shared CtaBand composite at tone='primary': a date-and-seats urgency eyebrow, a strong 'Reserve your spot — free' headline, a short reassuring subheading, and a centered row of two pill CTAs (a high-contrast 'Save my seat' button plus an outlined 'Add to calendar' button). Both CTAs route through section-kit route links. Use near the bottom of a webinar, summit, or virtual-event page to drive registrations.",
   props: z.object({
     /** Urgency line shown as the band eyebrow (date + seats left). */
     eyebrow: z.string().optional(),
@@ -44,7 +44,6 @@ export const WebinarCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow =
       props.eyebrow ?? 'July 17 · 11:00 AM PT — only 87 seats left'
     const headline = props.headline ?? 'Reserve your spot — free'
@@ -63,11 +62,15 @@ export const WebinarCta = defineCapsule({
           <CtaBandTitle>{headline}</CtaBandTitle>
           <CtaBandSubtitle>{subheading}</CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction variant="primary" onClick={() => go(primaryTarget)}>
-              {primaryCta}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={primaryTarget}>
+                {primaryCta}
+              </NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" onClick={() => go(secondaryTarget)}>
-              {secondaryCta}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={secondaryTarget}>
+                {secondaryCta}
+              </NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

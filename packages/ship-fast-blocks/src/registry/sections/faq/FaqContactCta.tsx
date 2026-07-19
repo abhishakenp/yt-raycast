@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   CtaBand,
   CtaBandInner,
@@ -9,6 +7,7 @@ import {
   CtaBandSubtitle,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * FaqContactCta — a "Still need help?" contact call-to-action band for a
@@ -16,13 +15,13 @@ import {
  * section: heading, supporting description, two centered buttons (a solid
  * background "Email Support" with mail icon and a translucent "Start Live Chat"
  * with chat icon), and a small response-time note with a highlighted span. Buttons
- * route through useNavigate. Use as the closing support / contact prompt on SaaS
+ * route through section-kit route links. Use as the closing support / contact prompt on SaaS
  * knowledge bases, help centers, or FAQ pages. Renders fully with no props.
  */
 export const FaqContactCta = defineCapsule({
   name: 'FaqContactCta',
   description:
-    "A 'Still need help?' contact call-to-action band for a help-center / support page: a primary-colored rounded panel centered on a muted section, with a heading, supporting description, two centered buttons (a solid 'Email Support' with mail icon and a translucent 'Start Live Chat' with chat icon), and a small response-time note with a highlighted span. Buttons route through useNavigate. Use as the closing support / contact prompt on SaaS knowledge bases, help centers, or FAQ pages.",
+    "A 'Still need help?' contact call-to-action band for a help-center / support page: a primary-colored rounded panel centered on a muted section, with a heading, supporting description, two centered buttons (a solid 'Email Support' with mail icon and a translucent 'Start Live Chat' with chat icon), and a small response-time note with a highlighted span. Buttons route through section-kit route links. Use as the closing support / contact prompt on SaaS knowledge bases, help centers, or FAQ pages.",
   props: z.object({
     /** Band heading. */
     heading: z.string().optional(),
@@ -39,7 +38,6 @@ export const FaqContactCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Still need help?'
     const description =
       props.description ??
@@ -66,43 +64,47 @@ export const FaqContactCta = defineCapsule({
               variant="primary"
               invert
               className="w-full gap-2 rounded-lg px-6 py-3 font-medium hover:bg-muted sm:w-auto"
-              onClick={() => go(primary)}
+              asChild
             >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <rect x="2" y="4" width="20" height="16" rx="2" />
-                <path d="m22 7-10 5L2 7" />
-              </svg>
-              {primary}
+              <NavbarRouteLink href={primary}>
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect x="2" y="4" width="20" height="16" rx="2" />
+                  <path d="m22 7-10 5L2 7" />
+                </svg>
+                {primary}
+              </NavbarRouteLink>
             </CtaAction>
             <CtaAction
               variant="ghost"
               className="w-full gap-2 rounded-lg bg-primary-foreground/10 px-6 py-3 font-medium text-primary-foreground hover:bg-primary-foreground/20 sm:w-auto"
-              onClick={() => go(secondary)}
+              asChild
             >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-              </svg>
-              {secondary}
+              <NavbarRouteLink href={secondary}>
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+                {secondary}
+              </NavbarRouteLink>
             </CtaAction>
           </div>
           <p className="mt-6 text-sm text-primary-foreground/60">

@@ -10,7 +10,7 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * MarketplaceCta — bold, centered conversion band for a multi-vendor
@@ -21,14 +21,14 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * "primary", auto-inverted to a light pill on the primary band) that routes to
  * seller onboarding, plus an outlined "Browse Marketplace" button (variant
  * "outline") that routes to category browsing. Both actions navigate through the
- * kit's useNavigate. Use near the bottom of an online marketplace, multi-vendor
+ * kit's section-kit route links. Use near the bottom of an online marketplace, multi-vendor
  * or maker/artisan platform, or retail aggregator to drive seller signups and
  * shopping. Renders fully with no props via vibrant baked-in defaults.
  */
 export const MarketplaceCta = defineCapsule({
   name: 'MarketplaceCta',
   description:
-    "Bold, centered conversion band for a multi-vendor marketplace / e-commerce home page built on the shared CtaBand composite at tone='primary': an optional eyebrow, a strong 'Start selling today' headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Start Selling' button routing to seller onboarding plus an outlined 'Browse Marketplace' button routing to category browsing). Both CTAs route through useNavigate. Use near the bottom of an online marketplace, multi-vendor or maker/artisan platform, or retail aggregator to drive seller signups and shopping.",
+    "Bold, centered conversion band for a multi-vendor marketplace / e-commerce home page built on the shared CtaBand composite at tone='primary': an optional eyebrow, a strong 'Start selling today' headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Start Selling' button routing to seller onboarding plus an outlined 'Browse Marketplace' button routing to category browsing). Both CTAs route through section-kit route links. Use near the bottom of an online marketplace, multi-vendor or maker/artisan platform, or retail aggregator to drive seller signups and shopping.",
   props: z.object({
     /** Optional eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -47,7 +47,6 @@ export const MarketplaceCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const headline = props.headline ?? 'Start selling today'
     const subheading =
       props.subheading ??
@@ -64,11 +63,15 @@ export const MarketplaceCta = defineCapsule({
           <CtaBandTitle>{headline}</CtaBandTitle>
           <CtaBandSubtitle>{subheading}</CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction variant="primary" onClick={() => go(primaryTarget)}>
-              {primaryCta}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={primaryTarget}>
+                {primaryCta}
+              </NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" onClick={() => go(secondaryTarget)}>
-              {secondaryCta}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={secondaryTarget}>
+                {secondaryCta}
+              </NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroHeading,
@@ -13,6 +12,7 @@ import {
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * MembershipClubHero — calm, editorial split hero for a private membership club /
@@ -21,14 +21,14 @@ import { Container } from '#/section-kit/Container.tsx'
  * highlight phrase, a relaxed subheading, dual rounded-pill CTAs (solid primary +
  * outlined secondary) and a member-count proof strip; on the right a large rounded
  * lifestyle photo with a floating pull-quote card overlapping its lower-left corner.
- * CTAs route through useNavigate. Use as the trust-building opening section for
+ * CTAs route through section-kit route links. Use as the trust-building opening section for
  * members clubs, founders/social clubs, professional networks, curated communities
  * or paid community subscriptions. Renders fully with no props.
  */
 export const MembershipClubHero = defineCapsule({
   name: 'MembershipClubHero',
   description:
-    'Calm, editorial split hero for a private membership club / exclusive community landing page: left column with an uppercase tracked eyebrow label, a thin display headline containing one emphasized (normal-weight) highlight phrase, a relaxed subheading, dual rounded-pill CTAs (solid primary + outlined secondary) and a member-count proof strip; right column with a large rounded lifestyle photo and a floating pull-quote card overlapping its lower-left corner. CTAs route through useNavigate. Use as the trust-building opening section for members clubs, founders/social clubs, professional networks, curated communities or paid community subscriptions.',
+    'Calm, editorial split hero for a private membership club / exclusive community landing page: left column with an uppercase tracked eyebrow label, a thin display headline containing one emphasized (normal-weight) highlight phrase, a relaxed subheading, dual rounded-pill CTAs (solid primary + outlined secondary) and a member-count proof strip; right column with a large rounded lifestyle photo and a floating pull-quote card overlapping its lower-left corner. CTAs route through section-kit route links. Use as the trust-building opening section for members clubs, founders/social clubs, professional networks, curated communities or paid community subscriptions.',
   props: z.object({
     eyebrow: z.string().optional(),
     /** Headline text before the emphasized highlight phrase. */
@@ -49,7 +49,6 @@ export const MembershipClubHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Est. 2019 — Private Collective'
     const headingBefore =
       props.headingBefore ?? 'A private space for people who value '
@@ -100,18 +99,18 @@ export const MembershipClubHero = defineCapsule({
                   variant="primary"
                   className="rounded-full px-8 py-4 text-base"
                 >
-                  <button type="button" onClick={() => go(primaryCta)}>
+                  <NavbarRouteLink href={primaryCta}>
                     {primaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
                 <HeroCta
                   asChild
                   variant="outline"
                   className="rounded-full bg-card px-8 py-4 text-base"
                 >
-                  <button type="button" onClick={() => go(secondaryCta)}>
+                  <NavbarRouteLink href={secondaryCta}>
                     {secondaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
               <div className="flex items-center gap-6 pt-6 text-sm text-muted-foreground">
@@ -130,7 +129,6 @@ export const MembershipClubHero = defineCapsule({
                 alt={imageAlt}
                 w={800}
                 h={600}
-
                 className="h-80 w-full shadow-xl lg:h-[500px] rounded-xl"
               />
               <div className="absolute -bottom-6 -left-6 hidden max-w-xs rounded-xl bg-card p-6 shadow-lg lg:block">

@@ -54,7 +54,7 @@ function GrapeClusterMark({ className }: { className?: string }) {
 export const WineryBreweryFooter = defineCapsule({
   name: 'WineryBreweryFooter',
   description:
-    'Rich, multi-column closing footer for a winery or brewery site: a responsive grid with a brand block (serif wordmark + grape-cluster mark + tagline + social row), a Visit column with address plus tappable phone and email, an Hours column of day/time rows, and extra link columns (Explore, Contact, …); a bordered-top bottom bar holds an auto-updating copyright line. Every brand, social, contact, and column link routes through useNavigate. Use as the site-wide footer for wineries, vineyards, cellar doors, breweries, taprooms, or cideries.',
+    'Rich, multi-column closing footer for a winery or brewery site: a responsive grid with a brand block (serif wordmark + grape-cluster mark + tagline + social row), a Visit column with address plus tappable phone and email, an Hours column of day/time rows, and extra link columns (Explore, Contact, …); a bordered-top bottom bar holds an auto-updating copyright line. Every brand, social, contact, and column link routes through section-kit route links. Use as the site-wide footer for wineries, vineyards, cellar doors, breweries, taprooms, or cideries.',
   props: z.object({
     /** Winery / brewery brand name shown as the serif wordmark. */
     brand: z.string().optional(),

@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   HeroSection,
@@ -12,6 +11,7 @@ import {
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * PortfolioHero — split, cinematic hero band for a dark creative-individual
@@ -20,7 +20,7 @@ import { Container } from '#/section-kit/Container.tsx'
  * is rendered in the cyan accent, a supporting paragraph, and dual pill CTAs
  * (filled primary + outlined secondary); and a right column showreel card — a
  * 16:10 alt-driven thumbnail with a glassy circular play overlay and a caption
- * pill. The whole reel card and both CTAs route through useNavigate. Use as the
+ * pill. The whole reel card and both CTAs route through section-kit route links. Use as the
  * opening hero for a 3D artist, motion designer, CGI/VFX, art director, or
  * animator personal site that needs a moody, high-craft reel showcase. Renders
  * fully with no props via baked-in "Kaelen Vance" defaults.
@@ -28,7 +28,7 @@ import { Container } from '#/section-kit/Container.tsx'
 export const PortfolioHero = defineCapsule({
   name: 'PortfolioHero',
   description:
-    'Split, cinematic hero band for a dark creative-individual portfolio over a near-black canvas with dual radial cyan glows: a left column with a small uppercase role eyebrow, a huge display headline whose middle word is rendered in a cyan accent, a supporting paragraph, and dual pill CTAs (filled primary + outlined secondary); and a right-column showreel card — a 16:10 alt-driven thumbnail with a glassy circular play overlay and a caption pill. The reel card and both CTAs route through useNavigate. Use as the opening hero for a 3D artist, motion designer, CGI/VFX, art director, or animator personal site that needs a moody, high-craft reel showcase.',
+    'Split, cinematic hero band for a dark creative-individual portfolio over a near-black canvas with dual radial cyan glows: a left column with a small uppercase role eyebrow, a huge display headline whose middle word is rendered in a cyan accent, a supporting paragraph, and dual pill CTAs (filled primary + outlined secondary); and a right-column showreel card — a 16:10 alt-driven thumbnail with a glassy circular play overlay and a caption pill. The reel card and both CTAs route through section-kit route links. Use as the opening hero for a 3D artist, motion designer, CGI/VFX, art director, or animator personal site that needs a moody, high-craft reel showcase.',
   props: z.object({
     /** Small uppercase role line above the headline. */
     eyebrow: z.string().optional(),
@@ -51,7 +51,6 @@ export const PortfolioHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? '3D Motion Designer & Art Director'
     const headlineLead = props.headlineLead ?? 'Crafting'
     const headlineAccent = props.headlineAccent ?? 'dimensional'
@@ -97,18 +96,18 @@ export const PortfolioHero = defineCapsule({
                   variant="primary"
                   className="gap-2.5 rounded-full px-7 py-3.5 text-[0.9375rem] font-semibold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
                 >
-                  <button type="button" onClick={() => go(primaryCta)}>
+                  <NavbarRouteLink href={primaryCta}>
                     {primaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
                 <HeroCta
                   asChild
                   variant="outline"
                   className="gap-2.5 rounded-full bg-secondary px-7 py-3.5 text-[0.9375rem] font-semibold text-secondary-foreground transition-all duration-300 hover:-translate-y-0.5 hover:border-muted-foreground hover:bg-accent hover:text-accent-foreground"
                 >
-                  <button type="button" onClick={() => go(secondaryCta)}>
+                  <NavbarRouteLink href={secondaryCta}>
                     {secondaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
             </div>
@@ -118,11 +117,7 @@ export const PortfolioHero = defineCapsule({
               variant="default"
               className="group relative block aspect-[16/10] w-full overflow-hidden text-left shadow-[0_24px_64px_rgba(0,0,0,0.55)] rounded-2xl p-0"
             >
-              <button
-                type="button"
-                onClick={() => go(primaryCta)}
-                aria-label="Watch showreel"
-              >
+              <NavbarRouteLink aria-label="Watch showreel" href={primaryCta}>
                 <Image
                   alt={reelAlt}
                   w={1600}
@@ -144,7 +139,7 @@ export const PortfolioHero = defineCapsule({
                 <span className="absolute bottom-4 left-4 rounded-full bg-background/45 px-3 py-1.5 text-xs font-medium text-foreground/85 backdrop-blur-sm">
                   {reelCaption}
                 </span>
-              </button>
+              </NavbarRouteLink>
             </Card>
           </div>
         </Container>

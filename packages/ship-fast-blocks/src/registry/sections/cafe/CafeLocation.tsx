@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
@@ -13,6 +12,7 @@ import {
 } from '#/section-kit/LocationBlock.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * CafeLocation — visit / location block for a cozy cafe / coffee shop page,
@@ -20,14 +20,14 @@ import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
  * a two-column layout: the left shows address, hours, and contact info tiles
  * (with inline icons), a social row, and a flex-wrap amenities chip row; the
  * right shows a large map image with an overlay "Open in Google Maps" button.
- * Every social link and the map button route through useNavigate. Use for
+ * Every social link and the map button route through section-kit route links. Use for
  * cafes, bakeries, tea houses, or any local business visit block. Renders fully
  * with no props via baked-in defaults.
  */
 export const CafeLocation = defineCapsule({
   name: 'CafeLocation',
   description:
-    "Visit / location block for a cozy cafe page on a card-colored band: centered cap, serif heading, and description above a two-column layout. Left side shows address, hours, and contact tiles with inline icons; a social row; and a flex-wrap amenities chip row. Right side shows a large map image with an overlay 'Open in Google Maps' button. Social links and the map button route through useNavigate. Use for cafes, bakeries, tea houses, or any local business visit block.",
+    "Visit / location block for a cozy cafe page on a card-colored band: centered cap, serif heading, and description above a two-column layout. Left side shows address, hours, and contact tiles with inline icons; a social row; and a flex-wrap amenities chip row. Right side shows a large map image with an overlay 'Open in Google Maps' button. Social links and the map button route through section-kit route links. Use for cafes, bakeries, tea houses, or any local business visit block.",
   props: z.object({
     /** Eyebrow / cap text. */
     cap: z.string().optional(),
@@ -56,7 +56,6 @@ export const CafeLocation = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const cap = props.cap ?? 'Visit Us'
     const heading = props.heading ?? 'Find your spot'
     const description =
@@ -242,15 +241,14 @@ export const CafeLocation = defineCapsule({
                   </h3>
                   <div className="flex gap-4">
                     {socials.map((social) => (
-                      <button
+                      <NavbarRouteLink
                         key={social}
-                        type="button"
                         aria-label={social}
-                        onClick={() => go(social)}
                         className="text-muted-foreground transition-colors hover:text-primary"
+                        href={social}
                       >
                         {social}
-                      </button>
+                      </NavbarRouteLink>
                     ))}
                   </div>
                 </div>
@@ -282,14 +280,13 @@ export const CafeLocation = defineCapsule({
                 className="size-full object-cover"
               />
               <div className="absolute inset-0 flex items-center justify-center bg-foreground/40">
-                <button
-                  type="button"
-                  onClick={() => go(mapTarget)}
+                <NavbarRouteLink
                   className="inline-flex items-center gap-2 rounded-full bg-background px-6 py-3 font-medium text-foreground transition-colors hover:bg-muted"
+                  href={mapTarget}
                 >
                   <MapPin className="size-5" />
                   {mapCta}
-                </button>
+                </NavbarRouteLink>
               </div>
             </LocationMap>
           </LocationBlock>

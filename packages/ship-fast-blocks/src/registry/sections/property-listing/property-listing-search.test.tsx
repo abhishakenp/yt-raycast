@@ -32,10 +32,6 @@ type PropertyMutationDelayName = 'selectListing' | 'setPropertySearch'
 const navigate = vi.fn()
 const lakebedRef: { current: PropertyListingLakebed | null } = { current: null }
 
-vi.mock('#/lib/use-navigate.tsx', () => ({
-  useNavigate: () => navigate,
-}))
-
 vi.mock('#/lib/img.tsx', () => ({
   Image: ({ alt, className }: { alt?: string; className?: string }) => (
     <img alt={alt} className={className} />

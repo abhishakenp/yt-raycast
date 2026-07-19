@@ -26,7 +26,7 @@ import {
  * intro above a responsive 3-column grid of plan cards (name, big price +
  * period, checkmark feature bullets, and a CTA button). The highlighted tier
  * gets a primary border, shadow, and a floating "Most popular" pill, and every
- * CTA routes through useNavigate. Use to present subscription tiers for SaaS
+ * CTA routes through section-kit route links. Use to present subscription tiers for SaaS
  * products, apps, or online services. Renders fully with no props via baked-in
  * defaults.
  */

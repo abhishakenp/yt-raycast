@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   ProductCard,
@@ -27,17 +26,19 @@ import {
  * corner badge (Sale tinted destructive, otherwise primary), a hover-revealed
  * add-to-cart button, a product name link, a variant subtitle, and a price line
  * that shows a struck-through original price when on sale. Card links and view-all
- * route through useNavigate; add-to-cart writes to the shared Lakebed cart. Use as
+ * route through section-kit route links; add-to-cart writes to the shared Lakebed cart. Use as
  * the product / shop grid for furniture, home-decor, or any retail store. Renders
  * fully with no props via baked-in "Haven & Home" defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const FurnitureStoreProducts = defineCapsule({
   name: 'FurnitureStoreProducts',
   description:
-    "Best-sellers product grid: a header row (eyebrow + heading left, arrow 'shop all' link right) above a responsive 1/2/4-column grid of product cards; each card has a square image that zooms on hover, an optional corner badge (Sale tinted destructive, else primary), a hover-revealed add-to-cart button that writes to the shared Lakebed cart, a product name link, a variant subtitle, and a price line showing a struck-through original price when on sale. Card links and view-all route through useNavigate. Use as the product / shop grid for furniture, home-decor, or any retail store.",
+    "Best-sellers product grid: a header row (eyebrow + heading left, arrow 'shop all' link right) above a responsive 1/2/4-column grid of product cards; each card has a square image that zooms on hover, an optional corner badge (Sale tinted destructive, else primary), a hover-revealed add-to-cart button that writes to the shared Lakebed cart, a product name link, a variant subtitle, and a price line showing a struck-through original price when on sale. Card links and view-all route through section-kit route links. Use as the product / shop grid for furniture, home-decor, or any retail store.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -59,7 +60,6 @@ export const FurnitureStoreProducts = defineCapsule({
   }),
   lakebed: commerceCartLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Best Sellers'
     const heading = props.heading ?? 'Customer favorites'
     const viewAll = props.viewAll ?? 'Shop all furniture'
@@ -167,25 +167,23 @@ export const FurnitureStoreProducts = defineCapsule({
                 titleClassName="text-3xl font-medium lg:text-4xl"
               />
             </div>
-            <button
-              type="button"
-              onClick={() => go(viewAll)}
+            <NavbarRouteLink
               className="inline-flex items-center text-sm font-medium text-foreground transition-colors hover:text-muted-foreground"
+              href={viewAll}
             >
               {viewAll}
               <ArrowRight className="ml-1 size-4" />
-            </button>
+            </NavbarRouteLink>
           </div>
 
           <ResponsiveGrid cols="1-2-4" className="gap-6">
             {visibleItems.map((product) => (
               <ProductCard key={product.name} variant="none">
                 <ProductCardImage className="mb-4 rounded-lg">
-                  <button
-                    type="button"
-                    onClick={() => go(product.name)}
+                  <NavbarRouteLink
                     className="block size-full"
                     aria-label={product.name}
+                    href={product.name}
                   >
                     <Image
                       alt={`${product.name}, ${product.variant}`}
@@ -194,7 +192,7 @@ export const FurnitureStoreProducts = defineCapsule({
                       loading="lazy"
                       className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
-                  </button>
+                  </NavbarRouteLink>
                   {product.badge ? (
                     <ProductCardBadge
                       className={cn(
@@ -232,13 +230,12 @@ export const FurnitureStoreProducts = defineCapsule({
                   </ProductCardActions>
                 </ProductCardImage>
                 <ProductCardTitle asChild className="mb-1">
-                  <button
-                    type="button"
-                    onClick={() => go(product.name)}
+                  <NavbarRouteLink
                     className="transition-colors hover:text-muted-foreground"
+                    href={product.name}
                   >
                     {product.name}
-                  </button>
+                  </NavbarRouteLink>
                 </ProductCardTitle>
                 <ProductCardSubtitle className="mb-2 mt-0">
                   {product.variant}

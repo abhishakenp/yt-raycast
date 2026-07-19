@@ -5,7 +5,7 @@ import { z } from 'zod/v4'
  * marketing page. A near-ink (foreground-toned) band: a brand column on the left
  * with a logo tile, name, tagline, and social text-links, followed by three link
  * columns; a divided bottom row carries the copyright, a set of legal links, and
- * a long fine-print regulatory disclosure. Every link routes through useNavigate.
+ * a long fine-print regulatory disclosure. Every link routes through section-kit route links.
  * Use as the closing footer with legal disclosures on personal-loan, debt-
  * consolidation, or financing pages. Renders fully with no props via defaults.
  */
@@ -28,7 +28,7 @@ import {
 export const LendingFooter = defineCapsule({
   name: 'LendingFooter',
   description:
-    'Dark rich multi-column site footer for a lending or fintech marketing page: near-ink (foreground-toned) band with a brand column (logo tile, name, tagline, social text-links) plus three link columns; a divided bottom row carries the copyright, a set of legal links and a long fine-print regulatory disclosure. Links route through useNavigate. Use as the closing footer with legal disclosures on personal-loan, debt-consolidation, or financing pages.',
+    'Dark rich multi-column site footer for a lending or fintech marketing page: near-ink (foreground-toned) band with a brand column (logo tile, name, tagline, social text-links) plus three link columns; a divided bottom row carries the copyright, a set of legal links and a long fine-print regulatory disclosure. Links route through section-kit route links. Use as the closing footer with legal disclosures on personal-loan, debt-consolidation, or financing pages.',
   props: z.object({
     /** Brand / lender name shown beside the footer logo tile. */
     brand: z.string().optional(),

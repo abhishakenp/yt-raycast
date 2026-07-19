@@ -28,7 +28,7 @@ import { Container } from '#/section-kit/Container.tsx'
  * a faux visual-EDITOR mockup: browser chrome with traffic-light dots, a
  * Components rail, a gridded drag-and-drop canvas with a selected block, a
  * Properties panel, and a floating "Published!" success toast. CTAs route
- * through useNavigate. Use as the opening hero for no-code / website-builder /
+ * through section-kit route links. Use as the opening hero for no-code / website-builder /
  * page-builder / SaaS platform products. Renders fully with no props.
  */
 export const NoCodeHero = defineCapsule({

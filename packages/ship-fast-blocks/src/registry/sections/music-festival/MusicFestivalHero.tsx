@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 /**
@@ -11,17 +10,19 @@ import { Image } from '#/lib/img.tsx'
  * primary/secondary pill CTAs (buy tickets / view lineup), and a bordered
  * inline KPI strip (artists / stages / attendees); on the right a large rounded
  * festival crowd photo with a floating early-bird price card overlay
- * (countdown + starting price). Both CTAs route through useNavigate; the photo
+ * (countdown + starting price). Both CTAs route through section-kit route links; the photo
  * uses the alt-driven Image component. Use as the opening hero for music
  * festivals, arts festivals, concert series, camping/desert events, or any
  * multi-day ticketed live event.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const MusicFestivalHero = defineCapsule({
   name: 'MusicFestivalHero',
   description:
-    'Split, editorial hero for a multi-day music / arts festival landing page: a two-column layout with a warm-clay uppercase date eyebrow, a huge two-line headline, a supporting paragraph, dual primary/secondary pill CTAs (buy tickets / view lineup), and a bordered inline KPI strip (artists / stages / attendees) on the left, plus a large rounded festival crowd photo with a floating early-bird price card overlay (countdown + starting price) on the right. Both CTAs route through useNavigate; the photo uses the alt-driven Image component. Use as the opening hero for music festivals, arts festivals, concert series, camping/desert events, raves, or any multi-day ticketed live event.',
+    'Split, editorial hero for a multi-day music / arts festival landing page: a two-column layout with a warm-clay uppercase date eyebrow, a huge two-line headline, a supporting paragraph, dual primary/secondary pill CTAs (buy tickets / view lineup), and a bordered inline KPI strip (artists / stages / attendees) on the left, plus a large rounded festival crowd photo with a floating early-bird price card overlay (countdown + starting price) on the right. Both CTAs route through section-kit route links; the photo uses the alt-driven Image component. Use as the opening hero for music festivals, arts festivals, concert series, camping/desert events, raves, or any multi-day ticketed live event.',
   props: z.object({
     /** Date eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -57,7 +58,6 @@ export const MusicFestivalHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'August 15-17, 2025'
     const headingTop = props.headingTop ?? 'Three days of'
     const headingBottom = props.headingBottom ?? 'music & magic'
@@ -127,21 +127,19 @@ export const MusicFestivalHero = defineCapsule({
                 {subheading}
               </p>
               <div className="flex flex-wrap gap-4">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
+                <NavbarRouteLink
                   className="inline-flex items-center gap-2 rounded-full bg-primary px-8 py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  href={primaryCta}
                 >
                   {primaryCta}
                   <ArrowRight />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
+                </NavbarRouteLink>
+                <NavbarRouteLink
                   className="inline-flex items-center rounded-full border border-border px-8 py-4 font-medium transition-colors hover:bg-accent"
+                  href={secondaryCta}
                 >
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </div>
               <div className="mt-10 flex items-center gap-8 border-t border-border pt-10">
                 {stats.map((s) => (

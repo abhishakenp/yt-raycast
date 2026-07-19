@@ -2,17 +2,17 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { EventList, EventCard } from '#/section-kit/EventList.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * WineryBreweryEvents — tastings, tours, and seasonal-event list for a winery
  * or brewery page. A centered eyebrow + serif heading + supporting line sit
  * above a responsive grid of event cards. Each card pairs a date badge with an
  * event name, a short blurb, an optional price, and a routable CTA, all
- * clickable through useNavigate to a booking / events target. Use to promote
+ * clickable through section-kit route links to a booking / events target. Use to promote
  * sunset tastings, barrel-room tours, harvest festivals, member nights, or
  * live-music evenings for wineries, vineyards, cellar doors, breweries,
  * taprooms, or cideries. Renders fully with no props via baked-in defaults.
@@ -20,7 +20,7 @@ import { Container } from '#/section-kit/Container.tsx'
 export const WineryBreweryEvents = defineCapsule({
   name: 'WineryBreweryEvents',
   description:
-    'Tastings, tours, and seasonal-event list for a winery or brewery page: centered eyebrow + serif heading + supporting line above a responsive grid of event cards. Each card pairs a date badge with an event name, a short blurb, an optional price, and a routable CTA, clicking through useNavigate to a booking / events target. Use to promote sunset tastings, barrel-room tours, harvest festivals, member nights, or live-music evenings for wineries, vineyards, breweries, taprooms, or cideries.',
+    'Tastings, tours, and seasonal-event list for a winery or brewery page: centered eyebrow + serif heading + supporting line above a responsive grid of event cards. Each card pairs a date badge with an event name, a short blurb, an optional price, and a routable CTA, clicking through section-kit route links to a booking / events target. Use to promote sunset tastings, barrel-room tours, harvest festivals, member nights, or live-music evenings for wineries, vineyards, breweries, taprooms, or cideries.',
   props: z.object({
     /** Small uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -45,7 +45,6 @@ export const WineryBreweryEvents = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'On the estate'
     const heading = props.heading ?? 'Tastings, tours & gatherings'
     const description =
@@ -107,7 +106,7 @@ export const WineryBreweryEvents = defineCapsule({
                 key={event.name}
                 className="gap-4 rounded-2xl border bg-card p-6 text-left text-card-foreground transition-colors hover:border-primary sm:flex-row sm:items-start"
               >
-                <button type="button" onClick={() => go(eventsTarget)}>
+                <NavbarRouteLink href={eventsTarget}>
                   <span className="inline-flex shrink-0 items-center justify-center rounded-xl bg-muted px-4 py-3 text-center font-serif text-sm font-medium uppercase tracking-wide text-foreground">
                     {event.date}
                   </span>
@@ -137,7 +136,7 @@ export const WineryBreweryEvents = defineCapsule({
                       </span>
                     ) : null}
                   </div>
-                </button>
+                </NavbarRouteLink>
               </EventCard>
             ))}
           </EventList>

@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   HeroSection,
@@ -19,6 +18,7 @@ import {
   StatValue,
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * CrowdfundingHero — a 2-column campaign hero for a crowdfunding / pre-order
@@ -28,7 +28,7 @@ import {
  * vs goal, an animated progress bar, a percent-funded / stretch-goals-unlocked
  * banner with a check glyph, a three-up backers / early-bird / days-left stat
  * trio, a big "Back This Project" CTA and an all-or-nothing deadline note.
- * Links route through useNavigate; imagery uses the alt-driven Image component.
+ * Links route through section-kit route links; imagery uses the alt-driven Image component.
  * Use as the opening hero for Kickstarter/Indiegogo-style raises, product
  * launches, fundraisers, or maker/hardware campaigns where funding progress and
  * a hard deadline must lead.
@@ -36,7 +36,7 @@ import {
 export const CrowdfundingHero = defineCapsule({
   name: 'CrowdfundingHero',
   description:
-    "A 2-column campaign hero for a crowdfunding / pre-order landing page with a clean, warm eco aesthetic on a card surface: on one side a large product image with a 4-up thumbnail strip, on the other a funding card showing a live badge + category, headline + subhead, the amount raised vs goal, an animated progress bar, a percent-funded / stretch-goals-unlocked banner with a check glyph, a three-up backers / early-bird / days-left stat trio, a big 'Back This Project' CTA and an all-or-nothing deadline note. Links route through useNavigate; imagery uses the alt-driven Image component. Use as the opening hero for Kickstarter/Indiegogo-style raises, product launches, fundraisers, or maker/hardware campaigns where funding progress and a hard deadline must lead.",
+    "A 2-column campaign hero for a crowdfunding / pre-order landing page with a clean, warm eco aesthetic on a card surface: on one side a large product image with a 4-up thumbnail strip, on the other a funding card showing a live badge + category, headline + subhead, the amount raised vs goal, an animated progress bar, a percent-funded / stretch-goals-unlocked banner with a check glyph, a three-up backers / early-bird / days-left stat trio, a big 'Back This Project' CTA and an all-or-nothing deadline note. Links route through section-kit route links; imagery uses the alt-driven Image component. Use as the opening hero for Kickstarter/Indiegogo-style raises, product launches, fundraisers, or maker/hardware campaigns where funding progress and a hard deadline must lead.",
   props: z.object({
     category: z.string().optional(),
     liveBadge: z.string().optional(),
@@ -60,7 +60,6 @@ export const CrowdfundingHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heroCategory = props.category ?? 'Design & Technology'
     const heroLiveBadge = props.liveBadge ?? 'Live Project'
     const heroHeading =
@@ -113,16 +112,14 @@ export const CrowdfundingHero = defineCapsule({
                 alt={heroMainImageAlt}
                 w={1200}
                 h={900}
-
                 className="aspect-[4/3] bg-muted shadow-lg rounded-xl"
               />
               <ResponsiveGrid cols="4" className="mt-4 gap-4">
                 {heroThumbAlts.map((alt) => (
-                  <button
+                  <NavbarRouteLink
                     key={alt}
-                    type="button"
-                    onClick={() => go(galleryTarget)}
                     className="aspect-square overflow-hidden rounded-lg bg-muted transition-all hover:ring-2 hover:ring-ring"
+                    href={galleryTarget}
                   >
                     <Image
                       alt={alt}
@@ -131,7 +128,7 @@ export const CrowdfundingHero = defineCapsule({
                       loading="lazy"
                       className="size-full object-cover"
                     />
-                  </button>
+                  </NavbarRouteLink>
                 ))}
               </ResponsiveGrid>
             </div>
@@ -194,7 +191,6 @@ export const CrowdfundingHero = defineCapsule({
 
                 <StatGrid
                   columns={3}
-
                   className="border-t border-border pt-6 gap-6"
                 >
                   {heroStats.map((s, i) => (
@@ -215,13 +211,12 @@ export const CrowdfundingHero = defineCapsule({
                 </StatGrid>
               </div>
 
-              <button
-                type="button"
-                onClick={() => go(rewardsTarget)}
+              <NavbarRouteLink
                 className="mb-4 block w-full rounded-xl bg-foreground py-4 text-center text-lg font-semibold text-background transition-colors hover:bg-foreground/90"
+                href={rewardsTarget}
               >
                 {heroPrimary}
-              </button>
+              </NavbarRouteLink>
               <p className="text-center text-sm text-muted-foreground">
                 {heroDeadlineNote}
               </p>

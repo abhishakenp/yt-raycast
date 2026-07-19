@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroHeading,
@@ -15,11 +14,12 @@ import {
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 export const TutoringHero = defineCapsule({
   name: 'TutoringHero',
   description:
-    "Friendly, trustworthy split-layout hero for tutoring sites. Renders a warm eyebrow pill, a large reassuring headline, supporting copy, primary 'Find a Tutor' and outline 'How it works' CTAs (both routed through useNavigate), and a trust strip with rating, session count, and a background-checked badge. The right column shows a rounded, bordered photo of a tutor working with a student via the alt-driven Image component. Use it as the opening viewport of a tutoring or education landing page when you want an inviting, conversion-focused first impression.",
+    "Friendly, trustworthy split-layout hero for tutoring sites. Renders a warm eyebrow pill, a large reassuring headline, supporting copy, primary 'Find a Tutor' and outline 'How it works' CTAs (both routed through section-kit route links), and a trust strip with rating, session count, and a background-checked badge. The right column shows a rounded, bordered photo of a tutor working with a student via the alt-driven Image component. Use it as the opening viewport of a tutoring or education landing page when you want an inviting, conversion-focused first impression.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -33,7 +33,6 @@ export const TutoringHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? '1-on-1 tutoring that clicks'
     const heading =
       props.heading ?? 'Learning made friendly, confident, and fun'
@@ -82,18 +81,18 @@ export const TutoringHero = defineCapsule({
                 variant="primary"
                 className="rounded-full px-6 py-3 font-semibold"
               >
-                <button type="button" onClick={() => go(primaryTarget)}>
+                <NavbarRouteLink href={primaryTarget}>
                   {primaryCta}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
               <HeroCta
                 asChild
                 variant="outline"
                 className="rounded-full px-6 py-3 font-semibold"
               >
-                <button type="button" onClick={() => go(secondaryTarget)}>
+                <NavbarRouteLink href={secondaryTarget}>
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
             </HeroActions>
             <HeroSocialProof className="mt-10 gap-y-3 border-t border-border pt-8">
@@ -131,7 +130,6 @@ export const TutoringHero = defineCapsule({
                 alt={imageAlt}
                 w={900}
                 h={760}
-
                 className="aspect-[5/4] rounded-3xl"
               />
               <div className="flex items-center gap-3 border-t border-border bg-card/95 p-5">

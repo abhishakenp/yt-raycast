@@ -5,7 +5,7 @@ import { z } from 'zod/v4'
  * directory. A foreground-on-background inverted footer with a brand block (a
  * location-pin glyph + wordmark and a short tagline) plus up to three link-group
  * columns, then a bottom bar with a copyright line on the left and a row of legal
- * links on the right. Every link routes through useNavigate. Use as the site
+ * links on the right. Every link routes through section-kit route links. Use as the site
  * footer for local directories, business-listing marketplaces, find-a-service
  * platforms, or review-and-discovery sites.
  */
@@ -25,7 +25,7 @@ import {
 export const DirectoryFooter = defineCapsule({
   name: 'DirectoryFooter',
   description:
-    'Dark inverted multi-column footer for a local-business DIRECTORY: a foreground-on-background inverted footer with a brand block (a location-pin glyph plus wordmark and a short tagline) plus up to three link-group columns, then a bottom bar with a copyright line on the left and a row of legal links on the right. Every link routes through useNavigate. Use as the site footer for local directories, business-listing marketplaces, find-a-service platforms, or review-and-discovery sites.',
+    'Dark inverted multi-column footer for a local-business DIRECTORY: a foreground-on-background inverted footer with a brand block (a location-pin glyph plus wordmark and a short tagline) plus up to three link-group columns, then a bottom bar with a copyright line on the left and a row of legal links on the right. Every link routes through section-kit route links. Use as the site footer for local directories, business-listing marketplaces, find-a-service platforms, or review-and-discovery sites.',
   props: z.object({
     /** Brand / directory name shown in the footer. */
     brand: z.string().optional(),

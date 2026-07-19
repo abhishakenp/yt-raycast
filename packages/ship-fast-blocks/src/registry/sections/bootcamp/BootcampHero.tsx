@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   HeroSection,
@@ -13,6 +12,7 @@ import {
   HeroStatBadgeSubtitle,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * BootcampHero — split-layout hero section for a coding bootcamp / career-school
@@ -21,14 +21,14 @@ import { Container } from '#/section-kit/Container.tsx'
  * one phrase in the primary accent color, a supporting paragraph, dual CTAs
  * (filled primary + outlined secondary), and an inline trust-chip row beneath;
  * on the right, a glowing cohort photo with a floating stat card showing
- * graduate headshots and a placement count. CTAs route through useNavigate.
+ * graduate headshots and a placement count. CTAs route through section-kit route links.
  * Use as the opening hero for coding bootcamps, software-engineering academies,
  * dev courses, or career-switch programs.
  */
 export const BootcampHero = defineCapsule({
   name: 'BootcampHero',
   description:
-    'Split-layout hero section for a coding bootcamp / career-school landing page: two-column band on a muted canvas with a soft gradient wash. Left side has a pulsing live-cohort pill badge, a bold multi-line headline with one phrase in primary accent, a supporting paragraph, dual CTAs (filled primary + outlined secondary), and an inline trust-chip row. Right side has a glowing cohort photo with a floating stat card showing graduate headshots and a placement count. CTAs route through useNavigate. Use as the opening hero for coding bootcamps, software-engineering academies, dev courses, or career-switch programs.',
+    'Split-layout hero section for a coding bootcamp / career-school landing page: two-column band on a muted canvas with a soft gradient wash. Left side has a pulsing live-cohort pill badge, a bold multi-line headline with one phrase in primary accent, a supporting paragraph, dual CTAs (filled primary + outlined secondary), and an inline trust-chip row. Right side has a glowing cohort photo with a floating stat card showing graduate headshots and a placement count. CTAs route through section-kit route links. Use as the opening hero for coding bootcamps, software-engineering academies, dev courses, or career-switch programs.',
   props: z.object({
     /** Availability / cohort pill text. */
     badge: z.string().optional(),
@@ -53,7 +53,6 @@ export const BootcampHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heroBadge = props.badge ?? 'Next cohort starts July 14, 2025'
     const heroHeadingTop = props.headingTop ?? 'Become a Full-Stack'
     const heroHighlight = props.highlight ?? 'Developer in 16 Weeks'
@@ -113,20 +112,18 @@ export const BootcampHero = defineCapsule({
                 {heroSub}
               </p>
               <div className="flex flex-col gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(heroPrimary)}
+                <NavbarRouteLink
                   className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3.5 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  href={heroPrimary}
                 >
                   {heroPrimary}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(heroSecondary)}
+                </NavbarRouteLink>
+                <NavbarRouteLink
                   className="inline-flex items-center justify-center rounded-lg border border-border bg-background px-6 py-3.5 font-medium text-foreground transition-colors hover:border-foreground/30"
+                  href={heroSecondary}
                 >
                   {heroSecondary}
-                </button>
+                </NavbarRouteLink>
               </div>
               <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
                 {heroTrust.map((t) => (

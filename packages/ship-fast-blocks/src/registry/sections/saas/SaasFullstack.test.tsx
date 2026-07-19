@@ -78,10 +78,6 @@ const navigate = vi.fn()
 const lakebedRef: { current: SaasLakebed | null } = { current: null }
 type TestAuthValue = ReturnType<SaasLakebed['useAuth']>
 
-vi.mock('#/lib/use-navigate.tsx', () => ({
-  useNavigate: () => navigate,
-}))
-
 vi.mock('@ship-fast/lakebed/react', () => {
   return {
     createLakebedClient: vi.fn(() => {

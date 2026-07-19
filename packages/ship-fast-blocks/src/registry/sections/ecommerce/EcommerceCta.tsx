@@ -17,7 +17,7 @@ import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.t
  * tone="primary": a bold headline + sub paragraph over a primary surface, a
  * contrasting "Claim My 15% Off" pill (auto-inverted on the primary band), and
  * a small disclaimer carried in the eyebrow. The CTA routes through
- * useNavigate. Use as a prominent storewide conversion band to capture
+ * section-kit route links. Use as a prominent storewide conversion band to capture
  * subscribers, advertise a first-order discount, or push a sale for any
  * ecommerce / online retail site. Renders fully with no props via baked-in
  * defaults.

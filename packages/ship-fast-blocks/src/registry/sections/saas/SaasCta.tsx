@@ -20,7 +20,7 @@ import { saasLakebed } from './saas-lakebed.ts'
  * tone="primary": a centered headline + supporting line over a primary surface,
  * a high-contrast "Start free trial" pill (auto-inverted on the primary band),
  * an outlined "Book demo" pill, and a small reassurance note carried in the
- * eyebrow. Both CTAs route through useNavigate. Use as the closing
+ * eyebrow. Both CTAs route through section-kit route links. Use as the closing
  * call-to-action for SaaS, API, or B2B product pages. Renders fully with no
  * props via baked-in defaults.
  */

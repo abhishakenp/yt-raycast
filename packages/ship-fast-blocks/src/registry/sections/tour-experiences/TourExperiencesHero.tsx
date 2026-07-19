@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroBackgroundImage,
@@ -20,13 +19,14 @@ import {
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * TourExperiencesHero — vivid, full-bleed adventure hero for a guided-tour /
  * expedition brand. A cinematic landscape photo fills the band behind a
  * token-driven dark gradient overlay, with an eyebrow pill, a large headline,
  * supporting copy, and dual CTAs ("Explore Tours" primary + "How it works"
- * outline) that route through useNavigate. A trust strip of rating and tour
+ * outline) that route through section-kit route links. A trust strip of rating and tour
  * stats anchors the bottom. Use as the opening hero for tour operators,
  * adventure outfitters, travel-experience marketplaces, and destination guides.
  * Renders fully with no props via baked-in "Wanderwild Tours" defaults.
@@ -34,7 +34,7 @@ import { Container } from '#/section-kit/Container.tsx'
 export const TourExperiencesHero = defineCapsule({
   name: 'TourExperiencesHero',
   description:
-    "Vivid full-bleed adventure hero for a guided-tour / expedition brand: a cinematic landscape photo behind a token-driven dark gradient overlay, with an eyebrow pill, a large headline, supporting copy, and dual CTAs ('Explore Tours' primary + 'How it works' outline) that route through useNavigate, plus a bottom trust strip of rating and tour stats. Use as the opening hero for tour operators, adventure outfitters, travel-experience marketplaces, and destination guides.",
+    "Vivid full-bleed adventure hero for a guided-tour / expedition brand: a cinematic landscape photo behind a token-driven dark gradient overlay, with an eyebrow pill, a large headline, supporting copy, and dual CTAs ('Explore Tours' primary + 'How it works' outline) that route through section-kit route links, plus a bottom trust strip of rating and tour stats. Use as the opening hero for tour operators, adventure outfitters, travel-experience marketplaces, and destination guides.",
   props: z.object({
     /** Eyebrow / kicker pill text above the headline. */
     eyebrow: z.string().optional(),
@@ -59,7 +59,6 @@ export const TourExperiencesHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Small-group adventures since 2012'
     const heading = props.heading ?? 'Go beyond the guidebook'
     const subheading =
@@ -116,25 +115,24 @@ export const TourExperiencesHero = defineCapsule({
                   variant="primary"
                   className="rounded-full px-7 py-3.5 text-sm font-semibold"
                 >
-                  <button type="button" onClick={() => go(primaryTarget)}>
+                  <NavbarRouteLink href={primaryTarget}>
                     {primaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
                 <HeroCta
                   asChild
                   variant="outline"
                   className="rounded-full border-background/40 bg-background/10 px-7 py-3.5 text-sm font-semibold text-background backdrop-blur-sm hover:bg-background/20"
                 >
-                  <button type="button" onClick={() => go(secondaryTarget)}>
+                  <NavbarRouteLink href={secondaryTarget}>
                     {secondaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
             </div>
 
             <StatGrid
               columns={3}
-
               className="mt-14 max-w-2xl border-t border-background/20 pt-8 gap-6"
             >
               {stats.map((s) => (

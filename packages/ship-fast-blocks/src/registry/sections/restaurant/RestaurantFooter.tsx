@@ -51,7 +51,7 @@ function ForkKnifeMark({ className }: { className?: string }) {
 export const RestaurantFooter = defineCapsule({
   name: 'RestaurantFooter',
   description:
-    'Rich, multi-column closing footer for a restaurant or dining site: a responsive grid with a brand block (serif wordmark + tagline + social row), an Hours column of day/time rows, a Visit column with address plus tappable phone and email, and extra link columns (Explore, About, …); a bordered-top bottom bar holds an auto-updating copyright line. Every brand, social, contact, and column link routes through useNavigate. Use as the site-wide footer for restaurants, cafés, bistros, bars, or any hospitality landing page.',
+    'Rich, multi-column closing footer for a restaurant or dining site: a responsive grid with a brand block (serif wordmark + tagline + social row), an Hours column of day/time rows, a Visit column with address plus tappable phone and email, and extra link columns (Explore, About, …); a bordered-top bottom bar holds an auto-updating copyright line. Every brand, social, contact, and column link routes through section-kit route links. Use as the site-wide footer for restaurants, cafés, bistros, bars, or any hospitality landing page.',
   props: z.object({
     /** Restaurant / brand name shown as the serif wordmark. */
     brand: z.string().optional(),

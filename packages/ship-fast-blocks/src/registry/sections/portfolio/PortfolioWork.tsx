@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import {
@@ -13,6 +12,7 @@ import {
 } from '#/section-kit/PortfolioGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * PortfolioWork — selected-work / project gallery for a dark creative portfolio.
@@ -20,14 +20,14 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * a responsive 3-up grid of clickable project cards: each card has a 16:10
  * alt-driven thumbnail that zooms on hover, a title, a short blurb, and a row of
  * tool/tag chips, all on a raised card surface that lifts and gains a cyan glow
- * on hover. Every card routes through useNavigate. Use to showcase a 3D artist,
+ * on hover. Every card routes through section-kit route links. Use to showcase a 3D artist,
  * motion designer, or director's reel-style projects, case studies, or featured
  * work. Renders fully with no props via six baked-in default projects.
  */
 export const PortfolioWork = defineCapsule({
   name: 'PortfolioWork',
   description:
-    "Selected-work / project gallery for a dark creative portfolio: a heading block (cyan uppercase label, big display title, lead paragraph) above a responsive 3-up grid of clickable project cards. Each card has a 16:10 alt-driven thumbnail that zooms on hover, a title, a short blurb, and a row of tool/tag chips, on a raised card surface that lifts and gains a cyan glow on hover. Cards route through useNavigate. Use to showcase a 3D artist, motion designer, or director's reel-style projects, case studies, or featured work.",
+    "Selected-work / project gallery for a dark creative portfolio: a heading block (cyan uppercase label, big display title, lead paragraph) above a responsive 3-up grid of clickable project cards. Each card has a 16:10 alt-driven thumbnail that zooms on hover, a title, a short blurb, and a row of tool/tag chips, on a raised card surface that lifts and gains a cyan glow on hover. Cards route through section-kit route links. Use to showcase a 3D artist, motion designer, or director's reel-style projects, case studies, or featured work.",
   props: z.object({
     /** Small uppercase section label. */
     label: z.string().optional(),
@@ -51,7 +51,6 @@ export const PortfolioWork = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const label = props.label ?? 'Selected Work'
     const title = props.title ?? 'Projects that pushed boundaries'
     const description =
@@ -131,37 +130,39 @@ export const PortfolioWork = defineCapsule({
                 variant="default"
                 className="group relative block overflow-hidden text-left transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_24px_64px_rgba(0,0,0,0.55)] rounded-2xl p-0"
               >
-                <PortfolioItem type="button" onClick={() => go(cardTarget)}>
-                  <PortfolioMedia
-                    aspect="16-10"
-                    className="bg-gradient-to-br from-muted to-card"
-                  >
-                    <Image
-                      alt={item.alt}
-                      w={1200}
-                      h={750}
-                      loading="lazy"
-                      className="h-full w-full object-cover opacity-85 transition-all duration-700 group-hover:scale-105 group-hover:opacity-100"
-                    />
-                  </PortfolioMedia>
-                  <PortfolioCaption className="p-6">
-                    <h3 className="mb-1.5 text-xl font-semibold">
-                      {item.title}
-                    </h3>
-                    <p className="text-sm leading-[1.6] text-muted-foreground">
-                      {item.description}
-                    </p>
-                    <div className="mt-3.5 flex flex-wrap gap-2">
-                      {item.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="rounded-full border border-border bg-secondary px-3 py-1 text-xs font-semibold text-secondary-foreground"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </PortfolioCaption>
+                <PortfolioItem asChild>
+                  <NavbarRouteLink href={cardTarget}>
+                    <PortfolioMedia
+                      aspect="16-10"
+                      className="bg-gradient-to-br from-muted to-card"
+                    >
+                      <Image
+                        alt={item.alt}
+                        w={1200}
+                        h={750}
+                        loading="lazy"
+                        className="h-full w-full object-cover opacity-85 transition-all duration-700 group-hover:scale-105 group-hover:opacity-100"
+                      />
+                    </PortfolioMedia>
+                    <PortfolioCaption className="p-6">
+                      <h3 className="mb-1.5 text-xl font-semibold">
+                        {item.title}
+                      </h3>
+                      <p className="text-sm leading-[1.6] text-muted-foreground">
+                        {item.description}
+                      </p>
+                      <div className="mt-3.5 flex flex-wrap gap-2">
+                        {item.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="rounded-full border border-border bg-secondary px-3 py-1 text-xs font-semibold text-secondary-foreground"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </PortfolioCaption>
+                  </NavbarRouteLink>
                 </PortfolioItem>
               </Card>
             ))}

@@ -60,10 +60,6 @@ const timestamp = '2026-06-26T00:00:00.000Z'
 const navigate = vi.fn()
 const lakebedRef: { current: SaasLakebed | null } = { current: null }
 
-vi.mock('#/lib/use-navigate.tsx', () => ({
-  useNavigate: () => navigate,
-}))
-
 vi.mock('@ship-fast/lakebed/react', async () => {
   const actual = await vi.importActual<
     typeof import('@ship-fast/lakebed/react')
@@ -537,7 +533,6 @@ describe('No-code fullstack generated section behavior', () => {
     fireEvent.click(within(searchDialog).getByText('Enterprise'))
 
     await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith('Enterprise')
       expect(state().intents.at(-1)).toEqual({
         label: 'Selected Enterprise',
         plan: 'Enterprise',
@@ -551,11 +546,16 @@ describe('No-code fullstack generated section behavior', () => {
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
-    expect(screen.getByRole('dialog')).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'Pricing' }))
+    const menuDialog = screen.getByRole('dialog')
+    expect(menuDialog).toBeTruthy()
+    const pricingLink = within(menuDialog).getByRole('link', {
+      name: 'Pricing',
+    })
+    expect(pricingLink.getAttribute('href')).toBe('#pricing')
+    fireEvent.click(pricingLink)
 
     await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith('Pricing')
+      expect(screen.queryByRole('dialog')).toBeNull()
     })
   })
 

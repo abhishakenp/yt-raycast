@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 
 /**
@@ -12,16 +11,18 @@ import { Card } from '#/section-kit/Card.tsx'
  * a 2-up credit-tier picker; the right muted "estimated offer" pane shows a large
  * monthly-payment figure, a key/value summary list (free items highlighted in the
  * primary tone), a full-width primary CTA and a reassuring sub-note. All controls
- * route through useNavigate. Use to let visitors estimate loan terms on personal-
+ * route through section-kit route links. Use to let visitors estimate loan terms on personal-
  * loan, debt-consolidation, or financing pages. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { LoanCalculator, LoanDisplay } from '#/section-kit/LoanCalculator.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const LendingCalculator = defineCapsule({
   name: 'LendingCalculator',
   description:
-    "Interactive personalized-rate calculator panel for a lending or fintech marketing page: centered heading + description above a two-column white card — left 'loan details' pane has a labelled amount range slider (min/max captions), a purpose select, a 3-up loan-term toggle and a 2-up credit-tier picker; right muted 'estimated offer' pane shows a large monthly-payment figure, a key/value summary list (free items in the primary tone), a full-width primary CTA and a reassuring sub-note. Controls route through useNavigate. Use to let visitors estimate loan terms on personal-loan, debt-consolidation, or financing pages.",
+    "Interactive personalized-rate calculator panel for a lending or fintech marketing page: centered heading + description above a two-column white card — left 'loan details' pane has a labelled amount range slider (min/max captions), a purpose select, a 3-up loan-term toggle and a 2-up credit-tier picker; right muted 'estimated offer' pane shows a large monthly-payment figure, a key/value summary list (free items in the primary tone), a full-width primary CTA and a reassuring sub-note. Controls route through section-kit route links. Use to let visitors estimate loan terms on personal-loan, debt-consolidation, or financing pages.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -61,7 +62,6 @@ export const LendingCalculator = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const calcHeading = props.heading ?? 'Personalized rate calculator'
     const calcDesc =
       props.description ?? 'See what you could save with a ClearLoan.'
@@ -204,19 +204,18 @@ export const LendingCalculator = defineCapsule({
                         </div>
                         <div className="grid grid-cols-3 gap-3">
                           {calcTerms.map((term, i) => (
-                            <button
+                            <NavbarRouteLink
                               key={term}
-                              type="button"
-                              onClick={() => go(`${calcTermLabel}: ${term}`)}
                               className={cn(
                                 'rounded-lg px-4 py-3 text-sm font-medium transition-colors',
                                 i === 1
                                   ? 'border-2 border-primary bg-muted text-foreground'
                                   : 'border border-border text-muted-foreground hover:border-primary hover:text-foreground',
                               )}
+                              href={`${calcTermLabel}: ${term}`}
                             >
                               {term}
-                            </button>
+                            </NavbarRouteLink>
                           ))}
                         </div>
                       </div>
@@ -226,22 +225,21 @@ export const LendingCalculator = defineCapsule({
                         </label>
                         <div className="grid grid-cols-2 gap-3">
                           {calcScores.map((s, i) => (
-                            <button
+                            <NavbarRouteLink
                               key={s.tier}
-                              type="button"
-                              onClick={() => go(`Credit: ${s.tier}`)}
                               className={cn(
                                 'rounded-lg px-4 py-3 text-left text-sm font-medium transition-colors',
                                 i === 0
                                   ? 'border-2 border-primary bg-muted text-foreground'
                                   : 'border border-border text-muted-foreground hover:border-primary hover:text-foreground',
                               )}
+                              href={`Credit: ${s.tier}`}
                             >
                               <div className="font-semibold">{s.tier}</div>
                               <div className="text-xs text-muted-foreground">
                                 {s.range}
                               </div>
-                            </button>
+                            </NavbarRouteLink>
                           ))}
                         </div>
                       </div>
@@ -290,13 +288,12 @@ export const LendingCalculator = defineCapsule({
                         ))}
                       </div>
                       <div className="pt-4">
-                        <button
-                          type="button"
-                          onClick={() => go(calcCta)}
+                        <NavbarRouteLink
                           className="w-full rounded-xl bg-primary py-4 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                          href={calcCta}
                         >
                           {calcCta}
-                        </button>
+                        </NavbarRouteLink>
                         <p className="mt-3 text-center text-xs text-muted-foreground">
                           {calcCtaNote}
                         </p>

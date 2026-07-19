@@ -8,7 +8,7 @@ import { cn } from '#/lib/utils.ts'
  * column card row; the featured tier inverts to a foreground surface and carries
  * a centered "Most Popular" badge, each card showing a name, blurb, price (with
  * optional /hr unit), a checklist of features and a full-width CTA routed
- * through useNavigate. Clean, neutral, transparent. Use to present
+ * through section-kit route links. Clean, neutral, transparent. Use to present
  * prototype/low-volume/production pricing on machine-shop or contract-
  * manufacturer pages. Renders fully with no props via baked-in defaults.
  */
@@ -30,7 +30,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 export const ManufacturingPricing = defineCapsule({
   name: 'ManufacturingPricing',
   description:
-    "A 3-tier pricing block for a precision-manufacturing site: a centered eyebrow + heading + description intro above a three-column card row; the featured tier inverts to a foreground surface and carries a centered 'Most Popular' badge, each card showing a name, blurb, price (with optional /hr unit), a checklist of features and a full-width CTA routed through useNavigate. Clean, neutral, transparent. Use to present prototype/low-volume/production pricing on machine-shop or contract-manufacturer pages.",
+    "A 3-tier pricing block for a precision-manufacturing site: a centered eyebrow + heading + description intro above a three-column card row; the featured tier inverts to a foreground surface and carries a centered 'Most Popular' badge, each card showing a name, blurb, price (with optional /hr unit), a checklist of features and a full-width CTA routed through section-kit route links. Clean, neutral, transparent. Use to present prototype/low-volume/production pricing on machine-shop or contract-manufacturer pages.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),

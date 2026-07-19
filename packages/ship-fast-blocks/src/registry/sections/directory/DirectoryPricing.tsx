@@ -25,9 +25,12 @@ import {
   PricingTierPeriod,
   PricingTierFeatures,
   PricingTierFeature,
-  PricingTierCta,
 } from '#/section-kit/PricingGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import {
+  DirectoryLeadButton,
+  DirectoryMutationSpinner,
+} from './directory-interactions.tsx'
 export const DirectoryPricing = defineCapsule({
   name: 'DirectoryPricing',
   description:
@@ -56,7 +59,7 @@ export const DirectoryPricing = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'List Your Business'
     const description =
       props.description ??
@@ -217,9 +220,25 @@ export const DirectoryPricing = defineCapsule({
                     </PricingTierFeatures>
                   )}
                   {t.cta && (
-                    <PricingTierCta target={t.ctaTarget}>
+                    <DirectoryLeadButton
+                      lakebed={lakebed}
+                      action={t.cta}
+                      source={`pricing:${t.name}`}
+                      pendingChildren={
+                        <>
+                          <DirectoryMutationSpinner />
+                          Recording
+                        </>
+                      }
+                      className={cn(
+                        'mt-auto inline-flex min-h-11 w-full items-center justify-center rounded-lg px-5 py-2.5 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
+                        t.highlighted || t.featured || t.popular
+                          ? 'bg-background text-foreground hover:bg-background/90'
+                          : 'border border-border text-foreground hover:bg-muted',
+                      )}
+                    >
                       {t.cta}
-                    </PricingTierCta>
+                    </DirectoryLeadButton>
                   )}
                 </PricingTier>
               )

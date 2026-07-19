@@ -2,12 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { PersonCard } from '#/section-kit/PersonCard.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * MarketplaceAuthors — a "Featured Sellers" section (the Authors role for a
@@ -18,14 +18,14 @@ import { PersonCard } from '#/section-kit/PersonCard.tsx'
  * badge overlaid), then a row pairing a circular seller avatar with the store
  * name, location, and a product-count + follower-count meta line. Clean,
  * neutral, light e-commerce aesthetic. Cards and the view-all link route
- * through useNavigate; cover and avatar use the alt-driven Image component. Use
+ * through section-kit route links; cover and avatar use the alt-driven Image component. Use
  * to spotlight top vendors / featured authors on online marketplaces,
  * multi-vendor or maker/artisan platforms, and seller communities.
  */
 export const MarketplaceAuthors = defineCapsule({
   name: 'MarketplaceAuthors',
   description:
-    "'Featured Sellers' section serving the Authors role for a marketplace (the vendors / creators behind the storefronts): a heading + description on the left and a 'View all sellers' link on the right cap a responsive 2/4-column grid of vendor storefront cards, each stacking a rounded cover photo (with a star-rating chip and an optional eco-verified badge overlaid) above a row pairing a circular seller avatar with the store name, location, and a product-count + follower-count meta line. Clean, neutral, light e-commerce aesthetic. Cards and the view-all link route through useNavigate; cover and avatar use the alt-driven Image component. Use to spotlight top vendors / featured authors on online marketplaces, multi-vendor or maker/artisan platforms, and seller communities.",
+    "'Featured Sellers' section serving the Authors role for a marketplace (the vendors / creators behind the storefronts): a heading + description on the left and a 'View all sellers' link on the right cap a responsive 2/4-column grid of vendor storefront cards, each stacking a rounded cover photo (with a star-rating chip and an optional eco-verified badge overlaid) above a row pairing a circular seller avatar with the store name, location, and a product-count + follower-count meta line. Clean, neutral, light e-commerce aesthetic. Cards and the view-all link route through section-kit route links; cover and avatar use the alt-driven Image component. Use to spotlight top vendors / featured authors on online marketplaces, multi-vendor or maker/artisan platforms, and seller communities.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -47,7 +47,6 @@ export const MarketplaceAuthors = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const sellersHeading = props.heading ?? 'Featured Sellers'
     const sellersDesc =
       props.description ??
@@ -189,28 +188,21 @@ export const MarketplaceAuthors = defineCapsule({
               titleClassName="mb-4 text-3xl font-semibold text-foreground sm:text-4xl"
               subtitleClassName="text-lg text-muted-foreground"
             />
-            <button
-              type="button"
-              onClick={() => go(sellersViewAll)}
+            <NavbarRouteLink
               className="inline-flex items-center gap-2 font-medium text-foreground transition-colors hover:text-muted-foreground"
+              href={sellersViewAll}
             >
               <span>{sellersViewAll}</span>
               <ArrowRight className="size-5" />
-            </button>
+            </NavbarRouteLink>
           </div>
 
           <ResponsiveGrid cols="1-2-4" className="gap-6">
             {sellerItems.map((seller) => (
-              <PersonCard
-                asChild
-                variant="plain"
-
-                key={seller.name}
-              >
-                <button
-                  type="button"
-                  onClick={() => go(seller.name)}
+              <PersonCard asChild variant="plain" key={seller.name}>
+                <NavbarRouteLink
                   className="group block w-full text-left"
+                  href={seller.name}
                 >
                   <div className="relative mb-4 aspect-[4/3] overflow-hidden rounded-xl bg-muted">
                     <Image
@@ -259,7 +251,7 @@ export const MarketplaceAuthors = defineCapsule({
                       </div>
                     </div>
                   </div>
-                </button>
+                </NavbarRouteLink>
               </PersonCard>
             ))}
           </ResponsiveGrid>

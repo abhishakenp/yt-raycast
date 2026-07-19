@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
@@ -14,6 +13,7 @@ import {
   ArticleMedia,
   ArticleContent,
 } from '#/section-kit/ArticleGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * KnowledgeBaseGuides — featured step-by-step guides gallery for a help center.
@@ -22,14 +22,14 @@ import {
  * with a token-colored difficulty badge (Beginner/Intermediate/Advanced)
  * overlaid, a title, a description and read-time + step-count meta with icons;
  * cards lift on hover and the image zooms. Calm, light, editorial. Every guide
- * card and the "view all" button route through useNavigate; covers use the
+ * card and the "view all" button route through section-kit route links; covers use the
  * alt-driven Image component. Use to spotlight walkthroughs on a knowledge base
  * or docs site. Renders fully with no props via baked-in defaults.
  */
 export const KnowledgeBaseGuides = defineCapsule({
   name: 'KnowledgeBaseGuides',
   description:
-    "Featured step-by-step guides gallery for a help center: a heading + description with a bordered 'view all' button on one side, above a responsive 1/2/3-up grid of card buttons — each with a wide cover image plus an overlaid token-colored difficulty badge (Beginner/Intermediate/Advanced), a title, a description and read-time + step-count meta with icons; cards lift on hover and the image zooms. Calm, light, editorial; guide cards and the 'view all' button route through useNavigate and covers use the alt-driven Image component. Use to spotlight walkthroughs on a knowledge base, support portal or docs site.",
+    "Featured step-by-step guides gallery for a help center: a heading + description with a bordered 'view all' button on one side, above a responsive 1/2/3-up grid of card buttons — each with a wide cover image plus an overlaid token-colored difficulty badge (Beginner/Intermediate/Advanced), a title, a description and read-time + step-count meta with icons; cards lift on hover and the image zooms. Calm, light, editorial; guide cards and the 'view all' button route through section-kit route links and covers use the alt-driven Image component. Use to spotlight walkthroughs on a knowledge base, support portal or docs site.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -49,7 +49,6 @@ export const KnowledgeBaseGuides = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Featured Guides'
     const description =
       props.description ??
@@ -169,10 +168,10 @@ export const KnowledgeBaseGuides = defineCapsule({
               variant="default"
               className="inline-flex cursor-pointer items-center gap-2 px-4 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-muted rounded-lg p-0"
             >
-              <button type="button" onClick={() => go(viewAll)}>
+              <NavbarRouteLink href={viewAll}>
                 {viewAll}
                 <ChevronRight className="size-4" />
-              </button>
+              </NavbarRouteLink>
             </Card>
           </div>
           <ArticleGrid cols="1-md-2-3">
@@ -183,7 +182,7 @@ export const KnowledgeBaseGuides = defineCapsule({
                 variant="default"
                 className="block cursor-pointer text-left transition-all hover:shadow-lg"
               >
-                <button type="button" onClick={() => go(guide.title)}>
+                <NavbarRouteLink href={guide.title}>
                   <ArticleMedia aspect="16-9">
                     <Image
                       alt={guide.imageAlt}
@@ -221,7 +220,7 @@ export const KnowledgeBaseGuides = defineCapsule({
                       </span>
                     </div>
                   </ArticleContent>
-                </button>
+                </NavbarRouteLink>
               </ArticleCard>
             ))}
           </ArticleGrid>

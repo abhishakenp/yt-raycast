@@ -10,7 +10,7 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 export const PetVeterinaryCta = defineCapsule({
   name: 'PetVeterinaryCta',
@@ -27,7 +27,6 @@ export const PetVeterinaryCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? "We can't wait to meet your furry friend"
     const headline = props.headline ?? "Schedule your pet's visit"
     const subheading =
@@ -40,17 +39,15 @@ export const PetVeterinaryCta = defineCapsule({
           <CtaBandTitle>{headline}</CtaBandTitle>
           <CtaBandSubtitle>{subheading}</CtaBandSubtitle>
           <CtaBandActions align="center">
-            <CtaAction
-              variant="primary"
-              onClick={() => go(props.primaryTarget ?? 'Contact')}
-            >
-              {props.primaryCta ?? 'Book Appointment'}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={props.primaryTarget ?? 'Contact'}>
+                {props.primaryCta ?? 'Book Appointment'}
+              </NavbarRouteLink>
             </CtaAction>
-            <CtaAction
-              variant="outline"
-              onClick={() => go(props.secondaryTarget ?? 'Contact')}
-            >
-              {props.secondaryCta ?? 'Call Us'}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={props.secondaryTarget ?? 'Contact'}>
+                {props.secondaryCta ?? 'Call Us'}
+              </NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

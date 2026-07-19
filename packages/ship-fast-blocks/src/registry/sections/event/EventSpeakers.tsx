@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   PersonCard,
@@ -13,19 +12,20 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * EventSpeakers — a featured-speakers grid for a conference or event page. A muted
  * band with a heading + description on the left and a "view all" link (with arrow)
  * on the right, above a responsive 4-up grid of bordered speaker cards. Each card
  * shows a circular alt-driven headshot, name, role, and short bio, and routes
- * through useNavigate. Use to showcase keynote and session speakers on tech
+ * through section-kit route links. Use to showcase keynote and session speakers on tech
  * conference, summit, meetup, or festival pages.
  */
 export const EventSpeakers = defineCapsule({
   name: 'EventSpeakers',
   description:
-    "Featured-speakers grid for a conference or event page: a muted band with a heading + description on the left and a 'view all' link (with arrow) on the right, above a responsive 4-up grid of bordered speaker cards. Each card shows a circular alt-driven headshot, the speaker name, role, and a short bio, and routes through useNavigate on click. Use to showcase keynote and session speakers on tech conference, summit, meetup, festival, or workshop pages.",
+    "Featured-speakers grid for a conference or event page: a muted band with a heading + description on the left and a 'view all' link (with arrow) on the right, above a responsive 4-up grid of bordered speaker cards. Each card shows a circular alt-driven headshot, the speaker name, role, and a short bio, and routes through section-kit route links on click. Use to showcase keynote and session speakers on tech conference, summit, meetup, festival, or workshop pages.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -46,7 +46,6 @@ export const EventSpeakers = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Featured Speakers'
     const description =
       props.description ??
@@ -126,14 +125,13 @@ export const EventSpeakers = defineCapsule({
               titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
               subtitleClassName="max-w-xl text-lg text-muted-foreground"
             />
-            <button
-              type="button"
-              onClick={() => go(viewAll)}
+            <NavbarRouteLink
               className="inline-flex items-center gap-1 text-sm font-medium transition-colors hover:text-muted-foreground"
+              href={viewAll}
             >
               {viewAll}
               <ArrowRight />
-            </button>
+            </NavbarRouteLink>
           </div>
           <ResponsiveGrid cols="1-2-4" className="gap-6">
             {items.map((sp) => (
@@ -141,12 +139,11 @@ export const EventSpeakers = defineCapsule({
                 key={sp.name}
                 asChild
                 variant="outlined"
-
-               className="rounded-2xl">
-                <button
-                  type="button"
-                  onClick={() => go(sp.name)}
+                className="rounded-2xl"
+              >
+                <NavbarRouteLink
                   className="group p-6 text-left transition-colors hover:border-primary/40"
+                  href={sp.name}
                 >
                   <Image
                     alt={`Professional headshot portrait of ${sp.name}, ${sp.role}`}
@@ -159,7 +156,7 @@ export const EventSpeakers = defineCapsule({
                   </PersonCardName>
                   <PersonCardRole className="mb-2">{sp.role}</PersonCardRole>
                   <PersonCardBio>{sp.bio}</PersonCardBio>
-                </button>
+                </NavbarRouteLink>
               </PersonCard>
             ))}
           </ResponsiveGrid>

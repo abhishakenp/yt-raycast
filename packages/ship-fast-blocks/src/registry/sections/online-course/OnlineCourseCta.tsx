@@ -10,7 +10,7 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * OnlineCourseCta — a bold, centered enrollment band for an online-course page.
@@ -19,14 +19,14 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * headline, a short supporting subheading, and a centered row of two routable
  * pill CTAs — a high-contrast "Enroll now" button (target "Pricing") plus an
  * outlined "View curriculum" button. Both actions navigate through the kit's
- * useNavigate so neither is a dead link. Use near the bottom of an e-learning,
+ * section-kit route links so neither is a dead link. Use near the bottom of an e-learning,
  * bootcamp, or academy landing page to drive enrollments. Renders fully with no
  * props.
  */
 export const OnlineCourseCta = defineCapsule({
   name: 'OnlineCourseCta',
   description:
-    "Bold, centered enrollment band for an online-course page built on the shared CtaBand composite at tone='primary': a reassurance eyebrow ('30-day money-back guarantee'), a strong 'Enroll now' headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Enroll now' button targeting Pricing plus an outlined 'View curriculum' button). Both CTAs route through useNavigate. Use near the bottom of an e-learning, bootcamp, or academy landing page to drive enrollments.",
+    "Bold, centered enrollment band for an online-course page built on the shared CtaBand composite at tone='primary': a reassurance eyebrow ('30-day money-back guarantee'), a strong 'Enroll now' headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Enroll now' button targeting Pricing plus an outlined 'View curriculum' button). Both CTAs route through section-kit route links. Use near the bottom of an e-learning, bootcamp, or academy landing page to drive enrollments.",
   props: z.object({
     /** Reassurance line shown as the band eyebrow. */
     eyebrow: z.string().optional(),
@@ -45,7 +45,6 @@ export const OnlineCourseCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? '30-day money-back guarantee'
     const headline = props.headline ?? 'Enroll now'
     const subheading =
@@ -63,11 +62,15 @@ export const OnlineCourseCta = defineCapsule({
           <CtaBandTitle>{headline}</CtaBandTitle>
           <CtaBandSubtitle>{subheading}</CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction variant="primary" onClick={() => go(primaryTarget)}>
-              {primaryCta}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={primaryTarget}>
+                {primaryCta}
+              </NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" onClick={() => go(secondaryTarget)}>
-              {secondaryCta}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={secondaryTarget}>
+                {secondaryCta}
+              </NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

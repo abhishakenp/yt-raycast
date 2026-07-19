@@ -3,7 +3,6 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { useSyncPublicationArticles } from '../blog/publication-interactions.tsx'
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
@@ -16,6 +15,7 @@ import {
 } from '#/section-kit/FeaturedArticle.tsx'
 import { StorySection } from '#/section-kit/StorySection.tsx'
 import { PullQuoteText } from '#/section-kit/PullQuote.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * NewsroomFeaturedStory — editorial "Editor's Pick" featured long-read band for
@@ -23,7 +23,7 @@ import { PullQuoteText } from '#/section-kit/PullQuote.tsx'
  * photograph on one side, and on the other a wide letter-spaced eyebrow
  * ("EDITOR'S PICK"), a serif headline, a two-to-three sentence excerpt, a short
  * bulleted "key points" list, a set-off pull-quote, a byline (author • date)
- * and a "Continue reading" CTA that routes through useNavigate. Magazine-grade,
+ * and a "Continue reading" CTA that routes through section-kit route links. Magazine-grade,
  * unhurried, long-form feel. Use to spotlight a featured analysis, cover story
  * or editor-selected long read on news, magazine, blog or publication
  * homepages. Renders fully with no props.
@@ -31,7 +31,7 @@ import { PullQuoteText } from '#/section-kit/PullQuote.tsx'
 export const NewsroomFeaturedStory = defineCapsule({
   name: 'NewsroomFeaturedStory',
   description:
-    "Editorial 'Editor's Pick' featured long-read band for a digital newsroom or magazine: a two-column split with a large feature photograph on one side and, on the other, a wide letter-spaced eyebrow label, a serif headline, a two-to-three sentence excerpt, a short bulleted 'key points' list, a set-off pull-quote, a byline (author • date) and a 'Continue reading' CTA that routes through useNavigate. Magazine-grade, unhurried, long-form aesthetic. Use to spotlight a featured analysis, cover story or editor-selected long read on news sites, magazines, blogs or publication homepages.",
+    "Editorial 'Editor's Pick' featured long-read band for a digital newsroom or magazine: a two-column split with a large feature photograph on one side and, on the other, a wide letter-spaced eyebrow label, a serif headline, a two-to-three sentence excerpt, a short bulleted 'key points' list, a set-off pull-quote, a byline (author • date) and a 'Continue reading' CTA that routes through section-kit route links. Magazine-grade, unhurried, long-form aesthetic. Use to spotlight a featured analysis, cover story or editor-selected long read on news sites, magazines, blogs or publication homepages.",
   props: z.object({
     /** Wide letter-spaced eyebrow label above the headline. */
     eyebrow: z.string().optional(),
@@ -55,7 +55,6 @@ export const NewsroomFeaturedStory = defineCapsule({
   }),
   lakebed: publicationLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? "EDITOR'S PICK"
     const headline =
       props.headline ?? 'The Quiet Reordering of the Global Supply Chain'
@@ -139,13 +138,12 @@ export const NewsroomFeaturedStory = defineCapsule({
                 <span aria-hidden="true">•</span>
                 <span>{date}</span>
               </FeaturedArticleMeta>
-              <button
-                type="button"
-                onClick={() => go(cta)}
+              <NavbarRouteLink
                 className="inline-flex items-center bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                href={cta}
               >
                 {cta}
-              </button>
+              </NavbarRouteLink>
             </FeaturedArticleContent>
           </div>
         </Container>

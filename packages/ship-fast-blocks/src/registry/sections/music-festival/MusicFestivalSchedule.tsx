@@ -1,15 +1,13 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 /**
  * MusicFestivalSchedule — a three-day schedule grid for a music / arts festival
  * landing page. A centered eyebrow + heading + intro, then a row of three day
  * cards, each with a primary-filled header (day label, name, date), a timed
  * set list (title + stage detail on the left, time on the right), and a
  * full-width outlined "view full schedule" CTA. Each day CTA routes through
- * useNavigate. Use to lay out the daily program on music festivals, arts
+ * section-kit route links. Use to lay out the daily program on music festivals, arts
  * festivals, concert series, or any multi-day live event.
  */
 import { Container } from '#/section-kit/Container.tsx'
@@ -21,10 +19,12 @@ import {
   EventDate,
   EventDetails,
 } from '#/section-kit/EventList.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const MusicFestivalSchedule = defineCapsule({
   name: 'MusicFestivalSchedule',
   description:
-    "Three-day schedule grid for a music / arts festival landing page: a centered eyebrow + heading + intro paragraph, then a row of three day cards, each with a primary-filled header (day label, name, date), a timed set list (set title + stage detail on the left, time on the right), and a full-width outlined 'view full schedule' CTA. Each day CTA routes through useNavigate. Use to lay out the daily program on music festivals, arts festivals, concert series, conferences-with-lineups, or any multi-day live event.",
+    "Three-day schedule grid for a music / arts festival landing page: a centered eyebrow + heading + intro paragraph, then a row of three day cards, each with a primary-filled header (day label, name, date), a timed set list (set title + stage detail on the left, time on the right), and a full-width outlined 'view full schedule' CTA. Each day CTA routes through section-kit route links. Use to lay out the daily program on music festivals, arts festivals, concert series, conferences-with-lineups, or any multi-day live event.",
   props: z.object({
     /** Eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -53,7 +53,6 @@ export const MusicFestivalSchedule = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'The Schedule'
     const heading = props.heading ?? 'Festival Days'
     const description =
@@ -177,10 +176,7 @@ export const MusicFestivalSchedule = defineCapsule({
           <EventList className="grid gap-8 md:grid-cols-3">
             {days.map((day) => (
               <EventCard asChild key={day.name}>
-                <Card
-                  variant="default"
-                  className="overflow-hidden p-0"
-                >
+                <Card variant="default" className="overflow-hidden p-0">
                   <div className="bg-primary p-6 text-primary-foreground">
                     <p className="mb-1 text-sm opacity-70">{day.label}</p>
                     <h3 className="text-2xl font-bold">{day.name}</h3>
@@ -205,13 +201,12 @@ export const MusicFestivalSchedule = defineCapsule({
                     ))}
                   </div>
                   <div className="px-6 pb-6">
-                    <button
-                      type="button"
-                      onClick={() => go(day.cta)}
+                    <NavbarRouteLink
                       className="w-full rounded-lg border border-border py-3 text-center text-sm font-medium transition-colors hover:bg-accent"
+                      href={day.cta}
                     >
                       {day.cta}
-                    </button>
+                    </NavbarRouteLink>
                   </div>
                 </Card>
               </EventCard>

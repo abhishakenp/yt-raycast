@@ -1,26 +1,26 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   LogoStrip,
   LogoStripLabel,
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * CrmLogos — slim trusted-by logo strip for a CRM / SaaS landing page. A
  * border-bottomed band with a small uppercase tracking-wide caption above a
  * responsive grid of dimmed, wordmark-style company names (2 cols on mobile up
- * to 6 on desktop) that brighten on hover. Each logo routes through useNavigate.
+ * to 6 on desktop) that brighten on hover. Each logo routes through section-kit route links.
  * Use right beneath a hero to establish social proof for CRM, sales-pipeline or
  * B2B SaaS products. Renders fully with no props.
  */
 export const CrmLogos = defineCapsule({
   name: 'CrmLogos',
   description:
-    'Slim trusted-by logo strip for a CRM / SaaS landing page: a border-bottomed band with a small uppercase tracking-wide caption above a responsive grid of dimmed wordmark-style company names (2 cols on mobile up to 6 on desktop) that brighten on hover. Each logo routes through useNavigate. Use right beneath a hero to establish social proof for CRM, sales-pipeline or B2B SaaS products.',
+    'Slim trusted-by logo strip for a CRM / SaaS landing page: a border-bottomed band with a small uppercase tracking-wide caption above a responsive grid of dimmed wordmark-style company names (2 cols on mobile up to 6 on desktop) that brighten on hover. Each logo routes through section-kit route links. Use right beneath a hero to establish social proof for CRM, sales-pipeline or B2B SaaS products.',
   props: z.object({
     /** Caption above the logo row. */
     heading: z.string().optional(),
@@ -29,7 +29,6 @@ export const CrmLogos = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading =
       props.heading ?? 'Trusted by sales teams at leading companies'
     const items = props.items?.length
@@ -46,7 +45,7 @@ export const CrmLogos = defineCapsule({
         <LogoStripItems layout="grid" className="mt-8">
           {items.filter(Boolean).map((logo) => (
             <LogoStripItem key={logo} variant="opacity-hover" asChild>
-              <button onClick={() => ((logo) => go(logo))(logo)}>{logo}</button>
+              <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
             </LogoStripItem>
           ))}
         </LogoStripItems>

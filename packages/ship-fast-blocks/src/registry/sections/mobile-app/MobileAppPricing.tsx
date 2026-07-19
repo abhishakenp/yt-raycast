@@ -11,7 +11,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * the primary background, lifts slightly, and carries a "Most Popular" pill. Each
  * card shows a name, tagline, big price + period, a checklist of features
  * (check / cross icons, dimmed when excluded), and a full-width CTA button that
- * routes through useNavigate. Use as the plans / subscription section on a habit
+ * routes through section-kit route links. Use as the plans / subscription section on a habit
  * tracker, fitness / wellness app, productivity or to-do app, or any consumer app
  * landing page. Renders fully with no props via baked-in Free / Pro / Teams
  * defaults.

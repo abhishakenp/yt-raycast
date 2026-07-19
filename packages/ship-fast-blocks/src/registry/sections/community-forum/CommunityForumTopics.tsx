@@ -2,23 +2,23 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { TopicGrid, TopicCard, TopicIcon } from '#/section-kit/TopicGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * CommunityForumTopics — colorful topic / category directory grid for a
  * community-platform landing page. A centered heading + description above a
  * responsive 4-column grid of rounded card tiles; each tile has a tinted emoji
  * circle, a title, and an active-discussion count. Cards route through
- * useNavigate on click. Use as the topic-browse / category-directory section for
+ * section-kit route links on click. Use as the topic-browse / category-directory section for
  * community platforms, forums, or discussion-board products.
  */
 export const CommunityForumTopics = defineCapsule({
   name: 'CommunityForumTopics',
   description:
-    'Colorful topic / category directory grid for a community-platform landing page: a centered heading and description above a responsive 4-column grid of rounded card tiles, each with a tinted emoji circle, a title, and an active-discussion count; cards route through useNavigate on click. Use as the topic-browse / category-directory section for community platforms, forums, or discussion-board products.',
+    'Colorful topic / category directory grid for a community-platform landing page: a centered heading and description above a responsive 4-column grid of rounded card tiles, each with a tinted emoji circle, a title, and an active-discussion count; cards route through section-kit route links on click. Use as the topic-browse / category-directory section for community platforms, forums, or discussion-board products.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -37,7 +37,6 @@ export const CommunityForumTopics = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Explore active communities'
     const description =
       props.description ??
@@ -112,7 +111,7 @@ export const CommunityForumTopics = defineCapsule({
                 key={topic.title}
                 className="p-6 text-left text-card-foreground transition-all hover:border-foreground/20 hover:shadow-sm"
               >
-                <button type="button" onClick={() => go(topic.title)}>
+                <NavbarRouteLink href={topic.title}>
                   <TopicIcon
                     className={cn(
                       'flex size-10 items-center justify-center text-xl',
@@ -125,7 +124,7 @@ export const CommunityForumTopics = defineCapsule({
                     {topic.title}
                   </h4>
                   <p className="text-sm text-muted-foreground">{topic.count}</p>
-                </button>
+                </NavbarRouteLink>
               </TopicCard>
             ))}
           </TopicGrid>

@@ -9,7 +9,7 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * YogaStudioCta — free-trial call-to-action band for a yoga-studio page. Thin
@@ -17,13 +17,13 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * headline, a short supporting line, and dual routable pill CTAs — a filled
  * "Start Free Trial" button (variant "primary", auto-inverted to a light pill on
  * the primary band) plus an outlined "Contact" button. Both CTAs route through
- * useNavigate. Use as a closing conversion band inviting visitors to begin a
+ * section-kit route links. Use as a closing conversion band inviting visitors to begin a
  * trial or reach out. Renders fully with no props via baked-in defaults.
  */
 export const YogaStudioCta = defineCapsule({
   name: 'YogaStudioCta',
   description:
-    "Free-trial call-to-action band for a yoga-studio page built on the shared CtaBand composite at tone='primary': a headline, a short supporting line, and dual pill CTAs (filled 'Start Free Trial' + outlined 'Contact'). Both route through useNavigate. Use as a closing conversion band inviting visitors to begin a trial or reach out.",
+    "Free-trial call-to-action band for a yoga-studio page built on the shared CtaBand composite at tone='primary': a headline, a short supporting line, and dual pill CTAs (filled 'Start Free Trial' + outlined 'Contact'). Both route through section-kit route links. Use as a closing conversion band inviting visitors to begin a trial or reach out.",
   props: z.object({
     /** Headline. */
     heading: z.string().optional(),
@@ -40,7 +40,6 @@ export const YogaStudioCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Your first week is on us'
     const subheading =
       props.subheading ??
@@ -56,11 +55,15 @@ export const YogaStudioCta = defineCapsule({
           <CtaBandTitle>{heading}</CtaBandTitle>
           <CtaBandSubtitle>{subheading}</CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction variant="primary" onClick={() => go(primaryTarget)}>
-              {primaryCta}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={primaryTarget}>
+                {primaryCta}
+              </NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" onClick={() => go(secondaryTarget)}>
-              {secondaryCta}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={secondaryTarget}>
+                {secondaryCta}
+              </NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

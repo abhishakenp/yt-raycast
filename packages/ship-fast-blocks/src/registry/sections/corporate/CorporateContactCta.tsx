@@ -10,19 +10,19 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * CorporateContactCta — dark conversion CTA band for an enterprise / corporate
  * B2B site. A full-width inverted section with a large centered headline, a lead
  * paragraph, dual pill CTAs (filled primary + bordered secondary), and a response-time
- * note beneath. Every CTA routes through useNavigate. Use as a pre-footer conversion
+ * note beneath. Every CTA routes through section-kit route links. Use as a pre-footer conversion
  * block on enterprise SaaS, consultancy, and managed services landing pages.
  */
 export const CorporateContactCta = defineCapsule({
   name: 'CorporateContactCta',
   description:
-    'Dark conversion CTA band for an enterprise / corporate B2B site: full-width inverted background with a large centered headline, a lead paragraph, dual pill CTAs (filled primary + bordered secondary), and a response-time note beneath. CTAs route through useNavigate. Use as a pre-footer conversion block on enterprise SaaS, consultancy, and managed services landing pages.',
+    'Dark conversion CTA band for an enterprise / corporate B2B site: full-width inverted background with a large centered headline, a lead paragraph, dual pill CTAs (filled primary + bordered secondary), and a response-time note beneath. CTAs route through section-kit route links. Use as a pre-footer conversion block on enterprise SaaS, consultancy, and managed services landing pages.',
   props: z.object({
     /** Headline text. */
     heading: z.string().optional(),
@@ -37,7 +37,6 @@ export const CorporateContactCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Ready to transform your enterprise?'
     const description =
       props.description ??
@@ -57,11 +56,13 @@ export const CorporateContactCta = defineCapsule({
           <CtaBandTitle>{heading}</CtaBandTitle>
           <CtaBandSubtitle>{description}</CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction variant="primary" onClick={() => go(primaryCta)}>
-              {primaryCta}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={primaryCta}>{primaryCta}</NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" onClick={() => go(secondaryCta)}>
-              {secondaryCta}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={secondaryCta}>
+                {secondaryCta}
+              </NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

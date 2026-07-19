@@ -10,14 +10,14 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * MembershipClubCta — full-width primary-surface conversion CTA for a private
  * membership club / exclusive community page. A centered narrow column on the
  * inverted primary surface: a thin display heading, a relaxed supporting line,
  * dual rounded-pill CTAs (solid light primary + outlined secondary) and a small
- * contact footnote (with email) below. CTAs route through useNavigate. Use as the
+ * contact footnote (with email) below. CTAs route through section-kit route links. Use as the
  * closing "Ready to join" band for members clubs, professional networks, founders
  * communities, mastermind groups or paid community subscriptions. Renders fully
  * with no props.
@@ -25,7 +25,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 export const MembershipClubCta = defineCapsule({
   name: 'MembershipClubCta',
   description:
-    "Full-width primary-surface conversion CTA for a private membership club / exclusive community page: a centered narrow column on the inverted primary surface with a thin display heading, a relaxed supporting line, dual rounded-pill CTAs (solid light primary + outlined secondary) and a small contact footnote (with email) below. CTAs route through useNavigate. Use as the closing 'Ready to join' band for members clubs, professional networks, founders communities, mastermind groups or paid community subscriptions.",
+    "Full-width primary-surface conversion CTA for a private membership club / exclusive community page: a centered narrow column on the inverted primary surface with a thin display heading, a relaxed supporting line, dual rounded-pill CTAs (solid light primary + outlined secondary) and a small contact footnote (with email) below. CTAs route through section-kit route links. Use as the closing 'Ready to join' band for members clubs, professional networks, founders communities, mastermind groups or paid community subscriptions.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -37,7 +37,6 @@ export const MembershipClubCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Ready to join us?'
     const description =
       props.description ??
@@ -56,11 +55,13 @@ export const MembershipClubCta = defineCapsule({
           <CtaBandTitle>{heading}</CtaBandTitle>
           <CtaBandSubtitle>{description}</CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction variant="primary" onClick={() => go(primaryCta)}>
-              {primaryCta}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={primaryCta}>{primaryCta}</NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" onClick={() => go(secondaryCta)}>
-              {secondaryCta}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={secondaryCta}>
+                {secondaryCta}
+              </NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

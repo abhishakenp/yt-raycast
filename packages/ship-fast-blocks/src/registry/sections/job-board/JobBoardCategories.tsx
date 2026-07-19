@@ -2,13 +2,11 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 /**
  * JobBoardCategories — a browse-by-category icon grid for a job-board / careers
  * site. A centered heading + description above a responsive 2/3/4-column grid of
  * tappable category tiles, each with a rounded icon chip, a category title, and a
- * per-category job count; tiles lift on hover and route through useNavigate. Use
+ * per-category job count; tiles lift on hover and route through section-kit route links. Use
  * to let visitors jump into a field (Engineering, Design, Marketing…) on job
  * boards, hiring marketplaces, talent networks or directory-style products.
  * Renders fully with no props; built-in line icons rotate across the items.
@@ -20,10 +18,12 @@ import {
   CategoryCard,
   CategoryIcon,
 } from '#/section-kit/CategoryGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const JobBoardCategories = defineCapsule({
   name: 'JobBoardCategories',
   description:
-    'Browse-by-category icon grid for a job-board / careers site: a centered heading + description above a responsive 2/3/4-column grid of tappable category tiles, each with a rounded icon chip, a category title and a per-category job count; tiles lift on hover and route through useNavigate. Use to let visitors jump into a field (Engineering, Design, Marketing…) on job boards, hiring marketplaces, talent networks or directory-style products.',
+    'Browse-by-category icon grid for a job-board / careers site: a centered heading + description above a responsive 2/3/4-column grid of tappable category tiles, each with a rounded icon chip, a category title and a per-category job count; tiles lift on hover and route through section-kit route links. Use to let visitors jump into a field (Engineering, Design, Marketing…) on job boards, hiring marketplaces, talent networks or directory-style products.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -41,7 +41,6 @@ export const JobBoardCategories = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Browse by category'
     const description =
       props.description ??
@@ -219,7 +218,7 @@ export const JobBoardCategories = defineCapsule({
                 key={cat.title}
                 className="bg-muted/40 p-6 text-left transition-all hover:border-foreground/30 hover:shadow-md"
               >
-                <button type="button" onClick={() => go(cat.title)}>
+                <NavbarRouteLink href={cat.title}>
                   <CategoryIcon className="bg-card text-foreground shadow-sm">
                     {categoryIcons[i % categoryIcons.length]}
                   </CategoryIcon>
@@ -227,7 +226,7 @@ export const JobBoardCategories = defineCapsule({
                     {cat.title}
                   </h3>
                   <p className="text-sm text-muted-foreground">{cat.count}</p>
-                </button>
+                </NavbarRouteLink>
               </CategoryCard>
             ))}
           </CategoryGrid>

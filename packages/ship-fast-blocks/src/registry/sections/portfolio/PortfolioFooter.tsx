@@ -30,7 +30,7 @@ import {
 export const PortfolioFooter = defineCapsule({
   name: 'PortfolioFooter',
   description:
-    'Rich, multi-column closing footer for a creative-individual portfolio built on the shared SiteFooter composite: a bold wordmark + tagline + social row (Instagram, Behance, LinkedIn), a responsive grid of link columns (Explore, Services, Contact) with contact details folded in as links, and a bordered-top bottom bar with an auto-updating copyright line. Every brand, social, and column link routes through useNavigate. Use as the site-wide footer for a 3D artist, motion designer, art director, or freelance creative site.',
+    'Rich, multi-column closing footer for a creative-individual portfolio built on the shared SiteFooter composite: a bold wordmark + tagline + social row (Instagram, Behance, LinkedIn), a responsive grid of link columns (Explore, Services, Contact) with contact details folded in as links, and a bordered-top bottom bar with an auto-updating copyright line. Every brand, social, and column link routes through section-kit route links. Use as the site-wide footer for a 3D artist, motion designer, art director, or freelance creative site.',
   props: z.object({
     /** Brand / person name shown as the wordmark. */
     brand: z.string().optional(),

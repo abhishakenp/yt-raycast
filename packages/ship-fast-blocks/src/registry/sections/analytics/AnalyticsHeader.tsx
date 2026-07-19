@@ -4,7 +4,6 @@ import { z } from 'zod/v4'
 import { useKeyedLakebedMutation } from '@ship-fast/lakebed/react'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import {
   Sheet,
@@ -19,6 +18,7 @@ import {
   type AnalyticsNotificationRecord,
 } from './analytics-admin-lakebed.ts'
 import { PageHeader } from '#/section-kit/PageHeader.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * AnalyticsHeader — sticky top header bar for a SaaS analytics dashboard. A
@@ -62,7 +62,6 @@ export const AnalyticsHeader = defineCapsule({
   }),
   lakebed: analyticsAdminLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const [menuOpen, setMenuOpen] = useState(false)
     const [notificationsOpen, setNotificationsOpen] = useState(false)
     const recordAction = useKeyedLakebedMutation(lakebed, 'recordAction')
@@ -279,28 +278,26 @@ export const AnalyticsHeader = defineCapsule({
               </SheetDescription>
             </SheetHeader>
             <nav className="flex flex-col gap-1 px-3 py-4">
-              <button
-                type="button"
+              <NavbarRouteLink
+                className="rounded-lg px-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
                 onClick={() => {
                   setMenuOpen(false)
-                  go(homeTarget)
                 }}
-                className="rounded-lg px-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                href={homeTarget}
               >
                 Home
-              </button>
+              </NavbarRouteLink>
               {nav.map((label) => (
-                <button
+                <NavbarRouteLink
                   key={label}
-                  type="button"
+                  className="rounded-lg px-3 py-3 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                   onClick={() => {
                     setMenuOpen(false)
-                    go(label)
                   }}
-                  className="rounded-lg px-3 py-3 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  href={label}
                 >
                   {label}
-                </button>
+                </NavbarRouteLink>
               ))}
             </nav>
           </SheetContent>

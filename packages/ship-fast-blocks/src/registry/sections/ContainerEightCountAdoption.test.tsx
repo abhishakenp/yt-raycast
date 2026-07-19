@@ -2,10 +2,6 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('#/lib/use-navigate.tsx', () => ({
-  useNavigate: () => vi.fn(),
-}))
-
 vi.mock('@ship-fast/lakebed/react', () => {
   const mutation = Object.assign(
     vi.fn(async () => []),

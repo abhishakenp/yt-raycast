@@ -22,14 +22,14 @@ import {
  * pairs a brand block (serif wordmark, blurb, office addresses, and a contact
  * line) with several labeled link columns, all over a token surface. A bordered
  * bottom row carries social links and an auto-updating copyright. The wordmark
- * and every link route through useNavigate. Use as the closing footer for a
+ * and every link route through section-kit route links. Use as the closing footer for a
  * real-estate brokerage or agent site. Renders fully with no props via baked
  * defaults.
  */
 export const RealEstateFooter = defineCapsule({
   name: 'RealEstateFooter',
   description:
-    'Full sitewide footer for a premium brokerage: a top region pairing a brand block (serif wordmark, blurb, office addresses, contact line) with several labeled link columns over a token surface, plus a bordered bottom row with social links and an auto-updating copyright. Wordmark and links route through useNavigate. Use as the closing footer for a real-estate brokerage or agent site.',
+    'Full sitewide footer for a premium brokerage: a top region pairing a brand block (serif wordmark, blurb, office addresses, contact line) with several labeled link columns over a token surface, plus a bordered bottom row with social links and an auto-updating copyright. Wordmark and links route through section-kit route links. Use as the closing footer for a real-estate brokerage or agent site.',
   props: z.object({
     /** Serif brand wordmark. */
     brand: z.string().optional(),

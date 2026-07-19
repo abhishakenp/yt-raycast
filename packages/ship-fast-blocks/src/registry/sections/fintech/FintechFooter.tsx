@@ -23,7 +23,7 @@ import {
  * page. A thin configuration over the shared SiteFooter composite: an inline
  * shield brand mark + wordmark, a tagline, Product / Company / Resources /
  * Legal link columns, a social row, and a compliance note in the bottom bar.
- * Every link routes through useNavigate. Use as the page footer for banking
+ * Every link routes through section-kit route links. Use as the page footer for banking
  * apps, wallets, payments, or lending products. Renders fully with no props via
  * baked-in "Vault" defaults.
  */
@@ -48,7 +48,7 @@ function ShieldMark({ className }: { className?: string }) {
 export const FintechFooter = defineCapsule({
   name: 'FintechFooter',
   description:
-    'Multi-column fintech / neobank site footer built on the shared SiteFooter composite: an inline shield brand mark + wordmark, a tagline, Product / Company / Resources / Legal link columns, a social row, and a compliance note in the bottom bar. Every link routes through useNavigate. Use as the page footer for banking apps, wallets, payments, or lending products.',
+    'Multi-column fintech / neobank site footer built on the shared SiteFooter composite: an inline shield brand mark + wordmark, a tagline, Product / Company / Resources / Legal link columns, a social row, and a compliance note in the bottom bar. Every link routes through section-kit route links. Use as the page footer for banking apps, wallets, payments, or lending products.',
   props: z.object({
     /** Brand / product name. */
     brand: z.string().optional(),

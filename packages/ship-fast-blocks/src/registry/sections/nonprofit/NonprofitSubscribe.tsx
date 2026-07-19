@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { NewsletterCtaFineprint } from '#/section-kit/NewsletterCta.tsx'
@@ -10,6 +9,7 @@ import { SubscribeBand } from '#/section-kit/SubscribeBand.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * NonprofitSubscribe — warm get-involved / newsletter band for a nonprofit /
@@ -17,7 +17,7 @@ import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.t
  * sits on a soft muted surface above a styled email-capture row with a submit
  * button, and a short row of secondary get-involved links (Volunteer, Fundraise,
  * Partner with us). The submit button writes to the shared Lakebed subscriber
- * list and the get-involved links route through useNavigate. Use to grow the
+ * list and the get-involved links route through section-kit route links. Use to grow the
  * mailing list and surface ways to help on nonprofit, foundation, or
  * humanitarian pages. Renders fully with no props via baked-in "Roots of Hope"
  * defaults.
@@ -25,7 +25,7 @@ import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.t
 export const NonprofitSubscribe = defineCapsule({
   name: 'NonprofitSubscribe',
   description:
-    'Warm get-involved / newsletter band for a nonprofit / charity / NGO page: a centered SectionHeading (eyebrow + title + subtitle) on a soft muted surface above a styled email-capture row with a submit button, plus a short row of secondary get-involved links (Volunteer, Fundraise, Partner with us). The submit button writes to the shared Lakebed subscriber list and secondary links route through useNavigate. Use to grow the mailing list and surface ways to help on nonprofit, foundation, or humanitarian pages.',
+    'Warm get-involved / newsletter band for a nonprofit / charity / NGO page: a centered SectionHeading (eyebrow + title + subtitle) on a soft muted surface above a styled email-capture row with a submit button, plus a short row of secondary get-involved links (Volunteer, Fundraise, Partner with us). The submit button writes to the shared Lakebed subscriber list and secondary links route through section-kit route links. Use to grow the mailing list and surface ways to help on nonprofit, foundation, or humanitarian pages.',
   props: z.object({
     /** Small uppercase eyebrow above the title. */
     eyebrow: z.string().optional(),
@@ -47,7 +47,6 @@ export const NonprofitSubscribe = defineCapsule({
   }),
   lakebed: newsletterLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Get involved'
     const heading = props.heading ?? 'Stay close to the change you make'
     const subheading =
@@ -97,14 +96,13 @@ export const NonprofitSubscribe = defineCapsule({
                 Other ways to help:
               </span>
               {getInvolved.map((label) => (
-                <button
+                <NavbarRouteLink
                   key={label}
-                  type="button"
-                  onClick={() => go(label)}
                   className="text-sm font-medium text-accent underline-offset-4 transition-colors hover:text-foreground hover:underline"
+                  href={label}
                 >
                   {label}
-                </button>
+                </NavbarRouteLink>
               ))}
             </div>
           </Card>

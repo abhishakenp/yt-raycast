@@ -6,7 +6,7 @@ import { z } from 'zod/v4'
  * open-book mark + name, a tagline, and round social buttons, beside several
  * link-list columns; a divider above a bottom bar with a dynamic-year copyright
  * line and a legal-links row. Every link, social, and the logo route through
- * useNavigate. Use as the closing site footer for kids-education startups,
+ * section-kit route links. Use as the closing site footer for kids-education startups,
  * children's e-learning platforms, tutoring services, and family learning apps.
  * Renders fully with no props via baked-in "WonderLearn" defaults.
  */
@@ -29,7 +29,7 @@ import {
 export const KidsEducationFooter = defineCapsule({
   name: 'KidsEducationFooter',
   description:
-    "Dark 5-column mega footer for a kids / family learning platform: a full-width dark (foreground) footer with a wide brand column (open-book mark + name, tagline, round social buttons) beside several link-list columns; a divider above a bottom bar with a dynamic-year copyright line and a legal-links row. Every link, social, and the logo route through useNavigate. Use as the closing site footer for kids-education startups, children's e-learning platforms, tutoring services, and family learning apps.",
+    "Dark 5-column mega footer for a kids / family learning platform: a full-width dark (foreground) footer with a wide brand column (open-book mark + name, tagline, round social buttons) beside several link-list columns; a divider above a bottom bar with a dynamic-year copyright line and a legal-links row. Every link, social, and the logo route through section-kit route links. Use as the closing site footer for kids-education startups, children's e-learning platforms, tutoring services, and family learning apps.",
   props: z.object({
     /** Brand / platform name shown beside the logo mark. */
     brand: z.string().optional(),

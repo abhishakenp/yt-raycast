@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   HeroSection,
@@ -21,6 +20,7 @@ import {
   LocalServiceMutationSpinner,
 } from '../local-service/local-service-interactions.tsx'
 import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * DentalHero — split, two-column hero for a dental practice / dentist landing
@@ -30,14 +30,14 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
  * Your Visit" CTA plus an outlined click-to-call phone button, and a row of
  * check-marked trust badges; the right column shows a rounded treatment-room
  * photo with a floating ratings card (overlapping dentist avatars + a star
- * rating). All CTAs route through useNavigate; imagery uses the alt-driven
+ * rating). All CTAs route through section-kit route links; imagery uses the alt-driven
  * Image component. Use as the top hero for dentists, dental offices,
  * orthodontists, or family / cosmetic dental clinics.
  */
 export const DentalHero = defineCapsule({
   name: 'DentalHero',
   description:
-    'Split two-column hero for a dental practice / dentist landing page on a soft muted band with blurred mint blobs: a left text column with a pulsing now-accepting-new-patients pill, a big headline with an accented middle word, a lede paragraph, a filled primary Schedule-Your-Visit CTA plus an outlined click-to-call phone button, and a row of check-marked trust badges; a right column with a rounded treatment-room photo and a floating ratings card showing overlapping dentist avatars and a star rating. CTAs route through useNavigate; imagery uses the Image component. Use as the top hero for dentists, dental offices, orthodontists, or family / cosmetic dental clinics.',
+    'Split two-column hero for a dental practice / dentist landing page on a soft muted band with blurred mint blobs: a left text column with a pulsing now-accepting-new-patients pill, a big headline with an accented middle word, a lede paragraph, a filled primary Schedule-Your-Visit CTA plus an outlined click-to-call phone button, and a row of check-marked trust badges; a right column with a rounded treatment-room photo and a floating ratings card showing overlapping dentist avatars and a star rating. CTAs route through section-kit route links; imagery uses the Image component. Use as the top hero for dentists, dental offices, orthodontists, or family / cosmetic dental clinics.',
   props: z.object({
     badge: z.string().optional(),
     headingPre: z.string().optional(),
@@ -57,7 +57,6 @@ export const DentalHero = defineCapsule({
   }),
   lakebed: localServiceLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const heroBadge = props.badge ?? 'Now accepting new patients'
     const heroPre = props.headingPre ?? 'Your smile deserves'
     const heroHighlight = props.highlight ?? 'exceptional'
@@ -163,10 +162,10 @@ export const DentalHero = defineCapsule({
                   variant="outline"
                   className="gap-2 rounded-full bg-background px-8 py-4 text-lg font-semibold"
                 >
-                  <button type="button" onClick={() => go(`Call ${heroPhone}`)}>
+                  <NavbarRouteLink href={`Call ${heroPhone}`}>
                     <PhoneIcon className="size-5" />
                     {heroPhone}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
               <HeroSocialProof className="mt-10 justify-center gap-6 lg:justify-start">
@@ -194,7 +193,6 @@ export const DentalHero = defineCapsule({
                 alt={heroImageAlt}
                 w={1200}
                 h={900}
-
                 className="aspect-[4/3] shadow-2xl rounded-3xl"
               />
               <div className="absolute -bottom-6 -left-6 max-w-xs rounded-2xl bg-background p-6 shadow-xl">

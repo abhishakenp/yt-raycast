@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 /**
@@ -12,17 +11,19 @@ import { Image } from '#/lib/img.tsx'
  * icons. On the right: a tall office photo with a floating success-rate stat
  * card overlapping its lower-left corner. Refined, authoritative, serif-driven
  * editorial aesthetic on a warm neutral canvas. CTAs and contact links route
- * through useNavigate; the photo uses the alt-driven Image component. Use as the
+ * through section-kit route links; the photo uses the alt-driven Image component. Use as the
  * opening hero for law firms, attorneys, legal practices, corporate counsel,
  * litigation boutiques or any premium professional-services landing page.
  * Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const LawFirmHero = defineCapsule({
   name: 'LawFirmHero',
   description:
-    'Split two-column hero for a corporate / trial law firm: left column has a tracked-uppercase eyebrow, a large serif headline with an italic muted highlight on the second line, a lead paragraph, dual CTAs (solid primary + bordered secondary) and a phone / office-address contact row with line icons; right column shows a tall office photo with a floating success-rate stat card overlapping its lower-left corner. Refined, authoritative, serif-driven editorial aesthetic on a warm neutral canvas with sharp squared corners. CTAs and contact links route through useNavigate; imagery uses the alt-driven Image component. Use as the opening hero for law firms, attorneys, legal practices, corporate counsel, litigation boutiques, estate-planning or tax practices, or any premium professional-services landing page.',
+    'Split two-column hero for a corporate / trial law firm: left column has a tracked-uppercase eyebrow, a large serif headline with an italic muted highlight on the second line, a lead paragraph, dual CTAs (solid primary + bordered secondary) and a phone / office-address contact row with line icons; right column shows a tall office photo with a floating success-rate stat card overlapping its lower-left corner. Refined, authoritative, serif-driven editorial aesthetic on a warm neutral canvas with sharp squared corners. CTAs and contact links route through section-kit route links; imagery uses the alt-driven Image component. Use as the opening hero for law firms, attorneys, legal practices, corporate counsel, litigation boutiques, estate-planning or tax practices, or any premium professional-services landing page.',
   props: z.object({
     eyebrow: z.string().optional(),
     headingTop: z.string().optional(),
@@ -39,7 +40,6 @@ export const LawFirmHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Corporate & Trial Law Since 1987'
     const headingTop = props.headingTop ?? 'Strategic Counsel.'
     const highlight = props.highlight ?? 'Decisive Results.'
@@ -112,38 +112,34 @@ export const LawFirmHero = defineCapsule({
                 {subheading}
               </p>
               <div className="flex flex-col gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
+                <NavbarRouteLink
                   className="bg-primary px-8 py-4 text-center font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  href={primaryCta}
                 >
                   {primaryCta}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
+                </NavbarRouteLink>
+                <NavbarRouteLink
                   className="border border-border px-8 py-4 text-center font-medium text-foreground transition-colors hover:border-foreground/40"
+                  href={secondaryCta}
                 >
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </div>
               <div className="mt-12 flex flex-col gap-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:gap-8">
-                <button
-                  type="button"
-                  onClick={() => go(phone)}
+                <NavbarRouteLink
                   className="flex items-center gap-2 transition-colors hover:text-foreground"
+                  href={phone}
                 >
                   <PhoneIcon className="size-5" />
                   <span>{phone}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
+                </NavbarRouteLink>
+                <NavbarRouteLink
                   className="flex items-center gap-2 text-left transition-colors hover:text-foreground"
+                  href={secondaryCta}
                 >
                   <MapPinIcon className="size-5 shrink-0" />
                   <span>{address}</span>
-                </button>
+                </NavbarRouteLink>
               </div>
             </div>
             <div className="relative">

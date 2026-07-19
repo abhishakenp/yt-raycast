@@ -21,7 +21,7 @@ import {
  * footer: a wide brand column (shield logo + name, tagline, and social links)
  * beside several link-list columns, then a bordered-top bottom row with an
  * auto-updating copyright line and a set of legal links. The brand button,
- * every column link, social link and legal link route through useNavigate. Use
+ * every column link, social link and legal link route through section-kit route links. Use
  * as the closing site footer for cybersecurity vendors, SOC/MDR providers, or
  * any enterprise B2B security SaaS. Renders fully with no props via baked-in
  * "SentinelGuard" defaults.
@@ -29,7 +29,7 @@ import {
 export const CybersecurityFooter = defineCapsule({
   name: 'CybersecurityFooter',
   description:
-    'Dark full-bleed 5-column mega-footer on the brand surface: a wide brand column (shield logo + name, tagline, social links) beside several link-list columns, then a bordered-top bottom row with an auto-updating copyright line and legal links. The brand button, column links, social links and legal links route through useNavigate. Use as the closing site footer for cybersecurity vendors, SOC/MDR providers, or any enterprise B2B security SaaS.',
+    'Dark full-bleed 5-column mega-footer on the brand surface: a wide brand column (shield logo + name, tagline, social links) beside several link-list columns, then a bordered-top bottom row with an auto-updating copyright line and legal links. The brand button, column links, social links and legal links route through section-kit route links. Use as the closing site footer for cybersecurity vendors, SOC/MDR providers, or any enterprise B2B security SaaS.',
   props: z.object({
     /** Brand / product name shown beside the shield logo. */
     brand: z.string().optional(),

@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   FaqAccordion,
   FaqAnswer,
@@ -12,20 +11,21 @@ import {
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * MentalHealthFaq — a centered FAQ accordion for a therapy practice. A narrow
  * eyebrow + heading + intro above a stack of native <details> rows on a muted
  * surface, each with a rotating chevron toggle, followed by a centered "still
  * have questions?" prompt and a rounded phone CTA. Calm, reassuring wellness
- * aesthetic. The CTA routes through useNavigate. Use to answer common questions
+ * aesthetic. The CTA routes through section-kit route links. Use to answer common questions
  * (insurance, session length, virtual vs in-person, cancellation) for therapists,
  * counselors, psychologists or wellness centers.
  */
 export const MentalHealthFaq = defineCapsule({
   name: 'MentalHealthFaq',
   description:
-    "Centered FAQ accordion for a therapy practice: a narrow eyebrow + heading + intro above a stack of native details rows on a muted surface, each with a rotating chevron toggle, then a centered 'still have questions?' prompt and a rounded phone CTA. Calm, reassuring wellness aesthetic. The CTA routes through useNavigate. Use to answer common questions (insurance, session length, virtual vs in-person, cancellation) for therapists, counselors, psychologists or wellness centers.",
+    "Centered FAQ accordion for a therapy practice: a narrow eyebrow + heading + intro above a stack of native details rows on a muted surface, each with a rotating chevron toggle, then a centered 'still have questions?' prompt and a rounded phone CTA. Calm, reassuring wellness aesthetic. The CTA routes through section-kit route links. Use to answer common questions (insurance, session length, virtual vs in-person, cancellation) for therapists, counselors, psychologists or wellness centers.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -42,7 +42,6 @@ export const MentalHealthFaq = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Stillpoint'
     const eyebrow = props.eyebrow ?? 'FAQ'
     const heading = props.heading ?? 'Common questions'
@@ -138,14 +137,13 @@ export const MentalHealthFaq = defineCapsule({
 
           <div className="mt-12 text-center">
             <p className="mb-4 text-muted-foreground">{footerNote}</p>
-            <button
-              type="button"
-              onClick={() => go(bookLabel)}
+            <NavbarRouteLink
               className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              href={bookLabel}
             >
               <Phone className="size-5" />
               {footerCta}
-            </button>
+            </NavbarRouteLink>
           </div>
         </Container>
       </section>

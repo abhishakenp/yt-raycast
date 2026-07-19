@@ -10,20 +10,20 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * RealEstateCta — a confident closing call-to-action band for a brokerage. A
  * rounded primary-toned panel centers an eyebrow, a large serif headline, a
  * supporting line, and dual CTAs (filled "Find Your Home" on the card surface +
- * outlined "Talk to an Agent"). Both CTAs route through useNavigate. Use to
+ * outlined "Talk to an Agent"). Both CTAs route through section-kit route links. Use to
  * convert near the bottom of a real-estate brokerage or agent page. Renders
  * fully with no props via baked-in defaults.
  */
 export const RealEstateCta = defineCapsule({
   name: 'RealEstateCta',
   description:
-    "Confident closing call-to-action band for a brokerage: a rounded primary-toned panel centering an eyebrow, a large serif headline, a supporting line, and dual CTAs (filled 'Find Your Home' on the card surface + outlined 'Talk to an Agent'). Both CTAs route through useNavigate. Use to convert near the bottom of a real-estate brokerage or agent page.",
+    "Confident closing call-to-action band for a brokerage: a rounded primary-toned panel centering an eyebrow, a large serif headline, a supporting line, and dual CTAs (filled 'Find Your Home' on the card surface + outlined 'Talk to an Agent'). Both CTAs route through section-kit route links. Use to convert near the bottom of a real-estate brokerage or agent page.",
   props: z.object({
     /** Small uppercase eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -42,7 +42,6 @@ export const RealEstateCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     return (
       <CtaBand tone="primary" className={props.className}>
         <CtaBandInner>
@@ -57,17 +56,15 @@ export const RealEstateCta = defineCapsule({
               "Tell us what you're looking for and we'll match you with an agent who knows the area — no pressure, no obligation."}
           </CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction
-              variant="primary"
-              onClick={() => go(props.primaryTarget ?? 'Buy')}
-            >
-              {props.primaryCta ?? 'Find Your Home'}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={props.primaryTarget ?? 'Buy'}>
+                {props.primaryCta ?? 'Find Your Home'}
+              </NavbarRouteLink>
             </CtaAction>
-            <CtaAction
-              variant="outline"
-              onClick={() => go(props.secondaryTarget ?? 'Agents')}
-            >
-              {props.secondaryCta ?? 'Talk to an Agent'}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={props.secondaryTarget ?? 'Agents'}>
+                {props.secondaryCta ?? 'Talk to an Agent'}
+              </NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

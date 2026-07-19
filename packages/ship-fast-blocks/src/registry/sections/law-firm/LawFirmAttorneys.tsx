@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   PersonCard,
@@ -18,17 +17,19 @@ import {
  * headshot that gently zooms on hover, then a serif name, muted title, bio, and
  * a row of LinkedIn + email icon links. Refined, authoritative editorial
  * aesthetic. Imagery uses the alt-driven Image component; the social links route
- * through useNavigate. Use to introduce leadership, partners or team members on
+ * through section-kit route links. Use to introduce leadership, partners or team members on
  * law-firm, attorney, consulting or professional-services pages. Renders fully
  * with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const LawFirmAttorneys = defineCapsule({
   name: 'LawFirmAttorneys',
   description:
-    'Centered-intro attorney / partner gallery for a law firm: a tracked-uppercase eyebrow, serif heading and lead paragraph above a responsive 3-up grid of cards on the card surface, each with a tall headshot that gently zooms on hover, a serif name, muted title, bio and a row of LinkedIn + email icon links. Refined, authoritative editorial aesthetic; imagery uses the alt-driven Image component and the social links route through useNavigate. Use to introduce leadership, partners, attorneys or team members on law-firm, attorney, consulting, accounting or professional-services pages.',
+    'Centered-intro attorney / partner gallery for a law firm: a tracked-uppercase eyebrow, serif heading and lead paragraph above a responsive 3-up grid of cards on the card surface, each with a tall headshot that gently zooms on hover, a serif name, muted title, bio and a row of LinkedIn + email icon links. Refined, authoritative editorial aesthetic; imagery uses the alt-driven Image component and the social links route through section-kit route links. Use to introduce leadership, partners, attorneys or team members on law-firm, attorney, consulting, accounting or professional-services pages.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -46,7 +47,6 @@ export const LawFirmAttorneys = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Our Team'
     const heading = props.heading ?? 'Leadership & Partners'
     const description =
@@ -143,7 +143,6 @@ export const LawFirmAttorneys = defineCapsule({
               <PersonCard
                 key={person.name}
                 variant="plain"
-
                 className="group rounded-none"
               >
                 <div className="overflow-hidden">
@@ -166,22 +165,20 @@ export const LawFirmAttorneys = defineCapsule({
                     {person.bio}
                   </PersonCardBio>
                   <div className="flex gap-3">
-                    <button
-                      type="button"
+                    <NavbarRouteLink
                       aria-label={`${person.name} on LinkedIn`}
-                      onClick={() => go(person.name)}
                       className="text-muted-foreground transition-colors hover:text-foreground"
+                      href={person.name}
                     >
                       <LinkedInIcon className="size-5" />
-                    </button>
-                    <button
-                      type="button"
+                    </NavbarRouteLink>
+                    <NavbarRouteLink
                       aria-label={`Email ${person.name}`}
-                      onClick={() => go(person.name)}
                       className="text-muted-foreground transition-colors hover:text-foreground"
+                      href={person.name}
                     >
                       <MailIcon className="size-5" />
-                    </button>
+                    </NavbarRouteLink>
                   </div>
                 </PersonCardContent>
               </PersonCard>

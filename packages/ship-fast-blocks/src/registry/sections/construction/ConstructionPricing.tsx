@@ -7,7 +7,7 @@ import { cn } from '#/lib/utils.ts'
  * contractor page. A centered section heading above a responsive 3-column
  * grid of pricing cards with a "Most Popular" highlight on the featured tier.
  * Each card lists features with check icons and a CTA button that routes
- * through useNavigate. Use to present transparent project pricing for
+ * through section-kit route links. Use to present transparent project pricing for
  * construction firms, contractors, builders, or remodeling companies.
  * Renders fully with no props via baked-in defaults.
  */
@@ -29,7 +29,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 export const ConstructionPricing = defineCapsule({
   name: 'ConstructionPricing',
   description:
-    "Three-tier pricing table for a construction / general contractor page: a centered section heading above a responsive 3-column grid of pricing cards with a 'Most Popular' highlight on the featured tier. Each card lists features with check icons and a CTA button that routes through useNavigate. Use to present transparent project pricing for construction firms, contractors, builders, or remodeling companies.",
+    "Three-tier pricing table for a construction / general contractor page: a centered section heading above a responsive 3-column grid of pricing cards with a 'Most Popular' highlight on the featured tier. Each card lists features with check icons and a CTA button that routes through section-kit route links. Use to present transparent project pricing for construction firms, contractors, builders, or remodeling companies.",
   props: z.object({
     /** Section eyebrow label. */
     eyebrow: z.string().optional(),

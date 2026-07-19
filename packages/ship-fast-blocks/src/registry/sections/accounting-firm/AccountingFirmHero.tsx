@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import {
@@ -12,6 +11,7 @@ import {
   HeroStatBadgeSubtitle,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * AccountingFirmHero — split, editorial hero band for a CPA / accounting-firm
@@ -20,7 +20,7 @@ import { Container } from '#/section-kit/Container.tsx'
  * (filled primary + secondary), and an inline check-marked trust-badge row; on
  * the right a 4:3 photo with a floating tax-savings stat card pinned to its
  * lower-left corner. Calm, trustworthy professional-services aesthetic. CTAs
- * route through useNavigate; the photo uses the alt-driven Image component. Use
+ * route through section-kit route links; the photo uses the alt-driven Image component. Use
  * as the opening hero for accounting firms, CPA practices, tax-preparation
  * services, bookkeeping/payroll providers, or financial advisory practices.
  * Renders fully with no props via baked-in "Northridge" defaults.
@@ -28,7 +28,7 @@ import { Container } from '#/section-kit/Container.tsx'
 export const AccountingFirmHero = defineCapsule({
   name: 'AccountingFirmHero',
   description:
-    'Split editorial hero band for a CPA / accounting-firm landing page: two-column section on a card surface with an uppercase Est.-year eyebrow, a large two-line headline, a supporting paragraph, dual CTAs (filled primary + secondary), and an inline check-marked trust-badge row on the left; a 4:3 photo with a floating tax-savings stat card pinned to its lower-left corner on the right. Calm, trustworthy professional-services look; CTAs route through useNavigate and the photo uses the alt-driven Image component. Use as the opening hero for accounting firms, CPA practices, tax-preparation services, bookkeeping/payroll providers, or financial advisory practices.',
+    'Split editorial hero band for a CPA / accounting-firm landing page: two-column section on a card surface with an uppercase Est.-year eyebrow, a large two-line headline, a supporting paragraph, dual CTAs (filled primary + secondary), and an inline check-marked trust-badge row on the left; a 4:3 photo with a floating tax-savings stat card pinned to its lower-left corner on the right. Calm, trustworthy professional-services look; CTAs route through section-kit route links and the photo uses the alt-driven Image component. Use as the opening hero for accounting firms, CPA practices, tax-preparation services, bookkeeping/payroll providers, or financial advisory practices.',
   props: z.object({
     /** Uppercase eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -53,7 +53,6 @@ export const AccountingFirmHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow =
       props.eyebrow ?? 'Est. 1987 • Chartered Professional Accountants'
     const headingTop = props.headingTop ?? 'Clarity in every number.'
@@ -114,20 +113,18 @@ export const AccountingFirmHero = defineCapsule({
                 {subheading}
               </p>
               <div className="flex flex-col gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
+                <NavbarRouteLink
                   className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3.5 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  href={primaryCta}
                 >
                   {primaryCta}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
+                </NavbarRouteLink>
+                <NavbarRouteLink
                   className="inline-flex items-center justify-center rounded-md bg-secondary px-6 py-3.5 text-base font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
+                  href={secondaryCta}
                 >
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </div>
               <div className="mt-10 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
                 {badges.map((badge) => (

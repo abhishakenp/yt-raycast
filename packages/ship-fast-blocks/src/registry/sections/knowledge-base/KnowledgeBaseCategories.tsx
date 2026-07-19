@@ -3,8 +3,6 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
@@ -12,6 +10,7 @@ import {
   CategoryCard,
   CategoryIcon,
 } from '#/section-kit/CategoryGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * KnowledgeBaseCategories — "browse by category" grid for a help center. A
@@ -19,14 +18,14 @@ import {
  * card buttons, each with a rounded muted icon tile (rotating line glyphs),
  * a title, a short description and an article-count caption; cards lift and tint
  * their border on hover. Calm, light, organized documentation aesthetic. Every
- * category card routes through useNavigate. Use to let visitors browse a
+ * category card routes through section-kit route links. Use to let visitors browse a
  * knowledge base / support portal by topic. Renders fully with no props via
  * baked-in defaults.
  */
 export const KnowledgeBaseCategories = defineCapsule({
   name: 'KnowledgeBaseCategories',
   description:
-    "'Browse by category' grid for a help center: a centered heading + description above a responsive 1/2/4-up grid of bordered card buttons, each with a rounded muted icon tile (rotating line glyphs), a title, a short description and an article-count caption; cards lift and tint their border on hover. Calm, light, organized documentation aesthetic; every category card routes through useNavigate. Use to let visitors browse a knowledge base, support portal or docs site by topic.",
+    "'Browse by category' grid for a help center: a centered heading + description above a responsive 1/2/4-up grid of bordered card buttons, each with a rounded muted icon tile (rotating line glyphs), a title, a short description and an article-count caption; cards lift and tint their border on hover. Calm, light, organized documentation aesthetic; every category card routes through section-kit route links. Use to let visitors browse a knowledge base, support portal or docs site by topic.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -42,7 +41,6 @@ export const KnowledgeBaseCategories = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Browse by Category'
     const description =
       props.description ??
@@ -237,10 +235,9 @@ export const KnowledgeBaseCategories = defineCapsule({
                 key={cat.title}
                 className="cursor-pointer p-6 text-left transition-all hover:border-primary/30 hover:shadow-md"
               >
-                <button
-                  type="button"
-                  onClick={() => go(cat.title)}
+                <NavbarRouteLink
                   aria-label={`${cat.title} category, ${cat.count}`}
+                  href={cat.title}
                 >
                   <CategoryIcon className="bg-muted text-primary transition-colors group-hover:bg-accent">
                     {categoryIcons[i % categoryIcons.length]}
@@ -254,7 +251,7 @@ export const KnowledgeBaseCategories = defineCapsule({
                   <span className="text-xs font-medium text-muted-foreground">
                     {cat.count}
                   </span>
-                </button>
+                </NavbarRouteLink>
               </CategoryCard>
             ))}
           </CategoryGrid>

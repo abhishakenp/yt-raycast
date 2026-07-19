@@ -25,14 +25,14 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * a responsive 3-column grid of tier cards; the middle tier can be featured
  * (dark primary card with a badge). Each tier includes name, price, unit,
  * description, a feature list with check icons, and a CTA button. All CTAs
- * route through useNavigate. Use for pricing, service tiers, or engagement
+ * route through section-kit route links. Use for pricing, service tiers, or engagement
  * models on consulting, advisory, or professional-services sites. Renders fully
  * with no props via three baked-in default tiers.
  */
 export const ConsultingPricing = defineCapsule({
   name: 'ConsultingPricing',
   description:
-    '3-tier engagement-models pricing block for a management-consulting firm page: a centered heading and lead paragraph above a responsive 3-column grid of tier cards, with an optional featured middle tier (dark primary card with a badge). Each tier shows name, price, unit, description, a feature list with check icons, and a CTA button. All CTAs route through useNavigate. Use for pricing, service tiers, or engagement models on consulting, advisory, or professional-services sites.',
+    '3-tier engagement-models pricing block for a management-consulting firm page: a centered heading and lead paragraph above a responsive 3-column grid of tier cards, with an optional featured middle tier (dark primary card with a badge). Each tier shows name, price, unit, description, a feature list with check icons, and a CTA button. All CTAs route through section-kit route links. Use for pricing, service tiers, or engagement models on consulting, advisory, or professional-services sites.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),

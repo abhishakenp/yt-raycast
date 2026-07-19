@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroHeading,
@@ -13,6 +12,7 @@ import {
 } from '#/section-kit/HeroSection.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * AboutHero — mission hero band for a modern company / ABOUT page. A spacious
@@ -21,14 +21,14 @@ import { Container } from '#/section-kit/Container.tsx'
  * one phrase rendered in an indigo-to-violet gradient highlight, a supporting
  * paragraph, and dual CTAs (filled primary pill with a chevron + outlined card
  * secondary). Premium, mission-led and conversion-focused. CTAs route through
- * useNavigate. Use as the opening hero for an about/company/mission page of
+ * section-kit route links. Use as the opening hero for an about/company/mission page of
  * startups, product studios, agencies, or SaaS brands. Renders fully with no
  * props via baked-in "Kinetic Labs" defaults.
  */
 export const AboutHero = defineCapsule({
   name: 'AboutHero',
   description:
-    'Mission hero band for a modern company / ABOUT page: a spacious section over soft blurred ambient glow orbs (primary + accent), an indigo soft-chip eyebrow pill with a sparkle icon, a huge multi-line headline with one phrase in an indigo-to-violet gradient highlight, a supporting paragraph, and dual CTAs (filled primary pill with a chevron + outlined card secondary). Premium, mission-led and conversion-focused; CTAs route through useNavigate. Use as the opening hero for an about/company/mission page of startups, product studios, agencies, or SaaS brands.',
+    'Mission hero band for a modern company / ABOUT page: a spacious section over soft blurred ambient glow orbs (primary + accent), an indigo soft-chip eyebrow pill with a sparkle icon, a huge multi-line headline with one phrase in an indigo-to-violet gradient highlight, a supporting paragraph, and dual CTAs (filled primary pill with a chevron + outlined card secondary). Premium, mission-led and conversion-focused; CTAs route through section-kit route links. Use as the opening hero for an about/company/mission page of startups, product studios, agencies, or SaaS brands.',
   props: z.object({
     /** Eyebrow pill text above the headline. */
     eyebrow: z.string().optional(),
@@ -45,7 +45,6 @@ export const AboutHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'About Kinetic Labs'
     const heading = props.heading ?? 'We build products that'
     const highlight = props.highlight ?? 'move the world forward'
@@ -100,29 +99,33 @@ export const AboutHero = defineCapsule({
             <HeroCta
               variant="primary"
               className="gap-2.5 rounded-xl px-5 py-3 text-[0.95rem] font-semibold shadow-sm transition-all hover:-translate-y-px hover:shadow-md"
-              onClick={() => go(primaryCta)}
+              asChild
             >
-              {primaryCta}
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
+              <NavbarRouteLink href={primaryCta}>
+                {primaryCta}
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </NavbarRouteLink>
             </HeroCta>
             <HeroCta
               variant="outline"
               className="rounded-xl px-5 py-3 text-[0.95rem] font-semibold shadow-sm transition-all hover:-translate-y-px hover:shadow-md"
-              onClick={() => go(secondaryCta)}
+              asChild
             >
-              {secondaryCta}
+              <NavbarRouteLink href={secondaryCta}>
+                {secondaryCta}
+              </NavbarRouteLink>
             </HeroCta>
           </HeroActions>
         </Container>

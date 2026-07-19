@@ -10,20 +10,20 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * InvestingCta — dark closing call-to-action band for an investing / fintech
  * page. A centered, dark (foreground-surface) section with a large headline, a
  * supporting paragraph, dual primary/outline CTA buttons, and a small reassurance
- * note beneath. Both CTAs route through useNavigate. Use as the final conversion
+ * note beneath. Both CTAs route through section-kit route links. Use as the final conversion
  * push before the footer on a brokerage, trading-app or robo-advisor page.
  * Renders fully with no props.
  */
 export const InvestingCta = defineCapsule({
   name: 'InvestingCta',
   description:
-    'Dark closing call-to-action band for an investing / fintech page: a centered dark (foreground-surface) section with a large headline, a supporting paragraph, dual primary/outline CTA buttons, and a small reassurance note beneath. Both CTAs route through useNavigate. Use as the final conversion push before the footer on a brokerage, trading-app or robo-advisor page.',
+    'Dark closing call-to-action band for an investing / fintech page: a centered dark (foreground-surface) section with a large headline, a supporting paragraph, dual primary/outline CTA buttons, and a small reassurance note beneath. Both CTAs route through section-kit route links. Use as the final conversion push before the footer on a brokerage, trading-app or robo-advisor page.',
   props: z.object({
     /** Large headline. */
     heading: z.string().optional(),
@@ -38,7 +38,6 @@ export const InvestingCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Ready to start investing smarter?'
     const description =
       props.description ??
@@ -57,11 +56,13 @@ export const InvestingCta = defineCapsule({
           <CtaBandTitle>{heading}</CtaBandTitle>
           <CtaBandSubtitle>{description}</CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction variant="primary" onClick={() => go(primaryCta)}>
-              {primaryCta}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={primaryCta}>{primaryCta}</NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" onClick={() => go(secondaryCta)}>
-              {secondaryCta}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={secondaryCta}>
+                {secondaryCta}
+              </NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

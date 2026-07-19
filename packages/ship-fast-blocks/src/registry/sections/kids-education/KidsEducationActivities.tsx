@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 /**
@@ -12,7 +11,7 @@ import { Image } from '#/lib/img.tsx'
  * floating count badge, a rotating soft-tint icon tile (science, art, coding,
  * math, reading, nature), a title, a description, and an arrow "explore" link.
  * Cards lift and the photo zooms on hover. Every explore link routes through
- * useNavigate. Use to showcase course categories / subjects for kids-education
+ * section-kit route links. Use to showcase course categories / subjects for kids-education
  * startups, children's e-learning platforms, STEM programs, and family learning
  * apps. Renders fully with no props via baked-in defaults.
  */
@@ -27,10 +26,12 @@ import {
   ActivityTileTitle,
   ActivityTileDescription,
 } from '#/section-kit/ActivityGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const KidsEducationActivities = defineCapsule({
   name: 'KidsEducationActivities',
   description:
-    "Playful activities / features grid for a kids / family learning platform: a centered eyebrow + heading + description intro above a responsive 3-up grid of rounded cards; each card has a photo with a floating count badge, a rotating soft-tint icon tile (science, art, coding, math, reading, nature), a title, a description, and an arrow 'explore' link, lifting and zooming the photo on hover. Explore links route through useNavigate. Use to showcase course categories / subjects for kids-education startups, children's e-learning platforms, STEM programs, and family learning apps.",
+    "Playful activities / features grid for a kids / family learning platform: a centered eyebrow + heading + description intro above a responsive 3-up grid of rounded cards; each card has a photo with a floating count badge, a rotating soft-tint icon tile (science, art, coding, math, reading, nature), a title, a description, and an arrow 'explore' link, lifting and zooming the photo on hover. Explore links route through section-kit route links. Use to showcase course categories / subjects for kids-education startups, children's e-learning platforms, STEM programs, and family learning apps.",
   props: z.object({
     /** Uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -53,7 +54,6 @@ export const KidsEducationActivities = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Activities'
     const heading = props.heading ?? 'Explore, Create, Learn'
     const description =
@@ -260,14 +260,13 @@ export const KidsEducationActivities = defineCapsule({
                 <ActivityTileDescription>
                   {item.description}
                 </ActivityTileDescription>
-                <button
-                  type="button"
-                  onClick={() => go(item.cta)}
+                <NavbarRouteLink
                   className="inline-flex items-center gap-2 font-semibold text-foreground transition-colors hover:text-secondary"
+                  href={item.cta}
                 >
                   {item.cta}
                   <ArrowRight className="size-4" />
-                </button>
+                </NavbarRouteLink>
               </ActivityTile>
             ))}
           </ActivityGrid>

@@ -16,14 +16,14 @@ import {
  * DevToolGallery — a 2x2 product screenshot gallery for a developer tool / API
  * platform. A centered heading + intro above a responsive 1/2-column grid of
  * figures, each a bordered dark-framed clickable image (alt-driven, zoom-on-hover)
- * with a centered title + caption beneath. Each tile routes through useNavigate.
+ * with a centered title + caption beneath. Each tile routes through section-kit route links.
  * Use to show dashboard, API explorer, edge network, and team workspace
  * screenshots for developer tools, API platforms, or technical SaaS.
  */
 export const DevToolGallery = defineCapsule({
   name: 'DevToolGallery',
   description:
-    '2x2 product screenshot gallery for a developer tool / API platform: a centered heading + intro above a responsive 1/2-column grid of figures, each a bordered dark-framed clickable image (alt-driven, zoom-on-hover) with a centered title + caption beneath. Each tile routes through useNavigate. Use to show dashboard, API explorer, edge network, and team workspace screenshots for developer tools, API platforms, or technical SaaS.',
+    '2x2 product screenshot gallery for a developer tool / API platform: a centered heading + intro above a responsive 1/2-column grid of figures, each a bordered dark-framed clickable image (alt-driven, zoom-on-hover) with a centered title + caption beneath. Each tile routes through section-kit route links. Use to show dashboard, API explorer, edge network, and team workspace screenshots for developer tools, API platforms, or technical SaaS.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),

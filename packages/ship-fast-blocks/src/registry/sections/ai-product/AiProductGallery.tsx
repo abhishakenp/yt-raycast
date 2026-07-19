@@ -18,7 +18,7 @@ import {
  * SaaS / product page. A centered heading + paragraph above a responsive
  * 1 → 2 → 3 column grid of bordered cards, each a clickable tile with a 4:3
  * alt-driven image, a bold title, and a short caption, lifting on hover. Each
- * card routes through useNavigate. Use to surface real in-app screenshots or
+ * card routes through section-kit route links. Use to surface real in-app screenshots or
  * feature highlights for AI tools, SaaS apps, editors, dashboards, or any
  * product worth showing visually. Renders fully with no props via six built-in
  * feature tiles.
@@ -26,7 +26,7 @@ import {
 export const AiProductGallery = defineCapsule({
   name: 'AiProductGallery',
   description:
-    'Product-screenshot showcase grid for a clean, light AI SaaS / product page: a centered heading and paragraph above a responsive 1 → 2 → 3 column grid of bordered cards, each a clickable tile with a 4:3 alt-driven image, a bold title, and a short caption, lifting with a shadow on hover. Each card routes through useNavigate. Use to surface real in-app screenshots or feature highlights for AI tools, SaaS apps, editors, dashboards, or any product worth showing visually.',
+    'Product-screenshot showcase grid for a clean, light AI SaaS / product page: a centered heading and paragraph above a responsive 1 → 2 → 3 column grid of bordered cards, each a clickable tile with a 4:3 alt-driven image, a bold title, and a short caption, lifting with a shadow on hover. Each card routes through section-kit route links. Use to surface real in-app screenshots or feature highlights for AI tools, SaaS apps, editors, dashboards, or any product worth showing visually.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),

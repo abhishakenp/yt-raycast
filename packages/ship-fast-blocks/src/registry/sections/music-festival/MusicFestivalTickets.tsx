@@ -1,8 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 /**
  * MusicFestivalTickets — a three-tier tickets / pricing block for a music /
  * arts festival landing page. A centered eyebrow + heading + intro, then a row
@@ -10,7 +8,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * unit, a checkmarked feature list and a primary CTA; the popular tier gets a
  * primary ring and a floating "Most Popular" badge. Below, a centered add-ons
  * row of small bordered cards. Every tier CTA and add-on routes through
- * useNavigate. Use to sell passes on music festivals, arts festivals, concert
+ * section-kit route links. Use to sell passes on music festivals, arts festivals, concert
  * series, or any multi-day ticketed event.
  */
 import { Container } from '#/section-kit/Container.tsx'
@@ -18,10 +16,12 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { TicketGrid, TicketCard } from '#/section-kit/TicketGrid.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const MusicFestivalTickets = defineCapsule({
   name: 'MusicFestivalTickets',
   description:
-    "Three-tier tickets / pricing block for a music / arts festival landing page: a centered eyebrow + heading + intro paragraph, then a row of three pass cards (GA, GA+, VIP) — each with a name, tagline, big price + unit, a checkmarked feature list and a primary CTA, with the popular tier highlighted by a primary ring and a floating 'Most Popular' badge — followed by a centered add-ons row of small bordered cards (camping, RV, glamping). Every tier CTA and add-on routes through useNavigate. Use to sell passes on music festivals, arts festivals, concert series, camping/desert events, or any multi-day ticketed event.",
+    "Three-tier tickets / pricing block for a music / arts festival landing page: a centered eyebrow + heading + intro paragraph, then a row of three pass cards (GA, GA+, VIP) — each with a name, tagline, big price + unit, a checkmarked feature list and a primary CTA, with the popular tier highlighted by a primary ring and a floating 'Most Popular' badge — followed by a centered add-ons row of small bordered cards (camping, RV, glamping). Every tier CTA and add-on routes through section-kit route links. Use to sell passes on music festivals, arts festivals, concert series, camping/desert events, or any multi-day ticketed event.",
   props: z.object({
     /** Eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -58,7 +58,6 @@ export const MusicFestivalTickets = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Tickets'
     const heading = props.heading ?? 'Get Your Pass'
     const description =
@@ -185,13 +184,12 @@ export const MusicFestivalTickets = defineCapsule({
                     </li>
                   ))}
                 </ul>
-                <button
-                  type="button"
-                  onClick={() => go(tier.cta)}
+                <NavbarRouteLink
                   className="w-full rounded-lg bg-primary py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  href={tier.cta}
                 >
                   {tier.cta}
-                </button>
+                </NavbarRouteLink>
               </TicketCard>
             ))}
           </TicketGrid>
@@ -208,10 +206,10 @@ export const MusicFestivalTickets = defineCapsule({
                   variant="default"
                   className="text-center transition-colors hover:border-primary/40 rounded-lg p-4"
                 >
-                  <button type="button" onClick={() => go(a.name)}>
+                  <NavbarRouteLink href={a.name}>
                     <p className="font-semibold">{a.name}</p>
                     <p className="text-sm text-card-foreground/60">{a.price}</p>
-                  </button>
+                  </NavbarRouteLink>
                 </Card>
               ))}
             </ResponsiveGrid>

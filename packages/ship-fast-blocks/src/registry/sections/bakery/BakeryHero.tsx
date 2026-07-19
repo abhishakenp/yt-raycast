@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroHeading,
@@ -19,6 +18,7 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * BakeryHero — split, two-column hero band for an artisan-bakery landing page,
@@ -27,14 +27,14 @@ import {
  * dark primary + outlined secondary), and an open-hours + address chip row with
  * clock/pin icons. Right column: a large rounded hero photo with a floating
  * "Certified Organic" badge card overlapping its corner. Warm, editorial, light
- * and craft-forward. CTAs route through useNavigate; the photo is alt-driven.
+ * and craft-forward. CTAs route through section-kit route links; the photo is alt-driven.
  * Use as the opening hero for bakeries, patisseries, cafes, or pastry shops.
  * Renders fully with no props via baked-in "Flour & Stone" defaults.
  */
 export const BakeryHero = defineCapsule({
   name: 'BakeryHero',
   description:
-    "Split two-column hero band for an artisan-bakery landing page on a soft muted surface: left column has an uppercase 'Est.' eyebrow, a large display headline, a supporting paragraph, dual CTAs (filled dark primary + outlined secondary), and an open-hours + address chip row with clock/pin icons; right column is a large rounded hero photo with a floating 'Certified Organic' badge card overlapping its corner. Warm, editorial, light and craft-forward; CTAs route through useNavigate and the photo is alt-driven. Use as the opening hero for bakeries, patisseries, sourdough/artisan-bread shops, cafes, or pastry kitchens.",
+    "Split two-column hero band for an artisan-bakery landing page on a soft muted surface: left column has an uppercase 'Est.' eyebrow, a large display headline, a supporting paragraph, dual CTAs (filled dark primary + outlined secondary), and an open-hours + address chip row with clock/pin icons; right column is a large rounded hero photo with a floating 'Certified Organic' badge card overlapping its corner. Warm, editorial, light and craft-forward; CTAs route through section-kit route links and the photo is alt-driven. Use as the opening hero for bakeries, patisseries, sourdough/artisan-bread shops, cafes, or pastry kitchens.",
   props: z.object({
     /** Uppercase eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -68,7 +68,6 @@ export const BakeryHero = defineCapsule({
   }),
   lakebed: commerceCartLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Est. 2018 — Portland, Oregon'
     const heading =
       props.heading ??
@@ -170,21 +169,21 @@ export const BakeryHero = defineCapsule({
                   asChild
                   className="rounded-lg bg-foreground px-6 py-3 font-medium text-background hover:bg-foreground/90"
                 >
-                  <button type="button" onClick={() => go(primaryTarget)}>
+                  <NavbarRouteLink href={primaryTarget}>
                     {primaryCta}
                     <span className="ml-2">
                       <ArrowRight />
                     </span>
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
                 <HeroCta
                   asChild
                   variant="outline"
                   className="rounded-lg px-6 py-3 font-medium hover:bg-card"
                 >
-                  <button type="button" onClick={() => go(secondaryTarget)}>
+                  <NavbarRouteLink href={secondaryTarget}>
                     {secondaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
                 <CommerceAddItemButton
                   lakebed={lakebed}
@@ -219,7 +218,6 @@ export const BakeryHero = defineCapsule({
                 alt={imageAlt}
                 w={800}
                 h={600}
-
                 className="h-[400px] w-full shadow-xl lg:h-[500px] rounded-xl"
               />
               <div className="absolute -bottom-6 -left-6 hidden rounded-xl bg-card p-4 shadow-lg sm:block">

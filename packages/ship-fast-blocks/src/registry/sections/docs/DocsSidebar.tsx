@@ -15,9 +15,9 @@ import {
   SearchFieldInput,
 } from '#/section-kit/SearchForm.tsx'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { docsLakebed, type DocsArticleRecord } from './docs-lakebed.ts'
 import { useDocsSearch, useSyncDocsCatalog } from './docs-interactions.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * DocsSidebar — persistent left navigation sidebar for a developer
@@ -27,7 +27,7 @@ import { useDocsSearch, useSyncDocsCatalog } from './docs-interactions.tsx'
  * inline, several grouped link sections (uppercase group title + a vertical list
  * of page links, the first link highlighted as active), and a documentation-version
  * <select> at the bottom. The search submit writes shared Lakebed search state and
- * renders matching docs articles inline; every link routes through useNavigate
+ * renders matching docs articles inline; every link routes through section-kit route links
  * (never a dead "#"). Use as the left rail of a sidebar-driven docs layout, API
  * reference, SDK guide, or knowledge base. Renders fully with no props via
  * baked-in StackForge section groups.
@@ -35,7 +35,7 @@ import { useDocsSearch, useSyncDocsCatalog } from './docs-interactions.tsx'
 export const DocsSidebar = defineCapsule({
   name: 'DocsSidebar',
   description:
-    'Persistent left navigation sidebar for a developer DOCUMENTATION / API-reference site: a sticky, scrollable, right-bordered column (hidden on mobile) with a search box + inline magnifier icon at the top that queries a shared Lakebed docs catalog and surfaces matching articles inline, several grouped link sections (uppercase group title + vertical list of page links, the first highlighted as active — e.g. Overview / Core Concepts / SDKs & Tools / Resources) and a documentation-version select at the bottom. The search submit writes shared Lakebed search state and renders matching docs articles inline; every link routes through useNavigate. Use as the left rail of a sidebar-driven docs layout, API reference, SDK guide, or knowledge base.',
+    'Persistent left navigation sidebar for a developer DOCUMENTATION / API-reference site: a sticky, scrollable, right-bordered column (hidden on mobile) with a search box + inline magnifier icon at the top that queries a shared Lakebed docs catalog and surfaces matching articles inline, several grouped link sections (uppercase group title + vertical list of page links, the first highlighted as active — e.g. Overview / Core Concepts / SDKs & Tools / Resources) and a documentation-version select at the bottom. The search submit writes shared Lakebed search state and renders matching docs articles inline; every link routes through section-kit route links. Use as the left rail of a sidebar-driven docs layout, API reference, SDK guide, or knowledge base.',
   props: z.object({
     /** Search input placeholder text. */
     searchPlaceholder: z.string().optional(),
@@ -67,7 +67,6 @@ export const DocsSidebar = defineCapsule({
   }),
   lakebed: docsLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const docsSearch = useDocsSearch(lakebed)
     const searchPlaceholder = props.searchPlaceholder ?? 'Search docs...'
     const groups = props.groups?.length
@@ -286,10 +285,7 @@ export const DocsSidebar = defineCapsule({
           </SearchForm>
 
           {showingResults ? (
-            <Card
-              className="mb-6 p-1.5 rounded-lg p-0"
-              aria-live="polite"
-            >
+            <Card className="mb-6 p-1.5 rounded-lg p-0" aria-live="polite">
               <p className="px-2 py-1.5 text-xs text-muted-foreground">
                 {matchingArticles.length} article
                 {matchingArticles.length === 1 ? '' : 's'} match{' '}
@@ -300,10 +296,9 @@ export const DocsSidebar = defineCapsule({
               <ul className="max-h-60 overflow-y-auto">
                 {matchingArticles.map((article) => (
                   <li key={article.slug}>
-                    <button
-                      type="button"
-                      onClick={() => go(article.title)}
+                    <NavbarRouteLink
                       className="flex w-full flex-col gap-0.5 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-muted"
+                      href={article.title}
                     >
                       <span className="truncate text-sm font-medium text-foreground">
                         {article.title}
@@ -311,7 +306,7 @@ export const DocsSidebar = defineCapsule({
                       <span className="truncate text-xs text-muted-foreground">
                         {article.category}
                       </span>
-                    </button>
+                    </NavbarRouteLink>
                   </li>
                 ))}
                 {!matchingArticles.length ? (
@@ -340,18 +335,17 @@ export const DocsSidebar = defineCapsule({
                     return (
                       <li key={item}>
                         <NavSidebarLink asChild active={active}>
-                          <button
-                            type="button"
-                            onClick={() => go(item)}
+                          <NavbarRouteLink
                             className={cn(
                               'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors',
                               active
                                 ? 'bg-muted font-medium text-foreground'
                                 : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
                             )}
+                            href={item}
                           >
                             {item}
-                          </button>
+                          </NavbarRouteLink>
                         </NavSidebarLink>
                       </li>
                     )

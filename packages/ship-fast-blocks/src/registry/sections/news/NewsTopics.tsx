@@ -2,12 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { TopicGrid, TopicCard } from '#/section-kit/TopicGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * NewsTopics — browse-by-topic / section nav grid for a news outlet. On a card
@@ -16,14 +16,14 @@ import { TopicGrid, TopicCard } from '#/section-kit/TopicGrid.tsx'
  * gradient scrim over the image and an overlaid section name, a one-line blurb
  * and a story count at the bottom — World, Politics, Business, Tech, Culture,
  * Science, Health, Sports and the like. The view-all link and every topic tile
- * route through useNavigate. Use as a section-discovery band on a newspaper,
+ * route through section-kit route links. Use as a section-discovery band on a newspaper,
  * magazine or publication homepage to let readers jump into top sections.
  * Renders fully with no props via baked-in defaults.
  */
 export const NewsTopics = defineCapsule({
   name: 'NewsTopics',
   description:
-    "Browse-by-topic / section nav grid for a news outlet on a card surface: a heading with a 'View all' link on the right, then a responsive grid of clickable topic tiles. Each tile is a square-ish photo card with a dark gradient scrim and an overlaid section name, a short blurb and a story count at the bottom (World, Politics, Business, Tech, Culture, Science, Health, Sports). The view-all link and every tile route through useNavigate. Use as a section-discovery band on a newspaper, magazine or publication homepage so readers can jump straight into top sections.",
+    "Browse-by-topic / section nav grid for a news outlet on a card surface: a heading with a 'View all' link on the right, then a responsive grid of clickable topic tiles. Each tile is a square-ish photo card with a dark gradient scrim and an overlaid section name, a short blurb and a story count at the bottom (World, Politics, Business, Tech, Culture, Science, Health, Sports). The view-all link and every tile route through section-kit route links. Use as a section-discovery band on a newspaper, magazine or publication homepage so readers can jump straight into top sections.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -43,7 +43,6 @@ export const NewsTopics = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Browse by Topic'
     const viewAll = props.viewAll ?? 'View all sections'
     const items = props.items?.length
@@ -131,23 +130,21 @@ export const NewsTopics = defineCapsule({
               className="gap-0"
               titleClassName="text-xl font-bold text-foreground lg:text-2xl"
             />
-            <button
-              type="button"
-              onClick={() => go(viewAll)}
+            <NavbarRouteLink
               className="flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              href={viewAll}
             >
               {viewAll}
               <ArrowRight className="size-4" />
-            </button>
+            </NavbarRouteLink>
           </div>
 
           <TopicGrid cols="2-3-4" className="gap-4">
             {items.map((topic) => (
               <TopicCard asChild key={topic.name}>
-                <button
-                  type="button"
-                  onClick={() => go(topic.name)}
+                <NavbarRouteLink
                   className="group relative aspect-[4/3] overflow-hidden rounded-xl bg-muted text-left"
+                  href={topic.name}
                 >
                   <Image
                     alt={topic.imageAlt}
@@ -173,7 +170,7 @@ export const NewsTopics = defineCapsule({
                       {topic.count}
                     </p>
                   </div>
-                </button>
+                </NavbarRouteLink>
               </TopicCard>
             ))}
           </TopicGrid>

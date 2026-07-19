@@ -1,12 +1,11 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { AboutSection } from '#/section-kit/AboutSection.tsx'
 import { PullQuoteText } from '#/section-kit/PullQuote.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * BlogPostAbout — long-form editorial article body for a blog post detail page.
@@ -16,13 +15,13 @@ import { PullQuoteText } from '#/section-kit/PullQuote.tsx'
  * bullet callouts), an accented serif pull-quote after the first section,
  * closing paragraphs, tag/topic chips, and an author bio card. Section headings
  * use the shared SectionHeading (align="left"). All links route through
- * useNavigate. Use as the main content area for blogs, journals, magazines,
+ * section-kit route links. Use as the main content area for blogs, journals, magazines,
  * essays, or editorial reading pages.
  */
 export const BlogPostAbout = defineCapsule({
   name: 'BlogPostAbout',
   description:
-    'Long-form editorial article body with headings + pullquote for a blog post detail page: a centered long-form reading column with lead paragraphs (large, light), intro paragraphs, body sections (each with a SectionHeading and ordered blocks: paragraphs, h3 sub-headings, inline figures with captions, and highlighted bullet callouts), an accented serif pull-quote after the first section, closing paragraphs, tag/topic chips, and an author bio card. All interactive elements route through useNavigate. Use as the main content area for blogs, journals, magazines, essays, or editorial reading pages.',
+    'Long-form editorial article body with headings + pullquote for a blog post detail page: a centered long-form reading column with lead paragraphs (large, light), intro paragraphs, body sections (each with a SectionHeading and ordered blocks: paragraphs, h3 sub-headings, inline figures with captions, and highlighted bullet callouts), an accented serif pull-quote after the first section, closing paragraphs, tag/topic chips, and an author bio card. All interactive elements route through section-kit route links. Use as the main content area for blogs, journals, magazines, essays, or editorial reading pages.',
   props: z.object({
     /** Lead paragraphs rendered above the first heading (large, light text). */
     lead: z.array(z.string()).optional(),
@@ -73,8 +72,6 @@ export const BlogPostAbout = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
-
     const lead = props.lead?.length
       ? props.lead
       : [
@@ -338,14 +335,13 @@ export const BlogPostAbout = defineCapsule({
                   Tagged:
                 </span>
                 {tags.map((tag) => (
-                  <button
+                  <NavbarRouteLink
                     key={tag}
-                    type="button"
-                    onClick={() => go(tag)}
                     className="rounded-full bg-muted px-3 py-1 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                    href={tag}
                   >
                     {tag}
-                  </button>
+                  </NavbarRouteLink>
                 ))}
               </div>
             </div>
@@ -368,14 +364,13 @@ export const BlogPostAbout = defineCapsule({
                   </p>
                   <div className="flex gap-4">
                     {authorLinks.map((link) => (
-                      <button
+                      <NavbarRouteLink
                         key={link}
-                        type="button"
-                        onClick={() => go(link)}
                         className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                        href={link}
                       >
                         {link}
-                      </button>
+                      </NavbarRouteLink>
                     ))}
                   </div>
                 </div>

@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   HeroSection,
@@ -17,6 +16,7 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * BarNightclubHero — full-bleed atmospheric hero band for a cocktail-bar /
@@ -25,7 +25,7 @@ import {
  * letter-spaced uppercase established-year eyebrow, a huge two-line light-weight
  * editorial headline, a supporting paragraph, dual CTAs (filled reserve +
  * outlined view-menu), and a bouncing scroll cue pinned to the bottom. Moody,
- * upscale, after-dark. CTAs route through useNavigate; the backdrop photo uses
+ * upscale, after-dark. CTAs route through section-kit route links; the backdrop photo uses
  * the alt-driven Image component. Use as the opening hero for cocktail bars,
  * nightclubs, lounges, speakeasies, or live-music venues. Renders fully with no
  * props via baked-in "NOIR" defaults.
@@ -33,7 +33,7 @@ import {
 export const BarNightclubHero = defineCapsule({
   name: 'BarNightclubHero',
   description:
-    'Full-bleed atmospheric hero band for a cocktail-bar / nightclub landing page: near-full-viewport centered section over a dimmed object-cover ambient bar photo with a bottom-up token gradient scrim, a wide letter-spaced uppercase established-year eyebrow, a huge two-line light-weight editorial headline, a supporting paragraph, dual CTAs (filled reserve + outlined view-menu), and a bouncing scroll cue pinned to the bottom. Moody, upscale and after-dark; CTAs route through useNavigate and the backdrop photo uses the alt-driven Image component. Use as the opening hero for cocktail bars, nightclubs, lounges, speakeasies, or live-music venues.',
+    'Full-bleed atmospheric hero band for a cocktail-bar / nightclub landing page: near-full-viewport centered section over a dimmed object-cover ambient bar photo with a bottom-up token gradient scrim, a wide letter-spaced uppercase established-year eyebrow, a huge two-line light-weight editorial headline, a supporting paragraph, dual CTAs (filled reserve + outlined view-menu), and a bouncing scroll cue pinned to the bottom. Moody, upscale and after-dark; CTAs route through section-kit route links and the backdrop photo uses the alt-driven Image component. Use as the opening hero for cocktail bars, nightclubs, lounges, speakeasies, or live-music venues.',
   props: z.object({
     /** Wide letter-spaced uppercase eyebrow (e.g. established year + city). */
     eyebrow: z.string().optional(),
@@ -59,7 +59,6 @@ export const BarNightclubHero = defineCapsule({
   }),
   lakebed: commerceCartLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Est. 2019 — Downtown Chicago'
     const headingTop = props.headingTop ?? 'Where Night'
     const headingBottom = props.headingBottom ?? 'Comes Alive'
@@ -112,20 +111,18 @@ export const BarNightclubHero = defineCapsule({
               {subheading}
             </HeroSubheading>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => go(primaryCta)}
+              <NavbarRouteLink
                 className="w-full bg-foreground px-8 py-4 text-sm tracking-wide text-background transition-colors hover:bg-foreground/90 sm:w-auto"
+                href={primaryCta}
               >
                 {primaryCta}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(secondaryCta)}
+              </NavbarRouteLink>
+              <NavbarRouteLink
                 className="w-full border border-foreground px-8 py-4 text-sm tracking-wide text-foreground transition-colors hover:bg-foreground hover:text-background sm:w-auto"
+                href={secondaryCta}
               >
                 {secondaryCta}
-              </button>
+              </NavbarRouteLink>
               <CommerceAddItemButton
                 lakebed={lakebed}
                 item={{

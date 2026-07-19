@@ -61,10 +61,6 @@ const timestamp = '2026-06-26T00:00:00.000Z'
 const navigate = vi.fn()
 const lakebedRef: { current: SaasLakebed | null } = { current: null }
 
-vi.mock('#/lib/use-navigate.tsx', () => ({
-  useNavigate: () => navigate,
-}))
-
 vi.mock('@ship-fast/lakebed/react', () => {
   return {
     createLakebedClient: vi.fn(() => {

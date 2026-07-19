@@ -22,14 +22,14 @@ import {
  * tagline, and a row of square social icon buttons) beside several link columns
  * with titled headings, closing with a divided bottom row pairing a copyright
  * note with inline legal links. Brand, social buttons and every link route
- * through useNavigate. Use as the global footer for job boards, hiring
+ * through section-kit route links. Use as the global footer for job boards, hiring
  * marketplaces, recruiting platforms or talent networks. Renders fully with no
  * props.
  */
 export const JobBoardFooter = defineCapsule({
   name: 'JobBoardFooter',
   description:
-    'Fat, multi-column site footer for a job-board / careers site: a muted top-bordered band with a wide brand column (briefcase mark + name, tagline, and a row of square social icon buttons) beside several titled link columns, closing with a divided bottom row pairing a copyright note with inline legal links. Brand, social buttons and links route through useNavigate. Use as the global footer for job boards, hiring marketplaces, recruiting platforms or talent networks.',
+    'Fat, multi-column site footer for a job-board / careers site: a muted top-bordered band with a wide brand column (briefcase mark + name, tagline, and a row of square social icon buttons) beside several titled link columns, closing with a divided bottom row pairing a copyright note with inline legal links. Brand, social buttons and links route through section-kit route links. Use as the global footer for job boards, hiring marketplaces, recruiting platforms or talent networks.',
   props: z.object({
     /** Brand / product name shown beside the briefcase mark. */
     brand: z.string().optional(),

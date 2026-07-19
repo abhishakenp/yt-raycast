@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   HeroSection,
@@ -15,6 +14,7 @@ import {
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * KidsEducationHero — bright, playful split hero for a kids / family learning
@@ -24,7 +24,7 @@ import { Container } from '#/section-kit/Container.tsx'
  * inline trust-points row with check icons. Right side: a large rounded hero
  * photo with a soft overlay plus two floating cards — a star-rating card anchored
  * bottom-left and an avatar-stack "+2k today" card anchored top-right. Decorative
- * blurred glow orbs sit behind everything. Every CTA routes through useNavigate.
+ * blurred glow orbs sit behind everything. Every CTA routes through section-kit route links.
  * Use as the opening hero for kids-education startups, children's e-learning,
  * family learning apps, and playful course platforms. Renders fully with no
  * props via baked-in "WonderLearn" defaults.
@@ -32,7 +32,7 @@ import { Container } from '#/section-kit/Container.tsx'
 export const KidsEducationHero = defineCapsule({
   name: 'KidsEducationHero',
   description:
-    "Bright, playful split hero for a kids / family learning platform: left side with a live-learners pill (pulsing dot), bold headline with a gradient 'adventure' highlight, supporting paragraph, dual rounded CTAs (filled primary with arrow + outlined play-icon secondary), and an inline trust-points row with check icons; right side has a large rounded hero photo with soft overlay plus two floating cards (a star-rating card bottom-left and an avatar-stack '+2k today' card top-right). Decorative blurred glow orbs sit behind. CTAs route through useNavigate. Use as the opening hero for kids-education startups, children's e-learning, family learning apps, and playful course platforms.",
+    "Bright, playful split hero for a kids / family learning platform: left side with a live-learners pill (pulsing dot), bold headline with a gradient 'adventure' highlight, supporting paragraph, dual rounded CTAs (filled primary with arrow + outlined play-icon secondary), and an inline trust-points row with check icons; right side has a large rounded hero photo with soft overlay plus two floating cards (a star-rating card bottom-left and an avatar-stack '+2k today' card top-right). Decorative blurred glow orbs sit behind. CTAs route through section-kit route links. Use as the opening hero for kids-education startups, children's e-learning, family learning apps, and playful course platforms.",
   props: z.object({
     /** Live-learners status pill text. */
     badge: z.string().optional(),
@@ -59,7 +59,6 @@ export const KidsEducationHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const badge = props.badge ?? 'Join 50,000+ happy learners'
     const headingTop = props.headingTop ?? 'Learning is an'
     const highlight = props.highlight ?? 'adventure'
@@ -175,20 +174,20 @@ export const KidsEducationHero = defineCapsule({
                   asChild
                   className="gap-2 rounded-full bg-foreground px-8 py-4 font-semibold text-background shadow-lg transition-all hover:bg-foreground/90"
                 >
-                  <button type="button" onClick={() => go(primaryCta)}>
+                  <NavbarRouteLink href={primaryCta}>
                     {primaryCta}
                     <ArrowRight />
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
                 <HeroCta
                   asChild
                   variant="outline"
                   className="gap-2 rounded-full border-2 border-border bg-card px-8 py-4 font-semibold transition-all hover:border-foreground/20 hover:bg-muted"
                 >
-                  <button type="button" onClick={() => go(secondaryCta)}>
+                  <NavbarRouteLink href={secondaryCta}>
                     <PlayIcon />
                     {secondaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
               <HeroSocialProof className="mt-8 justify-center gap-6 lg:justify-start">

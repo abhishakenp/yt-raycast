@@ -1,8 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 /**
  * BootcampPricing — 3-tier pricing / financing comparison for a coding bootcamp /
  * career-school landing page. A centered eyebrow, heading and description above
@@ -10,7 +8,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * feature list with check-icon bullets, and a CTA button. One plan can be
  * highlighted with a primary border and a floating badge. A footnote row with a
  * clickable CTA link sits below the grid. Every interaction routes through
- * useNavigate. Use as the pricing table for bootcamps, academies, or vocational
+ * section-kit route links. Use as the pricing table for bootcamps, academies, or vocational
  * programs offering multiple payment options.
  */
 import { Container } from '#/section-kit/Container.tsx'
@@ -28,10 +26,12 @@ import {
   PricingTierFeature,
   PricingTierCta,
 } from '#/section-kit/PricingGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const BootcampPricing = defineCapsule({
   name: 'BootcampPricing',
   description:
-    '3-tier pricing / financing comparison for a coding bootcamp / career-school landing page: centered eyebrow, heading and description above a responsive 3-column grid of plan cards. Each card shows name, blurb, price, feature list with check-icon bullets, and a CTA button. One plan can be highlighted with a primary border and floating badge. A footnote row with a clickable CTA link sits below. All routes through useNavigate. Use as the pricing table for bootcamps, academies, or vocational programs offering multiple payment options.',
+    '3-tier pricing / financing comparison for a coding bootcamp / career-school landing page: centered eyebrow, heading and description above a responsive 3-column grid of plan cards. Each card shows name, blurb, price, feature list with check-icon bullets, and a CTA button. One plan can be highlighted with a primary border and floating badge. A footnote row with a clickable CTA link sits below. All routes through section-kit route links. Use as the pricing table for bootcamps, academies, or vocational programs offering multiple payment options.',
   props: z.object({
     /** Section eyebrow label. */
     eyebrow: z.string().optional(),
@@ -61,7 +61,6 @@ export const BootcampPricing = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const pricingEyebrow = props.eyebrow ?? 'Investment'
     const pricingHeading = props.heading ?? 'Flexible payment options'
     const pricingDesc =
@@ -222,13 +221,12 @@ export const BootcampPricing = defineCapsule({
           </PricingGrid>
           <p className="mt-8 text-center text-sm text-muted-foreground">
             {pricingFootnote}{' '}
-            <button
-              type="button"
-              onClick={() => go(pricingFootnoteCta)}
+            <NavbarRouteLink
               className="text-primary hover:underline"
+              href={pricingFootnoteCta}
             >
               {pricingFootnoteCta}
-            </button>
+            </NavbarRouteLink>
           </p>
         </Container>
       </section>

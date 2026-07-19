@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroContent,
@@ -13,20 +12,21 @@ import {
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * CommunityForumHero — centered hero band for a community-platform / discussion-forum
  * landing page. A centered section with a live-status pill, a large tracking-tight
  * headline split across two lines, a supporting paragraph, dual CTAs (primary filled +
  * secondary outlined), and a trust-checkmark chip strip beneath. Clean, calm, light,
- * slate-toned SaaS aesthetic. CTAs route through useNavigate. Use as the opening hero
+ * slate-toned SaaS aesthetic. CTAs route through section-kit route links. Use as the opening hero
  * for community platforms, online forums, discussion boards, or membership SaaS
  * products.
  */
 export const CommunityForumHero = defineCapsule({
   name: 'CommunityForumHero',
   description:
-    'Centered hero band for a community-platform / discussion-forum landing page: a live-status pill dot, a large tracking-tight headline split across two lines, a supporting paragraph, dual CTAs (primary filled + secondary outlined), and a trust-checkmark chip strip beneath. Clean, calm, light slate-toned SaaS aesthetic; CTAs route through useNavigate. Use as the opening hero for community platforms, online forums, discussion boards, or membership SaaS products.',
+    'Centered hero band for a community-platform / discussion-forum landing page: a live-status pill dot, a large tracking-tight headline split across two lines, a supporting paragraph, dual CTAs (primary filled + secondary outlined), and a trust-checkmark chip strip beneath. Clean, calm, light slate-toned SaaS aesthetic; CTAs route through section-kit route links. Use as the opening hero for community platforms, online forums, discussion boards, or membership SaaS products.',
   props: z.object({
     /** Status pill text. */
     badge: z.string().optional(),
@@ -45,7 +45,6 @@ export const CommunityForumHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const badge = props.badge ?? 'Over 12,000 communities already connected'
     const headingTop = props.headingTop ?? 'Where conversations'
     const headingBottom = props.headingBottom ?? 'actually matter'
@@ -96,20 +95,18 @@ export const CommunityForumHero = defineCapsule({
             </HeroHeading>
             <HeroSubheading variant="large">{subheading}</HeroSubheading>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => go(primaryCta)}
+              <NavbarRouteLink
                 className="inline-flex w-full items-center justify-center rounded-lg bg-primary px-8 py-4 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:w-auto"
+                href={primaryCta}
               >
                 {primaryCta}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(secondaryCta)}
+              </NavbarRouteLink>
+              <NavbarRouteLink
                 className="inline-flex w-full items-center justify-center rounded-lg border border-input bg-background px-8 py-4 text-base font-medium text-foreground/80 transition-colors hover:bg-muted sm:w-auto"
+                href={secondaryCta}
               >
                 {secondaryCta}
-              </button>
+              </NavbarRouteLink>
             </div>
             <HeroSocialProof className="mt-12 justify-center gap-x-8 gap-y-4">
               {trust.map((t) => (

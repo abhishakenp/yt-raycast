@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   PersonCard,
@@ -14,6 +13,7 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * NewsAuthors — meet our columnists / contributors grid for a news outlet. On a
@@ -21,7 +21,7 @@ import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
  * journalist cards. Each card carries an avatar (via Image), the writer's name,
  * their beat / role, a short bio, an optional social handle and a "latest column"
  * link. The whole card, the latest-column link and the social handle route
- * through useNavigate. Use as a masthead / contributors band on a newspaper,
+ * through section-kit route links. Use as a masthead / contributors band on a newspaper,
  * magazine or publication homepage or about page so readers can get to know the
  * bylines behind the reporting. Renders fully with no props via baked-in
  * defaults.
@@ -29,7 +29,7 @@ import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const NewsAuthors = defineCapsule({
   name: 'NewsAuthors',
   description:
-    "Meet our columnists / contributors grid for a news outlet on a card surface: a heading with an optional intro, then a responsive grid of journalist cards. Each card has an avatar (via Image), the writer's name, their beat / role, a short bio, an optional social handle and a 'latest column' link. The card, the latest-column link and the social handle route through useNavigate. Use as a masthead / contributors band on a newspaper, magazine or publication homepage or about page so readers can get to know the bylines behind the reporting.",
+    "Meet our columnists / contributors grid for a news outlet on a card surface: a heading with an optional intro, then a responsive grid of journalist cards. Each card has an avatar (via Image), the writer's name, their beat / role, a short bio, an optional social handle and a 'latest column' link. The card, the latest-column link and the social handle route through section-kit route links. Use as a masthead / contributors band on a newspaper, magazine or publication homepage or about page so readers can get to know the bylines behind the reporting.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -53,7 +53,6 @@ export const NewsAuthors = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Meet Our Columnists'
     const intro =
       props.intro ??
@@ -170,13 +169,11 @@ export const NewsAuthors = defineCapsule({
               <PersonCard
                 key={author.name}
                 variant="outlined"
-
                 className="p-6 shadow-sm"
               >
-                <button
-                  type="button"
-                  onClick={() => go(author.name)}
+                <NavbarRouteLink
                   className="group flex items-start gap-4 text-left"
+                  href={author.name}
                 >
                   <Image
                     alt={author.avatarAlt}
@@ -191,7 +188,7 @@ export const NewsAuthors = defineCapsule({
                     </PersonCardName>
                     <PersonCardRole>{author.role}</PersonCardRole>
                   </div>
-                </button>
+                </NavbarRouteLink>
 
                 <PersonCardBio className="mt-4 leading-relaxed">
                   {author.bio}
@@ -199,25 +196,23 @@ export const NewsAuthors = defineCapsule({
 
                 <div className="mt-4 flex items-center justify-between gap-2 border-t border-border pt-4">
                   {author.column ? (
-                    <button
-                      type="button"
-                      onClick={() => go(author.column ?? author.name)}
+                    <NavbarRouteLink
                       className="inline-flex items-center gap-1 text-sm font-medium text-foreground transition-colors hover:text-muted-foreground"
+                      href={author.column ?? author.name}
                     >
                       {columnLabel}
                       <ArrowRight className="size-4" />
-                    </button>
+                    </NavbarRouteLink>
                   ) : (
                     <span />
                   )}
                   {author.handle ? (
-                    <button
-                      type="button"
-                      onClick={() => go(author.handle ?? author.name)}
+                    <NavbarRouteLink
                       className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                      href={author.handle ?? author.name}
                     >
                       {author.handle}
-                    </button>
+                    </NavbarRouteLink>
                   ) : null}
                 </div>
               </PersonCard>

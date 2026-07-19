@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
@@ -17,6 +16,7 @@ import {
   ArticleContent,
   ArticleMeta,
 } from '#/section-kit/ArticleGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * NewsStoryGrid — latest stories grid for a news / editorial outlet. On a subtle
@@ -25,14 +25,14 @@ import {
  * cards (sm:2-up, lg:3-up) — each a bordered card with a 4:3 photo on top, a
  * category label (rotating accent tone) + timestamp, headline, excerpt and an
  * author/read-time byline — closing with a centered "Load More" button. Every
- * card, filter and the load-more button route through useNavigate. Use as the
+ * card, filter and the load-more button route through section-kit route links. Use as the
  * latest-articles grid of a newspaper, magazine or publication homepage. Renders
  * fully with no props via baked-in defaults.
  */
 export const NewsStoryGrid = defineCapsule({
   name: 'NewsStoryGrid',
   description:
-    "Latest stories grid for a news outlet on a subtle muted band: a 'Latest Stories' heading with a row of filter chips (All / News / Opinion / Analysis) on the right, then a responsive grid of recent article cards (sm:grid-cols-2 lg:grid-cols-3) — each a bordered card with a 4:3 photo on top, a rotating-accent category label + timestamp, headline, excerpt and author/read-time byline — closing with a centered 'Load More' button. Cards, filters and the load-more button route through useNavigate. Use as the latest-articles grid of a newspaper, magazine or publication homepage.",
+    "Latest stories grid for a news outlet on a subtle muted band: a 'Latest Stories' heading with a row of filter chips (All / News / Opinion / Analysis) on the right, then a responsive grid of recent article cards (sm:grid-cols-2 lg:grid-cols-3) — each a bordered card with a 4:3 photo on top, a rotating-accent category label + timestamp, headline, excerpt and author/read-time byline — closing with a centered 'Load More' button. Cards, filters and the load-more button route through section-kit route links. Use as the latest-articles grid of a newspaper, magazine or publication homepage.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -57,7 +57,6 @@ export const NewsStoryGrid = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Latest Stories'
     const filters = props.filters?.length
       ? props.filters
@@ -173,19 +172,18 @@ export const NewsStoryGrid = defineCapsule({
             />
             <div className="hidden items-center gap-2 sm:flex">
               {filters.map((f, i) => (
-                <button
+                <NavbarRouteLink
                   key={f}
-                  type="button"
-                  onClick={() => go(f)}
                   className={cn(
                     'rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors',
                     i === 0
                       ? 'border-border bg-card text-foreground'
                       : 'border-transparent text-muted-foreground hover:border-border hover:bg-card hover:text-foreground',
                   )}
+                  href={f}
                 >
                   {f}
-                </button>
+                </NavbarRouteLink>
               ))}
             </div>
           </div>
@@ -194,10 +192,9 @@ export const NewsStoryGrid = defineCapsule({
             {stories.map((story) => (
               <ArticleCard key={story.title} asChild variant="elevated">
                 <article>
-                  <button
-                    type="button"
-                    onClick={() => go(story.title)}
+                  <NavbarRouteLink
                     className="flex h-full w-full flex-col text-left"
+                    href={story.title}
                   >
                     <ArticleMedia aspect="4-3" className="w-full flex-shrink-0">
                       <Image
@@ -241,7 +238,7 @@ export const NewsStoryGrid = defineCapsule({
                         <span>{story.readTime}</span>
                       </div>
                     </ArticleContent>
-                  </button>
+                  </NavbarRouteLink>
                 </article>
               </ArticleCard>
             ))}
@@ -253,9 +250,7 @@ export const NewsStoryGrid = defineCapsule({
               variant="default"
               className="cursor-pointer px-6 py-3 font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground rounded-lg p-0"
             >
-              <button type="button" onClick={() => go(loadMore)}>
-                {loadMore}
-              </button>
+              <NavbarRouteLink href={loadMore}>{loadMore}</NavbarRouteLink>
             </Card>
           </div>
         </Container>

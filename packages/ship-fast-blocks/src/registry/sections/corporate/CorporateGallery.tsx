@@ -6,7 +6,7 @@ import { cn } from '#/lib/utils.ts'
  * CorporateGallery — global office / presence gallery for an enterprise /
  * corporate B2B site. A centered section heading above a responsive 2/3-column
  * grid of image cards with gradient-caption overlays; each card has a hover
- * scale effect and is clickable via useNavigate. Use to showcase global
+ * scale effect and is clickable via section-kit route links. Use to showcase global
  * presence, workspace culture, or location hubs for large organizations.
  */
 import { Container } from '#/section-kit/Container.tsx'
@@ -21,7 +21,7 @@ import {
 export const CorporateGallery = defineCapsule({
   name: 'CorporateGallery',
   description:
-    'Global office / presence gallery for an enterprise / corporate B2B site: centered heading above a responsive 2/3-column grid of image cards with gradient-caption overlays, hover scale effect, and clickable buttons via useNavigate. Use to showcase global presence, workspace culture, or location hubs for large organizations.',
+    'Global office / presence gallery for an enterprise / corporate B2B site: centered heading above a responsive 2/3-column grid of image cards with gradient-caption overlays, hover scale effect, and clickable buttons via section-kit route links. Use to showcase global presence, workspace culture, or location hubs for large organizations.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),

@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -11,6 +10,7 @@ import {
   ProcessGrid,
   ProcessStep,
 } from '#/section-kit/ProcessTimeline.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * AccountingFirmProcess — "how we work" steps band for a CPA / accounting-firm
@@ -18,14 +18,14 @@ import {
  * (filled circular step badges with connecting rules between them on desktop),
  * followed by a bordered inline booking-CTA panel (heading + blurb + filled
  * button). Calm, trustworthy professional-services aesthetic. The CTA routes
- * through useNavigate. Use to explain engagement flow on accounting firms, CPA
+ * through section-kit route links. Use to explain engagement flow on accounting firms, CPA
  * practices, tax/bookkeeping providers, audit firms, or advisory practices.
  * Renders fully with no props via baked-in defaults.
  */
 export const AccountingFirmProcess = defineCapsule({
   name: 'AccountingFirmProcess',
   description:
-    'How-we-work process band for a CPA / accounting-firm site: a centered heading + lede above a responsive 3-up numbered process grid with filled circular step badges and connecting rules on desktop, followed by a bordered inline booking-CTA panel (heading + blurb + filled button). Calm professional-services look; the CTA routes through useNavigate. Use to explain the engagement flow on accounting firms, CPA practices, tax/bookkeeping providers, audit firms, or advisory practices.',
+    'How-we-work process band for a CPA / accounting-firm site: a centered heading + lede above a responsive 3-up numbered process grid with filled circular step badges and connecting rules on desktop, followed by a bordered inline booking-CTA panel (heading + blurb + filled button). Calm professional-services look; the CTA routes through section-kit route links. Use to explain the engagement flow on accounting firms, CPA practices, tax/bookkeeping providers, audit firms, or advisory practices.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -44,7 +44,6 @@ export const AccountingFirmProcess = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'How we work with you'
     const description =
       props.description ??
@@ -117,13 +116,12 @@ export const AccountingFirmProcess = defineCapsule({
                 </h4>
                 <p className="text-muted-foreground">{ctaDescription}</p>
               </div>
-              <button
-                type="button"
-                onClick={() => go(ctaButton)}
+              <NavbarRouteLink
                 className="inline-flex items-center justify-center whitespace-nowrap rounded-md bg-primary px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                href={ctaButton}
               >
                 {ctaButton}
-              </button>
+              </NavbarRouteLink>
             </div>
           </Card>
         </Container>

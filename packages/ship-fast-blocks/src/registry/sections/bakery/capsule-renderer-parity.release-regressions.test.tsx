@@ -95,11 +95,6 @@ const runtime = vi.hoisted(() => {
   return { addItem, fallbackMutation, lakebed, navigate, syncCatalog }
 })
 
-vi.mock('#/lib/use-navigate.tsx', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('#/lib/use-navigate.tsx')>()
-  return { ...actual, useNavigate: () => runtime.navigate }
-})
-
 vi.mock('@ship-fast/lakebed/react', async (importOriginal) => {
   const actual =
     await importOriginal<typeof import('@ship-fast/lakebed/react')>()
@@ -204,17 +199,16 @@ describe('Bakery capsule and Renderer interaction parity', () => {
     '%s exposes CTA and navigation labels with exact action targets',
     async (path) => {
       const view = await renderBakery(path)
-      const menuLink = await view.findByRole('button', { name: 'Menu' })
-      const orderCta = await view.findByRole('button', {
+      const menuLink = await view.findByRole('link', { name: 'Menu' })
+      const orderCta = await view.findByRole('link', {
         name: 'Order Online',
       })
 
       expect(menuLink.textContent).toBe('Menu')
       expect(orderCta.textContent).toBe('Order Online')
-      fireEvent.click(menuLink)
-      fireEvent.click(orderCta)
-
-      expect(runtime.navigate.mock.calls).toEqual([['Menu'], ['Order']])
+      expect(menuLink.getAttribute('href')).toBe('#menu')
+      expect(orderCta.getAttribute('href')).toBe('#order')
+      expect(runtime.navigate).not.toHaveBeenCalled()
     },
   )
 

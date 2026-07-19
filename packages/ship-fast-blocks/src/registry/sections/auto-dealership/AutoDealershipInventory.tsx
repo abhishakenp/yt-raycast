@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   AutoLeadActionButton,
@@ -15,6 +14,7 @@ import { autoDealershipLakebed } from './auto-dealership-lakebed.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { InventoryGrid, InventoryCard } from '#/section-kit/InventoryGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * AutoDealershipInventory — featured-inventory card grid for an auto dealership
@@ -25,14 +25,14 @@ import { InventoryGrid, InventoryCard } from '#/section-kit/InventoryGrid.tsx'
  * feature chips (Leather, Navigation, Autopilot…), and a price + "View Details"
  * footer. A centered "View All" button sits below the grid. Cards seed shared
  * search state and their CTAs write Lakebed vehicle-interest leads; View-All
- * routes through useNavigate. Use as the primary listings /
+ * routes through section-kit route links. Use as the primary listings /
  * browse-inventory section for dealerships, used-car lots, or EV/hybrid lots.
  * Renders fully with no props via baked-in defaults.
  */
 export const AutoDealershipInventory = defineCapsule({
   name: 'AutoDealershipInventory',
   description:
-    'Featured-inventory card grid for an auto dealership / used-car page backed by shared Lakebed vehicle/search state: a centered heading and lead over a responsive 3-up grid of vehicle cards (zoom-on-hover photo with a Certified/Electric/Hybrid corner badge, year-make-model title, mileage / transmission / drivetrain spec line, feature chips like Leather/Navigation/Autopilot, and a price + View Details footer), plus a centered View-All button below. Cards seed vehicle search and their CTAs write vehicle-interest leads; the View-All button routes through useNavigate and photos use the alt-driven Image component. Use as the primary listings / browse-inventory section for dealerships, used-car lots, or EV/hybrid lots.',
+    'Featured-inventory card grid for an auto dealership / used-car page backed by shared Lakebed vehicle/search state: a centered heading and lead over a responsive 3-up grid of vehicle cards (zoom-on-hover photo with a Certified/Electric/Hybrid corner badge, year-make-model title, mileage / transmission / drivetrain spec line, feature chips like Leather/Navigation/Autopilot, and a price + View Details footer), plus a centered View-All button below. Cards seed vehicle search and their CTAs write vehicle-interest leads; the View-All button routes through section-kit route links and photos use the alt-driven Image component. Use as the primary listings / browse-inventory section for dealerships, used-car lots, or EV/hybrid lots.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -58,7 +58,6 @@ export const AutoDealershipInventory = defineCapsule({
   }),
   lakebed: autoDealershipLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Featured Inventory'
     const description =
       props.description ??
@@ -213,13 +212,12 @@ export const AutoDealershipInventory = defineCapsule({
           </InventoryGrid>
 
           <div className="mt-12 text-center">
-            <button
-              type="button"
-              onClick={() => go(viewAll)}
+            <NavbarRouteLink
               className="inline-flex items-center justify-center rounded-md border border-border bg-card px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-accent"
+              href={viewAll}
             >
               {viewAll}
-            </button>
+            </NavbarRouteLink>
           </div>
         </Container>
       </section>

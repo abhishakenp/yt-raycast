@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroBackgroundImage,
@@ -13,6 +11,7 @@ import {
   HeroCta,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * SpaWellnessHero — tranquil full-bleed hero for a day-spa / wellness landing
@@ -21,13 +20,13 @@ import { Container } from '#/section-kit/Container.tsx'
  * content stacks an uppercase eyebrow, a large serif headline, a calming
  * supporting paragraph, dual CTAs (filled "Book a Treatment" + outlined "View
  * Menu"), and a divider-separated hours / location strip beneath. CTAs route
- * through useNavigate. Use as the opening hero for spas, wellness retreats,
+ * through section-kit route links. Use as the opening hero for spas, wellness retreats,
  * massage and facial studios, and bathhouses. Renders fully with no props.
  */
 export const SpaWellnessHero = defineCapsule({
   name: 'SpaWellnessHero',
   description:
-    "Tranquil full-bleed hero for a day-spa / wellness landing page: a serene treatment-room or natural-element photo fills the band under a soft token-based overlay so light serif text stays readable. Centered content has an uppercase eyebrow, a large serif headline, a calming supporting paragraph, dual CTAs (filled 'Book a Treatment' + outlined 'View Menu'), and a divider-separated hours / location strip. CTAs route through useNavigate. Use as the opening hero for spas, wellness retreats, massage and facial studios, and bathhouses.",
+    "Tranquil full-bleed hero for a day-spa / wellness landing page: a serene treatment-room or natural-element photo fills the band under a soft token-based overlay so light serif text stays readable. Centered content has an uppercase eyebrow, a large serif headline, a calming supporting paragraph, dual CTAs (filled 'Book a Treatment' + outlined 'View Menu'), and a divider-separated hours / location strip. CTAs route through section-kit route links. Use as the opening hero for spas, wellness retreats, massage and facial studios, and bathhouses.",
   props: z.object({
     /** Small uppercase eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -52,7 +51,6 @@ export const SpaWellnessHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Rest · Restore · Renew'
     const heading = props.heading ?? 'A calm escape for body and mind'
     const subheading =
@@ -92,18 +90,18 @@ export const SpaWellnessHero = defineCapsule({
                 variant="primary"
                 className="rounded-full px-8 py-4 font-medium"
               >
-                <button type="button" onClick={() => go(primaryTarget)}>
+                <NavbarRouteLink href={primaryTarget}>
                   {primaryCta}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
               <HeroCta
                 asChild
                 variant="outline"
                 className="rounded-full border-border bg-card/10 px-8 py-4 font-medium text-background backdrop-blur-sm hover:bg-card/20"
               >
-                <button type="button" onClick={() => go(secondaryTarget)}>
+                <NavbarRouteLink href={secondaryTarget}>
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
             </HeroActions>
 

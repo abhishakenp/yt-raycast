@@ -19,13 +19,13 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
  * paragraph, dual rounded CTAs (a light booking button with a calendar icon + an
  * outline phone button), and a row of trust badges (HIPAA, secure, next-day) with
  * checkmarks. Calm yet confident wellness aesthetic. CTAs route through
- * useNavigate. Use as the closing conversion section for therapists, counselors,
+ * section-kit route links. Use as the closing conversion section for therapists, counselors,
  * psychologists or wellness centers.
  */
 export const MentalHealthContactCta = defineCapsule({
   name: 'MentalHealthContactCta',
   description:
-    'Final full-bleed booking CTA band for a therapy practice: a solid primary-colored section with a centered heading + reassuring paragraph, dual rounded CTAs (a light booking button with a calendar icon + an outline phone button), and a row of trust badges (HIPAA, secure, next-day) with checkmarks. Calm yet confident wellness aesthetic. CTAs route through useNavigate. Use as the closing conversion section for therapists, counselors, psychologists or wellness centers.',
+    'Final full-bleed booking CTA band for a therapy practice: a solid primary-colored section with a centered heading + reassuring paragraph, dual rounded CTAs (a light booking button with a calendar icon + an outline phone button), and a row of trust badges (HIPAA, secure, next-day) with checkmarks. Calm yet confident wellness aesthetic. CTAs route through section-kit route links. Use as the closing conversion section for therapists, counselors, psychologists or wellness centers.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),

@@ -18,10 +18,6 @@ type Subscriber = SubscriberSummary['subscribers'][number]
 const navigate = vi.fn()
 const lakebedRef: { current: NewsletterLakebed | null } = { current: null }
 
-vi.mock('#/lib/use-navigate.tsx', () => ({
-  useNavigate: () => navigate,
-}))
-
 vi.mock('@ship-fast/lakebed/react', async () => {
   const actual = await vi.importActual<
     typeof import('@ship-fast/lakebed/react')

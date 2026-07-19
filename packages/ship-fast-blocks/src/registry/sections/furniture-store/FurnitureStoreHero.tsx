@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroHeading,
@@ -23,6 +22,7 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * FurnitureStoreHero — split, two-column hero for a warm minimal furniture /
@@ -30,7 +30,7 @@ import {
  * collection eyebrow, large serif-style headline, supporting paragraph, primary +
  * secondary CTA buttons, and a bordered KPI strip) beside a full-bleed lifestyle
  * room photo with a floating featured-product price card pinned to its corner.
- * Stacks the photo above the copy on mobile. CTAs route through useNavigate. Use
+ * Stacks the photo above the copy on mobile. CTAs route through section-kit route links. Use
  * as the top hero for furniture stores, home-decor or interiors brands, or any
  * warm boutique-retail landing page needing a product-forward lifestyle shot.
  * Renders fully with no props via baked-in "Haven & Home" defaults.
@@ -38,7 +38,7 @@ import {
 export const FurnitureStoreHero = defineCapsule({
   name: 'FurnitureStoreHero',
   description:
-    'Split two-column hero for a warm minimal furniture / home-decor store: a soft muted band with a tall left column (uppercase collection eyebrow, large headline, supporting paragraph, primary + secondary CTA buttons, bordered KPI strip) beside a full-bleed lifestyle room photo with a floating featured-product price card pinned to its corner; photo stacks above copy on mobile. CTAs route through useNavigate. Use as the top hero for furniture stores, home-decor or interiors brands, or any warm boutique-retail landing page needing a product-forward lifestyle shot.',
+    'Split two-column hero for a warm minimal furniture / home-decor store: a soft muted band with a tall left column (uppercase collection eyebrow, large headline, supporting paragraph, primary + secondary CTA buttons, bordered KPI strip) beside a full-bleed lifestyle room photo with a floating featured-product price card pinned to its corner; photo stacks above copy on mobile. CTAs route through section-kit route links. Use as the top hero for furniture stores, home-decor or interiors brands, or any warm boutique-retail landing page needing a product-forward lifestyle shot.',
   lakebed: commerceCartLakebed,
   props: z.object({
     eyebrow: z.string().optional(),
@@ -58,7 +58,6 @@ export const FurnitureStoreHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Spring Collection 2026'
     const heading = props.heading ?? 'Create a home that feels like you'
     const subheading =
@@ -131,19 +130,19 @@ export const FurnitureStoreHero = defineCapsule({
                   variant="primary"
                   className="rounded-md px-6 py-3 text-sm"
                 >
-                  <button type="button" onClick={() => go(primaryCta)}>
+                  <NavbarRouteLink href={primaryCta}>
                     {primaryCta}
                     <ArrowLong className="ml-2 size-4" />
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
                 <HeroCta
                   asChild
                   variant="outline"
                   className="rounded-md px-6 py-3 text-sm hover:bg-accent hover:text-accent-foreground"
                 >
-                  <button type="button" onClick={() => go(secondaryCta)}>
+                  <NavbarRouteLink href={secondaryCta}>
                     {secondaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
               <HeroStats className="mt-12 flex gap-8 pt-8">
@@ -162,7 +161,6 @@ export const FurnitureStoreHero = defineCapsule({
                 alt={imageAlt}
                 w={1200}
                 h={800}
-
                 className="absolute inset-0 size-full rounded-none"
               />
               <div className="absolute bottom-6 right-6 hidden rounded-lg bg-card/95 p-4 shadow-lg backdrop-blur-sm sm:block">

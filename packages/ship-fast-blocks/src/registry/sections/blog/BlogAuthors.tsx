@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
@@ -13,20 +12,21 @@ import {
   PersonCardRole,
   PersonCardBio,
 } from '#/section-kit/PersonCard.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * BlogAuthors — contributor / author cards grid for an editorial blog or
  * publication. A centered SectionHeading (eyebrow + title + subtitle) sits above
  * a responsive 1/2/3-column grid of author cards. Each card shows a round avatar
  * (resolved from a headshot alt description), the contributor's name, their role,
- * a one-line bio, and a routable "View profile" link wired through useNavigate.
+ * a one-line bio, and a routable "View profile" link wired through section-kit route links.
  * Use as the contributors / writers / "meet the team" section on blog homepages,
  * magazine about pages, or editorial landing pages.
  */
 export const BlogAuthors = defineCapsule({
   name: 'BlogAuthors',
   description:
-    "Contributor / author cards grid for an editorial blog or publication: a centered SectionHeading (eyebrow + title + subtitle) above a responsive 1/2/3-column grid of author cards. Each card has a round avatar image resolved from a headshot alt description, the contributor's name, their role, a one-line bio, and a routable 'View profile' link wired through useNavigate. Use as the contributors / writers / meet-the-team section on blog homepages, magazine about pages, or editorial landing pages.",
+    "Contributor / author cards grid for an editorial blog or publication: a centered SectionHeading (eyebrow + title + subtitle) above a responsive 1/2/3-column grid of author cards. Each card has a round avatar image resolved from a headshot alt description, the contributor's name, their role, a one-line bio, and a routable 'View profile' link wired through section-kit route links. Use as the contributors / writers / meet-the-team section on blog homepages, magazine about pages, or editorial landing pages.",
   props: z.object({
     /** Small uppercase eyebrow label above the title. */
     eyebrow: z.string().optional(),
@@ -52,7 +52,6 @@ export const BlogAuthors = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Contributors'
     const title = props.title ?? 'Meet the writers'
     const subtitle =
@@ -119,12 +118,7 @@ export const BlogAuthors = defineCapsule({
 
           <ResponsiveGrid cols="1-2-3" className="mt-10 gap-6">
             {authors.map((author) => (
-              <PersonCard
-                key={author.name}
-                variant="outlined"
-
-                className="p-6"
-              >
+              <PersonCard key={author.name} variant="outlined" className="p-6">
                 <div className="flex items-center gap-4">
                   <Image
                     alt={author.avatarAlt}
@@ -143,13 +137,12 @@ export const BlogAuthors = defineCapsule({
                 <PersonCardBio className="mt-4 leading-relaxed">
                   {author.bio}
                 </PersonCardBio>
-                <button
-                  type="button"
-                  onClick={() => go(author.name)}
+                <NavbarRouteLink
                   className="mt-4 inline-flex w-fit items-center text-sm font-semibold text-primary"
+                  href={author.name}
                 >
                   View profile
-                </button>
+                </NavbarRouteLink>
               </PersonCard>
             ))}
           </ResponsiveGrid>

@@ -18,7 +18,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * A centered section on a filled primary surface: a large headline, a supporting
  * paragraph, dual CTAs (a solid light primary button + an outlined ghost button)
  * and a fine-print reassurance note. High-contrast and conversion-focused; CTAs
- * route through useNavigate. Use near the bottom of a page to drive sign-ups for
+ * route through section-kit route links. Use near the bottom of a page to drive sign-ups for
  * CRM, sales-pipeline or B2B SaaS products. Renders fully with no props.
  */
 export const CrmCta = defineCapsule({

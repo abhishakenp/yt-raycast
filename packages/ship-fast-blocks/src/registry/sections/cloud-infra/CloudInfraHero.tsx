@@ -24,7 +24,7 @@ import { Container } from '#/section-kit/Container.tsx'
  * a bold multi-size headline, supporting paragraph, dual CTAs (filled primary
  * with arrow + outlined secondary), and a row of trust checkmarks. Right side is a
  * 4:3 alt-driven image with a floating stat card overlaid at the bottom-left.
- * Uses semantic tokens throughout. CTAs and links route through useNavigate.
+ * Uses semantic tokens throughout. CTAs and links route through section-kit route links.
  * Renders fully on zero arguments via baked-in defaults.
  */
 export const CloudInfraHero = defineCapsule({

@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
@@ -11,6 +10,7 @@ import {
   HotelMutationSpinner,
 } from './hotel-resort-interactions.tsx'
 import { hotelResortLakebed } from './hotel-resort-lakebed.ts'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * HotelResortHero — full-bleed oceanfront photo hero for a luxury hotel /
@@ -49,7 +49,6 @@ export const HotelResortHero = defineCapsule({
   }),
   lakebed: hotelResortLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const location = props.location ?? 'Malibu, California'
     const headingTop = props.headingTop ?? 'Where the Pacific'
     const headingBottom = props.headingBottom ?? 'meets perfection'
@@ -122,13 +121,12 @@ export const HotelResortHero = defineCapsule({
                 >
                   {primaryCta}
                 </HotelBookingActionButton>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
+                <NavbarRouteLink
                   className="rounded-md border border-background/30 bg-background/10 px-8 py-4 text-center text-sm font-medium text-background backdrop-blur-sm transition-colors hover:bg-background/20"
+                  href={secondaryCta}
                 >
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </div>
               <div className="mt-16 flex flex-wrap items-center gap-8 text-sm text-background/70">
                 {badges.map((badge, i) => (

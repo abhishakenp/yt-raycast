@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
@@ -20,6 +19,7 @@ import {
   HeroStatBadgeSubtitle,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * CafeHero — split-layout hero section for a cozy neighborhood cafe / coffee
@@ -28,14 +28,14 @@ import { Container } from '#/section-kit/Container.tsx'
  * paragraph, dual rounded CTAs (filled primary + outlined secondary), and an
  * inline KPI strip beneath. Right side: a tall interior photo with a floating
  * customer-review card anchored to the bottom-left corner. Every CTA routes
- * through useNavigate. Use as the opening hero for cafes, bakeries, tea
+ * through section-kit route links. Use as the opening hero for cafes, bakeries, tea
  * houses, brunch spots, or any warm food-and-drink small business. Renders
  * fully with no props via baked-in "Little Owl Coffee" defaults.
  */
 export const CafeHero = defineCapsule({
   name: 'CafeHero',
   description:
-    'Split-layout hero section for a cozy cafe / coffee shop landing page: left side with an open-now availability pill (pulsing dot), serif headline with an italic amber highlight phrase, supporting paragraph, dual rounded CTAs (filled primary + outlined secondary), and an inline KPI strip; right side has a tall interior photo with a floating customer-review card anchored bottom-left. CTAs route through useNavigate. Use as the opening hero for cafes, bakeries, tea houses, brunch spots, or warm food-and-drink businesses.',
+    'Split-layout hero section for a cozy cafe / coffee shop landing page: left side with an open-now availability pill (pulsing dot), serif headline with an italic amber highlight phrase, supporting paragraph, dual rounded CTAs (filled primary + outlined secondary), and an inline KPI strip; right side has a tall interior photo with a floating customer-review card anchored bottom-left. CTAs route through section-kit route links. Use as the opening hero for cafes, bakeries, tea houses, brunch spots, or warm food-and-drink businesses.',
   lakebed: commerceCartLakebed,
   props: z.object({
     /** Availability / status pill text. */
@@ -73,7 +73,6 @@ export const CafeHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const badge = props.badge ?? 'Now Open — 7am to 7pm Daily'
     const headingTop = props.headingTop ?? 'Coffee that feels like'
     const highlight = props.highlight ?? 'home'
@@ -134,20 +133,18 @@ export const CafeHero = defineCapsule({
                 {subheading}
               </p>
               <div className="flex flex-wrap gap-4">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
+                <NavbarRouteLink
                   className="inline-flex items-center justify-center rounded-full bg-foreground px-8 py-4 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+                  href={primaryCta}
                 >
                   {primaryCta}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
+                </NavbarRouteLink>
+                <NavbarRouteLink
                   className="inline-flex items-center justify-center rounded-full border border-border bg-card px-8 py-4 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                  href={secondaryCta}
                 >
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </div>
               <CommerceAddItemButton
                 lakebed={lakebed}

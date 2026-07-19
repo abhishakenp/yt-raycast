@@ -5,7 +5,7 @@ import { z } from 'zod/v4'
  * restaurant-marketplace site. A wide branded column (location-pin mark + brand
  * name + tagline) beside several link columns (company / resources / legal),
  * then a bordered bottom bar with a copyright line and a row of social icons.
- * The brand click, every link, and the social icons route through useNavigate.
+ * The brand click, every link, and the social icons route through section-kit route links.
  * Use as the closing footer for food-delivery apps, restaurant aggregators,
  * online-ordering platforms, or takeout services. Renders fully with no props
  * via baked-in "nosh" defaults.
@@ -27,7 +27,7 @@ import {
 export const FoodDeliveryFooter = defineCapsule({
   name: 'FoodDeliveryFooter',
   description:
-    'Muted multi-column site footer for a food-delivery / restaurant-marketplace site: a wide branded column (location-pin mark + brand name + tagline) beside several link columns (company / resources / legal), then a bordered bottom bar with a copyright line and a row of social icons. Brand click, links, and social icons route through useNavigate. Use as the closing footer for food-delivery apps, restaurant aggregators, online-ordering platforms, or takeout services.',
+    'Muted multi-column site footer for a food-delivery / restaurant-marketplace site: a wide branded column (location-pin mark + brand name + tagline) beside several link columns (company / resources / legal), then a bordered bottom bar with a copyright line and a row of social icons. Brand click, links, and social icons route through section-kit route links. Use as the closing footer for food-delivery apps, restaurant aggregators, online-ordering platforms, or takeout services.',
   props: z.object({
     /** Brand name shown beside the pin mark. */
     brand: z.string().optional(),

@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -14,6 +13,7 @@ import {
   PersonCardRole,
   PersonCardBio,
 } from '#/section-kit/PersonCard.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * AccountingFirmTeam — leadership team grid for a CPA / accounting-firm site. A
@@ -21,14 +21,14 @@ import {
  * grid of bordered cards, each with a square headshot, name, role, and short
  * bio; below sits a centered footnote with an arrow-linked "meet the full team"
  * action. Calm, trustworthy professional-services aesthetic. Headshots use the
- * alt-driven Image component; the footnote action routes through useNavigate.
+ * alt-driven Image component; the footnote action routes through section-kit route links.
  * Use to introduce partners on accounting firms, CPA practices, tax/bookkeeping
  * providers, audit firms, or advisory practices. Renders fully with no props.
  */
 export const AccountingFirmTeam = defineCapsule({
   name: 'AccountingFirmTeam',
   description:
-    'Leadership team grid for a CPA / accounting-firm site: a muted band with a centered heading + lede above a responsive 1-to-4 column grid of bordered cards, each with a square headshot, name, role, and short bio, plus a centered footnote with an arrow-linked meet-the-full-team action. Calm professional-services look; headshots use the alt-driven Image component and the footnote action routes through useNavigate. Use to introduce partners on accounting firms, CPA practices, tax/bookkeeping providers, audit firms, or advisory practices.',
+    'Leadership team grid for a CPA / accounting-firm site: a muted band with a centered heading + lede above a responsive 1-to-4 column grid of bordered cards, each with a square headshot, name, role, and short bio, plus a centered footnote with an arrow-linked meet-the-full-team action. Calm professional-services look; headshots use the alt-driven Image component and the footnote action routes through section-kit route links. Use to introduce partners on accounting firms, CPA practices, tax/bookkeeping providers, audit firms, or advisory practices.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -52,7 +52,6 @@ export const AccountingFirmTeam = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Meet our leadership'
     const description =
       props.description ??
@@ -122,7 +121,11 @@ export const AccountingFirmTeam = defineCapsule({
 
           <ResponsiveGrid cols="1-2-4">
             {members.map((member) => (
-              <PersonCard key={member.name} variant="outlined" className="rounded-lg">
+              <PersonCard
+                key={member.name}
+                variant="outlined"
+                className="rounded-lg"
+              >
                 <Image
                   alt={member.avatarAlt}
                   w={400}
@@ -145,14 +148,13 @@ export const AccountingFirmTeam = defineCapsule({
 
           <div className="mt-12 text-center">
             <p className="mb-4 text-muted-foreground">{footnote}</p>
-            <button
-              type="button"
-              onClick={() => go(footnoteCta)}
+            <NavbarRouteLink
               className="inline-flex items-center font-medium text-foreground transition-colors hover:text-muted-foreground"
+              href={footnoteCta}
             >
               {footnoteCta}
               <ArrowRight className="ml-2 size-4" />
-            </button>
+            </NavbarRouteLink>
           </div>
         </Container>
       </section>

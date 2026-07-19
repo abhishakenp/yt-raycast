@@ -167,7 +167,7 @@ export const JewelryStoreCraftsmanship = defineCapsule({
                 {items.map((item, i) => {
                   const Icon = icons[i % icons.length]
                   return (
-                    <FeatureListItem className="gap-6">
+                    <FeatureListItem key={item.title} className="gap-6">
                       <FeatureListItemIcon
                         shape="circle"
                         className="bg-card text-primary"

@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroBackgroundImage,
@@ -18,11 +17,12 @@ import {
   FormFieldControl,
 } from '#/section-kit/FormField.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 export const TravelAgencyHero = defineCapsule({
   name: 'TravelAgencyHero',
   description:
-    "Bespoke, full-bleed wanderlust hero for the Travel Agency page family. Renders a breathtaking destination image behind a token-based dark overlay, with an eyebrow, an oversized aspirational heading, supporting copy, and an inline destination search affordance (Where to? / Dates / Travelers cells plus a 'Find your trip' button wired through useNavigate). Use as the opening viewport of a premium travel agency page. All content is prop-driven with baked defaults so it renders with no props.",
+    "Bespoke, full-bleed wanderlust hero for the Travel Agency page family. Renders a breathtaking destination image behind a token-based dark overlay, with an eyebrow, an oversized aspirational heading, supporting copy, and an inline destination search affordance (Where to? / Dates / Travelers cells plus a 'Find your trip' button wired through section-kit route links). Use as the opening viewport of a premium travel agency page. All content is prop-driven with baked defaults so it renders with no props.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -36,7 +36,6 @@ export const TravelAgencyHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Where will you go next'
     const heading = props.heading ?? 'Journeys worth a lifetime of stories'
     const subheading =
@@ -115,13 +114,12 @@ export const TravelAgencyHero = defineCapsule({
                     className="bg-transparent text-sm text-card-foreground placeholder:text-muted-foreground focus:outline-none"
                   />
                 </FormField>
-                <button
-                  type="button"
-                  onClick={() => go(searchTarget)}
+                <NavbarRouteLink
                   className="inline-flex items-center justify-center rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+                  href={searchTarget}
                 >
                   {searchLabel}
-                </button>
+                </NavbarRouteLink>
               </div>
             </Card>
           </HeroContent>

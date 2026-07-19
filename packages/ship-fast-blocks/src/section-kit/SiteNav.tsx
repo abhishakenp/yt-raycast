@@ -4,7 +4,6 @@ import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '#/lib/utils.ts'
-import { useIsActiveRoute, useRouteHref } from '#/lib/use-navigate.tsx'
 
 import type { KitAction } from './types.ts'
 import { kitActionClasses } from './types.ts'
@@ -12,11 +11,17 @@ import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import { MobileNavDrawer } from './MobileNavDrawer.tsx'
 import { Logo, LogoImage, LogoLabel } from './Logo.tsx'
 import { Container } from './Container.tsx'
+import {
+  SectionKitNavHrefProvider,
+  useIsActiveSectionKitNavHref,
+  useSectionKitNavHref,
+} from './nav-href.tsx'
+import { RouterLink } from './RouterLink.tsx'
 
 /**
  * Matches CTA labels that express an auth intent (sign in / log in / sign up /
  * sign out / account / profile). Used to auto-wire a nav CTA to the real
- * Shoo/lakebed auth instead of the dead `go(label)` page-switch.
+ * Shoo/lakebed auth instead of legacy page-switch navigation.
  */
 const AUTH_INTENT =
   /\b(sign\s?-?\s?in|log\s?-?\s?in|login|signin|sign\s?-?\s?up|signup|sign\s?-?\s?out|log\s?-?\s?out|logout|my\s?account|account|my\s?profile)\b/i
@@ -82,8 +87,8 @@ const NavbarBrand = React.forwardRef<
   HTMLElement,
   React.ComponentProps<'a'> & { asChild?: boolean }
 >(({ className, href, asChild = false, ...props }, ref) => {
-  const resolvedHref = useRouteHref(href)
-  const Comp = asChild ? Slot : resolvedHref ? 'a' : 'div'
+  const resolvedHref = useSectionKitNavHref(href)
+  const Comp = asChild ? Slot : resolvedHref ? RouterLink : 'div'
   return (
     <Comp
       data-slot="navbar-brand"
@@ -121,9 +126,9 @@ const NavbarNavLink = React.forwardRef<
     { className, href, asChild = false, 'aria-current': ariaCurrent, ...props },
     ref,
   ) => {
-    const Comp = asChild ? Slot : 'a'
-    const resolvedHref = useRouteHref(href)
-    const isActive = useIsActiveRoute()(href)
+    const resolvedHref = useSectionKitNavHref(href)
+    const Comp = asChild ? Slot : resolvedHref ? RouterLink : 'a'
+    const isActive = useIsActiveSectionKitNavHref()(href)
 
     return (
       <Comp
@@ -131,10 +136,10 @@ const NavbarNavLink = React.forwardRef<
         href={resolvedHref}
         aria-current={isActive ? 'page' : ariaCurrent}
         className={cn(
-          'text-sm font-medium text-muted-foreground transition-colors hover:text-foreground',
+          'rounded-md px-2.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
           className,
           isActive &&
-            'text-foreground underline decoration-primary underline-offset-8',
+            'bg-muted text-foreground underline decoration-primary underline-offset-8',
         )}
         ref={ref}
         {...props}
@@ -164,8 +169,8 @@ const NavbarRouteLink = React.forwardRef<
   HTMLAnchorElement,
   React.ComponentProps<'a'> & { asChild?: boolean }
 >(({ className, href, asChild = false, ...props }, ref) => {
-  const resolvedHref = useRouteHref(href)
-  const Comp = asChild ? Slot : 'a'
+  const resolvedHref = useSectionKitNavHref(href)
+  const Comp = asChild ? Slot : resolvedHref ? RouterLink : 'a'
   return (
     <Comp
       data-slot="navbar-route-link"
@@ -184,8 +189,8 @@ const NavbarCta = React.forwardRef<
     Pick<React.ComponentProps<'button'>, 'type' | 'disabled'> &
     VariantProps<typeof navbarCtaVariants> & { asChild?: boolean }
 >(({ className, href, variant, asChild = false, type, ...props }, ref) => {
-  const resolvedHref = useRouteHref(href)
-  const Comp = asChild ? Slot : resolvedHref ? 'a' : 'button'
+  const resolvedHref = useSectionKitNavHref(href)
+  const Comp = asChild ? Slot : resolvedHref ? RouterLink : 'button'
   return (
     <Comp
       data-slot="navbar-cta"
@@ -230,10 +235,15 @@ export type SiteNavProps = {
 }
 
 export function SiteNav(props: SiteNavProps) {
-  if (props.children != null) {
-    return <CompoundSiteNav {...props} />
-  }
-  return <LegacySiteNav {...props} />
+  return (
+    <SectionKitNavHrefProvider>
+      {props.children != null ? (
+        <CompoundSiteNav {...props} />
+      ) : (
+        <LegacySiteNav {...props} />
+      )}
+    </SectionKitNavHrefProvider>
+  )
 }
 
 /* --- Legacy implementation (unchanged) --- */
@@ -244,8 +254,8 @@ function LegacySiteNav(props: SiteNavProps) {
   const ctaIsAuth = Boolean(
     props.signIn || (cta && AUTH_INTENT.test(cta.label)),
   )
-  const homeHref = useRouteHref(props.homeTarget ?? 'Home')
-  const ctaHref = useRouteHref(cta?.target ?? cta?.label)
+  const homeHref = useSectionKitNavHref(props.homeTarget ?? 'Home')
+  const ctaHref = useSectionKitNavHref(cta?.target ?? cta?.label)
 
   const headerClasses = sticky
     ? 'fixed inset-x-0 top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border'
@@ -254,7 +264,7 @@ function LegacySiteNav(props: SiteNavProps) {
   return (
     <header className={cn(headerClasses, props.className)}>
       <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
-        <a href={homeHref} className="flex items-center gap-3">
+        <RouterLink href={homeHref ?? '/'} className="flex items-center gap-3">
           <Logo brand={props.brand ?? ''}>
             <LogoImage className="size-8" fallback={props.brandMark} />
             <LogoLabel
@@ -264,7 +274,7 @@ function LegacySiteNav(props: SiteNavProps) {
               )}
             />
           </Logo>
-        </a>
+        </RouterLink>
 
         <div className="hidden items-center gap-8 md:flex">
           {props.nav?.map((label) => (
@@ -291,15 +301,15 @@ function LegacySiteNav(props: SiteNavProps) {
               className="hidden sm:inline-flex"
             />
           ) : cta ? (
-            <a
-              href={ctaHref}
+            <RouterLink
+              href={ctaHref ?? '#'}
               className={cn(
                 kitActionClasses(cta.variant),
                 'hidden sm:inline-flex',
               )}
             >
               {cta.label}
-            </a>
+            </RouterLink>
           ) : null}
 
           <MobileNavDrawer

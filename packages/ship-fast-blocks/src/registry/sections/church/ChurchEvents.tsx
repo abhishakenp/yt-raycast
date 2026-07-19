@@ -2,26 +2,26 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { EventList } from '#/section-kit/EventList.tsx'
 import { ImageTile } from '#/section-kit/ImageTile.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * ChurchEvents — featured-events grid for a church or faith-community site. A
  * responsive 6-card grid (2-col tablet, 3-col desktop) with header row (eyebrow +
  * heading + "View all" CTA), and event cards that each show a date badge, time,
  * title, description, and a CTA with arrow. Images lazily load and scale on hover.
- * All CTAs route through useNavigate. Use for upcoming events, classes, workshops,
+ * All CTAs route through section-kit route links. Use for upcoming events, classes, workshops,
  * baptisms, or outreach drives on church, ministry, or community organization pages.
  * Renders fully with no props via baked-in defaults.
  */
 export const ChurchEvents = defineCapsule({
   name: 'ChurchEvents',
   description:
-    "Featured-events grid for a church or faith-community site: a responsive 6-card grid with header row (eyebrow + heading + 'View all' CTA) and event cards that each show a date badge, time, title, description, and a CTA with arrow. Images lazily load and scale on hover. All CTAs route through useNavigate. Use for upcoming events, classes, workshops, baptisms, or outreach drives on church, ministry, or community organization pages.",
+    "Featured-events grid for a church or faith-community site: a responsive 6-card grid with header row (eyebrow + heading + 'View all' CTA) and event cards that each show a date badge, time, title, description, and a CTA with arrow. Images lazily load and scale on hover. All CTAs route through section-kit route links. Use for upcoming events, classes, workshops, baptisms, or outreach drives on church, ministry, or community organization pages.",
   props: z.object({
     /** Small uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -45,7 +45,6 @@ export const ChurchEvents = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Coming Up'
     const heading = props.heading ?? 'Featured Events'
     const viewAll = props.viewAll ?? 'View all events'
@@ -143,22 +142,20 @@ export const ChurchEvents = defineCapsule({
               eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground"
               titleClassName="text-3xl font-medium tracking-tight text-foreground sm:text-4xl"
             />
-            <button
-              type="button"
-              onClick={() => go(viewAll)}
+            <NavbarRouteLink
               className="inline-flex items-center text-sm font-medium text-foreground hover:text-muted-foreground"
+              href={viewAll}
             >
               {viewAll}
               <ArrowRight className="ml-1 size-4" />
-            </button>
+            </NavbarRouteLink>
           </div>
           <EventList variant="card" className="gap-8">
             {items.map((ev) => (
-              <button
+              <NavbarRouteLink
                 key={ev.title}
-                type="button"
-                onClick={() => go(ev.title)}
                 className="group block w-full cursor-pointer text-left"
+                href={ev.title}
               >
                 <ImageTile className="mb-5 aspect-[16/10] rounded-xl bg-muted">
                   <Image
@@ -185,7 +182,7 @@ export const ChurchEvents = defineCapsule({
                   {ev.cta}
                   <ArrowRight className="ml-1 size-4" />
                 </span>
-              </button>
+              </NavbarRouteLink>
             ))}
           </EventList>
         </Container>

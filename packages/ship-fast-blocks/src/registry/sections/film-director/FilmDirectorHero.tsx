@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroHeading,
@@ -16,6 +15,7 @@ import {
   HeroStatLabel,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * FilmDirectorHero — full-height split hero for a film director / cinematographer
@@ -24,14 +24,14 @@ import { Container } from '#/section-kit/Container.tsx'
  * rendered in medium weight, a lede paragraph, a play-icon primary CTA + an
  * outlined secondary CTA, and a 3-up KPI strip above a top border) beside a tall
  * 4:5 portrait photo with a soft bottom-up gradient overlay. CTAs route through
- * useNavigate; the portrait uses the alt-driven Image component. Use as the top
+ * section-kit route links; the portrait uses the alt-driven Image component. Use as the top
  * hero for filmmakers, directors, cinematographers, DPs, or video production
  * portfolios on a clean, editorial, light canvas.
  */
 export const FilmDirectorHero = defineCapsule({
   name: 'FilmDirectorHero',
   description:
-    'Full-height split hero for a film director / cinematographer portfolio: a two-column layout with a left text column (uppercase tracked eyebrow label, a thin light display headline with one emphasized phrase rendered in medium weight, a lede paragraph, a play-icon primary CTA plus an outlined secondary CTA, and a 3-up KPI strip above a top border) beside a tall 4:5 portrait photo with a soft bottom-up gradient overlay. CTAs route through useNavigate; the portrait uses the Image component. Use as the top hero for filmmakers, directors, cinematographers, DPs, or video production portfolios on a clean, editorial, light canvas.',
+    'Full-height split hero for a film director / cinematographer portfolio: a two-column layout with a left text column (uppercase tracked eyebrow label, a thin light display headline with one emphasized phrase rendered in medium weight, a lede paragraph, a play-icon primary CTA plus an outlined secondary CTA, and a 3-up KPI strip above a top border) beside a tall 4:5 portrait photo with a soft bottom-up gradient overlay. CTAs route through section-kit route links; the portrait uses the Image component. Use as the top hero for filmmakers, directors, cinematographers, DPs, or video production portfolios on a clean, editorial, light canvas.',
   props: z.object({
     eyebrow: z.string().optional(),
     /** Heading text; the `highlight` phrase within it is rendered emphasized. */
@@ -47,7 +47,6 @@ export const FilmDirectorHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heroEyebrow = props.eyebrow ?? 'Film Director & Cinematographer'
     const heroHeading = props.heading ?? 'Visual stories that resonate'
     const heroHighlight = props.highlight ?? 'resonate'
@@ -116,19 +115,19 @@ export const FilmDirectorHero = defineCapsule({
                   variant="primary"
                   className="rounded-md px-6 py-3"
                 >
-                  <button type="button" onClick={() => go(heroPrimary)}>
+                  <NavbarRouteLink href={heroPrimary}>
                     <PlayIcon className="mr-2 size-5" />
                     {heroPrimary}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
                 <HeroCta
                   asChild
                   variant="outline"
                   className="rounded-md px-6 py-3 hover:border-foreground"
                 >
-                  <button type="button" onClick={() => go(heroSecondary)}>
+                  <NavbarRouteLink href={heroSecondary}>
                     {heroSecondary}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
               <HeroStats className="mt-12 grid-cols-3 pt-8 md:grid-cols-3">
@@ -148,7 +147,6 @@ export const FilmDirectorHero = defineCapsule({
                   alt={heroImageAlt}
                   w={800}
                   h={1000}
-
                   className="size-full rounded-md rounded-xl"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-foreground/30 to-transparent" />

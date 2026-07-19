@@ -7,7 +7,7 @@ import { cn } from '#/lib/utils.ts'
  * contractor page. A centered section heading above a responsive 1/2/3-column
  * grid of hover-highlight cards; each card has a rounded icon tile (rotating
  * inline line-icons), a title, a description, and a "Learn more" link that
- * routes through useNavigate. Use to present a construction company's
+ * routes through section-kit route links. Use to present a construction company's
  * offerings — commercial, residential, renovation, project management,
  * design-build, pre-construction. Renders fully with no props via baked-in
  * defaults.
@@ -24,7 +24,7 @@ import {
 export const ConstructionServices = defineCapsule({
   name: 'ConstructionServices',
   description:
-    "Six-up services grid for a construction / general contractor page: a centered section heading above a responsive 1/2/3-column grid of hover-highlight cards, each with a rounded icon tile (rotating inline line-icons), a title, a description, and a 'Learn more' link that routes through useNavigate. Use to present a construction firm's offerings (commercial, residential, renovation, project management, design-build, pre-construction).",
+    "Six-up services grid for a construction / general contractor page: a centered section heading above a responsive 1/2/3-column grid of hover-highlight cards, each with a rounded icon tile (rotating inline line-icons), a title, a description, and a 'Learn more' link that routes through section-kit route links. Use to present a construction firm's offerings (commercial, residential, renovation, project management, design-build, pre-construction).",
   props: z.object({
     /** Section eyebrow label. */
     eyebrow: z.string().optional(),

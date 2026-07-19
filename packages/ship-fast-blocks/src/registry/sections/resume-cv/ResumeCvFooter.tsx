@@ -32,7 +32,7 @@ import {
 export const ResumeCvFooter = defineCapsule({
   name: 'ResumeCvFooter',
   description:
-    "Clean, multi-column closing footer for a personal resume / CV / portfolio site: a brand block (initials monogram + person's name + tagline + social row of LinkedIn / GitHub / Email) and a responsive grid of link columns (Navigate, Connect), with a bordered-top bottom bar holding an auto-updating copyright line and a short note. Every brand, social, and column link routes through useNavigate. Use as the site-wide footer for personal portfolios, online résumés, designer or developer profiles, or any individual's professional landing page.",
+    "Clean, multi-column closing footer for a personal resume / CV / portfolio site: a brand block (initials monogram + person's name + tagline + social row of LinkedIn / GitHub / Email) and a responsive grid of link columns (Navigate, Connect), with a bordered-top bottom bar holding an auto-updating copyright line and a short note. Every brand, social, and column link routes through section-kit route links. Use as the site-wide footer for personal portfolios, online résumés, designer or developer profiles, or any individual's professional landing page.",
   props: z.object({
     /** Person / brand name shown as the wordmark. */
     brand: z.string().optional(),

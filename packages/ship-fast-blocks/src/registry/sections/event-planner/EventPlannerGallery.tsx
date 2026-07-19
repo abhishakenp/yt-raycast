@@ -2,9 +2,8 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { ResponsiveGrid, NavbarRouteLink } from '#/section-kit/index.ts'
 import {
   GalleryGrid,
   GalleryGridItems,
@@ -20,14 +19,14 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * (uppercase eyebrow, thin light heading, lede) above a masonry-style grid where
  * alternating tiles vary in height (tall/short) for visual rhythm, followed by a
  * second wide 3-up row (the last tile spanning two columns on mobile). Every tile
- * is a clickable, hover-zoom rounded photo routed through useNavigate; imagery is
+ * is a clickable, hover-zoom rounded photo routed through section-kit route links; imagery is
  * alt-driven. Use to showcase recent weddings, galas and celebrations for event
  * planners or hospitality brands.
  */
 export const EventPlannerGallery = defineCapsule({
   name: 'EventPlannerGallery',
   description:
-    'Portfolio gallery of past events: a centered intro (uppercase eyebrow, thin light heading, lede) above a masonry-style grid where alternating tiles vary in height for visual rhythm, followed by a second wide 3-up row (the last tile spanning two columns on mobile). Every tile is a clickable, hover-zoom rounded photo routed through useNavigate; all imagery is alt-driven. Use to showcase recent weddings, galas and celebrations for event/wedding planners or premium hospitality brands.',
+    'Portfolio gallery of past events: a centered intro (uppercase eyebrow, thin light heading, lede) above a masonry-style grid where alternating tiles vary in height for visual rhythm, followed by a second wide 3-up row (the last tile spanning two columns on mobile). Every tile is a clickable, hover-zoom rounded photo routed through section-kit route links; all imagery is alt-driven. Use to showcase recent weddings, galas and celebrations for event/wedding planners or premium hospitality brands.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -37,7 +36,6 @@ export const EventPlannerGallery = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const galleryEyebrow = props.eyebrow ?? 'Portfolio'
     const galleryHeading = props.heading ?? 'Recent Events'
     const galleryDesc =
@@ -82,11 +80,10 @@ export const EventPlannerGallery = defineCapsule({
           />
           <ResponsiveGrid cols="2-lg-4" className="lg:gap-6 gap-4">
             {galleryImages.map((alt, i) => (
-              <button
+              <NavbarRouteLink
                 key={alt}
-                type="button"
-                onClick={() => go(galleryHeading)}
                 className="overflow-hidden rounded-xl"
+                href={galleryHeading}
               >
                 <Image
                   alt={alt}
@@ -98,7 +95,7 @@ export const EventPlannerGallery = defineCapsule({
                     i % 2 === 0 ? 'h-64 lg:h-80' : 'h-48 lg:h-56',
                   )}
                 />
-              </button>
+              </NavbarRouteLink>
             ))}
           </ResponsiveGrid>
           <GalleryGrid>

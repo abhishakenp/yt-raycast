@@ -3,11 +3,11 @@ import { z } from 'zod/v4'
 
 import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * CryptoHero — split-layout hero section for a crypto / DeFi infrastructure
@@ -52,7 +52,6 @@ export const CryptoHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const badge = props.badge ?? 'Mainnet Live • v2.4 Released'
     const heading =
       props.heading ?? 'The infrastructure layer for decentralized finance'
@@ -114,20 +113,18 @@ export const CryptoHero = defineCapsule({
                 {subheading}
               </p>
               <div className="flex flex-wrap gap-4">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
+                <NavbarRouteLink
                   className="rounded-lg bg-foreground px-6 py-3 font-medium text-background transition-colors hover:bg-foreground/90"
+                  href={primaryCta}
                 >
                   {primaryCta}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
+                </NavbarRouteLink>
+                <NavbarRouteLink
                   className="rounded-lg border border-border px-6 py-3 font-medium text-foreground transition-colors hover:bg-muted"
+                  href={secondaryCta}
                 >
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </div>
               <div className="mt-10 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
                 {trust.map((t) => (
@@ -144,9 +141,7 @@ export const CryptoHero = defineCapsule({
                 aria-hidden="true"
                 className="absolute inset-0 rotate-3 rounded-3xl bg-gradient-to-br from-muted to-muted/40"
               />
-              <Card
-                className="relative text-card-foreground rounded-2xl shadow-sm"
-              >
+              <Card className="relative text-card-foreground rounded-2xl shadow-sm">
                 <div className="mb-6 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="grid size-12 place-items-center rounded-xl bg-gradient-to-br from-foreground to-foreground/70 text-background">

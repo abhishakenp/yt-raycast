@@ -7,9 +7,9 @@ import {
   CtaBandTitle,
   CtaBandSubtitle,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { newsletterLakebed } from './newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from './newsletter-interactions.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * NewsletterCta — inverted final-CTA subscribe band for an editorial newsletter.
@@ -18,14 +18,14 @@ import { NewsletterSubscribeForm } from './newsletter-interactions.tsx'
  * background submit button that stacks on mobile), and a small note line with an
  * inline upgrade link. Warm, calm, literary mood inverted for emphasis. The form
  * submit writes to the shared Lakebed subscriber list and the note link routes
- * through useNavigate. Use as the closing
+ * through section-kit route links. Use as the closing
  * conversion band for newsletters, publications, blogs, or content creators.
  * Renders fully with no props via baked-in defaults.
  */
 export const NewsletterCta = defineCapsule({
   name: 'NewsletterCta',
   description:
-    'Inverted final-CTA subscribe band for an editorial newsletter: a full-width dark foreground band, centered, with a large serif headline, a relaxed lede, an inline email subscribe form (translucent email input + solid background submit button that stacks on mobile), and a small note line with an inline upgrade link. Warm, calm, literary mood inverted for emphasis. The form submit writes to the shared Lakebed subscriber list and the note link routes through useNavigate. Use as the closing conversion band for newsletters, publications, blogs, or content creators.',
+    'Inverted final-CTA subscribe band for an editorial newsletter: a full-width dark foreground band, centered, with a large serif headline, a relaxed lede, an inline email subscribe form (translucent email input + solid background submit button that stacks on mobile), and a small note line with an inline upgrade link. Warm, calm, literary mood inverted for emphasis. The form submit writes to the shared Lakebed subscriber list and the note link routes through section-kit route links. Use as the closing conversion band for newsletters, publications, blogs, or content creators.',
   props: z.object({
     /** Headline. */
     heading: z.string().optional(),
@@ -45,7 +45,6 @@ export const NewsletterCta = defineCapsule({
   }),
   lakebed: newsletterLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Start your Sunday with insight'
     const description =
       props.description ??
@@ -81,13 +80,12 @@ export const NewsletterCta = defineCapsule({
 
           <p className="mt-6 text-sm text-background/60">
             {notePrefix}
-            <button
-              type="button"
-              onClick={() => go(noteLink)}
+            <NavbarRouteLink
               className="text-background/80 underline hover:no-underline"
+              href={noteLink}
             >
               {noteLink}
-            </button>
+            </NavbarRouteLink>
             {noteSuffix}
           </p>
         </CtaBandInner>

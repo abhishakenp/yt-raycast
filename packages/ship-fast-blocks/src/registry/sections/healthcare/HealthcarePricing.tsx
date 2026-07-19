@@ -11,7 +11,7 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
  * HealthcarePricing — transparent pricing table for a medical-clinic page. A
  * centered eyebrow chip, heading and intro above a 3-column grid of plan cards;
  * each card has a name, tagline, big price with a unit, a check-marked feature
- * list, and a full-width CTA routing through useNavigate. A featured plan gets a
+ * list, and a full-width CTA routing through section-kit route links. A featured plan gets a
  * primary border, shadow and a floating "Most Popular" badge, plus a primary
  * CTA. Below the grid sits a reassurance note with an inline "verify coverage"
  * link. Use for a self-pay / visit-pricing / membership section of a doctors'
@@ -35,7 +35,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 export const HealthcarePricing = defineCapsule({
   name: 'HealthcarePricing',
   description:
-    "Transparent pricing table for a medical-clinic page: a centered eyebrow chip, heading and intro above a 3-column grid of plan cards, each with a name, tagline, big price with a unit, a check-marked feature list, and a full-width CTA routing through useNavigate. A featured plan gets a primary border, shadow and a floating 'Most Popular' badge plus a primary CTA. Below the grid sits a reassurance note with an inline 'verify coverage' link. Use for a self-pay / visit-pricing / membership section of a doctors' office or clinic.",
+    "Transparent pricing table for a medical-clinic page: a centered eyebrow chip, heading and intro above a 3-column grid of plan cards, each with a name, tagline, big price with a unit, a check-marked feature list, and a full-width CTA routing through section-kit route links. A featured plan gets a primary border, shadow and a floating 'Most Popular' badge plus a primary CTA. Below the grid sits a reassurance note with an inline 'verify coverage' link. Use for a self-pay / visit-pricing / membership section of a doctors' office or clinic.",
   props: z.object({
     /** Eyebrow chip text above the heading. */
     eyebrow: z.string().optional(),

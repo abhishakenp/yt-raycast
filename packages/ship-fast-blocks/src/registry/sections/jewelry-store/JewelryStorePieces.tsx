@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   ProductCard,
@@ -26,6 +25,7 @@ import {
   useCommerceFilteredProducts,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * JewelryStorePieces — featured-pieces product grid for a luxury jewelry
@@ -34,14 +34,14 @@ import {
  * cols) of product cards: a clickable square image/title that routes to the
  * piece, an optional status badge, a serif title, muted spec line, gold price,
  * and a Lakebed-backed add-to-cart button. The View All link routes through
- * useNavigate. Use to merchandise individual pieces (rings, necklaces,
+ * section-kit route links. Use to merchandise individual pieces (rings, necklaces,
  * earrings, bracelets) for fine jewelers, diamond houses, or watch maisons.
  * Renders fully with no props via baked-in defaults.
  */
 export const JewelryStorePieces = defineCapsule({
   name: 'JewelryStorePieces',
   description:
-    'Featured-pieces product grid for a luxury jewelry boutique: a header row pairing a gold eyebrow + serif heading with a right-aligned underlined View All link, above a responsive grid (1/2/4 cols) of product cards, each with a clickable square image/title that routes to the piece, an optional corner status badge (New = primary, others = secondary), a serif title, muted spec line, gold price, and a Lakebed-backed add-to-cart button that updates the shared cart. The View All link routes through useNavigate. Use to merchandise individual pieces (rings, necklaces, earrings, bracelets) for fine jewelers, diamond houses, or watch maisons.',
+    'Featured-pieces product grid for a luxury jewelry boutique: a header row pairing a gold eyebrow + serif heading with a right-aligned underlined View All link, above a responsive grid (1/2/4 cols) of product cards, each with a clickable square image/title that routes to the piece, an optional corner status badge (New = primary, others = secondary), a serif title, muted spec line, gold price, and a Lakebed-backed add-to-cart button that updates the shared cart. The View All link routes through section-kit route links. Use to merchandise individual pieces (rings, necklaces, earrings, bracelets) for fine jewelers, diamond houses, or watch maisons.',
   lakebed: commerceCartLakebed,
   props: z.object({
     eyebrow: z.string().optional(),
@@ -62,7 +62,6 @@ export const JewelryStorePieces = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Current Selection'
     const heading = props.heading ?? 'Featured Pieces'
     const viewAll = props.viewAll ?? 'View All Jewelry'
@@ -165,22 +164,20 @@ export const JewelryStorePieces = defineCapsule({
               eyebrowClassName="mb-4 text-sm uppercase tracking-[0.3em] text-primary"
               titleClassName="font-serif text-4xl text-foreground lg:text-5xl"
             />
-            <button
-              type="button"
-              onClick={() => go(viewAll)}
+            <NavbarRouteLink
               className="mt-6 inline-block w-fit border-b border-primary pb-0.5 text-sm uppercase tracking-widest text-primary lg:mt-0"
+              href={viewAll}
             >
               {viewAll}
-            </button>
+            </NavbarRouteLink>
           </div>
           <PiecesGrid className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {visibleItems.map((p) => (
               <PiecesCard asChild key={p.title}>
                 <ProductCard variant="none" className="w-full text-left">
-                  <button
-                    type="button"
-                    onClick={() => go(p.title)}
+                  <NavbarRouteLink
                     className="block w-full text-left"
+                    href={p.title}
                   >
                     <ProductCardImage className="mb-5">
                       <Image
@@ -206,7 +203,7 @@ export const JewelryStorePieces = defineCapsule({
                     <ProductCardTitle className="mb-1 font-serif text-lg text-foreground">
                       {p.title}
                     </ProductCardTitle>
-                  </button>
+                  </NavbarRouteLink>
                   <PieceSpecs className="mb-2 mt-0">{p.spec}</PieceSpecs>
                   <ProductCardPrice className="text-primary">
                     {p.price}

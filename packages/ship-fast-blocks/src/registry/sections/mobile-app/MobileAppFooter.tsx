@@ -9,7 +9,7 @@ import { cn } from '#/lib/utils.ts'
  * Twitter / Instagram / LinkedIn) sits beside several link columns (each a
  * heading over a list of nav buttons). A bordered-top bottom bar holds an
  * auto-updating copyright note and a "made in" line. The brand button, social
- * icons and every link route through useNavigate. Use as the closing footer for
+ * icons and every link route through section-kit route links. Use as the closing footer for
  * a habit tracker, fitness / wellness app, productivity or to-do app, or any
  * consumer app landing page. Renders fully with no props via baked-in
  * "DailyFlow" defaults.
@@ -32,7 +32,7 @@ import {
 export const MobileAppFooter = defineCapsule({
   name: 'MobileAppFooter',
   description:
-    "Bordered-top multi-column site footer for a clean, minimalist mobile-app marketing page: a wide brand column (check-in-circle logo mark + app name, a tagline, and a row of round social icon buttons — Twitter / Instagram / LinkedIn) beside several link columns (heading over a list of nav buttons), plus a bordered-top bottom bar with an auto-updating copyright note and a 'made in' line; the brand button, social icons and every link route through useNavigate. Use as the closing footer for a habit tracker, fitness / wellness app, productivity or to-do app, or any consumer app landing page.",
+    "Bordered-top multi-column site footer for a clean, minimalist mobile-app marketing page: a wide brand column (check-in-circle logo mark + app name, a tagline, and a row of round social icon buttons — Twitter / Instagram / LinkedIn) beside several link columns (heading over a list of nav buttons), plus a bordered-top bottom bar with an auto-updating copyright note and a 'made in' line; the brand button, social icons and every link route through section-kit route links. Use as the closing footer for a habit tracker, fitness / wellness app, productivity or to-do app, or any consumer app landing page.",
   props: z.object({
     /** Brand / app name shown beside the logo mark. */
     brand: z.string().optional(),

@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
@@ -13,6 +12,7 @@ import {
 import { StorySection } from '#/section-kit/StorySection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 const PodcastFeaturedStoryProps = z.object({
   eyebrow: z.string().optional().describe('Section eyebrow above the heading'),
@@ -37,8 +37,6 @@ export const PodcastFeaturedStory = defineCapsule({
     'A latest-episode feature section that spotlights one podcast episode inside a prominent two-column card. The left side shows a warm studio cover image while the right side stacks an episode-number eyebrow, a bold title, a duration and publish-date meta row, short show notes, and a rounded Play episode button. Best used directly below a podcast hero to surface the freshest release.',
   props: PodcastFeaturedStoryProps,
   component: ({ props }) => {
-    const go = useNavigate()
-
     const eyebrow = props.eyebrow ?? 'Latest episode'
     const heading = props.heading ?? 'Fresh from the booth'
     const episodeLabel = props.episodeLabel ?? 'Episode 42'
@@ -96,10 +94,9 @@ export const PodcastFeaturedStory = defineCapsule({
               <p className="text-base text-muted-foreground">{showNotes}</p>
 
               <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={() => go(ctaTarget)}
+                <NavbarRouteLink
                   className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  href={ctaTarget}
                 >
                   <svg
                     aria-hidden="true"
@@ -110,7 +107,7 @@ export const PodcastFeaturedStory = defineCapsule({
                     <path d="M8 5v14l11-7z" />
                   </svg>
                   {ctaLabel}
-                </button>
+                </NavbarRouteLink>
               </div>
             </FeaturedArticleContent>
           </Card>

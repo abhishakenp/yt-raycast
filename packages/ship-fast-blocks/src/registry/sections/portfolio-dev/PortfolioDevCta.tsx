@@ -10,7 +10,7 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * PortfolioDevCta — a bold, centered availability band for a modern developer
@@ -19,7 +19,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * short supporting subheading, and a centered row of two routable pill CTAs — a
  * high-contrast "Start a Project" button (variant "primary", auto-inverted to a
  * light pill on the primary band) plus an outlined "View Work" button (variant
- * "outline"). Both actions navigate through the kit's useNavigate so neither is
+ * "outline"). Both actions navigate through the kit's section-kit route links so neither is
  * a dead link. Use near the bottom of a freelance engineer or studio portfolio
  * to drive contact and new engagements. Renders fully with no props via
  * baked-in defaults.
@@ -27,7 +27,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 export const PortfolioDevCta = defineCapsule({
   name: 'PortfolioDevCta',
   description:
-    "Bold, centered availability band for a modern developer portfolio: a full-width primary-colored band with a mono-style availability eyebrow, a strong headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Start a Project' button plus an outlined 'View Work' button). Both CTAs route through useNavigate. Use near the bottom of a freelance engineer or studio portfolio to drive contact and new engagements.",
+    "Bold, centered availability band for a modern developer portfolio: a full-width primary-colored band with a mono-style availability eyebrow, a strong headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Start a Project' button plus an outlined 'View Work' button). Both CTAs route through section-kit route links. Use near the bottom of a freelance engineer or studio portfolio to drive contact and new engagements.",
   props: z.object({
     /** Mono-style availability eyebrow. */
     eyebrow: z.string().optional(),
@@ -46,7 +46,6 @@ export const PortfolioDevCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? '// open to work'
     const title = props.title ?? "Let's build something"
     const subtitle =
@@ -64,11 +63,15 @@ export const PortfolioDevCta = defineCapsule({
           <CtaBandTitle>{title}</CtaBandTitle>
           <CtaBandSubtitle>{subtitle}</CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction variant="primary" onClick={() => go(primaryTarget)}>
-              {primaryCta}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={primaryTarget}>
+                {primaryCta}
+              </NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" onClick={() => go(secondaryTarget)}>
-              {secondaryCta}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={secondaryTarget}>
+                {secondaryCta}
+              </NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

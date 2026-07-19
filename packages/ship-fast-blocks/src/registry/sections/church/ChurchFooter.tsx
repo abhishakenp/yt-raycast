@@ -18,14 +18,14 @@ import {
  * A dark foreground-background reversed footer with four columns: brand + about
  * paragraph + social icon buttons, quick links, resources, and contact info with
  * office hours. Bottom row carries copyright and legal links. Every link and the
- * brand button route through useNavigate. Use as the closing site footer for churches,
+ * brand button route through section-kit route links. Use as the closing site footer for churches,
  * parishes, worship centers, ministries, or religious nonprofits. Renders fully with
  * no props via baked-in defaults.
  */
 export const ChurchFooter = defineCapsule({
   name: 'ChurchFooter',
   description:
-    'Rich dark multi-column footer for a church or faith-community site: a foreground-background reversed footer with four columns (brand + about + social icons, quick links, resources, and contact info with office hours), plus a bottom row with auto-updating copyright and legal links. Every link and the brand button route through useNavigate. Use as the closing site footer for churches, parishes, worship centers, ministries, or religious nonprofits.',
+    'Rich dark multi-column footer for a church or faith-community site: a foreground-background reversed footer with four columns (brand + about + social icons, quick links, resources, and contact info with office hours), plus a bottom row with auto-updating copyright and legal links. Every link and the brand button route through section-kit route links. Use as the closing site footer for churches, parishes, worship centers, ministries, or religious nonprofits.',
   props: z.object({
     /** Church / community name shown beside the star mark. */
     brand: z.string().optional(),

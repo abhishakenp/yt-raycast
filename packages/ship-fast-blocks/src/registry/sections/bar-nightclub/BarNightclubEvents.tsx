@@ -2,12 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { EventList } from '#/section-kit/EventList.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * BarNightclubEvents — stacked weekly events list for a cocktail-bar /
@@ -15,7 +15,7 @@ import { EventList } from '#/section-kit/EventList.tsx'
  * vertical stack of bordered event rows; each row lays out a day/date block, a
  * title + description, an alt-driven event photo, and an outlined ticket CTA,
  * collapsing to a column on mobile. Moody, editorial, hairline-bordered. Each
- * CTA routes through useNavigate and photos use the alt-driven Image component.
+ * CTA routes through section-kit route links and photos use the alt-driven Image component.
  * Use to showcase an upcoming lineup of DJ nights, live performances, or themed
  * events for bars, nightclubs, lounges, or live-music venues. Renders fully with
  * no props via baked-in defaults.
@@ -23,7 +23,7 @@ import { EventList } from '#/section-kit/EventList.tsx'
 export const BarNightclubEvents = defineCapsule({
   name: 'BarNightclubEvents',
   description:
-    'Stacked weekly events list for a cocktail-bar / nightclub page: a left-aligned eyebrow, light-weight heading and lead, then a vertical stack of hairline-bordered event rows, each laying out a day/date block, a title + description, an alt-driven event photo, and an outlined ticket CTA that collapses to a column on mobile. Moody and editorial; each CTA routes through useNavigate and photos use the alt-driven Image component. Use to showcase an upcoming lineup of DJ nights, live performances, or themed events for bars, nightclubs, lounges, or live-music venues.',
+    'Stacked weekly events list for a cocktail-bar / nightclub page: a left-aligned eyebrow, light-weight heading and lead, then a vertical stack of hairline-bordered event rows, each laying out a day/date block, a title + description, an alt-driven event photo, and an outlined ticket CTA that collapses to a column on mobile. Moody and editorial; each CTA routes through section-kit route links and photos use the alt-driven Image component. Use to showcase an upcoming lineup of DJ nights, live performances, or themed events for bars, nightclubs, lounges, or live-music venues.',
   props: z.object({
     /** Wide letter-spaced uppercase eyebrow. */
     eyebrow: z.string().optional(),
@@ -47,7 +47,6 @@ export const BarNightclubEvents = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Upcoming Events'
     const heading = props.heading ?? 'This Week at NOIR'
     const description =
@@ -141,13 +140,12 @@ export const BarNightclubEvents = defineCapsule({
                     className="h-32 w-full rounded-sm object-cover"
                   />
                 </div>
-                <button
-                  type="button"
-                  onClick={() => go(ev.cta)}
+                <NavbarRouteLink
                   className={cn(ghostBtn, 'lg:w-40')}
+                  href={ev.cta}
                 >
                   {ev.cta}
-                </button>
+                </NavbarRouteLink>
               </div>
             ))}
           </EventList>

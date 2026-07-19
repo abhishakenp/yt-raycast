@@ -23,7 +23,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * Thin configuration over the shared `PricingGrid` composite: an optional
  * heading/subheading above three rate cards (Nightly / Weekly / Monthly), each
  * with a price, a period, an included-perks list, and a "Reserve" CTA that routes
- * through useNavigate. The Weekly tier is highlighted as the best value. Theme-
+ * through section-kit route links. The Weekly tier is highlighted as the best value. Theme-
  * token only. Use to present the rates of a vacation rental, beach house, cabin,
  * villa, or boutique short-stay. Renders fully with no props via baked-in
  * defaults.
@@ -31,7 +31,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 export const VacationRentalPricing = defineCapsule({
   name: 'VacationRentalPricing',
   description:
-    'Stay-rate table for a vacation-rental listing page built on the shared PricingGrid composite: an optional heading/subheading above three rate cards (Nightly / Weekly / Monthly), each with a price, a period, an included-perks list, and a Reserve CTA that routes through useNavigate. The Weekly tier is highlighted as the best value. Theme-token only. Use to present the rates of a vacation rental, beach house, cabin, villa, or boutique short-stay.',
+    'Stay-rate table for a vacation-rental listing page built on the shared PricingGrid composite: an optional heading/subheading above three rate cards (Nightly / Weekly / Monthly), each with a price, a period, an included-perks list, and a Reserve CTA that routes through section-kit route links. The Weekly tier is highlighted as the best value. Theme-token only. Use to present the rates of a vacation rental, beach house, cabin, villa, or boutique short-stay.',
   props: z.object({
     /** Section heading above the rate cards. */
     heading: z.string().optional(),

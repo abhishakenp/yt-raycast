@@ -22,7 +22,7 @@ import { Container } from '#/section-kit/Container.tsx'
  * stage columns of deal cards (dollar values, color-coded accents, a won check),
  * a pipeline-value/win-rate/active-deals stats bar, and a floating
  * revenue-growth badge. Clean, professional, conversion-focused; CTAs route
- * through useNavigate. Use as the opening hero for CRM products, sales-pipeline
+ * through section-kit route links. Use as the opening hero for CRM products, sales-pipeline
  * tools or deal-tracking SaaS. Renders fully with no props.
  */
 export const CrmHero = defineCapsule({
@@ -248,9 +248,7 @@ export const CrmHero = defineCapsule({
                   </div>
                 </div>
               </ContentCard>
-              <Card
-                className="absolute -bottom-4 -left-4 p-3 rounded-lg p-0 shadow-lg"
-              >
+              <Card className="absolute -bottom-4 -left-4 p-3 rounded-lg p-0 shadow-lg">
                 <div className="flex items-center gap-3">
                   <div className="grid size-10 place-items-center rounded-full bg-chart-2/15 text-chart-2">
                     <svg

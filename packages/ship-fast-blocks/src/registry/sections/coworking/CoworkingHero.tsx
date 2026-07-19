@@ -2,12 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { GridField } from '#/section-kit/motion.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * CoworkingHero — luminous opening scene for a coworking / workspace landing
@@ -17,14 +17,14 @@ import { Container } from '#/section-kit/Container.tsx'
  * gradient-ink closing phrase, supporting paragraph, a shimmer primary CTA
  * beside a glass secondary CTA, and a quiet trust-chip row. Right: an offset
  * outline frame behind a hero photo with specular ring, and one glass proof
- * card with an avatar stack. CTAs route through useNavigate; photos use the
+ * card with an avatar stack. CTAs route through section-kit route links; photos use the
  * alt-driven Image component. Use as the opening section for coworking
  * spaces, shared offices, flex-office providers, or business centers.
  */
 export const CoworkingHero = defineCapsule({
   name: 'CoworkingHero',
   description:
-    'Luminous hero scene for a coworking / workspace landing page over a blueprint light-field backdrop (architectural hairline grid with crosshair accents, hairline content rails): eyebrow chip with pulsing dot, display headline with gradient-ink closing phrase, supporting paragraph, shimmer primary CTA + glass secondary CTA, and a trust-chip row — beside an offset outline frame behind a hero photo with specular ring, and a glass social-proof card with an avatar stack and member metric. CTAs route through useNavigate; images use the alt-driven Image component. Use as the opening section for coworking spaces, shared offices, flex-office providers, or workspace membership sites.',
+    'Luminous hero scene for a coworking / workspace landing page over a blueprint light-field backdrop (architectural hairline grid with crosshair accents, hairline content rails): eyebrow chip with pulsing dot, display headline with gradient-ink closing phrase, supporting paragraph, shimmer primary CTA + glass secondary CTA, and a trust-chip row — beside an offset outline frame behind a hero photo with specular ring, and a glass social-proof card with an avatar stack and member metric. CTAs route through section-kit route links; images use the alt-driven Image component. Use as the opening section for coworking spaces, shared offices, flex-office providers, or workspace membership sites.',
   props: z.object({
     /** Availability / status eyebrow text above the headline. */
     eyebrow: z.string().optional(),
@@ -51,7 +51,6 @@ export const CoworkingHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow =
       typeof props.eyebrow === 'string' && props.eyebrow
         ? props.eyebrow
@@ -204,10 +203,9 @@ export const CoworkingHero = defineCapsule({
               </p>
 
               <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
+                <NavbarRouteLink
                   className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/35"
+                  href={primaryCta}
                 >
                   <span
                     aria-hidden="true"
@@ -215,14 +213,13 @@ export const CoworkingHero = defineCapsule({
                   />
                   <span className="relative">{primaryCta}</span>
                   <ArrowRight className="relative size-5 transition-transform duration-300 group-hover:translate-x-1" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
+                </NavbarRouteLink>
+                <NavbarRouteLink
                   className="inline-flex items-center justify-center rounded-2xl border border-border/70 bg-card/60 px-8 py-4 text-base font-medium text-foreground backdrop-blur transition-colors duration-300 hover:bg-card"
+                  href={secondaryCta}
                 >
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </div>
 
               <div className="mt-10 flex flex-wrap items-center gap-3">
@@ -270,9 +267,7 @@ export const CoworkingHero = defineCapsule({
                 </div>
 
                 <div className="absolute -bottom-8 -left-4 hidden sm:block lg:-left-10">
-                  <Card
-                    className="border-border/60 bg-card/85 backdrop-blur-xl rounded-2xl shadow-xl"
-                  >
+                  <Card className="border-border/60 bg-card/85 backdrop-blur-xl rounded-2xl shadow-xl">
                     <div className="flex items-center gap-4">
                       <div className="flex -space-x-3">
                         {proofAvatars.map((alt) => (

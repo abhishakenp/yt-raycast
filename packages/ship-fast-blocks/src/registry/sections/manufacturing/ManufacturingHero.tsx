@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroHeading,
@@ -12,6 +11,7 @@ import {
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * ManufacturingHero — split hero band for a precision-manufacturing /
@@ -20,7 +20,7 @@ import { Container } from '#/section-kit/Container.tsx'
  * supporting paragraph, dual CTAs (filled + outlined) and a divided KPI stat
  * strip; on the right a tall CNC machining photo with a floating quality-badge
  * card (check icon + title + subtitle). Clean, neutral, industrial B2B
- * aesthetic. CTAs route through useNavigate and the photo uses the alt-driven
+ * aesthetic. CTAs route through section-kit route links and the photo uses the alt-driven
  * Image component. Use as the opening hero for CNC machine shops, metal
  * fabricators, contract manufacturers or industrial engineering firms. Renders
  * fully with no props via baked-in "Vertex Manufacturing" defaults.
@@ -28,7 +28,7 @@ import { Container } from '#/section-kit/Container.tsx'
 export const ManufacturingHero = defineCapsule({
   name: 'ManufacturingHero',
   description:
-    'Split hero band for a precision-manufacturing / industrial-fabrication landing page: two-column layout with a certification status pill (pulsing dot + label), a large semibold headline, a supporting paragraph, dual CTAs (filled + outlined) and a divided KPI stat strip on the left, and a tall CNC machining photo with a floating quality-badge card (check icon + title + subtitle) on the right. Clean, neutral, industrial B2B aesthetic; CTAs route through useNavigate and the photo uses the alt-driven Image component. Use as the opening hero for CNC machine shops, metal fabricators, contract manufacturers or industrial engineering firms.',
+    'Split hero band for a precision-manufacturing / industrial-fabrication landing page: two-column layout with a certification status pill (pulsing dot + label), a large semibold headline, a supporting paragraph, dual CTAs (filled + outlined) and a divided KPI stat strip on the left, and a tall CNC machining photo with a floating quality-badge card (check icon + title + subtitle) on the right. Clean, neutral, industrial B2B aesthetic; CTAs route through section-kit route links and the photo uses the alt-driven Image component. Use as the opening hero for CNC machine shops, metal fabricators, contract manufacturers or industrial engineering firms.',
   props: z.object({
     badge: z.string().optional(),
     heading: z.string().optional(),
@@ -44,7 +44,6 @@ export const ManufacturingHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const badge = props.badge ?? 'ISO 9001:2015 Certified'
     const heading =
       props.heading ?? 'Precision Manufacturing for Complex Industries'
@@ -85,18 +84,18 @@ export const ManufacturingHero = defineCapsule({
                   asChild
                   className="rounded-md bg-foreground px-6 py-3 font-medium text-background hover:bg-foreground/90"
                 >
-                  <button type="button" onClick={() => go(primaryCta)}>
+                  <NavbarRouteLink href={primaryCta}>
                     {primaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
                 <HeroCta
                   asChild
                   variant="outline"
                   className="rounded-md px-6 py-3 font-medium"
                 >
-                  <button type="button" onClick={() => go(secondaryCta)}>
+                  <NavbarRouteLink href={secondaryCta}>
                     {secondaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
               <div className="flex items-center gap-6 border-t border-border pt-4">

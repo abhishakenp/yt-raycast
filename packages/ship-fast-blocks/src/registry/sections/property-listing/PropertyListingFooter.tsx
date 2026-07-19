@@ -22,14 +22,14 @@ import {
  * top region pairs a brand block (logo-tile wordmark, blurb, contact line) with
  * several "explore" link columns over a token surface. A bordered bottom row
  * carries social links and an auto-updating copyright. The wordmark and every
- * link route through useNavigate. Use as the closing footer for a property
+ * link route through section-kit route links. Use as the closing footer for a property
  * search portal or listing marketplace. Renders fully with no props via baked
  * defaults.
  */
 export const PropertyListingFooter = defineCapsule({
   name: 'PropertyListingFooter',
   description:
-    "Full sitewide footer for a property marketplace: a top region pairing a brand block (logo-tile wordmark, blurb, contact line) with several 'explore' link columns over a token surface, plus a bordered bottom row with social links and an auto-updating copyright. Wordmark and links route through useNavigate. Use as the closing footer for a property search portal or listing marketplace.",
+    "Full sitewide footer for a property marketplace: a top region pairing a brand block (logo-tile wordmark, blurb, contact line) with several 'explore' link columns over a token surface, plus a bordered bottom row with social links and an auto-updating copyright. Wordmark and links route through section-kit route links. Use as the closing footer for a property search portal or listing marketplace.",
   props: z.object({
     /** Brand wordmark beside the logo tile. */
     brand: z.string().optional(),

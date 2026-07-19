@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 
@@ -13,7 +12,7 @@ import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
  * column is a light card holding a form (first + last name, email, phone,
  * practice-area select, message textarea and a full-width submit) plus a fine
  * legal disclaimer. Refined, authoritative editorial aesthetic with sharp
- * squared corners. Contact links and the social button route through useNavigate;
+ * squared corners. Contact links and the social button route through section-kit route links;
  * submit writes a Lakebed inquiry. Use as the closing conversion section on
  * law-firm, attorney, consulting or professional-services pages. Renders fully
  * with no props via baked-in defaults.
@@ -30,10 +29,12 @@ import {
   ContactFormSubmit,
   ContactFormFooter,
 } from '#/section-kit/ContactForm.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const LawFirmContact = defineCapsule({
   name: 'LawFirmContact',
   description:
-    'Dark split contact band on the primary surface pairing firm details with a real Lakebed consultation-request form: the left column carries a tracked-uppercase eyebrow, serif heading, lead paragraph, a phone / email / address contact list with line icons and a LinkedIn social button; the right column is a light card holding a form (first + last name, email, phone, practice-area select, message textarea, full-width submit) plus a fine legal disclaimer. Refined, authoritative editorial aesthetic with sharp squared corners; contact links and the social button route through useNavigate, while submit writes a shared inquiry record. Use as the closing consultation / lead-capture conversion section on law-firm, attorney, consulting, accounting or professional-services pages.',
+    'Dark split contact band on the primary surface pairing firm details with a real Lakebed consultation-request form: the left column carries a tracked-uppercase eyebrow, serif heading, lead paragraph, a phone / email / address contact list with line icons and a LinkedIn social button; the right column is a light card holding a form (first + last name, email, phone, practice-area select, message textarea, full-width submit) plus a fine legal disclaimer. Refined, authoritative editorial aesthetic with sharp squared corners; contact links and the social button route through section-kit route links, while submit writes a shared inquiry record. Use as the closing consultation / lead-capture conversion section on law-firm, attorney, consulting, accounting or professional-services pages.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -50,7 +51,6 @@ export const LawFirmContact = defineCapsule({
   }),
   lakebed: inquiryLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Schedule Consultation'
     const heading = props.heading ?? "Let's Discuss Your Matter"
     const description =
@@ -167,36 +167,33 @@ export const LawFirmContact = defineCapsule({
                 subtitleClassName="text-lg leading-relaxed text-primary-foreground/80"
               />
               <div className="mb-8 space-y-4">
-                <button
-                  type="button"
-                  onClick={() => go(phone)}
+                <NavbarRouteLink
                   className="flex items-center gap-4 text-primary-foreground/80 transition-colors hover:text-primary-foreground"
+                  href={phone}
                 >
                   <PhoneIcon className="size-5 text-primary-foreground/60" />
                   <span>{phone}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(email)}
+                </NavbarRouteLink>
+                <NavbarRouteLink
                   className="flex items-center gap-4 text-primary-foreground/80 transition-colors hover:text-primary-foreground"
+                  href={email}
                 >
                   <MailIcon className="size-5 text-primary-foreground/60" />
                   <span>{email}</span>
-                </button>
+                </NavbarRouteLink>
                 <div className="flex items-center gap-4 text-primary-foreground/80">
                   <MapPinIcon className="size-5 shrink-0 text-primary-foreground/60" />
                   <span>{address}</span>
                 </div>
               </div>
               <div className="flex gap-4">
-                <button
-                  type="button"
+                <NavbarRouteLink
                   aria-label="LinkedIn"
-                  onClick={() => go('LinkedIn')}
                   className="grid size-10 place-items-center bg-primary-foreground/10 text-primary-foreground transition-colors hover:bg-primary-foreground/20"
+                  href={'LinkedIn'}
                 >
                   <LinkedInIcon className="size-5" />
-                </button>
+                </NavbarRouteLink>
               </div>
             </div>
 

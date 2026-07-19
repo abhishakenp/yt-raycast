@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   OverviewSection,
   OverviewGrid,
@@ -20,6 +18,7 @@ import {
   OverviewMediaPanel,
 } from '#/section-kit/OverviewSection.tsx'
 import { CtaAction } from '#/section-kit/CtaBand.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 export const PricingOverview = defineCapsule({
   name: 'PricingOverview',
@@ -40,7 +39,6 @@ export const PricingOverview = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Pricing'
     const eyebrow = props.eyebrow ?? 'Pricing section'
     const heading = props.heading ?? 'Pricing experience, ready to customize'
@@ -91,16 +89,20 @@ export const PricingOverview = defineCapsule({
               <CtaAction
                 variant="primary"
                 className="rounded-full px-6 py-3 text-sm font-semibold"
-                onClick={() => go(primaryCta)}
+                asChild
               >
-                {primaryCta}
+                <NavbarRouteLink href={primaryCta}>
+                  {primaryCta}
+                </NavbarRouteLink>
               </CtaAction>
               <CtaAction
                 variant="outline"
                 className="rounded-full bg-background px-6 py-3 text-sm font-semibold"
-                onClick={() => go(secondaryCta)}
+                asChild
               >
-                {secondaryCta}
+                <NavbarRouteLink href={secondaryCta}>
+                  {secondaryCta}
+                </NavbarRouteLink>
               </CtaAction>
             </OverviewCta>
             <OverviewStats>

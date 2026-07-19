@@ -29,7 +29,7 @@ const signInButtonVariants = cva('', {
  * email and a working "Sign out" action.
  *
  * This is NOT a dead page-switch button — it replaces the legacy
- * `useNavigate(label)` CTA wherever a generated site needs genuine login.
+ * label-based route CTA wherever a generated site needs genuine login.
  */
 const SignInButton = React.forwardRef<
   HTMLDivElement,

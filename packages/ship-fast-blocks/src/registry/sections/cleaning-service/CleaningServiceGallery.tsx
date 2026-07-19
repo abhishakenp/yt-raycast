@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * CleaningServiceGallery — a before/after transformations image gallery for a home-cleaning / maid-service landing page. A centered heading + lead paragraph above a responsive 1/2/3-column grid of clickable project cards; each card shows a lazy-loaded image that subtly zooms on hover, with a gradient-to-top overlay that fades in to reveal a title and location caption. Every card routes through useNavigate on click. Use for portfolio / results galleries for residential cleaning companies, maid services, renovation cleaners, or home-service brands that want visual proof. Renders fully with no props via six baked-in default transformations.
+ * CleaningServiceGallery — a before/after transformations image gallery for a home-cleaning / maid-service landing page. A centered heading + lead paragraph above a responsive 1/2/3-column grid of clickable project cards; each card shows a lazy-loaded image that subtly zooms on hover, with a gradient-to-top overlay that fades in to reveal a title and location caption. Every card routes through section-kit route links on click. Use for portfolio / results galleries for residential cleaning companies, maid services, renovation cleaners, or home-service brands that want visual proof. Renders fully with no props via six baked-in default transformations.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -17,7 +17,7 @@ import {
 export const CleaningServiceGallery = defineCapsule({
   name: 'CleaningServiceGallery',
   description:
-    'A before/after transformations image gallery for a home-cleaning / maid-service landing page: centered heading + lead above a responsive 1/2/3-column grid of clickable project cards. Each card has a lazy-loaded image that zooms on hover with a gradient-to-top overlay that fades in, revealing a title and location caption. Cards route through useNavigate on click. Use for portfolio / results galleries for residential cleaning, maid services, renovation cleaners, or home-service brands that want visual proof.',
+    'A before/after transformations image gallery for a home-cleaning / maid-service landing page: centered heading + lead above a responsive 1/2/3-column grid of clickable project cards. Each card has a lazy-loaded image that zooms on hover with a gradient-to-top overlay that fades in, revealing a title and location caption. Cards route through section-kit route links on click. Use for portfolio / results galleries for residential cleaning, maid services, renovation cleaners, or home-service brands that want visual proof.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),

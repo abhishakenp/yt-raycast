@@ -10,20 +10,20 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * MusicFestivalCta — a dark closing call-to-action band for a music / arts
  * festival landing page. A full-bleed inverted (foreground) centered section
  * with a large headline, a supporting paragraph, dual pill CTAs (get tickets /
  * join mailing list), and a small contact note beneath. Both CTAs route through
- * useNavigate. Use as the final conversion push on music festivals, arts
+ * section-kit route links. Use as the final conversion push on music festivals, arts
  * festivals, concert series, or any multi-day ticketed event.
  */
 export const MusicFestivalCta = defineCapsule({
   name: 'MusicFestivalCta',
   description:
-    'Dark closing call-to-action band for a music / arts festival landing page: a full-bleed inverted (foreground background, light text) centered section with a large headline, a supporting paragraph, dual pill CTAs (get tickets / join mailing list), and a small contact note beneath. Both CTAs route through useNavigate. Use as the final conversion push before the footer on music festivals, arts festivals, concert series, raves, or any multi-day ticketed event.',
+    'Dark closing call-to-action band for a music / arts festival landing page: a full-bleed inverted (foreground background, light text) centered section with a large headline, a supporting paragraph, dual pill CTAs (get tickets / join mailing list), and a small contact note beneath. Both CTAs route through section-kit route links. Use as the final conversion push before the footer on music festivals, arts festivals, concert series, raves, or any multi-day ticketed event.',
   props: z.object({
     /** Headline. */
     heading: z.string().optional(),
@@ -38,7 +38,6 @@ export const MusicFestivalCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Your horizon awaits'
     const description =
       props.description ??
@@ -58,11 +57,13 @@ export const MusicFestivalCta = defineCapsule({
           <CtaBandTitle>{heading}</CtaBandTitle>
           <CtaBandSubtitle>{description}</CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction variant="primary" onClick={() => go(primaryCta)}>
-              {primaryCta}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={primaryCta}>{primaryCta}</NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" onClick={() => go(secondaryCta)}>
-              {secondaryCta}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={secondaryCta}>
+                {secondaryCta}
+              </NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

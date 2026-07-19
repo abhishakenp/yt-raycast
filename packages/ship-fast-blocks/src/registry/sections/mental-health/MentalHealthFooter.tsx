@@ -20,13 +20,13 @@ import {
  * link column, and a contact column with address / phone / email / hours rows
  * (each with a primary icon), plus a bottom bar with copyright + license note.
  * Calm, trustworthy wellness aesthetic. Every brand button, link, phone and email
- * routes through useNavigate. Use as the closing site footer for therapists,
+ * routes through section-kit route links. Use as the closing site footer for therapists,
  * counselors, psychologists, psychiatrists or wellness centers.
  */
 export const MentalHealthFooter = defineCapsule({
   name: 'MentalHealthFooter',
   description:
-    "Dark, multi-column footer for a therapy practice on the inverted foreground surface: a brand column (calming 'sun/wellness' mark + name + about blurb + round social icon buttons), a services link column, a company link column, and a contact column with address / phone / email / hours rows (each with a primary icon), plus a bottom bar with copyright + license note. Calm, trustworthy wellness aesthetic. Every brand button, link, phone and email routes through useNavigate. Use as the closing site footer for therapists, counselors, psychologists, psychiatrists or wellness centers.",
+    "Dark, multi-column footer for a therapy practice on the inverted foreground surface: a brand column (calming 'sun/wellness' mark + name + about blurb + round social icon buttons), a services link column, a company link column, and a contact column with address / phone / email / hours rows (each with a primary icon), plus a bottom bar with copyright + license note. Calm, trustworthy wellness aesthetic. Every brand button, link, phone and email routes through section-kit route links. Use as the closing site footer for therapists, counselors, psychologists, psychiatrists or wellness centers.",
   props: z.object({
     /** Practice / brand name shown in the footer. */
     brand: z.string().optional(),

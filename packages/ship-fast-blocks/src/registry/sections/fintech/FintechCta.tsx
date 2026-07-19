@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   CtaBand,
   CtaBandInner,
@@ -11,20 +9,21 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * FintechCta — full-width closing call-to-action band for a fintech / neobank
  * landing page. A thin configuration over the shared CtaBand composite on a
  * primary-tone surface: an eyebrow, a "Start banking smarter" title, a
  * supporting subtitle, and a row of routable actions ("Open an Account"
- * primary + "Talk to sales" outline). Actions route through useNavigate. Use as
+ * primary + "Talk to sales" outline). Actions route through section-kit route links. Use as
  * the conversion band near the end of the page. Renders fully with no props via
  * baked-in defaults.
  */
 export const FintechCta = defineCapsule({
   name: 'FintechCta',
   description:
-    "Full-width closing call-to-action band for a fintech / neobank landing page built on the shared CtaBand composite (primary tone): an eyebrow, a 'Start banking smarter' title, a supporting subtitle, and a row of routable actions ('Open an Account' primary + 'Talk to sales' outline). Actions route through useNavigate. Use as the conversion band near the end of the page.",
+    "Full-width closing call-to-action band for a fintech / neobank landing page built on the shared CtaBand composite (primary tone): an eyebrow, a 'Start banking smarter' title, a supporting subtitle, and a row of routable actions ('Open an Account' primary + 'Talk to sales' outline). Actions route through section-kit route links. Use as the conversion band near the end of the page.",
   props: z.object({
     /** Small uppercase eyebrow above the title. */
     eyebrow: z.string().optional(),
@@ -45,7 +44,6 @@ export const FintechCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Get started today'
     const title = props.title ?? 'Start banking smarter'
     const subtitle =
@@ -70,12 +68,10 @@ export const FintechCta = defineCapsule({
           <CtaBandSubtitle>{subtitle}</CtaBandSubtitle>
           <CtaBandActions align="center">
             {actions.filter(Boolean).map((a) => (
-              <CtaAction
-                key={a.label}
-                variant={a.variant ?? 'primary'}
-                onClick={() => go(a.target ?? a.label)}
-              >
-                {a.label}
+              <CtaAction key={a.label} variant={a.variant ?? 'primary'} asChild>
+                <NavbarRouteLink href={a.target ?? a.label}>
+                  {a.label}
+                </NavbarRouteLink>
               </CtaAction>
             ))}
           </CtaBandActions>

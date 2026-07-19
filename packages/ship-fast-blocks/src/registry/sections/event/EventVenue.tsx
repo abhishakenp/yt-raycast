@@ -140,7 +140,7 @@ export const EventVenue = defineCapsule({
               />
               <div className="mb-8 space-y-4">
                 {details.map((d, i) => (
-                  <FeatureListItem>
+                  <FeatureListItem key={d.title}>
                     <FeatureListItemIcon
                       shape="square"
                       className="size-10 border border-border bg-background text-foreground"

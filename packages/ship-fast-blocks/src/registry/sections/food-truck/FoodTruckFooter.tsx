@@ -20,13 +20,13 @@ import {
  * foreground-filled band with a brand block (circular monogram tile of brand initials +
  * wordmark + about line) beside configurable link columns and a dedicated socials
  * column, then a divided bottom bar with a copyright line and inline legal links. All
- * links route through useNavigate. Use as the closing footer for food trucks,
+ * links route through section-kit route links. Use as the closing footer for food trucks,
  * street-food vendors, caterers or restaurants.
  */
 export const FoodTruckFooter = defineCapsule({
   name: 'FoodTruckFooter',
   description:
-    'Inverted, multi-column site footer for a food-truck brand: a foreground-filled band with a brand block (circular monogram tile of brand initials + wordmark + about line) beside configurable link columns and a dedicated socials column, then a divided bottom bar with a copyright line and inline legal links. All links route through useNavigate. Use as the closing footer for food trucks, street-food vendors, taco / burger / bowl concepts, caterers or restaurants.',
+    'Inverted, multi-column site footer for a food-truck brand: a foreground-filled band with a brand block (circular monogram tile of brand initials + wordmark + about line) beside configurable link columns and a dedicated socials column, then a divided bottom bar with a copyright line and inline legal links. All links route through section-kit route links. Use as the closing footer for food trucks, street-food vendors, taco / burger / bowl concepts, caterers or restaurants.',
   props: z.object({
     /** Brand / food-truck name; initials form the monogram. */
     brand: z.string().optional(),

@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   HeroSection,
@@ -13,6 +12,7 @@ import {
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * NutritionHero — split two-column hero for a nutrition-coaching / wellness landing
@@ -20,14 +20,14 @@ import { Container } from '#/section-kit/Container.tsx'
  * subheading, dual pill CTAs (filled primary + outlined card), and a stacked trust-avatar
  * row with a social-proof note; a right column with a large rounded food photo and an
  * overlapping floating "meal logged" card (check badge + title + subtitle). All CTAs
- * route through useNavigate; imagery uses the alt-driven Image component. Use as the
+ * route through section-kit route links; imagery uses the alt-driven Image component. Use as the
  * top hero for nutrition coaches, dietitians, meal-plan subscriptions, diet / wellness
  * programs or healthy-eating apps.
  */
 export const NutritionHero = defineCapsule({
   name: 'NutritionHero',
   description:
-    "Split two-column hero for a nutrition-coaching / wellness landing page: a left column with a primary eyebrow, big tracking-tight headline, relaxed subheading, dual pill CTAs (filled primary + outlined card), and a stacked trust-avatar row with a social-proof note; a right column with a large rounded food photo and an overlapping floating 'meal logged' card (check badge + title + subtitle). All CTAs route through useNavigate; imagery uses the alt-driven Image component. Use as the top hero for nutrition coaches, registered dietitians, meal-plan subscriptions, diet / wellness programs, weight-loss services or healthy-eating apps.",
+    "Split two-column hero for a nutrition-coaching / wellness landing page: a left column with a primary eyebrow, big tracking-tight headline, relaxed subheading, dual pill CTAs (filled primary + outlined card), and a stacked trust-avatar row with a social-proof note; a right column with a large rounded food photo and an overlapping floating 'meal logged' card (check badge + title + subtitle). All CTAs route through section-kit route links; imagery uses the alt-driven Image component. Use as the top hero for nutrition coaches, registered dietitians, meal-plan subscriptions, diet / wellness programs, weight-loss services or healthy-eating apps.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -44,7 +44,6 @@ export const NutritionHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Evidence-Based Nutrition Coaching'
     const heading =
       props.heading ?? 'Finally, a nutrition plan that fits your life'
@@ -109,18 +108,18 @@ export const NutritionHero = defineCapsule({
                   variant="primary"
                   className="rounded-full px-6 py-3.5 text-base"
                 >
-                  <button type="button" onClick={() => go(primaryCta)}>
+                  <NavbarRouteLink href={primaryCta}>
                     {primaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
                 <HeroCta
                   asChild
                   variant="outline"
                   className="rounded-full border-input bg-card px-6 py-3.5 text-base hover:border-primary/40 hover:text-primary"
                 >
-                  <button type="button" onClick={() => go(secondaryCta)}>
+                  <NavbarRouteLink href={secondaryCta}>
                     {secondaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -143,7 +142,6 @@ export const NutritionHero = defineCapsule({
                 alt={imageAlt}
                 w={800}
                 h={600}
-
                 className="aspect-[4/3] w-full shadow-2xl"
               />
               <div className="absolute -bottom-6 -left-6 hidden max-w-xs rounded-xl bg-card p-4 shadow-lg sm:block">

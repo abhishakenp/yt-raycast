@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
@@ -14,19 +13,20 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 import { useSyncPublicationArticles } from './publication-interactions.tsx'
 import { publicationLakebed } from './publication-lakebed.ts'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * BlogHero — split featured-post card for an editorial blog / publication index.
  * A two-column article card with a large cover image (left) that zooms on hover,
  * a badge label, and a rich text panel (right) with a topic label, serif headline,
  * excerpt, author meta row, and a read-link. Every interactive element routes via
- * useNavigate. Use as the lead / featured-article section above the story grid
+ * section-kit route links. Use as the lead / featured-article section above the story grid
  * on blog homepages, magazine indexes, or editorial landing pages.
  */
 export const BlogHero = defineCapsule({
   name: 'BlogHero',
   description:
-    'Split featured-post card for an editorial blog or publication index: a two-column article card with a large cover image on the left that zooms on hover, a badge label, and a rich text panel on the right with a topic label, serif headline, excerpt, author meta row, and a read-link. Every interactive element routes through useNavigate. Use as the lead featured-article section above the story grid on blog homepages, magazine indexes, or editorial landing pages.',
+    'Split featured-post card for an editorial blog or publication index: a two-column article card with a large cover image on the left that zooms on hover, a badge label, and a rich text panel on the right with a topic label, serif headline, excerpt, author meta row, and a read-link. Every interactive element routes through section-kit route links. Use as the lead featured-article section above the story grid on blog homepages, magazine indexes, or editorial landing pages.',
   props: z.object({
     /** Cover-image alt text (drives Image search). */
     alt: z.string().optional(),
@@ -52,7 +52,6 @@ export const BlogHero = defineCapsule({
   }),
   lakebed: publicationLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const alt =
       props.alt ??
       'A tidy desk with a laptop, notebook, and coffee bathed in warm morning light'
@@ -113,11 +112,7 @@ export const BlogHero = defineCapsule({
                 asChild
                 className="block min-h-[15rem] w-full bg-gradient-to-br from-primary/10 to-accent/20 md:min-h-[24rem]"
               >
-                <button
-                  type="button"
-                  onClick={() => go(postTarget)}
-                  className="group"
-                >
+                <NavbarRouteLink className="group" href={postTarget}>
                   <Image
                     alt={alt}
                     w={1200}
@@ -127,7 +122,7 @@ export const BlogHero = defineCapsule({
                   <span className="absolute left-[1.125rem] top-[1.125rem] rounded-full bg-background/90 px-2.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.08em] text-foreground shadow-sm backdrop-blur">
                     {badge}
                   </span>
-                </button>
+                </NavbarRouteLink>
               </FeaturedArticleMedia>
               <FeaturedArticleContent className="justify-center p-8 md:p-10">
                 <div className="mb-3 inline-flex items-center gap-2 text-[0.78rem] font-bold uppercase tracking-[0.08em] text-primary">
@@ -149,14 +144,13 @@ export const BlogHero = defineCapsule({
                   <span>{readTime}</span>
                   <span>{date}</span>
                 </FeaturedArticleMeta>
-                <button
-                  type="button"
-                  onClick={() => go(postTarget)}
+                <NavbarRouteLink
                   className="group mt-6 inline-flex items-center gap-2.5 self-start text-[0.95rem] font-semibold text-primary"
+                  href={postTarget}
                 >
                   {readLabel}
                   <Arrow />
-                </button>
+                </NavbarRouteLink>
               </FeaturedArticleContent>
             </article>
           </Card>

@@ -4,8 +4,6 @@ import { z } from 'zod/v4'
 import { SolutionGrid, SolutionCard } from '#/section-kit/SolutionGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 /**
  * CorporateSolutions — enterprise solutions / feature grid for a corporate B2B
  * homepage. A centered section heading + lead paragraph above a responsive 1/2/3
@@ -16,10 +14,12 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * services, risk) on SaaS, IT, or consultancy sites.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const CorporateSolutions = defineCapsule({
   name: 'CorporateSolutions',
   description:
-    "Enterprise solutions / feature grid for a corporate B2B homepage: centered section heading and lead above a responsive 1/2/3-column grid of bordered cards, each with a solid dark icon tile (rotating inline SVGs), a title, description, and a 'Learn more' text button with an arrow. Cards gain subtle hover border change. Use to present enterprise offerings on SaaS, IT, or consultancy sites. All card links route through useNavigate.",
+    "Enterprise solutions / feature grid for a corporate B2B homepage: centered section heading and lead above a responsive 1/2/3-column grid of bordered cards, each with a solid dark icon tile (rotating inline SVGs), a title, description, and a 'Learn more' text button with an arrow. Cards gain subtle hover border change. Use to present enterprise offerings on SaaS, IT, or consultancy sites. All card links route through section-kit route links.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -37,7 +37,6 @@ export const CorporateSolutions = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Enterprise solutions built for scale'
     const description =
       props.description ??
@@ -222,14 +221,13 @@ export const CorporateSolutions = defineCapsule({
                 <p className="mb-4 leading-relaxed text-muted-foreground">
                   {item.description}
                 </p>
-                <button
-                  type="button"
-                  onClick={() => go(item.title)}
+                <NavbarRouteLink
                   className="inline-flex items-center text-sm font-medium text-foreground transition-colors hover:text-muted-foreground"
+                  href={item.title}
                 >
                   Learn more
                   <ArrowRight className="ml-1 size-4" />
-                </button>
+                </NavbarRouteLink>
               </SolutionCard>
             ))}
           </SolutionGrid>

@@ -23,14 +23,14 @@ import {
  * landing page. A `bg-foreground` footer with a brand bolt icon + protocol
  * name, a description, social-link buttons with first-letter avatars, a
  * multi-column link grid, an auto-updating copyright line, and legal links.
- * All buttons route through useNavigate. Use as the closing site footer for
+ * All buttons route through section-kit route links. Use as the closing site footer for
  * crypto protocols, chains, bridges, DeFi platforms, or Web3 infrastructure
  * sites.
  */
 export const CryptoFooter = defineCapsule({
   name: 'CryptoFooter',
   description:
-    'Rich multi-column footer for a crypto / DeFi infrastructure landing page: bg-foreground footer with brand bolt icon + protocol name, description, social-link buttons with first-letter avatars, a multi-column link grid, auto-updating copyright line, and legal links. All buttons route through useNavigate. Use as the closing site footer for crypto protocols, chains, bridges, DeFi platforms, or Web3 infrastructure sites.',
+    'Rich multi-column footer for a crypto / DeFi infrastructure landing page: bg-foreground footer with brand bolt icon + protocol name, description, social-link buttons with first-letter avatars, a multi-column link grid, auto-updating copyright line, and legal links. All buttons route through section-kit route links. Use as the closing site footer for crypto protocols, chains, bridges, DeFi platforms, or Web3 infrastructure sites.',
   props: z.object({
     /** Brand / protocol name shown beside the logo icon. */
     brand: z.string().optional(),

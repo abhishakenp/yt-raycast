@@ -10,19 +10,19 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * CommunityForumContactCta — final dark call-to-action band for a community-platform /
  * discussion-forum landing page. A centered section on a dark foreground background with a
  * large heading, supporting paragraph, dual CTAs (filled primary + outlined secondary), and
- * a trust note beneath. All CTAs route through useNavigate. Use as the closing conversion band
+ * a trust note beneath. All CTAs route through section-kit route links. Use as the closing conversion band
  * for community platforms, SaaS products, or subscription services.
  */
 export const CommunityForumContactCta = defineCapsule({
   name: 'CommunityForumContactCta',
   description:
-    'Final dark call-to-action band for a community-platform / discussion-forum landing page: a centered section on a dark foreground background with a large heading, a supporting paragraph, dual CTAs (filled primary + outlined secondary), and a trust note beneath. All CTAs route through useNavigate. Use as the closing conversion band for community platforms, SaaS products, or subscription services.',
+    'Final dark call-to-action band for a community-platform / discussion-forum landing page: a centered section on a dark foreground background with a large heading, a supporting paragraph, dual CTAs (filled primary + outlined secondary), and a trust note beneath. All CTAs route through section-kit route links. Use as the closing conversion band for community platforms, SaaS products, or subscription services.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -37,7 +37,6 @@ export const CommunityForumContactCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Ready to build your community?'
     const description =
       props.description ??
@@ -58,11 +57,13 @@ export const CommunityForumContactCta = defineCapsule({
           <CtaBandTitle>{heading}</CtaBandTitle>
           <CtaBandSubtitle>{description}</CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction variant="primary" onClick={() => go(primaryCta)}>
-              {primaryCta}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={primaryCta}>{primaryCta}</NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" onClick={() => go(secondaryCta)}>
-              {secondaryCta}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={secondaryCta}>
+                {secondaryCta}
+              </NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

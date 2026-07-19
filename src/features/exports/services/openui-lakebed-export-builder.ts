@@ -2575,9 +2575,18 @@ function collectClientComponents(
       if (source !== undefined) files[filePath] = source
     }
     for (const vendorFile of generatedEntry.vendorFiles) {
+      const source = generatedManifest.files[vendorFile]
+      if (source !== undefined) files[vendorFile] = source
       seenVendorFiles.add(vendorFile)
+      copyVendorCommonJsCompanions(
+        vendorFile.replace(/^client\/vendor\//, ''),
+        files,
+        seenVendorFiles,
+      )
     }
     for (const blockFile of generatedEntry.blockFiles) {
+      const source = generatedManifest.files[blockFile]
+      if (source !== undefined) files[blockFile] = source
       seenBlockFiles.add(blockFile)
     }
     if (generatedEntry.clientComponent) {
@@ -3718,6 +3727,40 @@ function resolveVendorNamedExport(
   )
 }
 
+function copyVendorCommonJsCompanions(
+  manifestPath: string,
+  files: Record<string, string>,
+  seenVendorFiles: Set<string>,
+) {
+  if (manifestPath === 'use-sync-external-store/shim/with-selector.js') {
+    copyVendorSourceFile(
+      'use-sync-external-store/cjs/use-sync-external-store-shim/with-selector.development.js',
+      files,
+      seenVendorFiles,
+    )
+    copyVendorSourceFile(
+      'use-sync-external-store/cjs/use-sync-external-store-shim/with-selector.production.js',
+      files,
+      seenVendorFiles,
+    )
+  }
+}
+
+function ensureUseSyncExternalStoreCompanionFiles(
+  files: Record<string, string>,
+) {
+  if (!files['client/vendor/use-sync-external-store/shim/with-selector.js']) {
+    return
+  }
+  for (const sourcePath of [
+    'use-sync-external-store/cjs/use-sync-external-store-shim/with-selector.development.js',
+    'use-sync-external-store/cjs/use-sync-external-store-shim/with-selector.production.js',
+  ]) {
+    const source = getVendorSourceFileIndex()[sourcePath]
+    if (source !== undefined) files[`client/vendor/${sourcePath}`] = source
+  }
+}
+
 function copyVendorSourceFile(
   sourcePath: string,
   files: Record<string, string>,
@@ -3728,7 +3771,10 @@ function copyVendorSourceFile(
     throw new Error(`Cannot find vendored dependency source: ${sourcePath}`)
   }
   const outPath = vendorOutPathFor(manifestPath)
-  if (seenVendorFiles.has(outPath)) return outPath
+  if (seenVendorFiles.has(outPath)) {
+    copyVendorCommonJsCompanions(manifestPath, files, seenVendorFiles)
+    return outPath
+  }
   seenVendorFiles.add(outPath)
   const vendorSource = getVendorSourceFileIndex()[manifestPath]
   if (vendorSource === undefined) {
@@ -3742,6 +3788,7 @@ function copyVendorSourceFile(
     seenVendorFiles,
     seenBlockFiles: new Set(),
   })
+  copyVendorCommonJsCompanions(manifestPath, files, seenVendorFiles)
   return outPath
 }
 
@@ -3954,6 +4001,36 @@ function rewriteLakebedClientImports(
     })
   }
 
+  if (context.sourcePath) {
+    const visitRequire = (node: ts.Node) => {
+      if (
+        ts.isCallExpression(node) &&
+        ts.isIdentifier(node.expression) &&
+        node.expression.text === 'require'
+      ) {
+        const [argument] = node.arguments
+        if (argument && ts.isStringLiteral(argument)) {
+          const moduleName = argument.text
+          if (moduleName.startsWith('.')) {
+            const target = resolveRelativeVendorSourcePath(
+              context.sourcePath ?? '',
+              moduleName,
+            )
+            if (target) {
+              copyVendorSourceFile(
+                target,
+                context.files,
+                context.seenVendorFiles,
+              )
+            }
+          }
+        }
+      }
+      ts.forEachChild(node, visitRequire)
+    }
+    visitRequire(sourceFile)
+  }
+
   return replaceRanges(source, ranges).replace(
     /^['"]use client['"];?\n\n?/g,
     '',
@@ -3981,6 +4058,25 @@ function copyBlocksClientSourceForLakebed(
         : `client/vendor/blocks-runtime/${blocksRel}`
   if (seenBlockFiles.has(outPath)) return outPath
   seenBlockFiles.add(outPath)
+  if (sourcePath === 'src/section-kit/RouterLink.tsx') {
+    files[outPath] = `import type { ComponentChildren } from "preact";
+
+type RouterLinkProps = {
+  children?: ComponentChildren;
+  href: string;
+  [key: string]: unknown;
+};
+
+export function RouterLink({ href, children, ...props }: RouterLinkProps) {
+  return (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  );
+}
+`
+    return outPath
+  }
   const source = getBlockSourceFile(sourcePath)
   files[outPath] = rewriteLakebedClientImports(source, {
     outPath,
@@ -4491,53 +4587,28 @@ function renderLakebedLogoComponent(input: OpenUIExportInput): string {
   const logo = typeof selection?.logo === 'string' ? selection.logo.trim() : ''
   const src = icon || logo || ''
   const brandName = selection?.name ?? ''
-  if (!icon && logo) {
-    return `import { cn } from "../lib/cn";
-
-const logoUrl = ${JSON.stringify(logo)};
-const logoName = ${JSON.stringify(brandName)};
-
-export function Logo({
-  brand = logoName,
-  className,
-  imageClassName,
-  labelClassName,
-}: {
-  brand?: string;
-  className?: string;
-  imageClassName?: string;
-  labelClassName?: string;
-  [key: string]: unknown;
-}) {
-  return (
-    <>
-      <span
-        aria-hidden="true"
-        className={cn(
-          "inline-grid size-8 shrink-0 place-items-center overflow-hidden rounded-md bg-transparent",
-          className,
-        )}
-      >
-        <img
-          alt={brand}
-          className={cn("block size-full object-contain", imageClassName)}
-          draggable={false}
-          src={logoUrl}
-        />
-      </span>
-      <span className={labelClassName}>{brand}</span>
-    </>
-  );
-}
-`
-  }
-  return `import type { ComponentChildren } from "preact";
+  return `import { createContext, type ComponentChildren } from "preact";
+import { useContext } from "preact/hooks";
 import { cn } from "../lib/cn";
 
 const brandLogoSrc = ${JSON.stringify(src)};
 const brandName = ${JSON.stringify(brandName)};
+const LogoContext = createContext<{ brand?: string; src?: string } | null>(null);
+
+type LogoImageProps = {
+  fallback?: ComponentChildren;
+  className?: string;
+  [key: string]: unknown;
+};
+
+type LogoLabelProps = {
+  brand?: string;
+  className?: string;
+  [key: string]: unknown;
+};
 
 export function Logo({
+  children,
   fallback,
   className,
   imageClassName,
@@ -4546,35 +4617,60 @@ export function Logo({
   brand = brandName,
 }: {
   brand?: string;
+  children?: ComponentChildren;
   fallback?: ComponentChildren;
   className?: string;
   imageClassName?: string;
   labelClassName?: string;
   showLabel?: boolean;
+  [key: string]: unknown;
 }) {
   return (
-    <>
-      {brandLogoSrc ? (
-        <span
-          aria-hidden="true"
-          className={cn(
-            "inline-grid size-8 shrink-0 place-items-center overflow-hidden rounded-md bg-transparent",
-            className,
-          )}
-          data-brand-logo-selected="true"
-        >
-          <img
-            alt=""
-            className={cn("block size-full object-contain", imageClassName)}
-            draggable={false}
-            src={brandLogoSrc}
-          />
-        </span>
-      ) : (
-        fallback
+    <LogoContext.Provider value={{ brand, src: brandLogoSrc }}>
+      <span data-slot="logo" className={cn("inline-flex items-center gap-2", className)}>
+        {children ?? (
+          <>
+            <LogoImage className={imageClassName} fallback={fallback} />
+            {showLabel ? <LogoLabel brand={brand} className={labelClassName} /> : null}
+          </>
+        )}
+      </span>
+    </LogoContext.Provider>
+  );
+}
+
+export function LogoImage({ fallback = null, className, ...props }: LogoImageProps) {
+  const logo = useContext(LogoContext);
+  const src = logo?.src || brandLogoSrc;
+  if (!src) return <>{fallback}</>;
+  return (
+    <span
+      data-slot="logo-image"
+      aria-hidden="true"
+      className={cn(
+        "inline-grid size-8 shrink-0 place-items-center overflow-hidden rounded-md bg-transparent",
+        className,
       )}
-      {showLabel ? <span className={labelClassName}>{brand}</span> : null}
-    </>
+      data-brand-logo-selected="true"
+      {...props}
+    >
+      <img
+        alt=""
+        className="block size-full object-contain"
+        draggable={false}
+        src={src}
+      />
+    </span>
+  );
+}
+
+export function LogoLabel({ brand = brandName, className, ...props }: LogoLabelProps) {
+  const logo = useContext(LogoContext);
+  const label = logo?.brand || brand;
+  return (
+    <span data-slot="logo-label" className={className} {...props}>
+      {label}
+    </span>
   );
 }
 `
@@ -6924,6 +7020,7 @@ export const commerceStorefrontUrl = ${JSON.stringify(commerceConfig.storefrontU
     if (seoBundle.llmsTxt) files['public/llms.txt'] = seoBundle.llmsTxt
   }
   pruneUnreachableLakebedSources(files)
+  ensureUseSyncExternalStoreCompanionFiles(files)
   await input.onProgress?.('formatting')
   const formattedFiles = await formatExportFiles(files, input.formatCache)
   assertNoLeakedSourceTerms(formattedFiles)

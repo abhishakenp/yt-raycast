@@ -3,12 +3,12 @@ import { useState, type ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import { NavSidebar } from '#/section-kit/NavSidebar.tsx'
 import { Image } from '#/lib/img.tsx'
 import { dashboardLakebed } from './dashboard-lakebed.ts'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * DashboardSidebar — a fixed left navigation rail for a SaaS admin dashboard. A
@@ -17,7 +17,7 @@ import { dashboardLakebed } from './dashboard-lakebed.ts'
  * tile + product name at top, a primary line-icon nav group with an active state
  * and a count badge on the Orders item, a "Support" sub-group below it, and a
  * bottom user footer (avatar, name, email, sign-out). Every nav item, the brand
- * through useNavigate and the footer account button uses Shoo/Lakebed auth.
+ * through section-kit route links and the footer account button uses Shoo/Lakebed auth.
  * Use as the persistent left rail for an authenticated admin area, back office,
  * analytics console, CRM or internal SaaS tool. Renders fully with no props via
  * baked-in "Orbit" defaults.
@@ -25,7 +25,7 @@ import { dashboardLakebed } from './dashboard-lakebed.ts'
 export const DashboardSidebar = defineCapsule({
   name: 'DashboardSidebar',
   description:
-    "A fixed left navigation rail for a SaaS admin dashboard: a full-height bordered card column (hidden below md, with a slide-in mobile drawer + scrim toggled by an exposed hamburger button) holding an indigo brand tile + product name, a primary line-icon nav group with an active state and a count badge on the Orders item, a 'Support' sub-group, and a bottom user footer wired to Shoo/Lakebed auth. Nav items and the brand route through useNavigate for page-switching. Use as the persistent left rail for an authenticated admin area, back office, analytics console, CRM or internal SaaS tool.",
+    "A fixed left navigation rail for a SaaS admin dashboard: a full-height bordered card column (hidden below md, with a slide-in mobile drawer + scrim toggled by an exposed hamburger button) holding an indigo brand tile + product name, a primary line-icon nav group with an active state and a count badge on the Orders item, a 'Support' sub-group, and a bottom user footer wired to Shoo/Lakebed auth. Nav items and the brand route through section-kit route links for page-switching. Use as the persistent left rail for an authenticated admin area, back office, analytics console, CRM or internal SaaS tool.",
   props: z.object({
     /** Brand / product name shown at the top of the sidebar. */
     brand: z.string().optional(),
@@ -53,7 +53,6 @@ export const DashboardSidebar = defineCapsule({
   }),
   lakebed: dashboardLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const auth = lakebed.useAuth()
     const brand = props.brand ?? 'Orbit'
     const nav = props.nav?.length
@@ -195,20 +194,19 @@ export const DashboardSidebar = defineCapsule({
       const active = activeNav === label
       const badgeText = label === badgeLabel && badgeCount ? badgeCount : ''
       return (
-        <button
-          type="button"
+        <NavbarRouteLink
           aria-label={badgeText ? `${label} ${badgeText}` : label}
-          onClick={() => {
-            setActiveNav(label)
-            setMobileNavOpen(false)
-            go(label)
-          }}
           className={cn(
             'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors',
             active
               ? 'bg-primary/10 font-semibold text-primary'
               : 'text-muted-foreground hover:bg-primary/10 hover:text-primary',
           )}
+          onClick={() => {
+            setActiveNav(label)
+            setMobileNavOpen(false)
+          }}
+          href={label}
         >
           <svg
             width="18"
@@ -229,23 +227,19 @@ export const DashboardSidebar = defineCapsule({
               {badgeText}
             </span>
           ) : null}
-        </button>
+        </NavbarRouteLink>
       )
     }
 
     const sidebarBody = (
       <>
         <div className="flex h-16 items-center border-b border-border/60 px-6">
-          <button
-            type="button"
-            onClick={() => go(nav[0])}
-            className="flex items-center gap-3"
-          >
+          <NavbarRouteLink className="flex items-center gap-3" href={nav[0]}>
             <BrandLogo brand={brand}>
               <LogoImage fallback={<LogoMark />} />
               <LogoLabel className="text-lg font-bold tracking-tight text-foreground" />
             </BrandLogo>
-          </button>
+          </NavbarRouteLink>
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">

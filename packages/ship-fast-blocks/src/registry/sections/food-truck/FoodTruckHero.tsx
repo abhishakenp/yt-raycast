@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
@@ -13,6 +12,7 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * FoodTruckHero — warm, editorial split hero for a gourmet food-truck landing page.
@@ -20,14 +20,14 @@ import {
  * headline, a chef-story paragraph, dual rounded CTAs (filled primary + outlined
  * secondary), and a rating + open-hours row on the left, with a tall rounded dish
  * photo carrying a floating chef-owner card (avatar + name + role) on the right. CTAs
- * route through useNavigate; imagery uses the alt-driven Image component. Use as the
+ * route through section-kit route links; imagery uses the alt-driven Image component. Use as the
  * top hero for food trucks, street-food vendors, taco/burger/bowl concepts or
  * chef-driven mobile-food brands.
  */
 export const FoodTruckHero = defineCapsule({
   name: 'FoodTruckHero',
   description:
-    'Warm, editorial split hero for a gourmet food-truck landing page: a two-column layout pairing a now-serving location pill, a large stacked multi-line headline, a chef-story paragraph, dual rounded CTAs (filled primary and outlined secondary), and a star-rating + open-hours row on the left, with a tall rounded dish photo carrying a floating chef-owner card (avatar, name, role) on the right. CTAs route through useNavigate; the photos use the alt-driven Image component. Use as the top hero for food trucks, street-food vendors, taco / burger / bowl concepts, pop-up kitchens or any chef-driven mobile-food brand.',
+    'Warm, editorial split hero for a gourmet food-truck landing page: a two-column layout pairing a now-serving location pill, a large stacked multi-line headline, a chef-story paragraph, dual rounded CTAs (filled primary and outlined secondary), and a star-rating + open-hours row on the left, with a tall rounded dish photo carrying a floating chef-owner card (avatar, name, role) on the right. CTAs route through section-kit route links; the photos use the alt-driven Image component. Use as the top hero for food trucks, street-food vendors, taco / burger / bowl concepts, pop-up kitchens or any chef-driven mobile-food brand.',
   props: z.object({
     badge: z.string().optional(),
     /** Heading lines rendered stacked. */
@@ -49,7 +49,6 @@ export const FoodTruckHero = defineCapsule({
   }),
   lakebed: commerceCartLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const heroBadge = props.badge ?? 'Now serving Los Angeles'
     const heroHeadingLines = props.headingLines?.length
       ? props.headingLines
@@ -119,20 +118,18 @@ export const FoodTruckHero = defineCapsule({
                 {heroSub}
               </p>
               <div className="flex flex-wrap gap-4">
-                <button
-                  type="button"
-                  onClick={() => go(heroPrimary)}
+                <NavbarRouteLink
                   className="rounded-full bg-foreground px-6 py-3 font-medium text-background transition-colors hover:bg-foreground/90"
+                  href={heroPrimary}
                 >
                   {heroPrimary}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(heroSecondary)}
+                </NavbarRouteLink>
+                <NavbarRouteLink
                   className="rounded-full border border-border px-6 py-3 font-medium text-foreground transition-colors hover:bg-muted"
+                  href={heroSecondary}
                 >
                   {heroSecondary}
-                </button>
+                </NavbarRouteLink>
                 <CommerceAddItemButton
                   lakebed={lakebed}
                   item={{

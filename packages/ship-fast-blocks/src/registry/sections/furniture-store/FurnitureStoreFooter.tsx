@@ -7,7 +7,7 @@ import { z } from 'zod/v4'
  * logo tile + store name, an about blurb, and a stacked store address / hours
  * block, beside several link columns (each a heading over a list of nav buttons).
  * A bordered-top bottom bar holds an auto-updating copyright line and a wrapping
- * row of legal links. The brand button and every link route through useNavigate.
+ * row of legal links. The brand button and every link route through section-kit route links.
  * Use as the closing site footer for furniture stores, home-decor or interiors
  * brands, or any warm boutique-retail site. Renders fully with no props via
  * baked-in "Haven & Home" defaults.
@@ -29,7 +29,7 @@ import {
 export const FurnitureStoreFooter = defineCapsule({
   name: 'FurnitureStoreFooter',
   description:
-    'Rich multi-column footer on the dark primary background: a responsive 5-column grid with a wide brand column (house-glyph logo tile + store name, about blurb, stacked store address / hours block) beside several link columns (heading over a list of nav buttons), plus a bordered-top bottom bar with an auto-updating copyright line and a wrapping row of legal links; the brand button and every link route through useNavigate. Use as the closing site footer for furniture stores, home-decor or interiors brands, or any warm boutique-retail site.',
+    'Rich multi-column footer on the dark primary background: a responsive 5-column grid with a wide brand column (house-glyph logo tile + store name, about blurb, stacked store address / hours block) beside several link columns (heading over a list of nav buttons), plus a bordered-top bottom bar with an auto-updating copyright line and a wrapping row of legal links; the brand button and every link route through section-kit route links. Use as the closing site footer for furniture stores, home-decor or interiors brands, or any warm boutique-retail site.',
   props: z.object({
     /** Brand / store name shown beside the logo tile. */
     brand: z.string().optional(),

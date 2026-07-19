@@ -14,12 +14,12 @@ import {
 import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
- * CleaningServiceContactCta — a big closing book-now CTA section for a home-cleaning / maid-service landing page. A centered heading + supporting paragraph inside a rounded-3xl primary-colored card with a subtle dot-pattern background overlay, followed by dual pill CTAs (filled primary-foreground + outlined secondary) and a cancellation-note line beneath. Every CTA routes through useNavigate. Use as the final conversion push for residential cleaning companies, maid services, housekeeping platforms, or any local home-service brand. Renders fully with no props via baked-in "PureSpace" defaults.
+ * CleaningServiceContactCta — a big closing book-now CTA section for a home-cleaning / maid-service landing page. A centered heading + supporting paragraph inside a rounded-3xl primary-colored card with a subtle dot-pattern background overlay, followed by dual pill CTAs (filled primary-foreground + outlined secondary) and a cancellation-note line beneath. Every CTA routes through section-kit route links. Use as the final conversion push for residential cleaning companies, maid services, housekeeping platforms, or any local home-service brand. Renders fully with no props via baked-in "PureSpace" defaults.
  */
 export const CleaningServiceContactCta = defineCapsule({
   name: 'CleaningServiceContactCta',
   description:
-    'Big closing book-now CTA section for a home-cleaning / maid-service landing page: centered heading + supporting paragraph inside a rounded-3xl primary-colored card with a subtle dot-pattern background overlay, followed by dual pill CTAs (filled primary-foreground + outlined secondary with phone icon) and a cancellation-note line beneath. CTAs route through useNavigate. Use as the final conversion push for residential cleaning, maid services, housekeeping, or local home-service brands.',
+    'Big closing book-now CTA section for a home-cleaning / maid-service landing page: centered heading + supporting paragraph inside a rounded-3xl primary-colored card with a subtle dot-pattern background overlay, followed by dual pill CTAs (filled primary-foreground + outlined secondary with phone icon) and a cancellation-note line beneath. CTAs route through section-kit route links. Use as the final conversion push for residential cleaning, maid services, housekeeping, or local home-service brands.',
   props: z.object({
     /** Section heading inside the colored card. */
     heading: z.string().optional(),

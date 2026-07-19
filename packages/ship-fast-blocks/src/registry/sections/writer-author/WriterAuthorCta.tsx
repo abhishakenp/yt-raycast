@@ -10,7 +10,7 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * WriterAuthorCta — a bold, centered book-purchase band for a literary author
@@ -20,14 +20,14 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * high-contrast "Buy the Book" button (variant "primary", auto-inverted to a
  * light pill on the primary band) plus an outlined "Find a Store" button
  * (variant "outline") that routes to the store locator. Both actions navigate
- * through the kit's useNavigate so neither is a dead link. Use near the bottom
+ * through the kit's section-kit route links so neither is a dead link. Use near the bottom
  * of an author, novelist, poet, or book-launch page to drive sales. Renders
  * fully with no props via baked-in "Eleanor Vance" defaults.
  */
 export const WriterAuthorCta = defineCapsule({
   name: 'WriterAuthorCta',
   description:
-    "Bold, centered book-purchase band for a literary author home page: a full-width primary-toned section with an 'Out now' eyebrow, a serif headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Buy the Book' button plus an outlined 'Find a Store' button). Both CTAs route through useNavigate. Use near the bottom of an author, novelist, poet, or book-launch page to drive book sales.",
+    "Bold, centered book-purchase band for a literary author home page: a full-width primary-toned section with an 'Out now' eyebrow, a serif headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Buy the Book' button plus an outlined 'Find a Store' button). Both CTAs route through section-kit route links. Use near the bottom of an author, novelist, poet, or book-launch page to drive book sales.",
   props: z.object({
     /** Small eyebrow line above the headline (maps to CtaBand eyebrow). */
     eyebrow: z.string().optional(),
@@ -46,7 +46,6 @@ export const WriterAuthorCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Out now'
     const title = props.title ?? 'Get your copy today'
     const subtitle =
@@ -64,11 +63,15 @@ export const WriterAuthorCta = defineCapsule({
           <CtaBandTitle>{title}</CtaBandTitle>
           <CtaBandSubtitle>{subtitle}</CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction variant="primary" onClick={() => go(primaryTarget)}>
-              {primaryLabel}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={primaryTarget}>
+                {primaryLabel}
+              </NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" onClick={() => go(secondaryTarget)}>
-              {secondaryLabel}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={secondaryTarget}>
+                {secondaryLabel}
+              </NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

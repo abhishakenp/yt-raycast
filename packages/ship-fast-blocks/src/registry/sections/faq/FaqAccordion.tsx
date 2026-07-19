@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   FaqAccordion as KitFaqAccordion,
   FaqAnswer,
@@ -11,6 +10,7 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * FaqAccordion — an expandable frequently-asked-questions accordion for a
@@ -19,14 +19,14 @@ import { Container } from '#/section-kit/Container.tsx'
  * details/summary items; each item is a rounded bordered panel (raised when open)
  * with the question in a medium heading, a circular chevron badge that rotates on
  * open, and one or more answer paragraphs in relaxed body text. The first item is
- * open by default. The contact link routes through useNavigate. Use as the FAQ /
+ * open by default. The contact link routes through section-kit route links. Use as the FAQ /
  * questions section on SaaS knowledge bases, help centers, or support pages.
  * Renders fully with no props via eight baked-in multi-paragraph Q&As.
  */
 export const FaqAccordion = defineCapsule({
   name: 'FaqAccordion',
   description:
-    "An expandable frequently-asked-questions accordion for a help-center / support page: a centered heading with an intro line and an inline underlined 'contact support' link above a stacked list of native details/summary items. Each item is a rounded bordered panel (raised when open) with the question in a medium heading, a circular chevron badge that rotates on open, and one or more answer paragraphs in relaxed body text; the first item is open by default. The contact link routes through useNavigate. Use as the FAQ / questions section on SaaS knowledge bases, help centers, or support pages.",
+    "An expandable frequently-asked-questions accordion for a help-center / support page: a centered heading with an intro line and an inline underlined 'contact support' link above a stacked list of native details/summary items. Each item is a rounded bordered panel (raised when open) with the question in a medium heading, a circular chevron badge that rotates on open, and one or more answer paragraphs in relaxed body text; the first item is open by default. The contact link routes through section-kit route links. Use as the FAQ / questions section on SaaS knowledge bases, help centers, or support pages.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -46,7 +46,6 @@ export const FaqAccordion = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Frequently Asked Questions'
     const intro =
       props.intro ??
@@ -132,13 +131,12 @@ export const FaqAccordion = defineCapsule({
             </h2>
             <p className="text-muted-foreground">
               {intro}{' '}
-              <button
-                type="button"
-                onClick={() => go(contactLink)}
+              <NavbarRouteLink
                 className="font-medium text-foreground underline underline-offset-2 hover:no-underline"
+                href={contactLink}
               >
                 {contactLink}
-              </button>
+              </NavbarRouteLink>
               .
             </p>
           </div>

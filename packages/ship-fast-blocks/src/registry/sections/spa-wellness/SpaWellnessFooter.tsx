@@ -23,14 +23,14 @@ import {
  * tagline with a social row, and a responsive grid of link columns. Hours,
  * address, and contact details are folded into a "Visit" column alongside the
  * navigational columns, and the bottom bar carries an auto-updating copyright
- * line. The wordmark, social, and every column link route through useNavigate.
+ * line. The wordmark, social, and every column link route through section-kit route links.
  * Use as the closing site footer for spas, wellness retreats, and treatment
  * studios. Renders fully with no props via baked-in defaults.
  */
 export const SpaWellnessFooter = defineCapsule({
   name: 'SpaWellnessFooter',
   description:
-    'Full footer for a day-spa / wellness site built on the shared SiteFooter composite: a serif wordmark + tagline with a social row, and a responsive grid of link columns where hours / address / contact details fold into a Visit column, closing with an auto-updating copyright row. The wordmark, social, and column links route through useNavigate. Use as the closing site footer for spas, wellness retreats, and treatment studios.',
+    'Full footer for a day-spa / wellness site built on the shared SiteFooter composite: a serif wordmark + tagline with a social row, and a responsive grid of link columns where hours / address / contact details fold into a Visit column, closing with an auto-updating copyright row. The wordmark, social, and column links route through section-kit route links. Use as the closing site footer for spas, wellness retreats, and treatment studios.',
   props: z.object({
     /** Serif wordmark / brand name. */
     brand: z.string().optional(),

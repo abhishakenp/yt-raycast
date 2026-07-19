@@ -7,7 +7,7 @@ import { cn } from '#/lib/utils.ts'
  * contractor page. A multi-column layout with a brand logo tile + company
  * blurb + social buttons on the left, service links and company links in
  * the middle columns, and contact info (address, phone, email) on the right.
- * Every link and social button routes through useNavigate. A bottom bar
+ * Every link and social button routes through section-kit route links. A bottom bar
  * shows copyright and legal links. Use as the closing site footer for
  * construction firms, contractors, builders, or trades businesses.
  * Renders fully with no props via baked-in defaults.
@@ -28,7 +28,7 @@ import {
 export const ConstructionFooter = defineCapsule({
   name: 'ConstructionFooter',
   description:
-    'Four-column footer for a construction / general contractor page: a multi-column layout with a brand logo tile + company blurb + social buttons on the left, service links and company links in the middle columns, and contact info (address, phone, email) on the right. Every link and social button routes through useNavigate. A bottom bar shows copyright and legal links. Use as the closing site footer for construction firms, contractors, builders, or trades businesses.',
+    'Four-column footer for a construction / general contractor page: a multi-column layout with a brand logo tile + company blurb + social buttons on the left, service links and company links in the middle columns, and contact info (address, phone, email) on the right. Every link and social button routes through section-kit route links. A bottom bar shows copyright and legal links. Use as the closing site footer for construction firms, contractors, builders, or trades businesses.',
   props: z.object({
     /** Brand / company name shown beside the logo tile. */
     brand: z.string().optional(),

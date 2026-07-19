@@ -3,18 +3,17 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { TopicGrid, TopicCard } from '#/section-kit/TopicGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * NewsroomTopics — an editorial "Browse by section" block for a digital
  * newsroom / magazine. A serif heading + supporting subheading above a
  * responsive 1/2/4-up grid of topic cards. Each card has an image band, the
  * topic name set in serif, a one-line blurb, the current top headline, and a
- * small story-count badge; cards lift on hover and route through useNavigate.
+ * small story-count badge; cards lift on hover and route through section-kit route links.
  * Use to let readers explore by section (Politics, World, Business, Technology,
  * Science, Culture, Sport, Health…) on a news or magazine homepage. Renders
  * fully with no props.
@@ -22,7 +21,7 @@ import { TopicGrid, TopicCard } from '#/section-kit/TopicGrid.tsx'
 export const NewsroomTopics = defineCapsule({
   name: 'NewsroomTopics',
   description:
-    "Editorial 'Browse by section/topic' block for a digital newsroom or magazine: a serif heading + supporting subheading above a responsive 1/2/4-up grid of topic cards, each with an image band, the topic name in serif, a one-line blurb, the current top headline, and a small story-count badge; cards lift on hover and route through useNavigate. Use to let readers explore by section (Politics, World, Business, Technology, Science, Culture, Sport, Health) on a news or magazine homepage. Renders fully with no props.",
+    "Editorial 'Browse by section/topic' block for a digital newsroom or magazine: a serif heading + supporting subheading above a responsive 1/2/4-up grid of topic cards, each with an image band, the topic name in serif, a one-line blurb, the current top headline, and a small story-count badge; cards lift on hover and route through section-kit route links. Use to let readers explore by section (Politics, World, Business, Technology, Science, Culture, Sport, Health) on a news or magazine homepage. Renders fully with no props.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -43,7 +42,6 @@ export const NewsroomTopics = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Explore by topic'
     const subheading =
       props.subheading ??
@@ -133,7 +131,7 @@ export const NewsroomTopics = defineCapsule({
                 key={topic.name}
                 className="text-left transition-all hover:-translate-y-1 hover:shadow-lg"
               >
-                <button type="button" onClick={() => go(topic.name)}>
+                <NavbarRouteLink href={topic.name}>
                   <div className="relative overflow-hidden bg-muted">
                     <Image
                       alt={topic.imageAlt ?? topic.name}
@@ -159,7 +157,7 @@ export const NewsroomTopics = defineCapsule({
                       </p>
                     ) : null}
                   </div>
-                </button>
+                </NavbarRouteLink>
               </TopicCard>
             ))}
           </TopicGrid>

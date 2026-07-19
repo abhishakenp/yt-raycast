@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   PortfolioGrid,
@@ -12,6 +11,7 @@ import {
 } from '#/section-kit/PortfolioGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * IllustratorWork — a selected-work project gallery for an illustrator /
@@ -19,14 +19,14 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * uppercase accent eyebrow + serif heading with a "view all" link (arrow) on
  * the right, above a responsive 3-up grid of clickable projects; each project
  * is a tall 4:5 image that zooms on hover with a serif title and a small meta
- * line beneath. Every item and the view-all link route through useNavigate. Use
+ * line beneath. Every item and the view-all link route through section-kit route links. Use
  * to showcase an artist's recent books, editorial spreads, campaigns, and
  * personal projects. Renders fully with no props via baked-in defaults.
  */
 export const IllustratorWork = defineCapsule({
   name: 'IllustratorWork',
   description:
-    "Selected-work project gallery for an illustrator / visual-artist portfolio on a raised card-colored band: a header row pairing an uppercase accent eyebrow + serif heading with a 'view all' arrow link, above a responsive 3-up grid of clickable projects, each a tall 4:5 image that zooms on hover with a serif title and small meta line. Items and the view-all link route through useNavigate. Use to showcase an artist's recent books, editorial spreads, campaigns, and personal projects.",
+    "Selected-work project gallery for an illustrator / visual-artist portfolio on a raised card-colored band: a header row pairing an uppercase accent eyebrow + serif heading with a 'view all' arrow link, above a responsive 3-up grid of clickable projects, each a tall 4:5 image that zooms on hover with a serif title and small meta line. Items and the view-all link route through section-kit route links. Use to showcase an artist's recent books, editorial spreads, campaigns, and personal projects.",
   props: z.object({
     /** Uppercase accent eyebrow label. */
     eyebrow: z.string().optional(),
@@ -41,7 +41,6 @@ export const IllustratorWork = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Selected Work'
     const heading = props.heading ?? 'Recent Projects'
     const viewAll = props.viewAll ?? 'View all work'
@@ -93,35 +92,32 @@ export const IllustratorWork = defineCapsule({
               eyebrowClassName="mb-2 text-sm font-medium uppercase tracking-wider text-chart-1"
               titleClassName="font-serif text-3xl sm:text-4xl lg:text-5xl"
             />
-            <button
-              type="button"
-              onClick={() => go(viewAll)}
+            <NavbarRouteLink
               className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              href={viewAll}
             >
               {viewAll}
               <ArrowRight className="size-4" />
-            </button>
+            </NavbarRouteLink>
           </div>
           <PortfolioGrid cols="1-2-3" className="gap-4 sm:gap-6">
             {items.map((proj) => (
-              <PortfolioItem
-                key={proj.title}
-                onClick={() => go(proj.title)}
-                className="block w-full"
-              >
-                <PortfolioMedia aspect="4-5" className="mb-4">
-                  <Image
-                    alt={proj.title}
-                    w={600}
-                    h={750}
-                    loading="lazy"
-                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </PortfolioMedia>
-                <PortfolioCaption>
-                  <h3 className="mb-1 font-serif text-lg">{proj.title}</h3>
-                  <p className="text-sm text-muted-foreground">{proj.meta}</p>
-                </PortfolioCaption>
+              <PortfolioItem key={proj.title} className="block w-full" asChild>
+                <NavbarRouteLink href={proj.title}>
+                  <PortfolioMedia aspect="4-5" className="mb-4">
+                    <Image
+                      alt={proj.title}
+                      w={600}
+                      h={750}
+                      loading="lazy"
+                      className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </PortfolioMedia>
+                  <PortfolioCaption>
+                    <h3 className="mb-1 font-serif text-lg">{proj.title}</h3>
+                    <p className="text-sm text-muted-foreground">{proj.meta}</p>
+                  </PortfolioCaption>
+                </NavbarRouteLink>
               </PortfolioItem>
             ))}
           </PortfolioGrid>

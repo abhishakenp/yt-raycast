@@ -7,7 +7,7 @@ import { cn } from '#/lib/utils.ts'
  * B2B site. A centered heading above a responsive 1/2/3-column grid of pricing
  * cards on a muted band; the middle card can be featured with an inverted dark
  * style and a floating "Most Popular" badge. Every card lists plan name, blurb,
- * price, a feature checklist, and a CTA button that routes through useNavigate.
+ * price, a feature checklist, and a CTA button that routes through section-kit route links.
  * Use for SaaS, managed services, or enterprise software pricing pages.
  */
 import { Container } from '#/section-kit/Container.tsx'
@@ -28,7 +28,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 export const CorporatePricing = defineCapsule({
   name: 'CorporatePricing',
   description:
-    "Transparent 3-tier pricing table for an enterprise / corporate B2B site: centered heading above a responsive 1/2/3-column grid of pricing cards on a muted band, with an optional featured dark middle card and a floating 'Most Popular' badge. Each card lists plan name, blurb, price, feature checklist, and a CTA button routing through useNavigate. Use for SaaS, managed services, or enterprise software pricing.",
+    "Transparent 3-tier pricing table for an enterprise / corporate B2B site: centered heading above a responsive 1/2/3-column grid of pricing cards on a muted band, with an optional featured dark middle card and a floating 'Most Popular' badge. Each card lists plan name, blurb, price, feature checklist, and a CTA button routing through section-kit route links. Use for SaaS, managed services, or enterprise software pricing.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),

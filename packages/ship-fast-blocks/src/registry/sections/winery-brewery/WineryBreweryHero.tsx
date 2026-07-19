@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroBackgroundImage,
@@ -20,6 +18,7 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * WineryBreweryHero — full-bleed, image-forward hero for a winery, vineyard, or
@@ -28,14 +27,14 @@ import {
  * light, serif text reads cleanly on top. Centered content stacks an uppercase
  * eyebrow pill, a large serif headline, a supporting paragraph, dual CTAs
  * (filled "Visit Us" + outlined "Our Wines"), and a divider-separated hours /
- * location / phone strip beneath. CTAs route through useNavigate. Use as the
+ * location / phone strip beneath. CTAs route through section-kit route links. Use as the
  * opening hero for wineries, cellar doors, vineyards, breweries, taprooms, or
  * cideries. Renders fully with no props via rustic-premium baked-in defaults.
  */
 export const WineryBreweryHero = defineCapsule({
   name: 'WineryBreweryHero',
   description:
-    "Full-bleed image-forward hero for a winery / vineyard / craft brewery landing page: one golden-hour vineyard or taproom photo fills the band edge to edge under a token-based dark overlay so light serif text stays readable. Centered content has an uppercase eyebrow pill, a large serif headline, a supporting paragraph, dual CTAs (filled 'Visit Us' + outlined translucent 'Our Wines'), and a divider-separated hours / location / phone strip. CTAs route through useNavigate. Use as the opening hero for wineries, cellar doors, vineyards, breweries, taprooms, or cideries.",
+    "Full-bleed image-forward hero for a winery / vineyard / craft brewery landing page: one golden-hour vineyard or taproom photo fills the band edge to edge under a token-based dark overlay so light serif text stays readable. Centered content has an uppercase eyebrow pill, a large serif headline, a supporting paragraph, dual CTAs (filled 'Visit Us' + outlined translucent 'Our Wines'), and a divider-separated hours / location / phone strip. CTAs route through section-kit route links. Use as the opening hero for wineries, cellar doors, vineyards, breweries, taprooms, or cideries.",
   props: z.object({
     /** Small uppercase eyebrow pill above the headline. */
     eyebrow: z.string().optional(),
@@ -67,7 +66,6 @@ export const WineryBreweryHero = defineCapsule({
   }),
   lakebed: commerceCartLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const heroEyebrow = props.eyebrow ?? 'Estate-grown · Est. 1986'
     const heroHeading = props.heading ?? 'Where the vineyard meets the glass'
     const heroSub =
@@ -122,18 +120,18 @@ export const WineryBreweryHero = defineCapsule({
                 variant="primary"
                 className="rounded-full px-8 py-4 font-medium"
               >
-                <button type="button" onClick={() => go(heroPrimaryTarget)}>
+                <NavbarRouteLink href={heroPrimaryTarget}>
                   {heroPrimary}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
               <HeroCta
                 asChild
                 variant="outline"
                 className="rounded-full border-border bg-card/10 px-8 py-4 font-medium text-background backdrop-blur-sm hover:bg-card/20"
               >
-                <button type="button" onClick={() => go(heroSecondaryTarget)}>
+                <NavbarRouteLink href={heroSecondaryTarget}>
                   {heroSecondary}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
               <CommerceAddItemButton
                 lakebed={lakebed}

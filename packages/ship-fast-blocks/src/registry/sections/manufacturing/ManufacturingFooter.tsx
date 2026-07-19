@@ -6,7 +6,7 @@ import { z } from 'zod/v4'
  * tile + wordmark + about blurb), a services link list, an industries link list,
  * and a contact column (address, linked phone + email, social icon buttons),
  * over a bottom bar with copyright and legal links. Every link routes through
- * useNavigate. Clean, neutral, industrial. Use as the closing footer on machine-
+ * section-kit route links. Clean, neutral, industrial. Use as the closing footer on machine-
  * shop, fabricator or contract-manufacturer pages. Renders fully with no props
  * via baked-in "Vertex Manufacturing" defaults.
  */
@@ -26,7 +26,7 @@ import {
 export const ManufacturingFooter = defineCapsule({
   name: 'ManufacturingFooter',
   description:
-    'A dark four-column site footer for a precision-manufacturing site: on a foreground-colored band, a brand column (initials tile + wordmark + about blurb), a services link list, an industries link list, and a contact column (address, linked phone + email, social icon buttons), over a bottom bar with copyright and legal links. Every link routes through useNavigate. Clean, neutral, industrial. Use as the closing footer on machine-shop, fabricator or contract-manufacturer pages.',
+    'A dark four-column site footer for a precision-manufacturing site: on a foreground-colored band, a brand column (initials tile + wordmark + about blurb), a services link list, an industries link list, and a contact column (address, linked phone + email, social icon buttons), over a bottom bar with copyright and legal links. Every link routes through section-kit route links. Clean, neutral, industrial. Use as the closing footer on machine-shop, fabricator or contract-manufacturer pages.',
   props: z.object({
     /** Brand / company name shown in the footer; initials tile derives from it. */
     brand: z.string().optional(),

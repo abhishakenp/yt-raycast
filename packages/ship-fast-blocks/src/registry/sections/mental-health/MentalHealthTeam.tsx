@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   PersonCard,
@@ -13,6 +12,7 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * MentalHealthTeam — a clinician team gallery for a therapy practice. A centered
@@ -20,13 +20,13 @@ import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
  * cards (rounded headshot photo that zooms on hover, name, primary-colored role,
  * short bio), followed by a muted "looking for a specific specialty?" band with
  * a therapist-matching link. Calm, warm, sage-and-sand wellness aesthetic. The
- * specialty link routes through useNavigate. Use to introduce therapists,
+ * specialty link routes through section-kit route links. Use to introduce therapists,
  * counselors, psychologists or psychiatrists at a mental-health practice.
  */
 export const MentalHealthTeam = defineCapsule({
   name: 'MentalHealthTeam',
   description:
-    "Clinician team gallery for a therapy practice: a centered eyebrow + heading + intro above a responsive 1/2/4-column grid of clinician cards (rounded headshot photo that zooms on hover, name, primary-colored role, short bio), then a muted 'looking for a specific specialty?' band with a therapist-matching link. Calm, warm, sage-and-sand wellness aesthetic. The specialty link routes through useNavigate. Use to introduce therapists, counselors, psychologists or psychiatrists at a mental-health practice.",
+    "Clinician team gallery for a therapy practice: a centered eyebrow + heading + intro above a responsive 1/2/4-column grid of clinician cards (rounded headshot photo that zooms on hover, name, primary-colored role, short bio), then a muted 'looking for a specific specialty?' band with a therapist-matching link. Calm, warm, sage-and-sand wellness aesthetic. The specialty link routes through section-kit route links. Use to introduce therapists, counselors, psychologists or psychiatrists at a mental-health practice.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -49,7 +49,6 @@ export const MentalHealthTeam = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Our Team'
     const heading = props.heading ?? 'Experienced, compassionate clinicians'
     const description =
@@ -114,7 +113,6 @@ export const MentalHealthTeam = defineCapsule({
               <PersonCard
                 key={m.name}
                 variant="bare"
-
                 className="group rounded-none"
               >
                 <div className="relative mb-4 overflow-hidden rounded-2xl">
@@ -142,10 +140,9 @@ export const MentalHealthTeam = defineCapsule({
               {specialtyHeading}
             </h3>
             <p className="mb-6 text-muted-foreground">{specialtyDescription}</p>
-            <button
-              type="button"
-              onClick={() => go(bookLabel)}
+            <NavbarRouteLink
               className="inline-flex items-center gap-2 font-medium text-primary transition-colors hover:text-primary/80"
+              href={bookLabel}
             >
               {specialtyCta}
               <svg
@@ -162,7 +159,7 @@ export const MentalHealthTeam = defineCapsule({
                   d="M17 8l4 4m0 0l-4 4m4-4H3"
                 />
               </svg>
-            </button>
+            </NavbarRouteLink>
           </div>
         </Container>
       </section>

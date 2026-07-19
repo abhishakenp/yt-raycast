@@ -30,13 +30,13 @@ import { Container } from '#/section-kit/Container.tsx'
  * surface and a floating "Most Popular" badge, while others sit on a muted
  * surface. Each card shows name, cadence, big price + unit, a checkmarked feature
  * list, and a rounded booking button, with a centered sliding-scale note below.
- * Calm, reassuring wellness aesthetic. Buttons route through useNavigate. Use to
+ * Calm, reassuring wellness aesthetic. Buttons route through section-kit route links. Use to
  * present session rates for therapists, counselors, psychologists or psychiatry.
  */
 export const MentalHealthPricing = defineCapsule({
   name: 'MentalHealthPricing',
   description:
-    "Transparent 3-tier pricing block for a therapy practice: a centered eyebrow + heading + intro above a 3-column grid of pricing cards; the 'most popular' tier is lifted with a primary border, raised card surface and a floating badge, while others sit on a muted surface. Each card shows name, cadence, big price + unit, a checkmarked feature list, and a rounded booking button, with a centered sliding-scale note below. Calm, reassuring wellness aesthetic. Buttons route through useNavigate. Use to present session rates for therapists, counselors, psychologists or psychiatry.",
+    "Transparent 3-tier pricing block for a therapy practice: a centered eyebrow + heading + intro above a 3-column grid of pricing cards; the 'most popular' tier is lifted with a primary border, raised card surface and a floating badge, while others sit on a muted surface. Each card shows name, cadence, big price + unit, a checkmarked feature list, and a rounded booking button, with a centered sliding-scale note below. Calm, reassuring wellness aesthetic. Buttons route through section-kit route links. Use to present session rates for therapists, counselors, psychologists or psychiatry.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),

@@ -24,7 +24,7 @@ import {
  * A spanning brand block (logo tile + name, tagline, and small social icon
  * buttons) sits beside four link columns (Product, Resources, Company, Legal) in a
  * responsive grid, with a bottom bar holding the copyright, a Status link, and a
- * green "All systems operational" status pill. All links route through useNavigate.
+ * green "All systems operational" status pill. All links route through section-kit route links.
  * Use as the global footer for SaaS knowledge bases, help centers, documentation
  * landings, or support pages. Renders fully with no props via baked-in "FlowSync"
  * defaults.
@@ -32,7 +32,7 @@ import {
 export const FaqFooter = defineCapsule({
   name: 'FaqFooter',
   description:
-    "A five-column resource footer for a help-center / SaaS product page: a spanning brand block (logo tile + name, tagline, and small social icon buttons) beside four link columns (Product, Resources, Company, Legal) in a responsive grid, with a bottom bar holding the copyright, a Status link, and a green 'All systems operational' status pill. All links route through useNavigate. Use as the global footer for SaaS knowledge bases, help centers, documentation landings, or support pages.",
+    "A five-column resource footer for a help-center / SaaS product page: a spanning brand block (logo tile + name, tagline, and small social icon buttons) beside four link columns (Product, Resources, Company, Legal) in a responsive grid, with a bottom bar holding the copyright, a Status link, and a green 'All systems operational' status pill. All links route through section-kit route links. Use as the global footer for SaaS knowledge bases, help centers, documentation landings, or support pages.",
   props: z.object({
     /** Brand / product name shown beside the logo. */
     brand: z.string().optional(),

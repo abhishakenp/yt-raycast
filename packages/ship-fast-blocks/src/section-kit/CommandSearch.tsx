@@ -11,11 +11,13 @@ import {
   CommandList,
 } from '#/components/ui/command.tsx'
 import { cn } from '#/lib/utils.ts'
+import { NavbarRouteLink } from './SiteNav.tsx'
 
 type CommandSearchSearch<T> = {
   items: readonly T[]
   getKey: (item: T) => string
   getValue: (item: T) => string
+  getHref?: (item: T) => string | undefined
   onSelect: (item: T) => void | Promise<unknown>
 }
 
@@ -188,6 +190,7 @@ function CommandSearchGroup({
       {search.items.map((item) => {
         const key = search.getKey(item)
         const value = search.getValue(item)
+        const href = search.getHref?.(item)
         const handleSelect = () => {
           const result = search.onSelect(item)
           if (result && typeof result.then === 'function') {
@@ -199,9 +202,23 @@ function CommandSearchGroup({
             setOpen(false)
           }
         }
+        const content =
+          typeof children === 'function' ? children(item) : children
+        if (href) {
+          return (
+            <CommandItem
+              key={key}
+              value={value}
+              onSelect={handleSelect}
+              asChild
+            >
+              <NavbarRouteLink href={href}>{content}</NavbarRouteLink>
+            </CommandItem>
+          )
+        }
         return (
           <CommandItem key={key} value={value} onSelect={handleSelect}>
-            {typeof children === 'function' ? children(item) : children}
+            {content}
           </CommandItem>
         )
       })}

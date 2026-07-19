@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { Card } from '#/section-kit/Card.tsx'
@@ -15,6 +14,7 @@ import {
   HeroStatBadgeSubtitle,
 } from '#/section-kit/HeroSection.tsx'
 import { StarRating } from '#/section-kit/StarRating.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * OnlineCourseHero — split, two-column hero for an online-course / e-learning
@@ -23,14 +23,14 @@ import { StarRating } from '#/section-kit/StarRating.tsx'
  * outlined "Watch Demo" with a play glyph), and an overlapping avatar
  * social-proof row. Right column: a rounded showcase photo with a floating
  * "Certificate Issued" card (bottom-left) and a floating star-rating card
- * (top-right). All CTAs route through useNavigate. Use as the top hero for
+ * (top-right). All CTAs route through section-kit route links. Use as the top hero for
  * course platforms, e-learning marketplaces, bootcamps, academies, or any
  * skill-learning subscription product. Renders fully with no props.
  */
 export const OnlineCourseHero = defineCapsule({
   name: 'OnlineCourseHero',
   description:
-    'Split two-column hero for an online-course / e-learning landing page: left column has a pill enrollment badge with a pulsing dot, a huge tracking-tight headline, a relaxed subheading, dual CTAs (solid primary + outlined Watch Demo with a play glyph), and an overlapping avatar social-proof row; right column has a rounded showcase photo with a floating Certificate Issued card and a floating star-rating card. CTAs route through useNavigate. Use as the top hero for course platforms, e-learning marketplaces, bootcamps, academies, or skill-learning subscription products.',
+    'Split two-column hero for an online-course / e-learning landing page: left column has a pill enrollment badge with a pulsing dot, a huge tracking-tight headline, a relaxed subheading, dual CTAs (solid primary + outlined Watch Demo with a play glyph), and an overlapping avatar social-proof row; right column has a rounded showcase photo with a floating Certificate Issued card and a floating star-rating card. CTAs route through section-kit route links. Use as the top hero for course platforms, e-learning marketplaces, bootcamps, academies, or skill-learning subscription products.',
   props: z.object({
     badge: z.string().optional(),
     heading: z.string().optional(),
@@ -48,7 +48,6 @@ export const OnlineCourseHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const badge = props.badge ?? 'Over 50,000 students enrolled this month'
     const heading = props.heading ?? 'Master the skills that shape the future'
     const subheading =
@@ -95,17 +94,15 @@ export const OnlineCourseHero = defineCapsule({
                 {subheading}
               </p>
               <div className="mb-8 flex flex-col gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
+                <NavbarRouteLink
                   className="rounded-lg bg-primary px-6 py-3.5 text-center font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                  href={primaryCta}
                 >
                   {primaryCta}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
+                </NavbarRouteLink>
+                <NavbarRouteLink
                   className="flex items-center justify-center gap-2 rounded-lg border border-border px-6 py-3.5 font-semibold text-foreground transition-colors hover:bg-muted"
+                  href={secondaryCta}
                 >
                   <svg
                     width="20"
@@ -122,7 +119,7 @@ export const OnlineCourseHero = defineCapsule({
                     <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   {secondaryCta}
-                </button>
+                </NavbarRouteLink>
               </div>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex -space-x-2">
@@ -173,9 +170,7 @@ export const OnlineCourseHero = defineCapsule({
                   </HeroStatBadgeSubtitle>
                 </HeroStatBadgeContent>
               </HeroStatBadge>
-              <Card
-                className="absolute -right-4 -top-4 px-4 py-3 p-0 shadow-lg"
-              >
+              <Card className="absolute -right-4 -top-4 px-4 py-3 p-0 shadow-lg">
                 <div className="flex items-center gap-2">
                   <StarRating rating={5} size="md" color="primary" />
                   <span className="font-semibold text-card-foreground">

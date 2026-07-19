@@ -19,13 +19,13 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
  * centered heading + supporting paragraph, a pair of pill buttons (an inverted
  * click-to-call button with a phone icon and a translucent online-booking button
  * with a calendar icon), and a row of check-marked reassurance perks. All
- * buttons route through useNavigate. Use as the final conversion banner above
+ * buttons route through section-kit route links. Use as the final conversion banner above
  * the footer on a dentist, dental office, or clinic site.
  */
 export const DentalContactCta = defineCapsule({
   name: 'DentalContactCta',
   description:
-    'Bold closing call-to-action banner for a dental practice site: a full-width primary-colored section with soft blurred corner glows, a centered heading + supporting paragraph, a pair of pill buttons (an inverted click-to-call button with a phone icon and a translucent online-booking button with a calendar icon), and a row of check-marked reassurance perks. All buttons route through useNavigate. Use as the final conversion banner above the footer on a dentist, dental office, or clinic site.',
+    'Bold closing call-to-action banner for a dental practice site: a full-width primary-colored section with soft blurred corner glows, a centered heading + supporting paragraph, a pair of pill buttons (an inverted click-to-call button with a phone icon and a translucent online-booking button with a calendar icon), and a row of check-marked reassurance perks. All buttons route through section-kit route links. Use as the final conversion banner above the footer on a dentist, dental office, or clinic site.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),

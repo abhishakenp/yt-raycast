@@ -2,25 +2,25 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   LogoStrip,
   LogoStripLabel,
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * EventLogos — a trusted-by sponsor / company logo strip for a conference or event
  * page. A muted, top-and-bottom-bordered band with a centered caption above a
  * wrapping row of dimmed wordmark buttons that brighten on hover. Each wordmark
- * routes through useNavigate. Use directly beneath the hero of conference, summit,
+ * routes through section-kit route links. Use directly beneath the hero of conference, summit,
  * meetup, or festival pages to show sponsors, partners, or featured companies.
  */
 export const EventLogos = defineCapsule({
   name: 'EventLogos',
   description:
-    'Trusted-by sponsor / company logo strip for a conference or event page: a muted, top-and-bottom-bordered band with a centered caption above a wrapping row of dimmed wordmark buttons that brighten on hover. Each wordmark routes through useNavigate. Use directly beneath the hero of conference, summit, meetup, festival, or webinar pages to surface sponsors, partners, or featured companies.',
+    'Trusted-by sponsor / company logo strip for a conference or event page: a muted, top-and-bottom-bordered band with a centered caption above a wrapping row of dimmed wordmark buttons that brighten on hover. Each wordmark routes through section-kit route links. Use directly beneath the hero of conference, summit, meetup, festival, or webinar pages to surface sponsors, partners, or featured companies.',
   props: z.object({
     /** Caption above the logo row. */
     label: z.string().optional(),
@@ -29,7 +29,6 @@ export const EventLogos = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const label = props.label ?? 'Trusted by teams at leading companies'
     const items = props.items?.length
       ? props.items
@@ -52,7 +51,7 @@ export const EventLogos = defineCapsule({
               className="text-foreground transition-opacity hover:opacity-80"
               asChild
             >
-              <button onClick={() => ((logo) => go(logo))(logo)}>{logo}</button>
+              <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
             </LogoStripItem>
           ))}
         </LogoStripItems>

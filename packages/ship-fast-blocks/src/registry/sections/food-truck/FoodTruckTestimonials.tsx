@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -12,19 +11,20 @@ import {
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * FoodTruckTestimonials — a customer-reviews section with a press-logo strip. A
  * centered eyebrow + heading sits above a 3-up grid of muted quote cards, each with a
  * five-star row, an italicized quote and an avatar + name + role byline, followed by a
  * centered row of clickable press / publication logos. Avatars use the alt-driven
- * Image component; logos route through useNavigate. Use as the social-proof section for
+ * Image component; logos route through section-kit route links. Use as the social-proof section for
  * food trucks, restaurants, caterers or street-food vendors showing reviews and press.
  */
 export const FoodTruckTestimonials = defineCapsule({
   name: 'FoodTruckTestimonials',
   description:
-    'Customer-reviews section with a press-logo strip: a centered eyebrow + heading above a 3-up grid of muted quote cards, each with a five-star row, a quote and an avatar + name + role byline, followed by a centered row of clickable press / publication logos. Avatars use the alt-driven Image component; logos route through useNavigate. Use as the social-proof / testimonials section for food trucks, restaurants, caterers or street-food vendors showing reviews and press mentions.',
+    'Customer-reviews section with a press-logo strip: a centered eyebrow + heading above a 3-up grid of muted quote cards, each with a five-star row, a quote and an avatar + name + role byline, followed by a centered row of clickable press / publication logos. Avatars use the alt-driven Image component; logos route through section-kit route links. Use as the social-proof / testimonials section for food trucks, restaurants, caterers or street-food vendors showing reviews and press mentions.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -42,7 +42,6 @@ export const FoodTruckTestimonials = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const testEyebrow = props.eyebrow ?? 'Reviews'
     const testHeading = props.heading ?? 'What People Say'
     const testItems = props.items?.length
@@ -119,14 +118,13 @@ export const FoodTruckTestimonials = defineCapsule({
 
           <div className="mt-12 flex flex-wrap items-center justify-center gap-6">
             {pressLogos.map((logo) => (
-              <button
+              <NavbarRouteLink
                 key={logo}
-                type="button"
-                onClick={() => go(logo)}
                 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground/60 transition-colors hover:text-foreground"
+                href={logo}
               >
                 {logo}
-              </button>
+              </NavbarRouteLink>
             ))}
           </div>
         </Container>

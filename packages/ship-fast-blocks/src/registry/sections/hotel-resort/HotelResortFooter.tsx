@@ -23,14 +23,14 @@ import {
  * with an inline email-capture form, all over a bordered bottom row with an
  * auto-updating copyright line and legal links. The newsletter capture writes to
  * the shared Lakebed subscriber list; the brand button, socials, links, and
- * contact rows route through useNavigate. Use as the
+ * contact rows route through section-kit route links. Use as the
  * closing footer for hotels, resorts, spa retreats, villas, or inns. Renders
  * fully with no props via baked-in "Azure Coast" defaults.
  */
 export const HotelResortFooter = defineCapsule({
   name: 'HotelResortFooter',
   description:
-    'Rich 4-column dark footer for a luxury hotel / resort & spa site: a foreground-surface footer with a brand column (logo mark + name, about blurb, circular social buttons), an explore-links column, a contact column (address lines plus tappable phone/email), and a newsletter column with an inline email-capture form, over a bordered bottom row with an auto-updating copyright line and legal links. The newsletter capture writes to the shared Lakebed subscriber list; brand button, socials, links, and contact rows route through useNavigate. Use as the closing footer for hotels, resorts, spa retreats, villas, or boutique inns.',
+    'Rich 4-column dark footer for a luxury hotel / resort & spa site: a foreground-surface footer with a brand column (logo mark + name, about blurb, circular social buttons), an explore-links column, a contact column (address lines plus tappable phone/email), and a newsletter column with an inline email-capture form, over a bordered bottom row with an auto-updating copyright line and legal links. The newsletter capture writes to the shared Lakebed subscriber list; brand button, socials, links, and contact rows route through section-kit route links. Use as the closing footer for hotels, resorts, spa retreats, villas, or boutique inns.',
   props: z.object({
     /** Resort / brand name shown beside the logo mark. */
     brand: z.string().optional(),

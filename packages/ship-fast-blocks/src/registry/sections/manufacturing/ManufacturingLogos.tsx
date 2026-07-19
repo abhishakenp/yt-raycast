@@ -1,14 +1,12 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 /**
  * ManufacturingLogos — a "trusted by industry leaders" client-logo strip for a
  * precision-manufacturing / industrial B2B site. A muted, top-and-bottom-
  * bordered band: a small uppercase tracked heading above a responsive grid of
  * monochrome client wordmarks, each a small cube glyph plus name that brightens
- * on hover and routes through useNavigate. Quiet, credible social proof. Use
+ * on hover and routes through section-kit route links. Quiet, credible social proof. Use
  * directly beneath the hero on machine-shop, fabricator, contract-manufacturer
  * or industrial-engineering landing pages. Renders fully with no props via
  * baked-in defaults.
@@ -19,17 +17,18 @@ import {
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const ManufacturingLogos = defineCapsule({
   name: 'ManufacturingLogos',
   description:
-    "A 'trusted by industry leaders' client-logo strip for a precision-manufacturing / industrial B2B site: a muted, top-and-bottom-bordered band with a small uppercase tracked heading above a responsive grid of monochrome client wordmarks, each a small cube glyph plus name that brightens on hover and routes through useNavigate. Quiet, credible social proof. Use directly beneath the hero on machine-shop, fabricator, contract-manufacturer or industrial-engineering landing pages.",
+    "A 'trusted by industry leaders' client-logo strip for a precision-manufacturing / industrial B2B site: a muted, top-and-bottom-bordered band with a small uppercase tracked heading above a responsive grid of monochrome client wordmarks, each a small cube glyph plus name that brightens on hover and routes through section-kit route links. Quiet, credible social proof. Use directly beneath the hero on machine-shop, fabricator, contract-manufacturer or industrial-engineering landing pages.",
   props: z.object({
     heading: z.string().optional(),
     items: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Trusted by Industry Leaders'
     const items = props.items?.length
       ? props.items
@@ -49,7 +48,7 @@ export const ManufacturingLogos = defineCapsule({
         <LogoStripItems layout="flex" className="mt-8">
           {items.filter(Boolean).map((logo) => (
             <LogoStripItem key={logo} variant="opacity-hover" asChild>
-              <button onClick={() => go(logo)}>{logo}</button>
+              <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
             </LogoStripItem>
           ))}
         </LogoStripItems>

@@ -1,13 +1,11 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 /**
  * JobBoardLogos — a compact "trusted by" social-proof strip for a job-board /
  * careers site. A subtle muted band with a small uppercase eyebrow heading above
  * a responsive grid of wordmark company names rendered as muted text that
- * brighten on hover; each routes through useNavigate. Use directly below a hero
+ * brighten on hover; each routes through section-kit route links. Use directly below a hero
  * to establish credibility on job boards, hiring marketplaces, recruiting
  * platforms or any marketing page that wants a logo cloud. Renders fully with no
  * props.
@@ -18,10 +16,12 @@ import {
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+
 export const JobBoardLogos = defineCapsule({
   name: 'JobBoardLogos',
   description:
-    "Compact 'trusted by' social-proof strip for a job-board / careers site: a subtle muted band with a small uppercase eyebrow heading above a responsive grid of wordmark company names rendered as muted text that brighten on hover; each routes through useNavigate. Use directly below a hero to establish credibility on job boards, hiring marketplaces, recruiting platforms or any marketing page that wants a logo cloud.",
+    "Compact 'trusted by' social-proof strip for a job-board / careers site: a subtle muted band with a small uppercase eyebrow heading above a responsive grid of wordmark company names rendered as muted text that brighten on hover; each routes through section-kit route links. Use directly below a hero to establish credibility on job boards, hiring marketplaces, recruiting platforms or any marketing page that wants a logo cloud.",
   props: z.object({
     /** Eyebrow heading above the logo grid. */
     heading: z.string().optional(),
@@ -30,7 +30,6 @@ export const JobBoardLogos = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Trusted by leading companies worldwide'
     const companies = props.companies?.length
       ? props.companies
@@ -46,7 +45,7 @@ export const JobBoardLogos = defineCapsule({
         <LogoStripItems layout="flex" className="mt-8">
           {companies.filter(Boolean).map((logo) => (
             <LogoStripItem key={logo} variant="opacity-hover" asChild>
-              <button onClick={() => go(logo)}>{logo}</button>
+              <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
             </LogoStripItem>
           ))}
         </LogoStripItems>

@@ -25,13 +25,13 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
  * (portrait, full-day wedding, destination), each with a price, a coverage
  * line, an inclusions list, and a routable "Book a Shoot" CTA. The middle
  * wedding tier is highlighted with a "Most popular" pill. Each CTA routes
- * through useNavigate. Use to present collections for photographers, studios,
+ * through section-kit route links. Use to present collections for photographers, studios,
  * and elopement shooters. Renders fully with no props via baked-in defaults.
  */
 export const PhotographyPricing = defineCapsule({
   name: 'PhotographyPricing',
   description:
-    "Session-package pricing for a fine-art / wedding photographer site built on the shared PricingGrid composite: a centered serif header above three responsive tier cards (portrait, full-day wedding, destination), each with a price, a coverage period line, an inclusions list, and a routable 'Book a Shoot' CTA, with the middle wedding tier highlighted by a 'Most popular' pill. Each CTA routes through useNavigate. Use to present collections and session packages for photographers, studios, and elopement shooters.",
+    "Session-package pricing for a fine-art / wedding photographer site built on the shared PricingGrid composite: a centered serif header above three responsive tier cards (portrait, full-day wedding, destination), each with a price, a coverage period line, an inclusions list, and a routable 'Book a Shoot' CTA, with the middle wedding tier highlighted by a 'Most popular' pill. Each CTA routes through section-kit route links. Use to present collections and session packages for photographers, studios, and elopement shooters.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),

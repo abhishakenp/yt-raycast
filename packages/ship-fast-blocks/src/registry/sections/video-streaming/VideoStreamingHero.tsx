@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroBackgroundImage,
@@ -13,6 +11,7 @@ import {
   HeroCta,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * VideoStreamingHero — full-bleed, cinematic dark hero for a video-streaming
@@ -21,13 +20,13 @@ import { Container } from '#/section-kit/Container.tsx'
  * Content stacks a small "Featured" eyebrow, a huge show title, a short
  * logline, dual CTAs (filled "Start Free Trial" + outlined "Browse"), and a
  * divider-separated metadata strip (genre · rating · seasons). CTAs route
- * through useNavigate. Use as the opening hero for streaming services, OTT
+ * through section-kit route links. Use as the opening hero for streaming services, OTT
  * apps, and on-demand video platforms. Renders fully with no props.
  */
 export const VideoStreamingHero = defineCapsule({
   name: 'VideoStreamingHero',
   description:
-    "Full-bleed cinematic dark hero for a video-streaming landing page: one dramatic show backdrop fills the band edge to edge under layered token-based dark overlays so light text stays readable. Content has a small 'Featured' eyebrow, a huge show title, a short logline, dual CTAs (filled 'Start Free Trial' + outlined 'Browse'), and a divider-separated metadata strip (genre · rating · seasons). CTAs route through useNavigate. Use as the opening hero for streaming services, OTT apps, and on-demand video platforms.",
+    "Full-bleed cinematic dark hero for a video-streaming landing page: one dramatic show backdrop fills the band edge to edge under layered token-based dark overlays so light text stays readable. Content has a small 'Featured' eyebrow, a huge show title, a short logline, dual CTAs (filled 'Start Free Trial' + outlined 'Browse'), and a divider-separated metadata strip (genre · rating · seasons). CTAs route through section-kit route links. Use as the opening hero for streaming services, OTT apps, and on-demand video platforms.",
   props: z.object({
     /** Small uppercase eyebrow above the title. */
     eyebrow: z.string().optional(),
@@ -50,7 +49,6 @@ export const VideoStreamingHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heroEyebrow = props.eyebrow ?? 'Featured · New Season'
     const heroHeading = props.heading ?? 'Midnight Echo'
     const heroSub =
@@ -93,18 +91,18 @@ export const VideoStreamingHero = defineCapsule({
                 variant="primary"
                 className="rounded-full px-8 py-4 font-medium"
               >
-                <button type="button" onClick={() => go(heroPrimaryTarget)}>
+                <NavbarRouteLink href={heroPrimaryTarget}>
                   {heroPrimary}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
               <HeroCta
                 asChild
                 variant="outline"
                 className="rounded-full border-background/40 bg-background/10 px-8 py-4 font-medium text-background backdrop-blur-sm hover:bg-background/20"
               >
-                <button type="button" onClick={() => go(heroSecondaryTarget)}>
+                <NavbarRouteLink href={heroSecondaryTarget}>
                   {heroSecondary}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
             </HeroActions>
 

@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 /**
- * CleaningServiceFooter — a multi-column footer for a home-cleaning / maid-service landing page. A dark card-background footer with a 5-column layout: brand sparkle-mark + company name + tagline + social-icon buttons on the left (spanning 2 columns on desktop), followed by link-column groups (Services, Company, Support) and a bottom bar with copyright, location, phone, and email — all routable through useNavigate. Every brand click, footer link, phone, email, and social button routes through useNavigate. Use as the closing site footer for residential cleaning companies, maid services, housekeeping platforms, janitorial businesses, or any local home-service brand. Renders fully with no props via baked-in "PureSpace" defaults.
+ * CleaningServiceFooter — a multi-column footer for a home-cleaning / maid-service landing page. A dark card-background footer with a 5-column layout: brand sparkle-mark + company name + tagline + social-icon buttons on the left (spanning 2 columns on desktop), followed by link-column groups (Services, Company, Support) and a bottom bar with copyright, location, phone, and email — all routable through section-kit route links. Every brand click, footer link, phone, email, and social button routes through section-kit route links. Use as the closing site footer for residential cleaning companies, maid services, housekeeping platforms, janitorial businesses, or any local home-service brand. Renders fully with no props via baked-in "PureSpace" defaults.
  */
 import {
   SiteFooter,
@@ -21,7 +21,7 @@ import {
 export const CleaningServiceFooter = defineCapsule({
   name: 'CleaningServiceFooter',
   description:
-    'Multi-column footer for a home-cleaning / maid-service landing page: dark card-background with a 5-column layout. Left side has brand sparkle-mark + company name + tagline + social-icon buttons (spanning 2 columns on desktop); right side has link-column groups (Services, Company, Support). Bottom bar carries copyright, location, phone, and email — all routable through useNavigate. Use as the closing site footer for residential cleaning, maid services, housekeeping, janitorial, or local home-service brands.',
+    'Multi-column footer for a home-cleaning / maid-service landing page: dark card-background with a 5-column layout. Left side has brand sparkle-mark + company name + tagline + social-icon buttons (spanning 2 columns on desktop); right side has link-column groups (Services, Company, Support). Bottom bar carries copyright, location, phone, and email — all routable through section-kit route links. Use as the closing site footer for residential cleaning, maid services, housekeeping, janitorial, or local home-service brands.',
   props: z.object({
     /** Brand / company name shown beside the logo tile. */
     brand: z.string().optional(),

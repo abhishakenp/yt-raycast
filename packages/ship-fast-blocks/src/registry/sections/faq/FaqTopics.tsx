@@ -3,11 +3,10 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { TopicGrid, TopicCard, TopicIcon } from '#/section-kit/TopicGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * FaqTopics — a "Browse by Topic" category grid for a help-center / knowledge-base
@@ -15,14 +14,14 @@ import { TopicGrid, TopicCard, TopicIcon } from '#/section-kit/TopicGrid.tsx'
  * clickable card buttons; each card has a tinted rounded icon tile (rotating token
  * tints — rocket, card, kanban, plugs, shield, code), a bold title, a short
  * description, and an article-count link with a chevron that nudges on hover. Cards
- * route through useNavigate. Use as the topic/category browse section on SaaS
+ * route through section-kit route links. Use as the topic/category browse section on SaaS
  * knowledge bases, help centers, documentation landings, or support pages. Renders
  * fully with no props via six baked-in support topics.
  */
 export const FaqTopics = defineCapsule({
   name: 'FaqTopics',
   description:
-    "A 'Browse by Topic' category grid for a help-center / knowledge-base page: a left-aligned section heading above a responsive 1/2/3-column grid of clickable card buttons. Each card has a tinted rounded icon tile (rotating token tints — rocket, card, kanban, plugs, shield, code), a bold title, a short description, and an article-count link with a chevron that nudges on hover. Cards route through useNavigate. Use as the topic/category browse section on SaaS knowledge bases, help centers, documentation landings, or support pages.",
+    "A 'Browse by Topic' category grid for a help-center / knowledge-base page: a left-aligned section heading above a responsive 1/2/3-column grid of clickable card buttons. Each card has a tinted rounded icon tile (rotating token tints — rocket, card, kanban, plugs, shield, code), a bold title, a short description, and an article-count link with a chevron that nudges on hover. Cards route through section-kit route links. Use as the topic/category browse section on SaaS knowledge bases, help centers, documentation landings, or support pages.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -39,7 +38,6 @@ export const FaqTopics = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Browse by Topic'
     const items = props.items?.length
       ? props.items
@@ -220,7 +218,7 @@ export const FaqTopics = defineCapsule({
                 asChild
                 className="p-6 text-left text-card-foreground transition-all hover:border-border/60 hover:shadow-sm"
               >
-                <button type="button" onClick={() => go(topic.title)}>
+                <NavbarRouteLink href={topic.title}>
                   <TopicIcon className={cn(topicTints[i % topicTints.length])}>
                     {topicIcons[i % topicIcons.length]}
                   </TopicIcon>
@@ -234,7 +232,7 @@ export const FaqTopics = defineCapsule({
                     {topic.count}
                     <CaretRight className="ml-1 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
                   </span>
-                </button>
+                </NavbarRouteLink>
               </TopicCard>
             ))}
           </TopicGrid>

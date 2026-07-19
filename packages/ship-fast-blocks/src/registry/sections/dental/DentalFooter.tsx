@@ -8,7 +8,7 @@ import { cn } from '#/lib/utils.ts'
  * practice name + tagline + initial-letter social buttons), a services link
  * column, an office-hours column (day / time rows), and a contact column with
  * pinned address, click-to-call phone, and email, closed by a copyright + legal
- * bar. Every link, social, phone, and email routes through useNavigate. Use as
+ * bar. Every link, social, phone, and email routes through section-kit route links. Use as
  * the closing footer for dentists, dental offices, orthodontists, or clinics.
  */
 import {
@@ -27,7 +27,7 @@ import {
 export const DentalFooter = defineCapsule({
   name: 'DentalFooter',
   description:
-    'Rich 4-column footer for a dental practice site: a dark inverted section on the foreground color with a brand block (mint tooth-glyph logo + practice name + tagline + initial-letter social buttons), a services link column, an office-hours column (day / time rows), and a contact column with pinned address, click-to-call phone, and email, closed by a copyright + legal bar. Every link, social, phone, and email routes through useNavigate. Use as the closing footer for dentists, dental offices, orthodontists, or clinics.',
+    'Rich 4-column footer for a dental practice site: a dark inverted section on the foreground color with a brand block (mint tooth-glyph logo + practice name + tagline + initial-letter social buttons), a services link column, an office-hours column (day / time rows), and a contact column with pinned address, click-to-call phone, and email, closed by a copyright + legal bar. Every link, social, phone, and email routes through section-kit route links. Use as the closing footer for dentists, dental offices, orthodontists, or clinics.',
   props: z.object({
     /** Practice / brand name shown beside the logo tile. */
     brand: z.string().optional(),

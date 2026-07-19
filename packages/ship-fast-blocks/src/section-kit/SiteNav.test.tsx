@@ -1,7 +1,24 @@
 // @vitest-environment jsdom
 
-import type { ReactElement } from 'react'
+import type { ReactElement, ReactNode } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+
+type MockLinkProps = React.ComponentProps<'a'> & {
+  children: ReactNode
+  to: string
+}
+
+vi.mock('@tanstack/react-router', () => {
+  function Link({ children, to, ...props }: MockLinkProps) {
+    return (
+      <a href={to} {...props}>
+        {children}
+      </a>
+    )
+  }
+
+  return { Link }
+})
 
 if (typeof ResizeObserver === 'undefined') {
   Object.defineProperty(globalThis, 'ResizeObserver', {
@@ -15,15 +32,15 @@ if (typeof ResizeObserver === 'undefined') {
   })
 }
 
-const { cleanup, fireEvent, render, screen, waitFor } = await import(
-  '@testing-library/react'
-)
+const { cleanup, fireEvent, render, screen, waitFor } =
+  await import('@testing-library/react')
 const { SiteNav } = await import('./SiteNav.tsx')
 const { BrandLogoProvider } = await import('./Logo.tsx')
-const { RoutesContext } = await import('../lib/use-navigate.tsx')
+const { RoutesContext } = await import('../lib/route-context.tsx')
 
 afterEach(() => {
   cleanup()
+  window.history.replaceState(null, '', '/')
 })
 
 describe('SiteNav', () => {
@@ -56,6 +73,30 @@ describe('SiteNav', () => {
     expect(
       screen.getByRole('link', { name: 'Northridge' }).getAttribute('href'),
     ).toBe('/')
+  })
+
+  it('keeps legacy nav links under the current base path', () => {
+    window.history.pushState(null, '', '/preview/release-preview')
+
+    renderWithRoutes(
+      <SiteNav
+        brand="Northridge"
+        nav={['Services', 'Pricing']}
+        cta={{ label: 'Schedule Consultation', target: 'Contact' }}
+      />,
+    )
+
+    expect(
+      screen.getByRole('link', { name: 'Northridge' }).getAttribute('href'),
+    ).toBe('/preview/release-preview')
+    expect(screen.getAllByRole('link', { name: 'Pricing' })[0]?.href).toContain(
+      '/preview/release-preview/pricing',
+    )
+    expect(
+      screen
+        .getByRole('link', { name: 'Schedule Consultation' })
+        .getAttribute('href'),
+    ).toBe('/preview/release-preview/contact')
   })
 
   it('uses the shared mobile drawer and closes it after mobile navigation', async () => {

@@ -512,13 +512,8 @@ export const GovPortalNavbar = defineCapsule({
                 {nav.map((group) =>
                   group.links?.length ? (
                     <NavigationMenuItem key={group.page}>
-                      <NavigationMenuTrigger
-                        asChild
-                        className="bg-transparent text-sm font-medium text-primary-foreground hover:bg-primary-foreground/15 hover:text-primary-foreground focus:bg-primary-foreground/15 focus:text-primary-foreground data-[state=open]:bg-primary-foreground/15 data-[state=open]:text-primary-foreground data-[state=open]:hover:bg-primary-foreground/15 data-[state=open]:hover:text-primary-foreground data-[state=open]:focus:bg-primary-foreground/15 data-[state=open]:focus:text-primary-foreground"
-                      >
-                        <NavbarRouteLink href={group.page}>
-                          {label(group)}
-                        </NavbarRouteLink>
+                      <NavigationMenuTrigger className="bg-transparent text-sm font-medium text-primary-foreground hover:bg-primary-foreground/15 hover:text-primary-foreground focus:bg-primary-foreground/15 focus:text-primary-foreground data-[state=open]:bg-primary-foreground/15 data-[state=open]:text-primary-foreground data-[state=open]:hover:bg-primary-foreground/15 data-[state=open]:hover:text-primary-foreground data-[state=open]:focus:bg-primary-foreground/15 data-[state=open]:focus:text-primary-foreground">
+                        {label(group)}
                       </NavigationMenuTrigger>
                       <NavigationMenuContent className="z-50 border border-border bg-popover text-popover-foreground shadow-xl">
                         <ul className="grid w-[17rem] gap-0.5 p-2">

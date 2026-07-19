@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   PersonCard,
@@ -11,6 +10,7 @@ import {
   PersonCardBio,
 } from '#/section-kit/PersonCard.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * BlogPostAuthors — bespoke "About the author" bio card for the end of an
@@ -52,7 +52,6 @@ export const BlogPostAuthors = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'About the author'
     const name = props.name ?? 'Jordan Avery'
     const role = props.role ?? 'Staff Writer · Engineering'
@@ -88,24 +87,22 @@ export const BlogPostAuthors = defineCapsule({
                   {bio}
                 </PersonCardBio>
                 <div className="flex flex-wrap items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => go(name)}
+                  <NavbarRouteLink
                     className="rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                    href={name}
                   >
                     {followLabel}
-                  </button>
+                  </NavbarRouteLink>
                   {social.map((item, i) => {
                     const label = typeof item === 'string' ? item : item.label
                     return (
-                      <button
+                      <NavbarRouteLink
                         key={i}
-                        type="button"
-                        onClick={() => go(label)}
                         className="rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                        href={label}
                       >
                         {label}
-                      </button>
+                      </NavbarRouteLink>
                     )
                   })}
                 </div>

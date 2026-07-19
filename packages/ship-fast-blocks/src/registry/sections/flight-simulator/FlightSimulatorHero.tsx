@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   HeroSection,
   HeroBackgroundImage,
@@ -13,6 +11,7 @@ import {
   HeroCta,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * FlightSimulatorHero — full-bleed, cinematic hero for a flight simulator
@@ -21,14 +20,14 @@ import { Container } from '#/section-kit/Container.tsx'
  * on top. Centered content stacks an uppercase eyebrow pill, a large headline, a
  * supporting paragraph, dual CTAs (filled "Buy Now" + outlined translucent
  * "Watch Trailer"), and a divider-separated spec strip (aircraft count, scenery,
- * platforms). CTAs route through useNavigate. Use as the opening hero for flight
+ * platforms). CTAs route through section-kit route links. Use as the opening hero for flight
  * simulators, airliner / combat sims, and immersive aviation titles. Renders
  * fully with no props via baked-in defaults.
  */
 export const FlightSimulatorHero = defineCapsule({
   name: 'FlightSimulatorHero',
   description:
-    "Full-bleed cinematic hero for a flight-simulator landing page: one immersive cockpit-above-the-clouds photo fills the band edge to edge under a token-based dark overlay so light text stays readable. Centered content has an uppercase eyebrow pill, a large headline, a supporting paragraph, dual CTAs (filled 'Buy Now' + outlined translucent 'Watch Trailer'), and a divider-separated spec strip (aircraft count, scenery, platforms). CTAs route through useNavigate. Use as the opening hero for flight simulators, airliner / combat sims, and immersive aviation titles.",
+    "Full-bleed cinematic hero for a flight-simulator landing page: one immersive cockpit-above-the-clouds photo fills the band edge to edge under a token-based dark overlay so light text stays readable. Centered content has an uppercase eyebrow pill, a large headline, a supporting paragraph, dual CTAs (filled 'Buy Now' + outlined translucent 'Watch Trailer'), and a divider-separated spec strip (aircraft count, scenery, platforms). CTAs route through section-kit route links. Use as the opening hero for flight simulators, airliner / combat sims, and immersive aviation titles.",
   props: z.object({
     /** Small uppercase eyebrow pill above the headline. */
     eyebrow: z.string().optional(),
@@ -55,7 +54,6 @@ export const FlightSimulatorHero = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heroEyebrow = props.eyebrow ?? 'Next-generation flight simulation'
     const heroHeading = props.heading ?? 'Take to the skies like never before'
     const heroSub =
@@ -98,18 +96,18 @@ export const FlightSimulatorHero = defineCapsule({
                 variant="primary"
                 className="rounded-full px-8 py-4 font-medium"
               >
-                <button type="button" onClick={() => go(heroPrimaryTarget)}>
+                <NavbarRouteLink href={heroPrimaryTarget}>
                   {heroPrimary}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
               <HeroCta
                 asChild
                 variant="outline"
                 className="rounded-full border-border bg-card/10 px-8 py-4 font-medium text-background backdrop-blur-sm hover:bg-card/20"
               >
-                <button type="button" onClick={() => go(heroSecondaryTarget)}>
+                <NavbarRouteLink href={heroSecondaryTarget}>
                   {heroSecondary}
-                </button>
+                </NavbarRouteLink>
               </HeroCta>
             </HeroActions>
 

@@ -23,7 +23,7 @@ import {
  * tile + bold wordmark + tagline + a row of social links) beside four link
  * columns (Shop, Help, Company, Legal), closed by a bottom bar with a
  * dynamic-year copyright. Every link, social, and the brand logo route through
- * useNavigate. Use as the closing footer for online stores, marketplaces, retail
+ * section-kit route links. Use as the closing footer for online stores, marketplaces, retail
  * shops, ecommerce sites, or any general storefront that needs a bright, modern
  * footer (lighter alternative to the dark FashionStoreFooter). Renders fully
  * with no props via baked-in "Marketplace" defaults.
@@ -42,7 +42,7 @@ function LogoTile({ brand }: { brand: string }) {
 export const EcommerceFooter = defineCapsule({
   name: 'EcommerceFooter',
   description:
-    'Clean, light multi-column footer for a general online store built on the shared SiteFooter composite: a brand block (logo tile + bold wordmark + tagline + a row of social links) beside four link columns (Shop, Help, Company, Legal), closed by a bottom bar with a dynamic-year copyright. Every link, social, and the brand logo route through useNavigate. Use as the closing footer for online stores, marketplaces, retail shops, ecommerce sites, or any general storefront that needs a bright, modern footer (lighter alternative to the dark FashionStoreFooter).',
+    'Clean, light multi-column footer for a general online store built on the shared SiteFooter composite: a brand block (logo tile + bold wordmark + tagline + a row of social links) beside four link columns (Shop, Help, Company, Legal), closed by a bottom bar with a dynamic-year copyright. Every link, social, and the brand logo route through section-kit route links. Use as the closing footer for online stores, marketplaces, retail shops, ecommerce sites, or any general storefront that needs a bright, modern footer (lighter alternative to the dark FashionStoreFooter).',
   props: z.object({
     /** Brand / store name shown as the bold wordmark. */
     brand: z.string().optional(),

@@ -4,7 +4,7 @@ import {
   parseRouteTarget,
   resolveRouteHref,
   resolveRouteTarget,
-} from './use-navigate.tsx'
+} from './route-context.tsx'
 
 describe('route target resolution', () => {
   it('parses page and section targets', () => {
@@ -161,6 +161,10 @@ describe('route target resolution', () => {
     )
     expect(resolveRouteHref('#details', [], {})).toBe('#details')
     expect(resolveRouteHref('/pricing', [], {})).toBe('/pricing')
-    expect(resolveRouteHref('Missing', ['Home'], {})).toBeUndefined()
+  })
+
+  it('falls back unresolved labels to hash hrefs', () => {
+    expect(resolveRouteHref('Pricing Plans', [], {})).toBe('#pricing-plans')
+    expect(resolveRouteHref('Missing', ['Home'], {})).toBe('#missing')
   })
 })

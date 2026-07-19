@@ -3,7 +3,6 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import {
@@ -13,6 +12,7 @@ import {
   FeatureListItemDescription,
   FeatureListItemBody,
 } from '#/section-kit/FeatureListItem.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * LinkInBioFeatures — the core link hub of a Linktree / Bento style link-in-bio
@@ -21,7 +21,7 @@ import {
  * Links") sits above the stack. Each button is large and chunky — a leading
  * rounded icon tile tinted in the brand/primary color, a prominent title plus a
  * supporting subtitle, and a trailing open-link arrow chevron, or a small pill
- * badge (e.g. "New") when set. Every button routes through useNavigate. This is
+ * badge (e.g. "New") when set. Every button routes through section-kit route links. This is
  * the centerpiece / main call-to-action area of a creator, influencer, or
  * personal "all my links in one place" landing page. Renders fully with no
  * props.
@@ -29,7 +29,7 @@ import {
 export const LinkInBioFeatures = defineCapsule({
   name: 'LinkInBioFeatures',
   description:
-    "Core LINK HUB of a Linktree / Bento style LINK-IN-BIO page — a centered narrow column with a vertical stack of BIG, bold, full-width tappable link buttons (the whole point of the page). An optional small uppercase eyebrow ('My Links') sits on top. Each large link button has a leading rounded icon tile tinted in the primary/brand color (globe | shop | mail | calendar | music | video), a prominent title + supporting subtitle, and a trailing open-link arrow chevron, or a small pill badge (e.g. 'New') when set. Every button routes through useNavigate. Use as the centerpiece / primary call-to-action area of a creator, influencer, musician, or personal 'all my links in one place' landing page, bio-link hub, or social-profile splash. Supply content only — the eyebrow and the links list; the section owns all layout and styling.",
+    "Core LINK HUB of a Linktree / Bento style LINK-IN-BIO page — a centered narrow column with a vertical stack of BIG, bold, full-width tappable link buttons (the whole point of the page). An optional small uppercase eyebrow ('My Links') sits on top. Each large link button has a leading rounded icon tile tinted in the primary/brand color (globe | shop | mail | calendar | music | video), a prominent title + supporting subtitle, and a trailing open-link arrow chevron, or a small pill badge (e.g. 'New') when set. Every button routes through section-kit route links. Use as the centerpiece / primary call-to-action area of a creator, influencer, musician, or personal 'all my links in one place' landing page, bio-link hub, or social-profile splash. Supply content only — the eyebrow and the links list; the section owns all layout and styling.",
   props: z.object({
     /** Small uppercase label above the link stack (e.g. "My Links"). */
     eyebrow: z.string().optional(),
@@ -51,8 +51,6 @@ export const LinkInBioFeatures = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
-
     const eyebrow = props.eyebrow ?? 'My Links'
 
     const links = props.links?.length
@@ -231,10 +229,7 @@ export const LinkInBioFeatures = defineCapsule({
                 asChild
                 className="group flex w-full cursor-pointer items-center gap-4 rounded-2xl border bg-card px-5 py-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
               >
-                <button
-                  type="button"
-                  onClick={() => go(linkTargets[i] ?? link.title)}
-                >
+                <NavbarRouteLink href={linkTargets[i] ?? link.title}>
                   <FeatureListItemIcon
                     shape="square"
                     className="size-11 bg-primary/10 text-primary"
@@ -264,7 +259,7 @@ export const LinkInBioFeatures = defineCapsule({
                       <ExternalArrow />
                     </span>
                   )}
-                </button>
+                </NavbarRouteLink>
               </FeatureListItem>
             ))}
           </nav>

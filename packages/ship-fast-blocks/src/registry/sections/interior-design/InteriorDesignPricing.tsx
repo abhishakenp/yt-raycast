@@ -12,7 +12,7 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 import { CtaAction } from '#/section-kit/CtaBand.tsx'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * InteriorDesignPricing — inverted (foreground-surface) services + pricing list
@@ -21,14 +21,14 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * light-weight heading, a supporting paragraph and a filled inverted CTA; on the
  * right a divided vertical list of service tiers, each with a title, a right-
  * aligned price and a short description. Editorial, refined and high-contrast.
- * The CTA routes through useNavigate. Use to present service packages and
+ * The CTA routes through section-kit route links. Use to present service packages and
  * pricing for interior designers, design studios or architecture firms. Renders
  * fully with no props via baked-in defaults.
  */
 export const InteriorDesignPricing = defineCapsule({
   name: 'InteriorDesignPricing',
   description:
-    'Inverted (foreground-surface) services + pricing list for an upscale interior-design / architecture studio: a dramatic two-column band on the dark foreground surface with an uppercase eyebrow, light-weight heading, supporting paragraph and a filled inverted CTA on the left, and a divided vertical list of service tiers — each with a title, right-aligned price and short description — on the right. Editorial, refined and high-contrast; the CTA routes through useNavigate. Use to present service packages and pricing for interior designers, design studios or architecture firms.',
+    'Inverted (foreground-surface) services + pricing list for an upscale interior-design / architecture studio: a dramatic two-column band on the dark foreground surface with an uppercase eyebrow, light-weight heading, supporting paragraph and a filled inverted CTA on the left, and a divided vertical list of service tiers — each with a title, right-aligned price and short description — on the right. Editorial, refined and high-contrast; the CTA routes through section-kit route links. Use to present service packages and pricing for interior designers, design studios or architecture firms.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -46,7 +46,6 @@ export const InteriorDesignPricing = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const eyebrow = props.eyebrow ?? 'Services'
     const heading = props.heading ?? 'Comprehensive design services'
     const description =
@@ -106,9 +105,9 @@ export const InteriorDesignPricing = defineCapsule({
                 variant="primary"
                 invert
                 className="rounded-none px-8 py-4 text-sm font-medium"
-                onClick={() => go(cta)}
+                asChild
               >
-                {cta}
+                <NavbarRouteLink href={cta}>{cta}</NavbarRouteLink>
               </CtaAction>
             </div>
 

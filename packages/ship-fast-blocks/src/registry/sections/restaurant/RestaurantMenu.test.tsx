@@ -26,10 +26,6 @@ type RestaurantSelection = RestaurantOrder['selections'][number]
 const navigate = vi.fn()
 const lakebedRef: { current: RestaurantLakebed | null } = { current: null }
 
-vi.mock('#/lib/use-navigate.tsx', () => ({
-  useNavigate: () => navigate,
-}))
-
 type GenericMutation = ((input?: unknown) => Promise<unknown>) & {
   isPending: boolean
   lastError: unknown | null

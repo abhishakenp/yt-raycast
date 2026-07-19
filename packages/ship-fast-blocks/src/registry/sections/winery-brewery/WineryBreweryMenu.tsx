@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   MenuCategoryHeader,
   MenuCategoryTitle,
@@ -31,6 +30,7 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * WineryBreweryMenu — printed-style tasting list for a winery or craft brewery
@@ -38,7 +38,7 @@ import {
  * of categories (e.g. Reds, Whites, Seasonal Ales). Each category shows its
  * name with a divider, then lists pours in a two-column grid. Every pour seeds
  * shared command search and includes a scoped add-to-cart control that writes to
- * the shared Lakebed cart, while the item name still routes through useNavigate
+ * the shared Lakebed cart, while the item name still routes through section-kit route links
  * to a visit or tasting-booking target. Use for wineries, vineyards, cellar
  * doors, breweries, taprooms, or cideries that want a readable,
  * conversion-focused tasting menu.
@@ -46,7 +46,7 @@ import {
 export const WineryBreweryMenu = defineCapsule({
   name: 'WineryBreweryMenu',
   description:
-    'Printed-style tasting list for a winery or craft brewery page: centered serif heading and description above a stack of categories (Reds, Whites, Seasonal Ales). Each category has a titled divider and a two-column grid of pours. Every pour seeds shared command search and has a scoped add-to-cart control that writes to the shared Lakebed cart; the item name still routes through useNavigate. Use for wineries, vineyards, cellar doors, breweries, taprooms, or cideries wanting a readable tasting menu.',
+    'Printed-style tasting list for a winery or craft brewery page: centered serif heading and description above a stack of categories (Reds, Whites, Seasonal Ales). Each category has a titled divider and a two-column grid of pours. Every pour seeds shared command search and has a scoped add-to-cart control that writes to the shared Lakebed cart; the item name still routes through section-kit route links. Use for wineries, vineyards, cellar doors, breweries, taprooms, or cideries wanting a readable tasting menu.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -76,7 +76,6 @@ export const WineryBreweryMenu = defineCapsule({
   }),
   lakebed: commerceCartLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Tasting List'
     const description =
       props.description ??
@@ -198,16 +197,17 @@ export const WineryBreweryMenu = defineCapsule({
                   </MenuCategoryHeader>
                   <ResponsiveGrid
                     cols="1-md-2"
-
                     className="gap-x-12 gap-y-6 gap-0"
                   >
                     {(category.items ?? []).map((item) => (
-                      <MenuItemRow>
+                      <MenuItemRow key={`${category.name}:${item.name}`}>
                         <MenuItemContent>
                           <MenuItemBody>
                             <MenuItemNameRow>
-                              <MenuItemName onClick={() => go(menuTarget)}>
-                                {item.name}
+                              <MenuItemName asChild>
+                                <NavbarRouteLink href={menuTarget}>
+                                  {item.name}
+                                </NavbarRouteLink>
                               </MenuItemName>
                               <MenuItemTag>{item.tag}</MenuItemTag>
                             </MenuItemNameRow>

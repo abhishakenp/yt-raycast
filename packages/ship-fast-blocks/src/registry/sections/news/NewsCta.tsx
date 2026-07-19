@@ -10,7 +10,7 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
  * NewsCta — "Support Independent Journalism" subscribe call-to-action band for
@@ -19,14 +19,14 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * short supporting subheading, and a centered row of two routable pill CTAs — a
  * high-contrast "Subscribe Now" button (variant "primary") plus an outlined
  * "View All Plans" button (variant "outline"). Both actions route through the
- * kit's useNavigate so neither is a dead link. Use as the subscription /
+ * kit's section-kit route links so neither is a dead link. Use as the subscription /
  * membership CTA near the bottom of a newspaper, magazine or publication
  * homepage. Renders fully with no props via baked-in defaults.
  */
 export const NewsCta = defineCapsule({
   name: 'NewsCta',
   description:
-    "'Support Independent Journalism' subscribe call-to-action band for a news / editorial site built on the shared CtaBand composite at tone='primary': a membership eyebrow, a strong headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Subscribe Now' button plus an outlined 'View All Plans' button). Both CTAs route through useNavigate. Use as the subscription / membership CTA near the bottom of a newspaper, magazine or publication homepage.",
+    "'Support Independent Journalism' subscribe call-to-action band for a news / editorial site built on the shared CtaBand composite at tone='primary': a membership eyebrow, a strong headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Subscribe Now' button plus an outlined 'View All Plans' button). Both CTAs route through section-kit route links. Use as the subscription / membership CTA near the bottom of a newspaper, magazine or publication homepage.",
   props: z.object({
     /** CTA heading (maps to CtaBand title). */
     heading: z.string().optional(),
@@ -41,7 +41,6 @@ export const NewsCta = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     return (
       <CtaBand tone="primary" className={props.className}>
         <CtaBandInner>
@@ -54,11 +53,15 @@ export const NewsCta = defineCapsule({
               'Subscribe today for unlimited access to award-winning reporting, expert analysis, and exclusive features. No paywalls on breaking news—ever.'}
           </CtaBandSubtitle>
           <CtaBandActions>
-            <CtaAction variant="primary" onClick={() => go('Subscribe')}>
-              {props.primaryCta ?? 'Subscribe Now'}
+            <CtaAction variant="primary" asChild>
+              <NavbarRouteLink href={'Subscribe'}>
+                {props.primaryCta ?? 'Subscribe Now'}
+              </NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" onClick={() => go('Plans')}>
-              {props.secondaryCta ?? 'View All Plans'}
+            <CtaAction variant="outline" asChild>
+              <NavbarRouteLink href={'Plans'}>
+                {props.secondaryCta ?? 'View All Plans'}
+              </NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>
         </CtaBandInner>

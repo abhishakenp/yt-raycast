@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import {
   HeroSection,
@@ -22,14 +21,15 @@ import {
   LocalServiceMutationSpinner,
 } from '../local-service/local-service-interactions.tsx'
 import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * CleaningServiceHero — split-layout hero section for a home-cleaning / maid-service landing page. A muted-band background with a left text column (trust pill with checkmark icon, bold multi-line headline with an accent-colored highlight phrase, supporting paragraph, dual pill CTAs, and three trust badges with checkmarks) and a right image column (showcase photo with a floating star-rating card that overlaps the image edge, showing stacked avatars + a star icon + rating value + review count). Every CTA routes through useNavigate. Use as the primary above-the-fold hero for residential cleaning companies, maid services, housekeeping platforms, or local home-service brands. Renders fully with no props via baked-in "PureSpace" defaults.
+ * CleaningServiceHero — split-layout hero section for a home-cleaning / maid-service landing page. A muted-band background with a left text column (trust pill with checkmark icon, bold multi-line headline with an accent-colored highlight phrase, supporting paragraph, dual pill CTAs, and three trust badges with checkmarks) and a right image column (showcase photo with a floating star-rating card that overlaps the image edge, showing stacked avatars + a star icon + rating value + review count). Every CTA routes through section-kit route links. Use as the primary above-the-fold hero for residential cleaning companies, maid services, housekeeping platforms, or local home-service brands. Renders fully with no props via baked-in "PureSpace" defaults.
  */
 export const CleaningServiceHero = defineCapsule({
   name: 'CleaningServiceHero',
   description:
-    'Split-layout hero section for a home-cleaning / maid-service landing page: muted-band background with left text column (trust pill with checkmark, bold multi-line headline with accent-colored highlight, supporting paragraph, dual pill CTAs, three trust badges) and right image column (showcase photo with floating star-rating card showing stacked avatars, star icon, and review count). CTAs route through useNavigate. Use as the primary hero for residential cleaning, maid services, housekeeping, or local home-service brands.',
+    'Split-layout hero section for a home-cleaning / maid-service landing page: muted-band background with left text column (trust pill with checkmark, bold multi-line headline with accent-colored highlight, supporting paragraph, dual pill CTAs, three trust badges) and right image column (showcase photo with floating star-rating card showing stacked avatars, star icon, and review count). CTAs route through section-kit route links. Use as the primary hero for residential cleaning, maid services, housekeeping, or local home-service brands.',
   props: z.object({
     /** Trust-pill text above the headline. */
     badge: z.string().optional(),
@@ -55,7 +55,6 @@ export const CleaningServiceHero = defineCapsule({
   }),
   lakebed: localServiceLakebed,
   component: ({ props, lakebed }) => {
-    const go = useNavigate()
     const badge = props.badge ?? 'Trusted by 10,000+ homes in Seattle'
     const headingTop = props.headingTop ?? 'A cleaner home,'
     const highlight = props.highlight ?? 'without the stress.'
@@ -155,9 +154,9 @@ export const CleaningServiceHero = defineCapsule({
                   variant="outline"
                   className="rounded-full bg-background px-8 py-4 text-base font-semibold"
                 >
-                  <button type="button" onClick={() => go(secondaryCta)}>
+                  <NavbarRouteLink href={secondaryCta}>
                     {secondaryCta}
-                  </button>
+                  </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
               <HeroSocialProof className="mt-0 gap-6">
@@ -176,7 +175,6 @@ export const CleaningServiceHero = defineCapsule({
                 alt={imageAlt}
                 w={800}
                 h={600}
-
                 className="aspect-[4/3] w-full shadow-2xl"
               />
               <div className="absolute -bottom-6 -left-6 hidden rounded-xl bg-card p-4 shadow-xl sm:block sm:p-6">

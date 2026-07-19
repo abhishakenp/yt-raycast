@@ -18,14 +18,14 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
  * page. A solid primary-colored strip with a centered large heading, a
  * supporting paragraph, two CTAs (a light "book" button + an outlined
  * phone-number button with a phone icon), and a small reassurance note beneath.
- * Both CTAs route through useNavigate. Use as the closing conversion band before
+ * Both CTAs route through section-kit route links. Use as the closing conversion band before
  * the footer of a doctors' office, primary-care practice or telehealth clinic.
  * Renders fully with no props via baked-in "Vitality Health Partners" defaults.
  */
 export const HealthcareCta = defineCapsule({
   name: 'HealthcareCta',
   description:
-    "Full-bleed accent call-to-action band for a medical-clinic page: a solid primary-colored strip with a centered large heading, a supporting paragraph, two CTAs (a light 'book' button + an outlined phone-number button with a phone icon), and a small reassurance note beneath. Both CTAs route through useNavigate. Use as the closing conversion band before the footer of a doctors' office, primary-care practice or telehealth clinic.",
+    "Full-bleed accent call-to-action band for a medical-clinic page: a solid primary-colored strip with a centered large heading, a supporting paragraph, two CTAs (a light 'book' button + an outlined phone-number button with a phone icon), and a small reassurance note beneath. Both CTAs route through section-kit route links. Use as the closing conversion band before the footer of a doctors' office, primary-care practice or telehealth clinic.",
   props: z.object({
     /** Heading text. */
     heading: z.string().optional(),
