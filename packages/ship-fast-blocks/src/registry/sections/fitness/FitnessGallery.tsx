@@ -10,6 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * and recovery areas on gyms, fitness studios, yoga / pilates / boxing / spin studios.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   GalleryGrid,
   GalleryGridItems,
@@ -47,12 +48,13 @@ export const FitnessGallery = defineCapsule({
     return (
       <section className={cn('bg-card py-20 lg:py-28', props.className)}>
         <Container>
-          <div className="mx-auto mb-12 max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-semibold text-foreground md:text-4xl">
-              {galleryHeading}
-            </h2>
-            <p className="text-muted-foreground">{galleryDesc}</p>
-          </div>
+          <SectionHeading
+            title={galleryHeading}
+            subtitle={galleryDesc}
+            className="mb-12 max-w-2xl gap-0"
+            titleClassName="mb-4 text-3xl font-semibold text-foreground md:text-4xl"
+            subtitleClassName="text-muted-foreground"
+          />
 
           <GalleryGrid>
             <GalleryGridItems columns={4}>

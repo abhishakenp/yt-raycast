@@ -12,6 +12,7 @@ import { Image } from '#/lib/img.tsx'
  * gyms, fitness studios, CrossFit boxes, yoga / pilates / boxing / spin studios.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ClassGrid, ClassCard } from '#/section-kit/ClassGrid.tsx'
 export const FitnessClasses = defineCapsule({
   name: 'FitnessClasses',
@@ -127,12 +128,13 @@ export const FitnessClasses = defineCapsule({
     return (
       <section className={cn('py-20 lg:py-28', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-semibold text-foreground md:text-4xl">
-              {classesHeading}
-            </h2>
-            <p className="text-muted-foreground">{classesDesc}</p>
-          </div>
+          <SectionHeading
+            title={classesHeading}
+            subtitle={classesDesc}
+            className="mb-16 max-w-2xl gap-0"
+            titleClassName="mb-4 text-3xl font-semibold text-foreground md:text-4xl"
+            subtitleClassName="text-muted-foreground"
+          />
 
           <ClassGrid cols="1-2-3" className="gap-6">
             {classItems.map((item) => (

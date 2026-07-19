@@ -17,6 +17,7 @@ import {
  * personal trainers on gyms, fitness studios, yoga / pilates / boxing / spin studios.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const FitnessTrainers = defineCapsule({
   name: 'FitnessTrainers',
@@ -77,12 +78,13 @@ export const FitnessTrainers = defineCapsule({
     return (
       <section className={cn('py-20 lg:py-28', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-semibold text-foreground md:text-4xl">
-              {trainersHeading}
-            </h2>
-            <p className="text-muted-foreground">{trainersDesc}</p>
-          </div>
+          <SectionHeading
+            title={trainersHeading}
+            subtitle={trainersDesc}
+            className="mb-16 max-w-2xl gap-0"
+            titleClassName="mb-4 text-3xl font-semibold text-foreground md:text-4xl"
+            subtitleClassName="text-muted-foreground"
+          />
 
           <ResponsiveGrid cols="1-md-2-4" gap="lg">
             {trainerItems.map((trainer) => (

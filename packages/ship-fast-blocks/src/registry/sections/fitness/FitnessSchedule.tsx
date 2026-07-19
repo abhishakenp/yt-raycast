@@ -18,6 +18,7 @@ import {
  * studios, yoga / pilates / boxing / spin studios, or class-booking sites.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 export const FitnessSchedule = defineCapsule({
   name: 'FitnessSchedule',
   description:
@@ -139,12 +140,13 @@ export const FitnessSchedule = defineCapsule({
     return (
       <section className={cn('bg-card py-20 lg:py-28', props.className)}>
         <Container>
-          <div className="mx-auto mb-12 max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-semibold text-foreground md:text-4xl">
-              {scheduleHeading}
-            </h2>
-            <p className="text-muted-foreground">{scheduleDesc}</p>
-          </div>
+          <SectionHeading
+            title={scheduleHeading}
+            subtitle={scheduleDesc}
+            className="mb-12 max-w-2xl gap-0"
+            titleClassName="mb-4 text-3xl font-semibold text-foreground md:text-4xl"
+            subtitleClassName="text-muted-foreground"
+          />
 
           <div className="overflow-x-auto">
             <DataTable className="w-full min-w-[800px] text-sm">

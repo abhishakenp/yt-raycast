@@ -11,6 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * studios, yoga / pilates / boxing / spin studios or personal-training businesses.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -74,12 +75,13 @@ export const FitnessTestimonials = defineCapsule({
     return (
       <section className={cn('bg-card py-20 lg:py-28', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-semibold text-foreground md:text-4xl">
-              {testimonialsHeading}
-            </h2>
-            <p className="text-muted-foreground">{testimonialsDesc}</p>
-          </div>
+          <SectionHeading
+            title={testimonialsHeading}
+            subtitle={testimonialsDesc}
+            className="mb-16 max-w-2xl gap-0"
+            titleClassName="mb-4 text-3xl font-semibold text-foreground md:text-4xl"
+            subtitleClassName="text-muted-foreground"
+          />
 
           <TestimonialGrid columns={3}>
             {testimonialItems.map((t) => {

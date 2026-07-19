@@ -11,6 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * Use for membership tiers / plans on gyms, fitness studios, yoga or boxing studios.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   PricingGrid,
   PricingTier,
@@ -191,12 +192,13 @@ export const FitnessPricing = defineCapsule({
     return (
       <section className={cn('py-20 lg:py-28', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-semibold text-foreground md:text-4xl">
-              {pricingHeading}
-            </h2>
-            <p className="text-muted-foreground">{pricingDesc}</p>
-          </div>
+          <SectionHeading
+            title={pricingHeading}
+            subtitle={pricingDesc}
+            className="mb-16 max-w-2xl gap-0"
+            titleClassName="mb-4 text-3xl font-semibold text-foreground md:text-4xl"
+            subtitleClassName="text-muted-foreground"
+          />
 
           <PricingGrid
             className={cn(
