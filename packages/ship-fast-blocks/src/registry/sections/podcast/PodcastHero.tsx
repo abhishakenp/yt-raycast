@@ -8,6 +8,7 @@ import {
   HeroHeading,
   HeroSubheading,
   HeroActions,
+  HeroCta,
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 
@@ -78,20 +79,24 @@ export const PodcastHero = defineCapsule({
             </HeroSubheading>
 
             <HeroActions className="flex-col gap-4 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => go(primaryTarget)}
-                className="rounded-full bg-primary px-8 py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              <HeroCta
+                asChild
+                variant="primary"
+                className="rounded-full px-8 py-4 font-medium"
               >
-                {primaryCta}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(secondaryTarget)}
-                className="rounded-full border border-border bg-card px-8 py-4 font-medium text-foreground transition-colors hover:bg-muted"
+                <button type="button" onClick={() => go(primaryTarget)}>
+                  {primaryCta}
+                </button>
+              </HeroCta>
+              <HeroCta
+                asChild
+                variant="outline"
+                className="rounded-full bg-card px-8 py-4 font-medium"
               >
-                {secondaryCta}
-              </button>
+                <button type="button" onClick={() => go(secondaryTarget)}>
+                  {secondaryCta}
+                </button>
+              </HeroCta>
             </HeroActions>
 
             <div className="flex flex-wrap gap-2 pt-2">

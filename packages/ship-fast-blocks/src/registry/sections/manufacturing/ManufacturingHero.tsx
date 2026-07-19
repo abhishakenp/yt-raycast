@@ -8,6 +8,7 @@ import {
   HeroHeading,
   HeroSubheading,
   HeroActions,
+  HeroCta,
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
@@ -80,20 +81,23 @@ export const ManufacturingHero = defineCapsule({
               <HeroHeading className="font-semibold">{heading}</HeroHeading>
               <HeroSubheading className="max-w-xl">{subheading}</HeroSubheading>
               <HeroActions className="gap-4">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
-                  className="inline-flex items-center rounded-md bg-foreground px-6 py-3 font-medium text-background transition-colors hover:bg-foreground/90"
+                <HeroCta
+                  asChild
+                  className="rounded-md bg-foreground px-6 py-3 font-medium text-background hover:bg-foreground/90"
                 >
-                  {primaryCta}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
-                  className="inline-flex items-center rounded-md border border-border px-6 py-3 font-medium text-foreground transition-colors hover:bg-muted"
+                  <button type="button" onClick={() => go(primaryCta)}>
+                    {primaryCta}
+                  </button>
+                </HeroCta>
+                <HeroCta
+                  asChild
+                  variant="outline"
+                  className="rounded-md px-6 py-3 font-medium"
                 >
-                  {secondaryCta}
-                </button>
+                  <button type="button" onClick={() => go(secondaryCta)}>
+                    {secondaryCta}
+                  </button>
+                </HeroCta>
               </HeroActions>
               <div className="flex items-center gap-6 border-t border-border pt-4">
                 {stats.map((s, i) => (

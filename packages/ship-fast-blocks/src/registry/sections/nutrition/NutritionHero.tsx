@@ -9,6 +9,7 @@ import {
   HeroHeading,
   HeroSubheading,
   HeroActions,
+  HeroCta,
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
@@ -103,20 +104,24 @@ export const NutritionHero = defineCapsule({
                 {subheading}
               </HeroSubheading>
               <HeroActions className="mb-10 flex-col gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
-                  className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3.5 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                <HeroCta
+                  asChild
+                  variant="primary"
+                  className="rounded-full px-6 py-3.5 text-base"
                 >
-                  {primaryCta}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
-                  className="inline-flex items-center justify-center rounded-full border border-input bg-card px-6 py-3.5 text-base font-medium text-foreground transition-colors hover:border-primary/40 hover:text-primary"
+                  <button type="button" onClick={() => go(primaryCta)}>
+                    {primaryCta}
+                  </button>
+                </HeroCta>
+                <HeroCta
+                  asChild
+                  variant="outline"
+                  className="rounded-full border-input bg-card px-6 py-3.5 text-base hover:border-primary/40 hover:text-primary"
                 >
-                  {secondaryCta}
-                </button>
+                  <button type="button" onClick={() => go(secondaryCta)}>
+                    {secondaryCta}
+                  </button>
+                </HeroCta>
               </HeroActions>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex -space-x-2">

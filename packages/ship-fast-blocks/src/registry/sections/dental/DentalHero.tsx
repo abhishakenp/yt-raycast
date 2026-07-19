@@ -10,6 +10,7 @@ import {
   HeroHighlight,
   HeroSubheading,
   HeroActions,
+  HeroCta,
   HeroMediaPanel,
   HeroSocialProof,
   HeroSocialProofItem,
@@ -157,14 +158,16 @@ export const DentalHero = defineCapsule({
                     <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
                 </LocalServiceBookingButton>
-                <button
-                  type="button"
-                  onClick={() => go(`Call ${heroPhone}`)}
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-background px-8 py-4 text-lg font-semibold text-foreground transition-colors hover:bg-muted"
+                <HeroCta
+                  asChild
+                  variant="outline"
+                  className="gap-2 rounded-full bg-background px-8 py-4 text-lg font-semibold"
                 >
-                  <PhoneIcon className="size-5" />
-                  {heroPhone}
-                </button>
+                  <button type="button" onClick={() => go(`Call ${heroPhone}`)}>
+                    <PhoneIcon className="size-5" />
+                    {heroPhone}
+                  </button>
+                </HeroCta>
               </HeroActions>
               <HeroSocialProof className="mt-10 justify-center gap-6 lg:justify-start">
                 {heroBadges.map((b) => (

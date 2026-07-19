@@ -11,6 +11,7 @@ import {
   HeroHighlight,
   HeroSubheading,
   HeroActions,
+  HeroCta,
   HeroMediaPanel,
   HeroSocialProof,
   HeroSocialProofItem,
@@ -149,13 +150,15 @@ export const CleaningServiceHero = defineCapsule({
                   {primaryCta}
                   <ArrowRight className="ml-2 size-5" />
                 </LocalServiceBookingButton>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
-                  className="inline-flex items-center justify-center rounded-full border border-border bg-background px-8 py-4 text-base font-semibold text-foreground transition-colors hover:bg-muted"
+                <HeroCta
+                  asChild
+                  variant="outline"
+                  className="rounded-full bg-background px-8 py-4 text-base font-semibold"
                 >
-                  {secondaryCta}
-                </button>
+                  <button type="button" onClick={() => go(secondaryCta)}>
+                    {secondaryCta}
+                  </button>
+                </HeroCta>
               </HeroActions>
               <HeroSocialProof className="mt-0 gap-6">
                 {trustBadges.map((item) => (

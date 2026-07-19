@@ -8,6 +8,7 @@ import {
   HeroHeading,
   HeroSubheading,
   HeroActions,
+  HeroCta,
   HeroMediaPanel,
   HeroStats,
   HeroStat,
@@ -110,21 +111,25 @@ export const FilmDirectorHero = defineCapsule({
                 {heroSub}
               </HeroSubheading>
               <HeroActions className="mt-0 flex-wrap gap-4">
-                <button
-                  type="button"
-                  onClick={() => go(heroPrimary)}
-                  className="inline-flex items-center rounded-md bg-primary px-6 py-3 text-primary-foreground transition-colors hover:bg-primary/90"
+                <HeroCta
+                  asChild
+                  variant="primary"
+                  className="rounded-md px-6 py-3"
                 >
-                  <PlayIcon className="mr-2 size-5" />
-                  {heroPrimary}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(heroSecondary)}
-                  className="inline-flex items-center rounded-md border border-border px-6 py-3 transition-colors hover:border-foreground"
+                  <button type="button" onClick={() => go(heroPrimary)}>
+                    <PlayIcon className="mr-2 size-5" />
+                    {heroPrimary}
+                  </button>
+                </HeroCta>
+                <HeroCta
+                  asChild
+                  variant="outline"
+                  className="rounded-md px-6 py-3 hover:border-foreground"
                 >
-                  {heroSecondary}
-                </button>
+                  <button type="button" onClick={() => go(heroSecondary)}>
+                    {heroSecondary}
+                  </button>
+                </HeroCta>
               </HeroActions>
               <HeroStats className="mt-12 grid-cols-3 pt-8 md:grid-cols-3">
                 {heroStats.map((s) => (

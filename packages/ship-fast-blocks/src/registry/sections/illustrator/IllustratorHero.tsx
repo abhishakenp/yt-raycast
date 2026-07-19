@@ -9,6 +9,7 @@ import {
   HeroHeading,
   HeroSubheading,
   HeroActions,
+  HeroCta,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
@@ -129,21 +130,24 @@ export const IllustratorHero = defineCapsule({
                 {subheading}
               </HeroSubheading>
               <HeroActions className="mt-0 flex-wrap gap-4">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
-                  className="inline-flex items-center gap-2 rounded-full bg-foreground px-8 py-4 text-sm font-medium text-background transition-colors hover:bg-muted-foreground"
+                <HeroCta
+                  asChild
+                  className="gap-2 rounded-full bg-foreground px-8 py-4 text-sm font-medium text-background hover:bg-muted-foreground"
                 >
-                  {primaryCta}
-                  <ArrowRight className="size-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
-                  className="rounded-full border border-foreground px-8 py-4 text-sm font-medium text-foreground transition-colors hover:bg-foreground hover:text-background"
+                  <button type="button" onClick={() => go(primaryCta)}>
+                    {primaryCta}
+                    <ArrowRight className="size-4" />
+                  </button>
+                </HeroCta>
+                <HeroCta
+                  asChild
+                  variant="outline"
+                  className="rounded-full border-foreground px-8 py-4 text-sm font-medium hover:bg-foreground hover:text-background"
                 >
-                  {secondaryCta}
-                </button>
+                  <button type="button" onClick={() => go(secondaryCta)}>
+                    {secondaryCta}
+                  </button>
+                </HeroCta>
                 <CommerceAddItemButton
                   lakebed={lakebed}
                   item={{

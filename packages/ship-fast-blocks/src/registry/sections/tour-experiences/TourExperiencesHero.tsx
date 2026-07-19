@@ -11,6 +11,7 @@ import {
   HeroHeading,
   HeroSubheading,
   HeroActions,
+  HeroCta,
 } from '#/section-kit/HeroSection.tsx'
 
 /**
@@ -102,20 +103,24 @@ export const TourExperiencesHero = defineCapsule({
               {subheading}
             </HeroSubheading>
             <HeroActions className="mt-10 flex-col gap-3 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => go(primaryTarget)}
-                className="inline-flex items-center justify-center rounded-full bg-primary px-7 py-3.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+              <HeroCta
+                asChild
+                variant="primary"
+                className="rounded-full px-7 py-3.5 text-sm font-semibold"
               >
-                {primaryCta}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(secondaryTarget)}
-                className="inline-flex items-center justify-center rounded-full border border-background/40 bg-background/10 px-7 py-3.5 text-sm font-semibold text-background backdrop-blur-sm transition-colors hover:bg-background/20"
+                <button type="button" onClick={() => go(primaryTarget)}>
+                  {primaryCta}
+                </button>
+              </HeroCta>
+              <HeroCta
+                asChild
+                variant="outline"
+                className="rounded-full border-background/40 bg-background/10 px-7 py-3.5 text-sm font-semibold text-background backdrop-blur-sm hover:bg-background/20"
               >
-                {secondaryCta}
-              </button>
+                <button type="button" onClick={() => go(secondaryTarget)}>
+                  {secondaryCta}
+                </button>
+              </HeroCta>
             </HeroActions>
           </div>
 

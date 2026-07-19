@@ -9,6 +9,7 @@ import {
   HeroHighlight,
   HeroSubheading,
   HeroActions,
+  HeroCta,
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
@@ -103,20 +104,24 @@ export const SubscriptionBoxHero = defineCapsule({
               {subheading}
             </HeroSubheading>
             <HeroActions className="flex-col gap-3 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => go(primaryCta)}
-                className="inline-flex items-center justify-center rounded-full bg-primary px-7 py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90"
+              <HeroCta
+                asChild
+                variant="primary"
+                className="rounded-full px-7 py-3.5 text-sm font-semibold shadow-sm"
               >
-                {primaryCta}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(secondaryCta)}
-                className="inline-flex items-center justify-center rounded-full border border-border bg-background px-7 py-3.5 text-sm font-semibold text-foreground transition hover:bg-muted"
+                <button type="button" onClick={() => go(primaryCta)}>
+                  {primaryCta}
+                </button>
+              </HeroCta>
+              <HeroCta
+                asChild
+                variant="outline"
+                className="rounded-full bg-background px-7 py-3.5 text-sm font-semibold"
               >
-                {secondaryCta}
-              </button>
+                <button type="button" onClick={() => go(secondaryCta)}>
+                  {secondaryCta}
+                </button>
+              </HeroCta>
               <CommerceAddItemButton
                 lakebed={lakebed}
                 item={{

@@ -8,6 +8,7 @@ import {
   HeroHeading,
   HeroSubheading,
   HeroActions,
+  HeroCta,
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
@@ -93,21 +94,25 @@ export const MusicArtistHero = defineCapsule({
                 {description}
               </HeroSubheading>
               <HeroActions className="gap-4">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
-                  className="inline-flex items-center rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                <HeroCta
+                  asChild
+                  variant="primary"
+                  className="rounded-full px-6 py-3 text-sm"
                 >
-                  {primaryCta}
-                  <ArrowRight className="ml-2 size-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
-                  className="inline-flex items-center rounded-full border border-border px-6 py-3 text-sm font-medium text-foreground/80 transition-colors hover:border-foreground hover:text-foreground"
+                  <button type="button" onClick={() => go(primaryCta)}>
+                    {primaryCta}
+                    <ArrowRight className="ml-2 size-4" />
+                  </button>
+                </HeroCta>
+                <HeroCta
+                  asChild
+                  variant="outline"
+                  className="rounded-full px-6 py-3 text-sm text-foreground/80 hover:border-foreground hover:text-foreground"
                 >
-                  {secondaryCta}
-                </button>
+                  <button type="button" onClick={() => go(secondaryCta)}>
+                    {secondaryCta}
+                  </button>
+                </HeroCta>
               </HeroActions>
             </div>
             <div className="order-1 lg:order-2">

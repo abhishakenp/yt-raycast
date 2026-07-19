@@ -9,6 +9,7 @@ import {
   HeroHeading,
   HeroSubheading,
   HeroActions,
+  HeroCta,
   HeroMediaPanel,
   HeroSocialProof,
   HeroSocialProofItem,
@@ -100,20 +101,24 @@ export const EcommerceHero = defineCapsule({
               {heroSub}
             </HeroSubheading>
             <HeroActions className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
-              <button
-                type="button"
-                onClick={() => go(heroPrimary)}
-                className="w-full rounded-lg bg-primary px-8 py-4 text-sm font-semibold tracking-wide text-primary-foreground transition-opacity hover:opacity-90 sm:w-auto"
+              <HeroCta
+                asChild
+                variant="primary"
+                className="w-full rounded-lg px-8 py-4 text-sm font-semibold tracking-wide transition-opacity hover:opacity-90 sm:w-auto"
               >
-                {heroPrimary}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(heroSecondary)}
-                className="w-full rounded-lg border border-border px-8 py-4 text-sm font-semibold tracking-wide text-foreground transition-colors hover:bg-muted sm:w-auto"
+                <button type="button" onClick={() => go(heroPrimary)}>
+                  {heroPrimary}
+                </button>
+              </HeroCta>
+              <HeroCta
+                asChild
+                variant="outline"
+                className="w-full rounded-lg px-8 py-4 text-sm font-semibold tracking-wide transition-colors hover:bg-muted sm:w-auto"
               >
-                {heroSecondary}
-              </button>
+                <button type="button" onClick={() => go(heroSecondary)}>
+                  {heroSecondary}
+                </button>
+              </HeroCta>
               <CommerceAddItemButton
                 lakebed={lakebed}
                 item={{

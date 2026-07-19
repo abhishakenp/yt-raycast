@@ -9,6 +9,7 @@ import {
   HeroHighlight,
   HeroSubheading,
   HeroActions,
+  HeroCta,
   HeroMediaPanel,
   HeroSocialProof,
   HeroSocialProofItem,
@@ -117,21 +118,25 @@ export const MarketingAgencyHero = defineCapsule({
                 {subheading}
               </HeroSubheading>
               <HeroActions className="gap-4">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
-                  className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-all hover:bg-primary/90"
+                <HeroCta
+                  asChild
+                  variant="primary"
+                  className="rounded-full px-6 py-3 font-medium transition-all"
                 >
-                  {primaryCta}
-                  <ArrowRight className="ml-2 size-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
-                  className="inline-flex items-center justify-center rounded-full border border-border px-6 py-3 font-medium text-foreground transition-all hover:border-foreground/40"
+                  <button type="button" onClick={() => go(primaryCta)}>
+                    {primaryCta}
+                    <ArrowRight className="ml-2 size-4" />
+                  </button>
+                </HeroCta>
+                <HeroCta
+                  asChild
+                  variant="outline"
+                  className="rounded-full px-6 py-3 font-medium transition-all hover:border-foreground/40"
                 >
-                  {secondaryCta}
-                </button>
+                  <button type="button" onClick={() => go(secondaryCta)}>
+                    {secondaryCta}
+                  </button>
+                </HeroCta>
               </HeroActions>
               <HeroSocialProof className="mt-10 gap-6">
                 {trust.map((t) => (

@@ -11,6 +11,7 @@ import {
   HeroHighlight,
   HeroSubheading,
   HeroActions,
+  HeroCta,
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
@@ -164,21 +165,25 @@ export const PetVeterinaryHero = defineCapsule({
                 {heroSub}
               </HeroSubheading>
               <HeroActions className="mb-12 flex-col gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(heroPrimary)}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 text-base font-semibold text-primary-foreground transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-xl"
+                <HeroCta
+                  asChild
+                  variant="primary"
+                  className="gap-2 rounded-xl px-8 py-4 text-base font-semibold transition-all hover:-translate-y-0.5 hover:shadow-xl"
                 >
-                  {heroPrimary}
-                  <ArrowRight />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(heroSecondary)}
-                  className="inline-flex items-center justify-center rounded-xl border-2 border-border bg-card px-8 py-4 text-base font-semibold text-foreground transition-all hover:border-primary/40 hover:bg-primary/5"
+                  <button type="button" onClick={() => go(heroPrimary)}>
+                    {heroPrimary}
+                    <ArrowRight />
+                  </button>
+                </HeroCta>
+                <HeroCta
+                  asChild
+                  variant="outline"
+                  className="rounded-xl border-2 border-border bg-card px-8 py-4 text-base font-semibold transition-all hover:border-primary/40 hover:bg-primary/5"
                 >
-                  {heroSecondary}
-                </button>
+                  <button type="button" onClick={() => go(heroSecondary)}>
+                    {heroSecondary}
+                  </button>
+                </HeroCta>
               </HeroActions>
               <div className="flex flex-wrap items-center gap-8 text-sm">
                 <div className="flex items-center gap-2">

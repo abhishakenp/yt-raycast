@@ -10,6 +10,7 @@ import {
   HeroHighlight,
   HeroSubheading,
   HeroActions,
+  HeroCta,
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
@@ -137,20 +138,23 @@ export const BeautyStoreHero = defineCapsule({
                 {subheading}
               </HeroSubheading>
               <HeroActions className="mt-0 flex-wrap gap-4">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
-                  className="inline-flex items-center rounded-full bg-foreground px-8 py-4 font-medium text-background transition-colors hover:bg-foreground/90"
+                <HeroCta
+                  asChild
+                  className="rounded-full bg-foreground px-8 py-4 font-medium text-background hover:bg-foreground/90"
                 >
-                  {primaryCta}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
-                  className="inline-flex items-center rounded-full border border-border px-8 py-4 font-medium text-foreground transition-colors hover:border-foreground"
+                  <button type="button" onClick={() => go(primaryCta)}>
+                    {primaryCta}
+                  </button>
+                </HeroCta>
+                <HeroCta
+                  asChild
+                  variant="outline"
+                  className="rounded-full px-8 py-4 font-medium hover:border-foreground"
                 >
-                  {secondaryCta}
-                </button>
+                  <button type="button" onClick={() => go(secondaryCta)}>
+                    {secondaryCta}
+                  </button>
+                </HeroCta>
               </HeroActions>
               <div className="flex items-center gap-6 pt-4">
                 <div className="flex -space-x-3">

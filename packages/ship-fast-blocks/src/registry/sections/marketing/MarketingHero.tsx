@@ -9,6 +9,7 @@ import {
   HeroHeading,
   HeroSubheading,
   HeroActions,
+  HeroCta,
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 
@@ -105,47 +106,51 @@ export const MarketingHero = defineCapsule({
               {subheading}
             </HeroSubheading>
             <HeroActions className="justify-center gap-3 lg:justify-start">
-              <button
-                type="button"
-                onClick={() => go(primaryCta)}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-7 py-3.5 text-base font-semibold text-primary-foreground shadow-[0_4px_14px_rgba(79,70,229,0.35)] transition-all hover:-translate-y-px hover:bg-primary/90"
+              <HeroCta
+                asChild
+                variant="primary"
+                className="gap-2 rounded-xl px-7 py-3.5 text-base font-semibold shadow-[0_4px_14px_rgba(79,70,229,0.35)] transition-all hover:-translate-y-px"
               >
-                {primaryCta}
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </button>
-              <button
-                type="button"
-                onClick={() => go(secondaryCta)}
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-muted/50 px-7 py-3.5 text-base font-semibold text-foreground transition-colors hover:bg-muted"
+                <button type="button" onClick={() => go(primaryCta)}>
+                  {primaryCta}
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </button>
+              </HeroCta>
+              <HeroCta
+                asChild
+                variant="outline"
+                className="gap-2 rounded-xl bg-muted/50 px-7 py-3.5 text-base font-semibold transition-colors hover:bg-muted"
               >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <polygon points="10 8 16 12 10 16 10 8" />
-                </svg>
-                {secondaryCta}
-              </button>
+                <button type="button" onClick={() => go(secondaryCta)}>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <polygon points="10 8 16 12 10 16 10 8" />
+                  </svg>
+                  {secondaryCta}
+                </button>
+              </HeroCta>
             </HeroActions>
             <p className="mt-4 text-sm text-muted-foreground">{note}</p>
           </div>

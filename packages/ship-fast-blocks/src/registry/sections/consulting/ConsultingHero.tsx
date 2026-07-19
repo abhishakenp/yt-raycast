@@ -8,6 +8,7 @@ import {
   HeroHeading,
   HeroSubheading,
   HeroActions,
+  HeroCta,
   HeroMediaPanel,
   HeroSocialProof,
   HeroSocialProofItem,
@@ -122,20 +123,24 @@ export const ConsultingHero = defineCapsule({
                 {subheading}
               </HeroSubheading>
               <HeroActions className="mt-0 flex-wrap gap-4">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
-                  className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-base font-medium text-primary-foreground shadow-lg transition-all hover:bg-primary/90"
+                <HeroCta
+                  asChild
+                  variant="primary"
+                  className="rounded-md px-6 py-3 text-base shadow-lg transition-all"
                 >
-                  {primaryCta}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
-                  className="inline-flex items-center justify-center rounded-md border border-border bg-background px-6 py-3 text-base font-medium text-foreground transition-all hover:bg-muted"
+                  <button type="button" onClick={() => go(primaryCta)}>
+                    {primaryCta}
+                  </button>
+                </HeroCta>
+                <HeroCta
+                  asChild
+                  variant="outline"
+                  className="rounded-md px-6 py-3 text-base transition-all"
                 >
-                  {secondaryCta}
-                </button>
+                  <button type="button" onClick={() => go(secondaryCta)}>
+                    {secondaryCta}
+                  </button>
+                </HeroCta>
               </HeroActions>
               <HeroSocialProof className="mt-0 gap-8 pt-4">
                 {trust.map((t) => (

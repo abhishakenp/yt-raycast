@@ -10,6 +10,7 @@ import {
   HeroHeading,
   HeroSubheading,
   HeroActions,
+  HeroCta,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
@@ -91,28 +92,32 @@ export const ChurchHero = defineCapsule({
               {subheading}
             </HeroSubheading>
             <HeroActions className="mt-0 flex-col items-center justify-center gap-4 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => go(primaryCta)}
-                className="inline-flex items-center rounded-full bg-primary px-8 py-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              <HeroCta
+                asChild
+                variant="primary"
+                className="rounded-full px-8 py-4"
               >
-                {primaryCta}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(secondaryCta)}
-                className="inline-flex items-center rounded-full border border-border bg-card px-8 py-4 text-sm font-medium text-card-foreground transition-colors hover:bg-accent"
+                <button type="button" onClick={() => go(primaryCta)}>
+                  {primaryCta}
+                </button>
+              </HeroCta>
+              <HeroCta
+                asChild
+                variant="outline"
+                className="rounded-full border-border bg-card px-8 py-4 text-card-foreground hover:bg-accent"
               >
-                <svg
-                  className="mr-2 size-4"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-                {secondaryCta}
-              </button>
+                <button type="button" onClick={() => go(secondaryCta)}>
+                  <svg
+                    className="mr-2 size-4"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                  {secondaryCta}
+                </button>
+              </HeroCta>
             </HeroActions>
             <div className="mt-16 flex items-center justify-center gap-8 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">

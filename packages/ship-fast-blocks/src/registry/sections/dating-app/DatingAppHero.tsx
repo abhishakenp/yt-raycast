@@ -10,6 +10,7 @@ import {
   HeroHighlight,
   HeroSubheading,
   HeroActions,
+  HeroCta,
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
@@ -145,29 +146,33 @@ export const DatingAppHero = defineCapsule({
                 {heroSub}
               </HeroSubheading>
               <HeroActions className="mb-8 mt-0 flex flex-col gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(heroPrimary)}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:bg-primary/90"
+                <HeroCta
+                  asChild
+                  variant="primary"
+                  className="gap-2 rounded-xl px-6 py-4 text-base font-semibold shadow-lg shadow-primary/20 transition-all"
                 >
-                  <svg
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    className="size-5"
-                    aria-hidden="true"
-                  >
-                    <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" />
-                  </svg>
-                  {heroPrimary}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(heroSecondary)}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-6 py-4 text-base font-semibold text-foreground transition-all hover:bg-accent"
+                  <button type="button" onClick={() => go(heroPrimary)}>
+                    <svg
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      className="size-5"
+                      aria-hidden="true"
+                    >
+                      <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" />
+                    </svg>
+                    {heroPrimary}
+                  </button>
+                </HeroCta>
+                <HeroCta
+                  asChild
+                  variant="outline"
+                  className="gap-2 rounded-xl bg-card px-6 py-4 text-base font-semibold transition-all hover:bg-accent"
                 >
-                  {heroSecondary}
-                  <ChevronDown className="size-5" />
-                </button>
+                  <button type="button" onClick={() => go(heroSecondary)}>
+                    {heroSecondary}
+                    <ChevronDown className="size-5" />
+                  </button>
+                </HeroCta>
               </HeroActions>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex -space-x-2">

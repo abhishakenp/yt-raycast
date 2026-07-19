@@ -9,6 +9,7 @@ import {
   HeroHeading,
   HeroSubheading,
   HeroActions,
+  HeroCta,
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 
@@ -80,20 +81,24 @@ export const WriterAuthorHero = defineCapsule({
             <HeroSubheading className="max-w-xl">{heroIntro}</HeroSubheading>
 
             <HeroActions className="mt-10 flex-col gap-4 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => go(heroPrimaryTarget)}
-                className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              <HeroCta
+                asChild
+                variant="primary"
+                className="rounded-full px-8 py-4 font-medium"
               >
-                {heroPrimary}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(heroSecondaryTarget)}
-                className="inline-flex items-center justify-center rounded-full border border-border px-8 py-4 font-medium text-foreground transition-colors hover:bg-muted"
+                <button type="button" onClick={() => go(heroPrimaryTarget)}>
+                  {heroPrimary}
+                </button>
+              </HeroCta>
+              <HeroCta
+                asChild
+                variant="outline"
+                className="rounded-full px-8 py-4 font-medium"
               >
-                {heroSecondary}
-              </button>
+                <button type="button" onClick={() => go(heroSecondaryTarget)}>
+                  {heroSecondary}
+                </button>
+              </HeroCta>
             </HeroActions>
           </div>
 

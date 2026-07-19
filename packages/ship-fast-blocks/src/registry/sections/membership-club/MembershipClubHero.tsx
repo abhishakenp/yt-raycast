@@ -9,6 +9,7 @@ import {
   HeroHighlight,
   HeroSubheading,
   HeroActions,
+  HeroCta,
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
@@ -94,20 +95,24 @@ export const MembershipClubHero = defineCapsule({
               </HeroHeading>
               <HeroSubheading>{subheading}</HeroSubheading>
               <HeroActions className="flex-col gap-4 pt-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
-                  className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                <HeroCta
+                  asChild
+                  variant="primary"
+                  className="rounded-full px-8 py-4 text-base"
                 >
-                  {primaryCta}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
-                  className="inline-flex items-center justify-center rounded-full border border-border bg-card px-8 py-4 text-base font-medium text-foreground transition-colors hover:bg-muted"
+                  <button type="button" onClick={() => go(primaryCta)}>
+                    {primaryCta}
+                  </button>
+                </HeroCta>
+                <HeroCta
+                  asChild
+                  variant="outline"
+                  className="rounded-full bg-card px-8 py-4 text-base"
                 >
-                  {secondaryCta}
-                </button>
+                  <button type="button" onClick={() => go(secondaryCta)}>
+                    {secondaryCta}
+                  </button>
+                </HeroCta>
               </HeroActions>
               <div className="flex items-center gap-6 pt-6 text-sm text-muted-foreground">
                 {proof.map((p) => (

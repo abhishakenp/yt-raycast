@@ -9,6 +9,7 @@ import {
   HeroHeading,
   HeroSubheading,
   HeroActions,
+  HeroCta,
   HeroMediaPanel,
   HeroStats,
   HeroStat,
@@ -119,13 +120,15 @@ export const EventPlannerHero = defineCapsule({
                 >
                   {heroPrimary}
                 </InquiryActionButton>
-                <button
-                  type="button"
-                  onClick={() => go(heroSecondary)}
-                  className="inline-flex items-center rounded-full border border-border px-8 py-4 font-medium text-foreground transition-colors hover:bg-muted"
+                <HeroCta
+                  asChild
+                  variant="outline"
+                  className="rounded-full px-8 py-4 font-medium"
                 >
-                  {heroSecondary}
-                </button>
+                  <button type="button" onClick={() => go(heroSecondary)}>
+                    {heroSecondary}
+                  </button>
+                </HeroCta>
               </HeroActions>
               <HeroStats className="mt-12 flex items-center gap-8 pt-8">
                 {heroStats.map((s) => (

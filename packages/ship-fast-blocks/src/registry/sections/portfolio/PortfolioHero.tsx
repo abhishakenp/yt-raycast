@@ -8,6 +8,7 @@ import {
   HeroSection,
   HeroHighlight,
   HeroActions,
+  HeroCta,
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
@@ -91,20 +92,24 @@ export const PortfolioHero = defineCapsule({
                 {description}
               </p>
               <HeroActions>
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
-                  className="inline-flex items-center justify-center gap-2.5 rounded-full bg-primary px-7 py-3.5 text-[0.9375rem] font-semibold text-primary-foreground transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+                <HeroCta
+                  asChild
+                  variant="primary"
+                  className="gap-2.5 rounded-full px-7 py-3.5 text-[0.9375rem] font-semibold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
                 >
-                  {primaryCta}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
-                  className="inline-flex items-center justify-center gap-2.5 rounded-full border border-border bg-secondary px-7 py-3.5 text-[0.9375rem] font-semibold text-secondary-foreground transition-all duration-300 hover:-translate-y-0.5 hover:border-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  <button type="button" onClick={() => go(primaryCta)}>
+                    {primaryCta}
+                  </button>
+                </HeroCta>
+                <HeroCta
+                  asChild
+                  variant="outline"
+                  className="gap-2.5 rounded-full bg-secondary px-7 py-3.5 text-[0.9375rem] font-semibold text-secondary-foreground transition-all duration-300 hover:-translate-y-0.5 hover:border-muted-foreground hover:bg-accent hover:text-accent-foreground"
                 >
-                  {secondaryCta}
-                </button>
+                  <button type="button" onClick={() => go(secondaryCta)}>
+                    {secondaryCta}
+                  </button>
+                </HeroCta>
               </HeroActions>
             </div>
 

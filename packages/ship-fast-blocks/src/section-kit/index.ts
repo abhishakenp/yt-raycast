@@ -240,6 +240,7 @@ export {
   HeroSubheading,
   HeroActions,
   HeroCta,
+  heroCtaVariants,
   HeroMediaPanel,
   HeroSocialProof,
   HeroSocialProofItem,

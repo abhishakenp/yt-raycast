@@ -9,6 +9,7 @@ import {
   HeroHighlight,
   HeroSubheading,
   HeroActions,
+  HeroCta,
   HeroCodeWindow,
   HeroCodeWindowHeader,
   HeroCodeWindowBody,
@@ -66,18 +67,22 @@ export const PortfolioDevHero = defineCapsule({
               {intro}
             </HeroSubheading>
             <HeroActions className="flex-col gap-3 sm:flex-row">
-              <button
-                onClick={() => go(primaryTarget)}
-                className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+              <HeroCta
+                asChild
+                variant="primary"
+                className="rounded-md px-6 py-3 text-sm font-semibold"
               >
-                {primaryCta}
-              </button>
-              <button
-                onClick={() => go(secondaryTarget)}
-                className="inline-flex items-center justify-center rounded-md border border-border bg-background px-6 py-3 text-sm font-semibold text-foreground transition hover:bg-muted"
+                <button onClick={() => go(primaryTarget)}>{primaryCta}</button>
+              </HeroCta>
+              <HeroCta
+                asChild
+                variant="outline"
+                className="rounded-md px-6 py-3 text-sm font-semibold"
               >
-                {secondaryCta}
-              </button>
+                <button onClick={() => go(secondaryTarget)}>
+                  {secondaryCta}
+                </button>
+              </HeroCta>
             </HeroActions>
             <div className="mt-8 flex flex-wrap gap-2">
               {tags.map((tag) => (

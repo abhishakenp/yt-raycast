@@ -10,6 +10,7 @@ import {
   HeroHeading,
   HeroSubheading,
   HeroActions,
+  HeroCta,
 } from '#/section-kit/HeroSection.tsx'
 
 export const SalonBarberHero = defineCapsule({
@@ -64,20 +65,24 @@ export const SalonBarberHero = defineCapsule({
           </HeroSubheading>
 
           <HeroActions className="mt-10 flex-col gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => go(primaryTarget)}
-              className="rounded-full bg-primary px-8 py-3 font-semibold text-primary-foreground transition hover:bg-primary/90"
+            <HeroCta
+              asChild
+              variant="primary"
+              className="rounded-full px-8 py-3 font-semibold"
             >
-              {primaryCta}
-            </button>
-            <button
-              type="button"
-              onClick={() => go(secondaryTarget)}
-              className="rounded-full border border-border bg-card/10 px-8 py-3 font-semibold text-background transition hover:bg-card/20"
+              <button type="button" onClick={() => go(primaryTarget)}>
+                {primaryCta}
+              </button>
+            </HeroCta>
+            <HeroCta
+              asChild
+              variant="outline"
+              className="rounded-full border-border bg-card/10 px-8 py-3 font-semibold text-background hover:bg-card/20"
             >
-              {secondaryCta}
-            </button>
+              <button type="button" onClick={() => go(secondaryTarget)}>
+                {secondaryCta}
+              </button>
+            </HeroCta>
           </HeroActions>
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4 text-sm text-background/80">

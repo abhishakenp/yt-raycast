@@ -9,6 +9,7 @@ import {
   HeroHeading,
   HeroSubheading,
   HeroActions,
+  HeroCta,
   HeroCodeWindow,
   HeroCodeWindowHeader,
   HeroCodeWindowBody,
@@ -151,13 +152,15 @@ export const AuthHero = defineCapsule({
               >
                 {primaryCta}
               </SaasPlanActionButton>
-              <button
-                type="button"
-                onClick={() => go(secondaryTarget)}
-                className="inline-flex min-h-12 items-center justify-center rounded-xl border border-border bg-background/70 px-7 py-3 text-sm font-semibold text-foreground backdrop-blur transition-[background-color,border-color,transform] duration-150 ease-out hover:border-foreground/25 hover:bg-muted active:scale-[0.98] motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              <HeroCta
+                asChild
+                variant="outline"
+                className="min-h-12 rounded-xl bg-background/70 px-7 py-3 text-sm font-semibold backdrop-blur transition-[background-color,border-color,transform] duration-150 ease-out hover:border-foreground/25 active:scale-[0.98] motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
-                {secondaryCta}
-              </button>
+                <button type="button" onClick={() => go(secondaryTarget)}>
+                  {secondaryCta}
+                </button>
+              </HeroCta>
             </HeroActions>
 
             <p className="mt-7 max-w-md font-mono text-xs leading-6 text-muted-foreground">

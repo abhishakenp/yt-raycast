@@ -10,6 +10,7 @@ import {
   HeroHighlight,
   HeroSubheading,
   HeroActions,
+  HeroCta,
   HeroSocialProof,
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
@@ -153,36 +154,40 @@ export const InsuranceHero = defineCapsule({
                 {subheading}
               </HeroSubheading>
               <HeroActions className="mt-0 flex flex-col gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:bg-primary/90"
+                <HeroCta
+                  asChild
+                  variant="primary"
+                  className="gap-2 rounded-xl px-8 py-4 text-base font-semibold shadow-lg shadow-primary/25 transition-all"
                 >
-                  {primaryCta}
-                  <ArrowRight />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-8 py-4 text-base font-semibold text-foreground transition-all hover:bg-muted"
+                  <button type="button" onClick={() => go(primaryCta)}>
+                    {primaryCta}
+                    <ArrowRight />
+                  </button>
+                </HeroCta>
+                <HeroCta
+                  asChild
+                  variant="outline"
+                  className="gap-2 rounded-xl px-8 py-4 text-base font-semibold transition-all"
                 >
-                  <svg
-                    className="size-5 text-primary"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                    <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  {secondaryCta}
-                </button>
+                  <button type="button" onClick={() => go(secondaryCta)}>
+                    <svg
+                      className="size-5 text-primary"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                      <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {secondaryCta}
+                  </button>
+                </HeroCta>
               </HeroActions>
               <HeroSocialProof className="mt-0 gap-6">
                 {trustItems.map((item) => (

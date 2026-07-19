@@ -10,6 +10,7 @@ import {
   HeroHeading,
   HeroSubheading,
   HeroActions,
+  HeroCta,
   HeroSocialProof,
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
@@ -170,22 +171,25 @@ export const KidsEducationHero = defineCapsule({
                 {subheading}
               </HeroSubheading>
               <HeroActions className="mt-0 flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
-                  className="flex items-center justify-center gap-2 rounded-full bg-foreground px-8 py-4 font-semibold text-background shadow-lg transition-all hover:bg-foreground/90"
+                <HeroCta
+                  asChild
+                  className="gap-2 rounded-full bg-foreground px-8 py-4 font-semibold text-background shadow-lg transition-all hover:bg-foreground/90"
                 >
-                  {primaryCta}
-                  <ArrowRight />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
-                  className="flex items-center justify-center gap-2 rounded-full border-2 border-border bg-card px-8 py-4 font-semibold text-foreground transition-all hover:border-foreground/20 hover:bg-muted"
+                  <button type="button" onClick={() => go(primaryCta)}>
+                    {primaryCta}
+                    <ArrowRight />
+                  </button>
+                </HeroCta>
+                <HeroCta
+                  asChild
+                  variant="outline"
+                  className="gap-2 rounded-full border-2 border-border bg-card px-8 py-4 font-semibold transition-all hover:border-foreground/20 hover:bg-muted"
                 >
-                  <PlayIcon />
-                  {secondaryCta}
-                </button>
+                  <button type="button" onClick={() => go(secondaryCta)}>
+                    <PlayIcon />
+                    {secondaryCta}
+                  </button>
+                </HeroCta>
               </HeroActions>
               <HeroSocialProof className="mt-8 justify-center gap-6 lg:justify-start">
                 {trustPoints.map((point) => (

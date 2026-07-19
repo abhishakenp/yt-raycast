@@ -10,6 +10,7 @@ import {
   HeroHeading,
   HeroSubheading,
   HeroActions,
+  HeroCta,
 } from '#/section-kit/HeroSection.tsx'
 
 /**
@@ -90,20 +91,24 @@ export const FlightSimulatorHero = defineCapsule({
           <HeroSubheading variant="light">{heroSub}</HeroSubheading>
 
           <HeroActions className="mt-10 flex-col gap-4 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => go(heroPrimaryTarget)}
-              className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            <HeroCta
+              asChild
+              variant="primary"
+              className="rounded-full px-8 py-4 font-medium"
             >
-              {heroPrimary}
-            </button>
-            <button
-              type="button"
-              onClick={() => go(heroSecondaryTarget)}
-              className="inline-flex items-center justify-center rounded-full border border-border bg-card/10 px-8 py-4 font-medium text-background backdrop-blur-sm transition-colors hover:bg-card/20"
+              <button type="button" onClick={() => go(heroPrimaryTarget)}>
+                {heroPrimary}
+              </button>
+            </HeroCta>
+            <HeroCta
+              asChild
+              variant="outline"
+              className="rounded-full border-border bg-card/10 px-8 py-4 font-medium text-background backdrop-blur-sm hover:bg-card/20"
             >
-              {heroSecondary}
-            </button>
+              <button type="button" onClick={() => go(heroSecondaryTarget)}>
+                {heroSecondary}
+              </button>
+            </HeroCta>
           </HeroActions>
 
           <div className="mt-14 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-background/80">

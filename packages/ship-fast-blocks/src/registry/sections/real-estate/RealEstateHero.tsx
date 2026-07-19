@@ -10,6 +10,7 @@ import {
   HeroHeading,
   HeroSubheading,
   HeroActions,
+  HeroCta,
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 
@@ -93,20 +94,24 @@ export const RealEstateHero = defineCapsule({
           <HeroSubheading variant="light">{subheading}</HeroSubheading>
 
           <HeroActions className="mt-10 flex-col gap-4 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => go(primaryTarget)}
-              className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            <HeroCta
+              asChild
+              variant="primary"
+              className="rounded-full px-8 py-4 font-medium"
             >
-              {primaryCta}
-            </button>
-            <button
-              type="button"
-              onClick={() => go(secondaryTarget)}
-              className="inline-flex items-center justify-center rounded-full border border-border bg-card/10 px-8 py-4 font-medium text-background backdrop-blur-sm transition-colors hover:bg-card/20"
+              <button type="button" onClick={() => go(primaryTarget)}>
+                {primaryCta}
+              </button>
+            </HeroCta>
+            <HeroCta
+              asChild
+              variant="outline"
+              className="rounded-full border-border bg-card/10 px-8 py-4 font-medium text-background backdrop-blur-sm hover:bg-card/20"
             >
-              {secondaryCta}
-            </button>
+              <button type="button" onClick={() => go(secondaryTarget)}>
+                {secondaryCta}
+              </button>
+            </HeroCta>
           </HeroActions>
 
           <Card

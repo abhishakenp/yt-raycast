@@ -8,6 +8,7 @@ import {
   HeroHeading,
   HeroSubheading,
   HeroActions,
+  HeroCta,
   HeroMediaPanel,
   HeroSocialProof,
   HeroSocialProofItem,
@@ -75,20 +76,24 @@ export const TutoringHero = defineCapsule({
               {subheading}
             </HeroSubheading>
             <HeroActions className="flex-col gap-3 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => go(primaryTarget)}
-                className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+              <HeroCta
+                asChild
+                variant="primary"
+                className="rounded-full px-6 py-3 font-semibold"
               >
-                {primaryCta}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(secondaryTarget)}
-                className="inline-flex items-center justify-center rounded-full border border-border bg-background px-6 py-3 text-sm font-semibold text-foreground transition hover:bg-muted"
+                <button type="button" onClick={() => go(primaryTarget)}>
+                  {primaryCta}
+                </button>
+              </HeroCta>
+              <HeroCta
+                asChild
+                variant="outline"
+                className="rounded-full px-6 py-3 font-semibold"
               >
-                {secondaryCta}
-              </button>
+                <button type="button" onClick={() => go(secondaryTarget)}>
+                  {secondaryCta}
+                </button>
+              </HeroCta>
             </HeroActions>
             <HeroSocialProof className="mt-10 gap-y-3 border-t border-border pt-8">
               {trust.map((item) => (

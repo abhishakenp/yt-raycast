@@ -8,6 +8,7 @@ import {
   HeroHeading,
   HeroSubheading,
   HeroActions,
+  HeroCta,
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
@@ -165,23 +166,26 @@ export const BakeryHero = defineCapsule({
                 </HeroSubheading>
               </div>
               <HeroActions className="mt-0 flex-wrap gap-4">
-                <button
-                  type="button"
-                  onClick={() => go(primaryTarget)}
-                  className="inline-flex items-center rounded-lg bg-foreground px-6 py-3 font-medium text-background transition-colors hover:bg-foreground/90"
+                <HeroCta
+                  asChild
+                  className="rounded-lg bg-foreground px-6 py-3 font-medium text-background hover:bg-foreground/90"
                 >
-                  {primaryCta}
-                  <span className="ml-2">
-                    <ArrowRight />
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryTarget)}
-                  className="inline-flex items-center rounded-lg border border-border px-6 py-3 font-medium text-foreground transition-colors hover:bg-card"
+                  <button type="button" onClick={() => go(primaryTarget)}>
+                    {primaryCta}
+                    <span className="ml-2">
+                      <ArrowRight />
+                    </span>
+                  </button>
+                </HeroCta>
+                <HeroCta
+                  asChild
+                  variant="outline"
+                  className="rounded-lg px-6 py-3 font-medium hover:bg-card"
                 >
-                  {secondaryCta}
-                </button>
+                  <button type="button" onClick={() => go(secondaryTarget)}>
+                    {secondaryCta}
+                  </button>
+                </HeroCta>
                 <CommerceAddItemButton
                   lakebed={lakebed}
                   item={{

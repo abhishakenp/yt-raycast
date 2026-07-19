@@ -9,6 +9,7 @@ import {
   HeroHighlight,
   HeroSubheading,
   HeroActions,
+  HeroCta,
   HeroMediaPanel,
   HeroSocialProof,
   HeroSocialProofItem,
@@ -121,13 +122,15 @@ export const MentalHealthHero = defineCapsule({
                 >
                   {primaryCta}
                 </LocalServiceBookingButton>
-                <button
-                  type="button"
-                  onClick={() => go(secondaryCta)}
-                  className="rounded-full border border-border bg-background px-8 py-4 text-center font-medium text-foreground transition-colors hover:bg-accent"
+                <HeroCta
+                  asChild
+                  variant="outline"
+                  className="rounded-full bg-background px-8 py-4 text-center font-medium hover:bg-accent"
                 >
-                  {secondaryCta}
-                </button>
+                  <button type="button" onClick={() => go(secondaryCta)}>
+                    {secondaryCta}
+                  </button>
+                </HeroCta>
               </HeroActions>
               <HeroSocialProof className="mt-8 justify-center gap-6 lg:justify-start">
                 {trust.map((t) => (

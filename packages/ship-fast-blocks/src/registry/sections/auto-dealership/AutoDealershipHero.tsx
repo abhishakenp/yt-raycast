@@ -8,6 +8,7 @@ import {
   HeroHeading,
   HeroSubheading,
   HeroActions,
+  HeroCta,
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
@@ -89,13 +90,15 @@ export const AutoDealershipHero = defineCapsule({
                 </HeroSubheading>
               </div>
               <HeroActions className="mt-0 flex flex-col gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(primaryCta)}
-                  className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                <HeroCta
+                  asChild
+                  variant="primary"
+                  className="rounded-md px-6 py-3 text-base"
                 >
-                  {primaryCta}
-                </button>
+                  <button type="button" onClick={() => go(primaryCta)}>
+                    {primaryCta}
+                  </button>
+                </HeroCta>
                 <AutoLeadActionButton
                   lakebed={lakebed}
                   action="test_drive"

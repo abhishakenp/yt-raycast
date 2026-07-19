@@ -11,6 +11,7 @@ import {
   HeroHeading,
   HeroSubheading,
   HeroActions,
+  HeroCta,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
@@ -79,20 +80,24 @@ export const UniversityHero = defineCapsule({
               {subheading}
             </HeroSubheading>
             <HeroActions className="mt-10 flex-col justify-center gap-3 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => go(primaryTarget)}
-                className="rounded-full bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+              <HeroCta
+                asChild
+                variant="primary"
+                className="rounded-full px-7 py-3 text-sm font-semibold"
               >
-                {primaryCta}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(secondaryTarget)}
-                className="rounded-full border border-background/40 bg-background/10 px-7 py-3 text-sm font-semibold text-background backdrop-blur-sm transition hover:bg-background/20"
+                <button type="button" onClick={() => go(primaryTarget)}>
+                  {primaryCta}
+                </button>
+              </HeroCta>
+              <HeroCta
+                asChild
+                variant="outline"
+                className="rounded-full border-background/40 bg-background/10 px-7 py-3 text-sm font-semibold text-background backdrop-blur-sm hover:bg-background/20"
               >
-                {secondaryCta}
-              </button>
+                <button type="button" onClick={() => go(secondaryTarget)}>
+                  {secondaryCta}
+                </button>
+              </HeroCta>
             </HeroActions>
             <div className="mx-auto mt-12 flex max-w-2xl flex-wrap items-center justify-center gap-x-3 gap-y-2 border-t border-background/20 pt-8 text-sm font-medium text-background/80">
               {quickStats.map((stat, i) => (
