@@ -11,6 +11,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * sales-pipeline or B2B SaaS product. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   IntegrationGrid,
   IntegrationCard,
@@ -96,12 +97,13 @@ export const CrmIntegrations = defineCapsule({
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mb-16 max-w-3xl gap-0"
+            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <IntegrationGrid cols="2-4-6" gap="md">
             {items.map((item) => (
               <IntegrationCard

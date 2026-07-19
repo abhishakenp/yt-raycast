@@ -10,6 +10,7 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * CrmFaq — centered FAQ accordion for a CRM / SaaS landing page on a subtle
@@ -76,12 +77,13 @@ export const CrmFaq = defineCapsule({
     return (
       <section className={cn('bg-muted/50 py-20 lg:py-28', props.className)}>
         <Container size="sm">
-          <div className="mb-16 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mb-16 gap-0"
+            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <FaqAccordion>
             {items.map((item) => (
               <FaqItem key={item.question} variant="bordered-lg">
