@@ -96,8 +96,7 @@ export const UniversityPrograms = defineCapsule({
               <ProgramCard
                 key={`${program.degree ?? 'program'}-${i}`}
                 variant="default"
-                rounded="2xl"
-                className="flex flex-col p-7 text-card-foreground transition hover:border-primary/40 hover:shadow-lg"
+                className="flex flex-col rounded-2xl p-7 text-card-foreground transition hover:border-primary/40 hover:shadow-lg"
               >
                 <p className="font-serif text-sm font-semibold uppercase tracking-wide text-primary">
                   {program.school}

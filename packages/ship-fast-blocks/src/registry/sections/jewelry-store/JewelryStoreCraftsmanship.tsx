@@ -170,7 +170,6 @@ export const JewelryStoreCraftsmanship = defineCapsule({
                     <FeatureListItem className="gap-6">
                       <FeatureListItemIcon
                         shape="circle"
-                        size="md"
                         className="bg-card text-primary"
                       >
                         {<Icon />}

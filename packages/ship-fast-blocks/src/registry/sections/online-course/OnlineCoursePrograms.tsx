@@ -76,8 +76,7 @@ export const OnlineCoursePrograms = defineCapsule({
           />
           <ProgramCard
             variant="default"
-            rounded="2xl"
-            className="mt-12 overflow-hidden"
+            className="mt-12 overflow-hidden rounded-2xl"
           >
             {modules.map((module, i) => (
               <div

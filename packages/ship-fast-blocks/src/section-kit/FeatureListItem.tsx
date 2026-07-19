@@ -21,22 +21,16 @@ const FeatureListItem = React.forwardRef<
 FeatureListItem.displayName = 'FeatureListItem'
 
 const featureListItemIconVariants = cva(
-  'flex shrink-0 items-center justify-center bg-muted',
+  'flex size-12 shrink-0 items-center justify-center bg-muted',
   {
     variants: {
       shape: {
         circle: 'rounded-full',
         square: 'rounded-lg',
       },
-      size: {
-        sm: 'size-10',
-        md: 'size-12',
-        lg: 'size-14',
-      },
     },
     defaultVariants: {
       shape: 'circle',
-      size: 'md',
     },
   },
 )
@@ -45,13 +39,13 @@ const FeatureListItemIcon = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<'div'> &
     VariantProps<typeof featureListItemIconVariants> & { asChild?: boolean }
->(({ className, shape, size, asChild = false, ...props }, ref) => {
+>(({ className, shape, asChild = false, ...props }, ref) => {
   const Comp = asChild ? Slot : 'div'
   return (
     <Comp
       ref={ref}
       data-slot="feature-list-item-icon"
-      className={cn(featureListItemIconVariants({ shape, size }), className)}
+      className={cn(featureListItemIconVariants({ shape }), className)}
       {...props}
     />
   )

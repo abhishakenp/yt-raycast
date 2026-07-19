@@ -108,13 +108,11 @@ export const YogaStudioPrograms = defineCapsule({
               <ProgramCard
                 key={program.name}
                 variant="default"
-                rounded="2xl"
-                className="flex flex-col p-6 text-card-foreground shadow-sm transition-shadow hover:shadow-md lg:p-8"
+                className="flex flex-col rounded-2xl p-6 text-card-foreground shadow-sm transition-shadow hover:shadow-md lg:p-8"
               >
                 <ProgramIcon
-                  size="lg"
                   shape="circle"
-                  className="mb-4 bg-primary/10 text-primary"
+                  className="mb-4 size-14 bg-primary/10 text-primary"
                 >
                   <span className="text-lg font-semibold">
                     {program.name.charAt(0)}

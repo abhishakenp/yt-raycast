@@ -143,8 +143,7 @@ export const EventVenue = defineCapsule({
                   <FeatureListItem>
                     <FeatureListItemIcon
                       shape="square"
-                      size="sm"
-                      className="border border-border bg-background text-foreground"
+                      className="size-10 border border-border bg-background text-foreground"
                     >
                       {venueIcons[i % venueIcons.length]}
                     </FeatureListItemIcon>
