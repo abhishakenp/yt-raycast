@@ -3,11 +3,16 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import {
+  HeroSection,
+  HeroHeading,
+  HeroHighlight,
+  HeroSubheading,
+  HeroActions,
+  HeroCta,
+} from '#/section-kit/HeroSection.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
-import { Card } from '#/section-kit/Card.tsx'
-import { SplitStory } from '#/section-kit/SplitStory.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { CtaAction } from '#/section-kit/CtaBand.tsx'
 
 /**
  * AboutHero — mission hero band for a modern company / ABOUT page. A spacious
@@ -67,7 +72,7 @@ export const AboutHero = defineCapsule({
     )
 
     return (
-      <SplitStory
+      <HeroSection
         className={cn(
           'relative overflow-hidden py-20 sm:py-24 lg:py-28',
           props.className,
@@ -84,17 +89,15 @@ export const AboutHero = defineCapsule({
           <Eyebrow variant="primary" icon={<SparkleIcon />}>
             {eyebrow}
           </Eyebrow>
-          <h1 className="mt-6 max-w-3xl text-4xl font-extrabold leading-[1.1] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+          <HeroHeading variant="extra-bold" className="mt-6 max-w-3xl">
             {heading}{' '}
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              {highlight}
-            </span>
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
+            <HeroHighlight variant="gradient">{highlight}</HeroHighlight>
+          </HeroHeading>
+          <HeroSubheading variant="large" className="mt-5 max-w-2xl sm:text-xl">
             {subheading}
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <CtaAction
+          </HeroSubheading>
+          <HeroActions className="gap-3">
+            <HeroCta
               variant="primary"
               className="gap-2.5 rounded-xl px-5 py-3 text-[0.95rem] font-semibold shadow-sm transition-all hover:-translate-y-px hover:shadow-md"
               onClick={() => go(primaryCta)}
@@ -113,19 +116,17 @@ export const AboutHero = defineCapsule({
               >
                 <polyline points="6 9 12 15 18 9" />
               </svg>
-            </CtaAction>
-            <Card
-              asChild
-              variant="default"
-              className="inline-flex items-center px-5 py-3 text-[0.95rem] font-semibold text-foreground transition-all hover:-translate-y-px hover:border-muted-foreground/30 hover:shadow-sm p-0 shadow-sm"
+            </HeroCta>
+            <HeroCta
+              variant="outline"
+              className="rounded-xl px-5 py-3 text-[0.95rem] font-semibold shadow-sm transition-all hover:-translate-y-px hover:shadow-md"
+              onClick={() => go(secondaryCta)}
             >
-              <button type="button" onClick={() => go(secondaryCta)}>
-                {secondaryCta}
-              </button>
-            </Card>
-          </div>
+              {secondaryCta}
+            </HeroCta>
+          </HeroActions>
         </Container>
-      </SplitStory>
+      </HeroSection>
     )
   },
 })
