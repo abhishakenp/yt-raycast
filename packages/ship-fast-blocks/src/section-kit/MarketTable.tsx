@@ -18,15 +18,19 @@ const MarketTableVariants = cva('w-full overflow-hidden', {
 
 const MarketTable = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'table'> & VariantProps<typeof MarketTableVariants>
->(({ className, variant, ...props }, ref) => (
-  <div
-    data-slot="market-table"
-    className={cn(MarketTableVariants({ variant }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'table'> &
+    VariantProps<typeof MarketTableVariants> & { asChild?: boolean }
+>(({ className, variant, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="market-table"
+      className={cn(MarketTableVariants({ variant }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 MarketTable.displayName = 'MarketTable'
 
 const MarketHeader = React.forwardRef<

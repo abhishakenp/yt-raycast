@@ -18,15 +18,19 @@ const TenderTableVariants = cva('w-full overflow-hidden', {
 
 const TenderTable = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'table'> & VariantProps<typeof TenderTableVariants>
->(({ className, variant, ...props }, ref) => (
-  <div
-    data-slot="tender-table"
-    className={cn(TenderTableVariants({ variant }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'table'> &
+    VariantProps<typeof TenderTableVariants> & { asChild?: boolean }
+>(({ className, variant, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="tender-table"
+      className={cn(TenderTableVariants({ variant }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 TenderTable.displayName = 'TenderTable'
 
 const TenderHeader = React.forwardRef<

@@ -18,15 +18,19 @@ const GovFormTableVariants = cva('w-full overflow-hidden', {
 
 const GovFormTable = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'table'> & VariantProps<typeof GovFormTableVariants>
->(({ className, variant, ...props }, ref) => (
-  <div
-    data-slot="gov-form-table"
-    className={cn(GovFormTableVariants({ variant }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'table'> &
+    VariantProps<typeof GovFormTableVariants> & { asChild?: boolean }
+>(({ className, variant, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="gov-form-table"
+      className={cn(GovFormTableVariants({ variant }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 GovFormTable.displayName = 'GovFormTable'
 
 const GovFormHeader = React.forwardRef<

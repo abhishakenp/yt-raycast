@@ -18,15 +18,19 @@ const RatesTableVariants = cva('w-full overflow-hidden', {
 
 const RatesTable = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'table'> & VariantProps<typeof RatesTableVariants>
->(({ className, variant, ...props }, ref) => (
-  <div
-    data-slot="rates-table"
-    className={cn(RatesTableVariants({ variant }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'table'> &
+    VariantProps<typeof RatesTableVariants> & { asChild?: boolean }
+>(({ className, variant, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="rates-table"
+      className={cn(RatesTableVariants({ variant }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 RatesTable.displayName = 'RatesTable'
 
 const RatesHeader = React.forwardRef<
