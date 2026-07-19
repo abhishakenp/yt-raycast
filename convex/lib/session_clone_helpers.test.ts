@@ -396,6 +396,7 @@ describe('session clone helpers', () => {
             cloneBrief: 'Make the cloned brewery homepage feel more premium',
             cloneMode: false,
             themeOverride: 'darkmatter',
+            updatedAt: expect.any(Number),
           }),
         },
       ])

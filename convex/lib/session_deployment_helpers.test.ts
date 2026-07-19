@@ -12,6 +12,7 @@ import {
   publishSessionPreview,
   recordLakebedSessionDeploymentFailure,
   recordLakebedSessionDeploymentSuccess,
+  reserveDefaultDeploymentSlug,
 } from './session_deployment_helpers'
 
 type TableName =
@@ -319,6 +320,40 @@ describe('session deployment helpers', () => {
     expect(createDeploymentUrl('my-fancy-site')).toBe(
       'https://my-fancy-site.ship-fast.io',
     )
+  })
+
+  it('patches updatedAt when reserving a deployment slug', async () => {
+    const sessionId = 'session_deploy_slug' as Id<'sessions'>
+    const { ctx, patches } = mutationCtxFor({
+      sessions: [
+        {
+          _id: sessionId,
+          _creationTime: 1,
+          createdAt: 1,
+          prompt: 'Deploy my site',
+          preferredLanguage: 'en',
+          preferredExportTarget: 'html',
+          isPrivate: false,
+        } as Doc<'sessions'>,
+      ],
+    })
+
+    const slug = await reserveDefaultDeploymentSlug(
+      ctx,
+      'Deploy my site',
+      sessionId,
+    )
+
+    expect(slug).toBe('deploy-my-site')
+    expect(patches).toEqual([
+      {
+        id: sessionId,
+        patch: {
+          deploymentSlug: 'deploy-my-site',
+          updatedAt: expect.any(Number),
+        },
+      },
+    ])
   })
 
   it('loads deployment records by slug with session metadata', async () => {

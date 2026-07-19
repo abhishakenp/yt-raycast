@@ -382,9 +382,18 @@ describe('session access helpers', () => {
     ).resolves.toBeUndefined()
 
     expect(patches).toEqual([
-      { id: sessionId, patch: { themeOverride: 'noir' } },
-      { id: sessionId, patch: { themeOverride: undefined } },
-      { id: sessionId, patch: { themeMode: 'light' } },
+      {
+        id: sessionId,
+        patch: { themeOverride: 'noir', updatedAt: expect.any(Number) },
+      },
+      {
+        id: sessionId,
+        patch: { themeOverride: undefined, updatedAt: expect.any(Number) },
+      },
+      {
+        id: sessionId,
+        patch: { themeMode: 'light', updatedAt: expect.any(Number) },
+      },
     ])
   })
 

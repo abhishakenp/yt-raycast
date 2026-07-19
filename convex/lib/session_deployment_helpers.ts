@@ -176,7 +176,10 @@ export async function reserveDefaultDeploymentSlug(
     attempts++
   }
 
-  await ctx.db.patch(sessionId, { deploymentSlug: finalSlug })
+  await ctx.db.patch(sessionId, {
+    deploymentSlug: finalSlug,
+    updatedAt: Date.now(),
+  })
   return finalSlug
 }
 
