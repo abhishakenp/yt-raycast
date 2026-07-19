@@ -33,13 +33,28 @@ const StoryCard = React.forwardRef<
 })
 StoryCard.displayName = 'StoryCard'
 
+const storyCardImageVariants = cva(
+  'object-cover transition-transform duration-500',
+  {
+    variants: {
+      variant: {
+        simple: 'h-48 w-full group-hover:scale-105',
+        bordered: 'size-full group-hover:scale-[1.04]',
+      },
+    },
+    defaultVariants: {
+      variant: 'simple',
+    },
+  },
+)
+
 const StoryCardImage = React.forwardRef<
   HTMLImageElement,
   Omit<React.ComponentProps<typeof Image>, 'w' | 'h'> & {
     asChild?: boolean
     w?: number
     h?: number
-    variant?: 'simple' | 'bordered'
+    variant?: VariantProps<typeof storyCardImageVariants>['variant']
   }
 >(
   (
@@ -48,7 +63,7 @@ const StoryCardImage = React.forwardRef<
       asChild = false,
       w = 600,
       h = 400,
-      variant = 'simple',
+      variant,
       ...props
     },
     ref,
@@ -58,12 +73,7 @@ const StoryCardImage = React.forwardRef<
         <Slot
           ref={ref}
           data-slot="story-card-image"
-          className={cn(
-            variant === 'bordered'
-              ? 'size-full object-cover transition-transform duration-500 group-hover:scale-[1.04]'
-              : 'h-48 w-full object-cover transition-transform duration-500 group-hover:scale-105',
-            className,
-          )}
+          className={cn(storyCardImageVariants({ variant }), className)}
           {...props}
         />
       )
@@ -74,12 +84,7 @@ const StoryCardImage = React.forwardRef<
         h={h}
         loading="lazy"
         data-slot="story-card-image"
-        className={cn(
-          variant === 'bordered'
-            ? 'size-full object-cover transition-transform duration-500 group-hover:scale-[1.04]'
-            : 'h-48 w-full object-cover transition-transform duration-500 group-hover:scale-105',
-          className,
-        )}
+        className={cn(storyCardImageVariants({ variant }), className)}
         {...props}
       />
     )
@@ -213,4 +218,5 @@ export {
   StoryCardFooter,
   StoryCardBody,
   storyCardVariants,
+  storyCardImageVariants,
 }

@@ -138,27 +138,32 @@ const StepBadge = React.forwardRef<
 )
 StepBadge.displayName = 'StepBadge'
 
+const stepConnectorVariants = cva('absolute hidden md:block', {
+  variants: {
+    variant: {
+      solid: 'h-px bg-border',
+      gradient:
+        'pointer-events-none left-0 right-0 top-8 h-px bg-gradient-to-r from-transparent via-accent to-transparent',
+      dashed:
+        'left-full top-8 w-full -translate-x-1/2 border-t-2 border-dashed border-primary/30',
+    },
+  },
+  defaultVariants: {
+    variant: 'solid',
+  },
+})
+
 const StepConnector = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & {
-    variant?: 'solid' | 'gradient' | 'dashed'
-    asChild?: boolean
-  }
->(({ className, variant = 'solid', asChild = false, ...props }, ref) => {
+  React.ComponentProps<'div'> &
+    VariantProps<typeof stepConnectorVariants> & { asChild?: boolean }
+>(({ className, variant, asChild = false, ...props }, ref) => {
   const Comp = asChild ? Slot : 'div'
   return (
     <Comp
       aria-hidden="true"
       data-slot="step-connector"
-      className={cn(
-        'absolute hidden md:block',
-        variant === 'solid' && 'h-px bg-border',
-        variant === 'gradient' &&
-          'pointer-events-none left-0 right-0 top-8 h-px bg-gradient-to-r from-transparent via-accent to-transparent',
-        variant === 'dashed' &&
-          'left-full top-8 w-full -translate-x-1/2 border-t-2 border-dashed border-primary/30',
-        className,
-      )}
+      className={cn(stepConnectorVariants({ variant }), className)}
       ref={ref}
       {...props}
     />
@@ -210,4 +215,5 @@ export {
   StepContent,
   stepTimelineVariants,
   stepBadgeVariants,
+  stepConnectorVariants,
 }

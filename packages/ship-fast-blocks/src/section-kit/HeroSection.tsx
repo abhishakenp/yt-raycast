@@ -177,24 +177,30 @@ HeroHeading.displayName = 'HeroHeading'
 
 /* ---------- HeroHighlight ---------- */
 
+const heroHighlightVariants = cva('', {
+  variants: {
+    variant: {
+      primary: 'text-primary',
+      gradient:
+        'bg-gradient-to-br from-primary via-primary/80 to-accent bg-clip-text text-transparent',
+    },
+  },
+  defaultVariants: {
+    variant: 'primary',
+  },
+})
+
 const HeroHighlight = React.forwardRef<
   HTMLSpanElement,
-  React.ComponentProps<'span'> & {
-    variant?: 'primary' | 'gradient'
-    asChild?: boolean
-  }
->(({ className, variant = 'primary', asChild = false, ...props }, ref) => {
+  React.ComponentProps<'span'> &
+    VariantProps<typeof heroHighlightVariants> & { asChild?: boolean }
+>(({ className, variant, asChild = false, ...props }, ref) => {
   const Comp = asChild ? Slot : 'span'
   return (
     <Comp
       ref={ref}
       data-slot="hero-highlight"
-      className={cn(
-        variant === 'primary' && 'text-primary',
-        variant === 'gradient' &&
-          'bg-gradient-to-br from-primary via-primary/80 to-accent bg-clip-text text-transparent',
-        className,
-      )}
+      className={cn(heroHighlightVariants({ variant }), className)}
       {...props}
     />
   )
@@ -652,6 +658,7 @@ export {
   heroSectionVariants,
   heroBadgeVariants,
   heroHeadingVariants,
+  heroHighlightVariants,
   heroSubheadingVariants,
   HeroCodeWindow,
   HeroCodeWindowHeader,
