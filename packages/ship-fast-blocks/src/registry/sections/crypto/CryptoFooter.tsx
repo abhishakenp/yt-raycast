@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   SiteFooter,
   FooterContent,
@@ -57,12 +56,10 @@ export const CryptoFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'NexusChain'
     const description =
       props.description ??
       'Enterprise-grade infrastructure for DeFi protocols, cross-chain bridges, and institutional tokenization.'
-    const homeTarget = props.homeTarget ?? 'Features'
     const columns = props.columns?.length
       ? props.columns
       : [
@@ -95,26 +92,6 @@ export const CryptoFooter = defineCapsule({
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Cookie Policy']
 
-    const BoltIcon = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        aria-hidden="true"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M13 10V3L4 14h7v7l9-11h-7z"
-        />
-      </svg>
-    )
-
-    void go
-    void homeTarget
-    void BoltIcon
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

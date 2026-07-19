@@ -58,47 +58,9 @@ export const DentalFooter = defineCapsule({
   }),
   component: ({ props }) => {
     const brand = props.brand ?? 'Bright Smile'
-    const brandTagline = props.brandTagline ?? 'Dental Care'
-    const homeTarget = props.homeTarget ?? 'Services'
     const footerTagline =
       props.tagline ??
       'Modern, compassionate dental care for the whole family. Your smile is our passion.'
-    const footerServicesHeading = props.servicesHeading ?? 'Services'
-    const footerServiceLinks = props.serviceLinks?.length
-      ? props.serviceLinks
-      : [
-          'Preventive Care',
-          'Cosmetic Dentistry',
-          'Dental Implants',
-          'Orthodontics',
-          'Emergency Care',
-        ]
-    const footerHoursHeading = props.hoursHeading ?? 'Office Hours'
-    const footerHours = props.hours?.length
-      ? props.hours
-      : [
-          {
-            day: 'Monday - Thursday',
-            time: '8am - 6pm',
-          },
-          {
-            day: 'Friday',
-            time: '8am - 4pm',
-          },
-          {
-            day: 'Saturday',
-            time: '9am - 2pm',
-          },
-          {
-            day: 'Sunday',
-            time: 'Closed',
-          },
-        ]
-    const footerContactHeading = props.contactHeading ?? 'Contact'
-    const footerAddress =
-      props.address ?? '1847 NW Lovejoy St, Portland, OR 97209'
-    const footerPhone = props.phone ?? '(503) 555-0142'
-    const footerEmail = props.email ?? 'hello@brightsmiledental.com'
     const footerSocials = props.socials?.length
       ? props.socials
       : ['Facebook', 'Instagram', 'Google']
@@ -133,31 +95,6 @@ export const DentalFooter = defineCapsule({
         <ToothMark />
       </span>
     )
-    const PhoneIcon = ({ className }: { className?: string }) => (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className={className}
-        aria-hidden="true"
-      >
-        <path d="M3 5a2 2 0 0 1 2-2h3.28a1 1 0 0 1 .948.684l1.498 4.493a1 1 0 0 1-.502 1.21l-2.257 1.13a11.042 11.042 0 0 0 5.516 5.516l1.13-2.257a1 1 0 0 1 1.21-.502l4.493 1.498a1 1 0 0 1 .684.949V19a2 2 0 0 1-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-      </svg>
-    )
-    void brandTagline
-    void homeTarget
-    void footerServicesHeading
-    void footerServiceLinks
-    void footerHoursHeading
-    void footerHours
-    void footerContactHeading
-    void footerAddress
-    void footerPhone
-    void footerEmail
-    void PhoneIcon
     return (
       <SiteFooter className={props.className}>
         <FooterContent>
