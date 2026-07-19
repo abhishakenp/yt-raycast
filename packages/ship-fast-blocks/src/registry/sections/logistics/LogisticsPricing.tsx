@@ -107,21 +107,6 @@ export const LogisticsPricing = defineCapsule({
             cta: 'Contact sales',
           },
         ]
-    const Check = ({ className }: { className?: string }) => (
-      <svg
-        className={cn('size-5 shrink-0', className)}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M5 13l4 4L19 7" />
-      </svg>
-    )
-    void Check
     return (
       <section className={cn('py-16 lg:py-24', props.className)}>
         <Container>

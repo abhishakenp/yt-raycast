@@ -67,7 +67,6 @@ export const InsurancePricing = defineCapsule({
     const description =
       props.description ??
       "No hidden fees, no surprises. Choose the coverage level that's right for you."
-    const popularLabel = props.popularLabel ?? 'Most Popular'
     const plans = props.plans?.length
       ? props.plans
       : [
@@ -158,41 +157,6 @@ export const InsurancePricing = defineCapsule({
             ],
           },
         ]
-    const Check = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M5 13l4 4L19 7" />
-      </svg>
-    )
-    const Cross = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M6 18L18 6M6 6l12 12" />
-      </svg>
-    )
-    void Check
-    void Cross
-    void popularLabel
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <Container>

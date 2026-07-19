@@ -102,23 +102,6 @@ export const ManufacturingPricing = defineCapsule({
             cta: 'Contact Sales',
           },
         ]
-    const Check = () => (
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-        className="shrink-0"
-      >
-        <path d="M5 13l4 4L19 7" />
-      </svg>
-    )
-    void Check
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <Container>

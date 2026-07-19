@@ -119,24 +119,6 @@ export const MembershipClubPricing = defineCapsule({
       props.footnote ??
       'All applications reviewed within 48 hours. Full refund within 14 days if not satisfied.'
 
-    const Check = () => (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="mt-0.5 shrink-0"
-        aria-hidden="true"
-      >
-        <path d="M5 13l4 4L19 7" />
-      </svg>
-    )
-
-    void Check
     return (
       <section
         className={cn('w-full bg-background py-20 lg:py-28', props.className)}

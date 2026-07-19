@@ -119,36 +119,6 @@ export const CrmPricing = defineCapsule({
         }),
       ),
     )
-    const Check = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M5 13l4 4L19 7" />
-      </svg>
-    )
-    const XIcon = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M6 18L18 6M6 6l12 12" />
-      </svg>
-    )
-    void Check
-    void XIcon
     return (
       <section className={cn('bg-muted/50 py-20 lg:py-28', props.className)}>
         <Container>

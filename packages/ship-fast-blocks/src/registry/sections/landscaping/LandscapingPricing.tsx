@@ -106,22 +106,6 @@ export const LandscapingPricing = defineCapsule({
           },
         ]
 
-    const CheckIcon = ({ className }: { className?: string }) => (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className={cn('mt-0.5 size-5 flex-shrink-0', className)}
-        aria-hidden="true"
-      >
-        <path d="M5 13l4 4L19 7" />
-      </svg>
-    )
-
-    void CheckIcon
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <Container>

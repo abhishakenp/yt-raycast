@@ -126,28 +126,6 @@ export const HealthcarePricing = defineCapsule({
         }),
       ),
     )
-    const note =
-      props.note ?? 'Insurance typically covers 80-100% of visit costs.'
-    const noteCta = props.noteCta ?? 'Verify your coverage'
-    const Check = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        width="20"
-        height="20"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-        aria-hidden="true"
-      >
-        <path
-          fillRule="evenodd"
-          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-          clipRule="evenodd"
-        />
-      </svg>
-    )
-    void Check
-    void note
-    void noteCta
     return (
       <section
         id="pricing"

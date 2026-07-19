@@ -58,7 +58,6 @@ export const DevToolPricing = defineCapsule({
     const description =
       props.description ??
       'Start free, scale as you grow. No hidden fees, no surprises.'
-    const popularLabel = props.popularLabel ?? 'Most Popular'
     const tiers = props.tiers?.length
       ? props.tiers
       : [
@@ -119,23 +118,6 @@ export const DevToolPricing = defineCapsule({
       ),
     )
 
-    const Check = () => (
-      <svg
-        className="mt-0.5 size-5 flex-shrink-0 text-primary"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <polyline points="5 13 9 17 19 7" />
-      </svg>
-    )
-
-    void Check
-    void popularLabel
     return (
       <section
         className={cn('bg-muted/40 py-20 lg:py-28', props.className)}

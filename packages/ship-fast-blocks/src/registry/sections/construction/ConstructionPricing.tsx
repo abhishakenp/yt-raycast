@@ -62,8 +62,6 @@ export const ConstructionPricing = defineCapsule({
     const description =
       props.description ??
       'Every project is unique. Here are typical starting points for our most common project types. Final pricing depends on scope, materials, and timeline.'
-    const cta = props.cta ?? 'Get estimate'
-    const popularLabel = props.popularLabel ?? 'Most Popular'
     const tiers = props.tiers?.length
       ? props.tiers
       : [
@@ -105,25 +103,6 @@ export const ConstructionPricing = defineCapsule({
             ],
           },
         ]
-    const Check = ({ className }: { className?: string }) => (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-        className={className}
-        aria-hidden="true"
-      >
-        <path
-          fillRule="evenodd"
-          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-          clipRule="evenodd"
-        />
-      </svg>
-    )
-    void Check
-    void cta
-    void popularLabel
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <Container>

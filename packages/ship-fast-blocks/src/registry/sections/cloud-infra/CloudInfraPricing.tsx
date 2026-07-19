@@ -107,14 +107,6 @@ export const CloudInfraPricing = defineCapsule({
             cta: 'Start Storage',
           },
         ]
-    const enterpriseHeading =
-      props.enterpriseHeading ?? 'Enterprise commitments'
-    const enterpriseDescription =
-      props.enterpriseDescription ??
-      'For predictable workloads, reserve capacity and save up to 40%. Annual commitments include dedicated support and custom SLAs.'
-    const enterpriseItems = props.enterpriseItems?.length
-      ? props.enterpriseItems
-      : ['1-year: 15% discount', '2-year: 25% discount', '3-year: 40% discount']
     useSyncSaasPlans(
       lakebed,
       tiers.map((tier) =>
@@ -126,24 +118,6 @@ export const CloudInfraPricing = defineCapsule({
         }),
       ),
     )
-    const Check = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M5 13l4 4L19 7" />
-      </svg>
-    )
-    void Check
-    void enterpriseHeading
-    void enterpriseDescription
-    void enterpriseItems
     return (
       <section className={cn('bg-muted/40 py-20 lg:py-28', props.className)}>
         <Container>
