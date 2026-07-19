@@ -20,15 +20,19 @@ const portfolioGridVariants = cva('', {
 
 const PortfolioGrid = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & VariantProps<typeof portfolioGridVariants>
->(({ className, cols, ...props }, ref) => (
-  <div
-    data-slot="portfolio-grid"
-    className={cn(portfolioGridVariants({ cols }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> &
+    VariantProps<typeof portfolioGridVariants> & { asChild?: boolean }
+>(({ className, cols, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="portfolio-grid"
+      className={cn(portfolioGridVariants({ cols }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 PortfolioGrid.displayName = 'PortfolioGrid'
 
 const PortfolioItem = React.forwardRef<
@@ -54,8 +58,10 @@ const PortfolioMedia = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<'div'> & {
     aspect?: '4-3' | '4-5' | '16-9' | '16-10' | '3-2' | '2-3'
+    asChild?: boolean
   }
->(({ className, aspect = '4-3', ...props }, ref) => {
+>(({ className, aspect = '4-3', asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
   const aspectCls = {
     '4-3': 'aspect-[4/3]',
     '4-5': 'aspect-[4/5]',
@@ -65,7 +71,7 @@ const PortfolioMedia = React.forwardRef<
     '2-3': 'aspect-[2/3]',
   }[aspect]
   return (
-    <div
+    <Comp
       data-slot="portfolio-media"
       className={cn('relative overflow-hidden', aspectCls, className)}
       ref={ref}
@@ -77,28 +83,34 @@ PortfolioMedia.displayName = 'PortfolioMedia'
 
 const PortfolioCaption = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    data-slot="portfolio-caption"
-    className={cn('flex flex-col', className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="portfolio-caption"
+      className={cn('flex flex-col', className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 PortfolioCaption.displayName = 'PortfolioCaption'
 
 const PortfolioTag = React.forwardRef<
   HTMLSpanElement,
-  React.ComponentProps<'span'>
->(({ className, ...props }, ref) => (
-  <span
-    data-slot="portfolio-tag"
-    className={cn('inline-flex items-center text-sm font-medium', className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'span'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'span'
+  return (
+    <Comp
+      data-slot="portfolio-tag"
+      className={cn('inline-flex items-center text-sm font-medium', className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 PortfolioTag.displayName = 'PortfolioTag'
 
 export {
