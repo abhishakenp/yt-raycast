@@ -11,6 +11,7 @@ import {
 } from '../commerce/commerce-interactions.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   MenuCategoryHeader,
   MenuCategoryIcon,
@@ -256,12 +257,13 @@ export const BakeryMenu = defineCapsule({
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <Container>
           <MenuList>
-            <div className="mx-auto mb-16 max-w-3xl text-center">
-              <h2 className="mb-4 text-3xl font-semibold text-foreground lg:text-4xl">
-                {heading}
-              </h2>
-              <p className="text-lg text-muted-foreground">{description}</p>
-            </div>
+            <SectionHeading
+              title={heading}
+              subtitle={description}
+              className="mb-16 max-w-3xl gap-0"
+              titleClassName="mb-4 lg:text-4xl"
+              subtitleClassName="text-lg"
+            />
 
             <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
               <div className="rounded-xl bg-card p-8 shadow-sm">

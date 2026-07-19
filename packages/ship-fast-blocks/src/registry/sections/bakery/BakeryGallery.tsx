@@ -10,6 +10,7 @@ import {
 } from '#/section-kit/GalleryGrid.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * BakeryGallery — masonry photo gallery for an artisan-bakery page, on a soft
@@ -55,12 +56,13 @@ export const BakeryGallery = defineCapsule({
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <h2 className="mb-4 text-3xl font-semibold text-foreground lg:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mb-16 max-w-3xl gap-0"
+            titleClassName="mb-4 lg:text-4xl"
+            subtitleClassName="text-lg"
+          />
           <GalleryMasonry columns="2-4">
             {[0, 1, 2, 3].map((col) => (
               <GalleryMasonryColumn key={col}>
