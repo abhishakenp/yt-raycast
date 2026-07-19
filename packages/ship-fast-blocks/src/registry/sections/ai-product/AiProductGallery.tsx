@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   GalleryGrid,
   GalleryGridItems,
@@ -74,12 +75,13 @@ export const AiProductGallery = defineCapsule({
     return (
       <section className={cn('py-20 lg:py-28', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
-            <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mb-16 max-w-3xl gap-0 lg:mb-20"
+            titleClassName="mb-4 tracking-tight sm:text-4xl"
+            subtitleClassName="text-lg"
+          />
           <GalleryGrid>
             <GalleryGridItems columns={3}>
               {items
