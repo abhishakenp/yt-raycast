@@ -68,7 +68,7 @@ export const BlogPostAuthors = defineCapsule({
     return (
       <section className={cn('bg-background py-16 lg:py-24', props.className)}>
         <Container size="sm" className="px-6 lg:px-6">
-          <PersonCard variant="outlined" rounded="2xl" className="p-8">
+          <PersonCard variant="outlined" className="rounded-2xl p-8">
             <div className="flex flex-col items-start gap-6 sm:flex-row">
               <Image
                 alt={avatarAlt}

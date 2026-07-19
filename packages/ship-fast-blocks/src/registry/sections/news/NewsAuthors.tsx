@@ -170,7 +170,7 @@ export const NewsAuthors = defineCapsule({
               <PersonCard
                 key={author.name}
                 variant="outlined"
-                rounded="xl"
+
                 className="p-6 shadow-sm"
               >
                 <button

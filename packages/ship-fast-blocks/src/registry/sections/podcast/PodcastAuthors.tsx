@@ -91,8 +91,8 @@ export const PodcastAuthors = defineCapsule({
               <PersonCard
                 key={`${host.name}-${i}`}
                 variant="outlined"
-                rounded="2xl"
-                className="p-8"
+
+                className="p-8 rounded-2xl"
               >
                 <Image
                   alt={host.avatarAlt}

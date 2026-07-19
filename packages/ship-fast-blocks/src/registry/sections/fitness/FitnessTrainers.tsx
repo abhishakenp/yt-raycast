@@ -91,8 +91,8 @@ export const FitnessTrainers = defineCapsule({
               <PersonCard
                 key={trainer.name}
                 variant="bare"
-                rounded="none"
-                className="text-center"
+
+                className="text-center rounded-none"
               >
                 <Image
                   alt={trainer.imageAlt}

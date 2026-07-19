@@ -114,8 +114,8 @@ export const MentalHealthTeam = defineCapsule({
               <PersonCard
                 key={m.name}
                 variant="bare"
-                rounded="none"
-                className="group"
+
+                className="group rounded-none"
               >
                 <div className="relative mb-4 overflow-hidden rounded-2xl">
                   <Image

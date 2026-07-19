@@ -122,7 +122,7 @@ export const AccountingFirmTeam = defineCapsule({
 
           <ResponsiveGrid cols="1-2-4">
             {members.map((member) => (
-              <PersonCard key={member.name} variant="outlined" rounded="lg">
+              <PersonCard key={member.name} variant="outlined" className="rounded-lg">
                 <Image
                   alt={member.avatarAlt}
                   w={400}

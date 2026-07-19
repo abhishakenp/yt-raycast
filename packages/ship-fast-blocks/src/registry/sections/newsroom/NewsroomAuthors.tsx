@@ -138,8 +138,8 @@ export const NewsroomAuthors = defineCapsule({
               <PersonCard
                 key={a.name}
                 variant="outlined"
-                rounded="2xl"
-                className="p-6"
+
+                className="p-6 rounded-2xl"
               >
                 <Image
                   alt={a.avatarAlt}

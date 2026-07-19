@@ -204,7 +204,7 @@ export const MarketplaceAuthors = defineCapsule({
               <PersonCard
                 asChild
                 variant="plain"
-                rounded="xl"
+
                 key={seller.name}
               >
                 <button

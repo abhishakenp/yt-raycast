@@ -107,8 +107,8 @@ export const HealthcareDoctors = defineCapsule({
               <PersonCard
                 key={doc.name}
                 variant="bare"
-                rounded="none"
-                className="group"
+
+                className="group rounded-none"
               >
                 <PersonCardAvatar className="mb-6 aspect-[3/4] rounded-2xl bg-muted">
                   <Image

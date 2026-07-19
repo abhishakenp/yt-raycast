@@ -99,7 +99,7 @@ export const BootcampMentors = defineCapsule({
           />
           <ResponsiveGrid cols="1-2-4" className="gap-6">
             {mentorItems.map((m) => (
-              <PersonCard key={m.name} asChild variant="bare" rounded="none">
+              <PersonCard key={m.name} asChild variant="bare" className="rounded-none">
                 <button
                   type="button"
                   onClick={() => go(m.name)}

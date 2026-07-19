@@ -141,8 +141,8 @@ export const EventSpeakers = defineCapsule({
                 key={sp.name}
                 asChild
                 variant="outlined"
-                rounded="2xl"
-              >
+
+               className="rounded-2xl">
                 <button
                   type="button"
                   onClick={() => go(sp.name)}

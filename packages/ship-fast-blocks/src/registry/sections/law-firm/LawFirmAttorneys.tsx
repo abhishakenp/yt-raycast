@@ -143,8 +143,8 @@ export const LawFirmAttorneys = defineCapsule({
               <PersonCard
                 key={person.name}
                 variant="plain"
-                rounded="none"
-                className="group"
+
+                className="group rounded-none"
               >
                 <div className="overflow-hidden">
                   <Image

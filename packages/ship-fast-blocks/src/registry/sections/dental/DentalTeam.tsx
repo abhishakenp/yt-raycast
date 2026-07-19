@@ -100,8 +100,8 @@ export const DentalTeam = defineCapsule({
               <PersonCard
                 key={m.name}
                 variant="elevated"
-                rounded="2xl"
-                className="transition-shadow hover:shadow-xl"
+
+                className="transition-shadow hover:shadow-xl rounded-2xl"
               >
                 <PersonCardAvatar className="aspect-[3/4]">
                   <Image

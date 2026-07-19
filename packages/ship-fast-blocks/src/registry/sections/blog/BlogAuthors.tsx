@@ -122,7 +122,7 @@ export const BlogAuthors = defineCapsule({
               <PersonCard
                 key={author.name}
                 variant="outlined"
-                rounded="xl"
+
                 className="p-6"
               >
                 <div className="flex items-center gap-4">
