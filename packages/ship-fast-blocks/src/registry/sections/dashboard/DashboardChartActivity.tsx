@@ -219,7 +219,7 @@ export const DashboardChartActivity = defineCapsule({
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <Container>
-          <ResponsiveGrid cols="1-lg-3" gap="md">
+          <ResponsiveGrid cols="1-lg-3" className="gap-6">
             {/* Revenue chart */}
             <DashboardChart className="lg:col-span-2">
               <Card className="p-5 lg:col-span-2 p-4">

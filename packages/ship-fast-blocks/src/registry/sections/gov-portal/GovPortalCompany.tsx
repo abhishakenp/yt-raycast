@@ -106,7 +106,7 @@ export const GovPortalLeadership = defineCapsule({
                 <h3 className="mb-6 text-lg font-semibold text-foreground">
                   {pickLang(lang, 'Board of Directors', 'निदेशक मंडल')}
                 </h3>
-                <ResponsiveGrid cols="1-2-3" gap="none" className="gap-5">
+                <ResponsiveGrid cols="1-2-3" className="gap-5 gap-0">
                   {board.map((member, i) => (
                     <PersonCard
                       key={`${str(member, 'name')}-${i}`}
@@ -185,7 +185,7 @@ export const GovPortalPowerPlants = defineCapsule({
             className="mb-8 gap-0"
             titleClassName="text-2xl font-semibold tracking-tight text-foreground"
           />
-          <ResponsiveGrid cols="1-2" gap="none" className="gap-5">
+          <ResponsiveGrid cols="1-2" className="gap-5 gap-0">
             {plants.map((plant, i) => {
               const status = str(plant, 'status')
               return (

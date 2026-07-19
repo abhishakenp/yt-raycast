@@ -179,7 +179,7 @@ export const ManufacturingCapabilities = defineCapsule({
             titleClassName="mt-3 tracking-tight sm:text-4xl"
             subtitleClassName="mt-4 text-lg"
           />
-          <ResponsiveGrid cols="1-md-2-3" gap="lg">
+          <ResponsiveGrid cols="1-md-2-3">
             {items.map((item, i) => (
               <FeatureCard
                 key={item.title}

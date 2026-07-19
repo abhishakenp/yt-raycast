@@ -86,7 +86,7 @@ export const PodcastAuthors = defineCapsule({
             title={heading}
             subtitle={subheading}
           />
-          <ResponsiveGrid cols="1-md-3" gap="lg" className="mt-16">
+          <ResponsiveGrid cols="1-md-3" className="mt-16">
             {hosts.map((host, i) => (
               <PersonCard
                 key={`${host.name}-${i}`}

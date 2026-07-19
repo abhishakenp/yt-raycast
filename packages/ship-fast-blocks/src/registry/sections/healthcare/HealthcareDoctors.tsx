@@ -102,7 +102,7 @@ export const HealthcareDoctors = defineCapsule({
             subtitleClassName="text-lg text-muted-foreground"
           />
 
-          <ResponsiveGrid cols="1-md-2-4" gap="lg">
+          <ResponsiveGrid cols="1-md-2-4">
             {items.map((doc) => (
               <PersonCard
                 key={doc.name}

@@ -189,7 +189,7 @@ export const ChurchGive = defineCapsule({
                   </button>
                 </div>
               </div>
-              <ResponsiveGrid cols="2" gap="sm">
+              <ResponsiveGrid cols="2" className="gap-4">
                 <div className="space-y-4">
                   <ImageTile treatment="4-5-xl-muted">
                     <Image

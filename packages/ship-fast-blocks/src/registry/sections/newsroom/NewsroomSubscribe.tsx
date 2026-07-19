@@ -183,7 +183,7 @@ export const NewsroomSubscribe = defineCapsule({
             statusClassName="mb-16 text-center"
           />
 
-          <ResponsiveGrid cols="1-md-3" gap="lg" className="mx-auto max-w-6xl">
+          <ResponsiveGrid cols="1-md-3" className="mx-auto max-w-6xl">
             {plans.map((plan) => (
               <PricingCard
                 key={plan.name}

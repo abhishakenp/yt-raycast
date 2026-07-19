@@ -109,7 +109,7 @@ export const MentalHealthTeam = defineCapsule({
             subtitleClassName="mt-4 leading-relaxed text-muted-foreground"
           />
 
-          <ResponsiveGrid cols="1-2-4" gap="lg">
+          <ResponsiveGrid cols="1-2-4">
             {members.map((m) => (
               <PersonCard
                 key={m.name}

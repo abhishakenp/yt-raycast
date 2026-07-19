@@ -95,7 +95,7 @@ export const MusicArtistPress = defineCapsule({
               eyebrowClassName="mb-12 text-sm font-medium uppercase tracking-widest text-muted-foreground"
               titleClassName="mb-16 font-serif text-4xl font-normal sm:text-5xl"
             />
-            <ResponsiveGrid cols="1-md-3" gap="lg">
+            <ResponsiveGrid cols="1-md-3">
               {reviews.map((r) => (
                 <PressItem
                   key={r.name}

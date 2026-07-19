@@ -86,7 +86,7 @@ export const FitnessTrainers = defineCapsule({
             subtitleClassName="text-muted-foreground"
           />
 
-          <ResponsiveGrid cols="1-md-2-4" gap="lg">
+          <ResponsiveGrid cols="1-md-2-4">
             {trainerItems.map((trainer) => (
               <PersonCard
                 key={trainer.name}

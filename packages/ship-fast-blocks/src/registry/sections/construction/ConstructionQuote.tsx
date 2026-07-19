@@ -119,7 +119,7 @@ export const ConstructionQuote = defineCapsule({
             className="rounded-xl bg-card p-8 shadow-xl lg:p-12"
             onSubmit={inquiry.submitForm}
           >
-            <ResponsiveGrid cols="1-md-2" gap="md" className="mb-6">
+            <ResponsiveGrid cols="1-md-2" className="mb-6 gap-6">
               <ContactFormField className="mb-0">
                 <ContactFormLabel
                   htmlFor="con-quote-name"
@@ -153,7 +153,7 @@ export const ConstructionQuote = defineCapsule({
               </ContactFormField>
             </ResponsiveGrid>
 
-            <ResponsiveGrid cols="1-md-2" gap="md" className="mb-6">
+            <ResponsiveGrid cols="1-md-2" className="mb-6 gap-6">
               <ContactFormField className="mb-0">
                 <ContactFormLabel
                   htmlFor="con-quote-phone"
@@ -192,7 +192,7 @@ export const ConstructionQuote = defineCapsule({
               </ContactFormField>
             </ResponsiveGrid>
 
-            <ResponsiveGrid cols="1-md-2" gap="md" className="mb-6">
+            <ResponsiveGrid cols="1-md-2" className="mb-6 gap-6">
               <ContactFormField className="mb-0">
                 <ContactFormLabel
                   htmlFor="con-quote-budget"

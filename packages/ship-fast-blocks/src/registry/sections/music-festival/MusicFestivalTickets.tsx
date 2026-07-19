@@ -200,7 +200,7 @@ export const MusicFestivalTickets = defineCapsule({
             <h3 className="mb-6 text-center text-lg font-semibold">
               {addOnsLabel}
             </h3>
-            <ResponsiveGrid cols="1-3" gap="sm">
+            <ResponsiveGrid cols="1-3" className="gap-4">
               {addOns.map((a) => (
                 <Card
                   asChild

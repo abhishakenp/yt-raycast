@@ -136,7 +136,7 @@ export const NewsletterTestimonials = defineCapsule({
             })}
           </TestimonialGrid>
 
-          <ResponsiveGrid cols="1-2-4" gap="sm" className="mt-8 text-center">
+          <ResponsiveGrid cols="1-2-4" className="mt-8 text-center gap-4">
             {mini.map((m) => (
               <div key={m.author} className="p-4">
                 <p className="mb-1 font-serif text-xl font-medium text-foreground">

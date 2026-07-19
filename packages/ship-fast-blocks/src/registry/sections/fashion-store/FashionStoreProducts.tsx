@@ -186,7 +186,7 @@ export const FashionStoreProducts = defineCapsule({
             subtitleClassName="mx-auto max-w-md text-muted-foreground"
           />
 
-          <ResponsiveGrid cols="2-lg-4" gap="sm" className="sm:gap-6 lg:gap-8">
+          <ResponsiveGrid cols="2-lg-4" className="sm:gap-6 lg:gap-8 gap-4">
             {visibleProductItems.map((product) => (
               <ProductCard key={product.name} className="group">
                 <ProductCardImage className="relative mb-4 aspect-[3/4] overflow-hidden bg-muted">

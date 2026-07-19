@@ -230,7 +230,7 @@ export const CoworkingGallery = defineCapsule({
               </GalleryGrid>
             </>
           ) : (
-            <ResponsiveGrid cols={uniformCols} gap="sm" className="mt-14">
+            <ResponsiveGrid cols={uniformCols} className="mt-14 gap-4">
               {images.map((image, index) => (
                 <div
                   key={`${image.alt}-${index}`}

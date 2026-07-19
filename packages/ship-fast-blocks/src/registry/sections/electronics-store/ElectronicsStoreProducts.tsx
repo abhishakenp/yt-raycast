@@ -208,7 +208,7 @@ export const ElectronicsStoreProducts = defineCapsule({
             </div>
           </div>
 
-          <ResponsiveGrid cols="1-2-4" gap="md">
+          <ResponsiveGrid cols="1-2-4" className="gap-6">
             {visibleItems.map((p) => (
               <ProductCard
                 key={p.title}

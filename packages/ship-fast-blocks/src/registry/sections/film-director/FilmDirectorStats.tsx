@@ -117,7 +117,7 @@ export const FilmDirectorStats = defineCapsule({
           </StatGrid>
           <ResponsiveGrid
             cols="1-md-3"
-            gap="lg"
+
             className="mt-16 border-t border-border pt-16"
           >
             {statAwards.map((a) => (

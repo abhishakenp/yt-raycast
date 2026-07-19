@@ -199,7 +199,7 @@ export const MarketplaceAuthors = defineCapsule({
             </button>
           </div>
 
-          <ResponsiveGrid cols="1-2-4" gap="md">
+          <ResponsiveGrid cols="1-2-4" className="gap-6">
             {sellerItems.map((seller) => (
               <PersonCard
                 asChild

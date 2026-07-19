@@ -156,7 +156,7 @@ export const CleaningServiceSteps = defineCapsule({
                   ))}
                 </div>
               </div>
-              <ResponsiveGrid cols="2" gap="sm">
+              <ResponsiveGrid cols="2" className="gap-4">
                 {gallery.map((alt) => (
                   <Image
                     key={alt}

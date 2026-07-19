@@ -79,7 +79,7 @@ export const BarNightclubSteps = defineCapsule({
             subtitleClassName="leading-relaxed text-muted-foreground"
           />
 
-          <ResponsiveGrid cols="1-2-4" gap="lg">
+          <ResponsiveGrid cols="1-2-4">
             {items.map((step, i) => (
               <div key={step.title} className="text-center">
                 <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full border border-border text-2xl font-light">

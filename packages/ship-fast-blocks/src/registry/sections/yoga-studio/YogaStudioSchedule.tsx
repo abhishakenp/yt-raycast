@@ -120,7 +120,7 @@ export const YogaStudioSchedule = defineCapsule({
             subtitleClassName="text-lg text-muted-foreground"
           />
 
-          <ResponsiveGrid cols="1-2-3" gap="sm">
+          <ResponsiveGrid cols="1-2-3" className="gap-4">
             {days.map((day) => (
               <Card
                 key={day.day}

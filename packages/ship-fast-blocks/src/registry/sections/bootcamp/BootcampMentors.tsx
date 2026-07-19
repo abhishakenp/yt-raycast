@@ -97,7 +97,7 @@ export const BootcampMentors = defineCapsule({
             titleClassName="mb-4 text-3xl font-bold sm:text-4xl"
             subtitleClassName="text-lg text-muted-foreground"
           />
-          <ResponsiveGrid cols="1-2-4" gap="md">
+          <ResponsiveGrid cols="1-2-4" className="gap-6">
             {mentorItems.map((m) => (
               <PersonCard key={m.name} asChild variant="bare" rounded="none">
                 <button
@@ -125,7 +125,7 @@ export const BootcampMentors = defineCapsule({
               </PersonCard>
             ))}
           </ResponsiveGrid>
-          <ResponsiveGrid cols="1" gap="md" className="mt-12 md:grid-cols-3">
+          <ResponsiveGrid cols="1" className="mt-12 md:grid-cols-3 gap-6">
             {mentorPhotos.map((photo) => (
               <Image
                 key={photo}

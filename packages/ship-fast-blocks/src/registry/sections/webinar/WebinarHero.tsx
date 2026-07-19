@@ -127,8 +127,8 @@ export const WebinarHero = defineCapsule({
 
             <ResponsiveGrid
               cols="4"
-              gap="sm"
-              className="mx-auto mt-12 max-w-md"
+
+              className="mx-auto mt-12 max-w-md gap-4"
             >
               {countdown.map((unit, i) => (
                 <HeroStatBadge

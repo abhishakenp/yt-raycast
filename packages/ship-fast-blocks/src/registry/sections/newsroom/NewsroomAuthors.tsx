@@ -133,7 +133,7 @@ export const NewsroomAuthors = defineCapsule({
             titleClassName="mb-4 font-serif text-3xl font-bold text-foreground sm:text-4xl"
             subtitleClassName="text-lg text-muted-foreground"
           />
-          <ResponsiveGrid cols="1-2-3" gap="lg" className="xl:grid-cols-4">
+          <ResponsiveGrid cols="1-2-3" className="xl:grid-cols-4">
             {authors.map((a) => (
               <PersonCard
                 key={a.name}

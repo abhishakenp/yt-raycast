@@ -163,7 +163,7 @@ export const LendingRates = defineCapsule({
               ))}
             </div>
             <div className="border-t border-border bg-muted px-8 py-6">
-              <ResponsiveGrid cols="1-md-3" gap="md" className="text-sm">
+              <ResponsiveGrid cols="1-md-3" className="text-sm gap-6">
                 {rateGuarantees.map((g) => (
                   <div key={g.title} className="flex items-start gap-3">
                     <svg

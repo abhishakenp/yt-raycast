@@ -276,7 +276,7 @@ export const GovPortalQuickLinks = defineCapsule({
             className="mb-8 gap-0"
             titleClassName="text-2xl font-semibold tracking-tight text-foreground"
           />
-          <ResponsiveGrid cols="1-2-4" gap="sm">
+          <ResponsiveGrid cols="1-2-4" className="gap-4">
             {items.map((item, i) => {
               const Icon = QUICK_ICONS[i % QUICK_ICONS.length]
               return (

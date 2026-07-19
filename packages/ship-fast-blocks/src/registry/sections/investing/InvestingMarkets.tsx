@@ -240,7 +240,7 @@ export const InvestingMarkets = defineCapsule({
                   {indicesHeading}
                 </h3>
                 <p className="mb-6 text-background/60">{indicesNote}</p>
-                <ResponsiveGrid cols="2" gap="sm">
+                <ResponsiveGrid cols="2" className="gap-4">
                   {indices.map((idx) => (
                     <div
                       key={idx.name}

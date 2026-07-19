@@ -138,7 +138,7 @@ export const LawFirmAttorneys = defineCapsule({
             titleClassName="mb-6 font-serif text-3xl text-foreground lg:text-5xl"
             subtitleClassName="text-lg leading-relaxed text-muted-foreground"
           />
-          <ResponsiveGrid cols="1-md-2-3" gap="lg">
+          <ResponsiveGrid cols="1-md-2-3">
             {items.map((person) => (
               <PersonCard
                 key={person.name}

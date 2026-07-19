@@ -105,7 +105,7 @@ export const BootcampApplyCta = defineCapsule({
               className="space-y-4 text-left"
               onSubmit={inquiry.submitForm}
             >
-              <ResponsiveGrid cols="1-2" gap="sm">
+              <ResponsiveGrid cols="1-2" className="gap-4">
                 <ContactFormField className="mb-0">
                   <ContactFormLabel
                     htmlFor="bootcamp-apply-first"

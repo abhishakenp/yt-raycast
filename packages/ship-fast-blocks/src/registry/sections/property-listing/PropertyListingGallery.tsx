@@ -200,7 +200,7 @@ export const PropertyListingGallery = defineCapsule({
               : ''}
           </p>
 
-          <ResponsiveGrid cols="1-2-3" gap="md" className="mt-10">
+          <ResponsiveGrid cols="1-2-3" className="mt-10 gap-6">
             {matchingListings.map((listing, index) => (
               <ListingCard
                 key={`${listing.address}-${index}`}

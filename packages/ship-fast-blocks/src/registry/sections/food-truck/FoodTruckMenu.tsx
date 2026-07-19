@@ -233,7 +233,7 @@ export const FoodTruckMenu = defineCapsule({
               className="mb-16"
             />
 
-            <ResponsiveGrid cols="1-md-2" gap="lg">
+            <ResponsiveGrid cols="1-md-2">
               {menuCategories.map((cat) => (
                 <MenuCategory asChild key={cat.title}>
                   <div

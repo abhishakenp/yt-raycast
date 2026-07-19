@@ -110,7 +110,7 @@ export const FilmDirectorContactCta = defineCapsule({
           </div>
           <ResponsiveGrid
             cols="1-md-3"
-            gap="lg"
+
             className="border-t border-border pt-16 text-left"
           >
             <div>

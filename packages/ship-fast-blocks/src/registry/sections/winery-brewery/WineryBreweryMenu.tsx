@@ -198,8 +198,8 @@ export const WineryBreweryMenu = defineCapsule({
                   </MenuCategoryHeader>
                   <ResponsiveGrid
                     cols="1-md-2"
-                    gap="none"
-                    className="gap-x-12 gap-y-6"
+
+                    className="gap-x-12 gap-y-6 gap-0"
                   >
                     {(category.items ?? []).map((item) => (
                       <MenuItemRow>

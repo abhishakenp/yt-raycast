@@ -212,7 +212,7 @@ export const BarNightclubMenu = defineCapsule({
               subtitleClassName="leading-relaxed text-muted-foreground"
             />
 
-            <ResponsiveGrid cols="1-md-2" gap="2xl" className="lg:gap-16">
+            <ResponsiveGrid cols="1-md-2" className="lg:gap-16 gap-12">
               {columns.map((col) => (
                 <div key={col.title}>
                   <MenuCategoryHeader className="mb-8">

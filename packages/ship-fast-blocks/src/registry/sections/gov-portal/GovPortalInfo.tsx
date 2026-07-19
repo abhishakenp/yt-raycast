@@ -241,7 +241,7 @@ export const GovPortalNewsEvents = defineCapsule({
             className="mb-8 gap-0"
             titleClassName="text-2xl font-semibold tracking-tight text-foreground"
           />
-          <ResponsiveGrid cols="1-2-3" gap="md">
+          <ResponsiveGrid cols="1-2-3" className="gap-6">
             {rows.map((row, i) => (
               <ContentCard
                 asChild

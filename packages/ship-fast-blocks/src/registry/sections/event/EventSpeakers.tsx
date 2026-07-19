@@ -135,7 +135,7 @@ export const EventSpeakers = defineCapsule({
               <ArrowRight />
             </button>
           </div>
-          <ResponsiveGrid cols="1-2-4" gap="md">
+          <ResponsiveGrid cols="1-2-4" className="gap-6">
             {items.map((sp) => (
               <PersonCard
                 key={sp.name}

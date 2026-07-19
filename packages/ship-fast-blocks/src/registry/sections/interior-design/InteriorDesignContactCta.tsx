@@ -228,7 +228,7 @@ export const InteriorDesignContactCta = defineCapsule({
             </div>
 
             <ContactForm className="space-y-6" onSubmit={inquiry.submitForm}>
-              <ResponsiveGrid cols="1-2" gap="md">
+              <ResponsiveGrid cols="1-2" className="gap-6">
                 <ContactFormField className="mb-0">
                   <ContactFormLabel
                     htmlFor="interior-design-contact-first-name"

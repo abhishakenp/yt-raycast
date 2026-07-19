@@ -117,7 +117,7 @@ export const BlogAuthors = defineCapsule({
             align="center"
           />
 
-          <ResponsiveGrid cols="1-2-3" gap="md" className="mt-10">
+          <ResponsiveGrid cols="1-2-3" className="mt-10 gap-6">
             {authors.map((author) => (
               <PersonCard
                 key={author.name}

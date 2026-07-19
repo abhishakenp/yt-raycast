@@ -362,7 +362,7 @@ export const CafeMenu = defineCapsule({
               <h3 className="mb-8 text-center font-serif text-xl font-medium text-foreground">
                 {teaTitle}
               </h3>
-              <ResponsiveGrid cols="1-2-4" gap="md">
+              <ResponsiveGrid cols="1-2-4" className="gap-6">
                 {teas.map((tea) => (
                   <div
                     key={tea.name}

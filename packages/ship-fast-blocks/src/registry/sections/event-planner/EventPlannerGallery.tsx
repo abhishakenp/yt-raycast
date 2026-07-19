@@ -80,7 +80,7 @@ export const EventPlannerGallery = defineCapsule({
             titleClassName="mb-6 text-3xl font-light text-foreground sm:text-4xl lg:text-5xl"
             subtitleClassName="text-lg text-muted-foreground"
           />
-          <ResponsiveGrid cols="2-lg-4" gap="sm" className="lg:gap-6">
+          <ResponsiveGrid cols="2-lg-4" className="lg:gap-6 gap-4">
             {galleryImages.map((alt, i) => (
               <button
                 key={alt}

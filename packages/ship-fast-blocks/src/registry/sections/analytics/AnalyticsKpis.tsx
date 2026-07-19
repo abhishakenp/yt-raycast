@@ -127,7 +127,7 @@ export const AnalyticsKpis = defineCapsule({
         className={cn('bg-background py-20 lg:py-28', props.className)}
       >
         <Container size="xl">
-          <ResponsiveGrid cols="1-2-4" gap="md">
+          <ResponsiveGrid cols="1-2-4" className="gap-6">
             {kpis.map((kpi, i) => (
               <StatCard key={kpi.label}>
                 <StatCardHeader>

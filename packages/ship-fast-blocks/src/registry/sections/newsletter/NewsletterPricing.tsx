@@ -140,7 +140,7 @@ export const NewsletterPricing = defineCapsule({
             subtitleClassName="text-lg text-muted-foreground"
           />
 
-          <ResponsiveGrid cols="1-md-2" gap="lg" className="mx-auto max-w-4xl">
+          <ResponsiveGrid cols="1-md-2" className="mx-auto max-w-4xl">
             {/* Free Plan */}
             <PricingTier className="gap-0 p-8 lg:p-10">
               <div className="mb-2 flex items-baseline gap-1">

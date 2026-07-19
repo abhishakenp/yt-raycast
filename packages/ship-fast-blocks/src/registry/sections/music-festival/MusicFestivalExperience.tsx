@@ -191,7 +191,7 @@ export const MusicFestivalExperience = defineCapsule({
                 ))}
               </div>
             </div>
-            <ResponsiveGrid cols="2" gap="sm">
+            <ResponsiveGrid cols="2" className="gap-4">
               {imageAlts.map((alt, i) => (
                 <Image
                   key={alt}

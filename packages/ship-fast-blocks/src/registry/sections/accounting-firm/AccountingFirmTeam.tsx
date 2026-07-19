@@ -120,7 +120,7 @@ export const AccountingFirmTeam = defineCapsule({
             subtitleClassName="text-lg"
           />
 
-          <ResponsiveGrid cols="1-2-4" gap="lg">
+          <ResponsiveGrid cols="1-2-4">
             {members.map((member) => (
               <PersonCard key={member.name} variant="outlined" rounded="lg">
                 <Image

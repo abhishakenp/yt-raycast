@@ -83,7 +83,7 @@ export const WebinarAuthors = defineCapsule({
             subtitle={subheading}
           />
 
-          <ResponsiveGrid cols="1-2-3" gap="md" className="mt-14">
+          <ResponsiveGrid cols="1-2-3" className="mt-14 gap-6">
             {speakers.map((speaker, i) => (
               <PersonCard
                 key={`${speaker.name}-${i}`}

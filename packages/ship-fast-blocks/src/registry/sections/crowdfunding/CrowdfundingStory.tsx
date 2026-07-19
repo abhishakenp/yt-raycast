@@ -102,7 +102,7 @@ export const CrowdfundingStory = defineCapsule({
             className="mb-16 gap-6"
           />
 
-          <ResponsiveGrid cols="1-md-2" gap="lg" className="mb-12">
+          <ResponsiveGrid cols="1-md-2" className="mb-12">
             {storyBlocks.map((block) => (
               <div key={block.imageAlt}>
                 <ImageTile treatment="4-3-xl" className="mb-4">

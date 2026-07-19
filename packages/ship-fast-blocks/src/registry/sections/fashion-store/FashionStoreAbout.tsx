@@ -100,7 +100,7 @@ export const FashionStoreAbout = defineCapsule({
                 ))}
               </SplitStoryBody>
               <div className="mt-10 border-t border-border pt-10">
-                <ResponsiveGrid cols="3" gap="lg">
+                <ResponsiveGrid cols="3">
                   {aboutStats.map((s) => (
                     <div key={s.label}>
                       <p className="font-serif text-3xl text-foreground">
@@ -114,7 +114,7 @@ export const FashionStoreAbout = defineCapsule({
                 </ResponsiveGrid>
               </div>
             </SplitStoryContent>
-            <ResponsiveGrid cols="2" gap="sm">
+            <ResponsiveGrid cols="2" className="gap-4">
               <div className="space-y-4">
                 <div className="aspect-[3/4] overflow-hidden">
                   <Image

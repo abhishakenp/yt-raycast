@@ -181,7 +181,7 @@ export const CrowdfundingRewards = defineCapsule({
             subtitleClassName="mx-auto max-w-2xl text-lg text-muted-foreground"
           />
 
-          <ResponsiveGrid cols="1-md-2-4" gap="md">
+          <ResponsiveGrid cols="1-md-2-4" className="gap-6">
             {rewardTiers.map((tier) => (
               <div
                 key={tier.name}

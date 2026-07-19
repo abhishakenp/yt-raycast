@@ -194,7 +194,7 @@ export const MusicFestivalLineup = defineCapsule({
             <h3 className="mb-8 text-center text-sm font-medium uppercase tracking-widest text-foreground/50">
               {featuredLabel}
             </h3>
-            <ResponsiveGrid cols="2-3-6" gap="sm">
+            <ResponsiveGrid cols="2-3-6" className="gap-4">
               {featured.map((a) => (
                 <ArtistTier asChild key={a.name}>
                   <button type="button" onClick={() => go(a.name)}>

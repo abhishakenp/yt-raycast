@@ -109,7 +109,7 @@ export const AgencyContactCta = defineCapsule({
             className="relative z-10 mx-auto max-w-xl space-y-5"
             onSubmit={inquiry.submitForm}
           >
-            <ResponsiveGrid cols="1-2" gap="none" className="gap-5">
+            <ResponsiveGrid cols="1-2" className="gap-5 gap-0">
               <ContactFormField className="mb-0">
                 <ContactFormLabel htmlFor="agency-name">Name</ContactFormLabel>
                 <ContactFormInput

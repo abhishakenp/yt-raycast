@@ -106,7 +106,7 @@ export const InvestingSteps = defineCapsule({
             titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
             subtitleClassName="text-lg text-muted-foreground"
           />
-          <ResponsiveGrid cols="1-lg-3" gap="lg" className="lg:gap-12">
+          <ResponsiveGrid cols="1-lg-3" className="lg:gap-12">
             {items.map((step, i) => (
               <StepItem key={step.title} className="relative">
                 <div className="flex items-start gap-6 lg:flex-col lg:items-center">

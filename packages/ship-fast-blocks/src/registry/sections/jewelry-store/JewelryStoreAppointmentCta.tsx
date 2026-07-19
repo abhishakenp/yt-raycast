@@ -99,7 +99,7 @@ export const JewelryStoreAppointmentCta = defineCapsule({
         </div>
         <ResponsiveGrid
           cols="1-3"
-          gap="lg"
+
           className="mx-auto max-w-3xl text-center"
         >
           {locations.map((loc) => (

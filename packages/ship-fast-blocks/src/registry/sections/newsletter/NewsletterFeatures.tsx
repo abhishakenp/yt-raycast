@@ -126,7 +126,7 @@ export const NewsletterFeatures = defineCapsule({
           </FeatureGrid>
 
           <div className="mt-16 border-t border-border pt-16 md:mt-20 md:pt-20">
-            <ResponsiveGrid cols="1-2-4" gap="md">
+            <ResponsiveGrid cols="1-2-4" className="gap-6">
               {perks.map((perk) => (
                 <div key={perk.title} className="flex items-start gap-3">
                   <span className="mt-0.5 grid size-5 flex-shrink-0 place-items-center rounded-full bg-muted text-foreground">

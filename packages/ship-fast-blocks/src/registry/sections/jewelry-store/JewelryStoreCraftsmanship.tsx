@@ -188,7 +188,7 @@ export const JewelryStoreCraftsmanship = defineCapsule({
                 })}
               </div>
             </SplitStoryContent>
-            <ResponsiveGrid cols="2" gap="sm">
+            <ResponsiveGrid cols="2" className="gap-4">
               <div className="space-y-4">
                 <div className="aspect-[3/4] overflow-hidden bg-card">
                   <Image

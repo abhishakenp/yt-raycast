@@ -177,7 +177,7 @@ export const FurnitureStoreProducts = defineCapsule({
             </button>
           </div>
 
-          <ResponsiveGrid cols="1-2-4" gap="md">
+          <ResponsiveGrid cols="1-2-4" className="gap-6">
             {visibleItems.map((product) => (
               <ProductCard key={product.name} variant="none">
                 <ProductCardImage className="mb-4 rounded-lg">

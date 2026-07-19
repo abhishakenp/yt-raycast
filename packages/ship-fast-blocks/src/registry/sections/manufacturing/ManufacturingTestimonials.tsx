@@ -150,7 +150,7 @@ export const ManufacturingTestimonials = defineCapsule({
               )
             })}
           </TestimonialGrid>
-          <ResponsiveGrid cols="1-md-3" gap="md" className="mt-12">
+          <ResponsiveGrid cols="1-md-3" className="mt-12 gap-6">
             {compact.map((t) => (
               <Card
                 asChild

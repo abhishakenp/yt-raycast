@@ -116,7 +116,7 @@ export const CrowdfundingHero = defineCapsule({
                 rounded="xl"
                 className="aspect-[4/3] bg-muted shadow-lg"
               />
-              <ResponsiveGrid cols="4" gap="sm" className="mt-4">
+              <ResponsiveGrid cols="4" className="mt-4 gap-4">
                 {heroThumbAlts.map((alt) => (
                   <button
                     key={alt}

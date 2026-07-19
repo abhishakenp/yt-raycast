@@ -97,7 +97,7 @@ export const DentalWhyChooseUs = defineCapsule({
                 titleClassName="mb-6 text-3xl font-bold text-foreground sm:text-4xl"
                 subtitleClassName="text-lg leading-relaxed text-muted-foreground"
               />
-              <ResponsiveGrid cols="1-2" gap="lg">
+              <ResponsiveGrid cols="1-2">
                 {whyItems.map((item) => (
                   <WhyChooseUsCard key={item.title} className="rounded-xl">
                     <h3 className="mb-2 font-semibold text-foreground">

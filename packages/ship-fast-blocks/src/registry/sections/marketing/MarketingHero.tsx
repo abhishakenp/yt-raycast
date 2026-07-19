@@ -212,7 +212,7 @@ export const MarketingHero = defineCapsule({
                       className="aspect-[16/7] w-full object-cover opacity-85"
                     />
                   </Card>
-                  <ResponsiveGrid cols="1-2" gap="sm">
+                  <ResponsiveGrid cols="1-2" className="gap-4">
                     {/* Chart widget */}
                     <Card
                       variant="outline"

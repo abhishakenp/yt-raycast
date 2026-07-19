@@ -170,7 +170,7 @@ export const EventVenue = defineCapsule({
                   className="size-full object-cover"
                 />
               </div>
-              <ResponsiveGrid cols="3" gap="sm">
+              <ResponsiveGrid cols="3" className="gap-4">
                 {collage.map((alt) => (
                   <div
                     key={alt}

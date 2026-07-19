@@ -202,7 +202,7 @@ export const CafeLocation = defineCapsule({
 
           <LocationBlock className="grid gap-12 lg:grid-cols-2 lg:gap-16 border-0 bg-transparent">
             <div className="space-y-8">
-              <ResponsiveGrid cols="1-2" gap="lg">
+              <ResponsiveGrid cols="1-2">
                 {locationInfo.map((info) => (
                   <div key={info.title}>
                     <div className="mb-4 grid size-12 place-items-center rounded-full bg-primary/10 text-primary">

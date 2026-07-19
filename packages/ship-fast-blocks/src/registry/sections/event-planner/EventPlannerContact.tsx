@@ -182,7 +182,7 @@ export const EventPlannerContact = defineCapsule({
               onSubmit={inquiry.submitForm}
             >
               <div className="space-y-6">
-                <ResponsiveGrid cols="1-2" gap="md">
+                <ResponsiveGrid cols="1-2" className="gap-6">
                   <ContactFormField className="mb-0">
                     <ContactFormLabel
                       htmlFor="ep-first"
@@ -250,7 +250,7 @@ export const EventPlannerContact = defineCapsule({
                     ))}
                   </ContactFormSelect>
                 </ContactFormField>
-                <ResponsiveGrid cols="1-2" gap="md">
+                <ResponsiveGrid cols="1-2" className="gap-6">
                   <ContactFormField className="mb-0">
                     <ContactFormLabel
                       htmlFor="ep-date"

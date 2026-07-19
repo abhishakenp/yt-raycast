@@ -68,7 +68,7 @@ export const TutoringSteps = defineCapsule({
             title={heading}
             subtitle={subheading}
           />
-          <ResponsiveGrid asChild cols="1-2-4" gap="lg" className="mt-14">
+          <ResponsiveGrid asChild cols="1-2-4" className="mt-14">
             <ol>
               {steps.map((step, i) => (
                 <StepItem

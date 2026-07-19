@@ -92,7 +92,7 @@ export const EventPlannerStats = defineCapsule({
                 })}
               </StatGrid>
             </div>
-            <ResponsiveGrid cols="2" gap="sm">
+            <ResponsiveGrid cols="2" className="gap-4">
               <div className="space-y-4">
                 <Image
                   alt={statsImageAlts[0]}

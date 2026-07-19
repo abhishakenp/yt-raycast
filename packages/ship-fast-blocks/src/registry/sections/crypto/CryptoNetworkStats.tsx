@@ -110,7 +110,7 @@ export const CryptoNetworkStats = defineCapsule({
                 )
               })}
           </StatGrid>
-          <ResponsiveGrid cols="1-md-2" gap="md" className="mx-auto max-w-4xl">
+          <ResponsiveGrid cols="1-md-2" className="mx-auto max-w-4xl gap-6">
             <div className="rounded-xl border border-background/20 bg-background/10 p-6">
               <div className="mb-4 flex items-center justify-between">
                 <h4 className="font-medium text-background/90">

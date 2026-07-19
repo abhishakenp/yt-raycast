@@ -95,7 +95,7 @@ export const DentalTeam = defineCapsule({
             titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
             subtitleClassName="text-lg text-muted-foreground"
           />
-          <ResponsiveGrid cols="1-2-4" gap="lg">
+          <ResponsiveGrid cols="1-2-4">
             {teamMembers.map((m) => (
               <PersonCard
                 key={m.name}

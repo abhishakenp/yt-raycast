@@ -176,7 +176,7 @@ export const CryptoHero = defineCapsule({
                     {token.change}
                   </span>
                 </div>
-                <ResponsiveGrid cols="2" gap="sm" className="mb-6">
+                <ResponsiveGrid cols="2" className="mb-6 gap-4">
                   <div className="rounded-lg bg-muted p-4">
                     <p className="mb-1 text-xs text-muted-foreground">Price</p>
                     <p className="text-xl font-semibold">{token.price}</p>

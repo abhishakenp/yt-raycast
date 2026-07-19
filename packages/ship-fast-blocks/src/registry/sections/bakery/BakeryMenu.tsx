@@ -361,7 +361,7 @@ export const BakeryMenu = defineCapsule({
                   {cakesTitle}
                 </MenuCategoryTitle>
               </MenuCategoryHeader>
-              <ResponsiveGrid cols="1-md-3" gap="md">
+              <ResponsiveGrid cols="1-md-3" className="gap-6">
                 {cakes.map((item) => (
                   <MenuItemRow>
                     <MenuItemContent>

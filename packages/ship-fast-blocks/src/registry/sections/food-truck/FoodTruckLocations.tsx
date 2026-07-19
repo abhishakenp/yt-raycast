@@ -147,7 +147,7 @@ export const FoodTruckLocations = defineCapsule({
               className="mb-16"
             />
 
-            <ResponsiveGrid gap="md" className="md:grid-cols-3">
+            <ResponsiveGrid className="md:grid-cols-3 gap-6">
               {locDays.map((d, i) => (
                 <LocationItem key={d.day}>
                   <LocationCard>

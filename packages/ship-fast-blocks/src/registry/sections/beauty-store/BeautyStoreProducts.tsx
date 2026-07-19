@@ -201,7 +201,7 @@ export const BeautyStoreProducts = defineCapsule({
             </button>
           </div>
 
-          <ResponsiveGrid cols="2-lg-4" gap="sm" className="sm:gap-6 lg:gap-8">
+          <ResponsiveGrid cols="2-lg-4" className="sm:gap-6 lg:gap-8 gap-4">
             {visibleItems.map((product) => (
               <ProductCard
                 key={product.title}

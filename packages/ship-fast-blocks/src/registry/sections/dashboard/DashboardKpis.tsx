@@ -143,7 +143,7 @@ export const DashboardKpis = defineCapsule({
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <Container>
-          <ResponsiveGrid cols="1-2-4" gap="sm">
+          <ResponsiveGrid cols="1-2-4" className="gap-4">
             {kpis.map((kpi) => {
               const tone = kpi.tone ?? 'primary'
               const up = kpi.trendUp ?? true
