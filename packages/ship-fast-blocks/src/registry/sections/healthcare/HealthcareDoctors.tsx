@@ -21,6 +21,7 @@ import {
  * with no props via baked-in board-certified-physician defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const HealthcareDoctors = defineCapsule({
   name: 'HealthcareDoctors',
   description:
@@ -102,7 +103,7 @@ export const HealthcareDoctors = defineCapsule({
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+          <ResponsiveGrid cols="1-md-2-4" gap="lg">
             {items.map((doc) => (
               <PersonCard
                 key={doc.name}
@@ -130,7 +131,7 @@ export const HealthcareDoctors = defineCapsule({
                 </PersonCardBio>
               </PersonCard>
             ))}
-          </div>
+          </ResponsiveGrid>
         </Container>
       </section>
     )

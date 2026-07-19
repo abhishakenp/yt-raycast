@@ -17,6 +17,7 @@ import {
  * personal trainers on gyms, fitness studios, yoga / pilates / boxing / spin studios.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const FitnessTrainers = defineCapsule({
   name: 'FitnessTrainers',
   description:
@@ -83,7 +84,7 @@ export const FitnessTrainers = defineCapsule({
             <p className="text-muted-foreground">{trainersDesc}</p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+          <ResponsiveGrid cols="1-md-2-4" gap="lg">
             {trainerItems.map((trainer) => (
               <PersonCard
                 key={trainer.name}
@@ -105,7 +106,7 @@ export const FitnessTrainers = defineCapsule({
                 <PersonCardBio className="mt-2">{trainer.bio}</PersonCardBio>
               </PersonCard>
             ))}
-          </div>
+          </ResponsiveGrid>
         </Container>
       </section>
     )

@@ -23,6 +23,7 @@ import {
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const DentalTeam = defineCapsule({
   name: 'DentalTeam',
   description:
@@ -97,7 +98,7 @@ export const DentalTeam = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{teamDesc}</p>
           </div>
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <ResponsiveGrid cols="1-2-4" gap="lg">
             {teamMembers.map((m) => (
               <PersonCard
                 key={m.name}
@@ -142,7 +143,7 @@ export const DentalTeam = defineCapsule({
                 </PersonCardContent>
               </PersonCard>
             ))}
-          </div>
+          </ResponsiveGrid>
         </Container>
       </section>
     )

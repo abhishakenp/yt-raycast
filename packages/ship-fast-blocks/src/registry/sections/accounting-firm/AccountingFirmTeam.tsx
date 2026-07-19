@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import {
   PersonCard,
   PersonCardContent,
@@ -117,7 +118,7 @@ export const AccountingFirmTeam = defineCapsule({
             <p className="text-lg text-muted-foreground">{description}</p>
           </div>
 
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <ResponsiveGrid cols="1-2-4" gap="lg">
             {members.map((member) => (
               <PersonCard key={member.name} variant="outlined" rounded="lg">
                 <Image
@@ -138,7 +139,7 @@ export const AccountingFirmTeam = defineCapsule({
                 </PersonCardContent>
               </PersonCard>
             ))}
-          </div>
+          </ResponsiveGrid>
 
           <div className="mt-12 text-center">
             <p className="mb-4 text-muted-foreground">{footnote}</p>

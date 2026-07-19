@@ -11,6 +11,7 @@ import {
   PersonCardBio,
 } from '#/section-kit/PersonCard.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * MentalHealthTeam — a clinician team gallery for a therapy practice. A centered
@@ -109,7 +110,7 @@ export const MentalHealthTeam = defineCapsule({
             </p>
           </div>
 
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <ResponsiveGrid cols="1-2-4" gap="lg">
             {members.map((m) => (
               <PersonCard
                 key={m.name}
@@ -135,7 +136,7 @@ export const MentalHealthTeam = defineCapsule({
                 </PersonCardBio>
               </PersonCard>
             ))}
-          </div>
+          </ResponsiveGrid>
 
           <div className="mt-12 rounded-2xl bg-muted p-8 text-center">
             <h3 className="mb-2 text-xl font-semibold text-foreground">
