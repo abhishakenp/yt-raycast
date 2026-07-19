@@ -18,6 +18,11 @@ import {
 } from '#/section-kit/GovFormTable.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import {
+  FormField,
+  FormFieldLabel,
+  FormFieldControl,
+} from '#/section-kit/FormField.tsx'
 import { cn } from '#/lib/utils.ts'
 import { govPortalLakebed } from './gov-portal-lakebed.ts'
 import {
@@ -104,62 +109,73 @@ export const GovPortalGrievance = defineCapsule({
             className="mt-6 rounded-2xl border border-border bg-card p-6"
           >
             <form onSubmit={form.submit}>
-              <div>
-                <label className={labelCls} htmlFor="grv-name">
+              <FormField>
+                <FormFieldLabel className={labelCls} htmlFor="grv-name">
                   {pickLang(lang, 'Name', 'नाम')} *
-                </label>
-                <input id="grv-name" name="name" required className={field} />
-              </div>
-              <div>
-                <label className={labelCls} htmlFor="grv-email">
+                </FormFieldLabel>
+                <FormFieldControl
+                  id="grv-name"
+                  name="name"
+                  required
+                  className={field}
+                />
+              </FormField>
+              <FormField>
+                <FormFieldLabel className={labelCls} htmlFor="grv-email">
                   {pickLang(lang, 'Email', 'ईमेल')}
-                </label>
-                <input
+                </FormFieldLabel>
+                <FormFieldControl
                   id="grv-email"
                   name="email"
                   type="email"
                   className={field}
                 />
-              </div>
-              <div>
-                <label className={labelCls} htmlFor="grv-mobile">
+              </FormField>
+              <FormField>
+                <FormFieldLabel className={labelCls} htmlFor="grv-mobile">
                   {pickLang(lang, 'Mobile No.', 'मोबाइल नं.')}
-                </label>
-                <input id="grv-mobile" name="mobile" className={field} />
-              </div>
-              <div>
-                <label className={labelCls} htmlFor="grv-subject">
+                </FormFieldLabel>
+                <FormFieldControl
+                  id="grv-mobile"
+                  name="mobile"
+                  className={field}
+                />
+              </FormField>
+              <FormField>
+                <FormFieldLabel className={labelCls} htmlFor="grv-subject">
                   {pickLang(lang, 'Subject', 'विषय')} *
-                </label>
-                <input
+                </FormFieldLabel>
+                <FormFieldControl
                   id="grv-subject"
                   name="subject"
                   required
                   className={field}
                 />
-              </div>
-              <div className="sm:col-span-2">
-                <label className={labelCls} htmlFor="grv-desc">
+              </FormField>
+              <FormField className="sm:col-span-2">
+                <FormFieldLabel className={labelCls} htmlFor="grv-desc">
                   {pickLang(lang, 'Description', 'विवरण')}
-                </label>
-                <textarea
+                </FormFieldLabel>
+                <FormFieldControl
+                  as="textarea"
                   id="grv-desc"
                   name="description"
                   rows={3}
                   className={field}
                 />
-              </div>
-              <div className="sm:col-span-2">
-                <label className={labelCls} htmlFor="grv-addr">
+              </FormField>
+              <FormField className="sm:col-span-2">
+                <FormFieldLabel className={labelCls} htmlFor="grv-addr">
                   {pickLang(lang, 'Address', 'पता')}
-                </label>
-                <textarea
+                </FormFieldLabel>
+                <FormFieldControl
+                  as="textarea"
                   id="grv-addr"
                   name="address"
                   rows={2}
                   className={field}
                 />
-              </div>
+              </FormField>
               <div className="sm:col-span-2">
                 <button
                   type="submit"
@@ -248,32 +264,40 @@ export const GovPortalVendor = defineCapsule({
                 )}
               </h3>
               <div className="space-y-3">
-                <input
-                  name="company"
-                  placeholder={pickLang(
-                    lang,
-                    'Company name *',
-                    'कंपनी का नाम *',
-                  )}
-                  required
-                  className={field}
-                />
-                <input
-                  name="gstin"
-                  placeholder={pickLang(lang, 'GSTIN', 'जीएसटीआईएन')}
-                  className={field}
-                />
-                <input
-                  name="email"
-                  type="email"
-                  placeholder={pickLang(lang, 'Email', 'ईमेल')}
-                  className={field}
-                />
-                <input
-                  name="phone"
-                  placeholder={pickLang(lang, 'Phone', 'फोन')}
-                  className={field}
-                />
+                <FormField>
+                  <FormFieldControl
+                    name="company"
+                    placeholder={pickLang(
+                      lang,
+                      'Company name *',
+                      'कंपनी का नाम *',
+                    )}
+                    required
+                    className={field}
+                  />
+                </FormField>
+                <FormField>
+                  <FormFieldControl
+                    name="gstin"
+                    placeholder={pickLang(lang, 'GSTIN', 'जीएसटीआईएन')}
+                    className={field}
+                  />
+                </FormField>
+                <FormField>
+                  <FormFieldControl
+                    name="email"
+                    type="email"
+                    placeholder={pickLang(lang, 'Email', 'ईमेल')}
+                    className={field}
+                  />
+                </FormField>
+                <FormField>
+                  <FormFieldControl
+                    name="phone"
+                    placeholder={pickLang(lang, 'Phone', 'फोन')}
+                    className={field}
+                  />
+                </FormField>
                 <button
                   type="submit"
                   disabled={vendor.registerPending}
@@ -312,30 +336,36 @@ export const GovPortalVendor = defineCapsule({
                 {pickLang(lang, 'Submit a Bid', 'बोली जमा करें')}
               </h3>
               <div className="space-y-3">
-                <input
-                  name="tenderNit"
-                  placeholder={pickLang(
-                    lang,
-                    'Tender NIT No. *',
-                    'निविदा एनआईटी सं. *',
-                  )}
-                  required
-                  className={field}
-                />
-                <input
-                  name="company"
-                  placeholder={pickLang(lang, 'Company name', 'कंपनी का नाम')}
-                  className={field}
-                />
-                <input
-                  name="emdRef"
-                  placeholder={pickLang(
-                    lang,
-                    'EMD / BG reference',
-                    'ईएमडी / बीजी संदर्भ',
-                  )}
-                  className={field}
-                />
+                <FormField>
+                  <FormFieldControl
+                    name="tenderNit"
+                    placeholder={pickLang(
+                      lang,
+                      'Tender NIT No. *',
+                      'निविदा एनआईटी सं. *',
+                    )}
+                    required
+                    className={field}
+                  />
+                </FormField>
+                <FormField>
+                  <FormFieldControl
+                    name="company"
+                    placeholder={pickLang(lang, 'Company name', 'कंपनी का नाम')}
+                    className={field}
+                  />
+                </FormField>
+                <FormField>
+                  <FormFieldControl
+                    name="emdRef"
+                    placeholder={pickLang(
+                      lang,
+                      'EMD / BG reference',
+                      'ईएमडी / बीजी संदर्भ',
+                    )}
+                    className={field}
+                  />
+                </FormField>
                 <button
                   type="submit"
                   disabled={vendor.bidPending}
@@ -375,27 +405,33 @@ export const GovPortalVendor = defineCapsule({
                 {pickLang(lang, 'Tender Payment', 'निविदा भुगतान')}
               </h3>
               <div className="space-y-3">
-                <input
-                  name="rfxNo"
-                  placeholder={pickLang(lang, 'RFx No. *', 'आरएफएक्स सं. *')}
-                  required
-                  className={field}
-                />
-                <input
-                  name="company"
-                  placeholder={pickLang(
-                    lang,
-                    'Vendor / company',
-                    'विक्रेता / कंपनी',
-                  )}
-                  className={field}
-                />
-                <input
-                  name="amount"
-                  type="number"
-                  placeholder={pickLang(lang, 'Amount (₹)', 'राशि (₹)')}
-                  className={field}
-                />
+                <FormField>
+                  <FormFieldControl
+                    name="rfxNo"
+                    placeholder={pickLang(lang, 'RFx No. *', 'आरएफएक्स सं. *')}
+                    required
+                    className={field}
+                  />
+                </FormField>
+                <FormField>
+                  <FormFieldControl
+                    name="company"
+                    placeholder={pickLang(
+                      lang,
+                      'Vendor / company',
+                      'विक्रेता / कंपनी',
+                    )}
+                    className={field}
+                  />
+                </FormField>
+                <FormField>
+                  <FormFieldControl
+                    name="amount"
+                    type="number"
+                    placeholder={pickLang(lang, 'Amount (₹)', 'राशि (₹)')}
+                    className={field}
+                  />
+                </FormField>
                 <button
                   type="submit"
                   disabled={vendor.payPending}
