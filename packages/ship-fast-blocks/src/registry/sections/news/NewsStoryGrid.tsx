@@ -7,6 +7,7 @@ import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { StoryGrid } from '#/section-kit/StoryGrid.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import {
@@ -156,7 +157,7 @@ export const NewsStoryGrid = defineCapsule({
     }
 
     return (
-      <section
+      <StoryGrid
         className={cn(
           'bg-muted/40 pt-28 pb-8 lg:pt-32 lg:pb-12',
           props.className,
@@ -191,11 +192,7 @@ export const NewsStoryGrid = defineCapsule({
 
           <ArticleGrid cols="1-2-3" className="gap-6 lg:gap-8">
             {stories.map((story) => (
-              <ArticleCard
-                key={story.title}
-                asChild
-                variant="elevated"
-              >
+              <ArticleCard key={story.title} asChild variant="elevated">
                 <article>
                   <button
                     type="button"
@@ -262,7 +259,7 @@ export const NewsStoryGrid = defineCapsule({
             </Card>
           </div>
         </Container>
-      </section>
+      </StoryGrid>
     )
   },
 })

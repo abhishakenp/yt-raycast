@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { ArticleGrid } from '#/section-kit/ArticleGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { StoryGrid } from '#/section-kit/StoryGrid.tsx'
 import {
   StoryCard,
   StoryCardImage,
@@ -95,7 +96,10 @@ export const BlogPostStoryGrid = defineCapsule({
     )
 
     return (
-      <section className={cn('bg-muted py-16 lg:py-24', props.className)}>
+      <StoryGrid
+        variant="muted"
+        className={cn('py-16 lg:py-24', props.className)}
+      >
         <Container size="md" className="px-6 lg:px-6">
           <SectionHeading
             title={heading}
@@ -126,7 +130,7 @@ export const BlogPostStoryGrid = defineCapsule({
             ))}
           </ArticleGrid>
         </Container>
-      </section>
+      </StoryGrid>
     )
   },
 })

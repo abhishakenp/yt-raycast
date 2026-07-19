@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { ArticleGrid } from '#/section-kit/ArticleGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { StoryGrid } from '#/section-kit/StoryGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import {
   StoryCard,
@@ -152,7 +153,7 @@ export const BlogStoryGrid = defineCapsule({
     )
 
     return (
-      <section
+      <StoryGrid
         aria-label="Latest articles"
         className={cn('pb-14', props.className)}
       >
@@ -216,7 +217,7 @@ export const BlogStoryGrid = defineCapsule({
             ))}
           </ArticleGrid>
         </Container>
-      </section>
+      </StoryGrid>
     )
   },
 })

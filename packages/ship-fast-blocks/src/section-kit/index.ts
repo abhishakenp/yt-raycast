@@ -452,6 +452,7 @@ export {
   StoryImageTile,
   storySectionVariants,
 } from './StorySection.tsx'
+export { StoryGrid, storyGridVariants } from './StoryGrid.tsx'
 
 export type { KitAction } from './types.ts'
 export { kitActionClasses } from './types.ts'

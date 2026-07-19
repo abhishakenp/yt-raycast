@@ -9,6 +9,7 @@ import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { StoryGrid } from '#/section-kit/StoryGrid.tsx'
 import {
   ArticleGrid,
   ArticleCard,
@@ -156,7 +157,7 @@ export const NewsroomStoryGrid = defineCapsule({
     )
 
     return (
-      <section
+      <StoryGrid
         className={cn('bg-background py-16 lg:py-24', props.className)}
         aria-labelledby="newsroom-grid-heading"
       >
@@ -180,7 +181,11 @@ export const NewsroomStoryGrid = defineCapsule({
           <div className="mt-6 border-t border-border" />
           <ArticleGrid cols="1-2-3" className="mt-10 gap-x-8 gap-y-12">
             {stories.map((story) => (
-              <ArticleCard key={story.title} variant="none" className="rounded-none">
+              <ArticleCard
+                key={story.title}
+                variant="none"
+                className="rounded-none"
+              >
                 <ArticleMedia aspect="16-9" className="block w-full rounded-lg">
                   <button type="button" onClick={() => go(story.title)}>
                     <Image
@@ -222,7 +227,7 @@ export const NewsroomStoryGrid = defineCapsule({
             ))}
           </ArticleGrid>
         </Container>
-      </section>
+      </StoryGrid>
     )
   },
 })

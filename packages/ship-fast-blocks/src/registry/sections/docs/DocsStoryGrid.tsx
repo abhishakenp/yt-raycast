@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { StoryGrid } from '#/section-kit/StoryGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import {
   ArticleGrid,
@@ -103,7 +104,7 @@ export const DocsStoryGrid = defineCapsule({
         ]
 
     return (
-      <section className={cn('pt-28 pb-16', props.className)}>
+      <StoryGrid className={cn('pt-28 pb-16', props.className)}>
         <Container size="lg">
           <SectionHeading
             eyebrow={eyebrow}
@@ -153,7 +154,7 @@ export const DocsStoryGrid = defineCapsule({
             ))}
           </ArticleGrid>
         </Container>
-      </section>
+      </StoryGrid>
     )
   },
 })
