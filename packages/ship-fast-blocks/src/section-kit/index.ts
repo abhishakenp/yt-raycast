@@ -394,6 +394,17 @@ export {
   stepBadgeVariants,
   stepConnectorVariants,
 } from './StepTimeline.tsx'
+export {
+  PathwayGrid,
+  PathwayCard,
+  PathwayCardBody,
+  PathwayCardTitle,
+  PathwayCardDescription,
+  PathwayCardImage,
+  PathwayIcon,
+  PathwayCardCta,
+  PathwayGridVariants as pathwayGridVariants,
+} from './PathwayGrid.tsx'
 
 export type { KitAction } from './types.ts'
 export { kitActionClasses } from './types.ts'
