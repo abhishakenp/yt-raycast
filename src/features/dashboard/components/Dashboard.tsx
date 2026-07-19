@@ -1,9 +1,6 @@
+import { Link } from '@tanstack/react-router'
 import { useMutation, useQuery } from 'convex/react'
-import type {
-  CSSProperties,
-  MouseEvent as ReactMouseEvent,
-  ReactNode,
-} from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import {
   lazy,
   Suspense,
@@ -393,7 +390,7 @@ const ToolPopoverFallback = () => (
   </div>
 )
 
-function MissingProjectState({ onBackHome }: { onBackHome: () => void }) {
+function MissingProjectState() {
   return (
     <div
       className="grid h-full min-h-[480px] place-items-center bg-[#05070c] px-6 text-center"
@@ -411,25 +408,18 @@ function MissingProjectState({ onBackHome }: { onBackHome: () => void }) {
           It may have been deleted while resetting the public gallery. Create a
           new website from the home page to start fresh.
         </p>
-        <button
-          type="button"
-          onClick={onBackHome}
+        <Link
+          to="/"
           className="mt-6 inline-flex h-10 items-center justify-center rounded-full bg-cyan-300 px-5 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-px"
         >
           Back to home
-        </button>
+        </Link>
       </div>
     </div>
   )
 }
 
-function GenerationFailureState({
-  errorMessage,
-  onBackHome,
-}: {
-  errorMessage: string
-  onBackHome: () => void
-}) {
+function GenerationFailureState({ errorMessage }: { errorMessage: string }) {
   return (
     <div
       className="grid h-full min-h-[480px] place-items-center bg-[#05070c] px-6 text-center"
@@ -444,13 +434,12 @@ function GenerationFailureState({
           We couldn&apos;t finish building this website.
         </h1>
         <p className="mt-3 text-sm leading-6 text-white/56">{errorMessage}</p>
-        <button
-          type="button"
-          onClick={onBackHome}
+        <Link
+          to="/"
           className="mt-6 inline-flex h-10 items-center justify-center rounded-full bg-cyan-300 px-5 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-px"
         >
           Back to home
-        </button>
+        </Link>
       </div>
     </div>
   )
@@ -984,10 +973,8 @@ export function Dashboard({
     overflow: 'hidden',
   }
 
-  const navigateHome = (event: ReactMouseEvent<HTMLButtonElement>) => {
-    event.preventDefault()
+  const handleBackHomeClick = () => {
     closeInlineEditingSurface('cancel')
-    window.location.href = '/'
   }
 
   const handlePreviewReload = () => {
@@ -1850,10 +1837,10 @@ export function Dashboard({
             )}
           >
             <div className="dashboard-topbar flex h-14 shrink-0 items-center gap-3 border-b border-white/10 bg-white/[0.035] px-3">
-              <button
-                type="button"
+              <Link
+                to="/"
                 className="dashboard-topbar-circle-button grid size-9 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.055] text-white/70 transition-colors hover:bg-white/[0.09] hover:text-white"
-                onClick={navigateHome}
+                onClick={handleBackHomeClick}
                 data-tip="Back to home"
                 aria-label="Back to home"
               >
@@ -1873,7 +1860,7 @@ export function Dashboard({
                     d="m15 18-6-6 6-6"
                   />
                 </svg>
-              </button>
+              </Link>
               <div className="dashboard-url-pill flex min-w-0 flex-1 items-center gap-2 rounded-full border border-white/8 bg-black/25 px-3 py-2 text-sm text-white/48">
                 <span className="size-2 shrink-0 rounded-full bg-emerald-300/80" />
                 <a
@@ -2122,11 +2109,7 @@ export function Dashboard({
                   id="preview-stage"
                 >
                   {isMissingSession ? (
-                    <MissingProjectState
-                      onBackHome={() => {
-                        window.location.href = '/'
-                      }}
-                    />
+                    <MissingProjectState />
                   ) : hasGenerationFailure ? (
                     <GenerationFailureState
                       errorMessage={
@@ -2134,9 +2117,6 @@ export function Dashboard({
                         generationView?.session.errorCode ??
                         'Generation failed unexpectedly.'
                       }
-                      onBackHome={() => {
-                        window.location.href = '/'
-                      }}
                     />
                   ) : isAdminActive ? (
                     <LakebedSessionProvider
