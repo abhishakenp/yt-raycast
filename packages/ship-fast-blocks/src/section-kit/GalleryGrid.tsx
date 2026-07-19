@@ -77,6 +77,7 @@ const GalleryTileImage = React.forwardRef<
     return (
       <Slot
         ref={ref}
+        data-slot="gallery-tile-image"
         className={cn(
           'size-full object-cover transition-transform duration-300 group-hover:scale-105',
           className,
@@ -89,6 +90,7 @@ const GalleryTileImage = React.forwardRef<
     <Image
       w={w}
       h={h}
+      data-slot="gallery-tile-image"
       className={cn(
         'size-full object-cover transition-transform duration-300 group-hover:scale-105',
         className,

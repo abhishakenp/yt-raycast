@@ -57,6 +57,7 @@ const StoryCardImage = React.forwardRef<
       return (
         <Slot
           ref={ref}
+          data-slot="story-card-image"
           className={cn(
             variant === 'bordered'
               ? 'size-full object-cover transition-transform duration-500 group-hover:scale-[1.04]'
@@ -72,6 +73,7 @@ const StoryCardImage = React.forwardRef<
         w={w}
         h={h}
         loading="lazy"
+        data-slot="story-card-image"
         className={cn(
           variant === 'bordered'
             ? 'size-full object-cover transition-transform duration-500 group-hover:scale-[1.04]'

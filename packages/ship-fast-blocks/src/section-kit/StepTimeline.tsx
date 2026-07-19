@@ -111,6 +111,7 @@ const StepBadge = React.forwardRef<
       const Comp = asChild ? Slot : 'span'
       return (
         <Comp
+          data-slot="step-badge"
           className={cn(
             'absolute -left-2 -top-4 text-5xl font-extralight text-muted-foreground/40',
             className,
@@ -125,6 +126,7 @@ const StepBadge = React.forwardRef<
     const Comp = asChild ? Slot : 'div'
     return (
       <Comp
+        data-slot="step-badge"
         className={cn(stepBadgeVariants({ variant }), className)}
         ref={ref}
         {...props}
