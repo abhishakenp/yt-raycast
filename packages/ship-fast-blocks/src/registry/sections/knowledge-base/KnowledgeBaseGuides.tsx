@@ -167,9 +167,7 @@ export const KnowledgeBaseGuides = defineCapsule({
             <Card
               asChild
               variant="default"
-              rounded="lg"
-              padding="none"
-              className="inline-flex cursor-pointer items-center gap-2 px-4 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-muted"
+              className="inline-flex cursor-pointer items-center gap-2 px-4 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-muted rounded-lg p-0"
             >
               <button type="button" onClick={() => go(viewAll)}>
                 {viewAll}

@@ -114,9 +114,7 @@ export const CybersecuritySteps = defineCapsule({
                 <p className="text-muted-foreground">{step.description}</p>
                 {i === 0 && (
                   <Card
-                    rounded="lg"
-                    padding="sm"
-                    className="mt-4 font-mono text-xs text-muted-foreground"
+                    className="mt-4 font-mono text-xs text-muted-foreground rounded-lg p-4"
                   >
                     {snippet}
                   </Card>

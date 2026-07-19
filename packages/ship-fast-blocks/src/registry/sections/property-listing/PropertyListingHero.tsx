@@ -93,10 +93,7 @@ export const PropertyListingHero = defineCapsule({
             <Card
               asChild
               variant="default"
-              rounded="2xl"
-              padding="none"
-              shadow="sm"
-              className="mt-8 p-3"
+              className="mt-8 p-3 rounded-2xl p-0 shadow-sm"
             >
               <form
                 key={`${locationValue}:${activeFilter}`}

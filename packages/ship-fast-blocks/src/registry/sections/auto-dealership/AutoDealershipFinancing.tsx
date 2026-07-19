@@ -120,9 +120,7 @@ export const AutoDealershipFinancing = defineCapsule({
                     <Card
                       key={step.title}
                       variant="muted"
-                      rounded="lg"
-                      padding="sm"
-                      className="flex items-start gap-4"
+                      className="flex items-start gap-4 rounded-lg p-4"
                     >
                       <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
                         {i + 1}

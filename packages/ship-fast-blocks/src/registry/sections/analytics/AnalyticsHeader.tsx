@@ -327,9 +327,7 @@ export const AnalyticsHeader = defineCapsule({
                   return (
                     <Card
                       key={notification.id}
-                      rounded="lg"
-                      padding="sm"
-                      className={cn(!read && 'bg-muted/40')}
+                      className={cn(!read && 'bg-muted/40', 'rounded-lg p-4')}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">

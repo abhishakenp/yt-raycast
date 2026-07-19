@@ -399,9 +399,7 @@ export function SaasAccountButton({
               sessions.map((session) => (
                 <Card
                   key={session.id}
-                  rounded="lg"
-                  padding="sm"
-                  className="p-3"
+                  className="p-3 rounded-lg p-4"
                 >
                   <p className="truncate text-sm font-semibold text-card-foreground">
                     {session.displayName || session.email}

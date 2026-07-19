@@ -176,7 +176,7 @@ export const LendingHero = defineCapsule({
             </div>
 
             <div className="relative">
-              <Card rounded="2xl" padding="lg" shadow="xl">
+              <Card className="rounded-2xl p-8 shadow-xl">
                 <div className="mb-6 flex items-center gap-3">
                   <span className="grid size-10 place-items-center rounded-full bg-muted text-muted-foreground">
                     <svg

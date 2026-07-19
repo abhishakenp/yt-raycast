@@ -59,9 +59,7 @@ export const WriterAuthorSubscribe = defineCapsule({
       >
         <Container size="sm" className="px-6 lg:px-6">
           <Card
-            rounded="2xl"
-            padding="lg"
-            className="text-center text-card-foreground sm:p-12"
+            className="text-center text-card-foreground sm:p-12 rounded-2xl p-8"
           >
             <SectionHeading
               eyebrow={eyebrow}

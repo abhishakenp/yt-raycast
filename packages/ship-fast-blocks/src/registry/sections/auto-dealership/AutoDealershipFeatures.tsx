@@ -140,7 +140,7 @@ export const AutoDealershipFeatures = defineCapsule({
                 loading="lazy"
                 className="aspect-[16/10] w-full rounded-lg object-cover shadow-lg"
               />
-              <Card rounded="lg">
+              <Card className="rounded-lg">
                 <PullQuoteText className="italic text-muted-foreground">
                   &ldquo;{quote}&rdquo;
                 </PullQuoteText>

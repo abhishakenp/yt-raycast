@@ -249,10 +249,7 @@ export const CrmHero = defineCapsule({
                 </div>
               </ContentCard>
               <Card
-                rounded="lg"
-                padding="none"
-                shadow="lg"
-                className="absolute -bottom-4 -left-4 p-3"
+                className="absolute -bottom-4 -left-4 p-3 rounded-lg p-0 shadow-lg"
               >
                 <div className="flex items-center gap-3">
                   <div className="grid size-10 place-items-center rounded-full bg-chart-2/15 text-chart-2">

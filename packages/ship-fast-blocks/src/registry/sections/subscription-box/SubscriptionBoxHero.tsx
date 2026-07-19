@@ -169,9 +169,7 @@ export const SubscriptionBoxHero = defineCapsule({
             />
             <Card
               variant="default"
-              rounded="none"
-              padding="none"
-              className="relative overflow-hidden rounded-[2rem] shadow-[0_24px_80px_rgba(0,0,0,0.14)]"
+              className="relative overflow-hidden rounded-[2rem] shadow-[0_24px_80px_rgba(0,0,0,0.14)] rounded-none p-0"
             >
               <HeroMediaPanel
                 alt={imageAlt}

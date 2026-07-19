@@ -174,10 +174,7 @@ export const OnlineCourseHero = defineCapsule({
                 </HeroStatBadgeContent>
               </HeroStatBadge>
               <Card
-                rounded="xl"
-                padding="none"
-                shadow="lg"
-                className="absolute -right-4 -top-4 px-4 py-3"
+                className="absolute -right-4 -top-4 px-4 py-3 p-0 shadow-lg"
               >
                 <div className="flex items-center gap-2">
                   <StarRating rating={5} size="md" color="primary" />

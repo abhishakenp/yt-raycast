@@ -177,11 +177,8 @@ await ds.storage.set(\`user:\${user.id}\`, {
                 </div>
               </ContentCard>
               <Card
-                rounded="lg"
-                padding="none"
-                shadow="lg"
                 variant="outline"
-                className="absolute -bottom-4 -right-4 hidden bg-background p-3 sm:block"
+                className="absolute -bottom-4 -right-4 hidden bg-background p-3 sm:block rounded-lg p-0 shadow-lg"
               >
                 <div className="flex items-center gap-3">
                   <div className="flex -space-x-2">

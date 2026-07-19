@@ -113,7 +113,7 @@ export const LendingStats = defineCapsule({
                 loading="lazy"
                 className="w-full rounded-2xl object-cover shadow-lg"
               />
-              <Card shadow="lg" className="absolute -bottom-6 -left-6 max-w-xs">
+              <Card className="absolute -bottom-6 -left-6 max-w-xs shadow-lg">
                 <div className="mb-2 flex items-center gap-1">
                   <StarRating rating={5} size="md" color="chart-4" />
                 </div>

@@ -117,10 +117,7 @@ export const AboutHero = defineCapsule({
             <Card
               asChild
               variant="default"
-              rounded="xl"
-              padding="none"
-              shadow="sm"
-              className="inline-flex items-center px-5 py-3 text-[0.95rem] font-semibold text-foreground transition-all hover:-translate-y-px hover:border-muted-foreground/30 hover:shadow-sm"
+              className="inline-flex items-center px-5 py-3 text-[0.95rem] font-semibold text-foreground transition-all hover:-translate-y-px hover:border-muted-foreground/30 hover:shadow-sm p-0 shadow-sm"
             >
               <button type="button" onClick={() => go(secondaryCta)}>
                 {secondaryCta}

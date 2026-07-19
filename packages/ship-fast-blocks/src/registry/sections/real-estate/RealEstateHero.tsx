@@ -118,10 +118,7 @@ export const RealEstateHero = defineCapsule({
 
             <Card
               variant="default"
-              rounded="2xl"
-              padding="none"
-              shadow="lg"
-              className="mt-14 w-full max-w-3xl bg-background/95 p-3 backdrop-blur"
+              className="mt-14 w-full max-w-3xl bg-background/95 p-3 backdrop-blur rounded-2xl p-0 shadow-lg"
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div className="flex-1 rounded-xl bg-muted px-4 py-3 text-left text-sm text-muted-foreground">

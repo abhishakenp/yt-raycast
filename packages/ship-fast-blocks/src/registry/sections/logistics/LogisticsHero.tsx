@@ -196,8 +196,7 @@ export const LogisticsHero = defineCapsule({
                   <Card
                     aria-live="polite"
                     variant="outline"
-                    padding="sm"
-                    className="mt-4 bg-background"
+                    className="mt-4 bg-background p-4"
                   >
                     {shipment ? (
                       <div className="space-y-2">
@@ -245,9 +244,7 @@ export const LogisticsHero = defineCapsule({
                 />
               </div>
               <Card
-                padding="sm"
-                shadow="lg"
-                className="absolute -bottom-6 -left-6"
+                className="absolute -bottom-6 -left-6 p-4 shadow-lg"
               >
                 <div className="flex items-center gap-3">
                   <div className="grid size-12 place-items-center rounded-full bg-primary/10 text-primary">

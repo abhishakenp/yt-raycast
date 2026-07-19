@@ -133,10 +133,7 @@ export const AeoHero = defineCapsule({
         <div className="mx-auto max-w-5xl px-4 pb-20 sm:px-6 lg:px-8">
           <Card
             variant="default"
-            rounded="xl"
-            shadow="2xl"
-            padding="none"
-            className="overflow-hidden"
+            className="overflow-hidden shadow-2xl p-0"
           >
             <Image
               alt={imageAlt}

@@ -109,7 +109,7 @@ export const AccountingFirmProcess = defineCapsule({
             ))}
           </StepTimelineGrid>
 
-          <Card variant="muted" rounded="lg" padding="lg" className="mt-16">
+          <Card variant="muted" className="mt-16 rounded-lg p-8">
             <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
               <div>
                 <h4 className="mb-2 text-xl font-semibold text-foreground">

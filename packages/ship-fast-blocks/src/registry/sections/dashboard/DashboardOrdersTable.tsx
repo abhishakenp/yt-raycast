@@ -195,9 +195,7 @@ export const DashboardOrdersTable = defineCapsule({
     return (
       <Card
         variant="default"
-        rounded="xl"
-        padding="none"
-        className={cn('overflow-hidden', props.className)}
+        className={cn('overflow-hidden', props.className, 'p-0')}
       >
         <div className="flex flex-col justify-between gap-3 border-b border-border/60 p-5 sm:flex-row sm:items-center">
           <SectionHeading

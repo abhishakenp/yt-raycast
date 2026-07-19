@@ -206,9 +206,7 @@ export const MusicFestivalTickets = defineCapsule({
                   asChild
                   key={a.name}
                   variant="default"
-                  rounded="lg"
-                  padding="sm"
-                  className="text-center transition-colors hover:border-primary/40"
+                  className="text-center transition-colors hover:border-primary/40 rounded-lg p-4"
                 >
                   <button type="button" onClick={() => go(a.name)}>
                     <p className="font-semibold">{a.name}</p>

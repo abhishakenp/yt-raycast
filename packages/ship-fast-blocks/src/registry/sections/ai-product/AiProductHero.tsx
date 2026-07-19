@@ -195,10 +195,7 @@ export const AiProductHero = defineCapsule({
             <div className="relative">
               <Card
                 variant="default"
-                rounded="xl"
-                padding="none"
-                shadow="2xl"
-                className="relative overflow-hidden"
+                className="relative overflow-hidden p-0 shadow-2xl"
               >
                 <div className="flex items-center gap-2 border-b border-border bg-muted/50 px-4 py-3">
                   <div className="flex gap-1.5">
@@ -235,9 +232,7 @@ export const AiProductHero = defineCapsule({
                     </span>
                     <Card
                       variant="outline"
-                      rounded="lg"
-                      padding="sm"
-                      className="flex-1 bg-muted/50"
+                      className="flex-1 bg-muted/50 rounded-lg p-4"
                     >
                       <p className="mb-2 text-sm text-muted-foreground">
                         {previewIntro}

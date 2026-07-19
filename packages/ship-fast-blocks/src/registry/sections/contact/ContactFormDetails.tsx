@@ -228,9 +228,7 @@ export const ContactFormDetails = defineCapsule({
           <div className="grid items-start gap-10 lg:grid-cols-2">
             {/* Contact form */}
             <Card
-              rounded="2xl"
-              padding="none"
-              className="p-9 shadow-[0_24px_64px_rgba(0,0,0,0.45)] transition-colors hover:border-border/60"
+              className="p-9 shadow-[0_24px_64px_rgba(0,0,0,0.45)] transition-colors hover:border-border/60 rounded-2xl p-0"
             >
               <h2 className="sr-only">Contact form</h2>
               <ContactForm onSubmit={inquiry.submitForm}>
@@ -311,9 +309,7 @@ export const ContactFormDetails = defineCapsule({
 
             {/* Contact details */}
             <Card
-              rounded="2xl"
-              padding="none"
-              className="p-9 shadow-[0_24px_64px_rgba(0,0,0,0.45)] transition-colors hover:border-border/60"
+              className="p-9 shadow-[0_24px_64px_rgba(0,0,0,0.45)] transition-colors hover:border-border/60 rounded-2xl p-0"
             >
               <h2 className="mb-6 text-xl font-bold text-foreground">
                 {detailsHeading}

@@ -106,9 +106,7 @@ export const AboutStory = defineCapsule({
           <SplitStoryGrid className="items-center gap-10">
             <Card
               variant="muted"
-              rounded="2xl"
-              padding="none"
-              className="relative overflow-hidden shadow-[0_20px_50px_rgba(15,23,42,0.12)]"
+              className="relative overflow-hidden shadow-[0_20px_50px_rgba(15,23,42,0.12)] rounded-2xl p-0"
             >
               <Image
                 alt={imageAlt}

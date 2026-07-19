@@ -129,9 +129,7 @@ export const PortfolioWork = defineCapsule({
                 asChild
                 key={item.title}
                 variant="default"
-                rounded="2xl"
-                padding="none"
-                className="group relative block overflow-hidden text-left transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_24px_64px_rgba(0,0,0,0.55)]"
+                className="group relative block overflow-hidden text-left transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_24px_64px_rgba(0,0,0,0.55)] rounded-2xl p-0"
               >
                 <PortfolioItem type="button" onClick={() => go(cardTarget)}>
                   <PortfolioMedia

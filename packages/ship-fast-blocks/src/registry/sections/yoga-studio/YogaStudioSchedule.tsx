@@ -124,9 +124,7 @@ export const YogaStudioSchedule = defineCapsule({
             {days.map((day) => (
               <Card
                 key={day.day}
-                rounded="2xl"
-                padding="sm"
-                className="p-5 text-card-foreground"
+                className="p-5 text-card-foreground rounded-2xl p-4"
               >
                 <h3 className="border-b border-border pb-3 text-sm font-semibold uppercase tracking-wide text-foreground">
                   {day.day}

@@ -271,10 +271,7 @@ export const CoworkingHero = defineCapsule({
 
                 <div className="absolute -bottom-8 -left-4 hidden sm:block lg:-left-10">
                   <Card
-                    rounded="2xl"
-                    padding="md"
-                    shadow="xl"
-                    className="border-border/60 bg-card/85 backdrop-blur-xl"
+                    className="border-border/60 bg-card/85 backdrop-blur-xl rounded-2xl shadow-xl"
                   >
                     <div className="flex items-center gap-4">
                       <div className="flex -space-x-3">

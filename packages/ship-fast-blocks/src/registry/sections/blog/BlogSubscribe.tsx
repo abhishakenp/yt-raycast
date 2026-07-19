@@ -64,9 +64,7 @@ export const BlogSubscribe = defineCapsule({
       >
         <Container size="4xl">
           <Card
-            rounded="2xl"
-            padding="lg"
-            className="text-center shadow-[0_10px_30px_rgba(0,0,0,0.06)] md:p-12"
+            className="text-center shadow-[0_10px_30px_rgba(0,0,0,0.06)] md:p-12 rounded-2xl p-8"
           >
             <span className="inline-flex items-center rounded-full bg-accent/10 px-3 py-1 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-accent">
               {eyebrow}

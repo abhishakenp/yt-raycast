@@ -287,9 +287,7 @@ export const DocsSidebar = defineCapsule({
 
           {showingResults ? (
             <Card
-              rounded="lg"
-              padding="none"
-              className="mb-6 p-1.5"
+              className="mb-6 p-1.5 rounded-lg p-0"
               aria-live="polite"
             >
               <p className="px-2 py-1.5 text-xs text-muted-foreground">

@@ -137,7 +137,7 @@ export const ManufacturingProcess = defineCapsule({
               </StepItem>
             ))}
           </StepTimelineGrid>
-          <Card variant="muted" rounded="lg" padding="lg" className="mt-16">
+          <Card variant="muted" className="mt-16 rounded-lg p-8">
             <StatGrid className="grid gap-8 text-center md:grid-cols-3">
               {stats.map((s) => (
                 <StatItem key={s.label}>

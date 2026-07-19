@@ -157,9 +157,7 @@ export const AnalyticsHero = defineCapsule({
             <div className="flex justify-center">
               <Card
                 variant="elevated"
-                rounded="2xl"
-                padding="none"
-                className="w-full max-w-[560px] overflow-hidden"
+                className="w-full max-w-[560px] overflow-hidden rounded-2xl p-0"
               >
                 <div
                   className="flex items-center gap-2 border-b border-border px-5 py-4"

@@ -175,10 +175,7 @@ export const CoworkingFeatures = defineCapsule({
                   className="rounded-3xl"
                 >
                   <Card
-                    rounded="3xl"
-                    padding="lg"
-                    shadow="sm"
-                    className="group relative flex h-full flex-col overflow-hidden border-border/60 bg-card/70 backdrop-blur transition-shadow duration-500 hover:shadow-lg hover:shadow-primary/10"
+                    className="group relative flex h-full flex-col overflow-hidden border-border/60 bg-card/70 backdrop-blur transition-shadow duration-500 hover:shadow-lg hover:shadow-primary/10 rounded-3xl p-8 shadow-sm"
                   >
                     <div
                       aria-hidden="true"

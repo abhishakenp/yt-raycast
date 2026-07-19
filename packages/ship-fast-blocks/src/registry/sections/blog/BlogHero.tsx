@@ -106,9 +106,7 @@ export const BlogHero = defineCapsule({
           <Card
             asChild
             variant="default"
-            rounded="2xl"
-            padding="none"
-            className="grid overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.06)] md:grid-cols-[1.15fr_1fr]"
+            className="grid overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.06)] md:grid-cols-[1.15fr_1fr] rounded-2xl p-0"
           >
             <article>
               <FeaturedArticleMedia

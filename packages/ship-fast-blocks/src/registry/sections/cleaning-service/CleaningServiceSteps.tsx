@@ -140,10 +140,7 @@ export const CleaningServiceSteps = defineCapsule({
             ))}
           </StepTimelineGrid>
           <Card
-            rounded="2xl"
-            padding="lg"
-            shadow="sm"
-            className="mt-16 lg:p-12"
+            className="mt-16 lg:p-12 rounded-2xl p-8 shadow-sm"
           >
             <div className="grid items-center gap-8 lg:grid-cols-2">
               <div>

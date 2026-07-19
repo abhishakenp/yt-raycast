@@ -222,7 +222,7 @@ export const DashboardChartActivity = defineCapsule({
           <ResponsiveGrid cols="1-lg-3" gap="md">
             {/* Revenue chart */}
             <DashboardChart className="lg:col-span-2">
-              <Card padding="sm" className="p-5 lg:col-span-2">
+              <Card className="p-5 lg:col-span-2 p-4">
                 <div className="mb-5 flex items-center justify-between">
                   <div>
                     <h2 className="text-base font-semibold text-foreground">
@@ -327,7 +327,7 @@ export const DashboardChartActivity = defineCapsule({
             </DashboardChart>
 
             {/* Recent activity */}
-            <Card padding="sm" className="p-5">
+            <Card className="p-5 p-4">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-base font-semibold text-foreground">
                   {activityTitle}

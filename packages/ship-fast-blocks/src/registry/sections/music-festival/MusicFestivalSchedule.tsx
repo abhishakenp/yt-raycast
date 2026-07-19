@@ -179,9 +179,7 @@ export const MusicFestivalSchedule = defineCapsule({
               <EventCard asChild key={day.name}>
                 <Card
                   variant="default"
-                  rounded="xl"
-                  padding="none"
-                  className="overflow-hidden"
+                  className="overflow-hidden p-0"
                 >
                   <div className="bg-primary p-6 text-primary-foreground">
                     <p className="mb-1 text-sm opacity-70">{day.label}</p>

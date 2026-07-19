@@ -32,9 +32,7 @@ function NoticeRows({ rows, lang }: { rows: GovRow[]; lang: GovLang }) {
     return (
       <Card
         variant="default"
-        rounded="xl"
-        padding="lg"
-        className="border-dashed text-center text-sm text-muted-foreground"
+        className="border-dashed text-center text-sm text-muted-foreground p-8"
       >
         {pickLang(lang, 'No records available.', 'कोई रिकॉर्ड उपलब्ध नहीं।')}
       </Card>
@@ -45,9 +43,7 @@ function NoticeRows({ rows, lang }: { rows: GovRow[]; lang: GovLang }) {
       <Card
         asChild
         variant="default"
-        rounded="xl"
-        padding="none"
-        className="divide-y divide-border overflow-hidden"
+        className="divide-y divide-border overflow-hidden p-0"
       >
         <ul>
           {rows.map((row, i) => {
@@ -423,9 +419,7 @@ export const GovPortalDownloads = defineCapsule({
                   asChild
                   key={`${title}-${i}`}
                   variant="default"
-                  rounded="xl"
-                  padding="none"
-                  className="group flex items-start gap-3 p-5 transition-all hover:border-primary/40 hover:shadow-md"
+                  className="group flex items-start gap-3 p-5 transition-all hover:border-primary/40 hover:shadow-md p-0"
                 >
                   <a
                     href={fileUrl || undefined}

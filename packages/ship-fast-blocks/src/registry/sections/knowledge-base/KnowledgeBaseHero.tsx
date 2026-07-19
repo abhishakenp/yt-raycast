@@ -189,9 +189,7 @@ export const KnowledgeBaseHero = defineCapsule({
                     key={article.id}
                     asChild
                     variant="outline"
-                    rounded="xl"
-                    padding="sm"
-                    className="bg-background transition-colors hover:border-foreground/30"
+                    className="bg-background transition-colors hover:border-foreground/30 p-4"
                   >
                     <li>
                       <p className="text-sm font-medium text-foreground">

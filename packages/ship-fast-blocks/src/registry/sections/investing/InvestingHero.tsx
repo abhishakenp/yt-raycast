@@ -151,9 +151,7 @@ export const InvestingHero = defineCapsule({
                 className="absolute -bottom-8 -left-8 -z-10 size-72 rounded-full bg-chart-1/15 opacity-60 blur-3xl"
               />
               <Card
-                rounded="2xl"
-                shadow="2xl"
-                className="relative text-card-foreground"
+                className="relative text-card-foreground rounded-2xl shadow-2xl"
               >
                 <div className="mb-6 flex items-center justify-between">
                   <div>

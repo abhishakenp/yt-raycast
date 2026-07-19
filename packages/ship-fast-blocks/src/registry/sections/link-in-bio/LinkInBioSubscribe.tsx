@@ -61,7 +61,7 @@ export const LinkInBioSubscribe = defineCapsule({
     return (
       <SubscribeBand className={cn('pt-28 pb-10', props.className)}>
         <Container className="max-w-md">
-          <Card rounded="2xl" className="text-center sm:p-8">
+          <Card className="text-center sm:p-8 rounded-2xl">
             <div className="mx-auto grid size-12 place-items-center rounded-xl bg-primary/10 text-primary">
               <svg
                 width="22"

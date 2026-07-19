@@ -156,9 +156,7 @@ export const ManufacturingTestimonials = defineCapsule({
                 asChild
                 key={t.name}
                 variant="muted"
-                rounded="lg"
-                padding="md"
-              >
+               className="rounded-lg">
                 <blockquote>
                   <p className="mb-4 text-sm leading-relaxed text-foreground">
                     &ldquo;{t.quote}&rdquo;

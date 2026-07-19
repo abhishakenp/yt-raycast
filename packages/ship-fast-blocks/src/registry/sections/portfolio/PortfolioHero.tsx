@@ -116,9 +116,7 @@ export const PortfolioHero = defineCapsule({
             <Card
               asChild
               variant="default"
-              rounded="2xl"
-              padding="none"
-              className="group relative block aspect-[16/10] w-full overflow-hidden text-left shadow-[0_24px_64px_rgba(0,0,0,0.55)]"
+              className="group relative block aspect-[16/10] w-full overflow-hidden text-left shadow-[0_24px_64px_rgba(0,0,0,0.55)] rounded-2xl p-0"
             >
               <button
                 type="button"

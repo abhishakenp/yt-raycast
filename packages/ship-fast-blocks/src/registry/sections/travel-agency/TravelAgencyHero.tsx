@@ -82,9 +82,7 @@ export const TravelAgencyHero = defineCapsule({
 
             <Card
               variant="default"
-              rounded="3xl"
-              padding="none"
-              className="mt-12 w-full max-w-4xl bg-card/95 p-3 shadow-[0_24px_80px_rgba(0,0,0,0.25)] backdrop-blur-md"
+              className="mt-12 w-full max-w-4xl bg-card/95 p-3 shadow-[0_24px_80px_rgba(0,0,0,0.25)] backdrop-blur-md rounded-3xl p-0"
             >
               <div className="grid gap-2 sm:grid-cols-[1.3fr_1fr_1fr_auto]">
                 <FormField className="flex flex-col gap-1 rounded-2xl bg-muted px-4 py-3 text-left">

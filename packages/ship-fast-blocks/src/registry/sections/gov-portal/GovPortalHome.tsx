@@ -284,8 +284,6 @@ export const GovPortalQuickLinks = defineCapsule({
                   asChild
                   key={item.label}
                   variant="default"
-                  rounded="xl"
-                  padding="md"
                   className="group flex flex-col items-start gap-3 text-left transition-all hover:border-primary/40 hover:shadow-lg"
                 >
                   <button

@@ -255,9 +255,7 @@ export const NewsStoryGrid = defineCapsule({
             <Card
               asChild
               variant="default"
-              rounded="lg"
-              padding="none"
-              className="cursor-pointer px-6 py-3 font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+              className="cursor-pointer px-6 py-3 font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground rounded-lg p-0"
             >
               <button type="button" onClick={() => go(loadMore)}>
                 {loadMore}

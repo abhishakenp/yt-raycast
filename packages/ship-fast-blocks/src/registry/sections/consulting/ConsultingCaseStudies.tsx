@@ -168,9 +168,7 @@ export const ConsultingCaseStudies = defineCapsule({
                 key={item.title}
                 asChild
                 variant="elevated"
-                rounded="xl"
-                padding="none"
-                className="group block w-full cursor-pointer overflow-hidden text-left transition-all hover:shadow-xl"
+                className="group block w-full cursor-pointer overflow-hidden text-left transition-all hover:shadow-xl p-0"
               >
                 <PortfolioItem type="button" onClick={() => go(item.title)}>
                   <PortfolioMedia aspect="3-2" className="h-56">

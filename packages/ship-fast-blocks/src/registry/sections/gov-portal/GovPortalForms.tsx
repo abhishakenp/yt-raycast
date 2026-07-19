@@ -505,9 +505,7 @@ function StatusList({
   return (
     <Card
       variant="muted"
-      rounded="2xl"
-      padding="sm"
-      className="bg-muted/30 p-5"
+      className="bg-muted/30 p-5 rounded-2xl p-4"
     >
       <GovFormHeader asChild>
         <h3 className="mb-3 text-sm font-semibold text-foreground">{title}</h3>
@@ -585,7 +583,7 @@ export const GovPortalContact = defineCapsule({
           />
           <ResponsiveGrid cols="1-2" gap="md">
             {offices.map(({ title, office }) => (
-              <Card key={title} rounded="2xl">
+              <Card key={title} className="rounded-2xl">
                 <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-primary">
                   {title}
                 </h3>

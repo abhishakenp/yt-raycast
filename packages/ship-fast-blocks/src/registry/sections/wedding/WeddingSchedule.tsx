@@ -81,7 +81,7 @@ export const WeddingSchedule = defineCapsule({
                 asChild
                 className="flex-col"
               >
-                <Card padding="lg" className="text-card-foreground">
+                <Card className="text-card-foreground p-8">
                   <ScheduleContent>
                     <h3 className="font-serif text-2xl font-medium text-foreground">
                       {event.title}

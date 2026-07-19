@@ -288,10 +288,7 @@ export const NoCodeHero = defineCapsule({
                     {['Text', 'Image', 'Button', 'Form'].map((c, i) => (
                       <Card
                         key={c}
-                        rounded="lg"
-                        padding="none"
-                        shadow="sm"
-                        className="flex items-center gap-3 p-2"
+                        className="flex items-center gap-3 p-2 rounded-lg p-0 shadow-sm"
                       >
                         <div
                           className={cn(
@@ -331,7 +328,7 @@ export const NoCodeHero = defineCapsule({
                           Get Started
                         </span>
                       </div>
-                      <Card variant="muted" rounded="lg" padding="sm">
+                      <Card variant="muted" className="rounded-lg p-4">
                         <div className="mb-2 h-2 w-3/4 rounded bg-border" />
                         <div className="h-2 w-1/2 rounded bg-border" />
                       </Card>

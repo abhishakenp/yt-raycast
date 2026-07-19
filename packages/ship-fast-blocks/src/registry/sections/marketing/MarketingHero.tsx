@@ -203,9 +203,7 @@ export const MarketingHero = defineCapsule({
                   </div>
                   <Card
                     variant="outline"
-                    rounded="xl"
-                    padding="none"
-                    className="mb-4 overflow-hidden bg-muted/40"
+                    className="mb-4 overflow-hidden bg-muted/40 p-0"
                   >
                     <Image
                       alt={previewAlt}
@@ -218,9 +216,7 @@ export const MarketingHero = defineCapsule({
                     {/* Chart widget */}
                     <Card
                       variant="outline"
-                      rounded="xl"
-                      padding="sm"
-                      className="bg-muted/40"
+                      className="bg-muted/40 p-4"
                     >
                       <div className="mb-3 text-[0.7rem] font-semibold uppercase tracking-wider text-muted-foreground">
                         {chartTitle}
@@ -238,9 +234,7 @@ export const MarketingHero = defineCapsule({
                     {/* Tasks widget */}
                     <Card
                       variant="outline"
-                      rounded="xl"
-                      padding="sm"
-                      className="bg-muted/40"
+                      className="bg-muted/40 p-4"
                     >
                       <div className="mb-3 text-[0.7rem] font-semibold uppercase tracking-wider text-muted-foreground">
                         {tasksTitle}

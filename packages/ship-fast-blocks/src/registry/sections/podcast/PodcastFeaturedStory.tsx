@@ -66,9 +66,7 @@ export const PodcastFeaturedStory = defineCapsule({
           <SectionHeading eyebrow={eyebrow} title={heading} align="center" />
 
           <Card
-            rounded="2xl"
-            padding="none"
-            className="mt-12 grid overflow-hidden md:grid-cols-2"
+            className="mt-12 grid overflow-hidden md:grid-cols-2 rounded-2xl p-0"
           >
             <FeaturedArticleMedia className="relative min-h-64 md:min-h-full">
               <Image

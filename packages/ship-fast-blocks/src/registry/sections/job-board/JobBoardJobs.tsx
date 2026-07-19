@@ -327,9 +327,7 @@ export const JobBoardJobs = defineCapsule({
             })}
             {!visibleItems.length ? (
               <Card
-                rounded="xl"
-                padding="lg"
-                className="border-dashed text-center text-sm text-muted-foreground"
+                className="border-dashed text-center text-sm text-muted-foreground p-8"
               >
                 No jobs match the current search.
               </Card>

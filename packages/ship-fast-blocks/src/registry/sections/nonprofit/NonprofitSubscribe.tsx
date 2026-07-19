@@ -69,9 +69,7 @@ export const NonprofitSubscribe = defineCapsule({
         <Container className="max-w-4xl">
           <Card
             variant="outline"
-            rounded="2xl"
-            padding="none"
-            className="bg-muted/40 px-6 py-12 sm:px-12 lg:py-16"
+            className="bg-muted/40 px-6 py-12 sm:px-12 lg:py-16 rounded-2xl p-0"
           >
             <SectionHeading
               eyebrow={eyebrow}

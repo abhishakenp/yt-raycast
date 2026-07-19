@@ -84,9 +84,7 @@ export const WeddingAbout = defineCapsule({
               />
               <Card
                 variant="default"
-                rounded="2xl"
-                padding="none"
-                className="relative overflow-hidden shadow-[0_24px_80px_rgba(0,0,0,0.12)]"
+                className="relative overflow-hidden shadow-[0_24px_80px_rgba(0,0,0,0.12)] rounded-2xl p-0"
               >
                 <Image
                   alt={imageAlt}

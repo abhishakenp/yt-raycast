@@ -211,9 +211,7 @@ export const SaasHero = defineCapsule({
           <div className="flex justify-center">
             <Card
               variant="default"
-              rounded="3xl"
-              padding="none"
-              className="w-full max-w-[520px] overflow-hidden shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)]"
+              className="w-full max-w-[520px] overflow-hidden shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)] rounded-3xl p-0"
             >
               <div className="flex items-center gap-2 border-b border-border/60 px-5 py-4">
                 <span className="size-2.5 rounded-full bg-chart-5" />

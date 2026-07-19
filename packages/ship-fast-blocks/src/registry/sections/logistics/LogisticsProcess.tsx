@@ -114,7 +114,7 @@ export const LogisticsProcess = defineCapsule({
                   className="size-full object-cover"
                 />
               </div>
-              <Card padding="sm" shadow="lg" className="absolute right-6 top-6">
+              <Card className="absolute right-6 top-6 p-4 shadow-lg">
                 <div className="flex items-center gap-3">
                   <div className="grid size-10 place-items-center rounded-full bg-primary text-primary-foreground">
                     <svg

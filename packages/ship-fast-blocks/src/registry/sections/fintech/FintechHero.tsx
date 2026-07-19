@@ -140,7 +140,7 @@ export const FintechHero = defineCapsule({
             </ul>
           </div>
           <div className="relative">
-            <Card rounded="2xl" shadow="2xl" className="overflow-hidden p-2">
+            <Card className="overflow-hidden p-2 rounded-2xl shadow-2xl">
               <Image
                 alt={imageAlt}
                 w={720}

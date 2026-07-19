@@ -277,8 +277,7 @@ export const DocsHero = defineCapsule({
 
           {showingResults ? (
             <Card
-              shadow="sm"
-              className="mx-auto mt-4 max-w-2xl p-2 text-left"
+              className="mx-auto mt-4 max-w-2xl p-2 text-left shadow-sm"
               aria-live="polite"
             >
               <p className="px-3 py-2 text-sm text-muted-foreground">

@@ -93,10 +93,7 @@ export const JobBoardHero = defineCapsule({
             </p>
 
             <Card
-              rounded="2xl"
-              padding="none"
-              shadow="lg"
-              className="mx-auto max-w-4xl p-2 sm:p-4"
+              className="mx-auto max-w-4xl p-2 sm:p-4 rounded-2xl p-0 shadow-lg"
             >
               <SearchForm
                 key={`${queryValue}:${locationValue}`}

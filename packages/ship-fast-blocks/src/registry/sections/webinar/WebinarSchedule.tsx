@@ -91,9 +91,7 @@ export const WebinarSchedule = defineCapsule({
           <Card
             asChild
             variant="default"
-            rounded="2xl"
-            padding="none"
-            className="mt-14 overflow-hidden"
+            className="mt-14 overflow-hidden rounded-2xl p-0"
           >
             <ScheduleList layout="list">
               {items.map((item, i) => (

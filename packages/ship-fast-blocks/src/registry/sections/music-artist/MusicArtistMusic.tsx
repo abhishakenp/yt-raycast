@@ -155,9 +155,7 @@ export const MusicArtistMusic = defineCapsule({
               <MusicItem asChild key={track.title}>
                 <Card
                   variant="default"
-                  rounded="none"
-                  padding="md"
-                  className="group rounded-sm transition-colors hover:border-muted-foreground/40"
+                  className="group rounded-sm transition-colors hover:border-muted-foreground/40 rounded-none"
                 >
                   <MusicTrack className="items-start">
                     <div className="size-16 shrink-0 overflow-hidden rounded-sm bg-muted">

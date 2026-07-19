@@ -216,7 +216,7 @@ export function InquiryContactSheetButton({
           <SheetDescription>{detail}</SheetDescription>
         </SheetHeader>
         <div className="space-y-4 px-5 py-5">
-          <Card rounded="lg" padding="sm">
+          <Card className="rounded-lg p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
               Contact route
             </p>

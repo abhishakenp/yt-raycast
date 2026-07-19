@@ -257,9 +257,7 @@ export const DirectoryFeatured = defineCapsule({
             {!matchingItems.length ? (
               <Card
                 variant="default"
-                rounded="xl"
-                padding="lg"
-                className="border-dashed text-center text-sm text-muted-foreground sm:col-span-2 lg:col-span-3"
+                className="border-dashed text-center text-sm text-muted-foreground sm:col-span-2 lg:col-span-3 p-8"
               >
                 No featured businesses match the current search.
               </Card>

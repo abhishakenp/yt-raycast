@@ -46,9 +46,7 @@ export const MarketingTestimonial = defineCapsule({
           <Card
             asChild
             variant="default"
-            rounded="2xl"
-            padding="none"
-            className="relative mx-auto max-w-3xl px-8 py-12 text-center shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)] sm:px-10"
+            className="relative mx-auto max-w-3xl px-8 py-12 text-center shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)] sm:px-10 rounded-2xl p-0"
           >
             <figure>
               <PullQuoteIcon>

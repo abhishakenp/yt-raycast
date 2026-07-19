@@ -145,9 +145,7 @@ export const CryptoHero = defineCapsule({
                 className="absolute inset-0 rotate-3 rounded-3xl bg-gradient-to-br from-muted to-muted/40"
               />
               <Card
-                rounded="2xl"
-                shadow="sm"
-                className="relative text-card-foreground"
+                className="relative text-card-foreground rounded-2xl shadow-sm"
               >
                 <div className="mb-6 flex items-center justify-between">
                   <div className="flex items-center gap-3">
