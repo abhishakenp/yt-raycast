@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -77,12 +78,13 @@ export const DatingAppTestimonials = defineCapsule({
     return (
       <section className={cn('bg-background py-24', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
-              {testimonialsHeading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{testimonialsDesc}</p>
-          </div>
+          <SectionHeading
+            title={testimonialsHeading}
+            subtitle={testimonialsDesc}
+            className="mb-16 max-w-3xl gap-0"
+            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <TestimonialGrid columns={3}>
             {testimonialItems
               .map((t) => ({

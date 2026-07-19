@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   FeatureGrid,
   FeatureCard,
@@ -77,12 +78,13 @@ export const DatingAppFeatures = defineCapsule({
     return (
       <section className={cn('bg-background py-24', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
-              {featuresHeading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{featuresDesc}</p>
-          </div>
+          <SectionHeading
+            title={featuresHeading}
+            subtitle={featuresDesc}
+            className="mb-16 max-w-3xl gap-0"
+            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <FeatureGrid columns={3}>
             {featureItems.map((f) => {
               const __iv__ = f as {

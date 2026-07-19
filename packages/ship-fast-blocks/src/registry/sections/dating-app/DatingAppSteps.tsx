@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   StepTimeline,
   StepTimelineGrid,
@@ -64,12 +65,13 @@ export const DatingAppSteps = defineCapsule({
     return (
       <StepTimeline className={cn('bg-muted py-24', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
-              {stepsHeading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{stepsDesc}</p>
-          </div>
+          <SectionHeading
+            title={stepsHeading}
+            subtitle={stepsDesc}
+            className="mb-16 max-w-3xl gap-0"
+            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <StepTimelineGrid columns={2} className="gap-8 lg:grid-cols-4">
             {stepItems.map((step, i) => (
               <StepItem key={step.title} className="relative">
