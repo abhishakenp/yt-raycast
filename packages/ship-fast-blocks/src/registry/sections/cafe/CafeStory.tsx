@@ -5,7 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import {
   StorySection,
-  StoryGrid,
+  StorySplitGrid,
   StoryMedia,
   StoryContent,
   StoryEyebrow,
@@ -74,7 +74,7 @@ export const CafeStory = defineCapsule({
         className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
       >
         <Container size="xl" className="px-6">
-          <StoryGrid>
+          <StorySplitGrid>
             <div className="order-2 lg:order-1">
               <StoryMedia>
                 <StoryImageTile offset>
@@ -119,7 +119,7 @@ export const CafeStory = defineCapsule({
                 </div>
               </StoryFooter>
             </StoryContent>
-          </StoryGrid>
+          </StorySplitGrid>
         </Container>
       </StorySection>
     )

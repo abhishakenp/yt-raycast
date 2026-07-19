@@ -3,7 +3,7 @@ import { cleanup, render, screen } from '@testing-library/react'
 
 import {
   StorySection,
-  StoryGrid,
+  StorySplitGrid,
   StoryMedia,
   StoryContent,
   StoryEyebrow,
@@ -62,16 +62,16 @@ describe('StorySection', () => {
   })
 })
 
-describe('StoryGrid', () => {
+describe('StorySplitGrid', () => {
   it('renders as a div with story-grid data-slot', () => {
-    render(<StoryGrid data-testid="g">x</StoryGrid>)
+    render(<StorySplitGrid data-testid="g">x</StorySplitGrid>)
     const el = screen.getByTestId('g')
     expect(el.tagName).toBe('DIV')
     expect(el.getAttribute('data-slot')).toBe('story-grid')
   })
 
   it('has lg:grid-cols-2 by default', () => {
-    render(<StoryGrid data-testid="g">x</StoryGrid>)
+    render(<StorySplitGrid data-testid="g">x</StorySplitGrid>)
     expect(screen.getByTestId('g').className).toContain('lg:grid-cols-2')
   })
 })

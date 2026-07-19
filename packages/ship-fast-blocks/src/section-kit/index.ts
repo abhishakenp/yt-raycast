@@ -441,7 +441,7 @@ export {
 } from './AboutSection.tsx'
 export {
   StorySection,
-  StoryGrid,
+  StorySplitGrid,
   StoryMedia,
   StoryContent,
   StoryEyebrow,

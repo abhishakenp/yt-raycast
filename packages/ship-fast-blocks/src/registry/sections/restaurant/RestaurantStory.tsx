@@ -8,7 +8,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   StorySection,
-  StoryGrid,
+  StorySplitGrid,
   StoryContent,
   StoryFeatures,
 } from '#/section-kit/StorySection.tsx'
@@ -92,7 +92,7 @@ export const RestaurantStory = defineCapsule({
 
     return (
       <StorySection className={cn('w-full bg-background', props.className)}>
-        <StoryGrid className="mx-auto w-[min(1200px,92vw)] gap-16 py-24">
+        <StorySplitGrid className="mx-auto w-[min(1200px,92vw)] gap-16 py-24">
           <div className="relative order-1">
             <div className="overflow-hidden rounded-3xl shadow-2xl shadow-black/15">
               <Image
@@ -159,7 +159,7 @@ export const RestaurantStory = defineCapsule({
               {cta}
             </button>
           </StoryContent>
-        </StoryGrid>
+        </StorySplitGrid>
       </StorySection>
     )
   },
