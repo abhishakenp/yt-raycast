@@ -5,18 +5,21 @@ import { cn } from '#/lib/utils.ts'
 
 const LocationBlock = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    data-slot="location-block"
-    className={cn(
-      'rounded-xl border border-border bg-card overflow-hidden',
-      className,
-    )}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="location-block"
+      className={cn(
+        'rounded-xl border border-border bg-card overflow-hidden',
+        className,
+      )}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 LocationBlock.displayName = 'LocationBlock'
 
 const LocationMap = React.forwardRef<

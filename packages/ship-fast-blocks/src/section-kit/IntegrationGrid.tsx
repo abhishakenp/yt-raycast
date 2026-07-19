@@ -33,15 +33,19 @@ const IntegrationGridVariants = cva('grid', {
 
 const IntegrationGrid = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & VariantProps<typeof IntegrationGridVariants>
->(({ className, cols, gap, ...props }, ref) => (
-  <div
-    data-slot="integration-grid"
-    className={cn(IntegrationGridVariants({ cols, gap }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> &
+    VariantProps<typeof IntegrationGridVariants> & { asChild?: boolean }
+>(({ className, cols, gap, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="integration-grid"
+      className={cn(IntegrationGridVariants({ cols, gap }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 IntegrationGrid.displayName = 'IntegrationGrid'
 
 const IntegrationCard = React.forwardRef<

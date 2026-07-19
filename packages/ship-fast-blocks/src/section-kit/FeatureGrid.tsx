@@ -25,18 +25,37 @@ const FeatureGrid = React.forwardRef<
     VariantProps<typeof featureGridVariants> & {
       heading?: string
       subheading?: string
+      asChild?: boolean
     }
->(({ className, columns, heading, subheading, children, ...props }, ref) => (
-  <section
-    ref={ref}
-    data-slot="feature-grid"
-    className={cn('flex flex-col gap-10', className)}
-    {...props}
-  >
-    {heading ? <SectionHeading title={heading} subtitle={subheading} /> : null}
-    <div className={cn(featureGridVariants({ columns }))}>{children}</div>
-  </section>
-))
+>(
+  (
+    {
+      className,
+      columns,
+      heading,
+      subheading,
+      children,
+      asChild = false,
+      ...props
+    },
+    ref,
+  ) => {
+    const Comp = asChild ? Slot : 'section'
+    return (
+      <Comp
+        ref={ref}
+        data-slot="feature-grid"
+        className={cn('flex flex-col gap-10', className)}
+        {...props}
+      >
+        {heading ? (
+          <SectionHeading title={heading} subtitle={subheading} />
+        ) : null}
+        <div className={cn(featureGridVariants({ columns }))}>{children}</div>
+      </Comp>
+    )
+  },
+)
 FeatureGrid.displayName = 'FeatureGrid'
 
 const FeatureCard = React.forwardRef<

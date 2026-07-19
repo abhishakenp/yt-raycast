@@ -18,15 +18,19 @@ const reviewListVariants = cva('', {
 
 const ReviewList = React.forwardRef<
   HTMLUListElement,
-  React.ComponentProps<'ul'> & VariantProps<typeof reviewListVariants>
->(({ className, layout, ...props }, ref) => (
-  <ul
-    data-slot="review-list"
-    className={cn(reviewListVariants({ layout }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'ul'> &
+    VariantProps<typeof reviewListVariants> & { asChild?: boolean }
+>(({ className, layout, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'ul'
+  return (
+    <Comp
+      data-slot="review-list"
+      className={cn(reviewListVariants({ layout }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 ReviewList.displayName = 'ReviewList'
 
 const ReviewItem = React.forwardRef<
