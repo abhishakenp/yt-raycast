@@ -36,15 +36,18 @@ StepTimeline.displayName = 'StepTimeline'
 
 const StepTimelineHeader = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    data-slot="step-timeline-header"
-    className={cn('mx-auto mb-16 max-w-2xl text-center md:mb-24', className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="step-timeline-header"
+      className={cn('mx-auto mb-16 max-w-2xl text-center md:mb-24', className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 StepTimelineHeader.displayName = 'StepTimelineHeader'
 
 const StepTimelineGrid = React.forwardRef<
@@ -96,82 +99,103 @@ const StepBadge = React.forwardRef<
     VariantProps<typeof stepBadgeVariants> & {
       index: number
       pad?: boolean
+      asChild?: boolean
     }
->(({ className, variant, index, pad = false, ...props }, ref) => {
-  const num = pad ? String(index + 1).padStart(2, '0') : String(index + 1)
-  if (variant === 'faded-ordinal') {
+>(
+  (
+    { className, variant, index, pad = false, asChild = false, ...props },
+    ref,
+  ) => {
+    const num = pad ? String(index + 1).padStart(2, '0') : String(index + 1)
+    if (variant === 'faded-ordinal') {
+      const Comp = asChild ? Slot : 'span'
+      return (
+        <Comp
+          className={cn(
+            'absolute -left-2 -top-4 text-5xl font-extralight text-muted-foreground/40',
+            className,
+          )}
+          ref={ref as React.Ref<HTMLSpanElement>}
+          {...props}
+        >
+          {num}
+        </Comp>
+      )
+    }
+    const Comp = asChild ? Slot : 'div'
     return (
-      <span
-        className={cn(
-          'absolute -left-2 -top-4 text-5xl font-extralight text-muted-foreground/40',
-          className,
-        )}
-        ref={ref as React.Ref<HTMLSpanElement>}
+      <Comp
+        className={cn(stepBadgeVariants({ variant }), className)}
+        ref={ref}
         {...props}
       >
         {num}
-      </span>
+      </Comp>
     )
-  }
-  return (
-    <div
-      className={cn(stepBadgeVariants({ variant }), className)}
-      ref={ref}
-      {...props}
-    >
-      {num}
-    </div>
-  )
-})
+  },
+)
 StepBadge.displayName = 'StepBadge'
 
 const StepConnector = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & { variant?: 'solid' | 'gradient' | 'dashed' }
->(({ className, variant = 'solid', ...props }, ref) => (
-  <div
-    aria-hidden="true"
-    data-slot="step-connector"
-    className={cn(
-      'absolute hidden md:block',
-      variant === 'solid' && 'h-px bg-border',
-      variant === 'gradient' &&
-        'pointer-events-none left-0 right-0 top-8 h-px bg-gradient-to-r from-transparent via-accent to-transparent',
-      variant === 'dashed' &&
-        'left-full top-8 w-full -translate-x-1/2 border-t-2 border-dashed border-primary/30',
-      className,
-    )}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & {
+    variant?: 'solid' | 'gradient' | 'dashed'
+    asChild?: boolean
+  }
+>(({ className, variant = 'solid', asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      aria-hidden="true"
+      data-slot="step-connector"
+      className={cn(
+        'absolute hidden md:block',
+        variant === 'solid' && 'h-px bg-border',
+        variant === 'gradient' &&
+          'pointer-events-none left-0 right-0 top-8 h-px bg-gradient-to-r from-transparent via-accent to-transparent',
+        variant === 'dashed' &&
+          'left-full top-8 w-full -translate-x-1/2 border-t-2 border-dashed border-primary/30',
+        className,
+      )}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 StepConnector.displayName = 'StepConnector'
 
-const StepItem = React.forwardRef<HTMLLIElement, React.ComponentProps<'li'>>(
-  ({ className, ...props }, ref) => (
-    <li
+const StepItem = React.forwardRef<
+  HTMLLIElement,
+  React.ComponentProps<'li'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'li'
+  return (
+    <Comp
       data-slot="step-item"
       className={cn('relative', className)}
       ref={ref}
       {...props}
     />
-  ),
-)
+  )
+})
 StepItem.displayName = 'StepItem'
 
 /* ---------- StepContent ---------- */
 
 const StepContent = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    data-slot="step-content"
-    className={cn('mt-4 flex flex-col gap-3', className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="step-content"
+      className={cn('mt-4 flex flex-col gap-3', className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 StepContent.displayName = 'StepContent'
 
 export {
