@@ -19,15 +19,19 @@ const ticketGridVariants = cva('grid', {
 
 const TicketGrid = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & VariantProps<typeof ticketGridVariants>
->(({ className, cols, ...props }, ref) => (
-  <div
-    data-slot="ticket-grid"
-    className={cn(ticketGridVariants({ cols }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> &
+    VariantProps<typeof ticketGridVariants> & { asChild?: boolean }
+>(({ className, cols, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="ticket-grid"
+      className={cn(ticketGridVariants({ cols }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 TicketGrid.displayName = 'TicketGrid'
 
 const ticketCardVariants = cva('', {

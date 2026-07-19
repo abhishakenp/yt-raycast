@@ -19,15 +19,19 @@ const JobListVariants = cva('flex flex-col', {
 
 const JobList = React.forwardRef<
   HTMLUListElement,
-  React.ComponentProps<'ul'> & VariantProps<typeof JobListVariants>
->(({ className, gap, ...props }, ref) => (
-  <ul
-    data-slot="job-list"
-    className={cn(JobListVariants({ gap }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'ul'> &
+    VariantProps<typeof JobListVariants> & { asChild?: boolean }
+>(({ className, gap, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'ul'
+  return (
+    <Comp
+      data-slot="job-list"
+      className={cn(JobListVariants({ gap }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 JobList.displayName = 'JobList'
 
 const JobItem = React.forwardRef<
