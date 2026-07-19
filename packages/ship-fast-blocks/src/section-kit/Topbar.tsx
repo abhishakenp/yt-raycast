@@ -43,45 +43,54 @@ Topbar.displayName = 'Topbar'
 
 const TopbarSection = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    data-slot="topbar-section"
-    className={cn('flex items-center gap-2 sm:gap-4', className)}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="topbar-section"
+      className={cn('flex items-center gap-2 sm:gap-4', className)}
+      {...props}
+    />
+  )
+})
 TopbarSection.displayName = 'TopbarSection'
 
 const TopbarDivider = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    data-slot="topbar-divider"
-    className={cn('hidden h-6 w-px bg-border sm:block', className)}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="topbar-divider"
+      className={cn('hidden h-6 w-px bg-border sm:block', className)}
+      {...props}
+    />
+  )
+})
 TopbarDivider.displayName = 'TopbarDivider'
 
 const TopbarIconButton = React.forwardRef<
   HTMLButtonElement,
-  React.ComponentProps<'button'>
->(({ className, ...props }, ref) => (
-  <button
-    ref={ref}
-    type="button"
-    data-slot="topbar-icon-button"
-    className={cn(
-      'relative rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
-      className,
-    )}
-    {...props}
-  />
-))
+  React.ComponentProps<'button'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'button'
+  return (
+    <Comp
+      ref={ref}
+      type="button"
+      data-slot="topbar-icon-button"
+      className={cn(
+        'relative rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
+        className,
+      )}
+      {...props}
+    />
+  )
+})
 TopbarIconButton.displayName = 'TopbarIconButton'
 
 export {

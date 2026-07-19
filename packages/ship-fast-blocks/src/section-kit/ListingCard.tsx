@@ -55,10 +55,11 @@ ListingCard.displayName = 'ListingCard'
  */
 const ListingCardMedia = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => {
+  React.HTMLAttributes<HTMLDivElement> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
   return (
-    <div
+    <Comp
       ref={ref}
       data-slot="listing-card-media"
       className={cn('relative aspect-[4/3] overflow-hidden', className)}
@@ -90,14 +91,17 @@ const listingBadgeVariants = cva(
 export interface ListingCardBadgeProps
   extends
     React.HTMLAttributes<HTMLSpanElement>,
-    VariantProps<typeof listingBadgeVariants> {}
+    VariantProps<typeof listingBadgeVariants> {
+  asChild?: boolean
+}
 
 const ListingCardBadge = React.forwardRef<
   HTMLSpanElement,
   ListingCardBadgeProps
->(({ className, variant, ...props }, ref) => {
+>(({ className, variant, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'span'
   return (
-    <span
+    <Comp
       ref={ref}
       data-slot="listing-card-badge"
       className={cn(listingBadgeVariants({ variant }), className)}
@@ -116,10 +120,12 @@ const ListingCardSpecRow = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & {
     specs: React.ReactNode[]
+    asChild?: boolean
   }
->(({ className, specs, ...props }, ref) => {
+>(({ className, specs, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
   return (
-    <div
+    <Comp
       ref={ref}
       data-slot="listing-card-spec-row"
       className={cn(
@@ -136,7 +142,7 @@ const ListingCardSpecRow = React.forwardRef<
           <span>{spec}</span>
         </React.Fragment>
       ))}
-    </div>
+    </Comp>
   )
 })
 ListingCardSpecRow.displayName = 'ListingCardSpecRow'
