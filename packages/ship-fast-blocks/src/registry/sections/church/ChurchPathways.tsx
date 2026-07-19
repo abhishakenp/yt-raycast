@@ -3,7 +3,13 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { PathwayGrid, PathwayCard } from '#/section-kit/PathwayGrid.tsx'
+import {
+  PathwayGrid,
+  PathwayCard,
+  PathwayCardBody,
+  PathwayCardTitle,
+  PathwayCardDescription,
+} from '#/section-kit/PathwayGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
 /**
@@ -85,14 +91,12 @@ export const ChurchPathways = defineCapsule({
           <PathwayGrid cols="1-2-3">
             {items.map((item) => (
               <PathwayCard key={item.title}>
-                <div className="flex flex-col gap-3 p-6">
-                  <h3 className="text-lg font-semibold text-foreground">
-                    {item.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
+                <PathwayCardBody>
+                  <PathwayCardTitle>{item.title}</PathwayCardTitle>
+                  <PathwayCardDescription>
                     {item.description}
-                  </p>
-                </div>
+                  </PathwayCardDescription>
+                </PathwayCardBody>
               </PathwayCard>
             ))}
           </PathwayGrid>

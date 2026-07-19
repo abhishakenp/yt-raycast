@@ -56,4 +56,59 @@ const PathwayCard = React.forwardRef<
 })
 PathwayCard.displayName = 'PathwayCard'
 
-export { PathwayGrid, PathwayCard, PathwayGridVariants }
+const PathwayCardBody = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="pathway-card-body"
+      className={cn('flex flex-col gap-3 p-6', className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
+PathwayCardBody.displayName = 'PathwayCardBody'
+
+const PathwayCardTitle = React.forwardRef<
+  HTMLHeadingElement,
+  React.ComponentProps<'h3'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'h3'
+  return (
+    <Comp
+      data-slot="pathway-card-title"
+      className={cn('text-lg font-semibold text-foreground', className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
+PathwayCardTitle.displayName = 'PathwayCardTitle'
+
+const PathwayCardDescription = React.forwardRef<
+  HTMLParagraphElement,
+  React.ComponentProps<'p'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'p'
+  return (
+    <Comp
+      data-slot="pathway-card-description"
+      className={cn('text-sm text-muted-foreground', className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
+PathwayCardDescription.displayName = 'PathwayCardDescription'
+
+export {
+  PathwayGrid,
+  PathwayCard,
+  PathwayCardBody,
+  PathwayCardTitle,
+  PathwayCardDescription,
+  PathwayGridVariants,
+}
