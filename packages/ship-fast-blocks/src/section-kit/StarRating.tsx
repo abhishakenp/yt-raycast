@@ -76,4 +76,4 @@ const StarRating = React.forwardRef<
 )
 StarRating.displayName = 'StarRating'
 
-export { StarRating }
+export { StarRating, starColorVariants }
