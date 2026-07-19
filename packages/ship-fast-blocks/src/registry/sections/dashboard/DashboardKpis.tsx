@@ -4,7 +4,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { KpisGrid } from '#/section-kit/KpisGrid.tsx'
 import {
   StatValue,
   StatLabel,
@@ -143,7 +143,7 @@ export const DashboardKpis = defineCapsule({
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <Container>
-          <ResponsiveGrid cols="1-2-4" className="gap-4">
+          <KpisGrid cols="1-2-4" className="gap-4">
             {kpis.map((kpi) => {
               const tone = kpi.tone ?? 'primary'
               const up = kpi.trendUp ?? true
@@ -151,7 +151,6 @@ export const DashboardKpis = defineCapsule({
                 <StatCard
                   key={kpi.label}
                   aria-label={`${kpi.label}: ${kpi.value}`}
-
                   className="p-5 transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08),0_4px_10px_-4px_rgba(0,0,0,0.04)] p-4"
                 >
                   <StatCardHeader>
@@ -216,7 +215,7 @@ export const DashboardKpis = defineCapsule({
                 </StatCard>
               )
             })}
-          </ResponsiveGrid>
+          </KpisGrid>
         </Container>
       </section>
     )

@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
+import { KpisGrid, KpiTrendArrow } from '#/section-kit/KpisGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import {
   StatValue,
@@ -110,16 +110,8 @@ export const AnalyticsKpis = defineCapsule({
       </svg>,
     ]
 
-    const TrendUp = () => (
-      <svg {...iconProps} width={16} height={16}>
-        <path d="M7 17l9.2-9.2M17 17V7H7" />
-      </svg>
-    )
-    const TrendDown = () => (
-      <svg {...iconProps} width={16} height={16}>
-        <path d="M17 7l-9.2 9.2M7 7v10h10" />
-      </svg>
-    )
+    const TrendUp = () => <KpiTrendArrow trend="up" size={16} />
+    const TrendDown = () => <KpiTrendArrow trend="down" size={16} />
 
     return (
       <section
@@ -127,7 +119,7 @@ export const AnalyticsKpis = defineCapsule({
         className={cn('bg-background py-20 lg:py-28', props.className)}
       >
         <Container size="xl">
-          <ResponsiveGrid cols="1-2-4" className="gap-6">
+          <KpisGrid cols="1-2-4" className="gap-6">
             {kpis.map((kpi, i) => (
               <StatCard key={kpi.label}>
                 <StatCardHeader>
@@ -167,7 +159,7 @@ export const AnalyticsKpis = defineCapsule({
                 <StatCaption>{kpi.caption}</StatCaption>
               </StatCard>
             ))}
-          </ResponsiveGrid>
+          </KpisGrid>
         </Container>
       </section>
     )
