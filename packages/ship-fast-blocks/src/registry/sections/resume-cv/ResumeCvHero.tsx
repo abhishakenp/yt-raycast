@@ -11,6 +11,7 @@ import {
   HeroCta,
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 
 /**
  * ResumeCvHero — clean two-column opening hero for a personal resume / CV /
@@ -66,13 +67,18 @@ export const ResumeCvHero = defineCapsule({
       <HeroSection className={cn('bg-background', props.className)}>
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 py-24 lg:grid-cols-2 lg:gap-16 lg:px-8 lg:py-32">
           <div className="flex flex-col items-start">
-            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-4 py-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-              <span
-                aria-hidden="true"
-                className="size-1.5 rounded-full bg-primary"
-              />
+            <Eyebrow
+              variant="muted"
+              className="border-border bg-muted px-4 py-1.5 font-medium"
+              icon={
+                <span
+                  aria-hidden="true"
+                  className="size-1.5 rounded-full bg-primary"
+                />
+              }
+            >
               {eyebrow}
-            </span>
+            </Eyebrow>
 
             <HeroHeading className="mt-6 font-semibold">{name}</HeroHeading>
 

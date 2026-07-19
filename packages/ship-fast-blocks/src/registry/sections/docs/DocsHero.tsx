@@ -7,6 +7,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { docsLakebed, type DocsArticleRecord } from './docs-lakebed.ts'
 import { useDocsSearch, useSyncDocsCatalog } from './docs-interactions.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import {
   SearchForm,
   SearchField,
@@ -224,9 +225,9 @@ export const DocsHero = defineCapsule({
           props.className,
         )}
       >
-        <p className="mb-5 inline-flex items-center rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium uppercase tracking-widest text-accent">
+        <Eyebrow className="mb-5 bg-muted tracking-widest text-accent">
           {eyebrow}
-        </p>
+        </Eyebrow>
 
         <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
           {heading}
