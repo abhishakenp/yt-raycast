@@ -10,6 +10,7 @@ import {
   GalleryTileCaption,
 } from '#/section-kit/GalleryGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * EventGallery — a dark photo highlights gallery for a conference or event page. A
@@ -54,12 +55,13 @@ export const EventGallery = defineCapsule({
         )}
       >
         <Container size="lg">
-          <div className="mx-auto mb-12 max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-background/70">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mb-12 max-w-2xl gap-0"
+            titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
+            subtitleClassName="text-lg text-background/70"
+          />
           <GalleryGrid>
             <GalleryGridItems columns={3}>
               {items

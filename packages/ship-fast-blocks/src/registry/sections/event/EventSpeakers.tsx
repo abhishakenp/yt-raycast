@@ -11,6 +11,7 @@ import {
   PersonCardBio,
 } from '#/section-kit/PersonCard.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
@@ -117,14 +118,14 @@ export const EventSpeakers = defineCapsule({
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <Container size="lg">
           <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-                {heading}
-              </h2>
-              <p className="max-w-xl text-lg text-muted-foreground">
-                {description}
-              </p>
-            </div>
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="gap-0"
+              titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
+              subtitleClassName="max-w-xl text-lg text-muted-foreground"
+            />
             <button
               type="button"
               onClick={() => go(viewAll)}
