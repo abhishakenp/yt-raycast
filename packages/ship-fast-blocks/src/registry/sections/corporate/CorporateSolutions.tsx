@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 import { SolutionGrid, SolutionCard } from '#/section-kit/SolutionGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -194,12 +195,13 @@ export const CorporateSolutions = defineCapsule({
       </svg>
     )
     const sectionHead = (title: string, desc: string) => (
-      <div className="mx-auto mb-16 max-w-3xl text-center">
-        <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-          {title}
-        </h2>
-        <p className="text-lg text-muted-foreground">{desc}</p>
-      </div>
+      <SectionHeading
+        title={title}
+        subtitle={desc}
+        className="mb-16 max-w-3xl gap-0"
+        titleClassName="mb-4 tracking-tight sm:text-4xl"
+        subtitleClassName="text-lg"
+      />
     )
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
