@@ -51,26 +51,16 @@ const ProgramCard = React.forwardRef<
   HTMLElement,
   React.ComponentProps<'article'> & {
     variant?: VariantProps<typeof programCardVariants>['variant']
-    rounded?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl'
     asChild?: boolean
   }
->(({ className, variant, rounded = 'xl', asChild = false, ...props }, ref) => {
+>(({ className, variant, asChild = false, ...props }, ref) => {
   const Comp = asChild ? Slot : 'article'
-  const roundedCls = {
-    none: '',
-    sm: 'rounded-sm',
-    md: 'rounded-md',
-    lg: 'rounded-lg',
-    xl: 'rounded-xl',
-    '2xl': 'rounded-2xl',
-  }[rounded]
   return (
     <Comp
       data-slot="program-card"
       className={cn(
-        'group flex flex-col overflow-hidden',
+        'group flex flex-col overflow-hidden rounded-xl',
         programCardVariants({ variant }),
-        roundedCls,
         className,
       )}
       ref={ref}
@@ -80,13 +70,8 @@ const ProgramCard = React.forwardRef<
 })
 ProgramCard.displayName = 'ProgramCard'
 
-const programIconVariants = cva('', {
+const programIconVariants = cva('size-12', {
   variants: {
-    size: {
-      sm: 'size-10',
-      md: 'size-12',
-      lg: 'size-14',
-    },
     shape: {
       square: 'rounded-lg',
       circle: 'rounded-full',
@@ -94,7 +79,6 @@ const programIconVariants = cva('', {
     },
   },
   defaultVariants: {
-    size: 'md',
     shape: 'square',
   },
 })
@@ -103,14 +87,14 @@ const ProgramIcon = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<'div'> &
     VariantProps<typeof programIconVariants> & { asChild?: boolean }
->(({ className, size, shape, asChild = false, ...props }, ref) => {
+>(({ className, shape, asChild = false, ...props }, ref) => {
   const Comp = asChild ? Slot : 'div'
   return (
     <Comp
       data-slot="program-icon"
       className={cn(
         'grid shrink-0 place-items-center bg-muted text-foreground',
-        programIconVariants({ size, shape }),
+        programIconVariants({ shape }),
         className,
       )}
       ref={ref}
