@@ -13,6 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * directors, DPs, or video production houses.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   FeatureGrid,
   FeatureCard,
@@ -79,14 +80,14 @@ export const FilmDirectorServices = defineCapsule({
     return (
       <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
         <Container>
-          <div className="mb-16 max-w-2xl">
-            <h2 className="mb-4 text-3xl font-light md:text-4xl">
-              {servicesHeading}
-            </h2>
-            <p className="leading-relaxed text-muted-foreground">
-              {servicesDesc}
-            </p>
-          </div>
+          <SectionHeading
+            align="left"
+            title={servicesHeading}
+            subtitle={servicesDesc}
+            className="mb-16 max-w-2xl gap-0"
+            titleClassName="mb-4 text-3xl font-light md:text-4xl"
+            subtitleClassName="leading-relaxed text-muted-foreground"
+          />
           <FeatureGrid columns={3}>
             {serviceItems.map((f) => {
               const __iv__ = f as {

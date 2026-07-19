@@ -8,6 +8,7 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 import { z } from 'zod/v4'
 
@@ -76,12 +77,13 @@ export const FilmDirectorFaq = defineCapsule({
     return (
       <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
         <Container size="sm">
-          <div className="mb-16 text-center">
-            <h2 className="mb-4 text-3xl font-light md:text-4xl">
-              {faqHeading}
-            </h2>
-            <p className="text-muted-foreground">{faqDesc}</p>
-          </div>
+          <SectionHeading
+            title={faqHeading}
+            subtitle={faqDesc}
+            className="mb-16 gap-0"
+            titleClassName="mb-4 text-3xl font-light md:text-4xl"
+            subtitleClassName="text-muted-foreground"
+          />
           <FaqAccordion>
             {faqItems.map((item) => (
               <FaqItem

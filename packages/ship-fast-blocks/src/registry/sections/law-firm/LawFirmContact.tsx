@@ -19,6 +19,7 @@ import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
  * with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   ContactForm,
   ContactFormField,
@@ -155,15 +156,16 @@ export const LawFirmContact = defineCapsule({
         <Container>
           <div className="grid items-center gap-16 lg:grid-cols-2">
             <div>
-              <p className="mb-4 text-sm uppercase tracking-widest text-primary-foreground/70">
-                {eyebrow}
-              </p>
-              <h2 className="mb-6 font-serif text-3xl lg:text-5xl">
-                {heading}
-              </h2>
-              <p className="mb-8 text-lg leading-relaxed text-primary-foreground/80">
-                {description}
-              </p>
+              <SectionHeading
+                align="left"
+                eyebrow={eyebrow}
+                title={heading}
+                subtitle={description}
+                className="mb-8 gap-0"
+                eyebrowClassName="mb-4 text-sm uppercase tracking-widest text-primary-foreground/70"
+                titleClassName="mb-6 font-serif text-3xl lg:text-5xl"
+                subtitleClassName="text-lg leading-relaxed text-primary-foreground/80"
+              />
               <div className="mb-8 space-y-4">
                 <button
                   type="button"

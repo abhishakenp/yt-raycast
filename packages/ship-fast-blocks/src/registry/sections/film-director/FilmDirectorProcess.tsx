@@ -14,6 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * for filmmakers, directors, DPs, or video production houses.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { StepTimeline } from '#/section-kit/StepTimeline.tsx'
 export const FilmDirectorProcess = defineCapsule({
   name: 'FilmDirectorProcess',
@@ -82,15 +83,16 @@ export const FilmDirectorProcess = defineCapsule({
         <Container>
           <div className="grid items-center gap-16 lg:grid-cols-2">
             <div>
-              <p className="mb-4 text-sm uppercase tracking-widest text-muted-foreground">
-                {processEyebrow}
-              </p>
-              <h2 className="mb-6 text-3xl font-light md:text-4xl">
-                {processHeading}
-              </h2>
-              <p className="mb-12 leading-relaxed text-muted-foreground">
-                {processDesc}
-              </p>
+              <SectionHeading
+                align="left"
+                eyebrow={processEyebrow}
+                title={processHeading}
+                subtitle={processDesc}
+                className="mb-12 gap-0"
+                eyebrowClassName="mb-4 text-sm uppercase tracking-widest text-muted-foreground"
+                titleClassName="mb-6 text-3xl font-light md:text-4xl"
+                subtitleClassName="leading-relaxed text-muted-foreground"
+              />
               <div className="space-y-8">
                 {processSteps.map((step, i) => (
                   <div key={step.title} className="flex gap-6">

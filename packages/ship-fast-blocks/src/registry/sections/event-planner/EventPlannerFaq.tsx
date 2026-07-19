@@ -8,6 +8,7 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 import { z } from 'zod/v4'
 
@@ -87,15 +88,15 @@ export const EventPlannerFaq = defineCapsule({
         )}
       >
         <Container size="4xl">
-          <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-24">
-            <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-              {faqEyebrow}
-            </p>
-            <h2 className="mb-6 text-3xl font-light text-foreground sm:text-4xl lg:text-5xl">
-              {faqHeading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{faqDesc}</p>
-          </div>
+          <SectionHeading
+            eyebrow={faqEyebrow}
+            title={faqHeading}
+            subtitle={faqDesc}
+            className="mb-16 max-w-3xl lg:mb-24 gap-0"
+            eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground"
+            titleClassName="mb-6 text-3xl font-light text-foreground sm:text-4xl lg:text-5xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <FaqAccordion variant="wide">
             {faqItems.map((item) => (
               <FaqItem

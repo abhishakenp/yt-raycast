@@ -9,6 +9,7 @@ import {
   FaqQuestion,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * LawFirmFaq — a centered-heading, single-column FAQ stack for a law firm. A
@@ -68,14 +69,13 @@ export const LawFirmFaq = defineCapsule({
     return (
       <section className={cn('bg-background py-24 lg:py-28', props.className)}>
         <Container className="max-w-4xl">
-          <div className="mb-16 text-center">
-            <p className="mb-4 text-sm uppercase tracking-widest text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2 className="mb-6 font-serif text-3xl text-foreground lg:text-5xl">
-              {heading}
-            </h2>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            className="mb-16 gap-0"
+            eyebrowClassName="mb-4 text-sm uppercase tracking-widest text-muted-foreground"
+            titleClassName="mb-6 font-serif text-3xl text-foreground lg:text-5xl"
+          />
           <FaqAccordion variant="wide">
             {items.map((item) => (
               <FaqItem key={item.question} asChild className="p-8">

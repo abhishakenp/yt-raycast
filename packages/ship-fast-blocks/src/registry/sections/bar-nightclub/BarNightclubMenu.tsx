@@ -12,6 +12,7 @@ import {
 } from '../commerce/commerce-interactions.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   MenuCategoryHeader,
   MenuCategoryTitle,
@@ -201,17 +202,15 @@ export const BarNightclubMenu = defineCapsule({
       >
         <Container>
           <MenuList>
-            <div className="mx-auto mb-16 max-w-2xl text-center">
-              <p className="mb-4 text-sm uppercase tracking-[0.2em] text-muted-foreground">
-                {eyebrow}
-              </p>
-              <h2 className="mb-6 text-3xl font-light sm:text-4xl lg:text-5xl">
-                {heading}
-              </h2>
-              <p className="leading-relaxed text-muted-foreground">
-                {description}
-              </p>
-            </div>
+            <SectionHeading
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={description}
+              className="mb-16 max-w-2xl gap-0"
+              eyebrowClassName="mb-4 text-sm uppercase tracking-[0.2em] text-muted-foreground"
+              titleClassName="mb-6 text-3xl font-light sm:text-4xl lg:text-5xl"
+              subtitleClassName="leading-relaxed text-muted-foreground"
+            />
 
             <ResponsiveGrid cols="1-md-2" gap="2xl" className="lg:gap-16">
               {columns.map((col) => (

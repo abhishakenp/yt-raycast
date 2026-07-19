@@ -23,6 +23,7 @@ import {
  * with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const LawFirmAttorneys = defineCapsule({
   name: 'LawFirmAttorneys',
@@ -128,17 +129,15 @@ export const LawFirmAttorneys = defineCapsule({
     return (
       <section className={cn('bg-background py-24 lg:py-28', props.className)}>
         <Container>
-          <div className="mx-auto mb-20 max-w-3xl text-center">
-            <p className="mb-4 text-sm uppercase tracking-widest text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2 className="mb-6 font-serif text-3xl text-foreground lg:text-5xl">
-              {heading}
-            </h2>
-            <p className="text-lg leading-relaxed text-muted-foreground">
-              {description}
-            </p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            className="mb-20 max-w-3xl gap-0"
+            eyebrowClassName="mb-4 text-sm uppercase tracking-widest text-muted-foreground"
+            titleClassName="mb-6 font-serif text-3xl text-foreground lg:text-5xl"
+            subtitleClassName="text-lg leading-relaxed text-muted-foreground"
+          />
           <ResponsiveGrid cols="1-md-2-3" gap="lg">
             {items.map((person) => (
               <PersonCard

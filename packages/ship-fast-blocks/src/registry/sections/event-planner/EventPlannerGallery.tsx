@@ -13,6 +13,7 @@ import {
   GalleryTileCaption,
 } from '#/section-kit/GalleryGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * EventPlannerGallery — portfolio gallery of past events. A centered intro
@@ -70,15 +71,15 @@ export const EventPlannerGallery = defineCapsule({
         )}
       >
         <Container size="xl">
-          <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-24">
-            <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-              {galleryEyebrow}
-            </p>
-            <h2 className="mb-6 text-3xl font-light text-foreground sm:text-4xl lg:text-5xl">
-              {galleryHeading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{galleryDesc}</p>
-          </div>
+          <SectionHeading
+            eyebrow={galleryEyebrow}
+            title={galleryHeading}
+            subtitle={galleryDesc}
+            className="mb-16 max-w-3xl lg:mb-24 gap-0"
+            eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground"
+            titleClassName="mb-6 text-3xl font-light text-foreground sm:text-4xl lg:text-5xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <ResponsiveGrid cols="2-lg-4" gap="sm" className="lg:gap-6">
             {galleryImages.map((alt, i) => (
               <button

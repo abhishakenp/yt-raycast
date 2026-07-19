@@ -6,6 +6,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { EventList } from '#/section-kit/EventList.tsx'
 
 /**
@@ -106,17 +107,16 @@ export const BarNightclubEvents = defineCapsule({
         )}
       >
         <Container>
-          <div className="mb-16 max-w-2xl">
-            <p className="mb-4 text-sm uppercase tracking-[0.2em] text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2 className="mb-6 text-3xl font-light sm:text-4xl lg:text-5xl">
-              {heading}
-            </h2>
-            <p className="leading-relaxed text-muted-foreground">
-              {description}
-            </p>
-          </div>
+          <SectionHeading
+            align="left"
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            className="mb-16 max-w-2xl gap-0"
+            eyebrowClassName="mb-4 text-sm uppercase tracking-[0.2em] text-muted-foreground"
+            titleClassName="mb-6 text-3xl font-light sm:text-4xl lg:text-5xl"
+            subtitleClassName="leading-relaxed text-muted-foreground"
+          />
 
           <EventList variant="list">
             {items.map((ev) => (

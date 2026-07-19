@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { StepTimeline } from '#/section-kit/StepTimeline.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
@@ -68,17 +69,15 @@ export const BarNightclubSteps = defineCapsule({
         )}
       >
         <Container>
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <p className="mb-4 text-sm uppercase tracking-[0.2em] text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2 className="mb-6 text-3xl font-light sm:text-4xl lg:text-5xl">
-              {heading}
-            </h2>
-            <p className="leading-relaxed text-muted-foreground">
-              {description}
-            </p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            className="mb-16 max-w-2xl gap-0"
+            eyebrowClassName="mb-4 text-sm uppercase tracking-[0.2em] text-muted-foreground"
+            titleClassName="mb-6 text-3xl font-light sm:text-4xl lg:text-5xl"
+            subtitleClassName="leading-relaxed text-muted-foreground"
+          />
 
           <ResponsiveGrid cols="1-2-4" gap="lg">
             {items.map((step, i) => (

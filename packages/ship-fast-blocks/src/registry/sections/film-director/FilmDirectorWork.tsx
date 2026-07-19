@@ -23,6 +23,7 @@ import {
  * or production houses.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 export const FilmDirectorWork = defineCapsule({
   name: 'FilmDirectorWork',
   description:
@@ -144,12 +145,14 @@ export const FilmDirectorWork = defineCapsule({
       >
         <Container>
           <div className="mb-12 flex flex-col md:flex-row md:items-end md:justify-between">
-            <div>
-              <h2 className="mb-4 text-3xl font-light md:text-4xl">
-                {workHeading}
-              </h2>
-              <p className="max-w-xl text-background/70">{workDesc}</p>
-            </div>
+            <SectionHeading
+              align="left"
+              title={workHeading}
+              subtitle={workDesc}
+              className="gap-0"
+              titleClassName="mb-4 text-3xl font-light md:text-4xl"
+              subtitleClassName="max-w-xl text-background/70"
+            />
             <div className="mt-6 flex gap-4 text-sm md:mt-0">
               {workFilters.map((f, i) => (
                 <button

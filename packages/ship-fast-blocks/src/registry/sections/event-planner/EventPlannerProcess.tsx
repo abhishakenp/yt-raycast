@@ -12,6 +12,7 @@ import {
   StepTimelineHeader,
 } from '#/section-kit/StepTimeline.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * EventPlannerProcess — numbered "how we work" process row on a muted band. A
@@ -73,13 +74,16 @@ export const EventPlannerProcess = defineCapsule({
       >
         <Container size="xl">
           <StepTimelineHeader className="max-w-3xl">
-            <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-              {processEyebrow}
-            </p>
-            <h2 className="mb-6 text-3xl font-light text-foreground sm:text-4xl lg:text-5xl">
-              {processHeading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{processDesc}</p>
+            <SectionHeading
+              align="left"
+              eyebrow={processEyebrow}
+              title={processHeading}
+              subtitle={processDesc}
+              className="gap-0"
+              eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground"
+              titleClassName="mb-6 text-3xl font-light text-foreground sm:text-4xl lg:text-5xl"
+              subtitleClassName="text-lg text-muted-foreground"
+            />
           </StepTimelineHeader>
           <StepTimelineGrid columns={4} className="lg:gap-6">
             {processSteps.map((step, i) => (

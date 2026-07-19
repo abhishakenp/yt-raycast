@@ -12,6 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * production houses.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -99,12 +100,13 @@ export const FilmDirectorTestimonials = defineCapsule({
     return (
       <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-light md:text-4xl">
-              {testimonialsHeading}
-            </h2>
-            <p className="text-muted-foreground">{testimonialsDesc}</p>
-          </div>
+          <SectionHeading
+            title={testimonialsHeading}
+            subtitle={testimonialsDesc}
+            className="mb-16 max-w-2xl gap-0"
+            titleClassName="mb-4 text-3xl font-light md:text-4xl"
+            subtitleClassName="text-muted-foreground"
+          />
           <TestimonialGrid columns={3}>
             {testimonialItems.map((t) => {
               const __iv__ = t as {

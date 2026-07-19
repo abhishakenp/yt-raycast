@@ -15,6 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { StepTimeline } from '#/section-kit/StepTimeline.tsx'
 export const LawFirmProcess = defineCapsule({
   name: 'LawFirmProcess',
@@ -68,15 +69,16 @@ export const LawFirmProcess = defineCapsule({
         <Container>
           <div className="grid items-center gap-16 lg:grid-cols-2">
             <div>
-              <p className="mb-4 text-sm uppercase tracking-widest text-muted-foreground">
-                {eyebrow}
-              </p>
-              <h2 className="mb-6 font-serif text-3xl text-foreground lg:text-4xl">
-                {heading}
-              </h2>
-              <p className="mb-12 text-lg leading-relaxed text-muted-foreground">
-                {description}
-              </p>
+              <SectionHeading
+                align="left"
+                eyebrow={eyebrow}
+                title={heading}
+                subtitle={description}
+                className="mb-12 gap-0"
+                eyebrowClassName="mb-4 text-sm uppercase tracking-widest text-muted-foreground"
+                titleClassName="mb-6 font-serif text-3xl text-foreground lg:text-4xl"
+                subtitleClassName="text-lg leading-relaxed text-muted-foreground"
+              />
               <div className="space-y-10">
                 {steps.map((step, i) => (
                   <div key={step.title} className="flex gap-6">

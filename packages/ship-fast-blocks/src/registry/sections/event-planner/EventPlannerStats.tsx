@@ -10,6 +10,7 @@ import {
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * EventPlannerStats — impact band pairing a stats column with a photo collage. A
@@ -66,15 +67,16 @@ export const EventPlannerStats = defineCapsule({
         <Container size="xl">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
             <div>
-              <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-                {statsEyebrow}
-              </p>
-              <h2 className="mb-6 text-3xl font-light text-foreground sm:text-4xl lg:text-5xl">
-                {statsHeading}
-              </h2>
-              <p className="mb-8 text-lg leading-relaxed text-muted-foreground">
-                {statsDesc}
-              </p>
+              <SectionHeading
+                align="left"
+                eyebrow={statsEyebrow}
+                title={statsHeading}
+                subtitle={statsDesc}
+                className="mb-8 gap-0"
+                eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground"
+                titleClassName="mb-6 text-3xl font-light text-foreground sm:text-4xl lg:text-5xl"
+                subtitleClassName="text-lg leading-relaxed text-muted-foreground"
+              />
               <StatGrid columns={2}>
                 {statsItems.map((s) => {
                   const __iv__ = s as { value: string; label: string }

@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   GalleryGrid,
   GalleryGridItems,
@@ -62,14 +63,14 @@ export const BarNightclubGallery = defineCapsule({
       >
         <Container>
           <div className="mb-16 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="mb-4 text-sm uppercase tracking-[0.2em] text-muted-foreground">
-                {eyebrow}
-              </p>
-              <h2 className="text-3xl font-light sm:text-4xl lg:text-5xl">
-                {heading}
-              </h2>
-            </div>
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              className="gap-0"
+              eyebrowClassName="mb-4 text-sm uppercase tracking-[0.2em] text-muted-foreground"
+              titleClassName="text-3xl font-light sm:text-4xl lg:text-5xl"
+            />
             <p className="max-w-md text-muted-foreground md:text-right">
               {description}
             </p>
