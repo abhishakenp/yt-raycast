@@ -22,7 +22,7 @@ import {
  * board-certified dentists, orthodontists, or oral surgeons for a clinic site.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const DentalTeam = defineCapsule({
   name: 'DentalTeam',
@@ -86,18 +86,15 @@ export const DentalTeam = defineCapsule({
     return (
       <section className={cn('bg-muted py-24', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <Eyebrow
-              variant="text"
-              className="mb-3 inline-block text-sm tracking-wider text-primary"
-            >
-              {teamEyebrow}
-            </Eyebrow>
-            <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
-              {teamHeading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{teamDesc}</p>
-          </div>
+          <SectionHeading
+            eyebrow={teamEyebrow}
+            title={teamHeading}
+            subtitle={teamDesc}
+            className="mb-16 max-w-3xl gap-0"
+            eyebrowClassName="mb-3 inline-block text-xs font-semibold tracking-wider text-primary"
+            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <ResponsiveGrid cols="1-2-4" gap="lg">
             {teamMembers.map((m) => (
               <PersonCard

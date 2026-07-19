@@ -17,7 +17,7 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
  * orthodontists, or cosmetic / restorative dental clinics.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   FeatureGrid,
   FeatureCard,
@@ -128,18 +128,15 @@ export const DentalServices = defineCapsule({
     return (
       <section className={cn('bg-background py-24', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <Eyebrow
-              variant="text"
-              className="mb-3 inline-block text-sm tracking-wider text-primary"
-            >
-              {servicesEyebrow}
-            </Eyebrow>
-            <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
-              {servicesHeading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{servicesDesc}</p>
-          </div>
+          <SectionHeading
+            eyebrow={servicesEyebrow}
+            title={servicesHeading}
+            subtitle={servicesDesc}
+            className="mb-16 max-w-3xl gap-0"
+            eyebrowClassName="mb-3 inline-block text-xs font-semibold tracking-wider text-primary"
+            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <FeatureGrid columns={3}>
             {serviceItems.map((f) => {
               const __iv__ = f as {

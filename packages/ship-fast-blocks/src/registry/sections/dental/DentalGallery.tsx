@@ -11,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * rooms, and waiting area for dentists, dental offices, or clinics.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   GalleryGrid,
   GalleryGridItems,
@@ -49,18 +49,15 @@ export const DentalGallery = defineCapsule({
     return (
       <section className={cn('bg-background py-24', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <Eyebrow
-              variant="text"
-              className="mb-3 inline-block text-sm tracking-wider text-primary"
-            >
-              {galleryEyebrow}
-            </Eyebrow>
-            <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
-              {galleryHeading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{galleryDesc}</p>
-          </div>
+          <SectionHeading
+            eyebrow={galleryEyebrow}
+            title={galleryHeading}
+            subtitle={galleryDesc}
+            className="mb-16 max-w-3xl gap-0"
+            eyebrowClassName="mb-3 inline-block text-xs font-semibold tracking-wider text-primary"
+            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <GalleryGrid>
             <GalleryGridItems columns={3}>
               {galleryImages

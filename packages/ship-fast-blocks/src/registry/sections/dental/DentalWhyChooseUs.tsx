@@ -13,7 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * pricing, family care) for dentists, dental offices, or clinics.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   WhyChooseUsGrid,
   WhyChooseUsCard,
@@ -86,18 +86,16 @@ export const DentalWhyChooseUs = defineCapsule({
               </div>
             </div>
             <div className="order-1 lg:order-2">
-              <Eyebrow
-                variant="text"
-                className="mb-3 inline-block text-sm tracking-wider text-primary"
-              >
-                {whyEyebrow}
-              </Eyebrow>
-              <h2 className="mb-6 text-3xl font-bold text-foreground sm:text-4xl">
-                {whyHeading}
-              </h2>
-              <p className="mb-10 text-lg leading-relaxed text-muted-foreground">
-                {whyDesc}
-              </p>
+              <SectionHeading
+                align="left"
+                eyebrow={whyEyebrow}
+                title={whyHeading}
+                subtitle={whyDesc}
+                className="mb-10 gap-0"
+                eyebrowClassName="mb-3 inline-block text-xs font-semibold tracking-wider text-primary"
+                titleClassName="mb-6 text-3xl font-bold text-foreground sm:text-4xl"
+                subtitleClassName="text-lg leading-relaxed text-muted-foreground"
+              />
               <div className="grid gap-8 sm:grid-cols-2">
                 {whyItems.map((item) => (
                   <WhyChooseUsCard key={item.title} className="rounded-xl">
