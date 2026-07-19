@@ -92,15 +92,19 @@ const statLabelVariants = cva('text-sm', {
 
 const StatGrid = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & VariantProps<typeof statGridVariants>
->(({ className, columns, gap, ...props }, ref) => (
-  <div
-    ref={ref}
-    data-slot="stat-grid"
-    className={cn(statGridVariants({ columns, gap }), className)}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> &
+    VariantProps<typeof statGridVariants> & { asChild?: boolean }
+>(({ className, columns, gap, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="stat-grid"
+      className={cn(statGridVariants({ columns, gap }), className)}
+      {...props}
+    />
+  )
+})
 StatGrid.displayName = 'StatGrid'
 
 const StatItem = React.forwardRef<

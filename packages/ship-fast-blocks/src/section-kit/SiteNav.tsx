@@ -326,7 +326,10 @@ function LegacySiteNav(props: SiteNavProps) {
 
 const CompoundSiteNav = React.forwardRef<
   HTMLElement,
-  SiteNavProps & VariantProps<typeof siteNavHeaderVariants>
+  SiteNavProps &
+    VariantProps<typeof siteNavHeaderVariants> & {
+      asChild?: boolean
+    }
 >(
   (
     {
@@ -336,12 +339,14 @@ const CompoundSiteNav = React.forwardRef<
       containerClassName,
       rowClassName,
       children,
+      asChild = false,
       ...props
     },
     ref,
   ) => {
+    const Comp = asChild ? Slot : 'header'
     return (
-      <header
+      <Comp
         data-slot="site-nav"
         className={cn(siteNavHeaderVariants({ position }), className)}
         ref={ref}
@@ -354,7 +359,7 @@ const CompoundSiteNav = React.forwardRef<
             </div>
           </nav>
         </Container>
-      </header>
+      </Comp>
     )
   },
 )

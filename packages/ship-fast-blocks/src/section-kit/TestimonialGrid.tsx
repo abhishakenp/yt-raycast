@@ -25,28 +25,43 @@ const TestimonialGrid = React.forwardRef<
       eyebrow?: string
       heading?: string
       subheading?: string
+      asChild?: boolean
     }
 >(
   (
-    { className, columns, eyebrow, heading, subheading, children, ...props },
+    {
+      className,
+      columns,
+      eyebrow,
+      heading,
+      subheading,
+      children,
+      asChild = false,
+      ...props
+    },
     ref,
-  ) => (
-    <section
-      ref={ref}
-      data-slot="testimonial-grid"
-      className={cn('flex flex-col gap-10', className)}
-      {...props}
-    >
-      {heading ? (
-        <SectionHeading
-          eyebrow={eyebrow}
-          title={heading}
-          subtitle={subheading}
-        />
-      ) : null}
-      <div className={cn(testimonialGridVariants({ columns }))}>{children}</div>
-    </section>
-  ),
+  ) => {
+    const Comp = asChild ? Slot : 'section'
+    return (
+      <Comp
+        ref={ref}
+        data-slot="testimonial-grid"
+        className={cn('flex flex-col gap-10', className)}
+        {...props}
+      >
+        {heading ? (
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={subheading}
+          />
+        ) : null}
+        <div className={cn(testimonialGridVariants({ columns }))}>
+          {children}
+        </div>
+      </Comp>
+    )
+  },
 )
 TestimonialGrid.displayName = 'TestimonialGrid'
 

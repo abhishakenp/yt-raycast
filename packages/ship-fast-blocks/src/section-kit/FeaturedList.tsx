@@ -22,15 +22,19 @@ const FeaturedListVariants = cva('grid', {
 
 const FeaturedList = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & VariantProps<typeof FeaturedListVariants>
->(({ className, cols, ...props }, ref) => (
-  <div
-    data-slot="featured-list"
-    className={cn(FeaturedListVariants({ cols }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> &
+    VariantProps<typeof FeaturedListVariants> & { asChild?: boolean }
+>(({ className, cols, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="featured-list"
+      className={cn(FeaturedListVariants({ cols }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 FeaturedList.displayName = 'FeaturedList'
 
 const FeaturedItem = React.forwardRef<

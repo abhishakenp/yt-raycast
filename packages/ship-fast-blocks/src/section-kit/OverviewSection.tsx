@@ -293,42 +293,62 @@ interface OverviewMediaPanelProps extends React.ComponentProps<'div'> {
   w?: number
   /** Image height hint */
   h?: number
+  asChild?: boolean
 }
 
 const OverviewMediaPanel = React.forwardRef<
   HTMLDivElement,
   OverviewMediaPanelProps
->(({ className, alt, brand, caption, w = 900, h = 700, ...props }, ref) => (
-  <div
-    ref={ref}
-    data-slot="overview-image-panel"
-    className={cn('relative', className)}
-    {...props}
-  >
-    <div
-      className="absolute inset-6 rounded-3xl bg-primary/10 blur-3xl"
-      aria-hidden="true"
-    />
-    <div className="relative overflow-hidden rounded-3xl border border-border bg-card shadow-[0_24px_80px_rgba(0,0,0,0.12)]">
-      <Image
-        alt={alt}
-        w={w}
-        h={h}
-        className="aspect-[4/3] w-full object-cover"
-      />
-      {brand ? (
-        <div className="border-t border-border bg-card/95 p-6">
-          <p className="text-sm font-semibold text-card-foreground">{brand}</p>
-          {caption ? (
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              {caption}
-            </p>
+>(
+  (
+    {
+      className,
+      alt,
+      brand,
+      caption,
+      w = 900,
+      h = 700,
+      asChild = false,
+      ...props
+    },
+    ref,
+  ) => {
+    const Comp = asChild ? Slot : 'div'
+    return (
+      <Comp
+        ref={ref}
+        data-slot="overview-image-panel"
+        className={cn('relative', className)}
+        {...props}
+      >
+        <div
+          className="absolute inset-6 rounded-3xl bg-primary/10 blur-3xl"
+          aria-hidden="true"
+        />
+        <div className="relative overflow-hidden rounded-3xl border border-border bg-card shadow-[0_24px_80px_rgba(0,0,0,0.12)]">
+          <Image
+            alt={alt}
+            w={w}
+            h={h}
+            className="aspect-[4/3] w-full object-cover"
+          />
+          {brand ? (
+            <div className="border-t border-border bg-card/95 p-6">
+              <p className="text-sm font-semibold text-card-foreground">
+                {brand}
+              </p>
+              {caption ? (
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {caption}
+                </p>
+              ) : null}
+            </div>
           ) : null}
         </div>
-      ) : null}
-    </div>
-  </div>
-))
+      </Comp>
+    )
+  },
+)
 OverviewMediaPanel.displayName = 'OverviewMediaPanel'
 
 /* ---------- Exports ---------- */
