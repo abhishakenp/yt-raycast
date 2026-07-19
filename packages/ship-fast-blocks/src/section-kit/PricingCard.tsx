@@ -182,25 +182,22 @@ PricingCardFeature.displayName = 'PricingCardFeature'
 
 const PricingCardCheckIcon = React.forwardRef<
   SVGSVGElement,
-  React.ComponentProps<'svg'> & { asChild?: boolean }
->(({ className, asChild = false, ...props }, ref) => {
-  const Comp = asChild ? Slot : 'svg'
-  return (
-    <Comp
-      className={cn('mt-0.5 size-4 shrink-0 text-primary', className)}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      aria-hidden="true"
-      data-slot="pricing-card-check-icon"
-      ref={ref as React.Ref<SVGSVGElement>}
-      {...props}
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" d="m5 13 4 4L19 7" />
-    </Comp>
-  )
-})
+  React.ComponentProps<'svg'>
+>(({ className, ...props }, ref) => (
+  <svg
+    className={cn('mt-0.5 size-4 shrink-0 text-primary', className)}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    aria-hidden="true"
+    data-slot="pricing-card-check-icon"
+    ref={ref}
+    {...props}
+  >
+    <path strokeLinecap="round" strokeLinejoin="round" d="m5 13 4 4L19 7" />
+  </svg>
+))
 PricingCardCheckIcon.displayName = 'PricingCardCheckIcon'
 
 const PricingCardCta = React.forwardRef<
