@@ -22,6 +22,7 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { StarRating } from '#/section-kit/StarRating.tsx'
 
 /**
  * BeautyStoreProducts — shoppable bestsellers product grid for a beauty / skincare /
@@ -141,17 +142,6 @@ export const BeautyStoreProducts = defineCapsule({
       (product) => [product.brand, product.title, product.price, product.badge],
     )
 
-    const Star = ({ className }: { className?: string }) => (
-      <svg
-        viewBox="0 0 20 20"
-        fill="currentColor"
-        className={className}
-        aria-hidden="true"
-      >
-        <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-      </svg>
-    )
-
     const PlusIcon = () => (
       <svg
         width="20"
@@ -258,11 +248,12 @@ export const BeautyStoreProducts = defineCapsule({
                     {product.title}
                   </h3>
                   <div className="mb-3 flex items-center gap-2">
-                    <div className="flex text-primary">
-                      {[0, 1, 2, 3, 4].map((i) => (
-                        <Star key={i} className="size-3" />
-                      ))}
-                    </div>
+                    <StarRating
+                      rating={5}
+                      size="sm"
+                      color="primary"
+                      className="[&_svg]:size-3"
+                    />
                     <span className="text-xs text-muted-foreground">
                       {product.reviews}
                     </span>

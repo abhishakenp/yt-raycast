@@ -14,6 +14,7 @@ import {
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { StarRating } from '#/section-kit/StarRating.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -105,17 +106,6 @@ export const BeautyStoreHero = defineCapsule({
       }),
     ])
 
-    const Star = ({ className }: { className?: string }) => (
-      <svg
-        viewBox="0 0 20 20"
-        fill="currentColor"
-        className={className}
-        aria-hidden="true"
-      >
-        <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-      </svg>
-    )
-
     return (
       <HeroSection
         className={cn(
@@ -171,9 +161,7 @@ export const BeautyStoreHero = defineCapsule({
                 <div className="text-sm">
                   <p className="font-semibold text-foreground">{ratingCount}</p>
                   <div className="flex items-center gap-1 text-primary">
-                    {[0, 1, 2, 3, 4].map((i) => (
-                      <Star key={i} className="size-4" />
-                    ))}
+                    <StarRating rating={5} size="sm" color="primary" />
                     <span className="ml-1 text-muted-foreground">
                       {ratingValue}
                     </span>

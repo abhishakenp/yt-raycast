@@ -15,6 +15,7 @@ import {
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { StarRating } from '#/section-kit/StarRating.tsx'
 
 /**
  * InsuranceHero — two-column hero band for an insurance / fintech landing page.
@@ -230,9 +231,7 @@ export const InsuranceHero = defineCapsule({
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} className="size-5 text-primary" />
-                  ))}
+                  <StarRating rating={5} size="md" color="primary" />
                   <span className="ml-2 font-semibold text-card-foreground">
                     {proofRating}
                   </span>
