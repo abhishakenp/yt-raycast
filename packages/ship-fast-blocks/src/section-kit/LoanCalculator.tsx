@@ -35,15 +35,18 @@ LoanCalculator.displayName = 'LoanCalculator'
 
 const LoanDisplay = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    data-slot="loan-calculator-display"
-    className={cn('rounded-lg bg-primary/10 p-6 text-center', className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="loan-calculator-display"
+      className={cn('rounded-lg bg-primary/10 p-6 text-center', className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 LoanDisplay.displayName = 'LoanDisplay'
 
 export { LoanCalculator, LoanDisplay, LoanCalculatorVariants }
