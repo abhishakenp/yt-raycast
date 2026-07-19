@@ -7,6 +7,8 @@ import ts from 'typescript'
 import type { ElementNode } from '@openuidev/lang-core'
 import { buildImageSearchQuery, library } from '@ship-fast/blocks'
 import {
+  lakebedExportDepsBase64,
+  lakebedExportDepsEncoding,
   reactExportSourcesBase64,
   reactExportSourcesEncoding,
   vendorSourceFilesBase64,
@@ -89,6 +91,27 @@ type ClientComponentDefinition = {
   vendorFiles: Set<string>
 }
 
+type SerializableClientComponentDefinition = {
+  name: string
+  preludeSources: string[]
+  source: string
+  imports: string[]
+  vendorFiles: string[]
+}
+
+type LakebedGeneratedDependencyEntry = {
+  clientComponent: SerializableClientComponentDefinition | null
+  definitions: LakebedDefinition[]
+  filePaths: string[]
+  vendorFiles: string[]
+  blockFiles: string[]
+}
+
+export type LakebedExportDependencyManifest = {
+  components: Record<string, LakebedGeneratedDependencyEntry | undefined>
+  files: Record<string, string | undefined>
+}
+
 type ImageSource = {
   alt: string
   originalSrc?: string
@@ -127,6 +150,8 @@ let manifestSourceIndex: Record<
   ReactExportSourceEntry | undefined
 > | null = null
 let vendorSourceFileIndex: Record<string, string | undefined> | null = null
+let lakebedExportDependencyManifest: LakebedExportDependencyManifest | null =
+  null
 const lakebedImageResolveConcurrency = 8
 const lakebedImageFetchTimeoutMs = 2_500
 
@@ -241,7 +266,9 @@ function isPexelsPhoto(value: unknown): value is PexelsPhoto {
   if (value.src === undefined) return true
   if (!isRecord(value.src)) return false
   return ['large', 'large2x', 'original', 'medium'].every(
-    (key) => (value.src as Record<string, unknown>)?.[key] === undefined || isString((value.src as Record<string, unknown>)[key]),
+    (key) =>
+      (value.src as Record<string, unknown>)?.[key] === undefined ||
+      isString((value.src as Record<string, unknown>)[key]),
   )
 }
 
@@ -1236,6 +1263,71 @@ function getVendorSourceFileIndex(): Record<string, string | undefined> {
   return nextIndex
 }
 
+function isStringArray(value: unknown): value is string[] {
+  return (
+    Array.isArray(value) && value.every((entry) => typeof entry === 'string')
+  )
+}
+
+function isLakebedGeneratedDependencyEntry(
+  value: unknown,
+): value is LakebedGeneratedDependencyEntry {
+  if (!isRecord(value)) return false
+  const clientComponent = value.clientComponent
+  const isClientComponent =
+    clientComponent === null ||
+    (isRecord(clientComponent) &&
+      typeof clientComponent.name === 'string' &&
+      isStringArray(clientComponent.preludeSources) &&
+      typeof clientComponent.source === 'string' &&
+      isStringArray(clientComponent.imports) &&
+      isStringArray(clientComponent.vendorFiles))
+  return (
+    isClientComponent &&
+    Array.isArray(value.definitions) &&
+    isStringArray(value.filePaths) &&
+    isStringArray(value.vendorFiles) &&
+    isStringArray(value.blockFiles)
+  )
+}
+
+function getLakebedExportDependencyManifest(): LakebedExportDependencyManifest {
+  if (lakebedExportDependencyManifest) return lakebedExportDependencyManifest
+  if (lakebedExportDepsEncoding !== 'br+base64') {
+    throw new Error(
+      `Unsupported Lakebed export dependency manifest encoding: ${lakebedExportDepsEncoding}`,
+    )
+  }
+  const parsed = parseJsonRecord(
+    brotliDecompressSync(
+      Buffer.from(lakebedExportDepsBase64, 'base64'),
+    ).toString('utf8'),
+  )
+  if (!parsed) throw new Error('Invalid Lakebed export dependency manifest')
+  if (!isRecord(parsed.components) || !isRecord(parsed.files)) {
+    throw new Error('Invalid Lakebed export dependency manifest shape')
+  }
+  const components: Record<
+    string,
+    LakebedGeneratedDependencyEntry | undefined
+  > = {}
+  for (const [name, entry] of Object.entries(parsed.components)) {
+    if (!isLakebedGeneratedDependencyEntry(entry)) {
+      throw new Error(`Invalid Lakebed export dependency entry: ${name}`)
+    }
+    components[name] = entry
+  }
+  const files: Record<string, string | undefined> = {}
+  for (const [path, source] of Object.entries(parsed.files)) {
+    if (typeof source !== 'string') {
+      throw new Error(`Invalid Lakebed export dependency source: ${path}`)
+    }
+    files[path] = source
+  }
+  lakebedExportDependencyManifest = { components, files }
+  return lakebedExportDependencyManifest
+}
+
 function printNode(node: ts.Node, sourceFile: ts.SourceFile): string {
   return ts
     .createPrinter({ newLine: ts.NewLineKind.LineFeed, removeComments: true })
@@ -1549,7 +1641,8 @@ function collectAllBoundNames(sourceFile: ts.SourceFile): Set<string> {
   const bound = new Set<string>()
   const add = (name: ts.Node) => {
     if (!name) return
-    for (const text of bindingIdentifierNames(name as ts.BindingName)) bound.add(text)
+    for (const text of bindingIdentifierNames(name as ts.BindingName))
+      bound.add(text)
   }
   const visit = (node: ts.Node) => {
     if (ts.isImportClause(node)) {
@@ -2325,7 +2418,81 @@ function readClientComponentDefinition(
   return null
 }
 
-function collectDefinitions(componentNames: string[]): LakebedDefinition[] {
+function serializeClientComponentDefinition(
+  definition: ClientComponentDefinition | null,
+): SerializableClientComponentDefinition | null {
+  if (!definition) return null
+  return {
+    name: definition.name,
+    preludeSources: definition.preludeSources,
+    source: definition.source,
+    imports: definition.imports,
+    vendorFiles: [...definition.vendorFiles].sort(),
+  }
+}
+
+function hydrateClientComponentDefinition(
+  definition: SerializableClientComponentDefinition,
+): ClientComponentDefinition {
+  return {
+    name: definition.name,
+    preludeSources: definition.preludeSources,
+    source: definition.source,
+    imports: definition.imports,
+    vendorFiles: new Set(definition.vendorFiles),
+  }
+}
+
+export function buildLakebedExportDependencyManifestForGenerator(
+  componentNames = Object.keys(getManifestSourceIndex()).sort(),
+): LakebedExportDependencyManifest {
+  const manifest = getManifestSourceIndex()
+  const components: Record<
+    string,
+    LakebedGeneratedDependencyEntry | undefined
+  > = {}
+  const files: Record<string, string | undefined> = {}
+
+  for (const componentName of componentNames) {
+    const entry = manifest[componentName]
+    if (!entry) continue
+
+    const componentFiles: Record<string, string> = {}
+    const seenVendorFiles = new Set<string>()
+    const seenBlockFiles = new Set<string>()
+    let clientComponent: ClientComponentDefinition | null = null
+    let definition: LakebedDefinition | null = null
+    try {
+      clientComponent = readClientComponentDefinition(
+        componentName,
+        entry,
+        componentFiles,
+        seenVendorFiles,
+        seenBlockFiles,
+      )
+      definition = readLakebedDefinition(componentName, entry)
+    } catch {
+      continue
+    }
+    const filePaths = Object.keys(componentFiles).sort()
+    for (const filePath of filePaths) {
+      files[filePath] = componentFiles[filePath]
+    }
+    components[componentName] = {
+      clientComponent: serializeClientComponentDefinition(clientComponent),
+      definitions: definition ? [definition] : [],
+      filePaths,
+      vendorFiles: [...seenVendorFiles].sort(),
+      blockFiles: [...seenBlockFiles].sort(),
+    }
+  }
+
+  return { components, files }
+}
+
+function collectDefinitionsDynamically(
+  componentNames: string[],
+): LakebedDefinition[] {
   const manifest = getManifestSourceIndex()
   return componentNames.flatMap((componentName) => {
     const entry = manifest[componentName]
@@ -2336,7 +2503,27 @@ function collectDefinitions(componentNames: string[]): LakebedDefinition[] {
   })
 }
 
-function collectClientComponents(
+function collectDefinitions(componentNames: string[]): LakebedDefinition[] {
+  const generatedManifest = getLakebedExportDependencyManifest()
+  const generatedDefinitions: LakebedDefinition[] = []
+  const dynamicComponentNames: string[] = []
+
+  for (const componentName of componentNames) {
+    const generatedEntry = generatedManifest.components[componentName]
+    if (generatedEntry) {
+      generatedDefinitions.push(...generatedEntry.definitions)
+    } else {
+      dynamicComponentNames.push(componentName)
+    }
+  }
+
+  return [
+    ...generatedDefinitions,
+    ...collectDefinitionsDynamically(dynamicComponentNames),
+  ]
+}
+
+function collectClientComponentsDynamically(
   componentNames: string[],
   files: Record<string, string>,
   seenVendorFiles: Set<string>,
@@ -2356,6 +2543,95 @@ function collectClientComponents(
       : null
     return definition ? [definition] : []
   })
+}
+
+function collectClientComponents(
+  componentNames: string[],
+  files: Record<string, string>,
+  seenVendorFiles: Set<string>,
+  seenBlockFiles: Set<string>,
+): ClientComponentDefinition[] {
+  const generatedManifest = getLakebedExportDependencyManifest()
+  const clientComponents: ClientComponentDefinition[] = []
+  const dynamicComponentNames: string[] = []
+
+  for (const componentName of componentNames) {
+    const generatedEntry = generatedManifest.components[componentName]
+    if (!generatedEntry) {
+      dynamicComponentNames.push(componentName)
+      continue
+    }
+
+    const missingFile = generatedEntry.filePaths.find(
+      (filePath) => generatedManifest.files[filePath] === undefined,
+    )
+    if (missingFile) {
+      dynamicComponentNames.push(componentName)
+      continue
+    }
+
+    for (const filePath of generatedEntry.filePaths) {
+      const source = generatedManifest.files[filePath]
+      if (source !== undefined) files[filePath] = source
+    }
+    for (const vendorFile of generatedEntry.vendorFiles) {
+      seenVendorFiles.add(vendorFile)
+    }
+    for (const blockFile of generatedEntry.blockFiles) {
+      seenBlockFiles.add(blockFile)
+    }
+    if (generatedEntry.clientComponent) {
+      clientComponents.push(
+        hydrateClientComponentDefinition(generatedEntry.clientComponent),
+      )
+    }
+  }
+
+  clientComponents.push(
+    ...collectClientComponentsDynamically(
+      dynamicComponentNames,
+      files,
+      seenVendorFiles,
+      seenBlockFiles,
+    ),
+  )
+
+  return clientComponents
+}
+
+export function resolveLakebedExportDependenciesForTest(
+  componentNames: string[],
+  mode: 'dynamic' | 'generated',
+) {
+  const files: Record<string, string> = {}
+  const seenVendorFiles = new Set<string>()
+  const seenBlockFiles = new Set<string>()
+  const definitions =
+    mode === 'dynamic'
+      ? collectDefinitionsDynamically(componentNames)
+      : collectDefinitions(componentNames)
+  const clientComponents =
+    mode === 'dynamic'
+      ? collectClientComponentsDynamically(
+          componentNames,
+          files,
+          seenVendorFiles,
+          seenBlockFiles,
+        )
+      : collectClientComponents(
+          componentNames,
+          files,
+          seenVendorFiles,
+          seenBlockFiles,
+        )
+
+  return {
+    blockFiles: [...seenBlockFiles].sort(),
+    clientComponents,
+    definitions,
+    files,
+    vendorFiles: [...seenVendorFiles].sort(),
+  }
 }
 
 function normalizePortablePunctuation(value: unknown): unknown {
@@ -3491,6 +3767,7 @@ function rewriteNamedBareImport(
   if (
     allowedLakebedClientBareImport(moduleName) ||
     moduleName === '@ship-fast/lakebed/react' ||
+    moduleName === '@openuidev/react-lang' ||
     moduleName.startsWith('.') ||
     moduleName.startsWith('#/')
   ) {
@@ -3576,14 +3853,14 @@ function rewriteLakebedClientImports(
       )
       return relativeImportPath(context.outPath, 'client/lib/cn.ts')
     }
-    if (moduleName.startsWith('#/lib/use-navigate')) {
-      return relativeImportPath(context.outPath, 'client/lib/navigation.tsx')
-    }
     if (moduleName.startsWith('#/lib/img')) {
       return relativeImportPath(context.outPath, 'client/lib/image.tsx')
     }
     if (moduleName === '@ship-fast/lakebed/react') {
       return relativeImportPath(context.outPath, 'client/lib/lakebed.ts')
+    }
+    if (moduleName === '@openuidev/react-lang') {
+      return relativeImportPath(context.outPath, 'client/lib/state-field.ts')
     }
     if (moduleName.startsWith('#/')) {
       const targetRel = resolveBlockSourceManifestPath(
@@ -4330,50 +4607,6 @@ function renderClientStyleOverridesCss(
     : ''
 }
 
-function renderClientNavigation(): string {
-  return `import { routeByLabel, routeTargets } from "../routes";
-
-function slugFragment(value: string): string {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
-function navigateTo(path: string) {
-  window.history.pushState({}, "", path);
-  window.dispatchEvent(new PopStateEvent("popstate"));
-  const sectionId = path.includes("#") ? path.split("#").pop() : "";
-  if (sectionId) {
-    requestAnimationFrame(() => {
-      document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  } else {
-    window.scrollTo({ top: 0 });
-  }
-}
-
-export function useNavigate() {
-  function navigate(target: unknown) {
-    if (typeof target !== "string" || !target.trim()) return;
-    const value = target.trim();
-    const route =
-      routeTargets[value] ??
-      routeTargets[value.toLowerCase()] ??
-      routeByLabel.get(value) ??
-      (value.startsWith("/") ? value : null);
-    if (route) {
-      navigateTo(route);
-      return;
-    }
-    console.warn("[Navigation] Unresolved target:", slugFragment(value));
-  }
-  return navigate;
-}
-`
-}
-
 function renderClientImage(): string {
   return `import { imageSources } from "../routes";
 
@@ -4455,6 +4688,53 @@ export function Image({
       {...rest}
     />
   );
+}
+`
+}
+
+function renderClientStateFieldRuntime(): string {
+  return `import { useCallback, useEffect, useState } from "preact/hooks";
+
+type StateListener = () => void;
+
+const values = new Map<string, unknown>();
+const listeners = new Map<string, Set<StateListener>>();
+
+function listenersFor(key: string): Set<StateListener> {
+  const existing = listeners.get(key);
+  if (existing) return existing;
+  const next = new Set<StateListener>();
+  listeners.set(key, next);
+  return next;
+}
+
+export function useStateField<TValue>(key: string, initial: TValue) {
+  if (!values.has(key)) values.set(key, initial);
+  const [value, setValueState] = useState<TValue>(() => values.get(key) as TValue);
+
+  useEffect(() => {
+    const listener = () => setValueState(values.get(key) as TValue);
+    const keyListeners = listenersFor(key);
+    keyListeners.add(listener);
+    return () => {
+      keyListeners.delete(listener);
+    };
+  }, [key]);
+
+  const setValue = useCallback(
+    (nextValue: TValue) => {
+      values.set(key, nextValue);
+      setValueState(nextValue);
+      for (const listener of listenersFor(key)) listener();
+    },
+    [key],
+  );
+
+  return { value, setValue };
+}
+
+export function Renderer() {
+  return null;
 }
 `
 }
@@ -6599,7 +6879,7 @@ export const commerceStorefrontUrl = ${JSON.stringify(commerceConfig.storefrontU
       : {}),
     'client/lib/image.tsx': renderClientImage(),
     'client/lib/lakebed.ts': renderClientLakebed(),
-    'client/lib/navigation.tsx': renderClientNavigation(),
+    'client/lib/state-field.ts': renderClientStateFieldRuntime(),
     'client/lib/theme.tsx': renderClientTheme(
       themeCss + renderClientStyleOverridesCss(styleOverrides),
       tailwindThemeCss,

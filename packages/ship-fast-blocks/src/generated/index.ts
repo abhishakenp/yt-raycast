@@ -11,6 +11,10 @@ export {
   vendorSourceFilesBase64,
   vendorSourceFilesEncoding,
 } from './vendor-source-files.compressed'
+export {
+  lakebedExportDepsBase64,
+  lakebedExportDepsEncoding,
+} from './lakebed-export-deps.compressed'
 export { capsuleCategories, findSimilarCapsules } from './capsule-categories'
 
 export { componentSpec }
