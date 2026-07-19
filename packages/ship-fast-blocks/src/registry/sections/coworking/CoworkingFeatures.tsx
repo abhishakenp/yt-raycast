@@ -8,6 +8,7 @@ import { GridField } from '#/section-kit/motion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { BentoGrid, BentoTile } from '#/section-kit/BentoGrid.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * CoworkingFeatures — calm, dimensional amenity grid for a coworking or
@@ -173,7 +174,12 @@ export const CoworkingFeatures = defineCapsule({
                   span={bento ? bentoSpans[index % bentoSpans.length] : ''}
                   className="rounded-3xl"
                 >
-                  <div className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-border/60 bg-card/70 p-8 shadow-sm backdrop-blur transition-shadow duration-500 hover:shadow-lg hover:shadow-primary/10">
+                  <Card
+                    rounded="3xl"
+                    padding="lg"
+                    shadow="sm"
+                    className="group relative flex h-full flex-col overflow-hidden border-border/60 bg-card/70 backdrop-blur transition-shadow duration-500 hover:shadow-lg hover:shadow-primary/10"
+                  >
                     <div
                       aria-hidden="true"
                       className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
@@ -189,7 +195,7 @@ export const CoworkingFeatures = defineCapsule({
                         {feature.description}
                       </p>
                     ) : null}
-                  </div>
+                  </Card>
                 </BentoTile>
               )
             })}

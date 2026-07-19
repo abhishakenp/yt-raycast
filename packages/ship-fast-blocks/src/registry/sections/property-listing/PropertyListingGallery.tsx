@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { FilterChip, ResponsiveGrid } from '#/section-kit/index.ts'
+import { Card } from '#/section-kit/Card.tsx'
 import {
   ListingCard,
   ListingCardBadge,
@@ -283,9 +284,13 @@ export const PropertyListingGallery = defineCapsule({
               </ListingCard>
             ))}
             {!matchingListings.length ? (
-              <div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground sm:col-span-2 lg:col-span-3">
+              <Card
+                rounded="2xl"
+                padding="lg"
+                className="border-dashed text-center text-sm text-muted-foreground sm:col-span-2 lg:col-span-3"
+              >
                 No listings match the current search.
-              </div>
+              </Card>
             ) : null}
           </ResponsiveGrid>
         </Container>
