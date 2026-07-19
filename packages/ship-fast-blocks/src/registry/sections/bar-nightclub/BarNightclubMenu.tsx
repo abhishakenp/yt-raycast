@@ -29,6 +29,7 @@ import {
   MenuItemAction,
 } from '#/section-kit/MenuItemRow.tsx'
 import { MenuList } from '#/section-kit/MenuList.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * BarNightclubMenu — two-column drinks menu for a cocktail-bar / nightclub
@@ -212,7 +213,7 @@ export const BarNightclubMenu = defineCapsule({
               </p>
             </div>
 
-            <div className="grid gap-12 md:grid-cols-2 lg:gap-16">
+            <ResponsiveGrid cols="1-md-2" gap="2xl" className="lg:gap-16">
               {columns.map((col) => (
                 <div key={col.title}>
                   <MenuCategoryHeader className="mb-8">
@@ -265,7 +266,7 @@ export const BarNightclubMenu = defineCapsule({
                   </div>
                 </div>
               ))}
-            </div>
+            </ResponsiveGrid>
 
             <div className="mt-16 border border-border p-8 text-center">
               <p className="mb-4 text-muted-foreground">{footnote}</p>

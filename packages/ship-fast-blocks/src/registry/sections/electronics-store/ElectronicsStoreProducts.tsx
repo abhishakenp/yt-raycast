@@ -31,6 +31,7 @@ import {
  * Lakebed cart; chips and view-all route through useNavigate. Use as the main catalog grid on electronics or gadget storefronts.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const ElectronicsStoreProducts = defineCapsule({
   name: 'ElectronicsStoreProducts',
   description:
@@ -203,7 +204,7 @@ export const ElectronicsStoreProducts = defineCapsule({
             </div>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <ResponsiveGrid cols="1-2-4" gap="md">
             {visibleItems.map((p) => (
               <ProductCard
                 key={p.title}
@@ -276,7 +277,7 @@ export const ElectronicsStoreProducts = defineCapsule({
                 </ProductCardContent>
               </ProductCard>
             ))}
-          </div>
+          </ResponsiveGrid>
 
           <div className="mt-12 text-center">
             <button

@@ -26,6 +26,7 @@ import {
   MenuItemPrice,
 } from '#/section-kit/MenuList.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -361,7 +362,7 @@ export const CafeMenu = defineCapsule({
               <h3 className="mb-8 text-center font-serif text-xl font-medium text-foreground">
                 {teaTitle}
               </h3>
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              <ResponsiveGrid cols="1-2-4" gap="md">
                 {teas.map((tea) => (
                   <div
                     key={tea.name}
@@ -379,7 +380,7 @@ export const CafeMenu = defineCapsule({
                     </div>
                   </div>
                 ))}
-              </div>
+              </ResponsiveGrid>
             </div>
           </MenuList>
         </Container>

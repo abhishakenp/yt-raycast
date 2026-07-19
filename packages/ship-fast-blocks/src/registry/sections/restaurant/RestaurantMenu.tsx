@@ -11,6 +11,7 @@ import {
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { MenuList } from '#/section-kit/MenuList.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import {
   RestaurantMutationSpinner,
   useRestaurantExperience,
@@ -226,7 +227,11 @@ export const RestaurantMenu = defineCapsule({
                     <MenuCategoryTitle>{category.name}</MenuCategoryTitle>
                     <MenuCategoryDivider />
                   </MenuCategoryHeader>
-                  <div className="grid gap-x-12 gap-y-6 md:grid-cols-2">
+                  <ResponsiveGrid
+                    cols="1-md-2"
+                    gap="none"
+                    className="gap-x-12 gap-y-6"
+                  >
                     {(category.items ?? []).map((item) => (
                       <button
                         key={item.name}
@@ -275,7 +280,7 @@ export const RestaurantMenu = defineCapsule({
                         </span>
                       </button>
                     ))}
-                  </div>
+                  </ResponsiveGrid>
                 </div>
               ))}
             </div>

@@ -32,6 +32,7 @@ import {
  * fully with no props via baked-in "Haven & Home" defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const FurnitureStoreProducts = defineCapsule({
   name: 'FurnitureStoreProducts',
   description:
@@ -175,7 +176,7 @@ export const FurnitureStoreProducts = defineCapsule({
             </button>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <ResponsiveGrid cols="1-2-4" gap="md">
             {visibleItems.map((product) => (
               <ProductCard key={product.name} variant="none">
                 <ProductCardImage className="mb-4 rounded-lg">
@@ -251,7 +252,7 @@ export const FurnitureStoreProducts = defineCapsule({
                 </ProductCardPrice>
               </ProductCard>
             ))}
-          </div>
+          </ResponsiveGrid>
         </Container>
       </section>
     )

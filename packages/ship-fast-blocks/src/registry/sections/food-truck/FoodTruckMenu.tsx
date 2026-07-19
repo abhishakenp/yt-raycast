@@ -18,6 +18,7 @@ import {
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { MenuList, MenuCategory, MenuItem } from '#/section-kit/MenuList.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -232,7 +233,7 @@ export const FoodTruckMenu = defineCapsule({
               className="mb-16"
             />
 
-            <div className="grid gap-8 md:grid-cols-2">
+            <ResponsiveGrid cols="1-md-2" gap="lg">
               {menuCategories.map((cat) => (
                 <MenuCategory asChild key={cat.title}>
                   <div
@@ -316,7 +317,7 @@ export const FoodTruckMenu = defineCapsule({
                   </div>
                 </MenuCategory>
               ))}
-            </div>
+            </ResponsiveGrid>
 
             <div className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-center text-sm text-muted-foreground">
               {menuLegend.map((entry) => (

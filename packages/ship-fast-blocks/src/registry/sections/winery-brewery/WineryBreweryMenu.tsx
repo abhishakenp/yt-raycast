@@ -23,6 +23,7 @@ import {
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { MenuList } from '#/section-kit/MenuList.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -195,7 +196,11 @@ export const WineryBreweryMenu = defineCapsule({
                     <MenuCategoryTitle>{category.name}</MenuCategoryTitle>
                     <MenuCategoryDivider />
                   </MenuCategoryHeader>
-                  <div className="grid gap-x-12 gap-y-6 md:grid-cols-2">
+                  <ResponsiveGrid
+                    cols="1-md-2"
+                    gap="none"
+                    className="gap-x-12 gap-y-6"
+                  >
                     {(category.items ?? []).map((item) => (
                       <MenuItemRow>
                         <MenuItemContent>
@@ -237,7 +242,7 @@ export const WineryBreweryMenu = defineCapsule({
                         </MenuItemContent>
                       </MenuItemRow>
                     ))}
-                  </div>
+                  </ResponsiveGrid>
                 </div>
               ))}
             </div>
