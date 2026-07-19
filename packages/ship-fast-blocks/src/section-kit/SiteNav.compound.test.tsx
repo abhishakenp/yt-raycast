@@ -1,12 +1,29 @@
 // @vitest-environment jsdom
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import type { ReactNode } from 'react'
 
 const navigate = vi.fn()
 
-vi.mock('#/lib/use-navigate.tsx', async (importOriginal) => ({
+type MockLinkProps = React.ComponentProps<'a'> & {
+  children: ReactNode
+  to: string
+}
+
+vi.mock('@tanstack/react-router', () => {
+  function Link({ children, to, ...props }: MockLinkProps) {
+    return (
+      <a href={to} {...props}>
+        {children}
+      </a>
+    )
+  }
+
+  return { Link }
+})
+
+vi.mock('#/lib/route-context.tsx', async (importOriginal) => ({
   ...(await importOriginal()),
-  useNavigate: () => navigate,
 }))
 
 if (typeof ResizeObserver === 'undefined') {
@@ -31,11 +48,12 @@ const {
   NavbarActions,
   NavbarCta,
 } = await import('./SiteNav.tsx')
-const { RoutesContext } = await import('../lib/use-navigate.tsx')
+const { RoutesContext } = await import('../lib/route-context.tsx')
 
 afterEach(() => {
   cleanup()
   navigate.mockReset()
+  window.history.replaceState(null, '', '/')
 })
 
 describe('SiteNav compound', () => {
@@ -208,9 +226,12 @@ describe('NavbarNavLink', () => {
 
     expect(activeLink.getAttribute('aria-current')).toBe('page')
     expect(activeLink.getAttribute('href')).toBe(window.location.href)
+    expect(activeLink.className).toContain('bg-muted')
+    expect(activeLink.className).toContain('rounded-md')
     expect(activeLink.className).toContain('text-foreground')
     expect(activeLink.className).toContain('underline')
     expect(idleLink.getAttribute('aria-current')).toBeNull()
+    expect(idleLink.className).toContain('hover:bg-muted')
     expect(idleLink.className).toContain('text-muted-foreground')
     expect(idleLink.className).not.toContain('underline')
   })
@@ -236,6 +257,186 @@ describe('NavbarNavLink', () => {
     expect(screen.getByTestId('pricing-link').getAttribute('href')).toBe(
       '/pricing',
     )
+  })
+
+  it('scopes compound nav hrefs to the SiteNav base path', () => {
+    window.history.pushState(null, '', '/lakebed/site/pricing')
+
+    render(
+      <RoutesContext.Provider
+        value={{
+          routes: ['Home', 'Pricing'],
+          targetMap: {},
+          currentPage: 'Pricing',
+          setCurrentPage: vi.fn(),
+          pendingSectionId: null,
+          setPendingSectionId: vi.fn(),
+        }}
+      >
+        <SiteNav>
+          <NavbarNav>
+            <NavbarNavLink href="Home" data-testid="home-link">
+              Home
+            </NavbarNavLink>
+            <NavbarNavLink href="Pricing" data-testid="pricing-link">
+              Pricing
+            </NavbarNavLink>
+          </NavbarNav>
+        </SiteNav>
+      </RoutesContext.Provider>,
+    )
+
+    expect(screen.getByTestId('home-link').getAttribute('href')).toBe(
+      '/lakebed/site',
+    )
+    expect(screen.getByTestId('pricing-link').getAttribute('href')).toBe(
+      '/lakebed/site/pricing',
+    )
+    expect(
+      screen.getByTestId('pricing-link').getAttribute('aria-current'),
+    ).toBe('page')
+  })
+
+  it('scopes nav hrefs from a generated session home URL', () => {
+    window.history.pushState(null, '', '/generate/session-123')
+
+    render(
+      <RoutesContext.Provider
+        value={{
+          routes: ['Home', 'Pricing'],
+          targetMap: {},
+          currentPage: 'Home',
+          setCurrentPage: vi.fn(),
+          pendingSectionId: null,
+          setPendingSectionId: vi.fn(),
+        }}
+      >
+        <SiteNav>
+          <NavbarNav>
+            <NavbarNavLink href="Pricing" data-testid="pricing-link">
+              Pricing
+            </NavbarNavLink>
+          </NavbarNav>
+        </SiteNav>
+      </RoutesContext.Provider>,
+    )
+
+    expect(screen.getByTestId('pricing-link').getAttribute('href')).toBe(
+      '/generate/session-123/pricing',
+    )
+  })
+
+  it('does not append a page slug twice when route state has not caught up', () => {
+    window.history.pushState(null, '', '/pricing')
+
+    render(
+      <RoutesContext.Provider
+        value={{
+          routes: ['Home', 'Pricing'],
+          targetMap: {},
+          currentPage: 'Home',
+          setCurrentPage: vi.fn(),
+          pendingSectionId: null,
+          setPendingSectionId: vi.fn(),
+        }}
+      >
+        <SiteNav>
+          <NavbarNav>
+            <NavbarNavLink href="Home" data-testid="home-link">
+              Home
+            </NavbarNavLink>
+            <NavbarNavLink href="Pricing" data-testid="pricing-link">
+              Pricing
+            </NavbarNavLink>
+          </NavbarNav>
+        </SiteNav>
+      </RoutesContext.Provider>,
+    )
+
+    expect(screen.getByTestId('pricing-link').getAttribute('href')).toBe(
+      '/pricing',
+    )
+    expect(screen.getByTestId('home-link').getAttribute('aria-current')).toBe(
+      'page',
+    )
+    expect(
+      screen.getByTestId('pricing-link').getAttribute('aria-current'),
+    ).toBeNull()
+    expect(screen.getByTestId('pricing-link').className).not.toContain(
+      'bg-muted text-foreground underline',
+    )
+  })
+
+  it('does not append a page slug twice under an arbitrary nested base', () => {
+    window.history.pushState(null, '', '/future/session/path/pricing')
+
+    render(
+      <RoutesContext.Provider
+        value={{
+          routes: ['Home', 'Pricing'],
+          targetMap: {},
+          currentPage: 'Pricing',
+          setCurrentPage: vi.fn(),
+          pendingSectionId: null,
+          setPendingSectionId: vi.fn(),
+        }}
+      >
+        <SiteNav>
+          <NavbarNav>
+            <NavbarNavLink href="Home" data-testid="home-link">
+              Home
+            </NavbarNavLink>
+            <NavbarNavLink href="Pricing" data-testid="pricing-link">
+              Pricing
+            </NavbarNavLink>
+          </NavbarNav>
+        </SiteNav>
+      </RoutesContext.Provider>,
+    )
+
+    expect(screen.getByTestId('home-link').getAttribute('href')).toBe(
+      '/future/session/path',
+    )
+    expect(screen.getByTestId('pricing-link').getAttribute('href')).toBe(
+      '/future/session/path/pricing',
+    )
+    expect(
+      screen.getByTestId('pricing-link').getAttribute('aria-current'),
+    ).toBe('page')
+  })
+
+  it('keeps active styling for query strings and trailing slashes', () => {
+    window.history.pushState(null, '', '/future/session/path/pricing/?utm=1')
+
+    render(
+      <RoutesContext.Provider
+        value={{
+          routes: ['Home', 'Pricing'],
+          targetMap: {},
+          currentPage: 'Pricing',
+          setCurrentPage: vi.fn(),
+          pendingSectionId: null,
+          setPendingSectionId: vi.fn(),
+        }}
+      >
+        <SiteNav>
+          <NavbarNav>
+            <NavbarNavLink href="Pricing" data-testid="pricing-link">
+              Pricing
+            </NavbarNavLink>
+          </NavbarNav>
+        </SiteNav>
+      </RoutesContext.Provider>,
+    )
+
+    const pricingLink = screen.getByTestId('pricing-link')
+    expect(pricingLink.getAttribute('href')).toBe(
+      '/future/session/path/pricing',
+    )
+    expect(pricingLink.getAttribute('aria-current')).toBe('page')
+    expect(pricingLink.className).toContain('bg-muted')
+    expect(pricingLink.className).toContain('text-foreground')
+    expect(pricingLink.className).toContain('underline')
   })
 
   it('fires onClick', () => {

@@ -40,9 +40,12 @@ function collectWindowRuntimeErrors(dom: JSDOM) {
   dom.window.addEventListener('error', (event: ErrorEvent) => {
     errors.push(event.error ?? event.message)
   })
-  dom.window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
-    errors.push(event.reason ?? event)
-  })
+  dom.window.addEventListener(
+    'unhandledrejection',
+    (event: PromiseRejectionEvent) => {
+      errors.push(event.reason ?? event)
+    },
+  )
 
   return errors
 }
@@ -113,7 +116,6 @@ async function renderLakebedClientEntryText(
 export const Route = ({ element }) => element;
 export const Router = ({ children }) => children;
 export const Routes = ({ children }) => children;
-export function useNavigate() { return () => {}; }
 export function useAuth() { return { isLoading: false, isAuthenticated: false, user: null }; }
 export function useMutation() { return async () => undefined; }
 export function useQuery() { return undefined; }
@@ -188,7 +190,6 @@ async function renderLakebedClientEntryHtml(
 export const Route = ({ element }) => element;
 export const Router = ({ children }) => children;
 export const Routes = ({ children }) => children;
-export function useNavigate() { return () => {}; }
 export function useAuth() { return { isLoading: false, isAuthenticated: false, user: null }; }
 export function useMutation() { return async () => undefined; }
 export function useQuery() { return undefined; }
@@ -360,12 +361,6 @@ export function Routes({ children }) {
     ?? routes.find((child) => child?.props?.path === "*")
     ?? routes[0];
   return route?.props?.element ?? null;
-}
-export function useNavigate() {
-  return (to) => {
-    window.history.pushState({}, "", to);
-    window.dispatchEvent(new PopStateEvent("popstate"));
-  };
 }
 export function useAuth() { return { isLoading: false, isAuthenticated: false, user: null }; }
 export function useMutation() { return async () => undefined; }
@@ -579,7 +574,6 @@ render(h(EcommerceHeroBlock, { props: {}, lakebed }), document.getElementById("a
 export const Route = ({ element }) => element;
 export const Router = ({ children }) => children;
 export const Routes = ({ children }) => children;
-export function useNavigate() { return () => {}; }
 export function useAuth() { return { isLoading: false, isAuthenticated: false, user: null }; }
 export function useMutation() { return async () => undefined; }
 export function useQuery() { return undefined; }
@@ -668,7 +662,6 @@ render(h(Probe, {}), document.getElementById("app"));
 export const Route = ({ element }) => element;
 export const Router = ({ children }) => children;
 export const Routes = ({ children }) => children;
-export function useNavigate() { return () => {}; }
 export function useAuth() { return { isLoading: false, isAuthenticated: false, user: null }; }
 export function useMutation(name) {
   return async () => {
@@ -786,7 +779,6 @@ render(h(App, {}), document.getElementById("app"));
 export const Route = ({ element }) => element;
 export const Router = ({ children }) => children;
 export const Routes = ({ children }) => children;
-export function useNavigate() { return () => {}; }
 export function useAuth() { return { displayName: "Guest", isAuthenticated: false, isGuest: true, isLoading: false, user: null }; }
 export function useMutation() { return async () => undefined; }
 export function useQuery(name) {
@@ -883,7 +875,6 @@ render(h(App, {}), document.getElementById("app"));
 export const Route = ({ element }) => element;
 export const Router = ({ children }) => children;
 export const Routes = ({ children }) => children;
-export function useNavigate() { return () => {}; }
 export function useAuth() { return { displayName: "Guest", isAuthenticated: false, isGuest: true, isLoading: false, user: null }; }
 export function useMutation() { return async () => undefined; }
 export function useQuery(name) {
@@ -1001,7 +992,6 @@ render(h(App, {}), document.getElementById("app"));
 export const Route = ({ element }) => element;
 export const Router = ({ children }) => children;
 export const Routes = ({ children }) => children;
-export function useNavigate() { return () => {}; }
 export function useAuth() { return { displayName: "Guest", isAuthenticated: false, isGuest: true, isLoading: false, user: null }; }
 export function useMutation() { return async () => undefined; }
 export function useQuery(name) {
@@ -1121,7 +1111,6 @@ render(h(App, {}), document.getElementById("app"));
 export const Route = ({ element }) => element;
 export const Router = ({ children }) => children;
 export const Routes = ({ children }) => children;
-export function useNavigate() { return () => {}; }
 export function useAuth() { return { displayName: "Guest", isAuthenticated: false, isGuest: true, isLoading: false, user: null }; }
 export function useMutation() { return async () => undefined; }
 export function useQuery(name) {
@@ -1225,7 +1214,6 @@ render(h(App, {}), document.getElementById("app"));
 export const Route = ({ element }) => element;
 export const Router = ({ children }) => children;
 export const Routes = ({ children }) => children;
-export function useNavigate() { return () => {}; }
 export function useAuth() { return { displayName: "Guest", isAuthenticated: false, isGuest: true, isLoading: false, user: null }; }
 export function useMutation() { return async () => undefined; }
 export function useQuery(name) {
@@ -1364,7 +1352,6 @@ render(h(App, {}), document.getElementById("app"));
 export const Route = ({ element }) => element;
 export const Router = ({ children }) => children;
 export const Routes = ({ children }) => children;
-export function useNavigate() { return () => {}; }
 export function useAuth() { return { displayName: "Guest", isAuthenticated: false, isGuest: true, isLoading: false, user: null }; }
 export function useMutation() { return async () => undefined; }
 export function useQuery(name) {
@@ -1477,7 +1464,6 @@ render(h(App, {}), document.getElementById("app"));
 export const Route = ({ element }) => element;
 export const Router = ({ children }) => children;
 export const Routes = ({ children }) => children;
-export function useNavigate() { return () => {}; }
 export function useAuth() { return { isAuthenticated: false, isLoading: false, user: null }; }
 export function useMutation() { return async () => undefined; }
 export function useQuery(name) {
@@ -1600,7 +1586,6 @@ render(h(App, {}), document.getElementById("app"));
 export const Route = ({ element }) => element;
 export const Router = ({ children }) => children;
 export const Routes = ({ children }) => children;
-export function useNavigate() { return () => {}; }
 export function useAuth() { return { isAuthenticated: false, isLoading: false, user: null }; }
 export function useMutation() { return async () => undefined; }
 export function useQuery(name) {
@@ -1734,7 +1719,6 @@ render(h(Probe, {}), document.getElementById("app"));
 export const Route = ({ element }) => element;
 export const Router = ({ children }) => children;
 export const Routes = ({ children }) => children;
-export function useNavigate() { return () => {}; }
 export function useAuth() { return { isAuthenticated: false, isLoading: false, user: null }; }
 export function useMutation() { return async () => undefined; }
 export function useQuery() { return undefined; }
@@ -2529,7 +2513,6 @@ render(h(FashionStoreFaqBlock, { props, lakebed }), document.getElementById("app
 export const Route = ({ element }) => element;
 export const Router = ({ children }) => children;
 export const Routes = ({ children }) => children;
-export function useNavigate() { return () => {}; }
 export function useAuth() { return { isLoading: false, isAuthenticated: false, user: null }; }
 export function useMutation() { return async () => undefined; }
 export function useQuery() { return undefined; }
@@ -2638,7 +2621,6 @@ render(h(FashionStoreFaqBlock, { props, lakebed }), document.getElementById("app
 export const Route = ({ element }) => element;
 export const Router = ({ children }) => children;
 export const Routes = ({ children }) => children;
-export function useNavigate() { return () => {}; }
 export function useAuth() { return { isLoading: false, isAuthenticated: false, user: null }; }
 export function useMutation() { return async () => undefined; }
 export function useQuery() { return undefined; }

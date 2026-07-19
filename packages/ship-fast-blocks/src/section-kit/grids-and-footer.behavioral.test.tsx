@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import * as React from 'react'
+import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import {
@@ -49,16 +50,17 @@ import {
   TestimonialName,
   TestimonialMeta,
 } from './index.ts'
+import { RoutesContext } from '#/lib/route-context.tsx'
 
-const navigate = vi.fn()
-
-vi.mock('#/lib/use-navigate.tsx', () => ({
-  useNavigate: () => navigate,
+vi.mock('@tanstack/react-router', () => ({
+  Link: React.forwardRef<
+    HTMLAnchorElement,
+    Omit<React.ComponentProps<'a'>, 'href'> & { to: string }
+  >(({ to, ...props }, ref) => <a ref={ref} href={to} {...props} />),
 }))
 
 afterEach(() => {
   cleanup()
-  navigate.mockReset()
 })
 
 function renderMalformed(ui: React.ReactElement) {
@@ -100,8 +102,25 @@ describe('section-kit grids and footer', () => {
   })
 
   it('renders real generated content and routes interactive actions', () => {
+    const routes = [
+      'Home',
+      'Checkout',
+      'Contact',
+      'Features',
+      'Pricing',
+      'Privacy',
+    ]
     render(
-      <>
+      <RoutesContext.Provider
+        value={{
+          routes,
+          targetMap: {},
+          currentPage: 'Home',
+          setCurrentPage: vi.fn(),
+          pendingSectionId: null,
+          setPendingSectionId: vi.fn(),
+        }}
+      >
         <FeatureGrid heading="What you get">
           <FeatureCard>
             <FeatureTitle>Fast launch</FeatureTitle>
@@ -263,7 +282,7 @@ describe('section-kit grids and footer', () => {
             </FooterBottom>
           </FooterContent>
         </SiteFooter>
-      </>,
+      </RoutesContext.Provider>,
     )
 
     expect(screen.getByRole('heading', { name: 'What you get' })).toBeTruthy()
@@ -276,15 +295,15 @@ describe('section-kit grids and footer', () => {
     expect(screen.getByText('48h')).toBeTruthy()
     expect(screen.getAllByText(/Northwind/).length).toBeGreaterThan(0)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Start Pro' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Book a demo' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Pricing' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Privacy' }))
-
-    expect(navigate).toHaveBeenCalledWith('Checkout')
-    expect(navigate).toHaveBeenCalledWith('Contact')
-    expect(navigate).toHaveBeenCalledWith('Pricing')
-    expect(navigate).toHaveBeenCalledWith('Privacy')
+    expect(
+      screen.getByRole('link', { name: 'Start Pro' }).getAttribute('href'),
+    ).toBe('/checkout')
+    expect(
+      screen.getByRole('link', { name: 'Pricing' }).getAttribute('href'),
+    ).toBe('/pricing')
+    expect(
+      screen.getByRole('link', { name: 'Privacy' }).getAttribute('href'),
+    ).toBe('/privacy')
   })
 
   it('does not crash when AI output omits optional collection props', () => {

@@ -11,9 +11,13 @@ import {
   SheetTrigger,
 } from '#/components/ui/sheet.tsx'
 import { cn } from '#/lib/utils.ts'
-import { useIsActiveRoute, useRouteHref } from '#/lib/use-navigate.tsx'
 import type { KitAction } from './types.ts'
 import { kitActionClasses } from './types.ts'
+import {
+  useIsActiveSectionKitNavHref,
+  useSectionKitNavHref,
+} from './nav-href.tsx'
+import { RouterLink } from './RouterLink.tsx'
 
 function MobileNavAnchor({
   ariaCurrent,
@@ -28,16 +32,16 @@ function MobileNavAnchor({
   onNavigate: () => void
   target: string
 }) {
-  const href = useRouteHref(target)
+  const href = useSectionKitNavHref(target)
   return (
-    <a
-      href={href}
+    <RouterLink
+      href={href ?? '#'}
       onClick={onNavigate}
       aria-current={ariaCurrent}
       className={className}
     >
       {children}
-    </a>
+    </RouterLink>
   )
 }
 
@@ -75,7 +79,7 @@ const MobileNavDrawer = React.forwardRef<
     },
     ref,
   ) => {
-    const isActiveRoute = useIsActiveRoute()
+    const isActiveNavHref = useIsActiveSectionKitNavHref()
     const [open, setOpen] = React.useState(false)
     const targetHome = homeTarget ?? homeLabel
     const normalizedHomeLabel = homeLabel.trim().toLowerCase()
@@ -137,17 +141,17 @@ const MobileNavDrawer = React.forwardRef<
             <MobileNavAnchor
               target={targetHome}
               onNavigate={navigate}
-              ariaCurrent={isActiveRoute(targetHome) ? 'page' : undefined}
+              ariaCurrent={isActiveNavHref(targetHome) ? 'page' : undefined}
               className={cn(
                 'rounded-lg px-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted',
-                isActiveRoute(targetHome) &&
+                isActiveNavHref(targetHome) &&
                   'border-l-2 border-primary bg-muted',
               )}
             >
               {homeLabel}
             </MobileNavAnchor>
             {links.map((item) => {
-              const isActive = isActiveRoute(item)
+              const isActive = isActiveNavHref(item)
               return (
                 <MobileNavAnchor
                   key={item}

@@ -2,18 +2,8 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { useStateField } from '@openuidev/react-lang'
 import { useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { RoutesContext } from '#/lib/use-navigate.tsx'
+import { RoutesContext, slugifyRoute } from '#/lib/route-context.tsx'
 import { PreviewUrlBridgeContext } from '#/lib/preview-url-bridge.tsx'
-
-function slugifyRoute(value: string): string {
-  return (
-    value
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '') || 'page'
-  )
-}
 
 // System-owned multi-page switcher. The orchestrator emits exactly one of these as `root`.
 // routes[i] is the nav label; pages[i] is the page node for that route. Renders only the

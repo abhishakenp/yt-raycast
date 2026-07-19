@@ -1,13 +1,29 @@
 // @vitest-environment jsdom
 
-import type { ReactElement } from 'react'
+import type { ReactElement, ReactNode } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const navigate = vi.fn()
 
-vi.mock('#/lib/use-navigate.tsx', async (importOriginal) => ({
+type MockLinkProps = React.ComponentProps<'a'> & {
+  children: ReactNode
+  to: string
+}
+
+vi.mock('@tanstack/react-router', () => {
+  function Link({ children, to, ...props }: MockLinkProps) {
+    return (
+      <a href={to} {...props}>
+        {children}
+      </a>
+    )
+  }
+
+  return { Link }
+})
+
+vi.mock('#/lib/route-context.tsx', async (importOriginal) => ({
   ...(await importOriginal()),
-  useNavigate: () => navigate,
 }))
 
 if (typeof ResizeObserver === 'undefined') {
@@ -22,27 +38,28 @@ if (typeof ResizeObserver === 'undefined') {
   })
 }
 
-const { cleanup, fireEvent, render, screen, waitFor } = await import(
-  '@testing-library/react'
-)
+const { cleanup, fireEvent, render, screen, waitFor } =
+  await import('@testing-library/react')
 const { MobileNavDrawer } = await import('./MobileNavDrawer.tsx')
-const { RoutesContext } = await import('../lib/use-navigate.tsx')
+const { RoutesContext } = await import('#/lib/route-context.tsx')
 
 afterEach(() => {
   cleanup()
   navigate.mockReset()
+  window.history.replaceState(null, '', '/')
 })
 
 function renderWithRoutes(
   node: ReactElement,
   routes = ['Home', 'Services', 'Pricing', 'Contact'],
+  currentPage = 'Home',
 ) {
   return render(
     <RoutesContext.Provider
       value={{
         routes,
         targetMap: {},
-        currentPage: 'Home',
+        currentPage,
         setCurrentPage: vi.fn(),
         pendingSectionId: null,
         setPendingSectionId: vi.fn(),
@@ -112,6 +129,28 @@ describe('MobileNavDrawer', () => {
     expect(screen.getAllByRole('link', { name: 'Home' })).toHaveLength(1)
     expect(screen.getByRole('link', { name: 'Services' })).toBeTruthy()
     expect(screen.getByRole('link', { name: 'Pricing' })).toBeTruthy()
+  })
+
+  it('keeps the active drawer route visually highlighted', () => {
+    window.history.pushState(null, '', '/pricing')
+
+    renderWithRoutes(
+      <MobileNavDrawer
+        brand="Northridge"
+        nav={['Services', 'Pricing']}
+        buttonClassName="md:hidden"
+      />,
+      ['Home', 'Services', 'Pricing', 'Contact'],
+      'Pricing',
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
+
+    const pricingLink = screen.getByRole('link', { name: 'Pricing' })
+    expect(pricingLink.getAttribute('aria-current')).toBe('page')
+    expect(pricingLink.className).toContain('bg-muted')
+    expect(pricingLink.className).toContain('text-foreground')
+    expect(pricingLink.className).toContain('border-primary')
   })
 
   it('keeps long drawer navigation scroll-contained and renders footer content', () => {

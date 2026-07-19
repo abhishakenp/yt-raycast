@@ -9,10 +9,6 @@ import { isCapsule, type ShipFastCapsule } from '#/capsules/openui.ts'
 import * as registry from '#/registry/all.ts'
 import { BrandLogoProvider } from './Logo.tsx'
 
-vi.mock('#/lib/use-navigate.tsx', () => ({
-  useNavigate: () => vi.fn(),
-}))
-
 vi.mock('@ship-fast/lakebed/react', () => ({
   createLakebedClient: () => ({
     useAuth: () => ({

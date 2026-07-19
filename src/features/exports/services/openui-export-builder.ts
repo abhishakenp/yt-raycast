@@ -307,7 +307,10 @@ const themeVarKeys = [
 
 function buildThemeStyle(styles: ThemeStyles | null, isDark: boolean): string {
   if (!styles) return ''
-  const merged: Record<string, string> = { ...styles.light, ...(isDark ? styles.dark : {}) }
+  const merged: Record<string, string> = {
+    ...styles.light,
+    ...(isDark ? styles.dark : {}),
+  }
   return themeVarKeys
     .map((key) => {
       const value = merged[key]
@@ -441,113 +444,6 @@ function sourceFileScriptKind(sourcePath: string): ts.ScriptKind {
 
 function shouldTransformSourceImports(sourcePath: string): boolean {
   return /\.(tsx?|jsx?)$/.test(sourcePath)
-}
-
-function normalizeRouteTarget(value: string): string {
-  return value.trim().toLowerCase()
-}
-
-function resolveMappedRouteTarget(
-  target: string,
-  routes: ExportRoute[],
-): string | null {
-  const [pageLabel, sectionId] = target.split('#')
-  const exact = routes.find(
-    (route) =>
-      normalizeRouteTarget(route.label) ===
-      normalizeRouteTarget(pageLabel ?? ''),
-  )
-  if (!exact) return null
-  return sectionId ? `${exact.path}#${sectionId}` : exact.path
-}
-
-function resolveRouteTarget(
-  target: string,
-  routes: ExportRoute[],
-  sourceTargetMap: Record<string, string>,
-): string | null {
-  const normalized = normalizeRouteTarget(target)
-  const mapped = sourceTargetMap[target] ?? sourceTargetMap[normalized]
-  if (mapped) return resolveMappedRouteTarget(mapped, routes)
-
-  const exact = routes.find(
-    (route) => normalizeRouteTarget(route.label) === normalized,
-  )
-  if (exact) return exact.path
-
-  const find = (pattern: RegExp) =>
-    routes.find((route) => pattern.test(normalizeRouteTarget(route.label)))
-  const byKeyword =
-    (/shop|store|product|buy|cart|order|browse|collection/.test(normalized) &&
-      find(/shop|store|product|collection|menu|work|gallery/)) ||
-    (/price|plan|pricing|subscribe|upgrade|tier|membership/.test(normalized) &&
-      find(/pric|plan|member/)) ||
-    (/contact|reach|get in touch|book|reserve|demo|quote|sign ?up|start|join|get started|register|tour/.test(
-      normalized,
-    ) &&
-      find(/contact|book|reserve|demo|start|join/)) ||
-    (/about|story|team|who we are|mission/.test(normalized) &&
-      find(/about|team|story/)) ||
-    (/blog|news|post|article|read|stories|journal|tips/.test(normalized) &&
-      find(/blog|news|post|article|stories|tips/)) ||
-    (/feature|service|how it works|learn|explore|tour|class|schedule|trainer/.test(
-      normalized,
-    ) &&
-      find(/feature|service|how|class|home/)) ||
-    null
-
-  return byKeyword?.path ?? null
-}
-
-const navigationKeyPattern =
-  /(^|_|\b)(nav|cta|link|links|href|route|routes|action|button|buttons|primary|secondary|submit|phone|email|legal)(\b|_|$)/i
-
-function collectNavigationStrings(
-  value: unknown,
-  values = new Set<string>(),
-  navigationContext = false,
-  key = '',
-): Set<string> {
-  const nextNavigationContext =
-    navigationContext || navigationKeyPattern.test(key)
-  if (typeof value === 'string') {
-    if (nextNavigationContext && value.trim()) values.add(value)
-    return values
-  }
-  if (Array.isArray(value)) {
-    for (const item of value)
-      collectNavigationStrings(item, values, nextNavigationContext, key)
-    return values
-  }
-  if (value && typeof value === 'object') {
-    for (const [entryKey, item] of Object.entries(value)) {
-      collectNavigationStrings(item, values, nextNavigationContext, entryKey)
-    }
-  }
-  return values
-}
-
-function buildRouteTargetMap(
-  routes: ExportRoute[],
-  sourceTargetMap: Record<string, string>,
-): Record<string, string> {
-  const targets = new Set<string>()
-  for (const route of routes) {
-    targets.add(route.label)
-    collectNavigationStrings(route.props, targets)
-  }
-  for (const target of Object.keys(sourceTargetMap)) targets.add(target)
-  return Object.fromEntries(
-    [...targets]
-      .sort((a, b) => a.localeCompare(b))
-      .map((target) => [
-        target,
-        resolveRouteTarget(target, routes, sourceTargetMap),
-      ])
-      .filter(
-        (entry): entry is [string, string] => typeof entry[1] === 'string',
-      ),
-  )
 }
 
 function walkRegistryFiles(dir: string, files: string[] = []): string[] {
@@ -828,7 +724,6 @@ function removeImportDeclarations(
 function transformComponentImports(
   sourceFile: ts.SourceFile,
   componentName: string,
-  stack: ExportStack,
   generatedFilePath: string,
   sourcePath?: string,
 ): ImportTransformResult {
@@ -906,16 +801,6 @@ function transformComponentImports(
           relativeImportPath(generatedFilePath, 'src/lib/cn.ts'),
         ),
       )
-      continue
-    }
-    if (moduleName === '#/lib/use-navigate.tsx') {
-      if (stack === 'react') {
-        imports.push("import { useNavigate } from 'react-router-dom'")
-        dependencies.add('react-router-dom')
-      } else {
-        imports.push("import { useRouter } from 'next/navigation'")
-        dependencies.add('next')
-      }
       continue
     }
     if (moduleName === '#/lib/img.tsx') {
@@ -1368,67 +1253,8 @@ function readSourceEndpointDefinitions(
   return endpoints
 }
 
-const navigationVarPattern =
-  /\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*useNavigate\(\)/g
-
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
-function isStringLiteralSource(value: string): boolean {
-  return /^(['"`])[\s\S]*\1$/.test(value.trim())
-}
-
-function parseStringLiteralSource(value: string): string | null {
-  try {
-    const parsed = Function(`"use strict"; return (${value});`)() as unknown
-    return typeof parsed === 'string' ? parsed : null
-  } catch {
-    return null
-  }
-}
-
-function renderNavigationArgument(
-  argument: string,
-  routeTargets: Record<string, string>,
-): string {
-  const trimmed = argument.trim()
-  if (isStringLiteralSource(trimmed)) {
-    const literal = parseStringLiteralSource(trimmed)
-    if (literal) return JSON.stringify(routeTargets[literal]) ?? 'undefined'
-  }
-  return `routePaths[String(${trimmed})]`
-}
-
-function rewriteNavigationCalls(
-  body: string,
-  stack: ExportStack,
-  routeTargets: Record<string, string>,
-): { body: string; usesNavigation: boolean } {
-  const navigationVars = [...body.matchAll(navigationVarPattern)]
-    .map((match) => match[1])
-    .filter(Boolean)
-  if (navigationVars.length === 0) return { body, usesNavigation: false }
-
-  let nextBody = body
-  if (stack === 'next') {
-    nextBody = nextBody.replace(navigationVarPattern, 'const $1 = useRouter()')
-  }
-
-  for (const name of new Set(navigationVars)) {
-    const callPattern = new RegExp(
-      `\\b${escapeRegExp(name)}\\(([^()\\n]+)\\)`,
-      'g',
-    )
-    nextBody = nextBody.replace(callPattern, (_match, argument) => {
-      const destination = renderNavigationArgument(argument, routeTargets)
-      return stack === 'react'
-        ? `${name}(${destination})`
-        : `${name}.push(${destination})`
-    })
-  }
-
-  return { body: nextBody, usesNavigation: true }
 }
 
 function renderTranslatedQuery(
@@ -1967,7 +1793,6 @@ function translateBlockSourceLakebed(
 function extractComponent(
   componentName: string,
   stack: ExportStack,
-  routeTargets: Record<string, string>,
   dataKeys: DataKeys,
 ): ExtractedComponent {
   const entry = getComponentSourceIndex().get(componentName)
@@ -1982,7 +1807,6 @@ function extractComponent(
   const { imports, dependencies, blockSources } = transformComponentImports(
     sourceFile,
     componentName,
-    stack,
     generatedFilePath,
     entry.file,
   )
@@ -2016,15 +1840,7 @@ function extractComponent(
     .replace(/\b(\w+)\(\s*\n\s*lakebed\s*,\s*\n/g, '$1(\n')
     .replace(/\b(\w+)\(\s*\n\s*lakebed\s*\n\s*\)/g, '$1()')
   const translatedBody = lakebedPurgedBody
-  const rewrittenNavigation = rewriteNavigationCalls(
-    translatedBody,
-    stack,
-    routeTargets,
-  )
-  const routePaths = rewrittenNavigation.usesNavigation
-    ? `\nconst routePaths: Record<string, string> = ${JSON.stringify(routeTargets, null, 2)}\n`
-    : ''
-  const componentSource = `${preludeSources.join('\n\n')}\n${rewrittenNavigation.body}`
+  const componentSource = `${preludeSources.join('\n\n')}\n${translatedBody}`
   const queryHookImport =
     usesLakebed &&
     (translatedLakebed.usesAuth ||
@@ -2120,14 +1936,14 @@ function extractComponent(
   // are not referenced anywhere in the component (e.g. commerceCartLakebed
   // becomes unused after lakebed runtime translation replaces
   // `lakebed: commerceCartLakebed` with `const lakebed = useLakebed()`).
-  const fullSource = `${componentImports.join('\n')}${queryHookImport}${dataImports}${routePaths}
+  const fullSource = `${componentImports.join('\n')}${queryHookImport}${dataImports}
 
 ${preludeSources.join('\n\n')}
 ${helpersSection}
 ${renderPropsType(componentName, propsSchema, sourceFile)}
 
 export function ${componentName}(props: ${componentName}Props) {
-${translatedLakebed.needsQueryClient ? '  const queryClient = useQueryClient()\n' : ''}${rewrittenNavigation.body
+${translatedLakebed.needsQueryClient ? '  const queryClient = useQueryClient()\n' : ''}${translatedBody
     .split('\n')
     .map((line) => `  ${line}`)
     .join('\n')}
@@ -2152,7 +1968,7 @@ ${translatedLakebed.needsQueryClient ? '  const queryClient = useQueryClient()\n
       return re.test(sourceWithoutImports)
     })
   })
-  const source = `${filteredImports.join('\n')}${queryHookImport}${dataImports}${routePaths}
+  const source = `${filteredImports.join('\n')}${queryHookImport}${dataImports}
 
 ${preludeSources.join('\n\n')}
 ${helpersSection}
@@ -2160,7 +1976,7 @@ ${renderPropsType(componentName, propsSchema, sourceFile)}
 
 export function ${componentName}(props: ${componentName}Props) {
 ${translatedLakebed.needsQueryClient ? '  const queryClient = useQueryClient()\n' : ''}
-${rewrittenNavigation.body
+${translatedBody
   .split('\n')
   .map((line) => `  ${line}`)
   .join('\n')}
@@ -2176,11 +1992,32 @@ ${rewrittenNavigation.body
   }
 }
 
+function renderExportRouterLink(): string {
+  return `import * as React from 'react'
+
+type RouterLinkProps = Omit<React.ComponentProps<'a'>, 'href'> & {
+  href: string
+}
+
+const RouterLink = React.forwardRef<HTMLAnchorElement, RouterLinkProps>(
+  ({ href, children, ...props }, ref) => {
+    return (
+      <a ref={ref} href={href} {...props}>
+        {children}
+      </a>
+    )
+  },
+)
+RouterLink.displayName = 'RouterLink'
+
+export { RouterLink }
+`
+}
+
 function collectBlockSourceFiles(
   sourcePaths: Iterable<string>,
   stack: ExportStack,
   dataKeys?: DataKeys,
-  routeTargets?: Record<string, string>,
 ): { files: Record<string, string>; dependencies: Set<string> } {
   const pending = [...new Set(sourcePaths)]
   const seen = new Set<string>()
@@ -2195,6 +2032,11 @@ function collectBlockSourceFiles(
     seen.add(sourcePath)
 
     const source = getBlockSourceFile(sourcePath)
+    const outPath = exportedBlockSourceOutPath(sourcePath)
+    if (sourcePath === 'src/section-kit/RouterLink.tsx') {
+      files[outPath] = renderExportRouterLink()
+      continue
+    }
     const sourceFile = ts.createSourceFile(
       sourcePath,
       source,
@@ -2202,7 +2044,6 @@ function collectBlockSourceFiles(
       true,
       sourceFileScriptKind(sourcePath),
     )
-    const outPath = exportedBlockSourceOutPath(sourcePath)
     if (!shouldTransformSourceImports(sourcePath)) {
       files[outPath] = source
       continue
@@ -2210,7 +2051,6 @@ function collectBlockSourceFiles(
     const transformed = transformComponentImports(
       sourceFile,
       sourcePath,
-      stack,
       outPath,
       sourcePath,
     )
@@ -2236,28 +2076,13 @@ function collectBlockSourceFiles(
         outPath,
       )
       if (result.skip) continue
-      const navRewritten = routeTargets
-        ? rewriteNavigationCalls(result.source, stack, routeTargets)
-        : { body: result.source, usesNavigation: false }
-      const routePathsConst = navRewritten.usesNavigation
-        ? `const routePaths: Record<string, string> = ${JSON.stringify(routeTargets, null, 2)}\n`
-        : ''
-      files[outPath] = (routePathsConst + navRewritten.body).replace(
-        /Shoo\/lakebed/gi,
-        'site',
-      )
+      files[outPath] = result.source.replace(/Shoo\/lakebed/gi, 'site')
     } else {
       const rawSource = prependImports(
         removeImportDeclarations(source, sourceFile),
         ensureReactNodeImport(transformed.imports, source),
       )
-      const navRewritten = routeTargets
-        ? rewriteNavigationCalls(rawSource, stack, routeTargets)
-        : { body: rawSource, usesNavigation: false }
-      const routePathsConst = navRewritten.usesNavigation
-        ? `const routePaths: Record<string, string> = ${JSON.stringify(routeTargets, null, 2)}\n`
-        : ''
-      files[outPath] = routePathsConst + navRewritten.body
+      files[outPath] = rawSource
     }
   }
 
@@ -3865,8 +3690,7 @@ export const routes = ${JSON.stringify(serializedRoutes, null, 2)} satisfies Sit
 
 /**
  * Generate a simplified Logo.tsx at export time with the brand logo
- * src hardcoded. No runtime DOM manipulation, no MutationObserver,
- * no context provider — just a pure component that renders the logo.
+ * src hardcoded. No runtime DOM manipulation or MutationObserver.
  */
 function renderExportLogoComponent(input: OpenUIExportInput): string {
   const selection = input.selectedBrandLogo
@@ -3874,101 +3698,109 @@ function renderExportLogoComponent(input: OpenUIExportInput): string {
   const logo = typeof selection?.logo === 'string' ? selection.logo.trim() : ''
   const src = icon || logo || ''
   const brandName = selection?.name ?? ''
-  if (src && !icon) {
-    return `import type { ReactNode } from 'react'
+  return `import * as React from 'react'
 import { cn } from '../lib/cn'
 
 export type BrandLogoSelection = { icon?: string; logo?: string; name?: string }
-const brandLogoSelection: BrandLogoSelection = { logo: ${JSON.stringify(src)}, name: ${JSON.stringify(brandName)} }
-
-export function BrandLogoProvider({ children }: { children: ReactNode }) { return <>{children}</> }
-export function useBrandLogo(): BrandLogoSelection { return brandLogoSelection }
-export function getBrandLogoImageSrc(value: BrandLogoSelection | null = brandLogoSelection): string { return value?.icon?.trim() || value?.logo?.trim() || '' }
-
-type LogoProps = {
-  [key: string]: unknown
-  brand?: string
-  className?: string
-  imageClassName?: string
-  labelClassName?: string
-}
-
-export function Logo(props: LogoProps) {
-  const brand = props.brand ?? ${JSON.stringify(brandName)}
-  return (
-    <>
-      <span
-        aria-hidden="true"
-        className={cn(
-          'inline-grid size-8 shrink-0 place-items-center overflow-hidden rounded-md bg-transparent',
-          props.className,
-        )}
-      >
-        <img
-          alt=""
-          className={cn('block size-full object-contain', props.imageClassName)}
-          draggable={false}
-          src=${JSON.stringify(src)}
-        />
-      </span>
-      <span className={props.labelClassName}>{brand}</span>
-    </>
-  )
-}
-`
-  }
-  return `import type { ReactNode } from 'react'
-import { cn } from '../lib/cn'
-
 const brandLogoSrc = ${JSON.stringify(src)}
 const brandName = ${JSON.stringify(brandName)}
-export type BrandLogoSelection = { icon?: string; logo?: string; name?: string }
 const brandLogoSelection: BrandLogoSelection = { icon: ${JSON.stringify(icon)}, logo: ${JSON.stringify(logo)}, name: brandName }
 
-export function BrandLogoProvider({ children }: { children: ReactNode }) { return <>{children}</> }
+export function BrandLogoProvider({ children }: { children: React.ReactNode }) { return <>{children}</> }
 export function useBrandLogo(): BrandLogoSelection { return brandLogoSelection }
 export function getBrandLogoImageSrc(value: BrandLogoSelection | null = brandLogoSelection): string { return value?.icon?.trim() || value?.logo?.trim() || '' }
 
-export function Logo({
-  fallback,
-  className,
-  imageClassName,
-  labelClassName,
-  showLabel = true,
-  brand = brandName,
-}: {
+const LogoContext = React.createContext<{ brand?: string; src?: string } | null>(null)
+
+type LogoProps = React.ComponentProps<'span'> & {
+  asChild?: boolean
   brand?: string
-  fallback?: ReactNode
-  className?: string
+  fallback?: React.ReactNode
   imageClassName?: string
   labelClassName?: string
   showLabel?: boolean
-}) {
+}
+
+export function Logo({
+  asChild: _asChild,
+  brand = brandName,
+  children,
+  className,
+  fallback,
+  imageClassName,
+  labelClassName,
+  showLabel = true,
+  ...props
+}: LogoProps) {
+  const value = React.useMemo(() => ({ brand, src: brandLogoSrc }), [brand])
   return (
-    <>
-      {brandLogoSrc ? (
-        <span
-          aria-hidden="true"
-          className={cn(
-            'inline-grid size-8 shrink-0 place-items-center overflow-hidden rounded-md bg-transparent',
-            className,
-          )}
-          data-brand-logo-selected="true"
-        >
-          <img
-            alt=""
-            className={cn('block size-full object-contain', imageClassName)}
-            draggable={false}
-            src={brandLogoSrc}
-          />
-        </span>
-      ) : (
-        fallback
-      )}
-      {showLabel ? <span className={labelClassName}>{brand}</span> : null}
-    </>
+    <LogoContext.Provider value={value}>
+      <span
+        data-slot="logo"
+        className={cn('inline-flex items-center gap-2', className)}
+        {...props}
+      >
+        {children ?? (
+          <>
+            <LogoImage className={imageClassName} fallback={fallback} />
+            {showLabel ? <LogoLabel className={labelClassName} /> : null}
+          </>
+        )}
+      </span>
+    </LogoContext.Provider>
   )
 }
+
+export const LogoImage = React.forwardRef<
+  HTMLSpanElement,
+  React.ComponentProps<'span'> & {
+    asChild?: boolean
+    fallback?: React.ReactNode
+  }
+>(function LogoImage(
+  {
+    asChild: _asChild,
+    className,
+    fallback = null,
+    ...props
+  },
+  ref,
+) {
+  const ctx = React.useContext(LogoContext)
+  if (!ctx?.src) return <>{fallback}</>
+  return (
+    <span
+      ref={ref}
+      data-slot="logo-image"
+      aria-hidden="true"
+      className={cn(
+        'inline-grid size-8 shrink-0 place-items-center overflow-hidden rounded-md bg-transparent',
+        className,
+      )}
+      data-brand-logo-selected="true"
+      {...props}
+    >
+      <img
+        alt=""
+        className="block size-full object-contain"
+        draggable={false}
+        src={ctx.src}
+      />
+    </span>
+  )
+})
+
+export const LogoLabel = React.forwardRef<
+  HTMLSpanElement,
+  React.ComponentProps<'span'> & { asChild?: boolean }
+>(function LogoLabel({ asChild: _asChild, className, ...props }, ref) {
+  const ctx = React.useContext(LogoContext)
+  return (
+    <span ref={ref} data-slot="logo-label" className={className} {...props}>
+      {ctx?.brand}
+    </span>
+  )
+})
 `
 }
 
@@ -4171,13 +4003,10 @@ function zipRawFiles(files: Record<string, string>): Uint8Array {
 function collectExportComponents(
   routes: ExportRoute[],
   stack: ExportStack,
-  routeTargets: Record<string, string>,
   dataKeys: DataKeys,
 ): ExtractedComponent[] {
   const names = collectRouteComponentNames(routes)
-  return names.map((name) =>
-    extractComponent(name, stack, routeTargets, dataKeys),
-  )
+  return names.map((name) => extractComponent(name, stack, dataKeys))
 }
 
 function collectLakebedEndpoints(
@@ -4204,14 +4033,8 @@ async function buildReactExport(
   parsed: ParsedOpenUIProgram,
 ): Promise<BuiltExport> {
   const routes = buildRoutes(parsed)
-  const routeTargets = buildRouteTargetMap(routes, parsed.targetMap)
   const dataKeys = createDataKeys()
-  const components = collectExportComponents(
-    routes,
-    'react',
-    routeTargets,
-    dataKeys,
-  )
+  const components = collectExportComponents(routes, 'react', dataKeys)
   const nestedComponentNames = components.map((component) => component.name)
   const routeComponents = routes.map((route) => ({
     name: route.componentName,
@@ -4221,7 +4044,6 @@ async function buildReactExport(
     [...components.flatMap((component) => [...component.blockSources])],
     'react',
     dataKeys,
-    routeTargets,
   )
   const { dependencies, devDependencies } = resolveDependencyVersions(
     [
@@ -4332,14 +4154,8 @@ async function buildNextExport(
   parsed: ParsedOpenUIProgram,
 ): Promise<BuiltExport> {
   const routes = buildRoutes(parsed)
-  const routeTargets = buildRouteTargetMap(routes, parsed.targetMap)
   const dataKeys = createDataKeys()
-  const components = collectExportComponents(
-    routes,
-    'next',
-    routeTargets,
-    dataKeys,
-  )
+  const components = collectExportComponents(routes, 'next', dataKeys)
   const nestedComponentNames = components.map((component) => component.name)
   const routeComponents = routes.map((route) => ({
     name: route.componentName,
@@ -4350,7 +4166,6 @@ async function buildNextExport(
     [...components.flatMap((component) => [...component.blockSources])],
     'next',
     dataKeys,
-    routeTargets,
   )
   const { dependencies, devDependencies } = resolveDependencyVersions(
     [

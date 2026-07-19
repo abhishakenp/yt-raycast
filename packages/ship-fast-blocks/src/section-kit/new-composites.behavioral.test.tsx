@@ -1,7 +1,37 @@
 // @vitest-environment jsdom
 
+import type { ReactNode } from 'react'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+
+type MockLinkProps = React.ComponentProps<'a'> & {
+  children: ReactNode
+  to: string
+}
+
+vi.mock('@tanstack/react-router', () => {
+  function Link({ children, to, ...props }: MockLinkProps) {
+    return (
+      <a href={to} {...props}>
+        {children}
+      </a>
+    )
+  }
+
+  return { Link }
+})
+
+if (typeof ResizeObserver === 'undefined') {
+  Object.defineProperty(globalThis, 'ResizeObserver', {
+    configurable: true,
+    value: class ResizeObserver {
+      disconnect() {}
+      observe() {}
+      unobserve() {}
+    },
+    writable: true,
+  })
+}
 
 afterEach(() => {
   cleanup()
@@ -9,6 +39,11 @@ afterEach(() => {
 
 import {
   CommandSearch,
+  CommandSearchContent,
+  CommandSearchEmpty,
+  CommandSearchGroup,
+  CommandSearchInput,
+  CommandSearchList,
   CommandSearchTrigger,
   AccountDropdown,
   AccountDropdownTrigger,
@@ -35,6 +70,7 @@ import {
   Eyebrow,
   ResponsiveGrid,
 } from './index.ts'
+import { RoutesContext } from '#/lib/route-context.tsx'
 
 describe('FilterChip', () => {
   it('renders as button with rounded-full', () => {
@@ -86,7 +122,7 @@ describe('ResponsiveGrid', () => {
 
   it('applies custom cols preset', () => {
     render(
-      <ResponsiveGrid cols="1-2-4" gap="md">
+      <ResponsiveGrid cols="1-2-4" className="gap-6">
         <div>B</div>
       </ResponsiveGrid>,
     )
@@ -95,9 +131,9 @@ describe('ResponsiveGrid', () => {
     expect(grid?.className).toContain('gap-6')
   })
 
-  it('applies gap="none" with gap-0', () => {
+  it('applies gap override with gap-0', () => {
     render(
-      <ResponsiveGrid gap="none">
+      <ResponsiveGrid className="gap-0">
         <div>C</div>
       </ResponsiveGrid>,
     )
@@ -105,9 +141,9 @@ describe('ResponsiveGrid', () => {
     expect(grid?.className).toContain('gap-0')
   })
 
-  it('applies gap="2xl" with gap-12', () => {
+  it('applies gap override with gap-12', () => {
     render(
-      <ResponsiveGrid gap="2xl">
+      <ResponsiveGrid className="gap-12">
         <div>C2</div>
       </ResponsiveGrid>,
     )
@@ -321,7 +357,13 @@ describe('PersonCard', () => {
   })
 
   it('elevated variant is shadowed with no border', () => {
-    render(<PersonCard variant="elevated" rounded="2xl" data-testid="pc" />)
+    render(
+      <PersonCard
+        variant="elevated"
+        className="rounded-2xl"
+        data-testid="pc"
+      />,
+    )
     const el = screen.getByTestId('pc')
     expect(el.className).toContain('rounded-2xl')
     expect(el.className).toContain('shadow-sm')
@@ -330,7 +372,7 @@ describe('PersonCard', () => {
   })
 
   it('bare variant has no surface (no border, bg, or shadow)', () => {
-    render(<PersonCard variant="bare" rounded="none" data-testid="pc" />)
+    render(<PersonCard variant="bare" data-testid="pc" />)
     const el = screen.getByTestId('pc')
     expect(el.className).not.toContain('border-border')
     expect(el.className).not.toContain('bg-card')
@@ -390,7 +432,7 @@ describe('PersonCard', () => {
 
   it('asChild renders as child element with merged classes', () => {
     render(
-      <PersonCard asChild rounded="2xl" data-testid="pc">
+      <PersonCard asChild className="rounded-2xl" data-testid="pc">
         <div>X</div>
       </PersonCard>,
     )
@@ -433,8 +475,8 @@ describe('Card', () => {
     expect(el.getAttribute('data-slot')).toBe('card')
   })
 
-  it('applies rounded-2xl, padding-lg, shadow-sm variants', () => {
-    render(<Card rounded="2xl" padding="lg" shadow="sm" data-testid="card" />)
+  it('applies rounded, padding, and shadow overrides through className', () => {
+    render(<Card className="rounded-2xl p-8 shadow-sm" data-testid="card" />)
     const el = screen.getByTestId('card')
     expect(el.className).toContain('rounded-2xl')
     expect(el.className).toContain('p-8')
@@ -465,7 +507,7 @@ describe('Card', () => {
 
   it('asChild renders as child element with merged classes', () => {
     render(
-      <Card asChild rounded="2xl" data-testid="card">
+      <Card asChild className="rounded-2xl" data-testid="card">
         <article>Content</article>
       </Card>,
     )
@@ -590,6 +632,50 @@ describe('CommandSearch', () => {
     )
     const btn = screen.getByRole('button', { name: 'Search' })
     expect(btn).toBeTruthy()
+  })
+
+  it('renders command results as route links when getHref is provided', async () => {
+    const onSelect = vi.fn()
+
+    render(
+      <RoutesContext.Provider
+        value={{
+          routes: ['Home', 'Pricing'],
+          targetMap: {},
+          currentPage: 'Home',
+          setCurrentPage: vi.fn(),
+          pendingSectionId: null,
+          setPendingSectionId: vi.fn(),
+        }}
+      >
+        <CommandSearch
+          search={{
+            items: [{ label: 'Pricing' }],
+            getKey: (item) => item.label,
+            getValue: (item) => item.label,
+            getHref: (item) => item.label,
+            onSelect,
+          }}
+        >
+          <CommandSearchTrigger aria-label="Search" />
+          <CommandSearchContent>
+            <CommandSearchInput aria-label="Query" />
+            <CommandSearchList>
+              <CommandSearchEmpty>No results</CommandSearchEmpty>
+              <CommandSearchGroup heading="Pages">
+                {(item) => item.label}
+              </CommandSearchGroup>
+            </CommandSearchList>
+          </CommandSearchContent>
+        </CommandSearch>
+      </RoutesContext.Provider>,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Search' }))
+
+    const result = await screen.findByRole('option', { name: 'Pricing' })
+    expect(result.tagName).toBe('A')
+    expect(result.getAttribute('href')).toBe('/pricing')
   })
 })
 

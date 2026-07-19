@@ -9,7 +9,7 @@ import { createContext } from 'react'
  *
  * In the preview dashboard the host wraps the rendered site in
  * `PreviewUrlBridgeContext.Provider` so that:
- * - `useNavigate` can push the page slug to the URL via `navigateToPage`.
+ * - route links can push the page slug to the URL via `navigateToPage`.
  * - `PageSwitch` can read `pageFromUrl` to initialise / sync the active page
  *   when the user navigates with the browser back/forward buttons.
  *
@@ -19,7 +19,7 @@ import { createContext } from 'react'
  */
 export type PreviewUrlBridgeValue = {
   /**
-   * Called by `useNavigate` after the internal `$page` state has been updated.
+   * Called after the internal `$page` state has been updated.
    * `null` = home page (push base URL, no trailing path).
    * `string` = page slug (push `/<slug>` after the session base).
    * The field itself is `null` when no host bridge is active (exported site).

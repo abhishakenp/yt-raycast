@@ -2,8 +2,8 @@ import * as React from 'react'
 import { Slot } from '@radix-ui/react-slot'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Logo, LogoImage, LogoLabel } from './Logo.tsx'
+import { NavbarRouteLink } from './SiteNav.tsx'
 
 const SiteFooter = React.forwardRef<
   HTMLElement,
@@ -192,27 +192,24 @@ const FooterColumnList = React.forwardRef<
 FooterColumnList.displayName = 'FooterColumnList'
 
 const FooterLink = React.forwardRef<
-  HTMLButtonElement,
-  React.ComponentProps<'button'> & { asChild?: boolean }
->(({ className, asChild = false, onClick, ...props }, ref) => {
-  const go = useNavigate()
-  const Comp = asChild ? Slot : 'button'
+  HTMLAnchorElement,
+  React.ComponentProps<'a'> & { asChild?: boolean }
+>(({ className, asChild = false, href, children, ...props }, ref) => {
+  const Comp = asChild ? Slot : NavbarRouteLink
+  const routeTarget = href ?? (typeof children === 'string' ? children : '#')
   return (
     <Comp
       ref={ref}
       data-slot="footer-link"
+      href={routeTarget}
       className={cn(
         'text-sm text-muted-foreground hover:text-foreground',
         className,
       )}
-      onClick={(e: React.MouseEvent<HTMLElement>) => {
-        if (!asChild && typeof props.children === 'string') {
-          go(props.children as string)
-        }
-        onClick?.(e as React.MouseEvent<HTMLButtonElement>)
-      }}
       {...props}
-    />
+    >
+      {children}
+    </Comp>
   )
 })
 FooterLink.displayName = 'FooterLink'

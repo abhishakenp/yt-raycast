@@ -224,7 +224,6 @@ flushSync(() => root.render(
                 contents: `export const Link = ({ children }) => children;
 export const NavLink = ({ children }) => children;
 export function useLocation() { return { pathname: "/" }; }
-export function useNavigate() { return () => {}; }
 `,
                 loader: 'tsx',
               }),

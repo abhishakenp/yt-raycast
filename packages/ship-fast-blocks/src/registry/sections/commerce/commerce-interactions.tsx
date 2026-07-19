@@ -32,7 +32,6 @@ import {
 } from '#/components/ui/sheet.tsx'
 import { normalizeRecords } from '#/lib/normalize-records.ts'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   AccountDropdown,
   AccountDropdownTrigger,
@@ -48,6 +47,7 @@ import {
   CommandSearchList,
   CommandSearchEmpty,
   CommandSearchGroup,
+  NavbarRouteLink,
 } from '#/section-kit/index.ts'
 import type {
   commerceCartLakebed,
@@ -440,7 +440,6 @@ export function CommerceCartButton({
   label?: string
 }) {
   const [open, setOpen] = useState(false)
-  const go = useNavigate()
   const summary = lakebed.useQuery('cartSummary')
   const items: CommerceCartItem[] = summary?.items ?? []
   const count = summary?.count ?? fallbackCount
@@ -513,17 +512,16 @@ export function CommerceCartButton({
               lakebed={lakebed}
             />
             {fullCartTarget ? (
-              <button
-                type="button"
+              <NavbarRouteLink
                 disabled={!items.length}
+                className="inline-flex items-center justify-center rounded-[0.65rem] bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
                 onClick={() => {
                   setOpen(false)
-                  go(fullCartTarget)
                 }}
-                className="inline-flex items-center justify-center rounded-[0.65rem] bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
+                href={fullCartTarget}
               >
                 View full cart
-              </button>
+              </NavbarRouteLink>
             ) : null}
           </SheetFooter>
         </SheetContent>
@@ -548,12 +546,6 @@ export function CommerceMobileMenu({
   nav: string[]
 }) {
   const [open, setOpen] = useState(false)
-  const go = useNavigate()
-
-  const navigate = (target?: string) => {
-    setOpen(false)
-    go(target)
-  }
   const homeNavigationTarget = homeTarget ?? nav[0]
   const mobileNavItems = nav.filter(
     (item) => item.trim().toLowerCase() !== 'home',
@@ -577,22 +569,22 @@ export function CommerceMobileMenu({
           </SheetDescription>
         </SheetHeader>
         <div className="flex flex-col gap-1 px-3 py-4">
-          <button
-            type="button"
-            onClick={() => navigate(homeNavigationTarget)}
+          <NavbarRouteLink
             className="rounded-lg px-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            href={homeNavigationTarget}
+            onClick={() => setOpen(false)}
           >
             Home
-          </button>
+          </NavbarRouteLink>
           {mobileNavItems.map((item) => (
-            <button
+            <NavbarRouteLink
               key={item}
-              type="button"
-              onClick={() => navigate(item)}
               className="rounded-lg px-3 py-3 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              href={item}
+              onClick={() => setOpen(false)}
             >
               {item}
-            </button>
+            </NavbarRouteLink>
           ))}
         </div>
       </SheetContent>

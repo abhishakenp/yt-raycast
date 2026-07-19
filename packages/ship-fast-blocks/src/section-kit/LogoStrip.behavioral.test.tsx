@@ -245,17 +245,17 @@ describe('LogoStrip composition', () => {
   })
 
   it('clickable composition with asChild buttons', () => {
-    const go = vi.fn()
+    const onSelect = vi.fn()
     render(
       <LogoStrip>
         <LogoStripItems layout="grid">
           <LogoStripItem asChild variant="opacity-hover">
-            <button onClick={() => go('Stripe')}>Stripe</button>
+            <button onClick={() => onSelect('Stripe')}>Stripe</button>
           </LogoStripItem>
         </LogoStripItems>
       </LogoStrip>,
     )
     screen.getByText('Stripe').click()
-    expect(go).toHaveBeenCalledWith('Stripe')
+    expect(onSelect).toHaveBeenCalledWith('Stripe')
   })
 })

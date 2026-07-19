@@ -3,14 +3,12 @@ import { cleanup, render } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('#/lib/use-navigate.tsx', () => {
-  function RoutesContext(props: { children: ReactNode }) {
-    return props.children
+vi.mock('#/lib/route-context.tsx', async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import('#/lib/route-context.tsx')>()
+  return {
+    ...actual,
   }
-  function useNavigate() {
-    return vi.fn()
-  }
-  return { RoutesContext, useNavigate }
 })
 
 const mutation = Object.assign(

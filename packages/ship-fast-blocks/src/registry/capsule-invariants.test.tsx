@@ -3,9 +3,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 
-vi.mock('#/lib/use-navigate.tsx', () => ({
+vi.mock('#/lib/route-context.tsx', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('#/lib/route-context.tsx')>()),
   RoutesContext: ({ children }: { children?: React.ReactNode }) => children,
-  useNavigate: () => vi.fn(),
 }))
 
 const guestAuth = {
