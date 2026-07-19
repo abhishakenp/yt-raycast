@@ -1,7 +1,25 @@
 import * as React from 'react'
+import { cva, type VariantProps } from 'class-variance-authority'
 import { Slot } from '@radix-ui/react-slot'
 
 import { cn } from '#/lib/utils.ts'
+
+const starColorVariants = cva('', {
+  variants: {
+    color: {
+      accent: 'text-accent',
+      primary: 'text-primary',
+      foreground: 'text-foreground',
+      'chart-1': 'text-chart-1',
+      'chart-2': 'text-chart-2',
+      'chart-3': 'text-chart-3',
+      'chart-4': 'text-chart-4',
+    },
+  },
+  defaultVariants: {
+    color: 'accent',
+  },
+})
 
 const StarRating = React.forwardRef<
   HTMLDivElement,
@@ -10,15 +28,24 @@ const StarRating = React.forwardRef<
     rating?: number
     max?: number
     size?: 'sm' | 'md'
-  }
+  } & VariantProps<typeof starColorVariants>
 >(
   (
-    { className, asChild = false, rating = 5, max = 5, size = 'md', ...props },
+    {
+      className,
+      asChild = false,
+      rating = 5,
+      max = 5,
+      size = 'md',
+      color,
+      ...props
+    },
     ref,
   ) => {
     const Comp = asChild ? Slot : 'div'
     const filledCount = Math.round(rating)
     const starSize = size === 'sm' ? 'size-4' : 'size-5'
+    const filledColor = starColorVariants({ color })
 
     return (
       <Comp
@@ -36,7 +63,7 @@ const StarRating = React.forwardRef<
             className={cn(
               starSize,
               i < filledCount
-                ? 'text-accent fill-current'
+                ? cn(filledColor, 'fill-current')
                 : 'text-muted-foreground fill-none stroke-current',
             )}
           >

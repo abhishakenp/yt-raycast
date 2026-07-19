@@ -14,6 +14,7 @@ import {
 
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { StarRating } from '#/section-kit/StarRating.tsx'
 
 /**
  * CoworkingTestimonials — quiet editorial member-quote wall for a coworking
@@ -95,21 +96,6 @@ export const CoworkingTestimonials = defineCapsule({
       )
     const members = authored?.length ? authored : defaults
 
-    const Star = ({ filled }: { filled?: boolean }) => (
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 24 24"
-        className={cn(
-          'size-4',
-          filled
-            ? 'fill-current text-primary'
-            : 'fill-none stroke-current text-muted-foreground/50',
-        )}
-      >
-        <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-      </svg>
-    )
-
     return (
       <section
         className={cn(
@@ -139,7 +125,7 @@ export const CoworkingTestimonials = defineCapsule({
 
           <div className="mx-auto max-w-2xl text-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/70 px-4 py-1.5 backdrop-blur">
-              <Star filled />
+              <StarRating rating={1} max={1} size="sm" color="primary" />
               <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 Member stories
               </span>
@@ -195,11 +181,7 @@ export const CoworkingTestimonials = defineCapsule({
                     &ldquo;
                   </span>
 
-                  <div className="flex items-center gap-0.5">
-                    {Array.from({ length: 5 }).map((_, starIndex) => (
-                      <Star key={starIndex} filled={starIndex < rating} />
-                    ))}
-                  </div>
+                  <StarRating rating={rating} size="sm" color="primary" />
 
                   <TestimonialQuote className="mt-5 flex-1 text-[15px] font-medium leading-relaxed text-card-foreground">
                     &ldquo;{member.quote}&rdquo;
