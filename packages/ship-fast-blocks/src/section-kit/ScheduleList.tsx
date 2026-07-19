@@ -19,15 +19,19 @@ const scheduleListVariants = cva('', {
 
 const ScheduleList = React.forwardRef<
   HTMLUListElement,
-  React.ComponentProps<'ul'> & VariantProps<typeof scheduleListVariants>
->(({ className, layout, ...props }, ref) => (
-  <ul
-    data-slot="schedule-list"
-    className={cn(scheduleListVariants({ layout }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'ul'> &
+    VariantProps<typeof scheduleListVariants> & { asChild?: boolean }
+>(({ className, layout, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'ul'
+  return (
+    <Comp
+      data-slot="schedule-list"
+      className={cn(scheduleListVariants({ layout }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 ScheduleList.displayName = 'ScheduleList'
 
 const ScheduleItem = React.forwardRef<
@@ -48,60 +52,72 @@ ScheduleItem.displayName = 'ScheduleItem'
 
 const ScheduleTime = React.forwardRef<
   HTMLParagraphElement,
-  React.ComponentProps<'p'>
->(({ className, ...props }, ref) => (
-  <p
-    data-slot="schedule-time"
-    className={cn(
-      'shrink-0 text-sm font-semibold tabular-nums text-primary sm:w-24',
-      className,
-    )}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'p'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'p'
+  return (
+    <Comp
+      data-slot="schedule-time"
+      className={cn(
+        'shrink-0 text-sm font-semibold tabular-nums text-primary sm:w-24',
+        className,
+      )}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 ScheduleTime.displayName = 'ScheduleTime'
 
 const ScheduleContent = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    data-slot="schedule-content"
-    className={cn('flex flex-col', className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="schedule-content"
+      className={cn('flex flex-col', className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 ScheduleContent.displayName = 'ScheduleContent'
 
 const ScheduleTitle = React.forwardRef<
   HTMLHeadingElement,
-  React.ComponentProps<'h3'>
->(({ className, ...props }, ref) => (
-  <h3
-    data-slot="schedule-title"
-    className={cn('text-base font-semibold text-foreground', className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'h3'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'h3'
+  return (
+    <Comp
+      data-slot="schedule-title"
+      className={cn('text-base font-semibold text-foreground', className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 ScheduleTitle.displayName = 'ScheduleTitle'
 
 const ScheduleDetail = React.forwardRef<
   HTMLParagraphElement,
-  React.ComponentProps<'p'>
->(({ className, ...props }, ref) => (
-  <p
-    data-slot="schedule-detail"
-    className={cn(
-      'mt-1 text-sm leading-relaxed text-muted-foreground',
-      className,
-    )}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'p'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'p'
+  return (
+    <Comp
+      data-slot="schedule-detail"
+      className={cn(
+        'mt-1 text-sm leading-relaxed text-muted-foreground',
+        className,
+      )}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 ScheduleDetail.displayName = 'ScheduleDetail'
 
 export {
