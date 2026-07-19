@@ -19,15 +19,23 @@ const navSidebarVariants = cva('', {
 
 const NavSidebar = React.forwardRef<
   HTMLElement,
-  React.ComponentProps<'aside'> & VariantProps<typeof navSidebarVariants>
->(({ className, variant, ...props }, ref) => (
-  <aside
-    data-slot="nav-sidebar"
-    className={cn('flex flex-col', navSidebarVariants({ variant }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'aside'> &
+    VariantProps<typeof navSidebarVariants> & { asChild?: boolean }
+>(({ className, variant, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'aside'
+  return (
+    <Comp
+      data-slot="nav-sidebar"
+      className={cn(
+        'flex flex-col',
+        navSidebarVariants({ variant }),
+        className,
+      )}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 NavSidebar.displayName = 'NavSidebar'
 
 const navSidebarSectionVariants = cva('', {
@@ -45,19 +53,23 @@ const navSidebarSectionVariants = cva('', {
 
 const NavSidebarSection = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & VariantProps<typeof navSidebarSectionVariants>
->(({ className, spacing, ...props }, ref) => (
-  <div
-    data-slot="nav-sidebar-section"
-    className={cn(
-      'flex flex-col gap-1',
-      navSidebarSectionVariants({ spacing }),
-      className,
-    )}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> &
+    VariantProps<typeof navSidebarSectionVariants> & { asChild?: boolean }
+>(({ className, spacing, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="nav-sidebar-section"
+      className={cn(
+        'flex flex-col gap-1',
+        navSidebarSectionVariants({ spacing }),
+        className,
+      )}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 NavSidebarSection.displayName = 'NavSidebarSection'
 
 const navSidebarLinkVariants = cva('', {

@@ -19,15 +19,19 @@ const programGridVariants = cva('grid', {
 
 const ProgramGrid = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & VariantProps<typeof programGridVariants>
->(({ className, cols, ...props }, ref) => (
-  <div
-    data-slot="program-grid"
-    className={cn(programGridVariants({ cols }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> &
+    VariantProps<typeof programGridVariants> & { asChild?: boolean }
+>(({ className, cols, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="program-grid"
+      className={cn(programGridVariants({ cols }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 ProgramGrid.displayName = 'ProgramGrid'
 
 const programCardVariants = cva('', {
@@ -97,19 +101,23 @@ const programIconVariants = cva('', {
 
 const ProgramIcon = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & VariantProps<typeof programIconVariants>
->(({ className, size, shape, ...props }, ref) => (
-  <div
-    data-slot="program-icon"
-    className={cn(
-      'grid shrink-0 place-items-center bg-muted text-foreground',
-      programIconVariants({ size, shape }),
-      className,
-    )}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> &
+    VariantProps<typeof programIconVariants> & { asChild?: boolean }
+>(({ className, size, shape, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="program-icon"
+      className={cn(
+        'grid shrink-0 place-items-center bg-muted text-foreground',
+        programIconVariants({ size, shape }),
+        className,
+      )}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 ProgramIcon.displayName = 'ProgramIcon'
 
 export {
