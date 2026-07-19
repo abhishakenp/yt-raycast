@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { MasonryTile } from '#/section-kit/MasonryTile.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import {
   GalleryMasonry,
   GalleryMasonryColumn,
@@ -54,7 +55,7 @@ export const JewelryStoreGallery = defineCapsule({
           props.className,
         )}
       >
-        <div className="w-full px-6 lg:px-12 xl:px-20">
+        <Container className="px-6 lg:px-12 xl:px-20">
           <SectionHeading
             eyebrow={eyebrow}
             title={heading}
@@ -133,7 +134,7 @@ export const JewelryStoreGallery = defineCapsule({
               </MasonryTile>
             </GalleryMasonryColumn>
           </GalleryMasonry>
-        </div>
+        </Container>
       </section>
     )
   },

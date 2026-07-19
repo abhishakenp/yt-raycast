@@ -6,6 +6,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { ImageTile } from '#/section-kit/ImageTile.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import {
   CollectionGrid,
   CollectionCard,
@@ -98,7 +99,7 @@ export const JewelryStoreCollections = defineCapsule({
           props.className,
         )}
       >
-        <div className="w-full px-6 lg:px-12 xl:px-20">
+        <Container className="px-6 lg:px-12 xl:px-20">
           <SectionHeading
             eyebrow={eyebrow}
             title={heading}
@@ -136,7 +137,7 @@ export const JewelryStoreCollections = defineCapsule({
               </CollectionCard>
             ))}
           </CollectionGrid>
-        </div>
+        </Container>
       </section>
     )
   },

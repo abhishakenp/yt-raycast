@@ -10,6 +10,7 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * DocsFaq — accessible, JS-free FAQ section for a developer DOCUMENTATION / API-reference
@@ -88,30 +89,29 @@ export const DocsFaq = defineCapsule({
     ]
 
     return (
-      <section
-        className={cn(
-          'mx-auto w-full max-w-3xl px-6 pt-28 pb-16',
-          props.className,
-        )}
-      >
-        <SectionHeading
-          eyebrow={eyebrow}
-          title={title}
-          subtitle={subtitle}
-          align="center"
-        />
+      <section className={cn('pt-28 pb-16', props.className)}>
+        <Container size="sm">
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={title}
+            subtitle={subtitle}
+            align="center"
+          />
 
-        <FaqAccordion variant="compact" className="mt-10">
-          {items.map((item, index) => (
-            <FaqItem key={item.question} open={index === defaultOpen}>
-              <FaqQuestion className="px-5 py-4 font-medium">
-                <span>{item.question}</span>
-                <FaqQuestionIcon />
-              </FaqQuestion>
-              <FaqAnswer className="px-5 pb-5 text-sm">{item.answer}</FaqAnswer>
-            </FaqItem>
-          ))}
-        </FaqAccordion>
+          <FaqAccordion variant="compact" className="mt-10">
+            {items.map((item, index) => (
+              <FaqItem key={item.question} open={index === defaultOpen}>
+                <FaqQuestion className="px-5 py-4 font-medium">
+                  <span>{item.question}</span>
+                  <FaqQuestionIcon />
+                </FaqQuestion>
+                <FaqAnswer className="px-5 pb-5 text-sm">
+                  {item.answer}
+                </FaqAnswer>
+              </FaqItem>
+            ))}
+          </FaqAccordion>
+        </Container>
       </section>
     )
   },

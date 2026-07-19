@@ -9,6 +9,7 @@ import {
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * FintechStats — trust-building metrics band for a fintech / neobank landing
@@ -48,7 +49,7 @@ export const FintechStats = defineCapsule({
 
     return (
       <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
-        <div className="mx-auto flex max-w-7xl flex-col gap-12 px-6 lg:px-8">
+        <Container className="flex flex-col gap-12">
           {heading ? (
             <SectionHeading title={heading} subtitle={subheading} />
           ) : null}
@@ -63,7 +64,7 @@ export const FintechStats = defineCapsule({
               )
             })}
           </StatGrid>
-        </div>
+        </Container>
       </section>
     )
   },

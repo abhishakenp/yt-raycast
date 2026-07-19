@@ -5,6 +5,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import {
   FeatureListItem,
   FeatureListItemIcon,
@@ -212,65 +213,62 @@ export const LinkInBioFeatures = defineCapsule({
     )
 
     return (
-      <section
-        className={cn(
-          'mx-auto w-full max-w-md px-6 pt-28 pb-10',
-          props.className,
-        )}
-      >
-        {eyebrow ? (
-          <Eyebrow
-            variant="text"
-            className="mb-6 block text-center text-sm font-medium uppercase tracking-widest text-muted-foreground"
-          >
-            {eyebrow}
-          </Eyebrow>
-        ) : null}
-
-        <nav aria-label="Links" className="space-y-4">
-          {links.map((link, i) => (
-            <FeatureListItem
-              key={link.title}
-              asChild
-              className="group flex w-full cursor-pointer items-center gap-4 rounded-2xl border bg-card px-5 py-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+      <section className={cn('pt-28 pb-10', props.className)}>
+        <Container className="max-w-md">
+          {eyebrow ? (
+            <Eyebrow
+              variant="text"
+              className="mb-6 block text-center text-sm font-medium uppercase tracking-widest text-muted-foreground"
             >
-              <button
-                type="button"
-                onClick={() => go(linkTargets[i] ?? link.title)}
+              {eyebrow}
+            </Eyebrow>
+          ) : null}
+
+          <nav aria-label="Links" className="space-y-4">
+            {links.map((link, i) => (
+              <FeatureListItem
+                key={link.title}
+                asChild
+                className="group flex w-full cursor-pointer items-center gap-4 rounded-2xl border bg-card px-5 py-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
               >
-                <FeatureListItemIcon
-                  shape="square"
-                  className="size-11 bg-primary/10 text-primary"
+                <button
+                  type="button"
+                  onClick={() => go(linkTargets[i] ?? link.title)}
                 >
-                  {linkIcons[link.icon]}
-                </FeatureListItemIcon>
-                <FeatureListItemBody className="min-w-0 flex-1">
-                  <FeatureListItemTitle
-                    asChild
-                    className="block truncate font-semibold text-foreground"
+                  <FeatureListItemIcon
+                    shape="square"
+                    className="size-11 bg-primary/10 text-primary"
                   >
-                    <span>{link.title}</span>
-                  </FeatureListItemTitle>
-                  <FeatureListItemDescription
-                    asChild
-                    className="block truncate text-sm text-muted-foreground"
-                  >
-                    <span>{link.subtitle}</span>
-                  </FeatureListItemDescription>
-                </FeatureListItemBody>
-                {link.badge ? (
-                  <span className="shrink-0 rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold text-secondary-foreground">
-                    {link.badge}
-                  </span>
-                ) : (
-                  <span className="shrink-0 text-muted-foreground transition-colors group-hover:text-foreground">
-                    <ExternalArrow />
-                  </span>
-                )}
-              </button>
-            </FeatureListItem>
-          ))}
-        </nav>
+                    {linkIcons[link.icon]}
+                  </FeatureListItemIcon>
+                  <FeatureListItemBody className="min-w-0 flex-1">
+                    <FeatureListItemTitle
+                      asChild
+                      className="block truncate font-semibold text-foreground"
+                    >
+                      <span>{link.title}</span>
+                    </FeatureListItemTitle>
+                    <FeatureListItemDescription
+                      asChild
+                      className="block truncate text-sm text-muted-foreground"
+                    >
+                      <span>{link.subtitle}</span>
+                    </FeatureListItemDescription>
+                  </FeatureListItemBody>
+                  {link.badge ? (
+                    <span className="shrink-0 rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold text-secondary-foreground">
+                      {link.badge}
+                    </span>
+                  ) : (
+                    <span className="shrink-0 text-muted-foreground transition-colors group-hover:text-foreground">
+                      <ExternalArrow />
+                    </span>
+                  )}
+                </button>
+              </FeatureListItem>
+            ))}
+          </nav>
+        </Container>
       </section>
     )
   },

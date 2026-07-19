@@ -11,6 +11,7 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * ContactFaq — two-column FAQ accordion for a contact / support page.
@@ -79,66 +80,68 @@ export const ContactFaq = defineCapsule({
 
     return (
       <section className={cn('mt-20 mb-24', props.className)}>
-        <SectionHeading
-          title={heading}
-          subtitle={description}
-          className="mb-11 gap-0"
-          titleClassName="mb-2.5 text-[1.9rem] font-bold text-foreground"
-          subtitleClassName="mx-auto max-w-[480px] text-muted-foreground"
-        />
-        <FaqAccordion className="grid gap-4 md:grid-cols-2">
-          {items.map((item, i) => {
-            const open = openFaq === i
-            return (
-              <FaqItem
-                key={item.question}
-                asChild
-                className={cn(
-                  'px-6 py-5 transition-colors hover:border-border/60',
-                  open ? 'bg-muted/40' : 'bg-card',
-                )}
-              >
-                <div>
-                  <FaqQuestion
-                    asChild
-                    className="w-full text-left text-[0.98rem] font-semibold leading-[1.4]"
-                  >
-                    <button
-                      type="button"
-                      aria-expanded={open}
-                      onClick={() => setOpenFaq(open ? null : i)}
+        <Container>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mb-11 gap-0"
+            titleClassName="mb-2.5 text-[1.9rem] font-bold text-foreground"
+            subtitleClassName="mx-auto max-w-[480px] text-muted-foreground"
+          />
+          <FaqAccordion className="grid gap-4 md:grid-cols-2">
+            {items.map((item, i) => {
+              const open = openFaq === i
+              return (
+                <FaqItem
+                  key={item.question}
+                  asChild
+                  className={cn(
+                    'px-6 py-5 transition-colors hover:border-border/60',
+                    open ? 'bg-muted/40' : 'bg-card',
+                  )}
+                >
+                  <div>
+                    <FaqQuestion
+                      asChild
+                      className="w-full text-left text-[0.98rem] font-semibold leading-[1.4]"
                     >
-                      {item.question}
-                      <FaqQuestionIcon
-                        className={cn(
-                          'shrink-0 transition-transform',
-                          open
-                            ? 'rotate-180 text-primary'
-                            : 'text-muted-foreground',
-                        )}
-                      />
-                    </button>
-                  </FaqQuestion>
-                  <FaqAnswer
-                    asChild
-                    className={cn(
-                      'grid overflow-hidden transition-all duration-300',
-                      open
-                        ? 'grid-rows-[1fr] pt-3 opacity-100'
-                        : 'grid-rows-[0fr] opacity-0',
-                    )}
-                  >
-                    <div>
-                      <p className="min-h-0 text-[0.92rem] leading-[1.7] text-muted-foreground">
-                        {item.answer}
-                      </p>
-                    </div>
-                  </FaqAnswer>
-                </div>
-              </FaqItem>
-            )
-          })}
-        </FaqAccordion>
+                      <button
+                        type="button"
+                        aria-expanded={open}
+                        onClick={() => setOpenFaq(open ? null : i)}
+                      >
+                        {item.question}
+                        <FaqQuestionIcon
+                          className={cn(
+                            'shrink-0 transition-transform',
+                            open
+                              ? 'rotate-180 text-primary'
+                              : 'text-muted-foreground',
+                          )}
+                        />
+                      </button>
+                    </FaqQuestion>
+                    <FaqAnswer
+                      asChild
+                      className={cn(
+                        'grid overflow-hidden transition-all duration-300',
+                        open
+                          ? 'grid-rows-[1fr] pt-3 opacity-100'
+                          : 'grid-rows-[0fr] opacity-0',
+                      )}
+                    >
+                      <div>
+                        <p className="min-h-0 text-[0.92rem] leading-[1.7] text-muted-foreground">
+                          {item.answer}
+                        </p>
+                      </div>
+                    </FaqAnswer>
+                  </div>
+                </FaqItem>
+              )
+            })}
+          </FaqAccordion>
+        </Container>
       </section>
     )
   },

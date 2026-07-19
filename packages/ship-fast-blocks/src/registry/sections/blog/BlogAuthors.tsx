@@ -6,6 +6,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import {
   PersonCard,
   PersonCardName,
@@ -106,51 +107,53 @@ export const BlogAuthors = defineCapsule({
     return (
       <section
         aria-label="Contributors"
-        className={cn('mx-auto w-full max-w-6xl px-6 py-14', props.className)}
+        className={cn('py-14', props.className)}
       >
-        <SectionHeading
-          eyebrow={eyebrow}
-          title={title}
-          subtitle={subtitle}
-          align="center"
-        />
+        <Container size="lg">
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={title}
+            subtitle={subtitle}
+            align="center"
+          />
 
-        <ResponsiveGrid cols="1-2-3" gap="md" className="mt-10">
-          {authors.map((author) => (
-            <PersonCard
-              key={author.name}
-              variant="outlined"
-              rounded="xl"
-              className="p-6"
-            >
-              <div className="flex items-center gap-4">
-                <Image
-                  alt={author.avatarAlt}
-                  w={128}
-                  h={128}
-                  loading="lazy"
-                  className="size-16 rounded-full object-cover"
-                />
-                <div className="min-w-0">
-                  <PersonCardName className="truncate">
-                    {author.name}
-                  </PersonCardName>
-                  <PersonCardRole>{author.role}</PersonCardRole>
-                </div>
-              </div>
-              <PersonCardBio className="mt-4 leading-relaxed">
-                {author.bio}
-              </PersonCardBio>
-              <button
-                type="button"
-                onClick={() => go(author.name)}
-                className="mt-4 inline-flex w-fit items-center text-sm font-semibold text-primary"
+          <ResponsiveGrid cols="1-2-3" gap="md" className="mt-10">
+            {authors.map((author) => (
+              <PersonCard
+                key={author.name}
+                variant="outlined"
+                rounded="xl"
+                className="p-6"
               >
-                View profile
-              </button>
-            </PersonCard>
-          ))}
-        </ResponsiveGrid>
+                <div className="flex items-center gap-4">
+                  <Image
+                    alt={author.avatarAlt}
+                    w={128}
+                    h={128}
+                    loading="lazy"
+                    className="size-16 rounded-full object-cover"
+                  />
+                  <div className="min-w-0">
+                    <PersonCardName className="truncate">
+                      {author.name}
+                    </PersonCardName>
+                    <PersonCardRole>{author.role}</PersonCardRole>
+                  </div>
+                </div>
+                <PersonCardBio className="mt-4 leading-relaxed">
+                  {author.bio}
+                </PersonCardBio>
+                <button
+                  type="button"
+                  onClick={() => go(author.name)}
+                  className="mt-4 inline-flex w-fit items-center text-sm font-semibold text-primary"
+                >
+                  View profile
+                </button>
+              </PersonCard>
+            ))}
+          </ResponsiveGrid>
+        </Container>
       </section>
     )
   },

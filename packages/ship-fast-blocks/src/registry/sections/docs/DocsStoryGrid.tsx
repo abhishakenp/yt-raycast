@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import {
   ArticleGrid,
   ArticleCard,
@@ -102,60 +103,57 @@ export const DocsStoryGrid = defineCapsule({
         ]
 
     return (
-      <section
-        className={cn(
-          'mx-auto w-full max-w-6xl px-6 pt-28 pb-16',
-          props.className,
-        )}
-      >
-        <SectionHeading
-          eyebrow={eyebrow}
-          title={title}
-          subtitle={subtitle}
-          align={align}
-        />
-        <ArticleGrid cols="1-2-3" className="mt-12 gap-6">
-          {guides.map((guide, i) => (
-            <ArticleCard
-              asChild
-              key={`${guide.title}-${i}`}
-              variant="default"
-              rounded="xl"
-              className="text-left transition hover:shadow-md"
-            >
-              <button type="button" onClick={() => go(guide.title)}>
-                <ArticleContent className="p-6">
-                  <span className="text-xs font-medium uppercase tracking-wide text-primary">
-                    {guide.category}
-                  </span>
-                  <h3 className="mt-3 font-semibold text-foreground">
-                    {guide.title}
-                  </h3>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    {guide.description}
-                  </p>
-                  <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
-                    <span className="text-xs text-muted-foreground">
-                      {guide.readTime}
+      <section className={cn('pt-28 pb-16', props.className)}>
+        <Container size="lg">
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={title}
+            subtitle={subtitle}
+            align={align}
+          />
+          <ArticleGrid cols="1-2-3" className="mt-12 gap-6">
+            {guides.map((guide, i) => (
+              <ArticleCard
+                asChild
+                key={`${guide.title}-${i}`}
+                variant="default"
+                rounded="xl"
+                className="text-left transition hover:shadow-md"
+              >
+                <button type="button" onClick={() => go(guide.title)}>
+                  <ArticleContent className="p-6">
+                    <span className="text-xs font-medium uppercase tracking-wide text-primary">
+                      {guide.category}
                     </span>
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="size-4 text-primary transition-transform group-hover:translate-x-1"
-                      aria-hidden="true"
-                    >
-                      <path d="M5 12h14M13 6l6 6-6 6" />
-                    </svg>
-                  </div>
-                </ArticleContent>
-              </button>
-            </ArticleCard>
-          ))}
-        </ArticleGrid>
+                    <h3 className="mt-3 font-semibold text-foreground">
+                      {guide.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                      {guide.description}
+                    </p>
+                    <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
+                      <span className="text-xs text-muted-foreground">
+                        {guide.readTime}
+                      </span>
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="size-4 text-primary transition-transform group-hover:translate-x-1"
+                        aria-hidden="true"
+                      >
+                        <path d="M5 12h14M13 6l6 6-6 6" />
+                      </svg>
+                    </div>
+                  </ArticleContent>
+                </button>
+              </ArticleCard>
+            ))}
+          </ArticleGrid>
+        </Container>
       </section>
     )
   },

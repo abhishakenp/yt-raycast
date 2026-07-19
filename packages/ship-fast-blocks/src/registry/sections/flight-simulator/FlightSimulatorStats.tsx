@@ -8,6 +8,7 @@ import {
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { cn } from '#/lib/utils.ts'
 
 /**
@@ -54,7 +55,7 @@ export const FlightSimulatorStats = defineCapsule({
         {props.heading ? (
           <SectionHeading title={props.heading} subtitle={props.subheading} />
         ) : null}
-        <div className="mx-auto w-full max-w-5xl">
+        <Container size="md">
           <StatGrid columns={4}>
             {stats.map((s) => {
               const __iv__ = s as { value: string; label: string }
@@ -66,7 +67,7 @@ export const FlightSimulatorStats = defineCapsule({
               )
             })}
           </StatGrid>
-        </div>
+        </Container>
       </section>
     )
   },
