@@ -24,6 +24,7 @@ import {
   MarketChart,
   MarketIndicator,
 } from '#/section-kit/MarketTable.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const InvestingMarkets = defineCapsule({
   name: 'InvestingMarkets',
   description:
@@ -239,7 +240,7 @@ export const InvestingMarkets = defineCapsule({
                   {indicesHeading}
                 </h3>
                 <p className="mb-6 text-background/60">{indicesNote}</p>
-                <div className="grid grid-cols-2 gap-4">
+                <ResponsiveGrid cols="2" gap="sm">
                   {indices.map((idx) => (
                     <div
                       key={idx.name}
@@ -261,7 +262,7 @@ export const InvestingMarkets = defineCapsule({
                       </MarketIndicator>
                     </div>
                   ))}
-                </div>
+                </ResponsiveGrid>
               </div>
               <div className="relative h-64 min-h-[200px] lg:h-full">
                 <Image

@@ -20,6 +20,7 @@ import {
   GalleryTileImage,
   GalleryTileCaption,
 } from '#/section-kit/GalleryGrid.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * CoworkingGallery — immersive space tour for a coworking or shared-
@@ -102,11 +103,7 @@ export const CoworkingGallery = defineCapsule({
     const accordion = !authored?.length && props.columns == null
     const columns = props.columns ?? 3
     const uniformCols =
-      columns === 2
-        ? 'sm:grid-cols-2'
-        : columns === 4
-          ? 'sm:grid-cols-2 lg:grid-cols-4'
-          : 'sm:grid-cols-2 lg:grid-cols-3'
+      columns === 2 ? '1-2' : columns === 4 ? '1-2-4' : '1-2-3'
 
     const captionPlate = (caption: string, visible: boolean) =>
       caption ? (
@@ -233,7 +230,7 @@ export const CoworkingGallery = defineCapsule({
               </GalleryGrid>
             </>
           ) : (
-            <div className={cn('mt-14 grid grid-cols-1 gap-4', uniformCols)}>
+            <ResponsiveGrid cols={uniformCols} gap="sm" className="mt-14">
               {images.map((image, index) => (
                 <div
                   key={`${image.alt}-${index}`}
@@ -249,7 +246,7 @@ export const CoworkingGallery = defineCapsule({
                   {captionPlate(image.caption, false)}
                 </div>
               ))}
-            </div>
+            </ResponsiveGrid>
           )}
         </Container>
       </section>

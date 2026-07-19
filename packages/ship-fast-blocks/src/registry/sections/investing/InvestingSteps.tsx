@@ -16,6 +16,7 @@ import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { StepTimeline, StepItem } from '#/section-kit/StepTimeline.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const InvestingSteps = defineCapsule({
   name: 'InvestingSteps',
   description:
@@ -105,7 +106,7 @@ export const InvestingSteps = defineCapsule({
             titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
             subtitleClassName="text-lg text-muted-foreground"
           />
-          <div className="grid gap-8 lg:grid-cols-3 lg:gap-12">
+          <ResponsiveGrid cols="1-lg-3" gap="lg" className="lg:gap-12">
             {items.map((step, i) => (
               <StepItem key={step.title} className="relative">
                 <div className="flex items-start gap-6 lg:flex-col lg:items-center">
@@ -129,7 +130,7 @@ export const InvestingSteps = defineCapsule({
                 )}
               </StepItem>
             ))}
-          </div>
+          </ResponsiveGrid>
 
           <div className="mt-16 rounded-2xl bg-muted/50 p-8 lg:p-12">
             <div className="grid items-center gap-8 lg:grid-cols-2">
