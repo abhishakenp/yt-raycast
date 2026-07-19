@@ -35,6 +35,7 @@ import {
   DataRow,
   DataTableCell,
 } from '#/section-kit/DataTable.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * GovPortalDirectory — a telephone / staff directory table. Theme-token based;
@@ -234,7 +235,7 @@ export const GovPortalNewsEvents = defineCapsule({
           <h2 className="mb-8 text-2xl font-semibold tracking-tight text-foreground">
             {heading}
           </h2>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <ResponsiveGrid cols="1-2-3" gap="md">
             {rows.map((row, i) => (
               <ContentCard
                 asChild
@@ -265,7 +266,7 @@ export const GovPortalNewsEvents = defineCapsule({
                 </article>
               </ContentCard>
             ))}
-          </div>
+          </ResponsiveGrid>
         </Container>
       </section>
     )

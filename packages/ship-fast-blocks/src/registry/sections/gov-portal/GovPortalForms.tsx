@@ -17,6 +17,7 @@ import {
   GovFormBody,
 } from '#/section-kit/GovFormTable.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { cn } from '#/lib/utils.ts'
 import { govPortalLakebed } from './gov-portal-lakebed.ts'
 import {
@@ -96,80 +97,84 @@ export const GovPortalGrievance = defineCapsule({
             </div>
           ) : null}
 
-          <form
-            onSubmit={form.submit}
-            className="mt-6 grid gap-4 rounded-2xl border border-border bg-card p-6 sm:grid-cols-2"
+          <ResponsiveGrid
+            asChild
+            cols="1-2"
+            gap="sm"
+            className="mt-6 rounded-2xl border border-border bg-card p-6"
           >
-            <div>
-              <label className={labelCls} htmlFor="grv-name">
-                {pickLang(lang, 'Name', 'नाम')} *
-              </label>
-              <input id="grv-name" name="name" required className={field} />
-            </div>
-            <div>
-              <label className={labelCls} htmlFor="grv-email">
-                {pickLang(lang, 'Email', 'ईमेल')}
-              </label>
-              <input
-                id="grv-email"
-                name="email"
-                type="email"
-                className={field}
-              />
-            </div>
-            <div>
-              <label className={labelCls} htmlFor="grv-mobile">
-                {pickLang(lang, 'Mobile No.', 'मोबाइल नं.')}
-              </label>
-              <input id="grv-mobile" name="mobile" className={field} />
-            </div>
-            <div>
-              <label className={labelCls} htmlFor="grv-subject">
-                {pickLang(lang, 'Subject', 'विषय')} *
-              </label>
-              <input
-                id="grv-subject"
-                name="subject"
-                required
-                className={field}
-              />
-            </div>
-            <div className="sm:col-span-2">
-              <label className={labelCls} htmlFor="grv-desc">
-                {pickLang(lang, 'Description', 'विवरण')}
-              </label>
-              <textarea
-                id="grv-desc"
-                name="description"
-                rows={3}
-                className={field}
-              />
-            </div>
-            <div className="sm:col-span-2">
-              <label className={labelCls} htmlFor="grv-addr">
-                {pickLang(lang, 'Address', 'पता')}
-              </label>
-              <textarea
-                id="grv-addr"
-                name="address"
-                rows={2}
-                className={field}
-              />
-            </div>
-            <div className="sm:col-span-2">
-              <button
-                type="submit"
-                disabled={form.isPending}
-                aria-busy={form.isPending}
-                className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-70"
-              >
-                {form.isPending ? <GovMutationSpinner /> : null}
-                {form.isPending
-                  ? pickLang(lang, 'Sending', 'भेजा जा रहा है')
-                  : pickLang(lang, 'Send', 'भेजें')}
-              </button>
-            </div>
-          </form>
+            <form onSubmit={form.submit}>
+              <div>
+                <label className={labelCls} htmlFor="grv-name">
+                  {pickLang(lang, 'Name', 'नाम')} *
+                </label>
+                <input id="grv-name" name="name" required className={field} />
+              </div>
+              <div>
+                <label className={labelCls} htmlFor="grv-email">
+                  {pickLang(lang, 'Email', 'ईमेल')}
+                </label>
+                <input
+                  id="grv-email"
+                  name="email"
+                  type="email"
+                  className={field}
+                />
+              </div>
+              <div>
+                <label className={labelCls} htmlFor="grv-mobile">
+                  {pickLang(lang, 'Mobile No.', 'मोबाइल नं.')}
+                </label>
+                <input id="grv-mobile" name="mobile" className={field} />
+              </div>
+              <div>
+                <label className={labelCls} htmlFor="grv-subject">
+                  {pickLang(lang, 'Subject', 'विषय')} *
+                </label>
+                <input
+                  id="grv-subject"
+                  name="subject"
+                  required
+                  className={field}
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className={labelCls} htmlFor="grv-desc">
+                  {pickLang(lang, 'Description', 'विवरण')}
+                </label>
+                <textarea
+                  id="grv-desc"
+                  name="description"
+                  rows={3}
+                  className={field}
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className={labelCls} htmlFor="grv-addr">
+                  {pickLang(lang, 'Address', 'पता')}
+                </label>
+                <textarea
+                  id="grv-addr"
+                  name="address"
+                  rows={2}
+                  className={field}
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <button
+                  type="submit"
+                  disabled={form.isPending}
+                  aria-busy={form.isPending}
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-70"
+                >
+                  {form.isPending ? <GovMutationSpinner /> : null}
+                  {form.isPending
+                    ? pickLang(lang, 'Sending', 'भेजा जा रहा है')
+                    : pickLang(lang, 'Send', 'भेजें')}
+                </button>
+              </div>
+            </form>
+          </ResponsiveGrid>
         </Container>
       </GovFormTable>
     )

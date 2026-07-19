@@ -99,6 +99,7 @@ import {
   TenderHeader,
   TenderBody,
 } from '#/section-kit/TenderTable.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * GovPortalTenderBoard — a tabbed government e-tender board (Tenders /
@@ -405,7 +406,7 @@ export const GovPortalDownloads = defineCapsule({
           <h2 className="mb-6 text-2xl font-semibold tracking-tight text-foreground">
             {heading}
           </h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ResponsiveGrid cols="1-2-3" gap="sm">
             {rows.map((row, i) => {
               const title = str(row, 'title')
               const category = str(row, 'category')
@@ -441,7 +442,7 @@ export const GovPortalDownloads = defineCapsule({
                 </Card>
               )
             })}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )

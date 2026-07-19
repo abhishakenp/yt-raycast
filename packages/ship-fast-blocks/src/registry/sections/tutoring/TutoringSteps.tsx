@@ -9,6 +9,7 @@ import {
   StepContent,
 } from '#/section-kit/StepTimeline.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 const DEFAULT_STEPS: { title: string; description: string }[] = [
   {
@@ -67,32 +68,34 @@ export const TutoringSteps = defineCapsule({
             title={heading}
             subtitle={subheading}
           />
-          <ol className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {steps.map((step, i) => (
-              <StepItem
-                key={step.title}
-                className="relative flex flex-col gap-4"
-              >
-                {i < steps.length - 1 ? (
-                  <span
-                    className="absolute left-6 top-6 hidden h-px w-full bg-border lg:block"
-                    aria-hidden="true"
-                  />
-                ) : null}
-                <span className="relative z-10 inline-flex size-12 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground">
-                  {i + 1}
-                </span>
-                <StepContent className="mt-0 gap-0 rounded-lg border bg-card p-5">
-                  <h3 className="text-lg font-semibold text-card-foreground">
-                    {step.title}
-                  </h3>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    {step.description}
-                  </p>
-                </StepContent>
-              </StepItem>
-            ))}
-          </ol>
+          <ResponsiveGrid asChild cols="1-2-4" gap="lg" className="mt-14">
+            <ol>
+              {steps.map((step, i) => (
+                <StepItem
+                  key={step.title}
+                  className="relative flex flex-col gap-4"
+                >
+                  {i < steps.length - 1 ? (
+                    <span
+                      className="absolute left-6 top-6 hidden h-px w-full bg-border lg:block"
+                      aria-hidden="true"
+                    />
+                  ) : null}
+                  <span className="relative z-10 inline-flex size-12 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground">
+                    {i + 1}
+                  </span>
+                  <StepContent className="mt-0 gap-0 rounded-lg border bg-card p-5">
+                    <h3 className="text-lg font-semibold text-card-foreground">
+                      {step.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                      {step.description}
+                    </p>
+                  </StepContent>
+                </StepItem>
+              ))}
+            </ol>
+          </ResponsiveGrid>
         </Container>
       </StepTimeline>
     )

@@ -12,6 +12,7 @@ import {
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * NewsletterTestimonials — reader testimonials band for an editorial newsletter.
@@ -135,7 +136,7 @@ export const NewsletterTestimonials = defineCapsule({
             })}
           </TestimonialGrid>
 
-          <div className="mt-8 grid gap-4 text-center sm:grid-cols-2 lg:grid-cols-4">
+          <ResponsiveGrid cols="1-2-4" gap="sm" className="mt-8 text-center">
             {mini.map((m) => (
               <div key={m.author} className="p-4">
                 <p className="mb-1 font-serif text-xl font-medium text-foreground">
@@ -144,7 +145,7 @@ export const NewsletterTestimonials = defineCapsule({
                 <p className="text-sm text-muted-foreground">— {m.author}</p>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </Container>
       </section>
     )

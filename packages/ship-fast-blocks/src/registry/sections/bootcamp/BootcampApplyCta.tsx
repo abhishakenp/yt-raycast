@@ -17,6 +17,7 @@ import {
   ContactFormSubmit,
   ContactFormFooter,
 } from '#/section-kit/ContactForm.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 
@@ -104,7 +105,7 @@ export const BootcampApplyCta = defineCapsule({
               className="space-y-4 text-left"
               onSubmit={inquiry.submitForm}
             >
-              <div className="grid gap-4 sm:grid-cols-2">
+              <ResponsiveGrid cols="1-2" gap="sm">
                 <ContactFormField className="mb-0">
                   <ContactFormLabel
                     htmlFor="bootcamp-apply-first"
@@ -137,7 +138,7 @@ export const BootcampApplyCta = defineCapsule({
                     className={inputCls}
                   />
                 </ContactFormField>
-              </div>
+              </ResponsiveGrid>
               <ContactFormField className="mb-0">
                 <ContactFormLabel
                   htmlFor="bootcamp-apply-email"

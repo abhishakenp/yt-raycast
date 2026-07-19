@@ -23,6 +23,7 @@ import {
  * with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const LawFirmAttorneys = defineCapsule({
   name: 'LawFirmAttorneys',
   description:
@@ -138,7 +139,7 @@ export const LawFirmAttorneys = defineCapsule({
               {description}
             </p>
           </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <ResponsiveGrid cols="1-md-2-3" gap="lg">
             {items.map((person) => (
               <PersonCard
                 key={person.name}
@@ -186,7 +187,7 @@ export const LawFirmAttorneys = defineCapsule({
                 </PersonCardContent>
               </PersonCard>
             ))}
-          </div>
+          </ResponsiveGrid>
         </Container>
       </section>
     )

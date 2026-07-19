@@ -36,6 +36,7 @@ import {
 const HI_DIGITS = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९']
 import { Container } from '#/section-kit/Container.tsx'
 import { GovPortalHome } from '#/section-kit/GovPortalHome.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /** Render ASCII digits in Devanagari so numeric values localise in Hindi. */
 export function toHiNum(s: string) {
@@ -271,7 +272,7 @@ export const GovPortalQuickLinks = defineCapsule({
           <h2 className="mb-8 text-2xl font-semibold tracking-tight text-foreground">
             {heading}
           </h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <ResponsiveGrid cols="1-2-4" gap="sm">
             {items.map((item, i) => {
               const Icon = QUICK_ICONS[i % QUICK_ICONS.length]
               return (
@@ -306,7 +307,7 @@ export const GovPortalQuickLinks = defineCapsule({
                 </Card>
               )
             })}
-          </div>
+          </ResponsiveGrid>
         </Container>
       </section>
     )

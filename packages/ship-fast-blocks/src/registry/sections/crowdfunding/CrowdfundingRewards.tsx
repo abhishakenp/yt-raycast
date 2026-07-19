@@ -6,6 +6,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { RewardList, RewardItem } from '#/section-kit/RewardList.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * CrowdfundingRewards — a 4-tier REWARDS / pledge grid with a stretch-goals
@@ -181,7 +182,7 @@ export const CrowdfundingRewards = defineCapsule({
             </p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <ResponsiveGrid cols="1-md-2-4" gap="md">
             {rewardTiers.map((tier) => (
               <div
                 key={tier.name}
@@ -234,7 +235,7 @@ export const CrowdfundingRewards = defineCapsule({
                 </button>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
 
           {/* Stretch goals */}
           <div className="mt-16 rounded-xl bg-muted p-8">

@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { StepTimeline } from '#/section-kit/StepTimeline.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * BarNightclubSteps — numbered "how to book" flow for a cocktail-bar /
@@ -79,7 +80,7 @@ export const BarNightclubSteps = defineCapsule({
             </p>
           </div>
 
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <ResponsiveGrid cols="1-2-4" gap="lg">
             {items.map((step, i) => (
               <div key={step.title} className="text-center">
                 <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full border border-border text-2xl font-light">
@@ -91,7 +92,7 @@ export const BarNightclubSteps = defineCapsule({
                 </p>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </Container>
       </StepTimeline>
     )

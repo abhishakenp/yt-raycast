@@ -15,6 +15,7 @@ import {
   ContactFormFooter,
 } from '#/section-kit/ContactForm.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
@@ -118,7 +119,7 @@ export const ConstructionQuote = defineCapsule({
             className="rounded-xl bg-card p-8 shadow-xl lg:p-12"
             onSubmit={inquiry.submitForm}
           >
-            <div className="mb-6 grid gap-6 md:grid-cols-2">
+            <ResponsiveGrid cols="1-md-2" gap="md" className="mb-6">
               <ContactFormField className="mb-0">
                 <ContactFormLabel
                   htmlFor="con-quote-name"
@@ -150,9 +151,9 @@ export const ConstructionQuote = defineCapsule({
                   className={inputCls}
                 />
               </ContactFormField>
-            </div>
+            </ResponsiveGrid>
 
-            <div className="mb-6 grid gap-6 md:grid-cols-2">
+            <ResponsiveGrid cols="1-md-2" gap="md" className="mb-6">
               <ContactFormField className="mb-0">
                 <ContactFormLabel
                   htmlFor="con-quote-phone"
@@ -189,9 +190,9 @@ export const ConstructionQuote = defineCapsule({
                   ))}
                 </ContactFormSelect>
               </ContactFormField>
-            </div>
+            </ResponsiveGrid>
 
-            <div className="mb-6 grid gap-6 md:grid-cols-2">
+            <ResponsiveGrid cols="1-md-2" gap="md" className="mb-6">
               <ContactFormField className="mb-0">
                 <ContactFormLabel
                   htmlFor="con-quote-budget"
@@ -232,7 +233,7 @@ export const ConstructionQuote = defineCapsule({
                   ))}
                 </ContactFormSelect>
               </ContactFormField>
-            </div>
+            </ResponsiveGrid>
 
             <div className="mb-6">
               <ContactFormField className="mb-0">

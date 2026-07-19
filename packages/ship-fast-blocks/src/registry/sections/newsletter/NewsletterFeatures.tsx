@@ -11,6 +11,7 @@ import {
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * NewsletterFeatures — "What You Get" value grid for an editorial newsletter.
@@ -125,7 +126,7 @@ export const NewsletterFeatures = defineCapsule({
           </FeatureGrid>
 
           <div className="mt-16 border-t border-border pt-16 md:mt-20 md:pt-20">
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <ResponsiveGrid cols="1-2-4" gap="md">
               {perks.map((perk) => (
                 <div key={perk.title} className="flex items-start gap-3">
                   <span className="mt-0.5 grid size-5 flex-shrink-0 place-items-center rounded-full bg-muted text-foreground">
@@ -139,7 +140,7 @@ export const NewsletterFeatures = defineCapsule({
                   </div>
                 </div>
               ))}
-            </div>
+            </ResponsiveGrid>
           </div>
         </Container>
       </section>

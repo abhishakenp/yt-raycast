@@ -10,6 +10,7 @@ import {
   StatValue,
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * CryptoNetworkStats — inverted dark data-band for a crypto / DeFi
@@ -107,7 +108,7 @@ export const CryptoNetworkStats = defineCapsule({
                 )
               })}
           </StatGrid>
-          <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-2">
+          <ResponsiveGrid cols="1-md-2" gap="md" className="mx-auto max-w-4xl">
             <div className="rounded-xl border border-background/20 bg-background/10 p-6">
               <div className="mb-4 flex items-center justify-between">
                 <h4 className="font-medium text-background/90">
@@ -153,7 +154,7 @@ export const CryptoNetworkStats = defineCapsule({
                 ))}
               </div>
             </div>
-          </div>
+          </ResponsiveGrid>
         </Container>
       </section>
     )
