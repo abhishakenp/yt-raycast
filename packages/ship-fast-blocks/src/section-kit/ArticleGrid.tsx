@@ -19,15 +19,19 @@ const articleGridVariants = cva('', {
 
 const ArticleGrid = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & VariantProps<typeof articleGridVariants>
->(({ className, cols, ...props }, ref) => (
-  <div
-    data-slot="article-grid"
-    className={cn(articleGridVariants({ cols }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> &
+    VariantProps<typeof articleGridVariants> & { asChild?: boolean }
+>(({ className, cols, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="article-grid"
+      className={cn(articleGridVariants({ cols }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 ArticleGrid.displayName = 'ArticleGrid'
 
 const articleCardVariants = cva('', {
@@ -80,8 +84,10 @@ const ArticleMedia = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<'div'> & {
     aspect?: '4-3' | '4-5' | '16-9' | '16-10' | '3-2' | '2-3'
+    asChild?: boolean
   }
->(({ className, aspect = '4-3', ...props }, ref) => {
+>(({ className, aspect = '4-3', asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
   const aspectCls = {
     '4-3': 'aspect-[4/3]',
     '4-5': 'aspect-[4/5]',
@@ -91,7 +97,7 @@ const ArticleMedia = React.forwardRef<
     '2-3': 'aspect-[2/3]',
   }[aspect]
   return (
-    <div
+    <Comp
       data-slot="article-media"
       className={cn('relative overflow-hidden bg-muted', aspectCls, className)}
       ref={ref}
@@ -103,31 +109,37 @@ ArticleMedia.displayName = 'ArticleMedia'
 
 const ArticleContent = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    data-slot="article-content"
-    className={cn('flex flex-1 flex-col', className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="article-content"
+      className={cn('flex flex-1 flex-col', className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 ArticleContent.displayName = 'ArticleContent'
 
 const ArticleMeta = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    data-slot="article-meta"
-    className={cn(
-      'flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground',
-      className,
-    )}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="article-meta"
+      className={cn(
+        'flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground',
+        className,
+      )}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 ArticleMeta.displayName = 'ArticleMeta'
 
 export {
