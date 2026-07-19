@@ -3,12 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import {
-  StepBadge,
-  StepItem,
-  StepTimeline,
-  StepTimelineGrid,
-  StepTimelineHeader,
-} from '#/section-kit/StepTimeline.tsx'
+  ProcessBadge,
+  ProcessStep,
+  ProcessTimeline,
+  ProcessGrid,
+  ProcessTimelineHeader,
+} from '#/section-kit/ProcessTimeline.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
@@ -67,12 +67,12 @@ export const InteriorDesignProcess = defineCapsule({
         ]
 
     return (
-      <StepTimeline
+      <ProcessTimeline
         variant="muted"
         className={cn('px-4 py-20 sm:px-6 md:py-28 lg:px-8', props.className)}
       >
         <Container size="xl">
-          <StepTimelineHeader>
+          <ProcessTimelineHeader>
             <SectionHeading
               eyebrow={eyebrow}
               title={heading}
@@ -82,11 +82,11 @@ export const InteriorDesignProcess = defineCapsule({
               titleClassName="mb-6 text-3xl font-light text-foreground md:text-4xl"
               subtitleClassName="leading-relaxed text-muted-foreground"
             />
-          </StepTimelineHeader>
-          <StepTimelineGrid columns={4} className="md:gap-6 lg:gap-12">
+          </ProcessTimelineHeader>
+          <ProcessGrid columns={4} className="md:gap-6 lg:gap-12">
             {steps.map((step, i) => (
-              <StepItem key={step.title} className="relative">
-                <StepBadge index={i} variant="faded-ordinal" pad />
+              <ProcessStep key={step.title} className="relative">
+                <ProcessBadge index={i} variant="faded-ordinal" pad />
                 <div className="pt-12">
                   <h3 className="mb-3 text-lg font-medium text-foreground">
                     {step.title}
@@ -95,11 +95,11 @@ export const InteriorDesignProcess = defineCapsule({
                     {step.description}
                   </p>
                 </div>
-              </StepItem>
+              </ProcessStep>
             ))}
-          </StepTimelineGrid>
+          </ProcessGrid>
         </Container>
-      </StepTimeline>
+      </ProcessTimeline>
     )
   },
 })

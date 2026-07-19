@@ -3,14 +3,14 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import {
-  StepBadge,
-  StepConnector,
-  StepItem,
-  StepContent,
-  StepTimeline,
-  StepTimelineGrid,
-  StepTimelineHeader,
-} from '#/section-kit/StepTimeline.tsx'
+  ProcessBadge,
+  ProcessConnector,
+  ProcessStep,
+  ProcessContent,
+  ProcessTimeline,
+  ProcessGrid,
+  ProcessTimelineHeader,
+} from '#/section-kit/ProcessTimeline.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
@@ -68,12 +68,12 @@ export const EventPlannerProcess = defineCapsule({
         ]
 
     return (
-      <StepTimeline
+      <ProcessTimeline
         variant="muted"
         className={cn('px-4 py-20 sm:px-6 lg:px-8 lg:py-28', props.className)}
       >
         <Container size="xl">
-          <StepTimelineHeader className="max-w-3xl">
+          <ProcessTimelineHeader className="max-w-3xl">
             <SectionHeading
               align="left"
               eyebrow={processEyebrow}
@@ -84,32 +84,32 @@ export const EventPlannerProcess = defineCapsule({
               titleClassName="mb-6 text-3xl font-light text-foreground sm:text-4xl lg:text-5xl"
               subtitleClassName="text-lg text-muted-foreground"
             />
-          </StepTimelineHeader>
-          <StepTimelineGrid columns={4} className="lg:gap-6">
+          </ProcessTimelineHeader>
+          <ProcessGrid columns={4} className="lg:gap-6">
             {processSteps.map((step, i) => (
-              <StepItem key={step.title} className="relative">
-                <StepBadge
+              <ProcessStep key={step.title} className="relative">
+                <ProcessBadge
                   index={i}
                   variant="filled-circle"
                   pad
                   className="mb-6"
                 />
-                <StepContent>
+                <ProcessContent>
                   <h3 className="mb-3 text-xl font-medium text-foreground">
                     {step.title}
                   </h3>
                   <p className="leading-relaxed text-muted-foreground">
                     {step.description}
                   </p>
-                </StepContent>
+                </ProcessContent>
                 {i < processSteps.length - 1 && (
-                  <StepConnector className="left-full top-8 hidden w-full -translate-y-1/2 lg:block" />
+                  <ProcessConnector className="left-full top-8 hidden w-full -translate-y-1/2 lg:block" />
                 )}
-              </StepItem>
+              </ProcessStep>
             ))}
-          </StepTimelineGrid>
+          </ProcessGrid>
         </Container>
-      </StepTimeline>
+      </ProcessTimeline>
     )
   },
 })

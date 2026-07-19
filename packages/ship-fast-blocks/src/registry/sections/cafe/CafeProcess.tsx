@@ -3,12 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import {
-  StepBadge,
-  StepItem,
-  StepTimeline,
-  StepTimelineGrid,
-  StepTimelineHeader,
-} from '#/section-kit/StepTimeline.tsx'
+  ProcessBadge,
+  ProcessStep,
+  ProcessTimeline,
+  ProcessGrid,
+  ProcessTimelineHeader,
+} from '#/section-kit/ProcessTimeline.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
@@ -70,12 +70,12 @@ export const CafeProcess = defineCapsule({
         ]
 
     return (
-      <StepTimeline
+      <ProcessTimeline
         variant="inverted"
         className={cn('pt-28 pb-20', props.className)}
       >
         <Container size="xl" className="px-6">
-          <StepTimelineHeader>
+          <ProcessTimelineHeader>
             <SectionHeading
               align="left"
               eyebrow={cap}
@@ -86,11 +86,11 @@ export const CafeProcess = defineCapsule({
               titleClassName="mb-6 font-serif text-3xl font-medium sm:text-4xl"
               subtitleClassName="text-background/60"
             />
-          </StepTimelineHeader>
-          <StepTimelineGrid columns={4}>
+          </ProcessTimelineHeader>
+          <ProcessGrid columns={4}>
             {steps.map((step, i) => (
-              <StepItem key={step.title} className="space-y-4 text-center">
-                <StepBadge
+              <ProcessStep key={step.title} className="space-y-4 text-center">
+                <ProcessBadge
                   index={i}
                   variant="outlined-circle"
                   pad
@@ -98,11 +98,11 @@ export const CafeProcess = defineCapsule({
                 />
                 <h3 className="font-serif text-lg font-medium">{step.title}</h3>
                 <p className="text-sm text-background/60">{step.description}</p>
-              </StepItem>
+              </ProcessStep>
             ))}
-          </StepTimelineGrid>
+          </ProcessGrid>
         </Container>
-      </StepTimeline>
+      </ProcessTimeline>
     )
   },
 })

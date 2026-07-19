@@ -16,7 +16,7 @@ import { Card } from '#/section-kit/Card.tsx'
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { StepTimeline } from '#/section-kit/StepTimeline.tsx'
+import { ProcessTimeline } from '#/section-kit/ProcessTimeline.tsx'
 export const LogisticsProcess = defineCapsule({
   name: 'LogisticsProcess',
   description:
@@ -72,7 +72,7 @@ export const LogisticsProcess = defineCapsule({
     const badgeLabel = props.badgeLabel ?? 'Average booking time'
     const badgeValue = props.badgeValue ?? '3 min'
     return (
-      <StepTimeline className={cn('py-16 lg:py-24', props.className)}>
+      <ProcessTimeline className={cn('py-16 lg:py-24', props.className)}>
         <Container>
           <div className="grid items-center gap-16 lg:grid-cols-2">
             <div>
@@ -143,7 +143,7 @@ export const LogisticsProcess = defineCapsule({
             </div>
           </div>
         </Container>
-      </StepTimeline>
+      </ProcessTimeline>
     )
   },
 })

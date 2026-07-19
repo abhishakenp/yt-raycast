@@ -16,7 +16,7 @@ import { Image } from '#/lib/img.tsx'
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { StepTimeline } from '#/section-kit/StepTimeline.tsx'
+import { ProcessTimeline } from '#/section-kit/ProcessTimeline.tsx'
 export const LawFirmProcess = defineCapsule({
   name: 'LawFirmProcess',
   description:
@@ -65,7 +65,9 @@ export const LawFirmProcess = defineCapsule({
           },
         ]
     return (
-      <StepTimeline className={cn('bg-card py-24 lg:py-28', props.className)}>
+      <ProcessTimeline
+        className={cn('bg-card py-24 lg:py-28', props.className)}
+      >
         <Container>
           <div className="grid items-center gap-16 lg:grid-cols-2">
             <div>
@@ -108,7 +110,7 @@ export const LawFirmProcess = defineCapsule({
             </div>
           </div>
         </Container>
-      </StepTimeline>
+      </ProcessTimeline>
     )
   },
 })

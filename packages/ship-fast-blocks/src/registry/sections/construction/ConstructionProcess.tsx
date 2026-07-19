@@ -14,10 +14,10 @@ import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
-  StepTimeline,
-  StepTimelineGrid,
-  StepItem,
-} from '#/section-kit/StepTimeline.tsx'
+  ProcessTimeline,
+  ProcessGrid,
+  ProcessStep,
+} from '#/section-kit/ProcessTimeline.tsx'
 export const ConstructionProcess = defineCapsule({
   name: 'ConstructionProcess',
   description:
@@ -88,7 +88,9 @@ export const ConstructionProcess = defineCapsule({
           },
         ]
     return (
-      <StepTimeline className={cn('bg-muted py-20 lg:py-28', props.className)}>
+      <ProcessTimeline
+        className={cn('bg-muted py-20 lg:py-28', props.className)}
+      >
         <Container>
           <SectionHeading
             eyebrow={eyebrow}
@@ -100,9 +102,9 @@ export const ConstructionProcess = defineCapsule({
             subtitleClassName="text-lg text-muted-foreground"
           />
 
-          <StepTimelineGrid columns={2} className="gap-8 lg:grid-cols-3">
+          <ProcessGrid columns={2} className="gap-8 lg:grid-cols-3">
             {steps.map((step, i) => (
-              <StepItem key={step.title} className="relative">
+              <ProcessStep key={step.title} className="relative">
                 <div className="absolute -left-2 -top-4 text-6xl font-bold text-foreground/10">
                   {String(i + 1).padStart(2, '0')}
                 </div>
@@ -117,11 +119,11 @@ export const ConstructionProcess = defineCapsule({
                     {step.duration}
                   </div>
                 </div>
-              </StepItem>
+              </ProcessStep>
             ))}
-          </StepTimelineGrid>
+          </ProcessGrid>
         </Container>
-      </StepTimeline>
+      </ProcessTimeline>
     )
   },
 })

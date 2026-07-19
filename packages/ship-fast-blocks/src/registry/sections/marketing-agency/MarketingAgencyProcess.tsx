@@ -13,10 +13,10 @@ import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
-  StepTimeline,
-  StepTimelineGrid,
-  StepItem,
-} from '#/section-kit/StepTimeline.tsx'
+  ProcessTimeline,
+  ProcessGrid,
+  ProcessStep,
+} from '#/section-kit/ProcessTimeline.tsx'
 export const MarketingAgencyProcess = defineCapsule({
   name: 'MarketingAgencyProcess',
   description:
@@ -66,7 +66,7 @@ export const MarketingAgencyProcess = defineCapsule({
           },
         ]
     return (
-      <StepTimeline className={cn('bg-background py-24', props.className)}>
+      <ProcessTimeline className={cn('bg-background py-24', props.className)}>
         <Container>
           <SectionHeading
             eyebrow={eyebrow}
@@ -77,9 +77,9 @@ export const MarketingAgencyProcess = defineCapsule({
             titleClassName="mb-4 tracking-tight sm:text-4xl"
             subtitleClassName="md:text-base"
           />
-          <StepTimelineGrid columns={4} className="gap-8">
+          <ProcessGrid columns={4} className="gap-8">
             {steps.map((step, i) => (
-              <StepItem key={step.title} className="relative">
+              <ProcessStep key={step.title} className="relative">
                 <div className="mb-6 grid size-12 place-items-center rounded-full bg-primary text-lg font-semibold text-primary-foreground">
                   {i + 1}
                 </div>
@@ -95,11 +95,11 @@ export const MarketingAgencyProcess = defineCapsule({
                     className="absolute left-full top-6 hidden h-px w-full -translate-x-6 bg-border md:block"
                   />
                 )}
-              </StepItem>
+              </ProcessStep>
             ))}
-          </StepTimelineGrid>
+          </ProcessGrid>
         </Container>
-      </StepTimeline>
+      </ProcessTimeline>
     )
   },
 })

@@ -6,10 +6,10 @@ import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
-  StepTimeline,
-  StepTimelineGrid,
-  StepItem,
-} from '#/section-kit/StepTimeline.tsx'
+  ProcessTimeline,
+  ProcessGrid,
+  ProcessStep,
+} from '#/section-kit/ProcessTimeline.tsx'
 
 /**
  * LandscapingProcess — a centered-header "how we work" process band for a
@@ -64,7 +64,9 @@ export const LandscapingProcess = defineCapsule({
         ]
 
     return (
-      <StepTimeline className={cn('bg-accent py-20 lg:py-28', props.className)}>
+      <ProcessTimeline
+        className={cn('bg-accent py-20 lg:py-28', props.className)}
+      >
         <Container>
           <SectionHeading
             title={heading}
@@ -73,9 +75,9 @@ export const LandscapingProcess = defineCapsule({
             titleClassName="mb-4 sm:text-4xl"
             subtitleClassName="text-lg"
           />
-          <StepTimelineGrid columns={4} className="gap-8">
+          <ProcessGrid columns={4} className="gap-8">
             {items.map((step, i) => (
-              <StepItem key={step.title} className="relative">
+              <ProcessStep key={step.title} className="relative">
                 <div className="mb-6 flex size-12 items-center justify-center rounded-full bg-primary text-xl font-semibold text-primary-foreground">
                   {i + 1}
                 </div>
@@ -91,11 +93,11 @@ export const LandscapingProcess = defineCapsule({
                     className="absolute left-12 top-6 hidden h-0.5 w-full bg-primary/20 md:block"
                   />
                 )}
-              </StepItem>
+              </ProcessStep>
             ))}
-          </StepTimelineGrid>
+          </ProcessGrid>
         </Container>
-      </StepTimeline>
+      </ProcessTimeline>
     )
   },
 })

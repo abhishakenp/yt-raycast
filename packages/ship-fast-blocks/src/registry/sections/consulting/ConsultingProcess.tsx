@@ -6,10 +6,10 @@ import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
-  StepTimeline,
-  StepTimelineGrid,
-  StepItem,
-} from '#/section-kit/StepTimeline.tsx'
+  ProcessTimeline,
+  ProcessGrid,
+  ProcessStep,
+} from '#/section-kit/ProcessTimeline.tsx'
 
 /**
  * ConsultingProcess — dark 4-step "How We Work" process band for a
@@ -67,7 +67,7 @@ export const ConsultingProcess = defineCapsule({
         ]
 
     return (
-      <StepTimeline
+      <ProcessTimeline
         className={cn(
           'bg-primary py-24 text-primary-foreground',
           props.className,
@@ -81,9 +81,9 @@ export const ConsultingProcess = defineCapsule({
             titleClassName="mb-4 text-3xl font-bold tracking-tight sm:text-4xl"
             subtitleClassName="text-lg text-primary-foreground/70"
           />
-          <StepTimelineGrid columns={2} className="gap-8 lg:grid-cols-4">
+          <ProcessGrid columns={2} className="gap-8 lg:grid-cols-4">
             {steps.map((step, i) => (
-              <StepItem key={step.title} className="relative">
+              <ProcessStep key={step.title} className="relative">
                 <div className="mb-4 text-6xl font-bold text-primary-foreground/20">
                   {String(i + 1).padStart(2, '0')}
                 </div>
@@ -97,11 +97,11 @@ export const ConsultingProcess = defineCapsule({
                     className="absolute left-full top-8 hidden h-px w-full -translate-x-8 bg-primary-foreground/20 lg:block"
                   />
                 )}
-              </StepItem>
+              </ProcessStep>
             ))}
-          </StepTimelineGrid>
+          </ProcessGrid>
         </Container>
-      </StepTimeline>
+      </ProcessTimeline>
     )
   },
 })

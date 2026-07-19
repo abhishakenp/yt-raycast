@@ -416,6 +416,17 @@ export {
   ServiceDescription,
   servicesGridVariants,
 } from './ServicesGrid.tsx'
+export {
+  ProcessTimeline,
+  ProcessTimelineHeader,
+  ProcessGrid,
+  ProcessBadge,
+  ProcessStep,
+  ProcessContent,
+  ProcessConnector,
+  processTimelineVariants,
+  processBadgeVariants,
+} from './ProcessTimeline.tsx'
 
 export type { KitAction } from './types.ts'
 export { kitActionClasses } from './types.ts'

@@ -15,7 +15,7 @@ import { Image } from '#/lib/img.tsx'
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { StepTimeline } from '#/section-kit/StepTimeline.tsx'
+import { ProcessTimeline } from '#/section-kit/ProcessTimeline.tsx'
 export const FilmDirectorProcess = defineCapsule({
   name: 'FilmDirectorProcess',
   description:
@@ -77,7 +77,7 @@ export const FilmDirectorProcess = defineCapsule({
     const processQuoteName = props.quoteName ?? 'Sarah Mitchell'
     const processQuoteRole = props.quoteRole ?? 'Creative Director, Nike Global'
     return (
-      <StepTimeline
+      <ProcessTimeline
         className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
       >
         <Container>
@@ -131,7 +131,7 @@ export const FilmDirectorProcess = defineCapsule({
             </div>
           </div>
         </Container>
-      </StepTimeline>
+      </ProcessTimeline>
     )
   },
 })

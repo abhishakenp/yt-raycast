@@ -6,10 +6,10 @@ import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
-  StepTimeline,
-  StepTimelineGrid,
-  StepItem,
-} from '#/section-kit/StepTimeline.tsx'
+  ProcessTimeline,
+  ProcessGrid,
+  ProcessStep,
+} from '#/section-kit/ProcessTimeline.tsx'
 
 /**
  * ArchitectureFirmProcess — numbered process / how-we-work section for an
@@ -61,7 +61,7 @@ export const ArchitectureFirmProcess = defineCapsule({
         ]
 
     return (
-      <StepTimeline
+      <ProcessTimeline
         aria-labelledby="architecture-firm-process-heading"
         className={cn('py-24 lg:py-28', props.className)}
       >
@@ -75,9 +75,9 @@ export const ArchitectureFirmProcess = defineCapsule({
             titleClassName="text-3xl font-light text-foreground sm:text-4xl"
           />
 
-          <StepTimelineGrid columns={3} className="grid-cols-1 gap-8 lg:gap-12">
+          <ProcessGrid columns={3} className="grid-cols-1 gap-8 lg:gap-12">
             {steps.map((step, i) => (
-              <StepItem key={step.title} className="relative">
+              <ProcessStep key={step.title} className="relative">
                 <span className="absolute -left-2 -top-4 select-none text-7xl font-light text-muted-foreground/30">
                   {String(i + 1).padStart(2, '0')}
                 </span>
@@ -89,11 +89,11 @@ export const ArchitectureFirmProcess = defineCapsule({
                     {step.description}
                   </p>
                 </div>
-              </StepItem>
+              </ProcessStep>
             ))}
-          </StepTimelineGrid>
+          </ProcessGrid>
         </Container>
-      </StepTimeline>
+      </ProcessTimeline>
     )
   },
 })

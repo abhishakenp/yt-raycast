@@ -22,10 +22,10 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
-  StepTimeline,
-  StepTimelineGrid,
-  StepItem,
-} from '#/section-kit/StepTimeline.tsx'
+  ProcessTimeline,
+  ProcessGrid,
+  ProcessStep,
+} from '#/section-kit/ProcessTimeline.tsx'
 export const ManufacturingProcess = defineCapsule({
   name: 'ManufacturingProcess',
   description:
@@ -104,7 +104,7 @@ export const ManufacturingProcess = defineCapsule({
           },
         ]
     return (
-      <StepTimeline
+      <ProcessTimeline
         className={cn('bg-background py-20 lg:py-28', props.className)}
       >
         <Container>
@@ -117,9 +117,9 @@ export const ManufacturingProcess = defineCapsule({
             titleClassName="mt-3 tracking-tight sm:text-4xl"
             subtitleClassName="mt-4 text-lg"
           />
-          <StepTimelineGrid columns={4} className="gap-8">
+          <ProcessGrid columns={4} className="gap-8">
             {steps.map((step, i) => (
-              <StepItem key={step.title} className="relative">
+              <ProcessStep key={step.title} className="relative">
                 <div className="flex flex-col items-center text-center">
                   <div className="mb-4 grid size-12 place-items-center rounded-full bg-foreground text-lg font-semibold text-background">
                     {i + 1}
@@ -134,9 +134,9 @@ export const ManufacturingProcess = defineCapsule({
                 {i < steps.length - 1 && (
                   <div className="absolute left-full top-6 hidden h-px w-full -translate-x-1/2 bg-border md:block" />
                 )}
-              </StepItem>
+              </ProcessStep>
             ))}
-          </StepTimelineGrid>
+          </ProcessGrid>
           <Card variant="muted" className="mt-16 rounded-lg p-8">
             <StatGrid className="grid gap-8 text-center md:grid-cols-3">
               {stats.map((s) => (
@@ -150,7 +150,7 @@ export const ManufacturingProcess = defineCapsule({
             </StatGrid>
           </Card>
         </Container>
-      </StepTimeline>
+      </ProcessTimeline>
     )
   },
 })

@@ -7,10 +7,10 @@ import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
-  StepTimeline,
-  StepTimelineGrid,
-  StepItem,
-} from '#/section-kit/StepTimeline.tsx'
+  ProcessTimeline,
+  ProcessGrid,
+  ProcessStep,
+} from '#/section-kit/ProcessTimeline.tsx'
 
 /**
  * AccountingFirmProcess — "how we work" steps band for a CPA / accounting-firm
@@ -75,7 +75,7 @@ export const AccountingFirmProcess = defineCapsule({
     const ctaButton = props.ctaButton ?? 'Book Your Consultation'
 
     return (
-      <StepTimeline
+      <ProcessTimeline
         className={cn('bg-background py-20 lg:py-28', props.className)}
       >
         <Container>
@@ -87,9 +87,9 @@ export const AccountingFirmProcess = defineCapsule({
             subtitleClassName="text-lg"
           />
 
-          <StepTimelineGrid columns={3} className="gap-8 lg:gap-12">
+          <ProcessGrid columns={3} className="gap-8 lg:gap-12">
             {steps.map((step, i) => (
-              <StepItem key={step.title} className="relative">
+              <ProcessStep key={step.title} className="relative">
                 <div className="mb-6 flex size-12 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground">
                   {i + 1}
                 </div>
@@ -105,9 +105,9 @@ export const AccountingFirmProcess = defineCapsule({
                     className="absolute left-[calc(100%+1.5rem)] top-6 hidden h-px w-[calc(100%-3rem)] -translate-y-1/2 bg-border md:block"
                   />
                 )}
-              </StepItem>
+              </ProcessStep>
             ))}
-          </StepTimelineGrid>
+          </ProcessGrid>
 
           <Card variant="muted" className="mt-16 rounded-lg p-8">
             <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
@@ -127,7 +127,7 @@ export const AccountingFirmProcess = defineCapsule({
             </div>
           </Card>
         </Container>
-      </StepTimeline>
+      </ProcessTimeline>
     )
   },
 })
