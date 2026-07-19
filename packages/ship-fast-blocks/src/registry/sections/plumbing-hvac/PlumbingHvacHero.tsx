@@ -12,6 +12,7 @@ import {
   HeroActions,
   HeroCta,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * PlumbingHvacHero — full-bleed, image-forward hero for a local plumbing & HVAC
@@ -82,67 +83,69 @@ export const PlumbingHvacHero = defineCapsule({
           gradientClassName="bg-gradient-to-r from-foreground/80 via-foreground/50 to-foreground/30"
         />
 
-        <HeroContent className="mx-auto flex max-w-7xl flex-col items-start px-6 pb-28 pt-36 text-left sm:pt-40 lg:px-8 lg:pb-32 lg:pt-48">
-          <HeroBadge variant="pill" className="gap-2 font-semibold">
-            <span
-              aria-hidden="true"
-              className="size-2 animate-pulse rounded-full bg-primary"
-            />
-            {eyebrow}
-          </HeroBadge>
-
-          <HeroHeading className="mt-8 max-w-3xl text-background">
-            {heading}
-          </HeroHeading>
-
-          <HeroSubheading variant="light">{subheading}</HeroSubheading>
-
-          <HeroActions className="mt-10 flex-col gap-4 sm:flex-row">
-            <HeroCta
-              asChild
-              variant="primary"
-              className="rounded-full px-8 py-4 font-semibold"
-            >
-              <button type="button" onClick={() => go(primaryTarget)}>
-                {primaryCta}
-              </button>
-            </HeroCta>
-            <HeroCta
-              asChild
-              variant="outline"
-              className="rounded-full border-border bg-card/10 px-8 py-4 font-semibold text-background backdrop-blur-sm hover:bg-card/20"
-            >
-              <button type="button" onClick={() => go(secondaryTarget)}>
-                {secondaryCta}
-              </button>
-            </HeroCta>
-          </HeroActions>
-
-          <div className="mt-12 flex flex-wrap items-center gap-3">
-            {badges.map((badge) => (
+        <Container asChild>
+          <HeroContent className="flex flex-col items-start pb-28 pt-36 text-left sm:pt-40 lg:pb-32 lg:pt-48">
+            <HeroBadge variant="pill" className="gap-2 font-semibold">
               <span
-                key={badge}
-                className="inline-flex items-center gap-2 rounded-full border border-background/20 bg-background/10 px-4 py-2 text-sm font-medium text-background backdrop-blur-sm"
+                aria-hidden="true"
+                className="size-2 animate-pulse rounded-full bg-primary"
+              />
+              {eyebrow}
+            </HeroBadge>
+
+            <HeroHeading className="mt-8 max-w-3xl text-background">
+              {heading}
+            </HeroHeading>
+
+            <HeroSubheading variant="light">{subheading}</HeroSubheading>
+
+            <HeroActions className="mt-10 flex-col gap-4 sm:flex-row">
+              <HeroCta
+                asChild
+                variant="primary"
+                className="rounded-full px-8 py-4 font-semibold"
               >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                  className="text-primary"
+                <button type="button" onClick={() => go(primaryTarget)}>
+                  {primaryCta}
+                </button>
+              </HeroCta>
+              <HeroCta
+                asChild
+                variant="outline"
+                className="rounded-full border-border bg-card/10 px-8 py-4 font-semibold text-background backdrop-blur-sm hover:bg-card/20"
+              >
+                <button type="button" onClick={() => go(secondaryTarget)}>
+                  {secondaryCta}
+                </button>
+              </HeroCta>
+            </HeroActions>
+
+            <div className="mt-12 flex flex-wrap items-center gap-3">
+              {badges.map((badge) => (
+                <span
+                  key={badge}
+                  className="inline-flex items-center gap-2 rounded-full border border-background/20 bg-background/10 px-4 py-2 text-sm font-medium text-background backdrop-blur-sm"
                 >
-                  <path d="M20 6 9 17l-5-5" />
-                </svg>
-                {badge}
-              </span>
-            ))}
-          </div>
-        </HeroContent>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                    className="text-primary"
+                  >
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                  {badge}
+                </span>
+              ))}
+            </div>
+          </HeroContent>
+        </Container>
       </HeroSection>
     )
   },

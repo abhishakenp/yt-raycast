@@ -13,6 +13,7 @@ import {
   HeroCta,
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * RealEstateHero — full-bleed property hero for a premium brokerage. A striking
@@ -86,61 +87,63 @@ export const RealEstateHero = defineCapsule({
           gradientClassName="bg-gradient-to-t from-foreground/70 via-foreground/25 to-foreground/45"
         />
 
-        <HeroContent className="mx-auto flex max-w-7xl flex-col items-center px-6 pb-28 pt-36 text-center sm:pt-40 lg:px-8 lg:pb-32 lg:pt-48">
-          <HeroBadge variant="pill">{eyebrow}</HeroBadge>
+        <Container asChild>
+          <HeroContent className="flex flex-col items-center pb-28 pt-36 text-center sm:pt-40 lg:pb-32 lg:pt-48">
+            <HeroBadge variant="pill">{eyebrow}</HeroBadge>
 
-          <HeroHeading variant="serif">{heading}</HeroHeading>
+            <HeroHeading variant="serif">{heading}</HeroHeading>
 
-          <HeroSubheading variant="light">{subheading}</HeroSubheading>
+            <HeroSubheading variant="light">{subheading}</HeroSubheading>
 
-          <HeroActions className="mt-10 flex-col gap-4 sm:flex-row">
-            <HeroCta
-              asChild
-              variant="primary"
-              className="rounded-full px-8 py-4 font-medium"
-            >
-              <button type="button" onClick={() => go(primaryTarget)}>
-                {primaryCta}
-              </button>
-            </HeroCta>
-            <HeroCta
-              asChild
-              variant="outline"
-              className="rounded-full border-border bg-card/10 px-8 py-4 font-medium text-background backdrop-blur-sm hover:bg-card/20"
-            >
-              <button type="button" onClick={() => go(secondaryTarget)}>
-                {secondaryCta}
-              </button>
-            </HeroCta>
-          </HeroActions>
-
-          <Card
-            variant="default"
-            rounded="2xl"
-            padding="none"
-            shadow="lg"
-            className="mt-14 w-full max-w-3xl bg-background/95 p-3 backdrop-blur"
-          >
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <div className="flex-1 rounded-xl bg-muted px-4 py-3 text-left text-sm text-muted-foreground">
-                {locationPlaceholder}
-              </div>
-              <div className="rounded-xl bg-muted px-4 py-3 text-left text-sm text-muted-foreground sm:w-40">
-                {typePlaceholder}
-              </div>
-              <div className="rounded-xl bg-muted px-4 py-3 text-left text-sm text-muted-foreground sm:w-36">
-                {pricePlaceholder}
-              </div>
-              <button
-                type="button"
-                onClick={() => go(searchTarget)}
-                className="inline-flex items-center justify-center rounded-xl bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            <HeroActions className="mt-10 flex-col gap-4 sm:flex-row">
+              <HeroCta
+                asChild
+                variant="primary"
+                className="rounded-full px-8 py-4 font-medium"
               >
-                {searchLabel}
-              </button>
-            </div>
-          </Card>
-        </HeroContent>
+                <button type="button" onClick={() => go(primaryTarget)}>
+                  {primaryCta}
+                </button>
+              </HeroCta>
+              <HeroCta
+                asChild
+                variant="outline"
+                className="rounded-full border-border bg-card/10 px-8 py-4 font-medium text-background backdrop-blur-sm hover:bg-card/20"
+              >
+                <button type="button" onClick={() => go(secondaryTarget)}>
+                  {secondaryCta}
+                </button>
+              </HeroCta>
+            </HeroActions>
+
+            <Card
+              variant="default"
+              rounded="2xl"
+              padding="none"
+              shadow="lg"
+              className="mt-14 w-full max-w-3xl bg-background/95 p-3 backdrop-blur"
+            >
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <div className="flex-1 rounded-xl bg-muted px-4 py-3 text-left text-sm text-muted-foreground">
+                  {locationPlaceholder}
+                </div>
+                <div className="rounded-xl bg-muted px-4 py-3 text-left text-sm text-muted-foreground sm:w-40">
+                  {typePlaceholder}
+                </div>
+                <div className="rounded-xl bg-muted px-4 py-3 text-left text-sm text-muted-foreground sm:w-36">
+                  {pricePlaceholder}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => go(searchTarget)}
+                  className="inline-flex items-center justify-center rounded-xl bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  {searchLabel}
+                </button>
+              </div>
+            </Card>
+          </HeroContent>
+        </Container>
       </HeroSection>
     )
   },

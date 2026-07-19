@@ -11,6 +11,7 @@ import {
   HeroHeading,
   HeroSubheading,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * VacationRentalHero — a full-bleed, immersive getaway hero for a vacation-rental
@@ -80,78 +81,29 @@ export const VacationRentalHero = defineCapsule({
           gradientClassName="bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent"
         />
 
-        <HeroContent className="mx-auto flex max-w-5xl flex-col items-center px-6 py-28 text-center sm:py-36 lg:px-8">
-          <HeroBadge
-            variant="pill"
-            className="mb-5 gap-2 bg-background/15 text-sm tracking-normal normal-case"
-          >
-            <span className="inline-block size-1.5 rounded-full bg-background" />
-            {eyebrow}
-          </HeroBadge>
-          <HeroHeading className="max-w-3xl leading-[1.1] text-background">
-            {heading}
-          </HeroHeading>
-          <HeroSubheading
-            variant="light"
-            className="text-lg text-background/85 sm:text-lg"
-          >
-            {subheading}
-          </HeroSubheading>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm font-medium text-background/90">
-            <span className="inline-flex items-center gap-1.5">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-                <circle cx="12" cy="10" r="3" />
-              </svg>
-              {location}
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2Z" />
-              </svg>
-              {rating}
-            </span>
-          </div>
-
-          <div className="mt-10 w-full max-w-3xl rounded-2xl border border-background/30 bg-background/95 p-2 shadow-[0_24px_80px_rgba(0,0,0,0.25)] backdrop-blur-md sm:p-3">
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-center">
-              {cells.map((cell) => (
-                <div
-                  key={cell.label}
-                  className="rounded-xl px-4 py-3 text-left transition-colors hover:bg-muted"
-                >
-                  <span className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    {cell.label}
-                  </span>
-                  <span className="mt-1 block text-sm font-medium text-foreground">
-                    {cell.value}
-                  </span>
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={() => go(ctaTarget)}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:py-[3.25rem]"
-              >
+        <Container asChild size="md">
+          <HeroContent className="flex flex-col items-center py-28 text-center sm:py-36">
+            <HeroBadge
+              variant="pill"
+              className="mb-5 gap-2 bg-background/15 text-sm tracking-normal normal-case"
+            >
+              <span className="inline-block size-1.5 rounded-full bg-background" />
+              {eyebrow}
+            </HeroBadge>
+            <HeroHeading className="max-w-3xl leading-[1.1] text-background">
+              {heading}
+            </HeroHeading>
+            <HeroSubheading
+              variant="light"
+              className="text-lg text-background/85 sm:text-lg"
+            >
+              {subheading}
+            </HeroSubheading>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm font-medium text-background/90">
+              <span className="inline-flex items-center gap-1.5">
                 <svg
-                  width="18"
-                  height="18"
+                  width="16"
+                  height="16"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -160,14 +112,65 @@ export const VacationRentalHero = defineCapsule({
                   strokeLinejoin="round"
                   aria-hidden="true"
                 >
-                  <circle cx="11" cy="11" r="7" />
-                  <path d="m21 21-4.3-4.3" />
+                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                  <circle cx="12" cy="10" r="3" />
                 </svg>
-                {ctaLabel}
-              </button>
+                {location}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2Z" />
+                </svg>
+                {rating}
+              </span>
             </div>
-          </div>
-        </HeroContent>
+
+            <div className="mt-10 w-full max-w-3xl rounded-2xl border border-background/30 bg-background/95 p-2 shadow-[0_24px_80px_rgba(0,0,0,0.25)] backdrop-blur-md sm:p-3">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-center">
+                {cells.map((cell) => (
+                  <div
+                    key={cell.label}
+                    className="rounded-xl px-4 py-3 text-left transition-colors hover:bg-muted"
+                  >
+                    <span className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      {cell.label}
+                    </span>
+                    <span className="mt-1 block text-sm font-medium text-foreground">
+                      {cell.value}
+                    </span>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => go(ctaTarget)}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:py-[3.25rem]"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="m21 21-4.3-4.3" />
+                  </svg>
+                  {ctaLabel}
+                </button>
+              </div>
+            </div>
+          </HeroContent>
+        </Container>
       </HeroSection>
     )
   },

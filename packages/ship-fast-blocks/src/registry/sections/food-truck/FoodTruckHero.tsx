@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -101,98 +102,100 @@ export const FoodTruckHero = defineCapsule({
         variant="default"
         className={cn('px-6 pt-20 pb-20 lg:pt-28 lg:pb-28', props.className)}
       >
-        <HeroContent className="mx-auto grid max-w-6xl items-center gap-12 md:grid-cols-2">
-          <div className="space-y-6">
-            <span className="inline-block rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
-              {heroBadge}
-            </span>
-            <h1 className="text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
-              {heroHeadingLines.map((line) => (
-                <span key={line} className="block">
-                  {line}
-                </span>
-              ))}
-            </h1>
-            <p className="max-w-md text-lg leading-relaxed text-muted-foreground">
-              {heroSub}
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <button
-                type="button"
-                onClick={() => go(heroPrimary)}
-                className="rounded-full bg-foreground px-6 py-3 font-medium text-background transition-colors hover:bg-foreground/90"
-              >
-                {heroPrimary}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(heroSecondary)}
-                className="rounded-full border border-border px-6 py-3 font-medium text-foreground transition-colors hover:bg-muted"
-              >
-                {heroSecondary}
-              </button>
-              <CommerceAddItemButton
-                lakebed={lakebed}
-                item={{
-                  label: featuredItemName,
-                  price: featuredItemPrice,
-                }}
-                aria-label={`${addLabel} ${featuredItemName}`}
-                pendingChildren={<CommerceMutationSpinner />}
-                className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
-              >
-                {addLabel}
-              </CommerceAddItemButton>
-            </div>
-            <div className="flex flex-wrap items-center gap-6 pt-4 text-sm text-muted-foreground">
-              <span className="flex items-center gap-2">
-                <Star className="size-4 text-primary" />
-                {heroRating}
+        <Container asChild size="lg">
+          <HeroContent className="grid items-center gap-12 md:grid-cols-2">
+            <div className="space-y-6">
+              <span className="inline-block rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+                {heroBadge}
               </span>
-              <span className="flex items-center gap-2">
-                <svg
-                  className="size-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
+              <h1 className="text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
+                {heroHeadingLines.map((line) => (
+                  <span key={line} className="block">
+                    {line}
+                  </span>
+                ))}
+              </h1>
+              <p className="max-w-md text-lg leading-relaxed text-muted-foreground">
+                {heroSub}
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <button
+                  type="button"
+                  onClick={() => go(heroPrimary)}
+                  className="rounded-full bg-foreground px-6 py-3 font-medium text-background transition-colors hover:bg-foreground/90"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                {heroHours}
-              </span>
+                  {heroPrimary}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => go(heroSecondary)}
+                  className="rounded-full border border-border px-6 py-3 font-medium text-foreground transition-colors hover:bg-muted"
+                >
+                  {heroSecondary}
+                </button>
+                <CommerceAddItemButton
+                  lakebed={lakebed}
+                  item={{
+                    label: featuredItemName,
+                    price: featuredItemPrice,
+                  }}
+                  aria-label={`${addLabel} ${featuredItemName}`}
+                  pendingChildren={<CommerceMutationSpinner />}
+                  className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+                >
+                  {addLabel}
+                </CommerceAddItemButton>
+              </div>
+              <div className="flex flex-wrap items-center gap-6 pt-4 text-sm text-muted-foreground">
+                <span className="flex items-center gap-2">
+                  <Star className="size-4 text-primary" />
+                  {heroRating}
+                </span>
+                <span className="flex items-center gap-2">
+                  <svg
+                    className="size-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  {heroHours}
+                </span>
+              </div>
             </div>
-          </div>
-          <div className="relative">
-            <Image
-              alt={heroImageAlt}
-              w={800}
-              h={600}
-              className="h-[400px] w-full rounded-2xl object-cover md:h-[500px]"
-            />
-            <div className="absolute -bottom-6 -left-6 hidden rounded-xl bg-card p-4 shadow-lg md:block">
-              <div className="flex items-center gap-3">
-                <Image
-                  alt={chefAvatarAlt}
-                  w={120}
-                  h={120}
-                  className="size-12 rounded-full object-cover"
-                />
-                <div>
-                  <p className="text-sm font-semibold text-card-foreground">
-                    {chefName}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{chefRole}</p>
+            <div className="relative">
+              <Image
+                alt={heroImageAlt}
+                w={800}
+                h={600}
+                className="h-[400px] w-full rounded-2xl object-cover md:h-[500px]"
+              />
+              <div className="absolute -bottom-6 -left-6 hidden rounded-xl bg-card p-4 shadow-lg md:block">
+                <div className="flex items-center gap-3">
+                  <Image
+                    alt={chefAvatarAlt}
+                    w={120}
+                    h={120}
+                    className="size-12 rounded-full object-cover"
+                  />
+                  <div>
+                    <p className="text-sm font-semibold text-card-foreground">
+                      {chefName}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{chefRole}</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </HeroContent>
+          </HeroContent>
+        </Container>
       </HeroSection>
     )
   },

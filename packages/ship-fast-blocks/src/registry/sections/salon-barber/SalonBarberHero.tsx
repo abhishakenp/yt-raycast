@@ -12,6 +12,7 @@ import {
   HeroActions,
   HeroCta,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 export const SalonBarberHero = defineCapsule({
   name: 'SalonBarberHero',
@@ -55,51 +56,55 @@ export const SalonBarberHero = defineCapsule({
           gradientClassName="bg-gradient-to-t from-foreground/80 via-foreground/40 to-transparent"
         />
 
-        <HeroContent className="mx-auto flex max-w-4xl flex-col items-center px-6 py-28 text-center sm:py-36 lg:px-8">
-          <HeroBadge variant="pill" className="font-semibold tracking-widest">
-            {eyebrow}
-          </HeroBadge>
-          <HeroHeading className="mt-6 text-background">{heading}</HeroHeading>
-          <HeroSubheading variant="light" className="text-lg leading-8">
-            {subheading}
-          </HeroSubheading>
+        <Container asChild size="4xl">
+          <HeroContent className="flex flex-col items-center py-28 text-center sm:py-36">
+            <HeroBadge variant="pill" className="font-semibold tracking-widest">
+              {eyebrow}
+            </HeroBadge>
+            <HeroHeading className="mt-6 text-background">
+              {heading}
+            </HeroHeading>
+            <HeroSubheading variant="light" className="text-lg leading-8">
+              {subheading}
+            </HeroSubheading>
 
-          <HeroActions className="mt-10 flex-col gap-3 sm:flex-row">
-            <HeroCta
-              asChild
-              variant="primary"
-              className="rounded-full px-8 py-3 font-semibold"
-            >
-              <button type="button" onClick={() => go(primaryTarget)}>
-                {primaryCta}
-              </button>
-            </HeroCta>
-            <HeroCta
-              asChild
-              variant="outline"
-              className="rounded-full border-border bg-card/10 px-8 py-3 font-semibold text-background hover:bg-card/20"
-            >
-              <button type="button" onClick={() => go(secondaryTarget)}>
-                {secondaryCta}
-              </button>
-            </HeroCta>
-          </HeroActions>
+            <HeroActions className="mt-10 flex-col gap-3 sm:flex-row">
+              <HeroCta
+                asChild
+                variant="primary"
+                className="rounded-full px-8 py-3 font-semibold"
+              >
+                <button type="button" onClick={() => go(primaryTarget)}>
+                  {primaryCta}
+                </button>
+              </HeroCta>
+              <HeroCta
+                asChild
+                variant="outline"
+                className="rounded-full border-border bg-card/10 px-8 py-3 font-semibold text-background hover:bg-card/20"
+              >
+                <button type="button" onClick={() => go(secondaryTarget)}>
+                  {secondaryCta}
+                </button>
+              </HeroCta>
+            </HeroActions>
 
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-4 text-sm text-background/80">
-            {hours.flatMap((slot, i) =>
-              i === 0
-                ? [<span key={slot}>{slot}</span>]
-                : [
-                    <span
-                      key={`d-${i}`}
-                      className="h-4 w-px bg-background/30"
-                      aria-hidden="true"
-                    />,
-                    <span key={slot}>{slot}</span>,
-                  ],
-            )}
-          </div>
-        </HeroContent>
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-4 text-sm text-background/80">
+              {hours.flatMap((slot, i) =>
+                i === 0
+                  ? [<span key={slot}>{slot}</span>]
+                  : [
+                      <span
+                        key={`d-${i}`}
+                        className="h-4 w-px bg-background/30"
+                        aria-hidden="true"
+                      />,
+                      <span key={slot}>{slot}</span>,
+                    ],
+              )}
+            </div>
+          </HeroContent>
+        </Container>
       </HeroSection>
     )
   },

@@ -12,6 +12,7 @@ import {
   HeroActions,
   HeroCta,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 export const WeddingHero = defineCapsule({
   name: 'WeddingHero',
@@ -55,45 +56,47 @@ export const WeddingHero = defineCapsule({
           gradientClassName="bg-gradient-to-b from-foreground/40 via-transparent to-foreground/70"
         />
 
-        <HeroContent className="mx-auto flex min-h-[88vh] max-w-4xl flex-col items-center justify-center px-6 py-28 text-center lg:px-8">
-          <HeroBadge variant="pill" className="mb-6 py-2">
-            {eyebrow}
-          </HeroBadge>
+        <Container asChild size="4xl">
+          <HeroContent className="flex min-h-[88vh] flex-col items-center justify-center py-28 text-center">
+            <HeroBadge variant="pill" className="mb-6 py-2">
+              {eyebrow}
+            </HeroBadge>
 
-          <HeroHeading className="font-serif font-medium text-5xl tracking-normal text-background sm:text-6xl lg:text-7xl">
-            {coupleNames}
-          </HeroHeading>
+            <HeroHeading className="font-serif font-medium text-5xl tracking-normal text-background sm:text-6xl lg:text-7xl">
+              {coupleNames}
+            </HeroHeading>
 
-          <p className="mt-6 text-lg font-medium uppercase tracking-[0.18em] text-background/80">
-            {date}
-          </p>
-          <p className="mt-2 text-base text-background/80">{venue}</p>
+            <p className="mt-6 text-lg font-medium uppercase tracking-[0.18em] text-background/80">
+              {date}
+            </p>
+            <p className="mt-2 text-base text-background/80">{venue}</p>
 
-          <HeroSubheading variant="light" className="text-lg leading-8">
-            {subheading}
-          </HeroSubheading>
+            <HeroSubheading variant="light" className="text-lg leading-8">
+              {subheading}
+            </HeroSubheading>
 
-          <HeroActions className="mt-10 flex-col gap-3 sm:flex-row">
-            <HeroCta
-              asChild
-              variant="primary"
-              className="rounded-full px-8 py-3 text-sm font-semibold"
-            >
-              <button type="button" onClick={() => go(primaryTarget)}>
-                {primaryCta}
-              </button>
-            </HeroCta>
-            <HeroCta
-              asChild
-              variant="outline"
-              className="rounded-full border-border bg-card/10 px-8 py-3 text-sm font-semibold text-background backdrop-blur-sm hover:bg-card/20"
-            >
-              <button type="button" onClick={() => go(secondaryTarget)}>
-                {secondaryCta}
-              </button>
-            </HeroCta>
-          </HeroActions>
-        </HeroContent>
+            <HeroActions className="mt-10 flex-col gap-3 sm:flex-row">
+              <HeroCta
+                asChild
+                variant="primary"
+                className="rounded-full px-8 py-3 text-sm font-semibold"
+              >
+                <button type="button" onClick={() => go(primaryTarget)}>
+                  {primaryCta}
+                </button>
+              </HeroCta>
+              <HeroCta
+                asChild
+                variant="outline"
+                className="rounded-full border-border bg-card/10 px-8 py-3 text-sm font-semibold text-background backdrop-blur-sm hover:bg-card/20"
+              >
+                <button type="button" onClick={() => go(secondaryTarget)}>
+                  {secondaryCta}
+                </button>
+              </HeroCta>
+            </HeroActions>
+          </HeroContent>
+        </Container>
       </HeroSection>
     )
   },

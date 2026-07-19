@@ -17,6 +17,7 @@ import {
   FormFieldLabel,
   FormFieldControl,
 } from '#/section-kit/FormField.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 export const TravelAgencyHero = defineCapsule({
   name: 'TravelAgencyHero',
@@ -62,69 +63,71 @@ export const TravelAgencyHero = defineCapsule({
           gradientClassName="bg-gradient-to-t from-foreground/80 via-foreground/40 to-transparent"
         />
 
-        <HeroContent className="mx-auto flex min-h-[88vh] max-w-7xl flex-col justify-center px-6 py-28 lg:px-8">
-          <div className="max-w-3xl">
-            <HeroBadge variant="pill" className="py-2 text-sm tracking-wider">
-              {eyebrow}
-            </HeroBadge>
-            <HeroHeading className="mt-6 text-5xl tracking-normal text-background sm:text-6xl lg:text-7xl">
-              {heading}
-            </HeroHeading>
-            <HeroSubheading
-              variant="light"
-              className="text-lg leading-8 text-background/85 sm:text-lg"
-            >
-              {subheading}
-            </HeroSubheading>
-          </div>
-
-          <Card
-            variant="default"
-            rounded="3xl"
-            padding="none"
-            className="mt-12 w-full max-w-4xl bg-card/95 p-3 shadow-[0_24px_80px_rgba(0,0,0,0.25)] backdrop-blur-md"
-          >
-            <div className="grid gap-2 sm:grid-cols-[1.3fr_1fr_1fr_auto]">
-              <FormField className="flex flex-col gap-1 rounded-2xl bg-muted px-4 py-3 text-left">
-                <FormFieldLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Destination
-                </FormFieldLabel>
-                <FormFieldControl
-                  type="text"
-                  placeholder={destinationPlaceholder}
-                  className="bg-transparent text-sm text-card-foreground placeholder:text-muted-foreground focus:outline-none"
-                />
-              </FormField>
-              <FormField className="flex flex-col gap-1 rounded-2xl bg-muted px-4 py-3 text-left">
-                <FormFieldLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  When
-                </FormFieldLabel>
-                <FormFieldControl
-                  type="text"
-                  placeholder={datesPlaceholder}
-                  className="bg-transparent text-sm text-card-foreground placeholder:text-muted-foreground focus:outline-none"
-                />
-              </FormField>
-              <FormField className="flex flex-col gap-1 rounded-2xl bg-muted px-4 py-3 text-left">
-                <FormFieldLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Who
-                </FormFieldLabel>
-                <FormFieldControl
-                  type="text"
-                  placeholder={travelersPlaceholder}
-                  className="bg-transparent text-sm text-card-foreground placeholder:text-muted-foreground focus:outline-none"
-                />
-              </FormField>
-              <button
-                type="button"
-                onClick={() => go(searchTarget)}
-                className="inline-flex items-center justify-center rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+        <Container asChild>
+          <HeroContent className="flex min-h-[88vh] flex-col justify-center py-28">
+            <div className="max-w-3xl">
+              <HeroBadge variant="pill" className="py-2 text-sm tracking-wider">
+                {eyebrow}
+              </HeroBadge>
+              <HeroHeading className="mt-6 text-5xl tracking-normal text-background sm:text-6xl lg:text-7xl">
+                {heading}
+              </HeroHeading>
+              <HeroSubheading
+                variant="light"
+                className="text-lg leading-8 text-background/85 sm:text-lg"
               >
-                {searchLabel}
-              </button>
+                {subheading}
+              </HeroSubheading>
             </div>
-          </Card>
-        </HeroContent>
+
+            <Card
+              variant="default"
+              rounded="3xl"
+              padding="none"
+              className="mt-12 w-full max-w-4xl bg-card/95 p-3 shadow-[0_24px_80px_rgba(0,0,0,0.25)] backdrop-blur-md"
+            >
+              <div className="grid gap-2 sm:grid-cols-[1.3fr_1fr_1fr_auto]">
+                <FormField className="flex flex-col gap-1 rounded-2xl bg-muted px-4 py-3 text-left">
+                  <FormFieldLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Destination
+                  </FormFieldLabel>
+                  <FormFieldControl
+                    type="text"
+                    placeholder={destinationPlaceholder}
+                    className="bg-transparent text-sm text-card-foreground placeholder:text-muted-foreground focus:outline-none"
+                  />
+                </FormField>
+                <FormField className="flex flex-col gap-1 rounded-2xl bg-muted px-4 py-3 text-left">
+                  <FormFieldLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    When
+                  </FormFieldLabel>
+                  <FormFieldControl
+                    type="text"
+                    placeholder={datesPlaceholder}
+                    className="bg-transparent text-sm text-card-foreground placeholder:text-muted-foreground focus:outline-none"
+                  />
+                </FormField>
+                <FormField className="flex flex-col gap-1 rounded-2xl bg-muted px-4 py-3 text-left">
+                  <FormFieldLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Who
+                  </FormFieldLabel>
+                  <FormFieldControl
+                    type="text"
+                    placeholder={travelersPlaceholder}
+                    className="bg-transparent text-sm text-card-foreground placeholder:text-muted-foreground focus:outline-none"
+                  />
+                </FormField>
+                <button
+                  type="button"
+                  onClick={() => go(searchTarget)}
+                  className="inline-flex items-center justify-center rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+                >
+                  {searchLabel}
+                </button>
+              </div>
+            </Card>
+          </HeroContent>
+        </Container>
       </HeroSection>
     )
   },

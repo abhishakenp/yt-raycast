@@ -9,6 +9,7 @@ import {
   HeroStatBadge,
   HeroStatBadgeTitle,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
@@ -83,54 +84,56 @@ export const ComingSoonHero = defineCapsule({
           props.className,
         )}
       >
-        <HeroContent className="mx-auto max-w-4xl text-center">
-          <p className="mb-6 text-xs font-medium uppercase tracking-widest text-muted-foreground sm:text-sm">
-            {eyebrow}
-          </p>
-          <h1 className="mb-8 text-4xl font-light leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl xl:text-7xl">
-            {headingTop}
-            <br className="hidden sm:block" />{' '}
-            <span className="font-normal">{headingEmphasis}</span>
-          </h1>
-          <HeroSubheading variant="large" className="mb-12 font-light">
-            {subheading}
-          </HeroSubheading>
+        <Container asChild size="4xl">
+          <HeroContent className="text-center">
+            <p className="mb-6 text-xs font-medium uppercase tracking-widest text-muted-foreground sm:text-sm">
+              {eyebrow}
+            </p>
+            <h1 className="mb-8 text-4xl font-light leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl xl:text-7xl">
+              {headingTop}
+              <br className="hidden sm:block" />{' '}
+              <span className="font-normal">{headingEmphasis}</span>
+            </h1>
+            <HeroSubheading variant="large" className="mb-12 font-light">
+              {subheading}
+            </HeroSubheading>
 
-          {/* Countdown timer */}
-          <div
-            className="mb-12 flex flex-wrap justify-center gap-4 sm:gap-6"
-            aria-label="Time remaining until launch"
-          >
-            {countdown.map((unit) => (
-              <div key={unit.label} className="flex flex-col items-center">
-                <HeroStatBadge className="flex size-16 items-center justify-center rounded-lg sm:size-20">
-                  <HeroStatBadgeTitle
-                    asChild
-                    className="text-2xl font-light sm:text-3xl"
-                  >
-                    <span>{unit.value}</span>
-                  </HeroStatBadgeTitle>
-                </HeroStatBadge>
-                <span className="mt-2 text-xs uppercase tracking-wider text-muted-foreground">
-                  {unit.label}
-                </span>
-              </div>
-            ))}
-          </div>
+            {/* Countdown timer */}
+            <div
+              className="mb-12 flex flex-wrap justify-center gap-4 sm:gap-6"
+              aria-label="Time remaining until launch"
+            >
+              {countdown.map((unit) => (
+                <div key={unit.label} className="flex flex-col items-center">
+                  <HeroStatBadge className="flex size-16 items-center justify-center rounded-lg sm:size-20">
+                    <HeroStatBadgeTitle
+                      asChild
+                      className="text-2xl font-light sm:text-3xl"
+                    >
+                      <span>{unit.value}</span>
+                    </HeroStatBadgeTitle>
+                  </HeroStatBadge>
+                  <span className="mt-2 text-xs uppercase tracking-wider text-muted-foreground">
+                    {unit.label}
+                  </span>
+                </div>
+              ))}
+            </div>
 
-          {/* Email capture */}
-          <NewsletterSubscribeForm
-            lakebed={lakebed}
-            source={submit}
-            placeholder={emailPlaceholder}
-            buttonLabel={submit}
-            successMessage="You're on the waitlist. Early access updates will arrive by email."
-            className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
-            inputClassName={inputCls}
-            buttonClassName={`${submitCls} disabled:pointer-events-none disabled:opacity-70`}
-          />
-          <p className="mt-3 text-xs text-muted-foreground">{disclaimer}</p>
-        </HeroContent>
+            {/* Email capture */}
+            <NewsletterSubscribeForm
+              lakebed={lakebed}
+              source={submit}
+              placeholder={emailPlaceholder}
+              buttonLabel={submit}
+              successMessage="You're on the waitlist. Early access updates will arrive by email."
+              className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
+              inputClassName={inputCls}
+              buttonClassName={`${submitCls} disabled:pointer-events-none disabled:opacity-70`}
+            />
+            <p className="mt-3 text-xs text-muted-foreground">{disclaimer}</p>
+          </HeroContent>
+        </Container>
       </HeroSection>
     )
   },

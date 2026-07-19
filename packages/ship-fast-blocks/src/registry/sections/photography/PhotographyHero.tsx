@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * PhotographyHero — full-bleed, image-overlay hero for a fine-art / wedding
@@ -68,35 +69,37 @@ export const PhotographyHero = defineCapsule({
           />
           <div className="absolute inset-0 bg-foreground/30" />
         </div>
-        <HeroContent className="mx-auto flex h-full max-w-7xl flex-col justify-end px-6 pb-24 lg:px-8 lg:pb-32">
-          <div className="max-w-3xl">
-            <p className="mb-4 text-sm font-medium uppercase tracking-widest text-background/80">
-              {kicker}
-            </p>
-            <h1 className="mb-6 font-serif text-5xl font-medium leading-tight text-background md:text-6xl lg:text-7xl">
-              {heading}
-            </h1>
-            <p className="mb-10 max-w-xl text-lg leading-relaxed text-background/80 md:text-xl">
-              {subheading}
-            </p>
-            <div className="flex flex-col gap-4 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => go(primaryCta)}
-                className="inline-flex items-center justify-center bg-background px-8 py-4 text-sm font-medium tracking-wide text-foreground transition-colors hover:bg-muted"
-              >
-                {primaryCta}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(secondaryCta)}
-                className="inline-flex items-center justify-center border border-background px-8 py-4 text-sm font-medium tracking-wide text-background transition-colors hover:bg-background/10"
-              >
-                {secondaryCta}
-              </button>
+        <Container asChild>
+          <HeroContent className="flex h-full flex-col justify-end pb-24 lg:pb-32">
+            <div className="max-w-3xl">
+              <p className="mb-4 text-sm font-medium uppercase tracking-widest text-background/80">
+                {kicker}
+              </p>
+              <h1 className="mb-6 font-serif text-5xl font-medium leading-tight text-background md:text-6xl lg:text-7xl">
+                {heading}
+              </h1>
+              <p className="mb-10 max-w-xl text-lg leading-relaxed text-background/80 md:text-xl">
+                {subheading}
+              </p>
+              <div className="flex flex-col gap-4 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={() => go(primaryCta)}
+                  className="inline-flex items-center justify-center bg-background px-8 py-4 text-sm font-medium tracking-wide text-foreground transition-colors hover:bg-muted"
+                >
+                  {primaryCta}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => go(secondaryCta)}
+                  className="inline-flex items-center justify-center border border-background px-8 py-4 text-sm font-medium tracking-wide text-background transition-colors hover:bg-background/10"
+                >
+                  {secondaryCta}
+                </button>
+              </div>
             </div>
-          </div>
-        </HeroContent>
+          </HeroContent>
+        </Container>
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-background/60">
           <svg
             width="24"

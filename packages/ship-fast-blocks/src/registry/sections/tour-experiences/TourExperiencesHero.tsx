@@ -19,6 +19,7 @@ import {
   StatValue,
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * TourExperiencesHero — vivid, full-bleed adventure hero for a guided-tour /
@@ -90,67 +91,69 @@ export const TourExperiencesHero = defineCapsule({
           gradientClassName="bg-gradient-to-t from-foreground via-foreground/70 to-foreground/30"
         />
 
-        <HeroContent className="mx-auto flex min-h-[36rem] max-w-7xl flex-col justify-center px-6 py-32 lg:px-8 lg:py-40">
-          <div className="max-w-2xl">
-            <HeroBadge
-              variant="pill"
-              className="gap-2 py-2 text-sm tracking-normal normal-case"
-            >
-              <span className="size-2 rounded-full bg-primary" />
-              {eyebrow}
-            </HeroBadge>
-            <HeroHeading className="mt-6 text-background">
-              {heading}
-            </HeroHeading>
-            <HeroSubheading
-              variant="light"
-              className="max-w-xl text-lg sm:text-lg"
-            >
-              {subheading}
-            </HeroSubheading>
-            <HeroActions className="mt-10 flex-col gap-3 sm:flex-row">
-              <HeroCta
-                asChild
-                variant="primary"
-                className="rounded-full px-7 py-3.5 text-sm font-semibold"
+        <Container asChild>
+          <HeroContent className="flex min-h-[36rem] flex-col justify-center py-32 lg:py-40">
+            <div className="max-w-2xl">
+              <HeroBadge
+                variant="pill"
+                className="gap-2 py-2 text-sm tracking-normal normal-case"
               >
-                <button type="button" onClick={() => go(primaryTarget)}>
-                  {primaryCta}
-                </button>
-              </HeroCta>
-              <HeroCta
-                asChild
-                variant="outline"
-                className="rounded-full border-background/40 bg-background/10 px-7 py-3.5 text-sm font-semibold text-background backdrop-blur-sm hover:bg-background/20"
+                <span className="size-2 rounded-full bg-primary" />
+                {eyebrow}
+              </HeroBadge>
+              <HeroHeading className="mt-6 text-background">
+                {heading}
+              </HeroHeading>
+              <HeroSubheading
+                variant="light"
+                className="max-w-xl text-lg sm:text-lg"
               >
-                <button type="button" onClick={() => go(secondaryTarget)}>
-                  {secondaryCta}
-                </button>
-              </HeroCta>
-            </HeroActions>
-          </div>
-
-          <StatGrid
-            columns={3}
-            gap="compact"
-            className="mt-14 max-w-2xl border-t border-background/20 pt-8"
-          >
-            {stats.map((s) => (
-              <StatItem key={s.label} align="center">
-                <StatValue
-                  size="default"
-                  color="inverted"
-                  className="text-2xl sm:text-3xl"
+                {subheading}
+              </HeroSubheading>
+              <HeroActions className="mt-10 flex-col gap-3 sm:flex-row">
+                <HeroCta
+                  asChild
+                  variant="primary"
+                  className="rounded-full px-7 py-3.5 text-sm font-semibold"
                 >
-                  {s.value}
-                </StatValue>
-                <StatLabel color="inverted" className="mt-1">
-                  {s.label}
-                </StatLabel>
-              </StatItem>
-            ))}
-          </StatGrid>
-        </HeroContent>
+                  <button type="button" onClick={() => go(primaryTarget)}>
+                    {primaryCta}
+                  </button>
+                </HeroCta>
+                <HeroCta
+                  asChild
+                  variant="outline"
+                  className="rounded-full border-background/40 bg-background/10 px-7 py-3.5 text-sm font-semibold text-background backdrop-blur-sm hover:bg-background/20"
+                >
+                  <button type="button" onClick={() => go(secondaryTarget)}>
+                    {secondaryCta}
+                  </button>
+                </HeroCta>
+              </HeroActions>
+            </div>
+
+            <StatGrid
+              columns={3}
+              gap="compact"
+              className="mt-14 max-w-2xl border-t border-background/20 pt-8"
+            >
+              {stats.map((s) => (
+                <StatItem key={s.label} align="center">
+                  <StatValue
+                    size="default"
+                    color="inverted"
+                    className="text-2xl sm:text-3xl"
+                  >
+                    {s.value}
+                  </StatValue>
+                  <StatLabel color="inverted" className="mt-1">
+                    {s.label}
+                  </StatLabel>
+                </StatItem>
+              ))}
+            </StatGrid>
+          </HeroContent>
+        </Container>
       </HeroSection>
     )
   },

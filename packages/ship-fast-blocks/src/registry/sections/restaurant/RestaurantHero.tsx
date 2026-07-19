@@ -14,6 +14,7 @@ import {
   HeroInfoStrip,
   HeroInfoStripItem,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import {
   RestaurantMutationSpinner,
   RestaurantReservationButton,
@@ -90,46 +91,48 @@ export const RestaurantHero = defineCapsule({
           gradientClassName="bg-gradient-to-t from-foreground/70 via-foreground/30 to-foreground/50"
         />
 
-        <HeroContent className="mx-auto flex max-w-7xl flex-col items-center px-6 pb-28 pt-36 text-center sm:pt-40 lg:px-8 lg:pb-32 lg:pt-48">
-          <HeroBadge variant="pill">{heroEyebrow}</HeroBadge>
+        <Container asChild>
+          <HeroContent className="flex flex-col items-center pb-28 pt-36 text-center sm:pt-40 lg:pb-32 lg:pt-48">
+            <HeroBadge variant="pill">{heroEyebrow}</HeroBadge>
 
-          <HeroHeading variant="serif">{heroHeading}</HeroHeading>
+            <HeroHeading variant="serif">{heroHeading}</HeroHeading>
 
-          <HeroSubheading variant="light">{heroSub}</HeroSubheading>
+            <HeroSubheading variant="light">{heroSub}</HeroSubheading>
 
-          <HeroActions className="mt-10 flex-col gap-4 sm:flex-row">
-            <RestaurantReservationButton
-              lakebed={lakebed}
-              input={{ label: heroPrimary, source: heroPrimaryTarget }}
-              className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-              pendingChildren={<RestaurantMutationSpinner />}
-            >
-              {heroPrimary}
-            </RestaurantReservationButton>
-            <HeroCta
-              asChild
-              className="inline-flex items-center justify-center rounded-full border border-border bg-card/10 px-8 py-4 font-medium text-background backdrop-blur-sm transition-colors hover:bg-card/20"
-            >
-              <button type="button" onClick={() => go(heroSecondaryTarget)}>
-                {heroSecondary}
-              </button>
-            </HeroCta>
-          </HeroActions>
+            <HeroActions className="mt-10 flex-col gap-4 sm:flex-row">
+              <RestaurantReservationButton
+                lakebed={lakebed}
+                input={{ label: heroPrimary, source: heroPrimaryTarget }}
+                className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                pendingChildren={<RestaurantMutationSpinner />}
+              >
+                {heroPrimary}
+              </RestaurantReservationButton>
+              <HeroCta
+                asChild
+                className="inline-flex items-center justify-center rounded-full border border-border bg-card/10 px-8 py-4 font-medium text-background backdrop-blur-sm transition-colors hover:bg-card/20"
+              >
+                <button type="button" onClick={() => go(heroSecondaryTarget)}>
+                  {heroSecondary}
+                </button>
+              </HeroCta>
+            </HeroActions>
 
-          <HeroInfoStrip>
-            {infoItems.map((item, i) => (
-              <HeroInfoStripItem key={item}>
-                {i > 0 && (
-                  <span
-                    aria-hidden="true"
-                    className="hidden h-4 w-px bg-background/30 sm:block"
-                  />
-                )}
-                <span>{item}</span>
-              </HeroInfoStripItem>
-            ))}
-          </HeroInfoStrip>
-        </HeroContent>
+            <HeroInfoStrip>
+              {infoItems.map((item, i) => (
+                <HeroInfoStripItem key={item}>
+                  {i > 0 && (
+                    <span
+                      aria-hidden="true"
+                      className="hidden h-4 w-px bg-background/30 sm:block"
+                    />
+                  )}
+                  <span>{item}</span>
+                </HeroInfoStripItem>
+              ))}
+            </HeroInfoStrip>
+          </HeroContent>
+        </Container>
       </HeroSection>
     )
   },

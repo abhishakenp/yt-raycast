@@ -12,6 +12,7 @@ import {
   HeroActions,
   HeroCta,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * FlightSimulatorHero — full-bleed, cinematic hero for a flight simulator
@@ -81,50 +82,52 @@ export const FlightSimulatorHero = defineCapsule({
           gradientClassName="bg-gradient-to-t from-foreground/80 via-foreground/30 to-foreground/50"
         />
 
-        <HeroContent className="mx-auto flex max-w-7xl flex-col items-center px-6 pb-28 pt-36 text-center sm:pt-40 lg:px-8 lg:pb-32 lg:pt-48">
-          <HeroBadge variant="pill">{heroEyebrow}</HeroBadge>
+        <Container asChild>
+          <HeroContent className="flex flex-col items-center pb-28 pt-36 text-center sm:pt-40 lg:pb-32 lg:pt-48">
+            <HeroBadge variant="pill">{heroEyebrow}</HeroBadge>
 
-          <HeroHeading className="mt-8 max-w-3xl text-background">
-            {heroHeading}
-          </HeroHeading>
+            <HeroHeading className="mt-8 max-w-3xl text-background">
+              {heroHeading}
+            </HeroHeading>
 
-          <HeroSubheading variant="light">{heroSub}</HeroSubheading>
+            <HeroSubheading variant="light">{heroSub}</HeroSubheading>
 
-          <HeroActions className="mt-10 flex-col gap-4 sm:flex-row">
-            <HeroCta
-              asChild
-              variant="primary"
-              className="rounded-full px-8 py-4 font-medium"
-            >
-              <button type="button" onClick={() => go(heroPrimaryTarget)}>
-                {heroPrimary}
-              </button>
-            </HeroCta>
-            <HeroCta
-              asChild
-              variant="outline"
-              className="rounded-full border-border bg-card/10 px-8 py-4 font-medium text-background backdrop-blur-sm hover:bg-card/20"
-            >
-              <button type="button" onClick={() => go(heroSecondaryTarget)}>
-                {heroSecondary}
-              </button>
-            </HeroCta>
-          </HeroActions>
+            <HeroActions className="mt-10 flex-col gap-4 sm:flex-row">
+              <HeroCta
+                asChild
+                variant="primary"
+                className="rounded-full px-8 py-4 font-medium"
+              >
+                <button type="button" onClick={() => go(heroPrimaryTarget)}>
+                  {heroPrimary}
+                </button>
+              </HeroCta>
+              <HeroCta
+                asChild
+                variant="outline"
+                className="rounded-full border-border bg-card/10 px-8 py-4 font-medium text-background backdrop-blur-sm hover:bg-card/20"
+              >
+                <button type="button" onClick={() => go(heroSecondaryTarget)}>
+                  {heroSecondary}
+                </button>
+              </HeroCta>
+            </HeroActions>
 
-          <div className="mt-14 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-background/80">
-            {specItems.map((item, i) => (
-              <div key={item} className="flex items-center gap-x-4">
-                {i > 0 && (
-                  <span
-                    aria-hidden="true"
-                    className="hidden h-4 w-px bg-background/30 sm:block"
-                  />
-                )}
-                <span>{item}</span>
-              </div>
-            ))}
-          </div>
-        </HeroContent>
+            <div className="mt-14 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-background/80">
+              {specItems.map((item, i) => (
+                <div key={item} className="flex items-center gap-x-4">
+                  {i > 0 && (
+                    <span
+                      aria-hidden="true"
+                      className="hidden h-4 w-px bg-background/30 sm:block"
+                    />
+                  )}
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </HeroContent>
+        </Container>
       </HeroSection>
     )
   },
