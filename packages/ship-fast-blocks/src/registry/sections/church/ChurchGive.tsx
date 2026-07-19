@@ -14,6 +14,7 @@ import {
 import { ImageTile } from '#/section-kit/ImageTile.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { DonationBand } from '#/section-kit/DonationBand.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
 /**
@@ -188,7 +189,7 @@ export const ChurchGive = defineCapsule({
                   </button>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <ResponsiveGrid cols="2" gap="sm">
                 <div className="space-y-4">
                   <ImageTile treatment="4-5-xl-muted">
                     <Image
@@ -225,7 +226,7 @@ export const ChurchGive = defineCapsule({
                     />
                   </ImageTile>
                 </div>
-              </div>
+              </ResponsiveGrid>
             </div>
           </Container>
         </section>

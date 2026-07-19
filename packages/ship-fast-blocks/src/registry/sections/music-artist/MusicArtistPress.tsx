@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import {
   PressList,
   PressItem,
@@ -94,7 +95,7 @@ export const MusicArtistPress = defineCapsule({
               eyebrowClassName="mb-12 text-sm font-medium uppercase tracking-widest text-muted-foreground"
               titleClassName="mb-16 font-serif text-4xl font-normal sm:text-5xl"
             />
-            <div className="grid gap-8 md:grid-cols-3">
+            <ResponsiveGrid cols="1-md-3" gap="lg">
               {reviews.map((r) => (
                 <PressItem
                   key={r.name}
@@ -108,7 +109,7 @@ export const MusicArtistPress = defineCapsule({
                   </PressAttribution>
                 </PressItem>
               ))}
-            </div>
+            </ResponsiveGrid>
           </Container>
         </section>
       </PressList>

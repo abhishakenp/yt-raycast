@@ -21,6 +21,7 @@ import {
 
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * BeautyStoreProducts — shoppable bestsellers product grid for a beauty / skincare /
@@ -210,7 +211,7 @@ export const BeautyStoreProducts = defineCapsule({
             </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4 lg:gap-8">
+          <ResponsiveGrid cols="2-lg-4" gap="sm" className="sm:gap-6 lg:gap-8">
             {visibleItems.map((product) => (
               <ProductCard
                 key={product.title}
@@ -272,7 +273,7 @@ export const BeautyStoreProducts = defineCapsule({
                 </ProductCardContent>
               </ProductCard>
             ))}
-          </div>
+          </ResponsiveGrid>
         </Container>
       </section>
     )

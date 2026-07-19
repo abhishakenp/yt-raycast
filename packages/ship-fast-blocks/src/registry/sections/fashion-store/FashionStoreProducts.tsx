@@ -33,6 +33,7 @@ import {
   ProductCardTitle,
   ProductCardPrice,
 } from '#/section-kit/ProductCard.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const FashionStoreProducts = defineCapsule({
   name: 'FashionStoreProducts',
   description:
@@ -185,7 +186,7 @@ export const FashionStoreProducts = defineCapsule({
             subtitleClassName="mx-auto max-w-md text-muted-foreground"
           />
 
-          <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4 lg:gap-8">
+          <ResponsiveGrid cols="2-lg-4" gap="sm" className="sm:gap-6 lg:gap-8">
             {visibleProductItems.map((product) => (
               <ProductCard key={product.name} className="group">
                 <ProductCardImage className="relative mb-4 aspect-[3/4] overflow-hidden bg-muted">
@@ -240,7 +241,7 @@ export const FashionStoreProducts = defineCapsule({
                 </ProductCardContent>
               </ProductCard>
             ))}
-          </div>
+          </ResponsiveGrid>
 
           <div className="mt-12 text-center">
             <button

@@ -19,6 +19,7 @@ import {
   SplitStoryContent,
   SplitStoryBody,
 } from '#/section-kit/SplitStory.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const FashionStoreAbout = defineCapsule({
   name: 'FashionStoreAbout',
   description:
@@ -99,7 +100,7 @@ export const FashionStoreAbout = defineCapsule({
                 ))}
               </SplitStoryBody>
               <div className="mt-10 border-t border-border pt-10">
-                <div className="grid grid-cols-3 gap-8">
+                <ResponsiveGrid cols="3" gap="lg">
                   {aboutStats.map((s) => (
                     <div key={s.label}>
                       <p className="font-serif text-3xl text-foreground">
@@ -110,10 +111,10 @@ export const FashionStoreAbout = defineCapsule({
                       </p>
                     </div>
                   ))}
-                </div>
+                </ResponsiveGrid>
               </div>
             </SplitStoryContent>
-            <div className="grid grid-cols-2 gap-4">
+            <ResponsiveGrid cols="2" gap="sm">
               <div className="space-y-4">
                 <div className="aspect-[3/4] overflow-hidden">
                   <Image
@@ -157,7 +158,7 @@ export const FashionStoreAbout = defineCapsule({
                   />
                 </div>
               </div>
-            </div>
+            </ResponsiveGrid>
           </SplitStoryGrid>
         </Container>
       </SplitStory>

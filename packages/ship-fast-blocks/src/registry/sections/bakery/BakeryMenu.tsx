@@ -29,6 +29,7 @@ import {
   MenuItemAction,
 } from '#/section-kit/MenuItemRow.tsx'
 import { MenuList } from '#/section-kit/MenuList.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * BakeryMenu — full daily menu block for an artisan-bakery page, on a soft
@@ -360,7 +361,7 @@ export const BakeryMenu = defineCapsule({
                   {cakesTitle}
                 </MenuCategoryTitle>
               </MenuCategoryHeader>
-              <div className="grid gap-6 md:grid-cols-3">
+              <ResponsiveGrid cols="1-md-3" gap="md">
                 {cakes.map((item) => (
                   <MenuItemRow>
                     <MenuItemContent>
@@ -385,7 +386,7 @@ export const BakeryMenu = defineCapsule({
                     </MenuItemContent>
                   </MenuItemRow>
                 ))}
-              </div>
+              </ResponsiveGrid>
             </div>
           </MenuList>
         </Container>

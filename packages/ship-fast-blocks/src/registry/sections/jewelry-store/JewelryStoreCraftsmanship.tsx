@@ -16,6 +16,7 @@ import {
   SplitStoryGrid,
   SplitStoryContent,
 } from '#/section-kit/SplitStory.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
 /**
@@ -187,7 +188,7 @@ export const JewelryStoreCraftsmanship = defineCapsule({
                 })}
               </div>
             </SplitStoryContent>
-            <div className="grid grid-cols-2 gap-4">
+            <ResponsiveGrid cols="2" gap="sm">
               <div className="space-y-4">
                 <div className="aspect-[3/4] overflow-hidden bg-card">
                   <Image
@@ -228,7 +229,7 @@ export const JewelryStoreCraftsmanship = defineCapsule({
                   />
                 </div>
               </div>
-            </div>
+            </ResponsiveGrid>
           </SplitStoryGrid>
         </Container>
       </SplitStory>

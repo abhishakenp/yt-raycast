@@ -28,6 +28,7 @@ import {
   NewsletterCtaHeading,
 } from '#/section-kit/NewsletterCta.tsx'
 import { SubscribeBand } from '#/section-kit/SubscribeBand.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * NewsroomSubscribe — editorial subscription / membership band for a digital
@@ -182,7 +183,7 @@ export const NewsroomSubscribe = defineCapsule({
             statusClassName="mb-16 text-center"
           />
 
-          <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
+          <ResponsiveGrid cols="1-md-3" gap="lg" className="mx-auto max-w-6xl">
             {plans.map((plan) => (
               <PricingCard
                 key={plan.name}
@@ -271,7 +272,7 @@ export const NewsroomSubscribe = defineCapsule({
                 </PricingCardCta>
               </PricingCard>
             ))}
-          </div>
+          </ResponsiveGrid>
 
           <NewsletterCtaFineprint className="mt-10 text-center text-sm text-muted-foreground">
             {footnote}

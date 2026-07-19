@@ -10,6 +10,7 @@ import {
   FeatureListItemTitle,
   FeatureListItemDescription,
 } from '#/section-kit/FeatureListItem.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * MusicFestivalExperience — an experience / features split for a music / arts
@@ -190,7 +191,7 @@ export const MusicFestivalExperience = defineCapsule({
                 ))}
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <ResponsiveGrid cols="2" gap="sm">
               {imageAlts.map((alt, i) => (
                 <Image
                   key={alt}
@@ -201,7 +202,7 @@ export const MusicFestivalExperience = defineCapsule({
                   className={cn('w-full', collageCls[i % collageCls.length])}
                 />
               ))}
-            </div>
+            </ResponsiveGrid>
           </div>
         </Container>
       </section>

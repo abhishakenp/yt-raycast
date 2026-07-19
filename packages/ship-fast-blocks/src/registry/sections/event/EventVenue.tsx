@@ -12,6 +12,7 @@ import {
   FeatureListItemBody,
 } from '#/section-kit/FeatureListItem.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { VenueBlock } from '#/section-kit/VenueBlock.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
@@ -169,7 +170,7 @@ export const EventVenue = defineCapsule({
                   className="size-full object-cover"
                 />
               </div>
-              <div className="grid grid-cols-3 gap-4">
+              <ResponsiveGrid cols="3" gap="sm">
                 {collage.map((alt) => (
                   <div
                     key={alt}
@@ -184,7 +185,7 @@ export const EventVenue = defineCapsule({
                     />
                   </div>
                 ))}
-              </div>
+              </ResponsiveGrid>
             </div>
           </VenueBlock>
         </Container>

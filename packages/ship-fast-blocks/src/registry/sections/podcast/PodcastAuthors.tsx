@@ -10,6 +10,7 @@ import {
   PersonCardRole,
   PersonCardBio,
 } from '#/section-kit/PersonCard.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
 export const PodcastAuthors = defineCapsule({
@@ -85,7 +86,7 @@ export const PodcastAuthors = defineCapsule({
             title={heading}
             subtitle={subheading}
           />
-          <div className="mt-16 grid gap-8 md:grid-cols-3">
+          <ResponsiveGrid cols="1-md-3" gap="lg" className="mt-16">
             {hosts.map((host, i) => (
               <PersonCard
                 key={`${host.name}-${i}`}
@@ -123,7 +124,7 @@ export const PodcastAuthors = defineCapsule({
                 ) : null}
               </PersonCard>
             ))}
-          </div>
+          </ResponsiveGrid>
         </Container>
       </section>
     )
