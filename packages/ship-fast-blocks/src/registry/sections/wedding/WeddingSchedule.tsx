@@ -4,8 +4,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import {
+  ScheduleList,
+  ScheduleItem,
+  ScheduleContent,
+} from '#/section-kit/ScheduleList.tsx'
 
 export const WeddingSchedule = defineCapsule({
   name: 'WeddingSchedule',
@@ -70,56 +74,63 @@ export const WeddingSchedule = defineCapsule({
             titleClassName="font-serif"
           />
 
-          <ResponsiveGrid cols="1-md-2" gap="lg" className="mt-16">
+          <ScheduleList layout="grid" className="mt-16 sm:grid-cols-2">
             {events.map((event, i) => (
-              <Card
+              <ScheduleItem
                 key={`${event.title}-${i}`}
-                padding="lg"
-                className="text-card-foreground"
+                asChild
+                className="flex-col"
               >
-                <h3 className="font-serif text-2xl font-medium text-foreground">
-                  {event.title}
-                </h3>
-                <div className="mt-6 h-px w-12 bg-primary" aria-hidden="true" />
+                <Card padding="lg" className="text-card-foreground">
+                  <ScheduleContent>
+                    <h3 className="font-serif text-2xl font-medium text-foreground">
+                      {event.title}
+                    </h3>
+                    <div
+                      className="mt-6 h-px w-12 bg-primary"
+                      aria-hidden="true"
+                    />
 
-                <dl className="mt-6 space-y-4">
-                  <div>
-                    <dt className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                      Time
-                    </dt>
-                    <dd className="mt-1 text-base text-foreground">
-                      {event.time}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                      Place
-                    </dt>
-                    <dd className="mt-1 text-base text-foreground">
-                      {event.place}
-                    </dd>
-                    <dd className="mt-1 text-sm text-muted-foreground">
-                      {event.address}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                      Dress code
-                    </dt>
-                    <dd className="mt-1 text-base text-foreground">
-                      {event.dressCode}
-                    </dd>
-                  </div>
-                </dl>
+                    <dl className="mt-6 space-y-4">
+                      <div>
+                        <dt className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                          Time
+                        </dt>
+                        <dd className="mt-1 text-base text-foreground">
+                          {event.time}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                          Place
+                        </dt>
+                        <dd className="mt-1 text-base text-foreground">
+                          {event.place}
+                        </dd>
+                        <dd className="mt-1 text-sm text-muted-foreground">
+                          {event.address}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                          Dress code
+                        </dt>
+                        <dd className="mt-1 text-base text-foreground">
+                          {event.dressCode}
+                        </dd>
+                      </div>
+                    </dl>
 
-                {event.note ? (
-                  <p className="mt-6 border-t border-border pt-4 text-sm italic leading-6 text-muted-foreground">
-                    {event.note}
-                  </p>
-                ) : null}
-              </Card>
+                    {event.note ? (
+                      <p className="mt-6 border-t border-border pt-4 text-sm italic leading-6 text-muted-foreground">
+                        {event.note}
+                      </p>
+                    ) : null}
+                  </ScheduleContent>
+                </Card>
+              </ScheduleItem>
             ))}
-          </ResponsiveGrid>
+          </ScheduleList>
         </Container>
       </section>
     )
