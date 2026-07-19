@@ -104,18 +104,21 @@ SubscribeForm.displayName = 'SubscribeForm'
 
 const SubscribeInput = React.forwardRef<
   HTMLInputElement,
-  React.ComponentProps<'input'>
->(({ className, ...props }, ref) => (
-  <input
-    data-slot="subscribe-input"
-    className={cn(
-      'w-full flex-1 rounded-full border border-input bg-background px-5 py-3 text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-ring focus:ring-2 focus:ring-ring/30',
-      className,
-    )}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'input'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'input'
+  return (
+    <Comp
+      data-slot="subscribe-input"
+      className={cn(
+        'w-full flex-1 rounded-full border border-input bg-background px-5 py-3 text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-ring focus:ring-2 focus:ring-ring/30',
+        className,
+      )}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 SubscribeInput.displayName = 'SubscribeInput'
 
 export {
