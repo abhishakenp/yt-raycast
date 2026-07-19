@@ -18,15 +18,19 @@ const DataTableVariants = cva('w-full overflow-hidden', {
 
 const DataTable = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'table'> & VariantProps<typeof DataTableVariants>
->(({ className, variant, ...props }, ref) => (
-  <div
-    data-slot="data-table"
-    className={cn(DataTableVariants({ variant }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'table'> &
+    VariantProps<typeof DataTableVariants> & { asChild?: boolean }
+>(({ className, variant, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="data-table"
+      className={cn(DataTableVariants({ variant }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 DataTable.displayName = 'DataTable'
 
 const DataHeader = React.forwardRef<
