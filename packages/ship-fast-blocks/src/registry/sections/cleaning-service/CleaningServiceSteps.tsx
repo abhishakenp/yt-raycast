@@ -15,6 +15,7 @@ import {
   StepItem,
   StepContent,
 } from '#/section-kit/StepTimeline.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const CleaningServiceSteps = defineCapsule({
   name: 'CleaningServiceSteps',
   description:
@@ -158,7 +159,7 @@ export const CleaningServiceSteps = defineCapsule({
                   ))}
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <ResponsiveGrid cols="2" gap="sm">
                 {gallery.map((alt) => (
                   <Image
                     key={alt}
@@ -169,7 +170,7 @@ export const CleaningServiceSteps = defineCapsule({
                     className="h-40 w-full rounded-xl object-cover"
                   />
                 ))}
-              </div>
+              </ResponsiveGrid>
             </div>
           </Card>
         </Container>

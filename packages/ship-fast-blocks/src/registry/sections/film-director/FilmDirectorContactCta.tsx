@@ -8,6 +8,7 @@ import {
   CtaBandSubtitle,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
@@ -107,7 +108,11 @@ export const FilmDirectorContactCta = defineCapsule({
               {contactPhone}
             </CtaAction>
           </div>
-          <div className="grid gap-8 border-t border-border pt-16 text-left md:grid-cols-3">
+          <ResponsiveGrid
+            cols="1-md-3"
+            gap="lg"
+            className="border-t border-border pt-16 text-left"
+          >
             <div>
               <p className="mb-2 text-sm text-primary-foreground/70">
                 {contactStudioLabel}
@@ -137,7 +142,7 @@ export const FilmDirectorContactCta = defineCapsule({
                 ))}
               </div>
             </div>
-          </div>
+          </ResponsiveGrid>
         </CtaBandInner>
       </CtaBand>
     )

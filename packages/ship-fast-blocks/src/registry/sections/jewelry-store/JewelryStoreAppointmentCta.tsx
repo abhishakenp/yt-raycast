@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { AppointmentBand } from '#/section-kit/AppointmentBand.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { CtaAction } from '#/section-kit/CtaBand.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
@@ -96,14 +97,18 @@ export const JewelryStoreAppointmentCta = defineCapsule({
             {secondaryCta}
           </CtaAction>
         </div>
-        <div className="mx-auto grid max-w-3xl gap-8 text-center sm:grid-cols-3">
+        <ResponsiveGrid
+          cols="1-3"
+          gap="lg"
+          className="mx-auto max-w-3xl text-center"
+        >
           {locations.map((loc) => (
             <div key={loc.city}>
               <p className="mb-1 font-medium text-foreground">{loc.city}</p>
               <p className="text-sm text-muted-foreground">{loc.address}</p>
             </div>
           ))}
-        </div>
+        </ResponsiveGrid>
       </AppointmentBand>
     )
   },

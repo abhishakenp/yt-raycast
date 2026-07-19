@@ -17,6 +17,7 @@ import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { TicketGrid, TicketCard } from '#/section-kit/TicketGrid.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const MusicFestivalTickets = defineCapsule({
   name: 'MusicFestivalTickets',
   description:
@@ -199,7 +200,7 @@ export const MusicFestivalTickets = defineCapsule({
             <h3 className="mb-6 text-center text-lg font-semibold">
               {addOnsLabel}
             </h3>
-            <div className="grid gap-4 sm:grid-cols-3">
+            <ResponsiveGrid cols="1-3" gap="sm">
               {addOns.map((a) => (
                 <Card
                   asChild
@@ -215,7 +216,7 @@ export const MusicFestivalTickets = defineCapsule({
                   </button>
                 </Card>
               ))}
-            </div>
+            </ResponsiveGrid>
           </div>
         </Container>
       </section>

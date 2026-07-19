@@ -22,6 +22,7 @@ import {
   RatesRow,
   RateCard,
 } from '#/section-kit/RatesTable.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const LendingRates = defineCapsule({
   name: 'LendingRates',
   description:
@@ -162,7 +163,7 @@ export const LendingRates = defineCapsule({
               ))}
             </div>
             <div className="border-t border-border bg-muted px-8 py-6">
-              <div className="grid gap-6 text-sm md:grid-cols-3">
+              <ResponsiveGrid cols="1-md-3" gap="md" className="text-sm">
                 {rateGuarantees.map((g) => (
                   <div key={g.title} className="flex items-start gap-3">
                     <svg
@@ -185,7 +186,7 @@ export const LendingRates = defineCapsule({
                     </div>
                   </div>
                 ))}
-              </div>
+              </ResponsiveGrid>
             </div>
           </div>
 

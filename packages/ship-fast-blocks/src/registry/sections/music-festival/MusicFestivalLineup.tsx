@@ -21,6 +21,7 @@ import {
   ArtistCard,
   ArtistTier,
 } from '#/section-kit/LineupGrid.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const MusicFestivalLineup = defineCapsule({
   name: 'MusicFestivalLineup',
   description:
@@ -193,7 +194,7 @@ export const MusicFestivalLineup = defineCapsule({
             <h3 className="mb-8 text-center text-sm font-medium uppercase tracking-widest text-foreground/50">
               {featuredLabel}
             </h3>
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
+            <ResponsiveGrid cols="2-3-6" gap="sm">
               {featured.map((a) => (
                 <ArtistTier asChild key={a.name}>
                   <button type="button" onClick={() => go(a.name)}>
@@ -204,7 +205,7 @@ export const MusicFestivalLineup = defineCapsule({
                   </button>
                 </ArtistTier>
               ))}
-            </div>
+            </ResponsiveGrid>
           </div>
 
           <div className="text-center">

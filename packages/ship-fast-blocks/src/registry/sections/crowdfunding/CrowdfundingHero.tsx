@@ -12,6 +12,7 @@ import {
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * CrowdfundingHero — a 2-column campaign hero for a crowdfunding / pre-order
@@ -109,7 +110,7 @@ export const CrowdfundingHero = defineCapsule({
                 rounded="xl"
                 className="aspect-[4/3] bg-muted shadow-lg"
               />
-              <div className="mt-4 grid grid-cols-4 gap-3">
+              <ResponsiveGrid cols="4" gap="sm" className="mt-4">
                 {heroThumbAlts.map((alt) => (
                   <button
                     key={alt}
@@ -126,7 +127,7 @@ export const CrowdfundingHero = defineCapsule({
                     />
                   </button>
                 ))}
-              </div>
+              </ResponsiveGrid>
             </div>
 
             {/* Campaign info */}

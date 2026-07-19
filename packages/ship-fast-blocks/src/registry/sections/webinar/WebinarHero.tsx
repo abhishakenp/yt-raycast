@@ -17,6 +17,7 @@ import {
   HeroStatBadgeSubtitle,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 export const WebinarHero = defineCapsule({
   name: 'WebinarHero',
@@ -124,7 +125,11 @@ export const WebinarHero = defineCapsule({
               </HeroStatBadgeContent>
             </HeroStatBadge>
 
-            <div className="mx-auto mt-12 grid max-w-md grid-cols-4 gap-3">
+            <ResponsiveGrid
+              cols="4"
+              gap="sm"
+              className="mx-auto mt-12 max-w-md"
+            >
               {countdown.map((unit, i) => (
                 <HeroStatBadge
                   key={`${unit.label}-${i}`}
@@ -138,7 +143,7 @@ export const WebinarHero = defineCapsule({
                   </HeroStatBadgeSubtitle>
                 </HeroStatBadge>
               ))}
-            </div>
+            </ResponsiveGrid>
           </HeroContent>
         </Container>
       </HeroSection>

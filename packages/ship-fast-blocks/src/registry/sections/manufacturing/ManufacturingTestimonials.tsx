@@ -24,6 +24,7 @@ import {
   TestimonialName,
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const ManufacturingTestimonials = defineCapsule({
   name: 'ManufacturingTestimonials',
   description:
@@ -149,7 +150,7 @@ export const ManufacturingTestimonials = defineCapsule({
               )
             })}
           </TestimonialGrid>
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
+          <ResponsiveGrid cols="1-md-3" gap="md" className="mt-12">
             {compact.map((t) => (
               <Card
                 asChild
@@ -180,7 +181,7 @@ export const ManufacturingTestimonials = defineCapsule({
                 </blockquote>
               </Card>
             ))}
-          </div>
+          </ResponsiveGrid>
         </Container>
       </section>
     )

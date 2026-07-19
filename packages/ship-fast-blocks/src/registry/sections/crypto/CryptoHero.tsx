@@ -7,6 +7,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * CryptoHero — split-layout hero section for a crypto / DeFi infrastructure
@@ -177,7 +178,7 @@ export const CryptoHero = defineCapsule({
                     {token.change}
                   </span>
                 </div>
-                <div className="mb-6 grid grid-cols-2 gap-4">
+                <ResponsiveGrid cols="2" gap="sm" className="mb-6">
                   <div className="rounded-lg bg-muted p-4">
                     <p className="mb-1 text-xs text-muted-foreground">Price</p>
                     <p className="text-xl font-semibold">{token.price}</p>
@@ -188,7 +189,7 @@ export const CryptoHero = defineCapsule({
                     </p>
                     <p className="text-xl font-semibold">{token.marketCap}</p>
                   </div>
-                </div>
+                </ResponsiveGrid>
                 <div className="relative h-32 overflow-hidden rounded-lg bg-muted">
                   <Image
                     alt={token.imageAlt}

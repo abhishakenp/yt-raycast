@@ -18,6 +18,7 @@ import {
   WhyChooseUsGrid,
   WhyChooseUsCard,
 } from '#/section-kit/WhyChooseUsGrid.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const DentalWhyChooseUs = defineCapsule({
   name: 'DentalWhyChooseUs',
   description:
@@ -96,7 +97,7 @@ export const DentalWhyChooseUs = defineCapsule({
                 titleClassName="mb-6 text-3xl font-bold text-foreground sm:text-4xl"
                 subtitleClassName="text-lg leading-relaxed text-muted-foreground"
               />
-              <div className="grid gap-8 sm:grid-cols-2">
+              <ResponsiveGrid cols="1-2" gap="lg">
                 {whyItems.map((item) => (
                   <WhyChooseUsCard key={item.title} className="rounded-xl">
                     <h3 className="mb-2 font-semibold text-foreground">
@@ -107,7 +108,7 @@ export const DentalWhyChooseUs = defineCapsule({
                     </p>
                   </WhyChooseUsCard>
                 ))}
-              </div>
+              </ResponsiveGrid>
             </div>
           </WhyChooseUsGrid>
         </Container>
