@@ -229,19 +229,33 @@ HeroSubheading.displayName = 'HeroSubheading'
 
 /* ---------- HeroCta ---------- */
 
+const heroCtaVariants = cva(
+  'inline-flex items-center justify-center rounded-lg px-5 py-3 text-sm font-medium transition-colors',
+  {
+    variants: {
+      variant: {
+        none: '',
+        primary: 'bg-primary text-primary-foreground hover:bg-primary/90',
+        outline:
+          'border border-border bg-background text-foreground hover:bg-muted',
+        ghost: 'text-foreground hover:bg-muted',
+      },
+    },
+    defaultVariants: { variant: 'none' },
+  },
+)
+
 const HeroCta = React.forwardRef<
   HTMLAnchorElement,
-  React.ComponentProps<'a'> & { asChild?: boolean }
->(({ className, asChild = false, ...props }, ref) => {
+  React.ComponentProps<'a'> &
+    VariantProps<typeof heroCtaVariants> & { asChild?: boolean }
+>(({ className, variant, asChild = false, ...props }, ref) => {
   const Comp = asChild ? Slot : 'a'
   return (
     <Comp
-      ref={ref}
+      ref={ref as never}
       data-slot="hero-cta"
-      className={cn(
-        'inline-flex items-center justify-center rounded-lg px-5 py-3 text-sm font-medium transition-colors',
-        className,
-      )}
+      className={cn(heroCtaVariants({ variant }), className)}
       {...props}
     />
   )
@@ -567,6 +581,7 @@ export {
   HeroSubheading,
   HeroActions,
   HeroCta,
+  heroCtaVariants,
   HeroMediaPanel,
   HeroSocialProof,
   HeroSocialProofItem,
