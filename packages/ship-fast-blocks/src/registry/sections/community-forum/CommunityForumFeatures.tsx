@@ -10,6 +10,7 @@ import {
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * CommunityForumFeatures — capabilities grid for a community-platform / discussion-forum
@@ -78,12 +79,13 @@ export const CommunityForumFeatures = defineCapsule({
     return (
       <section className={cn('py-24 lg:py-28', props.className)}>
         <Container size="lg">
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mb-16 max-w-2xl gap-0"
+            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <FeatureGrid columns={3}>
             {items.map((f) => {
               const __iv__ = f as {

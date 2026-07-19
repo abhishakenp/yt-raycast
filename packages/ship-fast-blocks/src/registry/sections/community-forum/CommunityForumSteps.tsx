@@ -11,6 +11,7 @@ import {
   StepTimelineHeader,
 } from '#/section-kit/StepTimeline.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * CommunityForumSteps — numbered step timeline for a community-platform / discussion-forum
@@ -64,10 +65,13 @@ export const CommunityForumSteps = defineCapsule({
       <StepTimeline className={cn('py-24 lg:py-28', props.className)}>
         <Container size="lg">
           <StepTimelineHeader>
-            <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
+            <SectionHeading
+              title={heading}
+              subtitle={description}
+              className="gap-0"
+              titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
+              subtitleClassName="text-lg text-muted-foreground"
+            />
           </StepTimelineHeader>
           <StepTimelineGrid columns={3} className="lg:gap-12">
             {items.map((step, i) => (
