@@ -38,31 +38,21 @@ const NavSidebar = React.forwardRef<
 })
 NavSidebar.displayName = 'NavSidebar'
 
-const navSidebarSectionVariants = cva('', {
-  variants: {
-    spacing: {
-      sm: 'p-3',
-      md: 'p-4',
-      lg: 'p-6',
-    },
-  },
-  defaultVariants: {
-    spacing: 'md',
-  },
+const navSidebarSectionVariants = cva('p-4', {
+  variants: {},
 })
 
 const NavSidebarSection = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> &
-    VariantProps<typeof navSidebarSectionVariants> & { asChild?: boolean }
->(({ className, spacing, asChild = false, ...props }, ref) => {
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
   const Comp = asChild ? Slot : 'div'
   return (
     <Comp
       data-slot="nav-sidebar-section"
       className={cn(
         'flex flex-col gap-1',
-        navSidebarSectionVariants({ spacing }),
+        navSidebarSectionVariants(),
         className,
       )}
       ref={ref}

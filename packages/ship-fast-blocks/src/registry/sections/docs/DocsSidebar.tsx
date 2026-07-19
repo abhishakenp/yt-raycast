@@ -326,7 +326,7 @@ export const DocsSidebar = defineCapsule({
           {/* Navigation groups */}
           <nav className="space-y-6" aria-label="Sidebar navigation">
             {groups.map((group, gi) => (
-              <NavSidebarSection key={group.title} spacing="sm" className="p-0">
+              <NavSidebarSection key={group.title} className="p-0">
                 <Eyebrow
                   asChild
                   variant="text"
