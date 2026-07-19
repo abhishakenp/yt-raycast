@@ -22,15 +22,19 @@ const IndustryGridVariants = cva('grid', {
 
 const IndustryGrid = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & VariantProps<typeof IndustryGridVariants>
->(({ className, cols, ...props }, ref) => (
-  <div
-    data-slot="industry-grid"
-    className={cn(IndustryGridVariants({ cols }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> &
+    VariantProps<typeof IndustryGridVariants> & { asChild?: boolean }
+>(({ className, cols, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="industry-grid"
+      className={cn(IndustryGridVariants({ cols }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 IndustryGrid.displayName = 'IndustryGrid'
 
 const IndustryCard = React.forwardRef<

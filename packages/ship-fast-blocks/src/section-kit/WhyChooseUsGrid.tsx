@@ -22,15 +22,19 @@ const WhyChooseUsGridVariants = cva('grid', {
 
 const WhyChooseUsGrid = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & VariantProps<typeof WhyChooseUsGridVariants>
->(({ className, cols, ...props }, ref) => (
-  <div
-    data-slot="why-choose-us-grid"
-    className={cn(WhyChooseUsGridVariants({ cols }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> &
+    VariantProps<typeof WhyChooseUsGridVariants> & { asChild?: boolean }
+>(({ className, cols, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="why-choose-us-grid"
+      className={cn(WhyChooseUsGridVariants({ cols }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 WhyChooseUsGrid.displayName = 'WhyChooseUsGrid'
 
 const WhyChooseUsCard = React.forwardRef<

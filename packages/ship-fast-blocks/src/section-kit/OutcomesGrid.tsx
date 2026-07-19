@@ -22,15 +22,19 @@ const OutcomesGridVariants = cva('grid', {
 
 const OutcomesGrid = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & VariantProps<typeof OutcomesGridVariants>
->(({ className, cols, ...props }, ref) => (
-  <div
-    data-slot="outcomes-grid"
-    className={cn(OutcomesGridVariants({ cols }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> &
+    VariantProps<typeof OutcomesGridVariants> & { asChild?: boolean }
+>(({ className, cols, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="outcomes-grid"
+      className={cn(OutcomesGridVariants({ cols }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 OutcomesGrid.displayName = 'OutcomesGrid'
 
 const OutcomesCard = React.forwardRef<

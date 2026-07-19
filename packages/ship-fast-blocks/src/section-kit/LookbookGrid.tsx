@@ -22,15 +22,19 @@ const LookbookGridVariants = cva('grid', {
 
 const LookbookGrid = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & VariantProps<typeof LookbookGridVariants>
->(({ className, cols, ...props }, ref) => (
-  <div
-    data-slot="lookbook-grid"
-    className={cn(LookbookGridVariants({ cols }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> &
+    VariantProps<typeof LookbookGridVariants> & { asChild?: boolean }
+>(({ className, cols, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="lookbook-grid"
+      className={cn(LookbookGridVariants({ cols }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 LookbookGrid.displayName = 'LookbookGrid'
 
 const LookbookCard = React.forwardRef<
