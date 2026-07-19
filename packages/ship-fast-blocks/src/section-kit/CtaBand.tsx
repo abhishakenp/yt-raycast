@@ -4,7 +4,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '#/lib/utils.ts'
 
-import { kitActionClasses } from './types.ts'
+import { kitActionClasses, type KitAction } from './types.ts'
 
 const ctaBandVariants = cva('w-full', {
   variants: {
@@ -171,7 +171,7 @@ CtaBandActions.displayName = 'CtaBandActions'
 const CtaAction = React.forwardRef<
   HTMLButtonElement,
   React.ButtonHTMLAttributes<HTMLButtonElement> & {
-    variant?: 'primary' | 'outline' | 'ghost'
+    variant?: KitAction['variant']
     invert?: boolean
     asChild?: boolean
   }

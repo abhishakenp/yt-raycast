@@ -251,6 +251,7 @@ export {
   heroSectionVariants,
   heroBadgeVariants,
   heroHeadingVariants,
+  heroHighlightVariants,
   heroSubheadingVariants,
   HeroCodeWindow,
   HeroCodeWindowHeader,
@@ -364,6 +365,7 @@ export {
   StoryCardFooter,
   StoryCardBody,
   storyCardVariants,
+  storyCardImageVariants,
 } from './StoryCard.tsx'
 export {
   FeatureListItem,
@@ -380,6 +382,18 @@ export {
   formFieldControlVariants,
 } from './FormField.tsx'
 export { SignInButton, signInButtonVariants } from './SignInButton.tsx'
+export {
+  StepTimeline,
+  StepTimelineHeader,
+  StepTimelineGrid,
+  StepBadge,
+  StepConnector,
+  StepItem,
+  StepContent,
+  stepTimelineVariants,
+  stepBadgeVariants,
+  stepConnectorVariants,
+} from './StepTimeline.tsx'
 
 export type { KitAction } from './types.ts'
 export { kitActionClasses } from './types.ts'
