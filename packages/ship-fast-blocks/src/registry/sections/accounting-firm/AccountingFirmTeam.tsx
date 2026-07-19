@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import {
   PersonCard,
@@ -111,12 +112,13 @@ export const AccountingFirmTeam = defineCapsule({
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mb-16 max-w-3xl gap-0"
+            titleClassName="mb-4 tracking-tight sm:text-4xl"
+            subtitleClassName="text-lg"
+          />
 
           <ResponsiveGrid cols="1-2-4" gap="lg">
             {members.map((member) => (
