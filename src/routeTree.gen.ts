@@ -52,6 +52,7 @@ import { Route as ApiPartnersAttributionRouteImport } from './routes/api/partner
 import { Route as ApiMedusaStoreConfigRouteImport } from './routes/api/medusa-store.config'
 import { Route as ApiMedusaStoreCartRouteImport } from './routes/api/medusa-store.cart'
 import { Route as ApiMedusaAdminConfigRouteImport } from './routes/api/medusa-admin.config'
+import { Route as ApiImagesSessionIdRouteImport } from './routes/api/images.$sessionId'
 import { Route as ApiCheckoutStartRouteImport } from './routes/api/checkout.start'
 import { Route as ApiSessionsSessionIdStreamRouteImport } from './routes/api/sessions.$sessionId.stream'
 import { Route as ApiSessionsSessionIdSectionEditRouteImport } from './routes/api/sessions.$sessionId.section-edit'
@@ -296,6 +297,11 @@ const ApiMedusaAdminConfigRoute = ApiMedusaAdminConfigRouteImport.update({
   path: '/api/medusa-admin/config',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiImagesSessionIdRoute = ApiImagesSessionIdRouteImport.update({
+  id: '/api/images/$sessionId',
+  path: '/api/images/$sessionId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCheckoutStartRoute = ApiCheckoutStartRouteImport.update({
   id: '/api/checkout/start',
   path: '/api/checkout/start',
@@ -484,6 +490,7 @@ export interface FileRoutesByFullPath {
   '/generate/$sessionId': typeof GenerateSessionIdRouteWithChildren
   '/preview/$slug': typeof PreviewSlugRouteWithChildren
   '/api/checkout/start': typeof ApiCheckoutStartRoute
+  '/api/images/$sessionId': typeof ApiImagesSessionIdRoute
   '/api/medusa-admin/config': typeof ApiMedusaAdminConfigRoute
   '/api/medusa-store/cart': typeof ApiMedusaStoreCartRouteWithChildren
   '/api/medusa-store/config': typeof ApiMedusaStoreConfigRoute
@@ -556,6 +563,7 @@ export interface FileRoutesByTo {
   '/generate/$sessionId': typeof GenerateSessionIdRouteWithChildren
   '/preview/$slug': typeof PreviewSlugRouteWithChildren
   '/api/checkout/start': typeof ApiCheckoutStartRoute
+  '/api/images/$sessionId': typeof ApiImagesSessionIdRoute
   '/api/medusa-admin/config': typeof ApiMedusaAdminConfigRoute
   '/api/medusa-store/cart': typeof ApiMedusaStoreCartRouteWithChildren
   '/api/medusa-store/config': typeof ApiMedusaStoreConfigRoute
@@ -629,6 +637,7 @@ export interface FileRoutesById {
   '/generate/$sessionId': typeof GenerateSessionIdRouteWithChildren
   '/preview/$slug': typeof PreviewSlugRouteWithChildren
   '/api/checkout/start': typeof ApiCheckoutStartRoute
+  '/api/images/$sessionId': typeof ApiImagesSessionIdRoute
   '/api/medusa-admin/config': typeof ApiMedusaAdminConfigRoute
   '/api/medusa-store/cart': typeof ApiMedusaStoreCartRouteWithChildren
   '/api/medusa-store/config': typeof ApiMedusaStoreConfigRoute
@@ -703,6 +712,7 @@ export interface FileRouteTypes {
     | '/generate/$sessionId'
     | '/preview/$slug'
     | '/api/checkout/start'
+    | '/api/images/$sessionId'
     | '/api/medusa-admin/config'
     | '/api/medusa-store/cart'
     | '/api/medusa-store/config'
@@ -775,6 +785,7 @@ export interface FileRouteTypes {
     | '/generate/$sessionId'
     | '/preview/$slug'
     | '/api/checkout/start'
+    | '/api/images/$sessionId'
     | '/api/medusa-admin/config'
     | '/api/medusa-store/cart'
     | '/api/medusa-store/config'
@@ -847,6 +858,7 @@ export interface FileRouteTypes {
     | '/generate/$sessionId'
     | '/preview/$slug'
     | '/api/checkout/start'
+    | '/api/images/$sessionId'
     | '/api/medusa-admin/config'
     | '/api/medusa-store/cart'
     | '/api/medusa-store/config'
@@ -920,6 +932,7 @@ export interface RootRouteChildren {
   GenerateSessionIdRoute: typeof GenerateSessionIdRouteWithChildren
   PreviewSlugRoute: typeof PreviewSlugRouteWithChildren
   ApiCheckoutStartRoute: typeof ApiCheckoutStartRoute
+  ApiImagesSessionIdRoute: typeof ApiImagesSessionIdRoute
   ApiMedusaAdminConfigRoute: typeof ApiMedusaAdminConfigRoute
   ApiMedusaStoreCartRoute: typeof ApiMedusaStoreCartRouteWithChildren
   ApiMedusaStoreConfigRoute: typeof ApiMedusaStoreConfigRoute
@@ -1253,6 +1266,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCheckoutStartRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/images/$sessionId': {
+      id: '/api/images/$sessionId'
+      path: '/api/images/$sessionId'
+      fullPath: '/api/images/$sessionId'
+      preLoaderRoute: typeof ApiImagesSessionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/sessions/$sessionId/stream': {
       id: '/api/sessions/$sessionId/stream'
       path: '/stream'
@@ -1568,6 +1588,7 @@ const rootRouteChildren: RootRouteChildren = {
   GenerateSessionIdRoute: GenerateSessionIdRouteWithChildren,
   PreviewSlugRoute: PreviewSlugRouteWithChildren,
   ApiCheckoutStartRoute: ApiCheckoutStartRoute,
+  ApiImagesSessionIdRoute: ApiImagesSessionIdRoute,
   ApiMedusaAdminConfigRoute: ApiMedusaAdminConfigRoute,
   ApiMedusaStoreCartRoute: ApiMedusaStoreCartRouteWithChildren,
   ApiMedusaStoreConfigRoute: ApiMedusaStoreConfigRoute,

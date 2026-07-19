@@ -1,5 +1,4 @@
 import { Link } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
 import { useMutation } from 'convex/react'
 import {
   ArrowRight,
@@ -61,7 +60,6 @@ import { createAnonymousClientId } from '@/features/session/services/session-cre
 import { cn } from '@/lib/utils'
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
-import { fetchGalleryPreviewHtml } from '../server/gallery-preview-server-fn'
 
 import { useGalleryController } from '../hooks/useGalleryController'
 
@@ -87,6 +85,7 @@ export type GallerySession = {
   categories?: string[]
   elapsed?: number | null
   openuiReady?: boolean | null
+  updatedAt?: number | null
 }
 
 export type GalleryPayload = {
@@ -147,39 +146,38 @@ function getGalleryCardAriaLabel(session: GallerySession): string {
     : `Open ${title}`
 }
 
+function getGalleryPreviewImageSrc(session: GallerySession): string {
+  const base = `/api/images/${encodeURIComponent(session.sessionId)}`
+  if (
+    typeof session.updatedAt !== 'number' ||
+    !Number.isFinite(session.updatedAt)
+  ) {
+    return base
+  }
+
+  return `${base}?v=${encodeURIComponent(String(session.updatedAt))}`
+}
+
 function GalleryCardPreview({ session }: { session: GallerySession }) {
   const title = getPromptTitle(session.prompt)
-  const { data: html, isPending } = useQuery({
-    queryKey: ['gallery-preview', session.sessionId],
-    queryFn: () =>
-      fetchGalleryPreviewHtml({ data: { sessionId: session.sessionId } }),
-    staleTime: Infinity,
-    gcTime: 10 * 60 * 1000,
-    retry: 1,
-  })
 
   return (
     <div
       className="relative aspect-[16/10] overflow-hidden border-b border-white/10 bg-[#050816]"
       aria-hidden="true"
     >
-      {html ? (
-        <iframe
-          srcDoc={html}
-          className="pointer-events-none absolute inset-0 h-[250%] w-[250%] origin-top-left scale-[0.4] border-0"
-          scrolling="no"
-          tabIndex={-1}
-          title={title}
-        />
-      ) : (
-        <div
-          className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.16),transparent_34%),radial-gradient(circle_at_78%_30%,rgba(168,85,247,0.16),transparent_36%),linear-gradient(135deg,#050816,#111827)]"
-          aria-label={title}
-        />
-      )}
-      {isPending && !html ? (
-        <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.18),transparent_32%),radial-gradient(circle_at_80%_26%,rgba(168,85,247,0.18),transparent_35%),linear-gradient(135deg,#050816,#111827)]" />
-      ) : null}
+      <div
+        className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.16),transparent_34%),radial-gradient(circle_at_78%_30%,rgba(168,85,247,0.16),transparent_36%),linear-gradient(135deg,#050816,#111827)]"
+        aria-label={title}
+      />
+      <img
+        src={getGalleryPreviewImageSrc(session)}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        fetchPriority="low"
+        className="absolute inset-0 h-full w-full object-cover"
+      />
       <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/8" />
     </div>
   )
@@ -255,7 +253,7 @@ function GalleryCard({
       className="group block overflow-hidden rounded-[8px] border border-white/10 bg-white/[0.055] shadow-[0_24px_80px_rgba(0,0,0,0.28)] transition-colors hover:border-cyan-200/50 hover:bg-white/[0.075]"
       to="/generate/$sessionId"
       params={{ sessionId: session.sessionId }}
-      preload={false}
+      preload="intent"
       aria-label={getGalleryCardAriaLabel(session)}
       data-gallery-session-id={session.sessionId}
       onPointerEnter={() => onHoverStart(session.sessionId)}

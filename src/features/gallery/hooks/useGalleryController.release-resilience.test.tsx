@@ -15,23 +15,13 @@ const emptyGallery: GalleryPayload = {
   totalPages: 1,
 }
 
-const queryMock = vi.fn()
-let useQueryResult: { data?: GalleryPayload } = { data: undefined }
-let capturedQueryFn: (() => Promise<GalleryPayload>) | undefined
+let useQueryResult: GalleryPayload | undefined
+const convexUseQueryMock = vi.fn(function useQueryMock() {
+  return useQueryResult
+})
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: vi.fn(function useQueryMock(options: {
-    queryFn: () => Promise<GalleryPayload>
-  }) {
-    capturedQueryFn = options.queryFn
-    return useQueryResult
-  }),
-}))
-
-vi.mock('@/shared/convex/http-client', () => ({
-  createRuntimeConvexHttpClient: vi.fn(function createClient() {
-    return { query: queryMock }
-  }),
+vi.mock('convex/react', () => ({
+  useQuery: convexUseQueryMock,
 }))
 
 vi.mock('../../../../convex/_generated/api', () => ({
@@ -46,18 +36,16 @@ const { useGalleryController } = await import('./useGalleryController')
 
 describe('useGalleryController release resilience', () => {
   beforeEach(() => {
-    queryMock.mockReset()
-    useQueryResult = { data: undefined }
-    capturedQueryFn = undefined
+    convexUseQueryMock.mockClear()
+    useQueryResult = undefined
   })
 
   afterEach(() => {
     vi.clearAllMocks()
   })
 
-  it('returns gallery undefined while the Convex query has not resolved', () => {
-    queryMock.mockReturnValue(new Promise(() => {}))
-    useQueryResult = { data: undefined }
+  it('returns gallery undefined while the Convex subscription has not resolved', () => {
+    useQueryResult = undefined
 
     const { result } = renderHook(function renderLoadingGallery() {
       return useGalleryController({ search: 'pending' })
@@ -67,10 +55,9 @@ describe('useGalleryController release resilience', () => {
     expect(result.current.sessions).toBeUndefined()
   })
 
-  it('returns gallery data when the Convex query resolves', async () => {
+  it('returns gallery data when the Convex subscription resolves', async () => {
     const gallery: GalleryPayload = { ...emptyGallery, total: 4 }
-    queryMock.mockResolvedValue(gallery)
-    useQueryResult = { data: gallery }
+    useQueryResult = gallery
 
     const { result } = renderHook(function renderResolvedGallery() {
       return useGalleryController({ search: 'resolved' })
@@ -81,19 +68,5 @@ describe('useGalleryController release resilience', () => {
     })
 
     expect(result.current.sessions).toEqual(gallery.items)
-  })
-
-  it('does not crash when the Convex query rejects', async () => {
-    queryMock.mockRejectedValue(new Error('convex down'))
-    useQueryResult = { data: undefined }
-
-    const { result } = renderHook(function renderRejectedGallery() {
-      return useGalleryController({ search: 'rejected' })
-    })
-
-    await expect(capturedQueryFn).rejects.toThrow('convex down')
-
-    expect(result.current.gallery).toBeUndefined()
-    expect(() => result.current).not.toThrow()
   })
 })

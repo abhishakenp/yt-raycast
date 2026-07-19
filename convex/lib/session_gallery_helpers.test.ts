@@ -457,6 +457,7 @@ describe('listPublicGallerySessions', () => {
           _id: firstSessionId,
           prompt: 'SaaS analytics',
           createdAt: 300,
+          updatedAt: 333,
         }),
         sessionDoc({
           _id: secondSessionId,
@@ -490,6 +491,7 @@ describe('listPublicGallerySessions', () => {
     expect(result.total).toBe(3)
     expect(result.totalPages).toBe(3)
     expect(result.items.map((item) => item.sessionId)).toEqual([firstSessionId])
+    expect(result.items[0]?.updatedAt).toBe(333)
   })
 
   it('does not load artifact tables during listing (metadata-only query)', async () => {

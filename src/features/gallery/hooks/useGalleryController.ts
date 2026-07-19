@@ -1,8 +1,7 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery } from 'convex/react'
 
 import { api } from '../../../../convex/_generated/api'
 import { createAnonymousClientId } from '@/features/session/services/session-create-payload'
-import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
 export type GalleryQueryOptions = {
   category?: string
@@ -17,18 +16,11 @@ export function useGalleryController({
   page = 1,
   search = '',
 }: GalleryQueryOptions = {}) {
-  const { data: gallery } = useQuery({
-    queryKey: ['gallery', 'public', { category, limit, page, search }],
-    queryFn: async () => {
-      const client = createRuntimeConvexHttpClient()
-      return await client.query(api.sessions.listPublicSessions, {
-        limit,
-        page,
-        search: search || undefined,
-        category: category || undefined,
-      })
-    },
-    staleTime: 5 * 60 * 1000,
+  const gallery = useQuery(api.sessions.listPublicSessions, {
+    limit,
+    page,
+    search: search || undefined,
+    category: category || undefined,
   })
 
   return {
@@ -48,25 +40,18 @@ export function useOwnedGalleryController({
   search = '',
   anonymousClientId,
 }: OwnedGalleryQueryOptions = {}) {
-  const { data: gallery } = useQuery({
-    queryKey: [
-      'gallery',
-      'owned',
-      { anonymousClientId, category, limit, page, search },
-    ],
-    enabled: anonymousClientId !== undefined,
-    queryFn: async () => {
-      const client = createRuntimeConvexHttpClient()
-      return await client.query(api.sessions.listOwnedSessions, {
-        anonymousClientId,
-        category,
-        limit,
-        page,
-        search,
-      })
-    },
-    staleTime: 5 * 60 * 1000,
-  })
+  const gallery = useQuery(
+    api.sessions.listOwnedSessions,
+    anonymousClientId !== undefined
+      ? {
+          anonymousClientId,
+          category: category || undefined,
+          limit,
+          page,
+          search: search || undefined,
+        }
+      : 'skip',
+  )
 
   return {
     gallery,

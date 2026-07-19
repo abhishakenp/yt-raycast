@@ -279,8 +279,9 @@ export function serializePublicGallerySession(
  * Minimal metadata returned by gallery LIST endpoints.
  *
  * Only the fields the gallery card chrome needs: sessionId, prompt,
- * categories, elapsed, and openuiReady.  No HTML, no OpenUI source,
- * no siteSpec, no translations, no theme, no cost, no timestamps.
+ * categories, elapsed, openuiReady, and updatedAt for preview image cache
+ * busting.  No HTML, no OpenUI source, no siteSpec, no translations,
+ * no theme, and no cost.
  * Preview HTML is fetched per-card via the per-session thumbnail endpoint.
  */
 type GallerySessionMetadata = {
@@ -289,6 +290,7 @@ type GallerySessionMetadata = {
   categories: string[]
   elapsed: number | null
   openuiReady: boolean | null
+  updatedAt: number
 }
 
 function toGallerySessionMetadata(
@@ -300,6 +302,7 @@ function toGallerySessionMetadata(
     categories: getGalleryCategories(session.prompt),
     elapsed: session.elapsed ?? null,
     openuiReady: session.openuiReady ?? null,
+    updatedAt: session.updatedAt ?? session.createdAt,
   }
 }
 
