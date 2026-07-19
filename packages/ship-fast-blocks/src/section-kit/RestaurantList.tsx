@@ -19,15 +19,19 @@ const RestaurantListVariants = cva('flex flex-col', {
 
 const RestaurantList = React.forwardRef<
   HTMLUListElement,
-  React.ComponentProps<'ul'> & VariantProps<typeof RestaurantListVariants>
->(({ className, gap, ...props }, ref) => (
-  <ul
-    data-slot="restaurant-list"
-    className={cn(RestaurantListVariants({ gap }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'ul'> &
+    VariantProps<typeof RestaurantListVariants> & { asChild?: boolean }
+>(({ className, gap, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'ul'
+  return (
+    <Comp
+      data-slot="restaurant-list"
+      className={cn(RestaurantListVariants({ gap }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 RestaurantList.displayName = 'RestaurantList'
 
 const RestaurantItem = React.forwardRef<

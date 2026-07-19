@@ -19,15 +19,19 @@ const PopularListVariants = cva('flex flex-col', {
 
 const PopularList = React.forwardRef<
   HTMLUListElement,
-  React.ComponentProps<'ul'> & VariantProps<typeof PopularListVariants>
->(({ className, gap, ...props }, ref) => (
-  <ul
-    data-slot="popular-list"
-    className={cn(PopularListVariants({ gap }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'ul'> &
+    VariantProps<typeof PopularListVariants> & { asChild?: boolean }
+>(({ className, gap, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'ul'
+  return (
+    <Comp
+      data-slot="popular-list"
+      className={cn(PopularListVariants({ gap }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 PopularList.displayName = 'PopularList'
 
 const PopularItem = React.forwardRef<

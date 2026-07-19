@@ -19,15 +19,19 @@ const TourListVariants = cva('flex flex-col', {
 
 const TourList = React.forwardRef<
   HTMLUListElement,
-  React.ComponentProps<'ul'> & VariantProps<typeof TourListVariants>
->(({ className, gap, ...props }, ref) => (
-  <ul
-    data-slot="tour-list"
-    className={cn(TourListVariants({ gap }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'ul'> &
+    VariantProps<typeof TourListVariants> & { asChild?: boolean }
+>(({ className, gap, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'ul'
+  return (
+    <Comp
+      data-slot="tour-list"
+      className={cn(TourListVariants({ gap }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 TourList.displayName = 'TourList'
 
 const TourItem = React.forwardRef<

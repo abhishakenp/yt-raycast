@@ -19,15 +19,19 @@ const RewardListVariants = cva('flex flex-col', {
 
 const RewardList = React.forwardRef<
   HTMLUListElement,
-  React.ComponentProps<'ul'> & VariantProps<typeof RewardListVariants>
->(({ className, gap, ...props }, ref) => (
-  <ul
-    data-slot="reward-list"
-    className={cn(RewardListVariants({ gap }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'ul'> &
+    VariantProps<typeof RewardListVariants> & { asChild?: boolean }
+>(({ className, gap, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'ul'
+  return (
+    <Comp
+      data-slot="reward-list"
+      className={cn(RewardListVariants({ gap }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 RewardList.displayName = 'RewardList'
 
 const RewardItem = React.forwardRef<

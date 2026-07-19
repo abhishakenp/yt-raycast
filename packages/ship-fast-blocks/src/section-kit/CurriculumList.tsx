@@ -19,15 +19,19 @@ const CurriculumListVariants = cva('flex flex-col', {
 
 const CurriculumList = React.forwardRef<
   HTMLUListElement,
-  React.ComponentProps<'ul'> & VariantProps<typeof CurriculumListVariants>
->(({ className, gap, ...props }, ref) => (
-  <ul
-    data-slot="curriculum-list"
-    className={cn(CurriculumListVariants({ gap }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'ul'> &
+    VariantProps<typeof CurriculumListVariants> & { asChild?: boolean }
+>(({ className, gap, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'ul'
+  return (
+    <Comp
+      data-slot="curriculum-list"
+      className={cn(CurriculumListVariants({ gap }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 CurriculumList.displayName = 'CurriculumList'
 
 const CurriculumItem = React.forwardRef<

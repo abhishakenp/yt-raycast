@@ -19,15 +19,19 @@ const MusicListVariants = cva('flex flex-col', {
 
 const MusicList = React.forwardRef<
   HTMLUListElement,
-  React.ComponentProps<'ul'> & VariantProps<typeof MusicListVariants>
->(({ className, gap, ...props }, ref) => (
-  <ul
-    data-slot="music-list"
-    className={cn(MusicListVariants({ gap }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'ul'> &
+    VariantProps<typeof MusicListVariants> & { asChild?: boolean }
+>(({ className, gap, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'ul'
+  return (
+    <Comp
+      data-slot="music-list"
+      className={cn(MusicListVariants({ gap }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 MusicList.displayName = 'MusicList'
 
 const MusicItem = React.forwardRef<

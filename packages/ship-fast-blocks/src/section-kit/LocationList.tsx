@@ -19,15 +19,19 @@ const LocationListVariants = cva('flex flex-col', {
 
 const LocationList = React.forwardRef<
   HTMLUListElement,
-  React.ComponentProps<'ul'> & VariantProps<typeof LocationListVariants>
->(({ className, gap, ...props }, ref) => (
-  <ul
-    data-slot="location-list"
-    className={cn(LocationListVariants({ gap }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'ul'> &
+    VariantProps<typeof LocationListVariants> & { asChild?: boolean }
+>(({ className, gap, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'ul'
+  return (
+    <Comp
+      data-slot="location-list"
+      className={cn(LocationListVariants({ gap }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 LocationList.displayName = 'LocationList'
 
 const LocationItem = React.forwardRef<
