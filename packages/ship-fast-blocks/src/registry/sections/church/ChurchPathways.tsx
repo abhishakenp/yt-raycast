@@ -2,13 +2,16 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   PathwayGrid,
   PathwayCard,
+  PathwayCardImage,
   PathwayCardBody,
   PathwayCardTitle,
   PathwayCardDescription,
+  PathwayCardCta,
 } from '#/section-kit/PathwayGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
@@ -44,6 +47,7 @@ export const ChurchPathways = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
+    const go = useNavigate()
     const heading = props.heading ?? 'Everyone has a next step'
     const description =
       props.description ??
@@ -91,11 +95,32 @@ export const ChurchPathways = defineCapsule({
           <PathwayGrid cols="1-2-3">
             {items.map((item) => (
               <PathwayCard key={item.title}>
+                <PathwayCardImage>
+                  <img
+                    src={`https://picsum.photos/seed/${encodeURIComponent(item.imageAlt)}/600/450`}
+                    alt={item.imageAlt}
+                    loading="lazy"
+                    className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                </PathwayCardImage>
                 <PathwayCardBody>
                   <PathwayCardTitle>{item.title}</PathwayCardTitle>
                   <PathwayCardDescription>
                     {item.description}
                   </PathwayCardDescription>
+                  <PathwayCardCta
+                    asChild
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      go(item.cta)
+                    }}
+                  >
+                    <button type="button">
+                      {item.cta}
+                      <span aria-hidden="true">→</span>
+                    </button>
+                  </PathwayCardCta>
                 </PathwayCardBody>
               </PathwayCard>
             ))}
