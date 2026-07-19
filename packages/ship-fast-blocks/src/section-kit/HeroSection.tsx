@@ -181,20 +181,24 @@ const HeroHighlight = React.forwardRef<
   HTMLSpanElement,
   React.ComponentProps<'span'> & {
     variant?: 'primary' | 'gradient'
+    asChild?: boolean
   }
->(({ className, variant = 'primary', ...props }, ref) => (
-  <span
-    ref={ref}
-    data-slot="hero-highlight"
-    className={cn(
-      variant === 'primary' && 'text-primary',
-      variant === 'gradient' &&
-        'bg-gradient-to-br from-primary via-primary/80 to-accent bg-clip-text text-transparent',
-      className,
-    )}
-    {...props}
-  />
-))
+>(({ className, variant = 'primary', asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'span'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="hero-highlight"
+      className={cn(
+        variant === 'primary' && 'text-primary',
+        variant === 'gradient' &&
+          'bg-gradient-to-br from-primary via-primary/80 to-accent bg-clip-text text-transparent',
+        className,
+      )}
+      {...props}
+    />
+  )
+})
 HeroHighlight.displayName = 'HeroHighlight'
 
 /* ---------- HeroSubheading ---------- */
@@ -216,15 +220,19 @@ const heroSubheadingVariants = cva('', {
 
 const HeroSubheading = React.forwardRef<
   HTMLParagraphElement,
-  React.ComponentProps<'p'> & VariantProps<typeof heroSubheadingVariants>
->(({ className, variant, ...props }, ref) => (
-  <p
-    ref={ref}
-    data-slot="hero-subheading"
-    className={cn(heroSubheadingVariants({ variant }), className)}
-    {...props}
-  />
-))
+  React.ComponentProps<'p'> &
+    VariantProps<typeof heroSubheadingVariants> & { asChild?: boolean }
+>(({ className, variant, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'p'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="hero-subheading"
+      className={cn(heroSubheadingVariants({ variant }), className)}
+      {...props}
+    />
+  )
+})
 HeroSubheading.displayName = 'HeroSubheading'
 
 /* ---------- HeroCta ---------- */
@@ -266,15 +274,18 @@ HeroCta.displayName = 'HeroCta'
 
 const HeroActions = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    data-slot="hero-ctas"
-    className={cn('mt-8 flex flex-wrap gap-3.5', className)}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="hero-ctas"
+      className={cn('mt-8 flex flex-wrap gap-3.5', className)}
+      {...props}
+    />
+  )
+})
 HeroActions.displayName = 'HeroActions'
 
 /* ---------- HeroMediaPanel ---------- */
@@ -286,23 +297,40 @@ interface HeroImageProps extends React.ComponentProps<'div'> {
   rounded?: 'xl' | '2xl' | '3xl'
 }
 
-const HeroMediaPanel = React.forwardRef<HTMLDivElement, HeroImageProps>(
-  ({ className, alt, w = 1200, h = 1200, rounded = '2xl', ...props }, ref) => (
-    <div
-      ref={ref}
-      data-slot="hero-image"
-      className={cn(
-        'overflow-hidden',
-        rounded === 'xl' && 'rounded-xl',
-        rounded === '2xl' && 'rounded-2xl',
-        rounded === '3xl' && 'rounded-3xl',
-        className,
-      )}
-      {...props}
-    >
-      <Image alt={alt} w={w} h={h} className="size-full object-cover" />
-    </div>
-  ),
+const HeroMediaPanel = React.forwardRef<
+  HTMLDivElement,
+  HeroImageProps & { asChild?: boolean }
+>(
+  (
+    {
+      className,
+      alt,
+      w = 1200,
+      h = 1200,
+      rounded = '2xl',
+      asChild = false,
+      ...props
+    },
+    ref,
+  ) => {
+    const Comp = asChild ? Slot : 'div'
+    return (
+      <Comp
+        ref={ref}
+        data-slot="hero-image"
+        className={cn(
+          'overflow-hidden',
+          rounded === 'xl' && 'rounded-xl',
+          rounded === '2xl' && 'rounded-2xl',
+          rounded === '3xl' && 'rounded-3xl',
+          className,
+        )}
+        {...props}
+      >
+        <Image alt={alt} w={w} h={h} className="size-full object-cover" />
+      </Comp>
+    )
+  },
 )
 HeroMediaPanel.displayName = 'HeroMediaPanel'
 
@@ -310,40 +338,50 @@ HeroMediaPanel.displayName = 'HeroMediaPanel'
 
 const HeroSocialProof = React.forwardRef<
   HTMLUListElement,
-  React.ComponentProps<'ul'>
->(({ className, ...props }, ref) => (
-  <ul
-    ref={ref}
-    data-slot="hero-trust-row"
-    className={cn(
-      'mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground',
-      className,
-    )}
-    {...props}
-  />
-))
+  React.ComponentProps<'ul'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'ul'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="hero-trust-row"
+      className={cn(
+        'mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground',
+        className,
+      )}
+      {...props}
+    />
+  )
+})
 HeroSocialProof.displayName = 'HeroSocialProof'
 
 /* ---------- HeroSocialProofItem ---------- */
 
 const HeroSocialProofItem = React.forwardRef<
   HTMLLIElement,
-  React.ComponentProps<'li'>
->(({ className, ...props }, ref) => (
-  <li
-    ref={ref}
-    data-slot="hero-trust-item"
-    className={cn('flex items-center gap-2', className)}
-    {...props}
-  />
-))
+  React.ComponentProps<'li'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'li'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="hero-trust-item"
+      className={cn('flex items-center gap-2', className)}
+      {...props}
+    />
+  )
+})
 HeroSocialProofItem.displayName = 'HeroSocialProofItem'
 
 /* ---------- HeroStats ---------- */
 
-const HeroStats = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(
-  ({ className, ...props }, ref) => (
-    <div
+const HeroStats = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
       ref={ref}
       data-slot="hero-stats"
       className={cn(
@@ -352,52 +390,62 @@ const HeroStats = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(
       )}
       {...props}
     />
-  ),
-)
+  )
+})
 HeroStats.displayName = 'HeroStats'
 
 /* ---------- HeroStat ---------- */
 
-const HeroStat = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(
-  ({ className, ...props }, ref) => (
-    <div
+const HeroStat = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
       ref={ref}
       data-slot="hero-stat"
       className={cn('flex flex-col', className)}
       {...props}
     />
-  ),
-)
+  )
+})
 HeroStat.displayName = 'HeroStat'
 
 /* ---------- HeroStatValue ---------- */
 
 const HeroStatValue = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    data-slot="hero-stat-value"
-    className={cn('text-3xl font-bold text-foreground', className)}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="hero-stat-value"
+      className={cn('text-3xl font-bold text-foreground', className)}
+      {...props}
+    />
+  )
+})
 HeroStatValue.displayName = 'HeroStatValue'
 
 /* ---------- HeroStatLabel ---------- */
 
 const HeroStatLabel = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    data-slot="hero-stat-label"
-    className={cn('mt-1 text-sm text-muted-foreground', className)}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="hero-stat-label"
+      className={cn('mt-1 text-sm text-muted-foreground', className)}
+      {...props}
+    />
+  )
+})
 HeroStatLabel.displayName = 'HeroStatLabel'
 
 /* ---------- HeroCodeWindow ---------- */
@@ -423,62 +471,74 @@ HeroCodeWindow.displayName = 'HeroCodeWindow'
 
 const HeroCodeWindowHeader = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    data-slot="hero-code-window-header"
-    className={cn(
-      'flex items-center gap-2 border-b border-border bg-muted px-4 py-3',
-      className,
-    )}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="hero-code-window-header"
+      className={cn(
+        'flex items-center gap-2 border-b border-border bg-muted px-4 py-3',
+        className,
+      )}
+      {...props}
+    />
+  )
+})
 HeroCodeWindowHeader.displayName = 'HeroCodeWindowHeader'
 
 const HeroCodeWindowBody = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    data-slot="hero-code-window-body"
-    className={cn('space-y-2 p-5 font-mono text-sm', className)}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="hero-code-window-body"
+      className={cn('space-y-2 p-5 font-mono text-sm', className)}
+      {...props}
+    />
+  )
+})
 HeroCodeWindowBody.displayName = 'HeroCodeWindowBody'
 
 /* ---------- HeroInfoStrip ---------- */
 
 const HeroInfoStrip = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    data-slot="hero-info-strip"
-    className={cn(
-      'mt-14 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-background/80',
-      className,
-    )}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="hero-info-strip"
+      className={cn(
+        'mt-14 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-background/80',
+        className,
+      )}
+      {...props}
+    />
+  )
+})
 HeroInfoStrip.displayName = 'HeroInfoStrip'
 
 const HeroInfoStripItem = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    data-slot="hero-info-strip-item"
-    className={cn('flex items-center gap-x-4', className)}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="hero-info-strip-item"
+      className={cn('flex items-center gap-x-4', className)}
+      {...props}
+    />
+  )
+})
 HeroInfoStripItem.displayName = 'HeroInfoStripItem'
 
 /* ---------- HeroStatBadge (floating stat badge on hero media) ---------- */
