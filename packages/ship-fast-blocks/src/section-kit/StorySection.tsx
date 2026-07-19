@@ -13,7 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * component gives both patterns a dedicated `story-*` semantic identity so
  * styling and tests can target story sections specifically.
  *
- * Compound components: StorySection, StoryGrid, StoryMedia, StoryContent,
+ * Compound components: StorySection, StorySplitGrid, StoryMedia, StoryContent,
  * StoryEyebrow, StoryHeading, StoryBody, StoryFooter, StoryFeatures,
  * StoryImageTile — all forwardRef + displayName + asChild via Radix Slot.
  * Compose with `SectionHeading` or `Eyebrow` inside `StoryContent` for the
@@ -51,7 +51,7 @@ const StorySection = React.forwardRef<
 })
 StorySection.displayName = 'StorySection'
 
-const StoryGrid = React.forwardRef<
+const StorySplitGrid = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<'div'> & { asChild?: boolean }
 >(({ className, asChild = false, ...props }, ref) => {
@@ -68,7 +68,7 @@ const StoryGrid = React.forwardRef<
     />
   )
 })
-StoryGrid.displayName = 'StoryGrid'
+StorySplitGrid.displayName = 'StorySplitGrid'
 
 const StoryMedia = React.forwardRef<
   HTMLDivElement,
@@ -213,7 +213,7 @@ StoryImageTile.displayName = 'StoryImageTile'
 
 export {
   StorySection,
-  StoryGrid,
+  StorySplitGrid,
   StoryMedia,
   StoryContent,
   StoryEyebrow,
