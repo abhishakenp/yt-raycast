@@ -8,87 +8,102 @@ import { Image } from '#/lib/img.tsx'
 
 const OverviewSection = React.forwardRef<
   HTMLElement,
-  React.ComponentProps<'section'>
->(({ className, ...props }, ref) => (
-  <section
-    ref={ref}
-    data-slot="overview-section"
-    className={cn(
-      'overflow-hidden bg-background py-20 text-foreground sm:py-24',
-      className,
-    )}
-    {...props}
-  />
-))
+  React.ComponentProps<'section'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'section'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="overview-section"
+      className={cn(
+        'overflow-hidden bg-background py-20 text-foreground sm:py-24',
+        className,
+      )}
+      {...props}
+    />
+  )
+})
 OverviewSection.displayName = 'OverviewSection'
 
 /* ---------- OverviewGrid ---------- */
 
 const OverviewGrid = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    data-slot="overview-grid"
-    className={cn(
-      'mx-auto grid max-w-7xl gap-12 px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:px-8',
-      className,
-    )}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="overview-grid"
+      className={cn(
+        'mx-auto grid max-w-7xl gap-12 px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:px-8',
+        className,
+      )}
+      {...props}
+    />
+  )
+})
 OverviewGrid.displayName = 'OverviewGrid'
 
 /* ---------- OverviewContent ---------- */
 
 const OverviewContent = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    data-slot="overview-content"
-    className={cn('flex flex-col', className)}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="overview-content"
+      className={cn('flex flex-col', className)}
+      {...props}
+    />
+  )
+})
 OverviewContent.displayName = 'OverviewContent'
 
 /* ---------- OverviewEyebrow ---------- */
 
 const OverviewEyebrow = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    data-slot="overview-eyebrow"
-    className={cn(
-      'mb-6 inline-flex rounded-full border border-border bg-muted px-4 py-2 text-sm font-medium text-muted-foreground',
-      className,
-    )}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="overview-eyebrow"
+      className={cn(
+        'mb-6 inline-flex rounded-full border border-border bg-muted px-4 py-2 text-sm font-medium text-muted-foreground',
+        className,
+      )}
+      {...props}
+    />
+  )
+})
 OverviewEyebrow.displayName = 'OverviewEyebrow'
 
 /* ---------- OverviewBrand ---------- */
 
 const OverviewBrand = React.forwardRef<
   HTMLParagraphElement,
-  React.ComponentProps<'p'>
->(({ className, ...props }, ref) => (
-  <p
-    ref={ref}
-    data-slot="overview-brand"
-    className={cn(
-      'mb-4 text-sm font-semibold uppercase tracking-wider text-primary',
-      className,
-    )}
-    {...props}
-  />
-))
+  React.ComponentProps<'p'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'p'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="overview-brand"
+      className={cn(
+        'mb-4 text-sm font-semibold uppercase tracking-wider text-primary',
+        className,
+      )}
+      {...props}
+    />
+  )
+})
 OverviewBrand.displayName = 'OverviewBrand'
 
 /* ---------- OverviewHeading ---------- */
@@ -116,129 +131,153 @@ OverviewHeading.displayName = 'OverviewHeading'
 
 const OverviewSubheading = React.forwardRef<
   HTMLParagraphElement,
-  React.ComponentProps<'p'>
->(({ className, ...props }, ref) => (
-  <p
-    ref={ref}
-    data-slot="overview-subheading"
-    className={cn(
-      'mt-6 max-w-2xl text-lg leading-8 text-muted-foreground',
-      className,
-    )}
-    {...props}
-  />
-))
+  React.ComponentProps<'p'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'p'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="overview-subheading"
+      className={cn(
+        'mt-6 max-w-2xl text-lg leading-8 text-muted-foreground',
+        className,
+      )}
+      {...props}
+    />
+  )
+})
 OverviewSubheading.displayName = 'OverviewSubheading'
 
 /* ---------- OverviewFeatures ---------- */
 
 const OverviewFeatures = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    data-slot="overview-features"
-    className={cn('mt-8 flex flex-wrap gap-3', className)}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="overview-features"
+      className={cn('mt-8 flex flex-wrap gap-3', className)}
+      {...props}
+    />
+  )
+})
 OverviewFeatures.displayName = 'OverviewFeatures'
 
 /* ---------- OverviewFeature ---------- */
 
 const OverviewFeature = React.forwardRef<
   HTMLSpanElement,
-  React.ComponentProps<'span'>
->(({ className, ...props }, ref) => (
-  <span
-    ref={ref}
-    data-slot="overview-feature"
-    className={cn(
-      'rounded-full border border-border bg-card px-4 py-2 text-sm text-card-foreground',
-      className,
-    )}
-    {...props}
-  />
-))
+  React.ComponentProps<'span'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'span'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="overview-feature"
+      className={cn(
+        'rounded-full border border-border bg-card px-4 py-2 text-sm text-card-foreground',
+        className,
+      )}
+      {...props}
+    />
+  )
+})
 OverviewFeature.displayName = 'OverviewFeature'
 
 /* ---------- OverviewCta ---------- */
 
 const OverviewCta = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    data-slot="overview-cta"
-    className={cn('mt-10 flex flex-col gap-3 sm:flex-row', className)}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="overview-cta"
+      className={cn('mt-10 flex flex-col gap-3 sm:flex-row', className)}
+      {...props}
+    />
+  )
+})
 OverviewCta.displayName = 'OverviewCta'
 
 /* ---------- OverviewStats ---------- */
 
 const OverviewStats = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    data-slot="overview-stats"
-    className={cn(
-      'mt-12 grid grid-cols-3 gap-4 border-t border-border pt-8',
-      className,
-    )}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="overview-stats"
+      className={cn(
+        'mt-12 grid grid-cols-3 gap-4 border-t border-border pt-8',
+        className,
+      )}
+      {...props}
+    />
+  )
+})
 OverviewStats.displayName = 'OverviewStats'
 
 /* ---------- OverviewStat ---------- */
 
 const OverviewStat = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    data-slot="overview-stat"
-    className={cn('flex flex-col', className)}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="overview-stat"
+      className={cn('flex flex-col', className)}
+      {...props}
+    />
+  )
+})
 OverviewStat.displayName = 'OverviewStat'
 
 /* ---------- OverviewStatValue ---------- */
 
 const OverviewStatValue = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    data-slot="overview-stat-value"
-    className={cn('text-2xl font-bold text-foreground', className)}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="overview-stat-value"
+      className={cn('text-2xl font-bold text-foreground', className)}
+      {...props}
+    />
+  )
+})
 OverviewStatValue.displayName = 'OverviewStatValue'
 
 /* ---------- OverviewStatLabel ---------- */
 
 const OverviewStatLabel = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    data-slot="overview-stat-label"
-    className={cn('mt-1 text-sm text-muted-foreground', className)}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="overview-stat-label"
+      className={cn('mt-1 text-sm text-muted-foreground', className)}
+      {...props}
+    />
+  )
+})
 OverviewStatLabel.displayName = 'OverviewStatLabel'
 
 /* ---------- OverviewMediaPanel ---------- */
