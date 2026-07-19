@@ -8,6 +8,7 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 import { z } from 'zod/v4'
 
@@ -86,18 +87,16 @@ export const HealthcareFaq = defineCapsule({
         aria-labelledby="faq-heading"
       >
         <Container className="max-w-4xl">
-          <div className="mb-16 text-center">
-            <span className="mb-4 inline-block rounded-full bg-accent px-4 py-1.5 text-sm font-semibold text-accent-foreground">
-              {eyebrow}
-            </span>
-            <h2
-              id="faq-heading"
-              className="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
-            >
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            titleId="faq-heading"
+            className="mb-16  gap-0"
+            eyebrowClassName="mb-4 inline-block rounded-full bg-accent px-4 py-1.5 text-sm font-semibold text-accent-foreground"
+            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
 
           <FaqAccordion>
             {items.map((item) => (

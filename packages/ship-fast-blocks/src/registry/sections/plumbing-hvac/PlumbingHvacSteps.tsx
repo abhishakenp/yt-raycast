@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   StepTimeline,
   StepTimelineGrid,
@@ -72,15 +73,14 @@ export const PlumbingHvacSteps = defineCapsule({
         aria-labelledby="plumbing-hvac-steps-heading"
       >
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <h2
-              id="plumbing-hvac-steps-heading"
-              className="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
-            >
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{subheading}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={subheading}
+            titleId="plumbing-hvac-steps-heading"
+            className="mb-16 max-w-3xl gap-0"
+            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <StepTimelineGrid columns={3} className="relative gap-10 md:gap-8">
             {/* Connecting accent line behind the badges on desktop */}
             <span

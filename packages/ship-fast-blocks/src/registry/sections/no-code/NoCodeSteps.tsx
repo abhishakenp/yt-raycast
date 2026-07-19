@@ -13,6 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   StepTimeline,
   StepTimelineGrid,
@@ -78,18 +79,16 @@ export const NoCodeSteps = defineCapsule({
         aria-labelledby="nc-steps"
       >
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <span className="mb-3 inline-block text-sm font-medium uppercase tracking-wider text-muted-foreground">
-              {eyebrow}
-            </span>
-            <h2
-              id="nc-steps"
-              className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
-            >
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            titleId="nc-steps"
+            className="mb-16 max-w-3xl gap-0"
+            eyebrowClassName="mb-3 inline-block text-sm font-medium uppercase tracking-wider text-muted-foreground"
+            titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <StepTimelineGrid columns={3} className="gap-8 lg:gap-12">
             {items.map((step, i) => (
               <StepItem key={step.title} className="relative">

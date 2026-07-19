@@ -11,6 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * product landing page. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -82,18 +83,16 @@ export const NoCodeTestimonials = defineCapsule({
         aria-labelledby="nc-testimonials"
       >
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <span className="mb-3 inline-block text-sm font-medium uppercase tracking-wider text-muted-foreground">
-              {eyebrow}
-            </span>
-            <h2
-              id="nc-testimonials"
-              className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
-            >
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            titleId="nc-testimonials"
+            className="mb-16 max-w-3xl gap-0"
+            eyebrowClassName="mb-3 inline-block text-sm font-medium uppercase tracking-wider text-muted-foreground"
+            titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <TestimonialGrid columns={3}>
             {items.map((t) => {
               const __iv__ = t as {

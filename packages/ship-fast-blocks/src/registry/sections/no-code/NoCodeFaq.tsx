@@ -8,6 +8,7 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 import { z } from 'zod/v4'
 
@@ -72,17 +73,14 @@ export const NoCodeFaq = defineCapsule({
         aria-labelledby="nc-faq"
       >
         <Container size="sm">
-          <div className="mb-12 text-center">
-            <span className="mb-3 inline-block text-sm font-medium uppercase tracking-wider text-muted-foreground">
-              {eyebrow}
-            </span>
-            <h2
-              id="nc-faq"
-              className="text-3xl font-semibold tracking-tight sm:text-4xl"
-            >
-              {heading}
-            </h2>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            titleId="nc-faq"
+            className="mb-12 gap-0"
+            eyebrowClassName="mb-3 inline-block text-sm font-medium uppercase tracking-wider text-muted-foreground"
+            titleClassName="text-3xl font-semibold tracking-tight sm:text-4xl"
+          />
           <FaqAccordion>
             {items.map((item) => (
               <FaqItem key={item.q} className="transition-all open:shadow-sm">

@@ -11,6 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * SaaS, or product landing page. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   FeatureGrid,
   FeatureCard,
@@ -86,18 +87,16 @@ export const NoCodeFeatures = defineCapsule({
         aria-labelledby="nc-features"
       >
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <span className="mb-3 inline-block text-sm font-medium uppercase tracking-wider text-muted-foreground">
-              {eyebrow}
-            </span>
-            <h2
-              id="nc-features"
-              className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
-            >
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            titleId="nc-features"
+            className="mb-16 max-w-3xl gap-0"
+            eyebrowClassName="mb-3 inline-block text-sm font-medium uppercase tracking-wider text-muted-foreground"
+            titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <FeatureGrid columns={3}>
             {items.map((f) => {
               const __iv__ = f as {

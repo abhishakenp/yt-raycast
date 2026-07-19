@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { StepTimeline, StepItem } from '#/section-kit/StepTimeline.tsx'
 
 /**
@@ -69,15 +70,14 @@ export const SaasSteps = defineCapsule({
         aria-labelledby="saas-steps-heading"
       >
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <h2
-              id="saas-steps-heading"
-              className="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
-            >
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{subheading}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={subheading}
+            titleId="saas-steps-heading"
+            className="mb-16 max-w-3xl gap-0"
+            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <ol
             className={cn(
               'relative grid gap-10 md:gap-8',

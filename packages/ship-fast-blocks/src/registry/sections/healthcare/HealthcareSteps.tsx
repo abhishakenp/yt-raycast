@@ -12,6 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * clinic. Renders fully with no props via baked-in 3-step booking defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   StepTimeline,
   StepTimelineGrid,
@@ -71,18 +72,16 @@ export const HealthcareSteps = defineCapsule({
         aria-labelledby="booking-heading"
       >
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <span className="mb-4 inline-block rounded-full bg-accent px-4 py-1.5 text-sm font-semibold text-accent-foreground">
-              {eyebrow}
-            </span>
-            <h2
-              id="booking-heading"
-              className="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
-            >
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            titleId="booking-heading"
+            className="mb-16 max-w-3xl gap-0"
+            eyebrowClassName="mb-4 inline-block rounded-full bg-accent px-4 py-1.5 text-sm font-semibold text-accent-foreground"
+            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
 
           <StepTimelineGrid columns={3} className="gap-8 lg:gap-12">
             {items.map((step, i) => (

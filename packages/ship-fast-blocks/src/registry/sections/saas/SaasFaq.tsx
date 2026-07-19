@@ -10,6 +10,7 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * SaasFaq — a centered accordion-style FAQ band for a SaaS / AI-product landing
@@ -87,17 +88,14 @@ export const SaasFaq = defineCapsule({
         aria-labelledby="faq-heading"
       >
         <Container size="sm" className="px-6 sm:px-8">
-          <div className="mb-12 text-center">
-            <h2
-              id="faq-heading"
-              className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
-            >
-              {heading}
-            </h2>
-            <p className="mx-auto mt-4 max-w-xl text-lg leading-relaxed text-muted-foreground">
-              {subheading}
-            </p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={subheading}
+            titleId="faq-heading"
+            className="mb-12 gap-0"
+            titleClassName="text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
+            subtitleClassName="mx-auto mt-4 max-w-xl text-lg leading-relaxed text-muted-foreground"
+          />
           <FaqAccordion>
             {items.map((item, i) => (
               <FaqItem

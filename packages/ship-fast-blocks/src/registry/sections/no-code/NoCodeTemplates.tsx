@@ -15,6 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * marketplace. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { TemplateGrid, TemplateCard } from '#/section-kit/TemplateGrid.tsx'
 export const NoCodeTemplates = defineCapsule({
   name: 'NoCodeTemplates',
@@ -134,16 +135,16 @@ export const NoCodeTemplates = defineCapsule({
       >
         <Container>
           <div className="mx-auto mb-12 max-w-3xl text-center">
-            <span className="mb-3 inline-block text-sm font-medium uppercase tracking-wider text-muted-foreground">
-              {eyebrow}
-            </span>
-            <h2
-              id="nc-templates"
-              className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
-            >
-              {heading}
-            </h2>
-            <p className="mb-8 text-lg text-muted-foreground">{description}</p>
+            <SectionHeading
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={description}
+              titleId="nc-templates"
+              className="mb-8 max-w-3xl gap-0"
+              eyebrowClassName="mb-3 inline-block text-sm font-medium uppercase tracking-wider text-muted-foreground"
+              titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
+              subtitleClassName="text-lg text-muted-foreground"
+            />
             <div className="flex flex-wrap justify-center gap-3">
               {filters.map((f, i) => (
                 <button

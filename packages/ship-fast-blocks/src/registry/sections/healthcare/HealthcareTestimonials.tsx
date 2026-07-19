@@ -13,6 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * baked-in patient-testimonial defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -103,18 +104,16 @@ export const HealthcareTestimonials = defineCapsule({
         aria-labelledby="testimonials-heading"
       >
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <span className="mb-4 inline-block rounded-full bg-accent px-4 py-1.5 text-sm font-semibold text-accent-foreground">
-              {eyebrow}
-            </span>
-            <h2
-              id="testimonials-heading"
-              className="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
-            >
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            titleId="testimonials-heading"
+            className="mb-16 max-w-3xl gap-0"
+            eyebrowClassName="mb-4 inline-block rounded-full bg-accent px-4 py-1.5 text-sm font-semibold text-accent-foreground"
+            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
 
           <TestimonialGrid columns={3}>
             {items.map((t) => {
