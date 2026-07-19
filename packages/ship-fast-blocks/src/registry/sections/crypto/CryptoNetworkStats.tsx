@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   StatGrid,
   StatItem,
@@ -86,12 +87,13 @@ export const CryptoNetworkStats = defineCapsule({
         )}
       >
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-background/60">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mb-16 max-w-3xl gap-0"
+            titleClassName="mb-4 tracking-tight sm:text-4xl"
+            subtitleClassName="text-lg text-background/60"
+          />
           <StatGrid columns={4} className={'mb-12'}>
             {kpis
               .map((kpi) => ({
