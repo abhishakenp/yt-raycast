@@ -9,8 +9,8 @@ import {
   FaqQuestion,
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
-import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * BootcampFaq — accordion FAQ section for a coding bootcamp / career-school
@@ -73,18 +73,15 @@ export const BootcampFaq = defineCapsule({
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <Container size="sm">
-          <div className="mb-16 text-center lg:mb-20">
-            <Eyebrow
-              variant="text"
-              className="mb-4 inline-block tracking-wider text-primary"
-            >
-              {faqEyebrow}
-            </Eyebrow>
-            <h2 className="mb-4 text-3xl font-bold sm:text-4xl">
-              {faqHeading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{faqDesc}</p>
-          </div>
+          <SectionHeading
+            eyebrow={faqEyebrow}
+            title={faqHeading}
+            subtitle={faqDesc}
+            className="mb-16 lg:mb-20  gap-0"
+            eyebrowClassName="mb-4 inline-block text-xs font-semibold tracking-wider text-primary"
+            titleClassName="mb-4 text-3xl font-bold sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <FaqAccordion>
             {faqItems.map((item) => (
               <FaqItem key={item.q} variant="muted">

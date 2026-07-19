@@ -12,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * education programs.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   StepTimeline,
   StepTimelineGrid,
@@ -77,18 +77,15 @@ export const BootcampSteps = defineCapsule({
         className={cn('bg-muted/40 py-20 lg:py-28', props.className)}
       >
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
-            <Eyebrow
-              variant="text"
-              className="mb-4 inline-block tracking-wider text-primary"
-            >
-              {stepsEyebrow}
-            </Eyebrow>
-            <h2 className="mb-4 text-3xl font-bold sm:text-4xl">
-              {stepsHeading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{stepsDesc}</p>
-          </div>
+          <SectionHeading
+            eyebrow={stepsEyebrow}
+            title={stepsHeading}
+            subtitle={stepsDesc}
+            className="mb-16 lg:mb-20 max-w-3xl gap-0"
+            eyebrowClassName="mb-4 inline-block text-xs font-semibold tracking-wider text-primary"
+            titleClassName="mb-4 text-3xl font-bold sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <StepTimelineGrid asChild columns={4}>
             <ul className="md:grid-cols-2 lg:grid-cols-4">
               {stepItems.map((step, i) => (

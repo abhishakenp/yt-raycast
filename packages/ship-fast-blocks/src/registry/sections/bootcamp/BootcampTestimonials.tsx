@@ -12,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * success stories.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -94,18 +94,15 @@ export const BootcampTestimonials = defineCapsule({
     return (
       <section className={cn('bg-muted/40 py-20 lg:py-28', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
-            <Eyebrow
-              variant="text"
-              className="mb-4 inline-block tracking-wider text-primary"
-            >
-              {testimonialsEyebrow}
-            </Eyebrow>
-            <h2 className="mb-4 text-3xl font-bold sm:text-4xl">
-              {testimonialsHeading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{testimonialsDesc}</p>
-          </div>
+          <SectionHeading
+            eyebrow={testimonialsEyebrow}
+            title={testimonialsHeading}
+            subtitle={testimonialsDesc}
+            className="mb-16 lg:mb-20 max-w-3xl gap-0"
+            eyebrowClassName="mb-4 inline-block text-xs font-semibold tracking-wider text-primary"
+            titleClassName="mb-4 text-3xl font-bold sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <TestimonialGrid columns={3}>
             {testimonialItems.map((t) => {
               const __iv__ = t as {

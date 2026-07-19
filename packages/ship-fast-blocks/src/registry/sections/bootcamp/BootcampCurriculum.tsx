@@ -12,7 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * bootcamp's syllabus, course modules, or week-by-week curriculum breakdown.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   FeatureGrid,
   FeatureCard,
@@ -219,18 +219,15 @@ export const BootcampCurriculum = defineCapsule({
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
-            <Eyebrow
-              variant="text"
-              className="mb-4 inline-block tracking-wider text-primary"
-            >
-              {curriculumEyebrow}
-            </Eyebrow>
-            <h2 className="mb-4 text-3xl font-bold sm:text-4xl">
-              {curriculumHeading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{curriculumDesc}</p>
-          </div>
+          <SectionHeading
+            eyebrow={curriculumEyebrow}
+            title={curriculumHeading}
+            subtitle={curriculumDesc}
+            className="mb-16 lg:mb-20 max-w-3xl gap-0"
+            eyebrowClassName="mb-4 inline-block text-xs font-semibold tracking-wider text-primary"
+            titleClassName="mb-4 text-3xl font-bold sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <FeatureGrid className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {curriculumItems.map((mod, i) => (
               <FeatureCard

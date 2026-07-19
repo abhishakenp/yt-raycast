@@ -10,6 +10,7 @@ import {
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * CybersecurityStats — dark, full-bleed real-time threat-intelligence stats
@@ -96,10 +97,13 @@ export const CybersecurityStats = defineCapsule({
     return (
       <section className={cn('bg-foreground text-background', props.className)}>
         <Container size="xl" className="py-20">
-          <div className="mb-16 text-center">
-            <h2 className="mb-4 text-3xl font-bold sm:text-4xl">{heading}</h2>
-            <p className="text-lg text-background/60">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mb-16  gap-0"
+            titleClassName="mb-4 text-3xl font-bold sm:text-4xl"
+            subtitleClassName="text-lg text-background/60"
+          />
           <StatGrid columns={4} gap={'wide'} className={'lg:gap-12'}>
             {items.map((s) => {
               const __iv__ = s as { value: string; label: string }

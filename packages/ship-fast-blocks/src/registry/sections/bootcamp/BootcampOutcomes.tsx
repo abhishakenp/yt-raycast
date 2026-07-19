@@ -11,7 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * that want to showcase placement rate and earning potential.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   StatGrid,
   StatItem,
@@ -103,18 +103,15 @@ export const BootcampOutcomes = defineCapsule({
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
-            <Eyebrow
-              variant="text"
-              className="mb-4 inline-block tracking-wider text-primary"
-            >
-              {outcomesEyebrow}
-            </Eyebrow>
-            <h2 className="mb-4 text-3xl font-bold sm:text-4xl">
-              {outcomesHeading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{outcomesDesc}</p>
-          </div>
+          <SectionHeading
+            eyebrow={outcomesEyebrow}
+            title={outcomesHeading}
+            subtitle={outcomesDesc}
+            className="mb-16 lg:mb-20 max-w-3xl gap-0"
+            eyebrowClassName="mb-4 inline-block text-xs font-semibold tracking-wider text-primary"
+            titleClassName="mb-4 text-3xl font-bold sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <StatGrid columns={4} gap={'wide'} className={'mb-16'}>
             {outcomeStats
               .map((s) => ({
