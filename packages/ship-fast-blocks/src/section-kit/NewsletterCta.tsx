@@ -37,41 +37,50 @@ NewsletterCta.displayName = 'NewsletterCta'
 
 const NewsletterCtaHeading = React.forwardRef<
   HTMLHeadingElement,
-  React.ComponentProps<'h2'>
->(({ className, ...props }, ref) => (
-  <h2
-    data-slot="newsletter-cta-heading"
-    className={cn('mb-4 text-3xl font-semibold text-foreground', className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'h2'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'h2'
+  return (
+    <Comp
+      data-slot="newsletter-cta-heading"
+      className={cn('mb-4 text-3xl font-semibold text-foreground', className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 NewsletterCtaHeading.displayName = 'NewsletterCtaHeading'
 
 const NewsletterCtaDescription = React.forwardRef<
   HTMLParagraphElement,
-  React.ComponentProps<'p'>
->(({ className, ...props }, ref) => (
-  <p
-    data-slot="newsletter-cta-description"
-    className={cn('mx-auto mb-8 max-w-xl text-muted-foreground', className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'p'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'p'
+  return (
+    <Comp
+      data-slot="newsletter-cta-description"
+      className={cn('mx-auto mb-8 max-w-xl text-muted-foreground', className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 NewsletterCtaDescription.displayName = 'NewsletterCtaDescription'
 
 const NewsletterCtaFineprint = React.forwardRef<
   HTMLParagraphElement,
-  React.ComponentProps<'p'>
->(({ className, ...props }, ref) => (
-  <p
-    data-slot="newsletter-cta-fineprint"
-    className={cn('mt-4 text-xs text-muted-foreground', className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'p'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'p'
+  return (
+    <Comp
+      data-slot="newsletter-cta-fineprint"
+      className={cn('mt-4 text-xs text-muted-foreground', className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 NewsletterCtaFineprint.displayName = 'NewsletterCtaFineprint'
 
 export {

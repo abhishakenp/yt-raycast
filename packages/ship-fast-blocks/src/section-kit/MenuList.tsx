@@ -9,16 +9,20 @@ const MenuListVariants = cva('flex flex-col', {
   defaultVariants: {},
 })
 
-const MenuList = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(
-  ({ className, ...props }, ref) => (
-    <div
+const MenuList = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
       data-slot="menu-list"
       className={cn('flex flex-col', className)}
       ref={ref}
       {...props}
     />
-  ),
-)
+  )
+})
 MenuList.displayName = 'MenuList'
 
 const MenuCategory = React.forwardRef<
@@ -55,28 +59,34 @@ MenuItem.displayName = 'MenuItem'
 
 const MenuItemDescription = React.forwardRef<
   HTMLParagraphElement,
-  React.ComponentProps<'p'>
->(({ className, ...props }, ref) => (
-  <p
-    data-slot="menu-item-description"
-    className={cn('text-sm text-muted-foreground', className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'p'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'p'
+  return (
+    <Comp
+      data-slot="menu-item-description"
+      className={cn('text-sm text-muted-foreground', className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 MenuItemDescription.displayName = 'MenuItemDescription'
 
 const MenuItemPrice = React.forwardRef<
   HTMLSpanElement,
-  React.ComponentProps<'span'>
->(({ className, ...props }, ref) => (
-  <span
-    data-slot="menu-item-price"
-    className={cn('font-semibold text-foreground', className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'span'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'span'
+  return (
+    <Comp
+      data-slot="menu-item-price"
+      className={cn('font-semibold text-foreground', className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 MenuItemPrice.displayName = 'MenuItemPrice'
 
 export {
