@@ -8,6 +8,7 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 import { z } from 'zod/v4'
 
@@ -82,12 +83,13 @@ export const InvestingFaq = defineCapsule({
     return (
       <section id="faq" className={cn('bg-background py-24', props.className)}>
         <Container size="sm">
-          <div className="mb-16 text-center">
-            <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mb-16  gap-0"
+            titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <FaqAccordion>
             {items.map((item) => (
               <FaqItem key={item.question} className="bg-muted/50">

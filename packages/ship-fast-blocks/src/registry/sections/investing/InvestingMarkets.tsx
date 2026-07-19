@@ -15,6 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   MarketTable,
   MarketRow,
@@ -156,12 +157,13 @@ export const InvestingMarkets = defineCapsule({
       >
         <Container>
           <MarketHeader asChild>
-            <div className="mx-auto mb-16 max-w-2xl text-center">
-              <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-                {heading}
-              </h2>
-              <p className="text-lg text-muted-foreground">{description}</p>
-            </div>
+            <SectionHeading
+              title={heading}
+              subtitle={description}
+              className="mb-16 max-w-2xl gap-0"
+              titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
+              subtitleClassName="text-lg text-muted-foreground"
+            />
           </MarketHeader>
           <MarketTable
             variant="default"
@@ -175,55 +177,55 @@ export const InvestingMarkets = defineCapsule({
                     key={q.symbol}
                     className="rounded-xl border border-border bg-muted/50 p-6 text-left transition-shadow hover:shadow-lg"
                   >
-                      <button type="button" onClick={() => go(q.symbol)}>
-                        <div className="mb-4 flex items-center gap-3">
-                          <div
-                            className={cn(
-                              'grid size-10 place-items-center rounded-lg text-sm font-bold',
-                              symbolTones[i % symbolTones.length],
-                            )}
-                          >
-                            {q.symbol}
-                          </div>
-                          <div>
-                            <p className="font-semibold">{q.name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {q.exchange}
-                            </p>
-                          </div>
+                    <button type="button" onClick={() => go(q.symbol)}>
+                      <div className="mb-4 flex items-center gap-3">
+                        <div
+                          className={cn(
+                            'grid size-10 place-items-center rounded-lg text-sm font-bold',
+                            symbolTones[i % symbolTones.length],
+                          )}
+                        >
+                          {q.symbol}
                         </div>
-                        <MarketChart className="justify-between gap-0">
-                          <div>
-                            <p className="text-2xl font-semibold">{q.price}</p>
-                            <MarketIndicator asChild>
-                              <p
-                                className={cn(
-                                  'text-sm',
-                                  q.up ? 'text-chart-1' : 'text-destructive',
-                                )}
-                              >
-                                {q.change}
-                              </p>
-                            </MarketIndicator>
-                          </div>
-                          <svg
-                            className={cn(
-                              'h-10 w-20',
-                              q.up ? 'text-chart-1' : 'text-destructive',
-                            )}
-                            viewBox="0 0 80 40"
-                            preserveAspectRatio="none"
-                            aria-hidden="true"
-                          >
-                            <path
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              d={q.up ? trendUp : trendDown}
-                            />
-                          </svg>
-                        </MarketChart>
-                      </button>
+                        <div>
+                          <p className="font-semibold">{q.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {q.exchange}
+                          </p>
+                        </div>
+                      </div>
+                      <MarketChart className="justify-between gap-0">
+                        <div>
+                          <p className="text-2xl font-semibold">{q.price}</p>
+                          <MarketIndicator asChild>
+                            <p
+                              className={cn(
+                                'text-sm',
+                                q.up ? 'text-chart-1' : 'text-destructive',
+                              )}
+                            >
+                              {q.change}
+                            </p>
+                          </MarketIndicator>
+                        </div>
+                        <svg
+                          className={cn(
+                            'h-10 w-20',
+                            q.up ? 'text-chart-1' : 'text-destructive',
+                          )}
+                          viewBox="0 0 80 40"
+                          preserveAspectRatio="none"
+                          aria-hidden="true"
+                        >
+                          <path
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            d={q.up ? trendUp : trendDown}
+                          />
+                        </svg>
+                      </MarketChart>
+                    </button>
                   </MarketRow>
                 ))}
               </div>

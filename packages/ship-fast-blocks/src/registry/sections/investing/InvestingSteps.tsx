@@ -14,6 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * trade — on a brokerage or trading-app page. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { StepTimeline, StepItem } from '#/section-kit/StepTimeline.tsx'
 export const InvestingSteps = defineCapsule({
   name: 'InvestingSteps',
@@ -97,12 +98,13 @@ export const InvestingSteps = defineCapsule({
     return (
       <StepTimeline className={cn('bg-background py-24', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mb-16 max-w-2xl gap-0"
+            titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <div className="grid gap-8 lg:grid-cols-3 lg:gap-12">
             {items.map((step, i) => (
               <StepItem key={step.title} className="relative">

@@ -11,6 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * or crypto exchange. Renders fully with no props via six baked-in reviews.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -104,12 +105,13 @@ export const InvestingTestimonials = defineCapsule({
         className={cn('bg-muted/50 py-24', props.className)}
       >
         <Container>
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mb-16 max-w-2xl gap-0"
+            titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <TestimonialGrid columns={3}>
             {items.map((t) => {
               const __iv__ = t as {

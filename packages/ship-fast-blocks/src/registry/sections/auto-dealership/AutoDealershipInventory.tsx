@@ -13,6 +13,7 @@ import {
 import { autoDealershipLakebed } from './auto-dealership-lakebed.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { InventoryGrid, InventoryCard } from '#/section-kit/InventoryGrid.tsx'
 
 /**
@@ -136,12 +137,13 @@ export const AutoDealershipInventory = defineCapsule({
     return (
       <section className={cn('bg-card py-16 lg:py-24', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mb-16 max-w-2xl gap-0"
+            titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
 
           <InventoryGrid className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
             {items.map((v) => (
@@ -151,63 +153,61 @@ export const AutoDealershipInventory = defineCapsule({
               >
                 <article>
                   <div className="relative aspect-[4/3] overflow-hidden">
-                      <Image
-                        alt={v.imageAlt}
-                        w={600}
-                        h={450}
-                        loading="lazy"
-                        className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                      <span
-                        className={cn(
-                          'absolute left-4 top-4 rounded px-2 py-1 text-xs font-medium',
-                          v.electric
-                            ? 'bg-chart-2 text-primary-foreground'
-                            : 'bg-primary text-primary-foreground',
-                        )}
-                      >
-                        {v.badge}
-                      </span>
+                    <Image
+                      alt={v.imageAlt}
+                      w={600}
+                      h={450}
+                      loading="lazy"
+                      className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <span
+                      className={cn(
+                        'absolute left-4 top-4 rounded px-2 py-1 text-xs font-medium',
+                        v.electric
+                          ? 'bg-chart-2 text-primary-foreground'
+                          : 'bg-primary text-primary-foreground',
+                      )}
+                    >
+                      {v.badge}
+                    </span>
+                  </div>
+                  <div className="space-y-4 p-6">
+                    <div>
+                      <h3 className="text-lg font-semibold">{v.name}</h3>
+                      <p className="text-sm text-muted-foreground">{v.specs}</p>
                     </div>
-                    <div className="space-y-4 p-6">
-                      <div>
-                        <h3 className="text-lg font-semibold">{v.name}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {v.specs}
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {v.features.map((f) => (
-                          <span
-                            key={f}
-                            className="rounded bg-secondary px-2 py-1 text-xs text-secondary-foreground"
-                          >
-                            {f}
-                          </span>
-                        ))}
-                      </div>
-                      <div className="flex items-center justify-between border-t border-border pt-4">
-                        <p className="text-2xl font-semibold">{v.price}</p>
-                        <AutoLeadActionButton
-                          lakebed={lakebed}
-                          action="vehicle_interest"
-                          label="View Details"
-                          intentKey={`vehicle:${v.name}`}
-                          source="inventory"
-                          vehicle={v.name}
-                          pendingChildren={
-                            <>
-                              <AutoMutationSpinner />
-                              Sending
-                            </>
-                          }
-                          className="text-sm font-medium transition-colors hover:text-muted-foreground"
+                    <div className="flex flex-wrap gap-2">
+                      {v.features.map((f) => (
+                        <span
+                          key={f}
+                          className="rounded bg-secondary px-2 py-1 text-xs text-secondary-foreground"
                         >
-                          View Details →
-                        </AutoLeadActionButton>
-                      </div>
+                          {f}
+                        </span>
+                      ))}
                     </div>
-                  </article>
+                    <div className="flex items-center justify-between border-t border-border pt-4">
+                      <p className="text-2xl font-semibold">{v.price}</p>
+                      <AutoLeadActionButton
+                        lakebed={lakebed}
+                        action="vehicle_interest"
+                        label="View Details"
+                        intentKey={`vehicle:${v.name}`}
+                        source="inventory"
+                        vehicle={v.name}
+                        pendingChildren={
+                          <>
+                            <AutoMutationSpinner />
+                            Sending
+                          </>
+                        }
+                        className="text-sm font-medium transition-colors hover:text-muted-foreground"
+                      >
+                        View Details →
+                      </AutoLeadActionButton>
+                    </div>
+                  </div>
+                </article>
               </InventoryCard>
             ))}
           </InventoryGrid>

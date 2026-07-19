@@ -12,6 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * trading-app page. Renders fully with no props via six baked-in screens.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   GalleryGrid,
   GalleryGridItems,
@@ -78,12 +79,13 @@ export const InvestingGallery = defineCapsule({
         className={cn('bg-foreground py-24 text-background', props.className)}
       >
         <Container>
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-background/60">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mb-16 max-w-2xl gap-0"
+            titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
+            subtitleClassName="text-lg text-background/60"
+          />
           <GalleryGrid>
             <GalleryGridItems columns={3}>
               {items
