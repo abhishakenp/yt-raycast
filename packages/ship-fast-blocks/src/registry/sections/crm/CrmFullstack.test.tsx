@@ -100,8 +100,9 @@ if (
   })
 }
 
-const { cleanup, fireEvent, render, screen, waitFor, within } =
-  await import('@testing-library/react')
+const { cleanup, fireEvent, render, screen, waitFor, within } = await import(
+  '@testing-library/react'
+)
 const { CrmNavbar } = await import('./CrmNavbar.tsx')
 const { CrmPricing } = await import('./CrmPricing.tsx')
 const { CrmHero } = await import('./CrmHero.tsx')

@@ -101,12 +101,12 @@ function isCapsule(value: unknown): value is {
 } {
   return Boolean(
     value &&
-    typeof value === 'object' &&
-    'client' in value &&
-    value.client &&
-    typeof value.client === 'object' &&
-    'component' in value.client &&
-    typeof value.client.component === 'function',
+      typeof value === 'object' &&
+      'client' in value &&
+      value.client &&
+      typeof value.client === 'object' &&
+      'component' in value.client &&
+      typeof value.client.component === 'function',
   )
 }
 
@@ -147,8 +147,9 @@ describe('mid-count Container adoption', () => {
   })
 
   it('keeps the auto-dealership navbar wrapper semantic as a nav element', async () => {
-    const { AutoDealershipNavbar } =
-      await import('./auto-dealership/AutoDealershipNavbar.tsx')
+    const { AutoDealershipNavbar } = await import(
+      './auto-dealership/AutoDealershipNavbar.tsx'
+    )
     const SectionProbe = () =>
       AutoDealershipNavbar.client.component({
         props: {},

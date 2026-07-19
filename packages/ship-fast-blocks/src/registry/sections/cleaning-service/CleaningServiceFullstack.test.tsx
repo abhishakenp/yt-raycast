@@ -101,15 +101,18 @@ if (
   })
 }
 
-const { cleanup, fireEvent, render, screen, waitFor } =
-  await import('@testing-library/react')
+const { cleanup, fireEvent, render, screen, waitFor } = await import(
+  '@testing-library/react'
+)
 const { CleaningServiceNavbar } = await import('./CleaningServiceNavbar.tsx')
-const { CleaningServiceServices } =
-  await import('./CleaningServiceServices.tsx')
+const { CleaningServiceServices } = await import(
+  './CleaningServiceServices.tsx'
+)
 const { CleaningServicePricing } = await import('./CleaningServicePricing.tsx')
 const { CleaningServiceHero } = await import('./CleaningServiceHero.tsx')
-const { CleaningServiceContactCta } =
-  await import('./CleaningServiceContactCta.tsx')
+const { CleaningServiceContactCta } = await import(
+  './CleaningServiceContactCta.tsx'
+)
 
 function testService(service: TestServiceInput, index: number): TestService {
   return {

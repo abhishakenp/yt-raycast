@@ -10,6 +10,7 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * CorporateFaq — accordion FAQ section for an enterprise / corporate B2B site.
@@ -68,12 +69,13 @@ export const CorporateFaq = defineCapsule({
     return (
       <section className={cn('bg-muted/50 py-20 lg:py-28', props.className)}>
         <Container size="sm">
-          <div className="mb-16 text-center">
-            <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mb-16 gap-0"
+            titleClassName="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <FaqAccordion>
             {items.map((item) => (
               <FaqItem

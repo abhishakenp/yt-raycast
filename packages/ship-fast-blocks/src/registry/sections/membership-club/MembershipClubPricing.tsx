@@ -143,18 +143,16 @@ export const MembershipClubPricing = defineCapsule({
         aria-labelledby="pricing-heading"
       >
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-24">
-            <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2
-              id="pricing-heading"
-              className="mb-6 text-3xl font-light text-foreground sm:text-4xl"
-            >
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            className="mx-auto mb-16 max-w-3xl gap-0 lg:mb-24"
+            titleId="pricing-heading"
+            eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground"
+            titleClassName="mb-6 text-3xl font-light text-foreground sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <PricingGrid
             className={cn(
               'mx-auto grid max-w-6xl gap-8 md:grid-cols-3 lg:gap-12',

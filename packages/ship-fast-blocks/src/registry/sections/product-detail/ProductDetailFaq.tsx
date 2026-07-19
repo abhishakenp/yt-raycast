@@ -10,6 +10,7 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 export const ProductDetailFaq = defineCapsule({
   name: 'ProductDetailFaq',
@@ -64,14 +65,13 @@ export const ProductDetailFaq = defineCapsule({
         )}
       >
         <Container size="sm" className="px-6 lg:px-6">
-          <h2 className="text-center text-3xl font-bold text-foreground sm:text-4xl">
-            {heading}
-          </h2>
-          {subheading ? (
-            <p className="mt-3 text-center text-muted-foreground">
-              {subheading}
-            </p>
-          ) : null}
+          <SectionHeading
+            title={heading}
+            subtitle={subheading}
+            className="gap-0"
+            titleClassName="text-3xl font-bold text-foreground sm:text-4xl"
+            subtitleClassName="mt-3 text-muted-foreground"
+          />
           <FaqAccordion variant="compact" className="mt-10">
             {items.map((it, i) => (
               <FaqItem key={it.question} variant="open-raised" open={i === 0}>

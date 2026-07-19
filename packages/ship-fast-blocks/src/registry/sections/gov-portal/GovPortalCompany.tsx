@@ -28,6 +28,7 @@ function str(row: GovRow, key: string) {
 
 import { Container } from '#/section-kit/Container.tsx'
 import { CompanyInfo } from '#/section-kit/CompanyInfo.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
@@ -66,9 +67,12 @@ export const GovPortalLeadership = defineCapsule({
       <CompanyInfo asChild>
         <section className={cn('bg-background py-16', props.className)}>
           <Container>
-            <h2 className="mb-8 text-2xl font-semibold tracking-tight text-foreground">
-              {heading}
-            </h2>
+            <SectionHeading
+              align="left"
+              title={heading}
+              className="mb-8 gap-0"
+              titleClassName="text-2xl font-semibold tracking-tight text-foreground"
+            />
 
             {message ? (
               <Card
@@ -176,9 +180,12 @@ export const GovPortalPowerPlants = defineCapsule({
     return (
       <section className={cn('bg-muted/30 py-16', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-8 text-2xl font-semibold tracking-tight text-foreground">
-            {heading}
-          </h2>
+          <SectionHeading
+            align="left"
+            title={heading}
+            className="mb-8 gap-0"
+            titleClassName="text-2xl font-semibold tracking-tight text-foreground"
+          />
           <ResponsiveGrid cols="1-2" gap="none" className="gap-5">
             {plants.map((plant, i) => {
               const status = str(plant, 'status')
@@ -276,12 +283,14 @@ export const GovPortalAbout = defineCapsule({
       <section className={cn('bg-background py-16', props.className)}>
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
           <div>
-            <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-              {heading}
-            </h2>
-            <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-              {body}
-            </p>
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={body}
+              className="gap-0"
+              titleClassName="text-2xl font-semibold tracking-tight text-foreground"
+              subtitleClassName="mt-4 text-base leading-relaxed text-muted-foreground"
+            />
             <ul className="mt-6 space-y-3">
               {points.map((point) => (
                 <li key={point} className="flex items-start gap-3">

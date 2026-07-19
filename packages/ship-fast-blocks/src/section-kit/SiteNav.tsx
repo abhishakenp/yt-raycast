@@ -4,7 +4,7 @@ import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { useIsActiveRoute, useRouteHref } from '#/lib/use-navigate.tsx'
 
 import type { KitAction } from './types.ts'
 import { kitActionClasses } from './types.ts'
@@ -79,13 +79,15 @@ const navbarCtaVariants = cva(
  * ------------------------------------------------------------------------- */
 
 const NavbarBrand = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<'div'> & { asChild?: boolean }
->(({ className, asChild = false, ...props }, ref) => {
-  const Comp = asChild ? Slot : 'div'
+  HTMLElement,
+  React.ComponentProps<'a'> & { asChild?: boolean }
+>(({ className, href, asChild = false, ...props }, ref) => {
+  const resolvedHref = useRouteHref(href)
+  const Comp = asChild ? Slot : resolvedHref ? 'a' : 'div'
   return (
     <Comp
       data-slot="navbar-brand"
+      href={resolvedHref}
       className={cn('flex items-center', className)}
       ref={ref}
       {...props}
@@ -112,21 +114,34 @@ const NavbarNav = React.forwardRef<
 NavbarNav.displayName = 'NavbarNav'
 
 const NavbarNavLink = React.forwardRef<
-  HTMLButtonElement,
-  React.ComponentProps<'button'>
->(({ className, ...props }, ref) => {
-  return (
-    <button
-      data-slot="navbar-nav-link"
-      className={cn(
-        'text-sm font-medium text-muted-foreground transition-colors hover:text-foreground',
-        className,
-      )}
-      ref={ref}
-      {...props}
-    />
-  )
-})
+  HTMLAnchorElement,
+  React.ComponentProps<'a'> & { asChild?: boolean }
+>(
+  (
+    { className, href, asChild = false, 'aria-current': ariaCurrent, ...props },
+    ref,
+  ) => {
+    const Comp = asChild ? Slot : 'a'
+    const resolvedHref = useRouteHref(href)
+    const isActive = useIsActiveRoute()(href)
+
+    return (
+      <Comp
+        data-slot="navbar-nav-link"
+        href={resolvedHref}
+        aria-current={isActive ? 'page' : ariaCurrent}
+        className={cn(
+          'text-sm font-medium text-muted-foreground transition-colors hover:text-foreground',
+          className,
+          isActive &&
+            'text-foreground underline decoration-primary underline-offset-8',
+        )}
+        ref={ref}
+        {...props}
+      />
+    )
+  },
+)
 NavbarNavLink.displayName = 'NavbarNavLink'
 
 const NavbarActions = React.forwardRef<
@@ -145,15 +160,37 @@ const NavbarActions = React.forwardRef<
 })
 NavbarActions.displayName = 'NavbarActions'
 
+const NavbarRouteLink = React.forwardRef<
+  HTMLAnchorElement,
+  React.ComponentProps<'a'> & { asChild?: boolean }
+>(({ className, href, asChild = false, ...props }, ref) => {
+  const resolvedHref = useRouteHref(href)
+  const Comp = asChild ? Slot : 'a'
+  return (
+    <Comp
+      data-slot="navbar-route-link"
+      href={resolvedHref}
+      className={className}
+      ref={ref}
+      {...props}
+    />
+  )
+})
+NavbarRouteLink.displayName = 'NavbarRouteLink'
+
 const NavbarCta = React.forwardRef<
-  HTMLButtonElement,
-  React.ComponentProps<'button'> &
+  HTMLElement,
+  Omit<React.ComponentProps<'a'>, 'type'> &
+    Pick<React.ComponentProps<'button'>, 'type' | 'disabled'> &
     VariantProps<typeof navbarCtaVariants> & { asChild?: boolean }
->(({ className, variant, asChild = false, ...props }, ref) => {
-  const Comp = asChild ? Slot : 'button'
+>(({ className, href, variant, asChild = false, type, ...props }, ref) => {
+  const resolvedHref = useRouteHref(href)
+  const Comp = asChild ? Slot : resolvedHref ? 'a' : 'button'
   return (
     <Comp
       data-slot="navbar-cta"
+      href={resolvedHref}
+      type={resolvedHref ? undefined : (type ?? 'button')}
       className={cn(navbarCtaVariants({ variant }), className)}
       ref={ref}
       {...props}
@@ -200,11 +237,13 @@ export function SiteNav(props: SiteNavProps) {
 /* --- Legacy implementation (unchanged) --- */
 
 function LegacySiteNav(props: SiteNavProps) {
-  const go = useNavigate()
   const sticky = props.sticky ?? true
+  const cta = props.cta
   const ctaIsAuth = Boolean(
-    props.signIn || (props.cta && AUTH_INTENT.test(props.cta.label)),
+    props.signIn || (cta && AUTH_INTENT.test(cta.label)),
   )
+  const homeHref = useRouteHref(props.homeTarget ?? 'Home')
+  const ctaHref = useRouteHref(cta?.target ?? cta?.label)
 
   const headerClasses = sticky
     ? 'fixed inset-x-0 top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border'
@@ -213,11 +252,7 @@ function LegacySiteNav(props: SiteNavProps) {
   return (
     <header className={cn(headerClasses, props.className)}>
       <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
-        <button
-          type="button"
-          onClick={() => go(props.homeTarget ?? 'Home')}
-          className="flex items-center gap-3"
-        >
+        <a href={homeHref} className="flex items-center gap-3">
           <Logo brand={props.brand ?? ''}>
             <LogoImage className="size-8" fallback={props.brandMark} />
             <LogoLabel
@@ -227,18 +262,13 @@ function LegacySiteNav(props: SiteNavProps) {
               )}
             />
           </Logo>
-        </button>
+        </a>
 
         <div className="hidden items-center gap-8 md:flex">
           {props.nav?.map((label) => (
-            <button
-              key={label}
-              type="button"
-              onClick={() => go(label)}
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
+            <NavbarNavLink key={label} href={label}>
               {label}
-            </button>
+            </NavbarNavLink>
           ))}
         </div>
 
@@ -252,36 +282,35 @@ function LegacySiteNav(props: SiteNavProps) {
             </a>
           ) : null}
 
-          {props.cta && ctaIsAuth ? (
+          {cta && ctaIsAuth ? (
             <SignInButton
-              label={props.cta.label}
-              variant={props.cta.variant}
+              label={cta.label}
+              variant={cta.variant}
               className="hidden sm:inline-flex"
             />
-          ) : props.cta ? (
-            <button
-              type="button"
-              onClick={() => go(props.cta!.target ?? props.cta!.label)}
+          ) : cta ? (
+            <a
+              href={ctaHref}
               className={cn(
-                kitActionClasses(props.cta.variant),
+                kitActionClasses(cta.variant),
                 'hidden sm:inline-flex',
               )}
             >
-              {props.cta.label}
-            </button>
+              {cta.label}
+            </a>
           ) : null}
 
           <MobileNavDrawer
             brand={props.brand ?? ''}
             nav={props.nav ?? []}
             homeTarget={props.homeTarget}
-            cta={props.cta && !ctaIsAuth ? props.cta : undefined}
+            cta={cta && !ctaIsAuth ? cta : undefined}
             buttonClassName="p-2 text-muted-foreground hover:text-foreground md:hidden"
             footer={
-              props.cta && ctaIsAuth ? (
+              cta && ctaIsAuth ? (
                 <SignInButton
-                  label={props.cta.label}
-                  variant={props.cta.variant}
+                  label={cta.label}
+                  variant={cta.variant}
                   className="min-h-11 w-full"
                 />
               ) : null
@@ -336,6 +365,7 @@ export {
   NavbarNav,
   NavbarNavLink,
   NavbarActions,
+  NavbarRouteLink,
   NavbarCta,
   siteNavHeaderVariants,
   siteNavRowVariants,

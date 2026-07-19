@@ -6,6 +6,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import {
   ArticleGrid,
@@ -154,15 +155,15 @@ export const KnowledgeBaseGuides = defineCapsule({
       >
         <Container>
           <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2
-                id="kb-guides-heading"
-                className="mb-2 text-2xl font-semibold text-foreground sm:text-3xl"
-              >
-                {heading}
-              </h2>
-              <p className="text-muted-foreground">{description}</p>
-            </div>
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="gap-0"
+              titleId="kb-guides-heading"
+              titleClassName="mb-2 text-2xl font-semibold text-foreground sm:text-3xl"
+              subtitleClassName="text-muted-foreground"
+            />
             <Card
               asChild
               variant="default"

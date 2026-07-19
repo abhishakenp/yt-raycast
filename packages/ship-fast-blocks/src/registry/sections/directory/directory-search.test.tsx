@@ -137,8 +137,9 @@ if (typeof window !== 'undefined' && 'FormData' in window) {
   })
 }
 
-const { cleanup, fireEvent, render, screen, waitFor, within } =
-  await import('@testing-library/react')
+const { cleanup, fireEvent, render, screen, waitFor, within } = await import(
+  '@testing-library/react'
+)
 const { DirectoryHero } = await import('./DirectoryHero.tsx')
 const { DirectoryCategories } = await import('./DirectoryCategories.tsx')
 const { DirectoryFeatured } = await import('./DirectoryFeatured.tsx')

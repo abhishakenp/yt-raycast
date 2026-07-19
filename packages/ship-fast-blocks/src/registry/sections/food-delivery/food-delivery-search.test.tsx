@@ -136,14 +136,17 @@ if (typeof window !== 'undefined' && 'FormData' in window) {
   })
 }
 
-const { cleanup, fireEvent, render, screen, waitFor, within } =
-  await import('@testing-library/react')
-const { FoodDeliverySearchButton } =
-  await import('./food-delivery-interactions.tsx')
+const { cleanup, fireEvent, render, screen, waitFor, within } = await import(
+  '@testing-library/react'
+)
+const { FoodDeliverySearchButton } = await import(
+  './food-delivery-interactions.tsx'
+)
 const { FoodDeliveryHero } = await import('./FoodDeliveryHero.tsx')
 const { FoodDeliveryNavbar } = await import('./FoodDeliveryNavbar.tsx')
-const { FoodDeliveryRestaurants } =
-  await import('./FoodDeliveryRestaurants.tsx')
+const { FoodDeliveryRestaurants } = await import(
+  './FoodDeliveryRestaurants.tsx'
+)
 const { FoodDeliveryCta } = await import('./FoodDeliveryCta.tsx')
 
 const now = '2026-06-26T00:00:00.000Z'

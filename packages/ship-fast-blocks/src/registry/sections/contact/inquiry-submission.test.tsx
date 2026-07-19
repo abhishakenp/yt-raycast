@@ -92,24 +92,32 @@ if (typeof window !== 'undefined' && 'FormData' in window) {
   })
 }
 
-const { cleanup, fireEvent, render, screen, waitFor, within } =
-  await import('@testing-library/react')
+const { cleanup, fireEvent, render, screen, waitFor, within } = await import(
+  '@testing-library/react'
+)
 const { AgencyContactCta } = await import('../agency/AgencyContactCta.tsx')
 const { BootcampApplyCta } = await import('../bootcamp/BootcampApplyCta.tsx')
-const { ConstructionQuote } =
-  await import('../construction/ConstructionQuote.tsx')
-const { EventPlannerContact } =
-  await import('../event-planner/EventPlannerContact.tsx')
-const { EventPlannerHero } =
-  await import('../event-planner/EventPlannerHero.tsx')
-const { EventPlannerNavbar } =
-  await import('../event-planner/EventPlannerNavbar.tsx')
-const { EventPlannerPricing } =
-  await import('../event-planner/EventPlannerPricing.tsx')
-const { FoodTruckCatering } =
-  await import('../food-truck/FoodTruckCatering.tsx')
-const { InteriorDesignContactCta } =
-  await import('../interior-design/InteriorDesignContactCta.tsx')
+const { ConstructionQuote } = await import(
+  '../construction/ConstructionQuote.tsx'
+)
+const { EventPlannerContact } = await import(
+  '../event-planner/EventPlannerContact.tsx'
+)
+const { EventPlannerHero } = await import(
+  '../event-planner/EventPlannerHero.tsx'
+)
+const { EventPlannerNavbar } = await import(
+  '../event-planner/EventPlannerNavbar.tsx'
+)
+const { EventPlannerPricing } = await import(
+  '../event-planner/EventPlannerPricing.tsx'
+)
+const { FoodTruckCatering } = await import(
+  '../food-truck/FoodTruckCatering.tsx'
+)
+const { InteriorDesignContactCta } = await import(
+  '../interior-design/InteriorDesignContactCta.tsx'
+)
 const { LawFirmContact } = await import('../law-firm/LawFirmContact.tsx')
 const { ContactFormDetails } = await import('./ContactFormDetails.tsx')
 const { ContactNavbar } = await import('./ContactNavbar.tsx')

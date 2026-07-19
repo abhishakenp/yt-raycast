@@ -7,6 +7,7 @@ import { Card } from '#/section-kit/Card.tsx'
 import { PullQuoteText } from '#/section-kit/PullQuote.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   FeatureGrid,
   FeatureCard,
@@ -100,14 +101,14 @@ export const AutoDealershipFeatures = defineCapsule({
         <Container>
           <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="space-y-8">
-              <div className="space-y-4">
-                <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-                  {heading}
-                </h2>
-                <p className="text-lg leading-relaxed text-muted-foreground">
-                  {description}
-                </p>
-              </div>
+              <SectionHeading
+                align="left"
+                title={heading}
+                subtitle={description}
+                className="gap-0"
+                titleClassName="text-3xl font-semibold tracking-tight sm:text-4xl"
+                subtitleClassName="text-lg leading-relaxed text-muted-foreground"
+              />
               <FeatureGrid columns={3}>
                 {items.map((f) => {
                   const __iv__ = f as {

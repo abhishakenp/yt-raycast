@@ -11,6 +11,7 @@ import {
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * MentalHealthTestimonials — a 3-up testimonials grid for a therapy practice. A
@@ -79,17 +80,15 @@ export const MentalHealthTestimonials = defineCapsule({
     return (
       <section className={cn('py-20 lg:py-28', props.className)}>
         <Container size="lg">
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <span className="text-sm font-medium uppercase tracking-wider text-primary">
-              {eyebrow}
-            </span>
-            <h2 className="mt-3 text-3xl font-semibold text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="mt-4 leading-relaxed text-muted-foreground">
-              {description}
-            </p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            className="mx-auto mb-16 max-w-2xl gap-0"
+            eyebrowClassName="text-sm font-medium uppercase tracking-wider text-primary"
+            titleClassName="mt-3 text-3xl font-semibold text-foreground sm:text-4xl"
+            subtitleClassName="mt-4 leading-relaxed text-muted-foreground"
+          />
 
           <TestimonialGrid columns={3}>
             {items.map((t) => {

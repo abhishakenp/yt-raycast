@@ -5,6 +5,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   LocationBlock,
   LocationMap,
@@ -103,12 +104,14 @@ export const ContactOfficeMap = defineCapsule({
         <Container>
           <LocationBlock className="grid overflow-hidden rounded-2xl border border-border shadow-[0_24px_64px_rgba(0,0,0,0.45)] md:grid-cols-[1fr_1.3fr]">
             <div className="flex flex-col justify-center bg-card p-11">
-              <h2 className="mb-2.5 text-2xl font-bold text-foreground">
-                {heading}
-              </h2>
-              <p className="mb-6 text-[0.95rem] leading-[1.7] text-muted-foreground">
-                {description}
-              </p>
+              <SectionHeading
+                align="left"
+                title={heading}
+                subtitle={description}
+                className="gap-0"
+                titleClassName="mb-2.5 text-2xl font-bold text-foreground"
+                subtitleClassName="mb-6 text-[0.95rem] leading-[1.7] text-muted-foreground"
+              />
               <LocationContact className="flex flex-col gap-3.5">
                 {meta.map((line, i) => (
                   <div

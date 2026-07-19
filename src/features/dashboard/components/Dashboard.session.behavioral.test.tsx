@@ -368,7 +368,9 @@ function ExportPanelStub({ sessionId }: ExportPanelStubProps) {
       <button
         type="button"
         data-testid="export-panel-download"
-        onClick={() => (getConvexState().exportDownload as (id: string) => void)(sessionId)}
+        onClick={() =>
+          (getConvexState().exportDownload as (id: string) => void)(sessionId)
+        }
       >
         download export
       </button>
@@ -980,7 +982,7 @@ vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
             headingEl.textContent = draftText
 
             function commitLocalizedDraft(): void {
-              (state.pendingTextEdit.commit as () => void)()
+              ;(state.pendingTextEdit.commit as () => void)()
               props.onTextChange?.({
                 oldText: persistedText,
                 newText: draftText,
@@ -990,7 +992,7 @@ vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
             }
 
             function cancelLocalizedDraft(): void {
-              (state.pendingTextEdit.cancel as () => void)()
+              ;(state.pendingTextEdit.cancel as () => void)()
               headingEl.textContent = persistedText
             }
 

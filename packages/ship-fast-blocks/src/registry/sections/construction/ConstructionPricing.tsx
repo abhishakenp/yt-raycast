@@ -12,7 +12,6 @@ import { cn } from '#/lib/utils.ts'
  * Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import {
   PricingGrid,
   PricingTier,
@@ -128,18 +127,15 @@ export const ConstructionPricing = defineCapsule({
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <Eyebrow
-              variant="text"
-              className="text-sm tracking-wider text-muted-foreground"
-            >
-              {eyebrow}
-            </Eyebrow>
-            <h2 className="mb-4 mt-3 text-3xl font-bold text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            className="mx-auto mb-16 max-w-3xl gap-0"
+            eyebrowClassName="text-sm tracking-wider text-muted-foreground"
+            titleClassName="mb-4 mt-3 text-3xl font-bold text-foreground sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
 
           <PricingGrid
             className={cn(

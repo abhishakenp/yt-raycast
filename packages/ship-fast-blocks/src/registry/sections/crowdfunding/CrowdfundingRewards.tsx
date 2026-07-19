@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { RewardList, RewardItem } from '#/section-kit/RewardList.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
@@ -170,17 +171,15 @@ export const CrowdfundingRewards = defineCapsule({
     return (
       <section className={cn('bg-card py-20 lg:py-28', props.className)}>
         <Container>
-          <div className="mb-16 text-center">
-            <span className="text-sm font-medium uppercase tracking-wider text-primary">
-              {rewardsEyebrow}
-            </span>
-            <h2 className="mb-4 mt-3 text-3xl font-semibold sm:text-4xl">
-              {rewardsHeading}
-            </h2>
-            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-              {rewardsDesc}
-            </p>
-          </div>
+          <SectionHeading
+            eyebrow={rewardsEyebrow}
+            title={rewardsHeading}
+            subtitle={rewardsDesc}
+            className="mb-16 gap-0"
+            eyebrowClassName="text-sm font-medium uppercase tracking-wider text-primary"
+            titleClassName="mb-4 mt-3 text-3xl font-semibold sm:text-4xl"
+            subtitleClassName="mx-auto max-w-2xl text-lg text-muted-foreground"
+          />
 
           <ResponsiveGrid cols="1-md-2-4" gap="md">
             {rewardTiers.map((tier) => (

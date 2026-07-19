@@ -76,25 +76,34 @@ if (typeof document === 'undefined') {
   dom.window.cancelAnimationFrame = cancelAnimationFrame
 }
 
-const { cleanup, fireEvent, render, screen, waitFor } =
-  await import('@testing-library/react')
+const { cleanup, fireEvent, render, screen, waitFor } = await import(
+  '@testing-library/react'
+)
 const { BlogSubscribe } = await import('../blog/BlogSubscribe.tsx')
-const { BeautyStoreNewsletter } =
-  await import('../beauty-store/BeautyStoreNewsletter.tsx')
-const { ElectronicsStoreNewsletter } =
-  await import('../electronics-store/ElectronicsStoreNewsletter.tsx')
-const { FurnitureStoreNewsletter } =
-  await import('../furniture-store/FurnitureStoreNewsletter.tsx')
-const { LinkInBioSubscribe } =
-  await import('../link-in-bio/LinkInBioSubscribe.tsx')
-const { FashionStoreNewsletter } =
-  await import('../fashion-store/FashionStoreNewsletter.tsx')
-const { NonprofitSubscribe } =
-  await import('../nonprofit/NonprofitSubscribe.tsx')
-const { WriterAuthorSubscribe } =
-  await import('../writer-author/WriterAuthorSubscribe.tsx')
-const { MusicArtistMailing } =
-  await import('../music-artist/MusicArtistMailing.tsx')
+const { BeautyStoreNewsletter } = await import(
+  '../beauty-store/BeautyStoreNewsletter.tsx'
+)
+const { ElectronicsStoreNewsletter } = await import(
+  '../electronics-store/ElectronicsStoreNewsletter.tsx'
+)
+const { FurnitureStoreNewsletter } = await import(
+  '../furniture-store/FurnitureStoreNewsletter.tsx'
+)
+const { LinkInBioSubscribe } = await import(
+  '../link-in-bio/LinkInBioSubscribe.tsx'
+)
+const { FashionStoreNewsletter } = await import(
+  '../fashion-store/FashionStoreNewsletter.tsx'
+)
+const { NonprofitSubscribe } = await import(
+  '../nonprofit/NonprofitSubscribe.tsx'
+)
+const { WriterAuthorSubscribe } = await import(
+  '../writer-author/WriterAuthorSubscribe.tsx'
+)
+const { MusicArtistMailing } = await import(
+  '../music-artist/MusicArtistMailing.tsx'
+)
 const { CafeNewsletter } = await import('../cafe/CafeNewsletter.tsx')
 const { NewsroomSubscribe } = await import('../newsroom/NewsroomSubscribe.tsx')
 const { NewsroomFooter } = await import('../newsroom/NewsroomFooter.tsx')
@@ -103,8 +112,9 @@ const { ComingSoonCta } = await import('../coming-soon/ComingSoonCta.tsx')
 const { EcommerceCta } = await import('../ecommerce/EcommerceCta.tsx')
 const { FitnessCta } = await import('../fitness/FitnessCta.tsx')
 const { MarketingCta } = await import('../marketing/MarketingCta.tsx')
-const { HotelResortFooter } =
-  await import('../hotel-resort/HotelResortFooter.tsx')
+const { HotelResortFooter } = await import(
+  '../hotel-resort/HotelResortFooter.tsx'
+)
 const { NewsletterCta } = await import('./NewsletterCta.tsx')
 const { NewsletterHero } = await import('./NewsletterHero.tsx')
 const { NewsletterPricing } = await import('./NewsletterPricing.tsx')

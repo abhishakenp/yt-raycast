@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { PersonCard } from '#/section-kit/PersonCard.tsx'
 
@@ -179,15 +180,15 @@ export const MarketplaceAuthors = defineCapsule({
       >
         <Container>
           <div className="mb-12 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-2xl">
-              <h2
-                id="sellers-heading"
-                className="mb-4 text-3xl font-semibold text-foreground sm:text-4xl"
-              >
-                {sellersHeading}
-              </h2>
-              <p className="text-lg text-muted-foreground">{sellersDesc}</p>
-            </div>
+            <SectionHeading
+              align="left"
+              title={sellersHeading}
+              subtitle={sellersDesc}
+              className="max-w-2xl gap-0"
+              titleId="sellers-heading"
+              titleClassName="mb-4 text-3xl font-semibold text-foreground sm:text-4xl"
+              subtitleClassName="text-lg text-muted-foreground"
+            />
             <button
               type="button"
               onClick={() => go(sellersViewAll)}

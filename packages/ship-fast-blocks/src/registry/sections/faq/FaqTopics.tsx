@@ -6,6 +6,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { TopicGrid, TopicCard, TopicIcon } from '#/section-kit/TopicGrid.tsx'
 
 /**
@@ -205,9 +206,12 @@ export const FaqTopics = defineCapsule({
     return (
       <section className={cn('bg-muted/40 py-12 sm:py-16', props.className)}>
         <Container>
-          <h2 className="mb-8 text-lg font-semibold text-foreground">
-            {heading}
-          </h2>
+          <SectionHeading
+            align="left"
+            title={heading}
+            className="mb-8 gap-0"
+            titleClassName="text-lg font-semibold text-foreground"
+          />
 
           <TopicGrid cols="1-2-3" gap="sm">
             {items.map((topic, i) => (

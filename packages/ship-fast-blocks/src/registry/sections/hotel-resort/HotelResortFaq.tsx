@@ -8,6 +8,7 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 import { z } from 'zod/v4'
 
@@ -76,17 +77,15 @@ export const HotelResortFaq = defineCapsule({
     return (
       <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
         <Container size="sm" className="px-6 lg:px-6">
-          <div className="mb-16 text-center">
-            <p className="mb-3 text-sm uppercase tracking-widest text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2 className="mb-4 text-3xl font-light text-foreground lg:text-4xl">
-              {heading}
-            </h2>
-            <p className="leading-relaxed text-muted-foreground">
-              {description}
-            </p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            className="mb-16 gap-0"
+            eyebrowClassName="mb-3 text-sm uppercase tracking-widest text-muted-foreground"
+            titleClassName="mb-4 text-3xl font-light text-foreground lg:text-4xl"
+            subtitleClassName="leading-relaxed text-muted-foreground"
+          />
           <FaqAccordion>
             {items.map((item) => (
               <FaqItem

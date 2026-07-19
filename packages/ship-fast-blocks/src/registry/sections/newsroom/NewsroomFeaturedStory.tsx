@@ -8,6 +8,7 @@ import { useSyncPublicationArticles } from '../blog/publication-interactions.tsx
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   FeaturedArticle,
   FeaturedArticleMedia,
@@ -106,18 +107,17 @@ export const NewsroomFeaturedStory = defineCapsule({
               />
             </FeaturedArticleMedia>
             <FeaturedArticleContent className="order-1 lg:order-2">
-              <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-accent">
-                {eyebrow}
-              </p>
-              <h2
-                id="newsroom-featured-story-heading"
-                className="mb-5 font-serif text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl lg:text-5xl"
-              >
-                {headline}
-              </h2>
-              <p className="mb-6 text-lg leading-relaxed text-muted-foreground">
-                {excerpt}
-              </p>
+              <SectionHeading
+                align="left"
+                eyebrow={eyebrow}
+                title={headline}
+                subtitle={excerpt}
+                className="gap-0"
+                titleId="newsroom-featured-story-heading"
+                eyebrowClassName="mb-4 text-xs font-semibold uppercase tracking-widest text-accent"
+                titleClassName="mb-5 font-serif text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl lg:text-5xl"
+                subtitleClassName="mb-6 text-lg leading-relaxed text-muted-foreground"
+              />
               <ul className="mb-8 space-y-2">
                 {points.map((point) => (
                   <li

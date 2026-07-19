@@ -159,9 +159,7 @@ export const OnlineCourseHero = defineCapsule({
                   className="size-full object-cover"
                 />
               </div>
-              <HeroStatBadge
-                className="absolute -bottom-6 -left-6 flex max-w-xs items-center gap-3"
-              >
+              <HeroStatBadge className="absolute -bottom-6 -left-6 flex max-w-xs items-center gap-3">
                 <HeroStatBadgeIcon className="size-12 bg-primary/10 text-primary">
                   <svg
                     width="24"

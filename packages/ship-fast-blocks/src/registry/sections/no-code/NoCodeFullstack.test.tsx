@@ -100,8 +100,9 @@ if (
   })
 }
 
-const { cleanup, fireEvent, render, screen, waitFor, within } =
-  await import('@testing-library/react')
+const { cleanup, fireEvent, render, screen, waitFor, within } = await import(
+  '@testing-library/react'
+)
 const { NoCodeNavbar } = await import('./NoCodeNavbar.tsx')
 const { NoCodePricing } = await import('./NoCodePricing.tsx')
 const { NoCodeHero } = await import('./NoCodeHero.tsx')

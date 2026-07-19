@@ -157,47 +157,45 @@ export const NoCodePricing = defineCapsule({
         aria-labelledby="nc-pricing"
       >
         <Container>
-          <div className="mx-auto mb-12 max-w-3xl text-center">
-            <span className="mb-3 inline-block text-sm font-medium uppercase tracking-wider text-muted-foreground">
-              {eyebrow}
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            className="mx-auto mb-12 max-w-3xl gap-0"
+            titleId="nc-pricing"
+            eyebrowClassName="mb-3 inline-block text-sm font-medium uppercase tracking-wider text-muted-foreground"
+            titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
+            subtitleClassName="mb-8 text-lg text-muted-foreground"
+          />
+          <div className="flex items-center justify-center gap-4">
+            <span className="text-sm font-medium text-foreground">
+              {monthlyLabel}
             </span>
-            <h2
-              id="nc-pricing"
-              className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
+            <button
+              type="button"
+              role="switch"
+              aria-checked={isYearly}
+              aria-label="Toggle yearly billing"
+              onClick={() =>
+                setBilling((current) =>
+                  current === 'monthly' ? 'yearly' : 'monthly',
+                )
+              }
+              className="relative h-8 w-14 rounded-full bg-foreground p-1"
             >
-              {heading}
-            </h2>
-            <p className="mb-8 text-lg text-muted-foreground">{description}</p>
-            <div className="flex items-center justify-center gap-4">
-              <span className="text-sm font-medium text-foreground">
-                {monthlyLabel}
-              </span>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={isYearly}
-                aria-label="Toggle yearly billing"
-                onClick={() =>
-                  setBilling((current) =>
-                    current === 'monthly' ? 'yearly' : 'monthly',
-                  )
-                }
-                className="relative h-8 w-14 rounded-full bg-foreground p-1"
-              >
-                <span
-                  className={cn(
-                    'block size-6 rounded-full bg-background shadow transition-transform',
-                    isYearly ? 'translate-x-6' : 'translate-x-0',
-                  )}
-                />
-              </button>
-              <span className="text-sm font-medium text-muted-foreground">
-                {yearlyLabel}
-              </span>
-              <span className="rounded-full bg-chart-2/15 px-2 py-1 text-xs font-medium text-chart-2">
-                {saveBadge}
-              </span>
-            </div>
+              <span
+                className={cn(
+                  'block size-6 rounded-full bg-background shadow transition-transform',
+                  isYearly ? 'translate-x-6' : 'translate-x-0',
+                )}
+              />
+            </button>
+            <span className="text-sm font-medium text-muted-foreground">
+              {yearlyLabel}
+            </span>
+            <span className="rounded-full bg-chart-2/15 px-2 py-1 text-xs font-medium text-chart-2">
+              {saveBadge}
+            </span>
           </div>
           <PricingGrid>
             <SectionHeading

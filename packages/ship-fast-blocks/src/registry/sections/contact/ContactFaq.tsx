@@ -10,6 +10,7 @@ import {
   FaqQuestion,
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * ContactFaq — two-column FAQ accordion for a contact / support page.
@@ -78,14 +79,13 @@ export const ContactFaq = defineCapsule({
 
     return (
       <section className={cn('mt-20 mb-24', props.className)}>
-        <div className="mb-11 text-center">
-          <h2 className="mb-2.5 text-[1.9rem] font-bold text-foreground">
-            {heading}
-          </h2>
-          <p className="mx-auto max-w-[480px] text-muted-foreground">
-            {description}
-          </p>
-        </div>
+        <SectionHeading
+          title={heading}
+          subtitle={description}
+          className="mb-11 gap-0"
+          titleClassName="mb-2.5 text-[1.9rem] font-bold text-foreground"
+          subtitleClassName="mx-auto max-w-[480px] text-muted-foreground"
+        />
         <FaqAccordion className="grid gap-4 md:grid-cols-2">
           {items.map((item, i) => {
             const open = openFaq === i

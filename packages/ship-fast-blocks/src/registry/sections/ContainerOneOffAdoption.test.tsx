@@ -7,13 +7,16 @@ vi.mock('#/lib/use-navigate.tsx', () => ({
 }))
 
 const { cleanup, render } = await import('@testing-library/react')
-const { MarketplaceAuthors } =
-  await import('./marketplace/MarketplaceAuthors.tsx')
+const { MarketplaceAuthors } = await import(
+  './marketplace/MarketplaceAuthors.tsx'
+)
 const { NutritionLogos } = await import('./nutrition/NutritionLogos.tsx')
-const { OnlineCourseHero } =
-  await import('./online-course/OnlineCourseHero.tsx')
-const { PlumbingHvacSteps } =
-  await import('./plumbing-hvac/PlumbingHvacSteps.tsx')
+const { OnlineCourseHero } = await import(
+  './online-course/OnlineCourseHero.tsx'
+)
+const { PlumbingHvacSteps } = await import(
+  './plumbing-hvac/PlumbingHvacSteps.tsx'
+)
 const { SaasSteps } = await import('./saas/SaasSteps.tsx')
 
 const oneOffSections = [

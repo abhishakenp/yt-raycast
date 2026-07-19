@@ -17,6 +17,7 @@ import {
 import { autoDealershipLakebed } from './auto-dealership-lakebed.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   FinancingCalculator,
   FinancingDisplay,
@@ -106,14 +107,14 @@ export const AutoDealershipFinancing = defineCapsule({
                 />
               </div>
               <div className="order-1 space-y-8 lg:order-2">
-                <div className="space-y-4">
-                  <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-                    {heading}
-                  </h2>
-                  <p className="text-lg leading-relaxed text-muted-foreground">
-                    {description}
-                  </p>
-                </div>
+                <SectionHeading
+                  align="left"
+                  title={heading}
+                  subtitle={description}
+                  className="gap-0"
+                  titleClassName="text-3xl font-semibold tracking-tight sm:text-4xl"
+                  subtitleClassName="text-lg leading-relaxed text-muted-foreground"
+                />
                 <div className="space-y-4">
                   {steps.map((step, i) => (
                     <Card

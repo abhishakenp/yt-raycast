@@ -15,6 +15,7 @@ import { cn } from '#/lib/utils.ts'
  * with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { IndustryGrid, IndustryCard } from '#/section-kit/IndustryGrid.tsx'
 export const ManufacturingIndustries = defineCapsule({
   name: 'ManufacturingIndustries',
@@ -211,15 +212,16 @@ export const ManufacturingIndustries = defineCapsule({
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <Container>
-          <div className="mb-12 max-w-3xl">
-            <span className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
-              {eyebrow}
-            </span>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="mt-4 text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            align="left"
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            className="mb-12 max-w-3xl gap-0"
+            eyebrowClassName="text-sm font-medium uppercase tracking-wider text-muted-foreground"
+            titleClassName="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
+            subtitleClassName="mt-4 text-lg text-muted-foreground"
+          />
           <IndustryGrid cols="1-2-4">
             {items.map((item, i) => (
               <IndustryCard key={item.title}>

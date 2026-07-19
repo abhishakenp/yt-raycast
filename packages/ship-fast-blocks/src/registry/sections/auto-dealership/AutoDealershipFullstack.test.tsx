@@ -93,13 +93,16 @@ if (
   })
 }
 
-const { cleanup, fireEvent, render, screen, waitFor, within } =
-  await import('@testing-library/react')
-const { AutoDealershipFinancing } =
-  await import('./AutoDealershipFinancing.tsx')
+const { cleanup, fireEvent, render, screen, waitFor, within } = await import(
+  '@testing-library/react'
+)
+const { AutoDealershipFinancing } = await import(
+  './AutoDealershipFinancing.tsx'
+)
 const { AutoDealershipHero } = await import('./AutoDealershipHero.tsx')
-const { AutoDealershipInventory } =
-  await import('./AutoDealershipInventory.tsx')
+const { AutoDealershipInventory } = await import(
+  './AutoDealershipInventory.tsx'
+)
 const { AutoDealershipNavbar } = await import('./AutoDealershipNavbar.tsx')
 
 function useTestMutation<TMutation>({

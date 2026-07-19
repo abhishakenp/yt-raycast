@@ -4,7 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   SplitStory,
   SplitStoryGrid,
@@ -97,15 +97,14 @@ export const AccountingFirmAbout = defineCapsule({
               />
             </div>
             <SplitStoryContent className="order-1 lg:order-2 space-y-0">
-              <Eyebrow
-                variant="text"
-                className="mb-3 block text-sm tracking-wider text-muted-foreground"
-              >
-                {eyebrow}
-              </Eyebrow>
-              <h2 className="mb-6 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-                {heading}
-              </h2>
+              <SectionHeading
+                align="left"
+                eyebrow={eyebrow}
+                title={heading}
+                className="gap-0"
+                eyebrowClassName="mb-3 block text-sm tracking-wider text-muted-foreground"
+                titleClassName="mb-6 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
+              />
               {paragraphs.map((p, i) => (
                 <p
                   key={p}

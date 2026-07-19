@@ -174,8 +174,9 @@ if (
   })
 }
 
-const { cleanup, fireEvent, render, screen, waitFor, within } =
-  await import('@testing-library/react')
+const { cleanup, fireEvent, render, screen, waitFor, within } = await import(
+  '@testing-library/react'
+)
 const { AuthNavbar } = await import('./AuthNavbar.tsx')
 const { AuthPricing } = await import('./AuthPricing.tsx')
 const { AuthHero } = await import('./AuthHero.tsx')

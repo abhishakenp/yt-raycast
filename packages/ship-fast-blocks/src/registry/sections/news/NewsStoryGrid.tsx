@@ -6,6 +6,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import {
@@ -163,9 +164,12 @@ export const NewsStoryGrid = defineCapsule({
       >
         <Container>
           <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-foreground lg:text-2xl">
-              {heading}
-            </h2>
+            <SectionHeading
+              align="left"
+              title={heading}
+              className="gap-0"
+              titleClassName="text-xl font-bold text-foreground lg:text-2xl"
+            />
             <div className="hidden items-center gap-2 sm:flex">
               {filters.map((f, i) => (
                 <button

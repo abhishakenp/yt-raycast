@@ -66,6 +66,39 @@ function renderMalformed(ui: React.ReactElement) {
 }
 
 describe('section-kit grids and footer', () => {
+  it('lays pricing tiers out as a responsive equal-height grid', () => {
+    render(
+      <PricingGrid>
+        <PricingTier>
+          <PricingTierHeader>
+            <PricingTierName>Starter</PricingTierName>
+            <PricingTierPrice>$0</PricingTierPrice>
+          </PricingTierHeader>
+        </PricingTier>
+        <PricingTier variant="highlighted">
+          <PricingTierBadge>Most popular</PricingTierBadge>
+          <PricingTierHeader>
+            <PricingTierName>Pro</PricingTierName>
+            <PricingTierPrice>$99</PricingTierPrice>
+          </PricingTierHeader>
+        </PricingTier>
+      </PricingGrid>,
+    )
+
+    const grid = document.querySelector('[data-slot="pricing-grid"]')
+    const tiers = document.querySelectorAll('[data-slot="pricing-tier"]')
+    const highlighted = screen
+      .getByText('Pro')
+      .closest('[data-slot="pricing-tier"]')
+
+    expect(grid?.className).toContain('grid-cols-1')
+    expect(grid?.className).toContain('md:grid-cols-2')
+    expect(grid?.className).toContain('xl:grid-cols-3')
+    expect(tiers).toHaveLength(2)
+    expect(tiers[0]?.className).toContain('h-full')
+    expect(highlighted?.className).toContain('ring-primary')
+  })
+
   it('renders real generated content and routes interactive actions', () => {
     render(
       <>

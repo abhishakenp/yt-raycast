@@ -102,8 +102,9 @@ if (
   })
 }
 
-const { cleanup, fireEvent, render, screen, waitFor, within } =
-  await import('@testing-library/react')
+const { cleanup, fireEvent, render, screen, waitFor, within } = await import(
+  '@testing-library/react'
+)
 const { MobileAppNavbar } = await import('./MobileAppNavbar.tsx')
 const { MobileAppPricing } = await import('./MobileAppPricing.tsx')
 const { MobileAppHero } = await import('./MobileAppHero.tsx')

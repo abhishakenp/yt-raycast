@@ -12,6 +12,7 @@ import {
   PortfolioTag,
 } from '#/section-kit/PortfolioGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * InteriorDesignProjects — filterable project portfolio gallery for an upscale
@@ -97,14 +98,14 @@ export const InteriorDesignProjects = defineCapsule({
       >
         <Container size="xl">
           <div className="mb-12 flex flex-col gap-6 md:mb-16 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="mb-4 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                {eyebrow}
-              </p>
-              <h2 className="text-3xl font-light text-foreground md:text-4xl">
-                {heading}
-              </h2>
-            </div>
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              className="gap-0"
+              eyebrowClassName="mb-4 text-xs font-medium uppercase tracking-widest text-muted-foreground"
+              titleClassName="text-3xl font-light text-foreground md:text-4xl"
+            />
             <div className="flex gap-4">
               {filters.map((filter, i) => (
                 <button

@@ -81,9 +81,12 @@ export const GovPortalDirectory = defineCapsule({
         className={cn('bg-background py-16 border-0', props.className)}
       >
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-2xl font-semibold tracking-tight text-foreground">
-            {heading}
-          </h2>
+          <SectionHeading
+            align="left"
+            title={heading}
+            className="mb-6 gap-0"
+            titleClassName="text-2xl font-semibold tracking-tight text-foreground"
+          />
           <div className="overflow-x-auto rounded-xl border border-border">
             <DataTable className="w-full min-w-[36rem] text-left text-sm">
               <table className="w-full text-left text-sm">
@@ -232,9 +235,12 @@ export const GovPortalNewsEvents = defineCapsule({
     return (
       <section className={cn('bg-background py-16', props.className)}>
         <Container>
-          <h2 className="mb-8 text-2xl font-semibold tracking-tight text-foreground">
-            {heading}
-          </h2>
+          <SectionHeading
+            align="left"
+            title={heading}
+            className="mb-8 gap-0"
+            titleClassName="text-2xl font-semibold tracking-tight text-foreground"
+          />
           <ResponsiveGrid cols="1-2-3" gap="md">
             {rows.map((row, i) => (
               <ContentCard

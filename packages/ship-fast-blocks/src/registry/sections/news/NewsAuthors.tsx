@@ -12,6 +12,7 @@ import {
 } from '#/section-kit/PersonCard.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
@@ -155,16 +156,14 @@ export const NewsAuthors = defineCapsule({
         className={cn('bg-card pt-28 pb-12 lg:pt-32 lg:pb-16', props.className)}
       >
         <Container>
-          <div className="mb-10 max-w-2xl">
-            <h2 className="text-xl font-bold text-foreground lg:text-2xl">
-              {heading}
-            </h2>
-            {intro ? (
-              <p className="mt-2 text-sm text-muted-foreground lg:text-base">
-                {intro}
-              </p>
-            ) : null}
-          </div>
+          <SectionHeading
+            align="left"
+            title={heading}
+            subtitle={intro}
+            className="mb-10 max-w-2xl gap-0"
+            titleClassName="text-xl font-bold text-foreground lg:text-2xl"
+            subtitleClassName="mt-2 text-sm text-muted-foreground lg:text-base"
+          />
 
           <ResponsiveGrid cols="1-2-4" gap="md">
             {authors.map((author) => (

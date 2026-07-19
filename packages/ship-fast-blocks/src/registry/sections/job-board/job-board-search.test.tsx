@@ -134,8 +134,9 @@ if (typeof window !== 'undefined' && 'FormData' in window) {
   })
 }
 
-const { cleanup, fireEvent, render, screen, waitFor, within } =
-  await import('@testing-library/react')
+const { cleanup, fireEvent, render, screen, waitFor, within } = await import(
+  '@testing-library/react'
+)
 const { JobBoardHero } = await import('./JobBoardHero.tsx')
 const { JobBoardJobs } = await import('./JobBoardJobs.tsx')
 const { JobBoardNavbar } = await import('./JobBoardNavbar.tsx')

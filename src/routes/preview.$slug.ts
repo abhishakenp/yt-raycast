@@ -1,12 +1,8 @@
-import { createFileRoute } from '@tanstack/react-router'
-
-import { createDeploymentPreviewResponse } from '@/features/deployments/server/deployment-preview-response'
+import { createFileRoute, lazyRouteComponent } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/preview/$slug')({
-  server: {
-    handlers: {
-      GET: async ({ params, request }) =>
-        await createDeploymentPreviewResponse(params.slug, request),
-    },
-  },
+  component: lazyRouteComponent(
+    () => import('./-session-preview-route'),
+    'PreviewRoute',
+  ),
 })

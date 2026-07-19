@@ -3,7 +3,7 @@
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 
-import { BrandLogoProvider, Logo } from './Logo.tsx'
+import { BrandLogoProvider, Logo, LogoImage, LogoLabel } from './Logo.tsx'
 
 const selectedLogo = {
   name: 'Linear',
@@ -21,34 +21,42 @@ describe('Logo', () => {
   it('renders the supplied fallback mark when no brand logo is selected', () => {
     render(
       <BrandLogoProvider value={null}>
-        <Logo
-          brand="Acme"
-          fallback={<span data-testid="fallback-mark">A</span>}
-          labelClassName="brand-label"
-        />
+        <Logo brand="Acme" className="custom-logo">
+          <LogoImage fallback={<span data-testid="fallback-mark">A</span>} />
+          <LogoLabel className="brand-label" />
+        </Logo>
       </BrandLogoProvider>,
     )
 
     expect(screen.getByTestId('fallback-mark')).toBeTruthy()
     expect(screen.getByText('Acme').className).toContain('brand-label')
+    expect(
+      screen.getByText('Acme').closest('[data-slot="logo"]')?.className,
+    ).toContain('inline-flex')
+    expect(
+      screen.getByText('Acme').closest('[data-slot="logo"]')?.className,
+    ).toContain('custom-logo')
     expect(screen.queryByRole('img')).toBeNull()
   })
 
   it('uses the selected icon in the brand mark slot', () => {
     render(
       <BrandLogoProvider value={selectedLogo}>
-        <Logo
-          brand="Acme"
-          fallback={<span data-testid="fallback-mark">A</span>}
-        />
+        <Logo brand="Acme">
+          <LogoImage fallback={<span data-testid="fallback-mark">A</span>} />
+          <LogoLabel />
+        </Logo>
       </BrandLogoProvider>,
     )
 
     expect(screen.queryByTestId('fallback-mark')).toBeNull()
     const image = document.querySelector(
       '[data-brand-logo-selected="true"] img',
-    ) as HTMLImageElement
+    )
     expect(image).toBeInstanceOf(HTMLImageElement)
+    if (!(image instanceof HTMLImageElement)) {
+      throw new Error('Selected logo image did not render')
+    }
     expect(image.src).toBe(selectedLogo.icon)
     expect(screen.getByText('Acme')).toBeTruthy()
   })
@@ -72,7 +80,10 @@ describe('Logo', () => {
     await waitFor(() => {
       const image = document.querySelector(
         '[data-brand-logo-runtime-slot="true"] img',
-      ) as HTMLImageElement | null
+      )
+      if (!(image instanceof HTMLImageElement)) {
+        throw new Error('Runtime logo image did not render')
+      }
       expect(image?.src).toBe(selectedLogo.icon)
     })
 

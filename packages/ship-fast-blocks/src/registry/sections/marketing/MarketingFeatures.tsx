@@ -10,6 +10,7 @@ import {
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * MarketingFeatures — a centered-header 6-up feature grid for a SaaS /
@@ -76,12 +77,13 @@ export const MarketingFeatures = defineCapsule({
     return (
       <section className={cn('py-20', props.className)}>
         <Container size="lg" className="px-6 lg:px-6">
-          <div className="mx-auto mb-14 max-w-2xl text-center">
-            <h2 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="mt-3 text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mx-auto mb-14 max-w-2xl gap-0"
+            titleClassName="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl"
+            subtitleClassName="mt-3 text-lg text-muted-foreground"
+          />
           <FeatureGrid columns={3}>
             {items.map((f) => {
               const __iv__ = f as {

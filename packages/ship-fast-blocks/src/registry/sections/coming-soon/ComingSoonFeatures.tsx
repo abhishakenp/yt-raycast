@@ -10,6 +10,7 @@ import {
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * ComingSoonFeatures — product capabilities grid for a "launching soon" / waitlist
@@ -83,14 +84,13 @@ export const ComingSoonFeatures = defineCapsule({
         )}
       >
         <Container size="lg">
-          <div className="mb-20 text-center">
-            <h2 className="mb-4 text-2xl font-light text-foreground sm:text-3xl lg:text-4xl">
-              {heading}
-            </h2>
-            <p className="mx-auto max-w-xl font-light text-muted-foreground">
-              {description}
-            </p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mb-20 gap-0"
+            titleClassName="mb-4 text-2xl font-light text-foreground sm:text-3xl lg:text-4xl"
+            subtitleClassName="mx-auto max-w-xl font-light text-muted-foreground"
+          />
 
           <FeatureGrid columns={3}>
             {items.map((f) => {

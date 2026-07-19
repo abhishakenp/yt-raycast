@@ -196,15 +196,15 @@ export const InsurancePricing = defineCapsule({
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <span className="mb-4 inline-block rounded-full border border-border bg-background px-4 py-1.5 text-sm font-semibold text-primary">
-              {eyebrow}
-            </span>
-            <h2 className="mb-6 text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            className="mx-auto mb-16 max-w-3xl gap-0"
+            eyebrowClassName="mb-4 inline-block rounded-full border border-border bg-background px-4 py-1.5 text-sm font-semibold text-primary"
+            titleClassName="mb-6 text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <PricingGrid
             className={cn(
               'mx-auto grid max-w-6xl gap-8 md:grid-cols-3',

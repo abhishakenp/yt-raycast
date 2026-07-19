@@ -10,6 +10,7 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * AeoFaq — bespoke, accessible FAQ section for an Answer-Engine-Optimization
@@ -80,12 +81,13 @@ export const AeoFaq = defineCapsule({
         )}
       >
         <Container size="sm">
-          <div className="mb-10 text-center">
-            <h2 className="mb-3 text-2xl font-semibold text-foreground sm:text-3xl">
-              {heading}
-            </h2>
-            <p className="text-muted-foreground">{intro}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={intro}
+            className="mb-10 gap-0"
+            titleClassName="mb-3 text-2xl font-semibold text-foreground sm:text-3xl"
+            subtitleClassName="text-muted-foreground"
+          />
           <FaqAccordion>
             {items.map((item, i) => (
               <FaqItem key={item.question} variant="open-raised" open={i === 0}>

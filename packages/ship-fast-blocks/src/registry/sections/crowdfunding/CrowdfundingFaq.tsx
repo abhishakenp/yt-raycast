@@ -8,6 +8,7 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 import { z } from 'zod/v4'
 
@@ -68,14 +69,13 @@ export const CrowdfundingFaq = defineCapsule({
     return (
       <section className={cn('bg-card py-20 lg:py-28', props.className)}>
         <Container size="sm">
-          <div className="mb-16 text-center">
-            <span className="text-sm font-medium uppercase tracking-wider text-primary">
-              {faqEyebrow}
-            </span>
-            <h2 className="mt-3 text-3xl font-semibold sm:text-4xl">
-              {faqHeading}
-            </h2>
-          </div>
+          <SectionHeading
+            eyebrow={faqEyebrow}
+            title={faqHeading}
+            className="mb-16 gap-0"
+            eyebrowClassName="text-sm font-medium uppercase tracking-wider text-primary"
+            titleClassName="mt-3 text-3xl font-semibold sm:text-4xl"
+          />
 
           <FaqAccordion>
             {faqItems.map((item) => (

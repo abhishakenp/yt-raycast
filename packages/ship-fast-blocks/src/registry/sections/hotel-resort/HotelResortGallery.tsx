@@ -10,6 +10,7 @@ import {
   GalleryTileCaption,
 } from '#/section-kit/GalleryGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * HotelResortGallery — masonry photo gallery for a luxury hotel / resort & spa
@@ -57,17 +58,16 @@ export const HotelResortGallery = defineCapsule({
     return (
       <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
         <Container size="xl" className="px-6">
-          <div className="mb-16 max-w-2xl">
-            <p className="mb-3 text-sm uppercase tracking-widest text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2 className="mb-4 text-3xl font-light text-foreground lg:text-4xl">
-              {heading}
-            </h2>
-            <p className="leading-relaxed text-muted-foreground">
-              {description}
-            </p>
-          </div>
+          <SectionHeading
+            align="left"
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            className="mb-16 max-w-2xl gap-0"
+            eyebrowClassName="mb-3 text-sm uppercase tracking-widest text-muted-foreground"
+            titleClassName="mb-4 text-3xl font-light text-foreground lg:text-4xl"
+            subtitleClassName="leading-relaxed text-muted-foreground"
+          />
           <GalleryGrid>
             <GalleryGridItems columns={3}>
               {images

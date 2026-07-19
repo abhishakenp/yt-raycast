@@ -11,25 +11,34 @@ import {
   SheetTrigger,
 } from '#/components/ui/sheet.tsx'
 import { cn } from '#/lib/utils.ts'
-import * as routeNav from '#/lib/use-navigate.tsx'
-import { useNavigate } from '#/lib/use-navigate.tsx'
+import { useIsActiveRoute, useRouteHref } from '#/lib/use-navigate.tsx'
 import type { KitAction } from './types.ts'
 import { kitActionClasses } from './types.ts'
 
-/** Optional active-route matcher: tolerates test environments that mock
- *  use-navigate with only `useNavigate` exported (mock proxies throw on
- *  missing exports, so the access itself must be guarded). */
-function useActiveRouteMatcher(): (target?: string) => boolean {
-  let matcher: ((target?: string) => boolean) | null = null
-  try {
-    matcher =
-      typeof routeNav.useIsActiveRoute === 'function'
-        ? routeNav.useIsActiveRoute()
-        : null
-  } catch {
-    matcher = null
-  }
-  return matcher ?? (() => false)
+function MobileNavAnchor({
+  ariaCurrent,
+  children,
+  className,
+  onNavigate,
+  target,
+}: {
+  ariaCurrent?: React.AriaAttributes['aria-current']
+  children: React.ReactNode
+  className?: string
+  onNavigate: () => void
+  target: string
+}) {
+  const href = useRouteHref(target)
+  return (
+    <a
+      href={href}
+      onClick={onNavigate}
+      aria-current={ariaCurrent}
+      className={className}
+    >
+      {children}
+    </a>
+  )
 }
 
 const MobileNavDrawer = React.forwardRef<
@@ -66,8 +75,7 @@ const MobileNavDrawer = React.forwardRef<
     },
     ref,
   ) => {
-    const go = useNavigate()
-    const isActiveRoute = useActiveRouteMatcher()
+    const isActiveRoute = useIsActiveRoute()
     const [open, setOpen] = React.useState(false)
     const targetHome = homeTarget ?? homeLabel
     const normalizedHomeLabel = homeLabel.trim().toLowerCase()
@@ -78,9 +86,8 @@ const MobileNavDrawer = React.forwardRef<
     const close = () => setOpen(false)
     const footerContent = typeof footer === 'function' ? footer(close) : footer
 
-    const navigate = (target: string) => {
+    const navigate = () => {
       close()
-      go(target)
     }
 
     return (
@@ -127,10 +134,10 @@ const MobileNavDrawer = React.forwardRef<
             data-slot="mobile-nav-drawer-nav"
             className="flex flex-col gap-1 px-3 py-4"
           >
-            <button
-              type="button"
-              onClick={() => navigate(targetHome)}
-              aria-current={isActiveRoute(targetHome) ? 'page' : undefined}
+            <MobileNavAnchor
+              target={targetHome}
+              onNavigate={navigate}
+              ariaCurrent={isActiveRoute(targetHome) ? 'page' : undefined}
               className={cn(
                 'rounded-lg px-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted',
                 isActiveRoute(targetHome) &&
@@ -138,15 +145,15 @@ const MobileNavDrawer = React.forwardRef<
               )}
             >
               {homeLabel}
-            </button>
+            </MobileNavAnchor>
             {links.map((item) => {
               const isActive = isActiveRoute(item)
               return (
-                <button
+                <MobileNavAnchor
                   key={item}
-                  type="button"
-                  onClick={() => navigate(item)}
-                  aria-current={isActive ? 'page' : undefined}
+                  target={item}
+                  onNavigate={navigate}
+                  ariaCurrent={isActive ? 'page' : undefined}
                   className={cn(
                     'rounded-lg px-3 py-3 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
                     isActive &&
@@ -154,17 +161,17 @@ const MobileNavDrawer = React.forwardRef<
                   )}
                 >
                   {item}
-                </button>
+                </MobileNavAnchor>
               )
             })}
             {cta ? (
-              <button
-                type="button"
-                onClick={() => navigate(cta.target ?? cta.label)}
+              <MobileNavAnchor
+                target={cta.target ?? cta.label}
+                onNavigate={navigate}
                 className={cn(kitActionClasses(cta.variant), 'mt-2 min-h-11')}
               >
                 {cta.label}
-              </button>
+              </MobileNavAnchor>
             ) : null}
             {footerContent ? <div className="mt-2">{footerContent}</div> : null}
           </div>

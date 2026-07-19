@@ -8,6 +8,7 @@ import { useSyncPublicationArticles } from '../blog/publication-interactions.tsx
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   ArticleGrid,
   ArticleCard,
@@ -161,12 +162,13 @@ export const NewsroomStoryGrid = defineCapsule({
       >
         <Container>
           <div className="flex items-end justify-between gap-4">
-            <h2
-              id="newsroom-grid-heading"
-              className="font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
-            >
-              {heading}
-            </h2>
+            <SectionHeading
+              align="left"
+              title={heading}
+              className="gap-0"
+              titleId="newsroom-grid-heading"
+              titleClassName="font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
+            />
             <button
               type="button"
               onClick={() => go(viewAllCta)}

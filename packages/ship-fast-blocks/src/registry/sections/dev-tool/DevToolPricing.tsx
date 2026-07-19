@@ -142,15 +142,14 @@ export const DevToolPricing = defineCapsule({
         aria-labelledby="pricing-heading"
       >
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <h2
-              id="pricing-heading"
-              className="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
-            >
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mx-auto mb-16 max-w-3xl gap-0"
+            titleId="pricing-heading"
+            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <PricingGrid>
             <SectionHeading
               title={'Simple, transparent pricing'}

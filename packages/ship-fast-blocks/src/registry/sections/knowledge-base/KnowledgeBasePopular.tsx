@@ -6,6 +6,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   PopularList,
   PopularItem,
@@ -196,13 +197,15 @@ export const KnowledgeBasePopular = defineCapsule({
         <Container>
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-3">
             <div className="lg:col-span-2">
-              <h2
-                id="kb-popular-heading"
-                className="mb-3 text-2xl font-semibold text-foreground sm:text-3xl"
-              >
-                {heading}
-              </h2>
-              <p className="mb-8 text-muted-foreground">{description}</p>
+              <SectionHeading
+                align="left"
+                title={heading}
+                subtitle={description}
+                className="gap-0"
+                titleId="kb-popular-heading"
+                titleClassName="mb-3 text-2xl font-semibold text-foreground sm:text-3xl"
+                subtitleClassName="mb-8 text-muted-foreground"
+              />
               <div className="space-y-4">
                 {items.map((art) => (
                   <PopularItem key={art.title}>

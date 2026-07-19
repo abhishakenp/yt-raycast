@@ -53,30 +53,39 @@ const { FaqContactCta } = await import('./faq/FaqContactCta.tsx')
 const { FaqFooter } = await import('./faq/FaqFooter.tsx')
 const { FaqNavbar } = await import('./faq/FaqNavbar.tsx')
 const { FaqTopics } = await import('./faq/FaqTopics.tsx')
-const { GovPortalLeadership } =
-  await import('./gov-portal/GovPortalCompany.tsx')
-const { GovPortalQuickLinks, GovPortalStats } =
-  await import('./gov-portal/GovPortalHome.tsx')
-const { GovPortalMedia, GovPortalNewsEvents } =
-  await import('./gov-portal/GovPortalInfo.tsx')
-const { GovPortalTenderBoard } =
-  await import('./gov-portal/GovPortalTenders.tsx')
-const { KnowledgeBaseCategories } =
-  await import('./knowledge-base/KnowledgeBaseCategories.tsx')
-const { KnowledgeBaseGuides } =
-  await import('./knowledge-base/KnowledgeBaseGuides.tsx')
-const { KnowledgeBasePopular } =
-  await import('./knowledge-base/KnowledgeBasePopular.tsx')
-const { KnowledgeBaseStats } =
-  await import('./knowledge-base/KnowledgeBaseStats.tsx')
+const { GovPortalLeadership } = await import(
+  './gov-portal/GovPortalCompany.tsx'
+)
+const { GovPortalQuickLinks, GovPortalStats } = await import(
+  './gov-portal/GovPortalHome.tsx'
+)
+const { GovPortalMedia, GovPortalNewsEvents } = await import(
+  './gov-portal/GovPortalInfo.tsx'
+)
+const { GovPortalTenderBoard } = await import(
+  './gov-portal/GovPortalTenders.tsx'
+)
+const { KnowledgeBaseCategories } = await import(
+  './knowledge-base/KnowledgeBaseCategories.tsx'
+)
+const { KnowledgeBaseGuides } = await import(
+  './knowledge-base/KnowledgeBaseGuides.tsx'
+)
+const { KnowledgeBasePopular } = await import(
+  './knowledge-base/KnowledgeBasePopular.tsx'
+)
+const { KnowledgeBaseStats } = await import(
+  './knowledge-base/KnowledgeBaseStats.tsx'
+)
 const { NewsAuthors } = await import('./news/NewsAuthors.tsx')
 const { NewsFeaturedStory } = await import('./news/NewsFeaturedStory.tsx')
 const { NewsStoryGrid } = await import('./news/NewsStoryGrid.tsx')
 const { NewsTopics } = await import('./news/NewsTopics.tsx')
 const { NonprofitLogos } = await import('./nonprofit/NonprofitLogos.tsx')
 const { NonprofitServices } = await import('./nonprofit/NonprofitServices.tsx')
-const { NonprofitTestimonials } =
-  await import('./nonprofit/NonprofitTestimonials.tsx')
+const { NonprofitTestimonials } = await import(
+  './nonprofit/NonprofitTestimonials.tsx'
+)
 
 const smallCountSections = [
   AiProductFeatures,

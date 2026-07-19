@@ -17,6 +17,7 @@ import {
   GovFormBody,
 } from '#/section-kit/GovFormTable.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import {
   FormField,
@@ -82,10 +83,14 @@ export const GovPortalGrievance = defineCapsule({
         className={cn('bg-muted/30 py-16 border-0', props.className)}
       >
         <Container size="sm">
-          <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-            {heading}
-          </h2>
-          <p className="mt-2 text-sm text-muted-foreground">{description}</p>
+          <SectionHeading
+            align="left"
+            title={heading}
+            subtitle={description}
+            className="gap-0"
+            titleClassName="text-2xl font-semibold tracking-tight text-foreground"
+            subtitleClassName="mt-2 text-sm text-muted-foreground"
+          />
 
           {form.submitted ? (
             <div className="mt-6 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
@@ -572,9 +577,12 @@ export const GovPortalContact = defineCapsule({
     return (
       <section className={cn('bg-background py-16', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-8 text-2xl font-semibold tracking-tight text-foreground">
-            {heading}
-          </h2>
+          <SectionHeading
+            align="left"
+            title={heading}
+            className="mb-8 gap-0"
+            titleClassName="text-2xl font-semibold tracking-tight text-foreground"
+          />
           <ResponsiveGrid cols="1-2" gap="md">
             {offices.map(({ title, office }) => (
               <Card key={title} rounded="2xl">

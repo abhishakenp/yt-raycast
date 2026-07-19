@@ -44,7 +44,7 @@ import {
   type InspectorSelection,
 } from '@/features/editing/element-path'
 import { IntroLoader } from '@/components/GenUI/IntroLoader'
-import { GeneratedModulePreview } from '@/features/generation/components/GeneratedModulePreview'
+import { SessionGeneratedPreview } from '@/features/dashboard/components/SessionGeneratedPreview'
 import { useClonePageNav } from '@/features/clone/hooks/useClonePageNav'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { createPendingDashboardSaves } from '@/features/dashboard/lib/pending-dashboard-saves'
@@ -1624,7 +1624,10 @@ export function Dashboard({
           setIsForkingSession(false)
         }
       } else if (result !== true) {
-        const errorMsg = typeof result === 'object' && result ? result.error : 'Failed to save link'
+        const errorMsg =
+          typeof result === 'object' && result
+            ? result.error
+            : 'Failed to save link'
         console.error('[Inline Edit] Failed to save link:', errorMsg)
         toast.error(errorMsg)
       }
@@ -1760,7 +1763,10 @@ export function Dashboard({
           activeElement.setAttribute('style', originalStyleAttribute)
         }
       }
-      const styleErrorMsg = typeof result === 'object' && result ? result.error : 'Failed to save style'
+      const styleErrorMsg =
+        typeof result === 'object' && result
+          ? result.error
+          : 'Failed to save style'
       console.error('[Inline Edit] Failed to save style:', styleErrorMsg)
       toast.error(styleErrorMsg)
     }
@@ -2162,7 +2168,7 @@ export function Dashboard({
                         {isPreviewRenderable &&
                         (homeModule?.source || clonePageNav.currentUrl) &&
                         generationView ? (
-                          <GeneratedModulePreview
+                          <SessionGeneratedPreview
                             // Use homeModule.updatedAt for normal previews to avoid remounting on
                             // unrelated previewVersion bumps. CMS-promoted HTML is versioned by the
                             // latest preview because that HTML is now the displayed source.

@@ -11,6 +11,7 @@ import {
   PricingTierFeatures,
 } from '#/section-kit/PricingGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { newsletterLakebed } from './newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from './newsletter-interactions.tsx'
@@ -131,12 +132,13 @@ export const NewsletterPricing = defineCapsule({
         )}
       >
         <Container size="lg">
-          <div className="mx-auto mb-12 max-w-2xl text-center md:mb-16">
-            <h2 className="mb-4 font-serif text-3xl font-medium text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mx-auto mb-12 max-w-2xl gap-0 md:mb-16"
+            titleClassName="mb-4 font-serif text-3xl font-medium text-foreground sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
 
           <ResponsiveGrid cols="1-md-2" gap="lg" className="mx-auto max-w-4xl">
             {/* Free Plan */}

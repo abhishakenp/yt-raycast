@@ -13,6 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   GalleryGrid,
   GalleryGridItems,
@@ -76,14 +77,14 @@ export const ManufacturingGallery = defineCapsule({
       <section className={cn('bg-foreground py-20 lg:py-28', props.className)}>
         <Container>
           <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-            <div>
-              <span className="text-sm font-medium uppercase tracking-wider text-background/60">
-                {eyebrow}
-              </span>
-              <h2 className="mt-3 text-3xl font-semibold tracking-tight text-background sm:text-4xl">
-                {heading}
-              </h2>
-            </div>
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              className="gap-0"
+              eyebrowClassName="text-sm font-medium uppercase tracking-wider text-background/60"
+              titleClassName="mt-3 text-3xl font-semibold tracking-tight text-background sm:text-4xl"
+            />
             <p className="max-w-md text-background/70">{description}</p>
           </div>
           <GalleryGrid>

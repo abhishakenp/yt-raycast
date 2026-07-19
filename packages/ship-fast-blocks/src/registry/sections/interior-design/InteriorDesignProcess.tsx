@@ -10,6 +10,7 @@ import {
   StepTimelineHeader,
 } from '#/section-kit/StepTimeline.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * InteriorDesignProcess — numbered process band on a muted surface for an
@@ -72,15 +73,15 @@ export const InteriorDesignProcess = defineCapsule({
       >
         <Container size="xl">
           <StepTimelineHeader>
-            <p className="mb-4 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2 className="mb-6 text-3xl font-light text-foreground md:text-4xl">
-              {heading}
-            </h2>
-            <p className="leading-relaxed text-muted-foreground">
-              {description}
-            </p>
+            <SectionHeading
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={description}
+              className="gap-0"
+              eyebrowClassName="mb-4 text-xs font-medium uppercase tracking-widest text-muted-foreground"
+              titleClassName="mb-6 text-3xl font-light text-foreground md:text-4xl"
+              subtitleClassName="leading-relaxed text-muted-foreground"
+            />
           </StepTimelineHeader>
           <StepTimelineGrid columns={4} className="md:gap-6 lg:gap-12">
             {steps.map((step, i) => (

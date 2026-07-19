@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import {
   StepBadge,
   StepConnector,
@@ -12,6 +11,7 @@ import {
   StepTimelineHeader,
 } from '#/section-kit/StepTimeline.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * AeoSteps — bespoke three-step "how it works" band for an Answer-Engine-
@@ -72,13 +72,16 @@ export const AeoSteps = defineCapsule({
       >
         <Container size="lg" className="px-6 lg:px-6">
           <StepTimelineHeader className="mb-14">
-            <Eyebrow className="text-accent">{eyebrow}</Eyebrow>
-            <h2 className="mt-3 text-3xl font-semibold text-foreground md:text-4xl">
-              {heading}
-            </h2>
-            <p className="mt-4 text-base text-muted-foreground md:text-lg">
-              {intro}
-            </p>
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={intro}
+              className="gap-0"
+              eyebrowClassName="text-accent"
+              titleClassName="mt-3 text-3xl font-semibold text-foreground md:text-4xl"
+              subtitleClassName="mt-4 text-base text-muted-foreground md:text-lg"
+            />
           </StepTimelineHeader>
           <StepTimelineGrid columns={3} className="gap-10 md:gap-8" asChild>
             <ol className="relative">

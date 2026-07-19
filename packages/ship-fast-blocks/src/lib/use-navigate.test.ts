@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { parseRouteTarget, resolveRouteTarget } from './use-navigate.tsx'
+import {
+  parseRouteTarget,
+  resolveRouteHref,
+  resolveRouteTarget,
+} from './use-navigate.tsx'
 
 describe('route target resolution', () => {
   it('parses page and section targets', () => {
@@ -106,5 +110,57 @@ describe('route target resolution', () => {
     expect(
       resolveRouteTarget('Add Hydrating Serum to cart', ['Home'], {}),
     ).toBe(null)
+  })
+
+  it('resolves page targets to exported route hrefs', () => {
+    expect(resolveRouteHref('Home', ['Home', 'Pricing'], {})).toBe('/')
+    expect(resolveRouteHref('Pricing', ['Home', 'Pricing'], {})).toBe(
+      '/pricing',
+    )
+  })
+
+  it('resolves section targets to route hrefs with hashes', () => {
+    expect(
+      resolveRouteHref('Get Started', ['Home', 'Pricing'], {
+        'Get Started': 'Pricing#pricing_pricing',
+      }),
+    ).toBe('/pricing#pricing_pricing')
+  })
+
+  it('resolves preview route hrefs relative to the generate session base', () => {
+    expect(
+      resolveRouteHref(
+        'Pricing',
+        ['Home', 'Pricing'],
+        {},
+        {
+          currentPage: 'Home',
+          currentPathname: '/generate/session-123',
+          previewBase: true,
+        },
+      ),
+    ).toBe('/generate/session-123/pricing')
+
+    expect(
+      resolveRouteHref(
+        'Home',
+        ['Home', 'Pricing'],
+        {},
+        {
+          currentPage: 'Pricing',
+          currentPathname: '/generate/session-123/pricing',
+          previewBase: true,
+        },
+      ),
+    ).toBe('/generate/session-123')
+  })
+
+  it('passes through absolute, hash, and explicit path hrefs without route context', () => {
+    expect(resolveRouteHref('https://example.test', [], {})).toBe(
+      'https://example.test',
+    )
+    expect(resolveRouteHref('#details', [], {})).toBe('#details')
+    expect(resolveRouteHref('/pricing', [], {})).toBe('/pricing')
+    expect(resolveRouteHref('Missing', ['Home'], {})).toBeUndefined()
   })
 })

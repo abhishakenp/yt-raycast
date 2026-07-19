@@ -122,15 +122,15 @@ export const ManufacturingPricing = defineCapsule({
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <span className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
-              {eyebrow}
-            </span>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="mt-4 text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            className="mx-auto mb-16 max-w-3xl gap-0"
+            eyebrowClassName="text-sm font-medium uppercase tracking-wider text-muted-foreground"
+            titleClassName="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
+            subtitleClassName="mt-4 text-lg text-muted-foreground"
+          />
           <PricingGrid
             className={cn(
               'mx-auto grid max-w-5xl gap-8 md:grid-cols-3',

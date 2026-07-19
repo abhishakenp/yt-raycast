@@ -93,6 +93,7 @@ function NoticeRows({ rows, lang }: { rows: GovRow[]; lang: GovLang }) {
 }
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   TenderTable,
   TenderRow,
@@ -343,9 +344,12 @@ export const GovPortalNotices = defineCapsule({
     return (
       <section className={cn('bg-muted/30 py-16', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-2xl font-semibold tracking-tight text-foreground">
-            {heading}
-          </h2>
+          <SectionHeading
+            align="left"
+            title={heading}
+            className="mb-6 gap-0"
+            titleClassName="text-2xl font-semibold tracking-tight text-foreground"
+          />
           <div className="mb-5 flex flex-wrap gap-2">
             {tabs.map((tab) => (
               <FilterChip
@@ -403,9 +407,12 @@ export const GovPortalDownloads = defineCapsule({
     return (
       <section className={cn('bg-background py-16', props.className)}>
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-2xl font-semibold tracking-tight text-foreground">
-            {heading}
-          </h2>
+          <SectionHeading
+            align="left"
+            title={heading}
+            className="mb-6 gap-0"
+            titleClassName="text-2xl font-semibold tracking-tight text-foreground"
+          />
           <ResponsiveGrid cols="1-2-3" gap="sm">
             {rows.map((row, i) => {
               const title = str(row, 'title')

@@ -36,6 +36,7 @@ import {
 const HI_DIGITS = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९']
 import { Container } from '#/section-kit/Container.tsx'
 import { GovPortalHome } from '#/section-kit/GovPortalHome.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /** Render ASCII digits in Devanagari so numeric values localise in Hindi. */
@@ -269,9 +270,12 @@ export const GovPortalQuickLinks = defineCapsule({
     return (
       <section className={cn('bg-background py-14', props.className)}>
         <Container>
-          <h2 className="mb-8 text-2xl font-semibold tracking-tight text-foreground">
-            {heading}
-          </h2>
+          <SectionHeading
+            align="left"
+            title={heading}
+            className="mb-8 gap-0"
+            titleClassName="text-2xl font-semibold tracking-tight text-foreground"
+          />
           <ResponsiveGrid cols="1-2-4" gap="sm">
             {items.map((item, i) => {
               const Icon = QUICK_ICONS[i % QUICK_ICONS.length]
@@ -386,9 +390,11 @@ export const GovPortalStats = defineCapsule({
     return (
       <section className={cn('bg-muted/40 py-16', props.className)}>
         <Container>
-          <h2 className="mb-10 text-center text-2xl font-semibold tracking-tight text-foreground">
-            {heading}
-          </h2>
+          <SectionHeading
+            title={heading}
+            className="mb-10 gap-0"
+            titleClassName="text-2xl font-semibold tracking-tight text-foreground"
+          />
           <StatGrid columns={4}>
             {stats.map((s) => (
               <StatItem key={s.label}>

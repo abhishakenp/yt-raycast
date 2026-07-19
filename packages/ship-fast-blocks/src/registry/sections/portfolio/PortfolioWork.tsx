@@ -12,6 +12,7 @@ import {
   PortfolioCaption,
 } from '#/section-kit/PortfolioGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * PortfolioWork — selected-work / project gallery for a dark creative portfolio.
@@ -110,20 +111,17 @@ export const PortfolioWork = defineCapsule({
         aria-labelledby="portfolio-work-heading"
       >
         <Container size="xl" className="max-w-[1200px] px-6 lg:px-6">
-          <div className="mb-14 flex flex-col gap-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">
-              {label}
-            </p>
-            <h2
-              id="portfolio-work-heading"
-              className="text-[clamp(1.8rem,4vw,2.8rem)] font-bold leading-[1.15] tracking-[-0.02em]"
-            >
-              {title}
-            </h2>
-            <p className="max-w-[560px] text-[1.05rem] text-muted-foreground">
-              {description}
-            </p>
-          </div>
+          <SectionHeading
+            align="left"
+            eyebrow={label}
+            title={title}
+            subtitle={description}
+            className="mb-14 gap-0"
+            titleId="portfolio-work-heading"
+            eyebrowClassName="text-xs font-semibold uppercase tracking-[0.12em] text-primary"
+            titleClassName="text-[clamp(1.8rem,4vw,2.8rem)] font-bold leading-[1.15] tracking-[-0.02em]"
+            subtitleClassName="max-w-[560px] text-[1.05rem] text-muted-foreground"
+          />
 
           <PortfolioGrid cols="1-2-3" className="gap-6">
             {items.map((item) => (

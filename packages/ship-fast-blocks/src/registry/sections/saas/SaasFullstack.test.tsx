@@ -167,8 +167,9 @@ if (
   })
 }
 
-const { cleanup, fireEvent, render, screen, waitFor, within } =
-  await import('@testing-library/react')
+const { cleanup, fireEvent, render, screen, waitFor, within } = await import(
+  '@testing-library/react'
+)
 const { SaasHero } = await import('./SaasHero.tsx')
 const { SaasNavbar } = await import('./SaasNavbar.tsx')
 const { SaasPricing } = await import('./SaasPricing.tsx')

@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   PressList,
   PressItem,
@@ -86,12 +87,13 @@ export const MusicArtistPress = defineCapsule({
           )}
         >
           <Container>
-            <p className="mb-12 text-center text-sm font-medium uppercase tracking-widest text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2 className="mb-16 text-center font-serif text-4xl font-normal sm:text-5xl">
-              {heading}
-            </h2>
+            <SectionHeading
+              eyebrow={eyebrow}
+              title={heading}
+              className="gap-0"
+              eyebrowClassName="mb-12 text-sm font-medium uppercase tracking-widest text-muted-foreground"
+              titleClassName="mb-16 font-serif text-4xl font-normal sm:text-5xl"
+            />
             <div className="grid gap-8 md:grid-cols-3">
               {reviews.map((r) => (
                 <PressItem

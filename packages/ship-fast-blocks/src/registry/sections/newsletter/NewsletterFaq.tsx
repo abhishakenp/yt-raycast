@@ -8,6 +8,7 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 import { z } from 'zod/v4'
 
@@ -64,11 +65,11 @@ export const NewsletterFaq = defineCapsule({
     return (
       <section className={cn('py-16 md:py-24 lg:py-28', props.className)}>
         <Container size="sm">
-          <div className="mb-12 text-center md:mb-16">
-            <h2 className="mb-4 font-serif text-3xl font-medium text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-          </div>
+          <SectionHeading
+            title={heading}
+            className="mb-12 gap-0 md:mb-16"
+            titleClassName="mb-4 font-serif text-3xl font-medium text-foreground sm:text-4xl"
+          />
 
           <FaqAccordion variant="wide">
             {items.map((item) => (

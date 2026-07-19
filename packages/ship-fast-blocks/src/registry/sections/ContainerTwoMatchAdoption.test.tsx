@@ -58,19 +58,24 @@ vi.mock('@ship-fast/lakebed/react', () => {
 const { cleanup, render } = await import('@testing-library/react')
 const { EcommerceGallery } = await import('./ecommerce/EcommerceGallery.tsx')
 const { EcommerceLogos } = await import('./ecommerce/EcommerceLogos.tsx')
-const { EventPlannerLogos } =
-  await import('./event-planner/EventPlannerLogos.tsx')
-const { EventPlannerNavbar } =
-  await import('./event-planner/EventPlannerNavbar.tsx')
+const { EventPlannerLogos } = await import(
+  './event-planner/EventPlannerLogos.tsx'
+)
+const { EventPlannerNavbar } = await import(
+  './event-planner/EventPlannerNavbar.tsx'
+)
 const { FintechFeatures } = await import('./fintech/FintechFeatures.tsx')
 const { FintechLogos } = await import('./fintech/FintechLogos.tsx')
 const { IllustratorLogos } = await import('./illustrator/IllustratorLogos.tsx')
-const { IllustratorNavbar } =
-  await import('./illustrator/IllustratorNavbar.tsx')
-const { InteriorDesignLogos } =
-  await import('./interior-design/InteriorDesignLogos.tsx')
-const { InteriorDesignNavbar } =
-  await import('./interior-design/InteriorDesignNavbar.tsx')
+const { IllustratorNavbar } = await import(
+  './illustrator/IllustratorNavbar.tsx'
+)
+const { InteriorDesignLogos } = await import(
+  './interior-design/InteriorDesignLogos.tsx'
+)
+const { InteriorDesignNavbar } = await import(
+  './interior-design/InteriorDesignNavbar.tsx'
+)
 
 const twoMatchSections = [
   EcommerceGallery,

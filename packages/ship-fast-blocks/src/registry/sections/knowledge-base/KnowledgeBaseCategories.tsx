@@ -6,6 +6,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   CategoryGrid,
   CategoryCard,
@@ -221,17 +222,14 @@ export const KnowledgeBaseCategories = defineCapsule({
         aria-labelledby="kb-categories-heading"
       >
         <Container>
-          <div className="mb-12 text-center">
-            <h2
-              id="kb-categories-heading"
-              className="mb-3 text-2xl font-semibold text-foreground sm:text-3xl"
-            >
-              {heading}
-            </h2>
-            <p className="mx-auto max-w-xl text-muted-foreground">
-              {description}
-            </p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mb-12 gap-0"
+            titleId="kb-categories-heading"
+            titleClassName="mb-3 text-2xl font-semibold text-foreground sm:text-3xl"
+            subtitleClassName="mx-auto max-w-xl text-muted-foreground"
+          />
           <CategoryGrid cols="1-2-4" gap="md">
             {items.map((cat, i) => (
               <CategoryCard

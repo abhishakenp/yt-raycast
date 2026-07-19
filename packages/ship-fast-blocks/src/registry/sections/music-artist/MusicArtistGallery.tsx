@@ -10,6 +10,7 @@ import {
   GalleryTileCaption,
 } from '#/section-kit/GalleryGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * MusicArtistGallery — "behind the music" masonry photo gallery for a music
@@ -57,14 +58,13 @@ export const MusicArtistGallery = defineCapsule({
         )}
       >
         <Container size="lg">
-          <div className="mb-16 text-center lg:mb-24">
-            <p className="mb-4 text-sm uppercase tracking-wide text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2 className="mb-6 text-3xl font-light text-foreground lg:text-5xl">
-              {heading}
-            </h2>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            className="mb-16 gap-0 lg:mb-24"
+            eyebrowClassName="mb-4 text-sm uppercase tracking-wide text-muted-foreground"
+            titleClassName="mb-6 text-3xl font-light text-foreground lg:text-5xl"
+          />
 
           <GalleryGrid>
             <GalleryGridItems columns={3}>

@@ -6,6 +6,7 @@ import { Image } from '#/lib/img.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { TopicGrid, TopicCard } from '#/section-kit/TopicGrid.tsx'
 
 /**
@@ -117,15 +118,14 @@ export const NewsroomTopics = defineCapsule({
         aria-labelledby="newsroom-topics-heading"
       >
         <Container>
-          <div className="mx-auto mb-14 max-w-3xl text-center">
-            <h2
-              id="newsroom-topics-heading"
-              className="mb-4 font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
-            >
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{subheading}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={subheading}
+            className="mx-auto mb-14 max-w-3xl gap-0"
+            titleId="newsroom-topics-heading"
+            titleClassName="mb-4 font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <TopicGrid cols="1-2-4" className="gap-8">
             {topics.map((topic) => (
               <TopicCard

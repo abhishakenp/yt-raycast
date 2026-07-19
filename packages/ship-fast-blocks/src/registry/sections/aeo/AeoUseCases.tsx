@@ -9,6 +9,7 @@ import {
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
 export const AeoUseCases = defineCapsule({
@@ -59,12 +60,14 @@ export const AeoUseCases = defineCapsule({
         aria-label="Use cases"
       >
         <Container size="lg">
-          <div className="mb-10 max-w-2xl">
-            <h2 className="mb-3 text-2xl font-semibold text-foreground sm:text-3xl">
-              {heading}
-            </h2>
-            <p className="text-muted-foreground">{intro}</p>
-          </div>
+          <SectionHeading
+            align="left"
+            title={heading}
+            subtitle={intro}
+            className="mb-10 max-w-2xl gap-0"
+            titleClassName="mb-3 text-2xl font-semibold text-foreground sm:text-3xl"
+            subtitleClassName="text-muted-foreground"
+          />
           <FeatureGrid columns={3}>
             {items
               .map((item) => ({

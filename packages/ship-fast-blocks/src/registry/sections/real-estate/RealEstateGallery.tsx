@@ -10,6 +10,7 @@ import {
   GalleryTileCaption,
 } from '#/section-kit/GalleryGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * RealEstateGallery — featured-listings grid for a premium brokerage. A
@@ -109,16 +110,13 @@ export const RealEstateGallery = defineCapsule({
         )}
       >
         <Container size="xl" className="px-6">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="font-serif text-3xl font-medium tracking-tight text-foreground sm:text-4xl lg:text-5xl">
-              {heading}
-            </h2>
-            {description ? (
-              <p className="mt-4 text-base text-muted-foreground sm:text-lg">
-                {description}
-              </p>
-            ) : null}
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mx-auto max-w-2xl gap-0"
+            titleClassName="font-serif text-3xl font-medium tracking-tight text-foreground sm:text-4xl lg:text-5xl"
+            subtitleClassName="mt-4 text-base text-muted-foreground sm:text-lg"
+          />
 
           <GalleryGrid>
             <GalleryGridItems columns={3}>

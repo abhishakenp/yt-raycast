@@ -98,8 +98,9 @@ if (
   })
 }
 
-const { cleanup, fireEvent, render, screen, waitFor, within } =
-  await import('@testing-library/react')
+const { cleanup, fireEvent, render, screen, waitFor, within } = await import(
+  '@testing-library/react'
+)
 const { FashionStoreHero } = await import('./FashionStoreHero.tsx')
 const { FashionStoreNavbar } = await import('./FashionStoreNavbar.tsx')
 const { FashionStoreProducts } = await import('./FashionStoreProducts.tsx')

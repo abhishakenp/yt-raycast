@@ -11,6 +11,7 @@ import {
   ListingCardSpecRow,
 } from '#/section-kit/ListingCard.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import type { PropertyListingCatalogInput } from './property-listing-lakebed.ts'
 import {
   propertyListingLakebed,
@@ -159,9 +160,12 @@ export const PropertyListingGallery = defineCapsule({
       <section className={cn('bg-muted py-16 lg:py-24', props.className)}>
         <Container size="xl" className="px-6">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-              {heading}
-            </h2>
+            <SectionHeading
+              align="left"
+              title={heading}
+              className="gap-0"
+              titleClassName="text-2xl font-bold tracking-tight text-foreground sm:text-3xl"
+            />
             <div className="flex flex-wrap gap-2">
               {filters.map((filter, i) => {
                 const isActive =

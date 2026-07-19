@@ -103,8 +103,9 @@ if (
   })
 }
 
-const { cleanup, fireEvent, render, screen, waitFor, within } =
-  await import('@testing-library/react')
+const { cleanup, fireEvent, render, screen, waitFor, within } = await import(
+  '@testing-library/react'
+)
 const { MarketplaceHero } = await import('./MarketplaceHero.tsx')
 const { MarketplaceNavbar } = await import('./MarketplaceNavbar.tsx')
 const { EcommerceGallery } = await import('../ecommerce/EcommerceGallery.tsx')

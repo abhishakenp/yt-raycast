@@ -21,6 +21,7 @@ import {
  * Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 export const LendingStats = defineCapsule({
   name: 'LendingStats',
   description:
@@ -94,12 +95,14 @@ export const LendingStats = defineCapsule({
         <Container>
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div>
-              <h2 className="mb-6 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-                {statsHeading}
-              </h2>
-              <p className="mb-8 text-lg leading-relaxed text-muted-foreground">
-                {statsDesc}
-              </p>
+              <SectionHeading
+                align="left"
+                title={statsHeading}
+                subtitle={statsDesc}
+                className="gap-0"
+                titleClassName="mb-6 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
+                subtitleClassName="mb-8 text-lg leading-relaxed text-muted-foreground"
+              />
               <StatGrid columns={2} gap="compact">
                 {statsItems.map((s) => (
                   <StatItem asChild key={s.label} align="left">

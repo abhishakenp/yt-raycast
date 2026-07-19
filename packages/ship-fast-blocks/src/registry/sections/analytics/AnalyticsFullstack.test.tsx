@@ -152,8 +152,9 @@ if (
   })
 }
 
-const { cleanup, fireEvent, render, screen, waitFor, within } =
-  await import('@testing-library/react')
+const { cleanup, fireEvent, render, screen, waitFor, within } = await import(
+  '@testing-library/react'
+)
 const { AnalyticsHero } = await import('./AnalyticsHero.tsx')
 const { AnalyticsNavbar } = await import('./AnalyticsNavbar.tsx')
 const { AnalyticsPricing } = await import('./AnalyticsPricing.tsx')

@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { ArticleGrid } from '#/section-kit/ArticleGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   StoryCard,
   StoryCardImage,
@@ -155,9 +156,12 @@ export const BlogStoryGrid = defineCapsule({
         className={cn('mx-auto w-full max-w-6xl px-6 pb-14', props.className)}
       >
         <div className="flex flex-col items-start gap-1.5 py-5 sm:flex-row sm:items-baseline sm:justify-between">
-          <h2 className="font-serif text-2xl font-bold tracking-tight text-foreground">
-            {title}
-          </h2>
+          <SectionHeading
+            align="left"
+            title={title}
+            className="gap-0"
+            titleClassName="font-serif text-2xl font-bold tracking-tight text-foreground"
+          />
           <button
             type="button"
             onClick={() => go(viewAllTarget)}

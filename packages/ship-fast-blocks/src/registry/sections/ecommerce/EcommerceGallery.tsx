@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   commerceProduct,
@@ -143,16 +144,13 @@ export const EcommerceGallery = defineCapsule({
         className={cn('bg-background py-20 lg:py-28', props.className)}
       >
         <Container>
-          <div className="mb-12 text-center">
-            <h2 className="text-3xl font-semibold text-foreground sm:text-4xl">
-              {galleryHeading}
-            </h2>
-            {gallerySubheading ? (
-              <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground sm:text-base">
-                {gallerySubheading}
-              </p>
-            ) : null}
-          </div>
+          <SectionHeading
+            title={galleryHeading}
+            subtitle={gallerySubheading}
+            className="mb-12 gap-0"
+            titleClassName="text-3xl font-semibold text-foreground sm:text-4xl"
+            subtitleClassName="mx-auto mt-3 max-w-xl text-sm text-muted-foreground sm:text-base"
+          />
 
           <GalleryGrid>
             <GalleryGridItems columns={3}>

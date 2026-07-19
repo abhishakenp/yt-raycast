@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   FeatureGrid,
   FeatureCard,
@@ -75,14 +76,13 @@ export const CrowdfundingFeatures = defineCapsule({
     return (
       <section className={cn('bg-card py-20 lg:py-28', props.className)}>
         <Container>
-          <div className="mb-16 text-center">
-            <span className="text-sm font-medium uppercase tracking-wider text-primary">
-              {featuresEyebrow}
-            </span>
-            <h2 className="mb-4 mt-3 text-3xl font-semibold sm:text-4xl">
-              {featuresHeading}
-            </h2>
-          </div>
+          <SectionHeading
+            eyebrow={featuresEyebrow}
+            title={featuresHeading}
+            className="mb-16 gap-0"
+            eyebrowClassName="text-sm font-medium uppercase tracking-wider text-primary"
+            titleClassName="mb-4 mt-3 text-3xl font-semibold sm:text-4xl"
+          />
 
           <FeatureGrid columns={3}>
             {featureItems.map((f) => {
