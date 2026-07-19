@@ -6,6 +6,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { GridField } from '#/section-kit/motion.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
 /**
@@ -269,7 +270,12 @@ export const CoworkingHero = defineCapsule({
                 </div>
 
                 <div className="absolute -bottom-8 -left-4 hidden sm:block lg:-left-10">
-                  <div className="rounded-2xl border border-border/60 bg-card/85 p-5 shadow-xl backdrop-blur-xl">
+                  <Card
+                    rounded="2xl"
+                    padding="md"
+                    shadow="xl"
+                    className="border-border/60 bg-card/85 backdrop-blur-xl"
+                  >
                     <div className="flex items-center gap-4">
                       <div className="flex -space-x-3">
                         {proofAvatars.map((alt) => (
@@ -291,7 +297,7 @@ export const CoworkingHero = defineCapsule({
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </Card>
                 </div>
               </div>
             </div>

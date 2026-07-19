@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 import {
   HeroSection,
   HeroStatBadge,
@@ -184,7 +185,12 @@ export const OnlineCourseHero = defineCapsule({
                   </HeroStatBadgeSubtitle>
                 </HeroStatBadgeContent>
               </HeroStatBadge>
-              <div className="absolute -right-4 -top-4 rounded-xl border border-border bg-card px-4 py-3 shadow-lg">
+              <Card
+                rounded="xl"
+                padding="none"
+                shadow="lg"
+                className="absolute -right-4 -top-4 px-4 py-3"
+              >
                 <div className="flex items-center gap-2">
                   <div className="flex text-primary">
                     {Array.from({ length: 5 }).map((_, i) => (
@@ -198,7 +204,7 @@ export const OnlineCourseHero = defineCapsule({
                 <p className="mt-1 text-sm text-muted-foreground">
                   {ratingNote}
                 </p>
-              </div>
+              </Card>
             </div>
           </div>
         </Container>
