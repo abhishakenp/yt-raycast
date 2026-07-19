@@ -13,6 +13,7 @@ import {
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { StarRating } from '#/section-kit/StarRating.tsx'
 
 /**
  * LandscapingHero — calm, premium two-column hero for a landscaping / outdoor-
@@ -66,17 +67,6 @@ export const LandscapingHero = defineCapsule({
           'Headshot of a smiling older male customer with glasses',
         ]
 
-    const StarIcon = ({ className }: { className?: string }) => (
-      <svg
-        viewBox="0 0 20 20"
-        fill="currentColor"
-        className={cn('size-4 text-chart-4', className)}
-        aria-hidden="true"
-      >
-        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-      </svg>
-    )
-
     return (
       <HeroSection className={cn('relative bg-muted', props.className)}>
         <Container size="xl" className="py-16 lg:py-24">
@@ -118,9 +108,7 @@ export const LandscapingHero = defineCapsule({
                 </div>
                 <div>
                   <div className="flex items-center gap-1">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <StarIcon key={i} />
-                    ))}
+                    <StarRating rating={5} size="sm" color="chart-4" />
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">{rating}</p>
                 </div>

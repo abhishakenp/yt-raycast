@@ -3,7 +3,6 @@ import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { z } from 'zod/v4'
-import { StarIcon } from 'lucide-react'
 
 import {
   TestimonialCard,
@@ -12,6 +11,7 @@ import {
   TestimonialName,
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
+import { StarRating } from '#/section-kit/StarRating.tsx'
 
 /**
  * AuthTestimonials — field-report wall for Authly, a developer authentication
@@ -140,17 +140,12 @@ export const AuthTestimonials = defineCapsule({
                       <span className="-mx-6 -mt-6 block w-fit rounded-br-xl border-b border-r border-border bg-muted/70 px-4 py-2 font-mono text-[0.68rem] uppercase tracking-[0.14em] text-muted-foreground sm:-mx-7 sm:-mt-7">
                         note {String(index + 1).padStart(2, '0')}
                       </span>
-                      <div
-                        className="flex gap-1 pt-1 text-primary"
+                      <StarRating
+                        rating={rating}
+                        size="sm"
+                        color="primary"
                         aria-hidden="true"
-                      >
-                        {Array.from({ length: rating }).map((_, starIndex) => (
-                          <StarIcon
-                            key={`${t.name}-${starIndex}`}
-                            className="size-4 fill-current"
-                          />
-                        ))}
-                      </div>
+                      />
                     </div>
                     <TestimonialQuote className="text-pretty text-base leading-7 sm:text-lg sm:leading-8">
                       “{t.quote}”
