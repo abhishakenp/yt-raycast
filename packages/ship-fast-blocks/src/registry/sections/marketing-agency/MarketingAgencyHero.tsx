@@ -152,8 +152,8 @@ export const MarketingAgencyHero = defineCapsule({
                 alt={imageAlt}
                 w={800}
                 h={600}
-                rounded="xl"
-                className="w-full shadow-lg"
+
+                className="w-full shadow-lg rounded-xl"
               />
               <div className="absolute -bottom-6 -left-6 rounded-xl bg-card p-4 shadow-lg">
                 <div className="flex items-center gap-3">

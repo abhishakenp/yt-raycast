@@ -219,8 +219,8 @@ export const BakeryHero = defineCapsule({
                 alt={imageAlt}
                 w={800}
                 h={600}
-                rounded="xl"
-                className="h-[400px] w-full shadow-xl lg:h-[500px]"
+
+                className="h-[400px] w-full shadow-xl lg:h-[500px] rounded-xl"
               />
               <div className="absolute -bottom-6 -left-6 hidden rounded-xl bg-card p-4 shadow-lg sm:block">
                 <div className="flex items-center gap-3">

@@ -131,8 +131,8 @@ export const TutoringHero = defineCapsule({
                 alt={imageAlt}
                 w={900}
                 h={760}
-                rounded="3xl"
-                className="aspect-[5/4]"
+
+                className="aspect-[5/4] rounded-3xl"
               />
               <div className="flex items-center gap-3 border-t border-border bg-card/95 p-5">
                 <span className="inline-flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">

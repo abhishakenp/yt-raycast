@@ -113,8 +113,8 @@ export const CrowdfundingHero = defineCapsule({
                 alt={heroMainImageAlt}
                 w={1200}
                 h={900}
-                rounded="xl"
-                className="aspect-[4/3] bg-muted shadow-lg"
+
+                className="aspect-[4/3] bg-muted shadow-lg rounded-xl"
               />
               <ResponsiveGrid cols="4" className="mt-4 gap-4">
                 {heroThumbAlts.map((alt) => (

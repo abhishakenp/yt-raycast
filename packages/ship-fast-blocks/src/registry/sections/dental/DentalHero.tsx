@@ -194,8 +194,8 @@ export const DentalHero = defineCapsule({
                 alt={heroImageAlt}
                 w={1200}
                 h={900}
-                rounded="3xl"
-                className="aspect-[4/3] shadow-2xl"
+
+                className="aspect-[4/3] shadow-2xl rounded-3xl"
               />
               <div className="absolute -bottom-6 -left-6 max-w-xs rounded-2xl bg-background p-6 shadow-xl">
                 <div className="flex items-center gap-4">

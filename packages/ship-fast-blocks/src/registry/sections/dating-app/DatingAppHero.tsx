@@ -195,7 +195,7 @@ export const DatingAppHero = defineCapsule({
                   alt={heroImageAlt}
                   w={800}
                   h={1000}
-                  rounded="2xl"
+
                   className="aspect-[4/5] w-full shadow-2xl shadow-primary/10"
                 />
                 <div className="absolute inset-x-4 bottom-4 rounded-xl bg-card/95 p-4 shadow-lg backdrop-blur-sm">

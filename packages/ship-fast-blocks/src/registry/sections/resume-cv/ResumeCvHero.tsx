@@ -118,7 +118,7 @@ export const ResumeCvHero = defineCapsule({
               alt={imageAlt}
               w={720}
               h={840}
-              rounded="2xl"
+
               className="border border-border bg-muted aspect-[6/7]"
             />
           </div>

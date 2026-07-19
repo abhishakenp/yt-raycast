@@ -148,8 +148,8 @@ export const FilmDirectorHero = defineCapsule({
                   alt={heroImageAlt}
                   w={800}
                   h={1000}
-                  rounded="xl"
-                  className="size-full rounded-md"
+
+                  className="size-full rounded-md rounded-xl"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-foreground/30 to-transparent" />
               </div>

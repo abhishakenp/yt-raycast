@@ -151,7 +151,7 @@ export const InteriorDesignHero = defineCapsule({
                 alt={imageAlt}
                 w={1200}
                 h={800}
-                rounded="2xl"
+
                 className="h-[400px] w-full rounded-none md:h-[500px] lg:h-[600px]"
               />
               <div className="absolute inset-x-6 bottom-6 bg-card/95 p-6 backdrop-blur-sm md:p-8">

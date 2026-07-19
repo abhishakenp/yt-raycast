@@ -122,7 +122,7 @@ export const PodcastHero = defineCapsule({
                 alt={coverAlt}
                 w={640}
                 h={640}
-                rounded="2xl"
+
                 className="relative aspect-square border border-border shadow-2xl"
               />
             </div>

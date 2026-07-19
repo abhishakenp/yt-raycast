@@ -133,8 +133,8 @@ export const AutoDealershipHero = defineCapsule({
                 alt={imageAlt}
                 w={800}
                 h={600}
-                rounded="xl"
-                className="aspect-[4/3] w-full rounded-lg shadow-2xl"
+
+                className="aspect-[4/3] w-full rounded-lg shadow-2xl rounded-xl"
               />
             </div>
           </div>

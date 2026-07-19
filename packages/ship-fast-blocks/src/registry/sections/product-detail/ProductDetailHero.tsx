@@ -82,8 +82,8 @@ export const ProductDetailHero = defineCapsule({
               alt={imageAlt}
               w={800}
               h={800}
-              rounded="xl"
-              className="aspect-square border border-border"
+
+              className="aspect-square border border-border rounded-xl"
             />
           </div>
           <div>

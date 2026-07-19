@@ -143,7 +143,7 @@ export const NutritionHero = defineCapsule({
                 alt={imageAlt}
                 w={800}
                 h={600}
-                rounded="2xl"
+
                 className="aspect-[4/3] w-full shadow-2xl"
               />
               <div className="absolute -bottom-6 -left-6 hidden max-w-xs rounded-xl bg-card p-4 shadow-lg sm:block">

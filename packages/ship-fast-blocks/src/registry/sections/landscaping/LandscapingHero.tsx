@@ -119,8 +119,8 @@ export const LandscapingHero = defineCapsule({
                 alt={imageAlt}
                 w={800}
                 h={600}
-                rounded="xl"
-                className="h-[400px] w-full shadow-xl lg:h-[500px]"
+
+                className="h-[400px] w-full shadow-xl lg:h-[500px] rounded-xl"
               />
               <div className="absolute -bottom-6 -left-6 hidden rounded-xl bg-card p-6 shadow-lg sm:block">
                 <p className="text-3xl font-semibold text-primary">

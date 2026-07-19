@@ -175,8 +175,8 @@ export const BeautyStoreHero = defineCapsule({
                 alt={imageAlt}
                 w={800}
                 h={1000}
-                rounded="xl"
-                className="aspect-[4/5] shadow-2xl"
+
+                className="aspect-[4/5] shadow-2xl rounded-xl"
               />
               <div className="absolute -bottom-6 -left-6 hidden rounded-xl bg-card p-4 shadow-xl sm:block">
                 <div className="flex items-center gap-3">

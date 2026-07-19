@@ -160,7 +160,7 @@ export const CybersecurityHero = defineCapsule({
                 alt={imageAlt}
                 w={800}
                 h={600}
-                rounded="2xl"
+
                 className="relative aspect-[4/3] w-full shadow-2xl"
               />
               <div className="absolute -bottom-6 -left-6 max-w-xs rounded-xl bg-card p-4 shadow-xl sm:p-6">

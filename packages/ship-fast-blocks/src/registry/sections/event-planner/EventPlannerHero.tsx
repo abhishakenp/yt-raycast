@@ -147,7 +147,7 @@ export const EventPlannerHero = defineCapsule({
                   alt={heroImageAlt}
                   w={800}
                   h={1000}
-                  rounded="2xl"
+
                   className="h-[500px] w-full lg:h-[700px]"
                 />
                 <div className="absolute -bottom-6 -left-6 max-w-xs rounded-xl bg-card p-6 shadow-xl">

@@ -162,7 +162,7 @@ export const FurnitureStoreHero = defineCapsule({
                 alt={imageAlt}
                 w={1200}
                 h={800}
-                rounded="2xl"
+
                 className="absolute inset-0 size-full rounded-none"
               />
               <div className="absolute bottom-6 right-6 hidden rounded-lg bg-card/95 p-4 shadow-lg backdrop-blur-sm sm:block">

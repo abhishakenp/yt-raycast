@@ -151,7 +151,7 @@ export const EcommerceHero = defineCapsule({
               alt={heroImageAlt}
               w={1200}
               h={1200}
-              rounded="2xl"
+
               className="bg-muted"
             />
             <div className="absolute right-4 top-4 rounded-xl bg-background px-4 py-2 text-sm font-semibold text-foreground shadow-lg sm:right-6 sm:top-6">

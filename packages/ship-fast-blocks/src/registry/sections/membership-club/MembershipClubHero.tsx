@@ -130,8 +130,8 @@ export const MembershipClubHero = defineCapsule({
                 alt={imageAlt}
                 w={800}
                 h={600}
-                rounded="xl"
-                className="h-80 w-full shadow-xl lg:h-[500px]"
+
+                className="h-80 w-full shadow-xl lg:h-[500px] rounded-xl"
               />
               <div className="absolute -bottom-6 -left-6 hidden max-w-xs rounded-xl bg-card p-6 shadow-lg lg:block">
                 <p className="text-sm italic text-muted-foreground">

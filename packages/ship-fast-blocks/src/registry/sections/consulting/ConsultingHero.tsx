@@ -160,8 +160,8 @@ export const ConsultingHero = defineCapsule({
                 alt={imageAlt}
                 w={800}
                 h={600}
-                rounded="xl"
-                className="relative aspect-[4/3] w-full shadow-2xl"
+
+                className="relative aspect-[4/3] w-full shadow-2xl rounded-xl"
               />
               <div className="absolute -bottom-6 -left-6 max-w-xs rounded-lg bg-card p-4 shadow-xl">
                 <div className="flex items-center gap-3">

@@ -146,7 +146,7 @@ export const MentalHealthHero = defineCapsule({
                 alt={imageAlt}
                 w={800}
                 h={600}
-                rounded="2xl"
+
                 className="h-[400px] w-full shadow-2xl lg:h-[500px]"
               />
               <div className="absolute -bottom-6 -left-6 max-w-[200px] rounded-xl bg-card p-4 shadow-xl">

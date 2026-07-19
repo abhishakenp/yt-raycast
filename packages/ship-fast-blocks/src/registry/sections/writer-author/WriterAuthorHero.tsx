@@ -108,8 +108,8 @@ export const WriterAuthorHero = defineCapsule({
               alt={heroPortraitAlt}
               w={640}
               h={800}
-              rounded="3xl"
-              className="aspect-[4/5] border border-border shadow-xl"
+
+              className="aspect-[4/5] border border-border shadow-xl rounded-3xl"
             />
             <Image
               alt={heroCoverAlt}
