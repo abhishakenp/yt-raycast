@@ -94,7 +94,7 @@ export const LendingStats = defineCapsule({
                 titleClassName="mb-6 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
                 subtitleClassName="mb-8 text-lg leading-relaxed text-muted-foreground"
               />
-              <StatGrid columns={2} gap="compact">
+              <StatGrid columns={2} className="gap-6">
                 {statsItems.map((s) => (
                   <StatItem asChild key={s.label} align="left">
                     <Card variant="muted">

@@ -63,7 +63,7 @@ export const MusicFestivalStats = defineCapsule({
         )}
       >
         <Container>
-          <StatGrid columns={4} gap={'wide'}>
+          <StatGrid columns={4} className="gap-12">
             {items.map((s) => {
               const __iv__ = s as { value: string; label: string }
               return (

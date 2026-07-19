@@ -207,8 +207,8 @@ export const InvestingHero = defineCapsule({
                 </div>
                 <StatGrid
                   columns={3}
-                  gap="compact"
-                  className="mt-6 border-t border-border pt-6"
+
+                  className="mt-6 border-t border-border pt-6 gap-6"
                 >
                   {cardStats.map((s, i) => (
                     <StatItem key={s.label} align="left">

@@ -46,7 +46,7 @@ export const JewelryStoreStats = defineCapsule({
         )}
       >
         <Container size="xl" className="sm:px-4">
-          <StatGrid columns={4} gap={'wide'} className={'text-center'}>
+          <StatGrid columns={4} className={'text-center gap-12'}>
             {items.map((s) => {
               const __iv__ = s as { value: string; label: string }
               return (

@@ -151,8 +151,8 @@ export const DashboardKpis = defineCapsule({
                 <StatCard
                   key={kpi.label}
                   aria-label={`${kpi.label}: ${kpi.value}`}
-                  padding="sm"
-                  className="p-5 transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08),0_4px_10px_-4px_rgba(0,0,0,0.04)]"
+
+                  className="p-5 transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08),0_4px_10px_-4px_rgba(0,0,0,0.04)] p-4"
                 >
                   <StatCardHeader>
                     <div>

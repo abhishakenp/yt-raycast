@@ -48,7 +48,7 @@ export const MembershipClubStats = defineCapsule({
         aria-label="Community statistics"
       >
         <Container>
-          <StatGrid columns={4} gap={'wide'}>
+          <StatGrid columns={4} className="gap-12">
             {stats.map((s) => {
               const __iv__ = s as { value: string; label: string }
               return (

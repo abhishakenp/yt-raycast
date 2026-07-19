@@ -142,7 +142,7 @@ export const CloudInfraStats = defineCapsule({
                 ))}
               </div>
             </div>
-            <StatGrid columns={2} gap={'compact'}>
+            <StatGrid columns={2} className="gap-6">
               {items
                 .map((s) => ({ value: s.value, label: s.label }))
                 .map((s) => {

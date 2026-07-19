@@ -194,8 +194,8 @@ export const CrowdfundingHero = defineCapsule({
 
                 <StatGrid
                   columns={3}
-                  gap="compact"
-                  className="border-t border-border pt-6"
+
+                  className="border-t border-border pt-6 gap-6"
                 >
                   {heroStats.map((s, i) => (
                     <StatItem

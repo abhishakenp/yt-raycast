@@ -59,7 +59,7 @@ export const ElectronicsStoreStats = defineCapsule({
         className={cn('border-y border-border py-16 lg:py-20', props.className)}
       >
         <Container>
-          <StatGrid columns={4} gap={'wide'} className={'lg:gap-12'}>
+          <StatGrid columns={4} className={'lg:gap-12 gap-12'}>
             {stats.map((s) => {
               const __iv__ = s as { value: string; label: string }
               return (

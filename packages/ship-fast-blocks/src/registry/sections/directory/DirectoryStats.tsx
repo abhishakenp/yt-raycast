@@ -60,7 +60,7 @@ export const DirectoryStats = defineCapsule({
         className={cn('border-y border-border bg-muted py-12', props.className)}
       >
         <Container>
-          <StatGrid columns={4} gap={'wide'}>
+          <StatGrid columns={4} className="gap-12">
             {stats.map((s) => {
               const __iv__ = s as { value: string; label: string }
               return (

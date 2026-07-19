@@ -58,7 +58,7 @@ export const ConstructionStats = defineCapsule({
     return (
       <section className={cn('bg-muted py-16', props.className)}>
         <Container>
-          <StatGrid columns={4} gap={'wide'} className={'lg:gap-12'}>
+          <StatGrid columns={4} className={'lg:gap-12 gap-12'}>
             {items.map((s) => {
               const __iv__ = s as { value: string; label: string }
               return (

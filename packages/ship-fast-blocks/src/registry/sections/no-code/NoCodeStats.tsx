@@ -62,7 +62,7 @@ export const NoCodeStats = defineCapsule({
         aria-label="Company statistics"
       >
         <Container>
-          <StatGrid columns={4} gap={'wide'}>
+          <StatGrid columns={4} className="gap-12">
             {items
               .map((s) => ({ value: s.value, label: s.label }))
               .map((s) => {

@@ -78,7 +78,7 @@ export const MobileAppStats = defineCapsule({
             titleClassName="mb-4 text-3xl font-bold tracking-tight sm:text-4xl"
             subtitleClassName="text-lg text-primary-foreground/70"
           />
-          <StatGrid columns={4} gap={'wide'}>
+          <StatGrid columns={4} className="gap-12">
             {items
               .map((s) => ({ value: s.value, label: s.label }))
               .map((s) => {

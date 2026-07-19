@@ -112,7 +112,7 @@ export const BootcampOutcomes = defineCapsule({
             titleClassName="mb-4 text-3xl font-bold sm:text-4xl"
             subtitleClassName="text-lg text-muted-foreground"
           />
-          <StatGrid columns={4} gap={'wide'} className={'mb-16'}>
+          <StatGrid columns={4} className={'mb-16 gap-12'}>
             {outcomeStats
               .map((s) => ({
                 value: s.value,

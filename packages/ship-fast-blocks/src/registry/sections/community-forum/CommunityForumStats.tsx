@@ -42,7 +42,7 @@ export const CommunityForumStats = defineCapsule({
     return (
       <section className={cn('bg-foreground py-16', props.className)}>
         <Container size="lg">
-          <StatGrid columns={4} gap={'wide'}>
+          <StatGrid columns={4} className="gap-12">
             {items.map((s) => {
               const __iv__ = s as { value: string; label: string }
               return (

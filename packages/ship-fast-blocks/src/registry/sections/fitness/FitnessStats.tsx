@@ -56,7 +56,7 @@ export const FitnessStats = defineCapsule({
     return (
       <section className={cn('bg-primary py-16', props.className)}>
         <Container>
-          <StatGrid columns={4} gap={'wide'}>
+          <StatGrid columns={4} className="gap-12">
             {statsItems.map((s) => {
               const __iv__ = s as { value: string; label: string }
               return (

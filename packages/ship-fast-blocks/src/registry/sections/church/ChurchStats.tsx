@@ -45,7 +45,7 @@ export const ChurchStats = defineCapsule({
         className={cn('border-y border-border pt-28 pb-20', props.className)}
       >
         <Container size="xl" className="px-6">
-          <StatGrid columns={4} gap={'wide'} className={'lg:gap-12'}>
+          <StatGrid columns={4} className={'lg:gap-12 gap-12'}>
             {items.map((s) => {
               const __iv__ = s as { value: string; label: string }
               return (

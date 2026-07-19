@@ -51,8 +51,8 @@ export const AutoDealershipStats = defineCapsule({
         <Container>
           <StatGrid
             columns={4}
-            gap={'wide'}
-            className={'text-center lg:gap-12'}
+
+            className={'text-center lg:gap-12 gap-12'}
           >
             {items.map((s) => {
               const __iv__ = s as { value: string; label: string }

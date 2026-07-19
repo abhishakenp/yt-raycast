@@ -41,7 +41,7 @@ export const FoodTruckStats = defineCapsule({
     return (
       <section className={cn('bg-muted px-6 pt-28 pb-16', props.className)}>
         <Container size="lg">
-          <StatGrid columns={4} gap={'wide'}>
+          <StatGrid columns={4} className="gap-12">
             {stats.map((s) => {
               const __iv__ = s as { value: string; label: string }
               return (

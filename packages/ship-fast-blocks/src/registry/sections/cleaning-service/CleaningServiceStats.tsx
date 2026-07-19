@@ -53,7 +53,7 @@ export const CleaningServiceStats = defineCapsule({
     return (
       <section className={cn('bg-primary py-16 lg:py-20', props.className)}>
         <Container>
-          <StatGrid columns={4} gap={'wide'}>
+          <StatGrid columns={4} className="gap-12">
             {items.map((s) => {
               const __iv__ = s as { value: string; label: string }
               return (

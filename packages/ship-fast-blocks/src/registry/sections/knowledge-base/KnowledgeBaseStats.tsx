@@ -50,7 +50,7 @@ export const KnowledgeBaseStats = defineCapsule({
         aria-label="Help center statistics"
       >
         <Container>
-          <StatGrid columns={4} gap={'wide'}>
+          <StatGrid columns={4} className="gap-12">
             {items.map((s) => {
               const __iv__ = s as { value: string; label: string }
               return (

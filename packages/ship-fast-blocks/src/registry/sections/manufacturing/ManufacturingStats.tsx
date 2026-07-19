@@ -61,7 +61,7 @@ export const ManufacturingStats = defineCapsule({
       >
         <Container>
           <h2 className="sr-only">Company Statistics</h2>
-          <StatGrid columns={4} gap={'wide'}>
+          <StatGrid columns={4} className="gap-12">
             {items.map((s) => {
               const __iv__ = s as { value: string; label: string }
               return (

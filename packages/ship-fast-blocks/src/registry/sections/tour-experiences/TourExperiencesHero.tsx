@@ -134,8 +134,8 @@ export const TourExperiencesHero = defineCapsule({
 
             <StatGrid
               columns={3}
-              gap="compact"
-              className="mt-14 max-w-2xl border-t border-background/20 pt-8"
+
+              className="mt-14 max-w-2xl border-t border-background/20 pt-8 gap-6"
             >
               {stats.map((s) => (
                 <StatItem key={s.label} align="center">

@@ -104,7 +104,7 @@ export const CybersecurityStats = defineCapsule({
             titleClassName="mb-4 text-3xl font-bold sm:text-4xl"
             subtitleClassName="text-lg text-background/60"
           />
-          <StatGrid columns={4} gap={'wide'} className={'lg:gap-12'}>
+          <StatGrid columns={4} className={'lg:gap-12 gap-12'}>
             {items.map((s) => {
               const __iv__ = s as { value: string; label: string }
               return (
@@ -118,7 +118,7 @@ export const CybersecurityStats = defineCapsule({
             })}
           </StatGrid>
           <div className="mt-16 border-t border-background/20 pt-16">
-            <StatGrid columns={3} gap="default" className="text-center">
+            <StatGrid columns={3} className="text-center">
               {secondary.map((s) => (
                 <StatItem key={s.label} align="center">
                   <StatValue
