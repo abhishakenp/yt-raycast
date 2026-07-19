@@ -104,11 +104,71 @@ const PathwayCardDescription = React.forwardRef<
 })
 PathwayCardDescription.displayName = 'PathwayCardDescription'
 
+const PathwayCardImage = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="pathway-card-image"
+      className={cn(
+        'relative aspect-[4/3] overflow-hidden bg-muted',
+        className,
+      )}
+      {...props}
+    />
+  )
+})
+PathwayCardImage.displayName = 'PathwayCardImage'
+
+const PathwayIcon = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="pathway-card-icon"
+      className={cn(
+        'inline-flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary',
+        className,
+      )}
+      {...props}
+    />
+  )
+})
+PathwayIcon.displayName = 'PathwayIcon'
+
+const PathwayCardCta = React.forwardRef<
+  HTMLAnchorElement,
+  React.ComponentProps<'a'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'a'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="pathway-card-cta"
+      className={cn(
+        'mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-foreground transition-colors group-hover:text-primary',
+        className,
+      )}
+      {...props}
+    />
+  )
+})
+PathwayCardCta.displayName = 'PathwayCardCta'
+
 export {
   PathwayGrid,
   PathwayCard,
   PathwayCardBody,
   PathwayCardTitle,
   PathwayCardDescription,
+  PathwayCardImage,
+  PathwayIcon,
+  PathwayCardCta,
   PathwayGridVariants,
 }
