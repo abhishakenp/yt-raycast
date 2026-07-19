@@ -52,25 +52,16 @@ const ArticleCard = React.forwardRef<
   HTMLElement,
   React.ComponentProps<'article'> & {
     variant?: VariantProps<typeof articleCardVariants>['variant']
-    rounded?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
     asChild?: boolean
   }
->(({ className, variant, rounded = 'xl', asChild = false, ...props }, ref) => {
+>(({ className, variant, asChild = false, ...props }, ref) => {
   const Comp = asChild ? Slot : 'article'
-  const roundedCls = {
-    none: '',
-    sm: 'rounded-sm',
-    md: 'rounded-md',
-    lg: 'rounded-lg',
-    xl: 'rounded-xl',
-  }[rounded]
   return (
     <Comp
       data-slot="article-card"
       className={cn(
-        'group flex flex-col overflow-hidden',
+        'group flex flex-col overflow-hidden rounded-xl',
         articleCardVariants({ variant }),
-        roundedCls,
         className,
       )}
       ref={ref}

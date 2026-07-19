@@ -180,7 +180,7 @@ export const NewsroomStoryGrid = defineCapsule({
           <div className="mt-6 border-t border-border" />
           <ArticleGrid cols="1-2-3" className="mt-10 gap-x-8 gap-y-12">
             {stories.map((story) => (
-              <ArticleCard key={story.title} variant="none" rounded="none">
+              <ArticleCard key={story.title} variant="none" className="rounded-none">
                 <ArticleMedia aspect="16-9" className="block w-full rounded-lg">
                   <button type="button" onClick={() => go(story.title)}>
                     <Image

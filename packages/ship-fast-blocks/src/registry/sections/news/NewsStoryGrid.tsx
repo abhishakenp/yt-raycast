@@ -195,7 +195,6 @@ export const NewsStoryGrid = defineCapsule({
                 key={story.title}
                 asChild
                 variant="elevated"
-                rounded="xl"
               >
                 <article>
                   <button

@@ -117,7 +117,6 @@ export const DocsStoryGrid = defineCapsule({
                 asChild
                 key={`${guide.title}-${i}`}
                 variant="default"
-                rounded="xl"
                 className="text-left transition hover:shadow-md"
               >
                 <button type="button" onClick={() => go(guide.title)}>

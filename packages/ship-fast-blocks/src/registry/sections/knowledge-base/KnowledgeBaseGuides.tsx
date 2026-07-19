@@ -181,7 +181,6 @@ export const KnowledgeBaseGuides = defineCapsule({
                 key={guide.title}
                 asChild
                 variant="default"
-                rounded="xl"
                 className="block cursor-pointer text-left transition-all hover:shadow-lg"
               >
                 <button type="button" onClick={() => go(guide.title)}>
