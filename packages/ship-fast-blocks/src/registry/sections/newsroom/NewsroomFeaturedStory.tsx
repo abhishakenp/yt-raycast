@@ -10,11 +10,11 @@ import { publicationLakebed } from '../blog/publication-lakebed.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
-  FeaturedArticle,
   FeaturedArticleMedia,
   FeaturedArticleContent,
   FeaturedArticleMeta,
 } from '#/section-kit/FeaturedArticle.tsx'
+import { StorySection } from '#/section-kit/StorySection.tsx'
 import { PullQuoteText } from '#/section-kit/PullQuote.tsx'
 
 /**
@@ -90,9 +90,8 @@ export const NewsroomFeaturedStory = defineCapsule({
     ])
 
     return (
-      <FeaturedArticle
+      <StorySection
         aria-labelledby="newsroom-featured-story-heading"
-        size="none"
         className={cn('bg-background py-20 lg:py-28', props.className)}
       >
         <Container>
@@ -150,7 +149,7 @@ export const NewsroomFeaturedStory = defineCapsule({
             </FeaturedArticleContent>
           </div>
         </Container>
-      </FeaturedArticle>
+      </StorySection>
     )
   },
 })

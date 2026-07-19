@@ -6,11 +6,11 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
-  FeaturedArticle,
   FeaturedArticleMedia,
   FeaturedArticleContent,
   FeaturedArticleMeta,
 } from '#/section-kit/FeaturedArticle.tsx'
+import { StorySection } from '#/section-kit/StorySection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
@@ -55,8 +55,7 @@ export const PodcastFeaturedStory = defineCapsule({
       'podcast recording studio with warm lighting, microphone and headphones on a wooden desk'
 
     return (
-      <FeaturedArticle
-        size="none"
+      <StorySection
         className={cn(
           'bg-background py-20 text-foreground lg:py-28',
           props.className,
@@ -65,9 +64,7 @@ export const PodcastFeaturedStory = defineCapsule({
         <Container size="lg" className="px-6 lg:px-6">
           <SectionHeading eyebrow={eyebrow} title={heading} align="center" />
 
-          <Card
-            className="mt-12 grid overflow-hidden md:grid-cols-2 rounded-2xl p-0"
-          >
+          <Card className="mt-12 grid overflow-hidden md:grid-cols-2 rounded-2xl p-0">
             <FeaturedArticleMedia className="relative min-h-64 md:min-h-full">
               <Image
                 alt={imageAlt}
@@ -118,7 +115,7 @@ export const PodcastFeaturedStory = defineCapsule({
             </FeaturedArticleContent>
           </Card>
         </Container>
-      </FeaturedArticle>
+      </StorySection>
     )
   },
 })

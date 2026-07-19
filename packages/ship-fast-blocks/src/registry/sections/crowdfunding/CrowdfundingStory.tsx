@@ -6,7 +6,7 @@ import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { ImageTile } from '#/section-kit/ImageTile.tsx'
-import { SplitStory } from '#/section-kit/SplitStory.tsx'
+import { StorySection } from '#/section-kit/StorySection.tsx'
 import { PullQuoteText } from '#/section-kit/PullQuote.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
@@ -90,7 +90,7 @@ export const CrowdfundingStory = defineCapsule({
         ]
 
     return (
-      <SplitStory className={cn('bg-muted py-20 lg:py-28', props.className)}>
+      <StorySection className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <Container className="max-w-4xl">
           <SectionHeading
             eyebrow={storyEyebrow}
@@ -149,7 +149,7 @@ export const CrowdfundingStory = defineCapsule({
             </p>
           ))}
         </Container>
-      </SplitStory>
+      </StorySection>
     )
   },
 })

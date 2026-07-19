@@ -8,11 +8,11 @@ import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import {
-  FeaturedArticle,
   FeaturedArticleMedia,
   FeaturedArticleContent,
   FeaturedArticleMeta,
 } from '#/section-kit/FeaturedArticle.tsx'
+import { StorySection } from '#/section-kit/StorySection.tsx'
 
 /**
  * NewsFeaturedStory — featured big lead story band for a news / editorial
@@ -137,8 +137,7 @@ export const NewsFeaturedStory = defineCapsule({
     }
 
     return (
-      <FeaturedArticle
-        size="none"
+      <StorySection
         className={cn('bg-card pt-28 pb-8 lg:pt-32 lg:pb-12', props.className)}
       >
         <Container>
@@ -248,7 +247,7 @@ export const NewsFeaturedStory = defineCapsule({
             </div>
           </div>
         </Container>
-      </FeaturedArticle>
+      </StorySection>
     )
   },
 })

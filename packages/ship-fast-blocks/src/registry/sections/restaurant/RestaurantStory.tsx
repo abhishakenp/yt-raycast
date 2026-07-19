@@ -7,11 +7,11 @@ import { Image } from '#/lib/img.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
-  SplitStory,
-  SplitStoryGrid,
-  SplitStoryContent,
-  SplitStoryFeatures,
-} from '#/section-kit/SplitStory.tsx'
+  StorySection,
+  StoryGrid,
+  StoryContent,
+  StoryFeatures,
+} from '#/section-kit/StorySection.tsx'
 
 // About "Our Story" feature chips, keyed by intent; falls back to a soup bowl.
 const FEATURE_ICONS = [Flame, Wheat, Leaf]
@@ -91,8 +91,8 @@ export const RestaurantStory = defineCapsule({
         ]
 
     return (
-      <SplitStory className={cn('w-full bg-background', props.className)}>
-        <SplitStoryGrid className="mx-auto w-[min(1200px,92vw)] gap-16 py-24">
+      <StorySection className={cn('w-full bg-background', props.className)}>
+        <StoryGrid className="mx-auto w-[min(1200px,92vw)] gap-16 py-24">
           <div className="relative order-1">
             <div className="overflow-hidden rounded-3xl shadow-2xl shadow-black/15">
               <Image
@@ -114,7 +114,7 @@ export const RestaurantStory = defineCapsule({
             </div>
           </div>
 
-          <SplitStoryContent className="order-2 space-y-0">
+          <StoryContent className="order-2 space-y-0">
             <SectionHeading
               eyebrow={eyebrow}
               title={heading}
@@ -126,7 +126,7 @@ export const RestaurantStory = defineCapsule({
               className="gap-5"
             />
 
-            <SplitStoryFeatures className="mt-8 flex flex-col gap-5">
+            <StoryFeatures className="mt-8 flex flex-col gap-5">
               {features.map((feat, i) => {
                 const Icon = FEATURE_ICONS[i] ?? Soup
                 const chip = FEATURE_CHIPS[i % FEATURE_CHIPS.length]
@@ -149,7 +149,7 @@ export const RestaurantStory = defineCapsule({
                   </div>
                 )
               })}
-            </SplitStoryFeatures>
+            </StoryFeatures>
 
             <button
               type="button"
@@ -158,9 +158,9 @@ export const RestaurantStory = defineCapsule({
             >
               {cta}
             </button>
-          </SplitStoryContent>
-        </SplitStoryGrid>
-      </SplitStory>
+          </StoryContent>
+        </StoryGrid>
+      </StorySection>
     )
   },
 })

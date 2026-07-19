@@ -439,6 +439,19 @@ export {
   AboutFooter,
   aboutSectionVariants,
 } from './AboutSection.tsx'
+export {
+  StorySection,
+  StoryGrid,
+  StoryMedia,
+  StoryContent,
+  StoryEyebrow,
+  StoryHeading,
+  StoryBody,
+  StoryFooter,
+  StoryFeatures,
+  StoryImageTile,
+  storySectionVariants,
+} from './StorySection.tsx'
 
 export type { KitAction } from './types.ts'
 export { kitActionClasses } from './types.ts'
