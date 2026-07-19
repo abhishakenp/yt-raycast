@@ -11,6 +11,7 @@ import {
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * ChurchServices — split weekly service-times section for a church or faith-community
@@ -159,15 +160,16 @@ export const ChurchServices = defineCapsule({
         <Container size="xl" className="px-6">
           <div className="grid items-start gap-16 lg:grid-cols-2">
             <div>
-              <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-                {eyebrow}
-              </p>
-              <h2 className="mb-6 text-3xl font-medium tracking-tight text-foreground sm:text-4xl">
-                {heading}
-              </h2>
-              <p className="mb-10 text-lg leading-relaxed text-muted-foreground">
-                {description}
-              </p>
+              <SectionHeading
+                align="left"
+                eyebrow={eyebrow}
+                title={heading}
+                subtitle={description}
+                className="mb-10 gap-0"
+                eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground"
+                titleClassName="mb-6 text-3xl font-medium tracking-tight text-foreground sm:text-4xl"
+                subtitleClassName="text-lg leading-relaxed text-muted-foreground"
+              />
               <div className="space-y-6">
                 {items.map((s, i) => (
                   <FeatureCard

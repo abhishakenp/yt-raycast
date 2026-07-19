@@ -11,6 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * find-a-service platforms, or review-and-discovery sites.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { StepTimeline, StepTimelineGrid } from '#/section-kit/StepTimeline.tsx'
 export const DirectorySteps = defineCapsule({
   name: 'DirectorySteps',
@@ -59,14 +60,13 @@ export const DirectorySteps = defineCapsule({
     return (
       <StepTimeline className={cn('bg-card py-16 lg:py-24', props.className)}>
         <Container>
-          <div className="mb-12 text-center lg:mb-16">
-            <h2 className="mb-4 text-3xl font-semibold text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-              {description}
-            </p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mb-12 lg:mb-16 gap-0"
+            titleClassName="mb-4 text-3xl font-semibold text-foreground sm:text-4xl"
+            subtitleClassName="mx-auto max-w-2xl text-lg text-muted-foreground"
+          />
 
           <StepTimelineGrid columns={3} className="gap-8 lg:gap-12">
             {items.map((step, i) => (

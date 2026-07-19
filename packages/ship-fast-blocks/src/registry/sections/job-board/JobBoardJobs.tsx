@@ -26,6 +26,7 @@ import {
  * props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 export const JobBoardJobs = defineCapsule({
   name: 'JobBoardJobs',
   description:
@@ -182,12 +183,14 @@ export const JobBoardJobs = defineCapsule({
       <section className={cn('bg-background py-20', props.className)}>
         <Container>
           <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="mb-2 text-3xl font-semibold tracking-tight text-foreground">
-                {heading}
-              </h2>
-              <p className="text-muted-foreground">{description}</p>
-            </div>
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="gap-0"
+              titleClassName="mb-2 text-3xl font-semibold tracking-tight text-foreground"
+              subtitleClassName="text-muted-foreground"
+            />
             <button
               type="button"
               onClick={() =>

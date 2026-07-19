@@ -12,6 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * with no props; built-in line icons rotate across the items.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   FeatureGrid,
   FeatureCard,
@@ -66,14 +67,13 @@ export const JobBoardFeatures = defineCapsule({
     return (
       <section className={cn('bg-muted/40 py-20', props.className)}>
         <Container>
-          <div className="mb-16 text-center">
-            <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground">
-              {heading}
-            </h2>
-            <p className="mx-auto max-w-xl text-muted-foreground">
-              {description}
-            </p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mb-16 gap-0"
+            titleClassName="mb-4 text-3xl font-semibold tracking-tight text-foreground"
+            subtitleClassName="mx-auto max-w-xl text-muted-foreground"
+          />
           <FeatureGrid columns={3}>
             {items.map((f) => {
               const __iv__ = f as {

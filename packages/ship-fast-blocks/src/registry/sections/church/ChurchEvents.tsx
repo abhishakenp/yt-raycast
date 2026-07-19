@@ -7,6 +7,7 @@ import { Image } from '#/lib/img.tsx'
 import { EventList } from '#/section-kit/EventList.tsx'
 import { ImageTile } from '#/section-kit/ImageTile.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * ChurchEvents — featured-events grid for a church or faith-community site. A
@@ -134,14 +135,14 @@ export const ChurchEvents = defineCapsule({
       <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
         <Container size="xl" className="px-6">
           <div className="mb-16 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-                {eyebrow}
-              </p>
-              <h2 className="text-3xl font-medium tracking-tight text-foreground sm:text-4xl">
-                {heading}
-              </h2>
-            </div>
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              className="gap-0"
+              eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground"
+              titleClassName="text-3xl font-medium tracking-tight text-foreground sm:text-4xl"
+            />
             <button
               type="button"
               onClick={() => go(viewAll)}

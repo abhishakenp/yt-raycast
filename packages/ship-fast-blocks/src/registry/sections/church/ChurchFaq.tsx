@@ -10,6 +10,7 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * ChurchFaq — accordion FAQ section for a church or faith-community site. A centered
@@ -68,14 +69,13 @@ export const ChurchFaq = defineCapsule({
         )}
       >
         <Container size="sm" className="px-6 lg:px-6">
-          <div className="mb-16 text-center">
-            <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2 className="text-3xl font-medium tracking-tight text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            className="mb-16 gap-0"
+            eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground"
+            titleClassName="text-3xl font-medium tracking-tight text-foreground sm:text-4xl"
+          />
           <FaqAccordion>
             {items.map((item) => (
               <FaqItem key={item.q}>

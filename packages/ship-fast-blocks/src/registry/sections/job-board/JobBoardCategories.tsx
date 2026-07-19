@@ -14,6 +14,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * Renders fully with no props; built-in line icons rotate across the items.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   CategoryGrid,
   CategoryCard,
@@ -204,14 +205,13 @@ export const JobBoardCategories = defineCapsule({
     return (
       <section className={cn('bg-background py-20', props.className)}>
         <Container>
-          <div className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground">
-              {heading}
-            </h2>
-            <p className="mx-auto max-w-xl text-muted-foreground">
-              {description}
-            </p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mb-12 gap-0"
+            titleClassName="mb-4 text-3xl font-semibold tracking-tight text-foreground"
+            subtitleClassName="mx-auto max-w-xl text-muted-foreground"
+          />
           <CategoryGrid cols="2-3-4" gap="sm">
             {items.map((cat, i) => (
               <CategoryCard

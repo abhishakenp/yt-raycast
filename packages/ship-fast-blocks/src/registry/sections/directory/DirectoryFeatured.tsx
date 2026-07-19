@@ -22,6 +22,7 @@ import {
  * directories, marketplaces, or review-and-discovery sites.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { FeaturedList, FeaturedItem } from '#/section-kit/FeaturedList.tsx'
 export const DirectoryFeatured = defineCapsule({
@@ -168,12 +169,14 @@ export const DirectoryFeatured = defineCapsule({
       <section className={cn('bg-background py-16 lg:py-24', props.className)}>
         <Container>
           <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="mb-2 text-3xl font-semibold text-foreground sm:text-4xl">
-                {heading}
-              </h2>
-              <p className="text-muted-foreground">{description}</p>
-            </div>
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="gap-0"
+              titleClassName="mb-2 text-3xl font-semibold text-foreground sm:text-4xl"
+              subtitleClassName="text-muted-foreground"
+            />
             <button
               type="button"
               onClick={() =>

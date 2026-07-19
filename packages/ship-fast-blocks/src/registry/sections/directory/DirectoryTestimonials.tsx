@@ -12,6 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * find-a-service platforms, or review-and-discovery sites.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -83,14 +84,13 @@ export const DirectoryTestimonials = defineCapsule({
         )}
       >
         <Container>
-          <div className="mb-12 text-center lg:mb-16">
-            <h2 className="mb-4 text-3xl font-semibold sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="mx-auto max-w-2xl text-lg text-background/70">
-              {description}
-            </p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mb-12 lg:mb-16 gap-0"
+            titleClassName="mb-4 text-3xl font-semibold sm:text-4xl"
+            subtitleClassName="mx-auto max-w-2xl text-lg text-background/70"
+          />
 
           <TestimonialGrid columns={3}>
             {items.map((t) => {

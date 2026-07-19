@@ -12,6 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * or cargo/transport companies. Renders fully with no props via alt-driven images.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   GalleryGrid,
   GalleryGridItems,
@@ -47,12 +48,13 @@ export const LogisticsGallery = defineCapsule({
     return (
       <section className={cn('bg-muted/50 py-16 lg:py-24', props.className)}>
         <Container>
-          <div className="mx-auto mb-12 max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-semibold tracking-tight lg:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mb-12 max-w-2xl gap-0"
+            titleClassName="mb-4 text-3xl font-semibold tracking-tight lg:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
 
           <GalleryGrid>
             <GalleryGridItems columns={3}>

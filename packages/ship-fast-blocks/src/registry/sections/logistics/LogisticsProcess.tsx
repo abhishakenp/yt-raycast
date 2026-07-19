@@ -15,6 +15,7 @@ import { Card } from '#/section-kit/Card.tsx'
  * courier or cargo/transport companies. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { StepTimeline } from '#/section-kit/StepTimeline.tsx'
 export const LogisticsProcess = defineCapsule({
   name: 'LogisticsProcess',
@@ -75,12 +76,14 @@ export const LogisticsProcess = defineCapsule({
         <Container>
           <div className="grid items-center gap-16 lg:grid-cols-2">
             <div>
-              <h2 className="mb-6 text-3xl font-semibold tracking-tight lg:text-4xl">
-                {heading}
-              </h2>
-              <p className="mb-12 text-lg text-muted-foreground">
-                {description}
-              </p>
+              <SectionHeading
+                align="left"
+                title={heading}
+                subtitle={description}
+                className="mb-12 gap-0"
+                titleClassName="mb-6 text-3xl font-semibold tracking-tight lg:text-4xl"
+                subtitleClassName="text-lg text-muted-foreground"
+              />
 
               <div className="space-y-8">
                 {items.map((step, i) => (

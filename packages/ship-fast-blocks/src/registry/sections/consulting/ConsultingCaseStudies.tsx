@@ -6,6 +6,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import {
   PortfolioGrid,
@@ -144,14 +145,14 @@ export const ConsultingCaseStudies = defineCapsule({
       <section className={cn('bg-muted py-24', props.className)}>
         <Container>
           <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h2 className="mb-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-                {heading}
-              </h2>
-              <p className="max-w-2xl text-lg text-muted-foreground">
-                {description}
-              </p>
-            </div>
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="gap-0"
+              titleClassName="mb-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
+              subtitleClassName="max-w-2xl text-lg text-muted-foreground"
+            />
             <button
               type="button"
               onClick={() => go(viewAll)}

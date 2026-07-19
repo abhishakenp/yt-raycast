@@ -11,6 +11,7 @@ import {
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * ChurchTestimonials — a 3-up member testimonials wall for a church or faith-community
@@ -88,17 +89,15 @@ export const ChurchTestimonials = defineCapsule({
         )}
       >
         <Container size="xl" className="px-6">
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2 className="mb-6 text-3xl font-medium tracking-tight text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg leading-relaxed text-muted-foreground">
-              {description}
-            </p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            className="mb-16 max-w-3xl gap-0"
+            eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground"
+            titleClassName="mb-6 text-3xl font-medium tracking-tight text-foreground sm:text-4xl"
+            subtitleClassName="text-lg leading-relaxed text-muted-foreground"
+          />
           <TestimonialGrid columns={3}>
             {items.map((t) => {
               const __iv__ = t as {
