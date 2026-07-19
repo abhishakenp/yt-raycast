@@ -224,6 +224,8 @@ export type SiteNavProps = {
   height?: 'compact' | 'default' | 'responsive' | 'outlier'
   containerClassName?: string
   rowClassName?: string
+  /** Skip the Container + nav + row wrapping; render children directly inside the header. */
+  bare?: boolean
   children?: ReactNode
 }
 
@@ -338,6 +340,7 @@ const CompoundSiteNav = React.forwardRef<
       className,
       containerClassName,
       rowClassName,
+      bare = false,
       children,
       asChild = false,
       ...props
@@ -345,13 +348,21 @@ const CompoundSiteNav = React.forwardRef<
     ref,
   ) => {
     const Comp = asChild ? Slot : 'header'
+    const headerClasses = cn(siteNavHeaderVariants({ position }), className)
+    if (bare) {
+      return (
+        <Comp
+          data-slot="site-nav"
+          className={headerClasses}
+          ref={ref}
+          {...props}
+        >
+          {children}
+        </Comp>
+      )
+    }
     return (
-      <Comp
-        data-slot="site-nav"
-        className={cn(siteNavHeaderVariants({ position }), className)}
-        ref={ref}
-        {...props}
-      >
+      <Comp data-slot="site-nav" className={headerClasses} ref={ref} {...props}>
         <Container asChild className={containerClassName}>
           <nav aria-label="Main navigation">
             <div className={cn(siteNavRowVariants({ height }), rowClassName)}>
