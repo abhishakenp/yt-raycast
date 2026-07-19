@@ -57,7 +57,7 @@ export {
   ctaBandInnerVariants,
   ctaBandActionsVariants,
 } from './CtaBand.tsx'
-export { StarRating } from './StarRating.tsx'
+export { StarRating, starColorVariants } from './StarRating.tsx'
 export {
   StatGrid,
   StatItem,
