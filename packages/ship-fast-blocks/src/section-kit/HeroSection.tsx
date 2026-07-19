@@ -300,7 +300,6 @@ interface HeroImageProps extends React.ComponentProps<'div'> {
   alt: string
   w?: number
   h?: number
-  rounded?: 'xl' | '2xl' | '3xl'
 }
 
 const HeroMediaPanel = React.forwardRef<
@@ -313,7 +312,6 @@ const HeroMediaPanel = React.forwardRef<
       alt,
       w = 1200,
       h = 1200,
-      rounded = '2xl',
       asChild = false,
       ...props
     },
@@ -324,13 +322,7 @@ const HeroMediaPanel = React.forwardRef<
       <Comp
         ref={ref}
         data-slot="hero-image"
-        className={cn(
-          'overflow-hidden',
-          rounded === 'xl' && 'rounded-xl',
-          rounded === '2xl' && 'rounded-2xl',
-          rounded === '3xl' && 'rounded-3xl',
-          className,
-        )}
+        className={cn('overflow-hidden rounded-2xl', className)}
         {...props}
       >
         <Image alt={alt} w={w} h={h} className="size-full object-cover" />
