@@ -6,10 +6,14 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react'
-import type { ReactNode } from 'react'
+import type { MouseEventHandler, ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { Dashboard } from './Dashboard'
+
+const routerMocks = vi.hoisted(() => ({
+  navigate: vi.fn(),
+}))
 
 // ─── controllable convex test state ────────────────────────────────────────
 type SessionState = {
@@ -166,10 +170,29 @@ vi.mock('convex/react', () => ({
 }))
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to }: { children: ReactNode; to: string }) => (
-    <a href={to}>{children}</a>
+  Link: ({
+    children,
+    onClick,
+    to,
+    ...props
+  }: {
+    children: ReactNode
+    onClick?: MouseEventHandler<HTMLAnchorElement>
+    to: string
+    [key: string]: unknown
+  }) => (
+    <a
+      href={to}
+      onClick={(event) => {
+        onClick?.(event)
+        routerMocks.navigate(to)
+      }}
+      {...props}
+    >
+      {children}
+    </a>
   ),
-  useNavigate: () => vi.fn(),
+  useNavigate: () => routerMocks.navigate,
   useParams: () => ({}),
   useRouter: () => ({ state: { location: { pathname: '/' } } }),
 }))
@@ -331,6 +354,7 @@ const setupReady = () => {
 // ─── tests ─────────────────────────────────────────────────────────────────
 describe('Dashboard toolbar + device switcher + status indicators', () => {
   beforeEach(() => {
+    routerMocks.navigate.mockReset()
     ensureWindowStorage()
     getConvexState().generationView = null
     getConvexState().sidePanelData = null
@@ -513,14 +537,14 @@ describe('Dashboard toolbar + device switcher + status indicators', () => {
   // 4. Back to home button
   it('renders a back-to-home button that navigates to /', () => {
     setupReady()
-    const { hrefSetter } = installLocationMock()
     render(<Dashboard sessionId="ready-session" />)
 
-    const backBtn = screen.getByRole('button', { name: 'Back to home' })
+    const backBtn = screen.getByRole('link', { name: 'Back to home' })
     expect(backBtn.getAttribute('data-tip')).toBe('Back to home')
+    expect(backBtn.getAttribute('href')).toBe('/')
 
     fireEvent.click(backBtn)
-    expect(hrefSetter).toHaveBeenCalledWith('/')
+    expect(routerMocks.navigate).toHaveBeenCalledWith('/')
   })
 
   // 5. URL pill
@@ -702,7 +726,7 @@ describe('Dashboard toolbar + device switcher + status indicators', () => {
     getConvexState().generationView = null
     render(<Dashboard sessionId="ghost-session" />)
 
-    // MissingProjectState renders the heading + a back-to-home button
+    // MissingProjectState renders the heading + a back-to-home link
     expect(
       screen.getByText('This generated website is no longer available.'),
     ).toBeTruthy()
@@ -715,7 +739,7 @@ describe('Dashboard toolbar + device switcher + status indicators', () => {
     expect(screen.queryByRole('button', { name: 'Open auto admin' })).toBeNull()
     // the missing-state back-to-home button navigates to /. Two back-to-home
     // buttons exist (topbar + missing-state card); assert both are present.
-    const backButtons = screen.getAllByRole('button', { name: 'Back to home' })
+    const backButtons = screen.getAllByRole('link', { name: 'Back to home' })
     expect(backButtons.length).toBeGreaterThanOrEqual(2)
   })
 

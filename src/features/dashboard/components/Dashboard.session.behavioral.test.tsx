@@ -14,7 +14,7 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react'
-import type { ReactNode } from 'react'
+import type { MouseEventHandler, ReactNode } from 'react'
 import { hydrateRoot } from 'react-dom/client'
 import { renderToString } from 'react-dom/server'
 import { toast } from 'sonner'
@@ -23,6 +23,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import DirectPreview from '@/components/GenUI/DirectPreview'
 
 import { Dashboard } from './Dashboard'
+
+const routerMocks = vi.hoisted(() => ({
+  navigate: vi.fn(),
+}))
 
 // jsdom doesn't implement scrollIntoView; stub it so the section-move
 // scroll-into-view effect can be spied on.
@@ -337,10 +341,29 @@ vi.mock('convex/react', () => ({
 }))
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to }: { children: ReactNode; to: string }) => (
-    <a href={to}>{children}</a>
+  Link: ({
+    children,
+    onClick,
+    to,
+    ...props
+  }: {
+    children: ReactNode
+    onClick?: MouseEventHandler<HTMLAnchorElement>
+    to: string
+    [key: string]: unknown
+  }) => (
+    <a
+      href={to}
+      onClick={(event) => {
+        onClick?.(event)
+        routerMocks.navigate(to)
+      }}
+      {...props}
+    >
+      {children}
+    </a>
   ),
-  useNavigate: () => vi.fn(),
+  useNavigate: () => routerMocks.navigate,
   useParams: () => ({}),
   useRouter: () => ({ state: { location: { pathname: '/' } } }),
 }))
@@ -1347,6 +1370,7 @@ async function selectCorporateTheme(): Promise<void> {
 // ─── tests ─────────────────────────────────────────────────────────────────
 describe('Dashboard session workspace + Convex realtime + intro loader', () => {
   beforeEach(() => {
+    routerMocks.navigate.mockReset()
     restoreWindowLocation()
     ensureWindowStorage()
     getConvexState().generationView = null
@@ -3796,17 +3820,16 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
 
   it('discards one pending draft before navigating back home', async () => {
     setupReady()
-    const { hrefSetter } = installLocationMock()
     render(<Dashboard sessionId="ready-session" />)
     await startStubDashboardTextDraft()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Back to home' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Back to home' }))
 
-    expect(hrefSetter).toHaveBeenCalledWith('/')
+    expect(routerMocks.navigate).toHaveBeenCalledWith('/')
     expectStubDashboardDraftDiscarded()
     expect(
       getConvexState().pendingTextEdit.cancel.mock.invocationCallOrder[0],
-    ).toBeLessThan(hrefSetter.mock.invocationCallOrder[0])
+    ).toBeLessThan(routerMocks.navigate.mock.invocationCallOrder[0])
   })
 
   it('discards one pending draft before starting an export download', async () => {
