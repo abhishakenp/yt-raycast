@@ -17,6 +17,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
  * defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   PricingGrid,
   PricingTier,
@@ -206,15 +207,14 @@ export const MobileAppPricing = defineCapsule({
         aria-labelledby="mobileapp-pricing-heading"
       >
         <Container>
-          <div className="mx-auto mb-16 max-w-2xl text-center lg:mb-20">
-            <h2
-              id="mobileapp-pricing-heading"
-              className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl"
-            >
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            titleId="mobileapp-pricing-heading"
+            className="mb-16 lg:mb-20 max-w-2xl gap-0"
+            titleClassName="mb-4 text-3xl font-bold tracking-tight sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <PricingGrid>
             {tiers.map((tier) => {
               const t = tier as {

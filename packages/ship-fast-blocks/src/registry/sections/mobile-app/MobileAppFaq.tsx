@@ -8,6 +8,7 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 import { z } from 'zod/v4'
 
@@ -82,15 +83,14 @@ export const MobileAppFaq = defineCapsule({
         aria-labelledby="mobileapp-faq-heading"
       >
         <Container size="sm">
-          <div className="mb-16 text-center">
-            <h2
-              id="mobileapp-faq-heading"
-              className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl"
-            >
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            titleId="mobileapp-faq-heading"
+            className="mb-16  gap-0"
+            titleClassName="mb-4 text-3xl font-bold tracking-tight sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <FaqAccordion>
             {items.map((item) => (
               <FaqItem key={item.question} variant="overflow-bordered">

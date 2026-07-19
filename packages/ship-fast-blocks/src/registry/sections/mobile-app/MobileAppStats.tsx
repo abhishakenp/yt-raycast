@@ -12,6 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   StatGrid,
   StatItem,
@@ -69,15 +70,14 @@ export const MobileAppStats = defineCapsule({
         aria-labelledby="mobileapp-stats-heading"
       >
         <Container>
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <h2
-              id="mobileapp-stats-heading"
-              className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl"
-            >
-              {heading}
-            </h2>
-            <p className="text-lg text-primary-foreground/70">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            titleId="mobileapp-stats-heading"
+            className="mb-16 max-w-2xl gap-0"
+            titleClassName="mb-4 text-3xl font-bold tracking-tight sm:text-4xl"
+            subtitleClassName="text-lg text-primary-foreground/70"
+          />
           <StatGrid columns={4} gap={'wide'}>
             {items
               .map((s) => ({ value: s.value, label: s.label }))

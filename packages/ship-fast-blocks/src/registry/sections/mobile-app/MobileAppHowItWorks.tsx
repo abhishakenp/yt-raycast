@@ -13,6 +13,7 @@ import { Image } from '#/lib/img.tsx'
  * consumer app landing page. Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { PortfolioGrid } from '#/section-kit/PortfolioGrid.tsx'
 export const MobileAppHowItWorks = defineCapsule({
   name: 'MobileAppHowItWorks',
@@ -71,15 +72,14 @@ export const MobileAppHowItWorks = defineCapsule({
         aria-labelledby="mobileapp-steps-heading"
       >
         <Container>
-          <div className="mx-auto mb-16 max-w-2xl text-center lg:mb-20">
-            <h2
-              id="mobileapp-steps-heading"
-              className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl"
-            >
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            titleId="mobileapp-steps-heading"
+            className="mb-16 lg:mb-20 max-w-2xl gap-0"
+            titleClassName="mb-4 text-3xl font-bold tracking-tight sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <PortfolioGrid cols="1-2-3" className="lg:gap-12">
             {items.map((step, i) => (
               <div key={step.title} className="relative">

@@ -201,9 +201,7 @@ export const MobileAppHero = defineCapsule({
                   h={800}
                   className="relative w-72 rounded-[2.5rem] border-8 border-foreground object-cover shadow-2xl sm:w-80 lg:w-96"
                 />
-                <HeroStatBadge
-                  className="absolute -bottom-6 -right-6 flex items-center gap-3 rounded-2xl shadow-xl"
-                >
+                <HeroStatBadge className="absolute -bottom-6 -right-6 flex items-center gap-3 rounded-2xl shadow-xl">
                   <HeroStatBadgeIcon className="size-10 rounded-full bg-primary/10">
                     <CheckIcon className="size-5 text-primary" />
                   </HeroStatBadgeIcon>
@@ -216,9 +214,7 @@ export const MobileAppHero = defineCapsule({
                     </HeroStatBadgeSubtitle>
                   </HeroStatBadgeContent>
                 </HeroStatBadge>
-                <HeroStatBadge
-                  className="absolute -right-4 -top-4 rounded-2xl p-3 text-center shadow-xl"
-                >
+                <HeroStatBadge className="absolute -right-4 -top-4 rounded-2xl p-3 text-center shadow-xl">
                   <HeroStatBadgeTitle className="text-2xl font-bold">
                     {streakValue}
                   </HeroStatBadgeTitle>
