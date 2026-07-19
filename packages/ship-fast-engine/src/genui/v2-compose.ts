@@ -2041,49 +2041,6 @@ export async function runV2ComposedGeneration(input: {
     }
   }
 
-  // ROUTE — a self-contained interactive app/tool/widget (not a marketing
-  // website) is generated FREE-FORM from the generic primitives, so the engine
-  // is not limited to the curated vertical families. The classifier generalizes
-  // from a principle (operated tool vs marketing site); no per-app logic here.
-  if (
-    !input.cachedContent &&
-    !input.familyOverride &&
-    shouldConsiderFreeFormAppMode(input.prompt)
-  ) {
-    const mode = await classifyGenerationMode(
-      input.prompt,
-      input.modelId,
-      abort.signal,
-    )
-    if (mode === 'app') {
-      emit({ type: 'status', message: 'Building your app' })
-      emit({ type: 'theme', name: theme })
-      emit({ type: 'locale', code: locale })
-      const source = await composeFreeForm({
-        prompt: input.prompt,
-        brand,
-        modelId: input.modelId,
-        locale,
-        signal: abort.signal,
-      })
-      input.onSource?.(source)
-      emit({ type: 'source', text: source })
-      emit({ type: 'done' })
-      return {
-        source,
-        theme,
-        locale,
-        brand,
-        category: 'app',
-        family: 'Freeform',
-        artifacts: [],
-        routes: [],
-        pages: [],
-        navTargets: {},
-      }
-    }
-  }
-
   // CONTENT — reuse cached props, else author the homepage in the first pass.
   const cached =
     input.cachedContent && FAMILIES.has(input.cachedContent.family)
