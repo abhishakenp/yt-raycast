@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { StepTimeline, StepTimelineGrid } from '#/section-kit/StepTimeline.tsx'
 
 /**
@@ -59,18 +60,16 @@ export const MembershipClubSteps = defineCapsule({
         aria-labelledby="steps-heading"
       >
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-24">
-            <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2
-              id="steps-heading"
-              className="mb-6 text-3xl font-light text-foreground sm:text-4xl"
-            >
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            titleId="steps-heading"
+            className="mb-16 max-w-3xl lg:mb-24 gap-0"
+            eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground"
+            titleClassName="mb-6 text-3xl font-light text-foreground sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <StepTimelineGrid
             columns={3}
             className="mx-auto max-w-5xl gap-8 lg:gap-16"

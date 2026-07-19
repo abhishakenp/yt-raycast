@@ -12,6 +12,7 @@ import {
 } from '#/section-kit/FeatureGrid.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * MembershipClubBenefits — 6-up member-benefits grid for a private membership club
@@ -171,18 +172,16 @@ export const MembershipClubBenefits = defineCapsule({
         aria-labelledby="benefits-heading"
       >
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-24">
-            <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2
-              id="benefits-heading"
-              className="mb-6 text-3xl font-light text-foreground sm:text-4xl"
-            >
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            titleId="benefits-heading"
+            className="mb-16 max-w-3xl lg:mb-24 gap-0"
+            eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground"
+            titleClassName="mb-6 text-3xl font-light text-foreground sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <FeatureGrid className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 lg:gap-12">
             {items.map((item, i) => (
               <FeatureCard

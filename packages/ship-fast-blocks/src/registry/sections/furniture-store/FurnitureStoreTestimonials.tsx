@@ -12,6 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -76,17 +77,14 @@ export const FurnitureStoreTestimonials = defineCapsule({
         aria-labelledby="furniture-testimonials-heading"
       >
         <Container>
-          <div className="mb-12 text-center lg:mb-16">
-            <p className="mb-3 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2
-              id="furniture-testimonials-heading"
-              className="text-3xl font-medium lg:text-4xl"
-            >
-              {heading}
-            </h2>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            titleId="furniture-testimonials-heading"
+            className="mb-12 lg:mb-16 gap-0"
+            eyebrowClassName="mb-3 text-sm font-medium uppercase tracking-widest text-muted-foreground"
+            titleClassName="text-3xl font-medium lg:text-4xl"
+          />
 
           <TestimonialGrid columns={3}>
             {items.map((t) => {

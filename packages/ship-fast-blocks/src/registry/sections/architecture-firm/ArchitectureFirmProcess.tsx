@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   StepTimeline,
   StepTimelineGrid,
@@ -65,17 +66,14 @@ export const ArchitectureFirmProcess = defineCapsule({
         className={cn('py-24 lg:py-28', props.className)}
       >
         <Container>
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <p className="mb-3 text-xs uppercase tracking-widest text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2
-              id="architecture-firm-process-heading"
-              className="text-3xl font-light text-foreground sm:text-4xl"
-            >
-              {heading}
-            </h2>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            titleId="architecture-firm-process-heading"
+            className="mb-16 max-w-2xl gap-0"
+            eyebrowClassName="mb-3 text-xs uppercase tracking-widest text-muted-foreground"
+            titleClassName="text-3xl font-light text-foreground sm:text-4xl"
+          />
 
           <StepTimelineGrid columns={3} className="grid-cols-1 gap-8 lg:gap-12">
             {steps.map((step, i) => (

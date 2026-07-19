@@ -32,6 +32,7 @@ import {
  * fully with no props via baked-in "Haven & Home" defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const FurnitureStoreProducts = defineCapsule({
   name: 'FurnitureStoreProducts',
@@ -156,15 +157,15 @@ export const FurnitureStoreProducts = defineCapsule({
         <Container>
           <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="mb-3 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-                {eyebrow}
-              </p>
-              <h2
-                id="furniture-bestsellers-heading"
-                className="text-3xl font-medium lg:text-4xl"
-              >
-                {heading}
-              </h2>
+              <SectionHeading
+                align="left"
+                eyebrow={eyebrow}
+                title={heading}
+                titleId="furniture-bestsellers-heading"
+                className="gap-0"
+                eyebrowClassName="mb-3 text-sm font-medium uppercase tracking-widest text-muted-foreground"
+                titleClassName="text-3xl font-medium lg:text-4xl"
+              />
             </div>
             <button
               type="button"

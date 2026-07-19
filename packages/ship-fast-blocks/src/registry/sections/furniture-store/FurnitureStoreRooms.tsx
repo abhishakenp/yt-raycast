@@ -16,6 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * brands. Renders fully with no props via baked-in "Haven & Home" defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { RoomGrid, RoomCard } from '#/section-kit/RoomGrid.tsx'
 export const FurnitureStoreRooms = defineCapsule({
   name: 'FurnitureStoreRooms',
@@ -106,15 +107,15 @@ export const FurnitureStoreRooms = defineCapsule({
         <Container>
           <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="mb-3 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-                {eyebrow}
-              </p>
-              <h2
-                id="furniture-rooms-heading"
-                className="text-3xl font-medium lg:text-4xl"
-              >
-                {heading}
-              </h2>
+              <SectionHeading
+                align="left"
+                eyebrow={eyebrow}
+                title={heading}
+                titleId="furniture-rooms-heading"
+                className="gap-0"
+                eyebrowClassName="mb-3 text-sm font-medium uppercase tracking-widest text-muted-foreground"
+                titleClassName="text-3xl font-medium lg:text-4xl"
+              />
             </div>
             <button
               type="button"

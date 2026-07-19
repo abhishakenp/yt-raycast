@@ -6,6 +6,7 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   SplitStory,
   SplitStoryGrid,
@@ -136,15 +137,15 @@ export const ArchitectureFirmPhilosophy = defineCapsule({
         <Container>
           <SplitStoryGrid className="gap-16 lg:gap-24">
             <SplitStoryContent className="space-y-0">
-              <p className="mb-4 text-xs uppercase tracking-widest text-muted-foreground">
-                {eyebrow}
-              </p>
-              <h2
-                id="architecture-firm-philosophy-heading"
-                className="mb-8 text-3xl font-light text-foreground sm:text-4xl"
-              >
-                {heading}
-              </h2>
+              <SectionHeading
+                align="left"
+                eyebrow={eyebrow}
+                title={heading}
+                titleId="architecture-firm-philosophy-heading"
+                className="mb-8 gap-0"
+                eyebrowClassName="mb-4 text-xs uppercase tracking-widest text-muted-foreground"
+                titleClassName="text-3xl font-light text-foreground sm:text-4xl"
+              />
 
               <div className="space-y-8">
                 {points.map((point, i) => (

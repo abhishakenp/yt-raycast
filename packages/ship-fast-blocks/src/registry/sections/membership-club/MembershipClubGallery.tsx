@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   GalleryGrid,
   GalleryGridItems,
@@ -53,14 +54,14 @@ export const MembershipClubGallery = defineCapsule({
         aria-label="Photo gallery of events and spaces"
       >
         <Container>
-          <div className="mb-12 max-w-3xl lg:mb-16">
-            <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2 className="text-3xl font-light text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-          </div>
+          <SectionHeading
+            align="left"
+            eyebrow={eyebrow}
+            title={heading}
+            className="mb-12 max-w-3xl lg:mb-16 gap-0"
+            eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground"
+            titleClassName="text-3xl font-light text-foreground sm:text-4xl"
+          />
           <GalleryGrid>
             <GalleryGridItems columns={4}>
               {images

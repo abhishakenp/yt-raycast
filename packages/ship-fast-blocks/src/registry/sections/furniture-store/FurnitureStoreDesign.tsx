@@ -16,6 +16,7 @@ import { Image } from '#/lib/img.tsx'
  * "Haven & Home" defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { SplitStory } from '#/section-kit/SplitStory.tsx'
 export const FurnitureStoreDesign = defineCapsule({
   name: 'FurnitureStoreDesign',
@@ -100,18 +101,17 @@ export const FurnitureStoreDesign = defineCapsule({
         <Container>
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div>
-              <p className="mb-4 text-sm font-medium uppercase tracking-widest text-primary-foreground/70">
-                {eyebrow}
-              </p>
-              <h2
-                id="furniture-design-heading"
-                className="mb-6 text-3xl font-medium lg:text-4xl"
-              >
-                {heading}
-              </h2>
-              <p className="mb-8 text-lg leading-relaxed text-primary-foreground/80">
-                {description}
-              </p>
+              <SectionHeading
+                align="left"
+                eyebrow={eyebrow}
+                title={heading}
+                subtitle={description}
+                titleId="furniture-design-heading"
+                className="mb-8 gap-0"
+                eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-primary-foreground/70"
+                titleClassName="mb-6 text-3xl font-medium lg:text-4xl"
+                subtitleClassName="text-lg leading-relaxed text-primary-foreground/80"
+              />
 
               <div className="space-y-6">
                 {steps.map((step, i) => (

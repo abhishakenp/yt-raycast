@@ -12,6 +12,7 @@ import {
 } from '#/section-kit/PortfolioGrid.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * ArchitectureFirmWork — selected-work / project gallery for an
@@ -110,17 +111,15 @@ export const ArchitectureFirmWork = defineCapsule({
       >
         <Container>
           <div className="mb-16 flex flex-col md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="mb-3 text-xs uppercase tracking-widest text-muted-foreground">
-                {eyebrow}
-              </p>
-              <h2
-                id="architecture-firm-work-heading"
-                className="text-3xl font-light text-foreground sm:text-4xl"
-              >
-                {heading}
-              </h2>
-            </div>
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              titleId="architecture-firm-work-heading"
+              className="gap-0"
+              eyebrowClassName="mb-3 text-xs uppercase tracking-widest text-muted-foreground"
+              titleClassName="text-3xl font-light text-foreground sm:text-4xl"
+            />
             <p className="mt-4 max-w-md text-sm leading-relaxed text-muted-foreground md:mt-0">
               {description}
             </p>

@@ -12,6 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * home-decor, interiors, or any warm retail brand. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   FeatureGrid,
   FeatureCard,
@@ -69,17 +70,14 @@ export const FurnitureStoreFeatures = defineCapsule({
         aria-labelledby="furniture-features-heading"
       >
         <Container>
-          <div className="mb-12 text-center lg:mb-16">
-            <p className="mb-3 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2
-              id="furniture-features-heading"
-              className="text-3xl font-medium lg:text-4xl"
-            >
-              {heading}
-            </h2>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            titleId="furniture-features-heading"
+            className="mb-12 lg:mb-16 gap-0"
+            eyebrowClassName="mb-3 text-sm font-medium uppercase tracking-widest text-muted-foreground"
+            titleClassName="text-3xl font-medium lg:text-4xl"
+          />
           <FeatureGrid columns={4}>
             {items.map((f) => {
               const __iv__ = f as {

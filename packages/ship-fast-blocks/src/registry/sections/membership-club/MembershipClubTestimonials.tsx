@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -103,17 +104,14 @@ export const MembershipClubTestimonials = defineCapsule({
         aria-labelledby="testimonials-heading"
       >
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-24">
-            <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2
-              id="testimonials-heading"
-              className="mb-6 text-3xl font-light text-foreground sm:text-4xl"
-            >
-              {heading}
-            </h2>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            titleId="testimonials-heading"
+            className="mb-16 max-w-3xl lg:mb-24 gap-0"
+            eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground"
+            titleClassName="mb-6 text-3xl font-light text-foreground sm:text-4xl"
+          />
           <TestimonialGrid columns={3}>
             {items.map((t) => {
               const __iv__ = t as {
