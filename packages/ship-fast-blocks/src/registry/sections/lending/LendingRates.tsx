@@ -14,6 +14,7 @@ import { Card } from '#/section-kit/Card.tsx'
  * consolidation, or financing pages. Renders fully with no props via defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   RatesTable,
   RatesHeader,
@@ -139,12 +140,13 @@ export const LendingRates = defineCapsule({
     return (
       <section className={cn('bg-muted py-24 lg:py-28', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-              {ratesHeading}
-            </h2>
-            <p className="mt-4 text-lg text-muted-foreground">{ratesDesc}</p>
-          </div>
+          <SectionHeading
+            title={ratesHeading}
+            subtitle={ratesDesc}
+            className="mb-16 max-w-3xl gap-0"
+            titleClassName="tracking-tight sm:text-4xl"
+            subtitleClassName="mt-4 text-lg"
+          />
           <div className="mx-auto max-w-5xl overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
             <div className="grid divide-y divide-border md:grid-cols-3 md:divide-x md:divide-y-0">
               {rateHighlights.map((h) => (

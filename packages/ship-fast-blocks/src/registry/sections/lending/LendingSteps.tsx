@@ -13,6 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   StepTimeline,
   StepTimelineGrid,
@@ -66,12 +67,13 @@ export const LendingSteps = defineCapsule({
     return (
       <StepTimeline className={cn('bg-muted py-24 lg:py-28', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-              {stepsHeading}
-            </h2>
-            <p className="mt-4 text-lg text-muted-foreground">{stepsDesc}</p>
-          </div>
+          <SectionHeading
+            title={stepsHeading}
+            subtitle={stepsDesc}
+            className="mb-16 max-w-3xl gap-0"
+            titleClassName="tracking-tight sm:text-4xl"
+            subtitleClassName="mt-4 text-lg"
+          />
           <StepTimelineGrid columns={3} className="gap-8 lg:gap-12">
             {stepItems.map((step, i) => (
               <StepItem key={step.title} className="relative">

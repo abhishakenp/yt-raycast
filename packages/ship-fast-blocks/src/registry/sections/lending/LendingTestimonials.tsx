@@ -12,6 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -75,14 +76,13 @@ export const LendingTestimonials = defineCapsule({
     return (
       <section className={cn('bg-muted py-24 lg:py-28', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-              {testimonialsHeading}
-            </h2>
-            <p className="mt-4 text-lg text-muted-foreground">
-              {testimonialsDesc}
-            </p>
-          </div>
+          <SectionHeading
+            title={testimonialsHeading}
+            subtitle={testimonialsDesc}
+            className="mb-16 max-w-3xl gap-0"
+            titleClassName="tracking-tight sm:text-4xl"
+            subtitleClassName="mt-4 text-lg"
+          />
           <TestimonialGrid columns={3}>
             {testimonialItems.map((t) => {
               const __iv__ = t as {

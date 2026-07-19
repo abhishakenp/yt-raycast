@@ -16,6 +16,7 @@ import { Card } from '#/section-kit/Card.tsx'
  * loan, debt-consolidation, or financing pages. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { LoanCalculator, LoanDisplay } from '#/section-kit/LoanCalculator.tsx'
 export const LendingCalculator = defineCapsule({
   name: 'LendingCalculator',
@@ -141,12 +142,13 @@ export const LendingCalculator = defineCapsule({
       <LoanCalculator asChild>
         <section className={cn('py-24 lg:py-28', props.className)}>
           <Container>
-            <div className="mx-auto mb-16 max-w-3xl text-center">
-              <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-                {calcHeading}
-              </h2>
-              <p className="mt-4 text-lg text-muted-foreground">{calcDesc}</p>
-            </div>
+            <SectionHeading
+              title={calcHeading}
+              subtitle={calcDesc}
+              className="mb-16 max-w-3xl gap-0"
+              titleClassName="tracking-tight sm:text-4xl"
+              subtitleClassName="mt-4 text-lg"
+            />
             <div className="mx-auto max-w-4xl">
               <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
                 <div className="grid lg:grid-cols-2">
