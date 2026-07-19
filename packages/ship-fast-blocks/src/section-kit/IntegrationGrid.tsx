@@ -4,7 +4,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '#/lib/utils.ts'
 
-const IntegrationGridVariants = cva('grid', {
+const IntegrationGridVariants = cva('grid gap-6', {
   variants: {
     cols: {
       '1-2-3': 'sm:grid-cols-2 lg:grid-cols-3',
@@ -17,17 +17,9 @@ const IntegrationGridVariants = cva('grid', {
       '2-4-6': 'grid-cols-2 md:grid-cols-4 lg:grid-cols-6',
       '2-lg-4': 'grid-cols-2 lg:grid-cols-4',
     },
-    gap: {
-      none: 'gap-0',
-      sm: 'gap-4',
-      md: 'gap-6',
-      lg: 'gap-8',
-      xl: 'gap-10',
-    },
   },
   defaultVariants: {
     cols: '1-2-3',
-    gap: 'md',
   },
 })
 
@@ -35,12 +27,12 @@ const IntegrationGrid = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<'div'> &
     VariantProps<typeof IntegrationGridVariants> & { asChild?: boolean }
->(({ className, cols, gap, asChild = false, ...props }, ref) => {
+>(({ className, cols, asChild = false, ...props }, ref) => {
   const Comp = asChild ? Slot : 'div'
   return (
     <Comp
       data-slot="integration-grid"
-      className={cn(IntegrationGridVariants({ cols, gap }), className)}
+      className={cn(IntegrationGridVariants({ cols }), className)}
       ref={ref}
       {...props}
     />

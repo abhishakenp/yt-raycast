@@ -4,16 +4,10 @@ import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '#/lib/utils.ts'
 
-const CurriculumListVariants = cva('flex flex-col', {
+const CurriculumListVariants = cva('flex flex-col gap-4', {
   variants: {
-    gap: {
-      sm: 'gap-3',
-      md: 'gap-4',
-      lg: 'gap-6',
-    },
   },
   defaultVariants: {
-    gap: 'md',
   },
 })
 
@@ -21,12 +15,12 @@ const CurriculumList = React.forwardRef<
   HTMLUListElement,
   React.ComponentProps<'ul'> &
     VariantProps<typeof CurriculumListVariants> & { asChild?: boolean }
->(({ className, gap, asChild = false, ...props }, ref) => {
+>(({ className, asChild = false, ...props }, ref) => {
   const Comp = asChild ? Slot : 'ul'
   return (
     <Comp
       data-slot="curriculum-list"
-      className={cn(CurriculumListVariants({ gap }), className)}
+      className={cn(CurriculumListVariants({}), className)}
       ref={ref}
       {...props}
     />

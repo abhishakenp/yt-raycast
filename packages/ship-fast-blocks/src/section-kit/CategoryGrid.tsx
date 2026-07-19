@@ -4,7 +4,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '#/lib/utils.ts'
 
-const CategoryGridVariants = cva('grid', {
+const CategoryGridVariants = cva('grid gap-6', {
   variants: {
     cols: {
       '1-2-3': 'gap-6 sm:grid-cols-2 lg:grid-cols-3',
@@ -16,15 +16,9 @@ const CategoryGridVariants = cva('grid', {
       '2-3-4': 'gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4',
       '2-lg-4': 'gap-6 grid-cols-2 lg:grid-cols-4',
     },
-    gap: {
-      sm: 'gap-4',
-      md: 'gap-6',
-      lg: 'gap-8',
-    },
   },
   defaultVariants: {
     cols: '1-2-3',
-    gap: 'md',
   },
 })
 
@@ -32,12 +26,12 @@ const CategoryGrid = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<'div'> &
     VariantProps<typeof CategoryGridVariants> & { asChild?: boolean }
->(({ className, cols, gap, asChild = false, ...props }, ref) => {
+>(({ className, cols, asChild = false, ...props }, ref) => {
   const Comp = asChild ? Slot : 'div'
   return (
     <Comp
       data-slot="category-grid"
-      className={cn(CategoryGridVariants({ cols, gap }), className)}
+      className={cn(CategoryGridVariants({ cols }), className)}
       ref={ref}
       {...props}
     />
