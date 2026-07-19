@@ -30,15 +30,19 @@ const CategoryGridVariants = cva('grid', {
 
 const CategoryGrid = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & VariantProps<typeof CategoryGridVariants>
->(({ className, cols, gap, ...props }, ref) => (
-  <div
-    data-slot="category-grid"
-    className={cn(CategoryGridVariants({ cols, gap }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> &
+    VariantProps<typeof CategoryGridVariants> & { asChild?: boolean }
+>(({ className, cols, gap, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="category-grid"
+      className={cn(CategoryGridVariants({ cols, gap }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 CategoryGrid.displayName = 'CategoryGrid'
 
 const CategoryCard = React.forwardRef<
@@ -62,18 +66,21 @@ CategoryCard.displayName = 'CategoryCard'
 
 const CategoryIcon = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    data-slot="category-icon"
-    className={cn(
-      'grid size-12 place-items-center rounded-lg text-lg',
-      className,
-    )}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="category-icon"
+      className={cn(
+        'grid size-12 place-items-center rounded-lg text-lg',
+        className,
+      )}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 CategoryIcon.displayName = 'CategoryIcon'
 
 export {

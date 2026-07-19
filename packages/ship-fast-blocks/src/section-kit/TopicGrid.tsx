@@ -29,15 +29,19 @@ const TopicGridVariants = cva('grid', {
 
 const TopicGrid = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & VariantProps<typeof TopicGridVariants>
->(({ className, cols, gap, ...props }, ref) => (
-  <div
-    data-slot="topic-grid"
-    className={cn(TopicGridVariants({ cols, gap }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> &
+    VariantProps<typeof TopicGridVariants> & { asChild?: boolean }
+>(({ className, cols, gap, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="topic-grid"
+      className={cn(TopicGridVariants({ cols, gap }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 TopicGrid.displayName = 'TopicGrid'
 
 const TopicCard = React.forwardRef<
@@ -59,9 +63,13 @@ const TopicCard = React.forwardRef<
 })
 TopicCard.displayName = 'TopicCard'
 
-const TopicIcon = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(
-  ({ className, ...props }, ref) => (
-    <div
+const TopicIcon = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
       data-slot="topic-icon"
       className={cn(
         'grid size-12 place-items-center rounded-lg text-lg',
@@ -70,8 +78,8 @@ const TopicIcon = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(
       ref={ref}
       {...props}
     />
-  ),
-)
+  )
+})
 TopicIcon.displayName = 'TopicIcon'
 
 export {

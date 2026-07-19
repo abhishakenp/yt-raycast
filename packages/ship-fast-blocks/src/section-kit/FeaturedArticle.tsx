@@ -21,15 +21,19 @@ const featuredArticleVariants = cva('', {
 
 const FeaturedArticle = React.forwardRef<
   HTMLElement,
-  React.ComponentProps<'section'> & VariantProps<typeof featuredArticleVariants>
->(({ className, size, ...props }, ref) => (
-  <section
-    data-slot="featured-article"
-    className={cn(featuredArticleVariants({ size }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'section'> &
+    VariantProps<typeof featuredArticleVariants> & { asChild?: boolean }
+>(({ className, size, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'section'
+  return (
+    <Comp
+      data-slot="featured-article"
+      className={cn(featuredArticleVariants({ size }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 FeaturedArticle.displayName = 'FeaturedArticle'
 
 const FeaturedArticleMedia = React.forwardRef<
@@ -66,18 +70,21 @@ FeaturedArticleContent.displayName = 'FeaturedArticleContent'
 
 const FeaturedArticleMeta = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'>
->(({ className, ...props }, ref) => (
-  <div
-    data-slot="featured-article-meta"
-    className={cn(
-      'flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground',
-      className,
-    )}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="featured-article-meta"
+      className={cn(
+        'flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground',
+        className,
+      )}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 FeaturedArticleMeta.displayName = 'FeaturedArticleMeta'
 
 export {
