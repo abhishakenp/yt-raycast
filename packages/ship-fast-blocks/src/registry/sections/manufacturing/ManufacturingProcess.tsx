@@ -20,6 +20,7 @@ import {
  * props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   StepTimeline,
   StepTimelineGrid,
@@ -107,15 +108,15 @@ export const ManufacturingProcess = defineCapsule({
         className={cn('bg-background py-20 lg:py-28', props.className)}
       >
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <span className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
-              {eyebrow}
-            </span>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="mt-4 text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            className="mb-16 max-w-3xl gap-0"
+            eyebrowClassName="tracking-wider text-muted-foreground"
+            titleClassName="mt-3 tracking-tight sm:text-4xl"
+            subtitleClassName="mt-4 text-lg"
+          />
           <StepTimelineGrid columns={4} className="gap-8">
             {steps.map((step, i) => (
               <StepItem key={step.title} className="relative">
@@ -143,9 +144,7 @@ export const ManufacturingProcess = defineCapsule({
                   <StatValue className="text-3xl font-semibold text-foreground">
                     {s.value}
                   </StatValue>
-                  <StatLabel className="mt-1 text-sm">
-                    {s.label}
-                  </StatLabel>
+                  <StatLabel className="mt-1 text-sm">{s.label}</StatLabel>
                 </StatItem>
               ))}
             </StatGrid>

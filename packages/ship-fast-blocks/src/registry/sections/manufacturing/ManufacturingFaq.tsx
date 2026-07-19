@@ -9,6 +9,7 @@ import {
   FaqQuestion,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * ManufacturingFaq — a static FAQ list for a precision-manufacturing site. On a
@@ -82,14 +83,13 @@ export const ManufacturingFaq = defineCapsule({
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <Container className="max-w-4xl">
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <span className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
-              {eyebrow}
-            </span>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            className="mb-16 max-w-3xl gap-0"
+            eyebrowClassName="tracking-wider text-muted-foreground"
+            titleClassName="mt-3 tracking-tight sm:text-4xl"
+          />
           <FaqAccordion asChild>
             <dl>
               {items.map((item) => (
