@@ -9,6 +9,7 @@ import {
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { BookingForm } from '#/section-kit/BookingForm.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useHotelAvailabilitySubmission } from './hotel-resort-interactions.tsx'
 import { hotelResortLakebed } from './hotel-resort-lakebed.ts'
@@ -140,7 +141,7 @@ export const HotelResortBooking = defineCapsule({
               <div className="rounded-lg bg-background p-8 text-foreground">
                 <h3 className="mb-6 text-xl font-medium">{formHeading}</h3>
                 <form className="space-y-5" onSubmit={inquiry.submitForm}>
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <ResponsiveGrid cols="1-2" gap="sm">
                     <FormField>
                       <FormFieldLabel htmlFor="hotel-resort-booking-checkin">
                         Check-in
@@ -163,7 +164,7 @@ export const HotelResortBooking = defineCapsule({
                         className={inputCls}
                       />
                     </FormField>
-                  </div>
+                  </ResponsiveGrid>
                   <FormField>
                     <FormFieldLabel htmlFor="hotel-resort-booking-guests">
                       Guests

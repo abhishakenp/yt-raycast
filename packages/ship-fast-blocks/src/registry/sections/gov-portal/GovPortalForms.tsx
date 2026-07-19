@@ -221,7 +221,7 @@ export const GovPortalVendor = defineCapsule({
             />
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-3">
+          <ResponsiveGrid cols="1-lg-3" gap="md">
             {/* register */}
             <form
               onSubmit={async (e) => {
@@ -412,10 +412,10 @@ export const GovPortalVendor = defineCapsule({
                 ) : null}
               </div>
             </form>
-          </div>
+          </ResponsiveGrid>
 
           {/* status tables */}
-          <div className="mt-10 grid gap-6 lg:grid-cols-3">
+          <ResponsiveGrid cols="1-lg-3" gap="md" className="mt-10">
             <StatusList
               title={pickLang(lang, 'Registered Vendors', 'पंजीकृत विक्रेता')}
               lang={lang}
@@ -443,7 +443,7 @@ export const GovPortalVendor = defineCapsule({
                 }`
               }
             />
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )
@@ -539,7 +539,7 @@ export const GovPortalContact = defineCapsule({
           <h2 className="mb-8 text-2xl font-semibold tracking-tight text-foreground">
             {heading}
           </h2>
-          <div className="grid gap-6 sm:grid-cols-2">
+          <ResponsiveGrid cols="1-2" gap="md">
             {offices.map(({ title, office }) => (
               <Card key={title} rounded="2xl">
                 <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-primary">
@@ -581,7 +581,7 @@ export const GovPortalContact = defineCapsule({
                 ) : null}
               </Card>
             ))}
-          </div>
+          </ResponsiveGrid>
 
           {links.length ? (
             <div className="mt-10">

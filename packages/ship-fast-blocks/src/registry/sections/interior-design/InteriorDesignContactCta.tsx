@@ -27,6 +27,7 @@ import {
   ContactFormSubmit,
   ContactFormFooter,
 } from '#/section-kit/ContactForm.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 
@@ -227,7 +228,7 @@ export const InteriorDesignContactCta = defineCapsule({
             </div>
 
             <ContactForm className="space-y-6" onSubmit={inquiry.submitForm}>
-              <div className="grid gap-6 sm:grid-cols-2">
+              <ResponsiveGrid cols="1-2" gap="md">
                 <ContactFormField className="mb-0">
                   <ContactFormLabel
                     htmlFor="interior-design-contact-first-name"
@@ -260,7 +261,7 @@ export const InteriorDesignContactCta = defineCapsule({
                     className={inputCls}
                   />
                 </ContactFormField>
-              </div>
+              </ResponsiveGrid>
 
               <ContactFormField className="mb-0">
                 <ContactFormLabel

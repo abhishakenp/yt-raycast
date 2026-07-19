@@ -15,6 +15,7 @@ import {
   ContactFormFooter,
 } from '#/section-kit/ContactForm.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 
@@ -181,7 +182,7 @@ export const EventPlannerContact = defineCapsule({
               onSubmit={inquiry.submitForm}
             >
               <div className="space-y-6">
-                <div className="grid gap-6 sm:grid-cols-2">
+                <ResponsiveGrid cols="1-2" gap="md">
                   <ContactFormField className="mb-0">
                     <ContactFormLabel
                       htmlFor="ep-first"
@@ -212,7 +213,7 @@ export const EventPlannerContact = defineCapsule({
                       className={inputCls}
                     />
                   </ContactFormField>
-                </div>
+                </ResponsiveGrid>
                 <ContactFormField className="mb-0">
                   <ContactFormLabel
                     htmlFor="ep-email"
@@ -249,7 +250,7 @@ export const EventPlannerContact = defineCapsule({
                     ))}
                   </ContactFormSelect>
                 </ContactFormField>
-                <div className="grid gap-6 sm:grid-cols-2">
+                <ResponsiveGrid cols="1-2" gap="md">
                   <ContactFormField className="mb-0">
                     <ContactFormLabel
                       htmlFor="ep-date"
@@ -283,7 +284,7 @@ export const EventPlannerContact = defineCapsule({
                       ))}
                     </ContactFormSelect>
                   </ContactFormField>
-                </div>
+                </ResponsiveGrid>
                 <ContactFormField className="mb-0">
                   <ContactFormLabel
                     htmlFor="ep-message"

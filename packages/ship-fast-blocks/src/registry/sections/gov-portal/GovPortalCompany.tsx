@@ -28,6 +28,7 @@ function str(row: GovRow, key: string) {
 
 import { Container } from '#/section-kit/Container.tsx'
 import { CompanyInfo } from '#/section-kit/CompanyInfo.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * GovPortalLeadership — a featured MD/Chairman message + board-of-directors
@@ -102,7 +103,7 @@ export const GovPortalLeadership = defineCapsule({
                 <h3 className="mb-6 text-lg font-semibold text-foreground">
                   {pickLang(lang, 'Board of Directors', 'निदेशक मंडल')}
                 </h3>
-                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <ResponsiveGrid cols="1-2-3" gap="none" className="gap-5">
                   {board.map((member, i) => (
                     <PersonCard
                       key={`${str(member, 'name')}-${i}`}
@@ -128,7 +129,7 @@ export const GovPortalLeadership = defineCapsule({
                       </PersonCardContent>
                     </PersonCard>
                   ))}
-                </div>
+                </ResponsiveGrid>
               </>
             ) : null}
           </Container>
@@ -178,7 +179,7 @@ export const GovPortalPowerPlants = defineCapsule({
           <h2 className="mb-8 text-2xl font-semibold tracking-tight text-foreground">
             {heading}
           </h2>
-          <div className="grid gap-5 sm:grid-cols-2">
+          <ResponsiveGrid cols="1-2" gap="none" className="gap-5">
             {plants.map((plant, i) => {
               const status = str(plant, 'status')
               return (
@@ -212,7 +213,7 @@ export const GovPortalPowerPlants = defineCapsule({
                 </Card>
               )
             })}
-          </div>
+          </ResponsiveGrid>
         </div>
       </section>
     )
