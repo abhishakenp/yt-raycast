@@ -11,6 +11,7 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * FashionStoreFaq — native disclosure FAQ accordion for a minimalist fashion
@@ -118,12 +119,13 @@ export const FashionStoreFaq = defineCapsule({
         )}
       >
         <Container size="sm">
-          <div className="mb-16 text-center">
-            <p className={cn(eyebrowCls, 'mb-3')}>{faqEyebrow}</p>
-            <h2 className="font-serif text-4xl font-normal sm:text-5xl">
-              {faqHeading}
-            </h2>
-          </div>
+          <SectionHeading
+            eyebrow={faqEyebrow}
+            title={faqHeading}
+            className="mb-16 gap-0"
+            eyebrowClassName={cn(eyebrowCls, 'mb-3')}
+            titleClassName="font-serif text-4xl font-normal sm:text-5xl"
+          />
 
           <FaqAccordion variant="wide">
             {faqItems.map((item) => (

@@ -12,6 +12,7 @@ import {
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * CafeReviews — 3-up customer-review wall for a cozy cafe / coffee shop page.
@@ -87,12 +88,13 @@ export const CafeReviews = defineCapsule({
       <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
         <Container size="xl" className="px-6">
           <div className="mx-auto mb-16 max-w-2xl text-center">
-            <p className="mb-3 text-sm font-medium uppercase tracking-wider text-primary">
-              {cap}
-            </p>
-            <h2 className="mb-6 font-serif text-3xl font-medium text-foreground sm:text-4xl lg:text-5xl">
-              {heading}
-            </h2>
+            <SectionHeading
+              eyebrow={cap}
+              title={heading}
+              className="gap-0"
+              eyebrowClassName="mb-3 text-sm font-medium uppercase tracking-wider text-primary"
+              titleClassName="mb-6 font-serif text-3xl font-medium text-foreground sm:text-4xl lg:text-5xl"
+            />
           </div>
 
           <TestimonialGrid columns={3}>

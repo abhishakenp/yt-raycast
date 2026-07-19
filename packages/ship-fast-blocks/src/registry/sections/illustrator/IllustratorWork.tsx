@@ -11,6 +11,7 @@ import {
   PortfolioCaption,
 } from '#/section-kit/PortfolioGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * IllustratorWork — a selected-work project gallery for an illustrator /
@@ -84,14 +85,14 @@ export const IllustratorWork = defineCapsule({
       >
         <Container size="xl">
           <div className="mb-12 flex flex-col justify-between gap-4 sm:mb-16 sm:flex-row sm:items-end">
-            <div>
-              <p className="mb-2 text-sm font-medium uppercase tracking-wider text-chart-1">
-                {eyebrow}
-              </p>
-              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl">
-                {heading}
-              </h2>
-            </div>
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              className="gap-0"
+              eyebrowClassName="mb-2 text-sm font-medium uppercase tracking-wider text-chart-1"
+              titleClassName="font-serif text-3xl sm:text-4xl lg:text-5xl"
+            />
             <button
               type="button"
               onClick={() => go(viewAll)}

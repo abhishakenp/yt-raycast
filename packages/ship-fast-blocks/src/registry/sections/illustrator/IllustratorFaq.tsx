@@ -9,6 +9,7 @@ import {
   FaqQuestion,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * IllustratorFaq — a narrow, centered FAQ list for an illustrator /
@@ -70,12 +71,13 @@ export const IllustratorFaq = defineCapsule({
       >
         <Container size="sm">
           <div className="mb-16 text-center">
-            <p className="mb-2 text-sm font-medium uppercase tracking-wider text-chart-3">
-              {eyebrow}
-            </p>
-            <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl">
-              {heading}
-            </h2>
+            <SectionHeading
+              eyebrow={eyebrow}
+              title={heading}
+              className="gap-0"
+              eyebrowClassName="mb-2 text-sm font-medium uppercase tracking-wider text-chart-3"
+              titleClassName="font-serif text-3xl sm:text-4xl lg:text-5xl"
+            />
           </div>
           <FaqAccordion asChild>
             <dl>

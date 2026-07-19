@@ -20,6 +20,7 @@ import {
 } from '../commerce/commerce-interactions.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * BeautyStoreProducts — shoppable bestsellers product grid for a beauty / skincare /
@@ -191,14 +192,14 @@ export const BeautyStoreProducts = defineCapsule({
       <section className={cn('bg-muted/40 py-20 lg:py-28', props.className)}>
         <Container>
           <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <span className="mb-2 block text-xs font-semibold uppercase tracking-widest text-primary">
-                {eyebrow}
-              </span>
-              <h2 className="font-serif text-3xl font-semibold text-foreground sm:text-4xl">
-                {heading}
-              </h2>
-            </div>
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              className="gap-0"
+              eyebrowClassName="mb-2 block text-xs font-semibold uppercase tracking-widest text-primary"
+              titleClassName="font-serif text-3xl font-semibold text-foreground sm:text-4xl"
+            />
             <button
               type="button"
               onClick={() => go(viewAll)}

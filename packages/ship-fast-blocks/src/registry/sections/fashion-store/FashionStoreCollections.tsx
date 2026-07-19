@@ -14,6 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * clothing brands, boutiques, or apparel and accessories shops.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { CollectionGrid } from '#/section-kit/CollectionGrid.tsx'
 export const FashionStoreCollections = defineCapsule({
   name: 'FashionStoreCollections',
@@ -71,12 +72,13 @@ export const FashionStoreCollections = defineCapsule({
         className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
       >
         <Container>
-          <div className="mb-16 text-center">
-            <p className={cn(eyebrowCls, 'mb-3')}>{collectionsEyebrow}</p>
-            <h2 className="font-serif text-4xl font-normal sm:text-5xl lg:text-6xl">
-              {collectionsHeading}
-            </h2>
-          </div>
+          <SectionHeading
+            eyebrow={collectionsEyebrow}
+            title={collectionsHeading}
+            className="mb-16 gap-0"
+            eyebrowClassName={cn(eyebrowCls, 'mb-3')}
+            titleClassName="font-serif text-4xl font-normal sm:text-5xl lg:text-6xl"
+          />
 
           <CollectionGrid className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {collectionItems.map((c) => (

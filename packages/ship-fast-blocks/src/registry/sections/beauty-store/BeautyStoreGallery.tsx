@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   GalleryGrid,
   GalleryGridItems,
@@ -58,13 +59,15 @@ export const BeautyStoreGallery = defineCapsule({
       <section className={cn('py-20 lg:py-28', props.className)}>
         <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
-            <span className="mb-2 block text-xs font-semibold uppercase tracking-widest text-primary">
-              {eyebrow}
-            </span>
-            <h2 className="mb-4 font-serif text-3xl font-semibold text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-muted-foreground">{description}</p>
+            <SectionHeading
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={description}
+              className="gap-0"
+              eyebrowClassName="mb-2 block text-xs font-semibold uppercase tracking-widest text-primary"
+              titleClassName="mb-4 font-serif text-3xl font-semibold text-foreground sm:text-4xl"
+              subtitleClassName="text-muted-foreground"
+            />
           </div>
           <GalleryGrid>
             <GalleryGridItems columns={4}>

@@ -12,6 +12,7 @@ import {
 } from '#/section-kit/ProductCard.tsx'
 import { ShopGrid, ShopCard } from '#/section-kit/ShopGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -135,13 +136,15 @@ export const IllustratorShop = defineCapsule({
       >
         <Container size="xl">
           <div className="mx-auto mb-12 max-w-3xl text-center sm:mb-16">
-            <p className="mb-2 text-sm font-medium uppercase tracking-wider text-chart-2">
-              {eyebrow}
-            </p>
-            <h2 className="mb-6 font-serif text-3xl sm:text-4xl lg:text-5xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
+            <SectionHeading
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={description}
+              className="gap-0"
+              eyebrowClassName="mb-2 text-sm font-medium uppercase tracking-wider text-chart-2"
+              titleClassName="mb-6 font-serif text-3xl sm:text-4xl lg:text-5xl"
+              subtitleClassName="text-lg text-muted-foreground"
+            />
           </div>
           <ShopGrid className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {visibleItems.map((item) => (

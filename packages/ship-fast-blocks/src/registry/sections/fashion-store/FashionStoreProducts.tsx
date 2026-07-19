@@ -23,6 +23,7 @@ import {
  * product drop for clothing brands, boutiques, or apparel shops.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   ProductCard,
   ProductCardImage,
@@ -174,15 +175,15 @@ export const FashionStoreProducts = defineCapsule({
         className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
       >
         <Container>
-          <div className="mb-16 text-center">
-            <p className={cn(eyebrowCls, 'mb-3')}>{productsEyebrow}</p>
-            <h2 className="mb-4 font-serif text-4xl font-normal sm:text-5xl lg:text-6xl">
-              {productsHeading}
-            </h2>
-            <p className="mx-auto max-w-md text-muted-foreground">
-              {productsDesc}
-            </p>
-          </div>
+          <SectionHeading
+            eyebrow={productsEyebrow}
+            title={productsHeading}
+            subtitle={productsDesc}
+            className="mb-16 gap-0"
+            eyebrowClassName={cn(eyebrowCls, 'mb-3')}
+            titleClassName="mb-4 font-serif text-4xl font-normal sm:text-5xl lg:text-6xl"
+            subtitleClassName="mx-auto max-w-md text-muted-foreground"
+          />
 
           <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4 lg:gap-8">
             {visibleProductItems.map((product) => (

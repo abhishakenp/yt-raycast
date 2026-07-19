@@ -12,6 +12,7 @@ import {
 } from '#/section-kit/FeatureGrid.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * BeautyStoreBenefits — a four-up "why choose us" benefits grid for a beauty /
@@ -124,12 +125,13 @@ export const BeautyStoreBenefits = defineCapsule({
     return (
       <section className={cn('py-20 lg:py-28', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <h2 className="mb-4 font-serif text-3xl font-semibold text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            title={heading}
+            subtitle={description}
+            className="mb-16 max-w-2xl gap-0"
+            titleClassName="mb-4 font-serif text-3xl font-semibold text-foreground sm:text-4xl"
+            subtitleClassName="text-muted-foreground"
+          />
           <FeatureGrid className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {items.map((item, i) => (
               <FeatureCard
@@ -142,9 +144,7 @@ export const BeautyStoreBenefits = defineCapsule({
                 <FeatureTitle className="mb-2 font-semibold text-foreground">
                   {item.title}
                 </FeatureTitle>
-                <FeatureDescription>
-                  {item.description}
-                </FeatureDescription>
+                <FeatureDescription>{item.description}</FeatureDescription>
               </FeatureCard>
             ))}
           </FeatureGrid>

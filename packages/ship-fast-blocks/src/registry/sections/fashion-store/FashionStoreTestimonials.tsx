@@ -12,6 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * social proof for clothing brands, boutiques, or premium apparel labels.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -79,14 +80,13 @@ export const FashionStoreTestimonials = defineCapsule({
         )}
       >
         <Container>
-          <div className="mb-16 text-center">
-            <p className="mb-3 text-xs font-medium uppercase tracking-[0.2em] text-background/60">
-              {testimonialsEyebrow}
-            </p>
-            <h2 className="font-serif text-4xl font-normal sm:text-5xl lg:text-6xl">
-              {testimonialsHeading}
-            </h2>
-          </div>
+          <SectionHeading
+            eyebrow={testimonialsEyebrow}
+            title={testimonialsHeading}
+            className="mb-16 gap-0"
+            eyebrowClassName="mb-3 text-xs font-medium uppercase tracking-[0.2em] text-background/60"
+            titleClassName="font-serif text-4xl font-normal sm:text-5xl lg:text-6xl"
+          />
 
           <TestimonialGrid columns={3}>
             {testimonialItems.map((t) => {

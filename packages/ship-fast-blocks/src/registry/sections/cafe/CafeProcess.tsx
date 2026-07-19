@@ -10,6 +10,7 @@ import {
   StepTimelineHeader,
 } from '#/section-kit/StepTimeline.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * CafeProcess — dark "farm to cup" numbered process band for a cozy cafe /
@@ -75,13 +76,16 @@ export const CafeProcess = defineCapsule({
       >
         <Container size="xl" className="px-6">
           <StepTimelineHeader>
-            <p className="mb-3 text-sm font-medium uppercase tracking-wider text-primary">
-              {cap}
-            </p>
-            <h2 className="mb-6 font-serif text-3xl font-medium sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-background/60">{description}</p>
+            <SectionHeading
+              align="left"
+              eyebrow={cap}
+              title={heading}
+              subtitle={description}
+              className="gap-0"
+              eyebrowClassName="mb-3 text-sm font-medium uppercase tracking-wider text-primary"
+              titleClassName="mb-6 font-serif text-3xl font-medium sm:text-4xl"
+              subtitleClassName="text-background/60"
+            />
           </StepTimelineHeader>
           <StepTimelineGrid columns={4}>
             {steps.map((step, i) => (

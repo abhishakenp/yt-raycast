@@ -21,6 +21,7 @@ import {
  * lookbook for clothing brands, boutiques, or lifestyle commerce.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 export const FashionStoreLookbook = defineCapsule({
   name: 'FashionStoreLookbook',
   description:
@@ -116,12 +117,14 @@ export const FashionStoreLookbook = defineCapsule({
       >
         <Container>
           <div className="mb-16 grid items-start gap-8 lg:grid-cols-2 lg:gap-12">
-            <div>
-              <p className={cn(eyebrowCls, 'mb-3')}>{lookbookEyebrow}</p>
-              <h2 className="font-serif text-4xl font-normal sm:text-5xl lg:text-6xl">
-                {lookbookHeading}
-              </h2>
-            </div>
+            <SectionHeading
+              align="left"
+              eyebrow={lookbookEyebrow}
+              title={lookbookHeading}
+              className="gap-0"
+              eyebrowClassName={cn(eyebrowCls, 'mb-3')}
+              titleClassName="font-serif text-4xl font-normal sm:text-5xl lg:text-6xl"
+            />
             <div className="lg:pt-8 lg:text-right">
               <p className="max-w-md text-muted-foreground lg:ml-auto">
                 {lookbookDesc}

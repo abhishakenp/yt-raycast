@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -80,12 +81,13 @@ export const BeautyStoreTestimonials = defineCapsule({
       <section className={cn('bg-primary/10 py-20 lg:py-28', props.className)}>
         <Container>
           <div className="mx-auto mb-16 max-w-2xl text-center">
-            <span className="mb-2 block text-xs font-semibold uppercase tracking-widest text-primary">
-              {eyebrow}
-            </span>
-            <h2 className="mb-4 font-serif text-3xl font-semibold text-foreground sm:text-4xl">
-              {heading}
-            </h2>
+            <SectionHeading
+              eyebrow={eyebrow}
+              title={heading}
+              className="gap-0"
+              eyebrowClassName="mb-2 block text-xs font-semibold uppercase tracking-widest text-primary"
+              titleClassName="mb-4 font-serif text-3xl font-semibold text-foreground sm:text-4xl"
+            />
           </div>
           <TestimonialGrid columns={3}>
             {items.map((t) => {
