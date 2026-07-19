@@ -1,11 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { Sparkles } from 'lucide-react'
-
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { GridField } from '#/section-kit/motion.tsx'
-
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
@@ -22,7 +19,6 @@ import {
   PricingTierFeature,
   PricingTierCta,
 } from '#/section-kit/PricingGrid.tsx'
-
 /**
  * CoworkingPricing — calm, dimensional membership pricing for a coworking or
  * shared-workspace page. A centered header (eyebrow chip + display heading +
@@ -61,7 +57,6 @@ export const CoworkingPricing = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading =
       typeof props.heading === 'string' && props.heading
         ? props.heading
@@ -70,7 +65,6 @@ export const CoworkingPricing = defineCapsule({
       typeof props.subheading === 'string' && props.subheading
         ? props.subheading
         : 'No long-term contracts and no setup fees — pick the plan that fits how you work and upgrade anytime.'
-
     const defaults = [
       {
         name: 'Hot Desk',
@@ -117,13 +111,10 @@ export const CoworkingPricing = defineCapsule({
         highlighted: false,
       },
     ]
-
     const authored = props.tiers
       ?.filter(Boolean)
       .filter((tier) => typeof tier?.name === 'string')
     const tiers = authored?.length ? authored : defaults
-
-    void go
     return (
       <section
         className={cn(
@@ -140,7 +131,6 @@ export const CoworkingPricing = defineCapsule({
           size={64}
           mask="radial-gradient(ellipse 90% 75% at 50% 30%, black 25%, transparent 80%)"
         />
-
         <Container className="relative">
           <div
             aria-hidden="true"
@@ -150,7 +140,6 @@ export const CoworkingPricing = defineCapsule({
             aria-hidden="true"
             className="pointer-events-none absolute inset-y-0 right-0 hidden w-px bg-gradient-to-b from-transparent via-border/70 to-transparent lg:block"
           />
-
           <div className="mx-auto max-w-2xl text-center">
             <Eyebrow
               variant="default"
@@ -172,7 +161,6 @@ export const CoworkingPricing = defineCapsule({
               subtitleClassName="mt-4 text-lg leading-relaxed text-muted-foreground"
             />
           </div>
-
           <PricingGrid
             className={cn(
               'mx-auto mt-16 grid max-w-md grid-cols-1 items-stretch gap-7 lg:mx-0 lg:max-w-none lg:grid-cols-3',

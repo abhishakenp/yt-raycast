@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   SiteFooter,
   FooterContent,
@@ -14,7 +12,6 @@ import {
   FooterCopyright,
   FooterLegal,
 } from '#/section-kit/SiteFooter.tsx'
-
 /**
  * ComingSoonFooter — slim two-row footer for a "launching soon" / waitlist
  * pre-launch landing page. A bordered-top footer with two rows (stack on mobile):
@@ -42,19 +39,12 @@ export const ComingSoonFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Nexus'
     const note = props.note ?? 'Launching March 2025'
     const socials = props.socials?.length
       ? props.socials
       : ['Twitter', 'LinkedIn', 'GitHub']
     const legal = props.legal?.length ? props.legal : ['Privacy', 'Terms']
-    const copyright =
-      props.copyright ??
-      `© ${new Date().getFullYear()} ${brand} Inc. All rights reserved.`
-
-    void go
-    void copyright
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

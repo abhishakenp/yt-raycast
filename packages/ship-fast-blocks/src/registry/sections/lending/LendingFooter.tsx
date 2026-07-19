@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 /**
  * LendingFooter — a dark, rich multi-column site footer for a lending or fintech
  * marketing page. A near-ink (foreground-toned) band: a brand column on the left
@@ -53,9 +51,7 @@ export const LendingFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'ClearLoan'
-    const homeTarget = props.homeTarget ?? 'How it Works'
     const footerTagline =
       props.tagline ??
       'Simple, honest personal loans. No hidden fees, no surprises.'
@@ -96,27 +92,6 @@ export const LendingFooter = defineCapsule({
     const footerCopyright =
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand} Inc. All rights reserved.`
-    const footerDisclosure =
-      props.disclosure ??
-      'ClearLoan Inc. NMLS ID #1234567. Loans are made by ClearLoan Inc. or lending partners. All loans are subject to credit approval. Your actual rate depends on credit score, loan amount, loan term, credit usage and history. Example: A $15,000 loan with an APR of 10.99% and 48 month term would have monthly payments of $384. The total amount paid would be $18,432. Annual percentage rates (APRs) through ClearLoan range from 6.99% to 24.99%.'
-    const Logo = ({ className }: { className?: string }) => (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className={className}
-        aria-hidden="true"
-      >
-        <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    )
-    void go
-    void homeTarget
-    void footerDisclosure
-    void Logo
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

@@ -107,11 +107,6 @@ export const CleaningServicePricing = defineCapsule({
             cta: 'Book This Plan',
           },
         ]
-    const footnote =
-      props.footnote ??
-      'Need a custom quote for a larger space or commercial property?'
-    const footnoteCta =
-      props.footnoteCta ?? 'Call for custom pricing: (555) 123-4567'
     useSyncLocalServices(
       lakebed,
       plans.map((plan) =>
@@ -122,42 +117,6 @@ export const CleaningServicePricing = defineCapsule({
         }),
       ),
     )
-    const Check = ({ className }: { className?: string }) => (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-        className={className}
-        aria-hidden="true"
-      >
-        <path
-          fillRule="evenodd"
-          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-          clipRule="evenodd"
-        />
-      </svg>
-    )
-    const PhoneIcon = ({ className }: { className?: string }) => (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className={className}
-        aria-hidden="true"
-      >
-        <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-      </svg>
-    )
-    void Check
-    void PhoneIcon
-    void footnote
-    void footnoteCta
     return (
       <section className={cn('bg-muted/40 py-20 lg:py-28', props.className)}>
         <Container>

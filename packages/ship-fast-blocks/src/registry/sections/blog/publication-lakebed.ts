@@ -103,81 +103,89 @@ export const publicationLakebed = {
     }),
   },
   mutations: {
-    recordPublicationAction: publication.mutation((_ctx, input: PublicationActionInput) => {
-      const action = clean(input.action)
-      if (!action) return _ctx.db.actions.orderBy('createdAt').all()
+    recordPublicationAction: publication.mutation(
+      (_ctx, input: PublicationActionInput) => {
+        const action = clean(input.action)
+        if (!action) return _ctx.db.actions.orderBy('createdAt').all()
 
-      _ctx.db.actions.insert({
-        action,
-        source: clean(input.source),
-      })
-
-      return _ctx.db.actions.orderBy('createdAt', 'desc').all()
-    }),
-    recordSearch: publication.mutation((_ctx, input: PublicationSearchInput) => {
-      const query = clean(input.query)
-      const articleTitle = clean(input.articleTitle)
-      if (!query && !articleTitle) {
-        return _ctx.db.searches.orderBy('createdAt', 'desc').all()
-      }
-
-      _ctx.db.searches.insert({
-        articleTitle,
-        query: query || articleTitle,
-        source: clean(input.source),
-      })
-
-      return _ctx.db.searches.orderBy('createdAt', 'desc').all()
-    }),
-    subscribe: publication.mutation((_ctx, input: PublicationSubscriberInput) => {
-      const email = normalizeEmail(input.email)
-      if (!email) return _ctx.db.subscribers.orderBy('createdAt').all()
-
-      const existing = _ctx.db.subscribers.where('email', email).all().at(0)
-      const next = {
-        email,
-        source: clean(input.source),
-      }
-
-      if (existing) {
-        _ctx.db.subscribers.update(existing.id, {
-          ...next,
-          source: next.source || existing.source || '',
+        _ctx.db.actions.insert({
+          action,
+          source: clean(input.source),
         })
-      } else {
-        _ctx.db.subscribers.insert(next)
-      }
 
-      return _ctx.db.subscribers.orderBy('createdAt').all()
-    }),
-    syncArticles: publication.mutation((_ctx, input: { articles: PublicationArticleInput[] }) => {
-      const existing = _ctx.db.articles.orderBy('createdAt').all()
-      const existingByTitle = new Map(
-        existing.map((article) => [article.title.toLowerCase(), article]),
-      )
+        return _ctx.db.actions.orderBy('createdAt', 'desc').all()
+      },
+    ),
+    recordSearch: publication.mutation(
+      (_ctx, input: PublicationSearchInput) => {
+        const query = clean(input.query)
+        const articleTitle = clean(input.articleTitle)
+        if (!query && !articleTitle) {
+          return _ctx.db.searches.orderBy('createdAt', 'desc').all()
+        }
 
-      for (const article of input.articles) {
-        const title = clean(article.title)
-        if (!title) continue
+        _ctx.db.searches.insert({
+          articleTitle,
+          query: query || articleTitle,
+          source: clean(input.source),
+        })
 
+        return _ctx.db.searches.orderBy('createdAt', 'desc').all()
+      },
+    ),
+    subscribe: publication.mutation(
+      (_ctx, input: PublicationSubscriberInput) => {
+        const email = normalizeEmail(input.email)
+        if (!email) return _ctx.db.subscribers.orderBy('createdAt').all()
+
+        const existing = _ctx.db.subscribers.where('email', email).all().at(0)
         const next = {
-          author: clean(article.author),
-          category: clean(article.category),
-          date: clean(article.date),
-          excerpt: clean(article.excerpt),
-          target: clean(article.target) || title,
-          title,
+          email,
+          source: clean(input.source),
         }
-        const current = existingByTitle.get(title.toLowerCase())
 
-        if (current) {
-          _ctx.db.articles.update(current.id, next)
+        if (existing) {
+          _ctx.db.subscribers.update(existing.id, {
+            ...next,
+            source: next.source || existing.source || '',
+          })
         } else {
-          _ctx.db.articles.insert(next)
+          _ctx.db.subscribers.insert(next)
         }
-      }
 
-      return _ctx.db.articles.orderBy('createdAt').all()
-    }),
+        return _ctx.db.subscribers.orderBy('createdAt').all()
+      },
+    ),
+    syncArticles: publication.mutation(
+      (_ctx, input: { articles: PublicationArticleInput[] }) => {
+        const existing = _ctx.db.articles.orderBy('createdAt').all()
+        const existingByTitle = new Map(
+          existing.map((article) => [article.title.toLowerCase(), article]),
+        )
+
+        for (const article of input.articles) {
+          const title = clean(article.title)
+          if (!title) continue
+
+          const next = {
+            author: clean(article.author),
+            category: clean(article.category),
+            date: clean(article.date),
+            excerpt: clean(article.excerpt),
+            target: clean(article.target) || title,
+            title,
+          }
+          const current = existingByTitle.get(title.toLowerCase())
+
+          if (current) {
+            _ctx.db.articles.update(current.id, next)
+          } else {
+            _ctx.db.articles.insert(next)
+          }
+        }
+
+        return _ctx.db.articles.orderBy('createdAt').all()
+      },
+    ),
   },
 }

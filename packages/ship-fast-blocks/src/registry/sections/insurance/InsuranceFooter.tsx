@@ -1,8 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 /**
  * InsuranceFooter — fat 6-column dark footer for an insurance page. On a
  * foreground-colored band: a wide brand block (shield logo + name, tagline,
@@ -65,7 +62,6 @@ export const InsuranceFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'SecureLife'
     const tagline =
       props.tagline ??
@@ -108,70 +104,12 @@ export const InsuranceFooter = defineCapsule({
             ],
           },
         ]
-    const contactTitle = props.contactTitle ?? 'Contact'
-    const phone = props.phone ?? '1-800-555-0199'
-    const email = props.email ?? 'support@securelife.com'
-    const address = props.address ?? '500 Insurance Plaza, New York, NY 10004'
     const copyright =
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand} Insurance. All rights reserved.`
     const socials = props.socials?.length
       ? props.socials
       : ['Facebook', 'Twitter', 'LinkedIn']
-    const badges = props.badges?.length
-      ? props.badges
-      : [
-          'Better Business Bureau A+ rating badge',
-          'Norton Secured SSL certificate badge',
-        ]
-    const homeTarget = props.homeTarget ?? brand
-    const Shield = ({ className }: { className?: string }) => (
-      <span
-        className={cn(
-          'grid place-items-center rounded-lg bg-primary text-primary-foreground',
-          className,
-        )}
-        aria-hidden="true"
-      >
-        <svg
-          width="60%"
-          height="60%"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-        </svg>
-      </span>
-    )
-    const Phone = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-      </svg>
-    )
-    void go
-    void contactTitle
-    void phone
-    void email
-    void address
-    void badges
-    void homeTarget
-    void Shield
-    void Phone
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

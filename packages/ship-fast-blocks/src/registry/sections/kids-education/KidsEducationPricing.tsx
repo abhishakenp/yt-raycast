@@ -64,9 +64,6 @@ export const KidsEducationPricing = defineCapsule({
     const description =
       props.description ??
       'Choose the plan that works for your family. All plans include a 14-day free trial.'
-    const note =
-      props.note ??
-      'All plans include a 14-day free trial. No credit card required.'
     const plans = props.plans?.length
       ? props.plans
       : [
@@ -113,24 +110,6 @@ export const KidsEducationPricing = defineCapsule({
             cta: 'Contact Sales',
           },
         ]
-    const CheckMark = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        width="20"
-        height="20"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-        aria-hidden="true"
-      >
-        <path
-          fillRule="evenodd"
-          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-          clipRule="evenodd"
-        />
-      </svg>
-    )
-    void CheckMark
-    void note
     return (
       <section className={cn('bg-background py-24', props.className)}>
         <Container>

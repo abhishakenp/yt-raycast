@@ -1,8 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 /**
  * InvestingPricing — 3-tier pricing table for an investing / fintech page. A
  * muted section band with a centered heading + lead above a responsive 3-column
@@ -61,12 +59,10 @@ export const InvestingPricing = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const heading = props.heading ?? 'Simple, transparent pricing'
     const description =
       props.description ??
       'Start free and upgrade when you need more. No hidden fees, ever.'
-    const popularLabel = props.popularLabel ?? 'Most Popular'
     const tiers = props.tiers?.length
       ? props.tiers
       : [
@@ -171,38 +167,6 @@ export const InvestingPricing = defineCapsule({
             ],
           },
         ]
-    const Check = ({ className }: { className?: string }) => (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className={className}
-        aria-hidden="true"
-      >
-        <path d="M5 13l4 4L19 7" />
-      </svg>
-    )
-    const Cross = ({ className }: { className?: string }) => (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className={className}
-        aria-hidden="true"
-      >
-        <path d="M6 18L18 6M6 6l12 12" />
-      </svg>
-    )
-    void go
-    void Check
-    void Cross
-    void popularLabel
     return (
       <section
         id="pricing"

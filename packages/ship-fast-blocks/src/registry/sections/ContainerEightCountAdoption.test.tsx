@@ -148,12 +148,12 @@ type ModuleWithCapsules = Record<string, unknown>
 function isCapsule(value: unknown): value is CapsuleExport {
   return Boolean(
     value &&
-      typeof value === 'object' &&
-      'client' in value &&
-      value.client &&
-      typeof value.client === 'object' &&
-      'component' in value.client &&
-      typeof value.client.component === 'function',
+    typeof value === 'object' &&
+    'client' in value &&
+    value.client &&
+    typeof value.client === 'object' &&
+    'component' in value.client &&
+    typeof value.client.component === 'function',
   )
 }
 

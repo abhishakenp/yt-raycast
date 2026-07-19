@@ -37,7 +37,6 @@ export const MarketingFooter = defineCapsule({
   }),
   component: ({ props }) => {
     const brand = props.brand ?? 'Flowstate'
-    const homeTarget = props.homeTarget ?? 'Features'
     const links = props.links?.length
       ? props.links
       : ['Privacy', 'Terms', 'Security', 'Contact']
@@ -57,7 +56,6 @@ export const MarketingFooter = defineCapsule({
       </span>
     )
 
-    void homeTarget
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

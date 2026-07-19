@@ -1,9 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
-
 import {
   SiteFooter,
   FooterContent,
@@ -20,7 +17,6 @@ import {
   FooterCopyright,
   FooterLegal,
 } from '#/section-kit/SiteFooter.tsx'
-
 /**
  * NewsroomFooter — refined editorial footer for a digital newsroom or online
  * magazine. A large serif wordmark and a one-line tagline sit above a wide
@@ -56,8 +52,7 @@ export const NewsroomFooter = defineCapsule({
     className: z.string().optional(),
   }),
   lakebed: publicationLakebed,
-  component: ({ props, lakebed }) => {
-    const go = useNavigate()
+  component: ({ props }) => {
     const brand = props.brand ?? 'The Daily Ledger'
     const blurb =
       props.blurb ??
@@ -101,9 +96,6 @@ export const NewsroomFooter = defineCapsule({
     const legal = props.legal?.length
       ? props.legal
       : ['Privacy', 'Terms', 'Cookies']
-
-    void go
-    void lakebed
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

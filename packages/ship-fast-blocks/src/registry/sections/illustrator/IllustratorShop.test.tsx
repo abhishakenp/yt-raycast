@@ -117,9 +117,8 @@ if (
   })
 }
 
-const { cleanup, fireEvent, render, screen, waitFor, within } = await import(
-  '@testing-library/react'
-)
+const { cleanup, fireEvent, render, screen, waitFor, within } =
+  await import('@testing-library/react')
 const { IllustratorHero } = await import('./IllustratorHero.tsx')
 const { IllustratorNavbar } = await import('./IllustratorNavbar.tsx')
 const { IllustratorShop } = await import('./IllustratorShop.tsx')

@@ -129,9 +129,8 @@ if (typeof window !== 'undefined' && 'FormData' in window) {
   })
 }
 
-const { cleanup, fireEvent, render, screen, waitFor, within } = await import(
-  '@testing-library/react'
-)
+const { cleanup, fireEvent, render, screen, waitFor, within } =
+  await import('@testing-library/react')
 const { DocsHero } = await import('./DocsHero.tsx')
 const { DocsSidebar } = await import('./DocsSidebar.tsx')
 

@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 /**
  * FilmDirectorFooter — a slim, inverted footer for a film director or
  * cinematographer portfolio. A dark foreground band with muted text: a single
@@ -30,14 +28,11 @@ export const FilmDirectorFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Marcus Chen'
-    const footerNote = props.note ?? 'All rights reserved.'
-    const footerLinks = props.links?.length
-      ? props.links
-      : ['Privacy', 'Terms', 'Credits']
-    void go
-    void footerLinks
+    const footerNote =
+      (props.note ?? 'All rights reserved.')
+        ? props.links
+        : ['Privacy', 'Terms', 'Credits']
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

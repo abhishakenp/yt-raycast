@@ -155,9 +155,8 @@ if (
   })
 }
 
-const { cleanup, fireEvent, render, screen, waitFor, within } = await import(
-  '@testing-library/react'
-)
+const { cleanup, fireEvent, render, screen, waitFor, within } =
+  await import('@testing-library/react')
 const { RestaurantMenu } = await import('./RestaurantMenu.tsx')
 const { RestaurantNavbar } = await import('./RestaurantNavbar.tsx')
 const { RestaurantTestimonials } = await import('./RestaurantTestimonials.tsx')

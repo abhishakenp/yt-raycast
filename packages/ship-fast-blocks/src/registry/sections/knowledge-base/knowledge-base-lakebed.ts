@@ -73,46 +73,50 @@ export const knowledgeBaseLakebed = {
     }),
   },
   mutations: {
-    setKbSearch: knowledgeBase.mutation((_ctx, input: KnowledgeBaseSearchInput) => {
-      const query = clean(input.query)
-      const current = _ctx.db.state.orderBy('createdAt').all().at(0)
-
-      if (current) {
-        _ctx.db.state.update(current.id, { query })
-      } else {
-        _ctx.db.state.insert({ query })
-      }
-
-      _ctx.db.searches.insert({ query })
-
-      return _ctx.db.state.orderBy('createdAt').all()
-    }),
-    syncKbArticles: knowledgeBase.mutation((_ctx, input: { items: KnowledgeBaseArticleInput[] }) => {
-      const existing = _ctx.db.articles.orderBy('createdAt').all()
-      const existingBySlug = new Map(
-        existing.map((article) => [article.slug.toLowerCase(), article]),
-      )
-
-      for (const item of input.items) {
-        const slug = clean(item.slug)
-        if (!slug) continue
-
-        const next = {
-          category: clean(item.category),
-          content: clean(item.content),
-          slug,
-          title: clean(item.title),
-        }
-        const current = existingBySlug.get(slug.toLowerCase())
+    setKbSearch: knowledgeBase.mutation(
+      (_ctx, input: KnowledgeBaseSearchInput) => {
+        const query = clean(input.query)
+        const current = _ctx.db.state.orderBy('createdAt').all().at(0)
 
         if (current) {
-          _ctx.db.articles.update(current.id, next)
+          _ctx.db.state.update(current.id, { query })
         } else {
-          _ctx.db.articles.insert(next)
+          _ctx.db.state.insert({ query })
         }
-      }
 
-      return _ctx.db.articles.orderBy('createdAt').all()
-    }),
+        _ctx.db.searches.insert({ query })
+
+        return _ctx.db.state.orderBy('createdAt').all()
+      },
+    ),
+    syncKbArticles: knowledgeBase.mutation(
+      (_ctx, input: { items: KnowledgeBaseArticleInput[] }) => {
+        const existing = _ctx.db.articles.orderBy('createdAt').all()
+        const existingBySlug = new Map(
+          existing.map((article) => [article.slug.toLowerCase(), article]),
+        )
+
+        for (const item of input.items) {
+          const slug = clean(item.slug)
+          if (!slug) continue
+
+          const next = {
+            category: clean(item.category),
+            content: clean(item.content),
+            slug,
+            title: clean(item.title),
+          }
+          const current = existingBySlug.get(slug.toLowerCase())
+
+          if (current) {
+            _ctx.db.articles.update(current.id, next)
+          } else {
+            _ctx.db.articles.insert(next)
+          }
+        }
+
+        return _ctx.db.articles.orderBy('createdAt').all()
+      },
+    ),
   },
 } as const

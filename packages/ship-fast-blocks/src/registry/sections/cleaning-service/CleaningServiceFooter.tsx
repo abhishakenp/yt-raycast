@@ -1,8 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 /**
  * CleaningServiceFooter — a multi-column footer for a home-cleaning / maid-service landing page. A dark card-background footer with a 5-column layout: brand sparkle-mark + company name + tagline + social-icon buttons on the left (spanning 2 columns on desktop), followed by link-column groups (Services, Company, Support) and a bottom bar with copyright, location, phone, and email — all routable through useNavigate. Every brand click, footer link, phone, email, and social button routes through useNavigate. Use as the closing site footer for residential cleaning companies, maid services, housekeeping platforms, janitorial businesses, or any local home-service brand. Renders fully with no props via baked-in "PureSpace" defaults.
  */
@@ -54,12 +51,10 @@ export const CleaningServiceFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'PureSpace'
     const tagline =
       props.tagline ??
       'Professional home cleaning services in Seattle. Making homes sparkle since 2018.'
-    const homeTarget = props.homeTarget ?? 'Services'
     const columns = props.columns?.length
       ? props.columns
       : [
@@ -91,40 +86,9 @@ export const CleaningServiceFooter = defineCapsule({
     const copyright =
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand} Cleaning Services. All rights reserved.`
-    const location = props.location ?? 'Seattle, WA'
-    const phone = props.phone ?? '(555) 123-4567'
-    const email = props.email ?? 'hello@purespace.com'
     const socials = props.socials?.length
       ? props.socials
       : ['Facebook', 'Twitter', 'Instagram']
-    const SparkleMark = ({ className }: { className?: string }) => (
-      <span
-        className={cn(
-          'grid place-items-center rounded-lg bg-primary text-primary-foreground',
-          className,
-        )}
-        aria-hidden="true"
-      >
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-        </svg>
-      </span>
-    )
-    void go
-    void homeTarget
-    void location
-    void phone
-    void email
-    void SparkleMark
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

@@ -1,9 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 import {
   SiteFooter,
   FooterContent,
@@ -20,7 +16,6 @@ import {
   FooterCopyright,
   FooterLegal,
 } from '#/section-kit/SiteFooter.tsx'
-
 /**
  * CrowdfundingFooter — a 4-column closing footer for a crowdfunding / campaign
  * landing page. A bg-foreground footer with a decorative leaf/sparkle brand
@@ -54,7 +49,6 @@ export const CrowdfundingFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'EcoBrush'
     const footerTagline =
       props.tagline ??
@@ -76,47 +70,13 @@ export const CrowdfundingFooter = defineCapsule({
             ],
           },
         ]
-    const connectHeading = props.connectHeading ?? 'Connect'
     const footerSocials = props.socials?.length
       ? props.socials
       : ['Instagram', 'Twitter', 'YouTube']
-    const footerNote =
-      props.note ?? '© 2026 EcoBrush Inc. All rights reserved.'
+    const footerNote = props.note ?? '© 2026 EcoBrush Inc. All rights reserved.'
     const footerLegal = props.legal?.length
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Cookie Policy']
-
-    const LeafMark = ({ className }: { className?: string }) => (
-      <span
-        className={cn(
-          'grid place-items-center rounded-full bg-primary text-primary-foreground',
-          className,
-        )}
-        aria-hidden="true"
-      >
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-        </svg>
-      </span>
-    )
-
-    void go
-    void footerTagline
-    void footerColumns
-    void footerSocials
-    void footerNote
-    void footerLegal
-    void LeafMark
-    void connectHeading
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

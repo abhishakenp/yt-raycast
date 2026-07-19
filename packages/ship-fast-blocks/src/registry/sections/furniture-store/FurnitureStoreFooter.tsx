@@ -50,15 +50,14 @@ export const FurnitureStoreFooter = defineCapsule({
   component: ({ props }) => {
     const brand = props.brand ?? 'Haven & Home'
     const about =
-      props.about ??
-      'Thoughtfully designed furniture for modern living. Made with sustainable materials, built to last for generations.'
-    const address = props.address?.length
-      ? props.address
-      : [
-          '1234 Design District',
-          'San Francisco, CA 94102',
-          'Mon–Sat: 10am–7pm, Sun: 11am–6pm',
-        ]
+      (props.about ??
+      'Thoughtfully designed furniture for modern living. Made with sustainable materials, built to last for generations.')
+        ? props.address
+        : [
+            '1234 Design District',
+            'San Francisco, CA 94102',
+            'Mon–Sat: 10am–7pm, Sun: 11am–6pm',
+          ]
     const columns = props.columns?.length
       ? props.columns
       : [
@@ -114,7 +113,6 @@ export const FurnitureStoreFooter = defineCapsule({
         <path d="M12 2L2 9v11h8v-7h4v7h8V9L12 2z" />
       </svg>
     )
-    void address
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

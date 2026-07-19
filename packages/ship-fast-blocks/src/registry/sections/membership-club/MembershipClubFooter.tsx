@@ -45,7 +45,6 @@ export const MembershipClubFooter = defineCapsule({
   }),
   component: ({ props }) => {
     const brand = props.brand ?? 'The Guild'
-    const homeTarget = props.homeTarget ?? 'Benefits'
     const about =
       props.about ??
       'A private membership for people who value depth over breadth. Curated connections, intimate events, and spaces designed for genuine relationships.'
@@ -85,7 +84,6 @@ export const MembershipClubFooter = defineCapsule({
       </svg>
     )
 
-    void homeTarget
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

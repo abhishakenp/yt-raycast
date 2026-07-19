@@ -174,9 +174,8 @@ if (
   })
 }
 
-const { cleanup, fireEvent, render, screen, waitFor } = await import(
-  '@testing-library/react'
-)
+const { cleanup, fireEvent, render, screen, waitFor } =
+  await import('@testing-library/react')
 const { BlogNavbar } = await import('./BlogNavbar.tsx')
 const { BlogStoryGrid } = await import('./BlogStoryGrid.tsx')
 const { NewsroomSubscribe } = await import('../newsroom/NewsroomSubscribe.tsx')

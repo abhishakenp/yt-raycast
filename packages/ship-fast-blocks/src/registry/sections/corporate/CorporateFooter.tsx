@@ -64,7 +64,6 @@ export const CorporateFooter = defineCapsule({
   }),
   component: ({ props }) => {
     const brand = props.brand ?? 'Nexus'
-    const homeTarget = props.homeTarget ?? 'Solutions'
     const about =
       props.about ??
       'Nexus Enterprise Solutions delivers mission-critical cloud infrastructure and digital transformation services to organizations worldwide.'
@@ -144,7 +143,6 @@ export const CorporateFooter = defineCapsule({
         {brand.charAt(0).toUpperCase()}
       </span>
     )
-    void homeTarget
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

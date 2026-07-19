@@ -54,39 +54,15 @@ export const MentalHealthFooter = defineCapsule({
   }),
   component: ({ props }) => {
     const brand = props.brand ?? 'Stillpoint'
-    const homeTarget = props.homeTarget ?? 'Services'
     const about =
       props.about ??
       "Professional mental health services in Portland's Pearl District. Licensed, compassionate care for individuals, couples, and families."
     const socials = props.socials?.length
       ? props.socials
       : ['Facebook', 'Instagram', 'LinkedIn']
-    const servicesTitle = props.servicesTitle ?? 'Services'
-    const servicesLinks = props.servicesLinks?.length
-      ? props.servicesLinks
-      : [
-          'Individual Therapy',
-          'Couples Therapy',
-          'Family Therapy',
-          'EMDR & Trauma',
-          'Psychiatry',
-        ]
-    const servicesTarget = props.servicesTarget ?? 'Services'
-    const companyTitle = props.companyTitle ?? 'Company'
-    const companyLinks = props.companyLinks?.length
-      ? props.companyLinks
-      : ['About Us', 'Our Team', 'Careers', 'Blog', 'Privacy Policy']
-    const contactTitle = props.contactTitle ?? 'Contact'
-    const address = props.address ?? '1234 NW Lovejoy St, Portland, OR 97209'
-    const phone = props.phone ?? '(503) 555-0147'
-    const email = props.email ?? 'hello@stillpointtherapy.com'
-    const hours = props.hours ?? 'Mon-Fri: 8am - 8pm'
-    const bookLabel = props.bookLabel ?? 'Book Session'
     const copyright =
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand} Therapy, LLC. All rights reserved.`
-    const license = props.license ?? 'Licensed in Oregon • HIPAA Compliant'
-
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -104,37 +80,6 @@ export const MentalHealthFooter = defineCapsule({
       </svg>
     )
 
-    const Phone = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        aria-hidden="true"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-        />
-      </svg>
-    )
-
-    void homeTarget
-    void servicesTitle
-    void servicesLinks
-    void servicesTarget
-    void companyTitle
-    void companyLinks
-    void contactTitle
-    void address
-    void phone
-    void email
-    void hours
-    void bookLabel
-    void license
-    void Phone
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

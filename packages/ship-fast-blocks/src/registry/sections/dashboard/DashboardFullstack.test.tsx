@@ -307,9 +307,8 @@ function createDashboardLakebedStub() {
   }
 }
 
-const { cleanup, fireEvent, render, screen, waitFor } = await import(
-  '@testing-library/react'
-)
+const { cleanup, fireEvent, render, screen, waitFor } =
+  await import('@testing-library/react')
 
 afterEach(() => {
   cleanup()

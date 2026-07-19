@@ -152,9 +152,8 @@ if (
   })
 }
 
-const { cleanup, fireEvent, render, screen, waitFor, within } = await import(
-  '@testing-library/react'
-)
+const { cleanup, fireEvent, render, screen, waitFor, within } =
+  await import('@testing-library/react')
 const { AiProductNavbar } = await import('./AiProductNavbar.tsx')
 const { AiProductHero } = await import('./AiProductHero.tsx')
 const { AiProductSteps } = await import('./AiProductSteps.tsx')

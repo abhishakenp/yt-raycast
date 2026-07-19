@@ -65,24 +65,6 @@ export const ConstructionFooter = defineCapsule({
     const about =
       props.about ??
       'Building excellence since 1987. Commercial and residential construction across the Pacific Northwest.'
-    const servicesTitle = props.servicesTitle ?? 'Services'
-    const servicesLinks = props.servicesLinks?.length
-      ? props.servicesLinks
-      : [
-          'Commercial Construction',
-          'Residential Building',
-          'Renovation & Remodeling',
-          'Project Management',
-          'Design-Build',
-        ]
-    const companyTitle = props.companyTitle ?? 'Company'
-    const companyLinks = props.companyLinks?.length
-      ? props.companyLinks
-      : ['About Us', 'Projects', 'Careers', 'News', 'Contact']
-    const contactTitle = props.contactTitle ?? 'Contact'
-    const address = props.address ?? '1234 Construction Ave, Seattle, WA 98101'
-    const phone = props.phone ?? '(206) 555-1234'
-    const email = props.email ?? 'info@builtright.com'
     const socials = props.socials?.length
       ? props.socials
       : ['LinkedIn', 'Instagram', 'Facebook']
@@ -90,7 +72,6 @@ export const ConstructionFooter = defineCapsule({
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Licenses']
     const note = props.note ?? 'All rights reserved.'
-    const homeTarget = props.homeTarget ?? 'Services'
     const LogoMark = ({
       className,
       tone = 'primary',
@@ -122,15 +103,6 @@ export const ConstructionFooter = defineCapsule({
         </svg>
       </span>
     )
-    void servicesTitle
-    void servicesLinks
-    void companyTitle
-    void companyLinks
-    void contactTitle
-    void address
-    void phone
-    void email
-    void homeTarget
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

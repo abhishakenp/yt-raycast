@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   SiteFooter,
   FooterContent,
@@ -18,7 +16,6 @@ import {
   FooterCopyright,
   FooterLegal,
 } from '#/section-kit/SiteFooter.tsx'
-
 /**
  * JewelryStoreFooter — rich five-column footer for a luxury jewelry maison on
  * a bordered near-black band. A wide brand block (serif gold wordmark, blurb,
@@ -57,9 +54,7 @@ export const JewelryStoreFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Maison Noir'
-    const homeTarget = props.homeTarget ?? 'Collections'
     const about =
       props.about ??
       'Crafting exceptional jewelry since 1892. Every piece tells a story of heritage, craftsmanship, and enduring beauty.'
@@ -89,15 +84,6 @@ export const JewelryStoreFooter = defineCapsule({
             ],
           },
         ]
-    const contactTitle = props.contactTitle ?? 'Contact'
-    const contact = props.contact?.length
-      ? props.contact
-      : [
-          '+33 1 42 86 87 88',
-          'concierge@maisonnoir.com',
-          '12 Place Vendôme, 75001 Paris, France',
-          '730 Fifth Avenue, New York, NY 10019',
-        ]
     const socials = props.socials?.length
       ? props.socials
       : ['Instagram', 'Pinterest', 'Facebook']
@@ -105,11 +91,6 @@ export const JewelryStoreFooter = defineCapsule({
     const legal = props.legal?.length
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
-
-    void go
-    void homeTarget
-    void contactTitle
-    void contact
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

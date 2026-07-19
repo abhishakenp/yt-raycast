@@ -41,8 +41,6 @@ export const AgencyFooter = defineCapsule({
     const brand = props.brand ?? 'Studio Rise'
     const note = props.note ?? 'All rights reserved.'
     const links = props.links?.length ? props.links : ['Privacy', 'Terms']
-    const homeTarget = props.homeTarget ?? 'Services'
-
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
@@ -55,7 +53,6 @@ export const AgencyFooter = defineCapsule({
       </span>
     )
 
-    void homeTarget
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

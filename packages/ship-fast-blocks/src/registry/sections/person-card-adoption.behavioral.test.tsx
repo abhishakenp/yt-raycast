@@ -8,14 +8,12 @@ vi.mock('#/lib/use-navigate.tsx', () => ({
 
 const { cleanup, render } = await import('@testing-library/react')
 
-const { AccountingFirmTeam } = await import(
-  './accounting-firm/AccountingFirmTeam.tsx'
-)
+const { AccountingFirmTeam } =
+  await import('./accounting-firm/AccountingFirmTeam.tsx')
 const { DentalTeam } = await import('./dental/DentalTeam.tsx')
 const { HealthcareDoctors } = await import('./healthcare/HealthcareDoctors.tsx')
-const { MentalHealthTeam } = await import(
-  './mental-health/MentalHealthTeam.tsx'
-)
+const { MentalHealthTeam } =
+  await import('./mental-health/MentalHealthTeam.tsx')
 const { FitnessTrainers } = await import('./fitness/FitnessTrainers.tsx')
 const { LawFirmAttorneys } = await import('./law-firm/LawFirmAttorneys.tsx')
 const { EventSpeakers } = await import('./event/EventSpeakers.tsx')

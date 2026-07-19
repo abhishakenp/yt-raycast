@@ -1,8 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 import {
   SiteFooter,
   FooterContent,
@@ -19,7 +16,6 @@ import {
   FooterCopyright,
   FooterLegal,
 } from '#/section-kit/SiteFooter.tsx'
-
 /**
  * CybersecurityFooter — dark, full-bleed 5-column mega-footer. A brand-surface
  * footer: a wide brand column (shield logo + name, tagline, and social links)
@@ -54,7 +50,6 @@ export const CybersecurityFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'SentinelGuard'
     const tagline =
       props.tagline ??
@@ -104,26 +99,6 @@ export const CybersecurityFooter = defineCapsule({
     const social = props.social?.length
       ? props.social
       : ['Twitter', 'LinkedIn', 'GitHub']
-    const homeTarget = props.homeTarget ?? 'Platform'
-
-    const ShieldMark = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-      </svg>
-    )
-
-    void go
-    void homeTarget
-    void ShieldMark
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

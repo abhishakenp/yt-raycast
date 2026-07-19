@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   SiteFooter,
   FooterContent,
@@ -15,7 +13,6 @@ import {
   FooterCopyright,
   FooterLegal,
 } from '#/section-kit/SiteFooter.tsx'
-
 /**
  * InteriorDesignFooter — rich inverted footer on the foreground surface for an
  * upscale interior-design / architecture studio. A four-column band: a wide
@@ -47,7 +44,6 @@ export const InteriorDesignFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Atelier Studio'
     const about =
       props.about ??
@@ -55,38 +51,10 @@ export const InteriorDesignFooter = defineCapsule({
     const socials = props.socials?.length
       ? props.socials
       : ['Instagram', 'Pinterest', 'LinkedIn']
-    const servicesTitle = props.servicesTitle ?? 'Services'
-    const servicesLinks = props.servicesLinks?.length
-      ? props.servicesLinks
-      : [
-          'Residential Design',
-          'Commercial Spaces',
-          'Hospitality',
-          'Furniture Curation',
-          'Design Consultation',
-        ]
-    const companyTitle = props.companyTitle ?? 'Company'
-    const companyLinks = props.companyLinks?.length
-      ? props.companyLinks
-      : ['About Us', 'Portfolio', 'Press', 'Careers', 'Contact']
     const copyright = props.copyright ?? 'All rights reserved.'
     const legalLinks = props.legalLinks?.length
       ? props.legalLinks
       : ['Privacy Policy', 'Terms of Service']
-    const homeTarget = props.homeTarget ?? 'Projects'
-
-    const brandParts = brand.split(' ')
-    const brandMark = brandParts[0]
-    const brandSuffix = brandParts.slice(1).join(' ')
-
-    void go
-    void servicesTitle
-    void servicesLinks
-    void companyTitle
-    void companyLinks
-    void homeTarget
-    void brandMark
-    void brandSuffix
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

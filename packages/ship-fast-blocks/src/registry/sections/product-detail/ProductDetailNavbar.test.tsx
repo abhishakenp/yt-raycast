@@ -100,9 +100,8 @@ if (typeof ResizeObserver === 'undefined') {
   })
 }
 
-const { cleanup, fireEvent, render, screen, waitFor } = await import(
-  '@testing-library/react'
-)
+const { cleanup, fireEvent, render, screen, waitFor } =
+  await import('@testing-library/react')
 const { ProductDetailNavbar } = await import('./ProductDetailNavbar.tsx')
 
 function createCommerceLakebedStub() {

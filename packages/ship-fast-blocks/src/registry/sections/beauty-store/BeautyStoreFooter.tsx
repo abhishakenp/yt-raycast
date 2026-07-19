@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   SiteFooter,
   FooterContent,
@@ -12,7 +10,6 @@ import {
   FooterCopyright,
   FooterLegal,
 } from '#/section-kit/SiteFooter.tsx'
-
 /**
  * BeautyStoreFooter — slim bottom footer for a beauty / skincare / cosmetics
  * storefront. A single bordered-top row (stacks on mobile): serif brand name on
@@ -37,16 +34,11 @@ export const BeautyStoreFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Lumière'
     const note = props.note ?? 'All rights reserved.'
     const links = props.links?.length
       ? props.links
       : ['Privacy', 'Terms', 'Contact']
-    const homeTarget = props.homeTarget ?? 'Bestsellers'
-
-    void go
-    void homeTarget
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

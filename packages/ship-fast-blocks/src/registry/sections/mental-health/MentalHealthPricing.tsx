@@ -122,11 +122,6 @@ export const MentalHealthPricing = defineCapsule({
         }),
       ),
     )
-    const note =
-      props.note ??
-      'Sliding scale available: We reserve a limited number of reduced-rate slots for clients experiencing financial hardship. Contact us to inquire about availability.'
-
-    void note
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <Container size="lg">

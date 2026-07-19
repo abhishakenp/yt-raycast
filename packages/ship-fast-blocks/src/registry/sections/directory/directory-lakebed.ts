@@ -135,55 +135,59 @@ export const directoryLakebed = {
 
       return _ctx.db.selections.orderBy('createdAt').all()
     }),
-    setDirectorySearch: directory.mutation((_ctx, input: DirectorySearchInput) => {
-      const category = clean(input.category)
-      const query = clean(input.query)
-      const current = _ctx.db.state.orderBy('createdAt').all().at(0)
-      const next = {
-        category,
-        query,
-        selectedName: '',
-      }
-
-      if (current) {
-        _ctx.db.state.update(current.id, next)
-      } else {
-        _ctx.db.state.insert(next)
-      }
-
-      _ctx.db.searches.insert({ category, query })
-
-      return _ctx.db.state.orderBy('createdAt').all()
-    }),
-    syncListings: directory.mutation((_ctx, input: { items: DirectoryListingInput[] }) => {
-      const existing = _ctx.db.items.orderBy('createdAt').all()
-      const existingByName = new Map(
-        existing.map((item) => [item.name.toLowerCase(), item]),
-      )
-
-      for (const item of input.items) {
-        const name = clean(item.name)
-        if (!name) continue
-
+    setDirectorySearch: directory.mutation(
+      (_ctx, input: DirectorySearchInput) => {
+        const category = clean(input.category)
+        const query = clean(input.query)
+        const current = _ctx.db.state.orderBy('createdAt').all().at(0)
         const next = {
-          address: clean(item.address),
-          category: clean(item.category),
-          hours: clean(item.hours),
-          imageAlt: clean(item.imageAlt),
-          name,
-          rating: clean(item.rating),
-          reviews: clean(item.reviews),
+          category,
+          query,
+          selectedName: '',
         }
-        const current = existingByName.get(name.toLowerCase())
 
         if (current) {
-          _ctx.db.items.update(current.id, next)
+          _ctx.db.state.update(current.id, next)
         } else {
-          _ctx.db.items.insert(next)
+          _ctx.db.state.insert(next)
         }
-      }
 
-      return _ctx.db.items.orderBy('createdAt').all()
-    }),
+        _ctx.db.searches.insert({ category, query })
+
+        return _ctx.db.state.orderBy('createdAt').all()
+      },
+    ),
+    syncListings: directory.mutation(
+      (_ctx, input: { items: DirectoryListingInput[] }) => {
+        const existing = _ctx.db.items.orderBy('createdAt').all()
+        const existingByName = new Map(
+          existing.map((item) => [item.name.toLowerCase(), item]),
+        )
+
+        for (const item of input.items) {
+          const name = clean(item.name)
+          if (!name) continue
+
+          const next = {
+            address: clean(item.address),
+            category: clean(item.category),
+            hours: clean(item.hours),
+            imageAlt: clean(item.imageAlt),
+            name,
+            rating: clean(item.rating),
+            reviews: clean(item.reviews),
+          }
+          const current = existingByName.get(name.toLowerCase())
+
+          if (current) {
+            _ctx.db.items.update(current.id, next)
+          } else {
+            _ctx.db.items.insert(next)
+          }
+        }
+
+        return _ctx.db.items.orderBy('createdAt').all()
+      },
+    ),
   },
 } as const

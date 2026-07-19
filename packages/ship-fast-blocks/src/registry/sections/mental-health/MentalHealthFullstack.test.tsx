@@ -101,9 +101,8 @@ if (
   })
 }
 
-const { cleanup, fireEvent, render, screen, waitFor } = await import(
-  '@testing-library/react'
-)
+const { cleanup, fireEvent, render, screen, waitFor } =
+  await import('@testing-library/react')
 const { MentalHealthNavbar } = await import('./MentalHealthNavbar.tsx')
 const { MentalHealthHero } = await import('./MentalHealthHero.tsx')
 const { MentalHealthServices } = await import('./MentalHealthServices.tsx')

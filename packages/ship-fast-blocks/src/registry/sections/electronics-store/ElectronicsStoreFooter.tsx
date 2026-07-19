@@ -1,8 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 /**
  * ElectronicsStoreFooter — a multi-column site footer for an electronics
  * storefront. A wide brand column (bolt logo mark + name, description, social
@@ -63,12 +60,10 @@ export const ElectronicsStoreFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'TechNova'
     const description =
       props.description ??
       'Premium electronics and gadgets for the modern lifestyle. Quality products, competitive prices, exceptional service.'
-    const homeTarget = props.homeTarget ?? 'Products'
     const socials = props.socials?.length
       ? props.socials
       : [
@@ -125,31 +120,6 @@ export const ElectronicsStoreFooter = defineCapsule({
     const copyright =
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand}. All rights reserved.`
-    const BoltMark = ({ className }: { className?: string }) => (
-      <span
-        className={cn(
-          'grid place-items-center rounded-lg bg-foreground text-background',
-          className,
-        )}
-        aria-hidden="true"
-      >
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M13 10V3L4 14h7v7l9-11h-7z" />
-        </svg>
-      </span>
-    )
-    void go
-    void homeTarget
-    void BoltMark
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

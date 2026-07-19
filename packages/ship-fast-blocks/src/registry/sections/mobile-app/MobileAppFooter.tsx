@@ -55,7 +55,6 @@ export const MobileAppFooter = defineCapsule({
   }),
   component: ({ props }) => {
     const brand = props.brand ?? 'DailyFlow'
-    const homeTarget = props.homeTarget ?? 'Features'
     const tagline =
       props.tagline ??
       'Building better habits, one day at a time. Join 50,000+ habit builders worldwide.'
@@ -81,7 +80,6 @@ export const MobileAppFooter = defineCapsule({
     const note =
       props.note ??
       `© ${new Date().getFullYear()} ${brand}, Inc. All rights reserved.`
-    const madeIn = props.madeIn ?? 'Made with care in San Francisco'
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 32 32"
@@ -99,8 +97,6 @@ export const MobileAppFooter = defineCapsule({
         />
       </svg>
     )
-    void homeTarget
-    void madeIn
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 /**
  * MusicFestivalFooter — a four-column footer for a music / arts festival landing
  * page. A bordered band with a brand block (wordmark + about paragraph), one or
@@ -56,7 +54,6 @@ export const MusicFestivalFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'HORIZON'
     const about =
       props.about ??
@@ -73,7 +70,6 @@ export const MusicFestivalFooter = defineCapsule({
             links: ['FAQ', 'Contact', 'Accessibility', 'Safety'],
           },
         ]
-    const socialLabel = props.socialLabel ?? 'Connect'
     const socials = props.socials?.length
       ? props.socials
       : ['Instagram', 'Twitter', 'TikTok', 'YouTube']
@@ -83,8 +79,6 @@ export const MusicFestivalFooter = defineCapsule({
     const legal = props.legal?.length
       ? props.legal
       : ['Privacy Policy', 'Terms of Service']
-    void go
-    void socialLabel
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

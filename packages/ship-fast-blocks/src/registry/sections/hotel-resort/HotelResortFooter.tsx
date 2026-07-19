@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import {
@@ -16,7 +15,6 @@ import {
   FooterCopyright,
   FooterLegal,
 } from '#/section-kit/SiteFooter.tsx'
-
 /**
  * HotelResortFooter — rich 4-column dark footer for a luxury hotel / resort &
  * spa site. A foreground-surface footer: a brand column (logo mark + name,
@@ -65,7 +63,7 @@ export const HotelResortFooter = defineCapsule({
     className: z.string().optional(),
   }),
   lakebed: newsletterLakebed,
-  component: ({ props, lakebed }) => {
+  component: ({ props }) => {
     const brand = props.brand ?? 'Azure Coast'
     const about =
       props.about ??
@@ -73,30 +71,10 @@ export const HotelResortFooter = defineCapsule({
     const socials = props.socials?.length
       ? props.socials
       : ['Instagram', 'Facebook', 'Twitter']
-    const exploreHeading = props.exploreHeading ?? 'Explore'
-    const exploreLinks = props.exploreLinks?.length
-      ? props.exploreLinks
-      : ['Rooms & Suites', 'Spa & Wellness', 'Dining', 'Gallery', 'Gift Cards']
-    const contactHeading = props.contactHeading ?? 'Contact'
-    const contactLines = props.contactLines?.length
-      ? props.contactLines
-      : [
-          '34780 Pacific Coast Highway',
-          'Malibu, CA 90265',
-          '1-800-555-1234',
-          'reservations@azurecoast.com',
-        ]
-    const newsletterHeading = props.newsletterHeading ?? 'Newsletter'
-    const newsletterText =
-      props.newsletterText ?? 'Receive exclusive offers and resort updates.'
-    const newsletterCta = props.newsletterCta ?? 'Join'
-    const copyrightSuffix = props.copyrightSuffix ?? 'Resort & Spa.'
     const note = props.note ?? 'All rights reserved.'
     const legalLinks = props.legalLinks?.length
       ? props.legalLinks
       : ['Privacy Policy', 'Terms of Service', 'Accessibility']
-    const homeTarget = props.homeTarget ?? 'Rooms & Suites'
-
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
@@ -108,17 +86,6 @@ export const HotelResortFooter = defineCapsule({
         {brand.charAt(0).toUpperCase()}
       </span>
     )
-
-    void exploreHeading
-    void exploreLinks
-    void contactHeading
-    void contactLines
-    void newsletterHeading
-    void newsletterText
-    void newsletterCta
-    void copyrightSuffix
-    void homeTarget
-    void lakebed
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

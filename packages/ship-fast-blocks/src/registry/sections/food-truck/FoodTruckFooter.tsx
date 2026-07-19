@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   SiteFooter,
   FooterContent,
@@ -17,7 +15,6 @@ import {
   FooterCopyright,
   FooterLegal,
 } from '#/section-kit/SiteFooter.tsx'
-
 /**
  * FoodTruckFooter — an inverted, multi-column site footer for a food-truck brand. A
  * foreground-filled band with a brand block (circular monogram tile of brand initials +
@@ -45,11 +42,7 @@ export const FoodTruckFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Curbside Kitchen'
-    const footerAbout =
-      props.about ??
-      'Gourmet food truck serving Los Angeles since 2020. Farm-to-street, chef-made, zero pretension.'
     const footerColumns = props.columns?.length
       ? props.columns
       : [
@@ -67,7 +60,6 @@ export const FoodTruckFooter = defineCapsule({
             links: ['Locations', 'Catering', 'FAQ', 'Careers'],
           },
         ]
-    const socialsHeading = props.socialsHeading ?? 'Connect'
     const footerSocials = props.socials?.length
       ? props.socials
       : ['Instagram', 'Twitter', 'YouTube', 'Facebook']
@@ -75,18 +67,6 @@ export const FoodTruckFooter = defineCapsule({
     const footerLegal = props.legal?.length
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Food Safety']
-
-    const initials = brand
-      .split(/\s+/)
-      .map((w) => w.charAt(0))
-      .join('')
-      .slice(0, 2)
-      .toUpperCase()
-
-    void go
-    void footerAbout
-    void socialsHeading
-    void initials
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

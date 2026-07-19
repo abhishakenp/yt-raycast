@@ -120,9 +120,8 @@ if (
   })
 }
 
-const { cleanup, fireEvent, render, screen, waitFor, within } = await import(
-  '@testing-library/react'
-)
+const { cleanup, fireEvent, render, screen, waitFor, within } =
+  await import('@testing-library/react')
 const { SubscriptionBoxHero } = await import('./SubscriptionBoxHero.tsx')
 const { SubscriptionBoxNavbar } = await import('./SubscriptionBoxNavbar.tsx')
 const { SubscriptionBoxPricing } = await import('./SubscriptionBoxPricing.tsx')

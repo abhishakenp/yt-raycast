@@ -52,40 +52,12 @@ export const LogisticsFooter = defineCapsule({
   }),
   component: ({ props }) => {
     const brand = props.brand ?? 'SwiftFreight'
-    const homeTarget = props.homeTarget ?? 'Services'
     const blurb =
       props.blurb ??
       'Global logistics made simple. Air, ocean, and ground freight to 180+ countries with real-time tracking and guaranteed delivery.'
     const socials = props.socials?.length
       ? props.socials
       : ['LinkedIn', 'Twitter', 'Facebook']
-    const servicesTitle = props.servicesTitle ?? 'Services'
-    const servicesLinks = props.servicesLinks?.length
-      ? props.servicesLinks
-      : [
-          'Air Freight',
-          'Ocean Freight',
-          'Ground Transport',
-          'Warehousing',
-          'Customs Brokerage',
-          'Last-Mile Delivery',
-        ]
-    const companyTitle = props.companyTitle ?? 'Company'
-    const companyLinks = props.companyLinks?.length
-      ? props.companyLinks
-      : [
-          'About Us',
-          'Careers',
-          'Press',
-          'Partners',
-          'Sustainability',
-          'Security',
-        ]
-    const contactTitle = props.contactTitle ?? 'Contact'
-    const email = props.email ?? 'support@swiftfreight.com'
-    const phone = props.phone ?? '+1 (555) 234-5678'
-    const address =
-      props.address ?? '450 Lexington Ave, Suite 2800, New York, NY 10017'
     const copyright =
       props.copyright ?? 'SwiftFreight Logistics Inc. All rights reserved.'
     const legalLinks = props.legalLinks?.length
@@ -112,15 +84,6 @@ export const LogisticsFooter = defineCapsule({
         </svg>
       </span>
     )
-    void homeTarget
-    void servicesTitle
-    void servicesLinks
-    void companyTitle
-    void companyLinks
-    void contactTitle
-    void email
-    void phone
-    void address
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

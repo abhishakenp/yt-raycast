@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   SiteFooter,
   FooterContent,
@@ -14,7 +12,6 @@ import {
   FooterBottom,
   FooterCopyright,
 } from '#/section-kit/SiteFooter.tsx'
-
 /**
  * EventPlannerFooter — inverted four-column site footer. A foreground-colored band
  * with a brand column (thin clock-glyph logo + light brand name + tagline) beside
@@ -39,7 +36,6 @@ export const EventPlannerFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Serene Events'
     const footerTagline =
       props.tagline ??
@@ -65,34 +61,6 @@ export const EventPlannerFooter = defineCapsule({
             links: ['Instagram', 'Pinterest', 'LinkedIn', 'Contact Us'],
           },
         ]
-    const footerLegal =
-      props.legal ??
-      `© ${new Date().getFullYear()} ${brand}. All rights reserved.`
-    const footerLegalLinks = props.legalLinks?.length
-      ? props.legalLinks
-      : ['Privacy Policy', 'Terms of Service']
-
-    const Clock = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="1.5"
-          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-        />
-      </svg>
-    )
-
-    void go
-    void footerLegalLinks
-    void footerLegal
-    void Clock
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

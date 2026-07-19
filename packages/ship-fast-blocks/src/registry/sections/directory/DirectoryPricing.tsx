@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { directoryLakebed } from './directory-lakebed.ts'
-
 /**
  * DirectoryPricing — 3-tier business-listing pricing table for a local-business
  * directory. A card-surface section with a centered heading + description and a
@@ -57,7 +56,7 @@ export const DirectoryPricing = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props, lakebed }) => {
+  component: ({ props }) => {
     const heading = props.heading ?? 'List Your Business'
     const description =
       props.description ??
@@ -115,37 +114,6 @@ export const DirectoryPricing = defineCapsule({
             badge: '',
           },
         ]
-    const Check = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path d="M5 13l4 4L19 7" />
-      </svg>
-    )
-    const Cross = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path d="M6 18L18 6M6 6l12 12" />
-      </svg>
-    )
-    void Check
-    void Cross
-    void lakebed
     return (
       <section className={cn('bg-card py-16 lg:py-24', props.className)}>
         <Container>
@@ -156,7 +124,6 @@ export const DirectoryPricing = defineCapsule({
             titleClassName="mb-4 text-3xl font-semibold text-foreground sm:text-4xl"
             subtitleClassName="mx-auto max-w-2xl text-lg text-muted-foreground"
           />
-
           <PricingGrid
             className={cn(
               'mx-auto grid max-w-5xl gap-6 md:grid-cols-3 lg:gap-8',

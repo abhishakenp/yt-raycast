@@ -58,38 +58,42 @@ export const localServiceLakebed = {
     ),
   },
   mutations: {
-    requestBooking: localService.mutation((_ctx, input: LocalServiceBookingInput) => {
-      const label = normalizeLabel(input.label)
+    requestBooking: localService.mutation(
+      (_ctx, input: LocalServiceBookingInput) => {
+        const label = normalizeLabel(input.label)
 
-      _ctx.db.bookings.insert({
-        label,
-        service: input.service ?? label,
-        source: input.source ?? '',
-        type: 'booking',
-      })
+        _ctx.db.bookings.insert({
+          label,
+          service: input.service ?? label,
+          source: input.source ?? '',
+          type: 'booking',
+        })
 
-      return _ctx.db.bookings.orderBy('createdAt').all()
-    }),
-    syncServices: localService.mutation((_ctx, input: { services: LocalServiceItemInput[] }) => {
-      for (const service of input.services) {
-        const name = service.name.trim()
-        if (!name) continue
+        return _ctx.db.bookings.orderBy('createdAt').all()
+      },
+    ),
+    syncServices: localService.mutation(
+      (_ctx, input: { services: LocalServiceItemInput[] }) => {
+        for (const service of input.services) {
+          const name = service.name.trim()
+          if (!name) continue
 
-        const existing = _ctx.db.services.where('name', name).all().at(0)
-        const next = {
-          name,
-          price: service.price ?? '',
-          summary: service.summary ?? '',
+          const existing = _ctx.db.services.where('name', name).all().at(0)
+          const next = {
+            name,
+            price: service.price ?? '',
+            summary: service.summary ?? '',
+          }
+
+          if (existing) {
+            _ctx.db.services.update(existing.id, next)
+          } else {
+            _ctx.db.services.insert(next)
+          }
         }
 
-        if (existing) {
-          _ctx.db.services.update(existing.id, next)
-        } else {
-          _ctx.db.services.insert(next)
-        }
-      }
-
-      return _ctx.db.services.orderBy('updatedAt', 'desc').all()
-    }),
+        return _ctx.db.services.orderBy('updatedAt', 'desc').all()
+      },
+    ),
   },
 } as const

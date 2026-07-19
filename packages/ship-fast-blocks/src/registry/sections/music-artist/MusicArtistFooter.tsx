@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   SiteFooter,
   FooterContent,
@@ -16,7 +14,6 @@ import {
   FooterCopyright,
   FooterLegal,
 } from '#/section-kit/SiteFooter.tsx'
-
 /**
  * MusicArtistFooter — multi-column closing footer for a music artist / band
  * page. A wide brand block (thin wordmark, blurb, and a booking/press contact
@@ -53,14 +50,10 @@ export const MusicArtistFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Velvet Echo'
     const description =
       props.description ??
       'Independent folk music from Portland, Oregon. New album "Northbound" available everywhere.'
-    const contactLabel =
-      props.contactLabel ?? 'For booking and press inquiries:'
-    const email = props.email ?? 'hello@velvetecho.com'
     const columns = props.columns?.length
       ? props.columns
       : [
@@ -82,12 +75,6 @@ export const MusicArtistFooter = defineCapsule({
     const legal = props.legal?.length
       ? props.legal
       : ['Privacy Policy', 'Terms of Use']
-    const homeTarget = props.homeTarget ?? 'Music'
-
-    void go
-    void contactLabel
-    void email
-    void homeTarget
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

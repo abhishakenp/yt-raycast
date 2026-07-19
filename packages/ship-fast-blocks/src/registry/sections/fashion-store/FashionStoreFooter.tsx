@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 /**
  * FashionStoreFooter — rich multi-column dark footer for a minimalist fashion
  * store. A foreground-colored closing section with a brand block (serif
@@ -51,9 +49,7 @@ export const FashionStoreFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'NOIRE'
-    const homeTarget = props.homeTarget ?? 'Collections'
     const footerTagline =
       props.tagline ??
       'Timeless essentials for the modern wardrobe. Designed in Copenhagen, made with intention.'
@@ -105,13 +101,10 @@ export const FashionStoreFooter = defineCapsule({
     const footerSocials = props.socials?.length
       ? props.socials
       : ['Instagram', 'Pinterest', 'Twitter']
-    const footerCopyright = props.copyright ?? 'All rights reserved.'
-    const footerPayments = props.payments?.length
-      ? props.payments
-      : ['VISA', 'MC', 'AMEX', 'Pay']
-    void go
-    void homeTarget
-    void footerPayments
+    const footerCopyright =
+      (props.copyright ?? 'All rights reserved.')
+        ? props.payments
+        : ['VISA', 'MC', 'AMEX', 'Pay']
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

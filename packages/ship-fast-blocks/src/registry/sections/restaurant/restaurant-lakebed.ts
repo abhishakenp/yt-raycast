@@ -163,82 +163,90 @@ export const restaurantLakebed = {
 
       return []
     }),
-    removeMenuItem: restaurant.mutation((_ctx, input: RestaurantMenuItemInput) => {
-      const name = clean(input.name)
-      const existing = name
-        ? _ctx.db.orderItems.where('name', name).all().at(0)
-        : null
+    removeMenuItem: restaurant.mutation(
+      (_ctx, input: RestaurantMenuItemInput) => {
+        const name = clean(input.name)
+        const existing = name
+          ? _ctx.db.orderItems.where('name', name).all().at(0)
+          : null
 
-      if (existing) _ctx.db.orderItems.delete(existing.id)
+        if (existing) _ctx.db.orderItems.delete(existing.id)
 
-      return _ctx.db.orderItems.orderBy('createdAt').all()
-    }),
-    reserveTable: restaurant.mutation((_ctx, input: RestaurantReservationInput) => {
-      const source = clean(input.source)
-      if (!source) return _ctx.db.reservations.orderBy('createdAt').all()
+        return _ctx.db.orderItems.orderBy('createdAt').all()
+      },
+    ),
+    reserveTable: restaurant.mutation(
+      (_ctx, input: RestaurantReservationInput) => {
+        const source = clean(input.source)
+        if (!source) return _ctx.db.reservations.orderBy('createdAt').all()
 
-      _ctx.db.reservations.insert({
-        label: clean(input.label),
-        source,
-      })
+        _ctx.db.reservations.insert({
+          label: clean(input.label),
+          source,
+        })
 
-      return _ctx.db.reservations.orderBy('createdAt', 'desc').all()
-    }),
-    selectMenuItem: restaurant.mutation((_ctx, input: RestaurantMenuItemInput) => {
-      const name = clean(input.name)
-      if (!name) return _ctx.db.selections.orderBy('createdAt').all()
+        return _ctx.db.reservations.orderBy('createdAt', 'desc').all()
+      },
+    ),
+    selectMenuItem: restaurant.mutation(
+      (_ctx, input: RestaurantMenuItemInput) => {
+        const name = clean(input.name)
+        if (!name) return _ctx.db.selections.orderBy('createdAt').all()
 
-      const category = clean(input.category)
-      const price = clean(input.price)
-      const current = _ctx.db.state.orderBy('createdAt').all().at(0)
-      const next = {
-        selectedCategory: category,
-        selectedMenuItem: name,
-        selectedPrice: price,
-      }
-
-      if (current) {
-        _ctx.db.state.update(current.id, next)
-      } else {
-        _ctx.db.state.insert(next)
-      }
-
-      _ctx.db.selections.insert({
-        category,
-        name,
-        price,
-        source: clean(input.source) || 'search',
-      })
-
-      return _ctx.db.selections.orderBy('createdAt', 'desc').all()
-    }),
-    syncMenuCatalog: restaurant.mutation((_ctx, input: RestaurantCatalogInput) => {
-      const existing = _ctx.db.catalog.orderBy('createdAt').all()
-      const existingByName = new Map(
-        existing.map((item) => [item.name.toLowerCase(), item]),
-      )
-
-      for (const item of input.items as Array<Record<string, unknown>>) {
-        const name = clean(item.name)
-        if (!name) continue
-
+        const category = clean(input.category)
+        const price = clean(input.price)
+        const current = _ctx.db.state.orderBy('createdAt').all().at(0)
         const next = {
-          category: clean(item.category),
-          description: clean(item.description),
-          name,
-          price: clean(item.price),
-          tag: clean(item.tag),
+          selectedCategory: category,
+          selectedMenuItem: name,
+          selectedPrice: price,
         }
-        const current = existingByName.get(name.toLowerCase())
 
         if (current) {
-          _ctx.db.catalog.update(current.id, next)
+          _ctx.db.state.update(current.id, next)
         } else {
-          _ctx.db.catalog.insert(next)
+          _ctx.db.state.insert(next)
         }
-      }
 
-      return _ctx.db.catalog.orderBy('createdAt').all()
-    }),
+        _ctx.db.selections.insert({
+          category,
+          name,
+          price,
+          source: clean(input.source) || 'search',
+        })
+
+        return _ctx.db.selections.orderBy('createdAt', 'desc').all()
+      },
+    ),
+    syncMenuCatalog: restaurant.mutation(
+      (_ctx, input: RestaurantCatalogInput) => {
+        const existing = _ctx.db.catalog.orderBy('createdAt').all()
+        const existingByName = new Map(
+          existing.map((item) => [item.name.toLowerCase(), item]),
+        )
+
+        for (const item of input.items as Array<Record<string, unknown>>) {
+          const name = clean(item.name)
+          if (!name) continue
+
+          const next = {
+            category: clean(item.category),
+            description: clean(item.description),
+            name,
+            price: clean(item.price),
+            tag: clean(item.tag),
+          }
+          const current = existingByName.get(name.toLowerCase())
+
+          if (current) {
+            _ctx.db.catalog.update(current.id, next)
+          } else {
+            _ctx.db.catalog.insert(next)
+          }
+        }
+
+        return _ctx.db.catalog.orderBy('createdAt').all()
+      },
+    ),
   },
 } as const

@@ -96,10 +96,6 @@ export const FaqFooter = defineCapsule({
     const copyright =
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand}, Inc. All rights reserved.`
-    const statusTarget = props.statusTarget ?? 'Status'
-    const statusLabel = props.statusLabel ?? 'All systems operational'
-    const homeTarget = props.homeTarget ?? 'Documentation'
-
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
@@ -124,9 +120,6 @@ export const FaqFooter = defineCapsule({
       </span>
     )
 
-    void statusTarget
-    void statusLabel
-    void homeTarget
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

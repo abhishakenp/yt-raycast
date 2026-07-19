@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 /**
  * FitnessFooter — inverted multi-column site footer for a gym or fitness studio. A
  * foreground-filled band with a brand block (square monogram tile + short wordmark +
@@ -45,9 +43,7 @@ export const FitnessFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'Base Fitness Studio'
-    const brandShort = brand.split(/\s+/)[0]?.toUpperCase() ?? 'BASE'
     const footerTagline =
       props.tagline ??
       'Strength through movement. A fitness community built on progress, not perfection.'
@@ -78,8 +74,6 @@ export const FitnessFooter = defineCapsule({
     const footerLegal = props.legal?.length
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
-    void go
-    void brandShort
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

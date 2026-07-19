@@ -49,8 +49,6 @@ export const LandscapingFooter = defineCapsule({
     const links = props.links?.length
       ? props.links
       : ['Privacy', 'Terms', 'Careers']
-    const homeTarget = props.homeTarget ?? 'Services'
-
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
@@ -66,7 +64,6 @@ export const LandscapingFooter = defineCapsule({
       </svg>
     )
 
-    void homeTarget
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

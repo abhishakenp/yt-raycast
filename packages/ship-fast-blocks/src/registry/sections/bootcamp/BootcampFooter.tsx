@@ -1,7 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { useNavigate } from '#/lib/use-navigate.tsx'
-
 /**
  * BootcampFooter — 4-column dark footer for a coding bootcamp / career-school
  * landing page. A full-width footer on a foreground-colored band: left column
@@ -52,7 +50,6 @@ export const BootcampFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'CodeCraft Academy'
     const footerTagline =
       props.tagline ??
@@ -79,9 +76,6 @@ export const BootcampFooter = defineCapsule({
     const footerLegal = props.legal?.length
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Cookie Policy']
-    const homeTarget = props.homeTarget ?? 'Curriculum'
-    void go
-    void homeTarget
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

@@ -98,14 +98,12 @@ if (
   })
 }
 
-const { cleanup, fireEvent, render, screen, waitFor, within } = await import(
-  '@testing-library/react'
-)
+const { cleanup, fireEvent, render, screen, waitFor, within } =
+  await import('@testing-library/react')
 const { ElectronicsStoreNavbar } = await import('./ElectronicsStoreNavbar.tsx')
 const { ElectronicsStoreHero } = await import('./ElectronicsStoreHero.tsx')
-const { ElectronicsStoreProducts } = await import(
-  './ElectronicsStoreProducts.tsx'
-)
+const { ElectronicsStoreProducts } =
+  await import('./ElectronicsStoreProducts.tsx')
 const { ElectronicsStoreDeals } = await import('./ElectronicsStoreDeals.tsx')
 
 function publicCartItem({ id, label, price, quantity }: TestCartItem) {

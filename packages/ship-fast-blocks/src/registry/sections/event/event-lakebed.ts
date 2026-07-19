@@ -69,28 +69,30 @@ export const eventLakebed = {
 
       return _ctx.db.actions.orderBy('createdAt').all()
     }),
-    syncTickets: event.mutation((_ctx, input: { tickets: EventTicketInput[] }) => {
-      for (const ticket of input.tickets) {
-        const name = ticket.name.trim()
-        if (!name) continue
+    syncTickets: event.mutation(
+      (_ctx, input: { tickets: EventTicketInput[] }) => {
+        for (const ticket of input.tickets) {
+          const name = ticket.name.trim()
+          if (!name) continue
 
-        const existing = _ctx.db.tickets.where('name', name).all().at(0)
-        const next = {
-          availability: ticket.availability ?? '',
-          cta: ticket.cta ?? '',
-          name,
-          price: ticket.price ?? '',
-          unit: ticket.unit ?? '',
+          const existing = _ctx.db.tickets.where('name', name).all().at(0)
+          const next = {
+            availability: ticket.availability ?? '',
+            cta: ticket.cta ?? '',
+            name,
+            price: ticket.price ?? '',
+            unit: ticket.unit ?? '',
+          }
+
+          if (existing) {
+            _ctx.db.tickets.update(existing.id, next)
+          } else {
+            _ctx.db.tickets.insert(next)
+          }
         }
 
-        if (existing) {
-          _ctx.db.tickets.update(existing.id, next)
-        } else {
-          _ctx.db.tickets.insert(next)
-        }
-      }
-
-      return _ctx.db.tickets.orderBy('updatedAt', 'desc').all()
-    }),
+        return _ctx.db.tickets.orderBy('updatedAt', 'desc').all()
+      },
+    ),
   },
 } as const

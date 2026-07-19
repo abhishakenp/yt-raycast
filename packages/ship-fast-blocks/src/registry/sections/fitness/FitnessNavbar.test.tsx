@@ -85,9 +85,8 @@ if (typeof window !== 'undefined' && 'FormData' in window) {
   })
 }
 
-const { cleanup, fireEvent, render, screen, waitFor, within } = await import(
-  '@testing-library/react'
-)
+const { cleanup, fireEvent, render, screen, waitFor, within } =
+  await import('@testing-library/react')
 const { FitnessNavbar } = await import('./FitnessNavbar.tsx')
 
 const now = '2026-06-26T00:00:00.000Z'

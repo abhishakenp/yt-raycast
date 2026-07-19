@@ -78,9 +78,8 @@ if (typeof document === 'undefined') {
   dom.window.cancelAnimationFrame = cancelAnimationFrame
 }
 
-const { cleanup, fireEvent, render, screen, waitFor } = await import(
-  '@testing-library/react'
-)
+const { cleanup, fireEvent, render, screen, waitFor } =
+  await import('@testing-library/react')
 const { ProductDetailCta } = await import('./ProductDetailCta.tsx')
 
 function createCommerceLakebedStub() {

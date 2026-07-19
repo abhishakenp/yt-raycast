@@ -48,7 +48,6 @@ export const MarketingAgencyFooter = defineCapsule({
   }),
   component: ({ props }) => {
     const brand = props.brand ?? 'Nexus Growth'
-    const homeTarget = props.homeTarget ?? 'Services'
     const about =
       props.about ??
       'Data-driven marketing for ambitious brands. Based in San Francisco, working with clients globally.'
@@ -91,7 +90,6 @@ export const MarketingAgencyFooter = defineCapsule({
         <path d="M2 12l10 5 10-5" />
       </svg>
     )
-    void homeTarget
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

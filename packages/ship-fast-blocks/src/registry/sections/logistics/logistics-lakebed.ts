@@ -72,50 +72,54 @@ export const logisticsLakebed = {
     }),
   },
   mutations: {
-    setTrackingSearch: logistics.mutation((_ctx, input: LogisticsTrackingInput) => {
-      const trackingId = clean(input.trackingId)
-      const current = _ctx.db.state.orderBy('createdAt').all().at(0)
-
-      if (current) {
-        _ctx.db.state.update(current.id, { trackingId })
-      } else {
-        _ctx.db.state.insert({ trackingId })
-      }
-
-      _ctx.db.searches.insert({ trackingId })
-
-      return _ctx.db.state.orderBy('createdAt').all()
-    }),
-    syncShipments: logistics.mutation((_ctx, input: { items: LogisticsShipmentInput[] }) => {
-      const existing = _ctx.db.shipments.orderBy('createdAt').all()
-      const existingByTrackingId = new Map(
-        existing.map((shipment) => [
-          shipment.trackingId.toLowerCase(),
-          shipment,
-        ]),
-      )
-
-      for (const item of input.items) {
-        const trackingId = clean(item.trackingId)
-        if (!trackingId) continue
-
-        const next = {
-          destination: clean(item.destination),
-          estimatedDelivery: clean(item.estimatedDelivery),
-          origin: clean(item.origin),
-          status: clean(item.status),
-          trackingId,
-        }
-        const current = existingByTrackingId.get(trackingId.toLowerCase())
+    setTrackingSearch: logistics.mutation(
+      (_ctx, input: LogisticsTrackingInput) => {
+        const trackingId = clean(input.trackingId)
+        const current = _ctx.db.state.orderBy('createdAt').all().at(0)
 
         if (current) {
-          _ctx.db.shipments.update(current.id, next)
+          _ctx.db.state.update(current.id, { trackingId })
         } else {
-          _ctx.db.shipments.insert(next)
+          _ctx.db.state.insert({ trackingId })
         }
-      }
 
-      return _ctx.db.shipments.orderBy('createdAt').all()
-    }),
+        _ctx.db.searches.insert({ trackingId })
+
+        return _ctx.db.state.orderBy('createdAt').all()
+      },
+    ),
+    syncShipments: logistics.mutation(
+      (_ctx, input: { items: LogisticsShipmentInput[] }) => {
+        const existing = _ctx.db.shipments.orderBy('createdAt').all()
+        const existingByTrackingId = new Map(
+          existing.map((shipment) => [
+            shipment.trackingId.toLowerCase(),
+            shipment,
+          ]),
+        )
+
+        for (const item of input.items) {
+          const trackingId = clean(item.trackingId)
+          if (!trackingId) continue
+
+          const next = {
+            destination: clean(item.destination),
+            estimatedDelivery: clean(item.estimatedDelivery),
+            origin: clean(item.origin),
+            status: clean(item.status),
+            trackingId,
+          }
+          const current = existingByTrackingId.get(trackingId.toLowerCase())
+
+          if (current) {
+            _ctx.db.shipments.update(current.id, next)
+          } else {
+            _ctx.db.shipments.insert(next)
+          }
+        }
+
+        return _ctx.db.shipments.orderBy('createdAt').all()
+      },
+    ),
   },
 } as const

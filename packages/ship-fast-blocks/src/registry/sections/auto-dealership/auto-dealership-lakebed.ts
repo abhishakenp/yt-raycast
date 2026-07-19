@@ -69,28 +69,30 @@ export const autoDealershipLakebed = {
 
       return _ctx.db.leads.orderBy('createdAt').all()
     }),
-    syncVehicles: dealership.mutation((_ctx, input: { vehicles: AutoVehicleInput[] }) => {
-      for (const vehicle of input.vehicles) {
-        const name = vehicle.name.trim()
-        if (!name) continue
+    syncVehicles: dealership.mutation(
+      (_ctx, input: { vehicles: AutoVehicleInput[] }) => {
+        for (const vehicle of input.vehicles) {
+          const name = vehicle.name.trim()
+          if (!name) continue
 
-        const existing = _ctx.db.vehicles.where('name', name).all().at(0)
-        const next = {
-          badge: vehicle.badge ?? '',
-          imageAlt: vehicle.imageAlt ?? '',
-          name,
-          price: vehicle.price ?? '',
-          specs: vehicle.specs ?? '',
+          const existing = _ctx.db.vehicles.where('name', name).all().at(0)
+          const next = {
+            badge: vehicle.badge ?? '',
+            imageAlt: vehicle.imageAlt ?? '',
+            name,
+            price: vehicle.price ?? '',
+            specs: vehicle.specs ?? '',
+          }
+
+          if (existing) {
+            _ctx.db.vehicles.update(existing.id, next)
+          } else {
+            _ctx.db.vehicles.insert(next)
+          }
         }
 
-        if (existing) {
-          _ctx.db.vehicles.update(existing.id, next)
-        } else {
-          _ctx.db.vehicles.insert(next)
-        }
-      }
-
-      return _ctx.db.vehicles.orderBy('updatedAt', 'desc').all()
-    }),
+        return _ctx.db.vehicles.orderBy('updatedAt', 'desc').all()
+      },
+    ),
   },
 } as const

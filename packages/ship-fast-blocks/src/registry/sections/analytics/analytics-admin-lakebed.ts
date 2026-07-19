@@ -70,47 +70,53 @@ export const analyticsAdminLakebed = {
 
       return []
     }),
-    markNotificationRead: analyticsAdmin.mutation((_ctx, input: AnalyticsNotificationTarget) => {
-      const notification = _ctx.db.notifications.get(input.id)
-      if (notification) {
-        _ctx.db.notifications.update(notification.id, { read: 'true' })
-      }
-
-      return _ctx.db.notifications.orderBy('createdAt').all()
-    }),
-    recordAction: analyticsAdmin.mutation((_ctx, input: AnalyticsActionInput) => {
-      _ctx.db.actions.insert({
-        label: input.label,
-        query: input.query ?? '',
-        source: input.source ?? '',
-      })
-
-      return _ctx.db.actions.orderBy('createdAt').all()
-    }),
-    syncNotifications: analyticsAdmin.mutation((_ctx, input: { notifications: AnalyticsNotificationInput[] }) => {
-      for (const notification of input.notifications) {
-        const message = notification.message.trim()
-        if (!message) continue
-
-        const existing = _ctx.db.notifications
-          .where('message', message)
-          .all()
-          .at(0)
-        const next = {
-          message,
-          read: notification.read ?? 'false',
-          type: notification.type ?? 'info',
+    markNotificationRead: analyticsAdmin.mutation(
+      (_ctx, input: AnalyticsNotificationTarget) => {
+        const notification = _ctx.db.notifications.get(input.id)
+        if (notification) {
+          _ctx.db.notifications.update(notification.id, { read: 'true' })
         }
 
-        if (existing) {
-          _ctx.db.notifications.update(existing.id, next)
-        } else {
-          _ctx.db.notifications.insert(next)
-        }
-      }
+        return _ctx.db.notifications.orderBy('createdAt').all()
+      },
+    ),
+    recordAction: analyticsAdmin.mutation(
+      (_ctx, input: AnalyticsActionInput) => {
+        _ctx.db.actions.insert({
+          label: input.label,
+          query: input.query ?? '',
+          source: input.source ?? '',
+        })
 
-      return _ctx.db.notifications.orderBy('createdAt').all()
-    }),
+        return _ctx.db.actions.orderBy('createdAt').all()
+      },
+    ),
+    syncNotifications: analyticsAdmin.mutation(
+      (_ctx, input: { notifications: AnalyticsNotificationInput[] }) => {
+        for (const notification of input.notifications) {
+          const message = notification.message.trim()
+          if (!message) continue
+
+          const existing = _ctx.db.notifications
+            .where('message', message)
+            .all()
+            .at(0)
+          const next = {
+            message,
+            read: notification.read ?? 'false',
+            type: notification.type ?? 'info',
+          }
+
+          if (existing) {
+            _ctx.db.notifications.update(existing.id, next)
+          } else {
+            _ctx.db.notifications.insert(next)
+          }
+        }
+
+        return _ctx.db.notifications.orderBy('createdAt').all()
+      },
+    ),
   },
 } as const
 

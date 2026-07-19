@@ -112,21 +112,6 @@ export const CoworkingFooter = defineCapsule({
             },
           ]
     ) as Array<{ title: string; links: string[] }>
-    const year = new Date().getFullYear()
-    // Authored notes often arrive as a full copyright line ("© 2026 Brand …")
-    // — don't prepend a second © clause in that case.
-    const copyright = note.includes('©')
-      ? note
-      : `© ${year} ${brand}. ${note}`
-
-    const scrollToTop = () => {
-      if (typeof window !== 'undefined') {
-        window.scrollTo({ top: 0, behavior: 'smooth' })
-      }
-    }
-
-    void scrollToTop
-    void copyright
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

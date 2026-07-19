@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
 import { cn } from '#/lib/utils.ts'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -18,7 +17,6 @@ import {
   PricingTierCta,
 } from '#/section-kit/PricingGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-
 /**
  * EventPlannerPricing — three-tier planning-packages block on a muted band. A
  * centered intro (uppercase eyebrow, thin light heading, lede) above a 3-up grid
@@ -53,14 +51,12 @@ export const EventPlannerPricing = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props, lakebed }) => {
+  component: ({ props }) => {
     const pricingEyebrow = props.eyebrow ?? 'Investment'
     const pricingHeading = props.heading ?? 'Planning Packages'
     const pricingDesc =
       props.description ??
       'Transparent pricing for weddings and celebrations. Custom quotes available for corporate and destination events.'
-    const pricingPopular = props.popularLabel ?? 'Most Popular'
-    const pricingCta = props.cta ?? 'Inquire'
     const pricingTiers = props.tiers?.length
       ? props.tiers
       : [
@@ -104,10 +100,6 @@ export const EventPlannerPricing = defineCapsule({
             ],
           },
         ]
-
-    void pricingPopular
-    void pricingCta
-    void lakebed
     return (
       <section
         className={cn(

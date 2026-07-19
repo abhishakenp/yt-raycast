@@ -108,8 +108,6 @@ export const SubscriptionBoxPricing = defineCapsule({
             ctaTarget: 'Pricing',
           },
         ]
-    const addingLabel = props.addingLabel ?? 'Adding'
-
     useSyncCommerceCatalog(
       lakebed,
       tiers.map((tier) =>
@@ -129,7 +127,6 @@ export const SubscriptionBoxPricing = defineCapsule({
       ...(tier.features ?? []),
     ])
 
-    void addingLabel
     return (
       <section
         className={cn(

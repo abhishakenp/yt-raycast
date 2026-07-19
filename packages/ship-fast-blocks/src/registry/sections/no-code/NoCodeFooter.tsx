@@ -97,7 +97,6 @@ export const NoCodeFooter = defineCapsule({
     const legal = props.legal?.length
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Cookies']
-    const homeTarget = props.homeTarget ?? 'Features'
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
@@ -120,7 +119,6 @@ export const NoCodeFooter = defineCapsule({
         </svg>
       </span>
     )
-    void homeTarget
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

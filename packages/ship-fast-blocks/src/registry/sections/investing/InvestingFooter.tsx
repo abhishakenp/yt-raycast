@@ -57,7 +57,6 @@ export const InvestingFooter = defineCapsule({
   }),
   component: ({ props }) => {
     const brand = props.brand ?? 'Vestora'
-    const homeTarget = props.homeTarget ?? 'Features'
     const tagline =
       props.tagline ??
       'Modern investing for everyone. Trade stocks, ETFs, options, and crypto with zero commission.'
@@ -89,9 +88,6 @@ export const InvestingFooter = defineCapsule({
     const copyright =
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand} Inc. All rights reserved.`
-    const disclosure =
-      props.disclosure ??
-      `Securities trading offered through ${brand} Securities LLC, member FINRA/SIPC. Crypto trading offered through ${brand} Crypto LLC. Investing involves risk, including loss of principal.`
     const socials = props.socials?.length
       ? props.socials
       : ['Twitter', 'LinkedIn', 'Instagram']
@@ -116,8 +112,6 @@ export const InvestingFooter = defineCapsule({
         </svg>
       </span>
     )
-    void homeTarget
-    void disclosure
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

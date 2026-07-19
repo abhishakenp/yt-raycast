@@ -76,17 +76,19 @@ export const dashboardLakebed = {
 
       return _ctx.db.orders.orderBy('createdAt').all()
     }),
-    setOrderStatus: dashboard.mutation((_ctx, input: DashboardOrderStatusInput) => {
-      const order = _ctx.db.orders.get(input.id)
-      if (order) {
-        _ctx.db.orders.update(order.id, {
-          status: input.status,
-          statusTone: input.statusTone,
-        })
-      }
+    setOrderStatus: dashboard.mutation(
+      (_ctx, input: DashboardOrderStatusInput) => {
+        const order = _ctx.db.orders.get(input.id)
+        if (order) {
+          _ctx.db.orders.update(order.id, {
+            status: input.status,
+            statusTone: input.statusTone,
+          })
+        }
 
-      return _ctx.db.orders.orderBy('createdAt').all()
-    }),
+        return _ctx.db.orders.orderBy('createdAt').all()
+      },
+    ),
   },
 } as const
 

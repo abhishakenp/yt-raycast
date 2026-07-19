@@ -1,8 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-
-import { cn } from '#/lib/utils.ts'
-import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   SiteFooter,
   FooterContent,
@@ -19,7 +16,6 @@ import {
   FooterCopyright,
   FooterLegal,
 } from '#/section-kit/SiteFooter.tsx'
-
 /**
  * DevToolFooter — a 5-column footer for a developer tool / API platform. A
  * top-bordered section with a brand logo (blue bolt tile) + name + about blurb +
@@ -52,9 +48,7 @@ export const DevToolFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? 'DevStack'
-    const homeTarget = props.homeTarget ?? 'Features'
     const blurb =
       props.blurb ??
       'The complete developer platform for authentication, storage, real-time events, and serverless functions. Built for teams that ship.'
@@ -102,33 +96,6 @@ export const DevToolFooter = defineCapsule({
     const copyright =
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand} Inc. All rights reserved.`
-
-    const BoltMark = ({ className }: { className?: string }) => (
-      <span
-        className={cn(
-          'grid place-items-center rounded-lg bg-primary text-primary-foreground',
-          className,
-        )}
-        aria-hidden="true"
-      >
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M13 10V3L4 14h7v7l9-11h-7z" />
-        </svg>
-      </span>
-    )
-
-    void go
-    void homeTarget
-    void BoltMark
     return (
       <SiteFooter className={props.className}>
         <FooterContent>

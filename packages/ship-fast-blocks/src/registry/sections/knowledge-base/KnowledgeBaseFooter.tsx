@@ -77,8 +77,6 @@ export const KnowledgeBaseFooter = defineCapsule({
     const legal = props.legal?.length
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
-    const homeTarget = props.homeTarget ?? 'Categories'
-
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
@@ -102,7 +100,6 @@ export const KnowledgeBaseFooter = defineCapsule({
       </span>
     )
 
-    void homeTarget
     return (
       <SiteFooter className={props.className}>
         <FooterContent>
