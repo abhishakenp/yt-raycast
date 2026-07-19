@@ -194,7 +194,7 @@ const PricingCardCheckIcon = React.forwardRef<
       strokeWidth="2"
       aria-hidden="true"
       data-slot="pricing-card-check-icon"
-      ref={ref}
+      ref={ref as React.Ref<SVGSVGElement>}
       {...props}
     >
       <path strokeLinecap="round" strokeLinejoin="round" d="m5 13 4 4L19 7" />
