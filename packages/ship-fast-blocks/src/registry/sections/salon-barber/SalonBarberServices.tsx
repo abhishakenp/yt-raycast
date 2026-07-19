@@ -4,12 +4,12 @@ import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
 import {
-  FeatureGrid,
-  FeatureCard,
-  FeatureIcon,
-  FeatureTitle,
-  FeatureDescription,
-} from '#/section-kit/FeatureGrid.tsx'
+  ServicesGrid,
+  ServiceCard,
+  ServiceIcon,
+  ServiceTitle,
+  ServiceDescription,
+} from '#/section-kit/ServicesGrid.tsx'
 
 const ScissorsIcon = () => (
   <svg
@@ -87,7 +87,7 @@ const ICONS = [
 export const SalonBarberServices = defineCapsule({
   name: 'SalonBarberServices',
   description:
-    "Services band for a barbershop or salon, rendered through the shared FeatureGrid as four icon-tiled cards (cuts & fades, color, beard & grooming, styling & treatments). Each card pairs a stroke icon with a short, confident grooming description. Use it directly under the hero to lay out the menu of services on a barbershop, salon, or men's grooming page.",
+    "Services band for a barbershop or salon, rendered through the shared ServicesGrid as four icon-tiled cards (cuts & fades, color, beard & grooming, styling & treatments). Each card pairs a stroke icon with a short, confident grooming description. Use it directly under the hero to lay out the menu of services on a barbershop, salon, or men's grooming page.",
   props: z.object({
     heading: z.string().optional(),
     subheading: z.string().optional(),
@@ -136,7 +136,7 @@ export const SalonBarberServices = defineCapsule({
         )}
       >
         <Container>
-          <FeatureGrid
+          <ServicesGrid
             heading={props.heading ?? 'Our Services'}
             subheading={props.subheading ?? 'What we do best'}
             columns={4}
@@ -152,14 +152,14 @@ export const SalonBarberServices = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
-                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
-                </FeatureCard>
+                <ServiceCard key={__iv__.title}>
+                  {__iv__.icon && <ServiceIcon>{__iv__.icon}</ServiceIcon>}
+                  <ServiceTitle>{__iv__.title}</ServiceTitle>
+                  <ServiceDescription>{__iv__.description}</ServiceDescription>
+                </ServiceCard>
               )
             })}
-          </FeatureGrid>
+          </ServicesGrid>
         </Container>
       </section>
     )

@@ -4,12 +4,12 @@ import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
 import {
-  FeatureGrid,
-  FeatureCard,
-  FeatureIcon,
-  FeatureTitle,
-  FeatureDescription,
-} from '#/section-kit/FeatureGrid.tsx'
+  ServicesGrid,
+  ServiceCard,
+  ServiceIcon,
+  ServiceTitle,
+  ServiceDescription,
+} from '#/section-kit/ServicesGrid.tsx'
 
 /**
  * RealEstateServices — a clean services grid for a brokerage covering the core
@@ -72,7 +72,7 @@ export const RealEstateServices = defineCapsule({
         )}
       >
         <Container>
-          <FeatureGrid heading={heading} subheading={description} columns={4}>
+          <ServicesGrid heading={heading} subheading={description} columns={4}>
             {services
               .map((service) => ({
                 title: service.title,
@@ -89,16 +89,16 @@ export const RealEstateServices = defineCapsule({
                   imageAlt?: string
                 }
                 return (
-                  <FeatureCard key={__iv__.title}>
-                    {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                    <FeatureTitle>{__iv__.title}</FeatureTitle>
-                    <FeatureDescription>
+                  <ServiceCard key={__iv__.title}>
+                    {__iv__.icon && <ServiceIcon>{__iv__.icon}</ServiceIcon>}
+                    <ServiceTitle>{__iv__.title}</ServiceTitle>
+                    <ServiceDescription>
                       {__iv__.description}
-                    </FeatureDescription>
-                  </FeatureCard>
+                    </ServiceDescription>
+                  </ServiceCard>
                 )
               })}
-          </FeatureGrid>
+          </ServicesGrid>
         </Container>
       </section>
     )

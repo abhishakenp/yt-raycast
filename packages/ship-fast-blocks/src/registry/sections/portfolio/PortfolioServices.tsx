@@ -4,16 +4,16 @@ import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
 import {
-  FeatureGrid,
-  FeatureCard,
-  FeatureIcon,
-  FeatureTitle,
-  FeatureDescription,
-} from '#/section-kit/FeatureGrid.tsx'
+  ServicesGrid,
+  ServiceCard,
+  ServiceIcon,
+  ServiceTitle,
+  ServiceDescription,
+} from '#/section-kit/ServicesGrid.tsx'
 
 /**
  * PortfolioServices — a "what I do" capability grid for a creative-individual
- * portfolio. Thin configuration over the shared `FeatureGrid` composite: a
+ * portfolio. Thin configuration over the shared `ServicesGrid` composite: a
  * centered heading above a responsive 3-up grid of service cards, each with an
  * icon tile, a service title, and a short description. Use to outline the
  * disciplines a freelancer or studio offers — art direction, motion, 3D,
@@ -23,7 +23,7 @@ import {
 export const PortfolioServices = defineCapsule({
   name: 'PortfolioServices',
   description:
-    "'What I do' capability grid for a creative-individual portfolio built on the shared FeatureGrid composite: a centered heading above a responsive 3-up grid of service cards, each with an icon tile, a service title, and a short description. Use to outline the disciplines a freelancer or studio offers — art direction, motion, 3D, branding, web — on a designer, animator, or director personal site.",
+    "'What I do' capability grid for a creative-individual portfolio built on the shared ServicesGrid composite: a centered heading above a responsive 3-up grid of service cards, each with an icon tile, a service title, and a short description. Use to outline the disciplines a freelancer or studio offers — art direction, motion, 3D, branding, web — on a designer, animator, or director personal site.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -81,7 +81,7 @@ export const PortfolioServices = defineCapsule({
         )}
       >
         <Container>
-          <FeatureGrid
+          <ServicesGrid
             heading={props.heading ?? 'What I do'}
             subheading={
               props.subheading ??
@@ -95,18 +95,18 @@ export const PortfolioServices = defineCapsule({
                 icon?: React.ReactNode
               }
               return (
-                <FeatureCard key={__iv__.title}>
-                  <FeatureIcon>
+                <ServiceCard key={__iv__.title}>
+                  <ServiceIcon>
                     <span aria-hidden="true" className="text-xl leading-none">
                       {icons[i % icons.length]}
                     </span>
-                  </FeatureIcon>
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
-                </FeatureCard>
+                  </ServiceIcon>
+                  <ServiceTitle>{__iv__.title}</ServiceTitle>
+                  <ServiceDescription>{__iv__.description}</ServiceDescription>
+                </ServiceCard>
               )
             })}
-          </FeatureGrid>
+          </ServicesGrid>
         </Container>
       </section>
     )

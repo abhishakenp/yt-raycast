@@ -4,16 +4,16 @@ import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
 import {
-  FeatureGrid,
-  FeatureCard,
-  FeatureIcon,
-  FeatureTitle,
-  FeatureDescription,
-} from '#/section-kit/FeatureGrid.tsx'
+  ServicesGrid,
+  ServiceCard,
+  ServiceIcon,
+  ServiceTitle,
+  ServiceDescription,
+} from '#/section-kit/ServicesGrid.tsx'
 
 /**
  * NutritionServices — services / offerings grid for a nutrition-coaching or
- * wellness site, built on the shared FeatureGrid kit composite. Renders an
+ * wellness site, built on the shared ServicesGrid kit composite. Renders an
  * optional heading + subheading above a responsive grid of four service cards
  * (Meal Plans, 1-on-1 Coaching, Progress Tracking, Recipe Library), each with a
  * fresh primary-tinted inline-svg icon tile, title, and description. All props
@@ -24,7 +24,7 @@ import {
 export const NutritionServices = defineCapsule({
   name: 'NutritionServices',
   description:
-    'Services / offerings grid for a nutrition-coaching or wellness site, built on the shared FeatureGrid kit composite: an optional heading + subheading above a responsive grid of four service cards (Meal Plans, 1-on-1 Coaching, Progress Tracking, Recipe Library), each with a fresh primary-tinted inline-svg icon tile, title, and description. Use mid-page on nutrition coaches, registered dietitians, meal-plan subscriptions, diet / wellness programs or healthy-eating apps to lay out what the program includes.',
+    'Services / offerings grid for a nutrition-coaching or wellness site, built on the shared ServicesGrid kit composite: an optional heading + subheading above a responsive grid of four service cards (Meal Plans, 1-on-1 Coaching, Progress Tracking, Recipe Library), each with a fresh primary-tinted inline-svg icon tile, title, and description. Use mid-page on nutrition coaches, registered dietitians, meal-plan subscriptions, diet / wellness programs or healthy-eating apps to lay out what the program includes.',
   props: z.object({
     heading: z.string().optional(),
     subheading: z.string().optional(),
@@ -146,7 +146,7 @@ export const NutritionServices = defineCapsule({
         )}
       >
         <Container>
-          <FeatureGrid heading={heading} subheading={subheading} columns={4}>
+          <ServicesGrid heading={heading} subheading={subheading} columns={4}>
             {features.map((f) => {
               const __iv__ = f as {
                 title: string
@@ -158,14 +158,14 @@ export const NutritionServices = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
-                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
-                </FeatureCard>
+                <ServiceCard key={__iv__.title}>
+                  {__iv__.icon && <ServiceIcon>{__iv__.icon}</ServiceIcon>}
+                  <ServiceTitle>{__iv__.title}</ServiceTitle>
+                  <ServiceDescription>{__iv__.description}</ServiceDescription>
+                </ServiceCard>
               )
             })}
-          </FeatureGrid>
+          </ServicesGrid>
         </Container>
       </section>
     )

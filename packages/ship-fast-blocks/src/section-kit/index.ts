@@ -408,6 +408,14 @@ export {
 
 export { KpisGrid, KpiTrendArrow } from './KpisGrid.tsx'
 export { MapOverlay, MapPin } from './MapBlock.tsx'
+export {
+  ServicesGrid,
+  ServiceCard,
+  ServiceIcon,
+  ServiceTitle,
+  ServiceDescription,
+  servicesGridVariants,
+} from './ServicesGrid.tsx'
 
 export type { KitAction } from './types.ts'
 export { kitActionClasses } from './types.ts'

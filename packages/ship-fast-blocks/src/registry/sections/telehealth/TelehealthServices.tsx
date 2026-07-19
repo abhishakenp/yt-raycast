@@ -2,12 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import {
-  FeatureGrid,
-  FeatureCard,
-  FeatureIcon,
-  FeatureTitle,
-  FeatureDescription,
-} from '#/section-kit/FeatureGrid.tsx'
+  ServicesGrid,
+  ServiceCard,
+  ServiceIcon,
+  ServiceTitle,
+  ServiceDescription,
+} from '#/section-kit/ServicesGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
 const ICONS = [
@@ -84,7 +84,7 @@ const ICONS = [
 export const TelehealthServices = defineCapsule({
   name: 'TelehealthServices',
   description:
-    'Services overview band for a telehealth site, built on the shared FeatureGrid composite. Renders a centered heading and a four-up card grid covering the core virtual-care offerings — Primary Care, Mental Health, Prescriptions, and Urgent Care — each with a calm primary-toned inline icon, a title, and a short description. Cards collapse to two columns and then a single column on smaller screens. Use to summarize what a telehealth provider treats and help visitors self-route to the right service.',
+    'Services overview band for a telehealth site, built on the shared ServicesGrid composite. Renders a centered heading and a four-up card grid covering the core virtual-care offerings — Primary Care, Mental Health, Prescriptions, and Urgent Care — each with a calm primary-toned inline icon, a title, and a short description. Cards collapse to two columns and then a single column on smaller screens. Use to summarize what a telehealth provider treats and help visitors self-route to the right service.',
   props: z.object({
     heading: z.string().optional(),
     subheading: z.string().optional(),
@@ -132,7 +132,7 @@ export const TelehealthServices = defineCapsule({
     return (
       <section className="bg-background pt-28 pb-20 sm:pt-32 sm:pb-24">
         <Container size="xl" className="px-6">
-          <FeatureGrid
+          <ServicesGrid
             heading={heading}
             subheading={subheading}
             columns={4}
@@ -149,14 +149,14 @@ export const TelehealthServices = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
-                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
-                </FeatureCard>
+                <ServiceCard key={__iv__.title}>
+                  {__iv__.icon && <ServiceIcon>{__iv__.icon}</ServiceIcon>}
+                  <ServiceTitle>{__iv__.title}</ServiceTitle>
+                  <ServiceDescription>{__iv__.description}</ServiceDescription>
+                </ServiceCard>
               )
             })}
-          </FeatureGrid>
+          </ServicesGrid>
         </Container>
       </section>
     )

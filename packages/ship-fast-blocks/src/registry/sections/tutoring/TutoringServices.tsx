@@ -2,12 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import {
-  FeatureGrid,
-  FeatureCard,
-  FeatureIcon,
-  FeatureTitle,
-  FeatureDescription,
-} from '#/section-kit/FeatureGrid.tsx'
+  ServicesGrid,
+  ServiceCard,
+  ServiceIcon,
+  ServiceTitle,
+  ServiceDescription,
+} from '#/section-kit/ServicesGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
 const ICONS = {
@@ -157,7 +157,7 @@ const DEFAULT_SUBJECTS: {
 export const TutoringServices = defineCapsule({
   name: 'TutoringServices',
   description:
-    'Subjects / services band for tutoring sites, composing the FeatureGrid kit composite into a four-column grid of subject cards. Each card pairs a friendly outline icon tile with a subject name and an encouraging description (Math, Science, Languages, Test Prep, Writing, Reading by default). Accepts a public `subjects` prop to override the offering list. Use it to show parents and students the breadth of tutoring help available in a warm, scannable layout.',
+    'Subjects / services band for tutoring sites, composing the ServicesGrid kit composite into a four-column grid of subject cards. Each card pairs a friendly outline icon tile with a subject name and an encouraging description (Math, Science, Languages, Test Prep, Writing, Reading by default). Accepts a public `subjects` prop to override the offering list. Use it to show parents and students the breadth of tutoring help available in a warm, scannable layout.',
   props: z.object({
     heading: z.string().optional(),
     subheading: z.string().optional(),
@@ -203,7 +203,7 @@ export const TutoringServices = defineCapsule({
         }
       >
         <Container size="xl" className="px-6">
-          <FeatureGrid
+          <ServicesGrid
             heading={heading}
             subheading={subheading}
             columns={props.columns ?? 4}
@@ -219,14 +219,14 @@ export const TutoringServices = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
-                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
-                </FeatureCard>
+                <ServiceCard key={__iv__.title}>
+                  {__iv__.icon && <ServiceIcon>{__iv__.icon}</ServiceIcon>}
+                  <ServiceTitle>{__iv__.title}</ServiceTitle>
+                  <ServiceDescription>{__iv__.description}</ServiceDescription>
+                </ServiceCard>
               )
             })}
-          </FeatureGrid>
+          </ServicesGrid>
         </Container>
       </section>
     )

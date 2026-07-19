@@ -2,18 +2,18 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import {
-  FeatureGrid,
-  FeatureCard,
-  FeatureIcon,
-  FeatureTitle,
-  FeatureDescription,
-} from '#/section-kit/FeatureGrid.tsx'
+  ServicesGrid,
+  ServiceCard,
+  ServiceIcon,
+  ServiceTitle,
+  ServiceDescription,
+} from '#/section-kit/ServicesGrid.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * NonprofitServices — programs / causes grid for a nonprofit / charity / NGO
- * page. Thin configuration over the shared `FeatureGrid` composite: a centered
+ * page. Thin configuration over the shared `ServicesGrid` composite: a centered
  * heading and supporting subheading above a responsive grid of cause cards,
  * each pairing a small inline line-icon with a program title (Clean Water,
  * Education, Food Security, Healthcare, …) and a short, warm mission blurb. Use
@@ -41,7 +41,7 @@ function Icon({ d, className }: { d: string; className?: string }) {
 export const NonprofitServices = defineCapsule({
   name: 'NonprofitServices',
   description:
-    'Programs / causes grid for a nonprofit / charity / NGO page built on the shared FeatureGrid composite: a centered heading and supporting subheading above a responsive grid of cause cards, each pairing a small inline line-icon with a program title (Clean Water, Education, Food Security, Healthcare, …) and a short, warm mission blurb. Use to show the core programs, causes, or focus areas a nonprofit, foundation, or humanitarian organization runs.',
+    'Programs / causes grid for a nonprofit / charity / NGO page built on the shared ServicesGrid composite: a centered heading and supporting subheading above a responsive grid of cause cards, each pairing a small inline line-icon with a program title (Clean Water, Education, Food Security, Healthcare, …) and a short, warm mission blurb. Use to show the core programs, causes, or focus areas a nonprofit, foundation, or humanitarian organization runs.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -100,7 +100,7 @@ export const NonprofitServices = defineCapsule({
     return (
       <section className="pt-28 pb-20 lg:pt-32 lg:pb-28">
         <Container>
-          <FeatureGrid
+          <ServicesGrid
             heading={heading}
             subheading={subheading}
             columns={4}
@@ -117,14 +117,14 @@ export const NonprofitServices = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
-                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
-                </FeatureCard>
+                <ServiceCard key={__iv__.title}>
+                  {__iv__.icon && <ServiceIcon>{__iv__.icon}</ServiceIcon>}
+                  <ServiceTitle>{__iv__.title}</ServiceTitle>
+                  <ServiceDescription>{__iv__.description}</ServiceDescription>
+                </ServiceCard>
               )
             })}
-          </FeatureGrid>
+          </ServicesGrid>
         </Container>
       </section>
     )

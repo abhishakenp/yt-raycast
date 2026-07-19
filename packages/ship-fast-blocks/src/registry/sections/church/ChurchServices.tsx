@@ -5,11 +5,11 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import {
-  FeatureCard,
-  FeatureIcon,
-  FeatureTitle,
-  FeatureDescription,
-} from '#/section-kit/FeatureGrid.tsx'
+  ServiceCard,
+  ServiceIcon,
+  ServiceTitle,
+  ServiceDescription,
+} from '#/section-kit/ServicesGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
@@ -172,25 +172,25 @@ export const ChurchServices = defineCapsule({
               />
               <div className="space-y-6">
                 {items.map((s, i) => (
-                  <FeatureCard
+                  <ServiceCard
                     key={s.title}
                     className="flex flex-row items-start gap-4"
                   >
-                    <FeatureIcon className="flex size-12 flex-shrink-0 items-center justify-center rounded-full bg-muted text-foreground">
+                    <ServiceIcon className="flex size-12 flex-shrink-0 items-center justify-center rounded-full bg-muted text-foreground">
                       {serviceIcons[i % serviceIcons.length]}
-                    </FeatureIcon>
+                    </ServiceIcon>
                     <div>
-                      <FeatureTitle className="mb-1 font-medium text-card-foreground">
+                      <ServiceTitle className="mb-1 font-medium text-card-foreground">
                         {s.title}
-                      </FeatureTitle>
-                      <FeatureDescription className="mb-2">
+                      </ServiceTitle>
+                      <ServiceDescription className="mb-2">
                         {s.detail}
-                      </FeatureDescription>
+                      </ServiceDescription>
                       <p className="text-sm text-muted-foreground">
                         {s.location}
                       </p>
                     </div>
-                  </FeatureCard>
+                  </ServiceCard>
                 ))}
               </div>
             </div>

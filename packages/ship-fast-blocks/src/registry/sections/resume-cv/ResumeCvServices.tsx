@@ -4,16 +4,16 @@ import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
 import {
-  FeatureGrid,
-  FeatureCard,
-  FeatureIcon,
-  FeatureTitle,
-  FeatureDescription,
-} from '#/section-kit/FeatureGrid.tsx'
+  ServicesGrid,
+  ServiceCard,
+  ServiceIcon,
+  ServiceTitle,
+  ServiceDescription,
+} from '#/section-kit/ServicesGrid.tsx'
 
 /**
  * ResumeCvServices — a skills / expertise grid for a personal resume / CV /
- * portfolio site. Thin configuration over the shared `FeatureGrid` composite: a
+ * portfolio site. Thin configuration over the shared `ServicesGrid` composite: a
  * "Skills" heading with a short subheading and a responsive three-column grid of
  * token cards, each pairing an expertise area title (Product Design, Design
  * Systems, User Research, Prototyping, Frontend, Strategy) with a concise
@@ -24,9 +24,9 @@ import {
 export const ResumeCvServices = defineCapsule({
   name: 'ResumeCvServices',
   description:
-    "Skills / expertise grid for a personal resume / CV / portfolio site, built on the shared FeatureGrid composite: a 'Skills' heading with a short subheading and a responsive three-column grid of token cards, each pairing an expertise-area title (Product Design, Design Systems, User Research, Prototyping, Frontend, Strategy) with a concise description of what that skill covers. Use on a personal portfolio, online résumé, or professional profile page to summarize core competencies.",
+    "Skills / expertise grid for a personal resume / CV / portfolio site, built on the shared ServicesGrid composite: a 'Skills' heading with a short subheading and a responsive three-column grid of token cards, each pairing an expertise-area title (Product Design, Design Systems, User Research, Prototyping, Frontend, Strategy) with a concise description of what that skill covers. Use on a personal portfolio, online résumé, or professional profile page to summarize core competencies.",
   props: z.object({
-    /** Section heading (maps to FeatureGrid heading). */
+    /** Section heading (maps to ServicesGrid heading). */
     heading: z.string().optional(),
     /** Short supporting line under the heading. */
     subheading: z.string().optional(),
@@ -82,7 +82,7 @@ export const ResumeCvServices = defineCapsule({
         )}
       >
         <Container>
-          <FeatureGrid
+          <ServicesGrid
             heading={props.heading ?? 'Skills'}
             subheading={props.subheading ?? 'What I do'}
             columns={props.columns ?? 3}
@@ -98,14 +98,14 @@ export const ResumeCvServices = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
-                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
-                </FeatureCard>
+                <ServiceCard key={__iv__.title}>
+                  {__iv__.icon && <ServiceIcon>{__iv__.icon}</ServiceIcon>}
+                  <ServiceTitle>{__iv__.title}</ServiceTitle>
+                  <ServiceDescription>{__iv__.description}</ServiceDescription>
+                </ServiceCard>
               )
             })}
-          </FeatureGrid>
+          </ServicesGrid>
         </Container>
       </section>
     )

@@ -4,12 +4,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import {
-  FeatureGrid,
-  FeatureCard,
-  FeatureIcon,
-  FeatureTitle,
-  FeatureDescription,
-} from '#/section-kit/FeatureGrid.tsx'
+  ServicesGrid,
+  ServiceCard,
+  ServiceIcon,
+  ServiceTitle,
+  ServiceDescription,
+} from '#/section-kit/ServicesGrid.tsx'
 
 /**
  * IllustratorServices — a centered-heading "what I create" services grid for an
@@ -110,7 +110,7 @@ export const IllustratorServices = defineCapsule({
     ]
 
     return (
-      <FeatureGrid
+      <ServicesGrid
         heading={heading}
         subheading={description}
         columns={3}
@@ -135,14 +135,14 @@ export const IllustratorServices = defineCapsule({
               imageAlt?: string
             }
             return (
-              <FeatureCard key={__iv__.title}>
-                {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                <FeatureTitle>{__iv__.title}</FeatureTitle>
-                <FeatureDescription>{__iv__.description}</FeatureDescription>
-              </FeatureCard>
+              <ServiceCard key={__iv__.title}>
+                {__iv__.icon && <ServiceIcon>{__iv__.icon}</ServiceIcon>}
+                <ServiceTitle>{__iv__.title}</ServiceTitle>
+                <ServiceDescription>{__iv__.description}</ServiceDescription>
+              </ServiceCard>
             )
           })}
-      </FeatureGrid>
+      </ServicesGrid>
     )
   },
 })
