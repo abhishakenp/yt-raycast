@@ -10,7 +10,7 @@ import { cn } from '#/lib/utils.ts'
  * as ResponsiveGrid. Pass BentoTile children; each tile carries its own span
  * classes and chrome (aspect, rounded, hover) via className.
  */
-const bentoGridVariants = cva('grid', {
+const bentoGridVariants = cva('grid gap-4', {
   variants: {
     cols: {
       '2-lg-3': 'grid-cols-2 lg:grid-cols-3',
@@ -26,16 +26,9 @@ const bentoGridVariants = cva('grid', {
       '1-sm-2': 'sm:grid-cols-2',
       '1-sm-2-lg-3': 'sm:grid-cols-2 lg:grid-cols-3',
     },
-    gap: {
-      none: 'gap-0',
-      sm: 'gap-4',
-      md: 'gap-6',
-      lg: 'gap-8',
-    },
   },
   defaultVariants: {
     cols: '2-lg-4',
-    gap: 'sm',
   },
 })
 
@@ -47,13 +40,13 @@ export interface BentoGridProps
 }
 
 const BentoGrid = React.forwardRef<HTMLDivElement, BentoGridProps>(
-  ({ className, cols, gap, asChild = false, ...props }, ref) => {
+  ({ className, cols, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : 'div'
     return (
       <Comp
         ref={ref}
         data-slot="bento-grid"
-        className={cn(bentoGridVariants({ cols, gap }), className)}
+        className={cn(bentoGridVariants({ cols }), className)}
         {...props}
       />
     )

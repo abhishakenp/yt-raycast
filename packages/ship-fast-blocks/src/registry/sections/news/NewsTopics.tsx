@@ -141,7 +141,7 @@ export const NewsTopics = defineCapsule({
             </button>
           </div>
 
-          <TopicGrid cols="2-3-4" gap="sm">
+          <TopicGrid cols="2-3-4" className="gap-4">
             {items.map((topic) => (
               <TopicCard asChild key={topic.name}>
                 <button

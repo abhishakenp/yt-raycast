@@ -213,7 +213,7 @@ export const FaqTopics = defineCapsule({
             titleClassName="text-lg font-semibold text-foreground"
           />
 
-          <TopicGrid cols="1-2-3" gap="sm">
+          <TopicGrid cols="1-2-3" className="gap-4">
             {items.map((topic, i) => (
               <TopicCard
                 key={topic.title}

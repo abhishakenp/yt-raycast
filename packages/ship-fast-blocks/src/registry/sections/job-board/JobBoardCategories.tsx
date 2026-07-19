@@ -212,7 +212,7 @@ export const JobBoardCategories = defineCapsule({
             titleClassName="mb-4 text-3xl font-semibold tracking-tight text-foreground"
             subtitleClassName="mx-auto max-w-xl text-muted-foreground"
           />
-          <CategoryGrid cols="2-3-4" gap="sm">
+          <CategoryGrid cols="2-3-4" className="gap-4">
             {items.map((cat, i) => (
               <CategoryCard
                 asChild

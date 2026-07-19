@@ -148,7 +148,6 @@ export const MusicArtistMusic = defineCapsule({
           />
 
           <MusicList
-            gap="lg"
             className="mb-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
           >
             {tracks.map((track) => (

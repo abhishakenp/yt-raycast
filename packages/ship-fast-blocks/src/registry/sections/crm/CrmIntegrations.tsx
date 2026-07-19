@@ -104,7 +104,7 @@ export const CrmIntegrations = defineCapsule({
             titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
             subtitleClassName="text-lg text-muted-foreground"
           />
-          <IntegrationGrid cols="2-4-6" gap="md">
+          <IntegrationGrid cols="2-4-6">
             {items.map((item) => (
               <IntegrationCard
                 asChild

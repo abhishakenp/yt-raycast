@@ -96,7 +96,7 @@ export const ElectronicsStoreCategories = defineCapsule({
             className="mb-8 gap-0"
             titleClassName="text-2xl font-semibold text-foreground"
           />
-          <CategoryGrid cols="2-lg-4" gap="sm">
+          <CategoryGrid cols="2-lg-4" className="gap-4">
             {items.map((c) => (
               <CategoryCard asChild key={c.name}>
                 <button

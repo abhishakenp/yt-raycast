@@ -105,7 +105,7 @@ export const CommunityForumTopics = defineCapsule({
             subtitleClassName="text-lg"
             className="mx-auto mb-16 max-w-2xl gap-6"
           />
-          <TopicGrid cols="1-2-4" gap="sm">
+          <TopicGrid cols="1-2-4" className="gap-4">
             {items.map((topic, i) => (
               <TopicCard
                 asChild

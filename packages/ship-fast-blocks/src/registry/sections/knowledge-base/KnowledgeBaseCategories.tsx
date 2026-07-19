@@ -230,7 +230,7 @@ export const KnowledgeBaseCategories = defineCapsule({
             titleClassName="mb-3 text-2xl font-semibold text-foreground sm:text-3xl"
             subtitleClassName="mx-auto max-w-xl text-muted-foreground"
           />
-          <CategoryGrid cols="1-2-4" gap="md">
+          <CategoryGrid cols="1-2-4">
             {items.map((cat, i) => (
               <CategoryCard
                 asChild

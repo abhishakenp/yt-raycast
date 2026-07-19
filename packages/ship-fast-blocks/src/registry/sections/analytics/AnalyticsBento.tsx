@@ -86,7 +86,6 @@ export const AnalyticsBento = defineCapsule({
           />
           <BentoGrid
             cols="1-md-3"
-            gap="sm"
             className="auto-rows-[minmax(0,1fr)] gap-5 md:grid-rows-2"
           >
             <BentoTile

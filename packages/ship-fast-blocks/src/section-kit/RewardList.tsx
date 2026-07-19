@@ -4,16 +4,10 @@ import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '#/lib/utils.ts'
 
-const RewardListVariants = cva('flex flex-col', {
+const RewardListVariants = cva('flex flex-col gap-4', {
   variants: {
-    gap: {
-      sm: 'gap-3',
-      md: 'gap-4',
-      lg: 'gap-6',
-    },
   },
   defaultVariants: {
-    gap: 'md',
   },
 })
 
@@ -21,12 +15,12 @@ const RewardList = React.forwardRef<
   HTMLUListElement,
   React.ComponentProps<'ul'> &
     VariantProps<typeof RewardListVariants> & { asChild?: boolean }
->(({ className, gap, asChild = false, ...props }, ref) => {
+>(({ className, asChild = false, ...props }, ref) => {
   const Comp = asChild ? Slot : 'ul'
   return (
     <Comp
       data-slot="reward-list"
-      className={cn(RewardListVariants({ gap }), className)}
+      className={cn(RewardListVariants({}), className)}
       ref={ref}
       {...props}
     />

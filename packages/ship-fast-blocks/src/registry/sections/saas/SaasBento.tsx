@@ -101,7 +101,6 @@ export const SaasBento = defineCapsule({
 
           <BentoGrid
             cols="1-sm-2-md-6"
-            gap="sm"
             className="mt-14 auto-rows-[200px] gap-5 lg:gap-6"
           >
             {tiles.map((tile, i) => {

@@ -163,7 +163,6 @@ export const CoworkingFeatures = defineCapsule({
 
           <BentoGrid
             cols={bento ? '1-sm-2-lg-6' : uniformCols}
-            gap="sm"
             className="mt-14 gap-5"
           >
             {features.map((feature, index) => {
