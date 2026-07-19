@@ -11,8 +11,8 @@ import {
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * KidsEducationFaq — native disclosure FAQ accordion for a kids / family
@@ -83,18 +83,15 @@ export const KidsEducationFaq = defineCapsule({
     return (
       <section className={cn('bg-background py-24', props.className)}>
         <Container size="sm">
-          <div className="mb-16 text-center">
-            <Eyebrow
-              variant="text"
-              className="mb-3 text-sm tracking-wider text-secondary"
-            >
-              {eyebrow}
-            </Eyebrow>
-            <h2 className="mb-6 text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            className="mb-16  gap-0"
+            eyebrowClassName="mb-3 inline-block text-sm font-semibold tracking-wider text-secondary"
+            titleClassName="mb-6 text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
 
           <FaqAccordion>
             {items.map((item) => (

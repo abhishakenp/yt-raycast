@@ -12,6 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   StepTimeline,
   StepTimelineGrid,
@@ -83,15 +84,15 @@ export const InsuranceSteps = defineCapsule({
     return (
       <StepTimeline className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <span className="mb-4 inline-block rounded-full border border-border bg-background px-4 py-1.5 text-sm font-semibold text-primary">
-              {eyebrow}
-            </span>
-            <h2 className="mb-6 text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            className="mb-16 max-w-3xl gap-0"
+            eyebrowClassName="mb-4 inline-block rounded-full border border-border bg-background px-4 py-1.5 text-sm font-semibold text-primary"
+            titleClassName="mb-6 text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
           <StepTimelineGrid columns={3} className="gap-8 lg:gap-12">
             {items.map((step, i) => (
               <StepItem key={step.title} className="relative">
