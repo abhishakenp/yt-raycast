@@ -14,7 +14,7 @@ import { cn } from '#/lib/utils.ts'
  * size, serif face, or extra actions. Compose whatever layout the capsule
  * needs — full-bleed portrait, circular inline avatar, or horizontal byline.
  */
-const personCardVariants = cva('flex flex-col', {
+const personCardVariants = cva('flex flex-col rounded-xl', {
   variants: {
     variant: {
       /** No surface — the profile sits directly on the section background. */
@@ -27,17 +27,9 @@ const personCardVariants = cva('flex flex-col', {
       /** Shadowed card fill, no border. */
       elevated: 'overflow-hidden bg-card text-card-foreground shadow-sm',
     },
-    rounded: {
-      none: '',
-      lg: 'rounded-lg',
-      xl: 'rounded-xl',
-      '2xl': 'rounded-2xl',
-      '3xl': 'rounded-3xl',
-    },
   },
   defaultVariants: {
     variant: 'outlined',
-    rounded: 'xl',
   },
 })
 
@@ -49,13 +41,13 @@ export interface PersonCardProps
 }
 
 const PersonCard = React.forwardRef<HTMLElement, PersonCardProps>(
-  ({ className, variant, rounded, asChild = false, ...props }, ref) => {
+  ({ className, variant, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : 'article'
     return (
       <Comp
         ref={ref}
         data-slot="person-card"
-        className={cn(personCardVariants({ variant, rounded }), className)}
+        className={cn(personCardVariants({ variant }), className)}
         {...props}
       />
     )

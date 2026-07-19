@@ -16,21 +16,15 @@ import { cn } from '#/lib/utils.ts'
  * with a soft shadow fade.
  */
 const hoverAccordionPanelVariants = cva(
-  'group relative h-full min-w-0 overflow-hidden',
+  'group relative h-full min-w-0 overflow-hidden rounded-3xl',
   {
     variants: {
-      rounded: {
-        '3xl': 'rounded-3xl',
-        '2xl': 'rounded-2xl',
-        xl: 'rounded-xl',
-      },
       ring: {
         border: 'ring-1 ring-border/60 hover:ring-primary/40',
         none: '',
       },
     },
     defaultVariants: {
-      rounded: '3xl',
       ring: 'border',
     },
   },
@@ -56,7 +50,6 @@ const HoverAccordionPanel = React.forwardRef<
       className,
       expanded = false,
       grow = { expanded: 3, collapsed: 1 },
-      rounded,
       ring,
       asChild = false,
       ...props
@@ -69,7 +62,7 @@ const HoverAccordionPanel = React.forwardRef<
         ref={ref}
         data-slot="hover-accordion-panel"
         className={cn(
-          hoverAccordionPanelVariants({ rounded, ring }),
+          hoverAccordionPanelVariants({ ring }),
           className,
         )}
         style={{
