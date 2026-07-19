@@ -15,6 +15,7 @@ import {
   HeroCodeWindowBody,
 } from '#/section-kit/HeroSection.tsx'
 import { Drift, Float, Glow, GridField, Tilt } from '#/section-kit/motion.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -114,7 +115,7 @@ export const AuthHero = defineCapsule({
           <Glow className="-top-32 left-[-10%] h-96 w-[36rem] bg-primary/15" />
         </Drift>
 
-        <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-5 py-16 sm:px-6 sm:py-24 md:grid-cols-[minmax(0,1fr)_minmax(20rem,0.95fr)] md:gap-10 lg:px-8 lg:py-28 xl:grid-cols-[minmax(0,0.92fr)_minmax(28rem,1.08fr)] xl:gap-16">
+        <Container className="relative grid grid-cols-1 items-center gap-12 px-5 py-16 sm:py-24 md:grid-cols-[minmax(0,1fr)_minmax(20rem,0.95fr)] md:gap-10 lg:py-28 xl:grid-cols-[minmax(0,0.92fr)_minmax(28rem,1.08fr)] xl:gap-16">
           <div className="flex min-w-0 flex-col md:max-w-xl lg:max-w-2xl">
             <HeroBadge
               variant="solid"
@@ -254,7 +255,7 @@ export const AuthHero = defineCapsule({
               </span>
             </Float>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

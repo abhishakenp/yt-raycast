@@ -12,6 +12,7 @@ import {
   HeroCta,
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * WriterAuthorHero — elegant two-column author hero for a literary author site.
@@ -68,7 +69,7 @@ export const WriterAuthorHero = defineCapsule({
       <HeroSection
         className={cn('bg-background py-20 lg:py-28', props.className)}
       >
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-6 lg:grid-cols-2 lg:items-center lg:px-8">
+        <Container className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:items-center">
           <div>
             <p className="font-serif text-sm font-medium tracking-[0.2em] text-accent uppercase">
               {heroEyebrow}
@@ -118,7 +119,7 @@ export const WriterAuthorHero = defineCapsule({
               className="absolute -bottom-6 -left-6 w-32 rounded-xl border border-border object-cover shadow-2xl ring-4 ring-background sm:w-40"
             />
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

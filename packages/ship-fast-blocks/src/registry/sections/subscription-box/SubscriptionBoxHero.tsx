@@ -13,6 +13,7 @@ import {
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -88,7 +89,7 @@ export const SubscriptionBoxHero = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 lg:grid-cols-2 lg:px-8">
+        <Container className="grid items-center gap-12 lg:grid-cols-2">
           <div>
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-accent/10 px-4 py-2 text-sm font-medium text-accent">
               <span
@@ -183,7 +184,7 @@ export const SubscriptionBoxHero = defineCapsule({
               </div>
             </Card>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

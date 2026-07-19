@@ -14,6 +14,7 @@ import {
   HeroSocialProof,
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -93,7 +94,7 @@ export const EcommerceHero = defineCapsule({
         aria-label="Hero"
         className={cn('bg-background', props.className)}
       >
-        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-12 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:py-16">
+        <Container className="grid items-center gap-10 py-12 lg:grid-cols-2 lg:gap-16 lg:py-16">
           <div className="text-center lg:text-left">
             <HeroBadge variant="solid">{heroEyebrow}</HeroBadge>
             <HeroHeading className="mt-6">{heroHeading}</HeroHeading>
@@ -157,7 +158,7 @@ export const EcommerceHero = defineCapsule({
               {heroBadge}
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

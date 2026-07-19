@@ -6,6 +6,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * FintechHero — split hero for a fintech / neobank / digital-banking landing
@@ -75,7 +76,7 @@ export const FintechHero = defineCapsule({
           aria-hidden="true"
           className="pointer-events-none absolute -top-1/3 -right-[15%] size-[700px] rounded-full bg-primary/[0.07] blur-3xl"
         />
-        <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-6 py-20 sm:px-8 lg:grid-cols-2 lg:gap-16 lg:px-8 lg:py-28">
+        <Container className="relative grid items-center gap-12 py-20 sm:px-8 lg:grid-cols-2 lg:gap-16 lg:py-28">
           <div className="flex flex-col items-start gap-6">
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-4 py-1.5 text-sm font-medium text-muted-foreground">
               <span
@@ -148,7 +149,7 @@ export const FintechHero = defineCapsule({
               />
             </Card>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

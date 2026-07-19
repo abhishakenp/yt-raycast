@@ -10,6 +10,7 @@ import {
   HeroActions,
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -127,7 +128,10 @@ export const SaasHero = defineCapsule({
           aria-hidden="true"
           className="pointer-events-none absolute -top-1/2 -right-[20%] size-[800px] rounded-full bg-primary/[0.08] blur-3xl"
         />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-6 py-16 sm:px-8 lg:grid-cols-[1fr_1.1fr] lg:gap-16 lg:px-12 lg:py-28">
+        <Container
+          size="lg"
+          className="relative grid items-center gap-12 py-16 sm:px-8 lg:grid-cols-[1fr_1.1fr] lg:gap-16 lg:px-12 lg:py-28"
+        >
           <div>
             <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-1.5 text-sm font-medium text-muted-foreground shadow-sm">
               <span className="inline-block size-1.5 animate-pulse rounded-full bg-primary" />
@@ -293,7 +297,7 @@ export const SaasHero = defineCapsule({
               </div>
             </Card>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

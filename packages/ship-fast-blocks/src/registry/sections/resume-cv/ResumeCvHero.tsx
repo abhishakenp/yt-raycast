@@ -12,6 +12,7 @@ import {
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * ResumeCvHero — clean two-column opening hero for a personal resume / CV /
@@ -65,7 +66,7 @@ export const ResumeCvHero = defineCapsule({
 
     return (
       <HeroSection className={cn('bg-background', props.className)}>
-        <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 py-24 lg:grid-cols-2 lg:gap-16 lg:px-8 lg:py-32">
+        <Container className="grid items-center gap-12 py-24 lg:grid-cols-2 lg:gap-16 lg:py-32">
           <div className="flex flex-col items-start">
             <Eyebrow
               variant="muted"
@@ -121,7 +122,7 @@ export const ResumeCvHero = defineCapsule({
               className="border border-border bg-muted aspect-[6/7]"
             />
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

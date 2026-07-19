@@ -13,6 +13,7 @@ import {
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * MarketingHero — split product hero for a SaaS / product-marketing landing page.
@@ -79,7 +80,10 @@ export const MarketingHero = defineCapsule({
           props.className,
         )}
       >
-        <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-6 lg:grid-cols-[1fr_1.1fr]">
+        <Container
+          size="lg"
+          className="relative grid items-center gap-12 lg:grid-cols-[1fr_1.1fr]"
+        >
           <div className="text-center lg:text-left">
             <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-border bg-background px-3.5 py-1.5 text-xs font-semibold text-primary shadow-sm">
               <svg
@@ -267,7 +271,7 @@ export const MarketingHero = defineCapsule({
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

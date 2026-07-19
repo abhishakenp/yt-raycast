@@ -14,6 +14,7 @@ import {
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 export const TutoringHero = defineCapsule({
   name: 'TutoringHero',
@@ -60,7 +61,7 @@ export const TutoringHero = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 lg:grid-cols-2 lg:px-8">
+        <Container className="grid items-center gap-12 lg:grid-cols-2">
           <div>
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-4 py-2 text-sm font-medium text-muted-foreground">
               <span
@@ -163,7 +164,7 @@ export const TutoringHero = defineCapsule({
               </div>
             </Card>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

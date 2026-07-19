@@ -11,6 +11,7 @@ import {
   HeroCta,
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 const PodcastHeroProps = z.object({
   eyebrow: z.string().optional().describe('Small pill above the heading'),
@@ -62,7 +63,7 @@ export const PodcastHero = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 py-20 lg:grid-cols-2 lg:gap-16 lg:px-8 lg:py-28">
+        <Container className="grid items-center gap-12 py-20 lg:grid-cols-2 lg:gap-16 lg:py-28">
           <div className="flex flex-col items-start gap-6">
             {eyebrow ? (
               <span className="inline-flex items-center rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
@@ -126,7 +127,7 @@ export const PodcastHero = defineCapsule({
               />
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

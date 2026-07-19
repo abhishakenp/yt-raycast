@@ -13,6 +13,7 @@ import {
 import { propertyListingLakebed } from './property-listing-lakebed.ts'
 import { usePropertyListingSearch } from './property-listing-interactions.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * PropertyListingHero — search-portal hero for a property marketplace. A split
@@ -77,7 +78,7 @@ export const PropertyListingHero = defineCapsule({
         variant="split"
         className={cn('bg-background py-16 lg:py-24', props.className)}
       >
-        <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-6 lg:grid-cols-2 lg:px-8">
+        <Container className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
           <div>
             <span className="inline-flex items-center rounded-full bg-primary/10 px-4 py-1.5 text-xs font-medium tracking-[0.15em] text-primary uppercase">
               {eyebrow}
@@ -212,7 +213,7 @@ export const PropertyListingHero = defineCapsule({
               />
             </div>
           </div>
-        </div>
+        </Container>
       </HeroSection>
     )
   },

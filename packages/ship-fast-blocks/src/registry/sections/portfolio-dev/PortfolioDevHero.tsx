@@ -14,6 +14,7 @@ import {
   HeroCodeWindowHeader,
   HeroCodeWindowBody,
 } from '#/section-kit/HeroSection.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 export const PortfolioDevHero = defineCapsule({
   name: 'PortfolioDevHero',
@@ -53,7 +54,7 @@ export const PortfolioDevHero = defineCapsule({
           props.className,
         )}
       >
-        <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 lg:grid-cols-2 lg:px-8">
+        <Container className="grid items-center gap-12 lg:grid-cols-2">
           <div>
             <span className="font-mono text-sm text-primary">{eyebrow}</span>
             <HeroHeading className="mt-4">
@@ -127,7 +128,7 @@ export const PortfolioDevHero = defineCapsule({
               </HeroCodeWindowBody>
             </div>
           </HeroCodeWindow>
-        </div>
+        </Container>
       </HeroSection>
     )
   },
