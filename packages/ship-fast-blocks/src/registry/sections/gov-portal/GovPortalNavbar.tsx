@@ -11,6 +11,7 @@ import {
   NavbarActions,
   NavbarRouteLink,
   NavbarBrand,
+  SiteNav,
 } from '#/section-kit/index.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import {
@@ -380,9 +381,11 @@ export const GovPortalNavbar = defineCapsule({
     )
 
     return (
-      <header
+      <SiteNav
+        bare
+        position="sticky"
         className={cn(
-          'sticky top-0 z-50 w-full bg-background',
+          'z-50 w-full border-0 bg-background backdrop-blur-none',
           props.className,
         )}
       >
@@ -557,7 +560,7 @@ export const GovPortalNavbar = defineCapsule({
             </NavigationMenu>
           </Container>
         </div>
-      </header>
+      </SiteNav>
     )
   },
 })

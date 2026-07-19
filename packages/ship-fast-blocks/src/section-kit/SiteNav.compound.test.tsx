@@ -21,9 +21,8 @@ if (typeof ResizeObserver === 'undefined') {
   })
 }
 
-const { cleanup, fireEvent, render, screen } = await import(
-  '@testing-library/react'
-)
+const { cleanup, fireEvent, render, screen } =
+  await import('@testing-library/react')
 const {
   SiteNav,
   NavbarBrand,
@@ -315,5 +314,32 @@ describe('NavbarCta', () => {
     expect(el.getAttribute('data-slot')).toBe('navbar-cta')
     fireEvent.click(el)
     expect(navigate).toHaveBeenCalledWith('Order')
+  })
+})
+
+describe('SiteNav bare mode', () => {
+  it('renders header with data-slot and children directly (no nav wrapper)', () => {
+    render(
+      <SiteNav bare position="sticky" data-testid="bare">
+        <div data-testid="child">tier 1</div>
+      </SiteNav>,
+    )
+    const el = screen.getByTestId('bare')
+    expect(el.tagName).toBe('HEADER')
+    expect(el.getAttribute('data-slot')).toBe('site-nav')
+    expect(el.className).toContain('sticky')
+    // child is rendered directly inside header, not wrapped in nav
+    expect(el.querySelector('[data-testid="child"]')).not.toBeNull()
+    expect(el.querySelector('nav')).toBeNull()
+  })
+
+  it('does not render Container wrapper in bare mode', () => {
+    render(
+      <SiteNav bare data-testid="bare">
+        <div>content</div>
+      </SiteNav>,
+    )
+    const el = screen.getByTestId('bare')
+    expect(el.querySelector('[data-slot="container"]')).toBeNull()
   })
 })
