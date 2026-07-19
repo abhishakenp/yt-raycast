@@ -226,40 +226,42 @@ export const commerceCartLakebed = {
 
       return _ctx.db.state.orderBy('createdAt').all()
     }),
-    syncCatalog: commerce.mutation((_ctx, input: { products: CommerceCatalogProductInput[] }) => {
-      for (const product of input.products) {
-        const label = product.label.trim()
-        if (!label) continue
+    syncCatalog: commerce.mutation(
+      (_ctx, input: { products: CommerceCatalogProductInput[] }) => {
+        for (const product of input.products) {
+          const label = product.label.trim()
+          if (!label) continue
 
-        const itemKey = product.itemKey
-          ? commerceCartItemKey({
-              itemKey: product.itemKey,
-              label,
-              price: product.price,
-            })
-          : ''
-        const existing =
-          (itemKey
-            ? _ctx.db.products.where('itemKey', itemKey).all().at(0)
-            : null) ??
-          _ctx.db.products.where('label', label).all().at(0) ??
-          null
-        const next = {
-          imageAlt: product.imageAlt ?? '',
-          itemKey,
-          label,
-          price: product.price ?? '',
-          subtitle: product.subtitle ?? '',
+          const itemKey = product.itemKey
+            ? commerceCartItemKey({
+                itemKey: product.itemKey,
+                label,
+                price: product.price,
+              })
+            : ''
+          const existing =
+            (itemKey
+              ? _ctx.db.products.where('itemKey', itemKey).all().at(0)
+              : null) ??
+            _ctx.db.products.where('label', label).all().at(0) ??
+            null
+          const next = {
+            imageAlt: product.imageAlt ?? '',
+            itemKey,
+            label,
+            price: product.price ?? '',
+            subtitle: product.subtitle ?? '',
+          }
+
+          if (existing) {
+            _ctx.db.products.update(existing.id, next)
+          } else {
+            _ctx.db.products.insert(next)
+          }
         }
 
-        if (existing) {
-          _ctx.db.products.update(existing.id, next)
-        } else {
-          _ctx.db.products.insert(next)
-        }
-      }
-
-      return _ctx.db.products.orderBy('updatedAt', 'desc').all()
-    }),
+        return _ctx.db.products.orderBy('updatedAt', 'desc').all()
+      },
+    ),
   },
 } as const
