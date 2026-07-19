@@ -12,6 +12,7 @@ import {
   HeroCta,
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * MarketingHero — split product hero for a SaaS / product-marketing landing page.
@@ -209,7 +210,7 @@ export const MarketingHero = defineCapsule({
                       className="aspect-[16/7] w-full object-cover opacity-85"
                     />
                   </Card>
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <ResponsiveGrid cols="1-2" gap="sm">
                     {/* Chart widget */}
                     <Card
                       variant="outline"
@@ -261,7 +262,7 @@ export const MarketingHero = defineCapsule({
                         ))}
                       </div>
                     </Card>
-                  </div>
+                  </ResponsiveGrid>
                 </div>
               </div>
             </div>
