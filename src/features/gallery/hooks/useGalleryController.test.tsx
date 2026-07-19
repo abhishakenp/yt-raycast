@@ -1,7 +1,5 @@
 // @vitest-environment jsdom
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { cleanup, renderHook, waitFor } from '@testing-library/react'
-import type { ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { GalleryPayload } from '@/features/gallery/components/PublicGallery'
@@ -10,33 +8,25 @@ const queryMock = vi.hoisted(() => ({
   useQuery: vi.fn(),
 }))
 
-vi.mock('@tanstack/react-query', async () => {
-  const actual = await vi.importActual<typeof import('@tanstack/react-query')>(
-    '@tanstack/react-query',
-  )
-  return {
-    ...actual,
-    useQuery: queryMock.useQuery,
-  }
-})
-
-const convexClientMock = vi.hoisted(() => ({
-  query: vi.fn(),
-}))
-
-vi.mock('@/shared/convex/http-client', () => ({
-  createRuntimeConvexHttpClient: () => convexClientMock,
+vi.mock('convex/react', () => ({
+  useQuery: queryMock.useQuery,
 }))
 
 const apiMock = vi.hoisted(() => ({
-  sessions: { listPublicSessions: 'listPublicSessions' as const },
+  sessions: {
+    listOwnedSessions: 'listOwnedSessions' as const,
+    listPublicSessions: 'listPublicSessions' as const,
+  },
 }))
 
 vi.mock('../../../../convex/_generated/api', () => ({
   api: apiMock,
 }))
 
-import { useGalleryController } from './useGalleryController'
+import {
+  useGalleryController,
+  useOwnedGalleryController,
+} from './useGalleryController'
 
 const sampleGallery: GalleryPayload = {
   items: [
@@ -51,47 +41,28 @@ const sampleGallery: GalleryPayload = {
   hasPrev: false,
 }
 
-function createWrapper(client: QueryClient) {
-  return ({ children }: { children: ReactNode }) => (
-    <QueryClientProvider client={client}>{children}</QueryClientProvider>
-  )
-}
-
 function withData(data: GalleryPayload | undefined) {
-  queryMock.useQuery.mockReturnValue({ data })
-}
-
-function withQueryFnResolved(data: GalleryPayload) {
-  queryMock.useQuery.mockImplementation(
-    (opts: { queryFn: () => Promise<GalleryPayload> }) => {
-      void opts.queryFn()
-      return { data }
-    },
-  )
+  queryMock.useQuery.mockReturnValue(data)
 }
 
 describe('useGalleryController', () => {
   beforeEach(() => {
     queryMock.useQuery.mockReset()
-    convexClientMock.query.mockReset()
   })
 
   afterEach(() => {
     cleanup()
   })
 
-  it('returns gallery data from the mocked Convex client query', async () => {
-    convexClientMock.query.mockResolvedValue(sampleGallery)
-    withQueryFnResolved(sampleGallery)
+  it('returns gallery data from the reactive Convex query', async () => {
+    withData(sampleGallery)
 
-    const { result } = renderHook(() => useGalleryController(), {
-      wrapper: createWrapper(new QueryClient()),
-    })
+    const { result } = renderHook(() => useGalleryController())
 
     await waitFor(() => {
       expect(result.current.gallery).toEqual(sampleGallery)
     })
-    expect(convexClientMock.query).toHaveBeenCalledWith(
+    expect(queryMock.useQuery).toHaveBeenCalledWith(
       apiMock.sessions.listPublicSessions,
       { limit: 12, page: 1, search: undefined, category: undefined },
     )
@@ -100,9 +71,7 @@ describe('useGalleryController', () => {
   it('derives sessions from gallery.items', async () => {
     withData(sampleGallery)
 
-    const { result } = renderHook(() => useGalleryController(), {
-      wrapper: createWrapper(new QueryClient()),
-    })
+    const { result } = renderHook(() => useGalleryController())
 
     await waitFor(() => {
       expect(result.current.sessions).toEqual(sampleGallery.items)
@@ -112,13 +81,50 @@ describe('useGalleryController', () => {
   it('returns gallery undefined while loading', async () => {
     withData(undefined)
 
-    const { result } = renderHook(() => useGalleryController(), {
-      wrapper: createWrapper(new QueryClient()),
-    })
+    const { result } = renderHook(() => useGalleryController())
 
     await waitFor(() => {
       expect(result.current.gallery).toBeUndefined()
       expect(result.current.sessions).toBeUndefined()
     })
+  })
+
+  it('subscribes to public gallery metadata so preview image versions update', () => {
+    withData(sampleGallery)
+
+    renderHook(() => useGalleryController())
+
+    expect(queryMock.useQuery.mock.lastCall).toEqual([
+      apiMock.sessions.listPublicSessions,
+      { category: undefined, limit: 12, page: 1, search: undefined },
+    ])
+  })
+
+  it('subscribes to owned gallery metadata so preview image versions update', () => {
+    withData(sampleGallery)
+
+    renderHook(() => useOwnedGalleryController({ anonymousClientId: 'anon-1' }))
+
+    expect(queryMock.useQuery.mock.lastCall).toEqual([
+      apiMock.sessions.listOwnedSessions,
+      {
+        anonymousClientId: 'anon-1',
+        category: undefined,
+        limit: 12,
+        page: 1,
+        search: undefined,
+      },
+    ])
+  })
+
+  it('skips owned gallery subscription until anonymous client id is available', () => {
+    withData(undefined)
+
+    renderHook(() => useOwnedGalleryController())
+
+    expect(queryMock.useQuery.mock.lastCall).toEqual([
+      apiMock.sessions.listOwnedSessions,
+      'skip',
+    ])
   })
 })

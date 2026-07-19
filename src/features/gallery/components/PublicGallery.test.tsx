@@ -27,7 +27,7 @@ vi.mock('@tanstack/react-router', () => ({
     onPointerEnter?: (e: ReactPointerEvent) => void
     onPointerLeave?: (e: ReactPointerEvent) => void
     params?: Record<string, string>
-    preload?: boolean
+    preload?: boolean | 'intent'
     to?: string
     [key: string]: unknown
   }) => {
@@ -63,10 +63,6 @@ vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
 
 vi.mock('@tanstack/react-query', () => ({
   useQuery: () => ({ data: undefined, isPending: true }),
-}))
-
-vi.mock('../server/gallery-preview-server-fn', () => ({
-  fetchGalleryPreviewHtml: vi.fn(async () => null),
 }))
 
 vi.mock('@/features/gallery/hooks/useGalleryController', () => ({
@@ -131,7 +127,7 @@ describe('GalleryGrid', () => {
     )
   })
 
-  it('renders gallery card links without dashboard preloading or delete side effects', () => {
+  it('renders gallery card links with intent preloading and no delete side effects', () => {
     const gallery: GalleryPayload = {
       ...emptyGallery,
       items: [
@@ -147,7 +143,7 @@ describe('GalleryGrid', () => {
     const card = view.getByRole('link', { name: 'Open Public project link' })
 
     expect(card.getAttribute('href')).toBe('/generate/session_public_link')
-    expect(card.getAttribute('data-preload')).toBe('false')
+    expect(card.getAttribute('data-preload')).toBe('intent')
     expect(card.getAttribute('data-gallery-session-id')).toBe(
       'session_public_link',
     )

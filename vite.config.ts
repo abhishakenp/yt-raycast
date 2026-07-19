@@ -387,6 +387,89 @@ function pexelsDevApi(): Plugin {
   }
 }
 
+function galleryImageRouteDevProxy(): Plugin {
+  return {
+    name: 'ship-fast-gallery-image-route-dev-proxy',
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        if (req.method !== 'GET' && req.method !== 'HEAD') {
+          next()
+          return
+        }
+
+        const requestUrl = new URL(req.url ?? '', 'http://localhost/')
+        if (!requestUrl.pathname.startsWith('/api/images/')) {
+          next()
+          return
+        }
+
+        if (requestUrl.searchParams.has('__gallery_image_bypass')) {
+          next()
+          return
+        }
+
+        const parts = requestUrl.pathname.split('/').filter(Boolean)
+        const sessionId = parts[2]
+        if (!sessionId) {
+          next()
+          return
+        }
+
+        try {
+          const host = req.headers.host ?? 'localhost:3000'
+          const forwardedUrl = new URL(
+            `/api/images/${encodeURIComponent(sessionId)}`,
+            `http://${host}`,
+          )
+          requestUrl.searchParams.forEach((value, key) => {
+            if (key !== '__gallery_image_bypass') {
+              forwardedUrl.searchParams.append(key, value)
+            }
+          })
+          forwardedUrl.searchParams.set('__gallery_image_bypass', '1')
+
+          const forwardedHeaders = new Headers()
+          Object.entries(req.headers).forEach(([key, value]) => {
+            if (
+              value === undefined ||
+              key === 'host' ||
+              key === 'connection' ||
+              key === 'content-length' ||
+              key === 'sec-fetch-dest'
+            ) {
+              return
+            }
+            if (Array.isArray(value)) {
+              value.forEach((item) => forwardedHeaders.append(key, item))
+              return
+            }
+            forwardedHeaders.set(key, value)
+          })
+
+          const response = await fetch(forwardedUrl, {
+            headers: forwardedHeaders,
+            method: req.method,
+          })
+
+          res.statusCode = response.status
+          response.headers.forEach((value, key) => {
+            res.setHeader(key, value)
+          })
+
+          if (req.method === 'HEAD') {
+            res.end()
+            return
+          }
+
+          res.end(Buffer.from(await response.arrayBuffer()))
+        } catch (error) {
+          next(error)
+        }
+      })
+    },
+  }
+}
+
 const config = defineConfig({
   define: {
     'import.meta.env.MEDUSA_BACKEND_URL': JSON.stringify(
@@ -439,6 +522,7 @@ const config = defineConfig({
   plugins: [
     devtools(),
     pexelsDevApi(),
+    galleryImageRouteDevProxy(),
     nitro({
       rollupConfig: {
         external: [/^@sentry\//],

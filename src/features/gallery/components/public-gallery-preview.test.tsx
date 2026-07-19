@@ -5,19 +5,26 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 vi.mock('@tanstack/react-router', () => ({
   Link: ({
     children,
+    params,
+    preload,
     to,
     ...props
   }: {
     children?: React.ReactNode
+    params?: { sessionId?: string }
+    preload?: boolean
     to?: string
-    params?: unknown
     [key: string]: unknown
   }) => {
-    const anchorProps = { ...props }
-    delete anchorProps.params
+    const href =
+      to !== undefined && params?.sessionId !== undefined
+        ? to.replace('$sessionId', encodeURIComponent(params.sessionId))
+        : to
+
+    void preload
 
     return (
-      <a href={to} {...anchorProps}>
+      <a href={href} {...props}>
         {children}
       </a>
     )
@@ -32,14 +39,6 @@ vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
   GeneratedModulePreview: ({ source }: { source: string }) => (
     <div data-testid="generated-module-preview">{source}</div>
   ),
-}))
-
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: () => ({ data: undefined, isPending: true }),
-}))
-
-vi.mock('../server/gallery-preview-server-fn', () => ({
-  fetchGalleryPreviewHtml: vi.fn(async () => null),
 }))
 
 import { GalleryGrid, type GalleryPayload } from './PublicGallery'
@@ -96,6 +95,61 @@ describe('public gallery preview cards', () => {
     expect(card.getAttribute('href')).toBe('/generate/session_link_target')
     expect(card.getAttribute('data-gallery-session-id')).toBe(
       'session_link_target',
+    )
+  })
+
+  it('renders the preview as a lazy server image instead of an iframe document', () => {
+    const gallery: GalleryPayload = {
+      ...emptyGallery,
+      items: [
+        sessionWith({
+          sessionId: 'session_image_preview',
+          prompt: 'Image preview project',
+          updatedAt: 12345,
+        }),
+      ],
+      total: 1,
+    }
+
+    const { container } = render(<GalleryGrid gallery={gallery} />)
+
+    const image = container.querySelector('img')
+    expect(image).not.toBeNull()
+    expect(image?.getAttribute('alt')).toBe('')
+    expect(image?.getAttribute('src')).toBe(
+      '/api/images/session_image_preview?v=12345',
+    )
+    expect(image?.getAttribute('loading')).toBe('lazy')
+    expect(image?.getAttribute('decoding')).toBe('async')
+    expect(image?.getAttribute('fetchpriority')).toBe('low')
+    expect(container.querySelector('iframe')).toBeNull()
+  })
+
+  it('updates the preview image url when session updatedAt changes', () => {
+    const makeGallery = (updatedAt: number): GalleryPayload => ({
+      ...emptyGallery,
+      items: [
+        sessionWith({
+          sessionId: 'session_theme_changed',
+          prompt: 'Theme changed project',
+          updatedAt,
+        }),
+      ],
+      total: 1,
+    })
+
+    const { container, rerender } = render(
+      <GalleryGrid gallery={makeGallery(111)} />,
+    )
+
+    expect(container.querySelector('img')?.getAttribute('src')).toBe(
+      '/api/images/session_theme_changed?v=111',
+    )
+
+    rerender(<GalleryGrid gallery={makeGallery(222)} />)
+
+    expect(container.querySelector('img')?.getAttribute('src')).toBe(
+      '/api/images/session_theme_changed?v=222',
     )
   })
 
