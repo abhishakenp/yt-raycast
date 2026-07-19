@@ -12,6 +12,11 @@ import {
   HeroSubheading,
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import {
+  FormField,
+  FormFieldLabel,
+  FormFieldControl,
+} from '#/section-kit/FormField.tsx'
 
 export const TravelAgencyHero = defineCapsule({
   name: 'TravelAgencyHero',
@@ -80,36 +85,36 @@ export const TravelAgencyHero = defineCapsule({
             className="mt-12 w-full max-w-4xl bg-card/95 p-3 shadow-[0_24px_80px_rgba(0,0,0,0.25)] backdrop-blur-md"
           >
             <div className="grid gap-2 sm:grid-cols-[1.3fr_1fr_1fr_auto]">
-              <label className="flex flex-col gap-1 rounded-2xl bg-muted px-4 py-3 text-left">
-                <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <FormField className="flex flex-col gap-1 rounded-2xl bg-muted px-4 py-3 text-left">
+                <FormFieldLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Destination
-                </span>
-                <input
+                </FormFieldLabel>
+                <FormFieldControl
                   type="text"
                   placeholder={destinationPlaceholder}
                   className="bg-transparent text-sm text-card-foreground placeholder:text-muted-foreground focus:outline-none"
                 />
-              </label>
-              <label className="flex flex-col gap-1 rounded-2xl bg-muted px-4 py-3 text-left">
-                <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              </FormField>
+              <FormField className="flex flex-col gap-1 rounded-2xl bg-muted px-4 py-3 text-left">
+                <FormFieldLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   When
-                </span>
-                <input
+                </FormFieldLabel>
+                <FormFieldControl
                   type="text"
                   placeholder={datesPlaceholder}
                   className="bg-transparent text-sm text-card-foreground placeholder:text-muted-foreground focus:outline-none"
                 />
-              </label>
-              <label className="flex flex-col gap-1 rounded-2xl bg-muted px-4 py-3 text-left">
-                <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              </FormField>
+              <FormField className="flex flex-col gap-1 rounded-2xl bg-muted px-4 py-3 text-left">
+                <FormFieldLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Who
-                </span>
-                <input
+                </FormFieldLabel>
+                <FormFieldControl
                   type="text"
                   placeholder={travelersPlaceholder}
                   className="bg-transparent text-sm text-card-foreground placeholder:text-muted-foreground focus:outline-none"
                 />
-              </label>
+              </FormField>
               <button
                 type="button"
                 onClick={() => go(searchTarget)}

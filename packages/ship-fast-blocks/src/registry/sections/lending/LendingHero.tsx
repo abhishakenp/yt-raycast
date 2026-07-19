@@ -6,6 +6,11 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  FormField,
+  FormFieldLabel,
+  FormFieldControl,
+} from '#/section-kit/FormField.tsx'
 
 /**
  * LendingHero — split, conversion-focused hero for a personal-lending / loan
@@ -197,40 +202,36 @@ export const LendingHero = defineCapsule({
                   </div>
                 </div>
                 <div className="space-y-5">
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-foreground">
+                  <FormField>
+                    <FormFieldLabel className="mb-2 block text-sm font-medium text-foreground">
                       {heroAmountLabel}
-                    </label>
+                    </FormFieldLabel>
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
                         $
                       </span>
-                      <input
+                      <FormFieldControl
                         type="number"
                         defaultValue={heroAmountValue}
                         className={cn(inputCls, 'pl-8')}
                       />
                     </div>
-                  </div>
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-foreground">
+                  </FormField>
+                  <FormField>
+                    <FormFieldLabel className="mb-2 block text-sm font-medium text-foreground">
                       {heroScoreLabel}
-                    </label>
-                    <select
+                    </FormFieldLabel>
+                    <FormFieldControl
+                      as="select"
                       defaultValue={heroScoreOptions[2]}
                       className={cn(inputCls, 'appearance-none')}
-                    >
-                      {heroScoreOptions.map((opt) => (
-                        <option key={opt} className="bg-background">
-                          {opt}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-foreground">
+                      options={heroScoreOptions}
+                    />
+                  </FormField>
+                  <FormField>
+                    <FormFieldLabel className="mb-2 block text-sm font-medium text-foreground">
                       {heroTermLabel}
-                    </label>
+                    </FormFieldLabel>
                     <div className="grid grid-cols-3 gap-3">
                       {heroTerms.map((term, i) => (
                         <button
@@ -248,7 +249,7 @@ export const LendingHero = defineCapsule({
                         </button>
                       ))}
                     </div>
-                  </div>
+                  </FormField>
                   <div className="border-t border-border pt-4">
                     <div className="mb-2 flex items-baseline justify-between">
                       <span className="text-sm text-muted-foreground">

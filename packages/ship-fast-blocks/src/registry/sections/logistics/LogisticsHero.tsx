@@ -3,6 +3,11 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { Card } from '#/section-kit/Card.tsx'
+import {
+  FormField,
+  FormFieldLabel,
+  FormFieldControl,
+} from '#/section-kit/FormField.tsx'
 import { logisticsLakebed } from './logistics-lakebed.ts'
 import {
   useShipmentTracking,
@@ -144,43 +149,45 @@ export const LogisticsHero = defineCapsule({
                 onSubmit={tracking.submitTracking}
                 className="rounded-2xl border border-border bg-card p-6 shadow-sm"
               >
-                <label
-                  htmlFor="logistics-hero-track"
-                  className="mb-3 block text-sm font-medium text-card-foreground"
-                >
-                  {trackLabel}
-                </label>
-                <div className="flex gap-3">
-                  <input
-                    id="logistics-hero-track"
-                    name="trackingId"
-                    type="text"
-                    defaultValue={trackingIdValue}
-                    placeholder={trackPlaceholder}
-                    aria-label="Tracking number"
-                    className="flex-1 rounded-xl border border-input bg-muted/50 px-4 py-3 text-foreground placeholder:text-muted-foreground transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
-                  />
-                  <button
-                    type="submit"
-                    aria-busy={tracking.isPending}
-                    disabled={tracking.isPending}
-                    className="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+                <FormField>
+                  <FormFieldLabel
+                    htmlFor="logistics-hero-track"
+                    className="mb-3 block text-sm font-medium text-card-foreground"
                   >
-                    <svg
-                      className="size-5"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
+                    {trackLabel}
+                  </FormFieldLabel>
+                  <div className="flex gap-3">
+                    <FormFieldControl
+                      id="logistics-hero-track"
+                      name="trackingId"
+                      type="text"
+                      defaultValue={trackingIdValue}
+                      placeholder={trackPlaceholder}
+                      aria-label="Tracking number"
+                      className="flex-1 rounded-xl border border-input bg-muted/50 px-4 py-3 text-foreground placeholder:text-muted-foreground transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
+                    />
+                    <button
+                      type="submit"
+                      aria-busy={tracking.isPending}
+                      disabled={tracking.isPending}
+                      className="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
                     >
-                      <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                    <span>{trackButton}</span>
-                  </button>
-                </div>
+                      <svg
+                        className="size-5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                      <span>{trackButton}</span>
+                    </button>
+                  </div>
+                </FormField>
                 <p className="mt-3 text-xs text-muted-foreground">
                   {trackHint}
                 </p>
