@@ -14,6 +14,7 @@ import { Image } from '#/lib/img.tsx'
  * agency. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   PortfolioGrid,
   PortfolioItem,
@@ -126,15 +127,15 @@ export const MarketingAgencyCases = defineCapsule({
     return (
       <section className={cn('bg-muted py-24', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <p className="mb-3 text-sm font-medium text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            className="mb-16 max-w-3xl gap-0"
+            eyebrowClassName="mb-3 normal-case tracking-normal text-muted-foreground"
+            titleClassName="mb-4 tracking-tight sm:text-4xl"
+            subtitleClassName="md:text-base"
+          />
           <PortfolioGrid cols="1-2-3">
             {items.map((c, i) => (
               <PortfolioItem

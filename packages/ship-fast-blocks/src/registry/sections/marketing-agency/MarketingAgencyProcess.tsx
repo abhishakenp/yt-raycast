@@ -11,6 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * agencies, consultancies, or service firms. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   StepTimeline,
   StepTimelineGrid,
@@ -67,15 +68,15 @@ export const MarketingAgencyProcess = defineCapsule({
     return (
       <StepTimeline className={cn('bg-background py-24', props.className)}>
         <Container>
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <p className="mb-3 text-sm font-medium text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            className="mb-16 max-w-3xl gap-0"
+            eyebrowClassName="mb-3 normal-case tracking-normal text-muted-foreground"
+            titleClassName="mb-4 tracking-tight sm:text-4xl"
+            subtitleClassName="md:text-base"
+          />
           <StepTimelineGrid columns={4} className="gap-8">
             {steps.map((step, i) => (
               <StepItem key={step.title} className="relative">
