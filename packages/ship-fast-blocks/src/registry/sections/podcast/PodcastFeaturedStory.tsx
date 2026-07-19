@@ -11,6 +11,7 @@ import {
   FeaturedArticleContent,
   FeaturedArticleMeta,
 } from '#/section-kit/FeaturedArticle.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
 const PodcastFeaturedStoryProps = z.object({
@@ -64,7 +65,11 @@ export const PodcastFeaturedStory = defineCapsule({
         <Container size="lg" className="px-6 lg:px-6">
           <SectionHeading eyebrow={eyebrow} title={heading} align="center" />
 
-          <div className="mt-12 grid overflow-hidden rounded-2xl border border-border bg-card text-card-foreground md:grid-cols-2">
+          <Card
+            rounded="2xl"
+            padding="none"
+            className="mt-12 grid overflow-hidden md:grid-cols-2"
+          >
             <FeaturedArticleMedia className="relative min-h-64 md:min-h-full">
               <Image
                 alt={imageAlt}
@@ -113,7 +118,7 @@ export const PodcastFeaturedStory = defineCapsule({
                 </button>
               </div>
             </FeaturedArticleContent>
-          </div>
+          </Card>
         </Container>
       </FeaturedArticle>
     )
