@@ -7,6 +7,7 @@ import {
   CtaBandInner,
   CtaBandTitle,
   CtaBandSubtitle,
+  CtaAction,
 } from '#/section-kit/CtaBand.tsx'
 
 /**
@@ -61,10 +62,11 @@ export const FaqContactCta = defineCapsule({
             {description}
           </CtaBandSubtitle>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <button
-              type="button"
+            <CtaAction
+              variant="primary"
+              invert
+              className="w-full gap-2 rounded-lg px-6 py-3 font-medium hover:bg-muted sm:w-auto"
               onClick={() => go(primary)}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-background px-6 py-3 font-medium text-foreground transition-colors hover:bg-muted sm:w-auto"
             >
               <svg
                 width="18"
@@ -81,11 +83,11 @@ export const FaqContactCta = defineCapsule({
                 <path d="m22 7-10 5L2 7" />
               </svg>
               {primary}
-            </button>
-            <button
-              type="button"
+            </CtaAction>
+            <CtaAction
+              variant="ghost"
+              className="w-full gap-2 rounded-lg bg-primary-foreground/10 px-6 py-3 font-medium text-primary-foreground hover:bg-primary-foreground/20 sm:w-auto"
               onClick={() => go(secondary)}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary-foreground/10 px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary-foreground/20 sm:w-auto"
             >
               <svg
                 width="18"
@@ -101,7 +103,7 @@ export const FaqContactCta = defineCapsule({
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
               {secondary}
-            </button>
+            </CtaAction>
           </div>
           <p className="mt-6 text-sm text-primary-foreground/60">
             {note}{' '}

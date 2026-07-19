@@ -7,6 +7,7 @@ import {
   CtaBandEyebrow,
   CtaBandTitle,
   CtaBandSubtitle,
+  CtaAction,
 } from '#/section-kit/CtaBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { propertyListingLakebed } from './property-listing-lakebed.ts'
@@ -72,13 +73,14 @@ export const PropertyListingCta = defineCapsule({
             {subheading}
           </CtaBandSubtitle>
           <div className="flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
+            <CtaAction
+              variant="primary"
+              invert
+              className="rounded-full bg-primary-foreground px-6 py-3 text-sm font-semibold text-primary hover:bg-primary-foreground/90"
               onClick={() => go(primaryTarget)}
-              className="inline-flex items-center justify-center rounded-full bg-primary-foreground px-6 py-3 text-sm font-semibold text-primary transition hover:bg-primary-foreground/90"
             >
               {primaryCta}
-            </button>
+            </CtaAction>
             <PropertyListingInquiryButton
               lakebed={lakebed}
               intent={secondaryTarget}

@@ -6,6 +6,7 @@ import {
   CtaBandInner,
   CtaBandTitle,
   CtaBandSubtitle,
+  CtaAction,
 } from '#/section-kit/CtaBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -56,10 +57,9 @@ export const IllustratorContactCta = defineCapsule({
           <CtaBandTitle className="font-serif">{heading}</CtaBandTitle>
           <CtaBandSubtitle>{description}</CtaBandSubtitle>
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <button
-              type="button"
+            <CtaAction
+              className="gap-2 rounded-full bg-foreground px-8 py-4 text-sm font-medium text-background hover:bg-muted-foreground"
               onClick={() => go(email)}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-foreground px-8 py-4 text-sm font-medium text-background transition-colors hover:bg-muted-foreground"
             >
               <svg
                 className="size-5"
@@ -76,14 +76,14 @@ export const IllustratorContactCta = defineCapsule({
                 />
               </svg>
               {email}
-            </button>
-            <button
-              type="button"
+            </CtaAction>
+            <CtaAction
+              variant="outline"
+              className="rounded-full border-foreground px-8 py-4 text-sm font-medium hover:bg-foreground hover:text-background"
               onClick={() => go(secondaryCta)}
-              className="rounded-full border border-foreground px-8 py-4 text-sm font-medium text-foreground transition-colors hover:bg-foreground hover:text-background"
             >
               {secondaryCta}
-            </button>
+            </CtaAction>
           </div>
           <div className="flex justify-center gap-6">
             {socials.map((social) => (

@@ -7,6 +7,7 @@ import {
   CtaBandEyebrow,
   CtaBandTitle,
   CtaBandSubtitle,
+  CtaAction,
 } from '#/section-kit/CtaBand.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
@@ -112,13 +113,13 @@ export const AuthCta = defineCapsule({
                 {primaryCta}
               </SaasPlanActionButton>
               {secondaryIsDocs ? (
-                <button
-                  type="button"
+                <CtaAction
+                  variant="outline"
+                  className="min-h-12 rounded-xl border-background/25 px-7 py-3 text-sm font-semibold text-background transition-[background-color,border-color,transform] duration-150 ease-out hover:border-background/50 hover:bg-background/10 active:scale-[0.98] motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background/70 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground"
                   onClick={() => go(secondaryTarget)}
-                  className="inline-flex min-h-12 items-center justify-center rounded-xl border border-background/25 px-7 py-3 text-sm font-semibold text-background transition-[background-color,border-color,transform] duration-150 ease-out hover:border-background/50 hover:bg-background/10 active:scale-[0.98] motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background/70 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground"
                 >
                   {secondaryCta}
-                </button>
+                </CtaAction>
               ) : (
                 <SaasPlanActionButton
                   lakebed={lakebed}

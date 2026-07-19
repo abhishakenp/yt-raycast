@@ -6,6 +6,7 @@ import {
   CtaBandInner,
   CtaBandTitle,
   CtaBandSubtitle,
+  CtaAction,
 } from '#/section-kit/CtaBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { directoryLakebed } from './directory-lakebed.ts'
@@ -66,13 +67,13 @@ export const DirectoryCta = defineCapsule({
             >
               {primaryCta}
             </DirectoryLeadButton>
-            <button
-              type="button"
+            <CtaAction
+              variant="outline"
+              className="rounded-lg border-background/40 px-8 py-4 font-medium text-background hover:border-background/70"
               onClick={() => go(secondaryCta)}
-              className="rounded-lg border border-background/40 px-8 py-4 font-medium text-background transition-colors hover:border-background/70"
             >
               {secondaryCta}
-            </button>
+            </CtaAction>
           </div>
         </CtaBandInner>
       </CtaBand>

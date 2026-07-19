@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { AppointmentBand } from '#/section-kit/AppointmentBand.tsx'
+import { CtaAction } from '#/section-kit/CtaBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 
@@ -79,20 +80,20 @@ export const JewelryStoreAppointmentCta = defineCapsule({
           />
         </div>
         <div className="flex flex-col justify-center gap-4 sm:flex-row">
-          <button
-            type="button"
+          <CtaAction
+            variant="primary"
+            className="rounded-none px-10 py-4 text-sm font-medium uppercase tracking-widest"
             onClick={() => go(primaryCta)}
-            className="inline-flex items-center justify-center bg-primary px-10 py-4 text-sm font-medium uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary/90"
           >
             {primaryCta}
-          </button>
-          <button
-            type="button"
+          </CtaAction>
+          <CtaAction
+            variant="outline"
+            className="rounded-none px-10 py-4 text-sm font-medium uppercase tracking-widest hover:border-primary hover:text-primary"
             onClick={() => go(secondaryCta)}
-            className="inline-flex items-center justify-center border border-border px-10 py-4 text-sm font-medium uppercase tracking-widest text-foreground transition-colors hover:border-primary hover:text-primary"
           >
             {secondaryCta}
-          </button>
+          </CtaAction>
         </div>
         <div className="mx-auto grid max-w-3xl gap-8 text-center sm:grid-cols-3">
           {locations.map((loc) => (

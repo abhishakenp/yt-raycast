@@ -6,6 +6,7 @@ import {
   CtaBandInner,
   CtaBandTitle,
   CtaBandSubtitle,
+  CtaAction,
 } from '#/section-kit/CtaBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -74,20 +75,21 @@ export const CryptoContactCta = defineCapsule({
           <CtaBandTitle>{heading}</CtaBandTitle>
           <CtaBandSubtitle>{description}</CtaBandSubtitle>
           <div className="flex flex-wrap justify-center gap-4">
-            <button
-              type="button"
+            <CtaAction
+              variant="primary"
+              invert
+              className="rounded-lg px-8 py-3 font-medium"
               onClick={() => go(primaryCta)}
-              className="rounded-lg bg-background px-8 py-3 font-medium text-foreground transition-colors hover:bg-background/90"
             >
               {primaryCta}
-            </button>
-            <button
-              type="button"
+            </CtaAction>
+            <CtaAction
+              variant="outline"
+              className="rounded-lg border-background/40 px-8 py-3 font-medium text-background hover:bg-background/10"
               onClick={() => go(secondaryCta)}
-              className="rounded-lg border border-background/40 px-8 py-3 font-medium text-background transition-colors hover:bg-background/10"
             >
               {secondaryCta}
-            </button>
+            </CtaAction>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-primary-foreground/60">
             {trust.map((t) => (

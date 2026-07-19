@@ -7,6 +7,7 @@ import {
   CtaBandEyebrow,
   CtaBandTitle,
   CtaBandSubtitle,
+  CtaAction,
 } from '#/section-kit/CtaBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
@@ -82,13 +83,13 @@ export const RestaurantCta = defineCapsule({
             >
               {primaryCta}
             </RestaurantReservationButton>
-            <button
-              type="button"
+            <CtaAction
+              variant="outline"
+              className="min-h-12 min-w-36 rounded-full border-primary-foreground/35 px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary-foreground/10"
               onClick={() => go(secondaryTarget)}
-              className="inline-flex min-h-12 min-w-36 items-center justify-center rounded-full border border-primary-foreground/35 px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10"
             >
               {secondaryCta}
-            </button>
+            </CtaAction>
           </div>
         </CtaBandInner>
       </CtaBand>

@@ -7,6 +7,7 @@ import {
   CtaBandEyebrow,
   CtaBandTitle,
   CtaBandSubtitle,
+  CtaAction,
 } from '#/section-kit/CtaBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { kitActionClasses } from '#/section-kit/types.ts'
@@ -96,16 +97,17 @@ export const ProductDetailCta = defineCapsule({
               }
 
               return (
-                <button
+                <CtaAction
                   key={action.label}
-                  type="button"
+                  variant={action.variant}
+                  invert={isInvert}
+                  className="gap-2 disabled:pointer-events-none disabled:opacity-70"
                   onClick={() => {
                     go(action.target ?? action.label)
                   }}
-                  className={className}
                 >
                   {action.label}
-                </button>
+                </CtaAction>
               )
             })}
           </div>

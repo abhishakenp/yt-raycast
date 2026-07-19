@@ -6,6 +6,7 @@ import {
   CtaBandInner,
   CtaBandTitle,
   CtaBandSubtitle,
+  CtaAction,
 } from '#/section-kit/CtaBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -82,18 +83,19 @@ export const LendingCta = defineCapsule({
           <CtaBandTitle>{ctaHeading}</CtaBandTitle>
           <CtaBandSubtitle>{ctaDesc}</CtaBandSubtitle>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <button
-              type="button"
+            <CtaAction
+              variant="primary"
+              invert
+              className="w-full gap-2 rounded-xl px-8 py-4 text-base sm:w-auto"
               onClick={() => go(ctaPrimary)}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-background px-8 py-4 text-base font-medium text-foreground transition-colors hover:bg-background/90 sm:w-auto"
             >
               {ctaPrimary}
               <ArrowRight className="size-5" />
-            </button>
-            <button
-              type="button"
+            </CtaAction>
+            <CtaAction
+              variant="outline"
+              className="w-full gap-2 rounded-xl border-border/40 px-8 py-4 text-base text-background hover:bg-background/10 sm:w-auto"
               onClick={() => go(ctaPhone)}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border/40 px-8 py-4 text-base font-medium text-background transition-colors hover:bg-background/10 sm:w-auto"
             >
               <svg
                 viewBox="0 0 24 24"
@@ -108,7 +110,7 @@ export const LendingCta = defineCapsule({
                 <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
               </svg>
               {ctaPhone}
-            </button>
+            </CtaAction>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-primary-foreground/60">
             {ctaBadges.map((badge) => (

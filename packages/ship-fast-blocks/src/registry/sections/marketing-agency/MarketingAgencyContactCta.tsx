@@ -6,6 +6,7 @@ import {
   CtaBandInner,
   CtaBandTitle,
   CtaBandSubtitle,
+  CtaAction,
 } from '#/section-kit/CtaBand.tsx'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -67,10 +68,11 @@ export const MarketingAgencyContactCta = defineCapsule({
           <CtaBandTitle>{heading}</CtaBandTitle>
           <CtaBandSubtitle>{description}</CtaBandSubtitle>
           <div className="flex flex-wrap justify-center gap-4">
-            <button
-              type="button"
+            <CtaAction
+              variant="primary"
+              invert
+              className="rounded-full px-8 py-4 font-medium"
               onClick={() => go(primaryCta)}
-              className="inline-flex items-center justify-center rounded-full bg-background px-8 py-4 font-medium text-foreground transition-colors hover:bg-background/90"
             >
               {primaryCta}
               <svg
@@ -85,14 +87,14 @@ export const MarketingAgencyContactCta = defineCapsule({
               >
                 <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-            </button>
-            <button
-              type="button"
+            </CtaAction>
+            <CtaAction
+              variant="outline"
+              className="rounded-full border-primary-foreground/40 px-8 py-4 font-medium text-primary-foreground hover:border-primary-foreground/70"
               onClick={() => go(contactTarget)}
-              className="inline-flex items-center justify-center rounded-full border border-primary-foreground/40 px-8 py-4 font-medium text-primary-foreground transition-colors hover:border-primary-foreground/70"
             >
               {email}
-            </button>
+            </CtaAction>
           </div>
           <div className="flex flex-wrap justify-center gap-8 text-sm text-primary-foreground/70">
             {reassurances.map((r) => (

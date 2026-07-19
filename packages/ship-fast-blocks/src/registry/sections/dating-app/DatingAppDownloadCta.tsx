@@ -8,6 +8,7 @@ import {
   CtaBandInner,
   CtaBandTitle,
   CtaBandSubtitle,
+  CtaAction,
 } from '#/section-kit/CtaBand.tsx'
 import { DownloadBand } from '#/section-kit/DownloadBand.tsx'
 
@@ -105,10 +106,11 @@ export const DatingAppDownloadCta = defineCapsule({
             <div className="grid items-center gap-12 lg:grid-cols-2">
               <div>
                 <div className="flex flex-col gap-4 sm:flex-row">
-                  <button
-                    type="button"
+                  <CtaAction
+                    variant="primary"
+                    invert
+                    className="gap-3 rounded-xl px-6 py-4 font-semibold"
                     onClick={() => go(appStore)}
-                    className="inline-flex items-center justify-center gap-3 rounded-xl bg-background px-6 py-4 font-semibold text-foreground transition-colors hover:bg-background/90"
                   >
                     <svg
                       viewBox="0 0 24 24"
@@ -126,11 +128,12 @@ export const DatingAppDownloadCta = defineCapsule({
                         {appStore}
                       </span>
                     </span>
-                  </button>
-                  <button
-                    type="button"
+                  </CtaAction>
+                  <CtaAction
+                    variant="primary"
+                    invert
+                    className="gap-3 rounded-xl px-6 py-4 font-semibold"
                     onClick={() => go(googlePlay)}
-                    className="inline-flex items-center justify-center gap-3 rounded-xl bg-background px-6 py-4 font-semibold text-foreground transition-colors hover:bg-background/90"
                   >
                     <svg
                       viewBox="0 0 24 24"
@@ -148,7 +151,7 @@ export const DatingAppDownloadCta = defineCapsule({
                         {googlePlay}
                       </span>
                     </span>
-                  </button>
+                  </CtaAction>
                 </div>
               </div>
               <div className="relative flex justify-center lg:justify-end">
