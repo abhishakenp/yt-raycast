@@ -5,6 +5,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { AboutSection } from '#/section-kit/AboutSection.tsx'
 import { PullQuoteText } from '#/section-kit/PullQuote.tsx'
 
 /**
@@ -208,179 +209,181 @@ export const BlogPostAbout = defineCapsule({
       : ['Twitter', 'LinkedIn', 'Portfolio']
 
     return (
-      <Container asChild size="sm" className="px-6 pb-24 lg:px-6">
-        <article className={props.className}>
-          <div className="max-w-none">
-            {lead.map((p) => (
-              <p
-                key={p}
-                className="mb-8 text-xl font-light leading-relaxed text-foreground/90 md:text-2xl"
-              >
-                {p}
-              </p>
-            ))}
-
-            {introParagraphs.map((p) => (
-              <p
-                key={p}
-                className="mb-6 text-lg leading-relaxed text-muted-foreground"
-              >
-                {p}
-              </p>
-            ))}
-
-            {sections.map((section, sIdx) => (
-              <div key={section.heading}>
-                <SectionHeading
-                  title={section.heading}
-                  align="left"
-                  className="mt-12 mb-6"
-                  titleClassName="text-2xl font-semibold tracking-tight md:text-3xl"
-                />
-
-                {section.blocks.map((block, bIdx) => {
-                  if (block.h3) {
-                    return (
-                      <h3
-                        key={`${section.heading}-h3-${bIdx}`}
-                        className="mt-8 mb-4 text-xl font-semibold text-foreground"
-                      >
-                        {block.h3}
-                      </h3>
-                    )
-                  }
-                  if (block.imageAlt) {
-                    return (
-                      <figure
-                        key={`${section.heading}-fig-${bIdx}`}
-                        className="my-12"
-                      >
-                        <Image
-                          alt={block.imageAlt}
-                          w={1200}
-                          h={675}
-                          loading="lazy"
-                          className="h-64 w-full rounded-lg object-cover md:h-80"
-                        />
-                        {block.caption ? (
-                          <figcaption className="mt-3 text-center text-sm text-muted-foreground">
-                            {block.caption}
-                          </figcaption>
-                        ) : null}
-                      </figure>
-                    )
-                  }
-                  if (block.callout) {
-                    return (
-                      <div
-                        key={`${section.heading}-callout-${bIdx}`}
-                        className="my-12 rounded-lg bg-muted p-8"
-                      >
-                        <h4 className="mb-4 text-lg font-semibold text-foreground">
-                          {block.callout}
-                        </h4>
-                        <ul className="space-y-3 text-muted-foreground">
-                          {(block.items ?? []).map((item) => (
-                            <li key={item} className="flex items-start gap-3">
-                              <span
-                                className="mt-1 text-primary"
-                                aria-hidden="true"
-                              >
-                                •
-                              </span>
-                              <span>{item}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )
-                  }
-                  return (
-                    <p
-                      key={`${section.heading}-p-${bIdx}`}
-                      className="mb-6 text-lg leading-relaxed text-muted-foreground"
-                    >
-                      {block.p}
-                    </p>
-                  )
-                })}
-
-                {/* Pull-quote after the first section */}
-                {sIdx === 0 ? (
-                  <PullQuoteText className="my-12 block border-l-4 border-primary py-2 pl-6">
-                    <p className="font-serif text-2xl italic leading-relaxed text-foreground md:text-3xl">
-                      &ldquo;{pullQuote}&rdquo;
-                    </p>
-                    <footer className="mt-4 text-sm text-muted-foreground">
-                      — {pullQuoteAttribution}
-                    </footer>
-                  </PullQuoteText>
-                ) : null}
-              </div>
-            ))}
-
-            {closing.map((p) => (
-              <p
-                key={p}
-                className="mb-8 text-lg leading-relaxed text-muted-foreground"
-              >
-                {p}
-              </p>
-            ))}
-          </div>
-
-          {/* Tags */}
-          <div className="mt-12 border-t border-border pt-8">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="mr-2 text-sm text-muted-foreground">
-                Tagged:
-              </span>
-              {tags.map((tag) => (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() => go(tag)}
-                  className="rounded-full bg-muted px-3 py-1 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+      <AboutSection className={props.className}>
+        <Container asChild size="sm" className="px-6 pb-24 lg:px-6">
+          <article>
+            <div className="max-w-none">
+              {lead.map((p) => (
+                <p
+                  key={p}
+                  className="mb-8 text-xl font-light leading-relaxed text-foreground/90 md:text-2xl"
                 >
-                  {tag}
-                </button>
+                  {p}
+                </p>
+              ))}
+
+              {introParagraphs.map((p) => (
+                <p
+                  key={p}
+                  className="mb-6 text-lg leading-relaxed text-muted-foreground"
+                >
+                  {p}
+                </p>
+              ))}
+
+              {sections.map((section, sIdx) => (
+                <div key={section.heading}>
+                  <SectionHeading
+                    title={section.heading}
+                    align="left"
+                    className="mt-12 mb-6"
+                    titleClassName="text-2xl font-semibold tracking-tight md:text-3xl"
+                  />
+
+                  {section.blocks.map((block, bIdx) => {
+                    if (block.h3) {
+                      return (
+                        <h3
+                          key={`${section.heading}-h3-${bIdx}`}
+                          className="mt-8 mb-4 text-xl font-semibold text-foreground"
+                        >
+                          {block.h3}
+                        </h3>
+                      )
+                    }
+                    if (block.imageAlt) {
+                      return (
+                        <figure
+                          key={`${section.heading}-fig-${bIdx}`}
+                          className="my-12"
+                        >
+                          <Image
+                            alt={block.imageAlt}
+                            w={1200}
+                            h={675}
+                            loading="lazy"
+                            className="h-64 w-full rounded-lg object-cover md:h-80"
+                          />
+                          {block.caption ? (
+                            <figcaption className="mt-3 text-center text-sm text-muted-foreground">
+                              {block.caption}
+                            </figcaption>
+                          ) : null}
+                        </figure>
+                      )
+                    }
+                    if (block.callout) {
+                      return (
+                        <div
+                          key={`${section.heading}-callout-${bIdx}`}
+                          className="my-12 rounded-lg bg-muted p-8"
+                        >
+                          <h4 className="mb-4 text-lg font-semibold text-foreground">
+                            {block.callout}
+                          </h4>
+                          <ul className="space-y-3 text-muted-foreground">
+                            {(block.items ?? []).map((item) => (
+                              <li key={item} className="flex items-start gap-3">
+                                <span
+                                  className="mt-1 text-primary"
+                                  aria-hidden="true"
+                                >
+                                  •
+                                </span>
+                                <span>{item}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )
+                    }
+                    return (
+                      <p
+                        key={`${section.heading}-p-${bIdx}`}
+                        className="mb-6 text-lg leading-relaxed text-muted-foreground"
+                      >
+                        {block.p}
+                      </p>
+                    )
+                  })}
+
+                  {/* Pull-quote after the first section */}
+                  {sIdx === 0 ? (
+                    <PullQuoteText className="my-12 block border-l-4 border-primary py-2 pl-6">
+                      <p className="font-serif text-2xl italic leading-relaxed text-foreground md:text-3xl">
+                        &ldquo;{pullQuote}&rdquo;
+                      </p>
+                      <footer className="mt-4 text-sm text-muted-foreground">
+                        — {pullQuoteAttribution}
+                      </footer>
+                    </PullQuoteText>
+                  ) : null}
+                </div>
+              ))}
+
+              {closing.map((p) => (
+                <p
+                  key={p}
+                  className="mb-8 text-lg leading-relaxed text-muted-foreground"
+                >
+                  {p}
+                </p>
               ))}
             </div>
-          </div>
 
-          {/* Author bio */}
-          <div className="mt-12 rounded-lg bg-muted p-8">
-            <div className="flex flex-col items-start gap-6 sm:flex-row">
-              <Image
-                alt={authorAvatarAlt}
-                w={160}
-                h={160}
-                className="size-20 shrink-0 rounded-full object-cover"
-              />
-              <div>
-                <h3 className="mb-2 text-lg font-semibold text-foreground">
-                  {authorName}
-                </h3>
-                <p className="mb-4 leading-relaxed text-muted-foreground">
-                  {authorBio}
-                </p>
-                <div className="flex gap-4">
-                  {authorLinks.map((link) => (
-                    <button
-                      key={link}
-                      type="button"
-                      onClick={() => go(link)}
-                      className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                    >
-                      {link}
-                    </button>
-                  ))}
+            {/* Tags */}
+            <div className="mt-12 border-t border-border pt-8">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="mr-2 text-sm text-muted-foreground">
+                  Tagged:
+                </span>
+                {tags.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => go(tag)}
+                    className="rounded-full bg-muted px-3 py-1 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Author bio */}
+            <div className="mt-12 rounded-lg bg-muted p-8">
+              <div className="flex flex-col items-start gap-6 sm:flex-row">
+                <Image
+                  alt={authorAvatarAlt}
+                  w={160}
+                  h={160}
+                  className="size-20 shrink-0 rounded-full object-cover"
+                />
+                <div>
+                  <h3 className="mb-2 text-lg font-semibold text-foreground">
+                    {authorName}
+                  </h3>
+                  <p className="mb-4 leading-relaxed text-muted-foreground">
+                    {authorBio}
+                  </p>
+                  <div className="flex gap-4">
+                    {authorLinks.map((link) => (
+                      <button
+                        key={link}
+                        type="button"
+                        onClick={() => go(link)}
+                        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        {link}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </article>
-      </Container>
+          </article>
+        </Container>
+      </AboutSection>
     )
   },
 })

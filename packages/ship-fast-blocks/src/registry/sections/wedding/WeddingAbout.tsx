@@ -6,7 +6,7 @@ import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { SplitStory, SplitStoryGrid } from '#/section-kit/SplitStory.tsx'
+import { AboutSection, AboutGrid } from '#/section-kit/AboutSection.tsx'
 import { StepItem, StepContent } from '#/section-kit/StepTimeline.tsx'
 
 export const WeddingAbout = defineCapsule({
@@ -62,7 +62,7 @@ export const WeddingAbout = defineCapsule({
         ]
 
     return (
-      <SplitStory
+      <AboutSection
         className={cn(
           'bg-background py-20 text-foreground lg:py-28',
           props.className,
@@ -76,7 +76,7 @@ export const WeddingAbout = defineCapsule({
             titleClassName="font-serif"
           />
 
-          <SplitStoryGrid className="mt-16 lg:grid-cols-[0.9fr_1.1fr]">
+          <AboutGrid className="mt-16 lg:grid-cols-[0.9fr_1.1fr]">
             <div className="relative">
               <div
                 className="absolute -inset-4 rounded-3xl bg-primary/10 blur-2xl"
@@ -120,9 +120,9 @@ export const WeddingAbout = defineCapsule({
                 </StepItem>
               ))}
             </ol>
-          </SplitStoryGrid>
+          </AboutGrid>
         </Container>
-      </SplitStory>
+      </AboutSection>
     )
   },
 })

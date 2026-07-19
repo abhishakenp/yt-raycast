@@ -5,11 +5,11 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
-  SplitStory,
-  SplitStoryGrid,
-  SplitStoryContent,
-  SplitStoryBody,
-} from '#/section-kit/SplitStory.tsx'
+  AboutSection,
+  AboutGrid,
+  AboutContent,
+  AboutBody,
+} from '#/section-kit/AboutSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
 /**
@@ -45,14 +45,14 @@ export const WriterAuthorAbout = defineCapsule({
     ]
 
     return (
-      <SplitStory
+      <AboutSection
         className={cn(
           'bg-background pt-28 pb-20 sm:pt-32 sm:pb-24',
           props.className,
         )}
       >
         <Container asChild size="xl" className="px-6 lg:px-6 lg:gap-12">
-          <SplitStoryGrid>
+          <AboutGrid>
             <Image
               alt={props.portraitAlt ?? 'author portrait black and white'}
               w={640}
@@ -60,21 +60,21 @@ export const WriterAuthorAbout = defineCapsule({
               className="w-full rounded-2xl border border-border object-cover"
             />
 
-            <SplitStoryContent>
+            <AboutContent>
               <SectionHeading
                 align="left"
                 eyebrow={props.eyebrow ?? 'About'}
                 title={props.heading ?? 'On writing and a life of letters'}
               />
-              <SplitStoryBody className="mt-6 space-y-4 font-serif text-lg leading-relaxed text-muted-foreground">
+              <AboutBody className="mt-6 space-y-4 font-serif text-lg leading-relaxed text-muted-foreground">
                 {paragraphs.map((paragraph, i) => (
                   <p key={i}>{paragraph}</p>
                 ))}
-              </SplitStoryBody>
-            </SplitStoryContent>
-          </SplitStoryGrid>
+              </AboutBody>
+            </AboutContent>
+          </AboutGrid>
         </Container>
-      </SplitStory>
+      </AboutSection>
     )
   },
 })

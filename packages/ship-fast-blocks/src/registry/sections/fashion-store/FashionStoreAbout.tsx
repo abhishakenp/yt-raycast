@@ -14,11 +14,11 @@ import { Image } from '#/lib/img.tsx'
  */
 import { Container } from '#/section-kit/Container.tsx'
 import {
-  SplitStory,
-  SplitStoryGrid,
-  SplitStoryContent,
-  SplitStoryBody,
-} from '#/section-kit/SplitStory.tsx'
+  AboutSection,
+  AboutGrid,
+  AboutContent,
+  AboutBody,
+} from '#/section-kit/AboutSection.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const FashionStoreAbout = defineCapsule({
   name: 'FashionStoreAbout',
@@ -78,13 +78,13 @@ export const FashionStoreAbout = defineCapsule({
     const eyebrowCls =
       'text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground'
     return (
-      <SplitStory
+      <AboutSection
         aria-label="Our philosophy"
         className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
       >
         <Container>
-          <SplitStoryGrid>
-            <SplitStoryContent className="space-y-0">
+          <AboutGrid>
+            <AboutContent className="space-y-0">
               <p className={cn(eyebrowCls, 'mb-4')}>{aboutEyebrow}</p>
               <h2 className="mb-8 font-serif text-4xl font-normal leading-tight sm:text-5xl lg:text-6xl">
                 {aboutHeadingLines.map((line, i) => (
@@ -94,11 +94,11 @@ export const FashionStoreAbout = defineCapsule({
                   </span>
                 ))}
               </h2>
-              <SplitStoryBody className="space-y-6 text-muted-foreground">
+              <AboutBody className="space-y-6 text-muted-foreground">
                 {aboutParagraphs.map((p) => (
                   <p key={p}>{p}</p>
                 ))}
-              </SplitStoryBody>
+              </AboutBody>
               <div className="mt-10 border-t border-border pt-10">
                 <ResponsiveGrid cols="3">
                   {aboutStats.map((s) => (
@@ -113,7 +113,7 @@ export const FashionStoreAbout = defineCapsule({
                   ))}
                 </ResponsiveGrid>
               </div>
-            </SplitStoryContent>
+            </AboutContent>
             <ResponsiveGrid cols="2" className="gap-4">
               <div className="space-y-4">
                 <div className="aspect-[3/4] overflow-hidden">
@@ -159,9 +159,9 @@ export const FashionStoreAbout = defineCapsule({
                 </div>
               </div>
             </ResponsiveGrid>
-          </SplitStoryGrid>
+          </AboutGrid>
         </Container>
-      </SplitStory>
+      </AboutSection>
     )
   },
 })

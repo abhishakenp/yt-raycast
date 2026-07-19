@@ -427,6 +427,18 @@ export {
   processTimelineVariants,
   processBadgeVariants,
 } from './ProcessTimeline.tsx'
+export {
+  AboutSection,
+  AboutGrid,
+  AboutMedia,
+  AboutContent,
+  AboutEyebrow,
+  AboutHeading,
+  AboutImageTile,
+  AboutBody,
+  AboutFooter,
+  aboutSectionVariants,
+} from './AboutSection.tsx'
 
 export type { KitAction } from './types.ts'
 export { kitActionClasses } from './types.ts'

@@ -6,11 +6,11 @@ import { Image } from '#/lib/img.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import {
-  SplitStory,
-  SplitStoryGrid,
-  SplitStoryContent,
-  SplitStoryBody,
-} from '#/section-kit/SplitStory.tsx'
+  AboutSection,
+  AboutGrid,
+  AboutContent,
+  AboutBody,
+} from '#/section-kit/AboutSection.tsx'
 import { PullQuoteText } from '#/section-kit/PullQuote.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
@@ -82,7 +82,7 @@ export const AboutStory = defineCapsule({
     )
 
     return (
-      <SplitStory className={cn('py-16 sm:py-20 lg:py-24', props.className)}>
+      <AboutSection className={cn('py-16 sm:py-20 lg:py-24', props.className)}>
         <Container size="lg" className="px-6 sm:px-8 lg:px-12">
           <div className="mb-10 max-w-2xl">
             <Eyebrow
@@ -103,7 +103,7 @@ export const AboutStory = defineCapsule({
               {description}
             </p>
           </div>
-          <SplitStoryGrid className="items-center gap-10">
+          <AboutGrid className="items-center gap-10">
             <Card
               variant="muted"
               className="relative overflow-hidden shadow-[0_20px_50px_rgba(15,23,42,0.12)] rounded-2xl p-0"
@@ -125,8 +125,8 @@ export const AboutStory = defineCapsule({
                 {badge}
               </span>
             </Card>
-            <SplitStoryContent className="space-y-0">
-              <SplitStoryBody className="space-y-0">
+            <AboutContent className="space-y-0">
+              <AboutBody className="space-y-0">
                 {paragraphs.map((para, i) => (
                   <p
                     key={i}
@@ -138,14 +138,14 @@ export const AboutStory = defineCapsule({
                     {para}
                   </p>
                 ))}
-              </SplitStoryBody>
+              </AboutBody>
               <PullQuoteText className="mt-5 block rounded-r-xl border-l-[3px] border-primary bg-primary/[0.06] px-4 py-4 font-semibold text-foreground">
                 &ldquo;{quote}&rdquo;
               </PullQuoteText>
-            </SplitStoryContent>
-          </SplitStoryGrid>
+            </AboutContent>
+          </AboutGrid>
         </Container>
-      </SplitStory>
+      </AboutSection>
     )
   },
 })

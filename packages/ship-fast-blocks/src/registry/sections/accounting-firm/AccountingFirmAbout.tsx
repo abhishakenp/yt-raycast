@@ -6,11 +6,11 @@ import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
-  SplitStory,
-  SplitStoryGrid,
-  SplitStoryContent,
-  SplitStoryFooter,
-} from '#/section-kit/SplitStory.tsx'
+  AboutSection,
+  AboutGrid,
+  AboutContent,
+  AboutFooter,
+} from '#/section-kit/AboutSection.tsx'
 import {
   StatGrid,
   StatItem,
@@ -81,12 +81,12 @@ export const AccountingFirmAbout = defineCapsule({
       'professional headshot of Robert Northridge founder in navy suit with warm smile'
 
     return (
-      <SplitStory
+      <AboutSection
         variant="muted"
         className={cn('py-20 lg:py-28', props.className)}
       >
         <Container>
-          <SplitStoryGrid>
+          <AboutGrid>
             <div className="order-2 lg:order-1">
               <Image
                 alt={imageAlt}
@@ -96,7 +96,7 @@ export const AccountingFirmAbout = defineCapsule({
                 className="aspect-[4/3] w-full rounded-lg object-cover shadow-lg"
               />
             </div>
-            <SplitStoryContent className="order-1 lg:order-2 space-y-0">
+            <AboutContent className="order-1 lg:order-2 space-y-0">
               <SectionHeading
                 align="left"
                 eyebrow={eyebrow}
@@ -128,7 +128,7 @@ export const AccountingFirmAbout = defineCapsule({
                 ))}
               </StatGrid>
 
-              <SplitStoryFooter className="gap-4 pt-0">
+              <AboutFooter className="gap-4 pt-0">
                 <Image
                   alt={founderAvatarAlt}
                   w={100}
@@ -139,11 +139,11 @@ export const AccountingFirmAbout = defineCapsule({
                   <p className="font-semibold text-foreground">{founderName}</p>
                   <p className="text-sm text-muted-foreground">{founderRole}</p>
                 </div>
-              </SplitStoryFooter>
-            </SplitStoryContent>
-          </SplitStoryGrid>
+              </AboutFooter>
+            </AboutContent>
+          </AboutGrid>
         </Container>
-      </SplitStory>
+      </AboutSection>
     )
   },
 })

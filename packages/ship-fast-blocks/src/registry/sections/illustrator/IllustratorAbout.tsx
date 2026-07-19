@@ -5,11 +5,11 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
-  SplitStory,
-  SplitStoryGrid,
-  SplitStoryContent,
-  SplitStoryBody,
-} from '#/section-kit/SplitStory.tsx'
+  AboutSection,
+  AboutGrid,
+  AboutContent,
+  AboutBody,
+} from '#/section-kit/AboutSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
 /**
@@ -71,14 +71,14 @@ export const IllustratorAbout = defineCapsule({
         ]
 
     return (
-      <SplitStory
+      <AboutSection
         className={cn(
           'bg-muted/50 px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-28',
           props.className,
         )}
       >
         <Container size="xl">
-          <SplitStoryGrid>
+          <AboutGrid>
             <div className="relative">
               <div className="aspect-[3/4] overflow-hidden rounded-xl">
                 <Image
@@ -96,7 +96,7 @@ export const IllustratorAbout = defineCapsule({
                 <p className="text-sm text-muted-foreground">{badgeLabel}</p>
               </div>
             </div>
-            <SplitStoryContent className="space-y-0">
+            <AboutContent className="space-y-0">
               <SectionHeading
                 eyebrow={eyebrow}
                 title={heading}
@@ -105,11 +105,11 @@ export const IllustratorAbout = defineCapsule({
                 titleClassName="font-serif text-3xl sm:text-4xl lg:text-5xl"
                 className="mb-6 gap-4"
               />
-              <SplitStoryBody className="space-y-4 leading-relaxed text-muted-foreground">
+              <AboutBody className="space-y-4 leading-relaxed text-muted-foreground">
                 {paragraphs.map((para) => (
                   <p key={para.slice(0, 24)}>{para}</p>
                 ))}
-              </SplitStoryBody>
+              </AboutBody>
               <div className="mt-8 border-t border-border/60 pt-8">
                 <h3 className="mb-4 font-serif text-lg">
                   {recognitionHeading}
@@ -123,10 +123,10 @@ export const IllustratorAbout = defineCapsule({
                   ))}
                 </ul>
               </div>
-            </SplitStoryContent>
-          </SplitStoryGrid>
+            </AboutContent>
+          </AboutGrid>
         </Container>
-      </SplitStory>
+      </AboutSection>
     )
   },
 })

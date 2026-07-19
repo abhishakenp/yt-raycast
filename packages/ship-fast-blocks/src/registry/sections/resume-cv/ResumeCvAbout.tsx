@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { SplitStory } from '#/section-kit/SplitStory.tsx'
+import { AboutSection } from '#/section-kit/AboutSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
 /**
@@ -52,7 +52,7 @@ export const ResumeCvAbout = defineCapsule({
         ]
 
     return (
-      <SplitStory className={cn('bg-background', props.className)}>
+      <AboutSection className={cn('bg-background', props.className)}>
         <Container size="sm" className="px-6 py-24 lg:px-6 lg:py-28">
           <SectionHeading
             align="left"
@@ -86,7 +86,7 @@ export const ResumeCvAbout = defineCapsule({
             ))}
           </dl>
         </Container>
-      </SplitStory>
+      </AboutSection>
     )
   },
 })
