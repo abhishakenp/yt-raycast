@@ -4,22 +4,16 @@ import { Slot } from '@radix-ui/react-slot'
 
 import { cn } from '#/lib/utils.ts'
 
-const statGridVariants = cva('grid', {
+const statGridVariants = cva('grid gap-8', {
   variants: {
     columns: {
       2: 'grid-cols-2',
       3: 'grid-cols-2 md:grid-cols-3',
       4: 'grid-cols-2 md:grid-cols-4',
     },
-    gap: {
-      default: 'gap-8',
-      compact: 'gap-6',
-      wide: 'gap-12',
-    },
   },
   defaultVariants: {
     columns: 4,
-    gap: 'default',
   },
 })
 
@@ -94,13 +88,13 @@ const StatGrid = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<'div'> &
     VariantProps<typeof statGridVariants> & { asChild?: boolean }
->(({ className, columns, gap, asChild = false, ...props }, ref) => {
+>(({ className, columns, asChild = false, ...props }, ref) => {
   const Comp = asChild ? Slot : 'div'
   return (
     <Comp
       ref={ref}
       data-slot="stat-grid"
-      className={cn(statGridVariants({ columns, gap }), className)}
+      className={cn(statGridVariants({ columns }), className)}
       {...props}
     />
   )
@@ -221,7 +215,7 @@ const StatIcon = React.forwardRef<
 })
 StatIcon.displayName = 'StatIcon'
 
-const statCardVariants = cva('', {
+const statCardVariants = cva('rounded-xl p-6', {
   variants: {
     variant: {
       plain: '',
@@ -230,24 +224,9 @@ const statCardVariants = cva('', {
       outline: 'border border-border bg-transparent text-foreground',
       elevated: 'border border-border bg-card text-card-foreground shadow-sm',
     },
-    rounded: {
-      none: '',
-      lg: 'rounded-lg',
-      xl: 'rounded-xl',
-      '2xl': 'rounded-2xl',
-      '3xl': 'rounded-3xl',
-    },
-    padding: {
-      none: '',
-      sm: 'p-4',
-      md: 'p-6',
-      lg: 'p-8',
-    },
   },
   defaultVariants: {
     variant: 'card',
-    rounded: 'xl',
-    padding: 'md',
   },
 })
 
@@ -257,7 +236,7 @@ const StatCard = React.forwardRef<
     VariantProps<typeof statCardVariants> & { asChild?: boolean }
 >(
   (
-    { className, variant, rounded, padding, asChild = false, ...props },
+    { className, variant, asChild = false, ...props },
     ref,
   ) => {
     const Comp = asChild ? Slot : 'div'
@@ -266,7 +245,7 @@ const StatCard = React.forwardRef<
         ref={ref}
         data-slot="stat-card"
         className={cn(
-          statCardVariants({ variant, rounded, padding }),
+          statCardVariants({ variant }),
           className,
         )}
         {...props}
