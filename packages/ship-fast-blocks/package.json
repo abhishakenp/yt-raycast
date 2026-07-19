@@ -10,6 +10,7 @@
     "./generated": "./src/generated/index.ts",
     "./generated/capsule-categories": "./src/generated/capsule-categories.ts",
     "./generated/runtime-component-loaders": "./src/generated/runtime-component-loaders.ts",
+    "./generated/lakebed-export-deps.compressed": "./src/generated/lakebed-export-deps.compressed.ts",
     "./generated/react-export-sources.compressed": "./src/generated/react-export-sources.compressed.ts",
     "./theme": "./src/theme.ts",
     "./multi-image-src": "./src/lib/multi-image-src.ts",
