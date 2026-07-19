@@ -10,6 +10,7 @@ import {
   PricingTierTagline,
 } from '#/section-kit/PricingGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { CtaAction } from '#/section-kit/CtaBand.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 
@@ -101,13 +102,14 @@ export const InteriorDesignPricing = defineCapsule({
                 subtitleClassName="max-w-lg leading-relaxed text-background/70"
                 className="mb-12 gap-4"
               />
-              <button
-                type="button"
+              <CtaAction
+                variant="primary"
+                invert
+                className="rounded-none px-8 py-4 text-sm font-medium"
                 onClick={() => go(cta)}
-                className="inline-flex items-center bg-background px-8 py-4 text-sm font-medium text-foreground transition-colors hover:bg-background/90"
               >
                 {cta}
-              </button>
+              </CtaAction>
             </div>
 
             <div className="space-y-8">

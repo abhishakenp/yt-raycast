@@ -19,6 +19,7 @@ import {
   OverviewStatLabel,
   OverviewMediaPanel,
 } from '#/section-kit/OverviewSection.tsx'
+import { CtaAction } from '#/section-kit/CtaBand.tsx'
 
 export const PricingOverview = defineCapsule({
   name: 'PricingOverview',
@@ -87,20 +88,20 @@ export const PricingOverview = defineCapsule({
               ))}
             </OverviewFeatures>
             <OverviewCta>
-              <button
-                type="button"
+              <CtaAction
+                variant="primary"
+                className="rounded-full px-6 py-3 text-sm font-semibold"
                 onClick={() => go(primaryCta)}
-                className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
               >
                 {primaryCta}
-              </button>
-              <button
-                type="button"
+              </CtaAction>
+              <CtaAction
+                variant="outline"
+                className="rounded-full bg-background px-6 py-3 text-sm font-semibold"
                 onClick={() => go(secondaryCta)}
-                className="rounded-full border border-border bg-background px-6 py-3 text-sm font-semibold text-foreground transition hover:bg-muted"
               >
                 {secondaryCta}
-              </button>
+              </CtaAction>
             </OverviewCta>
             <OverviewStats>
               {stats.map((stat: { value: string; label: string }) => (

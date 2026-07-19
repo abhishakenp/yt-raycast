@@ -7,6 +7,7 @@ import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { SplitStory } from '#/section-kit/SplitStory.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { CtaAction } from '#/section-kit/CtaBand.tsx'
 
 /**
  * AboutHero — mission hero band for a modern company / ABOUT page. A spacious
@@ -93,10 +94,10 @@ export const AboutHero = defineCapsule({
             {subheading}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <button
-              type="button"
+            <CtaAction
+              variant="primary"
+              className="gap-2.5 rounded-xl px-5 py-3 text-[0.95rem] font-semibold shadow-sm transition-all hover:-translate-y-px hover:shadow-md"
               onClick={() => go(primaryCta)}
-              className="inline-flex items-center gap-2.5 rounded-xl bg-primary px-5 py-3 text-[0.95rem] font-semibold text-primary-foreground shadow-sm transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-md"
             >
               {primaryCta}
               <svg
@@ -112,7 +113,7 @@ export const AboutHero = defineCapsule({
               >
                 <polyline points="6 9 12 15 18 9" />
               </svg>
-            </button>
+            </CtaAction>
             <Card
               asChild
               variant="default"
