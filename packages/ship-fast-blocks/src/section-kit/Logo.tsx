@@ -36,8 +36,11 @@ const originalDisplayAttr = 'data-brand-logo-original-display'
 
 function restoreRuntimeSlots(root: ParentNode) {
   root.querySelectorAll(`[${runtimeSlotAttr}="true"]`).forEach((slot) => {
-    const patched = slot.nextElementSibling as HTMLElement | null
-    if (patched?.hasAttribute(originalDisplayAttr)) {
+    const patched = slot.nextElementSibling
+    if (
+      patched instanceof HTMLElement &&
+      patched.hasAttribute(originalDisplayAttr)
+    ) {
       patched.style.display = patched.getAttribute(originalDisplayAttr) ?? ''
       patched.removeAttribute(originalDisplayAttr)
     }
@@ -92,8 +95,8 @@ function applyRuntimeLogo(root: ParentNode, logo: BrandLogoSelection | null) {
 
     const existingSlot = componentRoot.querySelector(
       `[${runtimeSlotAttr}="true"]`,
-    ) as HTMLElement | null
-    if (existingSlot) {
+    )
+    if (existingSlot instanceof HTMLElement) {
       if (existingSlot.getAttribute(runtimeSlotSrcAttr) !== src) {
         const image = existingSlot.querySelector('img')
         if (image) image.src = src
@@ -174,7 +177,7 @@ const Logo = React.forwardRef<
     children?: React.ReactNode
     asChild?: boolean
   }
->(({ brand, children, asChild = false, ...props }, ref) => {
+>(({ brand, children, asChild = false, className, ...props }, ref) => {
   const selectedLogo = useBrandLogo()
   const src = getBrandLogoImageSrc(selectedLogo)
   const ctx = React.useMemo(() => ({ brand, src }), [brand, src])
@@ -184,7 +187,7 @@ const Logo = React.forwardRef<
       <Comp
         ref={ref}
         data-slot="logo"
-        className="inline-flex items-center gap-2"
+        className={cn('inline-flex items-center gap-2', className)}
         {...props}
       >
         {children ?? (

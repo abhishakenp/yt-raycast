@@ -16,7 +16,10 @@ const routeParamMocks = vi.hoisted(() => ({
 }))
 
 vi.mock('@tanstack/react-router', () => ({
-  createFileRoute: (path: string) => (options: Record<string, unknown>) => ({ options, path }),
+  createFileRoute: (path: string) => (options: Record<string, unknown>) => ({
+    options,
+    path,
+  }),
   getRouteApi: (path: string) => ({
     useParams: () => routeParamMocks.paramsByPath[path] ?? {},
   }),
@@ -57,7 +60,13 @@ vi.mock('@/features/referrals/components/ReferralDashboard', () => ({
 }))
 
 vi.mock('@/features/dashboard/components/Dashboard', () => ({
-  Dashboard: ({ initialAdminView, sessionId }: { initialAdminView?: boolean; sessionId?: string }) => (
+  Dashboard: ({
+    initialAdminView,
+    sessionId,
+  }: {
+    initialAdminView?: boolean
+    sessionId?: string
+  }) => (
     <section
       data-admin={initialAdminView === true ? 'true' : 'false'}
       data-testid="dashboard-route"
@@ -205,27 +214,17 @@ describe('top-level route behavior', () => {
     )
   })
 
-  it('delegates the public preview route with a real deployment slug from Convex', async () => {
-    createDeploymentPreviewResponseMock.mockResolvedValue(
-      new Response('preview body'),
-    )
+  it('renders the bare session preview route lazily', async () => {
     const Route = await importRoute('./preview.$slug')
-    const request = new Request(
-      'https://ship-fast.io/preview/a-craft-beer-brewery',
-    )
-
-    const response = await Route.options.server?.handlers.GET({
-      params: { slug: 'a-craft-beer-brewery' },
-      request,
-    })
+    const PreviewComponent = Route.options.component
 
     expect(Route.path).toBe('/preview/$slug')
-    expect(response?.status).toBe(200)
-    expect(await response?.text()).toBe('preview body')
-    expect(createDeploymentPreviewResponseMock).toHaveBeenCalledWith(
-      'a-craft-beer-brewery',
-      request,
-    )
+    expect(Route.options.server).toBeUndefined()
+    expect(PreviewComponent).toBeTypeOf('function')
+
+    render(PreviewComponent ? <PreviewComponent /> : null)
+
+    expect(screen.getByTestId('lazy-route').textContent).toBe('PreviewRoute')
   })
 
   it('serves a deployment preview from its Ship Fast subdomain root', async () => {

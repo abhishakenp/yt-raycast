@@ -56,6 +56,7 @@ describe('provider config', () => {
     expect(shouldUseConvexProviders('/partners')).toBe(true)
     expect(shouldUseConvexProviders('/generate/session_123')).toBe(true)
     expect(shouldUseConvexProviders('/generate/missing-session')).toBe(true)
+    expect(shouldUseConvexProviders('/preview/session_123')).toBe(true)
     expect(shouldUseConvexProviders('/gallery')).toBe(true)
     expect(shouldUseConvexProviders('/mine')).toBe(true)
     expect(shouldUseConvexProviders('/referrals')).toBe(false)

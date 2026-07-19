@@ -74,21 +74,37 @@ export function resolveRouteTarget(
   const mapped = targetMap[target] ?? targetMap[normalized]
   if (mapped) return parseRouteTarget(mapped)
 
-  const exact = routes.find((r) => normalizeTarget(r) === normalized)
+  function isExactRoute(route: string) {
+    return normalizeTarget(route) === normalized
+  }
+
+  const exact = routes.find(isExactRoute)
   if (exact) return { type: 'page', page: exact }
 
-  const find = (routePattern: RegExp, sectionPattern?: RegExp) => {
-    const route = routes.find((r) => routePattern.test(normalizeTarget(r)))
-    if (route) return { type: 'page' as const, page: route }
+  function find(
+    routePattern: RegExp,
+    sectionPattern?: RegExp,
+  ): RouteTarget | null {
+    function matchesRoute(route: string) {
+      return routePattern.test(normalizeTarget(route))
+    }
+
+    const route = routes.find(matchesRoute)
+    if (route) return { type: 'page', page: route }
     if (sectionPattern) {
+      function isMatchingSection(
+        candidate: RouteTarget | null,
+      ): candidate is RouteTarget {
+        return (
+          candidate !== null &&
+          typeof candidate.sectionId === 'string' &&
+          sectionPattern.test(normalizeTarget(candidate.sectionId))
+        )
+      }
+
       const entry = Object.values(targetMap)
         .map(parseRouteTarget)
-        .find(
-          (candidate): candidate is RouteTarget =>
-            candidate !== null &&
-            typeof candidate.sectionId === 'string' &&
-            sectionPattern.test(normalizeTarget(candidate.sectionId)),
-        )
+        .find(isMatchingSection)
       if (entry) return entry
     }
     return null
@@ -140,7 +156,7 @@ export function resolveRouteTarget(
   )
 }
 
-function slugifyRoute(value: string): string {
+export function slugifyRoute(value: string): string {
   return (
     value
       .trim()
@@ -150,11 +166,98 @@ function slugifyRoute(value: string): string {
   )
 }
 
+function routePath(page: string, routes: string[]): string {
+  return page === routes[0] ? '/' : `/${slugifyRoute(page)}`
+}
+
+function previewBasePath(currentPathname: string, currentPage: string): string {
+  const pageSlug = slugifyRoute(currentPage)
+  if (!pageSlug || !currentPathname.endsWith(`/${pageSlug}`)) {
+    return currentPathname || '/'
+  }
+  return currentPathname.slice(0, -pageSlug.length - 1) || '/'
+}
+
+export function resolveRouteHref(
+  target: string | undefined,
+  routes: string[],
+  targetMap: Record<string, string>,
+  options: {
+    currentPage?: string
+    currentPathname?: string
+    previewBase?: boolean
+  } = {},
+): string | undefined {
+  const rawTarget = (target ?? '').trim()
+  if (!rawTarget) return undefined
+  if (
+    /^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(rawTarget) ||
+    rawTarget.startsWith('#')
+  ) {
+    return rawTarget
+  }
+  if (!routes.length) return rawTarget.startsWith('/') ? rawTarget : undefined
+
+  const resolved = resolveRouteTarget(rawTarget, routes, targetMap)
+  if (!resolved) return rawTarget.startsWith('/') ? rawTarget : undefined
+
+  function isResolvedPage(route: string) {
+    return normalizeTarget(route) === normalizeTarget(resolved.page)
+  }
+
+  const page = routes.find(isResolvedPage) ?? resolved.page
+  if (!page || !routes.includes(page)) return undefined
+
+  const path = routePath(page, routes)
+  const hash =
+    resolved.type === 'section' && resolved.sectionId
+      ? `#${resolved.sectionId}`
+      : ''
+  if (!options.previewBase) return `${path}${hash}`
+
+  const currentPathname = options.currentPathname ?? '/'
+  const currentPage = options.currentPage ?? routes[0] ?? ''
+  const base = previewBasePath(currentPathname, currentPage)
+  if (path === '/') return `${base}${hash}`
+  return `${base.replace(/\/$/, '')}${path}${hash}`
+}
+
+export function useRouteHref(target: string | undefined): string | undefined {
+  const routing = useContext(RoutesContext)
+  const urlBridge = useContext(PreviewUrlBridgeContext)
+  return resolveRouteHref(target, routing.routes, routing.targetMap, {
+    currentPage: routing.currentPage,
+    currentPathname:
+      typeof window === 'undefined' ? undefined : window.location.pathname,
+    previewBase: urlBridge.navigateToPage !== null,
+  })
+}
+
+export function useIsActiveRoute(): (target: string | undefined) => boolean {
+  const routing = useContext(RoutesContext)
+  const urlBridge = useContext(PreviewUrlBridgeContext)
+
+  function isActiveRoute(target: string | undefined) {
+    if (typeof window === 'undefined') return false
+    const href = resolveRouteHref(target, routing.routes, routing.targetMap, {
+      currentPage: routing.currentPage,
+      currentPathname: window.location.pathname,
+      previewBase: urlBridge.navigateToPage !== null,
+    })
+    return (
+      typeof href === 'string' &&
+      new URL(href, window.location.href).href === window.location.href
+    )
+  }
+
+  return isActiveRoute
+}
+
 export function useNavigate() {
   const routing = useContext(RoutesContext)
   const page = useStateField<string>('page')
   const urlBridge = useContext(PreviewUrlBridgeContext)
-  return (target?: string) => {
+  function navigate(target?: string) {
     const rawTarget = (target ?? '').trim()
     const t = rawTarget.toLowerCase()
     // Real auth takes precedence over page routing.
@@ -185,10 +288,11 @@ export function useNavigate() {
       return
     }
 
-    const nextPage =
-      routing.routes.find(
-        (route) => normalizeTarget(route) === normalizeTarget(resolved.page),
-      ) ?? resolved.page
+    function isResolvedPage(route: string) {
+      return normalizeTarget(route) === normalizeTarget(resolved.page)
+    }
+
+    const nextPage = routing.routes.find(isResolvedPage) ?? resolved.page
     if (!nextPage || !routing.routes.includes(nextPage)) {
       console.warn(`[ShipFast] Unresolved navigation page: ${resolved.page}`)
       return
@@ -223,4 +327,5 @@ export function useNavigate() {
       scrollToPageTop()
     }
   }
+  return navigate
 }

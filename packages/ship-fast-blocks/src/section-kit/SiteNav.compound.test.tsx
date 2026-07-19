@@ -4,7 +4,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const navigate = vi.fn()
 
-vi.mock('#/lib/use-navigate.tsx', () => ({
+vi.mock('#/lib/use-navigate.tsx', async (importOriginal) => ({
+  ...(await importOriginal()),
   useNavigate: () => navigate,
 }))
 
@@ -20,8 +21,9 @@ if (typeof ResizeObserver === 'undefined') {
   })
 }
 
-const { cleanup, fireEvent, render, screen } =
-  await import('@testing-library/react')
+const { cleanup, fireEvent, render, screen } = await import(
+  '@testing-library/react'
+)
 const {
   SiteNav,
   NavbarBrand,
@@ -30,6 +32,7 @@ const {
   NavbarActions,
   NavbarCta,
 } = await import('./SiteNav.tsx')
+const { RoutesContext } = await import('../lib/use-navigate.tsx')
 
 afterEach(() => {
   cleanup()
@@ -176,12 +179,64 @@ describe('NavbarNav', () => {
 })
 
 describe('NavbarNavLink', () => {
-  it('renders a button with data-slot and default classes', () => {
+  it('renders an anchor with data-slot and default classes', () => {
     render(<NavbarNavLink data-testid="link">Home</NavbarNavLink>)
     const el = screen.getByTestId('link')
-    expect(el.tagName).toBe('BUTTON')
+    expect(el.tagName).toBe('A')
     expect(el.getAttribute('data-slot')).toBe('navbar-nav-link')
     expect(el.className).toContain('text-muted-foreground')
+  })
+
+  it('styles the active link when href matches the current page', () => {
+    window.history.pushState(null, '', '/pricing')
+
+    render(
+      <>
+        <NavbarNavLink href={window.location.href} data-testid="active-link">
+          Pricing
+        </NavbarNavLink>
+        <NavbarNavLink
+          href="https://example.test/about"
+          data-testid="idle-link"
+        >
+          About
+        </NavbarNavLink>
+      </>,
+    )
+
+    const activeLink = screen.getByTestId('active-link')
+    const idleLink = screen.getByTestId('idle-link')
+
+    expect(activeLink.getAttribute('aria-current')).toBe('page')
+    expect(activeLink.getAttribute('href')).toBe(window.location.href)
+    expect(activeLink.className).toContain('text-foreground')
+    expect(activeLink.className).toContain('underline')
+    expect(idleLink.getAttribute('aria-current')).toBeNull()
+    expect(idleLink.className).toContain('text-muted-foreground')
+    expect(idleLink.className).not.toContain('underline')
+  })
+
+  it('resolves route-label hrefs from RoutesContext', () => {
+    render(
+      <RoutesContext.Provider
+        value={{
+          routes: ['Home', 'Pricing'],
+          targetMap: {},
+          currentPage: 'Home',
+          setCurrentPage: vi.fn(),
+          pendingSectionId: null,
+          setPendingSectionId: vi.fn(),
+        }}
+      >
+        <NavbarNavLink href="Pricing" data-testid="pricing-link">
+          Pricing
+        </NavbarNavLink>
+      </RoutesContext.Provider>,
+    )
+
+    expect(screen.getByTestId('pricing-link').getAttribute('href')).toBe(
+      '/pricing',
+    )
   })
 
   it('fires onClick', () => {
