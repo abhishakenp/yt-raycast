@@ -20,6 +20,7 @@ import {
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const BootcampMentors = defineCapsule({
   name: 'BootcampMentors',
   description:
@@ -99,7 +100,7 @@ export const BootcampMentors = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{mentorsDesc}</p>
           </div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <ResponsiveGrid cols="1-2-4" gap="md">
             {mentorItems.map((m) => (
               <PersonCard key={m.name} asChild variant="bare" rounded="none">
                 <button
@@ -126,8 +127,8 @@ export const BootcampMentors = defineCapsule({
                 </button>
               </PersonCard>
             ))}
-          </div>
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
+          </ResponsiveGrid>
+          <ResponsiveGrid cols="1" gap="md" className="mt-12 md:grid-cols-3">
             {mentorPhotos.map((photo) => (
               <Image
                 key={photo}
@@ -138,7 +139,7 @@ export const BootcampMentors = defineCapsule({
                 className="h-64 w-full rounded-2xl object-cover"
               />
             ))}
-          </div>
+          </ResponsiveGrid>
         </Container>
       </section>
     )

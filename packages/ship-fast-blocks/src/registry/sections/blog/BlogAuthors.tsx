@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import {
   PersonCard,
   PersonCardName,
@@ -114,7 +115,7 @@ export const BlogAuthors = defineCapsule({
           align="center"
         />
 
-        <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <ResponsiveGrid cols="1-2-3" gap="md" className="mt-10">
           {authors.map((author) => (
             <PersonCard
               key={author.name}
@@ -149,7 +150,7 @@ export const BlogAuthors = defineCapsule({
               </button>
             </PersonCard>
           ))}
-        </div>
+        </ResponsiveGrid>
       </section>
     )
   },

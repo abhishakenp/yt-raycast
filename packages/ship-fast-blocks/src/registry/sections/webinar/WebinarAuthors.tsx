@@ -11,6 +11,7 @@ import {
   PersonCardBio,
 } from '#/section-kit/PersonCard.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 export const WebinarAuthors = defineCapsule({
   name: 'WebinarAuthors',
@@ -82,7 +83,7 @@ export const WebinarAuthors = defineCapsule({
             subtitle={subheading}
           />
 
-          <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <ResponsiveGrid cols="1-2-3" gap="md" className="mt-14">
             {speakers.map((speaker, i) => (
               <PersonCard
                 key={`${speaker.name}-${i}`}
@@ -111,7 +112,7 @@ export const WebinarAuthors = defineCapsule({
                 </PersonCardBio>
               </PersonCard>
             ))}
-          </div>
+          </ResponsiveGrid>
         </Container>
       </section>
     )

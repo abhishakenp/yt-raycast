@@ -11,6 +11,7 @@ import {
   PersonCardBio,
 } from '#/section-kit/PersonCard.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * EventSpeakers — a featured-speakers grid for a conference or event page. A muted
@@ -133,7 +134,7 @@ export const EventSpeakers = defineCapsule({
               <ArrowRight />
             </button>
           </div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <ResponsiveGrid cols="1-2-4" gap="md">
             {items.map((sp) => (
               <PersonCard
                 key={sp.name}
@@ -160,7 +161,7 @@ export const EventSpeakers = defineCapsule({
                 </button>
               </PersonCard>
             ))}
-          </div>
+          </ResponsiveGrid>
         </Container>
       </section>
     )

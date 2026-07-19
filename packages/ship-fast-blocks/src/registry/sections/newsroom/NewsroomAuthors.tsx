@@ -12,6 +12,7 @@ import {
 } from '#/section-kit/PersonCard.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
  * NewsroomAuthors — editorial "meet our columnists" block for a digital
@@ -130,7 +131,7 @@ export const NewsroomAuthors = defineCapsule({
             </h2>
             <p className="text-lg text-muted-foreground">{subheading}</p>
           </div>
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <ResponsiveGrid cols="1-2-3" gap="lg" className="xl:grid-cols-4">
             {authors.map((a) => (
               <PersonCard
                 key={a.name}
@@ -187,7 +188,7 @@ export const NewsroomAuthors = defineCapsule({
                 </div>
               </PersonCard>
             ))}
-          </div>
+          </ResponsiveGrid>
         </Container>
       </section>
     )

@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { PersonCard } from '#/section-kit/PersonCard.tsx'
 
 /**
@@ -197,7 +198,7 @@ export const MarketplaceAuthors = defineCapsule({
             </button>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <ResponsiveGrid cols="1-2-4" gap="md">
             {sellerItems.map((seller) => (
               <PersonCard
                 asChild
@@ -260,7 +261,7 @@ export const MarketplaceAuthors = defineCapsule({
                 </button>
               </PersonCard>
             ))}
-          </div>
+          </ResponsiveGrid>
         </Container>
       </section>
     )
