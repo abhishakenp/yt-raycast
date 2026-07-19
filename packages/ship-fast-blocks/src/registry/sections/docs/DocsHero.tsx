@@ -15,6 +15,7 @@ import {
   SearchFieldInput,
   SearchFieldHint,
 } from '#/section-kit/SearchForm.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * DocsHero — search-forward hero band for a developer DOCUMENTATION / API-reference
@@ -220,115 +221,116 @@ export const DocsHero = defineCapsule({
     return (
       <HeroSection
         variant="default"
-        className={cn(
-          'mx-auto w-full max-w-4xl px-6 py-20 text-center sm:py-24',
-          props.className,
-        )}
+        className={cn('py-20 text-center sm:py-24', props.className)}
       >
-        <Eyebrow className="mb-5 bg-muted tracking-widest text-accent">
-          {eyebrow}
-        </Eyebrow>
+        <Container size="4xl">
+          <Eyebrow className="mb-5 bg-muted tracking-widest text-accent">
+            {eyebrow}
+          </Eyebrow>
 
-        <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
-          {heading}
-        </h1>
+          <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
+            {heading}
+          </h1>
 
-        <p className="mx-auto mt-5 max-w-2xl text-base text-muted-foreground sm:text-lg">
-          {subheading}
-        </p>
+          <p className="mx-auto mt-5 max-w-2xl text-base text-muted-foreground sm:text-lg">
+            {subheading}
+          </p>
 
-        <SearchForm
-          key={queryValue}
-          onSubmit={docsSearch.submitSearch}
-          className="mx-auto mt-9 max-w-2xl"
-          role="search"
-          aria-label="Documentation search"
-        >
-          <SearchField>
-            <SearchFieldIcon className="left-4 top-1/2 -translate-y-1/2">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </SearchFieldIcon>
-            <SearchFieldInput
-              type="search"
-              name="query"
-              aria-label="Search the documentation"
-              placeholder={searchPlaceholder}
-              defaultValue={queryValue}
-              className="py-3.5 pl-11 outline-none transition focus:border-ring focus:ring-2 focus:ring-ring"
-            />
-            <SearchFieldHint className="right-3 top-1/2 -translate-y-1/2">
-              <kbd className="hidden select-none items-center gap-1 rounded-md border border-border bg-muted px-2 py-1 text-xs font-medium text-muted-foreground sm:inline-flex">
-                ⌘K
-              </kbd>
-            </SearchFieldHint>
-          </SearchField>
-        </SearchForm>
-
-        {showingResults ? (
-          <Card
-            shadow="sm"
-            className="mx-auto mt-4 max-w-2xl p-2 text-left"
-            aria-live="polite"
+          <SearchForm
+            key={queryValue}
+            onSubmit={docsSearch.submitSearch}
+            className="mx-auto mt-9 max-w-2xl"
+            role="search"
+            aria-label="Documentation search"
           >
-            <p className="px-3 py-2 text-sm text-muted-foreground">
-              {matchingArticles.length} article
-              {matchingArticles.length === 1 ? '' : 's'} match{' '}
-              <span className="font-medium text-foreground">{queryValue}</span>
-            </p>
-            <ul className="max-h-72 overflow-y-auto">
-              {matchingArticles.map((article) => (
-                <li key={article.slug}>
-                  <button
-                    type="button"
-                    onClick={() => go(article.title)}
-                    className="flex w-full flex-col gap-0.5 rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted"
-                  >
-                    <span className="text-sm font-medium text-foreground">
-                      {article.title}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {article.category}
-                    </span>
-                  </button>
-                </li>
-              ))}
-              {!matchingArticles.length ? (
-                <li className="px-3 py-4 text-center text-sm text-muted-foreground">
-                  No articles match the current search.
-                </li>
-              ) : null}
-            </ul>
-          </Card>
-        ) : null}
+            <SearchField>
+              <SearchFieldIcon className="left-4 top-1/2 -translate-y-1/2">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </SearchFieldIcon>
+              <SearchFieldInput
+                type="search"
+                name="query"
+                aria-label="Search the documentation"
+                placeholder={searchPlaceholder}
+                defaultValue={queryValue}
+                className="py-3.5 pl-11 outline-none transition focus:border-ring focus:ring-2 focus:ring-ring"
+              />
+              <SearchFieldHint className="right-3 top-1/2 -translate-y-1/2">
+                <kbd className="hidden select-none items-center gap-1 rounded-md border border-border bg-muted px-2 py-1 text-xs font-medium text-muted-foreground sm:inline-flex">
+                  ⌘K
+                </kbd>
+              </SearchFieldHint>
+            </SearchField>
+          </SearchForm>
 
-        <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-          <button
-            type="button"
-            onClick={() => go(primaryTarget)}
-            className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            {primaryCta}
-          </button>
-          <button
-            type="button"
-            onClick={() => go(secondaryTarget)}
-            className="rounded-full border border-border bg-background px-6 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-          >
-            {secondaryCta}
-          </button>
-        </div>
+          {showingResults ? (
+            <Card
+              shadow="sm"
+              className="mx-auto mt-4 max-w-2xl p-2 text-left"
+              aria-live="polite"
+            >
+              <p className="px-3 py-2 text-sm text-muted-foreground">
+                {matchingArticles.length} article
+                {matchingArticles.length === 1 ? '' : 's'} match{' '}
+                <span className="font-medium text-foreground">
+                  {queryValue}
+                </span>
+              </p>
+              <ul className="max-h-72 overflow-y-auto">
+                {matchingArticles.map((article) => (
+                  <li key={article.slug}>
+                    <button
+                      type="button"
+                      onClick={() => go(article.title)}
+                      className="flex w-full flex-col gap-0.5 rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted"
+                    >
+                      <span className="text-sm font-medium text-foreground">
+                        {article.title}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {article.category}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+                {!matchingArticles.length ? (
+                  <li className="px-3 py-4 text-center text-sm text-muted-foreground">
+                    No articles match the current search.
+                  </li>
+                ) : null}
+              </ul>
+            </Card>
+          ) : null}
+
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => go(primaryTarget)}
+              className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              {primaryCta}
+            </button>
+            <button
+              type="button"
+              onClick={() => go(secondaryTarget)}
+              className="rounded-full border border-border bg-background px-6 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            >
+              {secondaryCta}
+            </button>
+          </div>
+        </Container>
       </HeroSection>
     )
   },
