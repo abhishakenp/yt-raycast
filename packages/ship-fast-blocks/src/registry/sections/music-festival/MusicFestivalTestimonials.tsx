@@ -11,6 +11,7 @@ import { cn } from '#/lib/utils.ts'
  * multi-day live event with returning attendees.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -75,14 +76,13 @@ export const MusicFestivalTestimonials = defineCapsule({
     return (
       <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
         <Container>
-          <div className="mb-16 text-center">
-            <p className="mb-4 text-sm font-medium uppercase tracking-widest text-primary">
-              {eyebrow}
-            </p>
-            <h2 className="mb-4 text-4xl font-bold tracking-tight lg:text-5xl">
-              {heading}
-            </h2>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            className="mb-16 gap-0"
+            eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-primary"
+            titleClassName="mb-4 text-4xl font-bold tracking-tight lg:text-5xl"
+          />
           <TestimonialGrid columns={3}>
             {items.map((t) => {
               const __iv__ = t as {

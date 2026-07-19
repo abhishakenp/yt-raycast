@@ -7,8 +7,8 @@ import {
   FaqQuestion,
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
-import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 import { z } from 'zod/v4'
 
@@ -75,18 +75,15 @@ export const ConstructionFaq = defineCapsule({
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <Container size="sm">
-          <div className="mb-16 text-center">
-            <Eyebrow
-              variant="text"
-              className="text-sm tracking-wider text-muted-foreground"
-            >
-              {eyebrow}
-            </Eyebrow>
-            <h2 className="mb-4 mt-3 text-3xl font-bold text-foreground sm:text-4xl">
-              {heading}
-            </h2>
-            <p className="text-lg text-muted-foreground">{description}</p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            className="mb-16  gap-0"
+            eyebrowClassName="text-sm font-semibold tracking-wider text-muted-foreground"
+            titleClassName="mb-4 mt-3 text-3xl font-bold text-foreground sm:text-4xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
 
           <FaqAccordion>
             {items.map((item) => (

@@ -12,6 +12,7 @@ import { cn } from '#/lib/utils.ts'
  * series, or any recurring multi-day event.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   GalleryGrid,
   GalleryGridItems,
@@ -58,17 +59,15 @@ export const MusicFestivalGallery = defineCapsule({
         )}
       >
         <Container>
-          <div className="mb-16 text-center">
-            <p className="mb-4 text-sm font-medium uppercase tracking-widest text-background/50">
-              {eyebrow}
-            </p>
-            <h2 className="mb-4 text-4xl font-bold tracking-tight lg:text-5xl">
-              {heading}
-            </h2>
-            <p className="mx-auto max-w-2xl text-lg text-background/70">
-              {description}
-            </p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            className="mb-16 gap-0"
+            eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-background/50"
+            titleClassName="mb-4 text-4xl font-bold tracking-tight lg:text-5xl"
+            subtitleClassName="mx-auto max-w-2xl text-lg text-background/70"
+          />
           <GalleryGrid>
             <GalleryGridItems columns={4}>
               {imageAlts

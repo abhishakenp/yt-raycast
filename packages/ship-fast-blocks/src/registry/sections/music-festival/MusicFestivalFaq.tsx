@@ -8,6 +8,7 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 import { z } from 'zod/v4'
 
@@ -82,14 +83,13 @@ export const MusicFestivalFaq = defineCapsule({
         )}
       >
         <Container size="sm">
-          <div className="mb-16 text-center">
-            <p className="mb-4 text-sm font-medium uppercase tracking-widest text-primary">
-              {eyebrow}
-            </p>
-            <h2 className="mb-4 text-4xl font-bold tracking-tight lg:text-5xl">
-              {heading}
-            </h2>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            className="mb-16 gap-0"
+            eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-primary"
+            titleClassName="mb-4 text-4xl font-bold tracking-tight lg:text-5xl"
+          />
           <FaqAccordion>
             {items.map((item) => (
               <FaqItem key={item.question} variant="minimal">

@@ -15,6 +15,7 @@ import { Image } from '#/lib/img.tsx'
  * any multi-day live-music event.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   LineupGrid,
   ArtistCard,
@@ -149,17 +150,15 @@ export const MusicFestivalLineup = defineCapsule({
     return (
       <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
         <Container>
-          <div className="mb-16 text-center">
-            <p className="mb-4 text-sm font-medium uppercase tracking-widest text-primary">
-              {eyebrow}
-            </p>
-            <h2 className="mb-4 text-4xl font-bold tracking-tight lg:text-5xl">
-              {heading}
-            </h2>
-            <p className="mx-auto max-w-2xl text-lg text-foreground/70">
-              {description}
-            </p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            className="mb-16 gap-0"
+            eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-primary"
+            titleClassName="mb-4 text-4xl font-bold tracking-tight lg:text-5xl"
+            subtitleClassName="mx-auto max-w-2xl text-lg text-foreground/70"
+          />
 
           <div className="mb-16">
             <h3 className="mb-8 text-center text-sm font-medium uppercase tracking-widest text-foreground/50">
@@ -168,10 +167,7 @@ export const MusicFestivalLineup = defineCapsule({
             <LineupGrid className="grid gap-6 md:grid-cols-3">
               {headliners.map((h) => (
                 <ArtistCard asChild key={h.name}>
-                  <button
-                    type="button"
-                    onClick={() => go(h.name)}
-                  >
+                  <button type="button" onClick={() => go(h.name)}>
                     <Image
                       alt={h.imageAlt}
                       w={800}

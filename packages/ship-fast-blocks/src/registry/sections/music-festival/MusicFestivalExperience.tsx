@@ -22,6 +22,7 @@ import {
  * multi-day immersive event.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 export const MusicFestivalExperience = defineCapsule({
   name: 'MusicFestivalExperience',
   description:
@@ -158,15 +159,16 @@ export const MusicFestivalExperience = defineCapsule({
         <Container>
           <div className="grid items-center gap-16 lg:grid-cols-2">
             <div>
-              <p className="mb-4 text-sm font-medium uppercase tracking-widest text-primary">
-                {eyebrow}
-              </p>
-              <h2 className="mb-6 text-4xl font-bold tracking-tight lg:text-5xl">
-                {heading}
-              </h2>
-              <p className="mb-8 text-lg leading-relaxed text-card-foreground/70">
-                {description}
-              </p>
+              <SectionHeading
+                align="left"
+                eyebrow={eyebrow}
+                title={heading}
+                subtitle={description}
+                className="mb-8 gap-0"
+                eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-primary"
+                titleClassName="mb-6 text-4xl font-bold tracking-tight lg:text-5xl"
+                subtitleClassName="text-lg leading-relaxed text-card-foreground/70"
+              />
               <div className="space-y-6">
                 {features.map((f, i) => (
                   <FeatureListItem key={f.title} className="gap-4">

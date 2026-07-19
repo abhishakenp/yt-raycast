@@ -13,6 +13,7 @@ import { useNavigate } from '#/lib/use-navigate.tsx'
  * festivals, concert series, or any multi-day live event.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import {
   EventList,
@@ -164,17 +165,15 @@ export const MusicFestivalSchedule = defineCapsule({
     return (
       <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
         <Container>
-          <div className="mb-16 text-center">
-            <p className="mb-4 text-sm font-medium uppercase tracking-widest text-primary">
-              {eyebrow}
-            </p>
-            <h2 className="mb-4 text-4xl font-bold tracking-tight lg:text-5xl">
-              {heading}
-            </h2>
-            <p className="mx-auto max-w-2xl text-lg text-foreground/70">
-              {description}
-            </p>
-          </div>
+          <SectionHeading
+            eyebrow={eyebrow}
+            title={heading}
+            subtitle={description}
+            className="mb-16 gap-0"
+            eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-primary"
+            titleClassName="mb-4 text-4xl font-bold tracking-tight lg:text-5xl"
+            subtitleClassName="mx-auto max-w-2xl text-lg text-foreground/70"
+          />
           <EventList className="grid gap-8 md:grid-cols-3">
             {days.map((day) => (
               <EventCard asChild key={day.name}>
