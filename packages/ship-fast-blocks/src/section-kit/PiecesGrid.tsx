@@ -22,15 +22,19 @@ const PiecesGridVariants = cva('grid', {
 
 const PiecesGrid = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & VariantProps<typeof PiecesGridVariants>
->(({ className, cols, ...props }, ref) => (
-  <div
-    data-slot="pieces-grid"
-    className={cn(PiecesGridVariants({ cols }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> &
+    VariantProps<typeof PiecesGridVariants> & { asChild?: boolean }
+>(({ className, cols, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="pieces-grid"
+      className={cn(PiecesGridVariants({ cols }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 PiecesGrid.displayName = 'PiecesGrid'
 
 const PiecesCard = React.forwardRef<

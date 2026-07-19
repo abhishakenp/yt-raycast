@@ -22,15 +22,19 @@ const TemplateGridVariants = cva('grid', {
 
 const TemplateGrid = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & VariantProps<typeof TemplateGridVariants>
->(({ className, cols, ...props }, ref) => (
-  <div
-    data-slot="template-grid"
-    className={cn(TemplateGridVariants({ cols }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> &
+    VariantProps<typeof TemplateGridVariants> & { asChild?: boolean }
+>(({ className, cols, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="template-grid"
+      className={cn(TemplateGridVariants({ cols }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 TemplateGrid.displayName = 'TemplateGrid'
 
 const TemplateCard = React.forwardRef<

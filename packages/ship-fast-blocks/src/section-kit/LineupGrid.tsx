@@ -22,15 +22,19 @@ const LineupGridVariants = cva('grid', {
 
 const LineupGrid = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & VariantProps<typeof LineupGridVariants>
->(({ className, cols, ...props }, ref) => (
-  <div
-    data-slot="lineup-grid"
-    className={cn(LineupGridVariants({ cols }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> &
+    VariantProps<typeof LineupGridVariants> & { asChild?: boolean }
+>(({ className, cols, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="lineup-grid"
+      className={cn(LineupGridVariants({ cols }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 LineupGrid.displayName = 'LineupGrid'
 
 const LineupCard = React.forwardRef<

@@ -23,15 +23,19 @@ const SolutionGridVariants = cva('grid', {
 
 const SolutionGrid = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & VariantProps<typeof SolutionGridVariants>
->(({ className, cols, ...props }, ref) => (
-  <div
-    data-slot="solution-grid"
-    className={cn(SolutionGridVariants({ cols }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> &
+    VariantProps<typeof SolutionGridVariants> & { asChild?: boolean }
+>(({ className, cols, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="solution-grid"
+      className={cn(SolutionGridVariants({ cols }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 SolutionGrid.displayName = 'SolutionGrid'
 
 const SolutionCard = React.forwardRef<

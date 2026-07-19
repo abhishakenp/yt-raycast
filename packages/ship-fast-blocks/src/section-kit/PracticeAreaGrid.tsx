@@ -22,15 +22,19 @@ const PracticeAreaGridVariants = cva('grid', {
 
 const PracticeAreaGrid = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & VariantProps<typeof PracticeAreaGridVariants>
->(({ className, cols, ...props }, ref) => (
-  <div
-    data-slot="practice-area-grid"
-    className={cn(PracticeAreaGridVariants({ cols }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> &
+    VariantProps<typeof PracticeAreaGridVariants> & { asChild?: boolean }
+>(({ className, cols, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="practice-area-grid"
+      className={cn(PracticeAreaGridVariants({ cols }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 PracticeAreaGrid.displayName = 'PracticeAreaGrid'
 
 const PracticeAreaCard = React.forwardRef<

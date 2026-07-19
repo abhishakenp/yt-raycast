@@ -19,15 +19,19 @@ const roomGridVariants = cva('grid', {
 
 const RoomGrid = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & VariantProps<typeof roomGridVariants>
->(({ className, cols, ...props }, ref) => (
-  <div
-    data-slot="room-grid"
-    className={cn(roomGridVariants({ cols }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> &
+    VariantProps<typeof roomGridVariants> & { asChild?: boolean }
+>(({ className, cols, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="room-grid"
+      className={cn(roomGridVariants({ cols }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 RoomGrid.displayName = 'RoomGrid'
 
 const RoomCard = React.forwardRef<

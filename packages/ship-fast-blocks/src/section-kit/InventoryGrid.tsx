@@ -22,15 +22,19 @@ const InventoryGridVariants = cva('grid', {
 
 const InventoryGrid = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & VariantProps<typeof InventoryGridVariants>
->(({ className, cols, ...props }, ref) => (
-  <div
-    data-slot="inventory-grid"
-    className={cn(InventoryGridVariants({ cols }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> &
+    VariantProps<typeof InventoryGridVariants> & { asChild?: boolean }
+>(({ className, cols, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="inventory-grid"
+      className={cn(InventoryGridVariants({ cols }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 InventoryGrid.displayName = 'InventoryGrid'
 
 const InventoryCard = React.forwardRef<

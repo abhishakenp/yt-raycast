@@ -22,15 +22,19 @@ const ShopGridVariants = cva('grid', {
 
 const ShopGrid = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & VariantProps<typeof ShopGridVariants>
->(({ className, cols, ...props }, ref) => (
-  <div
-    data-slot="shop-grid"
-    className={cn(ShopGridVariants({ cols }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> &
+    VariantProps<typeof ShopGridVariants> & { asChild?: boolean }
+>(({ className, cols, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="shop-grid"
+      className={cn(ShopGridVariants({ cols }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 ShopGrid.displayName = 'ShopGrid'
 
 const ShopCard = React.forwardRef<

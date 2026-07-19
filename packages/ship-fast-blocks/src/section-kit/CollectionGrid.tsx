@@ -19,15 +19,19 @@ const collectionGridVariants = cva('grid', {
 
 const CollectionGrid = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<'div'> & VariantProps<typeof collectionGridVariants>
->(({ className, cols, ...props }, ref) => (
-  <div
-    data-slot="collection-grid"
-    className={cn(collectionGridVariants({ cols }), className)}
-    ref={ref}
-    {...props}
-  />
-))
+  React.ComponentProps<'div'> &
+    VariantProps<typeof collectionGridVariants> & { asChild?: boolean }
+>(({ className, cols, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      data-slot="collection-grid"
+      className={cn(collectionGridVariants({ cols }), className)}
+      ref={ref}
+      {...props}
+    />
+  )
+})
 CollectionGrid.displayName = 'CollectionGrid'
 
 const CollectionCard = React.forwardRef<
