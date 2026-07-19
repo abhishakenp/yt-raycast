@@ -85,6 +85,8 @@ describe('Theme persistence', () => {
       const patched = await t.run(async (ctx) => ctx.db.get(sessionId))
       expect(patched?.themeOverride).toBe('ocean')
       expect(patched?.themeMode).toBe('dark')
+      expect(patched?.updatedAt).toEqual(expect.any(Number))
+      expect(patched?.updatedAt).toBeGreaterThan(100)
     })
 
     it('clears theme fields when null is passed', async () => {
@@ -110,6 +112,8 @@ describe('Theme persistence', () => {
       const patched = await t.run(async (ctx) => ctx.db.get(sessionId))
       expect(patched?.themeOverride).toBeUndefined()
       expect(patched?.themeMode).toBeUndefined()
+      expect(patched?.updatedAt).toEqual(expect.any(Number))
+      expect(patched?.updatedAt).toBeGreaterThan(100)
     })
 
     it('leaves theme fields untouched when they are omitted from the args', async () => {

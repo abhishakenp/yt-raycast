@@ -120,6 +120,7 @@ export async function applyCloneBriefAndGenerate(
     ...(args.themeOverride !== undefined
       ? { themeOverride: args.themeOverride }
       : {}),
+    updatedAt: Date.now(),
   })
 
   await ctx.scheduler.runAfter(0, internal.generation.startGeneration, {

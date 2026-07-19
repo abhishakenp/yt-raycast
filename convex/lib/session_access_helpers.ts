@@ -334,6 +334,7 @@ export async function setSessionThemeOverride(
     ...(args.themeMode === undefined
       ? {}
       : { themeMode: args.themeMode ?? undefined }),
+    updatedAt: Date.now(),
   })
 }
 
