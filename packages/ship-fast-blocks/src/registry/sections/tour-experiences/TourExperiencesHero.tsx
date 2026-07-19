@@ -13,6 +13,12 @@ import {
   HeroActions,
   HeroCta,
 } from '#/section-kit/HeroSection.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 
 /**
  * TourExperiencesHero — vivid, full-bleed adventure hero for a guided-tour /
@@ -124,16 +130,26 @@ export const TourExperiencesHero = defineCapsule({
             </HeroActions>
           </div>
 
-          <div className="mt-14 grid max-w-2xl grid-cols-3 gap-6 border-t border-background/20 pt-8">
+          <StatGrid
+            columns={3}
+            gap="compact"
+            className="mt-14 max-w-2xl border-t border-background/20 pt-8"
+          >
             {stats.map((s) => (
-              <div key={s.label}>
-                <div className="text-2xl font-bold text-background sm:text-3xl">
+              <StatItem key={s.label} align="center">
+                <StatValue
+                  size="default"
+                  color="inverted"
+                  className="text-2xl sm:text-3xl"
+                >
                   {s.value}
-                </div>
-                <div className="mt-1 text-sm text-background/70">{s.label}</div>
-              </div>
+                </StatValue>
+                <StatLabel color="inverted" className="mt-1">
+                  {s.label}
+                </StatLabel>
+              </StatItem>
             ))}
-          </div>
+          </StatGrid>
         </HeroContent>
       </HeroSection>
     )

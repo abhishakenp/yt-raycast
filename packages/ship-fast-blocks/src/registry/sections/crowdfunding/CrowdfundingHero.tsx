@@ -13,6 +13,12 @@ import {
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 
 /**
  * CrowdfundingHero — a 2-column campaign hero for a crowdfunding / pre-order
@@ -186,24 +192,27 @@ export const CrowdfundingHero = defineCapsule({
                   <span>{heroFundedBanner}</span>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4 border-t border-border pt-6">
+                <StatGrid
+                  columns={3}
+                  gap="compact"
+                  className="border-t border-border pt-6"
+                >
                   {heroStats.map((s, i) => (
-                    <div
+                    <StatItem
                       key={s.label}
-                      className={cn(
-                        'text-center',
-                        i === 1 && 'border-x border-border',
-                      )}
+                      align="center"
+                      className={cn(i === 1 && 'border-x border-border')}
                     >
-                      <div className="text-2xl font-bold sm:text-3xl">
+                      <StatValue
+                        size="default"
+                        className="text-2xl sm:text-3xl"
+                      >
                         {s.value}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {s.label}
-                      </div>
-                    </div>
+                      </StatValue>
+                      <StatLabel>{s.label}</StatLabel>
+                    </StatItem>
                   ))}
-                </div>
+                </StatGrid>
               </div>
 
               <button

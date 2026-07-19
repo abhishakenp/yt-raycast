@@ -6,6 +6,12 @@ import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  StatGrid,
+  StatItem,
+  StatValue,
+  StatLabel,
+} from '#/section-kit/StatGrid.tsx'
 
 /**
  * InvestingHero — split hero for a modern investing / fintech brokerage landing
@@ -201,25 +207,29 @@ export const InvestingHero = defineCapsule({
                     <span className="block font-semibold">{indexValue}</span>
                   </div>
                 </div>
-                <div className="mt-6 grid grid-cols-3 gap-4 border-t border-border pt-6">
+                <StatGrid
+                  columns={3}
+                  gap="compact"
+                  className="mt-6 border-t border-border pt-6"
+                >
                   {cardStats.map((s, i) => (
-                    <div key={s.label}>
-                      <p className="mb-1 text-xs text-muted-foreground">
-                        {s.label}
-                      </p>
-                      <p
+                    <StatItem key={s.label} align="left">
+                      <StatLabel className="mb-1 text-xs">{s.label}</StatLabel>
+                      <StatValue
+                        weight="semibold"
+                        size="default"
                         className={cn(
-                          'text-lg font-semibold',
+                          'text-lg',
                           i === cardStats.length - 1
                             ? 'text-chart-1'
                             : 'text-foreground',
                         )}
                       >
                         {s.value}
-                      </p>
-                    </div>
+                      </StatValue>
+                    </StatItem>
                   ))}
-                </div>
+                </StatGrid>
               </Card>
             </div>
           </div>
