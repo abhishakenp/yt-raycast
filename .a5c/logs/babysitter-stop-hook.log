@@ -1818,3 +1818,10 @@
 [INFO] 2026-07-20T18:09:54.357Z [session=31557265-466b-4d50-a463-82ecf5719e41] Resolved stateDir: /Users/abhi/.a5c/state
 [INFO] 2026-07-20T18:09:54.357Z [session=31557265-466b-4d50-a463-82ecf5719e41] Checking session file at: /Users/abhi/.a5c/state/31557265-466b-4d50-a463-82ecf5719e41.md
 [INFO] 2026-07-20T18:09:54.359Z [session=31557265-466b-4d50-a463-82ecf5719e41] No active loop found for session 31557265-466b-4d50-a463-82ecf5719e41 — allowing exit
+[INFO] 2026-07-20T18:25:05.747Z handleHookRunStop started
+[INFO] 2026-07-20T18:25:05.750Z Hook input received
+[INFO] 2026-07-20T18:25:05.750Z [session=31557265-466b-4d50-a463-82ecf5719e41] Session ID: 31557265-466b-4d50-a463-82ecf5719e41
+[INFO] 2026-07-20T18:25:05.750Z [session=31557265-466b-4d50-a463-82ecf5719e41] Resolved pluginRoot: /Users/abhi/.claude/plugins/cache/a5c-ai/babysitter/4.0.157
+[INFO] 2026-07-20T18:25:05.750Z [session=31557265-466b-4d50-a463-82ecf5719e41] Resolved stateDir: /Users/abhi/.a5c/state
+[INFO] 2026-07-20T18:25:05.750Z [session=31557265-466b-4d50-a463-82ecf5719e41] Checking session file at: /Users/abhi/.a5c/state/31557265-466b-4d50-a463-82ecf5719e41.md
+[INFO] 2026-07-20T18:25:05.751Z [session=31557265-466b-4d50-a463-82ecf5719e41] No active loop found for session 31557265-466b-4d50-a463-82ecf5719e41 — allowing exit
