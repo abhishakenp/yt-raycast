@@ -58,8 +58,17 @@ function initLaunchBackdrop(canvas: HTMLCanvasElement) {
     return a + (b - a) * ux + (c - a) * uy + (a - b - c + d) * ux * uy
   }
 
-  function resetParticle(p: (typeof particles)[number], edge?: 'left') {
-    p.x = edge === 'left' ? -12 : Math.random() * width
+  function resetParticle(p: (typeof particles)[number], edge?: 'left' | 'middle' | 'right') {
+    const section = edge || (Math.random() > 0.75 ? 'left' : Math.random() > 0.25 ? 'middle' : 'right')
+    
+    if (section === 'left') {
+      p.x = Math.random() * (width * 0.25)
+    } else if (section === 'middle') {
+      p.x = (width * 0.25) + Math.random() * (width * 0.5)
+    } else {
+      p.x = (width * 0.75) + Math.random() * (width * 0.25)
+    }
+    
     p.y = Math.random() * height
     p.life = 0.45 + Math.random() * 0.55
     p.speed = 0.45 + Math.random() * 1.35
@@ -78,8 +87,8 @@ function initLaunchBackdrop(canvas: HTMLCanvasElement) {
     context.setTransform(dpr, 0, 0, dpr, 0, 0)
 
     const target = Math.max(
-      width < 760 ? 54 : 96,
-      Math.min(width < 760 ? 120 : 210, Math.floor((width * height) / 12000)),
+      width < 760 ? 540 : 960, // 10x more particles
+      Math.min(width < 760 ? 1200 : 2100, Math.floor((width * height) / 1200)), // 10x more particles
     )
     while (particles.length < target) {
       const p = {
@@ -137,7 +146,7 @@ function initLaunchBackdrop(canvas: HTMLCanvasElement) {
         p.y < -40 ||
         p.y > height + 40
       ) {
-        resetParticle(p, Math.random() > 0.35 ? 'left' : undefined)
+        resetParticle(p)
         continue
       }
 
