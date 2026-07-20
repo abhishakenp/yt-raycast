@@ -36,6 +36,7 @@ const mocks = vi.hoisted(() => ({
   refreshShareBonusStatus: vi.fn(),
   claimShareBonus: vi.fn(),
   detectSnippetLanguageBcp47: vi.fn().mockResolvedValue(null),
+  scheduleSpeculativeGeneration: vi.fn(),
 }))
 
 vi.mock('convex/react', () => ({
@@ -114,6 +115,7 @@ vi.mock('@/features/home/hooks/usePromptHomeController', () => {
         },
         setPrompt,
         submitPrompt: mocks.submitPrompt,
+        scheduleSpeculativeGeneration: mocks.scheduleSpeculativeGeneration,
         examplePrompts: [] as unknown[],
         submitButtonLabel: 'Start generating',
       }
@@ -147,6 +149,7 @@ describe('HomePage — language detection for short explicit-keyword prompts', (
     fetchMock.mockClear()
     mocks.submitPrompt.mockReset()
     mocks.selectExamplePromptSpy.mockReset()
+    mocks.scheduleSpeculativeGeneration.mockReset()
     // Mock detector: return 'hi' for any input containing "hindi", else null.
     mocks.detectSnippetLanguageBcp47
       .mockReset()
@@ -204,6 +207,23 @@ describe('HomePage — language detection for short explicit-keyword prompts', (
     expect(row).toBeTruthy()
     // BUG 1: languageRowVisible = trimmedPromptLength >= 65, so 17 chars -> hidden.
     expect(row.classList.contains('is-hidden')).toBe(false)
+  })
+
+  it('starts the three-second speculative-generation countdown from the complete form draft', () => {
+    render(<HomePage />)
+    const input = getPromptInput()
+
+    fireEvent.change(input, {
+      target: { value: 'Build a fast customer onboarding website' },
+    })
+
+    expect(mocks.scheduleSpeculativeGeneration).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        engineVersion: 'v1',
+        preferredLanguage: 'en',
+        prompt: 'Build a fast customer onboarding website',
+      }),
+    )
   })
 
   it('language auto-detection runs for short prompts with explicit language keyword', async () => {

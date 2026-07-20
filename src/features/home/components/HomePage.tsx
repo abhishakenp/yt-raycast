@@ -194,6 +194,7 @@ export const HomePage = () => {
     prompt,
     refreshShareBonusStatus,
     selectExamplePrompt,
+    scheduleSpeculativeGeneration,
     setPrompt,
     shareBonusClaimed,
     submitPrompt,
@@ -217,7 +218,9 @@ export const HomePage = () => {
   const promptLanguageDetectTokenRef = useRef(0)
   const promptSuggestAbortRef = useRef<AbortController | null>(null)
   const promptSuggestTokenRef = useRef(0)
+  const promptFormRef = useRef<HTMLFormElement | null>(null)
   const suppressSuggestionsRef = useRef(false)
+  const [generationDraftVersion, setGenerationDraftVersion] = useState(0)
 
   const placeholderText = SAMPLE_PLACEHOLDERS[placeholderIndex]
   const visiblePlaceholder = useMemo(
@@ -234,6 +237,32 @@ export const HomePage = () => {
     : ''
   const promptSuggestionsOpen = promptFocused && promptSuggestions.length > 0
   const promptCaption = prompt.length > 0 ? 'My prompt' : 'Try a prompt like'
+
+  useEffect(() => {
+    const form = promptFormRef.current
+    if (form === null) return
+
+    const formData = new FormData(form)
+    const designReferenceUrls = collectDesignReferenceUrls(formData)
+    const designReferenceNotes = String(
+      formData.get('design-ref-notes') ?? '',
+    ).trim()
+    scheduleSpeculativeGeneration({
+      prompt: String(formData.get('prompt') ?? prompt),
+      preferredLanguage: String(formData.get('prompt-language') ?? 'en'),
+      isPrivate: formData.get('private-generation') === 'on',
+      designReferenceUrls,
+      designReferenceNotes,
+      cloneUrl: designReferenceUrls[0],
+      engineVersion,
+    })
+  }, [
+    engineVersion,
+    generationDraftVersion,
+    preferredLanguage,
+    prompt,
+    scheduleSpeculativeGeneration,
+  ])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -631,6 +660,10 @@ export const HomePage = () => {
                         id="prompt-form"
                         className="flex w-full min-w-0 flex-col gap-[11px]"
                         onSubmit={handleSubmit}
+                        onInput={() =>
+                          setGenerationDraftVersion((version) => version + 1)
+                        }
+                        ref={promptFormRef}
                       >
                         <label className="sr-only" htmlFor="prompt-input">
                           Describe the website you want to build

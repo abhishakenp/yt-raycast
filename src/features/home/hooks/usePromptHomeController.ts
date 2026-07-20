@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router'
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   checkPromptContentPolicy,
@@ -31,6 +31,7 @@ import { AppError } from '@/shared/errors/app-error'
 const CREATE_SESSION_TIMEOUT_MS = 12_000
 const CREATE_SESSION_RETRY_DELAY_MS = 450
 const MIN_LAUNCH_FEEDBACK_MS = 1_200
+const SPECULATIVE_GENERATION_DELAY_MS = 3_000
 
 type CreateSessionPayload = ReturnType<typeof buildCreateSessionPayload>
 type RunSubmitOptions = Partial<
@@ -53,6 +54,14 @@ type CreateSessionResult = {
 type CreateSessionErrorResult = {
   code?: unknown
   error?: unknown
+}
+type SessionLaunch = {
+  anonymousOwnerSecret: string
+  fingerprint: string
+  payload: CreateSessionPayload
+}
+type SpeculativeGeneration = SessionLaunch & {
+  request: Promise<CreateSessionResult>
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -135,6 +144,51 @@ async function createSessionWithRetry<Payload, Result>(
   throw lastError
 }
 
+function createSessionLaunch(
+  opts: RunSubmitOptions | undefined,
+  fallbackPrompt: string,
+): SessionLaunch {
+  const prompt = normalizePromptDraft(opts?.prompt ?? fallbackPrompt)
+  const preferredLanguage = opts?.preferredLanguage?.trim() || 'en'
+  const isPrivate = opts?.isPrivate ?? false
+  const designReferenceUrls = (opts?.designReferenceUrls ?? [])
+    .map((url) => url.trim())
+    .filter(Boolean)
+    .slice(0, 4)
+  const designReferenceNotes = (opts?.designReferenceNotes ?? '').trim()
+  const cloneUrl = (opts?.cloneUrl ?? '').trim()
+  const engineVersion = opts?.engineVersion
+  const fingerprint = JSON.stringify({
+    cloneUrl,
+    designReferenceNotes,
+    designReferenceUrls,
+    engineVersion: engineVersion ?? 'v1',
+    isPrivate,
+    preferredLanguage,
+    prompt,
+  })
+  const anonymousOwnerSecret = createAnonymousOwnerSecret()
+  const anonymousClientId = createAnonymousClientId(window.localStorage)
+  const workspace = createSessionWorkspaceKey()
+
+  return {
+    anonymousOwnerSecret,
+    fingerprint,
+    payload: buildCreateSessionPayload({
+      prompt,
+      preferredLanguage,
+      isPrivate,
+      anonymousOwnerSecret,
+      anonymousClientId,
+      workspace,
+      designReferenceUrls,
+      designReferenceNotes,
+      cloneUrl,
+      engineVersion,
+    }),
+  }
+}
+
 async function createSessionFromHttp(
   payload: CreateSessionPayload,
 ): Promise<CreateSessionResult> {
@@ -209,6 +263,29 @@ export const usePromptHomeController = () => {
   const shareBonusHydratedRef = useRef(false)
   const shareBonusRefreshInFlightRef = useRef<Promise<void> | null>(null)
   const shareBonusClaimInFlightRef = useRef<Promise<void> | null>(null)
+  const speculativeGenerationRef = useRef<SpeculativeGeneration | null>(null)
+  const speculativeGenerationTimerRef = useRef<number | null>(null)
+  const speculativeGenerationTimerFingerprintRef = useRef<string | null>(null)
+
+  const clearSpeculativeGenerationTimer = useCallback(() => {
+    if (speculativeGenerationTimerRef.current !== null) {
+      window.clearTimeout(speculativeGenerationTimerRef.current)
+      speculativeGenerationTimerRef.current = null
+    }
+    speculativeGenerationTimerFingerprintRef.current = null
+  }, [])
+
+  const invalidateSpeculativeGeneration = useCallback(() => {
+    clearSpeculativeGenerationTimer()
+    speculativeGenerationRef.current = null
+  }, [clearSpeculativeGenerationTimer])
+
+  useEffect(
+    () => () => {
+      invalidateSpeculativeGeneration()
+    },
+    [invalidateSpeculativeGeneration],
+  )
 
   const refreshShareBonusStatus = useCallback(() => {
     if (shareBonusHydratedRef.current) return Promise.resolve()
@@ -262,6 +339,50 @@ export const usePromptHomeController = () => {
 
   const normalizedPrompt = useMemo(() => normalizePromptDraft(prompt), [prompt])
   const canSubmit = normalizedPrompt.length > 0 && !isSubmitting
+  const scheduleSpeculativeGeneration = useCallback(
+    (opts?: RunSubmitOptions) => {
+      const runtimePrompt = normalizePromptDraft(opts?.prompt ?? prompt)
+      if (!runtimePrompt || !checkPromptContentPolicy(runtimePrompt).ok) {
+        invalidateSpeculativeGeneration()
+        return
+      }
+      const launch = createSessionLaunch(opts, prompt)
+
+      if (
+        speculativeGenerationRef.current?.fingerprint === launch.fingerprint ||
+        speculativeGenerationTimerFingerprintRef.current === launch.fingerprint
+      ) {
+        return
+      }
+
+      invalidateSpeculativeGeneration()
+      speculativeGenerationTimerFingerprintRef.current = launch.fingerprint
+      speculativeGenerationTimerRef.current = window.setTimeout(() => {
+        speculativeGenerationTimerRef.current = null
+        if (
+          speculativeGenerationTimerFingerprintRef.current !==
+          launch.fingerprint
+        ) {
+          return
+        }
+        speculativeGenerationTimerFingerprintRef.current = null
+
+        const request = createSessionWithRetry(
+          createSessionFromHttp,
+          launch.payload,
+        )
+        const speculativeGeneration = { ...launch, request }
+        speculativeGenerationRef.current = speculativeGeneration
+        void request.catch(() => {
+          if (speculativeGenerationRef.current === speculativeGeneration) {
+            speculativeGenerationRef.current = null
+          }
+        })
+      }, SPECULATIVE_GENERATION_DELAY_MS)
+    },
+    [invalidateSpeculativeGeneration, prompt],
+  )
+
   const runSubmit = async (opts?: RunSubmitOptions) => {
     const runtimePrompt = normalizePromptDraft(opts?.prompt ?? prompt)
     const preferredLanguage = opts?.preferredLanguage?.trim() || 'en'
@@ -277,6 +398,7 @@ export const usePromptHomeController = () => {
     }
 
     submitInFlightRef.current = true
+    clearSpeculativeGenerationTimer()
     const launchFeedbackStartedAt = Date.now()
     setErrorMessage(undefined)
     setIsSubmitting(true)
@@ -322,24 +444,16 @@ export const usePromptHomeController = () => {
         }
       }
 
-      const anonymousOwnerSecret = createAnonymousOwnerSecret()
-      const anonymousClientId = createAnonymousClientId(window.localStorage)
-      const workspace = createSessionWorkspaceKey()
-      const result = await createSessionWithRetry(
-        createSessionFromHttp,
-        buildCreateSessionPayload({
-          prompt: runtimePrompt,
-          preferredLanguage,
-          isPrivate,
-          anonymousOwnerSecret,
-          anonymousClientId,
-          workspace,
-          designReferenceUrls: opts?.designReferenceUrls,
-          designReferenceNotes: opts?.designReferenceNotes,
-          cloneUrl: opts?.cloneUrl,
-          engineVersion: opts?.engineVersion,
-        }),
-      )
+      const launch = createSessionLaunch(opts, prompt)
+      const speculativeGeneration =
+        speculativeGenerationRef.current?.fingerprint === launch.fingerprint
+          ? speculativeGenerationRef.current
+          : null
+      if (speculativeGeneration === null) {
+        speculativeGenerationRef.current = null
+      }
+      const result = await (speculativeGeneration?.request ??
+        createSessionWithRetry(createSessionFromHttp, launch.payload))
       const sessionId = result.sessionId
 
       if (!sessionId || typeof sessionId !== 'string' || !sessionId.trim()) {
@@ -353,7 +467,8 @@ export const usePromptHomeController = () => {
         persistAnonymousOwnerSecret(
           window.localStorage,
           sessionId,
-          anonymousOwnerSecret,
+          speculativeGeneration?.anonymousOwnerSecret ??
+            launch.anonymousOwnerSecret,
         )
       }
 
@@ -403,6 +518,7 @@ export const usePromptHomeController = () => {
     prompt,
     refreshShareBonusStatus,
     selectExamplePrompt,
+    scheduleSpeculativeGeneration,
     setPrompt,
     shareBonusClaimed,
     submitButtonLabel,
