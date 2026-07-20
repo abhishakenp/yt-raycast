@@ -1,4 +1,4 @@
-import type { ComponentType, Context } from 'react'
+import type { ComponentType, Context, ReactNode } from 'react'
 
 declare module '@ship-fast/blocks' {
   export const allCapsules: any[]
@@ -40,6 +40,19 @@ declare module '@ship-fast/blocks' {
   export type OpenUIMedusaContextValue = any
   export const OpenUISanityContext: Context<any>
   export const OpenUIMedusaContext: Context<any>
+  export type CommerceRuntimeMode = 'demo' | 'disabled' | 'hosted' | 'sdk'
+  export type CommerceScope = 'deployments' | 'sessions'
+  export const CommerceProvider: ComponentType<{
+    adapter?: {
+      catalog: () => Promise<{ products: unknown[] }>
+    }
+    children?: ReactNode
+    fallbackProducts: unknown[]
+    mode: CommerceRuntimeMode
+    regionId?: string
+    scope: CommerceScope
+    tenant: string
+  }>
   export const PreviewUrlBridgeContext: Context<PreviewUrlBridgeValue>
   export type PreviewUrlBridgeValue = {
     navigateToPage: ((pageSlug: string | null) => void) | null
@@ -83,6 +96,19 @@ declare module '@ship-fast/blocks/runtime' {
   export type OpenUIMedusaContextValue = any
   export const OpenUISanityContext: Context<any>
   export const OpenUIMedusaContext: Context<any>
+  export type CommerceRuntimeMode = 'demo' | 'disabled' | 'hosted' | 'sdk'
+  export type CommerceScope = 'deployments' | 'sessions'
+  export const CommerceProvider: ComponentType<{
+    adapter?: {
+      catalog: () => Promise<{ products: unknown[] }>
+    }
+    children?: ReactNode
+    fallbackProducts: unknown[]
+    mode: CommerceRuntimeMode
+    regionId?: string
+    scope: CommerceScope
+    tenant: string
+  }>
   export const PreviewUrlBridgeContext: Context<PreviewUrlBridgeValue>
   export type PreviewUrlBridgeValue = {
     navigateToPage: ((pageSlug: string | null) => void) | null

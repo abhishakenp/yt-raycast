@@ -3,6 +3,8 @@
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 import { JSDOM } from 'jsdom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { CommerceProvider } from '../commerce/commerce-provider'
 
 type TestCartItem = {
   id: string
@@ -23,6 +25,18 @@ type TestLakebed = ReturnType<typeof createCommerceLakebedStub>['lakebed']
 
 const navigate = vi.fn()
 const lakebedRef: { current: TestLakebed | null } = { current: null }
+const authRuntime = vi.hoisted(() => ({
+  signInWithGoogle: vi.fn(async () => undefined),
+  signOut: vi.fn(),
+  state: {
+    displayName: '',
+    email: '',
+    isAuthenticated: false,
+    isGuest: true,
+    isLoading: false,
+    picture: '',
+  },
+}))
 
 vi.mock('@ship-fast/lakebed/react', async () => {
   const actual = await vi.importActual<
@@ -35,6 +49,9 @@ vi.mock('@ship-fast/lakebed/react', async () => {
       if (!lakebedRef.current) throw new Error('Missing test Lakebed client')
       return lakebedRef.current
     }),
+    signInWithGoogle: authRuntime.signInWithGoogle,
+    signOut: authRuntime.signOut,
+    useAuth: () => authRuntime.state,
   }
 })
 
@@ -126,8 +143,8 @@ function createCommerceLakebedStub() {
     },
   }
   const listeners = new Set<() => void>()
-  const signInWithGoogle = vi.fn(async () => undefined)
-  const signOut = vi.fn()
+  const signInWithGoogle = authRuntime.signInWithGoogle
+  const signOut = authRuntime.signOut
   const notify = () => {
     version += 1
     for (const listener of listeners) listener()
@@ -312,6 +329,8 @@ afterEach(() => {
   cleanup()
   setSectionKitNavClickFallback(null)
   navigate.mockReset()
+  authRuntime.signInWithGoogle.mockReset()
+  authRuntime.signOut.mockReset()
   lakebedRef.current = null
   document.body.removeAttribute('style')
 })
@@ -326,36 +345,62 @@ describe('EcommerceNavbar fullstack commerce behavior', () => {
     const Gallery = EcommerceGallery.client.component
 
     render(
-      <>
-        <Navbar
-          props={{ brand: 'Market', nav: ['Shop', 'Deals'], cartCount: '0' }}
-          statementId="ecommerce_navbar"
-        />
-        <Gallery
-          props={{
-            addToCartLabel: 'Add to cart',
-            products: [
-              {
-                imageAlt: 'Matte black headphones',
-                name: 'Wireless Headphones',
-                price: '$129',
-              },
-            ],
-          }}
-          statementId="ecommerce_gallery"
-        />
-        <Hero
-          props={{
-            addLabel: 'Add deal',
-            featuredProductName: 'Portable Speaker',
-            featuredProductPrice: '$79',
-            featuredProductSubtitle: 'Hero deal',
-            primaryCta: 'Shop',
-            secondaryCta: 'Deals',
-          }}
-          statementId="ecommerce_hero"
-        />
-      </>,
+      <QueryClientProvider client={new QueryClient()}>
+        <CommerceProvider
+          fallbackProducts={[
+            {
+              collections: [],
+              handle: 'wireless-headphones',
+              images: [],
+              options: [],
+              sourceId: 'product:wireless-headphones',
+              tags: [],
+              title: 'Wireless Headphones',
+              variants: [
+                {
+                  manageInventory: false,
+                  optionValues: {},
+                  prices: [{ amount: 129, currencyCode: 'usd' }],
+                  sourceId: 'variant:wireless-headphones:default',
+                  title: 'Default',
+                },
+              ],
+            },
+          ]}
+          mode="demo"
+          scope="sessions"
+          tenant="demo"
+        >
+          <Navbar
+            props={{ brand: 'Market', nav: ['Shop', 'Deals'], cartCount: '0' }}
+            statementId="ecommerce_navbar"
+          />
+          <Gallery
+            props={{
+              addToCartLabel: 'Add to cart',
+              products: [
+                {
+                  imageAlt: 'Matte black headphones',
+                  name: 'Wireless Headphones',
+                  price: '$129',
+                },
+              ],
+            }}
+            statementId="ecommerce_gallery"
+          />
+          <Hero
+            props={{
+              addLabel: 'Add deal',
+              featuredProductName: 'Portable Speaker',
+              featuredProductPrice: '$79',
+              featuredProductSubtitle: 'Hero deal',
+              primaryCta: 'Shop',
+              secondaryCta: 'Deals',
+            }}
+            statementId="ecommerce_hero"
+          />
+        </CommerceProvider>
+      </QueryClientProvider>,
     )
 
     await waitFor(() => {
@@ -392,18 +437,25 @@ describe('EcommerceNavbar fullstack commerce behavior', () => {
     })
     expect(navigate).not.toHaveBeenCalledWith('Wireless Headphones')
 
-    const shopButtons = screen.getAllByRole('link', { name: 'Shop' })
-    fireEvent.click(shopButtons[0])
-    fireEvent.click(shopButtons[1])
-    const dealButtons = screen.getAllByRole('link', { name: 'Deals' })
-    fireEvent.click(dealButtons[0])
-    fireEvent.click(dealButtons[1])
+    const shopLinks = screen.getAllByRole('link', { name: 'Shop' })
+    const dealLinks = screen.getAllByRole('link', { name: 'Deals' })
+    expect(shopLinks.map((link) => link.getAttribute('href'))).toContain(
+      '#shop',
+    )
+    expect(dealLinks.map((link) => link.getAttribute('href'))).toContain(
+      '#deals',
+    )
+
+    fireEvent.click(shopLinks[0])
+    fireEvent.click(shopLinks[1])
+    fireEvent.click(dealLinks[0])
+    fireEvent.click(dealLinks[1])
     await waitFor(() => {
       expect(navigate).toHaveBeenCalledWith('Shop')
       expect(navigate).toHaveBeenCalledWith('Deals')
     })
 
-    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
+    fireEvent.click(screen.getAllByRole('button', { name: 'Sign in' })[0])
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
 
     fireEvent.click(

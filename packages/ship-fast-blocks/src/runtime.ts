@@ -32,6 +32,21 @@ export {
   type OpenUIMedusaContextValue,
   OpenUIMedusaContext,
 } from './integrations.tsx'
+export {
+  CommerceProvider,
+  useCommerce,
+  type CommerceController,
+  type CommerceRuntimeStatus,
+} from './registry/sections/commerce/commerce-provider.tsx'
+export type {
+  CommerceCatalogAdapter,
+  CommerceCatalogEnvelope,
+  CommerceCatalogProduct,
+  CommerceProduct,
+  CommerceProductSlot,
+  CommerceRuntimeMode,
+  CommerceScope,
+} from './registry/sections/commerce/commerce-contracts.ts'
 
 export {
   extractAllComponentNames,

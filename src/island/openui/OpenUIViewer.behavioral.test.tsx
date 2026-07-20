@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 //
 // Behavioral tests for OpenUIViewer: streaming skeleton, first-paint detection,
-// error boundary, runtime library caching, AI capsule injection, Medusa sync +
-// polling, embed/preview styling, theme CSS-var injection, locale/image-context
+// error boundary, runtime library caching, AI capsule injection,
+// embed/preview styling, theme CSS-var injection, locale/image-context
 // propagation, empty source, source change, and rapid source-change cancellation.
 //
 // Philosophy: assert EXPECTED/CORRECT behavior. If the code is buggy, the test
@@ -23,9 +23,7 @@ const state = vi.hoisted(() => ({
   loadOpenUIRuntimeLibrary: vi.fn(),
   // Convex useQuery return value (undefined = loading, [] = loaded empty, rows = capsules).
   useQuery: vi.fn(),
-  // Medusa preview DOM applier spy.
-  applyMedusaProductsToPreviewDom: vi.fn(),
-  // Generated commerce product extractor (controls whether Medusa sync runs).
+  // Generated commerce products supplied to the commerce runtime.
   extractGeneratedCommerceProducts: vi.fn(() => [] as unknown[]),
   // Renderer behavior: 'content' renders real DOM text, 'img' renders an <img>,
   // 'throw' simulates a renderer crash for the error-boundary test.
@@ -43,6 +41,7 @@ const state = vi.hoisted(() => ({
 // changes produce different keys (drives effect re-runs / library reloads).
 vi.mock('@ship-fast/blocks/runtime', () => ({
   BrandLogoProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
+  CommerceProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
   ImageContextProvider: ({
     children,
     value,
@@ -130,13 +129,7 @@ vi.mock('./_providers/translation', () => ({
   T: ({ children }: { children: ReactNode }) => <>{children}</>,
 }))
 
-// Mock Medusa preview sync: spy on the DOM applier.
-vi.mock('./medusa-preview-sync', () => ({
-  applyMedusaProductsToPreviewDom: state.applyMedusaProductsToPreviewDom,
-}))
-
-// Mock generated-commerce-products: control whether products are present so
-// the Medusa sync effect runs (it early-returns when products.length === 0).
+// Mock generated-commerce-products for commerce runtime fallbacks.
 vi.mock('@/features/commerce/services/generated-commerce-products', () => ({
   extractGeneratedCommerceProducts: state.extractGeneratedCommerceProducts,
 }))
@@ -151,7 +144,6 @@ beforeEach(() => {
   state.loadOpenUIRuntimeLibrary.mockResolvedValue({} as never)
   state.useQuery.mockReturnValue(undefined)
   state.extractGeneratedCommerceProducts.mockReturnValue([])
-  state.applyMedusaProductsToPreviewDom.mockReset()
   state.rendererMode = 'content'
   state.i18nLocale = null
   state.imageContextValue = undefined
@@ -356,146 +348,6 @@ describe('OpenUIViewer behavioral', () => {
       expect(state.loadOpenUIRuntimeLibrary).toHaveBeenCalledTimes(1),
     )
     expect(state.loadOpenUIRuntimeLibrary.mock.calls[0][1]).toEqual(capsuleRows)
-  })
-
-  // 6. Medusa sync
-  it('syncs Medusa products after render when generated products are present', async () => {
-    state.loadOpenUIRuntimeLibrary.mockResolvedValue({} as never)
-    state.useQuery.mockReturnValue(undefined)
-    state.extractGeneratedCommerceProducts.mockReturnValue([
-      { handle: 'truffle-box', name: 'Truffle Box', price: '$79' },
-    ])
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response(
-        JSON.stringify({
-          products: [
-            {
-              handle: 'ship-fast-session-truffle-box',
-              sourceHandle: 'truffle-box',
-              title: 'Medusa Edited Truffle Box',
-              price: 89,
-              currencyCode: 'eur',
-            },
-          ],
-        }),
-        { status: 200 },
-      ),
-    )
-    vi.stubGlobal('fetch', fetchMock)
-
-    render(<OpenUIViewer response="root = StorePage()" sessionId="s1" />)
-
-    await waitFor(() =>
-      expect(state.applyMedusaProductsToPreviewDom).toHaveBeenCalled(),
-    )
-    expect(fetchMock).toHaveBeenCalledWith('/api/sessions/s1/medusa-products', {
-      headers: { Accept: 'application/json' },
-    })
-  })
-
-  it('syncs Medusa products through deployment tenant endpoints when deploymentSlug is configured', async () => {
-    state.loadOpenUIRuntimeLibrary.mockResolvedValue({} as never)
-    state.useQuery.mockReturnValue(undefined)
-    state.extractGeneratedCommerceProducts.mockReturnValue([
-      { handle: 'truffle-box', name: 'Truffle Box', price: '$79' },
-    ])
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response(
-        JSON.stringify({
-          products: [
-            {
-              handle: 'admin-truffle-box',
-              sourceHandle: 'truffle-box',
-              title: 'Admin Updated Truffle Box',
-              price: 9900,
-              currencyCode: 'usd',
-            },
-          ],
-        }),
-        { status: 200 },
-      ),
-    )
-    vi.stubGlobal('fetch', fetchMock)
-
-    render(
-      <OpenUIViewer
-        response="root = StorePage()"
-        sessionId="s1"
-        integrations={{
-          medusa: {
-            enabled: true,
-            config: { deploymentSlug: 'deployed-store' },
-          },
-        }}
-      />,
-    )
-
-    await waitFor(() =>
-      expect(state.applyMedusaProductsToPreviewDom).toHaveBeenCalled(),
-    )
-    expect(fetchMock).toHaveBeenCalledWith(
-      '/api/deployments/deployed-store/medusa-products',
-      {
-        headers: { Accept: 'application/json' },
-      },
-    )
-  })
-
-  it('keeps the preview usable when Medusa products returns malformed JSON', async () => {
-    state.loadOpenUIRuntimeLibrary.mockResolvedValue({} as never)
-    state.useQuery.mockReturnValue(undefined)
-    state.extractGeneratedCommerceProducts.mockReturnValue([
-      { handle: 'truffle-box', name: 'Truffle Box', price: '$79' },
-    ])
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response('<!doctype html><title>Medusa unavailable</title>', {
-        headers: { 'Content-Type': 'text/html' },
-        status: 200,
-      }),
-    )
-    vi.stubGlobal('fetch', fetchMock)
-
-    render(<OpenUIViewer response="root = StorePage()" sessionId="s1" />)
-
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
-    expect(screen.getByText('root = StorePage()')).toBeTruthy()
-    expect(state.applyMedusaProductsToPreviewDom).not.toHaveBeenCalled()
-  })
-
-  // 7. Medusa sync polling (fake timers)
-  it('polls Medusa sync at a 5s interval', async () => {
-    vi.useFakeTimers()
-    state.loadOpenUIRuntimeLibrary.mockResolvedValue({} as never)
-    state.useQuery.mockReturnValue(undefined)
-    state.extractGeneratedCommerceProducts.mockReturnValue([
-      { handle: 'p1', name: 'Truffle', price: '$79' },
-    ])
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValue(
-        new Response(JSON.stringify({ products: [] }), { status: 200 }),
-      )
-    vi.stubGlobal('fetch', fetchMock)
-
-    render(<OpenUIViewer response="root = StorePage()" sessionId="s1" />)
-
-    // Flush the async library load + the first immediate syncPreviewProducts.
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(0)
-    })
-    expect(fetchMock).toHaveBeenCalledTimes(1)
-
-    // Advance 5s → the setInterval fires a second sync.
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(5000)
-    })
-    expect(fetchMock).toHaveBeenCalledTimes(2)
-
-    // Advance another 5s → third sync.
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(5000)
-    })
-    expect(fetchMock).toHaveBeenCalledTimes(3)
   })
 
   // 8. Embed mode

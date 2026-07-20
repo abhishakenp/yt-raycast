@@ -2093,6 +2093,11 @@ export function Dashboard({
                         (homeModule?.source || clonePageNav.currentUrl) &&
                         generationView ? (
                           <SessionGeneratedPreview
+                            commerceMode={
+                              commerceConfig?.status === 'ready'
+                                ? 'hosted'
+                                : 'disabled'
+                            }
                             // Use homeModule.updatedAt for normal previews to avoid remounting on
                             // unrelated previewVersion bumps. CMS-promoted HTML is versioned by the
                             // latest preview because that HTML is now the displayed source.
