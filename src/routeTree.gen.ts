@@ -35,10 +35,8 @@ import { Route as ApiMedusaCheckoutRouteImport } from './routes/api/medusa-check
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiCreditsRouteImport } from './routes/api/credits'
 import { Route as ApiCloneRouteImport } from './routes/api/clone'
-import { Route as ApiClearPromptCacheRouteImport } from './routes/api/clear-prompt-cache'
 import { Route as ApiBrandProfileRouteImport } from './routes/api/brand-profile'
 import { Route as ApiBillingOverviewRouteImport } from './routes/api/billing-overview'
-import { Route as ApiAdminDeleteSessionRouteImport } from './routes/api/admin-delete-session'
 import { Route as PreviewSlugSitemapDotxmlRouteImport } from './routes/preview.$slug.sitemap[.]xml'
 import { Route as PreviewSlugRobotsDottxtRouteImport } from './routes/preview.$slug.robots[.]txt'
 import { Route as PreviewSlugLlmsDottxtRouteImport } from './routes/preview.$slug.llms[.]txt'
@@ -216,11 +214,6 @@ const ApiCloneRoute = ApiCloneRouteImport.update({
   path: '/api/clone',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiClearPromptCacheRoute = ApiClearPromptCacheRouteImport.update({
-  id: '/api/clear-prompt-cache',
-  path: '/api/clear-prompt-cache',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiBrandProfileRoute = ApiBrandProfileRouteImport.update({
   id: '/api/brand-profile',
   path: '/api/brand-profile',
@@ -229,11 +222,6 @@ const ApiBrandProfileRoute = ApiBrandProfileRouteImport.update({
 const ApiBillingOverviewRoute = ApiBillingOverviewRouteImport.update({
   id: '/api/billing-overview',
   path: '/api/billing-overview',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiAdminDeleteSessionRoute = ApiAdminDeleteSessionRouteImport.update({
-  id: '/api/admin-delete-session',
-  path: '/api/admin-delete-session',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PreviewSlugSitemapDotxmlRoute =
@@ -506,10 +494,8 @@ export interface FileRoutesByFullPath {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
-  '/api/admin-delete-session': typeof ApiAdminDeleteSessionRoute
   '/api/billing-overview': typeof ApiBillingOverviewRoute
   '/api/brand-profile': typeof ApiBrandProfileRoute
-  '/api/clear-prompt-cache': typeof ApiClearPromptCacheRoute
   '/api/clone': typeof ApiCloneRoute
   '/api/credits': typeof ApiCreditsRoute
   '/api/health': typeof ApiHealthRoute
@@ -583,10 +569,8 @@ export interface FileRoutesByTo {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
-  '/api/admin-delete-session': typeof ApiAdminDeleteSessionRoute
   '/api/billing-overview': typeof ApiBillingOverviewRoute
   '/api/brand-profile': typeof ApiBrandProfileRoute
-  '/api/clear-prompt-cache': typeof ApiClearPromptCacheRoute
   '/api/clone': typeof ApiCloneRoute
   '/api/credits': typeof ApiCreditsRoute
   '/api/health': typeof ApiHealthRoute
@@ -662,10 +646,8 @@ export interface FileRoutesById {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
-  '/api/admin-delete-session': typeof ApiAdminDeleteSessionRoute
   '/api/billing-overview': typeof ApiBillingOverviewRoute
   '/api/brand-profile': typeof ApiBrandProfileRoute
-  '/api/clear-prompt-cache': typeof ApiClearPromptCacheRoute
   '/api/clone': typeof ApiCloneRoute
   '/api/credits': typeof ApiCreditsRoute
   '/api/health': typeof ApiHealthRoute
@@ -742,10 +724,8 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/terms'
-    | '/api/admin-delete-session'
     | '/api/billing-overview'
     | '/api/brand-profile'
-    | '/api/clear-prompt-cache'
     | '/api/clone'
     | '/api/credits'
     | '/api/health'
@@ -819,10 +799,8 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/terms'
-    | '/api/admin-delete-session'
     | '/api/billing-overview'
     | '/api/brand-profile'
-    | '/api/clear-prompt-cache'
     | '/api/clone'
     | '/api/credits'
     | '/api/health'
@@ -897,10 +875,8 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/terms'
-    | '/api/admin-delete-session'
     | '/api/billing-overview'
     | '/api/brand-profile'
-    | '/api/clear-prompt-cache'
     | '/api/clone'
     | '/api/credits'
     | '/api/health'
@@ -976,10 +952,8 @@ export interface RootRouteChildren {
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
-  ApiAdminDeleteSessionRoute: typeof ApiAdminDeleteSessionRoute
   ApiBillingOverviewRoute: typeof ApiBillingOverviewRoute
   ApiBrandProfileRoute: typeof ApiBrandProfileRoute
-  ApiClearPromptCacheRoute: typeof ApiClearPromptCacheRoute
   ApiCloneRoute: typeof ApiCloneRoute
   ApiCreditsRoute: typeof ApiCreditsRoute
   ApiHealthRoute: typeof ApiHealthRoute
@@ -1202,13 +1176,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCloneRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/clear-prompt-cache': {
-      id: '/api/clear-prompt-cache'
-      path: '/api/clear-prompt-cache'
-      fullPath: '/api/clear-prompt-cache'
-      preLoaderRoute: typeof ApiClearPromptCacheRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/brand-profile': {
       id: '/api/brand-profile'
       path: '/api/brand-profile'
@@ -1221,13 +1188,6 @@ declare module '@tanstack/react-router' {
       path: '/api/billing-overview'
       fullPath: '/api/billing-overview'
       preLoaderRoute: typeof ApiBillingOverviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/admin-delete-session': {
-      id: '/api/admin-delete-session'
-      path: '/api/admin-delete-session'
-      fullPath: '/api/admin-delete-session'
-      preLoaderRoute: typeof ApiAdminDeleteSessionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/preview/$slug/sitemap.xml': {
@@ -1674,10 +1634,8 @@ const rootRouteChildren: RootRouteChildren = {
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
-  ApiAdminDeleteSessionRoute: ApiAdminDeleteSessionRoute,
   ApiBillingOverviewRoute: ApiBillingOverviewRoute,
   ApiBrandProfileRoute: ApiBrandProfileRoute,
-  ApiClearPromptCacheRoute: ApiClearPromptCacheRoute,
   ApiCloneRoute: ApiCloneRoute,
   ApiCreditsRoute: ApiCreditsRoute,
   ApiHealthRoute: ApiHealthRoute,

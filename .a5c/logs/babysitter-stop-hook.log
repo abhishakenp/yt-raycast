@@ -1804,3 +1804,17 @@
 [INFO] 2026-07-20T02:28:50.439Z [session=f3d9d441-6698-46e1-b462-d3374e7a35ac] Resolved stateDir: /Users/abhi/.a5c/state
 [INFO] 2026-07-20T02:28:50.439Z [session=f3d9d441-6698-46e1-b462-d3374e7a35ac] Checking session file at: /Users/abhi/.a5c/state/f3d9d441-6698-46e1-b462-d3374e7a35ac.md
 [INFO] 2026-07-20T02:28:50.471Z [session=f3d9d441-6698-46e1-b462-d3374e7a35ac] No active loop found for session f3d9d441-6698-46e1-b462-d3374e7a35ac — allowing exit
+[INFO] 2026-07-20T18:06:52.692Z handleHookRunStop started
+[INFO] 2026-07-20T18:06:52.696Z Hook input received
+[INFO] 2026-07-20T18:06:52.696Z [session=f3d9d441-6698-46e1-b462-d3374e7a35ac] Session ID: f3d9d441-6698-46e1-b462-d3374e7a35ac
+[INFO] 2026-07-20T18:06:52.696Z [session=f3d9d441-6698-46e1-b462-d3374e7a35ac] Resolved pluginRoot: /Users/abhi/.claude/plugins/cache/a5c-ai/babysitter/4.0.157
+[INFO] 2026-07-20T18:06:52.696Z [session=f3d9d441-6698-46e1-b462-d3374e7a35ac] Resolved stateDir: /Users/abhi/.a5c/state
+[INFO] 2026-07-20T18:06:52.696Z [session=f3d9d441-6698-46e1-b462-d3374e7a35ac] Checking session file at: /Users/abhi/.a5c/state/f3d9d441-6698-46e1-b462-d3374e7a35ac.md
+[INFO] 2026-07-20T18:06:52.825Z [session=f3d9d441-6698-46e1-b462-d3374e7a35ac] No run associated with session — allowing exit
+[INFO] 2026-07-20T18:09:54.354Z handleHookRunStop started
+[INFO] 2026-07-20T18:09:54.357Z Hook input received
+[INFO] 2026-07-20T18:09:54.357Z [session=31557265-466b-4d50-a463-82ecf5719e41] Session ID: 31557265-466b-4d50-a463-82ecf5719e41
+[INFO] 2026-07-20T18:09:54.357Z [session=31557265-466b-4d50-a463-82ecf5719e41] Resolved pluginRoot: /Users/abhi/.claude/plugins/cache/a5c-ai/babysitter/4.0.157
+[INFO] 2026-07-20T18:09:54.357Z [session=31557265-466b-4d50-a463-82ecf5719e41] Resolved stateDir: /Users/abhi/.a5c/state
+[INFO] 2026-07-20T18:09:54.357Z [session=31557265-466b-4d50-a463-82ecf5719e41] Checking session file at: /Users/abhi/.a5c/state/31557265-466b-4d50-a463-82ecf5719e41.md
+[INFO] 2026-07-20T18:09:54.359Z [session=31557265-466b-4d50-a463-82ecf5719e41] No active loop found for session 31557265-466b-4d50-a463-82ecf5719e41 — allowing exit
