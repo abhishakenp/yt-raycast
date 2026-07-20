@@ -326,7 +326,7 @@ async function replaceAsync(
 export async function rewritePreviewImageUrls(html: string): Promise<string> {
   const withAttributes = await replaceAsync(
     html,
-    /(\s(?:src|poster)\s*=\s*)(["'])([^"']+)\2/gi,
+    /(\s(?:src|poster|href)\s*=\s*)(["'])([^"']+)\2/gi,
     async (match, prefix, quote, value) => {
       const rewritten = await resolvePreviewImageUrl(decodeHtmlEntities(value))
       return rewritten ? `${prefix}${quote}${rewritten}${quote}` : match
