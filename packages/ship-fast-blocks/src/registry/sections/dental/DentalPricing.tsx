@@ -2,23 +2,29 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import {
+  LocalServiceBookingButton,
+  LocalServiceMutationSpinner,
   localServiceItem,
   useSyncLocalServices,
 } from '../local-service/local-service-interactions.tsx'
 import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
- * DentalPricing — transparent pricing / in-house membership block for a dental
- * practice site. A centered eyebrow + heading + lede above a 3-up plan grid;
- * the featured plan is filled in the primary color with an optional corner badge
- * while the others are bordered muted cards. Each plan shows a name, tagline,
- * big price + period, a check-marked feature list, and a full-width CTA button,
- * with a small reassurance note under the grid. CTAs route through section-kit route links.
- * Use to present exam fees, membership tiers, or treatment packages for
+ * DentalPricing — collapsed-border pricing ledger for a dental practice site.
+ * An asymmetric header (left-aligned mono eyebrow + heading + lede, mono index
+ * meta right) above a hairline-framed 3-up comparison ledger of square plan
+ * cells divided by hairlines; the featured plan sits on a soft muted wash with
+ * a primary top rule and a square mono badge. Each plan shows a name, mono
+ * tagline, giant extrabold tabular price + mono period, a hairline-divided
+ * check list, and a square CTA (filled primary on the featured plan, quiet
+ * outline that inverts on hover elsewhere) with press feedback, plus a mono
+ * reassurance note under the ledger. CTAs route through section-kit route
+ * links. Use to present exam fees, membership tiers, or treatment packages for
  * dentists, dental offices, or clinics.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   PricingGrid,
   PricingTier,
@@ -30,12 +36,11 @@ import {
   PricingTierPeriod,
   PricingTierFeatures,
   PricingTierFeature,
-  PricingTierCta,
 } from '#/section-kit/PricingGrid.tsx'
 export const DentalPricing = defineCapsule({
   name: 'DentalPricing',
   description:
-    'Transparent pricing / in-house membership block for a dental practice site: a centered eyebrow + heading + lede above a 3-up plan grid where the featured plan is filled in the primary color with an optional corner badge and the others are bordered muted cards. Each plan shows a name, tagline, big price + period, a check-marked feature list, and a full-width CTA button, with a small reassurance note under the grid. CTAs route through section-kit route links. Use to present exam fees, membership tiers, or treatment packages for dentists, dental offices, or clinics.',
+    'Collapsed-border pricing ledger for a dental practice site: an asymmetric header (left-aligned mono eyebrow + heading + lede, mono index meta right) above a hairline-framed 3-up comparison ledger of square plan cells; the featured plan sits on a soft muted wash with a primary top rule and a square mono badge. Each plan shows a name, mono tagline, giant extrabold tabular price + mono period, a hairline-divided check list, and a square CTA (filled primary on the featured plan, quiet outline elsewhere), with a mono reassurance note under the ledger. CTAs route through section-kit route links. Use to present exam fees, membership tiers, or treatment packages for dentists, dental offices, or clinics.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -125,23 +130,30 @@ export const DentalPricing = defineCapsule({
       ),
     )
     return (
-      <section className={cn('bg-background py-24', props.className)}>
+      <section
+        className={cn('bg-background py-20 sm:py-24 lg:py-28', props.className)}
+      >
         <Container>
-          <SectionHeading
-            eyebrow={pricingEyebrow}
-            title={pricingHeading}
-            subtitle={pricingDesc}
-            className="mb-16 max-w-3xl gap-0"
-            eyebrowClassName="mb-3 inline-block text-xs font-semibold tracking-wider text-primary"
-            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <PricingGrid
-            className={cn(
-              'mx-auto grid max-w-6xl gap-8 md:grid-cols-3',
-              props.className,
-            )}
-          >
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <SectionHeading
+              align="left"
+              eyebrow={pricingEyebrow}
+              title={pricingHeading}
+              subtitle={pricingDesc}
+              className="max-w-2xl gap-0"
+              eyebrowClassName="mb-4 inline-block font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground"
+              titleClassName="mb-4 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-[2.75rem] lg:leading-[1.05]"
+              subtitleClassName="text-base text-muted-foreground sm:text-lg"
+            />
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="shrink-0 md:pb-1"
+            >
+              {String(pricingPlans.length).padStart(2, '0')} / plans
+            </MonoTag>
+          </div>
+          <PricingGrid className="mx-auto max-w-6xl gap-0 divide-y divide-border border border-border md:grid-cols-3 md:divide-x md:divide-y-0 xl:grid-cols-3">
             {pricingPlans.map((tier) => {
               const t = tier as {
                 name: string
@@ -167,22 +179,31 @@ export const DentalPricing = defineCapsule({
                 priceSuffix?: string
                 note?: string
               }
+              const isFeatured = t.highlighted || t.featured || t.popular
               return (
                 <PricingTier
                   key={t.name}
-                  variant={
-                    t.highlighted || t.featured || t.popular
-                      ? 'highlighted'
-                      : undefined
-                  }
+                  variant={isFeatured ? 'highlighted' : undefined}
+                  className={cn(
+                    'gap-6 rounded-none border-0 p-6 shadow-none ring-0 sm:p-8',
+                    isFeatured
+                      ? 'border-t-2 border-primary bg-muted/40'
+                      : 'bg-background',
+                  )}
                 >
-                  {t.highlighted || t.featured || t.popular ? (
-                    <PricingTierBadge>{t.badge ?? 'Popular'}</PricingTierBadge>
+                  {isFeatured ? (
+                    <PricingTierBadge className="rounded-none px-2.5 py-1 font-mono text-[10px] font-normal uppercase tracking-[0.15em]">
+                      {t.badge ?? 'Popular'}
+                    </PricingTierBadge>
                   ) : null}
                   <PricingTierHeader>
-                    <PricingTierName>{t.name}</PricingTierName>
+                    <PricingTierName className="text-lg font-bold tracking-tight">
+                      {t.name}
+                    </PricingTierName>
                     {t.tagline && (
-                      <PricingTierTagline>{t.tagline}</PricingTierTagline>
+                      <PricingTierTagline className="font-mono text-[11px] uppercase tracking-[0.15em]">
+                        {t.tagline}
+                      </PricingTierTagline>
                     )}
                     {t.blurb && (
                       <PricingTierTagline>{t.blurb}</PricingTierTagline>
@@ -193,9 +214,13 @@ export const DentalPricing = defineCapsule({
                     {t.audience && (
                       <PricingTierTagline>{t.audience}</PricingTierTagline>
                     )}
-                    <PricingTierPrice>{t.price}</PricingTierPrice>
+                    <PricingTierPrice className="mt-2 text-[clamp(2.5rem,4vw,3.5rem)] font-extrabold leading-none tracking-tight tabular-nums">
+                      {t.price}
+                    </PricingTierPrice>
                     {t.period && (
-                      <PricingTierPeriod>{t.period}</PricingTierPeriod>
+                      <PricingTierPeriod className="font-mono text-[11px] uppercase tracking-[0.15em]">
+                        {t.period}
+                      </PricingTierPeriod>
                     )}
                     {t.unit && <PricingTierPeriod>{t.unit}</PricingTierPeriod>}
                     {t.cadence && (
@@ -206,7 +231,7 @@ export const DentalPricing = defineCapsule({
                     )}
                   </PricingTierHeader>
                   {t.features && (
-                    <PricingTierFeatures>
+                    <PricingTierFeatures className="gap-0 divide-y divide-border border-y border-border">
                       {t.features.map((feature) => (
                         <PricingTierFeature
                           key={
@@ -214,6 +239,7 @@ export const DentalPricing = defineCapsule({
                               ? feature
                               : (feature as { label: string }).label
                           }
+                          className="items-center gap-3 py-2.5"
                         >
                           {typeof feature === 'string'
                             ? feature
@@ -223,15 +249,33 @@ export const DentalPricing = defineCapsule({
                     </PricingTierFeatures>
                   )}
                   {t.cta && (
-                    <PricingTierCta target={t.ctaTarget}>
+                    <LocalServiceBookingButton
+                      lakebed={lakebed}
+                      intentLabel={t.cta}
+                      service={t.name}
+                      source="pricing"
+                      aria-label={`${t.cta} for ${t.name}`}
+                      pendingChildren={
+                        <>
+                          <LocalServiceMutationSpinner className="size-4" />
+                          Booking
+                        </>
+                      }
+                      className={cn(
+                        'mt-auto inline-flex min-h-11 w-full items-center justify-center rounded-none px-5 py-2.5 text-sm font-semibold transition-colors active:translate-y-px disabled:pointer-events-none disabled:opacity-70',
+                        isFeatured
+                          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                          : 'border border-foreground/25 bg-transparent text-foreground hover:bg-foreground hover:text-background',
+                      )}
+                    >
                       {t.cta}
-                    </PricingTierCta>
+                    </LocalServiceBookingButton>
                   )}
                 </PricingTier>
               )
             })}
           </PricingGrid>
-          <p className="mt-8 text-center text-sm text-muted-foreground">
+          <p className="mt-8 text-center font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
             {pricingNote}
           </p>
         </Container>

@@ -21,19 +21,21 @@ import {
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
- * DevToolNavbar — sticky, backdrop-blurred top navigation bar for a developer
- * tool / API platform marketing site. A border-bottomed header pinned to the top
- * with a blue brand "bolt" logo tile + product name on the left, horizontal nav
- * links centered/right on desktop, and a "Sign In" text link plus a filled
- * primary "Get Started" CTA on the right. Clean, light, slate-and-blue product
- * aesthetic. Every link and CTA routes through route hrefs. Use as the sticky
- * site header for developer tools, API platforms, backend-as-a-service, or
- * technical SaaS products.
+ * DevToolNavbar — terminal-grammar sticky navigation bar for a developer tool /
+ * API platform marketing site. A hairline-bottomed, backdrop-blurred header
+ * with a square primary "bolt" logo tile + product wordmark on the left, mono
+ * uppercase nav links (each prefixed with a faint "./" path glyph) across the
+ * center, and on the right the command plan search, Shoo account dropdown,
+ * selected-plan badge, and a square-cornered mono "Get Started" CTA with a hard
+ * offset shadow and press feedback, plus a real mobile drawer. Navigation
+ * routes through route hrefs while auth/search/conversion state is shared
+ * through Lakebed. Use as the sticky site header for developer tools, API
+ * platforms, backend-as-a-service, or technical SaaS products.
  */
 export const DevToolNavbar = defineCapsule({
   name: 'DevToolNavbar',
   description:
-    "Sticky, backdrop-blurred top navigation bar for a developer tool / API platform site: border-bottomed header with a blue brand 'bolt' logo tile + product name, horizontal nav links on desktop, command plan search, Shoo account dropdown, selected-plan badge, a fullstack 'Get Started' CTA, and a real mobile drawer. Clean, light, slate-and-blue product aesthetic. Navigation routes through route hrefs while auth/search/conversion state is shared through Lakebed. Use as the sticky site header for developer tools, API platforms, backend-as-a-service, or technical SaaS.",
+    "Terminal-grammar sticky navigation bar for a developer tool / API platform site: a hairline-bottomed, backdrop-blurred header with a square primary 'bolt' logo tile + product wordmark, mono uppercase './'-prefixed nav links, command plan search, Shoo account dropdown, selected-plan badge, a square hard-shadow fullstack 'Get Started' CTA with press feedback, and a real mobile drawer. Navigation routes through route hrefs while auth/search/conversion state is shared through Lakebed. Use as the sticky site header for developer tools, API platforms, backend-as-a-service, or technical SaaS.",
   props: z.object({
     /** Brand / product name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -62,14 +64,14 @@ export const DevToolNavbar = defineCapsule({
     const BoltMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          'grid place-items-center rounded-lg bg-primary text-primary-foreground',
+          'grid place-items-center rounded-none bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
       >
         <svg
-          width="20"
-          height="20"
+          width="16"
+          height="16"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -89,15 +91,28 @@ export const DevToolNavbar = defineCapsule({
         className={cn('bg-background/90 backdrop-blur-md', props.className)}
       >
         <NavbarBrand href={homeTarget} className="gap-2">
-          <BrandLogo brand={brand}>
-            <LogoImage fallback={<BoltMark className="size-8" />} />
-            <LogoLabel className="text-xl font-semibold text-foreground" />
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage
+              className="size-7"
+              fallback={<BoltMark className="size-7" />}
+            />
+            <LogoLabel className="font-mono text-lg font-bold tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <span
+                aria-hidden="true"
+                className="mr-1 text-muted-foreground/50"
+              >
+                ./
+              </span>
               {label}
             </NavbarNavLink>
           ))}
@@ -124,7 +139,7 @@ export const DevToolNavbar = defineCapsule({
                 Starting
               </>
             }
-            className="hidden items-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
+            className="hidden items-center rounded-none bg-primary px-4 py-2 font-mono text-xs font-semibold uppercase tracking-[0.08em] text-primary-foreground shadow-[3px_3px_0_0] shadow-foreground transition-[transform,box-shadow,background-color] duration-150 hover:bg-primary/90 active:translate-x-px active:translate-y-px active:shadow-none motion-reduce:transform-none disabled:pointer-events-none disabled:opacity-70 sm:inline-flex md:hidden lg:inline-flex"
           >
             {ctaLabel}
           </SaasPlanActionButton>

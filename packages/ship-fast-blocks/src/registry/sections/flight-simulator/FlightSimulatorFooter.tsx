@@ -18,12 +18,13 @@ import {
 } from '#/section-kit/SiteFooter.tsx'
 
 /**
- * FlightSimulatorFooter — a rich, multi-column closing footer for a flight
+ * FlightSimulatorFooter — an instrument-panel closing footer for a flight
  * simulator site. Thin configuration over the shared `SiteFooter` composite: a
  * bold wordmark beside an inline winged-plane mark, an aviation tagline, a
  * social row, and a responsive grid of link columns (Product, Editions,
- * Community, Support), with an auto-updating copyright line in the bottom bar.
- * Use as the site-wide footer for flight simulators, airliner / combat sims, or
+ * Community, Support) with mono uppercase column headers and left-aligned
+ * `block w-fit` links, closed by a mono copyright readout in the bottom bar. Use
+ * as the site-wide footer for flight simulators, airliner / combat sims, or
  * aviation titles. Renders fully with no props via baked-in "SkyForge Sim"
  * defaults.
  */
@@ -50,7 +51,7 @@ function WingMark({ className }: { className?: string }) {
 export const FlightSimulatorFooter = defineCapsule({
   name: 'FlightSimulatorFooter',
   description:
-    'Rich, multi-column closing footer for a flight-simulator site built on the shared SiteFooter composite: a bold wordmark + inline winged-plane mark, an aviation tagline, a social row, and a responsive grid of link columns (Product, Editions, Community, Support), with an auto-updating copyright line in the bottom bar. Every brand, social, and column link routes through section-kit route links. Use as the site-wide footer for flight simulators, airliner / combat sims, or aviation titles.',
+    'Instrument-panel closing footer for a flight-simulator site built on the shared SiteFooter composite: a bold wordmark + inline winged-plane mark, an aviation tagline, a social row, and a responsive grid of link columns (Product, Editions, Community, Support) with mono uppercase column headers and left-aligned block w-fit links, closed by a mono copyright readout in the bottom bar. Every brand, social, and column link routes through section-kit route links. Use as the site-wide footer for flight simulators, airliner / combat sims, or aviation titles.',
   props: z.object({
     /** Product / brand name shown as the wordmark. */
     brand: z.string().optional(),
@@ -119,17 +120,21 @@ export const FlightSimulatorFooter = defineCapsule({
             </FooterBrand>
             {columns.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnTitle className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  {col.title}
+                </FooterColumnTitle>
                 <FooterColumnList>
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink key={link} className="block w-fit">
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
           <FooterBottom>
-            <FooterCopyright>
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.15em]">
               {props.note ?? 'All rights reserved.'}
             </FooterCopyright>
           </FooterBottom>

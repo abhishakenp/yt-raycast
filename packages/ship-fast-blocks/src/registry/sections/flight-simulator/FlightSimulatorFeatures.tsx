@@ -1,21 +1,47 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { z } from 'zod/v4'
 
 import {
-  FeatureGrid,
   FeatureCard,
   FeatureIcon,
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
 
+/** Decorative div-built attitude indicator: rolled horizon + fixed aircraft symbol. */
+function AttitudeIndicator() {
+  return (
+    <div
+      aria-hidden="true"
+      className="relative size-28 shrink-0 overflow-hidden rounded-full border-2 border-border sm:size-32"
+    >
+      <div
+        className="absolute inset-[-30%]"
+        style={{ transform: 'rotate(-12deg)' }}
+      >
+        <div className="absolute inset-x-0 top-0 h-1/2 bg-muted" />
+        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-foreground/15" />
+        <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-border" />
+      </div>
+      <div className="absolute left-1/2 top-1/2 h-0.5 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary" />
+      <div className="absolute left-1/2 top-1/2 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-primary bg-background" />
+      <div className="absolute left-1/2 top-1.5 h-2 w-0.5 -translate-x-1/2 rounded-full bg-muted-foreground/70" />
+    </div>
+  )
+}
+
 /**
- * FlightSimulatorFeatures — a 3-up capability grid for a flight simulator
- * landing page. Thin configuration over the shared `FeatureGrid` composite: a
- * centered heading above token-styled cards, each pairing an aviation line-icon
- * tile with a title and description. Six baked features cover real flight
+ * FlightSimulatorFeatures — an instrument-panel capability bento for a flight
+ * simulator landing page. An asymmetric mono HUD header sits above a
+ * collapsed-border grid of sharp-cornered cells built from the shared
+ * `FeatureCard` slots: a wide lead cell pairs a div-built attitude-indicator gauge
+ * with the headline capability, a second wide cell carries a giant ghost index
+ * numeral, and four square cells each stack a mono `NN / SYS` index, a bordered
+ * line-icon, a title, and a description. Six baked features cover real flight
  * physics, global photoreal scenery, live real-world weather, true-to-life
  * multiplayer ATC, study-level aircraft systems, and VR support. Use to sell the
  * depth of a flight sim, airliner / combat sim, or aviation training title.
@@ -137,7 +163,7 @@ function VrIcon({ className }: { className?: string }) {
 export const FlightSimulatorFeatures = defineCapsule({
   name: 'FlightSimulatorFeatures',
   description:
-    '3-up capability grid for a flight-simulator landing page built on the shared FeatureGrid composite: a centered heading above token-styled cards, each pairing an aviation line-icon tile with a title and description. Six baked features cover real flight physics, global photoreal scenery, live real-world weather, true-to-life multiplayer ATC, study-level aircraft systems, and VR support. Use to sell the depth of a flight sim, airliner / combat sim, or aviation training title.',
+    'Instrument-panel capability bento for a flight-simulator landing page built on the shared FeatureCard slots: an asymmetric mono HUD header above a collapsed-border grid of sharp-cornered cells — a wide lead cell pairs a div-built attitude-indicator gauge with the headline capability, a second wide cell carries a giant ghost index numeral, and four square cells each stack a mono NN / SYS index, a bordered line-icon, a title, and a description. Six baked features cover real flight physics, global photoreal scenery, live real-world weather, true-to-life multiplayer ATC, study-level aircraft systems, and VR support. Use to sell the depth of a flight sim, airliner / combat sim, or aviation training title.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -196,20 +222,42 @@ export const FlightSimulatorFeatures = defineCapsule({
         }))
       : defaults
 
+    const cellBase =
+      'group relative gap-4 rounded-none border-0 border-b border-r border-border p-6 shadow-none transition-[background-color] duration-150 hover:bg-muted/40 sm:p-8'
+
     return (
       <section
         className={cn(
-          'bg-background pt-28 pb-20 lg:pt-32 lg:pb-28',
+          'relative overflow-hidden bg-background pb-20 pt-24 lg:pb-28 lg:pt-28',
           props.className,
         )}
       >
-        <Container>
-          <FeatureGrid
-            heading={heading}
-            subheading={props.subheading}
-            columns={3}
-          >
-            {features.map((f) => {
+        <Container className="relative">
+          {/* Asymmetric HUD header. */}
+          <div className="mb-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-14">
+            <div className="max-w-2xl">
+              <MonoTag className="mb-4 flex items-center gap-2.5">
+                <span
+                  aria-hidden="true"
+                  className="h-1.5 w-1.5 rounded-full bg-primary"
+                />
+                Systems
+              </MonoTag>
+              <SectionHeading
+                align="left"
+                title={heading}
+                subtitle={props.subheading}
+                titleClassName="text-3xl font-extrabold tracking-tight sm:text-4xl"
+              />
+            </div>
+            <MonoTag tone="faint" className="shrink-0 tabular-nums">
+              [ {String(features.length).padStart(2, '0')} systems ] armed
+            </MonoTag>
+          </div>
+
+          {/* Collapsed-border instrument bento. */}
+          <div className="grid grid-cols-1 border-l border-t border-border sm:grid-cols-2 lg:grid-cols-4">
+            {features.map((f, i) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -219,15 +267,78 @@ export const FlightSimulatorFeatures = defineCapsule({
                 price?: string
                 imageAlt?: string
               }
+              const monoIndex = `${String(i + 1).padStart(2, '0')} / SYS`
+
+              if (i === 0) {
+                return (
+                  <FeatureCard
+                    key={__iv__.title}
+                    className={cn(cellBase, 'sm:col-span-2 lg:col-span-2')}
+                  >
+                    <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center">
+                      <AttitudeIndicator />
+                      <div className="flex flex-col gap-3">
+                        <MonoTag tone="primary">{monoIndex}</MonoTag>
+                        <FeatureTitle className="text-2xl font-bold tracking-tight">
+                          {__iv__.title}
+                        </FeatureTitle>
+                        <FeatureDescription className="text-pretty text-[15px] leading-relaxed">
+                          {__iv__.description}
+                        </FeatureDescription>
+                      </div>
+                    </div>
+                  </FeatureCard>
+                )
+              }
+
+              if (i === 1) {
+                return (
+                  <FeatureCard
+                    key={__iv__.title}
+                    className={cn(
+                      cellBase,
+                      'justify-between overflow-hidden sm:col-span-2 lg:col-span-2',
+                    )}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute -right-2 -top-6 select-none font-mono text-[8rem] font-extrabold leading-none tracking-tighter text-foreground/[0.05]"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <div className="relative flex flex-col gap-3">
+                      <MonoTag>{monoIndex}</MonoTag>
+                      <FeatureTitle className="text-xl font-bold tracking-tight">
+                        {__iv__.title}
+                      </FeatureTitle>
+                      <FeatureDescription className="text-pretty text-[15px] leading-relaxed">
+                        {__iv__.description}
+                      </FeatureDescription>
+                    </div>
+                  </FeatureCard>
+                )
+              }
+
               return (
-                <FeatureCard key={__iv__.title}>
-                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                <FeatureCard key={__iv__.title} className={cellBase}>
+                  <div className="flex items-center justify-between">
+                    <MonoTag>{monoIndex}</MonoTag>
+                    {__iv__.icon && (
+                      <FeatureIcon className="size-9 rounded-none border border-border bg-card text-foreground group-hover:border-primary/50 group-hover:text-primary">
+                        {__iv__.icon}
+                      </FeatureIcon>
+                    )}
+                  </div>
+                  <FeatureTitle className="mt-1 text-lg font-bold tracking-tight">
+                    {__iv__.title}
+                  </FeatureTitle>
+                  <FeatureDescription className="text-pretty leading-relaxed">
+                    {__iv__.description}
+                  </FeatureDescription>
                 </FeatureCard>
               )
             })}
-          </FeatureGrid>
+          </div>
         </Container>
       </section>
     )

@@ -1,12 +1,14 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 /**
- * ElectronicsStoreFooter — a multi-column site footer for an electronics
- * storefront. A wide brand column (bolt logo mark + name, description, social
- * icon buttons) sits beside link columns of store/support/company links, over a
- * bottom bar with a copyright line and legal links. Every link and icon routes
- * through section-kit route links. Use as the closing footer for electronics stores, gadget
- * shops, consumer-tech retailers, or audio/camera storefronts.
+ * ElectronicsStoreFooter — a tech-brutalist multi-column site footer for an
+ * electronics storefront. A border-t-2 top rule over a wide brand column (bolt
+ * logo mark + name, description, social links) beside link columns of
+ * store/support/company links with mono uppercase column titles and block w-fit
+ * links, over a border-t-2 bottom bar with a copyright line and legal links.
+ * Every link and icon routes through section-kit route links. Use as the closing
+ * footer for electronics stores, gadget shops, consumer-tech retailers, or
+ * audio/camera storefronts.
  */
 import {
   SiteFooter,
@@ -27,7 +29,7 @@ import {
 export const ElectronicsStoreFooter = defineCapsule({
   name: 'ElectronicsStoreFooter',
   description:
-    'Multi-column site footer for an electronics storefront: a wide brand column (bolt logo mark + name, description, social icon buttons) beside link columns of store/support/company links, over a bottom bar with a copyright line and legal links. Every link and icon routes through section-kit route links. Use as the closing footer for electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.',
+    'Tech-brutalist multi-column site footer for an electronics storefront: a border-t-2 top rule over a wide brand column (bolt logo mark + name, description, social links) beside link columns of store/support/company links with mono uppercase column titles and block w-fit links, over a border-t-2 bottom bar with a copyright line and legal links. Every link and icon routes through section-kit route links. Use as the closing footer for electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.',
   props: z.object({
     /** Brand / store name shown in the footer. */
     brand: z.string().optional(),
@@ -121,35 +123,56 @@ export const ElectronicsStoreFooter = defineCapsule({
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand}. All rights reserved.`
     return (
-      <SiteFooter className={props.className}>
+      <SiteFooter
+        className={`border-t-2 border-foreground ${props.className ?? ''}`}
+      >
         <FooterContent>
           <FooterGrid>
             <FooterBrand brand={brand}>
-              <FooterTagline>{description}</FooterTagline>
+              <FooterTagline className="max-w-xs">{description}</FooterTagline>
               <FooterSocial>
                 {socials
                   .map((s) => ({ label: s.label }))
                   .map((s) => (
-                    <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                    <FooterSocialLink
+                      key={s.label}
+                      className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      {s.label}
+                    </FooterSocialLink>
                   ))}
               </FooterSocial>
             </FooterBrand>
             {columns.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
-                <FooterColumnList>
+                <FooterColumnTitle className="border-b-2 border-foreground pb-2 font-mono text-[11px] uppercase tracking-[0.2em] text-foreground">
+                  {col.title}
+                </FooterColumnTitle>
+                <FooterColumnList className="mt-4">
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink
+                      key={link}
+                      className="block w-fit transition-colors hover:text-foreground"
+                    >
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
-          <FooterBottom>
-            <FooterCopyright>{copyright}</FooterCopyright>
+          <FooterBottom className="border-t-2 border-foreground">
+            <FooterCopyright className="font-mono text-xs uppercase tracking-[0.12em]">
+              {copyright}
+            </FooterCopyright>
             <FooterLegal>
               {legal.map((l) => (
-                <FooterLink key={l}>{l}</FooterLink>
+                <FooterLink
+                  key={l}
+                  className="block w-fit font-mono text-xs uppercase tracking-[0.12em] transition-colors hover:text-foreground"
+                >
+                  {l}
+                </FooterLink>
               ))}
             </FooterLegal>
           </FooterBottom>

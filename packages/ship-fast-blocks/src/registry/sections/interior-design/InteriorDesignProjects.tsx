@@ -11,25 +11,27 @@ import {
   PortfolioTag,
 } from '#/section-kit/PortfolioGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * InteriorDesignProjects — filterable project portfolio gallery for an upscale
- * interior-design / architecture studio. A header row pairs an uppercase eyebrow
- * + light-weight heading with a row of underline-style filter tabs (first
- * active), above a responsive 2/3-column grid of tall project cards — each a
- * zoom-on-hover photo over an uppercase tag, a medium title and a location/year
- * meta line — followed by a centered outlined "view all" button. Editorial and
- * gallery-like; filters, cards and the button route through section-kit route links, and
- * photos use the alt-driven Image component. Use to showcase a body of work for
- * interior designers, design studios or architecture firms. Renders fully with
- * no props via baked-in defaults.
+ * InteriorDesignProjects — editorial-spatial project portfolio gallery for an
+ * upscale interior-design / architecture studio. An asymmetric header pairs a
+ * mono "03 / PORTFOLIO" rail + light-weight heading with a row of underline-style
+ * filter tabs (first active), above a responsive 2/3-column grid of staggered
+ * room plates — each a hairline-framed zoom-on-hover photo with a mono index
+ * numeral, an uppercase tag, a medium title and a location/year meta line —
+ * closed by a hairline "view all" row whose square outlined button inverts to ink
+ * with press feedback. Editorial, gallery-like, binary radius; filters, plates
+ * and the button route through section-kit route links, and photos use the alt-
+ * driven Image component. Use to showcase a body of work for interior designers,
+ * design studios or architecture firms. Renders fully with no props via baked-in
+ * defaults.
  */
 export const InteriorDesignProjects = defineCapsule({
   name: 'InteriorDesignProjects',
   description:
-    "Filterable project portfolio gallery for an upscale interior-design / architecture studio: a header row pairing an uppercase eyebrow + light-weight heading with underline-style filter tabs (first active), above a responsive 2/3-column grid of tall project cards — each a zoom-on-hover photo over an uppercase tag, a medium title and a location/year meta line — and a centered outlined 'view all' button. Editorial and gallery-like; filters, cards and button route through section-kit route links and photos use the alt-driven Image component. Use to showcase a body of work for interior designers, design studios or architecture firms.",
+    "Editorial-spatial project portfolio gallery for an upscale interior-design / architecture studio: an asymmetric header pairing a mono '03 / PORTFOLIO' rail + light-weight heading with underline-style filter tabs (first active), above a responsive 2/3-column grid of staggered room plates — each a hairline-framed zoom-on-hover photo with a mono index numeral, an uppercase tag, a medium title and a location/year meta line — closed by a hairline 'view all' row whose square outlined button inverts to ink with press feedback. Editorial, gallery-like, binary radius; filters, plates and button route through section-kit route links and photos use the alt-driven Image component. Use to showcase a body of work for interior designers, design studios or architecture firms.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -91,29 +93,30 @@ export const InteriorDesignProjects = defineCapsule({
     return (
       <section
         className={cn(
-          'px-4 pt-28 pb-20 sm:px-6 md:pt-32 md:pb-28 lg:px-8',
+          'px-4 pt-24 pb-16 sm:px-6 md:pt-28 md:pb-24 lg:px-8',
           props.className,
         )}
       >
         <Container size="xl">
-          <div className="mb-12 flex flex-col gap-6 md:mb-16 md:flex-row md:items-end md:justify-between">
-            <SectionHeading
-              align="left"
-              eyebrow={eyebrow}
-              title={heading}
-              className="gap-0"
-              eyebrowClassName="mb-4 text-xs font-medium uppercase tracking-widest text-muted-foreground"
-              titleClassName="text-3xl font-light text-foreground md:text-4xl"
-            />
-            <div className="flex gap-4">
+          <div className="mb-12 flex flex-col gap-6 border-b border-border pb-6 md:mb-16 md:flex-row md:items-end md:justify-between">
+            <div>
+              <MonoTag className="mb-4 flex items-center gap-3 tracking-[0.2em]">
+                <span aria-hidden="true" className="size-2 bg-primary" />
+                03 / {eyebrow}
+              </MonoTag>
+              <h2 className="text-3xl font-light tracking-tight text-foreground md:text-5xl">
+                {heading}
+              </h2>
+            </div>
+            <div className="flex flex-wrap gap-4">
               {filters.map((filter, i) => (
                 <NavbarRouteLink
                   key={filter}
                   className={cn(
-                    'px-4 py-2 text-sm font-medium transition-colors',
+                    'rounded-none px-1 pb-1 font-mono text-[11px] uppercase tracking-[0.16em] transition-colors',
                     i === 0
                       ? 'border-b-2 border-foreground text-foreground'
-                      : 'text-muted-foreground hover:text-foreground',
+                      : 'border-b-2 border-transparent text-muted-foreground hover:text-foreground',
                   )}
                   href={filter}
                 >
@@ -123,28 +126,41 @@ export const InteriorDesignProjects = defineCapsule({
             </div>
           </div>
 
-          <PortfolioGrid cols="1-md-2-3" className="md:gap-8">
-            {items.map((project) => (
+          <PortfolioGrid cols="1-md-2-3" className="gap-x-6 gap-y-12">
+            {items.map((project, i) => (
               <PortfolioItem
                 key={project.title}
-                className="block w-full cursor-pointer"
+                className={cn(
+                  'block w-full cursor-pointer',
+                  i % 3 === 1 && 'lg:mt-14',
+                  i % 3 === 2 && 'lg:mt-7',
+                )}
                 asChild
               >
                 <NavbarRouteLink href={project.title}>
-                  <PortfolioMedia aspect="4-5" className="mb-5">
+                  <PortfolioMedia
+                    aspect={i % 3 === 0 ? '4-5' : '4-3'}
+                    className="mb-5 border border-border"
+                  >
                     <Image
                       alt={`${project.title} — ${project.tag} interior design project`}
                       w={800}
                       h={1000}
                       loading="lazy"
-                      className="h-80 w-full object-cover transition-transform duration-700 group-hover:scale-105 md:h-96"
+                      className="size-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-0 top-0 bg-background/90 px-2.5 py-1 font-mono text-[11px] tabular-nums tracking-[0.16em] text-foreground backdrop-blur-sm"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
                   </PortfolioMedia>
                   <PortfolioCaption>
-                    <PortfolioTag className="mb-2 text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                    <PortfolioTag className="mb-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
                       {project.tag}
                     </PortfolioTag>
-                    <h3 className="mb-1 text-xl font-medium text-foreground">
+                    <h3 className="mb-1 text-xl font-medium tracking-tight text-foreground">
                       {project.title}
                     </h3>
                     <p className="text-sm text-muted-foreground">
@@ -156,9 +172,16 @@ export const InteriorDesignProjects = defineCapsule({
             ))}
           </PortfolioGrid>
 
-          <div className="mt-16 text-center">
+          <div className="mt-16 flex items-center justify-between gap-6 border-t border-border pt-8">
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="hidden tabular-nums sm:block"
+            >
+              {String(items.length).padStart(2, '0')} projects
+            </MonoTag>
             <NavbarRouteLink
-              className="inline-flex items-center border border-border px-8 py-4 text-sm font-medium text-foreground transition-colors hover:border-foreground hover:bg-foreground hover:text-background"
+              className="inline-flex items-center rounded-none border border-foreground px-8 py-4 font-mono text-[11px] uppercase tracking-[0.16em] text-foreground transition-all duration-150 hover:bg-foreground hover:text-background active:translate-y-px"
               href={viewAll}
             >
               {viewAll}

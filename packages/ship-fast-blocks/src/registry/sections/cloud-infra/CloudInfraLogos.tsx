@@ -2,11 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 /**
- * CloudInfraLogos — "trusted by" logo wall for a cloud-infrastructure / developer-
- * platform SaaS landing page. A centered small-caps heading above a responsive
- * grid of text-based logo buttons (2 cols mobile, 3 cols tablet, 6 cols desktop).
- * Each item is a clickable button that routes through section-kit route links. Token-only
- * colors with subtle opacity. Renders fully on zero arguments.
+ * CloudInfraLogos — terminal-industrial "trusted by" strip for a cloud-
+ * infrastructure / developer-platform SaaS landing page. A hairline-ruled row:
+ * a mono uppercase label flanked by rule lines above a wrap of square bordered
+ * logo chips (mono uppercase text buttons with press feedback). Each item is a
+ * clickable button that routes through section-kit route links. Token-only
+ * colors. Renders fully on zero arguments.
  */
 import {
   LogoStrip,
@@ -14,12 +15,13 @@ import {
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 export const CloudInfraLogos = defineCapsule({
   name: 'CloudInfraLogos',
   description:
-    'Trusted-by logo wall for a cloud-infrastructure / developer-platform SaaS landing page: a centered small-caps heading above a responsive grid of text-based logo buttons (2 cols mobile, 3 cols tablet, 6 cols desktop). Each item routes through section-kit route links. Use for social proof / credibility bands on cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',
+    'Terminal-industrial trusted-by strip for a cloud-infrastructure / developer-platform SaaS landing page: a mono uppercase label flanked by hairline rules above a wrap of square bordered logo chips (mono uppercase text buttons with press feedback). Each item routes through section-kit route links. Use for social proof / credibility bands on cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',
   props: z.object({
     /** Heading text above the logo grid. */
     heading: z.string().optional(),
@@ -34,16 +36,32 @@ export const CloudInfraLogos = defineCapsule({
       : ['Stripe', 'Notion', 'Figma', 'Vercel', 'Linear', 'Raycast']
     return (
       <LogoStrip
-        className={cn('border-b border-border py-16', props.className)}
+        className={cn('border-b border-border py-12 sm:py-14', props.className)}
       >
-        <LogoStripLabel>{heading}</LogoStripLabel>
-        <LogoStripItems layout="flex" className="mt-8">
-          {items.filter(Boolean).map((logo) => (
-            <LogoStripItem key={logo} variant="opacity-hover" asChild>
-              <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
-            </LogoStripItem>
-          ))}
-        </LogoStripItems>
+        <Container>
+          <div className="flex items-center gap-4">
+            <span aria-hidden="true" className="h-px flex-1 bg-border" />
+            <LogoStripLabel className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+              {heading}
+            </LogoStripLabel>
+            <span aria-hidden="true" className="h-px flex-1 bg-border" />
+          </div>
+          <LogoStripItems
+            layout="flex"
+            className="mt-8 flex flex-wrap items-center justify-center gap-2 sm:gap-3"
+          >
+            {items.filter(Boolean).map((logo) => (
+              <LogoStripItem key={logo} variant="opacity-hover" asChild>
+                <NavbarRouteLink
+                  href={logo}
+                  className="border border-border px-4 py-2 font-mono text-sm uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground active:translate-y-px sm:px-5"
+                >
+                  {logo}
+                </NavbarRouteLink>
+              </LogoStripItem>
+            ))}
+          </LogoStripItems>
+        </Container>
       </LogoStrip>
     )
   },

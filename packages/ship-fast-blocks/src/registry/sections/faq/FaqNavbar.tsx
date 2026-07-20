@@ -15,19 +15,20 @@ import {
 } from '#/section-kit/index.ts'
 
 /**
- * FaqNavbar — sticky top navigation bar for a help-center / FAQ / support page.
- * A clean, light, documentation-style header: a brand logo tile + name on the
- * left, centered text nav links (desktop), and a "Contact Support" text link plus
- * a solid primary "Sign In" button on the right, with a hamburger toggle on
- * mobile. Backdrop-blurred translucent background, bottom border. Every item routes
- * through route hrefs so labels can drive page-switching. Use as the site header
- * for SaaS knowledge bases, help centers, documentation landings, or support pages.
- * Renders fully with no props via baked-in "FlowSync" defaults.
+ * FaqNavbar — sticky editorial top navigation bar for a help-center / FAQ /
+ * support page. Typography-first "Editorial Q&A" header: a sharp square (rounded-none)
+ * brand mark + wordmark on the left, mono uppercase tracked nav labels centered on
+ * desktop, and a mono "Contact Support" text link plus the real "Sign In" auth chip
+ * on the right, with a hamburger toggle on mobile. Backdrop-blurred translucent
+ * background with a hairline bottom border. Every item routes through route hrefs so
+ * labels can drive page-switching. Use as the site header for SaaS knowledge bases,
+ * help centers, documentation landings, or support pages. Renders fully with no props
+ * via baked-in "FlowSync" defaults.
  */
 export const FaqNavbar = defineCapsule({
   name: 'FaqNavbar',
   description:
-    "Sticky top navigation bar for a help-center / FAQ / support page with a clean, light, documentation aesthetic: brand logo tile + name on the left, centered text nav links on desktop, and a 'Contact Support' text link plus a solid primary 'Sign In' button on the right, with a hamburger toggle on mobile. Backdrop-blurred translucent background with a bottom border. Links route through route hrefs for page-switching. Use as the site header for SaaS knowledge bases, help centers, documentation landings, or support pages.",
+    "Sticky editorial top navigation bar for a help-center / FAQ / support page with a typography-first 'Editorial Q&A' aesthetic: a sharp square (rounded-none) brand mark + wordmark on the left, mono uppercase tracked nav labels centered on desktop, and a mono 'Contact Support' text link plus the real 'Sign In' auth chip on the right, with a hamburger toggle on mobile. Backdrop-blurred translucent background with a hairline bottom border. Links route through route hrefs for page-switching. Use as the site header for SaaS knowledge bases, help centers, documentation landings, or support pages.",
   props: z.object({
     /** Brand / product name shown in the navbar. */
     brand: z.string().optional(),
@@ -53,7 +54,7 @@ export const FaqNavbar = defineCapsule({
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          'grid place-items-center rounded-lg bg-primary text-primary-foreground',
+          'grid place-items-center rounded-none bg-foreground text-background',
           className,
         )}
         aria-hidden="true"
@@ -80,16 +81,23 @@ export const FaqNavbar = defineCapsule({
         height="compact"
         className={cn('bg-background/80 backdrop-blur-md', props.className)}
       >
-        <NavbarBrand href={homeTarget} className="gap-2">
-          <BrandLogo brand={brand}>
-            <LogoImage fallback={<LogoMark className="size-8" />} />
-            <LogoLabel className="text-lg font-semibold text-foreground" />
+        <NavbarBrand href={homeTarget}>
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage
+              className="size-7"
+              fallback={<LogoMark className="size-7" />}
+            />
+            <LogoLabel className="text-lg font-semibold tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
-        <NavbarNav>
+        <NavbarNav className="gap-7">
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="rounded-none px-0 py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.16em] hover:bg-transparent"
+            >
               {label}
             </NavbarNavLink>
           ))}
@@ -98,7 +106,7 @@ export const FaqNavbar = defineCapsule({
         <NavbarActions className="gap-4">
           <NavbarRouteLink
             href={contactSupport}
-            className="hidden items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+            className="hidden items-center gap-2 font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
           >
             <svg
               width="18"

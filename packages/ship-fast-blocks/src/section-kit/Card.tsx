@@ -33,19 +33,13 @@ export interface CardProps
 }
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  (
-    { className, variant, asChild = false, ...props },
-    ref,
-  ) => {
+  ({ className, variant, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : 'div'
     return (
       <Comp
         ref={ref}
         data-slot="card"
-        className={cn(
-          surfaceCard({ variant }),
-          className,
-        )}
+        className={cn(surfaceCard({ variant }), className)}
         {...props}
       />
     )

@@ -11,15 +11,18 @@ import {
 } from './food-delivery-interactions.tsx'
 
 /**
- * FoodDeliveryRestaurants — popular-restaurants gallery band for a food-delivery
- * marketplace. A card-surfaced section with a left-aligned heading + subhead and
- * a right-aligned "View all" link, above a responsive 2/4-up grid of clickable
- * cuisine cards. Each card has an alt-driven food photo (zoom on hover) with a
- * cuisine chip and a rating badge overlaid, then a name, category line, and a
- * delivery-time / delivery-fee row. Restaurant cards update shared Lakebed
- * selected restaurant state, and the view-all link clears search filters. Use to
- * showcase restaurant discovery for food-delivery apps, restaurant aggregators,
- * or online-ordering platforms.
+ * FoodDeliveryRestaurants — playful-bold staggered menu grid for a food-delivery
+ * marketplace. A card-surfaced band with an asymmetric header (left-aligned mono
+ * eyebrow + extrabold heading + subhead, a right-aligned chunky "View all" pill
+ * link) above a responsive 2/4-up grid of clickable cuisine cards that stagger
+ * downward in a checker rhythm. Each card is a chunky 2px-bordered plate with an
+ * alt-driven food photo (zoom on hover), an overlaid cuisine chip and a rotated
+ * rounded-full rating sticker, then a bold name, a mono category line, and a
+ * delivery-time / delivery-fee row; a hard offset shadow lifts the card on hover
+ * and the selected card wears a primary hard shadow. Restaurant cards update
+ * shared Lakebed selected restaurant state, and the view-all link clears search
+ * filters. Use to showcase restaurant discovery for food-delivery apps,
+ * restaurant aggregators, or online-ordering platforms.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -30,7 +33,7 @@ import {
 export const FoodDeliveryRestaurants = defineCapsule({
   name: 'FoodDeliveryRestaurants',
   description:
-    'Popular-restaurants gallery band for a food-delivery marketplace: a card-surfaced section with a left-aligned heading + subhead and a right-aligned View all link, above a responsive 2/4-up grid of clickable cuisine cards. Each card shows an alt-driven food photo (zoom-on-hover) with an overlaid cuisine chip and rating badge, then a name, a category line, and a delivery-time / delivery-fee row. Cards update shared Lakebed selected restaurant state; the view-all link clears shared search filters. Use to showcase restaurant discovery for food-delivery apps, restaurant aggregators, online-ordering platforms, or grocery/takeout services.',
+    'Playful-bold staggered menu grid for a food-delivery marketplace: a card-surfaced band with an asymmetric header (left-aligned mono eyebrow + extrabold heading + subhead, right-aligned chunky View all pill link) above a responsive 2/4-up grid of clickable cuisine cards staggered in a checker rhythm. Each card is a chunky 2px-bordered plate with an alt-driven food photo (zoom-on-hover), an overlaid cuisine chip and a rotated rounded-full rating sticker, then a bold name, a mono category line, and a delivery-time / delivery-fee row, with a hard offset shadow lift on hover and a primary hard shadow when selected. Cards update shared Lakebed selected restaurant state; the view-all link clears shared search filters. Use to showcase restaurant discovery for food-delivery apps, restaurant aggregators, online-ordering platforms, or grocery/takeout services.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -181,17 +184,19 @@ export const FoodDeliveryRestaurants = defineCapsule({
     )
     return (
       <section
-        className={cn('bg-card pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
+        className={cn('bg-card pt-20 pb-16 lg:pt-28 lg:pb-24', props.className)}
       >
         <Container>
-          <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="mb-10 flex flex-col gap-4 sm:mb-12 sm:flex-row sm:items-end sm:justify-between">
             <SectionHeading
               align="left"
+              eyebrow="On the menu"
               title={restaurantsHeading}
               subtitle={restaurantsDesc}
-              className="gap-0"
-              titleClassName="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
-              subtitleClassName="mt-2 text-lg text-muted-foreground"
+              className="max-w-2xl gap-3"
+              eyebrowClassName="font-mono text-[11px] uppercase tracking-[0.2em] text-primary"
+              titleClassName="text-3xl font-extrabold leading-[1.03] tracking-tighter text-foreground sm:text-4xl"
+              subtitleClassName="text-lg text-muted-foreground"
             />
             <button
               type="button"
@@ -201,14 +206,17 @@ export const FoodDeliveryRestaurants = defineCapsule({
                   query: '',
                 })
               }
-              className="flex items-center gap-1 text-sm font-medium text-foreground transition-colors hover:text-muted-foreground"
+              className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-full border-2 border-foreground bg-background px-4 py-2 text-sm font-bold text-foreground shadow-[3px_3px_0_0] shadow-foreground transition-all hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0] hover:shadow-foreground active:translate-y-px active:shadow-none sm:self-auto"
             >
               {restaurantsViewAll}
               <ArrowRight className="size-4" />
             </button>
           </div>
 
-          <p className="mb-5 text-sm text-muted-foreground" aria-live="polite">
+          <p
+            className="mb-6 font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground"
+            aria-live="polite"
+          >
             {matchingRestaurants.length} restaurant
             {matchingRestaurants.length === 1 ? '' : 's'} match the current
             search
@@ -218,8 +226,12 @@ export const FoodDeliveryRestaurants = defineCapsule({
           </p>
 
           <RestaurantList className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {matchingRestaurants.map((r) => (
-              <RestaurantItem asChild key={r.name}>
+            {matchingRestaurants.map((r, i) => (
+              <RestaurantItem
+                asChild
+                key={r.name}
+                className={cn(i % 2 === 1 && 'lg:translate-y-8')}
+              >
                 <button
                   type="button"
                   aria-pressed={selectedRestaurant === r.name}
@@ -230,13 +242,13 @@ export const FoodDeliveryRestaurants = defineCapsule({
                     })
                   }}
                   className={cn(
-                    'group block w-full overflow-hidden rounded-xl border bg-background text-left transition-shadow hover:shadow-lg',
+                    'group block w-full overflow-hidden rounded-none border-2 bg-background text-left transition-all hover:-translate-y-1 active:translate-y-px active:shadow-none motion-reduce:transform-none',
                     selectedRestaurant === r.name
-                      ? 'border-primary shadow-lg'
-                      : 'border-border',
+                      ? 'border-foreground shadow-[5px_5px_0_0] shadow-primary/50'
+                      : 'border-foreground/25 hover:border-foreground hover:shadow-[5px_5px_0_0] hover:shadow-foreground',
                   )}
                 >
-                  <div className="relative aspect-[4/3] overflow-hidden">
+                  <div className="relative aspect-[4/3] overflow-hidden border-b-2 border-inherit">
                     <Image
                       alt={r.imageAlt}
                       w={400}
@@ -244,23 +256,25 @@ export const FoodDeliveryRestaurants = defineCapsule({
                       loading="lazy"
                       className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
-                    <span className="absolute left-3 top-3 rounded-full bg-background/90 px-2.5 py-1 text-xs font-medium text-foreground backdrop-blur-sm">
+                    <span className="absolute left-3 top-3 rounded-full border-2 border-foreground bg-background/95 px-2.5 py-0.5 font-mono text-[11px] font-bold uppercase tracking-[0.08em] text-foreground backdrop-blur-sm">
                       {r.cuisine}
                     </span>
-                    <span className="absolute right-3 top-3 rounded-full bg-primary px-2 py-1 text-xs font-semibold text-primary-foreground">
-                      {r.rating}
+                    <span className="absolute right-3 top-3 inline-flex rotate-3 items-center gap-1 rounded-full border-2 border-foreground bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground shadow-[2px_2px_0_0] shadow-foreground tabular-nums">
+                      ★ {r.rating}
                     </span>
                   </div>
                   <div className="p-5">
-                    <h3 className="font-semibold text-foreground">{r.name}</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
+                    <h3 className="text-lg font-extrabold tracking-tight text-foreground">
+                      {r.name}
+                    </h3>
+                    <p className="mt-1 font-mono text-xs uppercase tracking-[0.08em] text-muted-foreground">
                       {r.category}
                     </p>
-                    <div className="mt-4 flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">
+                    <div className="mt-4 flex items-center justify-between gap-2 border-t-2 border-foreground/10 pt-3">
+                      <span className="text-sm font-medium text-muted-foreground tabular-nums">
                         {r.time}
                       </span>
-                      <span className="text-sm font-medium text-foreground">
+                      <span className="rounded-full border-2 border-foreground/20 px-2.5 py-0.5 text-xs font-bold text-foreground">
                         {r.delivery}
                       </span>
                     </div>
@@ -269,7 +283,7 @@ export const FoodDeliveryRestaurants = defineCapsule({
               </RestaurantItem>
             ))}
             {!matchingRestaurants.length ? (
-              <div className="rounded-xl border border-dashed border-border bg-background p-8 text-center text-sm text-muted-foreground sm:col-span-2 lg:col-span-4">
+              <div className="rounded-none border-2 border-dashed border-foreground/30 bg-background p-8 text-center font-mono text-sm uppercase tracking-[0.1em] text-muted-foreground sm:col-span-2 lg:col-span-4">
                 No restaurants match the current search.
               </div>
             ) : null}

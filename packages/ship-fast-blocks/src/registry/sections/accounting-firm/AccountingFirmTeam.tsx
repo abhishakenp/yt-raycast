@@ -16,19 +16,24 @@ import {
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * AccountingFirmTeam — leadership team grid for a CPA / accounting-firm site. A
- * muted band with a centered heading + lede above a responsive 1-to-4 column
- * grid of bordered cards, each with a square headshot, name, role, and short
- * bio; below sits a centered footnote with an arrow-linked "meet the full team"
- * action. Calm, trustworthy professional-services aesthetic. Headshots use the
- * alt-driven Image component; the footnote action routes through section-kit route links.
- * Use to introduce partners on accounting firms, CPA practices, tax/bookkeeping
- * providers, audit firms, or advisory practices. Renders fully with no props.
+ * AccountingFirmTeam — Swiss-ledger staggered editorial team grid for a CPA /
+ * accounting-firm site. An asymmetric header (left-aligned oversized title +
+ * lede, right-aligned mono tabular partner count) above a 2-to-4 column grid of
+ * sharp-cornered, hairline-framed partner cards where every second card steps
+ * down (md:translate-y-8) for an offset editorial rhythm; portraits sit
+ * grayscale and regain color on hover, each card carries a mono index rule row
+ * with a primary square tick, a serif name, a mono uppercase micro-label role,
+ * and a short bio. Below, a hairline-ruled footer row pairs the footnote with an
+ * underline-slide arrow link. Newsprint portrait-gallery gravitas over uniform
+ * card slop. Headshots use the alt-driven Image component; the footnote action
+ * routes through section-kit route links. Use to introduce partners on
+ * accounting firms, CPA practices, tax/bookkeeping providers, audit firms, or
+ * advisory practices. Renders fully with no props.
  */
 export const AccountingFirmTeam = defineCapsule({
   name: 'AccountingFirmTeam',
   description:
-    'Leadership team grid for a CPA / accounting-firm site: a muted band with a centered heading + lede above a responsive 1-to-4 column grid of bordered cards, each with a square headshot, name, role, and short bio, plus a centered footnote with an arrow-linked meet-the-full-team action. Calm professional-services look; headshots use the alt-driven Image component and the footnote action routes through section-kit route links. Use to introduce partners on accounting firms, CPA practices, tax/bookkeeping providers, audit firms, or advisory practices.',
+    'Swiss-ledger staggered editorial team grid for a CPA / accounting-firm site: an asymmetric header (left-aligned oversized title + lede, right-aligned mono tabular partner count) above a 2-to-4 column grid of sharp-cornered hairline-framed partner cards with every second card stepped down for offset rhythm; portraits render grayscale and regain color on hover, each card carries a mono index rule row with a primary square, a serif name, a mono uppercase role micro-label, and a short bio, plus a hairline-ruled footer row with the footnote and an underline-slide arrow link. Headshots use the alt-driven Image component and the footnote action routes through section-kit route links. Use to introduce partners on accounting firms, CPA practices, tax/bookkeeping providers, audit firms, or advisory practices.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -109,51 +114,93 @@ export const AccountingFirmTeam = defineCapsule({
     )
 
     return (
-      <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
+      <section
+        className={cn(
+          'border-b border-border bg-background py-16 sm:py-20 lg:py-28',
+          props.className,
+        )}
+      >
         <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 tracking-tight sm:text-4xl"
-            subtitleClassName="text-lg"
-          />
+          <div className="mb-10 grid items-end gap-6 sm:mb-14 lg:mb-16 lg:grid-cols-12">
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="gap-4 lg:col-span-8"
+              titleClassName="text-4xl font-semibold tracking-tight sm:text-5xl"
+              subtitleClassName="max-w-xl text-lg"
+            />
+            <div
+              aria-hidden="true"
+              className="flex items-center justify-between gap-2 border-y border-border py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground lg:col-span-4 lg:flex-col lg:items-end lg:justify-start lg:gap-1.5 lg:border-y-0 lg:py-0"
+            >
+              <span className="flex items-center gap-2">
+                <span className="size-1.5 bg-primary" />
+                Partners
+              </span>
+              <span className="tabular-nums">
+                {String(members.length).padStart(2, '0')}
+              </span>
+            </div>
+          </div>
 
-          <ResponsiveGrid cols="1-2-4">
-            {members.map((member) => (
+          <ResponsiveGrid
+            cols="2-lg-4"
+            className="gap-x-3 gap-y-8 pb-6 sm:gap-x-6 sm:gap-y-10 md:pb-8"
+          >
+            {members.map((member, i) => (
               <PersonCard
                 key={member.name}
                 variant="outlined"
-                className="rounded-lg"
+                className={cn(
+                  'group rounded-none',
+                  i % 2 === 1 && 'translate-y-6 md:translate-y-8',
+                )}
               >
                 <Image
                   alt={member.avatarAlt}
                   w={400}
                   h={400}
                   loading="lazy"
-                  className="aspect-square w-full object-cover"
+                  className="aspect-square w-full object-cover grayscale transition duration-300 group-hover:grayscale-0"
                 />
-                <PersonCardContent>
-                  <PersonCardName className="text-lg">
+                <PersonCardContent className="p-4 sm:p-5">
+                  <div className="mb-3 flex items-center justify-between border-b border-border pb-2.5 sm:mb-4 sm:pb-3">
+                    <span className="font-mono text-[11px] tabular-nums tracking-[0.2em] text-muted-foreground">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span aria-hidden="true" className="size-1.5 bg-primary" />
+                  </div>
+                  <PersonCardName className="font-serif text-base sm:text-lg">
                     {member.name}
                   </PersonCardName>
-                  <PersonCardRole className="mb-3">
+                  <PersonCardRole className="mb-3 mt-1 font-mono text-[10px] uppercase tracking-[0.14em]">
                     {member.role}
                   </PersonCardRole>
-                  <PersonCardBio>{member.bio}</PersonCardBio>
+                  <PersonCardBio className="text-xs leading-relaxed sm:text-sm">
+                    {member.bio}
+                  </PersonCardBio>
                 </PersonCardContent>
               </PersonCard>
             ))}
           </ResponsiveGrid>
 
-          <div className="mt-12 text-center">
-            <p className="mb-4 text-muted-foreground">{footnote}</p>
+          <div className="mt-14 flex flex-col gap-4 border-t border-border pt-6 md:mt-20 md:flex-row md:items-center md:justify-between">
+            <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
+              {footnote}
+            </p>
             <NavbarRouteLink
-              className="inline-flex items-center font-medium text-foreground transition-colors hover:text-muted-foreground"
+              className="group inline-flex shrink-0 items-center gap-2 font-medium text-foreground"
               href={footnoteCta}
             >
-              {footnoteCta}
-              <ArrowRight className="ml-2 size-4" />
+              <span className="relative">
+                {footnoteCta}
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-primary transition-transform duration-200 group-hover:scale-x-100"
+                />
+              </span>
+              <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-1" />
             </NavbarRouteLink>
           </div>
         </Container>

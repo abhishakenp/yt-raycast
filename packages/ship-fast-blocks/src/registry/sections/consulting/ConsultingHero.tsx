@@ -13,22 +13,28 @@ import {
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * ConsultingHero — two-column hero section for a management-consulting firm
- * landing page. An eyebrow pill, a large headline with a muted-highlight phrase,
- * a supporting paragraph, dual CTAs (filled primary + outlined secondary),
- * inline trust stats with check icons, and a hero photo with a floating
- * client-retention stat card. CTAs route through section-kit route links. Use as the
- * opening hero for consulting firms, strategy advisories, professional-services
- * groups, or corporate B2B landing pages. Renders fully with no props via
- * baked-in "Nexus Strategy Partners" defaults.
+ * ConsultingHero — Swiss-authority asymmetric 7:5 hero for a
+ * management-consulting firm landing page. A mono "01 / eyebrow" metadata rail
+ * with a hairline rule sits above a giant tight-leading serif headline whose
+ * highlight phrase is set in italic with a primary underline accent, over a
+ * huge ghost "01" watermark numeral. Below the lede, dual square-edged CTAs
+ * (ink-filled + hairline-outlined, both with press feedback) and a
+ * hairline-topped trust row with primary index squares and mono labels. On the
+ * right, the alt-driven hero photo sits in a sharp hairline frame with a mono
+ * caption rule, and a bordered stat plate with a giant serif numeral + mono
+ * labels overlaps its bottom edge. CTAs route through section-kit route links.
+ * Use as the opening hero for consulting firms, strategy advisories,
+ * professional-services groups, or corporate B2B landing pages. Renders fully
+ * with no props via baked-in "Nexus Strategy Partners" defaults.
  */
 export const ConsultingHero = defineCapsule({
   name: 'ConsultingHero',
   description:
-    'Two-column hero section for a management-consulting firm landing page: an eyebrow pill, a large headline with one phrase rendered in muted highlight, a supporting paragraph, dual CTAs (filled primary and outlined secondary), inline trust stats with check icons, and a hero photo with a floating client-retention stat card. CTAs route through section-kit route links. Use as the opening hero for consulting firms, strategy advisories, professional-services groups, or corporate B2B landing pages.',
+    'Swiss-authority asymmetric 7:5 hero for a management-consulting firm landing page: a mono "01 /" metadata rail with hairline rule above a giant tight-leading serif headline (highlight phrase in italic with a primary underline accent) over a ghost "01" watermark numeral, a supporting lede, dual square-edged CTAs (ink-filled and hairline-outlined, press feedback), and a hairline-topped trust row with primary index squares and mono labels; on the right the alt-driven hero photo in a sharp hairline frame with mono caption rule and an overlapping bordered stat plate with a giant serif numeral. CTAs route through section-kit route links. Use as the opening hero for consulting firms, strategy advisories, professional-services groups, or corporate B2B landing pages.',
   props: z.object({
     /** Eyebrow pill text above the headline. */
     eyebrow: z.string().optional(),
@@ -74,30 +80,15 @@ export const ConsultingHero = defineCapsule({
     const statTitle = props.statTitle ?? 'Client Retention Rate'
     const statSubtitle = props.statSubtitle ?? 'Average 8-year partnership'
 
-    const CheckIcon = ({ className }: { className?: string }) => (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-        className={className}
-        aria-hidden="true"
-      >
-        <path
-          fillRule="evenodd"
-          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-          clipRule="evenodd"
-        />
-      </svg>
-    )
-
     const renderHeading = () => {
       const idx = highlight ? heading.indexOf(highlight) : -1
       if (idx === -1) return heading
       return (
         <>
           {heading.slice(0, idx)}
-          <span className="text-muted-foreground">{highlight}</span>
+          <em className="italic underline decoration-primary decoration-2 underline-offset-8">
+            {highlight}
+          </em>
           {heading.slice(idx + highlight.length)}
         </>
       )
@@ -105,27 +96,39 @@ export const ConsultingHero = defineCapsule({
 
     return (
       <HeroSection
-        className={cn('relative overflow-hidden bg-muted', props.className)}
+        className={cn(
+          'relative overflow-hidden border-b border-border bg-background',
+          props.className,
+        )}
       >
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-br from-muted via-background to-muted"
-        />
-        <Container size="xl" className="relative py-24 lg:py-32">
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-            <div className="space-y-8">
-              <div className="inline-flex items-center rounded-full bg-secondary px-3 py-1 text-xs font-medium uppercase tracking-wide text-secondary-foreground">
-                {eyebrow}
-              </div>
-              <HeroHeading>{renderHeading()}</HeroHeading>
-              <HeroSubheading className="mt-0 max-w-2xl sm:text-xl">
+        <Watermark className="-right-6 -top-10 font-serif text-[11rem] sm:text-[16rem] lg:text-[22rem]">
+          01
+        </Watermark>
+
+        <Container size="xl" className="relative py-16 sm:py-20 lg:py-28">
+          {/* Mono metadata rail: index — eyebrow — hairline rule. */}
+          <div className="mb-10 flex items-center gap-4 lg:mb-14">
+            <span aria-hidden="true" className="size-2 shrink-0 bg-primary" />
+            <MonoTag className="shrink-0">01 / {eyebrow}</MonoTag>
+            <span aria-hidden="true" className="h-px flex-1 bg-border" />
+            <MonoTag tone="faint" className="hidden tabular-nums sm:inline">
+              Est. 28 yrs
+            </MonoTag>
+          </div>
+
+          <div className="grid items-start gap-12 lg:grid-cols-12 lg:gap-10">
+            <div className="lg:col-span-7">
+              <HeroHeading className="font-serif text-[clamp(2.5rem,7vw,5.25rem)] font-bold leading-[0.98] tracking-tight text-foreground">
+                {renderHeading()}
+              </HeroHeading>
+              <HeroSubheading className="mt-7 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
                 {subheading}
               </HeroSubheading>
-              <HeroActions className="mt-0 flex-wrap gap-4">
+              <HeroActions className="mt-9 grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:gap-4">
                 <HeroCta
                   asChild
                   variant="primary"
-                  className="rounded-md px-6 py-3 text-base shadow-lg transition-all"
+                  className="justify-center rounded-none bg-foreground px-7 py-3.5 text-base font-medium text-background transition-all duration-150 hover:bg-foreground/90 active:translate-y-px"
                 >
                   <NavbarRouteLink href={primaryCta}>
                     {primaryCta}
@@ -134,46 +137,70 @@ export const ConsultingHero = defineCapsule({
                 <HeroCta
                   asChild
                   variant="outline"
-                  className="rounded-md px-6 py-3 text-base transition-all"
+                  className="justify-center rounded-none border-border px-7 py-3.5 text-base font-medium text-foreground transition-all duration-150 hover:border-foreground active:translate-y-px"
                 >
                   <NavbarRouteLink href={secondaryCta}>
                     {secondaryCta}
                   </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
-              <HeroSocialProof className="mt-0 gap-8 pt-4">
-                {trust.map((t) => (
-                  <HeroSocialProofItem key={t}>
-                    <CheckIcon className="size-5 text-muted-foreground" />
-                    <span>{t}</span>
+              <HeroSocialProof className="mt-10 grid grid-cols-2 gap-6 border-t border-border pt-6 sm:gap-10">
+                {trust.map((t, i) => (
+                  <HeroSocialProofItem
+                    key={t}
+                    className="items-start gap-3 text-sm"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="mt-1 size-1.5 shrink-0 bg-primary"
+                    />
+                    <span className="flex flex-col gap-1">
+                      <span className="font-semibold tabular-nums text-foreground">
+                        {t}
+                      </span>
+                      <MonoTag tone="faint">
+                        Index {String(i + 1).padStart(2, '0')}
+                      </MonoTag>
+                    </span>
                   </HeroSocialProofItem>
                 ))}
               </HeroSocialProof>
             </div>
-            <div className="relative">
-              <div
-                aria-hidden="true"
-                className="absolute -inset-4 rounded-2xl bg-secondary/60"
-              />
-              <HeroMediaPanel
-                alt={imageAlt}
-                w={800}
-                h={600}
-                className="relative aspect-[4/3] w-full shadow-2xl rounded-xl"
-              />
-              <div className="absolute -bottom-6 -left-6 max-w-xs rounded-lg bg-card p-4 shadow-xl">
-                <div className="flex items-center gap-3">
-                  <div className="grid size-12 place-items-center rounded-full bg-primary text-xl font-bold text-primary-foreground">
+
+            <div className="relative pb-16 lg:col-span-5 lg:pb-20">
+              <div className="border border-border p-2">
+                <div className="flex items-center justify-between gap-3 px-1 pb-2.5 pt-0.5">
+                  <MonoTag tone="faint">Fig. 01 — Engagement</MonoTag>
+                  <span aria-hidden="true" className="h-px flex-1 bg-border" />
+                  <MonoTag tone="faint" className="tabular-nums">
+                    N—SP
+                  </MonoTag>
+                </div>
+                <HeroMediaPanel
+                  alt={imageAlt}
+                  w={800}
+                  h={600}
+                  className="aspect-[4/3] w-full rounded-none"
+                />
+              </div>
+              {/* Overlapping hairline stat plate: giant serif pull-stat. */}
+              <div className="absolute -bottom-0 left-4 right-4 border border-border bg-background p-5 sm:left-8 sm:right-auto sm:min-w-72 lg:-left-10 lg:right-auto">
+                <div className="flex items-end justify-between gap-6">
+                  <span className="font-serif text-6xl font-bold leading-none tracking-tight text-foreground tabular-nums sm:text-7xl">
                     {statValue}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-card-foreground">
-                      {statTitle}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {statSubtitle}
-                    </p>
-                  </div>
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="mb-1 size-2 shrink-0 bg-primary"
+                  />
+                </div>
+                <div className="mt-4 border-t border-border pt-3">
+                  <MonoTag className="block text-foreground">
+                    {statTitle}
+                  </MonoTag>
+                  <MonoTag tone="faint" className="mt-1 block normal-case">
+                    {statSubtitle}
+                  </MonoTag>
                 </div>
               </div>
             </div>

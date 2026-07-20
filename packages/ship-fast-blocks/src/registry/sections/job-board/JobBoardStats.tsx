@@ -1,17 +1,19 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import {} from '#/section-kit/index.ts'
 
 /**
- * JobBoardStats — a dark, high-contrast metrics band for a job-board / careers
- * site. A full-width inverted band (foreground bg, background text) holding a
- * 2-up / 4-up grid of big bold stat figures each above a muted caption label.
- * Use as a confidence-building break between sections on job boards, hiring
- * marketplaces or recruiting platforms (active listings, companies hiring,
- * placements, time-to-hire). Static (no links). Renders fully with no props.
+ * JobBoardStats — inverted "hiring figures" band for a job-board / careers site.
+ * A bg-foreground/text-background band cutting in on a slanted clip-path seam,
+ * with an asymmetric mono header row ("Hiring figures" left, "Audited · Live
+ * count" right) above a collapsed-border ledger grid of stat cells — each cell
+ * carries an index numeral, a giant fluid tabular numeral, and a mono uppercase
+ * label. Static, no links. Use as a confidence-building break between sections
+ * on job boards, hiring marketplaces or recruiting platforms (active listings,
+ * companies hiring, placements, time-to-hire).
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   StatGrid,
   StatItem,
@@ -21,7 +23,7 @@ import {
 export const JobBoardStats = defineCapsule({
   name: 'JobBoardStats',
   description:
-    'Dark, high-contrast metrics band for a job-board / careers site: a full-width inverted band (foreground bg, background text) holding a 2-up / 4-up grid of big bold stat figures each above a muted caption label. Use as a confidence-building break between sections on job boards, hiring marketplaces or recruiting platforms (active listings, companies hiring, placements, time-to-hire).',
+    'Inverted hiring-figures band for a job-board / careers site: a bg-foreground/text-background band cutting in on a slanted clip-path seam, with an asymmetric mono header row above a collapsed-border ledger grid of stat cells — each cell carries an index numeral, a giant fluid tabular numeral, and a mono uppercase label. Static, no links. Use as a confidence-building break between sections on job boards, hiring marketplaces or recruiting platforms (active listings, companies hiring, placements, time-to-hire).',
   props: z.object({
     /** Stat figures: value + label. */
     items: z
@@ -57,18 +59,52 @@ export const JobBoardStats = defineCapsule({
         ]
     return (
       <section
-        className={cn('bg-foreground py-20 text-background', props.className)}
+        className={cn(
+          // Slanted top seam: the inverted band cuts in on a diagonal,
+          // independent of whichever section sits above it.
+          'bg-foreground py-12 pt-20 text-background [clip-path:polygon(0_2.5rem,100%_0,100%_100%,0_100%)] sm:pt-24 lg:py-16 lg:pt-28',
+          props.className,
+        )}
       >
         <Container>
-          <StatGrid columns={4} className={'lg:gap-12 gap-12'}>
-            {items.map((s) => {
+          <div className="mb-8 flex items-center justify-between gap-4">
+            <MonoTag tone="inverted">Hiring figures</MonoTag>
+            <MonoTag
+              tone="inverted"
+              aria-hidden="true"
+              className="text-background/40"
+            >
+              Audited · Live count
+            </MonoTag>
+          </div>
+          <StatGrid
+            columns={4}
+            className="gap-0 border-l border-t border-background/20"
+          >
+            {items.map((s, i) => {
               const __iv__ = s as { value: string; label: string }
               return (
-                <StatItem key={__iv__.label} align={'center'}>
-                  <StatValue weight={'bold'} size={'large'} color={'inverted'}>
+                <StatItem
+                  key={__iv__.label}
+                  align="left"
+                  className="gap-2 border-b border-r border-background/20 p-5 sm:p-7"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="font-mono text-[11px] tabular-nums text-background/40"
+                  >
+                    {String(i + 1).padStart(3, '0')}
+                  </span>
+                  <StatValue
+                    weight="semibold"
+                    color="inverted"
+                    className="mb-0 text-[clamp(2.25rem,4.5vw,4rem)] leading-none"
+                  >
                     {__iv__.value}
                   </StatValue>
-                  <StatLabel color={'inverted'}>{__iv__.label}</StatLabel>
+                  <StatLabel className="font-mono text-[11px] uppercase tracking-[0.14em] text-background/60">
+                    {__iv__.label}
+                  </StatLabel>
                 </StatItem>
               )
             })}

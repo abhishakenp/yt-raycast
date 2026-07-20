@@ -13,19 +13,25 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
+function stageLabel(title: string, index: number) {
+  const word = String(title).trim().split(/\s+/)[0] ?? ''
+  return `Stage ${String(index + 1).padStart(2, '0')} — ${word}`
+}
+
 /**
- * AeoSteps — bespoke three-step "how it works" band for an Answer-Engine-
- * Optimization (AEO) SaaS. A centered heading block sits above a connected,
- * numbered three-column timeline: connect your content, optimize for answer
- * engines, then track citations and win. Each step shows a gradient numbered
- * badge, a title, and a short description, with a horizontal accent line linking
- * them on desktop. Use on AEO, generative-search visibility, or brand-citation
- * landing pages to explain the workflow. Renders fully with no props.
+ * AeoSteps — "Answer Terminal" pipeline band for an Answer-Engine-Optimization
+ * (AEO) SaaS. A left-aligned header with a mono index eyebrow sits above a
+ * three-column staggered pipeline: each stage carries a mono "STAGE 01 —
+ * CONNECT" label, a bordered rounded-none square badge with a tabular number,
+ * a title, and a short description, joined by a dashed hairline connector on
+ * desktop with alternate stages offset downward. Use on AEO, generative-search
+ * visibility, or brand-citation landing pages to explain the workflow. Renders
+ * fully with no props.
  */
 export const AeoSteps = defineCapsule({
   name: 'AeoSteps',
   description:
-    "Bespoke three-step 'how it works' section for an Answer-Engine-Optimization (AEO) product: a centered heading block above a connected, numbered three-column timeline (connect your content, optimize for answer engines, track citations and win), each step with a gradient numbered badge, a title, and a short description, joined by a horizontal accent line on desktop. Use to explain the AEO workflow on landing or how-it-works pages.",
+    "Terminal-styled pipeline 'how it works' section for an Answer-Engine-Optimization (AEO) product: a left-aligned mono-labeled header above a staggered three-column pipeline (connect your content, optimize for answer engines, track citations and win), each stage with a mono 'STAGE 01' label, a bordered rounded-none square number badge, a title, and a short description, joined by a dashed hairline connector on desktop. Use to explain the AEO workflow on landing or how-it-works pages.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -68,38 +74,47 @@ export const AeoSteps = defineCapsule({
 
     return (
       <StepTimeline
-        className={cn('bg-background py-20 lg:py-28', props.className)}
+        className={cn('bg-background py-14 sm:py-20 lg:py-28', props.className)}
       >
         <Container size="lg" className="px-6 lg:px-6">
-          <StepTimelineHeader className="mb-14">
+          <StepTimelineHeader className="mx-0 mb-10 max-w-2xl text-left md:mb-14">
             <SectionHeading
               align="left"
               eyebrow={eyebrow}
               title={heading}
               subtitle={intro}
               className="gap-0"
-              eyebrowClassName="text-accent"
-              titleClassName="mt-3 text-3xl font-semibold text-foreground md:text-4xl"
+              eyebrowClassName="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+              titleClassName="mt-3 text-3xl font-semibold tracking-tight text-foreground md:text-4xl"
               subtitleClassName="mt-4 text-base text-muted-foreground md:text-lg"
             />
           </StepTimelineHeader>
           <StepTimelineGrid columns={3} className="gap-10 md:gap-8" asChild>
-            <ol className="relative">
-              <StepConnector variant="gradient" />
+            <ol className="relative md:pb-6">
+              <StepConnector
+                variant="dashed"
+                className="left-0 right-0 top-6 w-auto translate-x-0 border-t border-dashed border-primary/40"
+              />
               {steps.map((step, i) => (
                 <StepItem
-                  key={step.title}
-                  className="relative flex flex-col items-center text-center md:items-start md:text-left"
+                  key={`${step.title}-${i}`}
+                  className={cn(
+                    'relative grid grid-cols-[3rem_1fr] items-start gap-x-4 text-left transition-transform duration-150 before:absolute before:-bottom-10 before:left-6 before:top-14 before:w-px before:border-l before:border-dashed before:border-primary/40 before:content-[""] last:before:hidden md:flex md:flex-col md:items-start md:before:hidden',
+                    i % 2 === 1 && 'md:translate-y-6',
+                  )}
                 >
                   <StepBadge
                     index={i}
-                    variant="gradient-square"
-                    className="mb-5"
+                    variant="filled-square"
+                    className="row-span-3 mb-0 size-12 rounded-none border border-foreground bg-background font-mono text-lg font-semibold text-foreground tabular-nums ring-4 ring-background md:mb-5"
                   />
-                  <h3 className="mb-2 text-lg font-semibold text-foreground">
+                  <span className="col-start-2 mb-2 font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+                    {stageLabel(step.title, i)}
+                  </span>
+                  <h3 className="col-start-2 mb-2 text-lg font-semibold tracking-tight text-foreground">
                     {step.title}
                   </h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
+                  <p className="col-start-2 text-sm leading-relaxed text-muted-foreground">
                     {step.description}
                   </p>
                 </StepItem>

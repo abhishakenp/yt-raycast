@@ -16,20 +16,23 @@ import {
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * KnowledgeBaseGuides — featured step-by-step guides gallery for a help center.
- * A heading + description with a bordered "view all" button on one side, above a
- * responsive 1/2/3-up grid of card buttons: each card has a wide cover image
- * with a token-colored difficulty badge (Beginner/Intermediate/Advanced)
- * overlaid, a title, a description and read-time + step-count meta with icons;
- * cards lift on hover and the image zooms. Calm, light, editorial. Every guide
- * card and the "view all" button route through section-kit route links; covers use the
+ * KnowledgeBaseGuides — "Terminal-docs" featured step-by-step guides ledger for
+ * a help center. An asymmetric header row (left-aligned heading + description
+ * beside a mono "view all" link) sits above a collapsed-border hairline grid of
+ * routable guide cards: each square cell has a wide cover image with a square
+ * hairline mono difficulty badge (Beginner/Intermediate/Advanced) overlaid, a
+ * tabular mono index numeral, a `#`-anchored bold title, a description and a
+ * hairline mono read-time + step-count meta row with icons; the image zooms and
+ * cells tint on hover. Calm, hairline, reference aesthetic. Every guide card
+ * and the "view all" link route through section-kit route links; covers use the
  * alt-driven Image component. Use to spotlight walkthroughs on a knowledge base
- * or docs site. Renders fully with no props via baked-in defaults.
+ * or docs site. Renders fully with no props via baked-in defaults. Theme tokens
+ * only.
  */
 export const KnowledgeBaseGuides = defineCapsule({
   name: 'KnowledgeBaseGuides',
   description:
-    "Featured step-by-step guides gallery for a help center: a heading + description with a bordered 'view all' button on one side, above a responsive 1/2/3-up grid of card buttons — each with a wide cover image plus an overlaid token-colored difficulty badge (Beginner/Intermediate/Advanced), a title, a description and read-time + step-count meta with icons; cards lift on hover and the image zooms. Calm, light, editorial; guide cards and the 'view all' button route through section-kit route links and covers use the alt-driven Image component. Use to spotlight walkthroughs on a knowledge base, support portal or docs site.",
+    "Terminal-docs featured step-by-step guides ledger for a help center: an asymmetric header row (left-aligned heading + description beside a mono 'view all' link) above a collapsed-border hairline grid of routable guide cards — each square cell has a wide cover image with a square hairline mono difficulty badge (Beginner/Intermediate/Advanced) overlaid, a tabular mono index numeral, a '#'-anchored bold title, a description and a hairline mono read-time + step-count meta row with icons; the image zooms and cells tint on hover. Calm, hairline, reference aesthetic; guide cards and the 'view all' link route through section-kit route links and covers use the alt-driven Image component. Use to spotlight walkthroughs on a knowledge base, support portal or docs site.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -91,10 +94,13 @@ export const KnowledgeBaseGuides = defineCapsule({
 
     const levelTone = (level: string) => {
       const l = level.toLowerCase()
-      if (l.includes('begin')) return 'bg-chart-2/15 text-chart-2'
-      if (l.includes('inter')) return 'bg-chart-4/15 text-chart-4'
-      if (l.includes('adv')) return 'bg-destructive/15 text-destructive'
-      return 'bg-secondary text-secondary-foreground'
+      if (l.includes('begin'))
+        return 'border-chart-2/40 bg-background text-chart-2'
+      if (l.includes('inter'))
+        return 'border-chart-4/40 bg-background text-chart-4'
+      if (l.includes('adv'))
+        return 'border-destructive/40 bg-background text-destructive'
+      return 'border-border bg-background text-secondary-foreground'
     }
 
     const ChevronRight = ({ className }: { className?: string }) => (
@@ -153,20 +159,20 @@ export const KnowledgeBaseGuides = defineCapsule({
         aria-labelledby="kb-guides-heading"
       >
         <Container>
-          <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <SectionHeading
               align="left"
               title={heading}
               subtitle={description}
-              className="gap-0"
+              className="max-w-2xl gap-3"
               titleId="kb-guides-heading"
-              titleClassName="mb-2 text-2xl font-semibold text-foreground sm:text-3xl"
+              titleClassName="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl"
               subtitleClassName="text-muted-foreground"
             />
             <Card
               asChild
-              variant="default"
-              className="inline-flex cursor-pointer items-center gap-2 px-4 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-muted rounded-lg p-0"
+              variant="outline"
+              className="inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-none border border-border bg-background p-0 px-4 py-2 font-mono text-[11px] font-medium uppercase tracking-[0.15em] text-foreground transition-colors hover:bg-muted active:translate-y-px"
             >
               <NavbarRouteLink href={viewAll}>
                 {viewAll}
@@ -174,16 +180,22 @@ export const KnowledgeBaseGuides = defineCapsule({
               </NavbarRouteLink>
             </Card>
           </div>
-          <ArticleGrid cols="1-md-2-3">
-            {items.map((guide) => (
+          <ArticleGrid
+            cols="1-md-2-3"
+            className="gap-0 border-l border-t border-border"
+          >
+            {items.map((guide, i) => (
               <ArticleCard
                 key={guide.title}
                 asChild
-                variant="default"
-                className="block cursor-pointer text-left transition-all hover:shadow-lg"
+                variant="none"
+                className="block cursor-pointer rounded-none border-0 border-b border-r border-border bg-transparent text-left transition-colors hover:bg-muted/40"
               >
                 <NavbarRouteLink href={guide.title}>
-                  <ArticleMedia aspect="16-9">
+                  <ArticleMedia
+                    aspect="16-9"
+                    className="rounded-none border-b border-border"
+                  >
                     <Image
                       alt={guide.imageAlt}
                       w={800}
@@ -194,7 +206,7 @@ export const KnowledgeBaseGuides = defineCapsule({
                     <span className="absolute left-3 top-3">
                       <span
                         className={cn(
-                          'rounded px-2 py-1 text-xs font-medium',
+                          'rounded-none border px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.12em]',
                           levelTone(guide.level),
                         )}
                       >
@@ -203,18 +215,30 @@ export const KnowledgeBaseGuides = defineCapsule({
                     </span>
                   </ArticleMedia>
                   <ArticleContent className="p-6">
-                    <h3 className="mb-2 text-lg font-semibold text-card-foreground transition-colors group-hover:text-muted-foreground">
+                    <span
+                      aria-hidden="true"
+                      className="font-mono text-[11px] tabular-nums tracking-[0.2em] text-muted-foreground/60"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <h3 className="mb-2 mt-3 text-lg font-bold tracking-tight text-card-foreground">
+                      <span
+                        aria-hidden="true"
+                        className="mr-2 font-mono font-normal text-muted-foreground/50 transition-colors group-hover:text-primary"
+                      >
+                        #
+                      </span>
                       {guide.title}
                     </h3>
-                    <p className="mb-4 text-sm text-muted-foreground">
+                    <p className="mb-6 text-sm text-muted-foreground">
                       {guide.description}
                     </p>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
+                    <div className="flex items-center gap-4 border-t border-border pt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                      <span className="flex items-center gap-1.5">
                         <ClockIcon />
                         {guide.readTime}
                       </span>
-                      <span className="flex items-center gap-1">
+                      <span className="flex items-center gap-1.5">
                         <ListIcon />
                         {guide.steps}
                       </span>

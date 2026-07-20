@@ -95,7 +95,7 @@ export const AuthCta = defineCapsule({
             <CtaBandSubtitle className="mt-5 max-w-2xl text-pretty text-base leading-7 text-background/70 sm:text-lg sm:leading-8">
               {subheading}
             </CtaBandSubtitle>
-            <div className="mt-9 grid w-full max-w-md grid-cols-1 gap-3 sm:max-w-none sm:w-auto sm:grid-cols-2 lg:max-w-xl">
+            <div className="mt-9 grid w-full max-w-md grid-cols-2 gap-3 sm:max-w-none sm:w-auto sm:grid-cols-2 lg:max-w-xl">
               <SaasPlanActionButton
                 lakebed={lakebed}
                 intentLabel={primaryTarget}
@@ -107,14 +107,14 @@ export const AuthCta = defineCapsule({
                     Starting
                   </>
                 }
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-background px-7 py-3 text-sm font-semibold text-foreground shadow-sm transition-[background-color,transform] duration-150 ease-out hover:bg-background/90 active:scale-[0.98] motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background/70 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground disabled:pointer-events-none disabled:opacity-70"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-background px-4 py-3 text-sm font-semibold text-foreground shadow-sm transition-[background-color,transform] duration-150 ease-out hover:bg-background/90 active:scale-[0.98] motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background/70 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground disabled:pointer-events-none disabled:opacity-70 sm:px-7"
               >
                 {primaryCta}
               </SaasPlanActionButton>
               {secondaryIsDocs ? (
                 <CtaAction
                   variant="outline"
-                  className="min-h-12 rounded-xl border-background/25 px-7 py-3 text-sm font-semibold text-background transition-[background-color,border-color,transform] duration-150 ease-out hover:border-background/50 hover:bg-background/10 active:scale-[0.98] motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background/70 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground"
+                  className="min-h-12 rounded-xl border-background/25 bg-transparent px-4 py-3 text-sm font-semibold text-background transition-[background-color,border-color,transform] duration-150 ease-out hover:border-background/50 hover:bg-background/10 active:scale-[0.98] motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background/70 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground sm:px-7"
                   asChild
                 >
                   <NavbarRouteLink href={secondaryTarget}>
@@ -133,7 +133,7 @@ export const AuthCta = defineCapsule({
                       Sending
                     </>
                   }
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-background/25 px-7 py-3 text-sm font-semibold text-background transition-[background-color,border-color,transform] duration-150 ease-out hover:border-background/50 hover:bg-background/10 active:scale-[0.98] motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background/70 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground disabled:pointer-events-none disabled:opacity-70"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-background/25 px-4 py-3 text-sm font-semibold text-background transition-[background-color,border-color,transform] duration-150 ease-out hover:border-background/50 hover:bg-background/10 active:scale-[0.98] motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background/70 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground disabled:pointer-events-none disabled:opacity-70 sm:px-7"
                 >
                   {secondaryCta}
                 </SaasPlanActionButton>
@@ -144,7 +144,7 @@ export const AuthCta = defineCapsule({
           <div className="relative min-w-0 rotate-1 rounded-2xl border border-background/15 bg-background/[0.07] p-5 font-mono text-xs text-background/70 shadow-sm shadow-background/5 backdrop-blur-sm">
             <span
               aria-hidden="true"
-              className="absolute -top-5 right-6 z-10 hidden rotate-3 rounded-lg border-[3px] border-double border-primary bg-foreground/80 px-3.5 py-1.5 font-mono text-xs font-bold uppercase tracking-[0.14em] text-primary backdrop-blur-sm lg:inline-flex"
+              className="absolute -top-5 right-6 z-10 inline-flex rotate-3 rounded-lg border-[3px] border-double border-primary bg-foreground/80 px-3.5 py-1.5 font-mono text-xs font-bold uppercase tracking-[0.14em] text-primary backdrop-blur-sm max-lg:-top-4 max-lg:px-2.5 max-lg:py-1 max-lg:text-[0.68rem]"
             >
               cleared for production
             </span>

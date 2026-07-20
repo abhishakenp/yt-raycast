@@ -19,20 +19,21 @@ import {
 } from './food-delivery-interactions.tsx'
 
 /**
- * FoodDeliveryNavbar — fixed, translucent top navigation bar for a food-delivery
- * / restaurant-marketplace site. A backdrop-blurred, border-bottomed header
- * pinned to the top: a location-pin brand mark beside the brand name on the
- * left, a horizontal set of nav links in the center (desktop), and a text
- * "Sign In" link plus a rounded-full filled "Get Started" CTA on the right.
- * Every link and CTA routes through route hrefs so labels can drive
- * page-switching. Use as the sticky site header for food-delivery apps,
- * restaurant aggregators, online-ordering platforms, or takeout services.
- * Renders fully with no props via baked-in "nosh" defaults.
+ * FoodDeliveryNavbar — playful-bold, translucent top navigation bar for a
+ * food-delivery / restaurant-marketplace site. A backdrop-blurred header with a
+ * chunky 2px foreground bottom border pinned to the top: a rounded-full sticker
+ * location-pin brand badge beside an extrabold wordmark on the left, a
+ * horizontal set of bold nav links in the center (desktop), and a search chip,
+ * an account chip, and a chunky rounded-full "Get Started" pill CTA with a hard
+ * offset shadow + press feedback on the right. Every link and CTA routes through
+ * route hrefs so labels can drive page-switching. Use as the sticky site header
+ * for food-delivery apps, restaurant aggregators, online-ordering platforms, or
+ * takeout services. Renders fully with no props via baked-in "nosh" defaults.
  */
 export const FoodDeliveryNavbar = defineCapsule({
   name: 'FoodDeliveryNavbar',
   description:
-    'Fixed translucent top navigation bar for a food-delivery / restaurant-marketplace site: backdrop-blurred, border-bottomed header pinned to the top with a location-pin brand mark + brand name on the left, horizontal nav links in the center (desktop), and a text Sign In link plus a rounded-full filled Get Started CTA on the right. Links and CTAs route through route hrefs for page-switching. Use as the sticky site header for food-delivery apps, restaurant aggregators, online-ordering platforms, ghost-kitchen/meal-delivery startups, or takeout services.',
+    'Playful-bold translucent top navigation bar for a food-delivery / restaurant-marketplace site: a backdrop-blurred header with a chunky 2px foreground bottom border pinned to the top, a rounded-full sticker location-pin brand badge + extrabold wordmark on the left, bold horizontal nav links in the center (desktop), and a search chip, an account chip, and a chunky rounded-full Get Started pill CTA with a hard offset shadow and press feedback on the right. Links and CTAs route through route hrefs for page-switching. Use as the sticky site header for food-delivery apps, restaurant aggregators, online-ordering platforms, ghost-kitchen/meal-delivery startups, or takeout services.',
   props: z.object({
     /** Brand name shown beside the pin mark. */
     brand: z.string().optional(),
@@ -69,41 +70,56 @@ export const FoodDeliveryNavbar = defineCapsule({
       <SiteNav
         position="fixed"
         height="responsive"
-        className={cn('bg-background/80 backdrop-blur-md', props.className)}
+        className={cn(
+          'border-b-2 border-foreground bg-background/80 backdrop-blur-md',
+          props.className,
+        )}
       >
-        <NavbarBrand href={homeTarget} className="gap-2">
-          <BrandLogo brand={brand}>
+        <NavbarBrand href={homeTarget} className="gap-2.5">
+          <BrandLogo brand={brand} className="flex items-center gap-2.5">
             <LogoImage
-              fallback={<PinMark className="size-8 text-foreground" />}
+              className="size-7"
+              fallback={
+                <span
+                  aria-hidden="true"
+                  className="grid size-9 -rotate-3 place-items-center rounded-full border-2 border-foreground bg-primary text-primary-foreground shadow-[2px_2px_0_0] shadow-foreground"
+                >
+                  <PinMark className="size-5" />
+                </span>
+              }
             />
-            <LogoLabel className="text-xl font-semibold tracking-tight" />
+            <LogoLabel className="text-xl font-extrabold tracking-tight" />
           </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="text-sm font-bold text-foreground/70 transition-colors hover:text-foreground"
+            >
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
 
-        <NavbarActions className="gap-3">
+        <NavbarActions className="gap-2.5">
           <FoodDeliverySearchButton
             lakebed={lakebed}
-            buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            buttonClassName="inline-flex size-10 items-center justify-center rounded-full border-2 border-transparent text-muted-foreground transition-colors hover:border-foreground hover:bg-background hover:text-foreground"
           />
           <FoodDeliveryAccountButton
             lakebed={lakebed}
             label={signIn}
-            buttonClassName="hidden size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
+            buttonClassName="hidden size-10 items-center justify-center rounded-full border-2 border-transparent text-muted-foreground transition-colors hover:border-foreground hover:bg-background hover:text-foreground sm:inline-flex"
           />
           <FoodDeliveryActionButton
             lakebed={lakebed}
             action={getStarted}
             source="navbar"
             pendingChildren={<FoodDeliveryMutationSpinner />}
-            className="hidden min-h-10 items-center rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-60 md:inline-flex"
+            className="hidden min-h-10 items-center rounded-full border-2 border-foreground bg-foreground px-5 py-2 text-sm font-bold text-background shadow-[3px_3px_0_0] shadow-primary/40 transition-all hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0] hover:shadow-primary/40 active:translate-y-px active:shadow-none disabled:pointer-events-none disabled:opacity-60 md:inline-flex"
           >
             {getStarted}
           </FoodDeliveryActionButton>
@@ -111,7 +127,7 @@ export const FoodDeliveryNavbar = defineCapsule({
             brand={brand}
             homeTarget={homeTarget}
             nav={nav}
-            buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+            buttonClassName="inline-flex size-10 items-center justify-center rounded-full border-2 border-foreground text-foreground transition-colors hover:bg-foreground hover:text-background md:hidden"
           />
         </NavbarActions>
       </SiteNav>

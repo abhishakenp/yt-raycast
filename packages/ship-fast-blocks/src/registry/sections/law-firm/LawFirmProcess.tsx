@@ -4,15 +4,17 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
 /**
- * LawFirmProcess — a split "how we work" process band on the card surface. The
- * left column carries a tracked-uppercase eyebrow, serif heading, lead
- * paragraph and a vertical list of numbered steps (each a squared
- * primary-filled serif numeral beside a serif title + description); the right
- * column shows a tall portrait photo. Refined, authoritative editorial aesthetic
- * with sharp squared corners. Imagery uses the alt-driven Image component. Use
- * to explain a firm's client engagement or matter-handling process on law-firm,
- * attorney, consulting or professional-services pages. Renders fully with no
- * props via baked-in defaults.
+ * LawFirmProcess — an asymmetric 7/5 "how we work" process band on the card
+ * surface. The left column carries a mono eyebrow, giant serif heading, lead
+ * paragraph and a hairline-divided step ledger — each row a mono "Step 0x" case
+ * label, a giant serif tabular numeral, a serif title and description; the right
+ * column shows a tall portrait photo in a sharp hairline frame with a
+ * primary-tinted offset frame block behind it and a rotated hairline-bordered
+ * mono "seal" stamp overlapping its corner. Authoritative, traditional-yet-
+ * modern newsprint aesthetic with sharp binary corners. Imagery uses the
+ * alt-driven Image component. Use to explain a firm's client engagement or
+ * matter-handling process on law-firm, attorney, consulting or
+ * professional-services pages. Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -20,7 +22,7 @@ import { ProcessTimeline } from '#/section-kit/ProcessTimeline.tsx'
 export const LawFirmProcess = defineCapsule({
   name: 'LawFirmProcess',
   description:
-    "Split 'how we work' process band on the card surface: the left column carries a tracked-uppercase eyebrow, serif heading, lead paragraph and a vertical list of numbered steps (each a squared primary-filled serif numeral beside a serif title + description); the right column shows a tall portrait photo. Refined, authoritative editorial aesthetic with sharp squared corners; imagery uses the alt-driven Image component. Use to explain a firm's client engagement, intake or matter-handling process on law-firm, attorney, consulting, accounting or professional-services pages.",
+    "Asymmetric 7/5 'how we work' process band on the card surface: the left column carries a mono eyebrow, giant serif heading, lead paragraph and a hairline-divided step ledger (each row a mono 'Step 0x' case label, a giant serif tabular numeral, a serif title and description); the right column shows a tall portrait photo in a sharp hairline frame with a primary-tinted offset frame block behind it and a rotated hairline-bordered mono 'seal' stamp overlapping its corner. Authoritative, traditional-yet-modern newsprint aesthetic with sharp binary corners; imagery uses the alt-driven Image component. Use to explain a firm's client engagement, intake or matter-handling process on law-firm, attorney, consulting, accounting or professional-services pages.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),

@@ -4,32 +4,119 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const createExportResponseMock = vi.hoisted(() => vi.fn())
 const createDeploymentPreviewResponseMock = vi.hoisted(() => vi.fn())
-const routeParamMocks = vi.hoisted(() => ({
-  paramsByPath: {
-    '/generate/$sessionId': {
+const routeParamMocks = vi.hoisted(() => {
+  const paramsByPath: Record<string, Record<string, string>> = {
+    '/generate/$sessionId/$': {
       sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
     },
     '/generate/$sessionId/admin': {
       sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
     },
-  } as Record<string, Record<string, string>>,
-}))
+  }
 
-vi.mock('@tanstack/react-router', () => ({
-  createFileRoute: (path: string) => (options: Record<string, unknown>) => ({
-    options,
-    path,
-  }),
-  getRouteApi: (path: string) => ({
-    useParams: () => routeParamMocks.paramsByPath[path] ?? {},
-  }),
-  lazyRouteComponent: (_importer: unknown, exportName: string) => {
-    const LazyRouteComponent = () => (
-      <div data-testid="lazy-route">{exportName}</div>
-    )
-    return LazyRouteComponent
-  },
-}))
+  return {
+    paramsByPath,
+    pathname: '/generate/k574ms14ma9f94keq30r7dq24x89n1k2',
+  }
+})
+
+type MockRouterState = {
+  location: {
+    pathname: string
+  }
+}
+
+type UseRouterStateOptions = {
+  select(state: MockRouterState): string
+}
+
+type RouteWithHandlers = {
+  path: string
+  options: {
+    component?: React.ComponentType
+    server?: {
+      handlers: Record<
+        string,
+        (args: {
+          params: Record<string, string>
+          request: Request
+        }) => Promise<Response>
+      >
+    }
+  }
+}
+
+type RouteModule = {
+  Route: RouteWithHandlers
+}
+
+type MockRoute = {
+  options: Record<string, unknown>
+  path: string
+}
+
+interface CreateFileRouteResult {
+  (options: Record<string, unknown>): MockRoute
+}
+
+type TanStackRouterMock = {
+  createFileRoute(path: string): CreateFileRouteResult
+  getRouteApi(path: string): {
+    useParams(): Record<string, string>
+  }
+  lazyRouteComponent(importer: unknown, exportName: string): React.ComponentType
+  useRouterState(options: UseRouterStateOptions): string
+}
+
+const topLevelRouteCases = [
+  ['./index', '/', 'HomePage'],
+  ['./pricing', '/pricing', 'PricingPage'],
+  ['./partners', '/partners', 'PartnersPage'],
+  ['./privacy', '/privacy', 'PrivacyPage'],
+  ['./terms', '/terms', 'TermsPage'],
+  ['./gallery', '/gallery', 'GalleryPage'],
+  ['./mine', '/mine', 'Mine page route'],
+] satisfies ReadonlyArray<readonly [string, string, string]>
+
+const generateRouteCases = [
+  ['./generate.$sessionId.$', '/generate/$sessionId/$', 'GenerateRoute'],
+  [
+    './generate.$sessionId.admin',
+    '/generate/$sessionId/admin',
+    'GenerateAdminRoute',
+  ],
+] satisfies ReadonlyArray<readonly [string, string, string]>
+
+vi.mock('@tanstack/react-router', () => {
+  const routerMock = {
+    createFileRoute(path) {
+      function createRoute(options: Record<string, unknown>) {
+        return {
+          options,
+          path,
+        }
+      }
+
+      return createRoute
+    },
+    getRouteApi(path) {
+      return {
+        useParams: () => routeParamMocks.paramsByPath[path] ?? {},
+      }
+    },
+    lazyRouteComponent(_importer, exportName) {
+      const LazyRouteComponent = () => (
+        <div data-testid="lazy-route">{exportName}</div>
+      )
+      return LazyRouteComponent
+    },
+    useRouterState({ select }: UseRouterStateOptions) {
+      return select({ location: { pathname: routeParamMocks.pathname } })
+    },
+  } satisfies TanStackRouterMock
+
+  return routerMock
+})
 
 vi.mock('@/features/home/components/HomePage', () => ({
   HomePage: () => <main>Home page route</main>,
@@ -59,22 +146,25 @@ vi.mock('@/features/referrals/components/ReferralDashboard', () => ({
   ReferralDashboard: () => <section>Referral dashboard route</section>,
 }))
 
-vi.mock('@/features/dashboard/components/Dashboard', () => ({
-  Dashboard: ({
-    initialAdminView,
-    sessionId,
-  }: {
-    initialAdminView?: boolean
-    sessionId?: string
-  }) => (
-    <section
-      data-admin={initialAdminView === true ? 'true' : 'false'}
-      data-testid="dashboard-route"
-    >
-      {sessionId}
-    </section>
-  ),
-}))
+type DashboardMockProps = {
+  initialAdminView?: boolean
+  sessionId?: string
+}
+
+vi.mock('@/features/dashboard/components/Dashboard', () => {
+  function Dashboard({ initialAdminView, sessionId }: DashboardMockProps) {
+    return (
+      <section
+        data-admin={initialAdminView === true ? 'true' : 'false'}
+        data-testid="dashboard-route"
+      >
+        {sessionId}
+      </section>
+    )
+  }
+
+  return { Dashboard }
+})
 
 vi.mock('@/features/exports/server/create-export-response', () => ({
   createExportResponse: createExportResponseMock,
@@ -84,25 +174,19 @@ vi.mock('@/features/deployments/server/deployment-preview-response', () => ({
   createDeploymentPreviewResponse: createDeploymentPreviewResponseMock,
 }))
 
-type RouteWithHandlers = {
-  path: string
-  options: {
-    component?: React.ComponentType
-    server?: {
-      handlers: Record<
-        string,
-        (args: {
-          params: Record<string, string>
-          request: Request
-        }) => Promise<Response>
-      >
-    }
-  }
+async function importRoute(path: string): Promise<RouteWithHandlers> {
+  const mod: RouteModule = await import(path)
+  return mod.Route
 }
 
-async function importRoute(path: string): Promise<RouteWithHandlers> {
-  const mod = await import(path)
-  return mod.Route as unknown as RouteWithHandlers
+function requireComponent(
+  component?: React.ComponentType,
+): React.ComponentType {
+  if (!component) {
+    throw new Error('Expected route component')
+  }
+
+  return component
 }
 
 describe('top-level route behavior', () => {
@@ -114,22 +198,14 @@ describe('top-level route behavior', () => {
     cleanup()
   })
 
-  it.each([
-    ['./index', '/', 'HomePage'],
-    ['./pricing', '/pricing', 'PricingPage'],
-    ['./partners', '/partners', 'PartnersPage'],
-    ['./privacy', '/privacy', 'PrivacyPage'],
-    ['./terms', '/terms', 'TermsPage'],
-    ['./gallery', '/gallery', 'GalleryPage'],
-    ['./mine', '/mine', 'Mine page route'],
-  ] as const)(
+  it.each(topLevelRouteCases)(
     'mounts the expected lazy component export for %s',
     async (modulePath, routePath, exportName) => {
       const Route = await importRoute(modulePath)
-      const Component = Route.options.component
+      const Component = requireComponent(Route.options.component)
 
       expect(Route.path).toBe(routePath)
-      render(React.createElement(Component as React.ComponentType))
+      render(<Component />)
       expect(
         screen.queryByTestId('lazy-route')?.textContent ??
           screen.getByText(exportName).textContent,
@@ -139,32 +215,24 @@ describe('top-level route behavior', () => {
 
   it('wraps the referral dashboard in the referrals page shell', async () => {
     const Route = await importRoute('./referrals')
-    const Component = Route.options.component
+    const Component = requireComponent(Route.options.component)
 
     expect(Route.path).toBe('/referrals')
-    render(React.createElement(Component as React.ComponentType))
+    render(<Component />)
     expect(screen.getByText('Referral dashboard route')).toBeTruthy()
     expect(
       screen.getByText('Referral dashboard route').closest('main')?.className,
     ).toContain('min-h-screen')
   })
 
-  it.each([
-    ['./generate.$sessionId', '/generate/$sessionId', 'GenerateRoute'],
-    ['./generate.$sessionId.$', '/generate/$sessionId/$', 'GenerateRoute'],
-    [
-      './generate.$sessionId.admin',
-      '/generate/$sessionId/admin',
-      'GenerateAdminRoute',
-    ],
-  ] as const)(
+  it.each(generateRouteCases)(
     'mounts the correct lazy dashboard export for %s',
     async (modulePath, routePath, exportName) => {
       const Route = await importRoute(modulePath)
-      const Component = Route.options.component
+      const Component = requireComponent(Route.options.component)
 
       expect(Route.path).toBe(routePath)
-      render(React.createElement(Component as React.ComponentType))
+      render(<Component />)
       expect(screen.getByTestId('lazy-route').textContent).toBe(exportName)
     },
   )
@@ -219,6 +287,19 @@ describe('top-level route behavior', () => {
     const PreviewComponent = Route.options.component
 
     expect(Route.path).toBe('/preview/$slug')
+    expect(Route.options.server).toBeUndefined()
+    expect(PreviewComponent).toBeTypeOf('function')
+
+    render(PreviewComponent ? <PreviewComponent /> : null)
+
+    expect(screen.getByTestId('lazy-route').textContent).toBe('PreviewRoute')
+  })
+
+  it('renders the bare session preview route for nested page slugs', async () => {
+    const Route = await importRoute('./preview.$slug.$')
+    const PreviewComponent = Route.options.component
+
+    expect(Route.path).toBe('/preview/$slug/$')
     expect(Route.options.server).toBeUndefined()
     expect(PreviewComponent).toBeTypeOf('function')
 

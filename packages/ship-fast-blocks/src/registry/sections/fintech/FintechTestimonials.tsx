@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -13,17 +14,19 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 
 /**
- * FintechTestimonials — social-proof section for a fintech / neobank landing
- * page. A padded section wrapping the shared TestimonialGrid composite with a
- * heading and three customer quotes, each carrying a star rating, name, and
- * role/company. The grid is layout-only, so this capsule supplies the section
- * wrapper and container padding. Renders fully with no props via baked-in
+ * FintechTestimonials — Swiss-fintech social-proof ledger for a neobank landing
+ * page. An asymmetric header (heading + lede left, mono meta right) sits above
+ * a collapsed-border grid of quote cells sharing hairline rules (binary radius,
+ * no gaps); each cell carries a mono index, a primary star rating, the quote,
+ * and a name + role/company byline, with a giant ghost quotation watermark
+ * bleeding behind the band. Use as calm, trustworthy social proof for banking,
+ * payments, wallet, or lending pages. Renders fully with no props via baked-in
  * "Vault" defaults.
  */
 export const FintechTestimonials = defineCapsule({
   name: 'FintechTestimonials',
   description:
-    'Social-proof section for a fintech / neobank landing page: a padded section wrapping the shared TestimonialGrid composite with a heading and three customer quotes, each with a star rating, name, and role/company. The capsule supplies the section wrapper and container padding around the layout-only grid.',
+    'Swiss-fintech social-proof ledger for a neobank landing page: an asymmetric header (heading + lede left, mono meta right) above a collapsed-border grid of quote cells sharing hairline rules, each with a mono index, a primary star rating, the quote, and a name + role/company byline, behind a giant ghost quotation watermark. Use as calm, trustworthy social proof for banking, payments, wallet, or lending pages.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -84,17 +87,43 @@ export const FintechTestimonials = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-muted/30 pt-28 pb-20 lg:pt-32 lg:pb-28',
+          'relative overflow-hidden bg-muted/30 pt-24 pb-20 lg:pt-28 lg:pb-28',
           props.className,
         )}
       >
-        <Container size="xl" className="px-6">
+        <Watermark className="-top-16 left-2 text-[18rem] leading-none sm:text-[24rem]">
+          &ldquo;
+        </Watermark>
+        <Container size="xl" className="relative">
+          <div className="mb-12 flex flex-col gap-6 border-b border-border pb-6 md:flex-row md:items-end md:justify-between lg:mb-14">
+            <div className="max-w-2xl">
+              <MonoTag className="mb-4 block">
+                Testimonials
+                <span aria-hidden="true" className="text-primary">
+                  {' '}
+                  / 4.9 avg
+                </span>
+              </MonoTag>
+              <h2 className="text-3xl font-extrabold tracking-tight text-foreground text-balance sm:text-4xl">
+                {heading}
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground text-pretty">
+                {subheading}
+              </p>
+            </div>
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="shrink-0 tabular-nums"
+            >
+              [ {String(items.length).padStart(2, '0')} verified ]
+            </MonoTag>
+          </div>
           <TestimonialGrid
-            heading={heading}
-            subheading={subheading}
             columns={3}
+            className="gap-0 [&>div]:gap-0 [&>div]:border-l [&>div]:border-t [&>div]:border-border"
           >
-            {items.map((t) => {
+            {items.map((t, i) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -104,14 +133,59 @@ export const FintechTestimonials = defineCapsule({
                 rating?: number
                 avatarAlt?: string
               }
+              const rating = Math.max(
+                0,
+                Math.min(5, Math.round(__iv__.rating ?? 5)),
+              )
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
+                <TestimonialCard
+                  key={__iv__.name}
+                  className="gap-4 rounded-none border-0 border-b border-r border-border bg-background/60 p-7 transition-colors duration-150 hover:bg-background sm:p-8"
+                >
+                  <div className="flex items-center justify-between">
+                    <span
+                      className="flex items-center gap-0.5"
+                      role="img"
+                      aria-label={`${rating} out of 5 stars`}
+                    >
+                      {Array.from({ length: 5 }).map((_, s) => (
+                        <svg
+                          key={s}
+                          viewBox="0 0 24 24"
+                          className={cn(
+                            'size-3.5',
+                            s < rating
+                              ? 'fill-primary text-primary'
+                              : 'fill-transparent text-border',
+                          )}
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          aria-hidden="true"
+                        >
+                          <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14l-5-4.87 6.91-1.01L12 2z" />
+                        </svg>
+                      ))}
+                    </span>
+                    <MonoTag
+                      aria-hidden="true"
+                      tone="faint"
+                      className="tabular-nums"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </MonoTag>
+                  </div>
+                  <TestimonialQuote className="leading-relaxed">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="mt-auto flex-col items-start gap-1 border-t border-border pt-4">
+                    <TestimonialName className="tracking-tight">
+                      {__iv__.name}
+                    </TestimonialName>
                     {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
-                        {__iv__.role || __iv__.company || __iv__.meta}
+                      <TestimonialMeta className="font-mono text-[11px] uppercase tracking-[0.14em]">
+                        {[__iv__.role, __iv__.company]
+                          .filter(Boolean)
+                          .join(' · ') || __iv__.meta}
                       </TestimonialMeta>
                     )}
                   </TestimonialAuthor>

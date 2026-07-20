@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
+import { Container } from '#/section-kit/Container.tsx'
 import {
   LogoStrip,
   LogoStripLabel,
@@ -48,14 +49,16 @@ export const ArchitectureFirmLogos = defineCapsule({
       <LogoStrip
         className={cn('border-y border-border bg-card py-16', props.className)}
       >
-        <LogoStripLabel>{label}</LogoStripLabel>
-        <LogoStripItems layout="flex" className="mt-8">
-          {items.filter(Boolean).map((logo) => (
-            <LogoStripItem key={logo} variant="opacity-hover">
-              {logo}
-            </LogoStripItem>
-          ))}
-        </LogoStripItems>
+        <Container>
+          <LogoStripLabel>{label}</LogoStripLabel>
+          <LogoStripItems layout="flex" className="mt-8">
+            {items.filter(Boolean).map((logo) => (
+              <LogoStripItem key={logo} variant="opacity-hover">
+                {logo}
+              </LogoStripItem>
+            ))}
+          </LogoStripItems>
+        </Container>
       </LogoStrip>
     )
   },

@@ -3,13 +3,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * FashionStoreTestimonials — dark inverted customer testimonials band for a
- * minimalist fashion store. A foreground-colored section with a centered
- * uppercase eyebrow + serif heading above a responsive 1-to-3 column grid of
- * top-bordered quote blocks, each with a five-star rating row, a light italic
- * pull-quote, and a footer pairing a rounded avatar with the customer name and
- * role. Avatars use the alt-driven Image component. Use to build trust with
- * social proof for clothing brands, boutiques, or premium apparel labels.
+ * FashionStoreTestimonials — the one dark inverted customer testimonials band
+ * for a luxury fashion store. A foreground-colored section behind a giant ghost
+ * watermark, with a mono kicker + serif heading above a responsive 1-to-3
+ * column grid of hairline-topped quote blocks, each a light serif-italic
+ * pull-quote closed by the customer name and a mono role label. Use to build
+ * trust with social proof for clothing brands, boutiques, or premium apparel
+ * labels.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -24,7 +24,7 @@ import {
 export const FashionStoreTestimonials = defineCapsule({
   name: 'FashionStoreTestimonials',
   description:
-    'Dark inverted customer testimonials band for a minimalist fashion store: a foreground-colored section with a centered uppercase eyebrow + serif heading above a responsive 1-to-3 column grid of top-bordered quote blocks, each with a five-star rating row, a light italic pull-quote, and a footer pairing a rounded avatar with the customer name and role. Avatars use the alt-driven Image component. Use to build trust with social proof and client stories for clothing brands, boutiques, or premium apparel labels.',
+    'The one dark inverted customer testimonials band for a luxury fashion store: a foreground-colored section behind a giant ghost watermark, with a mono kicker + serif heading above a responsive 1-to-3 column grid of hairline-topped quote blocks, each a light serif-italic pull-quote closed by the customer name and a mono role label. Use to build trust with social proof and client stories for clothing brands, boutiques, or premium apparel labels.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -75,17 +75,23 @@ export const FashionStoreTestimonials = defineCapsule({
       <section
         aria-label="Customer testimonials"
         className={cn(
-          'bg-foreground py-20 text-background lg:py-28',
+          'relative overflow-hidden bg-foreground py-20 text-background lg:py-28',
           props.className,
         )}
       >
-        <Container>
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-[0.14em] -right-2 select-none font-serif text-[24vw] font-normal leading-none tracking-tighter text-background/[0.05]"
+        >
+          Voices
+        </span>
+        <Container className="relative">
           <SectionHeading
             eyebrow={testimonialsEyebrow}
             title={testimonialsHeading}
             className="mb-16 gap-0"
-            eyebrowClassName="mb-3 text-xs font-medium uppercase tracking-[0.2em] text-background/60"
-            titleClassName="font-serif text-4xl font-normal sm:text-5xl lg:text-6xl"
+            eyebrowClassName="mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.22em] text-background/60"
+            titleClassName="font-serif text-4xl font-normal tracking-tight sm:text-5xl lg:text-6xl"
           />
 
           <TestimonialGrid columns={3}>
@@ -100,12 +106,19 @@ export const FashionStoreTestimonials = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
+                <TestimonialCard
+                  key={__iv__.name}
+                  className="rounded-none border-0 border-t border-background/25 bg-transparent p-0 pt-8 transition-[border-color] duration-150 hover:border-background/45"
+                >
+                  <TestimonialQuote className="font-serif text-lg italic leading-relaxed text-background">
+                    {__iv__.quote}
+                  </TestimonialQuote>
                   <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
+                    <TestimonialName className="text-sm font-medium text-background">
+                      {__iv__.name}
+                    </TestimonialName>
                     {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
+                      <TestimonialMeta className="font-mono text-[11px] uppercase tracking-[0.14em] text-background/60">
                         {__iv__.role || __iv__.company || __iv__.meta}
                       </TestimonialMeta>
                     )}

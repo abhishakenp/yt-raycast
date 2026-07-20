@@ -14,20 +14,23 @@ import {
 } from '#/section-kit/index.ts'
 
 /**
- * DatingAppNavbar — sticky, translucent top navigation for a dating / matchmaking
- * app landing page. A backdrop-blurred, border-bottomed header pinned to the top:
- * a rounded rose/primary heart-glyph logo tile beside the app name on the left, a
- * centered set of horizontal nav links (desktop), and a "Log In" text button plus a
- * pill-shaped primary "Get the App" CTA on the right. Every link and CTA route
- * through route hrefs so labels can drive page-switching. Use as the sticky site
- * header for dating apps, matchmaking services, singles platforms, friend-finders,
- * or any friendly, conversion-focused social-connection landing page. Renders fully
- * with no props via baked-in "HeartLink" defaults.
+ * DatingAppNavbar — playful-geometric sticky navigation for a dating /
+ * matchmaking app landing page. A backdrop-blurred bg-background/80 header with
+ * a 2px foreground bottom rule: on the left a rounded-full primary heart-glyph
+ * chip beside the extrabold app wordmark, centered nav links (desktop), and on
+ * the right a "Log In" text link plus a rounded-full pill CTA with a 2px
+ * foreground border, hard 3px offset token shadow, and press feedback — the
+ * page's binary-radius grammar (full pills against sharp structure) starts
+ * here. Every link and CTA route through route hrefs so labels drive
+ * page-switching. Use as the sticky site header for dating apps, matchmaking
+ * services, singles platforms, friend-finders, or any friendly
+ * conversion-focused social-connection landing page. Renders fully with no
+ * props via baked-in "HeartLink" defaults.
  */
 export const DatingAppNavbar = defineCapsule({
   name: 'DatingAppNavbar',
   description:
-    "Sticky, translucent top navigation bar for a dating / matchmaking app landing page: backdrop-blurred, border-bottomed header pinned to the top with a rounded rose/primary heart-glyph logo tile + app name on the left, centered horizontal nav links (desktop), and a 'Log In' text button plus a pill-shaped primary 'Get the App' CTA on the right. Links and CTA route through route hrefs for page-switching. Use as the sticky site header for dating apps, matchmaking services, singles platforms, friend-finders, or any friendly conversion-focused social-connection landing page.",
+    "Playful-geometric sticky navigation bar for a dating / matchmaking app landing page: a backdrop-blurred header with a 2px foreground bottom rule, a rounded-full primary heart-glyph chip + extrabold app wordmark on the left, centered nav links (desktop), and a 'Log In' text link plus a rounded-full pill CTA with 2px foreground border, hard 3px offset shadow, and press feedback on the right. Links and CTA route through route hrefs for page-switching. Use as the sticky site header for dating apps, matchmaking services, singles platforms, friend-finders, or any friendly conversion-focused social-connection landing page.",
   props: z.object({
     /** Brand / app name shown beside the heart logo. */
     brand: z.string().optional(),
@@ -69,18 +72,22 @@ export const DatingAppNavbar = defineCapsule({
       <SiteNav
         position="sticky"
         height="compact"
-        className={cn('bg-background/80 backdrop-blur-md', props.className)}
+        className={cn(
+          'border-b-2 border-foreground bg-background/80 backdrop-blur-md',
+          props.className,
+        )}
       >
         <NavbarBrand href={nav[0]} className="gap-2">
-          <BrandLogo brand={brand}>
+          <BrandLogo brand={brand} className="flex items-center gap-2">
             <LogoImage
+              className="size-7"
               fallback={
-                <span className="grid size-8 place-items-center rounded-full bg-primary text-primary-foreground">
-                  <HeartGlyph className="size-5" />
+                <span className="grid size-7 place-items-center rounded-full bg-primary text-primary-foreground">
+                  <HeartGlyph className="size-4" />
                 </span>
               }
             />
-            <LogoLabel className="text-xl font-bold text-foreground" />
+            <LogoLabel className="text-xl font-extrabold tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
@@ -95,14 +102,14 @@ export const DatingAppNavbar = defineCapsule({
         <NavbarActions>
           <NavbarRouteLink
             href={loginLabel}
-            className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
+            className="hidden text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground sm:block"
           >
             {loginLabel}
           </NavbarRouteLink>
           <NavbarCta
             variant="primary-pill"
             href={ctaTarget}
-            className="px-4 py-2 shadow-sm"
+            className="rounded-full border-2 border-foreground px-4 py-2 font-semibold shadow-[3px_3px_0_0] shadow-foreground transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none motion-reduce:transform-none"
           >
             {cta}
           </NavbarCta>

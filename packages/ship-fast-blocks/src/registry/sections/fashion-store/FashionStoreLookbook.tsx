@@ -9,24 +9,27 @@ import {
 } from '#/section-kit/LookbookGrid.tsx'
 
 /**
- * FashionStoreLookbook — editorial Lookbook masonry gallery for a minimalist
- * fashion store. A subtle muted-band section with a split intro (eyebrow +
- * serif heading on the left, right-aligned description on the right) above a
- * mixed-span 2-to-3 column masonry grid of look tiles — each a portrait image
- * with an overlaid uppercase look label and optional serif title, sized as
- * feature (2x2), wide (2-wide) or small — closed by an outlined "Explore Full
- * Lookbook" CTA. Every tile and CTA routes through section-kit route links and imagery
- * uses the alt-driven Image component. Use to present a seasonal editorial
- * lookbook for clothing brands, boutiques, or lifestyle commerce.
+ * FashionStoreLookbook — editorial Lookbook masonry gallery for a luxury
+ * fashion store. A subtle muted-band section behind a giant ghost serif
+ * watermark, with a split intro (mono kicker + serif heading on the left,
+ * right-aligned description on the right) above a mixed-span 2-to-3 column
+ * masonry grid of sharp borderless look tiles — each a portrait image under a
+ * bottom scrim with an overlaid mono look label and optional serif title, sized
+ * as feature (2x2), wide (2-wide) or small — closed by a hairline-outline
+ * "Explore Full Lookbook" CTA. Every tile and CTA routes through section-kit
+ * route links and imagery uses the alt-driven Image component. Use to present a
+ * seasonal editorial lookbook for clothing brands, boutiques, or lifestyle
+ * commerce.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 export const FashionStoreLookbook = defineCapsule({
   name: 'FashionStoreLookbook',
   description:
-    "Editorial Lookbook masonry gallery for a minimalist fashion store: a subtle muted-band section with a split intro (eyebrow + serif heading on the left, right-aligned description on the right) above a mixed-span 2-to-3 column masonry grid of look tiles — each a portrait image with an overlaid uppercase look label and optional serif title, sized as feature (2x2), wide (2-wide) or small — closed by an outlined 'Explore Full Lookbook' CTA. Every tile and CTA routes through section-kit route links and imagery uses the alt-driven Image component. Use to present a seasonal editorial lookbook for clothing brands, boutiques, or lifestyle commerce.",
+    "Editorial Lookbook masonry gallery for a luxury fashion store: a subtle muted-band section behind a giant ghost serif watermark, with a split intro (mono kicker + serif heading on the left, right-aligned description on the right) above a mixed-span 2-to-3 column masonry grid of sharp borderless look tiles — each a portrait image under a bottom scrim with an overlaid mono look label and optional serif title, sized as feature (2x2), wide (2-wide) or small — closed by a hairline-outline 'Explore Full Lookbook' CTA. Every tile and CTA routes through section-kit route links and imagery uses the alt-driven Image component. Use to present a seasonal editorial lookbook for clothing brands, boutiques, or lifestyle commerce.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -101,7 +104,7 @@ export const FashionStoreLookbook = defineCapsule({
           },
         ]
     const eyebrowCls =
-      'text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground'
+      'font-mono text-[11px] font-medium uppercase tracking-[0.24em] text-muted-foreground'
     const lookbookSpan = (size?: string) => {
       if (size === 'feature') return 'col-span-2 row-span-2 aspect-[4/5]'
       if (size === 'wide') return 'col-span-2 aspect-[16/9]'
@@ -111,21 +114,24 @@ export const FashionStoreLookbook = defineCapsule({
       <section
         aria-label="Lookbook gallery"
         className={cn(
-          'bg-muted pt-28 pb-20 lg:pt-32 lg:pb-28',
+          'relative overflow-hidden bg-muted pt-28 pb-20 lg:pt-32 lg:pb-28',
           props.className,
         )}
       >
-        <Container>
-          <div className="mb-16 grid items-start gap-8 lg:grid-cols-2 lg:gap-12">
+        <Watermark className="-left-4 top-6 text-[24vw] uppercase">
+          Édit
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-16 grid items-end gap-8 lg:grid-cols-2 lg:gap-12">
             <SectionHeading
               align="left"
               eyebrow={lookbookEyebrow}
               title={lookbookHeading}
               className="gap-0"
               eyebrowClassName={cn(eyebrowCls, 'mb-3')}
-              titleClassName="font-serif text-4xl font-normal sm:text-5xl lg:text-6xl"
+              titleClassName="font-serif text-4xl font-normal tracking-tight sm:text-5xl lg:text-6xl"
             />
-            <div className="lg:pt-8 lg:text-right">
+            <div className="lg:text-right">
               <p className="max-w-md text-muted-foreground lg:ml-auto">
                 {lookbookDesc}
               </p>
@@ -141,7 +147,7 @@ export const FashionStoreLookbook = defineCapsule({
                 <NavbarRouteLink
                   key={item.look}
                   className={cn(
-                    'group relative overflow-hidden text-left',
+                    'group relative overflow-hidden rounded-none border-0 bg-muted text-left',
                     lookbookSpan(item.size),
                   )}
                   href={item.title ?? item.look}
@@ -153,18 +159,24 @@ export const FashionStoreLookbook = defineCapsule({
                     loading="lazy"
                     className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-gradient-to-t from-foreground/55 via-transparent to-transparent"
+                  />
                   <LookbookCaption
                     className={cn(
                       item.size === 'feature' || item.size === 'wide'
-                        ? 'bottom-6 left-6'
-                        : 'bottom-4 left-4',
+                        ? 'inset-x-6 bottom-6'
+                        : 'inset-x-4 bottom-4',
                     )}
                   >
-                    <p className="text-xs font-medium uppercase tracking-[0.2em]">
+                    <p className="font-mono text-[11px] font-medium uppercase tracking-[0.2em]">
                       {item.look}
                     </p>
                     {item.title ? (
-                      <p className="mt-1 font-serif text-xl">{item.title}</p>
+                      <p className="mt-1.5 font-serif text-xl leading-tight">
+                        {item.title}
+                      </p>
                     ) : null}
                   </LookbookCaption>
                 </NavbarRouteLink>
@@ -172,9 +184,9 @@ export const FashionStoreLookbook = defineCapsule({
             ))}
           </LookbookGrid>
 
-          <div className="mt-12 text-center">
+          <div className="mt-14 text-center">
             <NavbarRouteLink
-              className="inline-flex items-center border border-foreground px-8 py-4 text-sm font-medium tracking-wide text-foreground transition-colors hover:bg-foreground hover:text-background"
+              className="inline-flex items-center rounded-none border border-foreground px-8 py-4 font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-foreground transition-[background-color,color,transform] duration-150 hover:bg-foreground hover:text-background active:translate-y-px"
               href={lookbookCta}
             >
               {lookbookCta}

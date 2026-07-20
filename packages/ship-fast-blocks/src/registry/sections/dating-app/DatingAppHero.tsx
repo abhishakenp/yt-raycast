@@ -13,24 +13,30 @@ import {
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * DatingAppHero — bright, romantic split hero for a dating / matchmaking app. A
- * soft rose/primary-to-muted gradient canvas with a two-column layout: on the left
- * a live-matches pulse pill, a big "find someone who [gets you]" headline (with the
- * highlight phrase in the primary accent), a supporting paragraph, dual CTAs
- * (filled "Download Free" + outlined "See How It Works"), and stacked overlapping
- * avatar social proof; on the right a tall rounded photo with an overlaid online
- * profile card and a floating "It's a Match!" verified badge. Buttons route through
- * section-kit route links and all imagery is alt-driven. Use as the top hero for dating apps,
- * matchmaking services, singles or relationship platforms. Renders fully with no
- * props via baked-in "HeartLink" defaults.
+ * DatingAppHero — playful-geometric split hero for a dating / matchmaking app.
+ * An asymmetric 7:5 grid under a giant ghost "MATCH" watermark: on the left a
+ * rounded-full live-matches sticker pill with a 2px foreground border and hard
+ * offset shadow, a mono index rail, then a huge extrabold tight-tracked
+ * "find someone who [gets you]" headline whose highlight phrase sits on a
+ * tilted primary marker block, a supporting paragraph, dual rounded-full pill
+ * CTAs (filled primary + outlined) with hard 3px offset shadows and press
+ * feedback, and an overlapping rounded-full avatar stack for social proof; on
+ * the right the tall photo sits in a sharp 2px-bordered plate tilted 1deg over
+ * a primary-tinted offset frame, with a sharp overlaid online profile card and
+ * a rotated rounded-full "It's a Match!" heart sticker chip breaching the top
+ * corner. Buttons route through section-kit route links and all imagery is
+ * alt-driven. Use as the top hero for dating apps, matchmaking services,
+ * singles or relationship platforms. Renders fully with no props via baked-in
+ * "HeartLink" defaults.
  */
 export const DatingAppHero = defineCapsule({
   name: 'DatingAppHero',
   description:
-    "Bright, romantic split hero for a dating / matchmaking app: a soft rose/primary-to-muted gradient canvas, two columns — left has a live-matches pulse pill, a large 'find someone who [highlight]' headline with the accent phrase in primary, a supporting paragraph, dual CTAs (filled 'Download Free' + outlined 'See How It Works'), and stacked overlapping avatar social proof; right has a tall rounded photo with an overlaid online profile card and a floating 'It's a Match!' verified badge. Buttons route through section-kit route links; all imagery is alt-driven <Image>. Use as the top hero for dating apps, matchmaking services, singles or relationship platforms.",
+    "Playful-geometric split hero for a dating / matchmaking app: an asymmetric 7:5 grid under a giant ghost 'MATCH' watermark — left has a rounded-full live-matches sticker pill with 2px border and hard offset shadow, a mono index rail, a huge extrabold 'find someone who [highlight]' headline with the accent phrase on a tilted primary marker block, a supporting paragraph, dual rounded-full pill CTAs (filled 'Download Free' + outlined 'See How It Works') with hard offset shadows and press feedback, and an overlapping rounded-full avatar stack; right has the tall photo in a sharp 2px-bordered plate tilted over a primary-tinted offset frame with a sharp overlaid online profile card and a rotated rounded-full 'It's a Match!' heart sticker chip. Buttons route through section-kit route links; all imagery is alt-driven <Image>. Use as the top hero for dating apps, matchmaking services, singles or relationship platforms.",
   props: z.object({
     badge: z.string().optional(),
     /** Heading words before the highlighted phrase. */
@@ -95,21 +101,6 @@ export const DatingAppHero = defineCapsule({
       </svg>
     )
 
-    const Check = ({ className }: { className?: string }) => (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className={className}
-        aria-hidden="true"
-      >
-        <path d="M5 13l4 4L19 7" />
-      </svg>
-    )
-
     const ChevronDown = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
@@ -127,45 +118,53 @@ export const DatingAppHero = defineCapsule({
 
     return (
       <HeroSection className={cn('relative overflow-hidden', props.className)}>
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-muted"
-        />
-        <Container size="xl" className="relative pb-24 pt-20 lg:pb-40 lg:pt-32">
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-            <div className="max-w-2xl">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
-                <span className="size-2 animate-pulse rounded-full bg-primary" />
+        {/* Giant ghost watermark anchoring the playful-geometric grammar. */}
+        <Watermark className="-bottom-6 -right-8 text-[7rem] uppercase sm:text-[12rem] lg:-bottom-14 lg:text-[19rem]">
+          Match
+        </Watermark>
+        <Container size="xl" className="relative pb-16 pt-14 lg:pb-28 lg:pt-24">
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
+            <div className="lg:col-span-7">
+              {/* Rounded-full sticker pill vs sharp structure — binary radius. */}
+              <span className="inline-flex -rotate-1 items-center gap-2 rounded-full border-2 border-foreground bg-background px-4 py-1.5 text-sm font-semibold text-foreground shadow-[3px_3px_0_0] shadow-foreground">
+                <span
+                  aria-hidden="true"
+                  className="size-2 animate-pulse rounded-full bg-primary motion-reduce:animate-none"
+                />
                 {heroBadge}
+              </span>
+              <div className="mt-6 flex items-center gap-3">
+                <MonoTag tone="faint">01 / Meet</MonoTag>
+                <span aria-hidden="true" className="h-px w-16 bg-border" />
               </div>
-              <HeroHeading className="mb-6">
-                {headingPre} <HeroHighlight>{heroHighlight}</HeroHighlight>
+              <HeroHeading className="mt-4 text-5xl font-extrabold leading-[0.95] tracking-tighter text-foreground sm:text-6xl lg:text-7xl">
+                {headingPre}{' '}
+                <HeroHighlight className="relative inline-block whitespace-nowrap text-primary-foreground">
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-[-0.12em] inset-y-[0.04em] -rotate-1 bg-primary"
+                  />
+                  <span className="relative">{heroHighlight}</span>
+                </HeroHighlight>
               </HeroHeading>
-              <HeroSubheading className="mb-8 mt-0 sm:text-xl">
+              <HeroSubheading className="mt-6 max-w-xl text-lg leading-relaxed">
                 {heroSub}
               </HeroSubheading>
-              <HeroActions className="mb-8 mt-0 flex flex-col gap-4 sm:flex-row">
+              <HeroActions className="mt-8 grid grid-cols-1 gap-4 sm:flex sm:flex-row">
                 <HeroCta
                   asChild
                   variant="primary"
-                  className="gap-2 rounded-xl px-6 py-4 text-base font-semibold shadow-lg shadow-primary/20 transition-all"
+                  className="gap-2 rounded-full border-2 border-foreground px-7 py-3.5 text-base font-semibold shadow-[3px_3px_0_0] shadow-foreground transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:bg-primary/90 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none motion-reduce:transform-none"
                 >
                   <NavbarRouteLink href={heroPrimary}>
-                    <svg
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      className="size-5"
-                      aria-hidden="true"
-                    >
-                      <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" />
-                    </svg>
+                    <HeartGlyph className="size-5" />
                     {heroPrimary}
                   </NavbarRouteLink>
                 </HeroCta>
                 <HeroCta
                   asChild
                   variant="outline"
-                  className="gap-2 rounded-xl bg-card px-6 py-4 text-base font-semibold transition-all hover:bg-accent"
+                  className="gap-2 rounded-full border-2 border-foreground bg-background px-7 py-3.5 text-base font-semibold text-foreground shadow-[3px_3px_0_0] shadow-foreground transition-[transform,box-shadow,background-color] duration-150 hover:-translate-y-0.5 hover:bg-muted active:translate-x-[2px] active:translate-y-[2px] active:shadow-none motion-reduce:transform-none"
                 >
                   <NavbarRouteLink href={heroSecondary}>
                     {heroSecondary}
@@ -173,7 +172,7 @@ export const DatingAppHero = defineCapsule({
                   </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <div className="mt-8 flex items-center gap-4 border-t border-border pt-6 text-sm text-muted-foreground">
                 <div className="flex -space-x-2">
                   {avatars.map((a) => (
                     <Image
@@ -181,22 +180,27 @@ export const DatingAppHero = defineCapsule({
                       alt={a}
                       w={100}
                       h={100}
-                      className="size-8 rounded-full border-2 border-background object-cover"
+                      className="size-9 rounded-full border-2 border-background object-cover"
                     />
                   ))}
                 </div>
-                <p>{heroSocial}</p>
+                <p className="font-medium">{heroSocial}</p>
               </div>
             </div>
-            <div className="relative lg:pl-8">
-              <div className="relative">
+            <div className="relative mx-2 sm:mx-6 lg:col-span-5 lg:mx-0">
+              <div className="relative rotate-1">
+                {/* Primary-tinted offset frame behind the sharp photo plate. */}
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 translate-x-3 translate-y-3 border-2 border-primary/30 bg-primary/5"
+                />
                 <HeroMediaPanel
                   alt={heroImageAlt}
                   w={800}
                   h={1000}
-                  className="aspect-[4/5] w-full shadow-2xl shadow-primary/10"
+                  className="relative aspect-[4/5] w-full rounded-none border-2 border-foreground"
                 />
-                <div className="absolute inset-x-4 bottom-4 rounded-xl bg-card/95 p-4 shadow-lg backdrop-blur-sm">
+                <div className="absolute inset-x-4 bottom-4 border-2 border-foreground bg-card p-4 shadow-[3px_3px_0_0] shadow-foreground">
                   <div className="flex items-center gap-3">
                     <div className="relative">
                       <Image
@@ -207,30 +211,25 @@ export const DatingAppHero = defineCapsule({
                       />
                       <span className="absolute -right-1 -top-1 size-4 rounded-full border-2 border-card bg-primary" />
                     </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-card-foreground">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-bold text-card-foreground">
                         {profileName}
                       </p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="truncate text-sm text-muted-foreground">
                         {profileMeta}
                       </p>
                     </div>
-                    <span className="grid size-10 place-items-center rounded-full bg-primary/10 text-primary">
+                    <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
                       <HeartGlyph className="size-5" />
                     </span>
                   </div>
                 </div>
               </div>
-              <div className="absolute -right-4 -top-4 hidden rounded-xl bg-card p-4 shadow-lg sm:block">
-                <div className="flex items-center gap-2">
-                  <span className="grid size-8 place-items-center rounded-full bg-primary/10 text-primary">
-                    <Check className="size-4" />
-                  </span>
-                  <span className="text-sm font-medium text-card-foreground">
-                    {matchBadge}
-                  </span>
-                </div>
-              </div>
+              {/* Rotated heart sticker chip breaching the plate corner. */}
+              <span className="absolute -right-2 -top-5 inline-flex rotate-2 items-center gap-2 rounded-full border-2 border-foreground bg-background px-4 py-2 text-sm font-bold text-foreground shadow-[3px_3px_0_0] shadow-foreground sm:-right-5">
+                <HeartGlyph className="size-4 text-primary" />
+                {matchBadge}
+              </span>
             </div>
           </div>
         </Container>

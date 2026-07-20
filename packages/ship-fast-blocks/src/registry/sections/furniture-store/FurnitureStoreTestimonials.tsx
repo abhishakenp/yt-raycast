@@ -3,13 +3,14 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * FurnitureStoreTestimonials — a centered, star-rated customer-review grid. A
- * padded section with a centered eyebrow + heading above a 1/3-column grid of
- * muted-card blockquotes; each card has a 5-star row (primary-tinted), the quote
- * in quotation marks, and a footer with a round customer avatar beside the name
- * and a location / purchase meta line. Use as social proof for furniture,
- * home-decor, interiors, or any warm retail brand. Renders fully with no props
- * via baked-in defaults.
+ * FurnitureStoreTestimonials — an editorial customer-review gallery. A padded
+ * section with an asymmetric left-aligned mono index eyebrow + heading above a
+ * 1/3-column grid of column-staggered open blockquotes; each rounded-none
+ * hairline-topped cell carries a giant faint serif quotation mark, a mono index
+ * numeral, the quote, and a footer with the customer name and a mono
+ * location / purchase meta line. Use as social proof for furniture, home-decor,
+ * interiors, or any warm retail brand. Renders fully with no props via baked-in
+ * defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -24,7 +25,7 @@ import {
 export const FurnitureStoreTestimonials = defineCapsule({
   name: 'FurnitureStoreTestimonials',
   description:
-    'Centered star-rated customer-review grid: a padded section with a centered eyebrow + heading above a 1/3-column grid of muted-card blockquotes; each card has a 5-star row (primary-tinted), the quote in quotation marks, and a footer with a round customer avatar beside the name and a location / purchase meta line. Use as social proof for furniture, home-decor, interiors, or any warm retail brand.',
+    'Editorial customer-review gallery: a padded section with an asymmetric left-aligned mono index eyebrow + heading above a 1/3-column grid of column-staggered open blockquotes; each rounded-none hairline-topped cell carries a giant faint serif quotation mark, a mono index numeral, the quote, and a footer with the customer name and a mono location / purchase meta line. Use as social proof for furniture, home-decor, interiors, or any warm retail brand.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -78,16 +79,17 @@ export const FurnitureStoreTestimonials = defineCapsule({
       >
         <Container>
           <SectionHeading
+            align="left"
             eyebrow={eyebrow}
             title={heading}
             titleId="furniture-testimonials-heading"
-            className="mb-12 lg:mb-16 gap-0"
-            eyebrowClassName="mb-3 text-sm font-medium uppercase tracking-widest text-muted-foreground"
-            titleClassName="text-3xl font-medium lg:text-4xl"
+            className="mb-12 gap-0 lg:mb-16"
+            eyebrowClassName="mb-3 font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground"
+            titleClassName="text-3xl font-medium tracking-tight lg:text-4xl"
           />
 
-          <TestimonialGrid columns={3}>
-            {items.map((t) => {
+          <TestimonialGrid columns={3} className="items-start gap-x-8 gap-y-10">
+            {items.map((t, i) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -98,12 +100,32 @@ export const FurnitureStoreTestimonials = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
+                <TestimonialCard
+                  key={__iv__.name}
+                  className={cn(
+                    'relative gap-5 rounded-none border-0 border-t border-foreground bg-transparent pt-6 transition-none hover:border-foreground',
+                    i % 2 === 1 && 'lg:mt-10',
+                  )}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -top-4 right-0 select-none font-serif text-7xl leading-none text-foreground/[0.06]"
+                  >
+                    &rdquo;
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="font-mono text-[11px] tabular-nums tracking-[0.2em] text-primary"
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <TestimonialQuote className="text-base leading-relaxed">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="mt-2 flex-col items-start gap-1">
                     <TestimonialName>{__iv__.name}</TestimonialName>
                     {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
+                      <TestimonialMeta className="font-mono text-[11px] uppercase tracking-[0.12em]">
                         {__iv__.role || __iv__.company || __iv__.meta}
                       </TestimonialMeta>
                     )}

@@ -8,6 +8,7 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 import { z } from 'zod/v4'
@@ -15,18 +16,21 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * DevToolFaq — an accordion FAQ for a developer tool / API platform. A muted-
- * banded, narrow-width section with a centered heading + intro above a stack of
- * native <details> disclosure cards, each a bordered panel with a question
- * summary, a rotating chevron, and a revealed answer paragraph. No JS state —
- * uses the open/closed semantics of <details>. Use to answer common questions
- * about limits, self-hosting, supported languages, security, and trials for
- * developer tools, API platforms, or technical SaaS.
+ * DevToolFaq — "man page" accordion FAQ for a developer tool / API platform.
+ * A muted band with an asymmetric 4/8 split: a left rail holding an aria-hidden
+ * mono "$ man devstack" prompt, the heading, and the intro (sticky on
+ * desktop), beside a collapsed-border stack of native <details> disclosure
+ * rows sharing hairline borders — each summary carries a mono "Q.01" index,
+ * the question, and a square rotating chevron, with the answer indented behind
+ * a hairline prompt rail. No JS state — uses the open/closed semantics of
+ * <details>. Use to answer common questions about limits, self-hosting,
+ * supported languages, security, and trials for developer tools, API
+ * platforms, or technical SaaS.
  */
 export const DevToolFaq = defineCapsule({
   name: 'DevToolFaq',
   description:
-    'Accordion FAQ for a developer tool / API platform: a muted-banded, narrow-width section with a centered heading + intro above a stack of native <details> disclosure cards, each a bordered panel with a question summary, a rotating chevron, and a revealed answer paragraph. Uses native details open/closed semantics (no JS state). Use to answer common questions about limits, self-hosting, supported languages, security, and trials for developer tools, API platforms, or technical SaaS.',
+    "'Man page' accordion FAQ for a developer tool / API platform: a muted band with an asymmetric 4/8 split — a sticky left rail with an aria-hidden mono '$ man devstack' prompt, the heading, and intro beside a collapsed-border stack of native <details> disclosure rows sharing hairline borders, each summary carrying a mono 'Q.01' index, the question, and a square rotating chevron, with the answer indented behind a hairline prompt rail. Uses native details open/closed semantics (no JS state). Use to answer common questions about limits, self-hosting, supported languages, security, and trials for developer tools, API platforms, or technical SaaS.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -76,39 +80,61 @@ export const DevToolFaq = defineCapsule({
 
     return (
       <section
-        className={cn('bg-muted/40 py-20 lg:py-28', props.className)}
+        className={cn('bg-muted/40 py-16 lg:py-24', props.className)}
         aria-labelledby="faq-heading"
       >
-        <Container className="max-w-4xl">
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            titleId="faq-heading"
-            className="mb-16  gap-0"
-            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <FaqAccordion>
-            {items.map((item) => (
-              <FaqItem
-                key={item.question}
-                variant="overflow-bordered"
-                className="bg-background"
-              >
-                <FaqQuestion className="p-6">
-                  <h3 className="font-semibold text-foreground">
-                    {item.question}
-                  </h3>
-                  <FaqQuestionIcon />
-                </FaqQuestion>
-                <FaqAnswer asChild className="px-6 pb-6">
-                  <div>
-                    <p className="leading-relaxed">{item.answer}</p>
-                  </div>
-                </FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+        <Container>
+          <div className="grid gap-10 lg:grid-cols-12 lg:gap-12">
+            <div className="lg:col-span-4">
+              <div className="lg:sticky lg:top-24">
+                <MonoTag aria-hidden="true" tone="faint" className="mb-4 block">
+                  <span className="text-primary">$ </span>man devstack
+                </MonoTag>
+                <SectionHeading
+                  align="left"
+                  title={heading}
+                  subtitle={description}
+                  titleId="faq-heading"
+                  className="gap-4"
+                  titleClassName="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl"
+                  subtitleClassName="text-lg text-muted-foreground"
+                />
+              </div>
+            </div>
+            <div className="lg:col-span-8">
+              <FaqAccordion className="space-y-0 border border-border">
+                {items.map((item, i) => (
+                  <FaqItem
+                    key={item.question}
+                    variant="overflow-bordered"
+                    className="rounded-none border-0 border-b border-border bg-background last:border-b-0"
+                  >
+                    <FaqQuestion className="gap-4 p-5 sm:p-6">
+                      <span className="flex min-w-0 items-baseline gap-3">
+                        <span
+                          aria-hidden="true"
+                          className="shrink-0 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground"
+                        >
+                          Q.{String(i + 1).padStart(2, '0')}
+                        </span>
+                        <h3 className="font-semibold tracking-tight text-foreground">
+                          {item.question}
+                        </h3>
+                      </span>
+                      <FaqQuestionIcon className="grid size-7 shrink-0 place-items-center border border-border" />
+                    </FaqQuestion>
+                    <FaqAnswer asChild className="px-5 pb-6 sm:px-6">
+                      <div>
+                        <p className="border-l-2 border-primary/40 pl-4 text-sm leading-relaxed sm:ml-[3.25rem]">
+                          {item.answer}
+                        </p>
+                      </div>
+                    </FaqAnswer>
+                  </FaqItem>
+                ))}
+              </FaqAccordion>
+            </div>
+          </div>
         </Container>
       </section>
     )

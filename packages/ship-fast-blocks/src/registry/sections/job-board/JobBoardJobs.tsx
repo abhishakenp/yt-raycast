@@ -14,23 +14,26 @@ import {
 } from './job-board-interactions.tsx'
 
 /**
- * JobBoardJobs — a featured-jobs listings feed for a job-board / careers site. A
- * header row pairing a heading + description with a "view all" arrow link, a row
- * of pill filter chips (first active), then a vertical stack of rich job cards —
- * each with a company logo thumbnail, role title, optional New/Featured badge,
- * company + location line, skill/salary tag pills, a clamped description, a
- * posted-date and an Apply button — closing with a centered "load more" button.
- * Filters read/write shared Lakebed search state, applications are recorded,
- * and load-more changes the visible job count. Use as the primary listings feed
- * on job boards, hiring marketplaces or talent networks. Renders fully with no
- * props.
+ * JobBoardJobs — a classified-ads ledger of featured job listings for a
+ * job-board / careers site. An asymmetric hairline header (serif heading +
+ * description left, mono "view all" clear action right), a row of sharp-cornered
+ * stamp filter chips, then a hairline-divided collapsed-border stack of listing
+ * rows — each with an index numeral, a sharp company logo thumbnail, the role
+ * title, an optional rotated New/Featured stamp, a mono company + location line,
+ * mono tabular skill/salary stamp tags, a clamped description, a mono posted-date
+ * and a sharp Apply stamp button — closing with a centered mono "load more"
+ * stamp. Filters read/write shared Lakebed search state, applications are
+ * recorded, and load-more changes the visible job count. Use as the primary
+ * listings feed on job boards, hiring marketplaces or talent networks. Renders
+ * fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 export const JobBoardJobs = defineCapsule({
   name: 'JobBoardJobs',
   description:
-    "Featured-jobs listings feed for a job-board / careers site: a header row pairing a heading + description with a 'view all' action, a row of pill filter chips, then a vertical stack of rich job cards — each with a company logo thumbnail, role title, optional New/Featured badge, company + location line, skill/salary tag pills, a clamped description, a posted-date and an Apply button — closing with a centered 'load more' button. The feed reacts to shared Lakebed search criteria from JobBoardHero, filters write the same search state, Apply records applications, and Load more updates visible count. Use as the primary listings feed on job boards, hiring marketplaces or talent networks.",
+    'Classified-ads ledger of featured job listings for a job-board / careers site: an asymmetric hairline header (serif heading and description left, mono view-all clear action right), a row of sharp-cornered stamp filter chips, then a hairline-divided collapsed-border stack of listing rows — each with an index numeral, a sharp company logo thumbnail, the role title, an optional rotated New/Featured stamp, a mono company + location line, mono tabular skill/salary stamp tags, a clamped description, a mono posted-date and a sharp Apply stamp button — closing with a centered mono load-more stamp. The feed reacts to shared Lakebed search criteria from JobBoardHero, filters write the same search state, Apply records applications, and Load more updates visible count. Use as the primary listings feed on job boards, hiring marketplaces or talent networks.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -180,15 +183,23 @@ export const JobBoardJobs = defineCapsule({
       </svg>
     )
     return (
-      <section className={cn('bg-background py-20', props.className)}>
-        <Container>
-          <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <section
+        className={cn(
+          'relative overflow-hidden bg-background py-16 lg:py-24',
+          props.className,
+        )}
+      >
+        <Watermark className="-right-4 top-8 font-serif text-[7rem] sm:text-[10rem] lg:text-[13rem]">
+          WANTED
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-8 flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
             <SectionHeading
               align="left"
               title={heading}
               subtitle={description}
-              className="gap-0"
-              titleClassName="mb-2 text-3xl font-semibold tracking-tight text-foreground"
+              className="max-w-2xl gap-2"
+              titleClassName="font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
               subtitleClassName="text-muted-foreground"
             />
             <button
@@ -200,14 +211,14 @@ export const JobBoardJobs = defineCapsule({
                   query: '',
                 })
               }
-              className="inline-flex items-center gap-2 font-medium text-foreground hover:underline"
+              className="inline-flex shrink-0 items-center gap-2 border-b border-foreground pb-0.5 text-left font-mono text-[11px] uppercase tracking-[0.14em] text-foreground transition-colors hover:text-muted-foreground active:translate-y-px sm:text-right"
             >
               {viewAll}
-              <ArrowRight className="size-4" />
+              <ArrowRight className="size-3.5" />
             </button>
           </div>
 
-          <div className="mb-8 flex flex-wrap gap-3">
+          <div className="mb-6 flex flex-wrap gap-2">
             {filters.map((filter, i) => {
               const isActive =
                 activeFilter === filter || (i === 0 && !activeFilter)
@@ -215,7 +226,8 @@ export const JobBoardJobs = defineCapsule({
                 <FilterChip
                   key={filter}
                   active={isActive}
-                  variant={isActive ? 'default' : 'muted'}
+                  variant={isActive ? 'solid' : 'muted'}
+                  className="rounded-none border border-foreground/60 font-mono text-[11px] uppercase tracking-[0.1em] transition-[background-color,transform] active:translate-y-px"
                   onClick={() =>
                     jobSearch.chooseSearch({
                       filter,
@@ -230,7 +242,10 @@ export const JobBoardJobs = defineCapsule({
             })}
           </div>
 
-          <p className="mb-5 text-sm text-muted-foreground" aria-live="polite">
+          <p
+            className="mb-5 font-mono text-xs text-muted-foreground"
+            aria-live="polite"
+          >
             {matchingItems.length} matching job
             {matchingItems.length === 1 ? '' : 's'}
             {jobActions.applicationCount
@@ -238,61 +253,66 @@ export const JobBoardJobs = defineCapsule({
               : ''}
           </p>
 
-          <JobList className="space-y-4">
-            {visibleItems.map((job) => {
+          <JobList className="gap-0 divide-y divide-border border-y border-border">
+            {visibleItems.map((job, i) => {
               const applied = appliedRoles.has(job.role)
               const pending = pendingRole === job.role
               return (
-                <JobItem asChild key={job.role}>
-                  <Card
-                    key={job.role}
-                    className="group transition-all hover:border-foreground/30 hover:shadow-lg"
-                  >
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-                      <Image
-                        alt={job.logoAlt}
-                        w={100}
-                        h={100}
-                        loading="lazy"
-                        className="size-14 shrink-0 rounded-lg object-cover"
-                      />
+                <JobItem key={job.role}>
+                  <Card className="group rounded-none border-0 bg-transparent p-0 py-6 transition-colors hover:bg-muted/40">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr_auto] sm:gap-6">
+                      <div className="flex items-center gap-4 sm:flex-col sm:items-center sm:gap-3">
+                        <span
+                          aria-hidden="true"
+                          className="font-mono text-[11px] tabular-nums text-muted-foreground/70"
+                        >
+                          {String(i + 1).padStart(3, '0')}
+                        </span>
+                        <Image
+                          alt={job.logoAlt}
+                          w={100}
+                          h={100}
+                          loading="lazy"
+                          className="size-12 shrink-0 rounded-none border border-border object-cover"
+                        />
+                      </div>
                       <div className="min-w-0 flex-1">
-                        <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-                          <h3 className="text-lg font-semibold text-card-foreground transition-colors group-hover:text-foreground/70">
+                        <div className="mb-1.5 flex flex-wrap items-center gap-3">
+                          <h3 className="font-serif text-lg font-bold tracking-tight text-foreground">
                             {job.role}
                           </h3>
                           {job.badge ? (
                             <span
                               className={cn(
-                                'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
+                                'inline-flex rotate-[-2deg] items-center border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]',
                                 job.badge === 'New'
-                                  ? 'bg-primary/10 text-primary'
-                                  : 'bg-secondary text-secondary-foreground',
+                                  ? 'border-primary text-primary'
+                                  : 'border-foreground/60 text-foreground',
                               )}
                             >
                               {job.badge}
                             </span>
                           ) : null}
                         </div>
-                        <p className="mb-3 text-muted-foreground">
+                        <p className="mb-3 font-mono text-xs uppercase tracking-[0.08em] text-muted-foreground">
                           {job.company}
                         </p>
-                        <div className="mb-4 flex flex-wrap gap-2">
+                        <div className="mb-3 flex flex-wrap gap-2">
                           {job.tags.map((tag) => (
                             <span
                               key={tag}
-                              className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground"
+                              className="border border-border px-2 py-0.5 font-mono text-[11px] tabular-nums text-muted-foreground"
                             >
                               {tag}
                             </span>
                           ))}
                         </div>
-                        <p className="line-clamp-2 text-sm text-muted-foreground">
+                        <p className="line-clamp-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
                           {job.description}
                         </p>
                       </div>
-                      <div className="mt-2 flex flex-row items-center gap-3 sm:mt-0 sm:flex-col sm:items-end sm:gap-2">
-                        <span className="text-sm text-muted-foreground">
+                      <div className="flex flex-row items-center justify-between gap-3 sm:flex-col sm:items-end sm:justify-start sm:gap-3">
+                        <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
                           {job.posted}
                         </span>
                         <button
@@ -311,7 +331,7 @@ export const JobBoardJobs = defineCapsule({
                                 () => setPendingRole(''),
                               )
                           }}
-                          className="whitespace-nowrap rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+                          className="inline-flex min-h-9 items-center justify-center whitespace-nowrap rounded-none bg-primary px-5 text-sm font-medium text-primary-foreground transition-[background-color,transform] hover:bg-primary/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
                         >
                           {pending
                             ? 'Applying'
@@ -326,15 +346,13 @@ export const JobBoardJobs = defineCapsule({
               )
             })}
             {!visibleItems.length ? (
-              <Card
-                className="border-dashed text-center text-sm text-muted-foreground p-8"
-              >
+              <Card className="rounded-none border-dashed p-8 text-center font-mono text-sm text-muted-foreground">
                 No jobs match the current search.
               </Card>
             ) : null}
           </JobList>
 
-          <div className="mt-10 text-center">
+          <div className="mt-10 flex justify-center">
             <button
               type="button"
               aria-busy={jobActions.loadMorePending}
@@ -345,7 +363,7 @@ export const JobBoardJobs = defineCapsule({
               onClick={() => {
                 void jobActions.loadMore()
               }}
-              className="rounded-xl border border-input px-6 py-3 font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+              className="inline-flex min-h-11 items-center justify-center rounded-none border-2 border-foreground px-6 font-mono text-[11px] uppercase tracking-[0.14em] text-foreground transition-[background-color,color,transform] hover:bg-foreground hover:text-background active:translate-y-px disabled:pointer-events-none disabled:opacity-50"
             >
               {jobActions.loadMorePending ? 'Loading' : loadMore}
             </button>

@@ -39,7 +39,13 @@ export const processOutboxEvent = internalAction({
       ) {
         throw new Error('Dub partner delivery is not configured')
       }
-      await deliverDubOutboxEvent(event, new Dub({ token: env.DUB_API_KEY }))
+      await deliverDubOutboxEvent(
+        event,
+        new Dub({
+          token: env.DUB_API_KEY,
+          ...(env.DUB_API_URL ? { serverURL: env.DUB_API_URL } : {}),
+        }),
+      )
       await ctx.runMutation(internal.partners.completeOutboxEvent, {
         eventId: event._id,
         now: Date.now(),

@@ -1,7 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@tanstack/react-router', () => ({
-  createFileRoute: (path: string) => (options: Record<string, unknown>) => ({ options, path }),
+  createFileRoute: (path: string) => (options: Record<string, unknown>) => ({
+    options,
+    path,
+  }),
 }))
 
 type RouteWithHandlers = {

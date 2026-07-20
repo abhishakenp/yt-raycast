@@ -20,19 +20,21 @@ import {
 import { inquiryLakebed } from './inquiry-lakebed.ts'
 
 /**
- * ContactNavbar — glassy sticky top navigation bar for a contact / support page.
- * A blurred, border-bottomed header pinned to the top with a gradient orbit-glyph
- * logo tile + brand name on the left, a horizontal set of nav links in the center
- * (desktop), a Shoo account dropdown, a Lakebed-backed primary CTA, and a real
- * mobile Sheet menu on the right. Nav links route through route hrefs so labels
- * drive page-switching, while contact actions stay in scoped Lakebed state. Use
- * as the sticky site header for SaaS, agency, or startup contact pages. Renders
- * fully with no props via baked-in "Orbit Digital" defaults.
+ * ContactNavbar — hairline editorial sticky top navigation bar for a contact /
+ * support page. A blurred, border-bottomed header pinned to the top with a
+ * squared inverted orbit-glyph logo tile + brand name on the left, mono
+ * uppercase micro-label nav links in the center (desktop), a Shoo account
+ * dropdown in a squared hairline chip, a Lakebed-backed inverted primary CTA
+ * with press feedback, and a real mobile Sheet menu on the right. Nav links
+ * route through route hrefs so labels drive page-switching, while contact
+ * actions stay in scoped Lakebed state. Use as the sticky site header for
+ * SaaS, agency, or startup contact pages. Renders fully with no props via
+ * baked-in "Orbit Digital" defaults.
  */
 export const ContactNavbar = defineCapsule({
   name: 'ContactNavbar',
   description:
-    'Glassy sticky top navigation bar for a contact / support page: a blurred, border-bottomed header with a gradient orbit-glyph logo tile + brand name on the left, horizontal nav links in the center (desktop), Shoo profile dropdown, scoped Lakebed CTA, and real Sheet hamburger menu. Nav links route through route hrefs while inquiry actions stay in Lakebed state. Use as the sticky site header for SaaS, agency, or startup contact pages.',
+    'Hairline editorial sticky top navigation bar for a contact / support page: a blurred, border-bottomed header with a squared inverted orbit-glyph logo tile + brand name on the left, mono uppercase micro-label nav links in the center (desktop), Shoo profile dropdown in a squared hairline chip, scoped Lakebed inverted CTA with press feedback, and real Sheet hamburger menu. Nav links route through route hrefs while inquiry actions stay in Lakebed state. Use as the sticky site header for SaaS, agency, or startup contact pages.',
   props: z.object({
     /** Brand / product name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -59,14 +61,14 @@ export const ContactNavbar = defineCapsule({
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          'grid size-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-[0_4px_12px_rgba(0,0,0,0.4)]',
+          'grid size-7 place-items-center rounded-none bg-foreground text-background',
           className,
         )}
         aria-hidden="true"
       >
         <svg
-          width="18"
-          height="18"
+          width="16"
+          height="16"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -84,20 +86,26 @@ export const ContactNavbar = defineCapsule({
       <SiteNav
         position="sticky"
         height="compact"
-        className={cn('bg-background/80 backdrop-blur-md', props.className)}
+        className={cn(
+          'border-b border-border bg-background/80 backdrop-blur-md',
+          props.className,
+        )}
         containerClassName="max-w-[1160px] px-6"
       >
         <NavbarBrand
           href={homeTarget}
           className="gap-2 text-lg font-extrabold tracking-tight text-foreground"
         >
-          <BrandLogo brand={brand}>
-            <LogoImage fallback={<LogoMark />} />
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage className="size-7" fallback={<LogoMark />} />
             <LogoLabel />
           </BrandLogo>
         </NavbarBrand>
 
-        <NavbarNav className="gap-8 text-[0.9375rem] font-medium" asChild>
+        <NavbarNav
+          className="gap-7 font-mono text-[11px] font-medium uppercase tracking-[0.18em]"
+          asChild
+        >
           <ul>
             {nav.map((label) => (
               <li key={label}>
@@ -113,7 +121,7 @@ export const ContactNavbar = defineCapsule({
           <InquiryActionBadge lakebed={lakebed} />
           <InquiryAccountButton
             lakebed={lakebed}
-            buttonClassName="grid size-10 place-items-center rounded-lg border border-border bg-background text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+            buttonClassName="grid size-10 place-items-center rounded-none border border-border bg-background text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
           />
           <InquiryActionButton
             lakebed={lakebed}
@@ -126,7 +134,7 @@ export const ContactNavbar = defineCapsule({
                 Saving
               </>
             }
-            className="hidden items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-[0.9375rem] font-semibold text-primary-foreground shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)] disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
+            className="hidden items-center gap-2 rounded-none bg-foreground px-5 py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-background transition-colors hover:bg-foreground/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
           >
             {ctaLabel}
           </InquiryActionButton>
@@ -137,7 +145,7 @@ export const ContactNavbar = defineCapsule({
             ctaLabel={ctaLabel}
             ctaTarget={ctaTarget}
             lakebed={lakebed}
-            buttonClassName="grid size-10 place-items-center rounded-lg border border-border bg-background text-muted-foreground transition-colors hover:border-primary hover:text-foreground md:hidden"
+            buttonClassName="grid size-10 place-items-center rounded-none border border-border bg-background text-muted-foreground transition-colors hover:border-foreground hover:text-foreground md:hidden"
           />
         </NavbarActions>
       </SiteNav>

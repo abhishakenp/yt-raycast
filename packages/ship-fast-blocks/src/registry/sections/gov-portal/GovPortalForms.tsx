@@ -110,7 +110,6 @@ export const GovPortalGrievance = defineCapsule({
           <ResponsiveGrid
             asChild
             cols="1-2"
-
             className="mt-6 rounded-2xl border border-border bg-card p-6 gap-4"
           >
             <form onSubmit={form.submit}>
@@ -503,10 +502,7 @@ function StatusList({
   lang: GovLang
 }) {
   return (
-    <Card
-      variant="muted"
-      className="bg-muted/30 p-5 rounded-2xl p-4"
-    >
+    <Card variant="muted" className="bg-muted/30 p-5 rounded-2xl p-4">
       <GovFormHeader asChild>
         <h3 className="mb-3 text-sm font-semibold text-foreground">{title}</h3>
       </GovFormHeader>

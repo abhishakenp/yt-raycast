@@ -14,19 +14,22 @@ import {
 } from '#/section-kit/index.ts'
 
 /**
- * ConsultingNavbar — sticky top navigation bar for a management-consulting
- * firm landing page. A border-bottomed, backdrop-blurred header pinned to the
- * top with a solid brand-initial logo tile + firm name on the left, a horizontal
- * set of nav links in the center (desktop), and a primary CTA button plus a
- * hamburger menu icon on the right. The logo and every link route through
+ * ConsultingNavbar — Swiss-authority sticky top navigation bar for a
+ * management-consulting firm site. A hairline border-bottomed, backdrop-blurred
+ * header with a square primary index tile carrying the brand initial + a
+ * tight-tracked serif firm wordmark on the left, mono uppercase nav links in
+ * the center (desktop, secondary items hidden below xl to keep the bar
+ * uncrowded), and a square-edged ink CTA button with press feedback on the
+ * right beside the hamburger drawer. The logo and every link route through
  * route hrefs for page-switching. Use as the site header for consulting firms,
- * professional-services groups, corporate advisories, or B2B service businesses.
- * Renders fully with no props via baked-in "Nexus Strategy Partners" defaults.
+ * professional-services groups, corporate advisories, or B2B service
+ * businesses. Renders fully with no props via baked-in "Nexus Strategy
+ * Partners" defaults.
  */
 export const ConsultingNavbar = defineCapsule({
   name: 'ConsultingNavbar',
   description:
-    'Sticky top navigation bar for a management-consulting firm landing page: a border-bottomed, backdrop-blurred header with a solid brand-initial logo tile + firm name on the left, horizontal nav links in the center (desktop), a primary CTA button and a hamburger menu icon on the right. Every link and the logo route through route hrefs for page-switching. Use as the site header for consulting firms, professional-services groups, corporate advisories, or B2B service businesses.',
+    'Swiss-authority sticky navigation bar for a management-consulting firm site: a hairline border-bottomed, backdrop-blurred header with a square primary brand-initial tile + serif firm wordmark on the left, mono uppercase nav links in the center (desktop, later items hidden below xl), and a square-edged ink CTA button with press feedback plus a hamburger drawer on the right. Every link and the logo route through route hrefs for page-switching. Use as the site header for consulting firms, professional-services groups, corporate advisories, or B2B service businesses.',
   props: z.object({
     /** Firm / brand name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -52,7 +55,7 @@ export const ConsultingNavbar = defineCapsule({
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          'grid place-items-center rounded-sm bg-primary font-bold text-primary-foreground',
+          'grid place-items-center rounded-none bg-primary font-serif font-bold text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -68,15 +71,25 @@ export const ConsultingNavbar = defineCapsule({
         className={cn('bg-background/95', props.className)}
       >
         <NavbarBrand href={homeTarget} className="gap-3">
-          <BrandLogo brand={brand}>
-            <LogoImage fallback={<LogoMark className="size-10 text-lg" />} />
-            <LogoLabel className="text-xl font-semibold tracking-tight text-foreground" />
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage
+              className="size-8"
+              fallback={<LogoMark className="size-8 text-base" />}
+            />
+            <LogoLabel className="font-serif text-lg font-bold tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
-        <NavbarNav>
-          {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+        <NavbarNav className="gap-7">
+          {nav.map((label, i) => (
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className={cn(
+                'font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground active:translate-y-px',
+                i >= 4 && 'hidden xl:inline-flex',
+              )}
+            >
               {label}
             </NavbarNavLink>
           ))}
@@ -84,9 +97,9 @@ export const ConsultingNavbar = defineCapsule({
 
         <NavbarActions>
           <NavbarCta
-            variant="primary"
+            variant="dark"
             href={ctaTarget}
-            className="hidden rounded-md px-5 py-2.5 sm:inline-flex"
+            className="hidden rounded-none px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.14em] transition-all duration-150 active:translate-y-px sm:inline-flex"
           >
             {ctaLabel}
           </NavbarCta>

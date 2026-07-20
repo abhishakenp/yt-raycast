@@ -21,21 +21,24 @@ import {
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
- * CybersecurityNavbar — sticky, translucent top navigation bar for an
- * enterprise security-platform site. A backdrop-blurred, border-bottomed header
- * pinned to the top of the viewport: a shield-glyph logo beside the brand name
- * on the left, a horizontal set of nav links in the center (desktop), and a
- * "Contact Sales" text link plus a solid primary "Get Demo" CTA on the right.
- * Every nav item, the contact link and the CTA route through route hrefs so
- * labels can drive page-switching. Use as the sticky site header for
- * cybersecurity vendors, SOC/MDR/XDR/SIEM providers, zero-trust, cloud-security,
- * compliance-automation, or any authoritative B2B security SaaS landing page.
- * Renders fully with no props via baked-in "SentinelGuard" defaults.
+ * CybersecurityNavbar — terminal-stealth sticky top navigation for an
+ * enterprise security-platform site. A backdrop-blurred, hairline-bottomed
+ * header pinned to the viewport top: shield-glyph logo + bold brand wordmark
+ * left, mono uppercase nav links center (desktop), and on the right the
+ * command plan search, profile dropdown, selected-plan badge, a mono contact
+ * text link (xl and up), and a square-edged ink-inverted demo CTA with a
+ * hard-offset shadow and press feedback. Nav links route through route hrefs
+ * so labels can drive page-switching while conversion CTAs write to shared
+ * Lakebed state; a Sheet drawer serves mobile. Use as the sticky site header
+ * for cybersecurity vendors, SOC/MDR/XDR/SIEM providers, zero-trust,
+ * cloud-security, compliance-automation, or any authoritative B2B security
+ * SaaS landing page. Renders fully with no props via baked-in "SentinelGuard"
+ * defaults.
  */
 export const CybersecurityNavbar = defineCapsule({
   name: 'CybersecurityNavbar',
   description:
-    'Sticky translucent top navigation bar for an enterprise cybersecurity / security-platform site: backdrop-blurred, border-bottomed header pinned to the top with a shield-glyph logo + brand name, horizontal nav links, command plan search, Shoo profile dropdown, selected-plan badge, scoped contact/demo CTAs, and a reusable Sheet mobile drawer. Nav links route through route hrefs while conversion CTAs write to shared Lakebed state.',
+    'Terminal-stealth sticky top navigation bar for an enterprise cybersecurity / security-platform site: backdrop-blurred, hairline-bottomed header with a shield-glyph logo + bold brand wordmark, mono uppercase nav links, command plan search, Shoo profile dropdown, selected-plan badge, a mono contact link (xl+), a square-edged ink-inverted demo CTA with hard-offset shadow and press feedback, and a reusable Sheet mobile drawer. Nav links route through route hrefs while conversion CTAs write to shared Lakebed state.',
   props: z.object({
     /** Brand / product name shown beside the shield logo. */
     brand: z.string().optional(),
@@ -81,23 +84,28 @@ export const CybersecurityNavbar = defineCapsule({
         className={cn('bg-background/95', props.className)}
       >
         <NavbarBrand href={nav[0]} className="gap-2">
-          <BrandLogo brand={brand}>
+          <BrandLogo brand={brand} className="flex items-center gap-2">
             <LogoImage
-              fallback={<ShieldMark className="size-8 text-foreground" />}
+              className="size-7"
+              fallback={<ShieldMark className="size-7 text-foreground" />}
             />
-            <LogoLabel className="text-xl font-bold tracking-tight" />
+            <LogoLabel className="text-lg font-bold tracking-tight" />
           </BrandLogo>
         </NavbarBrand>
 
-        <NavbarNav className="[&>button]:font-normal">
+        <NavbarNav className="gap-1">
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="rounded-none px-3 font-mono text-xs font-medium uppercase tracking-[0.12em]"
+            >
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
 
-        <NavbarActions className="gap-4">
+        <NavbarActions className="gap-3">
           <SaasIntentBadge lakebed={lakebed} />
           <SaasSearchButton
             lakebed={lakebed}
@@ -113,7 +121,7 @@ export const CybersecurityNavbar = defineCapsule({
             plan={contactLabel}
             source="navbar-contact"
             pendingChildren={<SaasMutationSpinner className="size-4" />}
-            className="hidden items-center justify-center gap-2 text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-70 lg:inline-flex"
+            className="hidden items-center justify-center gap-2 whitespace-nowrap font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-70 xl:inline-flex"
           >
             {contactLabel}
           </SaasPlanActionButton>
@@ -128,7 +136,7 @@ export const CybersecurityNavbar = defineCapsule({
                 Scheduling
               </>
             }
-            className="hidden items-center justify-center gap-2 rounded-lg bg-primary px-5 py-2.5 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
+            className="hidden items-center justify-center gap-2 whitespace-nowrap rounded-none bg-foreground px-4 py-2 font-mono text-xs font-semibold uppercase tracking-[0.12em] text-background shadow-[3px_3px_0_0] shadow-foreground/20 transition-all duration-150 hover:bg-foreground/90 active:translate-y-px active:shadow-none disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
           >
             {ctaLabel}
           </SaasPlanActionButton>

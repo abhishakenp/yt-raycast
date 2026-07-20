@@ -14,18 +14,22 @@ import {
 } from '#/section-kit/GalleryGrid.tsx'
 
 /**
- * CybersecurityGallery — platform-screenshot gallery. A light section with a
- * centered heading + subheading above a responsive 2-to-3 column grid of
- * bordered, shadowed cards. Each card is a clickable tile with an alt-driven
- * screenshot image (zooms on hover) over a title + short caption, routing
- * through section-kit route links. Use to showcase product surfaces / dashboards for
+ * CybersecurityGallery — terminal-stealth surveillance dossier. A light
+ * section opening with a hairline mono meta rule ("SURFACE DOSSIER" + tabular
+ * figure count) above an asymmetric header (left-aligned heading + lede, mono
+ * "[ SINGLE PANE ]" tag right). Screens render as a square-edged,
+ * collapsed-border evidence grid with a deliberately broken rhythm — the first
+ * tile spans two columns like a lead exhibit. Each tile is an alt-driven
+ * screenshot (subtle zoom on hover) captioned by a hairline-topped mono
+ * "FIG.0X / title" label bar over the short description. Tiles route through
+ * section-kit route links. Use to showcase product surfaces / dashboards for
  * cybersecurity vendors, SOC/MDR providers, or any visual B2B security SaaS.
  * Renders fully with no props via baked-in platform-view defaults.
  */
 export const CybersecurityGallery = defineCapsule({
   name: 'CybersecurityGallery',
   description:
-    'Platform-screenshot gallery: a light section with a centered heading + subheading above a responsive 2-to-3 column grid of bordered, shadowed clickable cards, each with an alt-driven screenshot image (zooms on hover) over a title + short caption, routing through section-kit route links. Use to showcase product surfaces / dashboards for cybersecurity vendors, SOC/MDR providers, or any visual B2B security SaaS.',
+    "Terminal-stealth surveillance dossier gallery: a light section with a mono meta rule and asymmetric left-aligned header above a square-edged, collapsed-border evidence grid whose first tile spans two columns; each alt-driven screenshot zooms subtly on hover and is captioned by a hairline-topped mono 'FIG.0X / title' bar over its description, routing through section-kit route links. Use to showcase product surfaces / dashboards for cybersecurity vendors, SOC/MDR providers, or any visual B2B security SaaS.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -78,23 +82,46 @@ export const CybersecurityGallery = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-background py-24', props.className)}>
+      <section
+        className={cn('bg-background py-16 sm:py-20 lg:py-24', props.className)}
+      >
         <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 text-3xl font-bold sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
+          <div className="mb-8 flex items-center justify-between gap-4 border-b border-border pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground sm:mb-10">
+            <span className="flex items-center gap-3">
+              <span aria-hidden="true" className="size-2 bg-primary" />
+              Surface dossier
+            </span>
+            <span aria-hidden="true" className="tabular-nums">
+              {String(items.length).padStart(2, '0')} figures
+            </span>
+          </div>
+          <div className="mb-10 flex flex-col gap-6 sm:mb-14 md:flex-row md:items-end md:justify-between">
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-3"
+              titleClassName="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl"
+              subtitleClassName="max-w-xl text-base text-muted-foreground sm:text-lg"
+            />
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+            >
+              [ single pane ]
+            </p>
+          </div>
           <GalleryGrid>
-            <GalleryGridItems columns={3}>
+            <GalleryGridItems
+              columns={3}
+              className="gap-0 border-l border-t border-border"
+            >
               {items
                 .map((item) => ({
                   alt: item.title,
                   caption: item.description,
                 }))
-                .map((img) => {
+                .map((img, i) => {
                   const __iv__ = img as {
                     alt: string
                     caption?: string
@@ -102,13 +129,27 @@ export const CybersecurityGallery = defineCapsule({
                     location?: string
                   }
                   return (
-                    <GalleryTile key={__iv__.alt}>
-                      <GalleryTileImage alt={__iv__.alt} />
-                      {__iv__.caption && (
-                        <GalleryTileCaption>
-                          {__iv__.caption}
-                        </GalleryTileCaption>
+                    <GalleryTile
+                      key={__iv__.alt}
+                      className={cn(
+                        'rounded-none border-0 border-b border-r border-border',
+                        i % 2 === 0 && 'lg:col-span-2 lg:aspect-[8/3]',
                       )}
+                    >
+                      <GalleryTileImage alt={__iv__.alt} />
+                      <GalleryTileCaption className="rounded-none border-t border-border bg-background/90 px-4 py-3">
+                        <span
+                          aria-hidden="true"
+                          className="block font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground tabular-nums"
+                        >
+                          fig.{String(i + 1).padStart(2, '0')} / {__iv__.alt}
+                        </span>
+                        {__iv__.caption && (
+                          <span className="mt-1 block text-sm leading-snug text-foreground">
+                            {__iv__.caption}
+                          </span>
+                        )}
+                      </GalleryTileCaption>
                     </GalleryTile>
                   )
                 })}

@@ -1,17 +1,18 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import {} from '#/section-kit/index.ts'
 
 /**
- * DentalStats — dark inverted stats band for a dental practice site. A full-width
- * section on the foreground color with inverted background text, showing a
- * responsive 2-to-4 column grid of centered metrics where each big value is
- * rendered in the primary color above a faded label. Use as a credibility strip
- * (years of excellence, patients served, average rating, satisfaction) between
- * content sections on a dentist, dental office, or clinic site.
+ * DentalStats — hairline credibility ledger for a dental practice site. A calm
+ * border-y band on the page background with a mono "[ practice metrics ]" meta
+ * line above a collapsed-border 2-to-4 column ledger of stat cells; each cell
+ * carries a giant fluid-clamp extrabold tabular numeral, a short primary tick
+ * dash, and a mono uppercase micro-label. Use as a credibility strip (years of
+ * excellence, patients served, average rating, satisfaction) between content
+ * sections on a dentist, dental office, or clinic site.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   StatGrid,
   StatItem,
@@ -21,7 +22,7 @@ import {
 export const DentalStats = defineCapsule({
   name: 'DentalStats',
   description:
-    'Dark inverted stats band for a dental practice site: a full-width section on the foreground color with inverted text, showing a responsive 2-to-4 column grid of centered metrics where each big value is rendered in the primary color above a faded label. Use as a credibility strip (years of excellence, patients served, average rating, satisfaction) between content sections on a dentist, dental office, or clinic site.',
+    'Hairline credibility ledger for a dental practice site: a calm border-y band on the page background with a mono meta line above a collapsed-border 2-to-4 column ledger of stat cells, each with a giant fluid extrabold tabular numeral, a short primary tick dash, and a mono uppercase micro-label. Use as a credibility strip (years of excellence, patients served, average rating, satisfaction) between content sections on a dentist, dental office, or clinic site.',
   props: z.object({
     items: z
       .array(
@@ -56,18 +57,46 @@ export const DentalStats = defineCapsule({
         ]
     return (
       <section
-        className={cn('bg-foreground py-20 text-background', props.className)}
+        className={cn(
+          'border-y border-border bg-background py-16 sm:py-20',
+          props.className,
+        )}
       >
         <Container>
-          <StatGrid columns={4} className="gap-12">
+          <MonoTag
+            aria-hidden="true"
+            tone="faint"
+            className="mb-8 block sm:mb-10"
+          >
+            [ practice metrics ]
+          </MonoTag>
+          <StatGrid
+            columns={4}
+            className="gap-0 border-l border-t border-border"
+          >
             {statsItems.map((s) => {
               const __iv__ = s as { value: string; label: string }
               return (
-                <StatItem key={__iv__.label} align={'center'}>
-                  <StatValue weight={'bold'} size={'large'} color={'inverted'}>
+                <StatItem
+                  key={__iv__.label}
+                  align={'left'}
+                  className="gap-3 border-b border-r border-border p-6 sm:p-8"
+                >
+                  <StatValue
+                    weight={'bold'}
+                    size={'large'}
+                    color={'default'}
+                    className="text-[clamp(2.5rem,5.5vw,4.5rem)] font-extrabold leading-none tracking-tight tabular-nums"
+                  >
                     {__iv__.value}
                   </StatValue>
-                  <StatLabel color={'inverted'}>{__iv__.label}</StatLabel>
+                  <span aria-hidden="true" className="h-px w-8 bg-primary" />
+                  <StatLabel
+                    color={'default'}
+                    className="font-mono text-[11px] uppercase tracking-[0.2em]"
+                  >
+                    {__iv__.label}
+                  </StatLabel>
                 </StatItem>
               )
             })}

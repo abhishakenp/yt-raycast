@@ -20,12 +20,22 @@ import {
 import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
- * CleaningServiceNavbar — sticky, translucent top navigation bar for a home-cleaning / maid-service landing page. A blurred, border-bottomed header pinned to the top with a brand sparkle-mark logo tile + company name on the left, a horizontal row of service-section nav links on the desktop center, and a phone number + pill-shaped "Book Cleaning" CTA on the right. Every brand click, nav link, phone button, and CTA routes through route hrefs. Use as the sticky site header for residential cleaning companies, maid services, housekeeping platforms, janitorial businesses, or any local home-service brand. Renders fully with no props via baked-in "PureSpace" defaults.
+ * CleaningServiceNavbar — playful-Swiss sticky top navigation for a
+ * home-cleaning / maid-service landing page. A blurred, hairline-bottomed
+ * header with a square bordered sparkle-mark tile + extrabold wordmark on the
+ * left, a centered row of mono uppercase micro-label nav links on desktop, and
+ * on the right a phone number (shown only at xl to keep the bar uncrowded),
+ * square search/account chips, and a square bright-primary "Book Cleaning"
+ * button with a hard offset shadow and mechanical press feedback. Every brand
+ * click, nav link, phone button, and CTA routes through route hrefs. Use as
+ * the sticky site header for residential cleaning companies, maid services,
+ * housekeeping platforms, janitorial businesses, or any local home-service
+ * brand. Renders fully with no props via baked-in "PureSpace" defaults.
  */
 export const CleaningServiceNavbar = defineCapsule({
   name: 'CleaningServiceNavbar',
   description:
-    "Sticky translucent top navigation bar for a home-cleaning / maid-service landing page: blurred border-bottomed header with a brand sparkle-mark logo tile + company name on the left, horizontal nav links on desktop center, and a phone number + pill-shaped 'Book Cleaning' CTA on the right. Brand click, nav links, phone button, and CTA route through route hrefs. Use as the sticky site header for residential cleaning companies, maid services, housekeeping, janitorial, or local home-service brands.",
+    "Playful-Swiss sticky top navigation bar for a home-cleaning / maid-service landing page: blurred hairline-bottomed header with a square bordered sparkle-mark tile + extrabold wordmark on the left, mono uppercase micro-label nav links on desktop center, and a phone number (xl and up), square search/account chips, and a square bright-primary 'Book Cleaning' CTA with hard offset shadow and press feedback on the right. Brand click, nav links, phone button, and CTA route through route hrefs. Use as the sticky site header for residential cleaning companies, maid services, housekeeping, janitorial, or local home-service brands.",
   props: z.object({
     /** Brand / company name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -54,14 +64,14 @@ export const CleaningServiceNavbar = defineCapsule({
     const SparkleMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          'grid place-items-center rounded-lg bg-primary text-primary-foreground',
+          'grid place-items-center rounded-none border-2 border-foreground bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
       >
         <svg
-          width="20"
-          height="20"
+          width="16"
+          height="16"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -93,36 +103,46 @@ export const CleaningServiceNavbar = defineCapsule({
       <SiteNav
         position="sticky"
         height="responsive"
-        className={cn('bg-background/95', props.className)}
+        className={cn(
+          'border-b-2 border-foreground bg-background/95',
+          props.className,
+        )}
       >
         <NavbarBrand href={homeTarget} className="gap-2">
-          <BrandLogo brand={brand}>
-            <LogoImage fallback={<SparkleMark className="size-8" />} />
-            <LogoLabel className="text-xl font-semibold tracking-tight text-foreground" />
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage
+              className="size-7"
+              fallback={<SparkleMark className="size-7" />}
+            />
+            <LogoLabel className="text-lg font-extrabold tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground active:translate-y-px"
+            >
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
 
-        <NavbarActions className="gap-3">
+        <NavbarActions className="gap-2.5">
           <LocalServiceIntentBadge lakebed={lakebed} />
           <LocalServiceSearchButton
             lakebed={lakebed}
-            buttonClassName="hidden size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:inline-flex"
+            buttonClassName="hidden size-9 items-center justify-center rounded-none border border-border text-muted-foreground transition-colors hover:border-foreground hover:text-foreground active:translate-y-px md:inline-flex"
           />
           <LocalServiceAccountButton
             lakebed={lakebed}
-            buttonClassName="hidden size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:inline-flex"
+            buttonClassName="hidden size-9 items-center justify-center rounded-none border border-border text-muted-foreground transition-colors hover:border-foreground hover:text-foreground active:translate-y-px md:inline-flex"
           />
           <a
             href={`tel:${phone.replace(/[^\d+]/g, '')}`}
-            className="hidden items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:flex"
+            className="hidden items-center gap-2 font-mono text-xs font-semibold tabular-nums text-muted-foreground transition-colors hover:text-foreground active:translate-y-px xl:flex"
           >
             <PhoneIcon className="size-4" />
             {phone}
@@ -135,7 +155,7 @@ export const CleaningServiceNavbar = defineCapsule({
             pendingChildren={
               <LocalServiceMutationSpinner className="text-primary-foreground" />
             }
-            className="hidden items-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
+            className="hidden items-center whitespace-nowrap rounded-none border-2 border-foreground bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-[3px_3px_0_0] shadow-foreground transition-all duration-150 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
           >
             {ctaLabel}
           </LocalServiceBookingButton>
@@ -143,7 +163,7 @@ export const CleaningServiceNavbar = defineCapsule({
             brand={brand}
             homeTarget={homeTarget}
             nav={nav}
-            buttonClassName="inline-flex size-10 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-muted md:hidden"
+            buttonClassName="inline-flex size-9 items-center justify-center rounded-none border border-border text-foreground transition-colors hover:border-foreground active:translate-y-px md:hidden"
           />
         </NavbarActions>
       </SiteNav>

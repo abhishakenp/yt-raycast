@@ -1,9 +1,21 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
- * CleaningServiceReviews — a 6-up customer reviews grid for a home-cleaning / maid-service landing page. A centered heading + lead paragraph above a responsive 2/3-column grid of review cards; each card shows a 5-star rating row (inline filled-star icons), a quoted review paragraph, and an attribution row with a round lazy-loaded avatar + name + meta line. No links — pure social proof. Use for testimonial / review blocks for residential cleaning companies, maid services, or any local home-service brand wanting homeowner credibility. Renders fully with no props via six baked-in default reviews.
+ * CleaningServiceReviews — playful-Swiss staggered reviews board for a
+ * home-cleaning / maid-service landing page. An asymmetric header row (left
+ * mono "05 / Reviews" eyebrow + heading + lead, right tabular mono entry
+ * count) above a 1/2/3-column grid of square 2px-bordered review cards with
+ * hard offset shadows: the middle column drops down on desktop and one card
+ * tilts slightly for a playful accent. Each card layers a giant ghost
+ * quotation mark, a 5-star primary rating row, the quoted paragraph, and an
+ * attribution row with a round bordered lazy-loaded avatar, a bold name, and a
+ * mono meta line. No links — pure social proof. Use for testimonial / review
+ * blocks for residential cleaning companies, maid services, or any local
+ * home-service brand wanting homeowner credibility. Renders fully with no
+ * props via six baked-in default reviews.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -18,7 +30,7 @@ import {
 export const CleaningServiceReviews = defineCapsule({
   name: 'CleaningServiceReviews',
   description:
-    'A 6-up customer reviews grid for a home-cleaning / maid-service landing page: centered heading + lead above a responsive 2/3-column grid of review cards. Each card shows a 5-star rating row (inline filled-star icons), a quoted review paragraph, and an attribution row with a round lazy-loaded avatar + name + meta line. No links — pure social proof. Use for testimonial / review blocks for residential cleaning, maid services, or local home-service brands.',
+    "Playful-Swiss staggered reviews board for a home-cleaning / maid-service landing page: asymmetric header row (left mono '05 / Reviews' eyebrow + heading + lead, right tabular mono entry count) above a 1/2/3-column grid of square 2px-bordered review cards with hard offset shadows — middle column drops down on desktop and one card tilts slightly. Each card layers a giant ghost quotation mark, a 5-star primary rating row, the quoted paragraph, and an attribution row with a round bordered lazy-loaded avatar, bold name, and mono meta line. No links — pure social proof. Use for testimonial / review blocks for residential cleaning, maid services, or local home-service brands.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -94,18 +106,42 @@ export const CleaningServiceReviews = defineCapsule({
               'professional headshot of Robert Kim, a smiling man with dark hair and professional attire',
           },
         ]
+    const Star = () => (
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+      </svg>
+    )
     return (
-      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+      <section className={cn('bg-background py-16 lg:py-24', props.className)}>
         <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
+          <div className="mb-10 flex flex-col gap-4 sm:mb-14 md:flex-row md:items-end md:justify-between">
+            <SectionHeading
+              align="left"
+              eyebrow="05 / Reviews"
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-3"
+              titleClassName="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl"
+              subtitleClassName="max-w-xl text-lg text-muted-foreground"
+            />
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/70"
+            >
+              <span className="tabular-nums">
+                {String(items.length).padStart(2, '0')}
+              </span>{' '}
+              entries · unedited
+            </p>
+          </div>
           <TestimonialGrid columns={3}>
-            {items.map((t) => {
+            {items.map((t, i) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -116,15 +152,53 @@ export const CleaningServiceReviews = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
-                    {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
-                        {__iv__.role || __iv__.company || __iv__.meta}
-                      </TestimonialMeta>
+                <TestimonialCard
+                  key={__iv__.name}
+                  className={cn(
+                    'relative gap-4 overflow-hidden rounded-none border-2 border-foreground bg-card p-6 shadow-[4px_4px_0_0] shadow-foreground transition-transform duration-150 hover:-translate-y-0.5',
+                    i % 3 === 1 && 'lg:translate-y-8',
+                    i === 2 && 'lg:-rotate-1',
+                  )}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -right-1 -top-5 select-none font-serif text-8xl font-bold leading-none text-foreground/[0.06]"
+                  >
+                    &ldquo;
+                  </span>
+                  <span
+                    className="flex items-center gap-0.5 text-primary"
+                    aria-hidden="true"
+                  >
+                    <Star />
+                    <Star />
+                    <Star />
+                    <Star />
+                    <Star />
+                  </span>
+                  <TestimonialQuote className="text-sm leading-relaxed text-card-foreground">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="mt-auto gap-3 border-t border-border pt-4">
+                    {__iv__.avatarAlt && (
+                      <Image
+                        alt={__iv__.avatarAlt}
+                        w={100}
+                        h={100}
+                        loading="lazy"
+                        className="size-10 shrink-0 rounded-full border-2 border-foreground object-cover"
+                      />
                     )}
+                    <span className="flex min-w-0 flex-col">
+                      <TestimonialName className="text-sm font-bold text-card-foreground">
+                        {__iv__.name}
+                      </TestimonialName>
+                      {(__iv__.role || __iv__.company || __iv__.meta) && (
+                        <TestimonialMeta className="truncate font-mono text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
+                          {__iv__.role || __iv__.company || __iv__.meta}
+                        </TestimonialMeta>
+                      )}
+                    </span>
                   </TestimonialAuthor>
                 </TestimonialCard>
               )

@@ -10,6 +10,7 @@ import { guestAuthContext } from '@ship-fast/lakebed/server'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import type { CommerceLakebed } from '../commerce/commerce-interactions.tsx'
+import { RoutesContext } from '#/lib/route-context.tsx'
 
 type TestCartItem = {
   createdAt: string
@@ -99,6 +100,35 @@ const { cleanup, fireEvent, render, screen, waitFor, within } =
 const { CafeHero } = await import('./CafeHero.tsx')
 const { CafeMenu } = await import('./CafeMenu.tsx')
 const { CafeNavbar } = await import('./CafeNavbar.tsx')
+
+const CAFE_ROUTES = ['Home', 'Menu', 'Location', 'View Menu', 'Find Us']
+function RoutesProvider({
+  children,
+  routes = CAFE_ROUTES,
+}: {
+  children: React.ReactNode
+  routes?: string[]
+}) {
+  const [currentPage, setCurrentPage] = useState(routes[0] ?? '')
+  const [pendingSectionId, setPendingSectionId] = useState<string | null>(null)
+  const value = useMemo(
+    () => ({
+      routes,
+      targetMap: {} as Record<string, string>,
+      currentPage,
+      setCurrentPage: (page: string) => {
+        navigate(page)
+        setCurrentPage(page)
+      },
+      pendingSectionId,
+      setPendingSectionId,
+    }),
+    [routes, currentPage, pendingSectionId],
+  )
+  return (
+    <RoutesContext.Provider value={value}>{children}</RoutesContext.Provider>
+  )
+}
 
 function publicCartItem({ id, label, price, quantity }: TestCartItem) {
   return {
@@ -560,37 +590,39 @@ describe('Cafe fullstack commerce behavior', () => {
     lakebedRef.current = lakebed
 
     render(
-      <>
-        <CafeNavbar.component
-          props={{
-            brand: 'Cafe Test',
-            cartCount: '0',
-            nav: ['Menu', 'Location'],
-          }}
-        />
-        <CafeHero.component
-          props={{
-            featuredItemName: 'Honey Oat Latte',
-            featuredItemPrice: '$6.00',
-            primaryCta: 'View Menu',
-            secondaryCta: 'Find Us',
-          }}
-        />
-        <CafeMenu.component
-          props={{
-            addLabel: 'Add',
-            coffee: [
-              {
-                description: 'Double ristretto, oat milk, local honey',
-                name: 'Honey Cortado',
-                price: '$5.25',
-              },
-            ],
-            food: [],
-            teas: [],
-          }}
-        />
-      </>,
+      <RoutesProvider>
+        <>
+          <CafeNavbar.component
+            props={{
+              brand: 'Cafe Test',
+              cartCount: '0',
+              nav: ['Menu', 'Location'],
+            }}
+          />
+          <CafeHero.component
+            props={{
+              featuredItemName: 'Honey Oat Latte',
+              featuredItemPrice: '$6.00',
+              primaryCta: 'View Menu',
+              secondaryCta: 'Find Us',
+            }}
+          />
+          <CafeMenu.component
+            props={{
+              addLabel: 'Add',
+              coffee: [
+                {
+                  description: 'Double ristretto, oat milk, local honey',
+                  name: 'Honey Cortado',
+                  price: '$5.25',
+                },
+              ],
+              food: [],
+              teas: [],
+            }}
+          />
+        </>
+      </RoutesProvider>,
     )
 
     await waitFor(() => {
@@ -646,18 +678,20 @@ describe('Cafe fullstack commerce behavior', () => {
     lakebedRef.current = lakebed
 
     render(
-      <CafeHero.component
-        props={{
-          featuredItemName: 'Seasonal Cold Brew',
-          featuredItemPrice: '$5.75',
-          primaryCta: 'View Menu',
-          secondaryCta: 'Find Us',
-        }}
-      />,
+      <RoutesProvider>
+        <CafeHero.component
+          props={{
+            featuredItemName: 'Seasonal Cold Brew',
+            featuredItemPrice: '$5.75',
+            primaryCta: 'View Menu',
+            secondaryCta: 'Find Us',
+          }}
+        />
+      </RoutesProvider>,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'View Menu' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Find Us' }))
+    fireEvent.click(screen.getByRole('link', { name: 'View Menu' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Find Us' }))
 
     expect(navigate).toHaveBeenCalledWith('View Menu')
     expect(navigate).toHaveBeenCalledWith('Find Us')

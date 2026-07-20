@@ -11,15 +11,17 @@ import {
 } from './directory-interactions.tsx'
 
 /**
- * DirectoryFeatured — featured-business listing gallery for a local-business
- * directory. A background section with a header row (heading + description on the
- * left, a "View All" link on the right) and a responsive 1-to-3-column grid of
- * rated listing cards: each card has a 4:3 cover photo with an overlaid category
- * pill and a primary star-rating badge, then the business name, address, an
- * open-hours line with a clock icon, and a review count. Cards react to shared
- * Lakebed directory search, record selections, and photos use the alt-driven
- * Image component. Use to showcase top-rated or handpicked listings on
- * directories, marketplaces, or review-and-discovery sites.
+ * DirectoryFeatured — classified-ads featured listing gallery for a
+ * local-business directory. A muted-wash section with an asymmetric hairline
+ * header (serif heading + description left, mono uppercase "View All" clear
+ * action right) and a staggered 1-to-3-column grid of sharp-cornered ad
+ * cards: each carries a 4:3 cover photo with a rotated stamp category chip
+ * and an inverted mono star-rating tab, then an index numeral, the business
+ * name, a mono address line, and a hairline-topped hours / review-count meta
+ * row. Cards gain a hard offset shadow on hover, react to shared Lakebed
+ * directory search, and record selections; photos use the alt-driven Image
+ * component. Use to showcase top-rated or handpicked listings on directories,
+ * marketplaces, or review-and-discovery sites.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -28,7 +30,7 @@ import { FeaturedList, FeaturedItem } from '#/section-kit/FeaturedList.tsx'
 export const DirectoryFeatured = defineCapsule({
   name: 'DirectoryFeatured',
   description:
-    'Featured-business listing gallery for a local-business DIRECTORY: a background section with a header row (heading and description on the left, a View All action on the right) and a responsive 1-to-3-column grid of rated listing cards — each card has a 4:3 cover photo with an overlaid category pill and a primary star-rating badge, then the business name, address, an open-hours line with a clock icon, and a review count. Cards react to shared Lakebed directory search state and record selections; photos use the alt-driven Image component. Use to showcase top-rated or handpicked listings on local directories, business-listing marketplaces, find-a-service platforms, or review-and-discovery sites.',
+    'Classified-ads featured listing gallery for a local-business DIRECTORY: a muted-wash section with an asymmetric hairline header (serif heading and description left, a mono uppercase View All clear action right) and a staggered 1-to-3-column grid of sharp-cornered ad cards — each has a 4:3 cover photo with a rotated stamp category chip and an inverted mono star-rating tab, then an index numeral, the business name, a mono address line, and a hairline-topped hours / review-count meta row. Cards gain a hard offset shadow on hover, react to shared Lakebed directory search state, and record selections; photos use the alt-driven Image component. Use to showcase top-rated or handpicked listings on local directories, business-listing marketplaces, find-a-service platforms, or review-and-discovery sites.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -166,15 +168,15 @@ export const DirectoryFeatured = defineCapsule({
       </svg>
     )
     return (
-      <section className={cn('bg-background py-16 lg:py-24', props.className)}>
+      <section className={cn('bg-muted/40 py-16 lg:py-24', props.className)}>
         <Container>
-          <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-8 flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
             <SectionHeading
               align="left"
               title={heading}
               subtitle={description}
-              className="gap-0"
-              titleClassName="mb-2 text-3xl font-semibold text-foreground sm:text-4xl"
+              className="max-w-2xl gap-2"
+              titleClassName="font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
               subtitleClassName="text-muted-foreground"
             />
             <button
@@ -185,13 +187,16 @@ export const DirectoryFeatured = defineCapsule({
                   query: '',
                 })
               }
-              className="font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="shrink-0 border-b border-foreground pb-0.5 text-left font-mono text-[11px] uppercase tracking-[0.14em] text-foreground transition-colors hover:text-muted-foreground active:translate-y-px sm:text-right"
             >
               {viewAll}
             </button>
           </div>
 
-          <p className="mb-5 text-sm text-muted-foreground" aria-live="polite">
+          <p
+            className="mb-6 font-mono text-xs text-muted-foreground"
+            aria-live="polite"
+          >
             {matchingItems.length} featured business
             {matchingItems.length === 1 ? '' : 'es'} match the current search
             {directoryListings.state?.selectionCount
@@ -199,14 +204,16 @@ export const DirectoryFeatured = defineCapsule({
               : ''}
           </p>
 
-          <FeaturedList className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {matchingItems.map((biz) => (
+          <FeaturedList className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6 lg:[&>*:nth-child(3n+2)]:translate-y-6">
+            {matchingItems.map((biz, i) => (
               <FeaturedItem
                 asChild
                 key={biz.name}
                 className={cn(
-                  'block text-left transition-shadow hover:shadow-md',
-                  selectedName === biz.name ? 'border-primary shadow-md' : '',
+                  'block rounded-none text-left transition-[box-shadow,transform,border-color] duration-150 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0] hover:shadow-foreground/15 active:translate-y-0 active:shadow-none',
+                  selectedName === biz.name
+                    ? 'border-primary shadow-[6px_6px_0_0] shadow-primary/30'
+                    : '',
                 )}
               >
                 <button
@@ -227,28 +234,34 @@ export const DirectoryFeatured = defineCapsule({
                       loading="lazy"
                       className="size-full object-cover"
                     />
-                    <span className="absolute left-3 top-3 rounded bg-card px-2 py-1 text-xs font-medium text-card-foreground">
+                    <span className="absolute left-3 top-3 rotate-[-2deg] border border-foreground/60 bg-background/95 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-foreground">
                       {biz.category}
                     </span>
-                    <span className="absolute right-3 top-3 flex items-center gap-1 rounded bg-primary px-2 py-1 text-xs font-medium text-primary-foreground">
+                    <span className="absolute right-0 top-3 flex items-center gap-1 bg-foreground py-1 pl-2 pr-3 font-mono text-xs tabular-nums text-background">
                       <Star className="size-3" />
                       {biz.rating}
                     </span>
                   </div>
                   <div className="p-5">
-                    <h3 className="mb-1 text-lg font-semibold text-card-foreground">
+                    <span
+                      aria-hidden="true"
+                      className="font-mono text-[11px] tabular-nums text-muted-foreground/70"
+                    >
+                      No. {String(i + 1).padStart(3, '0')}
+                    </span>
+                    <h3 className="mt-1.5 text-lg font-semibold tracking-tight text-card-foreground">
                       {biz.name}
                     </h3>
-                    <p className="mb-3 text-sm text-muted-foreground">
+                    <p className="mt-1 font-mono text-xs text-muted-foreground">
                       {biz.address}
                     </p>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Clock className="size-4" />
+                    <div className="mt-4 flex items-center gap-3 border-t border-border pt-3 font-mono text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1.5">
+                        <Clock className="size-3.5" />
                         {biz.hours}
                       </span>
-                      <span>·</span>
-                      <span>{biz.reviews}</span>
+                      <span aria-hidden="true">·</span>
+                      <span className="tabular-nums">{biz.reviews}</span>
                     </div>
                   </div>
                 </button>
@@ -257,7 +270,7 @@ export const DirectoryFeatured = defineCapsule({
             {!matchingItems.length ? (
               <Card
                 variant="default"
-                className="border-dashed text-center text-sm text-muted-foreground sm:col-span-2 lg:col-span-3 p-8"
+                className="rounded-none border-dashed p-8 text-center font-mono text-sm text-muted-foreground sm:col-span-2 lg:col-span-3"
               >
                 No featured businesses match the current search.
               </Card>

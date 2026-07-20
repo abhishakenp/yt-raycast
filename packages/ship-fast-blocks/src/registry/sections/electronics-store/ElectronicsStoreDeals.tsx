@@ -20,12 +20,15 @@ import {
 } from '../commerce/commerce-interactions.tsx'
 
 /**
- * ElectronicsStoreDeals — a dark inverted "Flash Deals" band for an electronics
- * storefront. A header row pairs a heading + muted description with a boxed
- * countdown timer (hrs / min / sec tiles), above a responsive 1-to-4 grid of
- * clickable product cards: square image with a destructive discount badge, then
- * title, subtitle, current price and a struck-through original price. Cards
- * route through section-kit route links. Use to spotlight limited-time offers on electronics
+ * ElectronicsStoreDeals — a tech-brutalist inverted "Flash Deals" band for an
+ * electronics storefront. A bg-foreground/text-background section that cuts in on
+ * a slanted clip-path seam behind a giant ghost watermark word; a mono deal
+ * ticker strip runs above a header row pairing a mono index eyebrow + extrabold
+ * heading + muted description with squared border-2 countdown tiles (hrs / min /
+ * sec). Below sits a responsive 1-to-4 grid of clickable hard-shadow product
+ * cards: square image with a squared destructive discount badge, then title, mono
+ * subtitle, current tabular price and a struck-through original price. Cards add
+ * to the shared Lakebed cart. Use to spotlight limited-time offers on electronics
  * stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.
  */
 import { Container } from '#/section-kit/Container.tsx'
@@ -34,7 +37,7 @@ import { DealsGrid } from '#/section-kit/DealsGrid.tsx'
 export const ElectronicsStoreDeals = defineCapsule({
   name: 'ElectronicsStoreDeals',
   description:
-    'Dark inverted Flash Deals band for an electronics storefront: a header row pairs a heading + muted description with a boxed countdown timer (hrs / min / sec tiles), above a responsive 1-to-4 grid of clickable product cards — square image with a destructive discount badge, then title, subtitle, current price and a struck-through original price. Cards route through section-kit route links; imagery is alt-driven. Use to spotlight limited-time offers on electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.',
+    'Tech-brutalist inverted Flash Deals band for an electronics storefront: a bg-foreground/text-background section that cuts in on a slanted clip-path seam behind a giant ghost watermark word, with a mono deal ticker strip above a header row pairing a mono index eyebrow + extrabold heading + muted description with squared border-2 countdown tiles (hrs / min / sec), above a responsive 1-to-4 grid of clickable hard-shadow product cards — square image with a squared destructive discount badge, then title, mono subtitle, current tabular price and a struck-through original price. Cards add to the shared Lakebed cart; imagery is alt-driven. Use to spotlight limited-time offers on electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.',
   props: z.object({
     /** Band heading. */
     heading: z.string().optional(),
@@ -154,29 +157,54 @@ export const ElectronicsStoreDeals = defineCapsule({
     )
     return (
       <section
-        className={cn('bg-foreground py-16 text-background', props.className)}
+        className={cn(
+          'relative overflow-hidden bg-foreground py-16 pt-24 text-background [clip-path:polygon(0_3rem,100%_0,100%_100%,0_100%)] sm:pt-28 lg:pt-32',
+          props.className,
+        )}
       >
-        <Container>
-          <div className="mb-12 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <SectionHeading
-              align="left"
-              title={heading}
-              subtitle={description}
-              className="gap-0"
-              titleClassName="mb-2 text-3xl font-semibold text-background"
-              subtitleClassName="text-background/60"
-            />
-            <div className="flex items-center gap-4 rounded-lg bg-background/10 p-4">
-              <span className="text-sm text-background/60">
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-8 right-0 select-none font-mono text-[8rem] font-extrabold leading-none tracking-tighter text-background/[0.05] sm:text-[12rem]"
+        >
+          DEALS
+        </span>
+        <Container className="relative">
+          <div
+            aria-hidden="true"
+            className="mb-8 flex items-center gap-3 overflow-hidden whitespace-nowrap border-y-2 border-background/30 py-2 font-mono text-[11px] uppercase tracking-[0.2em] text-background/60"
+          >
+            <span className="text-background">● Flash Sale</span>
+            <span>/ Limited Stock</span>
+            <span className="text-background">/ Free 2-Day Shipping</span>
+            <span className="hidden sm:inline">/ Price Match</span>
+            <span className="ml-auto tabular-nums text-background">LIVE</span>
+          </div>
+          <div className="mb-12 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <span className="mb-3 flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+                <span className="tabular-nums">[ 03 ]</span>
+                <span className="text-background/60">Offers</span>
+              </span>
+              <SectionHeading
+                align="left"
+                title={heading}
+                subtitle={description}
+                className="gap-0"
+                titleClassName="mb-2 text-3xl font-extrabold tracking-tight text-background md:text-4xl"
+                subtitleClassName="text-background/60"
+              />
+            </div>
+            <div className="flex items-center gap-4 rounded-none border-2 border-background/40 p-4">
+              <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-background/60">
                 {countdownLabel}
               </span>
               <div className="flex gap-2">
                 {countdown.map((c) => (
                   <div key={c.unit} className="text-center">
-                    <div className="grid size-12 place-items-center rounded-lg bg-background text-lg font-semibold text-foreground">
+                    <div className="grid size-12 place-items-center rounded-none border-2 border-background bg-background text-lg font-extrabold tabular-nums text-foreground">
                       {c.value}
                     </div>
-                    <div className="mt-1 text-xs text-background/50">
+                    <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.14em] text-background/50">
                       {c.unit}
                     </div>
                   </div>
@@ -191,7 +219,7 @@ export const ElectronicsStoreDeals = defineCapsule({
                 key={d.title}
                 asChild
                 variant="elevated"
-                className="text-left transition-shadow hover:shadow-xl"
+                className="rounded-none border-2 border-background text-left shadow-[6px_6px_0_0] shadow-background transition-all duration-150 hover:-translate-y-1 hover:shadow-[9px_9px_0_0] motion-reduce:transform-none"
               >
                 <CommerceAddItemButton
                   lakebed={lakebed}
@@ -201,7 +229,7 @@ export const ElectronicsStoreDeals = defineCapsule({
                   }}
                   pendingChildren={<CommerceMutationSpinner />}
                 >
-                  <ProductCardImage className="overflow-visible">
+                  <ProductCardImage className="overflow-visible border-b-2 border-foreground">
                     <Image
                       alt={d.imageAlt}
                       w={400}
@@ -209,22 +237,22 @@ export const ElectronicsStoreDeals = defineCapsule({
                       loading="lazy"
                       className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
-                    <ProductCardBadge className="rounded bg-destructive px-2 py-1 text-destructive-foreground">
+                    <ProductCardBadge className="rounded-none border-2 border-foreground bg-destructive px-2 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-destructive-foreground">
                       {d.discount}
                     </ProductCardBadge>
                   </ProductCardImage>
                   <ProductCardContent className="block p-4">
-                    <ProductCardTitle className="mb-1 text-card-foreground">
+                    <ProductCardTitle className="mb-1 font-semibold text-card-foreground">
                       {d.title}
                     </ProductCardTitle>
-                    <ProductCardSubtitle className="mb-3 mt-0">
+                    <ProductCardSubtitle className="mb-3 mt-0 font-mono text-xs uppercase tracking-[0.08em]">
                       {d.subtitle}
                     </ProductCardSubtitle>
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg font-semibold text-card-foreground">
+                    <div className="flex items-baseline gap-2 border-t-2 border-dotted border-border pt-3">
+                      <span className="text-xl font-extrabold tabular-nums tracking-tight text-card-foreground">
                         {d.price}
                       </span>
-                      <span className="text-sm text-muted-foreground line-through">
+                      <span className="text-sm tabular-nums text-muted-foreground line-through">
                         {d.was}
                       </span>
                     </div>

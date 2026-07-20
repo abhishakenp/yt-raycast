@@ -4,27 +4,24 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
-import {
-  FeatureGrid,
-  FeatureCard,
-  FeatureIcon,
-  FeatureTitle,
-  FeatureDescription,
-} from '#/section-kit/FeatureGrid.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 
 /**
- * BarNightclubFeatures — 3-up centered features strip for a cocktail-bar /
- * nightclub page. A responsive row of equal columns, each with a thin
- * circle-bordered line icon (building / music / clock, rotated by index), a
- * medium title, and a muted description paragraph. Quiet, editorial, monochrome
- * — used to summarize the venue's three pillars (e.g. craft cocktails, live DJ
- * sets, late night). Use directly under the hero on bar, nightclub, lounge, or
- * speakeasy pages. Renders fully with no props via baked-in defaults.
+ * BarNightclubFeatures — collapsed-border poster pillars strip for a
+ * cocktail-bar / nightclub page. A single 2px-bordered grid (2-up on mobile,
+ * 3-up on desktop) of venue pillars; each cell stacks a hollow oversized index
+ * numeral (01/02/03 via text stroke), a condensed uppercase title, a muted
+ * description, and a small primary tick — with the middle cell flipped to a
+ * full foreground-on-background inversion for poster drama. Dark-kinetic,
+ * sharp-cornered, mono-labeled. Use directly under the hero to summarize the
+ * venue's three pillars (e.g. craft cocktails, live DJ sets, late night) on
+ * bar, nightclub, lounge, or speakeasy pages. Renders fully with no props via
+ * baked-in defaults.
  */
 export const BarNightclubFeatures = defineCapsule({
   name: 'BarNightclubFeatures',
   description:
-    "3-up centered features strip for a cocktail-bar / nightclub page: a responsive row of equal columns, each with a thin circle-bordered line icon (building / music / clock, rotated by index), a medium title, and a muted description paragraph. Quiet, editorial and monochrome, used to summarize the venue's three pillars such as craft cocktails, live DJ sets, and late night. Use directly under the hero on bar, nightclub, lounge, or speakeasy pages.",
+    "Collapsed-border poster pillars strip for a cocktail-bar / nightclub page: a single 2px-bordered grid (2-up mobile, 3-up desktop) of venue pillars, each cell stacking a hollow oversized index numeral, a condensed uppercase title, a muted description and a small primary tick, with the middle cell flipped to a full foreground-on-background inversion for poster drama. Dark-kinetic, sharp-cornered and mono-labeled; used to summarize the venue's three pillars such as craft cocktails, live DJ sets, and late night. Use directly under the hero on bar, nightclub, lounge, or speakeasy pages.",
   props: z.object({
     /** Three feature cards (title + description). */
     items: z
@@ -54,10 +51,10 @@ export const BarNightclubFeatures = defineCapsule({
         ]
 
     return (
-      <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
+      <section className={cn('py-14 sm:py-20 lg:py-24', props.className)}>
         <Container>
-          <FeatureGrid columns={3}>
-            {items.map((f) => {
+          <div className="grid grid-cols-2 border-2 border-foreground lg:grid-cols-3">
+            {items.map((f, i) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -67,15 +64,71 @@ export const BarNightclubFeatures = defineCapsule({
                 price?: string
                 imageAlt?: string
               }
+              const inverted = i % 3 === 1
               return (
-                <FeatureCard key={__iv__.title}>
-                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
-                </FeatureCard>
+                <div
+                  key={__iv__.title}
+                  className={cn(
+                    'relative flex flex-col gap-3 p-5 sm:p-8',
+                    inverted
+                      ? 'bg-foreground text-background'
+                      : 'bg-background text-foreground',
+                    i % 2 === 1 && 'border-l-2 border-foreground lg:border-l-0',
+                    i >= 2 && 'border-t-2 border-foreground lg:border-t-0',
+                    i === items.length - 1 &&
+                      items.length % 2 === 1 &&
+                      'col-span-2 lg:col-span-1',
+                    i % 3 !== 0 && 'lg:border-l-2 lg:border-foreground',
+                  )}
+                >
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      'select-none text-5xl font-black leading-none tracking-tighter [-webkit-text-fill-color:transparent] [-webkit-text-stroke-width:1.5px] sm:text-7xl',
+                      inverted ? 'text-background/60' : 'text-foreground/30',
+                    )}
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  {__iv__.icon && (
+                    <span aria-hidden="true" className="text-2xl">
+                      {__iv__.icon}
+                    </span>
+                  )}
+                  <h3 className="text-lg font-black uppercase leading-tight tracking-tight sm:text-xl">
+                    {__iv__.title}
+                  </h3>
+                  <p
+                    className={cn(
+                      'text-sm leading-relaxed',
+                      inverted ? 'text-background/70' : 'text-muted-foreground',
+                    )}
+                  >
+                    {__iv__.description}
+                  </p>
+                  <span
+                    aria-hidden="true"
+                    className="mt-auto flex items-center gap-1 pt-2"
+                  >
+                    <span className="h-1.5 w-6 bg-primary" />
+                    <span
+                      className={cn(
+                        'h-1.5 w-1.5',
+                        inverted ? 'bg-background/40' : 'bg-foreground/20',
+                      )}
+                    />
+                  </span>
+                  <MonoTag
+                    aria-hidden="true"
+                    tone={inverted ? 'inverted' : 'faint'}
+                    className="absolute right-4 top-5 text-[9px] sm:top-8"
+                  >
+                    / 0{items.length}
+                  </MonoTag>
+                </div>
               )
             })}
-          </FeatureGrid>
+          </div>
         </Container>
       </section>
     )

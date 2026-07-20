@@ -75,9 +75,7 @@ export const GovPortalLeadership = defineCapsule({
             />
 
             {message ? (
-              <Card
-                className="mb-12 grid items-start gap-6 sm:grid-cols-[auto_1fr] sm:p-8 rounded-2xl"
-              >
+              <Card className="mb-12 grid items-start gap-6 sm:grid-cols-[auto_1fr] sm:p-8 rounded-2xl">
                 <div className="mx-auto size-32 overflow-hidden rounded-2xl bg-muted sm:mx-0">
                   <Image
                     src={str(message, 'photoUrl') || undefined}
@@ -189,7 +187,10 @@ export const GovPortalPowerPlants = defineCapsule({
             {plants.map((plant, i) => {
               const status = str(plant, 'status')
               return (
-                <Card key={`${str(plant, 'name')}-${i}`} className="rounded-2xl">
+                <Card
+                  key={`${str(plant, 'name')}-${i}`}
+                  className="rounded-2xl"
+                >
                   <div className="mb-3 flex items-center justify-between gap-3">
                     <span className="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
                       <FactoryIcon className="size-6" aria-hidden />

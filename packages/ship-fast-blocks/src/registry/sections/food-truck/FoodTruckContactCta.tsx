@@ -10,19 +10,22 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * FoodTruckContactCta — a dark, inverted closing contact CTA band. A foreground-filled,
- * centered section with a bold heading, a supporting paragraph, a pair of pill buttons
- * (a filled email CTA + an outlined phone CTA) and a small response-time note beneath.
- * Both buttons route through section-kit route links. Use as the final call-to-action / get-in-touch
- * band for food trucks, caterers or street-food vendors prompting bookings and enquiries.
+ * FoodTruckContactCta — a sticker-poster inverted closing contact CTA band with a slanted
+ * clip-path seam. A foreground-filled section under a giant ghost "BOOK" watermark, with a
+ * mono response-time eyebrow, an extrabold slab heading, a supporting paragraph and a pair
+ * of hard-bordered rounded-none slab buttons (an inverted email CTA + an outlined phone
+ * CTA) with press feedback. Both buttons route through section-kit route links. Use as the
+ * final call-to-action / get-in-touch band for food trucks, caterers or street-food vendors
+ * prompting bookings and enquiries.
  */
 export const FoodTruckContactCta = defineCapsule({
   name: 'FoodTruckContactCta',
   description:
-    'Dark, inverted closing contact CTA band: a foreground-filled, centered section with a bold heading, a supporting paragraph, a pair of pill buttons (a filled email CTA and an outlined phone CTA) and a small response-time note beneath. Both buttons route through section-kit route links. Use as the final call-to-action / get-in-touch band for food trucks, caterers, street-food vendors or restaurants prompting catering bookings and enquiries.',
+    'Sticker-poster inverted closing contact CTA band with a slanted clip-path seam: a foreground-filled section under a giant ghost "BOOK" watermark, with a mono response-time eyebrow, an extrabold slab heading, a supporting paragraph and a pair of hard-bordered rounded-none slab buttons (an inverted email CTA and an outlined phone CTA) with press feedback. Both buttons route through section-kit route links. Use as the final call-to-action / get-in-touch band for food trucks, caterers, street-food vendors or restaurants prompting catering bookings and enquiries.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -43,17 +46,35 @@ export const FoodTruckContactCta = defineCapsule({
     return (
       <CtaBand
         tone="primary"
-        className={`bg-foreground text-background ${props.className ?? ''}`}
+        className={`relative overflow-hidden bg-foreground text-background [clip-path:polygon(0_2.5rem,100%_0,100%_100%,0_100%)] ${props.className ?? ''}`}
       >
-        <CtaBandInner>
-          <CtaBandEyebrow>{ctaNote}</CtaBandEyebrow>
-          <CtaBandTitle>{ctaHeading}</CtaBandTitle>
-          <CtaBandSubtitle>{ctaDesc}</CtaBandSubtitle>
-          <CtaBandActions>
-            <CtaAction variant="primary" asChild>
+        <Watermark className="-right-6 top-8 text-[7rem] text-background/[0.06] sm:text-[12rem] lg:text-[16rem]">
+          BOOK
+        </Watermark>
+        <CtaBandInner className="relative pt-24">
+          <CtaBandEyebrow className="font-mono text-[11px] uppercase tracking-[0.2em] opacity-80">
+            {ctaNote}
+          </CtaBandEyebrow>
+          <CtaBandTitle className="text-4xl font-extrabold tracking-tighter md:text-5xl">
+            {ctaHeading}
+          </CtaBandTitle>
+          <CtaBandSubtitle className="text-background/80">
+            {ctaDesc}
+          </CtaBandSubtitle>
+          <CtaBandActions className="pt-2">
+            <CtaAction
+              variant="primary"
+              invert
+              asChild
+              className="rounded-none border-2 border-background px-6 py-3 font-bold uppercase tracking-wide shadow-[4px_4px_0_0] shadow-background/30 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0] active:translate-y-px active:shadow-none"
+            >
               <NavbarRouteLink href={ctaEmail}>{ctaEmail}</NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" asChild>
+            <CtaAction
+              variant="outline"
+              asChild
+              className="rounded-none border-2 border-background bg-transparent px-6 py-3 font-bold uppercase tracking-wide text-background transition-all duration-150 hover:-translate-y-0.5 hover:bg-background hover:text-foreground active:translate-y-px"
+            >
               <NavbarRouteLink href={ctaPhone}>{ctaPhone}</NavbarRouteLink>
             </CtaAction>
           </CtaBandActions>

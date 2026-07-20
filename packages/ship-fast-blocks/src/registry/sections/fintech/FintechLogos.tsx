@@ -2,26 +2,29 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   LogoStrip,
-  LogoStripLabel,
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * FintechLogos — trusted-by logo strip for a fintech / neobank landing page. A
- * single muted band bordered top and bottom with a heading label above a
- * responsive 2/4/6-column grid of clickable partner/brand text logos. Each logo
- * routes through section-kit route links for page-switching. Use as social-proof for
- * digital-banking, payments, SaaS or any trust-forward product page.
- * Renders fully with no props via baked-in defaults.
+ * FintechLogos — Swiss-fintech trusted-by band for a neobank landing page. A
+ * hairline-bordered muted band whose content sits in a plain Container: a mono
+ * micro-label lead line with a tabular partner count sits above a collapsed-
+ * border grid of partner wordmark cells (shared hairline rules, binary radius,
+ * no gaps). Each cell is a clickable route link that dims to full ink on hover.
+ * Precise, calm, institutional social proof; use for digital-banking, payments,
+ * SaaS, or any trust-forward product page. Renders fully with no props via
+ * baked-in defaults.
  */
 export const FintechLogos = defineCapsule({
   name: 'FintechLogos',
   description:
-    'Trusted-by logo strip for a fintech / neobank landing page: a single muted band bordered top and bottom with a heading label above a responsive 2/4/6-column grid of clickable partner/brand text logos. Each logo routes through section-kit route links for page-switching. Use as social-proof for digital-banking, payments, SaaS or any trust-forward product page.',
+    'Swiss-fintech trusted-by band for a neobank landing page: a hairline-bordered muted band whose content sits in a plain Container, with a mono micro-label lead line + tabular partner count above a collapsed-border grid of clickable partner wordmark cells (shared hairline rules, binary radius, dim-to-ink hover). Each logo routes through route links for page-switching. Use as calm, institutional social-proof for digital-banking, payments, SaaS or any trust-forward product page.',
   props: z.object({
     /** Heading label above the logo grid. */
     label: z.string().optional(),
@@ -35,28 +38,49 @@ export const FintechLogos = defineCapsule({
     const items = props.items?.length
       ? props.items
       : ['Stripe', 'Notion', 'Slack', 'Figma', 'Webflow', 'Vercel']
+    const cells = items.filter(Boolean)
 
     return (
       <LogoStrip
         className={cn(
-          'border-y border-border bg-muted px-4 pt-28 pb-12 sm:px-6 lg:px-8',
+          'border-y border-border bg-muted/40 py-14 lg:py-16',
           props.className,
         )}
       >
-        <LogoStripLabel className="normal-case tracking-normal">
-          {label}
-        </LogoStripLabel>
-        <LogoStripItems layout="grid" className="mt-8">
-          {items.filter(Boolean).map((logo) => (
-            <LogoStripItem
-              key={logo}
-              className="text-lg font-bold tracking-tight text-foreground opacity-60 transition-opacity hover:opacity-100"
-              asChild
+        <Container>
+          <div className="mb-8 flex items-center justify-between gap-4 border-b border-border pb-4">
+            <MonoTag>{label}</MonoTag>
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="shrink-0 tabular-nums"
             >
-              <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
-            </LogoStripItem>
-          ))}
-        </LogoStripItems>
+              {String(cells.length).padStart(2, '0')} partners
+            </MonoTag>
+          </div>
+          <LogoStripItems
+            layout="grid"
+            className="grid-cols-2 gap-0 border-l border-t border-border sm:grid-cols-3 md:grid-cols-6"
+          >
+            {cells.map((logo, i) => (
+              <LogoStripItem
+                key={logo}
+                className="flex items-center justify-center border-b border-r border-border px-4 py-7 text-base font-semibold tracking-tight text-foreground/55 transition-colors hover:text-foreground"
+                asChild
+              >
+                <NavbarRouteLink href={logo}>
+                  <span
+                    aria-hidden="true"
+                    className="mr-2 font-mono text-[10px] tabular-nums text-muted-foreground/40"
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  {logo}
+                </NavbarRouteLink>
+              </LogoStripItem>
+            ))}
+          </LogoStripItems>
+        </Container>
       </LogoStrip>
     )
   },

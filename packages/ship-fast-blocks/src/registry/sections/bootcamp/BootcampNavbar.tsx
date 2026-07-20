@@ -14,20 +14,21 @@ import {
 } from '#/section-kit/index.ts'
 
 /**
- * BootcampNavbar — sticky translucent top navigation bar for a coding bootcamp /
- * career-school landing page. A blurred, border-bottomed header pinned to the
- * top of the viewport: a solid brand-initial logo tile beside the academy name
- * on the left, a horizontal set of nav links in the center (desktop), and a
- * rounded primary CTA on the right. The brand button routes to `homeTarget`,
- * nav links route to their own labels, and the CTA routes to `ctaTarget`.
- * Every link routes through route hrefs so labels can drive page-switching.
- * Use as the sticky site header for coding bootcamps, dev academies, vocational
- * tech schools, or any cohort-based education brand.
+ * BootcampNavbar — "Terminal Classroom" sticky top navigation for a coding
+ * bootcamp / career-school landing page. A blurred, hairline-bordered header
+ * pinned to the top of the viewport: a sharp square brand-initial tile in
+ * primary beside the academy wordmark on the left, mono uppercase
+ * wide-tracked nav links in the center (desktop), and a square hard-offset-
+ * shadow "Apply Now" CTA with press feedback on the right. The brand button
+ * routes to `homeTarget`, nav links route to their own labels, and the CTA
+ * routes to `ctaTarget`. Every link routes through route hrefs so labels can
+ * drive page-switching. Use as the sticky site header for coding bootcamps,
+ * dev academies, vocational tech schools, or any cohort-based education brand.
  */
 export const BootcampNavbar = defineCapsule({
   name: 'BootcampNavbar',
   description:
-    'Sticky translucent top navigation bar for a coding bootcamp / career-school landing page: blurred, border-bottomed header pinned to the top with a solid brand-initial logo tile + academy name on the left, horizontal nav links in the center (desktop), and a rounded primary CTA on the right. Brand button routes to homeTarget, nav links route to their own labels, and the CTA routes to ctaTarget through route hrefs. Use as the sticky site header for coding bootcamps, dev academies, vocational tech schools, or cohort-based education brands.',
+    'Terminal-styled sticky top navigation bar for a coding bootcamp / career-school landing page: blurred hairline-bordered header pinned to the top with a sharp square brand-initial tile + academy wordmark on the left, mono uppercase nav links in the center (desktop), and a square hard-offset-shadow primary "Apply Now" CTA with press feedback on the right. Brand button routes to homeTarget, nav links route to their own labels, and the CTA routes to ctaTarget through route hrefs. Use as the sticky site header for coding bootcamps, dev academies, vocational tech schools, or cohort-based education brands.',
   props: z.object({
     /** Brand / academy name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -50,7 +51,7 @@ export const BootcampNavbar = defineCapsule({
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          'grid place-items-center rounded-lg bg-primary font-bold text-primary-foreground',
+          'grid place-items-center rounded-none bg-primary font-mono font-bold text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -68,18 +69,28 @@ export const BootcampNavbar = defineCapsule({
       <SiteNav
         position="sticky"
         height="responsive"
-        className={cn('bg-background/95', props.className)}
+        className={cn(
+          'border-b border-border bg-background/90 supports-[backdrop-filter]:bg-background/75',
+          props.className,
+        )}
       >
         <NavbarBrand href={homeTarget} className="gap-2">
-          <BrandLogo brand={brand}>
-            <LogoImage fallback={<LogoMark className="size-8 text-sm" />} />
-            <LogoLabel className="text-lg font-semibold" />
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage
+              className="size-7"
+              fallback={<LogoMark className="size-7 text-xs" />}
+            />
+            <LogoLabel className="text-lg font-semibold tracking-tight" />
           </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label} className="font-normal">
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="font-mono text-xs font-normal uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:text-foreground"
+            >
               {label}
             </NavbarNavLink>
           ))}
@@ -89,7 +100,7 @@ export const BootcampNavbar = defineCapsule({
           <NavbarCta
             variant="primary"
             href={ctaTarget}
-            className="hidden px-5 py-2.5 sm:inline-flex"
+            className="hidden rounded-none px-5 py-2.5 font-mono text-xs font-semibold uppercase tracking-[0.12em] shadow-[4px_4px_0_0] shadow-primary/25 transition-[transform,box-shadow,background-color] duration-150 hover:bg-primary/90 active:translate-y-px active:shadow-none sm:inline-flex"
           >
             Apply Now
           </NavbarCta>

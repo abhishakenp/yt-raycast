@@ -2,6 +2,8 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   PathwayGrid,
@@ -16,18 +18,23 @@ import { Container } from '#/section-kit/Container.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * ChurchPathways — a 3-up "next step" pathways grid for a church or faith-community
- * site. Heading + description on the left, then a responsive grid of photo-card
- * articles with image, title, description, and a text CTA with arrow. Each card
- * image lazily loads and subtly scales on hover. CTAs route through section-kit route links.
- * Use for small-groups, kids/youth, serve-together, or any multi-pathway onboarding
- * flow for churches, ministries, or community organizations. Renders fully with no
- * props via baked-in defaults.
+ * ChurchPathways — serene editorial "next step" pathways section for a church
+ * or faith-community site. An asymmetric header row: a mono metadata rail
+ * ("Pathways" — hairline rule — "01 — 03" index) above a large serif heading
+ * on the left and the description pushed to the right column on desktop.
+ * Below, a gently staggered 3-card grid (middle card drifts down on desktop):
+ * each card is a sharp hairline-framed photo plate whose body carries a faint
+ * serif index numeral beside a serif title, a quiet description, and an
+ * uppercase-mono CTA with arrow above a hairline rule. Images lazily load and
+ * scale softly on hover; CTAs route through section-kit route links. Use for
+ * small-groups, kids/youth, serve-together, or any multi-pathway onboarding
+ * flow for churches, ministries, or community organizations. Renders fully
+ * with no props via baked-in defaults.
  */
 export const ChurchPathways = defineCapsule({
   name: 'ChurchPathways',
   description:
-    '3-up next-step pathways grid for a church or faith-community site: heading + description on the left, then a responsive grid of photo-card articles with image, title, description, and a text CTA with arrow. Each image lazily loads and subtly scales on hover. CTAs route through section-kit route links. Use for small-groups, kids/youth, serve-together, or any multi-pathway onboarding flow for churches, ministries, or community organizations.',
+    "Serene editorial next-step pathways section for a church or faith-community site: an asymmetric header row with a mono metadata rail ('Pathways' — hairline rule — index) above a large serif heading on the left and the description pushed right on desktop, then a gently staggered 3-card grid whose middle card drifts down. Each card is a sharp hairline-framed photo plate with a faint serif index numeral beside a serif title, quiet description, and an uppercase-mono CTA with arrow above a hairline rule. Images lazily load and scale softly on hover; CTAs route through section-kit route links. Use for small-groups, kids/youth, serve-together, or any multi-pathway onboarding flow for churches, ministries, or community organizations.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -81,36 +88,77 @@ export const ChurchPathways = defineCapsule({
         ]
 
     return (
-      <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
+      <section className={cn('py-20 lg:py-28', props.className)}>
         <Container size="xl" className="px-6">
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            align="left"
-            titleClassName="text-3xl font-medium tracking-tight sm:text-4xl"
-            subtitleClassName="text-lg leading-relaxed"
-            className="mb-20 max-w-3xl gap-6"
-          />
-          <PathwayGrid cols="1-2-3">
-            {items.map((item) => (
-              <PathwayCard key={item.title}>
-                <PathwayCardImage>
-                  <img
-                    src={`https://picsum.photos/seed/${encodeURIComponent(item.imageAlt)}/600/450`}
+          {/* Asymmetric header: serif heading left, description offset right. */}
+          <div className="mb-14 grid items-end gap-6 lg:mb-16 lg:grid-cols-12 lg:gap-12">
+            <div className="lg:col-span-7">
+              <div className="mb-5 flex items-center gap-4">
+                <MonoTag tone="primary" className="shrink-0">
+                  Pathways
+                </MonoTag>
+                <span aria-hidden="true" className="h-px flex-1 bg-border" />
+                <MonoTag tone="faint" className="shrink-0">
+                  01 — {String(items.length).padStart(2, '0')}
+                </MonoTag>
+              </div>
+              <SectionHeading
+                align="left"
+                title={heading}
+                className="gap-0"
+                titleClassName="font-serif text-4xl font-medium leading-[1.08] tracking-tight text-foreground sm:text-5xl"
+              />
+            </div>
+            <p className="max-w-md border-l border-border pl-5 text-base leading-relaxed text-muted-foreground sm:text-lg lg:col-span-5 lg:justify-self-end">
+              {description}
+            </p>
+          </div>
+          <PathwayGrid cols="1-2-3" className="gap-x-8 gap-y-12">
+            {items.map((item, i) => (
+              <PathwayCard
+                key={item.title}
+                className={cn(
+                  'rounded-none border-border bg-background transition-colors duration-200 hover:border-foreground/40',
+                  i % 3 === 1 && 'lg:translate-y-10',
+                  i % 2 === 1 && 'sm:max-lg:translate-y-8',
+                )}
+              >
+                <PathwayCardImage className="border-b border-border">
+                  <Image
                     alt={item.imageAlt}
+                    w={600}
+                    h={450}
                     loading="lazy"
-                    className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                   />
                 </PathwayCardImage>
-                <PathwayCardBody>
-                  <PathwayCardTitle>{item.title}</PathwayCardTitle>
-                  <PathwayCardDescription>
+                <PathwayCardBody className="gap-3 p-6 sm:p-7">
+                  <div className="flex items-baseline gap-4">
+                    <span
+                      aria-hidden="true"
+                      className="font-serif text-2xl font-medium italic leading-none text-muted-foreground/40"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <PathwayCardTitle className="font-serif text-xl font-medium tracking-tight sm:text-2xl">
+                      {item.title}
+                    </PathwayCardTitle>
+                  </div>
+                  <PathwayCardDescription className="leading-relaxed sm:text-base">
                     {item.description}
                   </PathwayCardDescription>
-                  <PathwayCardCta asChild>
+                  <PathwayCardCta
+                    asChild
+                    className="mt-2 items-center gap-1.5 border-t border-border pt-4 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground hover:text-muted-foreground"
+                  >
                     <NavbarRouteLink href={item.cta}>
                       {item.cta}
-                      <span aria-hidden="true">→</span>
+                      <span
+                        aria-hidden="true"
+                        className="transition-transform duration-300 group-hover:translate-x-1"
+                      >
+                        →
+                      </span>
                     </NavbarRouteLink>
                   </PathwayCardCta>
                 </PathwayCardBody>

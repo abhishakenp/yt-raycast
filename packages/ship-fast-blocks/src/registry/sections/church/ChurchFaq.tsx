@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   FaqAccordion,
   FaqAnswer,
@@ -13,17 +14,22 @@ import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
- * ChurchFaq — accordion FAQ section for a church or faith-community site. A centered
- * header (eyebrow + heading) above a stacked list of native <details> cards with a
- * chevron that rotates on open. Clean, accessible, and content-friendly. Use for
- * newcomer questions, service logistics, beliefs, kids programs, giving, counseling,
- * or any FAQ on churches, worship centers, parishes, ministries, or religious nonprofits.
- * Renders fully with no props via baked-in defaults.
+ * ChurchFaq — serene editorial FAQ section for a church or faith-community
+ * site, split on an asymmetric 5:7 grid with a giant ghost serif "Q" watermark.
+ * The left rail (sticky on desktop) holds a mono metadata rail (eyebrow —
+ * hairline rule), a large serif heading, and a quiet mono index of the
+ * question count. The right column stacks native <details> rows as a hairline
+ * ledger: each question pairs a faint serif index numeral with a serif
+ * question line and a chevron that rotates on open; answers sit indented
+ * under the numeral column. Clean, accessible, and content-friendly. Use for
+ * newcomer questions, service logistics, beliefs, kids programs, giving,
+ * counseling, or any FAQ on churches, worship centers, parishes, ministries,
+ * or religious nonprofits. Renders fully with no props via baked-in defaults.
  */
 export const ChurchFaq = defineCapsule({
   name: 'ChurchFaq',
   description:
-    'Accordion FAQ section for a church or faith-community site: centered header (eyebrow + heading) above a stacked list of native details cards with a chevron that rotates on open. Clean, accessible, and content-friendly. Use for newcomer questions, service logistics, beliefs, kids programs, giving, counseling, or any FAQ on churches, worship centers, parishes, ministries, or religious nonprofits.',
+    "Serene editorial FAQ section for a church or faith-community site: an asymmetric 5:7 split with a giant ghost serif 'Q' watermark — sticky left rail with mono metadata rail, large serif heading, and a quiet mono question-count index; right column stacking native details rows as a hairline ledger where each question pairs a faint serif index numeral with a serif question line and a rotating chevron, answers indented beneath. Clean, accessible, and content-friendly. Use for newcomer questions, service logistics, beliefs, kids programs, giving, counseling, or any FAQ on churches, worship centers, parishes, ministries, or religious nonprofits.",
   props: z.object({
     /** Small uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -64,33 +70,66 @@ export const ChurchFaq = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-muted pt-28 pb-24 lg:pt-32 lg:pb-28',
+          'relative overflow-hidden py-20 lg:py-28',
           props.className,
         )}
       >
-        <Container size="sm" className="px-6 lg:px-6">
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            className="mb-16 gap-0"
-            eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground"
-            titleClassName="text-3xl font-medium tracking-tight text-foreground sm:text-4xl"
-          />
-          <FaqAccordion>
-            {items.map((item) => (
-              <FaqItem key={item.q}>
-                <FaqQuestion className="p-6">
-                  <span className="font-medium text-card-foreground">
-                    {item.q}
-                  </span>
-                  <FaqQuestionIcon className="ml-4" />
-                </FaqQuestion>
-                <FaqAnswer asChild className="px-6 pb-6 leading-relaxed">
-                  <div>{item.a}</div>
-                </FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+        <Watermark className="-bottom-20 right-0 font-serif text-[14rem] font-medium italic text-foreground/[0.04] sm:text-[20rem]">
+          Q
+        </Watermark>
+        <Container size="xl" className="relative px-6">
+          <div className="grid items-start gap-12 lg:grid-cols-12 lg:gap-16">
+            {/* Sticky heading rail. */}
+            <div className="lg:sticky lg:top-24 lg:col-span-5">
+              <div className="mb-5 flex items-center gap-4">
+                <MonoTag tone="primary" className="shrink-0">
+                  {eyebrow}
+                </MonoTag>
+                <span aria-hidden="true" className="h-px flex-1 bg-border" />
+              </div>
+              <SectionHeading
+                align="left"
+                title={heading}
+                className="gap-0"
+                titleClassName="font-serif text-4xl font-medium leading-[1.08] tracking-tight text-foreground sm:text-5xl"
+              />
+              <MonoTag tone="faint" className="mt-6 block">
+                01 — {String(items.length).padStart(2, '0')} · Ask us anything
+              </MonoTag>
+            </div>
+
+            <div className="lg:col-span-7">
+              <FaqAccordion className="gap-0 space-y-0">
+                {items.map((item, i) => (
+                  <FaqItem
+                    key={item.q}
+                    className="rounded-none border-0 border-t border-border bg-transparent shadow-none last:border-b"
+                  >
+                    <FaqQuestion className="gap-5 rounded-none px-0 py-6 sm:gap-8">
+                      <span className="flex min-w-0 items-baseline gap-5 sm:gap-8">
+                        <span
+                          aria-hidden="true"
+                          className="shrink-0 font-serif text-xl font-medium italic leading-none text-muted-foreground/40 sm:text-2xl"
+                        >
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                        <span className="min-w-0 font-serif text-lg font-medium tracking-tight text-foreground sm:text-xl">
+                          {item.q}
+                        </span>
+                      </span>
+                      <FaqQuestionIcon className="ml-4 text-muted-foreground" />
+                    </FaqQuestion>
+                    <FaqAnswer
+                      asChild
+                      className="px-0 pb-7 leading-relaxed text-muted-foreground sm:pl-[3.75rem]"
+                    >
+                      <div>{item.a}</div>
+                    </FaqAnswer>
+                  </FaqItem>
+                ))}
+              </FaqAccordion>
+            </div>
+          </div>
         </Container>
       </section>
     )

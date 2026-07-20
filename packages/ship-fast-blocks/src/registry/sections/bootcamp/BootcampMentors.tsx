@@ -9,23 +9,28 @@ import {
 } from '#/section-kit/PersonCard.tsx'
 
 /**
- * BootcampMentors — world-class mentors gallery for a coding bootcamp / career-
- * school landing page. A centered eyebrow, heading and description above a
- * responsive grid of headshot cards; each card is clickable via section-kit route links
- * and features an alt-driven square portrait with a bottom company overlay,
- * plus name and role beneath. Below the cards sits a 3-column row of classroom
- * photos. Use to showcase instructor credibility for bootcamps, academies, or
+ * BootcampMentors — "Terminal Classroom" mentor roster for a coding bootcamp /
+ * career-school landing page. An asymmetric header (left-aligned heading, mono
+ * roster-count tag on the right) above a staggered 1/2/4-column grid of
+ * clickable bare headshot cards: every other card offsets downward, portraits
+ * sit in sharp hairline frames with a mono ghost index numeral and an
+ * inverted mono company chip pinned to the photo, with the name and a mono
+ * uppercase role line beneath. A 3-up classroom photo strip with mono
+ * `fig.01` captions and a middle-offset column closes the section, over a
+ * giant ghost "1:1" watermark. Cards route through section-kit route links.
+ * Use to showcase instructor credibility for bootcamps, academies, or
  * cohort-based education programs.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 export const BootcampMentors = defineCapsule({
   name: 'BootcampMentors',
   description:
-    'World-class mentors gallery for a coding bootcamp / career-school landing page: centered eyebrow, heading and description above a responsive grid of clickable headshot cards. Each card features an alt-driven square portrait with a bottom company overlay, plus name and role beneath. Below the cards sits a 3-column row of classroom photos. Cards route through section-kit route links. Use to showcase instructor credibility for bootcamps, academies, or cohort-based education programs.',
+    "Terminal-styled staggered mentor roster for a coding bootcamp / career-school landing page: asymmetric left-aligned header with a mono roster-count tag, above a 1/2/4-column grid of clickable bare headshot cards where every other card offsets downward. Portraits sit in sharp hairline frames with a mono ghost index numeral and an inverted mono company chip pinned to the photo; name and mono uppercase role sit beneath. A 3-up classroom photo strip with mono 'fig.01' captions and a middle-offset column closes the section over a giant ghost '1:1' watermark. Cards route through section-kit route links. Use to showcase instructor credibility for bootcamps, academies, or cohort-based education programs.",
   props: z.object({
     /** Section eyebrow label. */
     eyebrow: z.string().optional(),
@@ -86,56 +91,97 @@ export const BootcampMentors = defineCapsule({
           'modern tech workspace with developers working at standing desks',
         ]
     return (
-      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
-        <Container>
-          <SectionHeading
-            eyebrow={mentorsEyebrow}
-            title={mentorsHeading}
-            subtitle={mentorsDesc}
-            className="mb-16 lg:mb-20 max-w-3xl gap-0"
-            eyebrowClassName="mb-4 inline-block text-xs font-semibold tracking-wider text-primary"
-            titleClassName="mb-4 text-3xl font-bold sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <ResponsiveGrid cols="1-2-4" className="gap-6">
-            {mentorItems.map((m) => (
+      <section
+        className={cn(
+          'relative overflow-hidden bg-background py-16 lg:py-24',
+          props.className,
+        )}
+      >
+        <Watermark className="-left-4 bottom-0 font-mono text-[7rem] sm:text-[13rem]">
+          1:1
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-10 grid items-end gap-4 lg:mb-14 lg:grid-cols-12">
+            <SectionHeading
+              align="left"
+              eyebrow={mentorsEyebrow}
+              title={mentorsHeading}
+              subtitle={mentorsDesc}
+              className="max-w-2xl gap-0 lg:col-span-8"
+              eyebrowClassName="mb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+              titleClassName="mb-4 text-3xl font-bold tracking-tight sm:text-5xl"
+              subtitleClassName="text-base text-muted-foreground sm:text-lg"
+            />
+            <MonoTag tone="faint" className="lg:col-span-4 lg:justify-self-end">
+              [ {String(mentorItems.length).padStart(2, '0')} mentors · on
+              rotation ]
+            </MonoTag>
+          </div>
+          <ResponsiveGrid cols="1-2-4" className="gap-6 sm:gap-x-6 sm:gap-y-10">
+            {mentorItems.map((m, i) => (
               <PersonCard
                 key={m.name}
                 asChild
                 variant="bare"
-                className="rounded-none"
+                className={cn(
+                  'rounded-none',
+                  i % 2 === 1 && 'sm:translate-y-8',
+                )}
               >
                 <NavbarRouteLink className="group text-left" href={m.name}>
-                  <div className="relative mb-4 overflow-hidden rounded-2xl">
+                  <div className="relative mb-4 overflow-hidden rounded-none border border-border">
                     <Image
                       alt={`professional headshot of ${m.name}, ${m.role} at ${m.company}`}
                       w={400}
                       h={400}
                       loading="lazy"
-                      className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transform-none"
                     />
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-foreground/80 to-transparent p-4">
-                      <p className="text-sm font-medium text-background">
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute right-2 top-1 select-none font-mono text-4xl font-bold leading-none text-background/60 mix-blend-screen"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <div className="absolute bottom-3 left-3 border border-background/30 bg-foreground/85 px-2 py-1">
+                      <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-background">
                         {m.company}
                       </p>
                     </div>
                   </div>
-                  <PersonCardName>{m.name}</PersonCardName>
-                  <PersonCardRole>{m.role}</PersonCardRole>
+                  <PersonCardName className="text-base font-semibold tracking-tight">
+                    {m.name}
+                  </PersonCardName>
+                  <PersonCardRole className="mt-1 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                    {m.role}
+                  </PersonCardRole>
                 </NavbarRouteLink>
               </PersonCard>
             ))}
           </ResponsiveGrid>
-          <ResponsiveGrid cols="1" className="mt-12 md:grid-cols-3 gap-6">
-            {mentorPhotos.map((photo) => (
-              <Image
+          <ResponsiveGrid
+            cols="1"
+            className="mt-14 gap-6 sm:mt-20 md:grid-cols-3"
+          >
+            {mentorPhotos.map((photo, i) => (
+              <figure
                 key={photo}
-                alt={photo}
-                w={600}
-                h={400}
-                loading="lazy"
-                className="h-64 w-full rounded-2xl object-cover"
-              />
+                className={cn('m-0', i === 1 && 'md:translate-y-6')}
+              >
+                <Image
+                  alt={photo}
+                  w={600}
+                  h={400}
+                  loading="lazy"
+                  className="h-64 w-full rounded-none border border-border object-cover"
+                />
+                <figcaption
+                  aria-hidden="true"
+                  className="mt-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70"
+                >
+                  fig.{String(i + 1).padStart(2, '0')} — on campus
+                </figcaption>
+              </figure>
             ))}
           </ResponsiveGrid>
         </Container>

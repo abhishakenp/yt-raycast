@@ -3,28 +3,29 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * FilmDirectorServices — a services / capabilities grid for a film director or
- * cinematographer. A left-aligned section header (thin heading + muted lede)
- * above a responsive 1/2/3-column grid of bordered cards, each with a rounded
- * muted icon tile (rotating line-art film, camera, lightbulb, clapper, music,
- * and sliders glyphs), a title, and a short muted description. Use to present
+ * FilmDirectorServices — a capabilities "shot list" for a film director or
+ * cinematographer. A mono slate meta rule with a service count sits above an
+ * asymmetric header (giant credits-style extrabold heading left, mono meta right),
+ * over a responsive 1/2/3-column grid of square hairline cards, each carrying a
+ * mono "SC. 0X / SERVICE" slate index, a giant ghost numeral, an extrabold title,
+ * and a short muted description (no hover-lift). Tokens-only. Use to present
  * production offerings such as commercial direction, cinematography, creative
  * development, documentary, music videos, and post production for filmmakers,
  * directors, DPs, or video production houses.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   FeatureGrid,
   FeatureCard,
-  FeatureIcon,
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
 export const FilmDirectorServices = defineCapsule({
   name: 'FilmDirectorServices',
   description:
-    'Services / capabilities grid for a film director or cinematographer: a left-aligned section header (thin heading + muted lede) above a responsive 1/2/3-column grid of bordered cards, each with a rounded muted icon tile (rotating line-art film, camera, lightbulb, clapper, music, and sliders glyphs), a title, and a short muted description. Use to present production offerings such as commercial direction, cinematography, creative development, documentary, music videos, and post production for filmmakers, directors, DPs, or video production houses.',
+    'Capabilities "shot list" for a film director or cinematographer: a mono slate meta rule with a service count above an asymmetric header (giant credits-style extrabold heading left, mono meta right), over a responsive 1/2/3-column grid of square hairline cards, each with a mono "SC. 0X / SERVICE" slate index, a giant ghost numeral, an extrabold title, and a short muted description (no hover-lift). Tokens-only. Use to present production offerings such as commercial direction, cinematography, creative development, documentary, music videos, and post production for filmmakers, directors, DPs, or video production houses.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -80,16 +81,25 @@ export const FilmDirectorServices = defineCapsule({
     return (
       <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
         <Container>
+          <div className="mb-10 flex items-center justify-between gap-4 border-b border-border pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            <span className="flex items-center gap-3">
+              <span aria-hidden="true" className="size-2 bg-primary" />
+              Capabilities
+            </span>
+            <span className="tabular-nums">
+              {String(serviceItems.length).padStart(2, '0')} services
+            </span>
+          </div>
           <SectionHeading
             align="left"
             title={servicesHeading}
             subtitle={servicesDesc}
-            className="mb-16 max-w-2xl gap-0"
-            titleClassName="mb-4 text-3xl font-light md:text-4xl"
+            className="mb-12 max-w-2xl gap-0 sm:mb-16"
+            titleClassName="mb-4 text-4xl font-extrabold tracking-tight md:text-5xl"
             subtitleClassName="leading-relaxed text-muted-foreground"
           />
           <FeatureGrid columns={3}>
-            {serviceItems.map((f) => {
+            {serviceItems.map((f, i) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -100,10 +110,25 @@ export const FilmDirectorServices = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
-                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                <FeatureCard
+                  key={__iv__.title}
+                  className="relative gap-3 overflow-hidden rounded-none border-border bg-card p-6 shadow-none hover:translate-y-0 hover:border-foreground/30 sm:p-8"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -right-2 -top-3 select-none font-extrabold leading-none tracking-tighter text-foreground/[0.05] text-7xl"
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <MonoTag className="relative text-muted-foreground">
+                    SC. {String(i + 1).padStart(2, '0')} / Service
+                  </MonoTag>
+                  <FeatureTitle className="relative text-xl font-extrabold tracking-tight">
+                    {__iv__.title}
+                  </FeatureTitle>
+                  <FeatureDescription className="relative">
+                    {__iv__.description}
+                  </FeatureDescription>
                 </FeatureCard>
               )
             })}

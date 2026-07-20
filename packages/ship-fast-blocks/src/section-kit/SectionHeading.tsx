@@ -53,7 +53,7 @@ const SectionHeading = React.forwardRef<
           <span
             data-slot="section-heading-eyebrow"
             className={cn(
-              'text-sm font-medium uppercase tracking-wide text-accent',
+              'font-mono text-[11px] font-semibold uppercase tracking-[0.22em] text-primary',
               eyebrowClassName,
             )}
           >
@@ -64,7 +64,7 @@ const SectionHeading = React.forwardRef<
           id={titleId}
           data-slot="section-heading-title"
           className={cn(
-            'text-3xl font-semibold text-foreground md:text-4xl',
+            'text-3xl font-bold tracking-tight text-foreground md:text-4xl',
             titleClassName,
           )}
         >

@@ -1,12 +1,14 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { cn } from '#/lib/utils.ts'
 import {
   CtaBand,
   CtaBandInner,
   CtaBandTitle,
   CtaBandSubtitle,
 } from '#/section-kit/CtaBand.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import {
   EventActionButton,
   EventMutationSpinner,
@@ -14,17 +16,18 @@ import {
 import { eventLakebed } from './event-lakebed.ts'
 
 /**
- * EventCta — a final call-to-action band for a conference or event page. A
- * centered, large heading with a supporting paragraph, dual primary/secondary
- * CTAs (get ticket / download brochure), and a closing email line with a real
- * mailto link. CTAs write shared Lakebed event actions. Use as the closing
- * conversion band before the footer on tech conference, summit, festival, or
- * workshop pages.
+ * EventCta — kinetic-poster final conversion band for a conference or event page. A
+ * muted band with a giant ghost watermark behind a left-anchored, poster-scale
+ * extrabold heading and a supporting paragraph, a square-edged CTA pair (get ticket
+ * / download brochure) with a hard offset shadow and press feedback, and a mono
+ * closing email line with a real mailto link. CTAs write shared Lakebed event
+ * actions. Use as the closing conversion band before the footer on tech conference,
+ * summit, festival, or workshop pages.
  */
 export const EventCta = defineCapsule({
   name: 'EventCta',
   description:
-    'Final call-to-action band for a conference or event page: a centered large heading with a supporting paragraph, dual primary/secondary CTAs (get ticket / download brochure), and a closing email line with a real mailto contact link. CTAs write shared Lakebed event actions. Use as the closing conversion band before the footer on tech conference, summit, festival, meetup, or workshop pages.',
+    'Kinetic-poster final conversion band for a conference or event page: a muted band with a giant ghost watermark behind a left-anchored poster-scale extrabold heading and a supporting paragraph, a square-edged CTA pair (get ticket / download brochure) with a hard offset shadow and press feedback, and a mono closing email line with a real mailto contact link. CTAs write shared Lakebed event actions. Use as the closing conversion band before the footer on tech conference, summit, festival, meetup, or workshop pages.',
   props: z.object({
     /** Heading text. */
     heading: z.string().optional(),
@@ -52,11 +55,21 @@ export const EventCta = defineCapsule({
     const email = props.email ?? 'hello@designfront.io'
 
     return (
-      <CtaBand tone="muted" className={props.className}>
-        <CtaBandInner>
-          <CtaBandTitle>{heading}</CtaBandTitle>
-          <CtaBandSubtitle>{description}</CtaBandSubtitle>
-          <div className="flex flex-col justify-center gap-4 sm:flex-row">
+      <CtaBand
+        tone="muted"
+        className={cn('relative overflow-hidden', props.className)}
+      >
+        <Watermark className="-right-6 top-0 text-[9rem] leading-none sm:text-[16rem] lg:text-[20rem]">
+          2024
+        </Watermark>
+        <CtaBandInner align="left" className="relative max-w-3xl">
+          <CtaBandTitle className="text-[clamp(2.25rem,6vw,4rem)] font-extrabold leading-[0.95] tracking-tight text-balance">
+            {heading}
+          </CtaBandTitle>
+          <CtaBandSubtitle className="max-w-2xl text-pretty">
+            {description}
+          </CtaBandSubtitle>
+          <div className="flex flex-col gap-4 sm:flex-row">
             <EventActionButton
               lakebed={lakebed}
               action="ticket"
@@ -69,7 +82,7 @@ export const EventCta = defineCapsule({
                   Reserving
                 </>
               }
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-8 py-4 text-lg font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+              className="inline-flex items-center justify-center gap-2 rounded-none border border-foreground bg-primary px-8 py-4 font-mono text-sm font-bold uppercase tracking-[0.14em] text-primary-foreground shadow-[5px_5px_0_0] shadow-foreground transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_0] hover:shadow-foreground active:translate-x-[5px] active:translate-y-[5px] active:shadow-none disabled:pointer-events-none disabled:opacity-70"
             >
               {primaryCta}
             </EventActionButton>
@@ -85,16 +98,16 @@ export const EventCta = defineCapsule({
                   Preparing
                 </>
               }
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-background px-8 py-4 text-lg font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
+              className="inline-flex items-center justify-center gap-2 rounded-none border border-foreground bg-background px-8 py-4 font-mono text-sm font-bold uppercase tracking-[0.14em] text-foreground transition-[transform,background-color] duration-150 hover:bg-muted active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
             >
               {secondaryCta}
             </EventActionButton>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
             {emailLabel}{' '}
             <a
               href={`mailto:${email}`}
-              className="text-foreground underline hover:no-underline"
+              className="text-foreground underline decoration-primary underline-offset-4 hover:no-underline"
             >
               {email}
             </a>

@@ -4,32 +4,33 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
 /**
- * InvestingMarkets — live market-data section for an investing / fintech page. A
- * centered heading + lead above a responsive 4-up grid of clickable quote tiles
- * (colored symbol badge, company name + exchange, price, green/red change, and
- * an up/down mini sparkline), followed by a dark global-indices band pairing a
- * 2x2 grid of index cards (value + percent change) with a full-bleed trading
- * floor photo. Quote tiles route through section-kit route links. Use to surface real-time
- * market quotes and world indices on a brokerage or trading-app home page.
- * Renders fully with no props.
+ * InvestingMarkets — Swiss-fintech live market-data ledger for an investing /
+ * brokerage page. An asymmetric mono header (heading + lede left, tabular quote
+ * count right) sits above a collapsed-border grid of clickable quote cells
+ * sharing hairline rules (square symbol tile, company name + exchange, a giant
+ * tabular-nums price, a mono ▲/▼ change delta in primary/destructive, and a
+ * div-built hairline bar spark), followed by an inverted (bg-foreground /
+ * text-background) global-indices band on an asymmetric 7/5 split pairing a
+ * collapsed-border 2×2 index ledger (value + percent change) with a full-bleed
+ * trading-floor photo. Quote cells route through route links. Use to surface
+ * real-time market quotes and world indices on a brokerage or trading-app home
+ * page. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   MarketTable,
   MarketRow,
-  MarketHeader,
   MarketBody,
   MarketChart,
   MarketIndicator,
 } from '#/section-kit/MarketTable.tsx'
-import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 export const InvestingMarkets = defineCapsule({
   name: 'InvestingMarkets',
   description:
-    'Live market-data section for an investing / fintech page: a centered heading + lead above a responsive 4-up grid of clickable quote tiles (colored symbol badge, company name + exchange, price, green/red change and an up/down mini sparkline), followed by a dark global-indices band pairing a 2x2 grid of index cards (value + percent change) with a full-bleed trading-floor photo. Quote tiles route through section-kit route links. Use to surface real-time market quotes and world indices on a brokerage or trading-app home page.',
+    'Swiss-fintech live market-data ledger for an investing / brokerage page: an asymmetric mono header (heading + lede left, tabular quote count right) above a collapsed-border grid of clickable quote cells sharing hairline rules (square symbol tile, company name + exchange, a giant tabular-nums price, a mono ▲/▼ change delta in primary/destructive, and a div-built hairline bar spark), followed by an inverted global-indices band on a 7/5 split pairing a collapsed-border 2×2 index ledger (value + percent change) with a full-bleed trading-floor photo. Quote cells route through section-kit route links. Use to surface real-time market quotes and world indices on a brokerage or trading-app home page.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -143,32 +144,42 @@ export const InvestingMarkets = defineCapsule({
             up: true,
           },
         ]
-    const symbolTones = [
-      'bg-chart-1 text-primary-foreground',
-      'bg-destructive text-destructive-foreground',
-      'bg-chart-4 text-primary-foreground',
-      'bg-chart-2 text-primary-foreground',
-    ]
-    const trendUp = 'M0,35 Q20,28 40,22 T80,6'
-    const trendDown = 'M0,12 Q20,18 40,24 T80,36'
+    const upBars = ['h-2', 'h-3', 'h-4', 'h-6', 'h-8']
+    const downBars = ['h-8', 'h-6', 'h-4', 'h-3', 'h-2']
     return (
       <section
         id="markets"
-        className={cn('bg-background py-24', props.className)}
+        className={cn('pt-24 pb-20 lg:pt-28 lg:pb-28', props.className)}
       >
         <Container>
-          <MarketHeader asChild>
-            <SectionHeading
-              title={heading}
-              subtitle={description}
-              className="mb-16 max-w-2xl gap-0"
-              titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
-              subtitleClassName="text-lg text-muted-foreground"
-            />
-          </MarketHeader>
+          <div className="mb-12 flex flex-col gap-6 border-b border-border pb-6 md:flex-row md:items-end md:justify-between lg:mb-14">
+            <div className="max-w-2xl">
+              <MonoTag className="mb-4 block">
+                Markets
+                <span aria-hidden="true" className="text-primary">
+                  {' '}
+                  / live
+                </span>
+              </MonoTag>
+              <h2 className="text-3xl font-extrabold tracking-tight text-foreground text-balance sm:text-4xl">
+                {heading}
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground text-pretty">
+                {description}
+              </p>
+            </div>
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="shrink-0 tabular-nums"
+            >
+              [ {String(quotes.length).padStart(2, '0')} quotes ]
+            </MonoTag>
+          </div>
+
           <MarketTable
             variant="default"
-            className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 border-0"
+            className="grid grid-cols-1 gap-0 rounded-none border-0 border-l border-t border-border md:grid-cols-2 lg:grid-cols-4"
           >
             <MarketBody asChild>
               <div className="contents">
@@ -176,55 +187,65 @@ export const InvestingMarkets = defineCapsule({
                   <MarketRow
                     asChild
                     key={q.symbol}
-                    className="rounded-xl border border-border bg-muted/50 p-6 text-left transition-shadow hover:shadow-lg"
+                    className="rounded-none border-0 border-b border-r border-border bg-card p-6 text-left transition-colors hover:bg-muted/40"
                   >
                     <NavbarRouteLink href={q.symbol}>
-                      <div className="mb-4 flex items-center gap-3">
-                        <div
-                          className={cn(
-                            'grid size-10 place-items-center rounded-lg text-sm font-bold',
-                            symbolTones[i % symbolTones.length],
-                          )}
+                      <div className="mb-5 flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <span
+                            aria-hidden="true"
+                            className="grid size-9 place-items-center rounded-none border border-border bg-muted font-mono text-[11px] font-semibold tracking-tight text-foreground"
+                          >
+                            {q.symbol}
+                          </span>
+                          <div>
+                            <p className="font-semibold tracking-tight text-foreground">
+                              {q.name}
+                            </p>
+                            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                              {q.exchange}
+                            </p>
+                          </div>
+                        </div>
+                        <span
+                          aria-hidden="true"
+                          className="font-mono text-[10px] tabular-nums text-muted-foreground/50"
                         >
-                          {q.symbol}
-                        </div>
-                        <div>
-                          <p className="font-semibold">{q.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {q.exchange}
-                          </p>
-                        </div>
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
                       </div>
-                      <MarketChart className="justify-between gap-0">
+                      <MarketChart className="items-end justify-between gap-3">
                         <div>
-                          <p className="text-2xl font-semibold">{q.price}</p>
+                          <p className="text-2xl font-extrabold tracking-tight text-foreground tabular-nums">
+                            {q.price}
+                          </p>
                           <MarketIndicator asChild>
                             <p
                               className={cn(
-                                'text-sm',
-                                q.up ? 'text-chart-1' : 'text-destructive',
+                                'font-mono text-[11px] font-semibold tabular-nums',
+                                q.up ? 'text-primary' : 'text-destructive',
                               )}
                             >
+                              <span aria-hidden="true">{q.up ? '▲' : '▼'}</span>{' '}
                               {q.change}
                             </p>
                           </MarketIndicator>
                         </div>
-                        <svg
-                          className={cn(
-                            'h-10 w-20',
-                            q.up ? 'text-chart-1' : 'text-destructive',
-                          )}
-                          viewBox="0 0 80 40"
-                          preserveAspectRatio="none"
+                        <span
                           aria-hidden="true"
+                          className="flex h-8 items-end gap-1"
                         >
-                          <path
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            d={q.up ? trendUp : trendDown}
-                          />
-                        </svg>
+                          {(q.up ? upBars : downBars).map((h, b) => (
+                            <span
+                              key={b}
+                              className={cn(
+                                'w-1',
+                                h,
+                                q.up ? 'bg-primary' : 'bg-destructive',
+                              )}
+                            />
+                          ))}
+                        </span>
                       </MarketChart>
                     </NavbarRouteLink>
                   </MarketRow>
@@ -233,44 +254,51 @@ export const InvestingMarkets = defineCapsule({
             </MarketBody>
           </MarketTable>
 
-          <div className="mt-8 overflow-hidden rounded-2xl bg-foreground p-6 text-background sm:p-8">
-            <div className="grid items-center gap-8 lg:grid-cols-2">
-              <div>
-                <h3 className="mb-2 text-2xl font-semibold">
-                  {indicesHeading}
-                </h3>
-                <p className="mb-6 text-background/60">{indicesNote}</p>
-                <ResponsiveGrid cols="2" className="gap-4">
+          <div className="relative mt-8 overflow-hidden border border-foreground bg-foreground text-background">
+            <div className="grid items-stretch lg:grid-cols-12">
+              <div className="p-6 sm:p-10 lg:col-span-7">
+                <div className="mb-6 flex items-center justify-between gap-4 border-b border-background/20 pb-4">
+                  <MonoTag tone="inverted">{indicesHeading}</MonoTag>
+                  <MonoTag
+                    aria-hidden="true"
+                    className="shrink-0 tabular-nums text-background/40"
+                  >
+                    [ {String(indices.length).padStart(2, '0')} ]
+                  </MonoTag>
+                </div>
+                <p className="mb-6 text-sm text-background/60">{indicesNote}</p>
+                <div className="grid grid-cols-2 gap-0 border-l border-t border-background/20">
                   {indices.map((idx) => (
                     <div
                       key={idx.name}
-                      className="rounded-lg bg-background/10 p-4"
+                      className="border-b border-r border-background/20 p-5"
                     >
-                      <p className="mb-1 text-sm text-background/60">
+                      <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-background/60">
                         {idx.name}
                       </p>
-                      <p className="text-xl font-semibold">{idx.value}</p>
-                      <MarketIndicator asChild>
-                        <p
-                          className={cn(
-                            'text-sm',
-                            idx.up ? 'text-chart-1' : 'text-destructive',
-                          )}
-                        >
-                          {idx.change}
-                        </p>
-                      </MarketIndicator>
+                      <p className="mt-2 text-2xl font-extrabold tracking-tight text-background tabular-nums">
+                        {idx.value}
+                      </p>
+                      <p
+                        className={cn(
+                          'mt-1 font-mono text-[11px] font-semibold tabular-nums',
+                          idx.up ? 'text-background' : 'text-destructive',
+                        )}
+                      >
+                        <span aria-hidden="true">{idx.up ? '▲' : '▼'}</span>{' '}
+                        {idx.change}
+                      </p>
                     </div>
                   ))}
-                </ResponsiveGrid>
+                </div>
               </div>
-              <div className="relative h-64 min-h-[200px] lg:h-full">
+              <div className="relative min-h-[220px] lg:col-span-5 lg:min-h-full">
                 <Image
                   alt={indicesImageAlt}
                   w={800}
                   h={600}
                   loading="lazy"
-                  className="absolute inset-0 size-full rounded-xl object-cover opacity-80"
+                  className="absolute inset-0 size-full object-cover opacity-80"
                 />
               </div>
             </div>

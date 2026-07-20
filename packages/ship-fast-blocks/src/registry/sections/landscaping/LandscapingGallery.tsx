@@ -3,7 +3,6 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   GalleryGrid,
   GalleryGridItems,
@@ -14,20 +13,22 @@ import {
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * LandscapingGallery — a centered-header selected-projects portfolio grid for a
- * landscaping / outdoor-design company. A heading + description introduce a
- * responsive 1/2/3-column grid of rounded image tiles; each tile zooms its photo
- * on hover and reveals a bottom gradient overlay with a location eyebrow and a
- * project title. A centered outlined pill CTA closes the section. Tiles and the
- * CTA route through section-kit route links; all imagery uses the alt-driven Image component.
- * Calm, organic and premium on the card surface. Use to showcase completed work
+ * LandscapingGallery — organic-editorial selected-projects portfolio for a
+ * landscaping / outdoor-design company. An asymmetric header (mono "Portfolio"
+ * meta, heading + lede left, project count right) sits above a staggered grid of
+ * sharp photo plates (rounded-none, hairline framed) whose alternate columns
+ * ride an offset so the grid never reads as a uniform block; each plate zooms its
+ * photo on hover and carries a botanical museum-label caption — a mono location
+ * eyebrow above the project title. A square outlined CTA with press feedback
+ * closes the section. Plates and the CTA route through section-kit route links;
+ * all imagery uses the alt-driven Image component. Use to showcase completed work
  * for landscapers, garden designers, hardscaping contractors or grounds-keeping
  * companies. Renders fully with no props via baked-in six-project defaults.
  */
 export const LandscapingGallery = defineCapsule({
   name: 'LandscapingGallery',
   description:
-    'Centered-header selected-projects portfolio grid for a landscaping / outdoor-design company: a heading + description introduce a responsive 1/2/3-column grid of rounded image tiles; each tile zooms its photo on hover and reveals a bottom gradient overlay with a location eyebrow and a project title, with a centered outlined pill CTA closing the section. Tiles and the CTA route through section-kit route links and imagery uses the alt-driven Image component. Calm, organic and premium on the card surface. Use to showcase completed work for landscapers, garden designers, hardscaping contractors or grounds-keeping companies.',
+    'Organic-editorial selected-projects portfolio for a landscaping / outdoor-design company: an asymmetric header (mono portfolio meta, heading + lede left, project count right) above a staggered grid of sharp hairline-framed photo plates (rounded-none) whose alternate columns ride an offset, each zooming its photo on hover and carrying a botanical museum-label caption — a mono location eyebrow above the project title — with a square outlined CTA with press feedback closing the section. Plates and the CTA route through section-kit route links and imagery uses the alt-driven Image component. Use to showcase completed work for landscapers, garden designers, hardscaping contractors or grounds-keeping companies.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -91,45 +92,62 @@ export const LandscapingGallery = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-card py-20 lg:py-28', props.className)}>
+      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 sm:text-4xl"
-            subtitleClassName="text-lg"
-          />
+          {/* Asymmetric header: heading + lede left, mono project count right. */}
+          <div className="mb-14 flex flex-col gap-6 border-b border-border pb-8 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-2xl">
+              <span className="mb-4 block font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+                Portfolio
+              </span>
+              <h2 className="text-3xl font-semibold leading-tight tracking-tight text-foreground sm:text-4xl">
+                {heading}
+              </h2>
+              <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
+                {description}
+              </p>
+            </div>
+            <span
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/70"
+            >
+              {String(items.length).padStart(2, '0')} projects
+            </span>
+          </div>
+
           <GalleryGrid>
-            <GalleryGridItems columns={3}>
-              {items
-                .map((item) => ({
-                  alt: item.imageAlt,
-                  caption: item.title,
-                }))
-                .map((img) => {
-                  const __iv__ = img as {
-                    alt: string
-                    caption?: string
-                    title?: string
-                    location?: string
-                  }
-                  return (
-                    <GalleryTile key={__iv__.alt}>
-                      <GalleryTileImage alt={__iv__.alt} />
-                      {__iv__.caption && (
-                        <GalleryTileCaption>
-                          {__iv__.caption}
-                        </GalleryTileCaption>
-                      )}
-                    </GalleryTile>
-                  )
-                })}
+            <GalleryGridItems
+              columns={3}
+              className="gap-6 [&>*:nth-child(3n+2)]:sm:translate-y-8"
+            >
+              {items.map((item, i) => {
+                const __iv__ = item as {
+                  location: string
+                  title: string
+                  imageAlt: string
+                }
+                return (
+                  <GalleryTile
+                    key={__iv__.imageAlt}
+                    className="rounded-none border-foreground/15"
+                  >
+                    <GalleryTileImage alt={__iv__.imageAlt} />
+                    <GalleryTileCaption className="rounded-none bg-background/85 px-4 py-3">
+                      <span className="block font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
+                        {String(i + 1).padStart(2, '0')} / {__iv__.location}
+                      </span>
+                      <span className="mt-1 block text-base font-semibold tracking-tight text-foreground">
+                        {__iv__.title}
+                      </span>
+                    </GalleryTileCaption>
+                  </GalleryTile>
+                )
+              })}
             </GalleryGridItems>
           </GalleryGrid>
-          <div className="mt-12 text-center">
+          <div className="mt-16 text-center">
             <NavbarRouteLink
-              className="inline-flex items-center rounded-full border border-border bg-muted px-8 py-4 text-base font-medium text-primary transition-colors hover:bg-accent"
+              className="inline-flex items-center rounded-none border border-foreground bg-background px-8 py-4 text-base font-medium text-foreground transition-[transform,background-color] duration-150 hover:bg-muted active:translate-y-px motion-reduce:transform-none"
               href={cta}
             >
               {cta}

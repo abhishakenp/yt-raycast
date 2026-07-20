@@ -19,19 +19,21 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
 /**
- * ComingSoonPricing — three-tier pricing table for a "launching soon" / waitlist
- * pre-launch landing page. Thin configuration over the shared `PricingGrid`
- * composite: a centered heading and lead paragraph above a responsive grid of
- * plan cards — each with a name, price + period, a feature checklist, and a CTA
- * button. The featured plan is highlighted with a "Most popular" pill. All CTA
- * buttons route through section-kit route links. Use as the pricing / plans section on SaaS
- * waitlists, app pre-launch pages, or beta sign-up landers. Renders fully with
- * no props via three baked-in default plans.
+ * ComingSoonPricing — kinetic three-tier pricing ledger for a "launching soon" /
+ * waitlist pre-launch landing page. A left-aligned mono-eyebrow header above a
+ * responsive grid of sharp-cornered bordered plan cards with giant tabular
+ * price numerals, mono uppercase plan names, hairline-divided feature
+ * checklists, and full-width square CTAs with press feedback. The featured
+ * plan is fully inverted (bg-foreground/text-background) with a hard offset
+ * shadow and a square mono badge. All CTA buttons route through section-kit
+ * route links. Use as the pricing / plans section on SaaS waitlists, app
+ * pre-launch pages, or beta sign-up landers. Renders fully with no props via
+ * three baked-in default plans.
  */
 export const ComingSoonPricing = defineCapsule({
   name: 'ComingSoonPricing',
   description:
-    "Three-tier pricing table for a 'launching soon' / waitlist pre-launch landing page: centered heading and lead above a responsive 1/3-column grid of plan cards with name, tagline, price + period, feature checklist with check icons, and a CTA button. The featured plan gets a primary-colored background, shadow, and floating badge. CTAs route through section-kit route links. Use as the pricing / plans section on SaaS waitlists, app pre-launch pages, or beta sign-up landers.",
+    "Kinetic three-tier pricing ledger for a 'launching soon' / waitlist pre-launch landing page: left-aligned mono-eyebrow header above a responsive 1/3-column grid of sharp-cornered bordered plan cards with giant tabular price numerals, mono uppercase plan names, hairline-divided feature checklists, and full-width square CTA buttons with press feedback. The featured plan is fully inverted (dark band treatment) with a hard offset shadow and square mono badge. CTAs route through section-kit route links. Use as the pricing / plans section on SaaS waitlists, app pre-launch pages, or beta sign-up landers.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -112,13 +114,20 @@ export const ComingSoonPricing = defineCapsule({
     return (
       <section
         className={cn(
-          'w-full px-4 py-24 sm:px-6 lg:py-28 lg:px-8 xl:px-12',
+          'w-full px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-28 xl:px-12',
           props.className,
         )}
       >
         <Container size="md">
-          <PricingGrid>
-            <SectionHeading title={heading} subtitle={description} />
+          <PricingGrid className="gap-6 [&>[data-slot=section-heading]]:mb-8">
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="gap-4"
+              titleClassName="text-4xl font-extrabold uppercase leading-[0.92] tracking-tighter text-foreground sm:text-5xl"
+              subtitleClassName="max-w-xl text-base text-muted-foreground"
+            />
             {plans
               .map((plan) => ({
                 name: plan.name,
@@ -127,6 +136,8 @@ export const ComingSoonPricing = defineCapsule({
                 features: plan.features,
                 cta: plan.cta,
                 highlighted: plan.featured,
+                badge: plan.badge,
+                tagline: plan.tagline,
               }))
               .map((tier) => {
                 const t = tier as {
@@ -153,50 +164,118 @@ export const ComingSoonPricing = defineCapsule({
                   priceSuffix?: string
                   note?: string
                 }
+                const inverted = t.highlighted || t.featured || t.popular
                 return (
                   <PricingTier
                     key={t.name}
-                    variant={
-                      t.highlighted || t.featured || t.popular
-                        ? 'highlighted'
-                        : undefined
-                    }
+                    variant={inverted ? 'highlighted' : undefined}
+                    className={cn(
+                      'gap-6 rounded-none p-6 shadow-none sm:p-7 lg:p-8',
+                      inverted
+                        ? 'border-2 border-foreground bg-foreground text-background shadow-[8px_8px_0_0] shadow-primary/40 ring-0 lg:-translate-y-4'
+                        : 'border-2 border-foreground/15 bg-background transition-colors duration-150 hover:border-foreground',
+                    )}
                   >
-                    {t.highlighted || t.featured || t.popular ? (
-                      <PricingTierBadge>
+                    {inverted ? (
+                      <PricingTierBadge className="rounded-none bg-primary px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-primary-foreground">
                         {t.badge ?? 'Popular'}
                       </PricingTierBadge>
                     ) : null}
-                    <PricingTierHeader>
-                      <PricingTierName>{t.name}</PricingTierName>
+                    <PricingTierHeader className="gap-3">
+                      <PricingTierName
+                        className={cn(
+                          'font-mono text-[13px] font-semibold uppercase tracking-[0.2em]',
+                          inverted ? 'text-background' : 'text-foreground',
+                        )}
+                      >
+                        {t.name}
+                      </PricingTierName>
                       {t.tagline && (
-                        <PricingTierTagline>{t.tagline}</PricingTierTagline>
+                        <PricingTierTagline
+                          className={cn(inverted && 'text-background/60')}
+                        >
+                          {t.tagline}
+                        </PricingTierTagline>
                       )}
                       {t.blurb && (
-                        <PricingTierTagline>{t.blurb}</PricingTierTagline>
+                        <PricingTierTagline
+                          className={cn(inverted && 'text-background/60')}
+                        >
+                          {t.blurb}
+                        </PricingTierTagline>
                       )}
                       {t.description && (
-                        <PricingTierTagline>{t.description}</PricingTierTagline>
+                        <PricingTierTagline
+                          className={cn(inverted && 'text-background/60')}
+                        >
+                          {t.description}
+                        </PricingTierTagline>
                       )}
                       {t.audience && (
-                        <PricingTierTagline>{t.audience}</PricingTierTagline>
+                        <PricingTierTagline
+                          className={cn(inverted && 'text-background/60')}
+                        >
+                          {t.audience}
+                        </PricingTierTagline>
                       )}
-                      <PricingTierPrice>{t.price}</PricingTierPrice>
+                      <PricingTierPrice
+                        className={cn(
+                          'text-5xl font-extrabold leading-none tracking-tighter tabular-nums sm:text-6xl',
+                          inverted ? 'text-background' : 'text-foreground',
+                        )}
+                      >
+                        {t.price}
+                      </PricingTierPrice>
                       {t.period && (
-                        <PricingTierPeriod>{t.period}</PricingTierPeriod>
+                        <PricingTierPeriod
+                          className={cn(
+                            'font-mono text-[11px] uppercase tracking-[0.14em]',
+                            inverted && 'text-background/60',
+                          )}
+                        >
+                          {t.period}
+                        </PricingTierPeriod>
                       )}
                       {t.unit && (
-                        <PricingTierPeriod>{t.unit}</PricingTierPeriod>
+                        <PricingTierPeriod
+                          className={cn(
+                            'font-mono text-[11px] uppercase tracking-[0.14em]',
+                            inverted && 'text-background/60',
+                          )}
+                        >
+                          {t.unit}
+                        </PricingTierPeriod>
                       )}
                       {t.cadence && (
-                        <PricingTierPeriod>{t.cadence}</PricingTierPeriod>
+                        <PricingTierPeriod
+                          className={cn(
+                            'font-mono text-[11px] uppercase tracking-[0.14em]',
+                            inverted && 'text-background/60',
+                          )}
+                        >
+                          {t.cadence}
+                        </PricingTierPeriod>
                       )}
                       {t.suffix && (
-                        <PricingTierPeriod>{t.suffix}</PricingTierPeriod>
+                        <PricingTierPeriod
+                          className={cn(
+                            'font-mono text-[11px] uppercase tracking-[0.14em]',
+                            inverted && 'text-background/60',
+                          )}
+                        >
+                          {t.suffix}
+                        </PricingTierPeriod>
                       )}
                     </PricingTierHeader>
                     {t.features && (
-                      <PricingTierFeatures>
+                      <PricingTierFeatures
+                        className={cn(
+                          'gap-0 divide-y border-t pt-0',
+                          inverted
+                            ? 'divide-background/15 border-background/15'
+                            : 'divide-border border-border',
+                        )}
+                      >
                         {t.features.map((feature) => (
                           <PricingTierFeature
                             key={
@@ -204,6 +283,12 @@ export const ComingSoonPricing = defineCapsule({
                                 ? feature
                                 : (feature as { label: string }).label
                             }
+                            className={cn(
+                              'py-3 text-sm',
+                              inverted
+                                ? 'text-background/70 [&>svg]:text-primary'
+                                : 'text-muted-foreground',
+                            )}
                           >
                             {typeof feature === 'string'
                               ? feature
@@ -213,7 +298,15 @@ export const ComingSoonPricing = defineCapsule({
                       </PricingTierFeatures>
                     )}
                     {t.cta && (
-                      <PricingTierCta target={t.ctaTarget}>
+                      <PricingTierCta
+                        target={t.ctaTarget}
+                        className={cn(
+                          'rounded-none font-mono text-[12px] font-semibold uppercase tracking-[0.16em] transition-[transform,box-shadow,background-color] duration-100 active:translate-y-px',
+                          inverted
+                            ? 'bg-background text-foreground shadow-[4px_4px_0_0] shadow-primary/50 hover:-translate-y-0.5 active:shadow-[2px_2px_0_0] active:shadow-primary/50'
+                            : 'border-2 border-foreground bg-transparent text-foreground hover:bg-foreground hover:text-background',
+                        )}
+                      >
                         {t.cta}
                       </PricingTierCta>
                     )}

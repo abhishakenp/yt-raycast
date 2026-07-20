@@ -32,22 +32,23 @@ import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * InteriorDesignContactCta — split contact section pairing studio details with a
- * real inquiry form for an upscale interior-design / architecture studio. A two-
- * column layout: on the left an uppercase eyebrow, a light-weight heading, a
- * supporting paragraph and a stack of contact rows (studio address, email,
- * phone) each with a circular muted line icon; on the right a bordered inquiry
- * form (first/last name, email, project-type + budget selects, message
- * textarea) with a filled submit button and a footnote. Editorial and
- * conversion-focused. The email and phone route through section-kit route links; submit
- * writes a Lakebed inquiry. Use as the closing contact / lead-capture block for
- * interior designers, design studios or architecture firms. Renders fully with
- * no props via baked-in defaults.
+ * InteriorDesignContactCta — editorial-spatial split contact block pairing studio
+ * details with a real Lakebed inquiry form for an upscale interior-design /
+ * architecture studio. An asymmetric 5:7 layout: on the left a mono "08 / CONTACT"
+ * rail, a light-weight heading, a supporting paragraph and a hairline stack of
+ * contact rows (studio address, email, phone) each with a square outlined line
+ * icon and mono label; on the right a hairline-framed inquiry form (first/last
+ * name, email, project-type + budget selects, message textarea) with a square
+ * filled submit button with press feedback and a footnote. Editorial,
+ * conversion-focused, binary radius. The email and phone route through section-kit
+ * route links; submit writes a Lakebed inquiry. Use as the closing contact /
+ * lead-capture block for interior designers, design studios or architecture
+ * firms. Renders fully with no props via baked-in defaults.
  */
 export const InteriorDesignContactCta = defineCapsule({
   name: 'InteriorDesignContactCta',
   description:
-    'Split contact section pairing studio details with a real Lakebed inquiry form for an upscale interior-design / architecture studio: two-column layout with an uppercase eyebrow, light-weight heading, supporting paragraph and a stack of contact rows (studio address, email, phone) each with a circular muted line icon on the left, and a bordered inquiry form (first/last name, email, project-type + budget selects, message textarea) with a filled submit button and footnote on the right. Editorial and conversion-focused; email and phone route through section-kit route links, while submit writes a shared inquiry record. Use as the closing contact / lead-capture block for interior designers, design studios or architecture firms.',
+    'Editorial-spatial split contact block pairing studio details with a real Lakebed inquiry form for an upscale interior-design / architecture studio: an asymmetric 5:7 layout with a mono "08 / CONTACT" rail, light-weight heading, supporting paragraph and a hairline stack of contact rows (studio address, email, phone) each with a square outlined line icon and mono label on the left, and a hairline-framed inquiry form (first/last name, email, project-type + budget selects, message textarea) with a square filled submit button with press feedback and footnote on the right. Editorial, conversion-focused, binary radius; email and phone route through section-kit route links, while submit writes a shared inquiry record. Use as the closing contact / lead-capture block for interior designers, design studios or architecture firms.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -111,28 +112,29 @@ export const InteriorDesignContactCta = defineCapsule({
     })
 
     const inputCls =
-      'w-full rounded-sm border border-input bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground transition-colors focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring'
+      'w-full rounded-none border border-input bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground transition-colors focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring'
 
     return (
-      <CtaBand tone="muted" className={props.className}>
+      <CtaBand tone="muted" className={cn('bg-muted/40', props.className)}>
         <CtaBandInner
           align="left"
-          className="max-w-7xl gap-12 px-4 pt-28 pb-20 sm:px-6 md:pt-32 md:pb-28 lg:px-8 lg:gap-20"
+          className="max-w-7xl gap-8 px-4 pt-24 pb-16 sm:px-6 md:pt-28 md:pb-24 lg:px-8 lg:gap-10"
         >
-          <CtaBandEyebrow className="text-muted-foreground">
-            {eyebrow}
+          <CtaBandEyebrow className="flex items-center gap-3 font-mono text-[11px] font-normal normal-case tracking-[0.2em] text-muted-foreground">
+            <span aria-hidden="true" className="size-2 bg-primary" />
+            08 / {eyebrow}
           </CtaBandEyebrow>
-          <CtaBandTitle className="font-light md:text-4xl">
+          <CtaBandTitle className="max-w-2xl text-balance font-light tracking-tight md:text-5xl">
             {heading}
           </CtaBandTitle>
           <CtaBandSubtitle className="text-muted-foreground leading-relaxed">
             {description}
           </CtaBandSubtitle>
-          <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
-            <div className="space-y-8">
-              <div className="space-y-4">
-                <FeatureListItem>
-                  <FeatureListItemIcon className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
+          <div className="mt-4 grid gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="space-y-8 lg:col-span-5">
+              <div className="space-y-0 border-t border-border">
+                <FeatureListItem className="items-start gap-4 border-b border-border py-5">
+                  <FeatureListItemIcon className="flex size-11 items-center justify-center rounded-none border border-border bg-transparent text-foreground">
                     <svg
                       width="20"
                       height="20"
@@ -150,7 +152,7 @@ export const InteriorDesignContactCta = defineCapsule({
                   </FeatureListItemIcon>
                   <FeatureListItemBody>
                     <FeatureListItemTitle asChild>
-                      <p className="font-medium text-foreground">
+                      <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
                         {studioLabel}
                       </p>
                     </FeatureListItemTitle>
@@ -160,8 +162,8 @@ export const InteriorDesignContactCta = defineCapsule({
                   </FeatureListItemBody>
                 </FeatureListItem>
 
-                <FeatureListItem>
-                  <FeatureListItemIcon className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                <FeatureListItem className="items-start gap-4 border-b border-border py-5">
+                  <FeatureListItemIcon className="flex size-11 items-center justify-center rounded-none border border-border bg-transparent text-foreground">
                     <svg
                       width="20"
                       height="20"
@@ -178,7 +180,7 @@ export const InteriorDesignContactCta = defineCapsule({
                   </FeatureListItemIcon>
                   <FeatureListItemBody>
                     <FeatureListItemTitle asChild>
-                      <p className="font-medium text-foreground">
+                      <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
                         {emailLabel}
                       </p>
                     </FeatureListItemTitle>
@@ -191,8 +193,8 @@ export const InteriorDesignContactCta = defineCapsule({
                   </FeatureListItemBody>
                 </FeatureListItem>
 
-                <FeatureListItem>
-                  <FeatureListItemIcon className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                <FeatureListItem className="items-start gap-4 border-b border-border py-5">
+                  <FeatureListItemIcon className="flex size-11 items-center justify-center rounded-none border border-border bg-transparent text-foreground">
                     <svg
                       width="20"
                       height="20"
@@ -209,7 +211,7 @@ export const InteriorDesignContactCta = defineCapsule({
                   </FeatureListItemIcon>
                   <FeatureListItemBody>
                     <FeatureListItemTitle asChild>
-                      <p className="font-medium text-foreground">
+                      <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
                         {phoneLabel}
                       </p>
                     </FeatureListItemTitle>
@@ -224,7 +226,10 @@ export const InteriorDesignContactCta = defineCapsule({
               </div>
             </div>
 
-            <ContactForm className="space-y-6" onSubmit={inquiry.submitForm}>
+            <ContactForm
+              className="space-y-6 border border-border bg-background p-6 sm:p-8 lg:col-span-7"
+              onSubmit={inquiry.submitForm}
+            >
               <ResponsiveGrid cols="1-2" className="gap-6">
                 <ContactFormField className="mb-0">
                   <ContactFormLabel
@@ -337,7 +342,7 @@ export const InteriorDesignContactCta = defineCapsule({
                 type="submit"
                 aria-busy={inquiry.isPending}
                 disabled={inquiry.isPending}
-                className="w-full bg-foreground px-8 py-4 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70"
+                className="w-full rounded-none bg-foreground px-8 py-4 text-sm font-medium text-background transition-all duration-150 hover:bg-foreground/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
               >
                 {inquiry.isPending ? 'Sending' : submit}
               </ContactFormSubmit>

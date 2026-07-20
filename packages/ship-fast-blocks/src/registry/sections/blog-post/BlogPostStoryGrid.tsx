@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { ArticleGrid } from '#/section-kit/ArticleGrid.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { StoryGrid } from '#/section-kit/StoryGrid.tsx'
 import {
@@ -20,18 +21,22 @@ import { publicationLakebed } from '../blog/publication-lakebed.ts'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * BlogPostStoryGrid — related-articles cards grid for an editorial blog post
- * detail page. A muted-background band with a left-aligned "Related reading"
- * heading above a responsive 1/2/3-column grid of article cards; each card has
- * a hover-zoom cover image, category/date meta, a bold title, and a short
- * excerpt. All cards are clickable and route through section-kit route links. Use as the
+ * BlogPostStoryGrid — newsprint "further reading" archive band for an
+ * editorial blog post detail page. A muted wash band that cuts in on a slanted
+ * top seam, opened by a mono index rail ("Archive" — hairline rule — ✦
+ * ornament) above the serif heading. Below, a collapsed-border newspaper grid
+ * (shared hairlines, no gaps, 1/2/3 columns): each cell is a clickable
+ * article card with a sharp hairline-framed cover that renders grayscale and
+ * regains color on hover, a mono category · date dateline, a giant faint
+ * serif index numeral, a serif headline that underlines on hover, and a short
+ * excerpt. All cards route through section-kit route links. Use as the
  * "related reading" / "more stories" section below the body on blogs,
  * magazines, journals, or editorial reading pages.
  */
 export const BlogPostStoryGrid = defineCapsule({
   name: 'BlogPostStoryGrid',
   description:
-    "Related-articles cards grid for an editorial blog post detail page: a muted-background band with a left-aligned 'Related reading' heading above a responsive 1/2/3-column grid of article cards, each with a hover-zoom cover image, category/date meta, a bold title, and a short excerpt. All cards are clickable and route through section-kit route links. Use as the 'related reading' / 'more stories' section below the body on blogs, magazines, journals, or editorial reading pages.",
+    "Newsprint further-reading archive band for an editorial blog post detail page: a muted wash band cutting in on a slanted top seam, a mono index rail with hairline rule and ornament above the serif heading, and a collapsed-border newspaper grid (shared hairlines, no gaps, 1/2/3 columns) of clickable article cells — each with a sharp hairline-framed grayscale cover that regains color on hover, a mono category · date dateline, a giant faint serif index numeral, a serif headline that underlines on hover, and a short excerpt. All cards are clickable and route through section-kit route links. Use as the 'related reading' / 'more stories' section below the body on blogs, magazines, journals, or editorial reading pages.",
   props: z.object({
     /** Section heading above the grid. */
     heading: z.string().optional(),
@@ -97,38 +102,80 @@ export const BlogPostStoryGrid = defineCapsule({
     return (
       <StoryGrid
         variant="muted"
-        className={cn('py-16 lg:py-24', props.className)}
+        className={cn(
+          'relative overflow-hidden bg-muted/40 py-16 pt-24 [clip-path:polygon(0_2.5rem,100%_0,100%_100%,0_100%)] lg:py-24 lg:pt-32',
+          props.className,
+        )}
       >
-        <Container size="md" className="px-6 lg:px-6">
+        <Container size="md" className="relative px-6 lg:px-6">
+          {/* Mono archive rail: label — hairline — ornament. */}
+          <div className="mb-4 flex items-center gap-4">
+            <MonoTag className="flex shrink-0 items-center gap-2 text-foreground">
+              <span
+                aria-hidden="true"
+                className="size-1.5 shrink-0 bg-primary"
+              />
+              Archive
+            </MonoTag>
+            <span aria-hidden="true" className="h-px flex-1 bg-foreground/20" />
+            <span
+              aria-hidden="true"
+              className="shrink-0 font-serif text-sm text-muted-foreground/60"
+            >
+              ✦
+            </span>
+          </div>
           <SectionHeading
             title={heading}
             align="left"
-            titleClassName="text-2xl font-semibold tracking-tight"
+            titleClassName="font-serif text-3xl font-bold tracking-tight md:text-4xl"
             className="mb-10"
           />
-          <ArticleGrid cols="1-md-2-3">
-            {items.map((post) => (
+          {/* Collapsed-border newspaper grid — hairlines celebrated, no gaps. */}
+          <ArticleGrid
+            cols="1-md-2-3"
+            className="gap-0 border-t border-l border-foreground/20"
+          >
+            {items.map((post, i) => (
               <StoryCard
                 key={`${post.category}:${post.title}`}
                 variant="simple"
                 asChild
+                className="border-r border-b border-foreground/20 bg-background/40 p-6 transition-colors hover:bg-background sm:p-7"
               >
                 <NavbarRouteLink href={post.title}>
-                  <StoryCardFigure>
-                    <StoryCardImage alt={post.imageAlt} w={600} h={400} />
+                  <StoryCardFigure className="relative mb-5 overflow-hidden rounded-none border border-foreground/20">
+                    <StoryCardImage
+                      alt={post.imageAlt}
+                      w={600}
+                      h={400}
+                      className="grayscale transition-[filter,transform] duration-500 group-hover:grayscale-0"
+                    />
                   </StoryCardFigure>
                   <StoryCardBody>
                     <StoryCardMeta>
-                      {
-                        <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
-                          <span>{post.category}</span>
-                          <span aria-hidden="true">•</span>
-                          <time>{post.date}</time>
-                        </div>
-                      }
+                      <div className="mb-3 flex items-baseline justify-between gap-3">
+                        <span className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                          <span className="text-foreground">
+                            {post.category}
+                          </span>
+                          <span aria-hidden="true">·</span>
+                          <time className="shrink-0">{post.date}</time>
+                        </span>
+                        <span
+                          aria-hidden="true"
+                          className="shrink-0 font-serif text-3xl font-bold leading-none text-foreground/15"
+                        >
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                      </div>
                     </StoryCardMeta>
-                    <StoryCardTitle>{post.title}</StoryCardTitle>
-                    <StoryCardExcerpt>{post.excerpt}</StoryCardExcerpt>
+                    <StoryCardTitle className="font-serif text-xl font-bold leading-snug tracking-tight underline-offset-4 decoration-primary/60 group-hover:underline">
+                      {post.title}
+                    </StoryCardTitle>
+                    <StoryCardExcerpt className="font-serif">
+                      {post.excerpt}
+                    </StoryCardExcerpt>
                   </StoryCardBody>
                 </NavbarRouteLink>
               </StoryCard>

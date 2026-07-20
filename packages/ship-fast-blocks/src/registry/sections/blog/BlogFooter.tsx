@@ -19,14 +19,17 @@ import {
 } from '#/section-kit/SiteFooter.tsx'
 
 /**
- * BlogFooter — a rich, multi-column closing footer for an editorial blog or
- * publication. Thin configuration over the shared `SiteFooter` composite: a
- * wordmark beside an inline glyph mark, an editorial tagline, a social row, and
- * a responsive grid of link columns (Explore, Topics, More) folded alongside a
- * bottom bar that carries an auto-updating copyright line plus a small legal
- * link row. Use as the site-wide footer for blogs, magazines, newsrooms, or
- * content hubs. Renders fully with no props via baked-in "Form & Function"
- * defaults.
+ * BlogFooter — newsprint colophon footer for an editorial blog or
+ * publication. Opens on a heavy double masthead rule (thick top border plus a
+ * hairline echo), then lays out a brand block — serif wordmark beside a
+ * square ink-block pen mark, an editorial tagline, and a mono small-caps
+ * social row — alongside link columns whose mono uppercase titles sit on
+ * hairline rules (Explore, Topics, More). A hairline-ruled bottom bar carries
+ * the auto-updating copyright line and a mono legal link row, closing the
+ * page like a printer's colophon. Every brand, social, and column link routes
+ * through section-kit route links. Use as the site-wide footer for blogs,
+ * magazines, newsrooms, or content hubs. Renders fully with no props via
+ * baked-in "Form & Function" defaults.
  */
 function PenMark({ className }: { className?: string }) {
   return (
@@ -51,7 +54,7 @@ function PenMark({ className }: { className?: string }) {
 export const BlogFooter = defineCapsule({
   name: 'BlogFooter',
   description:
-    'Rich, multi-column closing footer for an editorial blog or publication: a responsive grid with a brand block (wordmark + inline glyph mark + editorial tagline + social row) and link columns (Explore, Topics, More), plus a bordered-top bottom bar holding an auto-updating copyright line and a small legal link row. Every brand, social, and column link routes through section-kit route links. Use as the site-wide footer for blogs, magazines, newsrooms, or content hubs.',
+    'Newsprint colophon footer for an editorial blog or publication: a heavy double masthead rule opens a grid with a brand block (serif wordmark + square ink-block pen mark + editorial tagline + mono small-caps social row) and link columns whose mono uppercase titles sit on hairline rules (Explore, Topics, More), plus a hairline-ruled bottom bar holding an auto-updating copyright line and a mono legal link row. Every brand, social, and column link routes through section-kit route links. Use as the site-wide footer for blogs, magazines, newsrooms, or content hubs.',
   props: z.object({
     /** Publication / brand name shown as the wordmark. */
     brand: z.string().optional(),
@@ -91,42 +94,69 @@ export const BlogFooter = defineCapsule({
         ]
 
     return (
-      <SiteFooter className={props.className}>
-        <FooterContent>
-          <FooterGrid>
+      <SiteFooter
+        className={
+          'border-t-2 border-foreground bg-background shadow-[inset_0_3px_0_-2px] shadow-border ' +
+          (props.className ?? '')
+        }
+      >
+        <FooterContent className="py-14">
+          <FooterGrid className="grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-[1.4fr_1fr_1fr_1fr] md:gap-10">
             <FooterBrand
+              className="col-span-2 md:col-span-1"
               brand={props.brand ?? 'Form & Function'}
-              brandMark={<PenMark className="size-8 text-primary" />}
-              brandClassName={'font-serif text-xl font-medium'}
+              brandMark={
+                <span className="grid size-7 place-items-center rounded-none bg-foreground text-background">
+                  <PenMark className="size-4" />
+                </span>
+              }
+              brandClassName={'font-serif text-2xl font-black tracking-tight'}
             >
-              <FooterTagline>
+              <FooterTagline className="mt-4 max-w-xs border-l border-border pl-4 leading-relaxed">
                 {props.tagline ??
                   'Essays on design, engineering, and the craft of building products.'}
               </FooterTagline>
-              <FooterSocial>
+              <FooterSocial className="mt-5 gap-4">
                 {social.map((s) => (
-                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  <FooterSocialLink
+                    key={s.label}
+                    className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+                  >
+                    {s.label}
+                  </FooterSocialLink>
                 ))}
               </FooterSocial>
             </FooterBrand>
             {columns.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
-                <FooterColumnList>
+                <FooterColumnTitle className="border-b border-border pb-2 font-mono text-[11px] font-normal uppercase tracking-[0.22em] text-muted-foreground">
+                  {col.title}
+                </FooterColumnTitle>
+                <FooterColumnList className="mt-4 space-y-2.5">
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink
+                      key={link}
+                      className="block w-fit text-left text-sm text-foreground/80 underline-offset-4 transition-colors hover:text-foreground hover:underline"
+                    >
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
-          <FooterBottom>
-            <FooterCopyright>
+          <FooterBottom className="mt-12 border-t border-border pt-6">
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
               {props.note ?? 'All rights reserved.'}
             </FooterCopyright>
-            <FooterLegal>
+            <FooterLegal className="gap-4">
               {['Privacy', 'Terms', 'RSS'].map((l) => (
-                <FooterLink key={l}>{l}</FooterLink>
+                <FooterLink
+                  key={l}
+                  className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {l}
+                </FooterLink>
               ))}
             </FooterLegal>
           </FooterBottom>

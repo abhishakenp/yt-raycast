@@ -100,7 +100,7 @@ describe('GovPortalNavbar mega-nav hover visibility', () => {
   it('plain nav items carry no accent hover classes from the NavigationMenuLink base', () => {
     render(<GovPortalNavbar.component props={{ brand: 'Test PSU' }} />)
 
-    const home = screen.getByRole('button', { name: 'Home' })
+    const home = screen.getByRole('link', { name: 'Home' })
     const tokens = classTokens(home)
 
     expect(tokens).toContain('hover:bg-primary-foreground/15')

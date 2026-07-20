@@ -100,12 +100,12 @@ export const AuthFeatures = defineCapsule({
     }))
     const featureMarks = ['lead', 'signal', 'path', 'flow', 'reach', 'guard']
     const featureLayouts = [
-      'md:col-span-2 xl:col-span-3 xl:-rotate-1',
-      'md:col-span-2 xl:col-span-3 xl:translate-y-6 xl:rotate-1',
-      'xl:col-span-2 xl:rotate-1',
-      'xl:col-span-2 xl:translate-y-6 xl:-rotate-1',
-      'xl:col-span-2 xl:-rotate-[0.5deg]',
-      'md:col-span-2 xl:col-span-6',
+      'md:col-span-2 xl:col-span-3 xl:-rotate-1 max-lg:-rotate-1',
+      'md:col-span-2 xl:col-span-3 xl:translate-y-6 xl:rotate-1 max-lg:rotate-1 max-lg:translate-x-1.5',
+      'xl:col-span-2 xl:rotate-1 max-lg:rotate-[0.6deg] max-lg:-translate-x-1.5',
+      'xl:col-span-2 xl:translate-y-6 xl:-rotate-1 max-lg:-rotate-[0.6deg] max-lg:translate-x-1',
+      'xl:col-span-2 xl:-rotate-[0.5deg] max-lg:rotate-1 max-lg:-translate-x-1',
+      'md:col-span-2 xl:col-span-6 max-lg:-rotate-[0.5deg]',
     ]
 
     return (
@@ -126,7 +126,7 @@ export const AuthFeatures = defineCapsule({
                 titleClassName="text-balance text-3xl font-semibold tracking-tight sm:text-4xl lg:text-[2.6rem] lg:leading-[1.12]"
                 subtitleClassName="text-pretty leading-7"
               />
-              <div className="mt-8 hidden max-w-sm rounded-2xl border border-border bg-background p-4 shadow-sm shadow-foreground/5 lg:block">
+              <div className="mt-8 max-w-sm rounded-2xl border border-border bg-background p-4 shadow-sm shadow-foreground/5 max-lg:-rotate-[0.6deg] lg:block">
                 <div className="flex items-center justify-between border-b border-border pb-3 font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">
                   <span>feature map</span>
                   <span className="inline-flex items-center gap-1.5">
@@ -174,7 +174,7 @@ export const AuthFeatures = defineCapsule({
                     {layout.includes('col-span-6') ? (
                       <span
                         aria-hidden="true"
-                        className="absolute right-6 top-6 hidden -rotate-3 rounded-md border-[3px] border-double border-primary/50 px-2.5 py-1 font-mono text-[0.65rem] font-bold uppercase tracking-[0.14em] text-primary/70 xl:inline-flex"
+                        className="absolute right-6 top-6 hidden -rotate-3 rounded-md border-[3px] border-double border-primary/50 px-2.5 py-1 font-mono text-[0.65rem] font-bold uppercase tracking-[0.14em] text-primary/70 max-lg:inline-flex xl:inline-flex"
                       >
                         cleared
                       </span>

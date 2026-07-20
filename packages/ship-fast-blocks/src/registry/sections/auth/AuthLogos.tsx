@@ -67,13 +67,13 @@ export const AuthLogos = defineCapsule({
           </LogoStripLabel>
           <span aria-hidden="true" className="h-px flex-1 bg-border" />
         </Container>
-        <div className="mt-9 -mx-4 -rotate-1 border-y-2 border-foreground bg-foreground py-5 sm:-mx-8">
+        <div className="mt-9 -mx-4 -rotate-2 border-y-2 border-foreground bg-foreground py-5 sm:-mx-8 sm:-rotate-1">
           <Marquee duration={42} gap={20} className="px-4">
             {logos.filter(Boolean).map((logo, index) => (
               <LogoStripItem
                 key={logo}
                 className={cn(
-                  'inline-flex min-h-12 min-w-0 shrink-0 items-center justify-center rounded-lg border-[3px] border-double px-5 text-center font-mono text-xs font-bold uppercase tracking-[0.14em] sm:text-sm',
+                  'inline-flex min-h-12 min-w-0 shrink-0 items-center justify-center rounded-lg border-[3px] border-double px-4 text-center font-mono text-xs font-bold uppercase tracking-[0.14em] sm:px-5 sm:text-sm',
                   index % 3 === 1
                     ? 'border-primary/60 text-primary'
                     : 'border-background/40 text-background/75',

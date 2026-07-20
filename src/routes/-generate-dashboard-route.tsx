@@ -1,4 +1,4 @@
-import { getRouteApi } from '@tanstack/react-router'
+import { getRouteApi, useRouterState } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { Dashboard } from '@/features/dashboard/components/Dashboard'
@@ -7,7 +7,7 @@ import {
   type PreviewUrlBridgeValue,
 } from '@ship-fast/blocks/runtime'
 
-const generateRouteApi = getRouteApi('/generate/$sessionId')
+const generateRouteApi = getRouteApi('/generate/$sessionId/$')
 const generateAdminRouteApi = getRouteApi('/generate/$sessionId/admin')
 
 /**
@@ -32,6 +32,9 @@ export function extractSlugFromPath(
 
 export const GenerateRoute = () => {
   const { sessionId } = generateRouteApi.useParams()
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  })
 
   // Track the current page slug in local state. Initialized from the URL
   // on mount, updated on pushState (in-app navigation) and popstate
@@ -51,6 +54,10 @@ export const GenerateRoute = () => {
     window.addEventListener('popstate', onPopState)
     return () => window.removeEventListener('popstate', onPopState)
   }, [sessionId])
+
+  useEffect(() => {
+    setPageFromUrl(extractSlugFromPath(pathname, sessionId))
+  }, [pathname, sessionId])
 
   const navigateToPage = useCallback(
     (pageSlug: string | null) => {

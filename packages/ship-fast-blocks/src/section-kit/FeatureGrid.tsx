@@ -68,7 +68,7 @@ const FeatureCard = React.forwardRef<
       ref={ref}
       data-slot="feature-card"
       className={cn(
-        'flex flex-col gap-3 rounded-xl border border-border bg-card p-6',
+        'flex flex-col gap-3 rounded-xl border border-border bg-card p-6 transition-[border-color,transform] duration-150 hover:-translate-y-0.5 hover:border-foreground/25 motion-reduce:transform-none',
         className,
       )}
       {...props}

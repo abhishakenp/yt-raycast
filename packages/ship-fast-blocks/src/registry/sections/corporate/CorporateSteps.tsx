@@ -3,12 +3,16 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * CorporateSteps — numbered implementation timeline / process section for an
- * enterprise / corporate B2B site. A centered section heading above a responsive
- * 1/2/4-column grid of numbered phase cards; each card shows a circled step
- * number, a title, and a description, with a horizontal connector line between
- * desktop items. Use to present a methodology, onboarding flow, or project
- * roadmap for enterprise software vendors, consultancies, or managed services.
+ * CorporateSteps — Swiss-corporate phase ledger for an enterprise / corporate
+ * B2B site. A muted wash band with a double-rule asymmetric header (mono
+ * "03 / Method" index left, left-aligned heading + lede, tabular phase count
+ * right) above a collapsed-border 1/2/4-column ledger of square-edged phase
+ * cells. Each cell shares hairline rules and carries a mono primary
+ * "Phase 01" label, a giant ghost numeral watermark, a title, and a
+ * description; on desktop every other cell drops by a calculated offset — the
+ * section's grid rupture. Use to present a methodology, onboarding flow, or
+ * project roadmap for enterprise software vendors, consultancies, or managed
+ * services.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -20,7 +24,7 @@ import {
 export const CorporateSteps = defineCapsule({
   name: 'CorporateSteps',
   description:
-    'Numbered implementation timeline / process section for an enterprise / corporate B2B site: centered heading above a responsive 1/2/4-column grid of numbered phase cards with circled step numbers, titles, descriptions, and horizontal connector lines between desktop items. Use to present a methodology, onboarding flow, or project roadmap for enterprise software, consultancies, or managed services.',
+    'Swiss-corporate phase ledger for an enterprise / corporate B2B site: a muted wash band with a double-rule asymmetric header (mono index + tabular phase count) above a collapsed-border 1/2/4-column ledger of square-edged phase cells carrying mono primary phase labels, giant ghost numeral watermarks, titles, and descriptions, with every other cell offset on desktop. Use to present a methodology, onboarding flow, or project roadmap for enterprise software, consultancies, or managed services.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -68,34 +72,53 @@ export const CorporateSteps = defineCapsule({
         ]
     return (
       <StepTimeline
-        className={cn('bg-muted/50 py-20 lg:py-28', props.className)}
+        className={cn('bg-muted/40 py-16 lg:py-28', props.className)}
       >
         <Container>
+          <div className="mb-6 flex items-center justify-between gap-4 border-b border-border pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            <span className="flex items-center gap-3">
+              <span aria-hidden="true" className="size-2 bg-primary" />
+              03 / Method
+            </span>
+            <span className="tabular-nums">
+              {String(items.length).padStart(2, '0')} phases
+            </span>
+          </div>
           <SectionHeading
+            align="left"
             title={heading}
             subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 tracking-tight sm:text-4xl"
-            subtitleClassName="text-lg"
+            className="mb-10 max-w-3xl gap-3 sm:mb-14 lg:mb-16"
+            titleClassName="text-3xl font-semibold tracking-tight sm:text-4xl"
+            subtitleClassName="max-w-xl text-lg"
           />
-          <StepTimelineGrid columns={2} className="gap-8 lg:grid-cols-4">
+          <StepTimelineGrid
+            columns={2}
+            className="gap-0 border-l border-t border-border md:grid-cols-2 lg:grid-cols-4"
+          >
             {items.map((step, i) => (
-              <StepItem key={step.title} className="relative">
-                <div className="mb-6 grid size-12 place-items-center rounded-full bg-foreground">
-                  <span className="font-semibold text-background">{i + 1}</span>
-                </div>
-                <h3 className="mb-2 text-lg font-semibold text-foreground">
+              <StepItem
+                key={step.title}
+                className={cn(
+                  'relative overflow-hidden border-b border-r border-border bg-background p-6 sm:p-8',
+                  i % 2 === 1 && 'lg:translate-y-6',
+                )}
+              >
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -right-1 -top-3 select-none font-mono text-7xl font-bold tabular-nums leading-none text-foreground/[0.05]"
+                >
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+                  Phase {String(i + 1).padStart(2, '0')}
+                </span>
+                <h3 className="mt-4 text-lg font-semibold tracking-tight text-foreground">
                   {step.title}
                 </h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                   {step.description}
                 </p>
-                {i < items.length - 1 && (
-                  <div
-                    aria-hidden="true"
-                    className="absolute left-full top-6 hidden h-px w-full -translate-x-6 bg-border lg:block"
-                  />
-                )}
               </StepItem>
             ))}
           </StepTimelineGrid>

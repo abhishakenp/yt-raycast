@@ -225,6 +225,8 @@ export async function detectSnippetLanguageBcp47(fullText: string) {
   code3 = resolveFrancCode3HinglishPreference(snippet, code3)
   if (!code3 || code3 === 'und') return null
   const toBcp47 = (resolved: unknown) =>
-    resolved === 'hinglish' ? 'hinglish' : FRANC_ISO639_3_TO_BCP47[resolved as string]
+    resolved === 'hinglish'
+      ? 'hinglish'
+      : FRANC_ISO639_3_TO_BCP47[resolved as string]
   return toBcp47(code3) || null
 }

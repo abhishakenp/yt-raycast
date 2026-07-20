@@ -9,17 +9,20 @@ import {
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
 /**
- * DatingAppFaq — a centered FAQ accordion for a dating / matchmaking app. A narrow
- * single-column layout with a centered heading + supporting paragraph above a stack
- * of native <details> accordion items on soft muted backgrounds; each summary shows
- * the question with a chevron that rotates open, revealing the answer below. The
- * default supporting line interpolates the brand name. Use to answer common
+ * DatingAppFaq — playful-geometric asymmetric FAQ ledger for a dating /
+ * matchmaking app. A 4:8 split: the left rail holds a mono "[ 06 ] questions"
+ * micro-label with a rounded-full primary dot, the extrabold heading, and the
+ * supporting line (which interpolates the brand name); the right column is a
+ * hairline-divided stack of native <details> rows, each summary pairing a mono
+ * tabular index numeral with the bold question and a rounded-full bordered
+ * plus chip that rotates open to reveal the answer. Use to answer common
  * questions — safety, matching, privacy, pricing — for dating apps, singles
  * platforms, or any consumer product. Renders fully with no props via baked-in
  * "HeartLink" FAQ defaults.
@@ -27,7 +30,7 @@ import { cn } from '#/lib/utils.ts'
 export const DatingAppFaq = defineCapsule({
   name: 'DatingAppFaq',
   description:
-    'Centered FAQ accordion for a dating / matchmaking app: a narrow single-column layout with a centered heading + supporting paragraph above a stack of native <details> accordion items on soft muted backgrounds; each summary shows the question with a chevron that rotates open to reveal the answer. The default supporting line interpolates the brand name. Use to answer common questions — safety, matching, privacy, pricing — for dating apps, singles platforms, or any consumer product.',
+    'Playful-geometric asymmetric FAQ ledger for a dating / matchmaking app: a 4:8 split with a left rail (mono question-count micro-label with rounded-full primary dot, extrabold heading, supporting line interpolating the brand name) beside a hairline-divided stack of native <details> rows whose summaries pair a mono tabular index numeral with the bold question and a rounded-full bordered plus chip that rotates open to reveal the answer. Use to answer common questions — safety, matching, privacy, pricing — for dating apps, singles platforms, or any consumer product.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -79,31 +82,61 @@ export const DatingAppFaq = defineCapsule({
           },
         ]
     return (
-      <section className={cn('bg-background py-24', props.className)}>
-        <Container size="sm">
-          <SectionHeading
-            title={faqHeading}
-            subtitle={faqDesc}
-            className="mb-16 gap-0"
-            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <FaqAccordion>
-            {faqItems.map((item) => (
-              <FaqItem
-                key={item.question}
-                variant="muted"
-                className="overflow-hidden bg-muted"
-              >
-                <FaqQuestion className="p-6 transition-colors hover:bg-accent">
-                  <FaqQuestionIcon />
-                </FaqQuestion>
-                <FaqAnswer asChild className="px-6 pb-6">
-                  <div>{item.answer}</div>
-                </FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+      <section className={cn('bg-background py-16 lg:py-24', props.className)}>
+        <Container>
+          <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
+            {/* Left rail: mono meta + heading, sticky on desktop. */}
+            <div className="lg:col-span-4">
+              <div className="lg:sticky lg:top-28">
+                <MonoTag className="flex items-center gap-2">
+                  <span
+                    aria-hidden="true"
+                    className="size-1.5 rounded-full bg-primary"
+                  />
+                  [ {String(faqItems.length).padStart(2, '0')} ] questions
+                </MonoTag>
+                <SectionHeading
+                  align="left"
+                  title={faqHeading}
+                  subtitle={faqDesc}
+                  className="mt-4 gap-0"
+                  titleClassName="mb-4 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl"
+                  subtitleClassName="text-lg text-muted-foreground"
+                />
+              </div>
+            </div>
+            {/* Right: hairline-divided question ledger. */}
+            <FaqAccordion variant="divided" className="space-y-0 lg:col-span-8">
+              {faqItems.map((item, i) => (
+                <FaqItem
+                  key={item.question}
+                  variant="divided"
+                  className="rounded-none bg-transparent"
+                >
+                  <FaqQuestion className="gap-4 py-1 text-left">
+                    <span className="flex min-w-0 items-baseline gap-4">
+                      <span
+                        aria-hidden="true"
+                        className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60 tabular-nums"
+                      >
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <span className="text-base font-bold tracking-tight text-foreground sm:text-lg">
+                        {item.question}
+                      </span>
+                    </span>
+                    <FaqQuestionIcon
+                      variant="plus"
+                      className="grid size-8 shrink-0 place-items-center rounded-full border-2 border-foreground text-foreground"
+                    />
+                  </FaqQuestion>
+                  <FaqAnswer asChild className="pb-2 pl-9 pr-12 pt-4">
+                    <div>{item.answer}</div>
+                  </FaqAnswer>
+                </FaqItem>
+              ))}
+            </FaqAccordion>
+          </div>
         </Container>
       </section>
     )

@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { Watermark, MonoTag } from '#/section-kit/Decor.tsx'
 import {
   AutoLeadActionButton,
   AutoMutationSpinner,
@@ -17,22 +18,26 @@ import { InventoryGrid, InventoryCard } from '#/section-kit/InventoryGrid.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * AutoDealershipInventory — featured-inventory card grid for an auto dealership
- * / used-car page. A centered heading + lead over a responsive 3-up grid of
- * vehicle cards: each card has a zoom-on-hover photo with a corner badge
- * (Certified / Electric / Hybrid — electric/hybrid tinted differently),
- * year-make-model title, a mileage / transmission / drivetrain spec line,
- * feature chips (Leather, Navigation, Autopilot…), and a price + "View Details"
- * footer. A centered "View All" button sits below the grid. Cards seed shared
- * search state and their CTAs write Lakebed vehicle-interest leads; View-All
- * routes through section-kit route links. Use as the primary listings /
- * browse-inventory section for dealerships, used-car lots, or EV/hybrid lots.
- * Renders fully with no props via baked-in defaults.
+ * AutoDealershipInventory — showroom-kinetic featured-inventory grid for an
+ * auto dealership / used-car page. An asymmetric header (left-aligned
+ * font-black uppercase heading + lead, mono "[ 01 ] Live stock feed" meta on
+ * the right) over a giant italic ghost "STOCK" watermark, above a staggered
+ * 3-up grid of sharp-cornered vehicle cards — the middle column drops on
+ * desktop for kinetic rhythm. Each card has a zoom-on-hover photo with an
+ * edge-bleeding skewed badge chip (Certified in inverted foreground,
+ * Electric/Hybrid in primary), a mono index numeral, a font-black uppercase
+ * year-make-model title, a mono spec line, hairline mono feature chips, and a
+ * hairline-ruled footer pairing a giant italic price with a "View Details"
+ * action. A skewed hairline "View All" parallelogram button closes the section
+ * on a rule line. Cards seed shared search state and their CTAs write Lakebed
+ * vehicle-interest leads; View-All routes through section-kit route links. Use
+ * as the primary listings / browse-inventory section for dealerships, used-car
+ * lots, or EV/hybrid lots. Renders fully with no props via baked-in defaults.
  */
 export const AutoDealershipInventory = defineCapsule({
   name: 'AutoDealershipInventory',
   description:
-    'Featured-inventory card grid for an auto dealership / used-car page backed by shared Lakebed vehicle/search state: a centered heading and lead over a responsive 3-up grid of vehicle cards (zoom-on-hover photo with a Certified/Electric/Hybrid corner badge, year-make-model title, mileage / transmission / drivetrain spec line, feature chips like Leather/Navigation/Autopilot, and a price + View Details footer), plus a centered View-All button below. Cards seed vehicle search and their CTAs write vehicle-interest leads; the View-All button routes through section-kit route links and photos use the alt-driven Image component. Use as the primary listings / browse-inventory section for dealerships, used-car lots, or EV/hybrid lots.',
+    'Showroom-kinetic featured-inventory grid for an auto dealership / used-car page backed by shared Lakebed vehicle/search state: an asymmetric header (left-aligned font-black uppercase heading and lead, mono live-stock meta right) over a giant italic ghost "STOCK" watermark, above a staggered 3-up grid of sharp-cornered vehicle cards (zoom-on-hover photo with an edge-bleeding skewed Certified/Electric/Hybrid badge chip — electric/hybrid in primary, others inverted — mono index numeral, font-black uppercase year-make-model title, mono spec line, hairline mono feature chips, and a hairline footer pairing a giant italic price with a View Details action), closed by a skewed hairline View-All parallelogram button on a rule line. Cards seed vehicle search and their CTAs write vehicle-interest leads; the View-All button routes through section-kit route links and photos use the alt-driven Image component. Use as the primary listings / browse-inventory section for dealerships, used-car lots, or EV/hybrid lots.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -134,21 +139,38 @@ export const AutoDealershipInventory = defineCapsule({
     )
 
     return (
-      <section className={cn('bg-card py-16 lg:py-24', props.className)}>
-        <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-2xl gap-0"
-            titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
+      <section
+        className={cn(
+          'relative overflow-hidden bg-card py-14 sm:py-16 lg:py-24',
+          props.className,
+        )}
+      >
+        <Watermark className="-top-2 right-0 italic text-[5rem] sm:text-[8rem] lg:text-[12rem]">
+          STOCK
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-10 flex flex-col gap-5 lg:mb-14 lg:flex-row lg:items-end lg:justify-between">
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-3"
+              titleClassName="text-3xl font-black uppercase tracking-tight sm:text-4xl lg:text-5xl"
+              subtitleClassName="text-base text-muted-foreground sm:text-lg"
+            />
+            <MonoTag aria-hidden="true" className="shrink-0 lg:pb-1.5">
+              [ 01 ] — Live stock feed
+            </MonoTag>
+          </div>
 
-          <InventoryGrid className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
-            {items.map((v) => (
+          <InventoryGrid className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6 lg:pb-10">
+            {items.map((v, i) => (
               <InventoryCard
                 key={v.name}
-                className="rounded-lg bg-muted transition-colors hover:border-foreground/30"
+                className={cn(
+                  'rounded-none border-border bg-background transition-all duration-150 hover:-translate-y-0.5 hover:border-primary motion-reduce:transform-none',
+                  i % 3 === 1 && 'lg:translate-y-10',
+                )}
               >
                 <article>
                   <div className="relative aspect-[4/3] overflow-hidden">
@@ -161,32 +183,46 @@ export const AutoDealershipInventory = defineCapsule({
                     />
                     <span
                       className={cn(
-                        'absolute left-4 top-4 rounded px-2 py-1 text-xs font-medium',
+                        'absolute -left-1 top-4 inline-block -skew-x-12 py-1 pl-4 pr-3 text-[10px] font-bold uppercase tracking-[0.15em]',
                         v.electric
-                          ? 'bg-chart-2 text-primary-foreground'
-                          : 'bg-primary text-primary-foreground',
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-foreground text-background',
                       )}
                     >
-                      {v.badge}
+                      <span className="inline-block skew-x-12">{v.badge}</span>
                     </span>
                   </div>
-                  <div className="space-y-4 p-6">
+                  <div className="space-y-4 p-5 sm:p-6">
                     <div>
-                      <h3 className="text-lg font-semibold">{v.name}</h3>
-                      <p className="text-sm text-muted-foreground">{v.specs}</p>
+                      <div className="flex items-baseline justify-between gap-3">
+                        <h3 className="text-lg font-black uppercase tracking-tight">
+                          {v.name}
+                        </h3>
+                        <span
+                          aria-hidden="true"
+                          className="shrink-0 font-mono text-[10px] text-muted-foreground/60"
+                        >
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                      </div>
+                      <p className="mt-1 font-mono text-[11px] uppercase tracking-wide text-muted-foreground">
+                        {v.specs}
+                      </p>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-1.5">
                       {v.features.map((f) => (
                         <span
                           key={f}
-                          className="rounded bg-secondary px-2 py-1 text-xs text-secondary-foreground"
+                          className="rounded-none border border-border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wide text-muted-foreground"
                         >
                           {f}
                         </span>
                       ))}
                     </div>
                     <div className="flex items-center justify-between border-t border-border pt-4">
-                      <p className="text-2xl font-semibold">{v.price}</p>
+                      <p className="text-2xl font-black italic tracking-tight tabular-nums">
+                        {v.price}
+                      </p>
                       <AutoLeadActionButton
                         lakebed={lakebed}
                         action="vehicle_interest"
@@ -200,7 +236,7 @@ export const AutoDealershipInventory = defineCapsule({
                             Sending
                           </>
                         }
-                        className="text-sm font-medium transition-colors hover:text-muted-foreground"
+                        className="font-mono text-[11px] font-semibold uppercase tracking-[0.15em] transition-colors hover:text-primary active:translate-y-px"
                       >
                         View Details →
                       </AutoLeadActionButton>
@@ -211,12 +247,13 @@ export const AutoDealershipInventory = defineCapsule({
             ))}
           </InventoryGrid>
 
-          <div className="mt-12 text-center">
+          <div className="mt-12 flex items-center gap-6 lg:mt-16">
+            <span aria-hidden="true" className="h-px flex-1 bg-border" />
             <NavbarRouteLink
-              className="inline-flex items-center justify-center rounded-md border border-border bg-card px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-accent"
+              className="inline-flex -skew-x-12 items-center justify-center rounded-none border border-foreground px-7 py-3.5 text-xs font-bold uppercase tracking-[0.15em] text-foreground transition-colors duration-150 hover:bg-foreground hover:text-background active:translate-y-px"
               href={viewAll}
             >
-              {viewAll}
+              <span className="inline-block skew-x-12">{viewAll}</span>
             </NavbarRouteLink>
           </div>
         </Container>

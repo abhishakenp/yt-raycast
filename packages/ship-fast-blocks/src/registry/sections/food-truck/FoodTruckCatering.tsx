@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import {
   FeatureListItem,
   FeatureListItemIcon,
@@ -25,19 +26,20 @@ import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 
 /**
- * FoodTruckCatering — a dark, inverted CATERING band with a request-a-quote form. A
- * foreground-filled section splits into a left pitch column (eyebrow, heading,
- * paragraph, a checklist of catering options each with a check-icon tile, and a row of
- * soft event-type chips) and a right elevated card form with name, email, event date,
- * guest-count + event-type selects and a message textarea, ending in a full-width
- * submit. The form submit writes a Lakebed inquiry. Use as the catering /
- * private-events lead-capture section for food trucks, caterers or street-food
- * vendors booking events.
+ * FoodTruckCatering — a sticker-poster inverted CATERING band with a slanted clip-path
+ * seam and a request-a-quote form. A foreground-filled section under a giant ghost
+ * "CATER" watermark splits into a left pitch column (mono index eyebrow, extrabold slab
+ * heading, paragraph, a checklist of catering options each with a square rubber-stamp
+ * check tile, and a row of event-type stamp chips) and a right hard-bordered card form
+ * with name, email, event date, guest-count + event-type selects and a message textarea,
+ * ending in a full-width slab submit with press feedback. The form submit writes a
+ * Lakebed inquiry. Use as the catering / private-events lead-capture section for food
+ * trucks, caterers or street-food vendors booking events.
  */
 export const FoodTruckCatering = defineCapsule({
   name: 'FoodTruckCatering',
   description:
-    'Dark, inverted CATERING band with a Lakebed request-a-quote form: a foreground-filled section split into a left pitch column (eyebrow, heading, paragraph, a checklist of catering options each with a check-icon tile, and a row of soft event-type chips) and a right elevated card form with name, email, event date, guest-count and event-type selects and a message textarea, ending in a full-width submit. Form submit writes a shared inquiry record. Use as the catering / private-events lead-capture section for food trucks, caterers, street-food vendors or any mobile-food brand booking corporate lunches, weddings and parties.',
+    'Sticker-poster inverted CATERING band with a slanted clip-path seam and a Lakebed request-a-quote form: a foreground-filled section under a giant ghost "CATER" watermark split into a left pitch column (mono index eyebrow, extrabold slab heading, paragraph, a checklist of catering options each with a square rubber-stamp check tile, and a row of event-type stamp chips) and a right hard-bordered card form with name, email, event date, guest-count and event-type selects and a message textarea, ending in a full-width slab submit with press feedback. Form submit writes a shared inquiry record. Use as the catering / private-events lead-capture section for food trucks, caterers, street-food vendors or any mobile-food brand booking corporate lunches, weddings and parties.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -103,25 +105,28 @@ export const FoodTruckCatering = defineCapsule({
     })
 
     const inputCls =
-      'w-full rounded-lg border border-input bg-background px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring'
+      'w-full rounded-none border-2 border-foreground bg-background px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring'
 
     return (
       <section
         className={cn(
-          'bg-foreground px-6 py-20 text-background',
+          'relative overflow-hidden bg-foreground px-6 pt-28 pb-20 text-background [clip-path:polygon(0_2.5rem,100%_0,100%_100%,0_100%)]',
           props.className,
         )}
       >
-        <Container size="lg">
-          <div className="grid items-center gap-12 md:grid-cols-2">
-            <div className="space-y-6">
+        <Watermark className="-right-6 top-10 text-[7rem] text-background/[0.06] sm:text-[12rem] lg:text-[16rem]">
+          CATER
+        </Watermark>
+        <Container size="lg" className="relative">
+          <div className="grid items-start gap-12 lg:grid-cols-12">
+            <div className="space-y-6 lg:col-span-5">
               <SectionHeading
-                eyebrow={cateringEyebrow}
+                eyebrow={`03 / ${cateringEyebrow}`}
                 title={cateringHeading}
                 subtitle={cateringDesc}
                 align="left"
-                eyebrowClassName="text-background/70 tracking-widest"
-                titleClassName="text-3xl font-bold text-background md:text-4xl"
+                eyebrowClassName="font-mono uppercase tracking-[0.2em] text-background/70"
+                titleClassName="text-4xl font-extrabold tracking-tighter text-background md:text-5xl"
                 subtitleClassName="leading-relaxed text-background/80"
                 className="gap-4"
               />
@@ -129,7 +134,7 @@ export const FoodTruckCatering = defineCapsule({
               <div className="space-y-4 pt-4">
                 {cateringOptions.map((opt) => (
                   <FeatureListItem key={opt.title}>
-                    <FeatureListItemIcon className="grid size-8 place-items-center rounded-lg bg-background/10">
+                    <FeatureListItemIcon className="grid size-9 shrink-0 -rotate-3 place-items-center rounded-none border-2 border-background bg-background/10">
                       <svg
                         className="size-4"
                         fill="none"
@@ -140,13 +145,13 @@ export const FoodTruckCatering = defineCapsule({
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          strokeWidth="2"
+                          strokeWidth="2.5"
                           d="M5 13l4 4L19 7"
                         />
                       </svg>
                     </FeatureListItemIcon>
                     <FeatureListItemBody>
-                      <FeatureListItemTitle className="font-semibold">
+                      <FeatureListItemTitle className="font-extrabold tracking-tight">
                         {opt.title}
                       </FeatureListItemTitle>
                       <FeatureListItemDescription className="text-background/70">
@@ -157,11 +162,11 @@ export const FoodTruckCatering = defineCapsule({
                 ))}
               </div>
 
-              <div className="flex flex-wrap gap-4 pt-4">
+              <div className="flex flex-wrap gap-3 pt-4">
                 {cateringTags.map((tag) => (
                   <span
                     key={tag}
-                    className="rounded-full bg-background/10 px-3 py-1 text-sm"
+                    className="rounded-full border-2 border-background px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.12em]"
                   >
                     {tag}
                   </span>
@@ -169,8 +174,8 @@ export const FoodTruckCatering = defineCapsule({
               </div>
             </div>
 
-            <div className="rounded-xl bg-card p-8 text-card-foreground">
-              <h3 className="mb-6 text-xl font-semibold">
+            <div className="rounded-none border-2 border-foreground bg-card p-8 text-card-foreground shadow-[6px_6px_0_0] shadow-background/30 lg:col-span-7">
+              <h3 className="mb-6 text-2xl font-extrabold tracking-tight">
                 {cateringFormTitle}
               </h3>
               <ContactForm className="space-y-4" onSubmit={inquiry.submitForm}>
@@ -178,7 +183,7 @@ export const FoodTruckCatering = defineCapsule({
                   <ContactFormField className="mb-0">
                     <ContactFormLabel
                       htmlFor="ft-catering-name"
-                      className="mb-1"
+                      className="mb-1 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground"
                     >
                       Name
                     </ContactFormLabel>
@@ -192,7 +197,7 @@ export const FoodTruckCatering = defineCapsule({
                   <ContactFormField className="mb-0">
                     <ContactFormLabel
                       htmlFor="ft-catering-email"
-                      className="mb-1"
+                      className="mb-1 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground"
                     >
                       Email
                     </ContactFormLabel>
@@ -209,7 +214,7 @@ export const FoodTruckCatering = defineCapsule({
                   <ContactFormField className="mb-0">
                     <ContactFormLabel
                       htmlFor="ft-catering-date"
-                      className="mb-1"
+                      className="mb-1 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground"
                     >
                       Event Date
                     </ContactFormLabel>
@@ -223,7 +228,7 @@ export const FoodTruckCatering = defineCapsule({
                   <ContactFormField className="mb-0">
                     <ContactFormLabel
                       htmlFor="ft-catering-guests"
-                      className="mb-1"
+                      className="mb-1 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground"
                     >
                       Guest Count
                     </ContactFormLabel>
@@ -241,7 +246,10 @@ export const FoodTruckCatering = defineCapsule({
                   </ContactFormField>
                 </div>
                 <ContactFormField className="mb-0">
-                  <ContactFormLabel htmlFor="ft-catering-type" className="mb-1">
+                  <ContactFormLabel
+                    htmlFor="ft-catering-type"
+                    className="mb-1 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground"
+                  >
                     Event Type
                   </ContactFormLabel>
                   <ContactFormSelect
@@ -259,7 +267,7 @@ export const FoodTruckCatering = defineCapsule({
                 <ContactFormField className="mb-0">
                   <ContactFormLabel
                     htmlFor="ft-catering-message"
-                    className="mb-1"
+                    className="mb-1 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground"
                   >
                     Message
                   </ContactFormLabel>
@@ -275,12 +283,12 @@ export const FoodTruckCatering = defineCapsule({
                   type="submit"
                   aria-busy={inquiry.isPending}
                   disabled={inquiry.isPending}
-                  className="w-full rounded-lg bg-foreground px-6 py-3 font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70"
+                  className="w-full rounded-none border-2 border-foreground bg-foreground px-6 py-3 font-bold uppercase tracking-wide text-background shadow-[4px_4px_0_0] shadow-foreground/30 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0] active:translate-y-px active:shadow-none disabled:pointer-events-none disabled:opacity-70"
                 >
                   {inquiry.isPending ? 'Sending' : cateringSubmit}
                 </ContactFormSubmit>
                 <ContactFormFooter
-                  className="text-sm text-muted-foreground"
+                  className="font-mono text-xs text-muted-foreground"
                   aria-live="polite"
                 >
                   {inquiry.statusText}

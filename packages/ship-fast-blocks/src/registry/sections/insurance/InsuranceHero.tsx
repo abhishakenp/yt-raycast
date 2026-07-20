@@ -14,24 +14,29 @@ import {
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { StarRating } from '#/section-kit/StarRating.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * InsuranceHero — two-column hero band for an insurance / fintech landing page.
- * On a soft muted canvas: a left column with a star rating pill, a bold headline
- * with one brand-accent highlighted word, a lede paragraph, dual CTAs (solid
- * primary + outline secondary), and an inline trust checklist; a right column
- * with a tilted gradient panel behind a rounded family photo, plus a floating
- * social-proof card (overlapping avatars, happy-customer count, star rating).
- * All links route through section-kit route links; imagery is alt-driven <Image>. Use as the
- * top-of-page hero for insurance carriers, insurtech, brokers, or financial-
- * protection products. Renders fully with no props via baked-in defaults.
+ * InsuranceHero — Swiss-trust asymmetric 7/5 split hero for an insurance /
+ * fintech landing page. The left column carries a mono index eyebrow + hairline
+ * rating pill, a large tracking-tight headline with one phrase in the brand
+ * accent, a lede paragraph, dual CTAs (a square binary-radius primary with a
+ * hard offset shadow and mechanical press feedback + a ghost "how it works"
+ * link with a play glyph), and a hairline mono row of trust checks. The narrower
+ * right column frames the family photo in a sharp bordered card with a hard
+ * offset shadow, overlaid by a floating hairline social-proof ledger — overlapping
+ * customer avatars, a happy-customer count, and a star rating — behind a giant
+ * ghost shield watermark. All links route through section-kit route links;
+ * imagery is alt-driven Image. Use as the top-of-page hero for insurance
+ * carriers, insurtech, brokers, or financial-protection products. Renders fully
+ * with no props via baked-in defaults.
  */
 export const InsuranceHero = defineCapsule({
   name: 'InsuranceHero',
   description:
-    'Two-column hero band for an insurance / fintech landing page on a soft muted canvas: a left column with a star rating pill, a bold headline with one brand-accent highlighted word, a lede paragraph, dual CTAs (solid primary + outline secondary with a play icon), and an inline trust checklist; a right column with a tilted gradient panel behind a rounded family photo plus a floating social-proof card (overlapping customer avatars, happy-customer count, star rating). Links route through section-kit route links; imagery is alt-driven Image. Use as the top-of-page hero for insurance carriers, insurtech startups, brokers, or financial-protection products.',
+    "Swiss-trust asymmetric 7/5 split hero for an insurance / fintech landing page: a left column with a mono index eyebrow + hairline rating pill, a large tracking-tight headline with one brand-accent phrase, a lede paragraph, dual CTAs (a square binary-radius primary with a hard offset shadow and press feedback + a ghost 'how it works' link with a play glyph), and a hairline mono row of trust checks; a narrower right column framing the family photo in a sharp bordered card with a hard offset shadow, overlaid by a floating hairline social-proof ledger (overlapping customer avatars, happy-customer count, star rating) behind a giant ghost shield watermark. Links route through section-kit route links; imagery is alt-driven Image. Use as the top-of-page hero for insurance carriers, insurtech startups, brokers, or financial-protection products.",
   props: z.object({
     /** Star rating pill above the headline. */
     ratingPill: z.string().optional(),
@@ -137,104 +142,131 @@ export const InsuranceHero = defineCapsule({
 
     return (
       <HeroSection
-        className={cn('relative overflow-hidden bg-muted', props.className)}
+        variant="split"
+        className={cn(
+          'relative overflow-hidden bg-background',
+          props.className,
+        )}
       >
-        <Container size="xl" className="py-16 lg:py-24">
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-            <div className="space-y-8">
-              <div className="inline-flex items-center gap-2 rounded-full bg-accent px-3 py-1 text-sm font-medium text-accent-foreground">
-                <Star className="size-4 text-primary" />
+        <Container
+          size="xl"
+          className="relative grid items-center gap-12 py-16 lg:grid-cols-12 lg:gap-14 lg:py-24"
+        >
+          <div className="flex flex-col items-start gap-6 lg:col-span-7">
+            <div className="flex flex-wrap items-center gap-3">
+              <MonoTag className="text-primary">01 / Protection</MonoTag>
+              <span aria-hidden="true" className="h-px w-8 bg-border" />
+              <span className="inline-flex items-center gap-2 rounded-none border border-border px-3 py-1 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                <Star className="size-3.5 text-primary" />
                 {ratingPill}
-              </div>
-              <HeroHeading>
-                {headingBefore} <HeroHighlight>{highlight}</HeroHighlight>{' '}
-                {headingAfter}
-              </HeroHeading>
-              <HeroSubheading className="mt-0 max-w-xl">
-                {subheading}
-              </HeroSubheading>
-              <HeroActions className="mt-0 flex flex-col gap-4 sm:flex-row">
-                <HeroCta
-                  asChild
-                  variant="primary"
-                  className="gap-2 rounded-xl px-8 py-4 text-base font-semibold shadow-lg shadow-primary/25 transition-all"
-                >
-                  <NavbarRouteLink href={primaryCta}>
-                    {primaryCta}
-                    <ArrowRight />
-                  </NavbarRouteLink>
-                </HeroCta>
-                <HeroCta
-                  asChild
-                  variant="outline"
-                  className="gap-2 rounded-xl px-8 py-4 text-base font-semibold transition-all"
-                >
-                  <NavbarRouteLink href={secondaryCta}>
-                    <svg
-                      className="size-5 text-primary"
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                      <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {secondaryCta}
-                  </NavbarRouteLink>
-                </HeroCta>
-              </HeroActions>
-              <HeroSocialProof className="mt-0 gap-6">
-                {trustItems.map((item) => (
-                  <HeroSocialProofItem key={item}>
-                    <Check className="size-5 text-primary" />
-                    <span>{item}</span>
-                  </HeroSocialProofItem>
-                ))}
-              </HeroSocialProof>
+              </span>
             </div>
-            <div className="relative">
-              <div
-                aria-hidden="true"
-                className="absolute inset-0 rotate-3 rounded-3xl bg-gradient-to-br from-primary/10 to-accent/40"
-              />
+            <HeroHeading className="text-4xl font-extrabold leading-[1.03] tracking-tight text-foreground text-balance sm:text-5xl lg:text-6xl">
+              {headingBefore} <HeroHighlight>{highlight}</HeroHighlight>{' '}
+              {headingAfter}
+            </HeroHeading>
+            <HeroSubheading className="mt-0 max-w-xl text-pretty">
+              {subheading}
+            </HeroSubheading>
+            <HeroActions className="mt-2 flex flex-col gap-3 sm:flex-row">
+              <HeroCta
+                asChild
+                variant="primary"
+                className="gap-2 rounded-none px-7 py-3.5 text-sm font-semibold shadow-[5px_5px_0_0] shadow-foreground transition-[transform,box-shadow,background-color] duration-150 hover:bg-primary/90 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none motion-reduce:transform-none"
+              >
+                <NavbarRouteLink href={primaryCta}>
+                  {primaryCta}
+                  <ArrowRight />
+                </NavbarRouteLink>
+              </HeroCta>
+              <HeroCta
+                asChild
+                variant="outline"
+                className="gap-2 rounded-none border-border px-7 py-3.5 text-sm font-semibold transition-[transform,background-color] duration-150 hover:bg-muted active:translate-y-px motion-reduce:transform-none"
+              >
+                <NavbarRouteLink href={secondaryCta}>
+                  <svg
+                    className="size-5 text-primary"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                    <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {secondaryCta}
+                </NavbarRouteLink>
+              </HeroCta>
+            </HeroActions>
+            <HeroSocialProof className="mt-2 gap-x-6 gap-y-3 border-t border-border pt-5">
+              {trustItems.map((item) => (
+                <HeroSocialProofItem
+                  key={item}
+                  className="font-mono text-[11px] uppercase tracking-[0.14em]"
+                >
+                  <Check className="size-4 text-primary" />
+                  <span>{item}</span>
+                </HeroSocialProofItem>
+              ))}
+            </HeroSocialProof>
+          </div>
+          <div className="relative lg:col-span-5">
+            <Watermark
+              aria-hidden="true"
+              className="-top-14 right-[-4%] hidden lg:block"
+            >
+              <svg
+                width="320"
+                height="320"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+            </Watermark>
+            <div className="relative overflow-hidden border border-foreground bg-card shadow-[10px_10px_0_0] shadow-foreground">
               <Image
                 alt={imageAlt}
                 w={800}
                 h={600}
-                className="relative w-full rounded-2xl object-cover shadow-2xl"
+                className="aspect-[4/3] w-full object-cover"
               />
-              <div className="absolute -bottom-6 -left-6 max-w-xs rounded-xl bg-card p-4 shadow-xl sm:p-6">
-                <div className="mb-3 flex items-center gap-3">
-                  <div className="flex -space-x-2">
-                    {proofAvatars.map((alt) => (
-                      <Image
-                        key={alt}
-                        alt={alt}
-                        w={100}
-                        h={100}
-                        className="size-10 rounded-full border-2 border-card object-cover"
-                      />
-                    ))}
-                  </div>
-                  <div className="text-sm">
-                    <p className="font-semibold text-card-foreground">
-                      {proofCount}
-                    </p>
-                    <p className="text-muted-foreground">{proofLabel}</p>
-                  </div>
+            </div>
+            <div className="absolute -bottom-6 -left-4 max-w-xs border border-border bg-background p-5 shadow-[6px_6px_0_0] shadow-foreground/15">
+              <div className="mb-3 flex items-center gap-3">
+                <div className="flex -space-x-2">
+                  {proofAvatars.map((alt) => (
+                    <Image
+                      key={alt}
+                      alt={alt}
+                      w={100}
+                      h={100}
+                      className="size-9 rounded-none border border-background object-cover"
+                    />
+                  ))}
                 </div>
-                <div className="flex items-center gap-1">
-                  <StarRating rating={5} size="md" color="primary" />
-                  <span className="ml-2 font-semibold text-card-foreground">
-                    {proofRating}
-                  </span>
+                <div className="text-sm">
+                  <p className="font-extrabold tabular-nums text-foreground">
+                    {proofCount}
+                  </p>
+                  <MonoTag tone="faint">{proofLabel}</MonoTag>
                 </div>
+              </div>
+              <div className="flex items-center gap-2 border-t border-border pt-3">
+                <StarRating rating={5} size="md" color="primary" />
+                <span className="font-mono text-[11px] font-semibold tabular-nums text-foreground">
+                  {proofRating}
+                </span>
               </div>
             </div>
           </div>

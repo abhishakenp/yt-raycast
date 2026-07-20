@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   FeatureGrid,
   FeatureCard,
@@ -14,19 +15,22 @@ import {
 } from '#/section-kit/FeatureGrid.tsx'
 
 /**
- * DatingAppFeatures — a 6-up feature grid for a dating / matchmaking app. A
- * centered heading + supporting paragraph above a responsive 1/2/3-column grid of
- * soft muted cards, each with a rounded primary-tinted icon tile (rotating through
- * a built-in set of decorative line icons), a bold title, and a description; cards
- * lift to a faint primary tint on hover. Use to showcase product capabilities —
- * smart matching, verified profiles, conversations, events, video dates, safety —
- * for dating apps, singles platforms, or social-connection products. Renders fully
- * with no props via baked-in "HeartLink" feature defaults.
+ * DatingAppFeatures — playful-geometric collapsed-border feature ledger for a
+ * dating / matchmaking app. An asymmetric header (left-aligned extrabold
+ * heading + lede, mono "[ 06 ] compatibility factors" meta right) above a
+ * sharp-cornered 2/3-column collapsed-border grid: every cell shares hairline
+ * rules and carries a mono primary index numeral beside a tiny rounded-full
+ * dot, a bold title, and a description; alternating cells sit on a faint muted
+ * wash and hover floods a faint primary tint. Use to showcase product
+ * capabilities — smart matching, verified profiles, conversations, events,
+ * video dates, safety — for dating apps, singles platforms, or
+ * social-connection products. Renders fully with no props via baked-in
+ * "HeartLink" feature defaults.
  */
 export const DatingAppFeatures = defineCapsule({
   name: 'DatingAppFeatures',
   description:
-    '6-up feature grid for a dating / matchmaking app: a centered heading + supporting paragraph above a responsive 1/2/3-column grid of soft muted cards, each with a rounded primary-tinted icon tile (rotating through a built-in set of decorative line icons), a bold title, and a description; cards lift to a faint primary tint on hover. Use to showcase product capabilities — smart matching, verified profiles, conversations, events, video dates, safety — for dating apps, singles platforms, or social-connection products.',
+    'Playful-geometric collapsed-border feature ledger for a dating / matchmaking app: an asymmetric header (left-aligned extrabold heading + lede, mono count meta right) above a sharp 2/3-column collapsed-border grid whose cells share hairline rules and carry a mono primary index numeral beside a tiny rounded-full dot, a bold title, and a description; alternating cells sit on a faint muted wash and hover floods a faint primary tint. Use to showcase product capabilities — smart matching, verified profiles, conversations, events, video dates, safety — for dating apps, singles platforms, or social-connection products.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -76,17 +80,28 @@ export const DatingAppFeatures = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-background py-24', props.className)}>
+      <section className={cn('bg-background py-16 lg:py-24', props.className)}>
         <Container>
-          <SectionHeading
-            title={featuresHeading}
-            subtitle={featuresDesc}
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <FeatureGrid columns={3}>
-            {featureItems.map((f) => {
+          {/* Asymmetric header: heading left, mono meta right. */}
+          <div className="mb-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-14">
+            <SectionHeading
+              align="left"
+              title={featuresHeading}
+              subtitle={featuresDesc}
+              className="max-w-2xl gap-0"
+              titleClassName="mb-4 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl"
+              subtitleClassName="text-lg text-muted-foreground"
+            />
+            <MonoTag aria-hidden="true" tone="faint" className="shrink-0">
+              [ {String(featureItems.length).padStart(2, '0')} ] compatibility
+              factors
+            </MonoTag>
+          </div>
+          <FeatureGrid
+            columns={3}
+            className="gap-0 [&>div]:grid-cols-1 [&>div]:gap-0 [&>div]:border-l [&>div]:border-t [&>div]:border-border sm:[&>div]:grid-cols-2 md:[&>div]:grid-cols-3"
+          >
+            {featureItems.map((f, i) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -97,10 +112,29 @@ export const DatingAppFeatures = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
+                <FeatureCard
+                  key={__iv__.title}
+                  className={cn(
+                    'gap-3 rounded-none border-0 border-b border-r border-border p-5 transition-colors duration-150 hover:-translate-y-0 hover:bg-primary/5 sm:p-7',
+                    i % 2 === 1 ? 'bg-muted/40' : 'bg-background',
+                  )}
+                >
+                  <span className="flex items-center gap-2">
+                    <MonoTag tone="primary" className="tabular-nums">
+                      {String(i + 1).padStart(2, '0')}
+                    </MonoTag>
+                    <span
+                      aria-hidden="true"
+                      className="size-1.5 rounded-full bg-primary/40"
+                    />
+                  </span>
                   {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                  <FeatureTitle className="text-lg font-bold tracking-tight">
+                    {__iv__.title}
+                  </FeatureTitle>
+                  <FeatureDescription className="text-sm leading-relaxed">
+                    {__iv__.description}
+                  </FeatureDescription>
                 </FeatureCard>
               )
             })}

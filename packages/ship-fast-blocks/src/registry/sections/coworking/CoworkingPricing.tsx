@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 import { Sparkles } from 'lucide-react'
 import { cn } from '#/lib/utils.ts'
 import { GridField } from '#/section-kit/motion.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
@@ -21,20 +22,24 @@ import {
 } from '#/section-kit/PricingGrid.tsx'
 /**
  * CoworkingPricing — calm, dimensional membership pricing for a coworking or
- * shared-workspace page. A centered header (eyebrow chip + display heading +
- * supporting line) above a grid of frosted glass tier cards. Each card has a
- * gradient hairline, large tracked price, a check-tile benefit list, and a
- * full-width CTA; the highlighted tier is elevated with a primary ring, a
- * soft internal glow, a "Most popular" pill, and a shimmer-sweep primary CTA.
- * A reassurance chip row closes the section, and the backdrop continues the
- * page's light-field (hairline rails, seam hairline). Any tier count renders
- * cleanly. CTAs route through section-kit route links. Use to convert prospective members
- * for coworking spaces, shared offices, or flex-office providers.
+ * shared-workspace page. An asymmetric 7:5 editorial header (mono index
+ * eyebrow chip "03 / Membership plans" + display heading left, supporting
+ * line right) above a grid of frosted glass tier cards. Each card has a
+ * gradient hairline, a large tracked price, a hairline-ledger benefit list
+ * (collapsed dividers between rows), and a full-width CTA with press
+ * feedback; the highlighted tier is elevated — lifted on desktop with a
+ * primary ring and a "Popular" pill — and gets a filled primary CTA. A
+ * collapsed-border mono reassurance ledger (no setup fees / month-to-month /
+ * cancel anytime) closes the section, and the backdrop continues the page's
+ * light-field (hairline rails, seam hairline). Any tier count renders
+ * cleanly. CTAs route through section-kit route links. Use to convert
+ * prospective members for coworking spaces, shared offices, or flex-office
+ * providers.
  */
 export const CoworkingPricing = defineCapsule({
   name: 'CoworkingPricing',
   description:
-    "Calm dimensional membership pricing for a coworking or shared-workspace page: centered header (eyebrow chip + display heading + supporting line) above frosted glass tier cards — gradient hairlines, large tracked prices, check-tile benefit lists, full-width CTAs. The highlighted tier is elevated with a primary ring, internal glow, 'Most popular' pill, and shimmer-sweep primary CTA; a reassurance chip row (no setup fees, month-to-month, cancel anytime) closes the section over a connected light-field backdrop. CTAs route through section-kit route links. Use to convert prospective members for coworking spaces, shared offices, or flex-office providers.",
+    "Calm dimensional membership pricing for a coworking or shared-workspace page: asymmetric 7:5 editorial header (mono index eyebrow chip + display heading left, supporting line right) above frosted glass tier cards — gradient hairlines, large tracked prices, hairline-ledger benefit lists, full-width press-feedback CTAs. The highlighted tier is lifted on desktop with a primary ring, 'Popular' pill, and filled primary CTA; a collapsed-border mono reassurance ledger (no setup fees, month-to-month, cancel anytime) closes the section over a connected light-field backdrop. CTAs route through section-kit route links. Use to convert prospective members for coworking spaces, shared offices, or flex-office providers.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -140,33 +145,32 @@ export const CoworkingPricing = defineCapsule({
             aria-hidden="true"
             className="pointer-events-none absolute inset-y-0 right-0 hidden w-px bg-gradient-to-b from-transparent via-border/70 to-transparent lg:block"
           />
-          <div className="mx-auto max-w-2xl text-center">
-            <Eyebrow
-              variant="default"
-              icon={
-                <Sparkles
-                  className="size-3.5 text-primary"
-                  aria-hidden="true"
-                />
-              }
-              className="border-border/60 bg-card/70 px-4 py-1.5 font-semibold backdrop-blur tracking-[0.18em]"
-            >
-              Membership plans
-            </Eyebrow>
-            <SectionHeading
-              title={heading}
-              subtitle={subheading}
-              className="mt-5 gap-0"
-              titleClassName="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl"
-              subtitleClassName="mt-4 text-lg leading-relaxed text-muted-foreground"
-            />
+          <div className="grid items-end gap-6 lg:grid-cols-[7fr_5fr] lg:gap-16">
+            <div>
+              <Eyebrow
+                variant="default"
+                icon={
+                  <Sparkles
+                    className="size-3.5 text-primary"
+                    aria-hidden="true"
+                  />
+                }
+                className="border-border/60 bg-card/70 px-4 py-1.5 font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground backdrop-blur"
+              >
+                03 / Membership plans
+              </Eyebrow>
+              <SectionHeading
+                align="left"
+                title={heading}
+                className="mt-5 max-w-xl gap-0"
+                titleClassName="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl"
+              />
+            </div>
+            <p className="text-lg leading-relaxed text-muted-foreground lg:pb-1">
+              {subheading}
+            </p>
           </div>
-          <PricingGrid
-            className={cn(
-              'mx-auto mt-16 grid max-w-md grid-cols-1 items-stretch gap-7 lg:mx-0 lg:max-w-none lg:grid-cols-3',
-              props.className,
-            )}
-          >
+          <PricingGrid className="mx-auto mt-16 grid max-w-md grid-cols-1 items-stretch gap-7 lg:mx-0 lg:max-w-none lg:grid-cols-3">
             {tiers.map((tier) => {
               const t = tier as {
                 name: string
@@ -192,16 +196,27 @@ export const CoworkingPricing = defineCapsule({
                 priceSuffix?: string
                 note?: string
               }
+              const isHighlighted = Boolean(
+                t.highlighted || t.featured || t.popular,
+              )
               return (
                 <PricingTier
                   key={t.name}
-                  variant={
-                    t.highlighted || t.featured || t.popular
-                      ? 'highlighted'
-                      : undefined
-                  }
+                  variant={isHighlighted ? 'highlighted' : undefined}
+                  className={cn(
+                    'rounded-3xl border-border/60 bg-card/70 backdrop-blur transition-shadow duration-500 hover:shadow-lg hover:shadow-primary/10',
+                    isHighlighted &&
+                      'border-primary/40 bg-card/85 lg:-translate-y-4',
+                  )}
                 >
-                  {t.highlighted || t.featured || t.popular ? (
+                  <div
+                    aria-hidden="true"
+                    className={cn(
+                      'absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent to-transparent',
+                      isHighlighted ? 'via-primary/60' : 'via-border',
+                    )}
+                  />
+                  {isHighlighted ? (
                     <PricingTierBadge>{t.badge ?? 'Popular'}</PricingTierBadge>
                   ) : null}
                   <PricingTierHeader>
@@ -218,7 +233,9 @@ export const CoworkingPricing = defineCapsule({
                     {t.audience && (
                       <PricingTierTagline>{t.audience}</PricingTierTagline>
                     )}
-                    <PricingTierPrice>{t.price}</PricingTierPrice>
+                    <PricingTierPrice className="text-4xl font-semibold tracking-tight sm:text-5xl">
+                      {t.price}
+                    </PricingTierPrice>
                     {t.period && (
                       <PricingTierPeriod>{t.period}</PricingTierPeriod>
                     )}
@@ -231,7 +248,7 @@ export const CoworkingPricing = defineCapsule({
                     )}
                   </PricingTierHeader>
                   {t.features && (
-                    <PricingTierFeatures>
+                    <PricingTierFeatures className="gap-0 divide-y divide-border/40 border-t border-border/40">
                       {t.features.map((feature) => (
                         <PricingTierFeature
                           key={
@@ -239,6 +256,7 @@ export const CoworkingPricing = defineCapsule({
                               ? feature
                               : (feature as { label: string }).label
                           }
+                          className="py-3"
                         >
                           {typeof feature === 'string'
                             ? feature
@@ -248,7 +266,15 @@ export const CoworkingPricing = defineCapsule({
                     </PricingTierFeatures>
                   )}
                   {t.cta && (
-                    <PricingTierCta target={t.ctaTarget}>
+                    <PricingTierCta
+                      target={t.ctaTarget}
+                      className={cn(
+                        'rounded-2xl font-semibold transition-all duration-300 active:translate-y-px',
+                        isHighlighted
+                          ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35'
+                          : 'border border-border/70 bg-background/60 text-foreground backdrop-blur hover:bg-card',
+                      )}
+                    >
                       {t.cta}
                     </PricingTierCta>
                   )}
@@ -256,6 +282,18 @@ export const CoworkingPricing = defineCapsule({
               )
             })}
           </PricingGrid>
+          <div className="mx-auto mt-14 grid max-w-xl grid-cols-3 divide-x divide-border/60 border-y border-border/60">
+            {['No setup fees', 'Month-to-month', 'Cancel anytime'].map(
+              (assurance) => (
+                <MonoTag
+                  key={assurance}
+                  className="px-2 py-3.5 text-center tracking-[0.14em]"
+                >
+                  {assurance}
+                </MonoTag>
+              ),
+            )}
+          </div>
         </Container>
       </section>
     )

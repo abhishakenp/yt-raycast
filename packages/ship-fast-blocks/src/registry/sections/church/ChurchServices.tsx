@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { Card } from '#/section-kit/Card.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   ServiceCard,
   ServiceIcon,
@@ -14,17 +14,24 @@ import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
- * ChurchServices — split weekly service-times section for a church or faith-community
- * site. Left column: eyebrow, heading, description, and an icon-accented list of
- * service cards (clock/moon/hands cycle). Right column: a sticky tall photo with a
- * "What to Expect" checklist card beneath it. Warm, informative, and welcoming. Use
- * as the service-times / weekly-gatherings section for churches, worship centers,
- * parishes, or ministries. Renders fully with no props via baked-in defaults.
+ * ChurchServices — serene editorial weekly-gatherings section for a church or
+ * faith-community site, set on a softly slanted muted wash (gentle clip-path
+ * top seam) with a giant ghost serif "9 & 11" watermark. An asymmetric 7:5
+ * grid: the left column opens with a mono metadata rail (eyebrow — hairline
+ * rule — "wk / order of service"), a large serif heading, and a hairline-ruled
+ * description, then lists each gathering as a quiet ledger row — hairline top
+ * rule, faint serif index numeral, serif title, detail line, and a mono
+ * location micro-label. The right column holds a sticky 3:4 photo plate in a
+ * hairline frame over an offset hairline outline with a vertical mono edition
+ * label, and beneath it a sharp hairline "What to Expect" card whose checklist
+ * uses small primary star ticks. Use as the service-times / weekly-gatherings
+ * section for churches, worship centers, parishes, or ministries. Renders
+ * fully with no props via baked-in defaults.
  */
 export const ChurchServices = defineCapsule({
   name: 'ChurchServices',
   description:
-    "Split weekly service-times section for a church or faith-community site: left column with eyebrow, heading, description, and an icon-accented list of service cards (clock/moon/hands cycle); right column with a sticky tall photo and a 'What to Expect' checklist card beneath. Warm, informative, and welcoming. Use as the service-times / weekly-gatherings section for churches, worship centers, parishes, or ministries.",
+    "Serene editorial weekly-gatherings section for a church or faith-community site on a softly slanted muted wash (gentle clip-path top seam) with a giant ghost serif '9 & 11' watermark. Asymmetric 7:5 grid: left column with a mono metadata rail, large serif heading, hairline-ruled description, and gatherings listed as quiet ledger rows (hairline top rule, faint serif index numeral, serif title, detail line, mono location micro-label); right column with a sticky 3:4 photo plate in a hairline frame over an offset hairline outline plus a vertical mono edition label, and a sharp hairline 'What to Expect' checklist card with small primary star ticks beneath. Use as the service-times / weekly-gatherings section for churches, worship centers, parishes, or ministries.",
   props: z.object({
     /** Small uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -91,132 +98,112 @@ export const ChurchServices = defineCapsule({
           'Accessible parking and seating',
         ]
 
-    const Check = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M5 13l4 4L19 7" />
-      </svg>
-    )
-
-    const serviceIcons = [
-      <svg
-        key="clock"
-        className="size-5 text-foreground"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>,
-      <svg
-        key="moon"
-        className="size-5 text-foreground"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-      </svg>,
-      <svg
-        key="hands"
-        className="size-5 text-foreground"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
-      </svg>,
-    ]
-
     return (
       <section
         className={cn(
-          'bg-muted pt-28 pb-24 lg:pt-32 lg:pb-28',
+          // Softly slanted muted band — the section cuts in on a gentle
+          // diagonal seam (clip-path is neighbor-independent).
+          'relative overflow-hidden bg-muted/40 pb-20 pt-24 [clip-path:polygon(0_2.5rem,100%_0,100%_100%,0_100%)] sm:pt-28 lg:pb-28 lg:pt-36',
           props.className,
         )}
       >
-        <Container size="xl" className="px-6">
-          <div className="grid items-start gap-16 lg:grid-cols-2">
-            <div>
+        {/* Giant ghost service-hour numerals. */}
+        <Watermark className="-left-4 bottom-0 font-serif text-[6rem] font-medium italic text-foreground/[0.04] sm:text-[9rem] lg:text-[13rem]">
+          9 &amp; 11
+        </Watermark>
+
+        <Container size="xl" className="relative px-6">
+          <div className="grid items-start gap-14 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-7">
+              {/* Mono metadata rail. */}
+              <div className="mb-8 flex items-center gap-4">
+                <MonoTag tone="primary" className="shrink-0">
+                  {eyebrow}
+                </MonoTag>
+                <span aria-hidden="true" className="h-px flex-1 bg-border" />
+                <MonoTag tone="faint" className="hidden shrink-0 sm:inline">
+                  Order of service
+                </MonoTag>
+              </div>
               <SectionHeading
                 align="left"
-                eyebrow={eyebrow}
                 title={heading}
                 subtitle={description}
-                className="mb-10 gap-0"
-                eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground"
-                titleClassName="mb-6 text-3xl font-medium tracking-tight text-foreground sm:text-4xl"
-                subtitleClassName="text-lg leading-relaxed text-muted-foreground"
+                className="mb-12 gap-0"
+                titleClassName="mb-6 font-serif text-4xl font-medium leading-[1.08] tracking-tight text-foreground sm:text-5xl"
+                subtitleClassName="max-w-lg border-l border-border pl-5 text-base leading-relaxed text-muted-foreground sm:text-lg"
               />
-              <div className="space-y-6">
+              <div>
                 {items.map((s, i) => (
                   <ServiceCard
                     key={s.title}
-                    className="flex flex-row items-start gap-4"
+                    className="grid grid-cols-[auto_1fr] items-start gap-x-5 gap-y-0 rounded-none border-0 border-t border-border bg-transparent p-0 py-7 sm:gap-x-8"
                   >
-                    <ServiceIcon className="flex size-12 flex-shrink-0 items-center justify-center rounded-full bg-muted text-foreground">
-                      {serviceIcons[i % serviceIcons.length]}
+                    <ServiceIcon className="size-auto rounded-none bg-transparent pt-1 font-serif text-3xl font-medium italic leading-none text-muted-foreground/40 sm:text-4xl">
+                      {String(i + 1).padStart(2, '0')}
                     </ServiceIcon>
-                    <div>
-                      <ServiceTitle className="mb-1 font-medium text-card-foreground">
+                    <div className="min-w-0">
+                      <ServiceTitle className="font-serif text-xl font-medium tracking-tight text-foreground sm:text-2xl">
                         {s.title}
                       </ServiceTitle>
-                      <ServiceDescription className="mb-2">
+                      <ServiceDescription className="mt-2 leading-relaxed">
                         {s.detail}
                       </ServiceDescription>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
                         {s.location}
                       </p>
                     </div>
                   </ServiceCard>
                 ))}
+                <span aria-hidden="true" className="block h-px bg-border" />
               </div>
             </div>
-            <div className="lg:sticky lg:top-24">
-              <div className="aspect-[3/4] overflow-hidden rounded-xl bg-muted">
-                <Image
-                  alt={imageAlt}
-                  w={800}
-                  h={1000}
-                  loading="lazy"
-                  className="size-full object-cover"
+
+            <div className="lg:col-span-5 lg:sticky lg:top-24">
+              <div className="relative mr-3 sm:mr-0">
+                {/* Vertical mono label on the plate's edge. */}
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -left-9 top-0 hidden font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground [writing-mode:vertical-rl] lg:block"
+                >
+                  Sundays — 9:00 &amp; 11:00
+                </span>
+                {/* Offset hairline outline behind the plate. */}
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 translate-x-3 translate-y-3 border border-border"
                 />
+                <div className="relative aspect-[3/4] overflow-hidden border border-foreground/25 bg-muted">
+                  <Image
+                    alt={imageAlt}
+                    w={800}
+                    h={1000}
+                    loading="lazy"
+                    className="size-full object-cover"
+                  />
+                </div>
               </div>
-              <Card className="mt-6">
-                <h4 className="mb-3 font-medium text-card-foreground">
-                  {expectTitle}
-                </h4>
-                <ul className="space-y-3 text-muted-foreground">
+              <div className="relative z-10 -mt-10 ml-6 border border-border bg-background p-6 sm:ml-10 sm:p-7">
+                <div className="mb-4 flex items-center gap-3">
+                  <h4 className="font-serif text-lg font-medium italic tracking-tight text-foreground">
+                    {expectTitle}
+                  </h4>
+                  <span aria-hidden="true" className="h-px flex-1 bg-border" />
+                </div>
+                <ul className="space-y-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
                   {expect.map((item) => (
                     <li key={item} className="flex items-start gap-3">
-                      <Check className="mt-0.5 size-5 flex-shrink-0 text-primary" />
+                      <span
+                        aria-hidden="true"
+                        className="mt-1 shrink-0 text-[10px] text-primary"
+                      >
+                        ✦
+                      </span>
                       <span>{item}</span>
                     </li>
                   ))}
                 </ul>
-              </Card>
+              </div>
             </div>
           </div>
         </Container>

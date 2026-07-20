@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
 import {
   LogoStrip,
   LogoStripLabel,
@@ -11,19 +12,22 @@ import {
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * AccountingFirmLogos — slim "trusted by" client logo strip for a CPA /
- * accounting-firm site. A muted, bordered band with a small uppercase heading
- * above a responsive 2-to-6 column grid of dimmed, bold word-mark client names.
- * Calm, trustworthy professional-services aesthetic that builds social proof.
- * Each name routes through section-kit route links. Use directly below the hero on
- * accounting firms, CPA practices, tax-preparation services, bookkeeping/payroll
- * providers, audit/assurance firms, or financial advisory practices. Renders
- * fully with no props via baked-in defaults.
+ * AccountingFirmLogos — Swiss-ledger "trusted by" client strip for a CPA /
+ * accounting-firm site. A newsprint-style collapsed-border cell grid: a mono
+ * uppercase column-header row (heading on the left, a tabular zero-padded firm
+ * count on the right) above a hairline-ruled grid of word-mark cells that share
+ * borders with no gaps; each cell floods with a muted wash and darkens its text
+ * on hover. Sharp corners, hairline rules, ledger discipline — social proof set
+ * like a table of accounts. Each name routes through section-kit route links.
+ * Use directly below the hero on accounting firms, CPA practices,
+ * tax-preparation services, bookkeeping/payroll providers, audit/assurance
+ * firms, or financial advisory practices. Renders fully with no props via
+ * baked-in defaults.
  */
 export const AccountingFirmLogos = defineCapsule({
   name: 'AccountingFirmLogos',
   description:
-    'Slim trusted-by client logo strip for a CPA / accounting-firm site: a muted, bordered band with a small uppercase heading above a responsive 2-to-6 column grid of dimmed, bold word-mark client names. Calm professional-services social-proof band; each name routes through section-kit route links. Use directly below the hero on accounting firms, CPA practices, tax-preparation services, bookkeeping/payroll providers, audit/assurance firms, or financial advisory practices.',
+    'Swiss-ledger trusted-by client strip for a CPA / accounting-firm site: a mono uppercase column-header row (heading left, tabular zero-padded firm count right) above a newsprint collapsed-border grid of word-mark cells sharing hairline rules with no gaps; each cell floods with a muted wash and darkens on hover. Sharp-cornered, hairline-ruled ledger-table social proof; each name routes through section-kit route links. Use directly below the hero on accounting firms, CPA practices, tax-preparation services, bookkeeping/payroll providers, audit/assurance firms, or financial advisory practices.',
   props: z.object({
     /** Small uppercase heading above the logo row. */
     heading: z.string().optional(),
@@ -43,19 +47,40 @@ export const AccountingFirmLogos = defineCapsule({
           'Harbor Logistics',
           'Vista Medical',
         ]
+    const visibleNames = names.filter(Boolean)
 
     return (
       <LogoStrip
-        className={cn('border-b border-border bg-muted py-12', props.className)}
+        className={cn('border-b border-border bg-background', props.className)}
       >
-        <LogoStripLabel>{heading}</LogoStripLabel>
-        <LogoStripItems layout="flex" className="mt-8">
-          {names.filter(Boolean).map((logo) => (
-            <LogoStripItem key={logo} variant="opacity-hover" asChild>
-              <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
-            </LogoStripItem>
-          ))}
-        </LogoStripItems>
+        <Container className="py-10 sm:py-12 lg:py-16">
+          <div className="mb-6 flex items-end justify-between gap-4 sm:mb-8">
+            <LogoStripLabel className="text-left font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground">
+              {heading}
+            </LogoStripLabel>
+            <span
+              aria-hidden="true"
+              className="font-mono text-[11px] uppercase tracking-[0.2em] tabular-nums text-muted-foreground"
+            >
+              {String(visibleNames.length).padStart(2, '0')} firms
+            </span>
+          </div>
+          <LogoStripItems
+            layout="grid"
+            className="grid-cols-2 items-stretch gap-0 border-l border-t border-border sm:grid-cols-3 md:grid-cols-6"
+          >
+            {visibleNames.map((logo) => (
+              <LogoStripItem
+                key={logo}
+                variant="opacity-hover"
+                asChild
+                className="flex items-center justify-center border-b border-r border-border px-3 py-5 text-center text-sm font-semibold tracking-tight transition-colors duration-150 hover:bg-muted hover:text-foreground sm:px-4 sm:py-7 sm:text-base"
+              >
+                <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
+              </LogoStripItem>
+            ))}
+          </LogoStripItems>
+        </Container>
       </LogoStrip>
     )
   },

@@ -14,18 +14,20 @@ import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
 /**
- * ElectronicsStoreNewsletter — a dark inverted, centered newsletter CTA band for
- * an electronics storefront. A bold heading, a muted supporting paragraph, an
- * inline email capture form (translucent input + solid submit button that stacks
- * on mobile), and a fine-print disclaimer beneath. The form submit writes to the
- * shared Lakebed subscriber list. Use as a closing email-capture /
- * discount-incentive band on electronics stores, gadget shops, consumer-tech
- * retailers, or any product catalog.
+ * ElectronicsStoreNewsletter — a tech-brutalist inverted newsletter CTA band for
+ * an electronics storefront. On a bg-foreground/text-background band: a mono
+ * index eyebrow, an extrabold heading, a muted supporting paragraph, an inline
+ * email capture form (squared border-2 translucent input + squared solid submit
+ * button with a hard offset shadow and press feedback that stacks on mobile), and
+ * a fine-print disclaimer beneath. The form submit writes to the shared Lakebed
+ * subscriber list. Use as a closing email-capture / discount-incentive band on
+ * electronics stores, gadget shops, consumer-tech retailers, or any product
+ * catalog.
  */
 export const ElectronicsStoreNewsletter = defineCapsule({
   name: 'ElectronicsStoreNewsletter',
   description:
-    "Dark inverted, centered newsletter CTA band for an electronics storefront: a bold heading, a muted supporting paragraph, an inline email capture form (translucent input + solid submit button that stacks on mobile), and a fine-print disclaimer beneath. The form submit writes to the shared Lakebed subscriber list so another subscribe block or admin view can react immediately. Use as a closing email-capture / discount-incentive band (e.g. 'Get 10% Off Your First Order') on electronics stores, gadget shops, consumer-tech retailers, or any product catalog.",
+    "Tech-brutalist inverted newsletter CTA band for an electronics storefront: on a bg-foreground/text-background band a mono index eyebrow, an extrabold heading, a muted supporting paragraph, an inline email capture form (squared border-2 translucent input + squared solid submit button with a hard offset shadow and press feedback that stacks on mobile), and a fine-print disclaimer beneath. The form submit writes to the shared Lakebed subscriber list so another subscribe block or admin view can react immediately. Use as a closing email-capture / discount-incentive band (e.g. 'Get 10% Off Your First Order') on electronics stores, gadget shops, consumer-tech retailers, or any product catalog.",
   props: z.object({
     /** Band heading. */
     heading: z.string().optional(),
@@ -58,7 +60,13 @@ export const ElectronicsStoreNewsletter = defineCapsule({
       >
         <NewsletterCta asChild>
           <Container size="4xl" className="text-center">
-            <NewsletterCtaHeading className="text-background lg:text-4xl">
+            <span className="mb-4 inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-background/60">
+              <span aria-hidden="true" className="tabular-nums text-primary">
+                [ 09 ]
+              </span>
+              Newsletter
+            </span>
+            <NewsletterCtaHeading className="text-4xl font-extrabold tracking-tight text-background lg:text-5xl">
               {heading}
             </NewsletterCtaHeading>
             <NewsletterCtaDescription className="text-background/60">
@@ -71,8 +79,8 @@ export const ElectronicsStoreNewsletter = defineCapsule({
               buttonLabel={submit}
               successMessage="You're subscribed. Watch your inbox for the next tech drop."
               className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
-              inputClassName="flex-1 rounded-lg border border-background/20 bg-background/10 px-4 py-3 text-background placeholder:text-background/50 focus:border-background/40 focus:outline-none"
-              buttonClassName="rounded-lg bg-background px-6 py-3 font-medium text-foreground transition-colors hover:bg-background/90 disabled:pointer-events-none disabled:opacity-70"
+              inputClassName="flex-1 rounded-none border-2 border-background/40 bg-background/10 px-4 py-3 text-background placeholder:text-background/50 focus:border-background focus:outline-none"
+              buttonClassName="rounded-none border-2 border-background bg-background px-6 py-3 font-semibold text-foreground shadow-[5px_5px_0_0] shadow-background/40 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_0] active:translate-y-0 active:shadow-[2px_2px_0_0] disabled:pointer-events-none disabled:opacity-70 motion-reduce:transform-none"
               emailLabel={placeholder}
               statusClassName="text-background/50"
             />

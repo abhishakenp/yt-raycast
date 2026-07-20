@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { Card } from '#/section-kit/Card.tsx'
+import { Watermark, MonoTag } from '#/section-kit/Decor.tsx'
 import {
   StatGrid,
   StatItem,
@@ -24,19 +24,24 @@ import {
 } from '#/section-kit/FinancingCalculator.tsx'
 
 /**
- * AutoDealershipFinancing — financing / pre-approval section for an auto
- * dealership page. Two-column layout: a large rounded finance photo on one side
- * and, on the other, a heading + lead, a vertical list of numbered step cards
- * (Apply Online, Compare Offers, Drive Away), a 3-up APR stats panel (starting
- * APR / max months / down options), and a solid primary CTA. The CTA writes a
- * Lakebed financing lead and the photo uses the alt-driven Image component. Use as
- * the financing / get-pre-approved section for car dealerships, used-car lots,
- * or auto sales groups. Renders fully with no props via baked-in defaults.
+ * AutoDealershipFinancing — showroom-kinetic financing / pre-approval section
+ * for an auto dealership page under a giant italic ghost "FINANCE" watermark.
+ * Asymmetric 7:5 split: the left column has a mono index rail ("[ 04 ] —
+ * Financing"), a font-black uppercase heading + lead, a collapsed-border
+ * ledger of numbered steps (Apply Online, Compare Offers, Drive Away) led by
+ * skewed inverted step chips, a dark inverted APR strip whose 3-up
+ * collapsed-border stats carry giant italic tabular numerals (starting APR /
+ * max months / down options), and a skewed parallelogram primary CTA with
+ * press feedback. The right column holds a chamfer-clipped finance photo over
+ * an offset hairline frame with a mono caption row. The CTA writes a Lakebed
+ * financing lead and the photo uses the alt-driven Image component. Use as the
+ * financing / get-pre-approved section for car dealerships, used-car lots, or
+ * auto sales groups. Renders fully with no props via baked-in defaults.
  */
 export const AutoDealershipFinancing = defineCapsule({
   name: 'AutoDealershipFinancing',
   description:
-    'Financing / pre-approval section for an auto dealership page: a two-column layout with a large rounded finance photo on one side and, on the other, a heading and lead, a vertical list of numbered step cards (Apply Online, Compare Offers, Drive Away), a 3-up APR stats panel (starting APR / max months / down options), and a solid primary CTA. The CTA writes a Lakebed financing lead and the photo uses the alt-driven Image component. Use as the financing / get-pre-approved section for car dealerships, used-car lots, or auto sales groups.',
+    'Showroom-kinetic financing / pre-approval section for an auto dealership page under a giant italic ghost "FINANCE" watermark: an asymmetric 7:5 split with a mono index rail, font-black uppercase heading and lead, a collapsed-border ledger of numbered steps (Apply Online, Compare Offers, Drive Away) led by skewed inverted step chips, a dark inverted APR strip of 3-up collapsed-border stats with giant italic tabular numerals (starting APR / max months / down options), and a skewed parallelogram primary CTA, beside a chamfer-clipped finance photo over an offset hairline frame with a mono caption row. The CTA writes a Lakebed financing lead and the photo uses the alt-driven Image component. Use as the financing / get-pre-approved section for car dealerships, used-car lots, or auto sales groups.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -94,54 +99,80 @@ export const AutoDealershipFinancing = defineCapsule({
 
     return (
       <FinancingCalculator asChild>
-        <section className={cn('bg-card py-16 lg:py-24', props.className)}>
-          <Container>
-            <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-              <div className="order-2 lg:order-1">
-                <Image
-                  alt={imageAlt}
-                  w={800}
-                  h={600}
-                  loading="lazy"
-                  className="aspect-[4/3] w-full rounded-lg object-cover shadow-lg"
-                />
-              </div>
-              <div className="order-1 space-y-8 lg:order-2">
+        <section
+          className={cn(
+            'relative overflow-hidden bg-card py-14 sm:py-16 lg:py-24',
+            props.className,
+          )}
+        >
+          <Watermark className="-top-2 right-0 italic text-[4.5rem] sm:text-[7.5rem] lg:text-[11rem]">
+            FINANCE
+          </Watermark>
+          <Container className="relative">
+            <div className="grid items-start gap-12 lg:grid-cols-12 lg:gap-14">
+              <div className="lg:col-span-7">
+                <div className="mb-6 flex items-center gap-4">
+                  <span
+                    aria-hidden="true"
+                    className="inline-block h-2 w-6 shrink-0 -skew-x-12 bg-primary"
+                  />
+                  <MonoTag aria-hidden="true">[ 04 ] — Financing</MonoTag>
+                  <span aria-hidden="true" className="h-px flex-1 bg-border" />
+                </div>
                 <SectionHeading
                   align="left"
                   title={heading}
                   subtitle={description}
-                  className="gap-0"
-                  titleClassName="text-3xl font-semibold tracking-tight sm:text-4xl"
-                  subtitleClassName="text-lg leading-relaxed text-muted-foreground"
+                  className="mb-8 gap-3"
+                  titleClassName="text-3xl font-black uppercase tracking-tight sm:text-4xl"
+                  subtitleClassName="max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg"
                 />
-                <div className="space-y-4">
+                {/* Collapsed-border step ledger with skewed inverted chips. */}
+                <div className="border-t border-border">
                   {steps.map((step, i) => (
-                    <Card
+                    <div
                       key={step.title}
-                      variant="muted"
-                      className="flex items-start gap-4 rounded-lg p-4"
+                      className="grid grid-cols-[3.5rem_1fr] items-start gap-4 border-b border-border py-5 sm:grid-cols-[4.25rem_1fr] sm:gap-5"
                     >
-                      <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
-                        {i + 1}
-                      </div>
+                      <span
+                        aria-hidden="true"
+                        className="inline-flex h-8 w-12 -skew-x-12 items-center justify-center bg-foreground text-sm font-black italic text-background"
+                      >
+                        <span className="inline-block skew-x-12">0{i + 1}</span>
+                      </span>
                       <div>
-                        <h4 className="font-semibold">{step.title}</h4>
-                        <p className="text-sm text-muted-foreground">
+                        <h4 className="text-base font-black uppercase tracking-tight">
+                          {step.title}
+                        </h4>
+                        <p className="mt-1 max-w-lg text-sm leading-relaxed text-muted-foreground">
                           {step.description}
                         </p>
                       </div>
-                    </Card>
+                    </div>
                   ))}
                 </div>
-                <FinancingDisplay className="rounded-lg bg-muted p-6">
-                  <StatGrid className="grid grid-cols-3 gap-4 text-center">
-                    {stats.map((s) => (
-                      <StatItem key={s.label}>
-                        <StatValue className="text-3xl font-semibold">
+                {/* Dark inverted APR strip. */}
+                <FinancingDisplay className="mt-8 rounded-none bg-foreground p-6 text-left text-background sm:p-7">
+                  <StatGrid columns={3} className="grid-cols-3 gap-0">
+                    {stats.map((s, i) => (
+                      <StatItem
+                        key={s.label}
+                        align="left"
+                        className={cn(
+                          'gap-2 pr-3',
+                          i > 0 && 'border-l border-background/20 pl-4 sm:pl-6',
+                        )}
+                      >
+                        <StatValue
+                          color="inverted"
+                          className="mb-0 text-[clamp(1.75rem,3vw,2.75rem)] font-black italic leading-none tracking-tight"
+                        >
                           {s.value}
                         </StatValue>
-                        <StatLabel className="text-xs uppercase tracking-wider">
+                        <StatLabel
+                          color="inverted"
+                          className="font-mono text-[10px] uppercase tracking-[0.2em] text-background/60"
+                        >
                           {s.label}
                         </StatLabel>
                       </StatItem>
@@ -155,15 +186,41 @@ export const AutoDealershipFinancing = defineCapsule({
                   intentKey="financing-application"
                   source="financing"
                   pendingChildren={
-                    <>
+                    <span className="inline-flex skew-x-12 items-center gap-2">
                       <AutoMutationSpinner />
                       Sending
-                    </>
+                    </span>
                   }
-                  className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  className="mt-8 inline-flex -skew-x-12 items-center justify-center rounded-none bg-primary px-8 py-4 text-sm font-bold uppercase tracking-[0.15em] text-primary-foreground transition-all duration-150 hover:bg-primary/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
                 >
-                  {cta}
+                  <span className="inline-block skew-x-12">{cta}</span>
                 </AutoLeadActionButton>
+              </div>
+
+              <div className="lg:col-span-5">
+                <div className="relative">
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 translate-x-3 translate-y-3 border border-foreground/20"
+                  />
+                  <Image
+                    alt={imageAlt}
+                    w={800}
+                    h={600}
+                    loading="lazy"
+                    className="relative aspect-[4/3] w-full rounded-none object-cover [clip-path:polygon(0_0,100%_0,100%_calc(100%-2rem),calc(100%-2rem)_100%,0_100%)] lg:aspect-[4/5]"
+                  />
+                </div>
+                <span
+                  aria-hidden="true"
+                  className="mt-6 flex items-center gap-3 text-border"
+                >
+                  <span className="inline-block h-1.5 w-6 -skew-x-12 bg-primary" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                    [ Secure ] — 3-min application
+                  </span>
+                  <span className="h-px flex-1 bg-current" />
+                </span>
               </div>
             </div>
           </Container>

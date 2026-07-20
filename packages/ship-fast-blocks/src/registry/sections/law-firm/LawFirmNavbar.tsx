@@ -12,22 +12,24 @@ import {
 } from '#/section-kit/index.ts'
 
 /**
- * LawFirmNavbar — sticky top navigation bar for a corporate / trial law-firm
- * site. A bordered header pinned to the top on the card surface: a squared
- * brand tile bearing the firm initial beside a two-line serif wordmark (firm
- * name + tracked-uppercase tagline) on the left, a row of quiet monochrome nav
- * links plus a solid "Free Consultation" CTA on the right (desktop), and a
- * hamburger menu button on mobile. Refined, authoritative, serif-driven
- * editorial aesthetic with sharp squared corners. Every link routes through
- * route hrefs so labels can drive page-switching. Use as the sticky site header
- * for law firms, attorneys, legal practices, solicitors, barristers, corporate
- * counsel, accounting/advisory or any premium professional-services site.
+ * LawFirmNavbar — sticky editorial-gravitas top navigation for a corporate /
+ * trial law-firm site. A backdrop-blurred bordered header pinned to the top on
+ * the card surface: a hairline-framed squared brand seal bearing the firm
+ * initial sits beside a two-line lockup — a serif wordmark over a mono
+ * tracked-uppercase tagline — on the left; a row of quiet monochrome nav links
+ * with a thin column-rule separator, plus a square-cornered solid "Free
+ * Consultation" CTA with press feedback on the right (desktop); and a hamburger
+ * menu button on mobile. Authoritative, traditional-yet-modern newsprint
+ * aesthetic with sharp binary corners. Every link routes through route hrefs so
+ * labels can drive page-switching. Use as the sticky site header for law firms,
+ * attorneys, legal practices, solicitors, barristers, corporate counsel,
+ * litigation boutiques, estate-planning, tax or accounting/advisory sites.
  * Renders fully with no props via baked-in "Reinhart & Associates" defaults.
  */
 export const LawFirmNavbar = defineCapsule({
   name: 'LawFirmNavbar',
   description:
-    "Sticky bordered top navigation bar for a corporate / trial law-firm site on the card surface: a squared brand tile bearing the firm initial beside a two-line serif wordmark (firm name + tracked-uppercase tagline) on the left, a row of quiet monochrome nav links plus a solid 'Free Consultation' CTA on the right (desktop), and a hamburger menu button on mobile. Refined, authoritative, serif-driven editorial aesthetic with sharp squared corners. Links route through route hrefs for page-switching. Use as the sticky site header for law firms, attorneys, legal practices, solicitors, barristers, corporate counsel, litigation boutiques, estate-planning, tax or accounting/advisory firms.",
+    "Sticky editorial-gravitas top navigation for a corporate / trial law-firm site on the card surface: a hairline-framed squared brand seal bearing the firm initial beside a two-line lockup (serif wordmark over a mono tracked-uppercase tagline) on the left, a row of quiet monochrome nav links with a thin column-rule separator plus a square-cornered solid 'Free Consultation' CTA with press feedback on the right (desktop), and a hamburger menu button on mobile. Authoritative, traditional-yet-modern newsprint aesthetic with sharp binary corners and backdrop blur. Links route through route hrefs for page-switching. Use as the sticky site header for law firms, attorneys, legal practices, solicitors, barristers, corporate counsel, litigation boutiques, estate-planning, tax or accounting/advisory firms.",
   props: z.object({
     /** Firm / brand name shown in the wordmark and brand tile initial. */
     brand: z.string().optional(),
@@ -57,41 +59,49 @@ export const LawFirmNavbar = defineCapsule({
         height="default"
         className={cn('bg-card', props.className)}
       >
-        <NavbarBrand href={nav[0]} className="gap-3 text-left">
-          <BrandLogo brand={brand} className="size-10 rounded-sm">
+        <NavbarBrand href={nav[0]} className="text-left">
+          <BrandLogo brand={brand} className="flex items-center gap-3">
             <LogoImage
-              className="size-10 rounded-sm"
+              className="size-10 rounded-none"
               fallback={
                 <span
-                  className="grid size-10 place-items-center rounded-sm bg-primary font-serif text-lg font-bold text-primary-foreground"
+                  className="grid size-10 place-items-center rounded-none border border-foreground/15 bg-primary font-serif text-lg font-bold text-primary-foreground"
                   aria-hidden="true"
                 >
                   {brandInitial}
                 </span>
               }
             />
-            <LogoLabel />
+            <span className="flex flex-col leading-none">
+              <LogoLabel className="font-serif text-lg font-semibold tracking-tight text-foreground" />
+              <span
+                aria-hidden="true"
+                className="mt-1 hidden font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:block"
+              >
+                {tagline}
+              </span>
+            </span>
           </BrandLogo>
-          <span className="block">
-            <span className="block font-serif text-xl font-semibold tracking-tight text-foreground">
-              {brand}
-            </span>
-            <span className="block text-xs uppercase tracking-widest text-muted-foreground">
-              {tagline}
-            </span>
-          </span>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.slice(0, -1).map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="text-muted-foreground hover:text-foreground"
+            >
               {label}
             </NavbarNavLink>
           ))}
+          <span
+            aria-hidden="true"
+            className="hidden h-6 w-px bg-border lg:block"
+          />
           <NavbarCta
             variant="primary"
             href={nav[nav.length - 1]}
-            className="rounded-none px-6 py-3"
+            className="rounded-none px-6 py-3 transition-transform duration-150 active:translate-y-px"
           >
             {ctaLabel}
           </NavbarCta>

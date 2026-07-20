@@ -2,26 +2,27 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   FeatureGrid,
   FeatureCard,
-  FeatureIcon,
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
 
 /**
- * FoodTruckFeatures — a compact "why us" feature strip for a food-truck site. A
- * top-bordered band holding a 3-up responsive grid of plain feature blocks, each with
- * a rounded muted icon tile (sparkle glyph), a bold title and a muted supporting
- * paragraph. No imagery, no links — pure value-prop messaging. Use directly below the
- * hero on food trucks, street-food vendors or catering businesses to spell out
- * sourcing, dietary options and catering capability.
+ * FoodTruckFeatures — a sticker-poster "why us" strip for a food-truck site. A
+ * hazard-lite accent rule and a rotated rubber-stamp caption sit above a collapsed-border
+ * 3-up grid of hard-bordered rounded-none slab cards, each led by a giant ghost index
+ * numeral (no icon tiles), a chunky extrabold slab title and a muted supporting
+ * paragraph, lifting on a hard offset token shadow on hover. No imagery, no links — pure
+ * value-prop messaging. Use directly below the hero on food trucks, street-food vendors
+ * or catering businesses to spell out sourcing, dietary options and catering capability.
  */
 export const FoodTruckFeatures = defineCapsule({
   name: 'FoodTruckFeatures',
   description:
-    "Compact 'why us' feature strip for a food-truck site: a top-bordered band holding a 3-up responsive grid of plain feature blocks, each with a rounded muted icon tile (sparkle glyph), a bold title and a muted supporting paragraph. No imagery or links — pure value-prop messaging. Use directly below the hero on food trucks, street-food vendors, taco / burger / bowl concepts or catering businesses to spell out sourcing, dietary options and catering capability.",
+    "Sticker-poster 'why us' strip for a food-truck site: a hazard-lite accent rule and a rotated rubber-stamp caption above a collapsed-border 3-up grid of hard-bordered rounded-none slab cards, each led by a giant ghost index numeral (no icon tiles), a chunky extrabold slab title and a muted supporting paragraph that lifts on a hard offset token shadow on hover. No imagery or links — pure value-prop messaging. Use directly below the hero on food trucks, street-food vendors, taco / burger / bowl concepts or catering businesses to spell out sourcing, dietary options and catering capability.",
   props: z.object({
     features: z
       .array(z.object({ title: z.string(), description: z.string() }))
@@ -49,51 +50,45 @@ export const FoodTruckFeatures = defineCapsule({
           },
         ]
 
-    const sparkleIcon = (
-      <svg
-        className="size-5"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
-        />
-      </svg>
-    )
-
     return (
       <FeatureGrid
         columns={3}
-        className={cn(
-          'border-t border-border px-6 pt-28 pb-16',
-          props.className,
-        )}
+        className={cn('px-6 pt-24 pb-16', props.className)}
       >
-        {features
-          .map((f) => ({ ...f, icon: sparkleIcon }))
-          .map((f) => {
-            const __iv__ = f as {
-              title: string
-              description: string
-              icon?: React.ReactNode
-              points?: string[]
-              cta?: string
-              price?: string
-              imageAlt?: string
-            }
+        <div className="flex flex-col gap-6">
+          <div
+            aria-hidden="true"
+            className="h-1.5 w-full bg-[repeating-linear-gradient(45deg,currentColor_0px,currentColor_3px,transparent_3px,transparent_9px)] text-foreground/20"
+          />
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="inline-flex -rotate-2 items-center rounded-full border-2 border-foreground bg-background px-3.5 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-foreground shadow-[3px_3px_0_0] shadow-primary/40">
+              Curbside Difference
+            </span>
+            <MonoTag>What sets us apart</MonoTag>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 gap-0 border-l-2 border-t-2 border-foreground md:grid-cols-3">
+          {features.map((f, i) => {
+            const __iv__ = f as { title: string; description: string }
             return (
-              <FeatureCard key={__iv__.title}>
-                {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                <FeatureTitle>{__iv__.title}</FeatureTitle>
+              <FeatureCard
+                key={__iv__.title}
+                className="gap-3 rounded-none border-0 border-b-2 border-r-2 border-foreground bg-card p-6 transition-all duration-150 hover:-translate-y-1 hover:border-foreground hover:shadow-[6px_6px_0_0] hover:shadow-foreground motion-reduce:transform-none"
+              >
+                <span
+                  aria-hidden="true"
+                  className="font-mono text-5xl font-extrabold leading-none tabular-nums text-foreground/[0.12]"
+                >
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <FeatureTitle className="text-xl font-extrabold tracking-tight">
+                  {__iv__.title}
+                </FeatureTitle>
                 <FeatureDescription>{__iv__.description}</FeatureDescription>
               </FeatureCard>
             )
           })}
+        </div>
       </FeatureGrid>
     )
   },

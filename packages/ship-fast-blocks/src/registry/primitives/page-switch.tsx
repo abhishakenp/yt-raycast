@@ -2,7 +2,11 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { useStateField } from '@openuidev/react-lang'
 import { useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { RoutesContext, slugifyRoute } from '#/lib/route-context.tsx'
+import {
+  PageStateContext,
+  RoutesContext,
+  slugifyRoute,
+} from '#/lib/route-context.tsx'
 import { PreviewUrlBridgeContext } from '#/lib/preview-url-bridge.tsx'
 
 // System-owned multi-page switcher. The orchestrator emits exactly one of these as `root`.
@@ -72,12 +76,15 @@ export const PageSwitch = defineCapsule({
       }),
       [currentPage, pendingSectionId, props.targetMap, routes],
     )
+    const pageStateValue = useMemo(() => ({ setPage: page.setValue }), [page])
     return (
-      <RoutesContext.Provider value={contextValue}>
-        <div className={props.className}>
-          {node != null ? renderNode(node) : null}
-        </div>
-      </RoutesContext.Provider>
+      <PageStateContext.Provider value={pageStateValue}>
+        <RoutesContext.Provider value={contextValue}>
+          <div className={props.className}>
+            {node != null ? renderNode(node) : null}
+          </div>
+        </RoutesContext.Provider>
+      </PageStateContext.Provider>
     )
   },
 })

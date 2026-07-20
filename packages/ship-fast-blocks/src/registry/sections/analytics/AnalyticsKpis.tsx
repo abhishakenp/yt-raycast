@@ -1,34 +1,36 @@
 import { defineCapsule } from '#/capsules/openui.ts'
-import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { KpisGrid, KpiTrendArrow } from '#/section-kit/KpisGrid.tsx'
+import { KpiTrendArrow } from '#/section-kit/KpisGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import {
-  StatValue,
-  StatLabel,
-  StatDelta,
-  StatIcon,
-  StatCard,
-  StatCardHeader,
-  StatCaption,
-} from '#/section-kit/StatGrid.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
+
+/** Deterministic per-cell div-built sparkline heights. */
+const SPARKS = [
+  ['h-2', 'h-4', 'h-3', 'h-5', 'h-4', 'h-6', 'h-5', 'h-7', 'h-6', 'h-8'],
+  ['h-3', 'h-2', 'h-4', 'h-5', 'h-3', 'h-6', 'h-7', 'h-5', 'h-8', 'h-7'],
+  ['h-2', 'h-3', 'h-5', 'h-4', 'h-6', 'h-5', 'h-7', 'h-8', 'h-6', 'h-8'],
+  ['h-6', 'h-7', 'h-5', 'h-6', 'h-4', 'h-5', 'h-3', 'h-4', 'h-3', 'h-2'],
+]
 
 /**
- * AnalyticsKpis — a 4-up KPI metric-card grid for a SaaS analytics dashboard. A
- * responsive 1/2/4-column grid of bordered cards, each with a label, a large
- * value, an up/down trend delta (positive uses chart styling, negative uses
- * destructive) with a directional arrow, a rotating icon chip, and a caption.
- * Tokens-only, no links. Use as the top summary row of a dashboard — total
- * revenue, active users, conversion rate, average session, or any
- * headline-metric scorecard band. Renders fully with no props via four baked-in
- * default KPIs.
+ * AnalyticsKpis — Swiss data-grid KPI summary strip for a SaaS analytics
+ * dashboard. A collapsed-border hairline grid (2-up on mobile, 4-up on
+ * desktop) of sharp metric cells: each carries a mono uppercase label with a
+ * tabular index, a large tabular-numeral value, an up/down trend delta
+ * (positive uses chart styling, negative destructive) with a directional
+ * arrow, a mono caption, and a div-built sparkline motif whose final bar
+ * echoes the trend color. Tokens-only, no links, no icon chips — hairline
+ * precision instead of card chrome. Use as the top summary row of a dashboard
+ * — total revenue, active users, conversion rate, average session, or any
+ * headline-metric scorecard band. Renders fully with no props via four
+ * baked-in default KPIs.
  */
 export const AnalyticsKpis = defineCapsule({
   name: 'AnalyticsKpis',
   description:
-    'A 4-up KPI metric-card grid for a SaaS analytics dashboard: a responsive 1/2/4-column grid of bordered cards, each with a label, large value, an up/down trend delta (positive chart styling, negative destructive) with a directional arrow, a rotating icon chip, and a caption. Tokens-only, no links. Use as the top summary row of a dashboard — total revenue, active users, conversion rate, average session, or any headline-metric scorecard band.',
+    'Swiss data-grid KPI summary strip for a SaaS analytics dashboard: a collapsed-border hairline grid (2-up mobile, 4-up desktop) of sharp metric cells, each with a mono uppercase label and tabular index, a large tabular-numeral value, an up/down trend delta (positive chart styling, negative destructive) with a directional arrow, a mono caption, and a div-built sparkline whose final bar echoes the trend color. Tokens-only, no links. Use as the top summary row of a dashboard — total revenue, active users, conversion rate, average session, or any headline-metric scorecard band.',
   props: z.object({
     /** KPI metric cards. `trend` "up" renders positive (chart) styling, "down" negative. */
     kpis: z
@@ -78,88 +80,71 @@ export const AnalyticsKpis = defineCapsule({
           },
         ] as const)
 
-    // ---- Inline icons (decorative, currentColor) ----
-    const iconProps = {
-      width: 20,
-      height: 20,
-      viewBox: '0 0 24 24',
-      fill: 'none',
-      stroke: 'currentColor',
-      strokeWidth: 2,
-      strokeLinecap: 'round' as const,
-      strokeLinejoin: 'round' as const,
-      'aria-hidden': true,
-    }
-
-    const kpiIcons: ReactNode[] = [
-      // currency
-      <svg key="currency" {...iconProps}>
-        <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>,
-      // users
-      <svg key="users" {...iconProps}>
-        <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-      </svg>,
-      // bars
-      <svg key="bars" {...iconProps}>
-        <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-      </svg>,
-      // clock
-      <svg key="clock" {...iconProps}>
-        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>,
-    ]
-
-    const TrendUp = () => <KpiTrendArrow trend="up" size={16} />
-    const TrendDown = () => <KpiTrendArrow trend="down" size={16} />
-
     return (
       <section
         aria-label="Key performance indicators"
-        className={cn('bg-background py-20 lg:py-28', props.className)}
+        className={cn('bg-background py-16 lg:py-24', props.className)}
       >
         <Container size="xl">
-          <KpisGrid cols="1-2-4" className="gap-6">
-            {kpis.map((kpi, i) => (
-              <StatCard key={kpi.label}>
-                <StatCardHeader>
-                  <div>
-                    <StatLabel className="text-sm font-medium">
-                      {kpi.label}
-                    </StatLabel>
-                    <StatValue
-                      weight="semibold"
-                      color="default"
-                      className="mt-2 text-2xl text-card-foreground"
+          <div className="grid grid-cols-2 border-l border-t border-border lg:grid-cols-4">
+            {kpis.map((kpi, i) => {
+              const up = kpi.trend === 'up'
+              const bars = SPARKS[i % SPARKS.length]
+              return (
+                <div
+                  key={kpi.label}
+                  className="group flex flex-col border-b border-r border-border p-4 transition-colors duration-150 hover:bg-muted/30 sm:p-6"
+                >
+                  <div className="flex items-baseline justify-between gap-2">
+                    <MonoTag className="text-[10px]">{kpi.label}</MonoTag>
+                    <MonoTag
+                      aria-hidden="true"
+                      tone="faint"
+                      className="tabular-nums"
                     >
-                      {kpi.value}
-                    </StatValue>
-                    <div
-                      className={cn(
-                        'mt-2 flex items-center gap-1',
-                        kpi.trend === 'up'
-                          ? 'text-chart-1'
-                          : 'text-destructive',
-                      )}
-                    >
-                      {kpi.trend === 'up' ? <TrendUp /> : <TrendDown />}
-                      <StatDelta
-                        trend={kpi.trend === 'up' ? 'up' : 'down'}
-                        bare
-                        className="text-sm font-medium"
-                      >
-                        {kpi.delta}
-                      </StatDelta>
-                    </div>
+                      {String(i + 1).padStart(2, '0')}
+                    </MonoTag>
                   </div>
-                  <StatIcon className="rounded-lg bg-muted p-2 text-muted-foreground">
-                    {kpiIcons[i % kpiIcons.length]}
-                  </StatIcon>
-                </StatCardHeader>
-                <StatCaption>{kpi.caption}</StatCaption>
-              </StatCard>
-            ))}
-          </KpisGrid>
+                  <p className="mt-3 text-2xl font-bold tabular-nums tracking-tight text-foreground sm:text-3xl lg:text-4xl">
+                    {kpi.value}
+                  </p>
+                  <div
+                    className={cn(
+                      'mt-2 flex items-center gap-1.5',
+                      up ? 'text-chart-1' : 'text-destructive',
+                    )}
+                  >
+                    <KpiTrendArrow trend={up ? 'up' : 'down'} size={14} />
+                    <span className="font-mono text-xs font-semibold tabular-nums">
+                      {kpi.delta}
+                    </span>
+                  </div>
+                  <MonoTag tone="faint" className="mt-1 text-[10px]">
+                    {kpi.caption}
+                  </MonoTag>
+                  <span
+                    aria-hidden="true"
+                    className="mt-auto flex items-end gap-px pt-5"
+                  >
+                    {bars.map((h, j) => (
+                      <span
+                        key={j}
+                        className={cn(
+                          'w-full',
+                          h,
+                          j === bars.length - 1
+                            ? up
+                              ? 'bg-chart-1'
+                              : 'bg-destructive'
+                            : 'bg-foreground/15',
+                        )}
+                      />
+                    ))}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
         </Container>
       </section>
     )

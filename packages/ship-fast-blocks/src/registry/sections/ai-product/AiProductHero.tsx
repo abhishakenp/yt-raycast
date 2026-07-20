@@ -4,7 +4,6 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import {
   HeroSection,
-  HeroHeading,
   HeroSubheading,
   HeroActions,
   HeroSocialProof,
@@ -12,6 +11,7 @@ import {
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { DotGrid, MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -19,21 +19,24 @@ import {
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
- * AiProductHero — split, two-column hero for a clean, light AI SaaS / product
- * landing page. On the left: a live-status pill with a pulsing dot, a huge
- * two-line headline (second line muted), a supporting paragraph, dual CTAs (a
- * near-black filled primary with arrow + an outlined "watch demo" secondary with
- * play glyph), and a trust microcopy row with check marks. On the right: a
- * mocked AI chat/editor preview card with a macOS-style title bar, skeleton
- * message rows, and a highlighted AI suggestion block with action chips, framed
- * by soft blurred glow orbs. CTAs and chips route through section-kit route links. Use as
- * the opening hero for AI writing assistants, AI copilots, or generative-AI
+ * AiProductHero — kinetic tech-editorial split hero for an AI SaaS / product
+ * landing page. An asymmetric 7:5 grid over a fading dot-grid field with a
+ * giant ghost "//AI" watermark: the left column opens with a mono live-status
+ * line (pulsing primary square + tracked micro-label), then an oversized fluid
+ * clamp display headline whose second line is a marker-highlight phrase, a
+ * supporting paragraph, dual CTAs (a skewed near-black block that un-skews its
+ * label + a bracketed mono ghost "watch demo"), and a mono trust microcopy row
+ * with plus-glyph markers. The right column is a sharp-cornered editor pane
+ * with a hairline title bar (square window dots, mono filename), skeleton
+ * message rows, and a primary-edged AI-suggestion block with mono action
+ * chips. CTAs and chips route through section-kit route links. Use as the
+ * opening hero for AI writing assistants, AI copilots, or generative-AI
  * tools. Renders fully with no props.
  */
 export const AiProductHero = defineCapsule({
   name: 'AiProductHero',
   description:
-    'Split two-column hero for a clean, light AI SaaS / product landing page: a left column with a live-status pill (pulsing dot), a large two-line headline (second line muted), a supporting paragraph, dual fullstack CTAs (near-black filled primary with arrow + outlined watch-demo secondary with play glyph), and a check-marked trust microcopy row; a right column with a mocked AI chat/editor preview card featuring a macOS-style title bar, skeleton message rows, and a highlighted AI-suggestion block with scoped mutation action chips, framed by soft blurred glow orbs. CTAs and chips write to shared Lakebed conversion state. Use as the opening hero for AI writing assistants, AI copilots, generative-AI tools, developer-AI products, or modern SaaS launch pages.',
+    'Kinetic tech-editorial split hero for an AI SaaS / product landing page: an asymmetric 7:5 grid over a fading dot-grid field with a giant ghost "//AI" watermark — a left column with a mono live-status line (pulsing primary square), an oversized fluid clamp display headline whose second line is a marker-highlight phrase, a supporting paragraph, dual fullstack CTAs (skewed near-black block whose label un-skews + bracketed mono ghost watch-demo), and a mono plus-glyph trust row; a right column with a sharp-cornered editor pane featuring a hairline title bar with square window dots and mono filename, skeleton message rows, and a primary-edged AI-suggestion block with scoped mutation mono action chips. CTAs and chips write to shared Lakebed conversion state. Use as the opening hero for AI writing assistants, AI copilots, generative-AI tools, developer-AI products, or modern SaaS launch pages.',
   props: z.object({
     /** Live-status pill text. */
     badge: z.string().optional(),
@@ -83,75 +86,52 @@ export const AiProductHero = defineCapsule({
       ? props.previewActions
       : ['Use this', 'Try again', 'Make shorter']
 
-    const Check = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M5 13l4 4L19 7" />
-      </svg>
-    )
-
-    const ArrowRight = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
-      </svg>
-    )
-
     return (
-      <HeroSection className={cn('relative overflow-hidden', props.className)}>
-        <Container size="xl" className="pb-24 pt-16 lg:pb-32 lg:pt-24">
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-            <div className="max-w-2xl">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1">
-                <span className="size-2 animate-pulse rounded-full bg-primary" />
-                <span className="text-xs font-medium text-muted-foreground">
-                  {badge}
-                </span>
-              </div>
-              <HeroHeading className="mb-6 font-semibold">
+      <HeroSection
+        className={cn(
+          'relative overflow-hidden bg-background',
+          props.className,
+        )}
+      >
+        <DotGrid tone="faint" fade="bottom" className="inset-0" />
+        <Watermark className="-right-8 top-2 font-mono text-[7rem] sm:-right-12 sm:top-0 sm:text-[15rem]">
+          //AI
+        </Watermark>
+        <Container size="xl" className="relative pb-16 pt-14 lg:pb-24 lg:pt-20">
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-14">
+            <div className="max-w-2xl lg:col-span-7">
+              <p className="flex items-center gap-3">
+                <span
+                  aria-hidden="true"
+                  className="size-2 animate-pulse bg-primary"
+                />
+                <MonoTag>{badge}</MonoTag>
+              </p>
+              <h1 className="mt-6 text-[clamp(2.9rem,8vw,6.5rem)] font-semibold leading-[0.92] tracking-tighter text-foreground">
                 {headingTop}
                 <br />
-                <span className="text-muted-foreground">{headingBottom}</span>
-              </HeroHeading>
-              <HeroSubheading className="mb-8 max-w-xl sm:text-xl">
+                <span className="-mx-1 box-decoration-clone bg-primary/15 px-2">
+                  {headingBottom}
+                </span>
+              </h1>
+              <HeroSubheading className="mb-8 mt-6 max-w-xl text-base sm:text-lg">
                 {subheading}
               </HeroSubheading>
-              <HeroActions className="mb-8 mt-0 flex flex-col gap-4 sm:flex-row">
+              <HeroActions className="mb-8 mt-0 grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4">
                 <SaasPlanActionButton
                   lakebed={lakebed}
                   intentLabel={primaryCta}
                   plan={primaryCta}
                   source="hero"
                   pendingChildren={
-                    <>
-                      <SaasMutationSpinner className="size-5" />
+                    <span className="inline-flex skew-x-6 items-center justify-center gap-2">
+                      <SaasMutationSpinner className="size-4" />
                       Starting
-                    </>
+                    </span>
                   }
-                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-foreground px-6 py-3 text-base font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70"
+                  className="inline-flex -skew-x-6 items-center justify-center rounded-none bg-foreground px-4 py-4 font-mono text-sm font-semibold uppercase tracking-[0.12em] text-background transition-[background-color,transform] duration-150 hover:bg-primary hover:text-primary-foreground active:translate-y-px disabled:pointer-events-none disabled:opacity-70 sm:px-8"
                 >
-                  {primaryCta}
-                  <ArrowRight className="ml-2 size-5" />
+                  <span className="inline-block skew-x-6">{primaryCta}</span>
                 </SaasPlanActionButton>
                 <SaasPlanActionButton
                   lakebed={lakebed}
@@ -159,64 +139,64 @@ export const AiProductHero = defineCapsule({
                   source="hero"
                   pendingChildren={
                     <>
-                      <SaasMutationSpinner className="size-5" />
+                      <SaasMutationSpinner className="size-4" />
                       Opening
                     </>
                   }
-                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-input bg-background px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
+                  className="inline-flex items-center justify-center gap-2 rounded-none border border-border bg-background px-4 py-4 font-mono text-sm font-medium uppercase tracking-[0.12em] text-foreground transition-colors duration-150 hover:bg-foreground hover:text-background active:translate-y-px disabled:pointer-events-none disabled:opacity-70 sm:px-6"
                 >
-                  <svg
-                    className="size-5"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                    <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+                  <span aria-hidden="true">[</span>
                   {secondaryCta}
+                  <span aria-hidden="true">]</span>
                 </SaasPlanActionButton>
               </HeroActions>
-              <HeroSocialProof className="mt-0 gap-6">
+              <HeroSocialProof className="mt-0 gap-x-6 gap-y-2">
                 {trust.map((t) => (
-                  <HeroSocialProofItem key={t}>
-                    <Check className="size-5 text-primary" />
+                  <HeroSocialProofItem
+                    key={t}
+                    className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground"
+                  >
+                    <span aria-hidden="true" className="text-primary">
+                      +
+                    </span>
                     <span>{t}</span>
                   </HeroSocialProofItem>
                 ))}
               </HeroSocialProof>
             </div>
 
-            {/* Preview card */}
-            <div className="relative">
+            {/* Editor pane */}
+            <div className="relative lg:col-span-5">
               <Card
                 variant="default"
-                className="relative overflow-hidden p-0 shadow-2xl"
+                className="-mx-2 overflow-hidden rounded-none border-border p-0 shadow-none sm:mx-0"
               >
-                <div className="flex items-center gap-2 border-b border-border bg-muted/50 px-4 py-3">
-                  <div className="flex gap-1.5">
-                    <span className="size-3 rounded-full bg-destructive/70" />
-                    <span className="size-3 rounded-full bg-chart-4" />
-                    <span className="size-3 rounded-full bg-primary/70" />
+                <div className="flex items-center gap-2 border-b border-border bg-muted/60 px-4 py-2.5">
+                  <div className="flex gap-1.5" aria-hidden="true">
+                    <span className="size-2.5 bg-muted-foreground/40" />
+                    <span className="size-2.5 bg-muted-foreground/25" />
+                    <span className="size-2.5 bg-primary/60" />
                   </div>
-                  <span className="ml-2 font-mono text-xs text-muted-foreground">
+                  <span className="ml-2 truncate font-mono text-[11px] text-muted-foreground">
                     {previewFile}
                   </span>
+                  <span
+                    aria-hidden="true"
+                    className="ml-auto font-mono text-[10px] uppercase tracking-[0.2em] text-primary"
+                  >
+                    ● live
+                  </span>
                 </div>
-                <div className="space-y-4 p-6">
+                <div className="space-y-4 p-5 sm:p-6">
                   <div className="flex gap-3">
-                    <span className="size-8 shrink-0 rounded-full bg-muted" />
+                    <span className="size-8 shrink-0 rounded-none bg-muted" />
                     <div className="flex-1 space-y-2">
-                      <div className="h-4 w-3/4 rounded bg-muted" />
-                      <div className="h-4 w-1/2 rounded bg-muted" />
+                      <div className="h-3.5 w-3/4 bg-muted" />
+                      <div className="h-3.5 w-1/2 bg-muted" />
                     </div>
                   </div>
                   <div className="flex gap-3">
-                    <span className="grid size-8 shrink-0 place-items-center rounded-full bg-foreground text-background">
+                    <span className="grid size-8 shrink-0 place-items-center rounded-none bg-foreground text-background">
                       <svg
                         className="size-4"
                         viewBox="0 0 24 24"
@@ -232,12 +212,12 @@ export const AiProductHero = defineCapsule({
                     </span>
                     <Card
                       variant="outline"
-                      className="flex-1 bg-muted/50 rounded-lg p-4"
+                      className="flex-1 rounded-none border-l-2 border-border border-l-primary bg-primary/[0.04] p-4"
                     >
-                      <p className="mb-2 text-sm text-muted-foreground">
+                      <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                         {previewIntro}
                       </p>
-                      <p className="text-sm italic text-foreground">
+                      <p className="text-sm italic leading-relaxed text-foreground">
                         &ldquo;{previewQuote}&rdquo;
                       </p>
                       <div className="mt-3 flex flex-wrap gap-2">
@@ -250,10 +230,10 @@ export const AiProductHero = defineCapsule({
                             source="preview"
                             pendingChildren={<SaasMutationSpinner />}
                             className={cn(
-                              'inline-flex items-center justify-center rounded px-3 py-1.5 text-xs font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
+                              'inline-flex items-center justify-center rounded-none px-3 py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.12em] transition-colors duration-150 active:translate-y-px disabled:pointer-events-none disabled:opacity-70',
                               i === 0
-                                ? 'bg-foreground text-background hover:bg-foreground/90'
-                                : 'text-muted-foreground hover:text-foreground',
+                                ? 'bg-foreground text-background hover:bg-primary hover:text-primary-foreground'
+                                : 'border border-border text-muted-foreground hover:border-foreground hover:text-foreground',
                             )}
                           >
                             {action}
@@ -263,22 +243,18 @@ export const AiProductHero = defineCapsule({
                     </Card>
                   </div>
                   <div className="flex gap-3">
-                    <span className="size-8 shrink-0 rounded-full bg-muted" />
+                    <span className="size-8 shrink-0 rounded-none bg-muted" />
                     <div className="flex-1 space-y-2">
-                      <div className="h-4 w-full rounded bg-muted" />
-                      <div className="h-4 w-5/6 rounded bg-muted" />
-                      <div className="h-4 w-4/6 rounded bg-muted" />
+                      <div className="h-3.5 w-full bg-muted" />
+                      <div className="h-3.5 w-5/6 bg-muted" />
+                      <div className="h-3.5 w-4/6 bg-muted" />
                     </div>
                   </div>
                 </div>
               </Card>
               <div
                 aria-hidden="true"
-                className="absolute -bottom-6 -right-6 size-24 rounded-full bg-muted blur-2xl"
-              />
-              <div
-                aria-hidden="true"
-                className="absolute -left-6 -top-6 size-32 rounded-full bg-muted/50 blur-3xl"
+                className="pointer-events-none absolute -bottom-3 -right-3 -z-10 hidden size-full border border-primary/30 sm:block"
               />
             </div>
           </div>

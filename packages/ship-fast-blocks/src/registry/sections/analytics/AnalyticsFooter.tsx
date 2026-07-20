@@ -1,6 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { cn } from '#/lib/utils.ts'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   SiteFooter,
   FooterContent,
@@ -58,10 +60,12 @@ const DEFAULT_SOCIAL: { label: string; href?: string }[] = [
 const DEFAULT_LEGAL = ['Privacy', 'Terms', 'Cookies']
 
 /**
- * AnalyticsFooter — sharp, data-forward site footer for an analytics product,
- * composing the shared SiteFooter kit composite. Renders a bar-chart brand mark,
- * a confident tagline, social links, and four link columns (Product, Resources,
- * Company, Legal), plus a bottom bar with copyright, a short note, and legal
+ * AnalyticsFooter — Swiss data-grid site footer for an analytics product,
+ * composing the shared SiteFooter kit composite over a giant ghost brand
+ * watermark. Renders a bar-chart brand mark, a confident tagline, social links
+ * as hairline-framed mono chips, and four link columns whose titles are set as
+ * mono uppercase micro-labels with tabular indexes (Product, Resources,
+ * Company, Legal), plus a hairline bottom bar with a mono note and legal
  * links. Accepts public props to override every block. Use it as the closing
  * band of any analytics, BI, or data-product site for consistent, route-aware
  * navigation. Renders fully with no props via baked-in defaults.
@@ -69,7 +73,7 @@ const DEFAULT_LEGAL = ['Privacy', 'Terms', 'Cookies']
 export const AnalyticsFooter = defineCapsule({
   name: 'AnalyticsFooter',
   description:
-    'Sharp, data-forward site footer for an analytics product, composing the shared SiteFooter kit composite. Renders a bar-chart brand mark, a confident tagline, social links, and four link columns (Product, Resources, Company, Legal), plus a bottom bar with copyright, a short note, and legal links. Accepts public props to override every block. Use it as the closing band of any analytics, BI, or data-product site for consistent, route-aware navigation.',
+    'Swiss data-grid site footer for an analytics product, composing the shared SiteFooter kit composite over a giant ghost brand watermark. Renders a bar-chart brand mark, a confident tagline, social links as hairline-framed mono chips, and four link columns titled with mono uppercase micro-labels and tabular indexes (Product, Resources, Company, Legal), plus a hairline bottom bar with a mono note and legal links. Accepts public props to override every block. Use it as the closing band of any analytics, BI, or data-product site for consistent, route-aware navigation.',
   props: z.object({
     brand: z.string().optional(),
     tagline: z.string().optional(),
@@ -94,34 +98,64 @@ export const AnalyticsFooter = defineCapsule({
     const note = props.note ?? 'Built for teams who trust their data.'
 
     return (
-      <SiteFooter className={props.className}>
-        <FooterContent>
-          <FooterGrid>
+      <SiteFooter
+        className={cn(
+          'relative overflow-hidden border-t border-border bg-background',
+          props.className,
+        )}
+      >
+        <Watermark className="-bottom-6 left-0 text-[5rem] sm:text-[8rem] lg:text-[11rem]">
+          {brand}
+        </Watermark>
+        <FooterContent className="relative py-14">
+          <FooterGrid className="gap-0 border-l border-t border-border md:grid-cols-5">
             <FooterBrand
               brand={brand}
               brandMark={brandMark}
               brandClassName={'font-semibold tracking-tight'}
+              className="border-b border-r border-border p-6 md:col-span-1"
             >
               <FooterTagline>{tagline}</FooterTagline>
               <FooterSocial>
                 {social.map((s) => (
-                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  <FooterSocialLink
+                    key={s.label}
+                    className="border border-border px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.15em] transition-colors hover:border-foreground/40 hover:bg-muted/40"
+                  >
+                    {s.label}
+                  </FooterSocialLink>
                 ))}
               </FooterSocial>
             </FooterBrand>
-            {columns.map((col) => (
-              <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
-                <FooterColumnList>
+            {columns.map((col, i) => (
+              <FooterColumn
+                key={col.title}
+                className="border-b border-r border-border p-6"
+              >
+                <FooterColumnTitle className="flex items-baseline gap-2 font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-foreground">
+                  <MonoTag
+                    aria-hidden="true"
+                    tone="faint"
+                    className="text-[10px] tabular-nums"
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </MonoTag>
+                  {col.title}
+                </FooterColumnTitle>
+                <FooterColumnList className="mt-4">
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <li key={link}>
+                      <FooterLink className="inline-block">{link}</FooterLink>
+                    </li>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
-          <FooterBottom>
-            <FooterCopyright>{note}</FooterCopyright>
+          <FooterBottom className="border-t-0 pt-6">
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.15em]">
+              {note}
+            </FooterCopyright>
             <FooterLegal>
               {legal.map((l) => (
                 <FooterLink key={l}>{l}</FooterLink>

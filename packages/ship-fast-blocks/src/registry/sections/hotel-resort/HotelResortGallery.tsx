@@ -13,19 +13,20 @@ import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
- * HotelResortGallery — masonry photo gallery for a luxury hotel / resort & spa
- * site. A left-aligned eyebrow + thin heading + paragraph, then a responsive
- * grid where the first image spans 2x2 as a tall feature and the last two
- * images span a double column, the rest sized uniformly — an airy editorial
- * mosaic. Use to show off property, rooms, spa, dining and beach photography
- * for hotels, resorts, spa retreats, inns, or wellness destinations. Imagery
- * uses the alt-driven Image component. Renders fully with no props via baked-in
- * resort defaults.
+ * HotelResortGallery — full-bleed editorial photo mosaic for a luxury hotel /
+ * resort & spa site. An asymmetric intro row (mono eyebrow + thin serif heading
+ * on the left, supporting paragraph on the right), then a sharp-cornered
+ * responsive grid where every fifth plate widens to a cinematic double-column
+ * feature and the rest sit in a 4:3 rhythm, each tagged with a mono index
+ * numeral and zooming gently on hover — an airy editorial mosaic. Use to show
+ * off property, rooms, spa, dining and beach photography for hotels, resorts,
+ * spa retreats, inns, or wellness destinations. Imagery uses the alt-driven
+ * Image component. Renders fully with no props via baked-in resort defaults.
  */
 export const HotelResortGallery = defineCapsule({
   name: 'HotelResortGallery',
   description:
-    'Masonry photo gallery for a luxury hotel / resort & spa site: a left-aligned uppercase eyebrow + thin heading + paragraph, then a responsive grid where the first image spans 2x2 as a tall feature and the last two span a double column with the rest sized uniformly — an airy editorial mosaic. Imagery uses the alt-driven Image component. Use to show off property, rooms, spa, dining and beach photography for hotels, resorts, spa retreats, inns, or wellness destinations.',
+    'Full-bleed editorial photo mosaic for a luxury hotel / resort & spa site: an asymmetric intro row (mono eyebrow + thin serif heading on the left, supporting paragraph on the right), then a sharp-cornered responsive grid where every fifth plate widens to a cinematic double-column feature and the rest sit in a 4:3 rhythm, each tagged with a mono index numeral and zooming gently on hover. Imagery uses the alt-driven Image component. Use to show off property, rooms, spa, dining and beach photography for hotels, resorts, spa retreats, inns, or wellness destinations.',
   props: z.object({
     /** Uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -56,34 +57,52 @@ export const HotelResortGallery = defineCapsule({
         ]
 
     return (
-      <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
+      <section className={cn('pt-24 pb-24 lg:pt-28 lg:pb-28', props.className)}>
         <Container size="xl" className="px-6">
-          <SectionHeading
-            align="left"
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-2xl gap-0"
-            eyebrowClassName="mb-3 text-sm uppercase tracking-widest text-muted-foreground"
-            titleClassName="mb-4 text-3xl font-light text-foreground lg:text-4xl"
-            subtitleClassName="leading-relaxed text-muted-foreground"
-          />
+          <div className="mb-16 grid items-end gap-8 lg:grid-cols-12 lg:gap-12">
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              className="gap-3 lg:col-span-7"
+              eyebrowClassName="font-mono text-[11px] font-medium uppercase tracking-[0.22em] text-muted-foreground"
+              titleClassName="font-serif text-4xl font-normal text-foreground tracking-tight lg:text-5xl"
+            />
+            <p className="text-base leading-relaxed text-muted-foreground lg:col-span-5 lg:pb-1">
+              {description}
+            </p>
+          </div>
           <GalleryGrid>
-            <GalleryGridItems columns={3}>
+            <GalleryGridItems columns={4} className="gap-3">
               {images
                 .map((alt) => ({ alt }))
-                .map((img) => {
+                .map((img, i) => {
                   const __iv__ = img as {
                     alt: string
                     caption?: string
                     title?: string
                     location?: string
                   }
+                  const feature = i % 5 === 0
                   return (
-                    <GalleryTile key={__iv__.alt}>
+                    <GalleryTile
+                      key={__iv__.alt}
+                      className={cn(
+                        'rounded-none border-0 bg-muted',
+                        feature
+                          ? 'aspect-[16/10] sm:col-span-2'
+                          : 'aspect-[4/3]',
+                      )}
+                    >
                       <GalleryTileImage alt={__iv__.alt} />
+                      <span
+                        aria-hidden="true"
+                        className="absolute left-3 top-3 font-mono text-[11px] uppercase tracking-[0.14em] text-background/90"
+                      >
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
                       {__iv__.caption && (
-                        <GalleryTileCaption>
+                        <GalleryTileCaption className="rounded-none font-mono text-[11px] uppercase tracking-[0.12em]">
                           {__iv__.caption}
                         </GalleryTileCaption>
                       )}

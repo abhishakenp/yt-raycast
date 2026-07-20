@@ -12,21 +12,24 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
  * KidsEducationFaq — native disclosure FAQ accordion for a kids / family
- * learning platform. A centered eyebrow + heading + description intro above a
- * narrow stack of rounded muted <details> rows; each summary shows a question and
- * a chevron that rotates when open, revealing the answer beneath. Uses native
- * details/summary (no JS state). Use to answer common parent questions for
- * kids-education startups, children's e-learning platforms, tutoring services,
- * and family learning apps. Renders fully with no props via baked-in defaults.
+ * learning platform, in the playful-primary language. A mono-labeled left
+ * header under a giant ghost watermark above a narrow stack of sharp-cornered
+ * 2px-bordered <details> rows; each summary pairs a mono index numeral with the
+ * question and a chevron that rotates when open, revealing the answer beneath,
+ * and gains a hard offset token shadow when open. Uses native details/summary
+ * (no JS state). Use to answer common parent questions for kids-education
+ * startups, children's e-learning platforms, tutoring services, and family
+ * learning apps. Renders fully with no props via baked-in defaults.
  */
 export const KidsEducationFaq = defineCapsule({
   name: 'KidsEducationFaq',
   description:
-    "Native disclosure FAQ accordion for a kids / family learning platform: a centered eyebrow + heading + description intro above a narrow stack of rounded muted details rows; each summary shows a question and a chevron that rotates when open, revealing the answer beneath. Uses native details/summary (no JS state). Use to answer common parent questions for kids-education startups, children's e-learning platforms, tutoring services, and family learning apps.",
+    "Native disclosure FAQ accordion for a kids / family learning platform in the playful-primary language: a mono-labeled left header under a giant ghost watermark above a narrow stack of sharp-cornered 2px-bordered details rows; each summary pairs a mono index numeral with the question and a chevron that rotates when open, revealing the answer beneath and gaining a hard offset token shadow. Uses native details/summary (no JS state). Use to answer common parent questions for kids-education startups, children's e-learning platforms, tutoring services, and family learning apps.",
   props: z.object({
     /** Uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -81,32 +84,49 @@ export const KidsEducationFaq = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-background py-24', props.className)}>
-        <Container size="sm">
+      <section
+        className={cn(
+          'relative overflow-hidden bg-background py-20 lg:py-24',
+          props.className,
+        )}
+      >
+        <Watermark className="-right-4 top-8 text-[8rem] sm:text-[12rem] lg:text-[16rem]">
+          FAQ
+        </Watermark>
+        <Container size="sm" className="relative">
           <SectionHeading
+            align="left"
             eyebrow={eyebrow}
             title={heading}
             subtitle={description}
-            className="mb-16  gap-0"
-            eyebrowClassName="mb-3 inline-block text-sm font-semibold tracking-wider text-secondary"
-            titleClassName="mb-6 text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl"
+            className="mb-12 max-w-2xl gap-0"
+            eyebrowClassName="mb-3 inline-block font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground"
+            titleClassName="mb-5 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl"
             subtitleClassName="text-lg text-muted-foreground"
           />
 
-          <FaqAccordion>
-            {items.map((item) => (
+          <FaqAccordion className="space-y-4">
+            {items.map((item, i) => (
               <FaqItem
                 key={item.question}
                 variant="muted"
-                className="rounded-2xl bg-muted/40"
+                className="rounded-none border-2 border-foreground bg-card transition-shadow duration-150 open:shadow-[4px_4px_0_0] open:shadow-foreground"
               >
-                <FaqQuestion className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground">
-                    {item.question}
-                  </h3>
-                  <FaqQuestionIcon />
+                <FaqQuestion className="gap-4 p-5">
+                  <span className="flex items-start gap-3">
+                    <span
+                      aria-hidden="true"
+                      className="mt-0.5 shrink-0 font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-primary"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <h3 className="text-base font-extrabold tracking-tight text-foreground">
+                      {item.question}
+                    </h3>
+                  </span>
+                  <FaqQuestionIcon className="text-foreground" />
                 </FaqQuestion>
-                <FaqAnswer asChild className="px-6 pb-6">
+                <FaqAnswer asChild className="px-5 pb-5 pl-[3.1rem]">
                   <div>{item.answer}</div>
                 </FaqAnswer>
               </FaqItem>

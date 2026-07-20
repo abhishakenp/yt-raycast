@@ -644,7 +644,9 @@ describe('Navfix', () => {
         'fetch',
         vi.fn(async (_url, init?) => {
           const body = JSON.parse(String(init?.body ?? '{}'))
-          const userMsg = body.messages?.find((m: { role?: string; content?: string }) => m.role === 'user')
+          const userMsg = body.messages?.find(
+            (m: { role?: string; content?: string }) => m.role === 'user',
+          )
           calls.push(userMsg?.content ?? '')
           return {
             ok: true,

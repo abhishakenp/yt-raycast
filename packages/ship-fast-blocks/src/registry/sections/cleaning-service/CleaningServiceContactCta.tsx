@@ -1,12 +1,14 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { cn } from '#/lib/utils.ts'
 import {
   CtaBand,
   CtaBandInner,
   CtaBandTitle,
   CtaBandSubtitle,
 } from '#/section-kit/CtaBand.tsx'
+import { DotGrid, Watermark } from '#/section-kit/Decor.tsx'
 import {
   LocalServiceBookingButton,
   LocalServiceMutationSpinner,
@@ -14,12 +16,23 @@ import {
 import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
- * CleaningServiceContactCta — a big closing book-now CTA section for a home-cleaning / maid-service landing page. A centered heading + supporting paragraph inside a rounded-3xl primary-colored card with a subtle dot-pattern background overlay, followed by dual pill CTAs (filled primary-foreground + outlined secondary) and a cancellation-note line beneath. Every CTA routes through section-kit route links. Use as the final conversion push for residential cleaning companies, maid services, housekeeping platforms, or any local home-service brand. Renders fully with no props via baked-in "PureSpace" defaults.
+ * CleaningServiceContactCta — playful-Swiss closing book-now block for a
+ * home-cleaning / maid-service landing page. On a muted band sits a square
+ * bright-primary card with a 2px border, a big hard offset shadow, a faint
+ * dot-grid overlay, and a giant rotated ghost sparkle watermark: an oversized
+ * extrabold heading and supporting paragraph lead into dual square CTAs
+ * (filled primary-foreground + outlined with phone icon), both with press
+ * feedback, and a mono checkbox-square cancellation note beneath. A small
+ * rotated "✓ same-day" chip sticks out of the card's top edge. Every CTA
+ * routes through section-kit route links. Use as the final conversion push for
+ * residential cleaning companies, maid services, housekeeping platforms, or
+ * any local home-service brand. Renders fully with no props via baked-in
+ * "PureSpace" defaults.
  */
 export const CleaningServiceContactCta = defineCapsule({
   name: 'CleaningServiceContactCta',
   description:
-    'Big closing book-now CTA section for a home-cleaning / maid-service landing page: centered heading + supporting paragraph inside a rounded-3xl primary-colored card with a subtle dot-pattern background overlay, followed by dual pill CTAs (filled primary-foreground + outlined secondary with phone icon) and a cancellation-note line beneath. CTAs route through section-kit route links. Use as the final conversion push for residential cleaning, maid services, housekeeping, or local home-service brands.',
+    'Playful-Swiss closing book-now block for a home-cleaning / maid-service landing page: a square bright-primary card on a muted band with 2px border, big hard offset shadow, faint dot-grid overlay, giant rotated ghost sparkle watermark, and a rotated chip sticking out of its top edge. Oversized extrabold heading + supporting paragraph, dual square CTAs (filled primary-foreground + outlined with phone icon) with press feedback, and a mono checkbox-square cancellation note beneath. CTAs route through section-kit route links. Use as the final conversion push for residential cleaning, maid services, housekeeping, or local home-service brands.',
   props: z.object({
     /** Section heading inside the colored card. */
     heading: z.string().optional(),
@@ -79,37 +92,43 @@ export const CleaningServiceContactCta = defineCapsule({
     )
 
     return (
-      <CtaBand tone="muted" className={props.className}>
-        <CtaBandInner className="max-w-5xl rounded-3xl bg-primary p-8 lg:p-16">
-          <CtaBandTitle className="text-primary-foreground">
+      <CtaBand
+        tone="muted"
+        className={cn('px-4 py-16 sm:px-6 lg:px-8 lg:py-24', props.className)}
+      >
+        <CtaBandInner className="relative max-w-5xl rounded-none border-2 border-foreground bg-primary p-8 shadow-[10px_10px_0_0] shadow-foreground lg:p-14">
+          <DotGrid
+            density="tight"
+            className="inset-0 text-primary-foreground/15"
+          />
+          <Watermark className="-right-6 -top-8 rotate-12 text-[9rem] text-primary-foreground/10 sm:text-[13rem]">
+            ✱
+          </Watermark>
+          <span
+            aria-hidden="true"
+            className="absolute -top-4 right-8 inline-flex rotate-3 items-center gap-1.5 border-2 border-foreground bg-background px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-foreground"
+          >
+            <svg
+              width="10"
+              height="10"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3.5"
+              strokeLinecap="square"
+              className="text-primary"
+            >
+              <path d="M3 11l4 4 10-11" />
+            </svg>
+            same-day
+          </span>
+          <CtaBandTitle className="relative text-4xl font-extrabold tracking-tight text-primary-foreground sm:text-5xl">
             {heading}
           </CtaBandTitle>
-          <CtaBandSubtitle className="text-primary-foreground/80">
+          <CtaBandSubtitle className="relative text-primary-foreground/85">
             {description}
           </CtaBandSubtitle>
-          <div aria-hidden="true" className="absolute inset-0 -z-10 opacity-10">
-            <svg
-              className="size-full"
-              viewBox="0 0 100 100"
-              preserveAspectRatio="none"
-            >
-              <pattern
-                id="cleaning-service-cta-grid"
-                width="10"
-                height="10"
-                patternUnits="userSpaceOnUse"
-              >
-                <circle cx="1" cy="1" r="1" fill="currentColor" />
-              </pattern>
-              <rect
-                width="100"
-                height="100"
-                fill="url(#cleaning-service-cta-grid)"
-                className="text-primary-foreground"
-              />
-            </svg>
-          </div>
-          <div className="flex flex-col justify-center gap-4 sm:flex-row">
+          <div className="relative grid w-full grid-cols-1 justify-center gap-4 sm:flex sm:w-auto sm:flex-row">
             <LocalServiceBookingButton
               lakebed={lakebed}
               intentLabel={primaryCta}
@@ -118,7 +137,7 @@ export const CleaningServiceContactCta = defineCapsule({
               pendingChildren={
                 <LocalServiceMutationSpinner className="text-primary" />
               }
-              className="inline-flex items-center justify-center rounded-full bg-primary-foreground px-8 py-4 text-base font-semibold text-primary shadow-lg transition-colors hover:bg-primary-foreground/90 disabled:pointer-events-none disabled:opacity-70"
+              className="inline-flex items-center justify-center rounded-none border-2 border-foreground bg-primary-foreground px-7 py-3.5 text-base font-bold text-primary shadow-[4px_4px_0_0] shadow-foreground transition-all duration-150 hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:pointer-events-none disabled:opacity-70"
             >
               {primaryCta}
               <ArrowRight className="ml-2 size-5" />
@@ -131,13 +150,31 @@ export const CleaningServiceContactCta = defineCapsule({
               pendingChildren={
                 <LocalServiceMutationSpinner className="text-primary-foreground" />
               }
-              className="inline-flex items-center justify-center rounded-full border border-primary-foreground/40 bg-primary px-8 py-4 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10 disabled:pointer-events-none disabled:opacity-70"
+              className="inline-flex items-center justify-center rounded-none border-2 border-primary-foreground/50 bg-primary px-7 py-3.5 text-base font-bold text-primary-foreground transition-all duration-150 hover:border-primary-foreground hover:bg-primary-foreground/10 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
             >
               <PhoneIcon className="mr-2 size-5" />
               {secondaryCta}
             </LocalServiceBookingButton>
           </div>
-          <p className="text-sm text-primary-foreground/70">{note}</p>
+          <p className="relative flex items-center gap-2.5 font-mono text-[11px] uppercase tracking-[0.12em] text-primary-foreground/80">
+            <span
+              aria-hidden="true"
+              className="grid size-4 shrink-0 place-items-center border-2 border-primary-foreground/60 text-primary-foreground"
+            >
+              <svg
+                width="9"
+                height="9"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3.5"
+                strokeLinecap="square"
+              >
+                <path d="M3 11l4 4 10-11" />
+              </svg>
+            </span>
+            {note}
+          </p>
         </CtaBandInner>
       </CtaBand>
     )

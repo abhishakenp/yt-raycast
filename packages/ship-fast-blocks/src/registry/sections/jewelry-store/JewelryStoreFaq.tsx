@@ -13,18 +13,19 @@ import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
- * JewelryStoreFaq — accordion FAQ for a luxury jewelry maison. A centered gold
- * eyebrow + serif heading sit above a narrow column of native <details>/<summary>
- * accordions on muted surfaces, each with a serif question, a gold chevron that
- * rotates open, and a relaxed muted answer. Use to address custom design,
- * certifications, warranty, shipping, in-person viewing, and financing questions
- * for fine jewelers, diamond houses, or high-jewelry maisons. Renders fully with
- * no props via baked-in defaults.
+ * JewelryStoreFaq — editorial FAQ for a luxury jewelry maison. An asymmetric
+ * 4:8 split pairs a left rail (mono micro-label kicker + serif heading, sticky on
+ * desktop) with a right column of hairline-divided native <details>/<summary>
+ * ledger rows, each with a serif question, a gold chevron that rotates open, and
+ * a relaxed muted answer. Use to address custom design, certifications, warranty,
+ * shipping, in-person viewing, and financing questions for fine jewelers, diamond
+ * houses, or high-jewelry maisons. Renders fully with no props via baked-in
+ * defaults.
  */
 export const JewelryStoreFaq = defineCapsule({
   name: 'JewelryStoreFaq',
   description:
-    'Accordion FAQ for a luxury jewelry maison: a centered gold eyebrow + serif heading above a narrow column of native details/summary accordions on muted surfaces, each with a serif question, a gold chevron that rotates open, and a relaxed muted answer. Use to address custom design, certifications, warranty, shipping, in-person viewing, and financing questions for fine jewelers, diamond houses, or high-jewelry maisons.',
+    'Editorial FAQ for a luxury jewelry maison: an asymmetric 4:8 split pairing a left rail (mono micro-label kicker + serif heading, sticky on desktop) with a right column of hairline-divided native details/summary ledger rows, each with a serif question, a gold chevron that rotates open, and a relaxed muted answer. Use to address custom design, certifications, warranty, shipping, in-person viewing, and financing questions for fine jewelers, diamond houses, or high-jewelry maisons.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -78,32 +79,33 @@ export const JewelryStoreFaq = defineCapsule({
           props.className,
         )}
       >
-        <div className="w-full px-6 lg:px-12 xl:px-20">
-          <Container size="sm">
+        <Container>
+          <div className="grid gap-12 lg:grid-cols-[4fr_8fr] lg:gap-20">
             <SectionHeading
+              align="left"
               eyebrow={eyebrow}
               title={heading}
-              className="mb-16 gap-0"
-              eyebrowClassName="mb-4 text-sm uppercase tracking-[0.3em] text-primary"
-              titleClassName="font-serif text-4xl text-foreground lg:text-5xl"
+              className="gap-0 lg:sticky lg:top-28 lg:self-start"
+              eyebrowClassName="mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.24em] text-muted-foreground"
+              titleClassName="font-serif text-4xl font-normal tracking-tight text-foreground lg:text-5xl"
             />
-            <FaqAccordion>
+            <FaqAccordion className="space-y-0 divide-y divide-border border-y border-border">
               {items.map((f) => (
-                <FaqItem key={f.question} variant="muted">
-                  <FaqQuestion className="p-6">
-                    <span className="font-serif text-lg text-foreground">
+                <FaqItem key={f.question} variant="divided" className="py-2">
+                  <FaqQuestion className="py-5">
+                    <span className="font-serif text-lg font-normal text-foreground">
                       {f.question}
                     </span>
                     <FaqQuestionIcon className="text-primary" />
                   </FaqQuestion>
-                  <FaqAnswer asChild className="px-6 pb-6 leading-relaxed">
+                  <FaqAnswer asChild className="pb-6 leading-relaxed">
                     <div>{f.answer}</div>
                   </FaqAnswer>
                 </FaqItem>
               ))}
             </FaqAccordion>
-          </Container>
-        </div>
+          </div>
+        </Container>
       </section>
     )
   },

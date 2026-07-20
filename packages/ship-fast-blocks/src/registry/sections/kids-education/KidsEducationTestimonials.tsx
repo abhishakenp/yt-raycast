@@ -4,14 +4,17 @@ import { cn } from '#/lib/utils.ts'
 
 /**
  * KidsEducationTestimonials — parent & teacher testimonial grid for a kids /
- * family learning platform. A centered eyebrow + heading + description intro on a
- * muted band above a responsive 3-up grid of rounded white quote cards; each card
- * has a 5-star rating row, a quote, and a headshot avatar with name + role. Use
- * as social proof for kids-education startups, children's e-learning platforms,
- * tutoring services, and family learning apps. Renders fully with no props via
- * baked-in defaults.
+ * family learning platform, in the playful-primary language. On a muted band
+ * under a giant ghost quotation watermark: an asymmetric mono-labeled header
+ * (eyebrow + heading left, index meta right) above a staggered 3-up grid of
+ * chunky sharp-cornered 2px-bordered quote cards; each card carries an oversized
+ * ghost quote mark, the quote, and a bold name with a mono role label, lifting
+ * on a hard offset token shadow on hover. Use as social proof for kids-education
+ * startups, children's e-learning platforms, tutoring services, and family
+ * learning apps. Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   TestimonialGrid,
@@ -24,7 +27,7 @@ import {
 export const KidsEducationTestimonials = defineCapsule({
   name: 'KidsEducationTestimonials',
   description:
-    "Parent & teacher testimonial grid for a kids / family learning platform: a centered eyebrow + heading + description intro on a muted band above a responsive 3-up grid of rounded white quote cards; each card has a 5-star rating row, a quote, and a headshot avatar with name + role. Use as social proof for kids-education startups, children's e-learning platforms, tutoring services, and family learning apps.",
+    "Parent & teacher testimonial grid for a kids / family learning platform in the playful-primary language: on a muted band under a giant ghost quotation watermark, an asymmetric mono-labeled header (eyebrow + heading left, index meta right) above a staggered 3-up grid of chunky sharp-cornered 2px-bordered quote cards, each with an oversized ghost quote mark, the quote, and a bold name with a mono role label, lifting on a hard offset token shadow on hover. Use as social proof for kids-education startups, children's e-learning platforms, tutoring services, and family learning apps.",
   props: z.object({
     /** Uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -80,20 +83,37 @@ export const KidsEducationTestimonials = defineCapsule({
           },
         ]
     return (
-      <section className={cn('bg-muted/40 py-24', props.className)}>
-        <Container>
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            eyebrowClassName="mb-3 inline-block text-sm font-semibold tracking-wider text-secondary"
-            titleClassName="mb-6 text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
+      <section
+        className={cn(
+          'relative overflow-hidden bg-muted/40 py-20 lg:py-24',
+          props.className,
+        )}
+      >
+        <Watermark className="-left-4 top-4 text-[9rem] leading-none sm:text-[13rem] lg:text-[17rem]">
+          &ldquo;
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-14 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-0"
+              eyebrowClassName="mb-3 inline-block font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground"
+              titleClassName="mb-5 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl"
+              subtitleClassName="text-lg text-muted-foreground"
+            />
+            <MonoTag
+              aria-hidden="true"
+              className="shrink-0 text-muted-foreground/60"
+            >
+              [ 05 ] loved by families
+            </MonoTag>
+          </div>
 
           <TestimonialGrid columns={3}>
-            {items.map((t) => {
+            {items.map((t, i) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -104,12 +124,28 @@ export const KidsEducationTestimonials = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
+                <TestimonialCard
+                  key={__iv__.name}
+                  className={cn(
+                    'relative gap-5 rounded-none border-2 border-foreground bg-card p-6 shadow-[5px_5px_0_0] shadow-transparent transition-[transform,box-shadow] duration-150 hover:-translate-y-1 hover:border-foreground hover:shadow-foreground motion-reduce:transform-none',
+                    i % 3 === 1 && 'lg:mt-10',
+                  )}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="font-mono text-5xl font-extrabold leading-none text-primary/25"
+                  >
+                    &ldquo;
+                  </span>
+                  <TestimonialQuote className="text-base leading-relaxed text-foreground">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="mt-auto flex-col items-start gap-1 border-t-2 border-border pt-4">
+                    <TestimonialName className="text-sm font-extrabold uppercase tracking-tight text-foreground">
+                      {__iv__.name}
+                    </TestimonialName>
                     {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
+                      <TestimonialMeta className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
                         {__iv__.role || __iv__.company || __iv__.meta}
                       </TestimonialMeta>
                     )}

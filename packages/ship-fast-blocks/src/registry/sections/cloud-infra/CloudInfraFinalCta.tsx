@@ -7,6 +7,7 @@ import {
   CtaBandTitle,
   CtaBandSubtitle,
 } from '#/section-kit/CtaBand.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -14,16 +15,20 @@ import {
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
- * CloudInfraFinalCta — dark inverted final call-to-action band for a cloud-
- * infrastructure / developer-platform SaaS landing page. A centered heading + description
- * on a primary background with primary-foreground text, followed by dual CTAs
- * (dark filled primary + ghost outlined secondary) and a row of trust checkmarks.
- * CTAs route through section-kit route links. Renders fully on zero arguments.
+ * CloudInfraFinalCta — terminal-industrial inverted closing band for a cloud-
+ * infrastructure / developer-platform SaaS landing page. A full
+ * bg-foreground/text-background inversion band that cuts in on a slanted top
+ * seam (opposite direction to the stats band), with a giant ghost `>_`
+ * watermark behind. Centered mono `[ deploy ]` meta line, extrabold display
+ * heading, supporting paragraph, dual square CTAs with press feedback
+ * (background fill + hairline ghost outline), and a mono trust row with
+ * primary status squares. CTAs route through section-kit route links. Renders
+ * fully on zero arguments.
  */
 export const CloudInfraFinalCta = defineCapsule({
   name: 'CloudInfraFinalCta',
   description:
-    'Dark inverted final call-to-action band for a cloud-infrastructure / developer-platform SaaS landing page backed by shared Lakebed conversion state: a centered heading plus description on a primary background, dual scoped fullstack CTAs, and a row of trust checkmarks. Use as the closing conversion band for cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',
+    'Terminal-industrial inverted closing band for a cloud-infrastructure / developer-platform SaaS landing page backed by shared Lakebed conversion state: a bg-foreground inversion band with a slanted top seam and giant ghost watermark, centered mono meta line, extrabold display heading, supporting paragraph, dual scoped fullstack square CTAs with press feedback, and a mono trust row with primary status squares. Use as the closing conversion band for cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -49,21 +54,6 @@ export const CloudInfraFinalCta = defineCapsule({
       ? props.trust
       : ['$500 free credits', 'No credit card required', 'Cancel anytime']
 
-    const Check = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M5 13l4 4L19 7" />
-      </svg>
-    )
-
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -82,11 +72,30 @@ export const CloudInfraFinalCta = defineCapsule({
     )
 
     return (
-      <CtaBand tone="primary" className={props.className}>
-        <CtaBandInner>
-          <CtaBandTitle>{heading}</CtaBandTitle>
-          <CtaBandSubtitle>{description}</CtaBandSubtitle>
-          <div className="flex flex-wrap justify-center gap-4">
+      <CtaBand
+        tone="primary"
+        className={
+          'relative overflow-hidden bg-foreground pt-10 text-background [clip-path:polygon(0_0,100%_2.5rem,100%_100%,0_100%)] sm:pt-14' +
+          (props.className ? ' ' + props.className : '')
+        }
+      >
+        <Watermark className="-bottom-8 -right-2 font-mono text-[8rem] text-background/[0.05] sm:text-[12rem] lg:text-[16rem]">
+          &gt;_
+        </Watermark>
+        <CtaBandInner className="relative gap-6 py-16 sm:py-20">
+          <p
+            aria-hidden="true"
+            className="font-mono text-[11px] uppercase tracking-[0.2em] text-background/40"
+          >
+            [ deploy ] ship it
+          </p>
+          <CtaBandTitle className="text-3xl font-extrabold tracking-tight text-background sm:text-5xl">
+            {heading}
+          </CtaBandTitle>
+          <CtaBandSubtitle className="text-background/60 opacity-100">
+            {description}
+          </CtaBandSubtitle>
+          <div className="flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row sm:flex-wrap">
             <SaasPlanActionButton
               lakebed={lakebed}
               intentLabel={primaryCta}
@@ -98,10 +107,10 @@ export const CloudInfraFinalCta = defineCapsule({
                   Starting
                 </>
               }
-              className="inline-flex items-center gap-2 rounded-lg bg-background px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-background/90 disabled:pointer-events-none disabled:opacity-70"
+              className="inline-flex items-center justify-center gap-2 rounded-none bg-background px-6 py-3 font-mono text-sm font-semibold uppercase tracking-wide text-foreground transition-colors hover:bg-background/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
             >
               {primaryCta}
-              <ArrowRight className="ml-2 size-5" />
+              <ArrowRight className="size-4" />
             </SaasPlanActionButton>
             <SaasPlanActionButton
               lakebed={lakebed}
@@ -114,15 +123,21 @@ export const CloudInfraFinalCta = defineCapsule({
                   Sending
                 </>
               }
-              className="inline-flex items-center gap-2 rounded-lg border border-primary-foreground/40 px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary-foreground/10 disabled:pointer-events-none disabled:opacity-70"
+              className="inline-flex items-center justify-center gap-2 rounded-none border border-background/30 px-6 py-3 font-mono text-sm font-semibold uppercase tracking-wide text-background transition-colors hover:bg-background/10 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
             >
               {secondaryCta}
             </SaasPlanActionButton>
           </div>
-          <div className="flex flex-wrap justify-center gap-8 text-sm text-primary-foreground/70">
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
             {trust.map((t) => (
-              <div key={t} className="flex items-center gap-2">
-                <Check className="size-5 text-chart-2" />
+              <div
+                key={t}
+                className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-background/60"
+              >
+                <span
+                  aria-hidden="true"
+                  className="size-1.5 bg-background/70"
+                />
                 <span>{t}</span>
               </div>
             ))}

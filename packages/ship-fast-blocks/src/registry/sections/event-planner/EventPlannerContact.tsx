@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   ContactForm,
   ContactFormField,
@@ -20,19 +19,22 @@ import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * EventPlannerContact — dark split contact section with a full inquiry form. A
- * primary-colored two-column band: a left details column (uppercase eyebrow, thin
- * light heading, lede, and click-to-email / click-to-call buttons plus an address
- * row with inline icons) beside a right rounded card form (first/last name, email,
- * event-type + guest-count selects, event date, vision textarea, and a full-width
- * primary submit pill). Contact buttons route through section-kit route links; submit writes
- * a Lakebed inquiry. Use as the booking/inquiry section above the footer for
- * event/wedding planners or premium service businesses.
+ * EventPlannerContact — kinetic-poster "RSVP invitation" contact section with a
+ * full inquiry form. An asymmetric two-column band over a giant faint "RSVP"
+ * watermark: a left details column (a mono metadata rail eyebrow, a giant
+ * tight-tracked heading, a relaxed lede, and squared click-to-email /
+ * click-to-call rows plus an address row with inline icons) beside a right
+ * hard-framed invitation card form (first/last name, email, event-type +
+ * guest-count selects, event date, vision textarea, and a full-width squared
+ * ticket-stub submit with press feedback), all with hairline rounded-none inputs.
+ * Contact buttons route through section-kit route links; submit writes a Lakebed
+ * inquiry. Use as the booking/inquiry section above the footer for event/wedding
+ * planners or premium service businesses.
  */
 export const EventPlannerContact = defineCapsule({
   name: 'EventPlannerContact',
   description:
-    'Dark split contact section with a full Lakebed inquiry form: a primary-colored two-column band with a left details column (uppercase eyebrow, thin light heading, lede, click-to-email / click-to-call buttons and an address row with inline icons) beside a right rounded card form (first/last name, email, event-type and guest-count selects, event date, vision textarea, and a full-width primary submit pill). Contact buttons route through section-kit route links; submit writes a shared inquiry record. Use as the booking/inquiry section above the footer for event/wedding planners, gala organizers, or premium service businesses.',
+    'Kinetic-poster "RSVP invitation" contact section with a full Lakebed inquiry form: an asymmetric two-column band over a giant faint "RSVP" watermark with a left details column (a mono metadata rail eyebrow, a giant tight-tracked heading, a relaxed lede, squared click-to-email / click-to-call rows and an address row with inline icons) beside a right hard-framed invitation card form (first/last name, email, event-type and guest-count selects, event date, vision textarea, and a full-width squared ticket-stub submit with press feedback), all with hairline rounded-none inputs. Contact buttons route through section-kit route links; submit writes a shared inquiry record. Use as the booking/inquiry section above the footer for event/wedding planners, gala organizers, or premium service businesses.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -85,35 +87,51 @@ export const EventPlannerContact = defineCapsule({
     })
 
     const inputCls =
-      'w-full rounded-lg border border-input bg-background px-4 py-3 text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-transparent focus:ring-2 focus:ring-ring'
+      'w-full rounded-none border-2 border-input bg-background px-4 py-3 text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-foreground focus:ring-2 focus:ring-ring'
 
     return (
       <section
         className={cn(
-          'bg-primary px-4 py-20 sm:px-6 lg:px-8 lg:py-28',
+          'relative overflow-hidden bg-background px-4 py-20 sm:px-6 lg:px-8 lg:py-28',
           props.className,
         )}
       >
-        <Container size="xl">
-          <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
-            <div>
-              <SectionHeading
-                eyebrow={contactEyebrow}
-                title={contactHeading}
-                subtitle={contactDesc}
-                align="left"
-                eyebrowClassName="text-primary-foreground/70 tracking-widest"
-                titleClassName="text-3xl font-light text-primary-foreground sm:text-4xl lg:text-5xl"
-                subtitleClassName="text-lg leading-relaxed text-primary-foreground/80"
-                className="mb-8 gap-4"
-              />
-              <div className="space-y-4 text-primary-foreground/80">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+        >
+          <span className="absolute -left-4 bottom-0 select-none font-serif italic leading-none tracking-tighter text-foreground/[0.04] text-[9rem] sm:text-[14rem] lg:text-[19rem]">
+            RSVP
+          </span>
+        </div>
+        <Container size="xl" className="relative">
+          <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-5">
+              <div className="mb-8">
+                <div className="flex items-center gap-4">
+                  <span
+                    aria-hidden="true"
+                    className="size-1.5 shrink-0 bg-primary"
+                  />
+                  <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                    {contactEyebrow}
+                  </span>
+                  <span aria-hidden="true" className="h-px flex-1 bg-border" />
+                </div>
+                <h2 className="mt-6 text-4xl font-extrabold leading-[0.95] tracking-tighter text-foreground text-balance sm:text-5xl lg:text-6xl">
+                  {contactHeading}
+                </h2>
+                <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
+                  {contactDesc}
+                </p>
+              </div>
+              <div className="space-y-3 text-foreground/80">
                 <NavbarRouteLink
-                  className="flex items-center gap-4 text-left transition-colors hover:text-primary-foreground"
+                  className="flex items-center gap-4 rounded-none border-2 border-foreground/15 px-4 py-3 text-left transition-colors duration-150 hover:border-foreground/40 hover:text-foreground"
                   href={contactEmail}
                 >
                   <svg
-                    className="size-5 text-primary-foreground/70"
+                    className="size-5 text-primary"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -129,11 +147,11 @@ export const EventPlannerContact = defineCapsule({
                   <span>{contactEmail}</span>
                 </NavbarRouteLink>
                 <NavbarRouteLink
-                  className="flex items-center gap-4 text-left transition-colors hover:text-primary-foreground"
+                  className="flex items-center gap-4 rounded-none border-2 border-foreground/15 px-4 py-3 text-left transition-colors duration-150 hover:border-foreground/40 hover:text-foreground"
                   href={contactPhone}
                 >
                   <svg
-                    className="size-5 text-primary-foreground/70"
+                    className="size-5 text-primary"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -148,9 +166,9 @@ export const EventPlannerContact = defineCapsule({
                   </svg>
                   <span>{contactPhone}</span>
                 </NavbarRouteLink>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 rounded-none border-2 border-foreground/15 px-4 py-3">
                   <svg
-                    className="size-5 shrink-0 text-primary-foreground/70"
+                    className="size-5 shrink-0 text-primary"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -175,7 +193,7 @@ export const EventPlannerContact = defineCapsule({
             </div>
             <ContactForm
               variant="card"
-              className="rounded-2xl bg-card p-8 lg:p-10"
+              className="rounded-none border-2 border-foreground bg-card p-8 shadow-[8px_8px_0_0] shadow-primary/30 lg:col-span-7 lg:p-10"
               onSubmit={inquiry.submitForm}
             >
               <div className="space-y-6">
@@ -301,7 +319,7 @@ export const EventPlannerContact = defineCapsule({
                   type="submit"
                   aria-busy={inquiry.isPending}
                   disabled={inquiry.isPending}
-                  className="w-full rounded-full bg-primary px-8 py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+                  className="inline-flex w-full items-center justify-center rounded-none border-2 border-foreground bg-primary px-8 py-4 font-semibold text-primary-foreground shadow-[4px_4px_0_0] shadow-foreground transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0] active:translate-y-0 active:shadow-[2px_2px_0_0] disabled:pointer-events-none disabled:opacity-70"
                 >
                   {inquiry.isPending ? 'Sending' : contactSubmit}
                 </ContactFormSubmit>

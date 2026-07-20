@@ -3,12 +3,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * FurnitureStoreFeatures — a centered guarantees / value-prop grid. A padded
- * section with a centered eyebrow + heading above a 4-up grid (1/2/4 columns
- * responsive) of items, each a centered circular muted icon tile over a title and
- * a short supporting paragraph. Decorative outline icons rotate through a baked-in
- * set (check / clock / cube / refresh) tinted with the primary token. Use to
- * showcase store guarantees, perks, or why-choose-us value props for furniture,
+ * FurnitureStoreFeatures — an editorial guarantees / value-prop ledger. A padded
+ * section with an asymmetric left-aligned mono index eyebrow + heading above a
+ * collapsed-hairline 4-up grid (1/2/4 columns responsive) of guarantee cells;
+ * each rounded-none cell carries a giant mono index numeral, a title, and a
+ * short supporting paragraph — a museum-label ledger, not icon-tile cards. An
+ * optional icon slot still renders when a caller supplies one. Use to showcase
+ * store guarantees, perks, or why-choose-us value props for furniture,
  * home-decor, interiors, or any warm retail brand. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
@@ -23,7 +24,7 @@ import {
 export const FurnitureStoreFeatures = defineCapsule({
   name: 'FurnitureStoreFeatures',
   description:
-    'Centered guarantees / value-prop grid: a padded section with a centered eyebrow + heading above a 4-up grid (1/2/4 columns responsive) of items, each a centered circular muted icon tile over a title and short paragraph; decorative outline icons rotate through a baked-in check / clock / cube / refresh set tinted primary. Use to showcase store guarantees, perks, or why-choose-us value props for furniture, home-decor, interiors, or any warm retail brand.',
+    'Editorial guarantees / value-prop ledger: a padded section with an asymmetric left-aligned mono index eyebrow + heading above a collapsed-hairline 4-up grid (1/2/4 columns responsive) of rounded-none guarantee cells, each carrying a giant mono index numeral, a title, and a short paragraph — a museum-label ledger, not icon-tile cards; an optional icon slot still renders when a caller supplies one. Use to showcase store guarantees, perks, or why-choose-us value props for furniture, home-decor, interiors, or any warm retail brand.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -71,15 +72,16 @@ export const FurnitureStoreFeatures = defineCapsule({
       >
         <Container>
           <SectionHeading
+            align="left"
             eyebrow={eyebrow}
             title={heading}
             titleId="furniture-features-heading"
-            className="mb-12 lg:mb-16 gap-0"
-            eyebrowClassName="mb-3 text-sm font-medium uppercase tracking-widest text-muted-foreground"
-            titleClassName="text-3xl font-medium lg:text-4xl"
+            className="mb-12 gap-0 lg:mb-16"
+            eyebrowClassName="mb-3 font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground"
+            titleClassName="text-3xl font-medium tracking-tight lg:text-4xl"
           />
-          <FeatureGrid columns={4}>
-            {items.map((f) => {
+          <FeatureGrid columns={4} className="border-l border-t border-border">
+            {items.map((f, i) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -90,10 +92,28 @@ export const FurnitureStoreFeatures = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
-                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                <FeatureCard
+                  key={__iv__.title}
+                  className="gap-4 rounded-none border-0 border-b border-r border-border bg-transparent p-6 transition-none hover:translate-y-0 hover:border-border sm:p-8"
+                >
+                  {__iv__.icon ? (
+                    <FeatureIcon className="rounded-none">
+                      {__iv__.icon}
+                    </FeatureIcon>
+                  ) : (
+                    <span
+                      aria-hidden="true"
+                      className="font-mono text-3xl font-semibold tabular-nums tracking-tight text-muted-foreground/40"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                  )}
+                  <FeatureTitle className="text-base font-semibold tracking-tight">
+                    {__iv__.title}
+                  </FeatureTitle>
+                  <FeatureDescription className="leading-relaxed">
+                    {__iv__.description}
+                  </FeatureDescription>
                 </FeatureCard>
               )
             })}

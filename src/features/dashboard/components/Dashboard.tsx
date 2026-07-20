@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { useCanGoBack, useNavigate, useRouter } from '@tanstack/react-router'
 import { useMutation, useQuery } from 'convex/react'
 import type { CSSProperties, ReactNode } from 'react'
 import {
@@ -391,6 +391,17 @@ const ToolPopoverFallback = () => (
 )
 
 function MissingProjectState() {
+  const canGoBack = useCanGoBack()
+  const navigate = useNavigate()
+  const router = useRouter()
+  const handleBackClick = useCallback(() => {
+    if (canGoBack) {
+      router.history.back()
+      return
+    }
+    void navigate({ to: '/' })
+  }, [canGoBack, navigate, router])
+
   return (
     <div
       className="grid h-full min-h-[480px] place-items-center bg-[#05070c] px-6 text-center"
@@ -408,18 +419,30 @@ function MissingProjectState() {
           It may have been deleted while resetting the public gallery. Create a
           new website from the home page to start fresh.
         </p>
-        <Link
-          to="/"
+        <button
+          type="button"
+          onClick={handleBackClick}
           className="mt-6 inline-flex h-10 items-center justify-center rounded-full bg-cyan-300 px-5 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-px"
         >
-          Back to home
-        </Link>
+          Back
+        </button>
       </div>
     </div>
   )
 }
 
 function GenerationFailureState({ errorMessage }: { errorMessage: string }) {
+  const canGoBack = useCanGoBack()
+  const navigate = useNavigate()
+  const router = useRouter()
+  const handleBackClick = useCallback(() => {
+    if (canGoBack) {
+      router.history.back()
+      return
+    }
+    void navigate({ to: '/' })
+  }, [canGoBack, navigate, router])
+
   return (
     <div
       className="grid h-full min-h-[480px] place-items-center bg-[#05070c] px-6 text-center"
@@ -434,12 +457,13 @@ function GenerationFailureState({ errorMessage }: { errorMessage: string }) {
           We couldn&apos;t finish building this website.
         </h1>
         <p className="mt-3 text-sm leading-6 text-white/56">{errorMessage}</p>
-        <Link
-          to="/"
+        <button
+          type="button"
+          onClick={handleBackClick}
           className="mt-6 inline-flex h-10 items-center justify-center rounded-full bg-cyan-300 px-5 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-px"
         >
-          Back to home
-        </Link>
+          Back
+        </button>
       </div>
     </div>
   )
@@ -973,9 +997,17 @@ export function Dashboard({
     overflow: 'hidden',
   }
 
-  const handleBackHomeClick = () => {
+  const canGoBack = useCanGoBack()
+  const navigate = useNavigate()
+  const router = useRouter()
+  const handleBackClick = useCallback(() => {
     closeInlineEditingSurface('cancel')
-  }
+    if (canGoBack) {
+      router.history.back()
+      return
+    }
+    void navigate({ to: '/' })
+  }, [canGoBack, closeInlineEditingSurface, navigate, router])
 
   const handlePreviewReload = () => {
     closeInlineEditingSurface('cancel')
@@ -1837,12 +1869,12 @@ export function Dashboard({
             )}
           >
             <div className="dashboard-topbar flex h-14 shrink-0 items-center gap-3 border-b border-white/10 bg-white/[0.035] px-3">
-              <Link
-                to="/"
+              <button
+                type="button"
                 className="dashboard-topbar-circle-button grid size-9 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.055] text-white/70 transition-colors hover:bg-white/[0.09] hover:text-white"
-                onClick={handleBackHomeClick}
-                data-tip="Back to home"
-                aria-label="Back to home"
+                onClick={handleBackClick}
+                data-tip="Back"
+                aria-label="Back"
               >
                 <svg
                   className="size-4"
@@ -1860,7 +1892,7 @@ export function Dashboard({
                     d="m15 18-6-6 6-6"
                   />
                 </svg>
-              </Link>
+              </button>
               <div className="dashboard-url-pill flex min-w-0 flex-1 items-center gap-2 rounded-full border border-white/8 bg-black/25 px-3 py-2 text-sm text-white/48">
                 <span className="size-2 shrink-0 rounded-full bg-emerald-300/80" />
                 <a

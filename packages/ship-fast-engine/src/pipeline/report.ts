@@ -57,7 +57,8 @@ export function formatRunAllReport(
     timings[b as string] && timings[a]
       ? ((timings[b as string] - timings[a]) / 1000).toFixed(1)
       : '\u2014'
-  const tokFmt = (t: unknown) => ((t as number) > 0 ? (t as number).toLocaleString() : '\u2014')
+  const tokFmt = (t: unknown) =>
+    (t as number) > 0 ? (t as number).toLocaleString() : '\u2014'
 
   const totalInput =
     (designStats?.inputTokens ?? 0) +

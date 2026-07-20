@@ -15,17 +15,18 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * EventFaq — a frequently-asked-questions accordion for a conference or event
- * page. A muted band with a centered heading + description above a narrow stack
- * of native <details> accordion items; each bordered card has a question summary
- * with a chevron that rotates when open and reveals the answer. Use to answer
- * common ticket, refund, schedule, and policy questions on tech conference,
- * summit, festival, or workshop pages.
+ * EventFaq — kinetic-poster FAQ ledger for a conference or event page. A muted band
+ * with an asymmetric header (mono index eyebrow + oversized heading + lede) above a
+ * hairline collapsed-border stack of native details/summary accordion rows; each
+ * square-edged row leads with a mono question index, a question summary, and a
+ * chevron that rotates when open to reveal the answer. Use to answer common ticket,
+ * refund, schedule, and policy questions on tech conference, summit, festival, or
+ * workshop pages.
  */
 export const EventFaq = defineCapsule({
   name: 'EventFaq',
   description:
-    'Frequently-asked-questions accordion for a conference or event page: a muted band with a centered heading + description above a narrow stack of native details/summary accordion items; each bordered card shows a question with a chevron that rotates when open and reveals the answer below. Use to answer common ticket, refund, schedule, code-of-conduct, recording, and discount questions on tech conference, summit, festival, meetup, or workshop pages.',
+    'Kinetic-poster FAQ ledger for a conference or event page: a muted band with an asymmetric header (mono index eyebrow + oversized heading + lede) above a hairline collapsed-border stack of native details/summary accordion rows; each square-edged row leads with a mono question index, a question summary, and a chevron that rotates when open to reveal the answer below. Use to answer common ticket, refund, schedule, code-of-conduct, recording, and discount questions on tech conference, summit, festival, meetup, or workshop pages.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -71,29 +72,45 @@ export const EventFaq = defineCapsule({
 
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
-        <Container size="sm">
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-12 gap-0"
-            titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <FaqAccordion>
-            {items.map((item) => (
-              <FaqItem key={item.q} className="[&[open]]:border-primary/40">
-                <FaqQuestion className="p-5">
-                  <span className="font-medium text-card-foreground">
-                    {item.q}
-                  </span>
-                  <FaqQuestionIcon />
-                </FaqQuestion>
-                <FaqAnswer asChild className="px-5 pb-5">
-                  <div>{item.a}</div>
-                </FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+        <Container size="md">
+          <div className="grid gap-10 lg:grid-cols-12">
+            <SectionHeading
+              align="left"
+              eyebrow="09 / Questions"
+              title={heading}
+              subtitle={description}
+              className="gap-4 lg:col-span-5"
+              eyebrowClassName="text-muted-foreground"
+              titleClassName="text-4xl font-extrabold tracking-tight sm:text-5xl"
+              subtitleClassName="text-lg text-muted-foreground"
+            />
+            <FaqAccordion className="border-t border-border lg:col-span-7">
+              {items.map((item, i) => (
+                <FaqItem
+                  key={item.q}
+                  className="rounded-none border-b border-border bg-transparent [&[open]]:bg-background"
+                >
+                  <FaqQuestion className="items-start gap-4 p-5">
+                    <span
+                      aria-hidden="true"
+                      className="font-mono text-sm tabular-nums text-muted-foreground/50"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span className="flex-1 font-semibold tracking-tight text-card-foreground">
+                      {item.q}
+                    </span>
+                    <FaqQuestionIcon />
+                  </FaqQuestion>
+                  <FaqAnswer asChild className="px-5 pb-5 pl-14">
+                    <div className="leading-relaxed text-muted-foreground">
+                      {item.a}
+                    </div>
+                  </FaqAnswer>
+                </FaqItem>
+              ))}
+            </FaqAccordion>
+          </div>
         </Container>
       </section>
     )

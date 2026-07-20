@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { ContentCard } from '#/section-kit/ContentCard.tsx'
+import { DotGrid, Watermark } from '#/section-kit/Decor.tsx'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import {
@@ -15,20 +16,23 @@ import { HeroSection } from '#/section-kit/HeroSection.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * DevToolHero — two-column product hero for a developer tool / API platform.
- * A muted-banded section with a left content column (animated release/version
- * pill, bold headline with a brand-accent highlighted phrase, supporting
- * paragraph, dual CTAs — filled primary + outline secondary — and a no-credit-
- * card footnote) beside a right dark code-window mockup (traffic-light dots,
- * filename tab, syntax-spaced SDK snippet) with a floating developer-avatar
- * social-proof card. Clean light slate-and-blue aesthetic. All CTAs route
- * through section-kit route links. Use as the top hero for developer tools, API platforms,
+ * DevToolHero — full-terminal asymmetric 7/5 hero for a developer tool / API
+ * platform. Left column: a square mono release chip with a blinking block
+ * cursor, a giant extrabold tight-tracked headline with the key phrase in the
+ * primary accent, a supporting paragraph, dual square-cornered CTAs (primary
+ * with hard offset shadow + hairline mono secondary, both with press feedback),
+ * and a mono "#"-comment footnote. Right column: a sharp-cornered terminal
+ * window pane — mono title bar with square chrome dots and a filename tab, the
+ * SDK snippet with a "$" prompt rail, and an aria-hidden diff-motif status
+ * footer (+/- rows tinted chart-1/destructive) — plus a floating square
+ * developer-avatar proof chip. A giant ghost ">_" watermark and faint dot grid
+ * sit behind. Use as the top hero for developer tools, API platforms,
  * backend-as-a-service, or technical SaaS landing pages.
  */
 export const DevToolHero = defineCapsule({
   name: 'DevToolHero',
   description:
-    'Two-column product hero for a developer tool / API platform: a left content column with an animated release/version pill, a bold headline with a brand-accent highlighted phrase, a supporting paragraph, a Lakebed-backed primary conversion CTA, a routable docs CTA, and a no-credit-card footnote, beside a right dark code-window mockup with a floating developer-avatar social-proof card. Clean light slate-and-blue aesthetic. Use as the top hero for developer tools, API platforms, backend-as-a-service, or technical SaaS.',
+    "Full-terminal asymmetric 7/5 hero for a developer tool / API platform: a left column with a square mono release chip (blinking block cursor), a giant extrabold headline with a primary-accent phrase, a supporting paragraph, a Lakebed-backed square hard-shadow primary CTA, a hairline mono routable docs CTA, and a mono '#'-comment footnote, beside a sharp terminal window pane (mono title bar with square chrome dots + filename tab, '$'-prompt SDK snippet, aria-hidden +/- diff status footer) with a floating square developer-avatar proof chip; a giant ghost '>_' watermark and faint dot grid sit behind. Use as the top hero for developer tools, API platforms, backend-as-a-service, or technical SaaS.",
   props: z.object({
     badge: z.string().optional(),
     headingTop: z.string().optional(),
@@ -111,24 +115,36 @@ await ds.storage.set(\`user:\${user.id}\`, {
         className={cn('relative overflow-hidden bg-muted/40', props.className)}
         aria-labelledby="hero-heading"
       >
-        <Container size="xl" className="py-20 lg:py-28">
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-            <div className="max-w-2xl">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                <span className="size-2 animate-pulse rounded-full bg-primary" />
+        <DotGrid
+          density="default"
+          tone="faint"
+          fade="bottom"
+          className="inset-x-0 top-0 h-72"
+        />
+        <Watermark className="-bottom-14 -left-6 font-mono text-[11rem] sm:text-[16rem] lg:-bottom-24 lg:text-[24rem]">
+          &gt;_
+        </Watermark>
+        <Container size="xl" className="relative py-16 sm:py-20 lg:py-28">
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
+            <div className="min-w-0 max-w-2xl lg:col-span-7">
+              <div className="mb-6 inline-flex items-center gap-2 border border-border bg-background px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.12em] text-foreground">
+                <span
+                  aria-hidden="true"
+                  className="h-3 w-1.5 animate-pulse bg-primary motion-reduce:animate-none"
+                />
                 {badge}
               </div>
               <h1
                 id="hero-heading"
-                className="mb-6 text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl"
+                className="mb-6 text-4xl font-extrabold leading-[1.02] tracking-tighter text-foreground sm:text-5xl lg:text-6xl"
               >
                 {headingTop} <span className="text-primary">{highlight}</span>
                 {headingBottom ? ` ${headingBottom}` : null}
               </h1>
-              <p className="mb-8 text-lg leading-relaxed text-muted-foreground sm:text-xl">
+              <p className="mb-8 max-w-xl text-lg leading-relaxed text-muted-foreground">
                 {subheading}
               </p>
-              <div className="mb-8 flex flex-col gap-4 sm:flex-row">
+              <div className="mb-8 grid grid-cols-1 gap-3 sm:flex sm:flex-row sm:gap-4">
                 <SaasPlanActionButton
                   lakebed={lakebed}
                   intentLabel={primaryCta}
@@ -140,43 +156,78 @@ await ds.storage.set(\`user:\${user.id}\`, {
                       Starting
                     </>
                   }
-                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-none bg-primary px-6 py-3 font-mono text-sm font-semibold uppercase tracking-[0.08em] text-primary-foreground shadow-[4px_4px_0_0] shadow-foreground transition-[transform,box-shadow,background-color] duration-150 hover:bg-primary/90 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none motion-reduce:transform-none disabled:pointer-events-none disabled:opacity-70"
                 >
                   {primaryCta}
                   <ArrowRight />
                 </SaasPlanActionButton>
                 <NavbarRouteLink
-                  className="inline-flex items-center justify-center rounded-lg border border-border bg-background px-6 py-3 font-semibold text-foreground transition-colors hover:bg-muted"
+                  className="inline-flex min-h-12 items-center justify-center rounded-none border border-foreground/25 bg-background px-6 py-3 font-mono text-sm font-semibold uppercase tracking-[0.08em] text-foreground transition-[background-color,transform] duration-150 hover:bg-muted active:translate-y-px motion-reduce:transform-none"
                   href={secondaryCta}
                 >
                   {secondaryCta}
                 </NavbarRouteLink>
               </div>
-              <p className="text-sm text-muted-foreground">{footnote}</p>
+              <p className="font-mono text-xs text-muted-foreground">
+                <span aria-hidden="true" className="text-muted-foreground/60">
+                  #{' '}
+                </span>
+                {footnote}
+              </p>
             </div>
 
-            {/* Code window mockup */}
-            <div className="relative">
-              <ContentCard variant="figure-dark" className="shadow-2xl">
-                <div className="flex items-center gap-2 border-b border-border/30 bg-foreground/95 px-4 py-3">
-                  <div className="flex gap-1.5">
-                    <div className="size-3 rounded-full bg-destructive" />
-                    <div className="size-3 rounded-full bg-chart-4" />
-                    <div className="size-3 rounded-full bg-chart-2" />
+            {/* Terminal window pane */}
+            <div className="relative min-w-0 lg:col-span-5">
+              <ContentCard
+                variant="figure-dark"
+                className="rounded-none border-foreground/20 shadow-none"
+              >
+                <div className="flex items-center gap-2 border-b border-background/15 bg-foreground px-4 py-3">
+                  <div className="flex gap-1.5" aria-hidden="true">
+                    <div className="size-2 bg-background/30" />
+                    <div className="size-2 bg-background/30" />
+                    <div className="size-2 bg-background/60" />
                   </div>
-                  <span className="ml-2 font-mono text-xs text-background/60">
+                  <span className="ml-2 font-mono text-[11px] uppercase tracking-[0.12em] text-background/60">
                     {codeFile}
                   </span>
+                  <span
+                    aria-hidden="true"
+                    className="ml-auto font-mono text-[11px] text-background/40"
+                  >
+                    — bash
+                  </span>
                 </div>
-                <div className="overflow-x-auto p-4">
-                  <pre className="font-mono text-sm leading-relaxed text-background/90">
+                <div className="relative overflow-x-auto p-4">
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute left-4 top-4 select-none font-mono text-sm leading-relaxed text-background/35"
+                  >
+                    $
+                  </span>
+                  <pre className="pl-5 font-mono text-sm leading-relaxed text-background/90">
                     <code>{code}</code>
                   </pre>
+                </div>
+                {/* Diff-motif status footer (abstract +/- rows). */}
+                <div
+                  aria-hidden="true"
+                  className="flex items-center gap-4 border-t border-background/15 px-4 py-2.5 font-mono text-[11px]"
+                >
+                  <span className="uppercase tracking-[0.12em] text-background/40">
+                    [ ok ] exit 0
+                  </span>
+                  <span className="flex items-center gap-1.5 text-chart-1">
+                    +<span className="h-1.5 w-10 bg-chart-1/70" />
+                  </span>
+                  <span className="flex items-center gap-1.5 text-destructive">
+                    −<span className="h-1.5 w-4 bg-destructive/70" />
+                  </span>
                 </div>
               </ContentCard>
               <Card
                 variant="outline"
-                className="absolute -bottom-4 -right-4 hidden bg-background p-3 sm:block rounded-lg p-0 shadow-lg"
+                className="absolute -bottom-4 -right-2 hidden rounded-none border-foreground/25 bg-background p-3 shadow-[4px_4px_0_0] shadow-foreground/20 sm:block lg:-right-4"
               >
                 <div className="flex items-center gap-3">
                   <div className="flex -space-x-2">
@@ -200,10 +251,12 @@ await ds.storage.set(\`user:\${user.id}\`, {
                     />
                   </div>
                   <div className="text-xs">
-                    <p className="font-semibold text-foreground">
+                    <p className="font-mono font-semibold text-foreground">
                       {proofTitle}
                     </p>
-                    <p className="text-muted-foreground">{proofSubtitle}</p>
+                    <p className="font-mono text-[11px] text-muted-foreground">
+                      {proofSubtitle}
+                    </p>
                   </div>
                 </div>
               </Card>

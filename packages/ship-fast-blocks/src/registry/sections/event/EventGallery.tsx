@@ -11,18 +11,21 @@ import {
 } from '#/section-kit/GalleryGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 
 /**
- * EventGallery — a dark photo highlights gallery for a conference or event page. A
- * full-bleed inverted (foreground-background) band with a centered heading +
- * description above a responsive 3-up grid of 4:3 alt-driven photos that gently
- * zoom on hover. Use to show last year's highlights, venue atmosphere, or past
- * event photos on tech conference, summit, festival, or meetup pages.
+ * EventGallery — kinetic-poster inverted highlights gallery for a conference or
+ * event page. A full-bleed inverted (foreground background, light text) band that
+ * cuts in on a slanted clip-path seam, with an asymmetric header (mono index
+ * eyebrow + oversized heading + lede) over a giant ghost watermark, above a
+ * staggered 3-up grid of square-edged 4:3 alt-driven photos that gently zoom on
+ * hover. Use to show last year's highlights, venue atmosphere, or past event
+ * photos on tech conference, summit, festival, or meetup pages.
  */
 export const EventGallery = defineCapsule({
   name: 'EventGallery',
   description:
-    "Dark photo highlights gallery for a conference or event page: a full-bleed inverted (foreground background, light text) band with a centered heading + description above a responsive 3-up grid of 4:3 alt-driven photos that gently zoom on hover. Use to show last year's highlights, venue atmosphere, networking moments, or past event photos on tech conference, summit, festival, or meetup pages.",
+    "Kinetic-poster inverted highlights gallery for a conference or event page: a full-bleed inverted (foreground background, light text) band cut on a slanted clip-path seam, with an asymmetric header (mono index eyebrow + oversized heading + lede) over a giant ghost watermark, above a staggered 3-up grid of square-edged 4:3 alt-driven photos that gently zoom on hover. Use to show last year's highlights, venue atmosphere, networking moments, or past event photos on tech conference, summit, festival, or meetup pages.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -50,23 +53,29 @@ export const EventGallery = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-foreground py-20 text-background lg:py-28',
+          'relative overflow-hidden bg-foreground py-20 pt-28 text-background [clip-path:polygon(0_3rem,100%_0,100%_100%,0_100%)] lg:py-28 lg:pt-36',
           props.className,
         )}
       >
-        <Container size="lg">
+        <Watermark className="-right-4 top-10 text-[9rem] leading-none text-background/[0.06] sm:text-[15rem] lg:text-[20rem]">
+          2024
+        </Watermark>
+        <Container size="lg" className="relative">
           <SectionHeading
+            align="left"
+            eyebrow="08 / Recap"
             title={heading}
             subtitle={description}
-            className="mb-12 max-w-2xl gap-0"
-            titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
+            className="mb-12 max-w-2xl gap-4"
+            eyebrowClassName="text-background/50"
+            titleClassName="text-4xl font-extrabold tracking-tight text-background sm:text-5xl"
             subtitleClassName="text-lg text-background/70"
           />
           <GalleryGrid>
             <GalleryGridItems columns={3}>
               {items
                 .map((alt) => ({ alt }))
-                .map((img) => {
+                .map((img, i) => {
                   const __iv__ = img as {
                     alt: string
                     caption?: string
@@ -74,7 +83,13 @@ export const EventGallery = defineCapsule({
                     location?: string
                   }
                   return (
-                    <GalleryTile key={__iv__.alt}>
+                    <GalleryTile
+                      key={__iv__.alt}
+                      className={cn(
+                        'overflow-hidden rounded-none border border-background/20',
+                        i % 2 === 1 ? 'lg:translate-y-6' : '',
+                      )}
+                    >
                       <GalleryTileImage alt={__iv__.alt} />
                       {__iv__.caption && (
                         <GalleryTileCaption>

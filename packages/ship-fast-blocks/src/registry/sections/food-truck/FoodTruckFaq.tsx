@@ -8,24 +8,26 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
 /**
- * FoodTruckFaq — a narrow accordion FAQ section. A centered eyebrow + heading sits
- * above a stack of native <details> disclosure rows on muted rounded panels, each with
- * a bold question summary and a rotating chevron that reveals a muted answer paragraph.
- * No JS state — uses the browser's open/close. Use as the questions section for food
- * trucks, caterers, restaurants or street-food vendors covering dietary, booking,
- * payment and location questions.
+ * FoodTruckFaq — a sticker-poster accordion FAQ section. Under a giant ghost "FAQ"
+ * watermark, a rotated rubber-stamp caption + mono index eyebrow and an extrabold slab
+ * heading sit above a stack of native <details> disclosure slabs on hard-bordered
+ * rounded-none panels, each with a mono question-index numeral, a bold question summary
+ * and a rotating chevron that reveals a muted answer paragraph. No JS state — uses the
+ * browser's open/close. Use as the questions section for food trucks, caterers,
+ * restaurants or street-food vendors covering dietary, booking, payment and location
+ * questions.
  */
 export const FoodTruckFaq = defineCapsule({
   name: 'FoodTruckFaq',
   description:
-    'Narrow accordion FAQ section: a centered eyebrow + heading above a stack of native details disclosure rows on muted rounded panels, each with a bold question summary and a rotating chevron that reveals a muted answer paragraph (no JS state). Use as the questions section for food trucks, caterers, restaurants or street-food vendors covering dietary restrictions, catering booking, payment and where-to-find-us questions.',
+    'Sticker-poster accordion FAQ section: under a giant ghost "FAQ" watermark, a rotated rubber-stamp caption + mono index eyebrow and an extrabold slab heading above a stack of native details disclosure slabs on hard-bordered rounded-none panels, each with a mono question-index numeral, a bold question summary and a rotating chevron that reveals a muted answer paragraph (no JS state). Use as the questions section for food trucks, caterers, restaurants or street-food vendors covering dietary restrictions, catering booking, payment and where-to-find-us questions.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -60,27 +62,51 @@ export const FoodTruckFaq = defineCapsule({
           },
         ]
     return (
-      <section className={cn('px-6 pt-28 pb-20', props.className)}>
-        <Container size="sm">
-          <div className="mb-16 space-y-4 text-center">
-            <span className="text-sm uppercase tracking-widest text-muted-foreground">
+      <section
+        className={cn(
+          'relative overflow-hidden px-6 pt-24 pb-20',
+          props.className,
+        )}
+      >
+        <Watermark className="-right-4 top-6 text-[8rem] sm:text-[13rem] lg:text-[18rem]">
+          FAQ
+        </Watermark>
+        <Container size="sm" className="relative">
+          <div className="mb-10 flex flex-wrap items-center gap-3">
+            <span className="inline-flex -rotate-2 items-center rounded-full border-2 border-foreground bg-background px-3.5 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-foreground shadow-[3px_3px_0_0] shadow-primary/40">
               {faqEyebrow}
             </span>
-            <SectionHeading
-              title={faqHeading}
-              className="gap-0"
-              titleClassName="text-3xl font-bold md:text-4xl"
-            />
+            <MonoTag>Cash &amp; card</MonoTag>
           </div>
+          <h2 className="mb-10 text-4xl font-extrabold tracking-tighter md:text-5xl">
+            {faqHeading}
+          </h2>
           <FaqAccordion>
-            {faqItems.map((item) => (
-              <FaqItem key={item.q} variant="muted" className="bg-muted">
-                <FaqQuestion className="p-6">
+            {faqItems.map((item, i) => (
+              <FaqItem
+                key={item.q}
+                variant="muted"
+                className="rounded-none border-2 border-foreground bg-card open:shadow-[4px_4px_0_0] open:shadow-foreground"
+              >
+                <FaqQuestion className="gap-4 p-6">
+                  <span className="flex items-baseline gap-3">
+                    <span
+                      aria-hidden="true"
+                      className="font-mono text-sm font-bold tabular-nums text-muted-foreground"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span className="font-extrabold tracking-tight">
+                      {item.q}
+                    </span>
+                  </span>
                   <FaqQuestionIcon />
                 </FaqQuestion>
                 <FaqAnswer asChild className="px-6 pb-6">
                   <div>
-                    <p>{item.a}</p>
+                    <p className="border-t-2 border-dashed border-foreground/20 pt-4">
+                      {item.a}
+                    </p>
                   </div>
                 </FaqAnswer>
               </FaqItem>

@@ -3,15 +3,18 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * DentalGallery — office-tour photo gallery for a dental practice site. A
- * centered eyebrow + heading + lede above a responsive mosaic grid where the
- * first image spans two columns and rows as a large feature tile and the rest
- * are uniform 64-tall thumbnails; every photo zooms slightly on hover. Imagery
- * uses the alt-driven Image component. Use to show off the reception, treatment
- * rooms, and waiting area for dentists, dental offices, or clinics.
+ * DentalGallery — hairline mosaic office tour for a dental practice site. An
+ * asymmetric header (left-aligned mono eyebrow + heading + lede, mono index
+ * meta right) above a hairline-connected mosaic grid (gap-px over the border
+ * color) of square photo tiles where the first image spans two columns and two
+ * rows as a large feature plate; each tile carries a small square mono index
+ * chip and zooms subtly on hover. Imagery uses the alt-driven Image component.
+ * Use to show off the reception, treatment rooms, and waiting area for
+ * dentists, dental offices, or clinics.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   GalleryGrid,
   GalleryGridItems,
@@ -22,7 +25,7 @@ import {
 export const DentalGallery = defineCapsule({
   name: 'DentalGallery',
   description:
-    'Office-tour photo gallery for a dental practice site: a centered eyebrow + heading + lede above a responsive mosaic grid where the first image spans two columns and rows as a large feature tile and the rest are uniform thumbnails; every photo zooms slightly on hover. Imagery uses the Image component. Use to show off the reception, treatment rooms, and waiting area for dentists, dental offices, or clinics.',
+    'Hairline mosaic office tour for a dental practice site: an asymmetric header (left-aligned mono eyebrow + heading + lede, mono index meta right) above a hairline-connected mosaic grid of square photo tiles where the first image spans two columns and rows as a large feature plate; each tile carries a small square mono index chip and zooms subtly on hover. Imagery uses the Image component. Use to show off the reception, treatment rooms, and waiting area for dentists, dental offices, or clinics.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -47,22 +50,37 @@ export const DentalGallery = defineCapsule({
           'Welcoming dental office waiting area with plants and comfortable modern furniture',
         ]
     return (
-      <section className={cn('bg-background py-24', props.className)}>
+      <section
+        className={cn('bg-background py-20 sm:py-24 lg:py-28', props.className)}
+      >
         <Container>
-          <SectionHeading
-            eyebrow={galleryEyebrow}
-            title={galleryHeading}
-            subtitle={galleryDesc}
-            className="mb-16 max-w-3xl gap-0"
-            eyebrowClassName="mb-3 inline-block text-xs font-semibold tracking-wider text-primary"
-            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <SectionHeading
+              align="left"
+              eyebrow={galleryEyebrow}
+              title={galleryHeading}
+              subtitle={galleryDesc}
+              className="max-w-2xl gap-0"
+              eyebrowClassName="mb-4 inline-block font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground"
+              titleClassName="mb-4 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-[2.75rem] lg:leading-[1.05]"
+              subtitleClassName="text-base text-muted-foreground sm:text-lg"
+            />
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="shrink-0 md:pb-1"
+            >
+              {String(galleryImages.length).padStart(2, '0')} / rooms
+            </MonoTag>
+          </div>
           <GalleryGrid>
-            <GalleryGridItems columns={3}>
+            <GalleryGridItems
+              columns={3}
+              className="grid-cols-2 gap-px border border-border bg-border sm:grid-cols-2 lg:grid-cols-4"
+            >
               {galleryImages
                 .map((alt) => ({ alt }))
-                .map((img) => {
+                .map((img, i) => {
                   const __iv__ = img as {
                     alt: string
                     caption?: string
@@ -70,10 +88,24 @@ export const DentalGallery = defineCapsule({
                     location?: string
                   }
                   return (
-                    <GalleryTile key={__iv__.alt}>
+                    <GalleryTile
+                      key={__iv__.alt}
+                      className={cn(
+                        'rounded-none border-0 bg-background',
+                        i === 0
+                          ? 'col-span-2 row-span-2 aspect-auto'
+                          : 'aspect-[4/3]',
+                      )}
+                    >
                       <GalleryTileImage alt={__iv__.alt} />
+                      <MonoTag
+                        aria-hidden="true"
+                        className="absolute left-3 top-3 bg-background/90 px-2 py-1 text-foreground"
+                      >
+                        {String(i + 1).padStart(2, '0')}
+                      </MonoTag>
                       {__iv__.caption && (
-                        <GalleryTileCaption>
+                        <GalleryTileCaption className="rounded-none font-mono text-[11px] uppercase tracking-[0.15em]">
                           {__iv__.caption}
                         </GalleryTileCaption>
                       )}

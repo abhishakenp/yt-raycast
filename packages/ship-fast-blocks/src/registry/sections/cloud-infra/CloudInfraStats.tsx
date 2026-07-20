@@ -4,10 +4,15 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * CloudInfraStats — split stats / trust band for a cloud-infrastructure / developer-
- * platform SaaS landing page. Left side: a heading, description paragraph, and a
- * vertical list of trust badges (each with an icon tile + title + subtitle). Right
- * side: a 2x2 grid of big metric tiles. Tokens-only. Renders fully on zero arguments.
+ * CloudInfraStats — inverted terminal telemetry band for a cloud-infrastructure /
+ * developer-platform SaaS landing page. A full bg-foreground/text-background
+ * inversion band that cuts in on a slanted top seam. Asymmetric 5/7 split:
+ * left carries the heading, description, and trust badges restyled as square
+ * bordered status rows (icon tile + title + mono subtitle); right is a
+ * collapsed-border 2x2 metric ledger with giant tabular numerals, mono
+ * uppercase labels, and tiny primary tick-bar motifs. A faint graph-paper
+ * texture and mono telemetry meta line sit behind. Tokens-only. Renders fully
+ * on zero arguments.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -17,10 +22,11 @@ import {
   StatValue,
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
+import { GraphPaper } from '#/section-kit/Decor.tsx'
 export const CloudInfraStats = defineCapsule({
   name: 'CloudInfraStats',
   description:
-    'Split stats / trust band for a cloud-infrastructure / developer-platform SaaS landing page: left side carries a heading, a description paragraph, and a vertical list of trust badges (each with an icon tile, title, and subtitle); right side is a 2x2 grid of big metric value tiles. Tokens-only. Use for credibility, social-proof, and KPI bands on cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',
+    'Inverted terminal telemetry band for a cloud-infrastructure / developer-platform SaaS landing page: a bg-foreground inversion band with a slanted top seam and an asymmetric 5/7 split. Left carries a heading, description, and trust badges as square bordered status rows; right is a collapsed-border 2x2 metric ledger with giant tabular numerals, mono uppercase labels, and tiny tick-bar motifs. Tokens-only. Use for credibility, social-proof, and KPI bands on cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -86,7 +92,7 @@ export const CloudInfraStats = defineCapsule({
     const icons: ReactNode[] = [
       <svg
         key="sla"
-        className="size-6"
+        className="size-5"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -99,7 +105,7 @@ export const CloudInfraStats = defineCapsule({
       </svg>,
       <svg
         key="soc2"
-        className="size-6"
+        className="size-5"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -111,52 +117,96 @@ export const CloudInfraStats = defineCapsule({
         <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm0 0V5a4 4 0 00-8 0v4h8z" />
       </svg>,
     ]
+    const tickWidths = ['w-8', 'w-5', 'w-10', 'w-6']
     return (
-      <section className={cn('py-20 lg:py-28', props.className)}>
-        <Container>
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-            <div>
+      <section
+        className={cn(
+          'relative overflow-hidden bg-foreground py-14 pt-20 text-background [clip-path:polygon(0_2.5rem,100%_0,100%_100%,0_100%)] sm:py-20 sm:pt-28 lg:py-28 lg:pt-36',
+          props.className,
+        )}
+      >
+        <GraphPaper className="inset-0 text-background/[0.06]" />
+        <Container className="relative">
+          <div className="grid gap-12 lg:grid-cols-12 lg:gap-14">
+            <div className="lg:col-span-5">
+              <p
+                aria-hidden="true"
+                className="mb-5 font-mono text-[11px] uppercase tracking-[0.2em] text-background/40"
+              >
+                [ telemetry ] live fleet
+              </p>
               <SectionHeading
                 align="left"
                 title={heading}
                 subtitle={description}
-                className="gap-0"
-                titleClassName="mb-6 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
-                subtitleClassName="mb-8 text-lg text-muted-foreground"
+                className="gap-4"
+                titleClassName="text-3xl font-extrabold tracking-tight text-background sm:text-4xl"
+                subtitleClassName="text-base text-background/60 sm:text-lg"
               />
-              <div className="space-y-4">
+              <div className="mt-8 space-y-3">
                 {badges.map((badge, i) => (
-                  <div key={badge.title} className="flex items-center gap-3">
-                    <div className="grid size-12 place-items-center rounded-lg bg-chart-2/15 text-chart-2">
+                  <div
+                    key={badge.title}
+                    className="flex items-center gap-4 border border-background/15 p-4"
+                  >
+                    <div className="grid size-10 shrink-0 place-items-center border border-background/20 text-background">
                       {icons[i % icons.length]}
                     </div>
-                    <div>
-                      <p className="font-semibold text-foreground">
+                    <div className="min-w-0">
+                      <p className="font-semibold tracking-tight text-background">
                         {badge.title}
                       </p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.16em] text-background/50">
                         {badge.subtitle}
                       </p>
                     </div>
+                    <span
+                      aria-hidden="true"
+                      className="ml-auto size-1.5 shrink-0 animate-pulse bg-background"
+                    />
                   </div>
                 ))}
               </div>
             </div>
-            <StatGrid columns={2} className="gap-6">
-              {items
-                .map((s) => ({ value: s.value, label: s.label }))
-                .map((s) => {
-                  const __iv__ = s as { value: string; label: string }
-                  return (
-                    <StatItem key={__iv__.label}>
-                      <StatValue weight={'semibold'} size={'large'}>
-                        {__iv__.value}
-                      </StatValue>
-                      <StatLabel>{__iv__.label}</StatLabel>
-                    </StatItem>
-                  )
-                })}
-            </StatGrid>
+            <div className="lg:col-span-7">
+              <StatGrid
+                columns={2}
+                className="gap-0 border-l border-t border-background/15"
+              >
+                {items
+                  .map((s) => ({ value: s.value, label: s.label }))
+                  .map((s, i) => {
+                    const __iv__ = s as { value: string; label: string }
+                    return (
+                      <StatItem
+                        key={__iv__.label}
+                        align="left"
+                        className="gap-3 border-b border-r border-background/15 p-5 sm:p-8 lg:p-10"
+                      >
+                        <StatValue className="text-[clamp(2.25rem,4.5vw,4rem)] font-extrabold leading-none tracking-tight text-background tabular-nums">
+                          {__iv__.value}
+                        </StatValue>
+                        <StatLabel className="font-mono text-[11px] uppercase tracking-[0.2em] text-background/60">
+                          {__iv__.label}
+                        </StatLabel>
+                        <span
+                          aria-hidden="true"
+                          className="mt-1 flex items-center gap-1"
+                        >
+                          <span
+                            className={cn(
+                              'h-1 bg-background',
+                              tickWidths[i % tickWidths.length],
+                            )}
+                          />
+                          <span className="h-1 w-1 bg-background/30" />
+                          <span className="h-1 w-1 bg-background/30" />
+                        </span>
+                      </StatItem>
+                    )
+                  })}
+              </StatGrid>
+            </div>
           </div>
         </Container>
       </section>

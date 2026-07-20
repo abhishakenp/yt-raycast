@@ -20,19 +20,20 @@ import {
 } from '../commerce/commerce-interactions.tsx'
 
 /**
- * CafeNavbar — fixed, translucent top navigation bar for a cozy neighborhood
- * cafe / coffee shop. A backdrop-blurred header pinned to the top: an inline
- * owl brand mark + cafe name on the left, horizontal nav links in the center
- * (desktop), menu command search, Shoo account dropdown, shared Lakebed cart
- * drawer, a pill-shaped "Visit Us" CTA, and a real mobile drawer on the right.
- * Every link and the CTA route through route hrefs so labels drive
- * page-switching. Use as the sticky site header for cafes, bakeries, tea
- * houses, brunch spots, or any warm food-and-drink landing page.
+ * CafeNavbar — fixed, translucent newsprint-masthead navigation bar for a cozy
+ * neighborhood cafe / coffee shop. A backdrop-blurred hairline-ruled header
+ * pinned to the top: an inline owl brand mark + serif cafe wordmark on the
+ * left, mono uppercase nav links in the center (desktop), menu command search,
+ * Shoo account dropdown, shared Lakebed cart drawer, a sharp square mono CTA
+ * with press feedback, and a real mobile drawer on the right. Every link and
+ * the CTA route through route hrefs so labels drive page-switching. Use as the
+ * sticky site header for cafes, bakeries, tea houses, brunch spots, or any
+ * warm food-and-drink landing page.
  */
 export const CafeNavbar = defineCapsule({
   name: 'CafeNavbar',
   description:
-    'Fixed translucent top navigation bar for a cozy cafe / coffee shop: backdrop-blurred header with an inline owl brand mark + cafe name on the left, horizontal nav links in the center (desktop), menu command search, Shoo account dropdown, shared Lakebed cart drawer with reactive badge, a pill-shaped primary CTA, and a real mobile drawer on the right. Every link and CTA route through route hrefs for page-switching. Use as the sticky site header for cafes, bakeries, tea houses, brunch spots, or warm food-and-drink landing pages.',
+    'Fixed translucent newsprint-masthead navigation bar for a cozy cafe / coffee shop: backdrop-blurred hairline-ruled header with an inline owl brand mark + serif cafe wordmark on the left, mono uppercase nav links in the center (desktop), menu command search, Shoo account dropdown, shared Lakebed cart drawer with reactive badge, a sharp square mono primary CTA with press feedback, and a real mobile drawer on the right. Every link and CTA route through route hrefs for page-switching. Use as the sticky site header for cafes, bakeries, tea houses, brunch spots, or warm food-and-drink landing pages.',
   props: z.object({
     /** Cafe / brand name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -77,15 +78,19 @@ export const CafeNavbar = defineCapsule({
         className={cn('bg-background/95', props.className)}
       >
         <NavbarBrand href={homeTarget} className="gap-3">
-          <BrandLogo brand={brand}>
+          <BrandLogo brand={brand} className="flex items-center gap-2.5">
             <LogoImage fallback={<OwlMark className="size-8 text-primary" />} />
-            <LogoLabel className="font-serif text-xl font-medium text-foreground" />
+            <LogoLabel className="font-serif text-lg font-medium tracking-tight text-foreground sm:text-xl" />
           </BrandLogo>
         </NavbarBrand>
 
-        <NavbarNav className="gap-10">
+        <NavbarNav className="gap-8">
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="font-mono text-[11px] uppercase tracking-[0.18em]"
+            >
               {label}
             </NavbarNavLink>
           ))}
@@ -108,7 +113,7 @@ export const CafeNavbar = defineCapsule({
           <NavbarCta
             variant="dark-pill"
             href={ctaTarget}
-            className="hidden px-5 py-2.5 sm:inline-flex"
+            className="hidden rounded-none border border-foreground bg-foreground px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.15em] text-background transition-colors duration-150 hover:bg-background hover:text-foreground sm:inline-flex active:translate-y-px"
           >
             {ctaLabel}
           </NavbarCta>

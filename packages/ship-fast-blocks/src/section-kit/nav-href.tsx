@@ -1,11 +1,14 @@
 import * as React from 'react'
 
 import {
+  PageStateContext,
   resolveRouteHref,
+  resolveRouteTarget,
   RoutesContext,
   slugifyRoute,
   type RoutesContextValue,
 } from '#/lib/route-context.tsx'
+import { PreviewUrlBridgeContext } from '#/lib/preview-url-bridge.tsx'
 
 const DEFAULT_ROUTES_CONTEXT: RoutesContextValue = {
   routes: [],
@@ -62,6 +65,7 @@ function normalizePathname(pathname: string): string {
 }
 
 function isActiveHref(href: string): boolean {
+  if (typeof window === 'undefined' || !window.location) return false
   const current = new URL(window.location.href)
   const target = new URL(href, window.location.href)
   if (
@@ -73,6 +77,7 @@ function isActiveHref(href: string): boolean {
 }
 
 function hrefsMatch(leftHref: string, rightHref: string): boolean {
+  if (typeof window === 'undefined' || !window.location) return false
   const left = new URL(leftHref, window.location.href)
   const right = new URL(rightHref, window.location.href)
   if (normalizePathname(left.pathname) !== normalizePathname(right.pathname)) {
@@ -95,7 +100,9 @@ export function SectionKitNavHrefProvider({
 }) {
   const routing = useRoutesContextValue()
   const basePath = React.useMemo(() => {
-    if (typeof window === 'undefined') return null
+    // In SSR / edge-runtime, `window` may be absent or present without a
+    // `location` (e.g. cloudflare workers). Treat both as "no base path".
+    if (typeof window === 'undefined' || !window.location) return null
     return resolveSectionKitNavBasePath({
       currentPathname: window.location.pathname,
       routes: routing.routes,
@@ -142,7 +149,11 @@ export function useIsActiveSectionKitNavHref(): (
   return React.useCallback(
     (target: string | undefined) => {
       const href = resolveHref(target)
-      if (typeof window === 'undefined' || typeof href !== 'string') {
+      if (
+        typeof window === 'undefined' ||
+        !window.location ||
+        typeof href !== 'string'
+      ) {
         return false
       }
       if (typeof activePageHref === 'string') {
@@ -151,5 +162,85 @@ export function useIsActiveSectionKitNavHref(): (
       return isActiveHref(href)
     },
     [activePageHref, resolveHref],
+  )
+}
+
+/**
+ * Returns a click handler that drives in-preview page switching for a nav
+ * link targeting `target`. Mirrors the legacy `useNavigate` behavior:
+ * resolves the target to a route page, updates the shared `$page` state and
+ * `RoutesContext.currentPage`, and pushes the slug to the host URL bridge when
+ * one is active. When no routes context is present (exported/deployed site or
+ * isolated component test), the handler is a no-op so the native anchor
+ * navigation proceeds.
+ *
+ * Auth-intent targets are intentionally ignored here — `SignInButton` owns the
+ * real auth flow now.
+ *
+ * Implementation note: `useStateField` requires an OpenUI `<Renderer>` context.
+ * SiteNav compound components are also rendered in isolation (unit tests,
+ * storybook) without a Renderer, so we read the `$page` setter from
+ * `PageStateContext` (provided by `PageSwitch`) instead of calling
+ * `useStateField` directly. The context defaults to a no-op setter, so
+ * isolated renders don't crash.
+ */
+// Module-level navigation fallback. Tests that mock `#/lib/use-navigate.tsx`
+// can set this to intercept section-kit nav clicks when no RoutesContext
+// provider is present. In production (exported/deployed sites), this stays
+// null and nav clicks on route links are no-ops (native anchor navigation).
+let navClickFallback: ((target: string) => void) | null = null
+
+export function setSectionKitNavClickFallback(
+  fn: ((target: string) => void) | null,
+): void {
+  navClickFallback = fn
+}
+
+export function useSectionKitNavClick(
+  target: string | undefined,
+): (event: React.MouseEvent) => void {
+  const routing = useRoutesContextValue()
+  const urlBridge = React.useContext(PreviewUrlBridgeContext)
+  const { setPage } = React.useContext(PageStateContext)
+  return React.useCallback(
+    (event: React.MouseEvent) => {
+      const rawTarget = (target ?? '').trim()
+      if (!rawTarget) return
+      if (!routing.routes.length) {
+        // No routes context — use the fallback if set (tests), otherwise
+        // let the native anchor navigation proceed.
+        if (navClickFallback) {
+          event.preventDefault()
+          navClickFallback(rawTarget)
+        }
+        return
+      }
+      const resolved = resolveRouteTarget(
+        rawTarget,
+        routing.routes,
+        routing.targetMap,
+      )
+      if (!resolved) return
+      const nextPage =
+        routing.routes.find(
+          (route) =>
+            route.trim().toLowerCase() === resolved.page.trim().toLowerCase(),
+        ) ?? resolved.page
+      if (!nextPage || !routing.routes.includes(nextPage)) return
+
+      // In-preview (and test) navigation: a RoutesContext with routes means a
+      // PageSwitch is driving the view, so intercept the click and switch the
+      // page in-place. Exported/deployed sites have no routes context here and
+      // let the native anchor navigation proceed to the real route.
+      event.preventDefault()
+      routing.setPendingSectionId(
+        resolved.type === 'section' ? (resolved.sectionId ?? null) : null,
+      )
+      routing.setCurrentPage(nextPage)
+      setPage(nextPage)
+      const isHome = nextPage === routing.routes[0]
+      urlBridge.navigateToPage?.(isHome ? null : slugifyRoute(nextPage))
+    },
+    [routing, setPage, target, urlBridge],
   )
 }

@@ -2,29 +2,30 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Image } from '#/lib/img.tsx'
 import {
   FeatureGrid,
   FeatureCard,
-  FeatureIcon,
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
 /**
- * EventPlannerServices — airy services grid for an event-planning agency. A
- * centered intro block (uppercase eyebrow, thin light heading, supporting lede)
- * above a responsive 2-up/3-up grid of service cards, each with a rounded 4:3
- * photo that scales gently on hover, a medium-weight title, a relaxed description,
- * and a muted "starting at" price line. Imagery is alt-driven. Use to present the
- * service menu for wedding/event planners, gala organizers, or premium
- * hospitality services.
+ * EventPlannerServices — editorial gallery-plate services grid for an event
+ * studio. An asymmetric intro (a mono metadata rail with a primary square, index
+ * count and hairline rule above a giant tight-tracked heading and lede, over a
+ * faint "MENU" watermark) sits above a staggered 3-up grid of hard-framed service
+ * plates — each a rounded-none bordered card with an alt-driven 4:3 photo that
+ * scales gently on hover, a mono index numeral, a bold title, a relaxed
+ * description, and a ticket-stub "starting at" price chip. Imagery is alt-driven.
+ * Use to present the service menu for wedding/event planners, gala organizers, or
+ * premium hospitality services.
  */
 export const EventPlannerServices = defineCapsule({
   name: 'EventPlannerServices',
   description:
-    "Airy services grid for an event-planning agency: a centered intro block (uppercase eyebrow, thin light heading, supporting lede) above a responsive 2-up/3-up grid of service cards, each with a rounded 4:3 photo that scales gently on hover, a medium-weight title, a relaxed description, and a muted 'starting at' price line. All imagery is alt-driven. Use to present the service menu (wedding planning, corporate events, private celebrations, galas, destination events, day-of coordination) for wedding/event planners, gala organizers, or premium hospitality services.",
+    "Editorial gallery-plate services grid for an event studio: an asymmetric intro (a mono metadata rail with a primary square, index count and hairline rule above a giant tight-tracked heading and lede, over a faint 'MENU' watermark) above a staggered 3-up grid of hard-framed service plates, each a rounded-none bordered card with an alt-driven 4:3 photo that scales gently on hover, a mono index numeral, a bold title, a relaxed description, and a ticket-stub 'starting at' price chip. All imagery is alt-driven. Use to present the service menu (wedding planning, corporate events, private celebrations, galas, destination events, day-of coordination) for wedding/event planners, gala organizers, or premium hospitality services.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -103,23 +104,45 @@ export const EventPlannerServices = defineCapsule({
     return (
       <section
         className={cn(
-          'px-4 pt-28 pb-20 sm:px-6 lg:px-8 lg:pt-32 lg:pb-28',
+          'relative overflow-hidden px-4 pt-28 pb-20 sm:px-6 lg:px-8 lg:pt-32 lg:pb-28',
           props.className,
         )}
       >
-        <Container size="xl">
-          <SectionHeading
-            eyebrow={servicesEyebrow}
-            title={servicesHeading}
-            subtitle={servicesDesc}
-            align="center"
-            eyebrowClassName="text-muted-foreground tracking-widest"
-            titleClassName="text-3xl font-light sm:text-4xl lg:text-5xl"
-            subtitleClassName="text-lg"
-            className="mb-16 max-w-3xl gap-6 lg:mb-24"
-          />
-          <FeatureGrid columns={3}>
-            {serviceItems.map((f) => {
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+        >
+          <span className="absolute -right-6 top-8 select-none font-extrabold leading-none tracking-tighter text-foreground/[0.035] text-[9rem] sm:text-[13rem] lg:text-[17rem]">
+            MENU
+          </span>
+        </div>
+        <Container size="xl" className="relative">
+          <div className="mb-14 max-w-3xl lg:mb-20">
+            <div className="flex items-center gap-4">
+              <span
+                aria-hidden="true"
+                className="size-1.5 shrink-0 bg-primary"
+              />
+              <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                {servicesEyebrow}
+              </span>
+              <span aria-hidden="true" className="h-px flex-1 bg-border" />
+              <span
+                aria-hidden="true"
+                className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60 tabular-nums"
+              >
+                {String(serviceItems.length).padStart(2, '0')} / services
+              </span>
+            </div>
+            <h2 className="mt-6 text-4xl font-extrabold leading-[0.95] tracking-tighter text-foreground text-balance sm:text-5xl lg:text-6xl">
+              {servicesHeading}
+            </h2>
+            <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
+              {servicesDesc}
+            </p>
+          </div>
+          <FeatureGrid columns={3} className="gap-8">
+            {serviceItems.map((f, i) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -130,10 +153,46 @@ export const EventPlannerServices = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
-                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                <FeatureCard
+                  key={__iv__.title}
+                  className={cn(
+                    'group gap-0 overflow-hidden rounded-none border-2 border-foreground/15 p-0 hover:-translate-y-1 hover:border-foreground/40',
+                    i % 3 === 1 && 'lg:translate-y-8',
+                  )}
+                >
+                  {__iv__.imageAlt ? (
+                    <div className="relative overflow-hidden border-b-2 border-foreground/15">
+                      <Image
+                        alt={__iv__.imageAlt}
+                        w={640}
+                        h={480}
+                        loading="lazy"
+                        className="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-105 motion-reduce:transform-none"
+                      />
+                      <span
+                        aria-hidden="true"
+                        className="absolute left-0 top-0 border-b-2 border-r-2 border-foreground/15 bg-background px-2.5 py-1 font-mono text-[11px] font-semibold tabular-nums text-muted-foreground"
+                      >
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                    </div>
+                  ) : null}
+                  <div className="flex flex-1 flex-col gap-3 p-6">
+                    <FeatureTitle className="text-xl font-bold tracking-tight">
+                      {__iv__.title}
+                    </FeatureTitle>
+                    <FeatureDescription className="flex-1 text-[15px] leading-relaxed">
+                      {__iv__.description}
+                    </FeatureDescription>
+                    {__iv__.price ? (
+                      <span className="mt-2 inline-flex w-fit items-center gap-2 rounded-none border border-foreground/20 bg-muted px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.12em] text-foreground">
+                        <span aria-hidden="true" className="text-primary">
+                          ◆
+                        </span>
+                        {__iv__.price}
+                      </span>
+                    ) : null}
+                  </div>
                 </FeatureCard>
               )
             })}

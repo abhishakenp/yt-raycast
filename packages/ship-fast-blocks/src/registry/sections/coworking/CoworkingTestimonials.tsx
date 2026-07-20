@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { GridField } from '#/section-kit/motion.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   TestimonialCard,
   TestimonialQuote,
@@ -18,20 +19,22 @@ import { StarRating } from '#/section-kit/StarRating.tsx'
 
 /**
  * CoworkingTestimonials — quiet editorial member-quote wall for a coworking
- * or shared-workspace page. A centered header (eyebrow chip + display
- * heading + supporting line) above a responsive grid of frosted glass cards:
- * each carries an oversized ghosted quote glyph, a primary star row, the
- * member's words in relaxed reading type, and an attribution row with an
- * alt-driven avatar. The middle card sits slightly elevated with a primary
- * hairline for editorial rhythm; cards lift softly on hover. The backdrop
- * continues the page's light-field — hairline content rails and a seam
- * hairline. Any member count renders cleanly. Use for social proof on
- * coworking spaces, shared offices, or flex-office providers.
+ * or shared-workspace page. An asymmetric 7:5 editorial header (mono index
+ * eyebrow chip "04 / Member stories" + display heading left, supporting line
+ * right) above a gently staggered grid of frosted glass cards: each carries
+ * an oversized ghosted quote glyph, a primary star row, the member's words
+ * in relaxed reading type, and a mono attribution row with an alt-driven
+ * avatar. On desktop the cards step in a rising-falling rhythm with the
+ * middle card lifted behind a primary hairline; a giant ghost quotation mark
+ * watermarks the section edge. The backdrop continues the page's light-field
+ * — hairline content rails and a seam hairline. Any member count renders
+ * cleanly. Use for social proof on coworking spaces, shared offices, or
+ * flex-office providers.
  */
 export const CoworkingTestimonials = defineCapsule({
   name: 'CoworkingTestimonials',
   description:
-    'Quiet editorial member-quote wall for a coworking or shared-workspace page: centered header (eyebrow chip + display heading + supporting line) above frosted glass testimonial cards with oversized ghosted quote glyphs, primary star rows, relaxed reading type, and alt-driven avatar attributions; the middle card is slightly elevated with a primary hairline, and cards lift softly on hover over a connected light-field backdrop. Use for social proof on coworking spaces, shared offices, or flex-office providers.',
+    'Quiet editorial member-quote wall for a coworking or shared-workspace page: asymmetric 7:5 editorial header (mono index eyebrow chip + display heading left, supporting line right) above gently staggered frosted glass testimonial cards with oversized ghosted quote glyphs, primary star rows, relaxed reading type, and mono alt-driven avatar attributions; on desktop the cards step in a rising-falling rhythm with the middle card lifted behind a primary hairline, under a giant ghost quotation-mark watermark, over a connected light-field backdrop. Use for social proof on coworking spaces, shared offices, or flex-office providers.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -113,6 +116,10 @@ export const CoworkingTestimonials = defineCapsule({
           mask="radial-gradient(ellipse 90% 70% at 50% 25%, black 25%, transparent 78%)"
         />
 
+        <Watermark className="right-[-2%] top-[2%] -z-10 font-serif text-[clamp(9rem,22vw,20rem)]">
+          &ldquo;
+        </Watermark>
+
         <Container className="relative">
           <div
             aria-hidden="true"
@@ -123,20 +130,22 @@ export const CoworkingTestimonials = defineCapsule({
             className="pointer-events-none absolute inset-y-0 right-0 hidden w-px bg-gradient-to-b from-transparent via-border/70 to-transparent lg:block"
           />
 
-          <div className="mx-auto max-w-2xl text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/70 px-4 py-1.5 backdrop-blur">
-              <StarRating rating={1} max={1} size="sm" color="primary" />
-              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                Member stories
+          <div className="grid items-end gap-6 lg:grid-cols-[7fr_5fr] lg:gap-16">
+            <div>
+              <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/70 px-4 py-1.5 backdrop-blur">
+                <StarRating rating={1} max={1} size="sm" color="primary" />
+                <MonoTag>04 / Member stories</MonoTag>
               </span>
-            </span>
-            <SectionHeading
-              title={heading}
-              subtitle={subheading}
-              className="mt-5 gap-0"
-              titleClassName="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl"
-              subtitleClassName="mt-4 text-lg leading-relaxed text-muted-foreground"
-            />
+              <SectionHeading
+                align="left"
+                title={heading}
+                className="mt-5 max-w-xl gap-0"
+                titleClassName="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl"
+              />
+            </div>
+            <p className="text-lg leading-relaxed text-muted-foreground lg:pb-1">
+              {subheading}
+            </p>
           </div>
 
           <div className="mx-auto mt-16 grid max-w-md grid-cols-1 items-start gap-7 lg:mx-0 lg:max-w-none lg:grid-cols-3">
@@ -163,8 +172,9 @@ export const CoworkingTestimonials = defineCapsule({
                   className={cn(
                     'relative h-full overflow-hidden rounded-3xl bg-card/75 p-8 shadow-sm backdrop-blur transition-shadow duration-500 hover:shadow-lg hover:shadow-primary/10',
                     featured
-                      ? 'border-primary/30 lg:-translate-y-3'
+                      ? 'border-primary/30 lg:-translate-y-5'
                       : 'border-border/60',
+                    !featured && index % 3 === 2 && 'lg:translate-y-4',
                   )}
                 >
                   <div
@@ -199,7 +209,7 @@ export const CoworkingTestimonials = defineCapsule({
                         {member.name}
                       </TestimonialName>
                       {attribution ? (
-                        <TestimonialMeta className="text-sm">
+                        <TestimonialMeta className="font-mono text-[11px] uppercase tracking-[0.12em]">
                           {attribution}
                         </TestimonialMeta>
                       ) : null}

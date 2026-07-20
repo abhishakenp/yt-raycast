@@ -13,17 +13,18 @@ import {
 
 /**
  * JewelryStoreGallery — lifestyle masonry gallery for a luxury jewelry brand
- * on a subtle muted band. A centered gold eyebrow + serif heading introduce a
- * three-column masonry-style collage of editorial lifestyle images with mixed
- * aspect ratios (3:4, square, 4:5) and the middle column nudged down, each
- * image zooming gently on hover. Use to evoke the brand experience — clients,
- * boutiques, gifting moments — for fine jewelers, diamond houses, or any
- * premium luxury-retail brand. Renders fully with no props via baked-in defaults.
+ * on a subtle muted band. A left-aligned mono micro-label kicker + serif heading
+ * introduce a three-column masonry-style collage of editorial lifestyle images,
+ * each set in a hairline vitrine mat, with mixed aspect ratios (3:4, square, 4:5)
+ * and the middle column nudged down, each image zooming gently on hover. Use to
+ * evoke the brand experience — clients, boutiques, gifting moments — for fine
+ * jewelers, diamond houses, or any premium luxury-retail brand. Renders fully
+ * with no props via baked-in defaults.
  */
 export const JewelryStoreGallery = defineCapsule({
   name: 'JewelryStoreGallery',
   description:
-    'Lifestyle masonry gallery for a luxury jewelry brand on a subtle muted band: a centered gold eyebrow + serif heading introduce a three-column masonry-style collage of editorial lifestyle images with mixed aspect ratios (3:4, square, 4:5) and the middle column nudged down, each image zooming gently on hover. Use to evoke the brand experience — clients, boutiques, gifting moments — for fine jewelers, diamond houses, or any premium luxury-retail brand.',
+    'Lifestyle masonry gallery for a luxury jewelry brand on a subtle muted band: a left-aligned mono micro-label kicker + serif heading introduce a three-column masonry-style collage of editorial lifestyle images, each set in a hairline vitrine mat, with mixed aspect ratios (3:4, square, 4:5) and the middle column nudged down, each image zooming gently on hover. Use to evoke the brand experience — clients, boutiques, gifting moments — for fine jewelers, diamond houses, or any premium luxury-retail brand.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -47,6 +48,7 @@ export const JewelryStoreGallery = defineCapsule({
 
     const imgCls =
       'h-full w-full object-cover transition-transform duration-700 hover:scale-105'
+    const mat = 'border border-border bg-background p-2'
 
     return (
       <section
@@ -57,15 +59,16 @@ export const JewelryStoreGallery = defineCapsule({
       >
         <Container className="px-6 lg:px-12 xl:px-20">
           <SectionHeading
+            align="left"
             eyebrow={eyebrow}
             title={heading}
-            className="mb-20 max-w-2xl gap-0"
-            eyebrowClassName="mb-4 text-sm uppercase tracking-[0.3em] text-primary"
-            titleClassName="font-serif text-4xl text-foreground lg:text-5xl"
+            className="mb-16 max-w-2xl gap-0"
+            eyebrowClassName="mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.24em] text-muted-foreground"
+            titleClassName="font-serif text-4xl font-normal tracking-tight text-foreground lg:text-5xl"
           />
           <GalleryMasonry columns="1-3">
             <GalleryMasonryColumn>
-              <MasonryTile treatment="3-4-card">
+              <MasonryTile treatment="3-4-card" className={mat}>
                 <Image
                   alt={alts[0]}
                   w={600}
@@ -74,7 +77,7 @@ export const JewelryStoreGallery = defineCapsule({
                   className={imgCls}
                 />
               </MasonryTile>
-              <MasonryTile treatment="square-card">
+              <MasonryTile treatment="square-card" className={mat}>
                 <Image
                   alt={alts[1]}
                   w={600}
@@ -85,7 +88,7 @@ export const JewelryStoreGallery = defineCapsule({
               </MasonryTile>
             </GalleryMasonryColumn>
             <GalleryMasonryColumn className="md:mt-12">
-              <MasonryTile treatment="square-card">
+              <MasonryTile treatment="square-card" className={mat}>
                 <Image
                   alt={alts[2]}
                   w={600}
@@ -94,7 +97,7 @@ export const JewelryStoreGallery = defineCapsule({
                   className={imgCls}
                 />
               </MasonryTile>
-              <MasonryTile treatment="4-5-card">
+              <MasonryTile treatment="4-5-card" className={mat}>
                 <Image
                   alt={alts[3]}
                   w={600}
@@ -103,7 +106,7 @@ export const JewelryStoreGallery = defineCapsule({
                   className={imgCls}
                 />
               </MasonryTile>
-              <MasonryTile treatment="square-card">
+              <MasonryTile treatment="square-card" className={mat}>
                 <Image
                   alt={alts[4]}
                   w={600}
@@ -114,7 +117,7 @@ export const JewelryStoreGallery = defineCapsule({
               </MasonryTile>
             </GalleryMasonryColumn>
             <GalleryMasonryColumn>
-              <MasonryTile treatment="3-4-card">
+              <MasonryTile treatment="3-4-card" className={mat}>
                 <Image
                   alt={alts[5]}
                   w={600}
@@ -123,7 +126,7 @@ export const JewelryStoreGallery = defineCapsule({
                   className={imgCls}
                 />
               </MasonryTile>
-              <MasonryTile treatment="square-card">
+              <MasonryTile treatment="square-card" className={mat}>
                 <Image
                   alt={alts[6]}
                   w={600}

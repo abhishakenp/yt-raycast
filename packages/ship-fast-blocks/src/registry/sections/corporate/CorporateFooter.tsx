@@ -3,19 +3,21 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * CorporateFooter — fat multi-column footer for an enterprise / corporate B2B
- * site. A dark inverted section with a 5-column grid: a brand logo + about
- * paragraph + social icons on the left (spanning 2 columns), followed by three
- * link columns, and a bottom copyright / legal bar. Every brand button, link,
- * and social icon routes through section-kit route links. Use as the closing site footer for
- * enterprise software vendors, SaaS platforms, consultancies, or any corporate
- * site with extensive navigation.
+ * CorporateFooter — Swiss-corporate fat footer for an enterprise / corporate
+ * B2B site. A double-rule-topped section on the page surface with a giant
+ * ghost brand watermark along its bottom edge and an asymmetric 12-column
+ * grid: a clickable square-tile brand block + about paragraph + hairline
+ * square social icon chips (built from each social's SVG path) spanning five
+ * columns, followed by three link columns whose titles carry mono index
+ * numerals, and a hairline-topped mono copyright / legal bar. Every brand
+ * button, link, and social icon routes through section-kit route links. Use
+ * as the closing site footer for enterprise software vendors, SaaS platforms,
+ * consultancies, or any corporate site with extensive navigation.
  */
 import {
   SiteFooter,
   FooterContent,
   FooterGrid,
-  FooterBrand,
   FooterTagline,
   FooterSocial,
   FooterSocialLink,
@@ -27,10 +29,13 @@ import {
   FooterCopyright,
   FooterLegal,
 } from '#/section-kit/SiteFooter.tsx'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 export const CorporateFooter = defineCapsule({
   name: 'CorporateFooter',
   description:
-    'Fat multi-column footer for an enterprise / corporate B2B site: dark inverted section with a 5-column grid of brand logo + about paragraph + social icons on the left (spanning 2 columns), followed by three titled link columns, plus a bottom copyright/legal bar. Every brand button, link, and social icon routes through section-kit route links. Use as the closing site footer for enterprise software, SaaS, consultancies, or any corporate site.',
+    'Swiss-corporate fat footer for an enterprise / corporate B2B site: a double-rule-topped section with a giant ghost brand watermark along the bottom edge and an asymmetric 12-column grid — clickable square-tile brand block + about paragraph + hairline square social icon chips (SVG-path driven) spanning five columns, three link columns with mono-indexed titles, and a hairline-topped mono copyright/legal bar. Every brand button, link, and social icon routes through section-kit route links. Use as the closing site footer for enterprise software, SaaS, consultancies, or any corporate site.',
   props: z.object({
     /** Brand / company name shown in the footer. */
     brand: z.string().optional(),
@@ -123,19 +128,10 @@ export const CorporateFooter = defineCapsule({
     const legal = props.legal?.length
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Cookie Policy']
-    const LogoMark = ({
-      className,
-      inverse,
-    }: {
-      className?: string
-      inverse?: boolean
-    }) => (
+    const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          'grid place-items-center rounded-lg font-bold',
-          inverse
-            ? 'bg-background text-foreground'
-            : 'bg-foreground text-background',
+          'grid place-items-center rounded-none bg-foreground font-bold text-background',
           className,
         )}
         aria-hidden="true"
@@ -144,35 +140,100 @@ export const CorporateFooter = defineCapsule({
       </span>
     )
     return (
-      <SiteFooter className={props.className}>
-        <FooterContent>
-          <FooterGrid>
-            <FooterBrand brand={brand} brandMark={<LogoMark />}>
-              <FooterTagline>{about}</FooterTagline>
-              <FooterSocial>
+      <SiteFooter
+        className={cn(
+          'relative overflow-hidden border-t-2 border-foreground bg-background',
+          props.className,
+        )}
+      >
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-1 block border-t border-border"
+        />
+        <Watermark className="-bottom-8 left-0 text-[7rem] text-foreground/[0.03] sm:text-[11rem]">
+          {brand}
+        </Watermark>
+        <FooterContent className="relative py-14 lg:py-16">
+          <FooterGrid className="gap-10 md:grid-cols-2 lg:grid-cols-12">
+            <div className="md:col-span-2 lg:col-span-5 lg:pr-10">
+              <NavbarRouteLink
+                href={props.homeTarget ?? brand}
+                className="inline-flex items-center gap-2"
+              >
+                <BrandLogo brand={brand} className="flex items-center gap-2">
+                  <LogoImage
+                    className="size-7 rounded-none"
+                    fallback={<LogoMark className="size-7 text-sm" />}
+                  />
+                  <LogoLabel className="text-lg font-semibold tracking-tight text-foreground" />
+                </BrandLogo>
+              </NavbarRouteLink>
+              <FooterTagline className="mt-4 max-w-sm leading-relaxed">
+                {about}
+              </FooterTagline>
+              <FooterSocial className="mt-6 gap-0 border-l border-border">
                 {socials
-                  .map((s) => ({ label: s.label }))
+                  .map((s) => ({ label: s.label, path: s.path }))
                   .map((s) => (
-                    <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                    <FooterSocialLink key={s.label} asChild>
+                      <NavbarRouteLink
+                        href={s.label}
+                        className="grid size-10 place-items-center border-b border-r border-t border-border text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground active:translate-y-px"
+                      >
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                          aria-hidden="true"
+                        >
+                          <path d={s.path} />
+                        </svg>
+                        <span className="sr-only">{s.label}</span>
+                      </NavbarRouteLink>
+                    </FooterSocialLink>
                   ))}
               </FooterSocial>
-            </FooterBrand>
-            {columns.map((col) => (
-              <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
-                <FooterColumnList>
+            </div>
+            {columns.map((col, i) => (
+              <FooterColumn
+                key={col.title}
+                className={cn('lg:col-span-2', i === 0 && 'lg:col-start-7')}
+              >
+                <FooterColumnTitle className="flex items-baseline gap-2 border-b border-border pb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  <span
+                    aria-hidden="true"
+                    className="tabular-nums text-primary"
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  {col.title}
+                </FooterColumnTitle>
+                <FooterColumnList className="mt-4 space-y-2.5">
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink
+                      key={link}
+                      className="block w-fit transition-colors duration-150"
+                    >
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
-          <FooterBottom>
-            <FooterCopyright>{copyright}</FooterCopyright>
-            <FooterLegal>
+          <FooterBottom className="mt-14 gap-4 pt-5">
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.14em]">
+              {copyright}
+            </FooterCopyright>
+            <FooterLegal className="gap-5">
               {legal.map((l) => (
-                <FooterLink key={l}>{l}</FooterLink>
+                <FooterLink
+                  key={l}
+                  className="font-mono text-[11px] uppercase tracking-[0.14em]"
+                >
+                  {l}
+                </FooterLink>
               ))}
             </FooterLegal>
           </FooterBottom>

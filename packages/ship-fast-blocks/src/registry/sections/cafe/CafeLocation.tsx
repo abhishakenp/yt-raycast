@@ -3,7 +3,6 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   LocationBlock,
   LocationMap,
@@ -11,23 +10,27 @@ import {
   LocationContact,
 } from '#/section-kit/LocationBlock.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * CafeLocation — visit / location block for a cozy cafe / coffee shop page,
- * on a card-colored band. A centered cap, serif heading, and description above
- * a two-column layout: the left shows address, hours, and contact info tiles
- * (with inline icons), a social row, and a flex-wrap amenities chip row; the
- * right shows a large map image with an overlay "Open in Google Maps" button.
- * Every social link and the map button route through section-kit route links. Use for
- * cafes, bakeries, tea houses, or any local business visit block. Renders fully
- * with no props via baked-in defaults.
+ * CafeLocation — newsprint visitor's-ledger location block for a cozy cafe /
+ * coffee shop page on a kraft-toned muted wash. A mono dateline rail (cap
+ * stamp, hairline rule, edition label) above an asymmetric 7:5 pairing of the
+ * serif heading with the right-aligned description. Below, an asymmetric 5:7
+ * split: the left column runs a hairline-ruled directory ledger — Address,
+ * Hours, Contact, and Social rows, each led by a mono uppercase label column —
+ * followed by a row of square dashed stamp chips for amenities; the right
+ * column frames the large map image in a hairline photo plate with a mono
+ * caption row and a sharp square "Open in Google Maps" overlay button. Every
+ * social link and the map button route through section-kit route links. Use
+ * for cafes, bakeries, tea houses, or any local business visit block. Renders
+ * fully with no props via baked-in defaults.
  */
 export const CafeLocation = defineCapsule({
   name: 'CafeLocation',
   description:
-    "Visit / location block for a cozy cafe page on a card-colored band: centered cap, serif heading, and description above a two-column layout. Left side shows address, hours, and contact tiles with inline icons; a social row; and a flex-wrap amenities chip row. Right side shows a large map image with an overlay 'Open in Google Maps' button. Social links and the map button route through section-kit route links. Use for cafes, bakeries, tea houses, or any local business visit block.",
+    "Newsprint visitor's-ledger location block for a cozy cafe page on a kraft-toned muted wash: a mono dateline rail above an asymmetric 7:5 serif heading + right-aligned description pairing; below, an asymmetric 5:7 split with a hairline-ruled directory ledger on the left (Address, Hours, Contact, Social rows each led by a mono uppercase label column, then square dashed amenity stamp chips) and the large map image on the right framed in a hairline photo plate with a mono caption row and a sharp square overlay button. Social links and the map button route through section-kit route links. Use for cafes, bakeries, tea houses, or any local business visit block.",
   props: z.object({
     /** Eyebrow / cap text. */
     cap: z.string().optional(),
@@ -115,153 +118,98 @@ export const CafeLocation = defineCapsule({
       </svg>
     )
 
-    const ClockIcon = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="1.5"
-          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-        />
-      </svg>
+    const LedgerRow = ({
+      label,
+      children,
+    }: {
+      label: string
+      children: React.ReactNode
+    }) => (
+      <div className="grid grid-cols-[6.5rem_1fr] gap-4 border-b border-foreground/15 py-4 sm:grid-cols-[8rem_1fr] sm:gap-6">
+        <MonoTag className="pt-0.5">{label}</MonoTag>
+        <div>{children}</div>
+      </div>
     )
-
-    const PhoneIcon = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="1.5"
-          d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-        />
-      </svg>
-    )
-
-    const ChatIcon = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="1.5"
-          d="M8.228 9c.549-1.385 2.432-4 6.022-4 2.972 0 4.943 1.818 5.463 4.066l1.756-.395C20.86 1.923 17.373 0 14.25 0c-5.06 0-8.386 3.586-9.44 6.522L8.228 9zm7.052 2.118c-.566 1.385-2.439 4-6.052 4-2.972 0-4.943-1.818-5.463-4.066l-1.756.395C3.14 22.077 6.627 24 9.75 24c5.06 0 8.386-3.586 9.44-6.522l-1.01-2.36z"
-        />
-      </svg>
-    )
-
-    const locationInfo = [
-      {
-        icon: <MapPin className="size-6" />,
-        title: 'Address',
-        lines: addressLines,
-      },
-      {
-        icon: <ClockIcon className="size-6" />,
-        title: 'Hours',
-        lines: hoursLines,
-      },
-      {
-        icon: <PhoneIcon className="size-6" />,
-        title: 'Contact',
-        lines: [phone, email],
-      },
-    ]
 
     return (
       <section
-        className={cn('bg-card pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
+        className={cn(
+          'bg-muted/40 pt-24 pb-16 lg:pt-32 lg:pb-24',
+          props.className,
+        )}
       >
         <Container size="xl" className="px-6">
-          <SectionHeading
-            eyebrow={cap}
-            title={heading}
-            subtitle={description}
-            align="center"
-            eyebrowClassName="text-primary tracking-wider"
-            titleClassName="font-serif text-3xl font-medium sm:text-4xl lg:text-5xl"
-            className="mx-auto mb-16 max-w-2xl gap-6"
-          />
+          <div className="flex items-center gap-4">
+            <MonoTag>{cap}</MonoTag>
+            <span aria-hidden="true" className="h-px flex-1 bg-border" />
+            <MonoTag tone="faint" className="hidden sm:inline">
+              The Directory
+            </MonoTag>
+          </div>
 
-          <LocationBlock className="grid gap-12 lg:grid-cols-2 lg:gap-16 border-0 bg-transparent">
-            <div className="space-y-8">
-              <ResponsiveGrid cols="1-2">
-                {locationInfo.map((info) => (
-                  <div key={info.title}>
-                    <div className="mb-4 grid size-12 place-items-center rounded-full bg-primary/10 text-primary">
-                      {info.icon}
-                    </div>
-                    <h3 className="mb-2 font-serif text-lg font-medium text-foreground">
-                      {info.title}
-                    </h3>
-                    {info.title === 'Hours' ? (
-                      <LocationHours className="space-y-1 text-muted-foreground">
-                        {info.lines.map((line, i) => (
-                          <p key={i}>{line}</p>
-                        ))}
-                      </LocationHours>
-                    ) : info.title === 'Contact' ? (
-                      <LocationContact className="space-y-1 text-muted-foreground">
-                        {info.lines.map((line, i) => (
-                          <p key={i}>{line}</p>
-                        ))}
-                      </LocationContact>
-                    ) : (
-                      <div className="space-y-1 text-muted-foreground">
-                        {info.lines.map((line, i) => (
-                          <p key={i}>{line}</p>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
+          <div className="mt-6 grid gap-4 lg:grid-cols-12 lg:items-end lg:gap-10">
+            <h2 className="font-serif text-4xl font-medium tracking-tight text-foreground sm:text-5xl lg:col-span-7">
+              {heading}
+            </h2>
+            <p className="max-w-md text-base leading-relaxed text-muted-foreground lg:col-span-5 lg:justify-self-end lg:text-right">
+              {description}
+            </p>
+          </div>
 
-                <div>
-                  <div className="mb-4 grid size-12 place-items-center rounded-full bg-primary/10 text-primary">
-                    <ChatIcon className="size-6" />
+          <LocationBlock className="mt-12 grid gap-12 border-0 bg-transparent lg:mt-16 lg:grid-cols-12 lg:gap-14">
+            {/* Directory ledger. */}
+            <div className="lg:col-span-5">
+              <div className="border-t border-foreground/15">
+                <LedgerRow label="Address">
+                  <div className="space-y-0.5 text-foreground">
+                    {addressLines.map((line, i) => (
+                      <p key={i} className="font-serif text-lg">
+                        {line}
+                      </p>
+                    ))}
                   </div>
-                  <h3 className="mb-2 font-serif text-lg font-medium text-foreground">
-                    Social
-                  </h3>
-                  <div className="flex gap-4">
+                </LedgerRow>
+                <LedgerRow label="Hours">
+                  <LocationHours className="space-y-1 text-muted-foreground">
+                    {hoursLines.map((line, i) => (
+                      <p key={i}>{line}</p>
+                    ))}
+                  </LocationHours>
+                </LedgerRow>
+                <LedgerRow label="Contact">
+                  <LocationContact className="space-y-1 text-muted-foreground">
+                    <p>{phone}</p>
+                    <p>{email}</p>
+                  </LocationContact>
+                </LedgerRow>
+                <LedgerRow label="Social">
+                  <div className="flex flex-wrap gap-x-5 gap-y-2">
                     {socials.map((social) => (
                       <NavbarRouteLink
                         key={social}
                         aria-label={social}
-                        className="text-muted-foreground transition-colors hover:text-primary"
+                        className="border-b border-foreground/30 pb-0.5 text-sm text-foreground transition-colors hover:border-primary hover:text-primary"
                         href={social}
                       >
                         {social}
                       </NavbarRouteLink>
                     ))}
                   </div>
-                </div>
-              </ResponsiveGrid>
+                </LedgerRow>
+              </div>
 
-              {/* Amenities */}
-              <div className="border-t border-border pt-8">
-                <h4 className="mb-4 font-medium text-foreground">Amenities</h4>
-                <div className="flex flex-wrap gap-3">
-                  {amenities.map((a) => (
+              {/* Amenity stamp chips. */}
+              <div className="mt-8">
+                <MonoTag tone="faint">Amenities</MonoTag>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {amenities.map((a, i) => (
                     <span
                       key={a}
-                      className="rounded-full bg-muted px-4 py-2 text-sm text-foreground"
+                      className={cn(
+                        'inline-flex items-center border border-dashed border-foreground/30 bg-background/60 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-foreground',
+                        i % 3 === 1 && 'rotate-[0.6deg]',
+                        i % 3 === 2 && '-rotate-[0.6deg]',
+                      )}
                     >
                       {a}
                     </span>
@@ -270,25 +218,35 @@ export const CafeLocation = defineCapsule({
               </div>
             </div>
 
-            {/* Map */}
-            <LocationMap>
-              <Image
-                alt={mapAlt}
-                w={1200}
-                h={800}
-                loading="lazy"
-                className="size-full object-cover"
-              />
-              <div className="absolute inset-0 flex items-center justify-center bg-foreground/40">
-                <NavbarRouteLink
-                  className="inline-flex items-center gap-2 rounded-full bg-background px-6 py-3 font-medium text-foreground transition-colors hover:bg-muted"
-                  href={mapTarget}
-                >
-                  <MapPin className="size-5" />
-                  {mapCta}
-                </NavbarRouteLink>
+            {/* Map plate. */}
+            <div className="lg:col-span-7">
+              <div className="border border-foreground/20 bg-card p-2.5">
+                <LocationMap className="relative aspect-[3/2] h-auto min-h-0 overflow-hidden rounded-none">
+                  <Image
+                    alt={mapAlt}
+                    w={1200}
+                    h={800}
+                    loading="lazy"
+                    className="size-full object-cover"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center bg-foreground/40">
+                    <NavbarRouteLink
+                      className="inline-flex items-center gap-2 border border-background bg-background px-6 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.15em] text-foreground transition-colors duration-150 hover:bg-foreground hover:text-background active:translate-y-px"
+                      href={mapTarget}
+                    >
+                      <MapPin className="size-4" />
+                      {mapCta}
+                    </NavbarRouteLink>
+                  </div>
+                </LocationMap>
+                <div className="flex items-center gap-2 px-1 pt-2.5 pb-0.5">
+                  <MonoTag tone="faint" className="text-[10px]">
+                    Fig. 03 — The Map
+                  </MonoTag>
+                  <span aria-hidden="true" className="h-px flex-1 bg-border" />
+                </div>
               </div>
-            </LocationMap>
+            </div>
           </LocationBlock>
         </Container>
       </section>

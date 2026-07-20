@@ -2,7 +2,10 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import {
+  InquiryActionButton,
+  InquiryMutationSpinner,
+} from '../contact/inquiry-interactions.tsx'
 import {
   PricingGrid,
   PricingTier,
@@ -14,23 +17,24 @@ import {
   PricingTierPeriod,
   PricingTierFeatures,
   PricingTierFeature,
-  PricingTierCta,
 } from '#/section-kit/PricingGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 /**
- * EventPlannerPricing — three-tier planning-packages block on a muted band. A
- * centered intro (uppercase eyebrow, thin light heading, lede) above a 3-up grid
- * of rounded package cards; the "popular" tier is filled with the primary color
- * and lifted with a shadow plus a corner ribbon, while the others are plain cards.
- * Each card shows name, tagline, large light price, a check-marked feature list,
- * and a full-width pill CTA that records a real Lakebed pricing action. Use to
- * present tiered pricing for event/wedding planners or premium service
+ * EventPlannerPricing — kinetic-poster three-tier planning-packages block on a
+ * muted band. An asymmetric intro (a mono metadata rail with a primary square,
+ * hairline rule and tier count above a giant tight-tracked heading and lede)
+ * above a 3-up grid of hard-framed rounded-none package cards; the "popular" tier
+ * carries a primary border, a hard primary offset shadow and a squared ribbon,
+ * while the others are hairline cards. Each card shows name, tagline, a giant
+ * extrabold tabular price, a check-marked feature list, and a full-width squared
+ * ticket-stub CTA with press feedback that records a real Lakebed pricing action.
+ * Use to present tiered pricing for event/wedding planners or premium service
  * businesses.
  */
 export const EventPlannerPricing = defineCapsule({
   name: 'EventPlannerPricing',
   description:
-    "Three-tier planning-packages block on a muted band: a centered intro (uppercase eyebrow, thin light heading, lede) above a 3-up grid of rounded package cards; the 'popular' tier is filled with the primary color and lifted with a shadow plus a corner ribbon, while the others are plain cards. Each card shows name, tagline, large light price, a check-marked feature list, and a full-width pill CTA that records a real Lakebed pricing action. Use to present tiered pricing (e.g. Essential, Signature, White Glove) for event/wedding planners or premium service businesses.",
+    "Kinetic-poster three-tier planning-packages block on a muted band: an asymmetric intro (a mono metadata rail with a primary square, hairline rule and tier count above a giant tight-tracked heading and lede) above a 3-up grid of hard-framed rounded-none package cards; the 'popular' tier carries a primary border, a hard primary offset shadow and a squared ribbon, while the others are hairline cards. Each card shows name, tagline, a giant extrabold tabular price, a check-marked feature list, and a full-width squared ticket-stub CTA with press feedback that records a real Lakebed pricing action. Use to present tiered pricing (e.g. Essential, Signature, White Glove) for event/wedding planners or premium service businesses.",
   lakebed: inquiryLakebed,
   props: z.object({
     eyebrow: z.string().optional(),
@@ -51,12 +55,13 @@ export const EventPlannerPricing = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  component: ({ props, lakebed }) => {
     const pricingEyebrow = props.eyebrow ?? 'Investment'
     const pricingHeading = props.heading ?? 'Planning Packages'
     const pricingDesc =
       props.description ??
       'Transparent pricing for weddings and celebrations. Custom quotes available for corporate and destination events.'
+    const pricingCta = props.cta ?? 'Inquire'
     const pricingTiers = props.tiers?.length
       ? props.tiers
       : [
@@ -108,17 +113,31 @@ export const EventPlannerPricing = defineCapsule({
         )}
       >
         <Container size="xl">
-          <SectionHeading
-            eyebrow={pricingEyebrow}
-            title={pricingHeading}
-            subtitle={pricingDesc}
-            align="center"
-            eyebrowClassName="text-muted-foreground tracking-widest"
-            titleClassName="text-3xl font-light sm:text-4xl lg:text-5xl"
-            subtitleClassName="text-lg"
-            className="mx-auto mb-16 max-w-3xl gap-6 lg:mb-24"
-          />
-          <PricingGrid className={props.className}>
+          <div className="mb-14 max-w-3xl lg:mb-20">
+            <div className="flex items-center gap-4">
+              <span
+                aria-hidden="true"
+                className="size-1.5 shrink-0 bg-primary"
+              />
+              <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                {pricingEyebrow}
+              </span>
+              <span aria-hidden="true" className="h-px flex-1 bg-border" />
+              <span
+                aria-hidden="true"
+                className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60 tabular-nums"
+              >
+                {String(pricingTiers.length).padStart(2, '0')} / packages
+              </span>
+            </div>
+            <h2 className="mt-6 text-4xl font-extrabold leading-[0.95] tracking-tighter text-foreground text-balance sm:text-5xl lg:text-6xl">
+              {pricingHeading}
+            </h2>
+            <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
+              {pricingDesc}
+            </p>
+          </div>
+          <PricingGrid>
             {pricingTiers.map((tier) => {
               const t = tier as {
                 name: string
@@ -144,20 +163,29 @@ export const EventPlannerPricing = defineCapsule({
                 priceSuffix?: string
                 note?: string
               }
+              const isPopular = Boolean(
+                t.highlighted || t.featured || t.popular,
+              )
               return (
                 <PricingTier
                   key={t.name}
-                  variant={
-                    t.highlighted || t.featured || t.popular
-                      ? 'highlighted'
-                      : undefined
-                  }
+                  variant={isPopular ? 'highlighted' : undefined}
+                  className={cn(
+                    'rounded-none border-2 shadow-none ring-0',
+                    isPopular
+                      ? 'border-primary bg-primary/[0.04] shadow-[7px_7px_0_0] shadow-primary/40'
+                      : 'border-foreground/15 bg-background',
+                  )}
                 >
-                  {t.highlighted || t.featured || t.popular ? (
-                    <PricingTierBadge>{t.badge ?? 'Popular'}</PricingTierBadge>
+                  {isPopular ? (
+                    <PricingTierBadge className="rounded-none border-2 border-foreground font-mono text-[10px] uppercase tracking-[0.14em]">
+                      {t.badge ?? 'Popular'}
+                    </PricingTierBadge>
                   ) : null}
                   <PricingTierHeader>
-                    <PricingTierName>{t.name}</PricingTierName>
+                    <PricingTierName className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                      {t.name}
+                    </PricingTierName>
                     {t.tagline && (
                       <PricingTierTagline>{t.tagline}</PricingTierTagline>
                     )}
@@ -170,7 +198,9 @@ export const EventPlannerPricing = defineCapsule({
                     {t.audience && (
                       <PricingTierTagline>{t.audience}</PricingTierTagline>
                     )}
-                    <PricingTierPrice>{t.price}</PricingTierPrice>
+                    <PricingTierPrice className="text-4xl font-extrabold tracking-tight tabular-nums sm:text-5xl">
+                      {t.price}
+                    </PricingTierPrice>
                     {t.period && (
                       <PricingTierPeriod>{t.period}</PricingTierPeriod>
                     )}
@@ -183,7 +213,7 @@ export const EventPlannerPricing = defineCapsule({
                     )}
                   </PricingTierHeader>
                   {t.features && (
-                    <PricingTierFeatures>
+                    <PricingTierFeatures className="border-t border-border pt-6">
                       {t.features.map((feature) => (
                         <PricingTierFeature
                           key={
@@ -199,11 +229,27 @@ export const EventPlannerPricing = defineCapsule({
                       ))}
                     </PricingTierFeatures>
                   )}
-                  {t.cta && (
-                    <PricingTierCta target={t.ctaTarget}>
-                      {t.cta}
-                    </PricingTierCta>
-                  )}
+                  <InquiryActionButton
+                    lakebed={lakebed}
+                    label={`${pricingCta} ${t.name}`}
+                    source="Event planner pricing"
+                    target={t.name}
+                    kind="pricing"
+                    pendingChildren={
+                      <>
+                        <InquiryMutationSpinner />
+                        Recording
+                      </>
+                    }
+                    className={cn(
+                      'mt-auto inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-none border-2 border-foreground px-5 py-3 text-sm font-semibold shadow-[3px_3px_0_0] transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[5px_5px_0_0] active:translate-y-0 active:shadow-[1px_1px_0_0] disabled:pointer-events-none disabled:opacity-70',
+                      isPopular
+                        ? 'bg-primary text-primary-foreground shadow-foreground'
+                        : 'bg-foreground text-background shadow-primary/40',
+                    )}
+                  >
+                    {pricingCta}
+                  </InquiryActionButton>
                 </PricingTier>
               )
             })}

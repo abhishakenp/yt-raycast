@@ -21,20 +21,22 @@ import {
 import { hotelResortLakebed } from './hotel-resort-lakebed.ts'
 
 /**
- * HotelResortNavbar — fixed, translucent top navigation bar for a luxury
- * hotel / resort & spa site. A backdrop-blurred, border-bottomed header pinned
- * to the top: a circular brand-initial logo mark beside the resort name on the
- * left, a horizontal set of nav links in the center (desktop), and a phone
- * number, search, profile dropdown, and a solid "Book Now" CTA on the right,
- * with a Sheet menu on mobile. Nav links preserve page switching; booking and
- * profile actions use shared Lakebed state. Use as the sticky site header for hotels,
- * beach or coastal resorts, spa retreats, boutique inns, villas, or wellness
- * destinations. Renders fully with no props via baked-in "Azure Coast" defaults.
+ * HotelResortNavbar — fixed, backdrop-blurred top navigation bar for a
+ * luxury-editorial hotel / resort & spa site. A hairline-bottomed translucent
+ * header pinned to the top: a squared serif brand-initial mark beside the
+ * serif resort wordmark on the left, a horizontal set of nav links in the
+ * center (desktop), and a phone number, room search, profile dropdown, booking
+ * badge, and a sharp-cornered mono-lettered "Book Now" CTA (with press
+ * feedback) on the right, with a Sheet menu on mobile. Nav links preserve page
+ * switching; booking and profile actions use shared Lakebed state. Use as the
+ * sticky site header for hotels, beach or coastal resorts, spa retreats,
+ * boutique inns, villas, or wellness destinations. Renders fully with no props
+ * via baked-in "Azure Coast" defaults.
  */
 export const HotelResortNavbar = defineCapsule({
   name: 'HotelResortNavbar',
   description:
-    'Fixed translucent top navigation bar for a luxury hotel / resort & spa site: backdrop-blurred, border-bottomed header pinned to the top with a circular brand-initial logo mark + resort name on the left, horizontal nav links in the center (desktop), and a phone number, room search, profile dropdown, booking badge, and a solid Book Now CTA on the right, with a real Sheet menu on mobile. Nav links route through route hrefs for page-switching while booking/profile/search actions use shared Lakebed state. Use as the sticky site header for hotels, beach or coastal resorts, spa retreats, boutique inns, villas, or wellness destinations.',
+    'Fixed backdrop-blurred top navigation bar for a luxury-editorial hotel / resort & spa site: a hairline-bottomed translucent header pinned to the top with a squared serif brand-initial mark + serif resort wordmark on the left, horizontal nav links in the center (desktop), and a phone number, room search, profile dropdown, booking badge, and a sharp-cornered mono-lettered Book Now CTA with press feedback on the right, with a real Sheet menu on mobile. Nav links route through route hrefs for page-switching while booking/profile/search actions use shared Lakebed state. Use as the sticky site header for hotels, beach or coastal resorts, spa retreats, boutique inns, villas, or wellness destinations.',
   props: z.object({
     /** Resort / brand name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -61,7 +63,7 @@ export const HotelResortNavbar = defineCapsule({
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          'grid place-items-center rounded-full font-light',
+          'grid place-items-center rounded-none font-serif',
           className,
         )}
         aria-hidden="true"
@@ -74,23 +76,27 @@ export const HotelResortNavbar = defineCapsule({
       <SiteNav
         position="fixed"
         height="default"
-        className={cn('bg-background/95', props.className)}
+        className={cn(
+          'border-border bg-background/90 backdrop-blur-xl',
+          props.className,
+        )}
         containerClassName="px-6 lg:px-8"
       >
-        <NavbarBrand href={nav[0]} className="gap-3">
-          <BrandLogo brand={brand}>
+        <NavbarBrand href={nav[0]}>
+          <BrandLogo brand={brand} className="flex items-center gap-2.5">
             <LogoImage
+              className="size-7"
               fallback={
-                <LogoMark className="size-10 bg-foreground text-lg text-background" />
+                <LogoMark className="size-9 bg-foreground text-base text-background" />
               }
             />
-            <LogoLabel className="text-xl font-medium tracking-tight" />
+            <LogoLabel className="font-serif text-xl font-normal tracking-tight" />
           </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink key={label} href={label} className="text-sm">
               {label}
             </NavbarNavLink>
           ))}
@@ -108,7 +114,7 @@ export const HotelResortNavbar = defineCapsule({
           />
           <a
             href={`tel:${phone.replace(/[^\d+]/g, '')}`}
-            className="hidden text-sm text-muted-foreground lg:block"
+            className="hidden font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground xl:block"
           >
             {phone}
           </a>
@@ -123,7 +129,7 @@ export const HotelResortNavbar = defineCapsule({
                 Sending
               </>
             }
-            className="hidden items-center justify-center gap-2 rounded-md bg-foreground px-6 py-3 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
+            className="hidden items-center justify-center gap-2 rounded-none bg-foreground px-6 py-3 font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-background transition-[background-color,transform] duration-150 hover:bg-foreground/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
           >
             {cta}
           </HotelBookingActionButton>

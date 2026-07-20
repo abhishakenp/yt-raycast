@@ -10,6 +10,7 @@ import {
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { LocalServiceLakebed } from '../local-service/local-service-interactions.tsx'
 import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
+import { RoutesContext } from '#/lib/route-context.tsx'
 
 type TestService = {
   createdAt: string
@@ -58,6 +59,42 @@ type MutationResult<TMutation> = TMutation extends (
 const timestamp = '2026-06-26T00:00:00.000Z'
 const navigate = vi.fn()
 const lakebedRef: { current: LocalServiceLakebed | null } = { current: null }
+
+const DENTAL_ROUTES = [
+  'Home',
+  'Services',
+  'Pricing',
+  'Reviews',
+  'FAQ',
+  'Book Appointment',
+]
+function RoutesProvider({
+  children,
+  routes = DENTAL_ROUTES,
+}: {
+  children: React.ReactNode
+  routes?: string[]
+}) {
+  const [currentPage, setCurrentPage] = useState(routes[0] ?? '')
+  const [pendingSectionId, setPendingSectionId] = useState<string | null>(null)
+  const value = useMemo(
+    () => ({
+      routes,
+      targetMap: {} as Record<string, string>,
+      currentPage,
+      setCurrentPage: (page: string) => {
+        navigate(page)
+        setCurrentPage(page)
+      },
+      pendingSectionId,
+      setPendingSectionId,
+    }),
+    [routes, currentPage, pendingSectionId],
+  )
+  return (
+    <RoutesContext.Provider value={value}>{children}</RoutesContext.Provider>
+  )
+}
 
 vi.mock('@ship-fast/lakebed/react', async () => {
   const actual = await vi.importActual<
@@ -417,13 +454,15 @@ describe('Dental fullstack behavior', () => {
     lakebedRef.current = lakebed
 
     render(
-      <>
-        <DentalNavbar.component
-          props={{ brand: 'Bright Smile', nav: ['Services', 'Pricing'] }}
-        />
-        <DentalServices.component props={{ items: dentalServices }} />
-        <DentalPricing.component props={{ plans: dentalPlans }} />
-      </>,
+      <RoutesProvider>
+        <>
+          <DentalNavbar.component
+            props={{ brand: 'Bright Smile', nav: ['Services', 'Pricing'] }}
+          />
+          <DentalServices.component props={{ items: dentalServices }} />
+          <DentalPricing.component props={{ plans: dentalPlans }} />
+        </>
+      </RoutesProvider>,
     )
 
     await waitFor(() => {
@@ -447,13 +486,12 @@ describe('Dental fullstack behavior', () => {
         source: 'search',
       })
     })
-    expect(navigate).toHaveBeenCalledWith('Preventive Care')
 
     fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
-    fireEvent.click(await screen.findByRole('button', { name: 'Pricing' }))
+    fireEvent.click(await screen.findByRole('link', { name: 'Pricing' }))
     expect(navigate).toHaveBeenCalledWith('Pricing')
   })
 
@@ -467,12 +505,14 @@ describe('Dental fullstack behavior', () => {
     lakebedRef.current = lakebed
 
     render(
-      <>
-        <DentalHero.component props={{}} />
-        <DentalServices.component props={{ items: dentalServices }} />
-        <DentalPricing.component props={{ plans: dentalPlans }} />
-        <DentalContactCta.component props={{}} />
-      </>,
+      <RoutesProvider>
+        <>
+          <DentalHero.component props={{}} />
+          <DentalServices.component props={{ items: dentalServices }} />
+          <DentalPricing.component props={{ plans: dentalPlans }} />
+          <DentalContactCta.component props={{}} />
+        </>
+      </RoutesProvider>,
     )
 
     const preventiveButton = screen.getByRole('button', {

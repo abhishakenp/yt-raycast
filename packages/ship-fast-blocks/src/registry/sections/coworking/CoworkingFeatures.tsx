@@ -4,6 +4,7 @@ import { Clock, Coffee, Phone, Sparkles, Users, Wifi } from 'lucide-react'
 
 import { cn } from '#/lib/utils.ts'
 import { GridField } from '#/section-kit/motion.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -12,14 +13,16 @@ import { Card } from '#/section-kit/Card.tsx'
 
 /**
  * CoworkingFeatures — calm, dimensional amenity grid for a coworking or
- * shared-workspace page. An editorial split header (eyebrow chip + display
- * heading left, supporting line right) above a bento of frosted glass cards:
- * each card carries a gradient icon tile that lifts softly on hover, and a
- * hairline that warms under the pointer. The backdrop continues the page's
- * light-field — hairline content rails and a seam hairline at the top edge —
- * so the section reads as part of one connected canvas. Default content
- * forms a varied-span bento; authored features or an explicit column count
- * render a clean uniform grid. Renders fully with no props via bright
+ * shared-workspace page. An editorial split header (mono index eyebrow chip
+ * "01 / Amenities" + display heading left, supporting line right) above a
+ * bento of frosted glass cards: each card opens with a mono index numeral
+ * beside a hairline icon chip that lifts softly on hover, carries a giant
+ * ghost numeral in its corner, and a hairline that warms under the pointer;
+ * cards lift and warm their border on hover. The backdrop continues the
+ * page's light-field — hairline content rails and a seam hairline at the top
+ * edge — so the section reads as part of one connected canvas. Default
+ * content forms a varied-span bento; authored features or an explicit column
+ * count render a clean uniform grid. Renders fully with no props via bright
  * "Northside" defaults. Use to communicate what's included with a membership
  * for coworking spaces, shared offices, flex-office providers, or business
  * centers.
@@ -27,7 +30,7 @@ import { Card } from '#/section-kit/Card.tsx'
 export const CoworkingFeatures = defineCapsule({
   name: 'CoworkingFeatures',
   description:
-    "Calm dimensional amenity grid for a coworking or shared-workspace page: editorial split header (eyebrow chip + display heading + supporting line) above a bento of frosted glass amenity cards with gradient icon tiles that lift softly on hover, and hairlines that warm under the pointer, over a connected light-field backdrop (hairline content rails, seam hairline). Defaults produce a varied-span bento; authored features or an explicit column count render a clean uniform grid. Use to communicate what's included with a membership for coworking spaces, shared offices, flex-office providers, or business centers.",
+    "Calm dimensional amenity grid for a coworking or shared-workspace page: editorial split header (mono index eyebrow chip + display heading + supporting line) above a bento of frosted glass amenity cards — each opens with a mono index numeral beside a hairline icon chip that lifts softly on hover, carries a giant ghost numeral in its corner, and a hairline that warms under the pointer — over a connected light-field backdrop (hairline content rails, seam hairline). Defaults produce a varied-span bento; authored features or an explicit column count render a clean uniform grid. Use to communicate what's included with a membership for coworking spaces, shared offices, flex-office providers, or business centers.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -145,9 +148,7 @@ export const CoworkingFeatures = defineCapsule({
                   className="size-3.5 text-primary"
                   aria-hidden="true"
                 />
-                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  Amenities
-                </span>
+                <MonoTag>01 / Amenities</MonoTag>
               </span>
               <SectionHeading
                 align="left"
@@ -173,16 +174,25 @@ export const CoworkingFeatures = defineCapsule({
                   span={bento ? bentoSpans[index % bentoSpans.length] : ''}
                   className="rounded-3xl"
                 >
-                  <Card
-                    className="group relative flex h-full flex-col overflow-hidden border-border/60 bg-card/70 backdrop-blur transition-shadow duration-500 hover:shadow-lg hover:shadow-primary/10 rounded-3xl p-8 shadow-sm"
-                  >
+                  <Card className="group relative flex h-full flex-col overflow-hidden border-border/60 bg-card/70 backdrop-blur transition-all duration-500 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 rounded-3xl p-8 shadow-sm">
                     <div
                       aria-hidden="true"
                       className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
                     />
-                    <span className="grid size-12 place-items-center rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 text-primary ring-1 ring-primary/20 transition-transform duration-500 group-hover:-translate-y-1">
-                      <Icon className="size-5" aria-hidden="true" />
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute -right-2 -top-5 select-none text-[5.5rem] font-extrabold leading-none tracking-tighter text-foreground/[0.045]"
+                    >
+                      {String(index + 1).padStart(2, '0')}
                     </span>
+                    <div className="flex items-center justify-between gap-4">
+                      <MonoTag tone="faint">
+                        {String(index + 1).padStart(2, '0')}
+                      </MonoTag>
+                      <span className="grid size-11 place-items-center rounded-2xl border border-border/60 bg-background/40 text-primary transition-transform duration-500 group-hover:-translate-y-1">
+                        <Icon className="size-4.5" aria-hidden="true" />
+                      </span>
+                    </div>
                     <h3 className="mt-6 text-lg font-semibold tracking-tight text-card-foreground">
                       {feature.title}
                     </h3>

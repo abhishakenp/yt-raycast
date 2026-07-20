@@ -4,27 +4,31 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { GridField } from '#/section-kit/motion.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * CoworkingHero — luminous opening scene for a coworking / workspace landing
- * page. The backdrop is a blueprint light-field: an architectural hairline
- * grid with crosshair accents and vertical rails at the content edges. Left:
- * an eyebrow chip with a soft pulsing dot, a display headline with a
- * gradient-ink closing phrase, supporting paragraph, a shimmer primary CTA
- * beside a glass secondary CTA, and a quiet trust-chip row. Right: an offset
+ * CoworkingHero — luminous editorial opening scene for a coworking /
+ * workspace landing page. The backdrop is a blueprint light-field: an
+ * architectural hairline grid with crosshair accents, vertical rails at the
+ * content edges, and a giant ghost watermark of the headline's opening word.
+ * The stage splits asymmetrically 7:5 — left: a mono-label eyebrow chip with
+ * a soft pulsing dot, a display headline with a gradient-ink closing phrase,
+ * supporting paragraph, a shimmer primary CTA beside a glass secondary CTA
+ * (both with press feedback), and a quiet trust-chip row. Right: an offset
  * outline frame behind a hero photo with specular ring, and one glass proof
- * card with an avatar stack. CTAs route through section-kit route links; photos use the
- * alt-driven Image component. Use as the opening section for coworking
- * spaces, shared offices, flex-office providers, or business centers.
+ * card with an avatar stack. CTAs route through section-kit route links;
+ * photos use the alt-driven Image component. Use as the opening section for
+ * coworking spaces, shared offices, flex-office providers, or business
+ * centers.
  */
 export const CoworkingHero = defineCapsule({
   name: 'CoworkingHero',
   description:
-    'Luminous hero scene for a coworking / workspace landing page over a blueprint light-field backdrop (architectural hairline grid with crosshair accents, hairline content rails): eyebrow chip with pulsing dot, display headline with gradient-ink closing phrase, supporting paragraph, shimmer primary CTA + glass secondary CTA, and a trust-chip row — beside an offset outline frame behind a hero photo with specular ring, and a glass social-proof card with an avatar stack and member metric. CTAs route through section-kit route links; images use the alt-driven Image component. Use as the opening section for coworking spaces, shared offices, flex-office providers, or workspace membership sites.',
+    'Luminous editorial hero for a coworking / workspace landing page over a blueprint light-field backdrop (architectural hairline grid with crosshair accents, hairline content rails, giant ghost watermark of the opening headline word), split asymmetrically 7:5: mono-label eyebrow chip with pulsing dot, display headline with gradient-ink closing phrase, supporting paragraph, shimmer primary CTA + glass secondary CTA with press feedback, and a trust-chip row — beside an offset outline frame behind a hero photo with specular ring, and a glass social-proof card with an avatar stack and member metric. CTAs route through section-kit route links; images use the alt-driven Image component. Use as the opening section for coworking spaces, shared offices, flex-office providers, or workspace membership sites.',
   props: z.object({
     /** Availability / status eyebrow text above the headline. */
     eyebrow: z.string().optional(),
@@ -147,6 +151,9 @@ export const CoworkingHero = defineCapsule({
           size={64}
           mask="radial-gradient(ellipse 95% 85% at 50% 10%, black 30%, transparent 78%)"
         />
+        <Watermark className="right-[-4%] top-[6%] -z-10 text-[clamp(6rem,16vw,15rem)] uppercase">
+          {headingLead.split(/\s+/)[0] ?? ''}
+        </Watermark>
         <div aria-hidden="true" className="absolute inset-0 -z-10">
           {[
             'left-[16%] top-[22%]',
@@ -179,14 +186,14 @@ export const CoworkingHero = defineCapsule({
             className="pointer-events-none absolute inset-y-0 right-0 hidden w-px bg-gradient-to-b from-transparent via-border/70 to-transparent lg:block"
           />
 
-          <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20">
+          <div className="grid items-center gap-14 lg:grid-cols-[7fr_5fr] lg:gap-20">
             <div className="max-w-2xl">
               <span className="inline-flex items-center gap-2.5 rounded-full border border-border/60 bg-card/70 px-4 py-1.5 shadow-sm backdrop-blur">
                 <span className="relative flex size-2">
                   <span className="absolute inline-flex size-full animate-ping rounded-full bg-primary opacity-50" />
                   <span className="relative inline-flex size-2 rounded-full bg-primary" />
                 </span>
-                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
                   {eyebrow}
                 </span>
               </span>
@@ -204,7 +211,7 @@ export const CoworkingHero = defineCapsule({
 
               <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
                 <NavbarRouteLink
-                  className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/35"
+                  className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/35 active:translate-y-px"
                   href={primaryCta}
                 >
                   <span
@@ -215,7 +222,7 @@ export const CoworkingHero = defineCapsule({
                   <ArrowRight className="relative size-5 transition-transform duration-300 group-hover:translate-x-1" />
                 </NavbarRouteLink>
                 <NavbarRouteLink
-                  className="inline-flex items-center justify-center rounded-2xl border border-border/70 bg-card/60 px-8 py-4 text-base font-medium text-foreground backdrop-blur transition-colors duration-300 hover:bg-card"
+                  className="inline-flex items-center justify-center rounded-2xl border border-border/70 bg-card/60 px-8 py-4 text-base font-medium text-foreground backdrop-blur transition-colors duration-300 hover:bg-card active:translate-y-px"
                   href={secondaryCta}
                 >
                   {secondaryCta}

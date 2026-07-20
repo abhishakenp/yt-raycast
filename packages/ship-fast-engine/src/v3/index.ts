@@ -142,10 +142,7 @@ export async function runAllV3({
   ]
 
   const persistTasks = () => {
-    writeFileSync(
-      join(ws, 'tasks.json'),
-      JSON.stringify({ tasks }, null, 2),
-    )
+    writeFileSync(join(ws, 'tasks.json'), JSON.stringify({ tasks }, null, 2))
   }
 
   sessionCtx?.setPrompt?.(normalizedPrompt)
@@ -357,10 +354,7 @@ export async function runAllV3({
     timings.ssr_start = Date.now()
     _status('Rendering preview…', 'render')
     try {
-      await renderPreviewToWorkspace(
-        siteSpec as unknown as SiteSpecProject,
-        ws,
-      )
+      await renderPreviewToWorkspace(siteSpec as unknown as SiteSpecProject, ws)
     } catch (ssrErr) {
       _log(
         `  SSR render failed: ${(ssrErr as Error)?.message} — writing shell fallback`,

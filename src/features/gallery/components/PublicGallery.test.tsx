@@ -33,7 +33,7 @@ vi.mock('@tanstack/react-router', () => ({
   }) => {
     const anchorProps = { ...props }
     const href =
-      to === '/generate/$sessionId' && params?.sessionId
+      to === '/generate/$sessionId/$' && params?.sessionId
         ? `/generate/${params.sessionId}`
         : to
 

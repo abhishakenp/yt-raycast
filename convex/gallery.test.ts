@@ -174,9 +174,9 @@ test("listOwnedSessions returns the caller's sessions (signed-in owner) and excl
     },
   )
 
-  expect(aliceMine.items.map((item: Record<string, unknown>) => item.sessionId)).toEqual([
-    minePublic.sessionId,
-  ])
+  expect(
+    aliceMine.items.map((item: Record<string, unknown>) => item.sessionId),
+  ).toEqual([minePublic.sessionId])
   expect(aliceMine.total).toBe(1)
 }, 15_000)
 
@@ -289,9 +289,11 @@ test('claimAnonymousSessionsByClientIdMutation links all anon sessions to signed
     },
   )
   expect(aliceMine.total).toBe(2)
-  expect(aliceMine.items.map((item: Record<string, unknown>) => item.sessionId).sort()).toEqual(
-    [anonSession1, anonSession2].sort(),
-  )
+  expect(
+    aliceMine.items
+      .map((item: Record<string, unknown>) => item.sessionId)
+      .sort(),
+  ).toEqual([anonSession1, anonSession2].sort())
 
   // Bob's session is still Bob's — not claimed by Alice.
   const bobMine = await asUser(t, 'bob').query(api.sessions.listOwnedSessions, {

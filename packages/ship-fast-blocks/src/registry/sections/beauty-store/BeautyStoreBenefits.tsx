@@ -4,7 +4,6 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import {
-  FeatureGrid,
   FeatureCard,
   FeatureIcon,
   FeatureTitle,
@@ -12,20 +11,25 @@ import {
 } from '#/section-kit/FeatureGrid.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
- * BeautyStoreBenefits — a four-up "why choose us" benefits grid for a beauty /
- * skincare / cosmetics storefront. Centered section heading and intro paragraph above
- * a responsive grid of icon-topped cards: each card has a rounded tinted icon circle
- * (rotating inline line-icons), a bold title, and a short description. Use for clean-
- * beauty value propositions (clean ingredients, cruelty-free, sustainable, free
- * shipping) or any e-commerce trust / UVP block. Tokens-only, no links.
+ * BeautyStoreBenefits — editorial-vogue "house standards" band for a beauty /
+ * skincare / cosmetics storefront. An asymmetric 7:5 masthead: mono index rail
+ * ("N° 03" — hairline rule) and a large serif heading on the left, the intro
+ * paragraph on the right behind a hairline left rule. Below, a collapsed
+ * hairline-border grid (1/2/4 columns joined by hairline seams, no card
+ * chrome): each cell opens with an oversized ghost serif italic numeral
+ * ("01"–"04") opposite a small hairline-framed line icon, then a serif title
+ * and a short description. Use for clean-beauty value propositions (clean
+ * ingredients, cruelty-free, sustainable, free shipping) or any e-commerce
+ * trust / UVP block. Tokens-only, no links.
  */
 export const BeautyStoreBenefits = defineCapsule({
   name: 'BeautyStoreBenefits',
   description:
-    "Four-up 'why choose us' benefits grid for a beauty / skincare / cosmetics storefront: centered section heading and intro paragraph above a responsive grid of cards, each with a rounded tinted icon circle (rotating inline line-icons), a bold title, and a short description. Use for clean-beauty value propositions (clean ingredients, cruelty-free, sustainable, fast shipping) or any e-commerce trust / UVP block.",
+    "Editorial-vogue 'house standards' band for a beauty / skincare / cosmetics storefront: an asymmetric 7:5 masthead with a mono index rail and large serif heading on the left and the intro paragraph behind a hairline rule on the right, above a collapsed hairline-border grid (1/2/4 columns joined by hairline seams). Each cell opens with an oversized ghost serif italic numeral opposite a small hairline-framed line icon, then a serif title and short description. Use for clean-beauty value propositions (clean ingredients, cruelty-free, sustainable, fast shipping) or any e-commerce trust / UVP block.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -123,31 +127,57 @@ export const BeautyStoreBenefits = defineCapsule({
     ]
 
     return (
-      <section className={cn('py-20 lg:py-28', props.className)}>
+      <section className={cn('py-16 sm:py-20 lg:py-24', props.className)}>
         <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-2xl gap-0"
-            titleClassName="mb-4 font-serif text-3xl font-semibold text-foreground sm:text-4xl"
-            subtitleClassName="text-muted-foreground"
-          />
-          <FeatureGrid className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Asymmetric masthead: serif heading left, intro right of a hairline. */}
+          <div className="mb-10 grid gap-6 sm:mb-14 lg:grid-cols-12 lg:items-end lg:gap-10">
+            <div className="lg:col-span-7">
+              <div className="mb-5 flex items-center gap-4">
+                <MonoTag className="shrink-0 text-foreground">N° 03</MonoTag>
+                <span
+                  aria-hidden="true"
+                  className="h-px w-10 bg-border sm:max-w-24 sm:flex-1"
+                />
+              </div>
+              <SectionHeading
+                align="left"
+                title={heading}
+                className="gap-0"
+                titleClassName="font-serif text-3xl font-medium tracking-tight text-foreground sm:text-4xl lg:text-5xl"
+              />
+            </div>
+            <p className="max-w-md border-l border-border pl-5 text-muted-foreground lg:col-span-5 lg:justify-self-end">
+              {description}
+            </p>
+          </div>
+
+          {/* Collapsed hairline grid — seams celebrated, no card chrome. */}
+          <div className="grid grid-cols-1 gap-px border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
             {items.map((item, i) => (
               <FeatureCard
                 key={item.title}
-                className="border-0 bg-transparent p-6 text-center"
+                className="rounded-none border-0 bg-background p-6 text-left shadow-none sm:p-8"
               >
-                <FeatureIcon className="mx-auto mb-5 flex size-16 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  {benefitIcons[i % benefitIcons.length]}
-                </FeatureIcon>
-                <FeatureTitle className="mb-2 font-semibold text-foreground">
+                <div className="mb-8 flex items-start justify-between gap-4 sm:mb-10">
+                  <span
+                    aria-hidden="true"
+                    className="font-serif text-4xl italic leading-none text-foreground/20 sm:text-5xl"
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <FeatureIcon className="flex size-10 shrink-0 items-center justify-center rounded-none border border-border bg-transparent text-primary [&_svg]:size-4">
+                    {benefitIcons[i % benefitIcons.length]}
+                  </FeatureIcon>
+                </div>
+                <FeatureTitle className="mb-2 font-serif text-lg font-medium text-foreground">
                   {item.title}
                 </FeatureTitle>
-                <FeatureDescription>{item.description}</FeatureDescription>
+                <FeatureDescription className="text-sm leading-relaxed">
+                  {item.description}
+                </FeatureDescription>
               </FeatureCard>
             ))}
-          </FeatureGrid>
+          </div>
         </Container>
       </section>
     )

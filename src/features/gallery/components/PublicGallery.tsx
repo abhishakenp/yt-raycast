@@ -251,7 +251,7 @@ function GalleryCard({
   return (
     <Link
       className="group block overflow-hidden rounded-[8px] border border-white/10 bg-white/[0.055] shadow-[0_24px_80px_rgba(0,0,0,0.28)] transition-colors hover:border-cyan-200/50 hover:bg-white/[0.075]"
-      to="/generate/$sessionId"
+      to="/generate/$sessionId/$"
       params={{ sessionId: session.sessionId }}
       preload="intent"
       aria-label={getGalleryCardAriaLabel(session)}

@@ -13,17 +13,17 @@ import {
   FooterCopyright,
 } from '#/section-kit/SiteFooter.tsx'
 /**
- * EventPlannerFooter — inverted four-column site footer. A foreground-colored band
- * with a brand column (thin clock-glyph logo + light brand name + tagline) beside
- * link columns of grouped navigation buttons, then a top-bordered bottom bar with
- * a copyright line and legal links. Every link routes through section-kit route links. Use as
- * the closing footer for event/wedding planners, agencies, or premium service
- * businesses.
+ * EventPlannerFooter — kinetic-poster inverted four-column site footer. A
+ * foreground-colored band with a brand column (clock-glyph mark + wordmark +
+ * tagline) beside link columns whose mono uppercase titles head stacked
+ * block-width navigation links, then a top-bordered bottom bar with a copyright
+ * line. Every link routes through section-kit route links. Use as the closing
+ * footer for event/wedding planners, agencies, or premium service businesses.
  */
 export const EventPlannerFooter = defineCapsule({
   name: 'EventPlannerFooter',
   description:
-    'Inverted four-column site footer: a foreground-colored band with a brand column (thin clock-glyph logo + light brand name + tagline) beside link columns of grouped navigation buttons, then a top-bordered bottom bar with a copyright line and legal links. Every link routes through section-kit route links. Use as the closing footer for event/wedding planners, agencies, or premium service businesses.',
+    'Kinetic-poster inverted four-column site footer: a foreground-colored band with a brand column (clock-glyph mark + wordmark + tagline) beside link columns whose mono uppercase titles head stacked block-width navigation links, then a top-bordered bottom bar with a copyright line. Every link routes through section-kit route links. Use as the closing footer for event/wedding planners, agencies, or premium service businesses.',
   props: z.object({
     /** Brand / studio name shown beside the footer logo. */
     brand: z.string().optional(),
@@ -68,10 +68,14 @@ export const EventPlannerFooter = defineCapsule({
             <FooterBrand brand={brand} />
             {footerColumns.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnTitle className="font-mono text-[11px] uppercase tracking-[0.2em]">
+                  {col.title}
+                </FooterColumnTitle>
                 <FooterColumnList>
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink key={link} className="block w-fit">
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>

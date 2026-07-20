@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import {
   FaqAccordion,
   FaqAnswer,
@@ -13,22 +14,25 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
 /**
- * DocsFaq — accessible, JS-free FAQ section for a developer DOCUMENTATION / API-reference
- * home. A centered column (max-w-3xl) leads with a kit SectionHeading: an uppercase "FAQ"
- * eyebrow in accent, a semibold "Frequently asked questions" title, and a muted subtitle.
- * Below it, a vertical stack of native <details>/<summary> accordions — each a rounded,
- * bordered card on bg-card whose <summary> holds the question plus a chevron SVG that
- * rotates 180° on open (group-open), and a muted answer paragraph that reveals when the
- * disclosure expands. Pure semantic HTML (no useState, no navigation) so it stays keyboard-
- * and screen-reader-accessible by default; the first item opens via defaultOpen. Use for
- * docs homes, API references, SDK guides, developer portals, or knowledge-base FAQ bands.
- * Renders fully with no props via baked-in developer-docs defaults. Clean docs aesthetic,
- * theme tokens only.
+ * DocsFaq — "Terminal-docs" accessible, JS-free FAQ ledger for a developer
+ * DOCUMENTATION / API-reference home. An asymmetric 4:8 split under a giant
+ * ghost `?` watermark: the left rail (sticky on lg) holds a left-aligned
+ * SectionHeading — mono "FAQ" eyebrow, extrabold title, muted subtitle — plus
+ * a tabular mono entry count over a hairline rule. The right column is a
+ * collapsed hairline question ledger of native <details>/<summary> rows: each
+ * summary pairs a tabular mono `Q index` numeral with the question and a plus
+ * glyph that rotates 45° on open (group-open); the answer reveals under a
+ * hairline left rail, indented to the question column. Pure semantic HTML (no
+ * useState, no navigation) so it stays keyboard- and screen-reader-accessible
+ * by default; the first item opens via defaultOpen. Use for docs homes, API
+ * references, SDK guides, developer portals, or knowledge-base FAQ bands.
+ * Renders fully with no props via baked-in developer-docs defaults. Theme
+ * tokens only.
  */
 export const DocsFaq = defineCapsule({
   name: 'DocsFaq',
   description:
-    "Accessible, JS-free FAQ section for a developer DOCUMENTATION / API-reference home: a centered max-w-3xl column with a kit SectionHeading (uppercase 'FAQ' eyebrow, semibold 'Frequently asked questions' title, muted subtitle) above a vertical stack of native <details>/<summary> accordions. Each accordion is a rounded bordered card on bg-card whose summary shows the question and a chevron SVG that rotates 180° on open (group-open), with a muted answer paragraph revealed on expand. Pure semantic HTML — keyboard- and screen-reader-accessible by default, no client state and no navigation; the first item opens via defaultOpen. Use for docs homes, API references, SDK guides, developer portals, or knowledge-base FAQ bands. Clean developer-docs aesthetic, theme tokens only.",
+    "Terminal-docs accessible, JS-free FAQ ledger for a developer DOCUMENTATION / API-reference home: an asymmetric 4:8 split under a giant ghost '?' watermark — a sticky left rail with a left-aligned SectionHeading (mono 'FAQ' eyebrow, extrabold title, muted subtitle) and a tabular mono entry count over a hairline rule, beside a collapsed hairline ledger of native <details>/<summary> rows. Each summary pairs a tabular mono index numeral with the question and a plus glyph rotating 45° on open (group-open); the answer reveals under a hairline left rail indented to the question column. Pure semantic HTML — keyboard- and screen-reader-accessible by default, no client state and no navigation; the first item opens via defaultOpen. Use for docs homes, API references, SDK guides, developer portals, or knowledge-base FAQ bands. Theme tokens only.",
   props: z.object({
     /** Uppercase eyebrow label above the title. */
     eyebrow: z.string().optional(),
@@ -89,28 +93,68 @@ export const DocsFaq = defineCapsule({
     ]
 
     return (
-      <section className={cn('pt-28 pb-16', props.className)}>
-        <Container size="sm">
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={title}
-            subtitle={subtitle}
-            align="center"
-          />
+      <section
+        className={cn(
+          'relative overflow-hidden border-b border-border pt-24 pb-16 lg:pt-28 lg:pb-24',
+          props.className,
+        )}
+      >
+        {/* Giant ghost question mark — the section's reading anchor. */}
+        <Watermark className="-bottom-16 -left-6 font-mono text-[14rem] sm:text-[18rem] lg:text-[24rem]">
+          ?
+        </Watermark>
 
-          <FaqAccordion variant="compact" className="mt-10">
-            {items.map((item, index) => (
-              <FaqItem key={item.question} open={index === defaultOpen}>
-                <FaqQuestion className="px-5 py-4 font-medium">
-                  <span>{item.question}</span>
-                  <FaqQuestionIcon />
-                </FaqQuestion>
-                <FaqAnswer className="px-5 pb-5 text-sm">
-                  {item.answer}
-                </FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+        <Container className="relative">
+          <div className="grid gap-10 lg:grid-cols-12 lg:gap-12">
+            {/* Left rail: heading + mono meta, sticky on lg. */}
+            <div className="lg:col-span-4">
+              <div className="lg:sticky lg:top-24">
+                <SectionHeading
+                  eyebrow={eyebrow}
+                  title={title}
+                  subtitle={subtitle}
+                  align="left"
+                  className="gap-3"
+                  eyebrowClassName="font-mono text-[11px] font-normal uppercase tracking-[0.22em] text-muted-foreground"
+                  titleClassName="text-3xl font-extrabold tracking-tight sm:text-4xl"
+                />
+                <p
+                  aria-hidden="true"
+                  className="mt-6 border-t border-border pt-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60 tabular-nums"
+                >
+                  [ {String(items.length).padStart(2, '0')} entries ]
+                </p>
+              </div>
+            </div>
+
+            {/* Right column: collapsed hairline question ledger. */}
+            <div className="lg:col-span-8">
+              <FaqAccordion variant="divided" className="space-y-0">
+                {items.map((item, index) => (
+                  <FaqItem
+                    key={item.question}
+                    open={index === defaultOpen}
+                    variant="divided"
+                    className="rounded-none border-0 bg-transparent"
+                  >
+                    <FaqQuestion className="items-baseline gap-4 rounded-none px-0 text-base font-semibold tracking-tight">
+                      <span
+                        aria-hidden="true"
+                        className="shrink-0 font-mono text-[11px] font-normal tabular-nums tracking-[0.2em] text-muted-foreground/60"
+                      >
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <span className="flex-1">{item.question}</span>
+                      <FaqQuestionIcon variant="plus" className="self-center" />
+                    </FaqQuestion>
+                    <FaqAnswer className="ml-8 mt-3 border-l-2 border-border pl-4 text-sm leading-relaxed">
+                      {item.answer}
+                    </FaqAnswer>
+                  </FaqItem>
+                ))}
+              </FaqAccordion>
+            </div>
+          </div>
         </Container>
       </section>
     )

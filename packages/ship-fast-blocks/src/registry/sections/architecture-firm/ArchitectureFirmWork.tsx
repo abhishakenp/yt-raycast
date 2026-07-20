@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   PortfolioGrid,
   PortfolioItem,
@@ -15,21 +16,26 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * ArchitectureFirmWork — selected-work / project gallery for an
- * architecture-studio / design-practice page. A heading row (eyebrow + light
- * title on the left, a short descriptive paragraph on the right) above a
- * responsive 1/2/3-column grid of tall 4:5 portrait project cards; each card
- * has an image-zoom-on-hover photo, a project title with typology/year meta and
- * a right-aligned location caption. Calm, editorial, monochrome. Each card
- * routes through section-kit route links. Use as a portfolio / selected-projects / case-study
- * gallery for architecture firms, design studios, interior designers, landscape
- * architects or any project-forward built-environment site. Renders fully with
- * no props via six baked-in project defaults.
+ * ArchitectureFirmWork — blueprint drawing-index project gallery for an
+ * architecture-studio / design-practice page. An asymmetric header row — mono
+ * annotation rail ("01 /" + eyebrow + hairline rule) and huge ultra-thin
+ * heading on the left, the descriptive paragraph hanging off a hairline left
+ * rule on the right — above a staggered 2/3-column grid of portrait project
+ * plates in which every second column drops down, keeping an offset rhythm
+ * even on small screens. Each plate is a sharp hairline-framed 4:5 grayscale
+ * photograph that regains color and zooms subtly on hover, headed by a mono
+ * "PROJ. 01" index row with the location, and captioned with a light title
+ * over mono uppercase typology/year metadata. Precise, monochrome,
+ * drafting-table calm. Each card routes through section-kit route links. Use
+ * as a portfolio / selected-projects / case-study gallery for architecture
+ * firms, design studios, interior designers, landscape architects or any
+ * project-forward built-environment site. Renders fully with no props via six
+ * baked-in project defaults.
  */
 export const ArchitectureFirmWork = defineCapsule({
   name: 'ArchitectureFirmWork',
   description:
-    'Selected-work / project gallery for an architecture-studio / design-practice page: a heading row (eyebrow + light title on the left, a short descriptive paragraph on the right) above a responsive 1/2/3-column grid of tall 4:5 portrait project cards, each with an image-zoom-on-hover photo, a project title with typology/year meta and a right-aligned location caption. Calm, editorial, monochrome. Cards route through section-kit route links. Use as a portfolio / selected-projects / case-study gallery for architecture firms, design studios, interior designers, landscape architects or any project-forward built-environment site.',
+    'Blueprint drawing-index project gallery for an architecture-studio / design-practice page: an asymmetric header row (mono annotation rail + huge ultra-thin heading left, descriptive paragraph on a hairline rule right) above a staggered 2/3-column grid of portrait project plates where every second column drops down, keeping an offset rhythm even on small screens — each plate a sharp hairline-framed 4:5 grayscale photograph that regains color and zooms subtly on hover, headed by a mono "PROJ. 01" index row with the location and captioned with a light title over mono uppercase typology/year metadata. Precise, monochrome, drafting-table calm. Cards route through section-kit route links. Use as a portfolio / selected-projects / case-study gallery for architecture firms, design studios, interior designers, landscape architects or any project-forward built-environment site.',
   props: z.object({
     /** Wide letter-spaced eyebrow label. */
     eyebrow: z.string().optional(),
@@ -106,47 +112,77 @@ export const ArchitectureFirmWork = defineCapsule({
     return (
       <section
         aria-labelledby="architecture-firm-work-heading"
-        className={cn('py-24 lg:py-28', props.className)}
+        className={cn(
+          'relative overflow-hidden py-16 sm:py-24 lg:py-28',
+          props.className,
+        )}
       >
         <Container>
-          <div className="mb-16 flex flex-col md:flex-row md:items-end md:justify-between">
-            <SectionHeading
-              align="left"
-              eyebrow={eyebrow}
-              title={heading}
-              titleId="architecture-firm-work-heading"
-              className="gap-0"
-              eyebrowClassName="mb-3 text-xs uppercase tracking-widest text-muted-foreground"
-              titleClassName="text-3xl font-light text-foreground sm:text-4xl"
-            />
-            <p className="mt-4 max-w-md text-sm leading-relaxed text-muted-foreground md:mt-0">
+          <div className="mb-12 flex flex-col gap-8 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <div>
+              <div className="mb-6 flex items-center gap-4">
+                <MonoTag className="shrink-0 text-foreground">01 /</MonoTag>
+                <MonoTag className="shrink-0">{eyebrow}</MonoTag>
+                <span aria-hidden="true" className="h-px w-16 bg-border" />
+              </div>
+              <SectionHeading
+                align="left"
+                title={heading}
+                titleId="architecture-firm-work-heading"
+                className="gap-0"
+                titleClassName="text-4xl font-extralight tracking-tight text-foreground sm:text-5xl lg:text-6xl"
+              />
+            </div>
+            <p className="max-w-md border-l border-border pl-5 text-sm leading-relaxed text-muted-foreground">
               {description}
             </p>
           </div>
 
-          <PortfolioGrid cols="1-md-2-3">
-            {items.map((proj) => (
-              <PortfolioItem key={proj.title} className="block w-full" asChild>
+          <PortfolioGrid
+            cols="1-md-2-3"
+            className="grid-cols-2 gap-x-4 gap-y-12 md:grid-cols-2 lg:grid-cols-3 lg:gap-x-8 lg:gap-y-16"
+          >
+            {items.map((proj, i) => (
+              <PortfolioItem
+                key={proj.title}
+                className={cn(
+                  'block w-full',
+                  // Staggered plate rhythm: every second column drops.
+                  i % 2 === 1 && 'translate-y-6 lg:translate-y-0',
+                  i % 3 === 1 && 'lg:translate-y-10',
+                )}
+                asChild
+              >
                 <NavbarRouteLink href={proj.title}>
-                  <PortfolioMedia aspect="4-5" className="mb-5 bg-muted">
+                  {/* Mono drawing-index row above the plate. */}
+                  <span className="mb-3 flex items-baseline justify-between gap-2">
+                    <MonoTag className="text-foreground">
+                      Proj. {String(i + 1).padStart(2, '0')}
+                    </MonoTag>
+                    <MonoTag className="hidden text-muted-foreground/60 sm:inline">
+                      {proj.location}
+                    </MonoTag>
+                  </span>
+                  <PortfolioMedia
+                    aspect="4-5"
+                    className="mb-4 border border-foreground/25 bg-muted"
+                  >
                     <Image
                       alt={proj.imageAlt}
                       w={800}
                       h={1000}
                       loading="lazy"
-                      className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="size-full object-cover grayscale transition-[filter,transform] duration-500 group-hover:scale-[1.03] group-hover:grayscale-0"
                     />
                   </PortfolioMedia>
-                  <PortfolioCaption className="flex items-start justify-between">
-                    <div>
-                      <h3 className="text-lg font-medium text-foreground">
-                        {proj.title}
-                      </h3>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {proj.meta}
-                      </p>
-                    </div>
-                    <span className="text-xs text-muted-foreground">
+                  <PortfolioCaption>
+                    <h3 className="text-base font-light tracking-tight text-foreground sm:text-lg">
+                      {proj.title}
+                    </h3>
+                    <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                      {proj.meta}
+                    </p>
+                    <span className="mt-1 font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground/60 sm:hidden">
                       {proj.location}
                     </span>
                   </PortfolioCaption>

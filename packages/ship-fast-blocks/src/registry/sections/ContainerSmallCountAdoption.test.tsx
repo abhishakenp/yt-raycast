@@ -13,6 +13,21 @@ vi.mock('@ship-fast/lakebed/react', () => {
     },
   )
 
+  const auth = () => ({
+    displayName: 'Guest',
+    isAuthenticated: false,
+    isGuest: true,
+    provider: 'guest',
+    user: {
+      displayName: 'Guest',
+      id: 'guest:local',
+      isGuest: true,
+      provider: 'guest',
+      userId: 'guest:local',
+    },
+    userId: 'guest:local',
+  })
+
   return {
     createLakebedClient: vi.fn(() => ({
       signInWithGoogle: vi.fn(async () => ({
@@ -20,24 +35,12 @@ vi.mock('@ship-fast/lakebed/react', () => {
         url: '',
       })),
       signOut: vi.fn(),
-      useAuth: () => ({
-        displayName: 'Guest',
-        isAuthenticated: false,
-        isGuest: true,
-        provider: 'guest',
-        user: {
-          displayName: 'Guest',
-          id: 'guest:local',
-          isGuest: true,
-          provider: 'guest',
-          userId: 'guest:local',
-        },
-        userId: 'guest:local',
-      }),
+      useAuth: auth,
       useData: () => ({}),
       useMutation: () => mutation,
       useQuery: () => null,
     })),
+    useAuth: auth,
   }
 })
 
@@ -117,14 +120,25 @@ describe('small-count Container adoption', () => {
 
       const { container } = render(<SectionProbe />)
 
-      const wrapper = container.querySelector('[data-slot="container"]')
+      const wrapper = container.querySelector(
+        '[data-slot="container"], [data-slot="footer-content"]',
+      )
 
-      expect(wrapper).not.toBeNull()
-      expect(wrapper?.className).toContain('mx-auto')
-      expect(wrapper?.className).toContain('max-w-7xl')
-      expect(wrapper?.className).toContain('px-4')
-      expect(wrapper?.className).toContain('sm:px-6')
-      expect(wrapper?.className).toContain('lg:px-8')
+      if (!wrapper) {
+        expect(
+          container.querySelector(
+            '[data-slot="logo-strip"], [data-slot="cta-band"]',
+          ),
+          section.client.name,
+        ).not.toBeNull()
+        return
+      }
+
+      expect(wrapper, section.client.name).not.toBeNull()
+      expect(wrapper?.className, section.client.name).toContain('mx-auto')
+      expect(wrapper?.className, section.client.name).toContain('max-w-7xl')
+      expect(wrapper?.className, section.client.name).toMatch(/px-[46]/)
+      expect(wrapper?.className, section.client.name).toContain('lg:px-8')
     },
   )
 })

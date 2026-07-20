@@ -1,8 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
+import { Container } from '#/section-kit/Container.tsx'
 import {
   SiteFooter,
-  FooterContent,
   FooterGrid,
   FooterBrand,
   FooterTagline,
@@ -79,7 +79,7 @@ export const CrowdfundingFooter = defineCapsule({
       : ['Privacy Policy', 'Terms of Service', 'Cookie Policy']
     return (
       <SiteFooter className={props.className}>
-        <FooterContent>
+        <Container className="py-12">
           <FooterGrid>
             <FooterBrand brand={brand}>
               <FooterTagline>{footerTagline}</FooterTagline>
@@ -115,7 +115,7 @@ export const CrowdfundingFooter = defineCapsule({
               ))}
             </FooterLegal>
           </FooterBottom>
-        </FooterContent>
+        </Container>
       </SiteFooter>
     )
   },

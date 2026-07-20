@@ -3,14 +3,8 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import {
-  FeatureGrid,
-  FeatureCard,
-  FeatureIcon,
-  FeatureTitle,
-  FeatureDescription,
-} from '#/section-kit/FeatureGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 
 const ICONS = {
   realtime: (
@@ -81,19 +75,30 @@ const ICONS = {
   ),
 }
 
+/** Deterministic per-cell div-built bar-chart motifs. */
+const CELL_BARS = [
+  ['h-2', 'h-4', 'h-3', 'h-6', 'h-5', 'h-8', 'h-6', 'h-7', 'h-8'],
+  ['h-5', 'h-3', 'h-6', 'h-4', 'h-7', 'h-5', 'h-8', 'h-6', 'h-8'],
+  ['h-3', 'h-5', 'h-2', 'h-6', 'h-4', 'h-7', 'h-5', 'h-8', 'h-6'],
+  ['h-4', 'h-6', 'h-5', 'h-3', 'h-7', 'h-6', 'h-8', 'h-7', 'h-8'],
+]
+
 /**
- * AnalyticsFeatures — four-up capability grid for an analytics product,
- * composing the shared FeatureGrid kit composite inside a padded section. An
- * optional centered SectionHeading sits above four token-styled feature cards
- * with inline stroke icons: real-time event tracking, custom dashboards, smart
- * alerting, and integrations. Sharp, data-forward, marketing-grade. Use to
- * explain the core capabilities of any analytics, BI, or data-product site.
- * Renders fully with no props via baked-in defaults.
+ * AnalyticsFeatures — Swiss data-grid capability ledger for an analytics
+ * product. An asymmetric 7:5 header (left-aligned oversized title + lede,
+ * right-aligned mono index meta with a tick rule) above a collapsed-border
+ * hairline grid where the first capability cell spans double width: each cell
+ * carries a mono primary index, a hairline-framed stroke icon, a giant ghost
+ * numeral watermark, a title, a description, and a small div-built bar-chart
+ * motif along its baseline. Sharp corners, tabular discipline, faint wash on
+ * hover — grid lines celebrated instead of uniform icon cards. Use to explain
+ * the core capabilities of any analytics, BI, or data-product site. Renders
+ * fully with no props via baked-in defaults.
  */
 export const AnalyticsFeatures = defineCapsule({
   name: 'AnalyticsFeatures',
   description:
-    'Four-up capability grid for an analytics product, composing the shared FeatureGrid kit composite inside a padded section. An optional centered SectionHeading sits above four token-styled feature cards with inline stroke icons: real-time event tracking, custom dashboards, smart alerting, and integrations. Sharp, data-forward and marketing-grade. Use to explain the core capabilities of any analytics, BI, or data-product site.',
+    'Swiss data-grid capability ledger for an analytics product: an asymmetric header (left-aligned oversized title + lede, right-aligned mono index meta) above a collapsed-border hairline grid where the first capability cell spans double width; each cell carries a mono primary index, a hairline-framed stroke icon, a giant ghost numeral watermark, a title, a description, and a small div-built bar-chart motif. Sharp corners and tabular discipline instead of uniform icon cards. Use to explain the core capabilities of any analytics, BI, or data-product site.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -143,16 +148,39 @@ export const AnalyticsFeatures = defineCapsule({
       : defaults
 
     return (
-      <section className={cn('bg-background py-20 sm:py-24', props.className)}>
+      <section
+        className={cn(
+          'border-b border-border bg-background py-16 sm:py-20 lg:py-24',
+          props.className,
+        )}
+      >
         <Container size="xl" className="px-6">
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={subheading}
-            className="mb-14"
-          />
-          <FeatureGrid columns={4}>
-            {features.map((f) => {
+          <div className="mb-10 grid items-end gap-6 sm:mb-12 lg:grid-cols-12">
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={subheading}
+              className="gap-4 lg:col-span-7"
+              titleClassName="text-4xl font-bold tracking-tight sm:text-5xl"
+              subtitleClassName="max-w-xl text-lg"
+            />
+            <div
+              aria-hidden="true"
+              className="flex items-center justify-between gap-2 border-y border-border py-3 lg:col-span-5 lg:flex-col lg:items-end lg:justify-end lg:gap-1.5 lg:border-y-0 lg:py-0"
+            >
+              <MonoTag className="flex items-center gap-2">
+                <span className="size-1.5 bg-primary" />
+                Capability index
+              </MonoTag>
+              <MonoTag tone="faint" className="tabular-nums">
+                01 — {String(features.length).padStart(2, '0')}
+              </MonoTag>
+            </div>
+          </div>
+
+          <div className="grid border-l border-t border-border sm:grid-cols-2 lg:grid-cols-3">
+            {features.map((f, i) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -162,15 +190,59 @@ export const AnalyticsFeatures = defineCapsule({
                 price?: string
                 imageAlt?: string
               }
+              const index = String(i + 1).padStart(2, '0')
+              const bars = CELL_BARS[i % CELL_BARS.length]
               return (
-                <FeatureCard key={__iv__.title}>
-                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
-                </FeatureCard>
+                <div
+                  key={__iv__.title}
+                  className={cn(
+                    'group relative flex flex-col border-b border-r border-border bg-background p-6 transition-colors duration-150 hover:bg-muted/30 sm:p-8',
+                    i % 3 === 0 && 'sm:col-span-2 lg:col-span-2',
+                  )}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute right-5 top-4 select-none font-mono text-7xl font-bold tabular-nums text-foreground/[0.05]"
+                  >
+                    {index}
+                  </span>
+                  <div className="flex items-center justify-between gap-3">
+                    <MonoTag tone="primary" className="tabular-nums">
+                      {index}
+                    </MonoTag>
+                    {__iv__.icon && (
+                      <span className="grid size-10 shrink-0 place-items-center border border-border text-muted-foreground transition-colors duration-150 group-hover:border-foreground/30 group-hover:text-foreground">
+                        {__iv__.icon}
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="mt-5 text-lg font-semibold tracking-tight text-foreground">
+                    {__iv__.title}
+                  </h3>
+                  <p className="mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
+                    {__iv__.description}
+                  </p>
+                  <span
+                    aria-hidden="true"
+                    className="mt-auto flex items-end gap-px pt-6"
+                  >
+                    {bars.map((h, j) => (
+                      <span
+                        key={j}
+                        className={cn(
+                          'w-full max-w-3',
+                          h,
+                          j === bars.length - 1
+                            ? 'bg-primary'
+                            : 'bg-foreground/15',
+                        )}
+                      />
+                    ))}
+                  </span>
+                </div>
               )
             })}
-          </FeatureGrid>
+          </div>
         </Container>
       </section>
     )

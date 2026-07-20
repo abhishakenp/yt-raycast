@@ -15,16 +15,18 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * CloudInfraFaq — accordion-style FAQ section for a cloud-infrastructure / developer-
- * platform SaaS landing page. A centered heading + description above an accordion
- * list of detail/summary pairs. Each details block opens with a border transition
- * to primary; summary includes a chevron that rotates on open. Tokens-only. Renders
+ * CloudInfraFaq — terminal-industrial manual-page FAQ for a cloud-
+ * infrastructure / developer-platform SaaS landing page. Asymmetric 4/8
+ * split: the left rail carries a left-aligned heading, description, and a
+ * mono `$ man` meta line (sticky on desktop); the right column is a
+ * collapsed-border accordion ledger of detail/summary rows, each with a mono
+ * `Q.NN` index tag and a chevron that rotates on open. Tokens-only. Renders
  * fully on zero arguments. ID attributes are namespaced.
  */
 export const CloudInfraFaq = defineCapsule({
   name: 'CloudInfraFaq',
   description:
-    'Accordion-style FAQ section for a cloud-infrastructure / developer-platform SaaS landing page: a centered heading plus description above an accordion list of detail/summary pairs. Each details block opens with a border transition to primary, and the summary includes a chevron that rotates on open. Tokens-only. Use for FAQ bands on cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',
+    'Terminal-industrial manual-page FAQ for a cloud-infrastructure / developer-platform SaaS landing page: an asymmetric 4/8 split with a sticky left rail (heading, description, mono meta line) and a collapsed-border accordion ledger on the right — detail/summary rows with mono Q-index tags and a chevron that rotates on open. Tokens-only. Use for FAQ bands on cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -85,36 +87,67 @@ export const CloudInfraFaq = defineCapsule({
     )
 
     return (
-      <section className={cn('py-20 lg:py-28', props.className)}>
-        <Container size="4xl">
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 gap-0"
-            titleClassName="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <FaqAccordion>
-            {items.map((item) => (
-              <FaqItem key={item.q} className="open:border-primary">
-                <FaqQuestion className="p-6">
-                  <h3 className="pr-8 text-lg font-medium text-card-foreground">
-                    {item.q}
-                  </h3>
-                  <span
-                    aria-hidden="true"
-                    className="transition-transform group-open:rotate-180"
+      <section className={cn('py-14 sm:py-20 lg:py-28', props.className)}>
+        <Container>
+          <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
+            <div className="lg:col-span-4">
+              <div className="lg:sticky lg:top-24">
+                <p
+                  aria-hidden="true"
+                  className="mb-5 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+                >
+                  <span className="text-primary">$</span> man cloudshift
+                </p>
+                <SectionHeading
+                  align="left"
+                  title={heading}
+                  subtitle={description}
+                  className="gap-3"
+                  titleClassName="text-3xl font-extrabold tracking-tight sm:text-4xl"
+                  subtitleClassName="text-base sm:text-lg"
+                />
+                <span
+                  aria-hidden="true"
+                  className="mt-6 hidden h-1 w-12 bg-primary lg:block"
+                />
+              </div>
+            </div>
+            <div className="lg:col-span-8">
+              <FaqAccordion className="space-y-0 divide-y divide-border border border-border bg-background">
+                {items.map((item, i) => (
+                  <FaqItem
+                    key={item.q}
+                    className="rounded-none border-0 bg-transparent"
                   >
-                    <Chevron className="size-5 text-muted-foreground" />
-                  </span>
-                  <FaqQuestionIcon />
-                </FaqQuestion>
-                <FaqAnswer asChild className="px-6 pb-6">
-                  <div>{item.a}</div>
-                </FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+                    <FaqQuestion className="items-baseline gap-4 p-5 sm:p-6">
+                      <span
+                        aria-hidden="true"
+                        className="shrink-0 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground/70"
+                      >
+                        Q.{`0${i + 1}`.slice(-2)}
+                      </span>
+                      <h3 className="flex-1 pr-4 text-base font-semibold tracking-tight text-foreground sm:text-lg">
+                        {item.q}
+                      </h3>
+                      <span
+                        aria-hidden="true"
+                        className="self-center transition-transform group-open:rotate-180"
+                      >
+                        <Chevron className="size-5 text-muted-foreground" />
+                      </span>
+                      <FaqQuestionIcon />
+                    </FaqQuestion>
+                    <FaqAnswer
+                      asChild
+                      className="px-5 pb-5 text-sm leading-relaxed sm:px-6 sm:pb-6 sm:pl-[4.25rem]"
+                    >
+                      <div>{item.a}</div>
+                    </FaqAnswer>
+                  </FaqItem>
+                ))}
+              </FaqAccordion>
+            </div>
+          </div>
         </Container>
       </section>
     )

@@ -36,22 +36,25 @@ type DashboardDisplayRow = {
 }
 
 /**
- * DashboardOrdersTable — a recent-orders data table card for a SaaS admin
- * dashboard. A bordered card with a header (title + subtitle and a row of
- * toolbar buttons whose icon is chosen from the label — download for Export,
- * funnel otherwise), a responsive table (order id, a customer cell with a
- * gradient initial avatar, product, date, amount, a colored status pill with a
- * matching dot, and a row-actions kebab) and a pagination footer (summary text +
- * Prev / numbered / Next buttons, with "1" active and "Prev" disabled). Toolbar
- * buttons and pagination route through section-kit route links; Lakebed-backed row actions
- * update order status in the shared dashboard state. Use below the
- * KPI / chart band to list latest transactions, orders, invoices or any recent
- * records. Renders fully with no props via baked-in default orders.
+ * DashboardOrdersTable — Swiss-data recent-orders ledger for a SaaS admin
+ * dashboard. A rounded-none hairline-framed card: a header row (title +
+ * subtitle and square mono uppercase toolbar buttons whose icon is chosen
+ * from the label — download for Export, funnel otherwise), a dense hairline
+ * table (mono order id, a customer cell with a square monogram chip, product,
+ * tabular date, tabular amount, a square mono status chip with a matching
+ * square tick — data-viz tokens, destructive for cancelled — and a
+ * row-actions kebab) and a pagination footer (mono tabular summary + square
+ * Prev / numbered / Next buttons, the active page ink-inverted, "Prev"
+ * disabled). Toolbar buttons and pagination route through section-kit route
+ * links; Lakebed-backed row actions update order status in the shared
+ * dashboard state. Use below the KPI / chart band to list latest
+ * transactions, orders, invoices or any recent records. Renders fully with no
+ * props via baked-in default orders.
  */
 export const DashboardOrdersTable = defineCapsule({
   name: 'DashboardOrdersTable',
   description:
-    "A recent-orders data table card for a SaaS admin dashboard: a bordered card with a header (title + subtitle and toolbar buttons whose icon is chosen from the label — download for Export, funnel otherwise), a responsive table (order id, customer cell with a gradient initial avatar, product, date, amount, a colored status pill with a matching dot, and a row-actions kebab) and a pagination footer (summary text + Prev / numbered / Next buttons, '1' active, 'Prev' disabled). Toolbar buttons and pagination route through section-kit route links; Lakebed-backed row actions update order status in shared dashboard state. Use below the KPI / chart band to list latest transactions, orders, invoices or any recent records.",
+    "Swiss-data recent-orders ledger for a SaaS admin dashboard: a rounded-none hairline-framed card with a header row (title + subtitle and square mono uppercase toolbar buttons whose icon is chosen from the label — download for Export, funnel otherwise), a dense hairline table (mono order id, customer cell with a square monogram chip, product, tabular date, tabular amount, a square mono status chip with matching square tick — data-viz tokens, destructive for cancelled — and a row-actions kebab) and a pagination footer (mono tabular summary + square Prev / numbered / Next buttons, active page ink-inverted, 'Prev' disabled). Toolbar buttons and pagination route through section-kit route links; Lakebed-backed row actions update order status in shared dashboard state. Use below the KPI / chart band to list latest transactions, orders, invoices or any recent records.",
   props: z.object({
     /** Table heading. */
     title: z.string().optional(),
@@ -179,13 +182,22 @@ export const DashboardOrdersTable = defineCapsule({
       ? props.pages
       : ['Prev', '1', '2', '3', 'Next']
 
-    // ── Status pill tints. ──
+    // ── Square status chips (hairline border + tick, data-viz tokens). ──
     const statusTones: Record<string, { pill: string; dot: string }> = {
-      emerald: { pill: 'bg-chart-1/10 text-chart-1', dot: 'bg-chart-1' },
-      sky: { pill: 'bg-chart-2/10 text-chart-2', dot: 'bg-chart-2' },
-      amber: { pill: 'bg-chart-4/15 text-chart-4', dot: 'bg-chart-4' },
+      emerald: {
+        pill: 'border-chart-1/30 bg-chart-1/5 text-chart-1',
+        dot: 'bg-chart-1',
+      },
+      sky: {
+        pill: 'border-chart-2/30 bg-chart-2/5 text-chart-2',
+        dot: 'bg-chart-2',
+      },
+      amber: {
+        pill: 'border-chart-4/40 bg-chart-4/10 text-chart-4',
+        dot: 'bg-chart-4',
+      },
       red: {
-        pill: 'bg-destructive/10 text-destructive',
+        pill: 'border-destructive/30 bg-destructive/5 text-destructive',
         dot: 'bg-destructive',
       },
     }
@@ -193,27 +205,27 @@ export const DashboardOrdersTable = defineCapsule({
     return (
       <Card
         variant="default"
-        className={cn('overflow-hidden', props.className, 'p-0')}
+        className={cn('rounded-none overflow-hidden', props.className, 'p-0')}
       >
-        <div className="flex flex-col justify-between gap-3 border-b border-border/60 p-5 sm:flex-row sm:items-center">
+        <div className="flex flex-col justify-between gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:p-5">
           <SectionHeading
             title={title}
             subtitle={subtitle}
             align="left"
-            titleClassName="text-base font-semibold"
-            subtitleClassName="text-xs"
+            titleClassName="text-sm font-semibold tracking-tight md:text-sm"
+            subtitleClassName="text-xs md:text-xs"
             className="gap-0.5"
           />
           <div className="flex gap-2">
             {actions.map((action) => (
               <NavbarRouteLink
                 key={action}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-medium text-muted-foreground transition hover:bg-muted"
+                className="inline-flex items-center gap-1.5 rounded-none border border-border bg-card px-3 py-2 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground active:translate-y-px"
                 href={action}
               >
                 <svg
-                  width="14"
-                  height="14"
+                  width="13"
+                  height="13"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -239,16 +251,16 @@ export const DashboardOrdersTable = defineCapsule({
           </div>
         </div>
         <div className="overflow-x-auto">
-          <DataTable className="w-full overflow-hidden text-left text-sm">
+          <DataTable className="w-full overflow-hidden rounded-none border-0 text-left text-sm">
             <table className="w-full text-left text-sm">
-              <DataHeader asChild>
+              <DataHeader asChild className="bg-transparent">
                 <thead>
-                  <tr className="bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground">
+                  <tr className="border-b border-border font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                     {columns.map((col, i) => (
                       <th
                         key={i}
                         className={cn(
-                          'px-5 py-3 font-semibold',
+                          'px-4 py-2.5 font-medium',
                           col === '' && 'text-right',
                         )}
                       >
@@ -259,7 +271,7 @@ export const DashboardOrdersTable = defineCapsule({
                 </thead>
               </DataHeader>
               <DataBody asChild>
-                <tbody className="divide-y divide-border/60">
+                <tbody className="divide-y divide-border">
                   {rows.map((row, index) => {
                     const id = row.id ?? `R-${index + 1}`
                     const customer =
@@ -284,13 +296,13 @@ export const DashboardOrdersTable = defineCapsule({
                     const rowPending = setOrderStatus.isPending(rowActionKey)
                     return (
                       <DataRow key={id} asChild>
-                        <tr className="transition-colors hover:bg-muted/60">
-                          <DataTableCell className="font-medium text-foreground">
+                        <tr className="transition-colors">
+                          <DataTableCell className="px-4 py-3 font-mono text-xs font-medium tabular-nums text-foreground">
                             {id}
                           </DataTableCell>
-                          <DataTableCell>
+                          <DataTableCell className="px-4 py-3">
                             <div className="flex items-center gap-2.5">
-                              <span className="grid size-7 shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary/70 to-primary text-[0.625rem] font-bold text-primary-foreground">
+                              <span className="grid size-6 shrink-0 place-items-center rounded-none border border-border bg-muted font-mono text-[10px] font-semibold text-foreground">
                                 {initial}
                               </span>
                               <span className="text-foreground/80">
@@ -298,32 +310,32 @@ export const DashboardOrdersTable = defineCapsule({
                               </span>
                             </div>
                           </DataTableCell>
-                          <DataTableCell className="text-muted-foreground">
+                          <DataTableCell className="px-4 py-3 text-muted-foreground">
                             {product}
                           </DataTableCell>
-                          <DataTableCell className="text-muted-foreground">
+                          <DataTableCell className="whitespace-nowrap px-4 py-3 tabular-nums text-muted-foreground">
                             {date}
                           </DataTableCell>
-                          <DataTableCell className="font-medium text-foreground">
+                          <DataTableCell className="whitespace-nowrap px-4 py-3 font-medium tabular-nums text-foreground">
                             {amount}
                           </DataTableCell>
-                          <DataTableCell>
+                          <DataTableCell className="px-4 py-3">
                             <span
                               className={cn(
-                                'inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs font-medium',
+                                'inline-flex items-center gap-1.5 rounded-none border px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.08em]',
                                 tone.pill,
                               )}
                             >
                               <span
                                 className={cn(
-                                  'inline-block size-2 rounded-full',
+                                  'inline-block size-1.5',
                                   tone.dot,
                                 )}
                               />
                               {status}
                             </span>
                           </DataTableCell>
-                          <DataTableCell className="text-right">
+                          <DataTableCell className="px-4 py-3 text-right">
                             {row.dbId ? (
                               <button
                                 type="button"
@@ -337,7 +349,7 @@ export const DashboardOrdersTable = defineCapsule({
                                     statusTone: 'emerald',
                                   })
                                 }}
-                                className="text-muted-foreground transition-colors hover:text-foreground"
+                                className="rounded-none text-muted-foreground transition-colors duration-150 hover:text-foreground active:translate-y-px"
                               >
                                 <svg
                                   width="16"
@@ -359,7 +371,7 @@ export const DashboardOrdersTable = defineCapsule({
                               <NavbarRouteLink
                                 href={rowTarget}
                                 aria-label={`Actions for ${id}`}
-                                className="text-muted-foreground transition-colors hover:text-foreground"
+                                className="rounded-none text-muted-foreground transition-colors duration-150 hover:text-foreground active:translate-y-px"
                               >
                                 <svg
                                   width="16"
@@ -388,8 +400,10 @@ export const DashboardOrdersTable = defineCapsule({
             </table>
           </DataTable>
         </div>
-        <div className="flex items-center justify-between border-t border-border/60 px-5 py-3">
-          <p className="text-xs text-muted-foreground">{summary}</p>
+        <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3">
+          <p className="font-mono text-[11px] tabular-nums text-muted-foreground">
+            {summary}
+          </p>
           <div className="flex gap-1">
             {pages.map((label) => {
               const isActive = label === '1'
@@ -399,8 +413,8 @@ export const DashboardOrdersTable = defineCapsule({
                   key={label}
                   aria-disabled="true"
                   className={cn(
-                    'rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors',
-                    'cursor-not-allowed border-border bg-card text-muted-foreground/50',
+                    'rounded-none border px-2.5 py-1.5 font-mono text-[11px] tabular-nums transition-colors',
+                    'cursor-not-allowed border-border bg-card text-muted-foreground/40',
                   )}
                 >
                   {label}
@@ -409,10 +423,10 @@ export const DashboardOrdersTable = defineCapsule({
                 <NavbarRouteLink
                   key={label}
                   className={cn(
-                    'rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors',
+                    'rounded-none border px-2.5 py-1.5 font-mono text-[11px] tabular-nums transition-colors duration-150 active:translate-y-px',
                     isActive
-                      ? 'border-primary/20 bg-primary/10 text-primary'
-                      : 'border-border bg-card text-muted-foreground hover:bg-muted',
+                      ? 'border-foreground bg-foreground text-background'
+                      : 'border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground',
                   )}
                   href={rowTarget}
                 >

@@ -20,20 +20,21 @@ import {
 } from './job-board-interactions.tsx'
 
 /**
- * JobBoardNavbar — sticky, backdrop-blurred top navigation bar for a job-board /
- * careers marketplace. A border-bottomed header pinned to the top of the
- * viewport: a briefcase brand-mark tile beside the product name on the left, a
- * horizontal set of nav links in the center (desktop), and a "Sign In" text link
- * plus a solid primary "Post a Job" CTA on the right. Every link and CTA routes
- * through route hrefs so labels can drive page-switching. Use as the sticky site
- * header for job boards, careers sites, hiring marketplaces, recruiting platforms
- * or talent networks. Renders fully with no props via baked-in "WorkFlow"
- * defaults.
+ * JobBoardNavbar — newsprint classifieds masthead navigation for a job-board /
+ * careers marketplace. A backdrop-blurred paper-surface header pinned to the top
+ * with a hairline briefcase glyph + serif wordmark on the left, mono uppercase
+ * index-style nav links in the center (desktop), and a right-side cluster of
+ * square hairline search / account chips plus a sharp-cornered primary
+ * "Post a Job" stamp CTA with press feedback. Every link and CTA routes through
+ * route hrefs so labels can drive page-switching; links beyond the fifth demote
+ * to large screens. Use as the sticky site header for job boards, careers sites,
+ * hiring marketplaces, recruiting platforms or talent networks. Renders fully
+ * with no props via baked-in "WorkFlow" defaults.
  */
 export const JobBoardNavbar = defineCapsule({
   name: 'JobBoardNavbar',
   description:
-    "Sticky backdrop-blurred top navigation bar for a job-board / careers marketplace: border-bottomed header pinned to the top with a briefcase brand-mark tile + product name on the left, horizontal nav links in the center (desktop), and a 'Sign In' text link plus a solid primary 'Post a Job' CTA on the right. Links and CTAs route through route hrefs for page-switching. Use as the sticky site header for job boards, careers sites, hiring marketplaces, recruiting platforms or talent networks.",
+    "Newsprint classifieds masthead navigation for a job-board / careers marketplace: a backdrop-blurred paper-surface sticky header with a hairline briefcase glyph + serif wordmark on the left, mono uppercase index-style nav links in the center (desktop), and a right-side cluster of square hairline search / account chips plus a sharp-cornered primary 'Post a Job' stamp CTA with press feedback. Links and CTAs route through route hrefs for page-switching. Use as the sticky site header for job boards, careers sites, hiring marketplaces, recruiting platforms or talent networks.",
   props: z.object({
     /** Brand / product name shown beside the briefcase mark. */
     brand: z.string().optional(),
@@ -58,27 +59,19 @@ export const JobBoardNavbar = defineCapsule({
     const homeTarget = props.homeTarget ?? nav[0]
 
     const BriefcaseMark = ({ className }: { className?: string }) => (
-      <span
-        className={cn(
-          'grid place-items-center rounded-lg bg-primary text-primary-foreground',
-          className,
-        )}
+      <svg
+        className={className}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
         aria-hidden="true"
       >
-        <svg
-          width="60%"
-          height="60%"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <rect x="2" y="7" width="20" height="14" rx="2" />
-          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
-        </svg>
-      </span>
+        <rect x="2" y="7" width="20" height="14" rx="2" />
+        <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+      </svg>
     )
 
     return (
@@ -87,19 +80,26 @@ export const JobBoardNavbar = defineCapsule({
         height="compact"
         className={cn('bg-background/80 backdrop-blur-md', props.className)}
       >
-        <NavbarBrand
-          href={homeTarget}
-          className="flex items-center gap-2 text-foreground"
-        >
-          <BrandLogo brand={brand}>
-            <LogoImage fallback={<BriefcaseMark className="size-8" />} />
-            <LogoLabel className="text-xl font-semibold tracking-tight" />
+        <NavbarBrand href={homeTarget} className="flex items-center gap-2">
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage
+              className="size-7"
+              fallback={<BriefcaseMark className="size-7 text-foreground" />}
+            />
+            <LogoLabel className="font-serif text-xl font-bold tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
-        <NavbarNav>
-          {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+        <NavbarNav className="gap-1">
+          {nav.map((label, i) => (
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className={cn(
+                'rounded-none font-mono text-[11px] uppercase tracking-[0.14em]',
+                i >= 5 && 'hidden lg:inline-flex',
+              )}
+            >
               {label}
             </NavbarNavLink>
           ))}
@@ -108,19 +108,19 @@ export const JobBoardNavbar = defineCapsule({
         <NavbarActions className="gap-2 sm:gap-3">
           <JobBoardSearchButton
             lakebed={lakebed}
-            buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            buttonClassName="inline-flex size-9 items-center justify-center rounded-none border border-border text-muted-foreground transition-colors hover:border-foreground hover:text-foreground active:translate-y-px"
           />
           <JobBoardAccountButton
             lakebed={lakebed}
             label={signIn}
-            buttonClassName="hidden size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
+            buttonClassName="hidden size-9 items-center justify-center rounded-none border border-border text-muted-foreground transition-colors hover:border-foreground hover:text-foreground active:translate-y-px sm:inline-flex"
           />
           <JobBoardActionButton
             lakebed={lakebed}
             action={cta}
             source="navbar"
             pendingChildren={<JobBoardMutationSpinner />}
-            className="hidden min-h-10 items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-60 md:inline-flex"
+            className="hidden min-h-9 items-center justify-center whitespace-nowrap rounded-none bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-60 md:inline-flex"
           >
             {cta}
           </JobBoardActionButton>
@@ -128,7 +128,7 @@ export const JobBoardNavbar = defineCapsule({
             brand={brand}
             homeTarget={homeTarget}
             nav={nav}
-            buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+            buttonClassName="inline-flex size-9 items-center justify-center rounded-none border border-border text-muted-foreground transition-colors hover:border-foreground hover:text-foreground active:translate-y-px md:hidden"
           />
         </NavbarActions>
       </SiteNav>

@@ -15,17 +15,18 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * ElectronicsStoreFaq — a centered native-disclosure FAQ accordion for an
- * electronics storefront. A centered heading above a narrow stack of muted
- * rounded <details> rows, each a clickable question summary with a chevron that
- * rotates open to reveal a muted answer paragraph. Use to answer shipping,
- * returns, warranty, price-match and tracking questions on electronics stores,
- * gadget shops, consumer-tech retailers, or any product catalog.
+ * ElectronicsStoreFaq — a tech-brutalist native-disclosure FAQ for an electronics
+ * storefront. An asymmetric 4/8 split: a sticky mono index eyebrow + extrabold
+ * heading on the left beside a stack of squared border-2 <details> rows on the
+ * right, each a clickable question summary prefixed by a mono Q numeral with a
+ * chevron that rotates open to reveal a muted answer paragraph. Use to answer
+ * shipping, returns, warranty, price-match and tracking questions on electronics
+ * stores, gadget shops, consumer-tech retailers, or any product catalog.
  */
 export const ElectronicsStoreFaq = defineCapsule({
   name: 'ElectronicsStoreFaq',
   description:
-    'Centered native-disclosure FAQ accordion for an electronics storefront: a centered heading above a narrow stack of muted rounded details rows, each a clickable question summary with a chevron that rotates open to reveal a muted answer paragraph. Use to answer shipping, returns, warranty, price-match and tracking questions on electronics stores, gadget shops, consumer-tech retailers, or any product catalog.',
+    'Tech-brutalist native-disclosure FAQ for an electronics storefront: an asymmetric 4/8 split with a sticky mono index eyebrow + extrabold heading on the left beside a stack of squared border-2 details rows on the right, each a clickable question summary prefixed by a mono Q numeral with a chevron that rotates open to reveal a muted answer paragraph. Use to answer shipping, returns, warranty, price-match and tracking questions on electronics stores, gadget shops, consumer-tech retailers, or any product catalog.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -62,25 +63,52 @@ export const ElectronicsStoreFaq = defineCapsule({
 
     return (
       <section className={cn('py-16 lg:py-24', props.className)}>
-        <Container size="sm">
-          <SectionHeading
-            title={heading}
-            className="mb-12 gap-0"
-            titleClassName="text-2xl font-semibold text-foreground"
-          />
-          <FaqAccordion>
-            {items.map((item) => (
-              <FaqItem key={item.q} variant="muted">
-                <FaqQuestion className="p-5">
-                  <span className="font-medium text-foreground">{item.q}</span>
-                  <FaqQuestionIcon />
-                </FaqQuestion>
-                <FaqAnswer asChild className="px-5 pb-5">
-                  <div>{item.a}</div>
-                </FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+        <Container>
+          <div className="grid gap-10 lg:grid-cols-12">
+            <div className="lg:col-span-4">
+              <div className="lg:sticky lg:top-24">
+                <span className="mb-3 flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+                  <span className="tabular-nums">[ 08 ]</span>
+                  <span className="text-muted-foreground">Support</span>
+                </span>
+                <SectionHeading
+                  align="left"
+                  title={heading}
+                  className="gap-0"
+                  titleClassName="text-3xl font-extrabold tracking-tight text-foreground md:text-4xl"
+                />
+              </div>
+            </div>
+            <div className="lg:col-span-8">
+              <FaqAccordion className="space-y-0 border-t-2 border-foreground">
+                {items.map((item, i) => (
+                  <FaqItem
+                    key={item.q}
+                    variant="muted"
+                    className="rounded-none border-b-2 border-l-2 border-r-2 border-foreground bg-transparent open:bg-muted/40"
+                  >
+                    <FaqQuestion className="items-start gap-4 p-5">
+                      <span className="flex min-w-0 items-baseline gap-3">
+                        <span
+                          aria-hidden="true"
+                          className="shrink-0 font-mono text-[11px] uppercase tracking-[0.16em] tabular-nums text-primary"
+                        >
+                          Q{String(i + 1).padStart(2, '0')}
+                        </span>
+                        <span className="font-bold tracking-tight text-foreground">
+                          {item.q}
+                        </span>
+                      </span>
+                      <FaqQuestionIcon />
+                    </FaqQuestion>
+                    <FaqAnswer asChild className="px-5 pb-5 pl-14">
+                      <div>{item.a}</div>
+                    </FaqAnswer>
+                  </FaqItem>
+                ))}
+              </FaqAccordion>
+            </div>
+          </div>
         </Container>
       </section>
     )

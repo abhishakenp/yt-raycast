@@ -23,6 +23,7 @@ export const eyebrowVariants = cva(
         text: 'text-primary',
         primary:
           'rounded-full border border-primary/15 bg-primary/[0.06] px-3 py-1.5 tracking-[0.08em] text-primary',
+        mono: 'font-mono text-[11px] font-normal tracking-[0.22em] text-muted-foreground',
       },
     },
     defaultVariants: {

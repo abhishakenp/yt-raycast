@@ -11,20 +11,23 @@ import {
 } from '#/section-kit/FeatureGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 
 /**
- * ComingSoonFeatures — product capabilities grid for a "launching soon" / waitlist
- * pre-launch landing page. A centered heading and lead paragraph above a responsive
- * 1/2/3-column grid of bordered card panels; each card has a tinted icon tile
- * (rotating through six inline line-icons), a title, and a description. Use to
- * present product features, platform capabilities, or "what's included" on SaaS
- * waitlists, app pre-launch pages, or beta sign-up landers. Renders fully with
- * no props via six baked-in default features.
+ * ComingSoonFeatures — kinetic capability index for a "launching soon" /
+ * waitlist pre-launch landing page. An asymmetric header (left-aligned mono
+ * eyebrow rail + big tight-tracked heading left, lead paragraph offset right)
+ * above a collapsed-border 1/2/3-column grid of sharp-cornered cells, each
+ * stamped with a giant faint mono index numeral ("01"–"06") behind its title
+ * and description; a huge ghost "FEATURES-scale" watermark word sits behind
+ * the band. Use to present product features, platform capabilities, or
+ * "what's included" on SaaS waitlists, app pre-launch pages, or beta sign-up
+ * landers. Renders fully with no props via six baked-in default features.
  */
 export const ComingSoonFeatures = defineCapsule({
   name: 'ComingSoonFeatures',
   description:
-    "Product capabilities grid for a 'launching soon' / waitlist pre-launch landing page: centered heading and lead paragraph above a responsive 1/2/3-column grid of bordered card panels, each with a tinted icon tile (rotating through six inline line-icons), a title and a description. Use to present product features, platform capabilities, or 'what\'s included' on SaaS waitlists, app pre-launch pages, or beta sign-up landers.",
+    "Kinetic capability index for a 'launching soon' / waitlist pre-launch landing page: asymmetric header (mono eyebrow rail and big tight-tracked heading left, lead paragraph offset right) above a collapsed-border 1/2/3-column grid of sharp-cornered cells, each stamped with a giant faint mono index numeral ('01'–'06') behind its title and description. Use to present product features, platform capabilities, or 'what's included' on SaaS waitlists, app pre-launch pages, or beta sign-up landers.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -79,21 +82,33 @@ export const ComingSoonFeatures = defineCapsule({
     return (
       <section
         className={cn(
-          'w-full px-4 py-24 sm:px-6 lg:py-28 lg:px-8 xl:px-12',
+          'relative w-full overflow-hidden px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-28 xl:px-12',
           props.className,
         )}
       >
-        <Container size="lg">
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-20 gap-0"
-            titleClassName="mb-4 text-2xl font-light text-foreground sm:text-3xl lg:text-4xl"
-            subtitleClassName="mx-auto max-w-xl font-light text-muted-foreground"
-          />
+        <Watermark className="-left-6 top-2 text-[7rem] sm:text-[11rem] lg:text-[15rem]">
+          {String(items.length).padStart(2, '0')}
+        </Watermark>
 
-          <FeatureGrid columns={3}>
-            {items.map((f) => {
+        <Container size="lg" className="relative">
+          {/* Asymmetric header: heading left, lead offset bottom-right. */}
+          <div className="mb-12 grid gap-6 sm:mb-16 lg:grid-cols-12 lg:items-end lg:gap-10">
+            <SectionHeading
+              align="left"
+              title={heading}
+              className="gap-4 lg:col-span-7"
+              titleClassName="text-4xl font-extrabold uppercase leading-[0.92] tracking-tighter text-foreground sm:text-5xl lg:text-6xl"
+            />
+            <p className="max-w-md text-base leading-relaxed text-muted-foreground lg:col-span-5 lg:justify-self-end lg:pb-1">
+              {description}
+            </p>
+          </div>
+
+          <FeatureGrid
+            columns={3}
+            className="gap-0 [&>div]:grid-cols-2 [&>div]:gap-0 [&>div]:border-l [&>div]:border-t [&>div]:border-border md:[&>div]:grid-cols-3"
+          >
+            {items.map((f, i) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -104,10 +119,31 @@ export const ComingSoonFeatures = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
-                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                <FeatureCard
+                  key={__iv__.title}
+                  className="group relative gap-3 overflow-hidden rounded-none border-0 border-b border-r border-border bg-transparent p-5 transition-colors duration-150 hover:-translate-y-0 hover:border-border hover:bg-muted/40 sm:p-7"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -right-2 -top-4 select-none font-mono text-[4.5rem] font-bold leading-none tracking-tighter text-foreground/[0.06] tabular-nums sm:text-[6rem]"
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  {__iv__.icon && (
+                    <FeatureIcon className="rounded-none bg-transparent text-foreground">
+                      {__iv__.icon}
+                    </FeatureIcon>
+                  )}
+                  <span
+                    aria-hidden="true"
+                    className="h-1 w-8 bg-primary transition-[width] duration-150 group-hover:w-12"
+                  />
+                  <FeatureTitle className="relative text-base font-bold uppercase tracking-tight sm:text-lg">
+                    {__iv__.title}
+                  </FeatureTitle>
+                  <FeatureDescription className="relative text-sm leading-relaxed">
+                    {__iv__.description}
+                  </FeatureDescription>
                 </FeatureCard>
               )
             })}

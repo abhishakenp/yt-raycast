@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import type { LakebedClientRuntime } from '@ship-fast/lakebed/react'
 import { Loader2Icon, MenuIcon, SparklesIcon } from 'lucide-react'
@@ -116,6 +116,7 @@ export function LocalServiceIntentBadge({
 
 export function LocalServiceBookingButton({
   children,
+  className,
   disabled,
   intentLabel,
   lakebed,
@@ -138,6 +139,7 @@ export function LocalServiceBookingButton({
   return (
     <button
       {...buttonProps}
+      className={cn('whitespace-nowrap', className)}
       type={type}
       aria-busy={isButtonPending}
       disabled={disabled || isButtonPending}

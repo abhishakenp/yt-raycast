@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   PersonCard,
   PersonCardName,
@@ -13,17 +14,20 @@ import { Container } from '#/section-kit/Container.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * BlogPostAuthors — bespoke "About the author" bio card for the end of an
- * editorial blog article. A narrow reading-column card with a round author
- * avatar, a small eyebrow label, the author name and byline/role, a short bio
- * paragraph, a routable Follow pill button, and small social handle buttons.
- * Uses semantic tokens only. Use as the author bio block at the end of blog
- * posts, journals, magazines, or editorial reading pages.
+ * BlogPostAuthors — newsprint byline-ledger "About the author" card for the
+ * end of an editorial blog article. A sharp hairline card in the reading
+ * column, opened by a mono eyebrow rail (label — hairline rule — "№ 01"
+ * index): inside, a square grayscale author portrait framed over an offset
+ * hairline outline sits beside the serif bold author name, a mono role
+ * stamp, a serif bio paragraph, and an action row — a square solid-ink Follow
+ * button with press feedback plus square hairline social chips that invert on
+ * hover. Uses semantic tokens only. Use as the author bio block at the end of
+ * blog posts, journals, magazines, or editorial reading pages.
  */
 export const BlogPostAuthors = defineCapsule({
   name: 'BlogPostAuthors',
   description:
-    'Bespoke about-the-author bio card for the end of a blog article: a narrow reading-column card with a round author avatar, a small eyebrow label, the author name and byline/role, a short bio paragraph, a routable Follow pill button, and small social handle buttons. Use as the author bio block at the end of blog posts, journals, magazines, or editorial reading pages.',
+    "Newsprint byline-ledger about-the-author card for the end of a blog article: a sharp hairline card in the reading column opened by a mono eyebrow rail (label — hairline rule — '№ 01' index), with a square grayscale author portrait framed over an offset hairline outline beside the serif bold author name, a mono role stamp, a serif bio paragraph, a square solid-ink Follow button with press feedback, and square hairline social chips that invert on hover. Use as the author bio block at the end of blog posts, journals, magazines, or editorial reading pages.",
   props: z.object({
     /** Small eyebrow label above the author name. */
     eyebrow: z.string().optional(),
@@ -67,28 +71,54 @@ export const BlogPostAuthors = defineCapsule({
     return (
       <section className={cn('bg-background py-16 lg:py-24', props.className)}>
         <Container size="sm" className="px-6 lg:px-6">
-          <PersonCard variant="outlined" className="rounded-2xl p-8">
-            <div className="flex flex-col items-start gap-6 sm:flex-row">
-              <Image
-                alt={avatarAlt}
-                w={160}
-                h={160}
-                className="size-16 shrink-0 rounded-full object-cover sm:size-20"
+          <PersonCard
+            variant="outlined"
+            className="rounded-none border-foreground/25 bg-transparent p-6 sm:p-8"
+          >
+            {/* Mono eyebrow rail: label — hairline — ledger index. */}
+            <div className="mb-6 flex items-center gap-4">
+              <MonoTag className="shrink-0 text-foreground">{eyebrow}</MonoTag>
+              <span
+                aria-hidden="true"
+                className="h-px flex-1 bg-foreground/20"
               />
+              <MonoTag
+                aria-hidden="true"
+                className="shrink-0 text-muted-foreground/60"
+              >
+                № 01
+              </MonoTag>
+            </div>
+
+            <div className="flex flex-col items-start gap-6 sm:flex-row sm:gap-8">
+              <div className="relative shrink-0">
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 translate-x-2 translate-y-2 border border-border"
+                />
+                <Image
+                  alt={avatarAlt}
+                  w={160}
+                  h={160}
+                  className="relative size-20 rounded-none border border-foreground/25 object-cover grayscale sm:size-24"
+                />
+              </div>
               <div className="flex-1">
-                <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  {eyebrow}
-                </p>
-                <PersonCardName asChild className="text-lg tracking-tight">
+                <PersonCardName
+                  asChild
+                  className="font-serif text-2xl font-bold tracking-tight"
+                >
                   <h2>{name}</h2>
                 </PersonCardName>
-                <PersonCardRole className="mb-4">{role}</PersonCardRole>
-                <PersonCardBio className="mb-6 text-base leading-relaxed">
+                <PersonCardRole className="mb-4 mt-1 font-mono text-[11px] uppercase tracking-[0.16em]">
+                  {role}
+                </PersonCardRole>
+                <PersonCardBio className="mb-6 font-serif text-base leading-relaxed">
                   {bio}
                 </PersonCardBio>
                 <div className="flex flex-wrap items-center gap-3">
                   <NavbarRouteLink
-                    className="rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                    className="rounded-none bg-foreground px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-background transition-colors hover:bg-foreground/85 active:translate-y-px"
                     href={name}
                   >
                     {followLabel}
@@ -98,7 +128,7 @@ export const BlogPostAuthors = defineCapsule({
                     return (
                       <NavbarRouteLink
                         key={i}
-                        className="rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                        className="rounded-none border border-foreground/25 px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:bg-foreground hover:text-background active:translate-y-px"
                         href={label}
                       >
                         {label}

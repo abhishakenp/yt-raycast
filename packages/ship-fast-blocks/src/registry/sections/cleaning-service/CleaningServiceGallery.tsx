@@ -3,7 +3,17 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * CleaningServiceGallery — a before/after transformations image gallery for a home-cleaning / maid-service landing page. A centered heading + lead paragraph above a responsive 1/2/3-column grid of clickable project cards; each card shows a lazy-loaded image that subtly zooms on hover, with a gradient-to-top overlay that fades in to reveal a title and location caption. Every card routes through section-kit route links on click. Use for portfolio / results galleries for residential cleaning companies, maid services, renovation cleaners, or home-service brands that want visual proof. Renders fully with no props via six baked-in default transformations.
+ * CleaningServiceGallery — playful-Swiss transformations gallery for a
+ * home-cleaning / maid-service landing page. An asymmetric header row (left
+ * mono "03 / Results" eyebrow + heading + lead, right tabular mono project
+ * count) above a staggered 2/3-column grid of square 2px-bordered project
+ * tiles with hard offset shadows: the middle column drops down on desktop,
+ * each tile carries a small rotated mono index chip, a lazy-loaded photo that
+ * subtly zooms on hover, and an always-visible bordered caption bar with a
+ * bold title and a mono location line. Use for portfolio / results galleries
+ * for residential cleaning companies, maid services, renovation cleaners, or
+ * home-service brands that want visual proof. Renders fully with no props via
+ * six baked-in default transformations.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -17,7 +27,7 @@ import {
 export const CleaningServiceGallery = defineCapsule({
   name: 'CleaningServiceGallery',
   description:
-    'A before/after transformations image gallery for a home-cleaning / maid-service landing page: centered heading + lead above a responsive 1/2/3-column grid of clickable project cards. Each card has a lazy-loaded image that zooms on hover with a gradient-to-top overlay that fades in, revealing a title and location caption. Cards route through section-kit route links on click. Use for portfolio / results galleries for residential cleaning, maid services, renovation cleaners, or home-service brands that want visual proof.',
+    "Playful-Swiss transformations gallery for a home-cleaning / maid-service landing page: asymmetric header row (left mono '03 / Results' eyebrow + heading + lead, right tabular mono project count) above a staggered 2/3-column grid of square 2px-bordered project tiles with hard offset shadows. The middle column drops down on desktop; each tile has a rotated mono index chip, a lazy-loaded photo that zooms subtly on hover, and an always-visible bordered caption bar with bold title and mono location. Use for portfolio / results galleries for residential cleaning, maid services, renovation cleaners, or home-service brands that want visual proof.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -75,29 +85,73 @@ export const CleaningServiceGallery = defineCapsule({
           },
         ]
     return (
-      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+      <section className={cn('bg-background py-16 lg:py-24', props.className)}>
         <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
+          <div className="mb-10 flex flex-col gap-4 sm:mb-14 md:flex-row md:items-end md:justify-between">
+            <SectionHeading
+              align="left"
+              eyebrow="03 / Results"
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-3"
+              titleClassName="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl"
+              subtitleClassName="max-w-xl text-lg text-muted-foreground"
+            />
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/70"
+            >
+              <span className="tabular-nums">
+                {String(items.length).padStart(2, '0')}
+              </span>{' '}
+              projects · documented
+            </p>
+          </div>
           <GalleryGrid>
-            <GalleryGridItems columns={3}>
-              {items.map((img) => {
+            <GalleryGridItems
+              columns={3}
+              className="grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3 lg:gap-8"
+            >
+              {items.map((img, i) => {
                 const __iv__ = img as {
                   alt: string
                   caption?: string
                   title?: string
                   location?: string
                 }
+                const captionTitle = __iv__.title ?? __iv__.caption
                 return (
-                  <GalleryTile key={__iv__.alt}>
-                    <GalleryTileImage alt={__iv__.alt} />
-                    {__iv__.caption && (
-                      <GalleryTileCaption>{__iv__.caption}</GalleryTileCaption>
+                  <GalleryTile
+                    key={__iv__.alt}
+                    className={cn(
+                      'aspect-auto rounded-none border-2 border-foreground bg-card shadow-[4px_4px_0_0] shadow-foreground',
+                      i % 3 === 1 && 'lg:translate-y-8',
+                    )}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-2.5 top-2.5 z-10 inline-flex -rotate-2 border-2 border-foreground bg-background px-2 py-0.5 font-mono text-[10px] font-bold tabular-nums tracking-[0.12em] text-foreground sm:left-3 sm:top-3"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <GalleryTileImage
+                      alt={__iv__.alt}
+                      loading="lazy"
+                      className="aspect-[4/3] h-auto w-full"
+                    />
+                    {(captionTitle || __iv__.location) && (
+                      <GalleryTileCaption className="relative border-t-2 border-foreground bg-card px-3 py-2 backdrop-blur-none">
+                        {captionTitle && (
+                          <span className="block truncate text-xs font-bold text-card-foreground sm:text-sm">
+                            {captionTitle}
+                          </span>
+                        )}
+                        {__iv__.location && (
+                          <span className="block truncate font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+                            {__iv__.location}
+                          </span>
+                        )}
+                      </GalleryTileCaption>
                     )}
                   </GalleryTile>
                 )

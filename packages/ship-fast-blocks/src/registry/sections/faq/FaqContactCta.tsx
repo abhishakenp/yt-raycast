@@ -7,21 +7,25 @@ import {
   CtaBandSubtitle,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
+import { Watermark, MonoTag } from '#/section-kit/Decor.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * FaqContactCta — a "Still need help?" contact call-to-action band for a
- * help-center / support page. A primary-colored rounded panel centered on a muted
- * section: heading, supporting description, two centered buttons (a solid
- * background "Email Support" with mail icon and a translucent "Start Live Chat"
- * with chat icon), and a small response-time note with a highlighted span. Buttons
- * route through section-kit route links. Use as the closing support / contact prompt on SaaS
- * knowledge bases, help centers, or FAQ pages. Renders fully with no props.
+ * FaqContactCta — the page's one inverted "Still need help?" band for a help-center
+ * / support page. A full ink inversion (bg-foreground / text-background) cut in on a
+ * slanted clip-path seam, with a giant faint ghost "?" watermark bleeding behind an
+ * asymmetric 7/5 layout: a mono eyebrow rail and oversized heading + description on
+ * the left, and a stacked action column on the right — a solid light square (rounded-none)
+ * "Email Support" button with mail icon over a hairline-outlined "Start Live Chat"
+ * button with chat icon, both with press feedback — plus a small mono response-time
+ * note with a highlighted span. Buttons route through section-kit route links. Use as
+ * the closing support / contact prompt on SaaS knowledge bases, help centers, or FAQ
+ * pages. Renders fully with no props.
  */
 export const FaqContactCta = defineCapsule({
   name: 'FaqContactCta',
   description:
-    "A 'Still need help?' contact call-to-action band for a help-center / support page: a primary-colored rounded panel centered on a muted section, with a heading, supporting description, two centered buttons (a solid 'Email Support' with mail icon and a translucent 'Start Live Chat' with chat icon), and a small response-time note with a highlighted span. Buttons route through section-kit route links. Use as the closing support / contact prompt on SaaS knowledge bases, help centers, or FAQ pages.",
+    "The page's one inverted 'Still need help?' band for a help-center / support page: a full ink inversion (bg-foreground / text-background) cut in on a slanted clip-path seam, with a giant faint ghost '?' watermark behind an asymmetric 7/5 layout — a mono eyebrow rail and oversized heading + description on the left, and a stacked action column on the right (a solid light square 'Email Support' button with mail icon over a hairline-outlined 'Start Live Chat' button with chat icon, both with press feedback) — plus a small mono response-time note with a highlighted span. Buttons route through section-kit route links. Use as the closing support / contact prompt on SaaS knowledge bases, help centers, or FAQ pages.",
   props: z.object({
     /** Band heading. */
     heading: z.string().optional(),
@@ -50,67 +54,87 @@ export const FaqContactCta = defineCapsule({
     return (
       <CtaBand
         tone="muted"
-        className={`border-t border-border bg-muted/40 py-12 sm:py-16 ${props.className ?? ''}`}
+        className={`relative overflow-hidden bg-foreground py-16 pt-24 text-background [clip-path:polygon(0_3rem,100%_0,100%_100%,0_100%)] sm:py-20 sm:pt-28 lg:py-28 lg:pt-36 ${props.className ?? ''}`}
       >
-        <CtaBandInner className="max-w-4xl gap-5 rounded-2xl bg-primary p-8 sm:p-12 lg:p-16">
-          <CtaBandTitle className="text-primary-foreground sm:text-3xl">
-            {heading}
-          </CtaBandTitle>
-          <CtaBandSubtitle className="text-primary-foreground/70">
-            {description}
-          </CtaBandSubtitle>
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <CtaAction
-              variant="primary"
-              invert
-              className="w-full gap-2 rounded-lg px-6 py-3 font-medium hover:bg-muted sm:w-auto"
-              asChild
-            >
-              <NavbarRouteLink href={primary}>
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <rect x="2" y="4" width="20" height="16" rx="2" />
-                  <path d="m22 7-10 5L2 7" />
-                </svg>
-                {primary}
-              </NavbarRouteLink>
-            </CtaAction>
-            <CtaAction
-              variant="ghost"
-              className="w-full gap-2 rounded-lg bg-primary-foreground/10 px-6 py-3 font-medium text-primary-foreground hover:bg-primary-foreground/20 sm:w-auto"
-              asChild
-            >
-              <NavbarRouteLink href={secondary}>
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                </svg>
-                {secondary}
-              </NavbarRouteLink>
-            </CtaAction>
+        {/* Giant ghost "?" watermark bleeding off the edge. */}
+        <Watermark className="-right-6 top-1/2 -translate-y-1/2 font-serif text-[14rem] leading-none text-background/[0.06] sm:text-[20rem] lg:text-[26rem]">
+          ?
+        </Watermark>
+
+        <CtaBandInner align="left" className="w-full max-w-6xl gap-8 py-0">
+          <div className="flex w-full items-center gap-4">
+            <MonoTag tone="inverted" className="shrink-0 tracking-[0.24em]">
+              [ Support ]
+            </MonoTag>
+            <span aria-hidden="true" className="h-px flex-1 bg-background/20" />
+            <MonoTag aria-hidden="true" className="shrink-0 text-background/40">
+              Still here?
+            </MonoTag>
           </div>
-          <p className="mt-6 text-sm text-primary-foreground/60">
-            {note}{' '}
-            <span className="text-primary-foreground/90">{noteHighlight}</span>
-          </p>
+
+          <div className="grid w-full gap-10 md:grid-cols-12 md:items-end md:gap-12">
+            <div className="md:col-span-7">
+              <CtaBandTitle className="text-4xl font-extrabold tracking-tighter text-background sm:text-5xl">
+                {heading}
+              </CtaBandTitle>
+              <CtaBandSubtitle className="mt-5 max-w-xl text-background/60">
+                {description}
+              </CtaBandSubtitle>
+            </div>
+
+            <div className="flex flex-col gap-3 md:col-span-5">
+              <CtaAction
+                variant="primary"
+                invert
+                className="w-full gap-2 rounded-none bg-background px-6 py-3.5 text-sm font-medium text-foreground transition-all duration-150 hover:bg-background/90 active:translate-y-px"
+                asChild
+              >
+                <NavbarRouteLink href={primary}>
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <rect x="2" y="4" width="20" height="16" rx="2" />
+                    <path d="m22 7-10 5L2 7" />
+                  </svg>
+                  {primary}
+                </NavbarRouteLink>
+              </CtaAction>
+              <CtaAction
+                variant="ghost"
+                className="w-full gap-2 rounded-none border border-background/40 px-6 py-3.5 text-sm font-medium text-background transition-all duration-150 hover:bg-background/10 active:translate-y-px"
+                asChild
+              >
+                <NavbarRouteLink href={secondary}>
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                  {secondary}
+                </NavbarRouteLink>
+              </CtaAction>
+              <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.14em] text-background/50">
+                {note}{' '}
+                <span className="text-background/90">{noteHighlight}</span>
+              </p>
+            </div>
+          </div>
         </CtaBandInner>
       </CtaBand>
     )

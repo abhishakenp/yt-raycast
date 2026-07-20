@@ -109,9 +109,9 @@ export const AuthPricing = defineCapsule({
           },
         ]
     const tierLayouts = [
-      'xl:translate-y-8 xl:-rotate-1',
-      '',
-      'xl:translate-y-8 xl:rotate-1',
+      'xl:translate-y-8 xl:-rotate-1 max-lg:-rotate-1 max-lg:-translate-x-1',
+      'max-lg:z-10',
+      'xl:translate-y-8 xl:rotate-1 max-lg:rotate-1 max-lg:translate-x-1 md:max-lg:col-span-2',
     ]
 
     useSyncSaasPlans(

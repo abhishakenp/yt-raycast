@@ -17,17 +17,19 @@ import { VenueBlock } from '#/section-kit/VenueBlock.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
 /**
- * EventVenue — a venue-spotlight split for a conference or event page. A muted
- * band with a two-column layout: on the left a heading, description, and a list
- * of detail rows (address, getting there, hotels) each with a bordered icon tile;
- * on the right a large 16:10 hero photo above a 3-up square photo collage, all
- * alt-driven. Use to highlight the location, directions, and lodging for tech
- * conference, summit, festival, or workshop pages.
+ * EventVenue — kinetic-poster venue spotlight for a conference or event page. A
+ * muted band with an asymmetric 5/7 split: on the left a mono index eyebrow,
+ * heading, lede, and a hairline collapsed-border list of detail rows (address,
+ * getting there, hotels) each fronted by a square icon tile; on the right a large
+ * square-edged 16:10 hero photo carrying a hard offset shadow above a 3-up square
+ * photo collage with mono catalogue captions, all alt-driven. Use to highlight the
+ * location, directions, and lodging for tech conference, summit, festival, or
+ * workshop pages.
  */
 export const EventVenue = defineCapsule({
   name: 'EventVenue',
   description:
-    'Venue-spotlight split for a conference or event page: a muted band with a two-column layout — on the left a heading, description, and a list of detail rows (address, getting there, hotels) each with a bordered icon tile; on the right a large 16:10 hero photo above a 3-up square photo collage, all alt-driven via the Image component. Use to highlight the location, directions, and lodging for tech conference, summit, festival, meetup, or workshop pages.',
+    'Kinetic-poster venue spotlight for a conference or event page: a muted band with an asymmetric 5/7 split — on the left a mono index eyebrow, heading, lede, and a hairline collapsed-border list of detail rows (address, getting there, hotels) each fronted by a square icon tile; on the right a large square-edged 16:10 hero photo with a hard offset shadow above a 3-up square photo collage with mono catalogue captions, all alt-driven via the Image component. Use to highlight the location, directions, and lodging for tech conference, summit, festival, meetup, or workshop pages.',
   props: z.object({
     /** Section heading (venue name). */
     heading: z.string().optional(),
@@ -128,30 +130,35 @@ export const EventVenue = defineCapsule({
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
         <Container size="lg">
-          <VenueBlock className="grid items-center gap-12 lg:grid-cols-2 border-0 bg-transparent">
-            <div>
+          <VenueBlock className="grid items-start gap-12 border-0 bg-transparent lg:grid-cols-12">
+            <div className="lg:col-span-5">
               <SectionHeading
+                align="left"
+                eyebrow="06 / Venue"
                 title={heading}
                 subtitle={description}
-                align="left"
-                titleClassName="tracking-tight"
-                subtitleClassName="text-lg leading-relaxed"
-                className="mb-6 gap-6"
+                className="mb-8 gap-4"
+                eyebrowClassName="text-muted-foreground"
+                titleClassName="text-4xl font-extrabold tracking-tight sm:text-5xl"
+                subtitleClassName="text-lg leading-relaxed text-muted-foreground"
               />
-              <div className="mb-8 space-y-4">
+              <div className="border-t border-border">
                 {details.map((d, i) => (
-                  <FeatureListItem key={d.title}>
+                  <FeatureListItem
+                    key={d.title}
+                    className="items-center gap-4 border-b border-border py-4"
+                  >
                     <FeatureListItemIcon
                       shape="square"
-                      className="size-10 border border-border bg-background text-foreground"
+                      className="size-11 shrink-0 rounded-none border border-foreground bg-background text-foreground"
                     >
                       {venueIcons[i % venueIcons.length]}
                     </FeatureListItemIcon>
                     <FeatureListItemBody>
-                      <FeatureListItemTitle className="font-medium">
+                      <FeatureListItemTitle className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                         {d.title}
                       </FeatureListItemTitle>
-                      <FeatureListItemDescription>
+                      <FeatureListItemDescription className="font-medium text-foreground">
                         {d.text}
                       </FeatureListItemDescription>
                     </FeatureListItemBody>
@@ -159,8 +166,8 @@ export const EventVenue = defineCapsule({
                 ))}
               </div>
             </div>
-            <div className="space-y-4">
-              <div className="aspect-[16/10] overflow-hidden rounded-2xl">
+            <div className="space-y-4 lg:col-span-7">
+              <div className="aspect-[16/10] overflow-hidden rounded-none border border-foreground shadow-[10px_10px_0_0] shadow-foreground/20">
                 <Image
                   alt={imageAlt}
                   w={1000}
@@ -170,19 +177,21 @@ export const EventVenue = defineCapsule({
                 />
               </div>
               <ResponsiveGrid cols="3" className="gap-4">
-                {collage.map((alt) => (
-                  <div
-                    key={alt}
-                    className="aspect-square overflow-hidden rounded-xl"
-                  >
-                    <Image
-                      alt={alt}
-                      w={300}
-                      h={300}
-                      loading="lazy"
-                      className="size-full object-cover"
-                    />
-                  </div>
+                {collage.map((alt, i) => (
+                  <figure key={alt} className="space-y-2">
+                    <div className="aspect-square overflow-hidden rounded-none border border-border">
+                      <Image
+                        alt={alt}
+                        w={300}
+                        h={300}
+                        loading="lazy"
+                        className="size-full object-cover"
+                      />
+                    </div>
+                    <figcaption className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                      Fig {String(i + 1).padStart(2, '0')}
+                    </figcaption>
+                  </figure>
                 ))}
               </ResponsiveGrid>
             </div>

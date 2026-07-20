@@ -9,19 +9,21 @@ import { dashboardLakebed } from './dashboard-lakebed.ts'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * DashboardHeader — a page-title header row for a SaaS admin dashboard. A
- * responsive flex band with a bold title + muted subtitle on the left and two
- * action buttons on the right: an outline secondary action and a gradient indigo
- * primary action (prefixed with a "+"). The primary action writes a shared
- * Lakebed order and the secondary action routes through section-kit route links.
- * Use as the heading row at the top of a dashboard content area — above KPI
- * cards, tables or charts — to label the view and surface its key actions.
- * Renders fully with no props via baked-in "Dashboard" defaults.
+ * DashboardHeader — Swiss-data page-title band for a SaaS admin dashboard. A
+ * hairline-bordered header row with an extrabold tight-tracked title + muted
+ * subtitle on the left and two square-edged actions on the right: a hairline
+ * outline secondary action and a single solid primary action (prefixed with a
+ * "+"), both with press feedback and rounded-none precision. The primary
+ * action writes a shared Lakebed order and the secondary action routes through
+ * section-kit route links. Use as the heading row at the top of a dashboard
+ * content area — above KPI cards, tables or charts — to label the view and
+ * surface its key actions. Renders fully with no props via baked-in
+ * "Dashboard" defaults.
  */
 export const DashboardHeader = defineCapsule({
   name: 'DashboardHeader',
   description:
-    "A page-title header row for a SaaS admin dashboard: a responsive flex band with a bold title + muted subtitle on the left and two action buttons on the right — an outline secondary action and a gradient indigo primary action (prefixed with a '+'). The primary action writes a shared Lakebed order and the secondary action routes through section-kit route links. Use as the heading row at the top of a dashboard content area, above KPI cards, tables or charts, to label the view and surface its key actions.",
+    "Swiss-data page-title band for a SaaS admin dashboard: a hairline-bordered header row with an extrabold tight-tracked title + muted subtitle on the left and two square-edged actions on the right — a hairline outline secondary action and a single solid primary action (prefixed with a '+'), both rounded-none with press feedback. The primary action writes a shared Lakebed order and the secondary action routes through section-kit route links. Use as the heading row at the top of a dashboard content area, above KPI cards, tables or charts, to label the view and surface its key actions.",
   props: z.object({
     /** Page-header heading. */
     title: z.string().optional(),
@@ -49,7 +51,7 @@ export const DashboardHeader = defineCapsule({
       <PageHeader asChild>
         <div
           className={cn(
-            'flex flex-col justify-between gap-4 sm:flex-row sm:items-end',
+            'flex flex-col justify-between gap-4 px-4 py-5 sm:flex-row sm:items-end sm:px-6 lg:px-8',
             props.className,
           )}
         >
@@ -58,13 +60,13 @@ export const DashboardHeader = defineCapsule({
             subtitle={subtitle}
             align="left"
             titleAs="h1"
-            titleClassName="text-2xl font-bold"
-            subtitleClassName="text-sm"
+            titleClassName="text-2xl font-extrabold tracking-tight md:text-2xl"
+            subtitleClassName="text-sm md:text-sm"
             className="gap-1"
           />
           <PageHeaderActions className="flex gap-2">
             <NavbarRouteLink
-              className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition hover:bg-muted"
+              className="inline-flex items-center justify-center rounded-none border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors duration-150 hover:bg-muted active:translate-y-px"
               href={secondaryAction}
             >
               {secondaryAction}
@@ -89,7 +91,7 @@ export const DashboardHeader = defineCapsule({
                   statusTone: 'sky',
                 })
               }}
-              className="rounded-lg bg-gradient-to-br from-primary to-primary/80 px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm shadow-primary/30 transition hover:-translate-y-px hover:shadow-md hover:shadow-primary/40 disabled:pointer-events-none disabled:opacity-70"
+              className="inline-flex items-center justify-center rounded-none bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors duration-150 hover:bg-primary/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
             >
               {newOrderPending ? 'Adding' : `+ ${primaryAction}`}
             </button>

@@ -9,6 +9,7 @@ import {
   TestimonialName,
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
 const DEFAULT_REVIEWS: {
@@ -44,10 +45,20 @@ const DEFAULT_REVIEWS: {
   },
 ]
 
+/**
+ * AeoTestimonials — "Answer Terminal" social-proof band for an Answer-Engine-
+ * Optimization (AEO) SaaS. An asymmetric header (title left, mono meta right)
+ * sits above staggered rounded-none quote cards styled as cited answers: each
+ * card opens with a mono "[SOURCE 01] — role" citation header, sets the
+ * results-focused quote over a hairline rule, renders the star rating as a row
+ * of primary squares, and closes with the reviewer's name and role/company.
+ * Accepts a public `reviews` prop to override the quotes. Use to build trust
+ * on AEO, generative-search visibility, or brand-citation analytics pages.
+ */
 export const AeoTestimonials = defineCapsule({
   name: 'AeoTestimonials',
   description:
-    "Social-proof band for an Answer-Engine-Optimization (AEO) SaaS, composing the shared TestimonialGrid composite into a row of customer reviews. Each card shows a star rating, a results-focused quote about earning AI citations and share-of-voice, and an avatar with the reviewer's name, role, and company. Accepts a public `reviews` prop to override the quotes. Use to build trust on AEO, generative-search visibility, or brand-citation analytics landing pages.",
+    "Terminal-styled social-proof band for an Answer-Engine-Optimization (AEO) SaaS: an asymmetric mono-labeled header above staggered rounded-none quote cards styled as cited answers — each with a mono '[SOURCE 01]' citation header, a results-focused quote about earning AI citations and share-of-voice, a rating row of primary squares, and the reviewer's name, role, and company. Accepts a public `reviews` prop to override the quotes. Use to build trust on AEO, generative-search visibility, or brand-citation analytics landing pages.",
   props: z.object({
     heading: z.string().optional(),
     subheading: z.string().optional(),
@@ -84,17 +95,28 @@ export const AeoTestimonials = defineCapsule({
     return (
       <section
         className={
-          'bg-muted py-20 lg:py-28' +
+          'bg-muted py-14 sm:py-20 lg:py-28' +
           (props.className ? ' ' + props.className : '')
         }
       >
         <Container size="xl" className="px-6">
-          <TestimonialGrid
-            heading={heading}
-            subheading={subheading}
-            columns={props.columns ?? 3}
-          >
-            {items.map((t) => {
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={subheading}
+              className="max-w-2xl gap-2"
+              titleClassName="text-3xl font-semibold tracking-tight md:text-4xl"
+            />
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+            >
+              [ cited sources ]
+            </p>
+          </div>
+          <TestimonialGrid columns={props.columns ?? 3}>
+            {items.map((t, index) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -104,14 +126,35 @@ export const AeoTestimonials = defineCapsule({
                 rating?: number
                 avatarAlt?: string
               }
+              const sourceMeta = __iv__.role || __iv__.company || __iv__.meta
+              const rating = Math.max(
+                0,
+                Math.min(5, Math.round(__iv__.rating ?? 5)),
+              )
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
+                <TestimonialCard
+                  key={`${__iv__.name}-${index}`}
+                  className="rounded-none border-border bg-card p-5 transition-[border-color,transform] duration-150 hover:-translate-y-0.5 hover:border-primary max-md:odd:mr-7 max-md:even:ml-7 sm:p-6 md:even:mt-8 md:last:odd:col-span-2 lg:last:odd:col-span-1"
+                >
+                  <span className="flex items-baseline gap-2 border-b border-border pb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                    <span className="text-primary">
+                      [source {String(index + 1).padStart(2, '0')}]
+                    </span>
+                    {sourceMeta ? <span>— {sourceMeta}</span> : null}
+                  </span>
+                  <TestimonialQuote className="text-base leading-relaxed">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <span aria-hidden="true" className="flex items-center gap-1">
+                    {Array.from({ length: rating }, (_, star) => (
+                      <span key={star} className="size-2 bg-primary" />
+                    ))}
+                  </span>
                   <TestimonialAuthor>
                     <TestimonialName>{__iv__.name}</TestimonialName>
-                    {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
-                        {__iv__.role || __iv__.company || __iv__.meta}
+                    {sourceMeta && (
+                      <TestimonialMeta className="font-mono text-[11px] uppercase tracking-[0.12em]">
+                        {sourceMeta}
                       </TestimonialMeta>
                     )}
                   </TestimonialAuthor>

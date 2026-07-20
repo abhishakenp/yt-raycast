@@ -14,18 +14,19 @@ import {
 } from '#/section-kit/index.ts'
 
 /**
- * ConstructionNavbar — sticky top navigation bar for a construction / general
- * contractor site. A backdrop-blurred, border-bottomed header pinned to the
- * top: a hard-hat logo tile + brand name on the left, horizontal nav links in
- * the center, and a phone link plus a 'Get a Quote' CTA on the right (desktop).
- * Links and CTA route through route hrefs so labels can drive page-switching.
- * Use as the sticky site header for construction firms, contractors, builders,
- * or trades businesses.
+ * ConstructionNavbar — industrial-brutalist sticky top navigation for a
+ * construction / general contractor site. A backdrop-blurred header with a
+ * heavy 2px bottom rule: a square site-marker logo tile + extrabold uppercase
+ * brand wordmark on the left, mono uppercase nav links in the center, and a
+ * phone link (xl+) plus a square hard-edged 'Get a Quote' CTA with press
+ * feedback on the right. Links and CTA route through route hrefs so labels can
+ * drive page-switching. Use as the sticky site header for construction firms,
+ * contractors, builders, or trades businesses.
  */
 export const ConstructionNavbar = defineCapsule({
   name: 'ConstructionNavbar',
   description:
-    "Sticky top navigation bar for a construction / general contractor site: backdrop-blurred, border-bottomed header with a hard-hat logo tile + brand name on the left, horizontal nav links in the center, and a phone link plus a 'Get a Quote' CTA on the right (desktop). Links and CTA route through route hrefs for page-switching. Use as the sticky site header for construction firms, contractors, builders, or trades businesses.",
+    "Industrial-brutalist sticky top navigation bar for a construction / general contractor site: backdrop-blurred header with a heavy 2px bottom rule, a square site-marker logo tile + extrabold uppercase brand wordmark on the left, mono uppercase nav links in the center, and a phone link plus a square hard-edged 'Get a Quote' CTA with press feedback on the right (desktop). Links and CTA route through route hrefs for page-switching. Use as the sticky site header for construction firms, contractors, builders, or trades businesses.",
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -50,7 +51,7 @@ export const ConstructionNavbar = defineCapsule({
     }) => (
       <span
         className={cn(
-          'grid place-items-center rounded-lg',
+          'grid place-items-center rounded-none',
           tone === 'foreground'
             ? 'bg-foreground text-background'
             : 'bg-primary text-primary-foreground',
@@ -59,8 +60,8 @@ export const ConstructionNavbar = defineCapsule({
         aria-hidden="true"
       >
         <svg
-          width="20"
-          height="20"
+          width="18"
+          height="18"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -77,20 +78,28 @@ export const ConstructionNavbar = defineCapsule({
       <SiteNav
         position="sticky"
         height="responsive"
-        className={cn('bg-background/95', props.className)}
+        className={cn(
+          'border-b-2 border-foreground bg-background/95',
+          props.className,
+        )}
       >
         <NavbarBrand href={nav[0]} className="gap-2">
-          <BrandLogo brand={brand}>
+          <BrandLogo brand={brand} className="flex items-center gap-2">
             <LogoImage
-              fallback={<LogoMark className="size-8" tone="foreground" />}
+              className="size-7"
+              fallback={<LogoMark className="size-7" tone="foreground" />}
             />
-            <LogoLabel className="text-xl font-semibold tracking-tight text-foreground" />
+            <LogoLabel className="text-lg font-extrabold uppercase tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="font-mono text-[11px] uppercase tracking-[0.18em]"
+            >
               {label}
             </NavbarNavLink>
           ))}
@@ -99,11 +108,11 @@ export const ConstructionNavbar = defineCapsule({
         <NavbarActions>
           <a
             href={`tel:${phone.replace(/[^\d+]/g, '')}`}
-            className="hidden items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground lg:flex"
+            className="hidden items-center gap-2 font-mono text-xs tabular-nums text-muted-foreground transition-colors hover:text-foreground xl:flex"
           >
             <svg
-              width="16"
-              height="16"
+              width="14"
+              height="14"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -116,7 +125,11 @@ export const ConstructionNavbar = defineCapsule({
             </svg>
             {phone}
           </a>
-          <NavbarCta variant="dark" href={ctaLabel} className="px-5 py-2.5">
+          <NavbarCta
+            variant="dark"
+            href={ctaLabel}
+            className="rounded-none px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-[0.15em] shadow-[3px_3px_0_0] shadow-primary transition-all duration-100 hover:-translate-y-px active:translate-x-px active:translate-y-px active:shadow-none"
+          >
             {ctaLabel}
           </NavbarCta>
           <MobileNavDrawer

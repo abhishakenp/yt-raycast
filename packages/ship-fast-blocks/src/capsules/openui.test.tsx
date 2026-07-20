@@ -4,7 +4,11 @@ import type { ReactElement } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { z } from 'zod/v4'
 
-import { defineCapsule, withLakebed, type CapsuleComponentRenderer } from './openui.ts'
+import {
+  defineCapsule,
+  withLakebed,
+  type CapsuleComponentRenderer,
+} from './openui.ts'
 import { commerceCartLakebed } from '../registry/sections/commerce/cart-lakebed.ts'
 
 describe('defineCapsule Lakebed contract', () => {
@@ -262,14 +266,15 @@ describe('withLakebed', () => {
 
   it('wraps a renderer and provides a lakebed client with expected runtime shape', () => {
     let capturedLakebed: Record<string, unknown> | undefined
-    const mockRenderer: CapsuleComponentRenderer<unknown, undefined> = (input) => {
+    const mockRenderer: CapsuleComponentRenderer<unknown, undefined> = (
+      input,
+    ) => {
       capturedLakebed = input.lakebed as unknown as Record<string, unknown>
       return null
     }
 
     const wrapped = withLakebed(mockRenderer, undefined, 'TestCapsule')
     expect(typeof wrapped).toBe('function')
-
     ;(wrapped as unknown as (input: Record<string, unknown>) => unknown)({
       props: { foo: 'bar' },
       statementId: 'stmt1',

@@ -297,7 +297,13 @@ describe('HeroMediaPanel', () => {
   })
 
   it('rounded=3xl uses rounded-3xl', () => {
-    render(<HeroMediaPanel alt="Product" rounded="3xl" data-testid="img" />)
+    render(
+      <HeroMediaPanel
+        alt="Product"
+        className="rounded-3xl"
+        data-testid="img"
+      />,
+    )
     expect(screen.getByTestId('img').className).toContain('rounded-3xl')
   })
 })

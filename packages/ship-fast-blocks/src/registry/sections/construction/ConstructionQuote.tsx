@@ -14,6 +14,7 @@ import {
   ContactFormSubmit,
   ContactFormFooter,
 } from '#/section-kit/ContactForm.tsx'
+import { GraphPaper } from '#/section-kit/Decor.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
@@ -21,18 +22,23 @@ import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 
 /**
- * ConstructionQuote — dark "request a free estimate" lead-capture form for a
- * construction / general contractor page. A centered heading on a dark band
- * above a functional multi-field form (name, email, phone, project type, budget,
- * timeline, project details) with a submit button that writes a Lakebed inquiry,
- * plus a privacy disclaimer. Use as the closing conversion section for
- * construction firms, contractors, builders, or any service business collecting
- * project inquiries. Renders fully with no props via baked-in defaults.
+ * ConstructionQuote — industrial-brutalist "request a free estimate"
+ * lead-capture band for a construction / general contractor page. A full
+ * foreground-inversion band cutting in on a slanted clip-path seam with a
+ * blueprint graph-paper overlay: a mono work-order meta rule + left-aligned
+ * extrabold uppercase heading above a hard-edged 2px-bordered intake form
+ * (mono uppercase labels, square inputs for name, email, phone, project type,
+ * budget, timeline, project details) whose hazard-filled square submit button
+ * has a hard offset shadow and press feedback and writes a Lakebed inquiry,
+ * plus a mono privacy disclaimer. Use as the closing conversion section for
+ * construction firms, contractors, builders, or any service business
+ * collecting project inquiries. Renders fully with no props via baked-in
+ * defaults.
  */
 export const ConstructionQuote = defineCapsule({
   name: 'ConstructionQuote',
   description:
-    "Dark 'request a free estimate' Lakebed lead-capture form for a construction / general contractor page: a centered heading on a dark band above a functional multi-field form (name, email, phone, project type, budget, timeline, project details) with a submit button that writes a shared inquiry record, plus a privacy disclaimer. Use as the closing conversion section for construction firms, contractors, builders, or any service business collecting project inquiries.",
+    "Industrial-brutalist 'request a free estimate' Lakebed lead-capture band for a construction / general contractor page: a foreground-inversion band with a slanted clip-path top seam and blueprint graph-paper overlay, a mono work-order meta rule + extrabold uppercase heading, and a hard-edged 2px-bordered intake form (mono uppercase labels, square inputs for name, email, phone, project type, budget, timeline, project details) whose hazard-filled square submit button carries a hard offset shadow and press feedback and writes a shared inquiry record, plus a mono privacy disclaimer. Use as the closing conversion section for construction firms, contractors, builders, or any service business collecting project inquiries.",
   props: z.object({
     /** Form section heading. */
     heading: z.string().optional(),
@@ -100,31 +106,46 @@ export const ConstructionQuote = defineCapsule({
     })
 
     const inputCls =
-      'w-full rounded-lg border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/30'
+      'w-full rounded-none border-2 border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/30'
+    const labelCls =
+      'font-mono text-[11px] uppercase tracking-[0.15em] text-foreground/80'
 
     return (
-      <section className={cn('bg-foreground py-20 lg:py-28', props.className)}>
-        <Container size="sm" className="max-w-4xl">
+      <section
+        className={cn(
+          'relative overflow-hidden bg-foreground py-16 pt-24 [clip-path:polygon(0_3rem,100%_0,100%_100%,0_100%)] sm:pt-28 lg:py-24 lg:pt-32',
+          props.className,
+        )}
+      >
+        <GraphPaper className="inset-0 text-background/[0.05]" />
+        <Container size="sm" className="relative max-w-4xl">
+          <div className="mb-8 flex items-center justify-between gap-4 border-b border-background/20 pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-background/50">
+            <span className="flex items-center gap-3">
+              <span
+                aria-hidden="true"
+                className="size-2 animate-pulse bg-primary"
+              />
+              Work order / intake
+            </span>
+            <span className="tabular-nums">24h response</span>
+          </div>
           <SectionHeading
             title={heading}
             subtitle={description}
-            align="center"
-            titleClassName="text-3xl font-bold text-background sm:text-4xl"
+            align="left"
+            titleClassName="text-3xl font-extrabold uppercase tracking-tight text-background sm:text-4xl lg:text-5xl"
             subtitleClassName="text-lg text-background/60"
-            className="mb-12 gap-6"
+            className="mb-10 gap-4"
           />
 
           <ContactForm
             variant="card"
-            className="rounded-xl bg-card p-8 shadow-xl lg:p-12"
+            className="rounded-none border-2 border-background/25 bg-card p-6 shadow-[10px_10px_0_0] shadow-background/15 sm:p-8 lg:p-12"
             onSubmit={inquiry.submitForm}
           >
             <ResponsiveGrid cols="1-md-2" className="mb-6 gap-6">
               <ContactFormField className="mb-0">
-                <ContactFormLabel
-                  htmlFor="con-quote-name"
-                  className="text-foreground/80"
-                >
+                <ContactFormLabel htmlFor="con-quote-name" className={labelCls}>
                   Full Name
                 </ContactFormLabel>
                 <ContactFormInput
@@ -138,7 +159,7 @@ export const ConstructionQuote = defineCapsule({
               <ContactFormField className="mb-0">
                 <ContactFormLabel
                   htmlFor="con-quote-email"
-                  className="text-foreground/80"
+                  className={labelCls}
                 >
                   Email Address
                 </ContactFormLabel>
@@ -157,7 +178,7 @@ export const ConstructionQuote = defineCapsule({
               <ContactFormField className="mb-0">
                 <ContactFormLabel
                   htmlFor="con-quote-phone"
-                  className="text-foreground/80"
+                  className={labelCls}
                 >
                   Phone Number
                 </ContactFormLabel>
@@ -171,10 +192,7 @@ export const ConstructionQuote = defineCapsule({
                 />
               </ContactFormField>
               <ContactFormField className="mb-0">
-                <ContactFormLabel
-                  htmlFor="con-quote-type"
-                  className="text-foreground/80"
-                >
+                <ContactFormLabel htmlFor="con-quote-type" className={labelCls}>
                   Project Type
                 </ContactFormLabel>
                 <ContactFormSelect
@@ -196,7 +214,7 @@ export const ConstructionQuote = defineCapsule({
               <ContactFormField className="mb-0">
                 <ContactFormLabel
                   htmlFor="con-quote-budget"
-                  className="text-foreground/80"
+                  className={labelCls}
                 >
                   Estimated Budget
                 </ContactFormLabel>
@@ -216,7 +234,7 @@ export const ConstructionQuote = defineCapsule({
               <ContactFormField className="mb-0">
                 <ContactFormLabel
                   htmlFor="con-quote-timeline"
-                  className="text-foreground/80"
+                  className={labelCls}
                 >
                   Desired Timeline
                 </ContactFormLabel>
@@ -239,7 +257,7 @@ export const ConstructionQuote = defineCapsule({
               <ContactFormField className="mb-0">
                 <ContactFormLabel
                   htmlFor="con-quote-message"
-                  className="text-foreground/80"
+                  className={labelCls}
                 >
                   Project Details
                 </ContactFormLabel>
@@ -257,7 +275,7 @@ export const ConstructionQuote = defineCapsule({
               type="submit"
               aria-busy={inquiry.isPending}
               disabled={inquiry.isPending}
-              className="w-full rounded-lg bg-foreground py-4 text-lg font-semibold text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70"
+              className="w-full rounded-none bg-primary py-4 font-mono text-sm font-bold uppercase tracking-[0.15em] text-primary-foreground shadow-[5px_5px_0_0] shadow-foreground/40 transition-all duration-100 hover:-translate-y-px hover:bg-primary/90 active:translate-x-px active:translate-y-px active:shadow-none disabled:pointer-events-none disabled:opacity-70"
             >
               {inquiry.isPending ? 'Sending' : submitLabel}
             </ContactFormSubmit>
@@ -266,7 +284,7 @@ export const ConstructionQuote = defineCapsule({
               {inquiry.statusText}
             </ContactFormFooter>
 
-            <p className="mt-4 text-center text-sm text-muted-foreground">
+            <p className="mt-4 text-center font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
               {disclaimer}
             </p>
           </ContactForm>

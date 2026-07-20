@@ -14,19 +14,19 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * FashionStoreFaq — native disclosure FAQ accordion for a minimalist fashion
- * store. A subtle muted-band, narrow centered section with an eyebrow + serif
- * heading above a stack of bordered <details> cards (question summary with a
- * chevron that rotates on open, revealing one or more body paragraphs), closed
- * by a centered footer note and an underlined "Contact Customer Care" link.
- * The footer link routes through section-kit route links. Use to answer shipping, returns,
- * sizing and materials questions for clothing brands, boutiques, or apparel
- * shops.
+ * FashionStoreFaq — native disclosure FAQ accordion for a luxury fashion store.
+ * A subtle muted-band, narrow centered section with a mono kicker + serif
+ * heading above a stack of hairline-ruled <details> rows (serif question summary
+ * with a chevron that rotates on open, revealing one or more body paragraphs),
+ * closed by a centered footer note and an underlined mono "Contact Customer
+ * Care" link. The footer link routes through section-kit route links. Use to
+ * answer shipping, returns, sizing and materials questions for clothing brands,
+ * boutiques, or apparel shops.
  */
 export const FashionStoreFaq = defineCapsule({
   name: 'FashionStoreFaq',
   description:
-    "Native disclosure FAQ accordion for a minimalist fashion store: a subtle muted-band, narrow centered section with an eyebrow + serif heading above a stack of bordered <details> cards (question summary with a chevron that rotates on open, revealing one or more body paragraphs), closed by a centered footer note and an underlined 'Contact Customer Care' link that routes through section-kit route links. Use to answer shipping, returns, sizing and materials questions for clothing brands, boutiques, or apparel and accessories shops.",
+    "Native disclosure FAQ accordion for a luxury fashion store: a subtle muted-band, narrow centered section with a mono kicker + serif heading above a stack of hairline-ruled <details> rows (serif question summary with a chevron that rotates on open, revealing one or more body paragraphs), closed by a centered footer note and an underlined mono 'Contact Customer Care' link that routes through section-kit route links. Use to answer shipping, returns, sizing and materials questions for clothing brands, boutiques, or apparel and accessories shops.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -107,7 +107,7 @@ export const FashionStoreFaq = defineCapsule({
     const faqFooterCta = props.footerCta ?? 'Contact Customer Care'
 
     const eyebrowCls =
-      'text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground'
+      'font-mono text-[11px] font-medium uppercase tracking-[0.24em] text-muted-foreground'
 
     return (
       <section
@@ -123,17 +123,25 @@ export const FashionStoreFaq = defineCapsule({
             title={faqHeading}
             className="mb-16 gap-0"
             eyebrowClassName={cn(eyebrowCls, 'mb-3')}
-            titleClassName="font-serif text-4xl font-normal sm:text-5xl"
+            titleClassName="font-serif text-4xl font-normal tracking-tight sm:text-5xl"
           />
 
-          <FaqAccordion variant="wide">
+          <FaqAccordion
+            variant="wide"
+            className="space-y-0 border-t border-border"
+          >
             {faqItems.map((item) => (
-              <FaqItem key={item.q} className="bg-background">
-                <FaqQuestion className="p-6">
-                  <h3 className="pr-4 font-medium text-foreground">{item.q}</h3>
+              <FaqItem
+                key={item.q}
+                className="rounded-none border-0 border-b border-border bg-transparent"
+              >
+                <FaqQuestion className="py-6">
+                  <h3 className="pr-4 font-serif text-lg font-normal text-foreground">
+                    {item.q}
+                  </h3>
                   <FaqQuestionIcon />
                 </FaqQuestion>
-                <FaqAnswer asChild className="space-y-3 px-6 pb-6">
+                <FaqAnswer asChild className="space-y-3 pb-6">
                   <div>
                     {item.a.map((para) => (
                       <p key={para}>{para}</p>
@@ -147,7 +155,7 @@ export const FashionStoreFaq = defineCapsule({
           <div className="mt-12 text-center">
             <p className="mb-4 text-muted-foreground">{faqFooterNote}</p>
             <NavbarRouteLink
-              className="inline-flex items-center border-b border-foreground pb-1 text-sm font-medium text-foreground transition-colors hover:border-muted-foreground hover:text-muted-foreground"
+              className="inline-flex items-center border-b border-foreground pb-1 font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-foreground transition-colors hover:border-muted-foreground hover:text-muted-foreground"
               href={faqFooterCta}
             >
               {faqFooterCta}

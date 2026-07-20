@@ -9,19 +9,23 @@ import {
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 
 /**
- * JewelryStoreStats — heritage stats band for a luxury jewelry maison. A clean
- * centered responsive grid (1/2/4 cols) of metric blocks, each pairing a large
- * gold serif value with a wide letter-spaced uppercase muted label. Use to
- * convey legacy and scale — years of heritage, pieces crafted, master artisans,
- * global boutiques — for fine jewelers, diamond houses, or high-jewelry maisons.
- * Renders fully with no props via baked-in defaults.
+ * JewelryStoreStats — inverted heritage stats band for a luxury jewelry maison.
+ * The single dramatic dark moment in the page: a near-black bg-foreground /
+ * text-background band cut with a slanted top seam and carrying a giant ghost
+ * serif watermark, above a collapsed-border 2-to-4 column grid of metric cells
+ * divided by faint vertical hairlines, each pairing a large light serif
+ * tabular-nums value with a small mono uppercase label. Use to convey legacy and
+ * scale — years of heritage, pieces crafted, master artisans, global boutiques —
+ * for fine jewelers, diamond houses, or high-jewelry maisons. Renders fully with
+ * no props via baked-in defaults.
  */
 export const JewelryStoreStats = defineCapsule({
   name: 'JewelryStoreStats',
   description:
-    'Heritage stats band for a luxury jewelry maison: a clean centered responsive grid (1/2/4 cols) of metric blocks, each pairing a large gold serif value with a wide letter-spaced uppercase muted label. Use to convey legacy and scale — years of heritage, pieces crafted, master artisans, global boutiques — for fine jewelers, diamond houses, or high-jewelry maisons.',
+    'Inverted heritage stats band for a luxury jewelry maison: the single dramatic dark moment in the page — a near-black bg-foreground / text-background band cut with a slanted top seam and a giant ghost serif watermark, above a collapsed-border 2-to-4 column grid of metric cells divided by faint vertical hairlines, each pairing a large light serif tabular-nums value with a small mono uppercase label. Use to convey legacy and scale — years of heritage, pieces crafted, master artisans, global boutiques — for fine jewelers, diamond houses, or high-jewelry maisons.',
   props: z.object({
     items: z
       .array(z.object({ value: z.string(), label: z.string() }))
@@ -41,20 +45,40 @@ export const JewelryStoreStats = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-background pt-28 pb-20 lg:pt-32 lg:pb-28',
+          'relative overflow-hidden bg-foreground text-background [clip-path:polygon(0_2.5rem,100%_0,100%_100%,0_100%)] pt-36 pb-24 lg:pt-40 lg:pb-28',
           props.className,
         )}
       >
-        <Container size="xl" className="sm:px-4">
-          <StatGrid columns={4} className={'text-center gap-12'}>
+        <Watermark
+          aria-hidden="true"
+          className="left-1/2 top-24 -translate-x-1/2 font-serif text-[24vw] font-normal leading-none tracking-tighter text-background/[0.05]"
+        >
+          Heritage
+        </Watermark>
+        <Container size="xl" className="relative sm:px-4">
+          <StatGrid columns={4} className="gap-0 divide-x divide-background/20">
             {items.map((s) => {
               const __iv__ = s as { value: string; label: string }
               return (
-                <StatItem key={__iv__.label}>
-                  <StatValue fontFamily={'serif'} size={'xl'} color={'primary'}>
+                <StatItem
+                  key={__iv__.label}
+                  align="center"
+                  className="px-4 py-2"
+                >
+                  <StatValue
+                    fontFamily="serif"
+                    size="xl"
+                    color="inverted"
+                    className="font-normal"
+                  >
                     {__iv__.value}
                   </StatValue>
-                  <StatLabel uppercase>{__iv__.label}</StatLabel>
+                  <StatLabel
+                    color="inverted"
+                    className="mt-3 font-mono text-[11px] uppercase tracking-[0.2em]"
+                  >
+                    {__iv__.label}
+                  </StatLabel>
                 </StatItem>
               )
             })}

@@ -1,28 +1,31 @@
 import { defineCapsule } from '#/capsules/openui.ts'
-import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import {
   FeatureGrid,
   FeatureCard,
-  FeatureIcon,
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 
 /**
- * EventFeatures — an "everything you get" feature grid for a conference or event
- * page. A centered heading + description above a responsive 3-up (2-up on tablet)
- * grid of feature blocks, each with a rounded icon tile that tints on hover, a
- * title, and a description. Icons rotate through a built-in set. Use to outline
- * what attendees receive (sessions, networking, workshops, swag, venue, party) on
- * tech conference, summit, meetup, festival, or workshop pages.
+ * EventFeatures — kinetic-poster "everything you get" grid for a conference or
+ * event page. An asymmetric header (mono index eyebrow + oversized heading + lede)
+ * over a giant ghost watermark, above a staggered 3-up grid of square-edged
+ * feature cards. Each card leads with a big mono index numeral, a title, and a
+ * description, carries a hard offset shadow on hover, and every other card is
+ * nudged down for a broken-grid rhythm. Use to outline what attendees receive
+ * (sessions, networking, workshops, swag, venue, party) on tech conference,
+ * summit, meetup, festival, or workshop pages.
  */
 export const EventFeatures = defineCapsule({
   name: 'EventFeatures',
   description:
-    "'Everything you get' feature grid for a conference or event page: a centered heading + description above a responsive 3-up (2-up on tablet) grid of feature blocks, each with a rounded icon tile that tints on hover, a title, and a description. Icons rotate through a built-in set (lightbulb, people, wrench, gift, building, party). Use to outline what attendees receive — sessions, networking, workshops, swag, venue, closing party — on tech conference, summit, meetup, festival, or workshop pages.",
+    "Kinetic-poster 'everything you get' feature grid for a conference or event page: an asymmetric header (mono index eyebrow + oversized heading + lede) over a giant ghost watermark, above a staggered 3-up (2-up on tablet) grid of square-edged feature cards. Each card leads with a big mono index numeral, a title, and a description, gains a hard offset shadow on hover, and every other card is nudged down for a broken-grid rhythm. Use to outline what attendees receive — sessions, networking, workshops, swag, venue, closing party — on tech conference, summit, meetup, festival, or workshop pages.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -74,141 +77,53 @@ export const EventFeatures = defineCapsule({
           },
         ]
 
-    const featureIcons: ReactNode[] = [
-      <svg
-        key="bulb"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M9 18h6" />
-        <path d="M10 22h4" />
-        <path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2z" />
-      </svg>,
-      <svg
-        key="people"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-      </svg>,
-      <svg
-        key="wrench"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-2.4 2.6-2.6z" />
-      </svg>,
-      <svg
-        key="gift"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <polyline points="20 12 20 22 4 22 4 12" />
-        <rect x="2" y="7" width="20" height="5" />
-        <line x1="12" y1="22" x2="12" y2="7" />
-        <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
-        <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
-      </svg>,
-      <svg
-        key="building"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M3 21h18" />
-        <path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16" />
-        <line x1="9" y1="7" x2="10" y2="7" />
-        <line x1="9" y1="11" x2="10" y2="11" />
-        <line x1="14" y1="7" x2="15" y2="7" />
-        <line x1="14" y1="11" x2="15" y2="11" />
-      </svg>,
-      <svg
-        key="party"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <circle cx="12" cy="12" r="10" />
-        <path d="M8 14s1.5 2 4 2 4-2 4-2" />
-        <line x1="9" y1="9" x2="9.01" y2="9" />
-        <line x1="15" y1="9" x2="15.01" y2="9" />
-      </svg>,
-    ]
-
     return (
-      <FeatureGrid
-        heading={heading}
-        subheading={description}
-        columns={3}
-        className={cn('py-20 lg:py-28', props.className)}
+      <section
+        className={cn(
+          'relative overflow-hidden py-20 lg:py-28',
+          props.className,
+        )}
       >
-        {items
-          .map((item, i) => ({
-            ...item,
-            icon: featureIcons[i % featureIcons.length],
-          }))
-          .map((f) => {
-            const __iv__ = f as {
-              title: string
-              description: string
-              icon?: React.ReactNode
-              points?: string[]
-              cta?: string
-              price?: string
-              imageAlt?: string
-            }
-            return (
-              <FeatureCard key={__iv__.title}>
-                {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                <FeatureTitle>{__iv__.title}</FeatureTitle>
-                <FeatureDescription>{__iv__.description}</FeatureDescription>
+        <Watermark className="-left-6 bottom-0 text-[8rem] leading-none sm:text-[13rem] lg:text-[17rem]">
+          2024
+        </Watermark>
+        <Container size="lg" className="relative">
+          <SectionHeading
+            align="left"
+            eyebrow="03 / Included"
+            title={heading}
+            subtitle={description}
+            className="mb-12 max-w-2xl gap-4"
+            eyebrowClassName="text-muted-foreground"
+            titleClassName="text-4xl font-extrabold tracking-tight sm:text-5xl"
+            subtitleClassName="text-lg text-muted-foreground"
+          />
+          <FeatureGrid columns={3}>
+            {items.map((item, i) => (
+              <FeatureCard
+                key={item.title}
+                className={cn(
+                  'group gap-4 rounded-none border-border p-6 sm:p-7 transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-1 hover:border-foreground hover:shadow-[8px_8px_0_0] hover:shadow-foreground active:translate-y-0 active:shadow-none',
+                  i % 2 === 1 ? 'lg:translate-y-6' : '',
+                )}
+              >
+                <span
+                  aria-hidden="true"
+                  className="font-mono text-3xl font-extrabold tabular-nums leading-none tracking-tight text-muted-foreground/40 transition-colors group-hover:text-primary"
+                >
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <FeatureTitle className="text-lg font-bold tracking-tight">
+                  {item.title}
+                </FeatureTitle>
+                <FeatureDescription className="leading-relaxed">
+                  {item.description}
+                </FeatureDescription>
               </FeatureCard>
-            )
-          })}
-      </FeatureGrid>
+            ))}
+          </FeatureGrid>
+        </Container>
+      </section>
     )
   },
 })

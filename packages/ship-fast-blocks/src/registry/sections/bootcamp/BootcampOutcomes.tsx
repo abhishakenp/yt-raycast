@@ -3,15 +3,20 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * BootcampOutcomes — proven outcomes / stats band for a coding bootcamp /
- * career-school landing page. A centered eyebrow, heading and description
- * above a 4-up metrics grid of large bold figures, followed by a 3-column row
- * of progress-bar cards showing salary before / after / increase. Use as the
- * outcomes validation section for bootcamps, academies, or vocational programs
- * that want to showcase placement rate and earning potential.
+ * BootcampOutcomes — "Terminal Classroom" inverted outcomes band for a coding
+ * bootcamp / career-school landing page. A full-inversion (foreground-on-
+ * background flip) band entered through a slanted clip-path seam, with a
+ * graph-paper texture and a giant ghost watermark of the lead stat: a
+ * left-aligned mono-labeled header sits above a collapsed-border 2/4-column
+ * grid of giant mono tabular stat numerals, followed by a 3-up row of
+ * hairline salary cards whose div-built progress bars carry mono percentage
+ * readouts. Use as the outcomes validation section for bootcamps, academies,
+ * or vocational programs that want to showcase placement rate and earning
+ * potential.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { GraphPaper, Watermark } from '#/section-kit/Decor.tsx'
 import {
   StatGrid,
   StatItem,
@@ -26,7 +31,7 @@ import {
 export const BootcampOutcomes = defineCapsule({
   name: 'BootcampOutcomes',
   description:
-    'Proven outcomes / stats band for a coding bootcamp / career-school landing page: centered eyebrow, heading and description above a 4-up metrics grid of large bold figures, followed by a 3-column row of progress-bar cards showing salary before, after, and increase. Use as the outcomes validation section for bootcamps, academies, or vocational programs that want to showcase placement rate and earning potential.',
+    'Terminal-styled inverted outcomes band for a coding bootcamp / career-school landing page: a foreground-inverted band entered through a slanted clip-path seam with graph-paper texture and a giant ghost watermark of the lead stat. A left-aligned mono-labeled header sits above a collapsed-border 2/4-column grid of giant mono tabular stat numerals, followed by a 3-up row of hairline salary cards with div-built progress bars and mono percentage readouts (salary before, after, increase). Use as the outcomes validation section for bootcamps, academies, or vocational programs showcasing placement rate and earning potential.',
   props: z.object({
     /** Section eyebrow label. */
     eyebrow: z.string().optional(),
@@ -101,18 +106,39 @@ export const BootcampOutcomes = defineCapsule({
           },
         ]
     return (
-      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
-        <Container>
-          <SectionHeading
-            eyebrow={outcomesEyebrow}
-            title={outcomesHeading}
-            subtitle={outcomesDesc}
-            className="mb-16 lg:mb-20 max-w-3xl gap-0"
-            eyebrowClassName="mb-4 inline-block text-xs font-semibold tracking-wider text-primary"
-            titleClassName="mb-4 text-3xl font-bold sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <StatGrid columns={4} className={'mb-16 gap-12'}>
+      <section
+        className={cn(
+          'relative overflow-hidden bg-foreground pb-16 pt-28 text-background [clip-path:polygon(0_2.5rem,100%_0,100%_100%,0_100%)] lg:pb-24 lg:pt-36',
+          props.className,
+        )}
+      >
+        <GraphPaper className="inset-0 text-background/[0.05]" />
+        <Watermark className="-right-6 top-16 font-mono text-[8rem] text-background/[0.05] sm:text-[16rem]">
+          {outcomeStats[0]?.value ?? '%'}
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-12 grid items-end gap-6 lg:mb-16 lg:grid-cols-12">
+            <SectionHeading
+              align="left"
+              eyebrow={outcomesEyebrow}
+              title={outcomesHeading}
+              subtitle={outcomesDesc}
+              className="max-w-2xl gap-0 lg:col-span-8"
+              eyebrowClassName="mb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-background/60"
+              titleClassName="mb-4 text-3xl font-bold tracking-tight text-background sm:text-5xl"
+              subtitleClassName="text-base text-background/70 sm:text-lg"
+            />
+            <p
+              aria-hidden="true"
+              className="hidden justify-self-end font-mono text-[11px] uppercase tracking-[0.2em] text-background/40 lg:col-span-4 lg:block"
+            >
+              [ outcomes.report — verified ]
+            </p>
+          </div>
+          <StatGrid
+            columns={4}
+            className="mb-12 gap-0 border-l border-t border-background/15 lg:mb-16"
+          >
             {outcomeStats
               .map((s) => ({
                 value: s.value,
@@ -121,32 +147,52 @@ export const BootcampOutcomes = defineCapsule({
               .map((s) => {
                 const __iv__ = s as { value: string; label: string }
                 return (
-                  <StatItem key={__iv__.label}>
-                    <StatValue color={'primary'} size={'xl'}>
+                  <StatItem
+                    key={__iv__.label}
+                    align="left"
+                    className="border-b border-r border-background/15 p-5 sm:p-7"
+                  >
+                    <StatValue
+                      color="inverted"
+                      size="xl"
+                      className="font-mono tracking-tighter"
+                    >
                       {__iv__.value}
                     </StatValue>
-                    <StatLabel>{__iv__.label}</StatLabel>
+                    <StatLabel
+                      color="inverted"
+                      className="mt-2 font-mono text-[11px] uppercase tracking-[0.18em]"
+                    >
+                      {__iv__.label}
+                    </StatLabel>
                   </StatItem>
                 )
               })}
           </StatGrid>
-          <OutcomesGrid className="grid gap-6 md:grid-cols-3">
+          <OutcomesGrid className="grid gap-4 md:grid-cols-3 md:gap-6">
             {outcomeBars.map((bar) => (
               <OutcomesCard asChild key={bar.label}>
-                <div className="rounded-xl bg-muted/60 p-6">
+                <div className="rounded-none border border-background/15 bg-transparent p-6">
                   <OutcomeStat className="gap-0">
-                    <p className="mb-1 text-3xl font-bold">{bar.value}</p>
-                    <p className="mb-3 text-sm text-muted-foreground">
+                    <p className="mb-1 font-mono text-3xl font-bold tabular-nums tracking-tight text-background">
+                      {bar.value}
+                    </p>
+                    <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.15em] text-background/60">
                       {bar.label}
                     </p>
                   </OutcomeStat>
-                  <div className="h-2 overflow-hidden rounded-full bg-border">
-                    <div
-                      className="h-full rounded-full bg-primary"
-                      style={{
-                        width: `${bar.pct}%`,
-                      }}
-                    />
+                  <div className="flex items-center gap-3">
+                    <div className="h-2 flex-1 overflow-hidden rounded-none bg-background/15">
+                      <div
+                        className="h-full rounded-none bg-background/80"
+                        style={{
+                          width: `${bar.pct}%`,
+                        }}
+                      />
+                    </div>
+                    <span className="font-mono text-[11px] tabular-nums text-background/70">
+                      {bar.pct}%
+                    </span>
                   </div>
                 </div>
               </OutcomesCard>

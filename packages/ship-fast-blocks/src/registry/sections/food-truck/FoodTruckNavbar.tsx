@@ -20,20 +20,21 @@ import {
 } from '../commerce/commerce-interactions.tsx'
 
 /**
- * FoodTruckNavbar — fixed, backdrop-blurred top navigation bar for a gourmet
- * food-truck / street-food site. A border-bottomed header pinned to the top with a
- * circular monogram logo tile (brand initials) + brand wordmark on the left,
- * horizontal muted-to-foreground nav links on the right (desktop), menu command
- * search, Shoo account dropdown, shared Lakebed cart drawer, a filled pill CTA
- * built from the LAST nav item (e.g. "Book Catering"), and a real mobile drawer.
- * Every link and CTA routes through route hrefs so PageSwitch can swap pages.
- * Use as the sticky site header for food trucks, street-food vendors,
+ * FoodTruckNavbar — fixed, backdrop-blurred sticker-poster header for a gourmet
+ * food-truck / street-food site. A hairline-bottomed bar pinned to the top with a
+ * square rubber-stamp monogram tile (sharp border-2, brand initials) beside the
+ * brand wordmark on the left, mono uppercase index-tracked nav links on the right
+ * (desktop), menu command search, Shoo account dropdown, shared Lakebed cart drawer
+ * with reactive badge, a hard-bordered rounded-none slab CTA built from the LAST nav
+ * item (e.g. "Book Catering") with an offset token shadow + press feedback, and a
+ * real mobile drawer. Every link and CTA routes through route hrefs so PageSwitch can
+ * swap pages. Use as the sticky site header for food trucks, street-food vendors,
  * taco/burger/bowl concepts, pop-up kitchens or catering businesses.
  */
 export const FoodTruckNavbar = defineCapsule({
   name: 'FoodTruckNavbar',
   description:
-    "Fixed, backdrop-blurred top navigation bar for a gourmet food-truck / street-food site: a border-bottomed header pinned to the top with a circular monogram logo tile (brand initials) and brand wordmark on the left, horizontal muted-to-foreground nav links on the right (desktop), menu command search, Shoo account dropdown, shared Lakebed cart drawer with reactive badge, a filled pill CTA built from the LAST nav item (e.g. 'Book Catering'), and a real mobile drawer. All links and CTAs route through route hrefs. Use as the sticky site header for food trucks, street-food vendors, taco / burger / bowl concepts, pop-up kitchens or catering businesses.",
+    "Fixed, backdrop-blurred sticker-poster top navigation bar for a gourmet food-truck / street-food site: a hairline-bottomed header pinned to the top with a square rubber-stamp monogram tile (sharp border-2, brand initials) beside the brand wordmark on the left, mono uppercase index-tracked nav links on the right (desktop), menu command search, Shoo account dropdown, shared Lakebed cart drawer with reactive badge, a hard-bordered rounded-none slab CTA built from the LAST nav item (e.g. 'Book Catering') with an offset token shadow and press feedback, and a real mobile drawer. All links and CTAs route through route hrefs. Use as the sticky site header for food trucks, street-food vendors, taco / burger / bowl concepts, pop-up kitchens or catering businesses.",
   props: z.object({
     /** Brand / food-truck name; initials form the monogram. */
     brand: z.string().optional(),
@@ -70,32 +71,44 @@ export const FoodTruckNavbar = defineCapsule({
         position="fixed"
         height="outlier"
         rowClassName="py-4"
-        className={cn('bg-background/95', props.className)}
+        className={cn(
+          'border-b-2 border-foreground bg-background/90 supports-[backdrop-filter]:bg-background/70',
+          props.className,
+        )}
         containerClassName="max-w-6xl px-6"
       >
         <NavbarBrand href={homeTarget} className="gap-2">
-          <BrandLogo brand={brand}>
+          <BrandLogo brand={brand} className="flex items-center gap-2">
             <LogoImage
+              className="size-7"
               fallback={
                 <span
-                  className="grid size-8 place-items-center rounded-full bg-foreground text-xs font-bold text-background"
+                  className="grid size-7 -rotate-3 place-items-center rounded-none border-2 border-foreground bg-foreground text-[10px] font-extrabold text-background"
                   aria-hidden="true"
                 >
                   {initials}
                 </span>
               }
             />
-            <LogoLabel className="text-lg font-semibold tracking-tight" />
+            <LogoLabel className="text-lg font-extrabold tracking-tight" />
           </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.slice(0, -1).map((label) => (
-            <NavbarNavLink key={label} href={label} className="font-normal">
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="rounded-none px-0 font-mono text-xs font-medium uppercase tracking-[0.12em] hover:bg-transparent"
+            >
               {label}
             </NavbarNavLink>
           ))}
-          <NavbarCta variant="dark-pill" href={ctaTarget} className="px-4 py-2">
+          <NavbarCta
+            variant="dark-pill"
+            href={ctaTarget}
+            className="rounded-none border-2 border-foreground px-4 py-2 text-sm font-bold uppercase tracking-wide shadow-[3px_3px_0_0] shadow-primary/50 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0] active:translate-y-px active:shadow-none"
+          >
             {lastNav}
           </NavbarCta>
         </NavbarNav>

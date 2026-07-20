@@ -9,22 +9,26 @@ import {
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
 /**
- * CryptoFaq — accordion FAQ section for a crypto / DeFi landing page. A
- * centered heading + description followed by a vertical stack of bordered
- * detail/summary cards. Each item shows a question as a clickable summary
- * with a chevron that rotates on open, and the answer in the details panel.
- * Use for common questions about protocols, pricing, security, or onboarding.
+ * CryptoFaq — Web3-terminal query ledger FAQ for a crypto / DeFi landing
+ * page. An asymmetric 5/7 split: left column holds a sticky left-aligned
+ * heading + description with a mono "[ QUERY ] INDEX" meta line and a ghost
+ * "?" watermark; right column is a hairline-divided ledger of
+ * detail/summary rows — each question prefixed by a mono zero-padded index
+ * numeral with a plus icon that rotates on open, answers indented under the
+ * numeral column. No card chrome, no rounding. Use for common questions
+ * about protocols, pricing, security, or onboarding.
  */
 export const CryptoFaq = defineCapsule({
   name: 'CryptoFaq',
   description:
-    'Accordion FAQ section for a crypto / DeFi landing page: centered heading + description, then a vertical stack of bordered detail/summary cards. Each item shows a question as a clickable summary with a rotating chevron, and the answer in the details panel. Use for common questions about protocols, pricing, security, or onboarding.',
+    'Web3-terminal query ledger FAQ for a crypto / DeFi landing page: asymmetric 5/7 split with a sticky left-aligned heading + mono meta line and ghost "?" watermark, and a hairline-divided ledger of detail/summary rows on the right — each question prefixed by a mono zero-padded index numeral with a rotating plus icon, answers indented beneath. Use for common questions about protocols, pricing, security, or onboarding.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -76,28 +80,65 @@ export const CryptoFaq = defineCapsule({
         ]
 
     return (
-      <section className={cn('py-20 lg:py-28', props.className)}>
-        <Container size="sm">
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16  gap-0"
-            titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <FaqAccordion>
-            {items.map((item) => (
-              <FaqItem key={item.question} variant="bordered-lg">
-                <FaqQuestion className="p-6">
-                  <span className="font-medium">{item.question}</span>
-                  <FaqQuestionIcon />
-                </FaqQuestion>
-                <FaqAnswer asChild className="px-6 pb-6 text-sm">
-                  <div>{item.answer}</div>
-                </FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+      <section
+        className={cn(
+          'relative overflow-hidden py-16 lg:py-28',
+          props.className,
+        )}
+      >
+        <Container className="relative">
+          <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="relative lg:col-span-5">
+              <Watermark className="-top-8 right-0 font-mono text-[8rem] sm:text-[12rem]">
+                ?
+              </Watermark>
+              <div className="relative lg:sticky lg:top-24">
+                <SectionHeading
+                  align="left"
+                  title={heading}
+                  subtitle={description}
+                  className="gap-3"
+                  titleClassName="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl"
+                  subtitleClassName="text-lg"
+                />
+                <p
+                  aria-hidden="true"
+                  className="mt-6 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+                >
+                  [ query ] index / 0{items.length}
+                </p>
+              </div>
+            </div>
+            <div className="lg:col-span-7">
+              <FaqAccordion variant="divided">
+                {items.map((item, i) => (
+                  <FaqItem key={item.question} variant="divided">
+                    <FaqQuestion className="items-baseline gap-4 py-1 pr-1">
+                      <span
+                        aria-hidden="true"
+                        className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground tabular-nums"
+                      >
+                        0{i + 1}
+                      </span>
+                      <span className="flex-1 text-base font-semibold tracking-tight">
+                        {item.question}
+                      </span>
+                      <FaqQuestionIcon
+                        variant="plus"
+                        className="self-center text-muted-foreground"
+                      />
+                    </FaqQuestion>
+                    <FaqAnswer
+                      asChild
+                      className="pb-1 pl-9 pr-10 pt-4 text-sm leading-relaxed"
+                    >
+                      <div>{item.answer}</div>
+                    </FaqAnswer>
+                  </FaqItem>
+                ))}
+              </FaqAccordion>
+            </div>
+          </div>
         </Container>
       </section>
     )

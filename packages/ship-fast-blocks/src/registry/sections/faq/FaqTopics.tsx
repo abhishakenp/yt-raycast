@@ -5,23 +5,26 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { TopicGrid, TopicCard, TopicIcon } from '#/section-kit/TopicGrid.tsx'
+import { TopicGrid, TopicCard } from '#/section-kit/TopicGrid.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * FaqTopics — a "Browse by Topic" category grid for a help-center / knowledge-base
- * page. A left-aligned section heading above a responsive 1/2/3-column grid of
- * clickable card buttons; each card has a tinted rounded icon tile (rotating token
- * tints — rocket, card, kanban, plugs, shield, code), a bold title, a short
- * description, and an article-count link with a chevron that nudges on hover. Cards
- * route through section-kit route links. Use as the topic/category browse section on SaaS
- * knowledge bases, help centers, documentation landings, or support pages. Renders
- * fully with no props via six baked-in support topics.
+ * FaqTopics — an "Editorial Q&A" browse-by-topic ledger for a help-center /
+ * knowledge-base page. A mono-eyebrow section heading with a hairline meta rail
+ * (topic count on the right) above a collapsed-border hairline grid of square
+ * (rounded-none) topic cells. Each cell leads with a giant ghost index numeral and a
+ * small mono icon, then a tight-tracked title, a short description, and an
+ * article-count link with a chevron that nudges on hover; the cell washes to muted on
+ * hover with press feedback. Cards route through section-kit route links. Use as the
+ * topic/category browse section on SaaS knowledge bases, help centers, documentation
+ * landings, or support pages. Renders fully with no props via six baked-in support
+ * topics.
  */
 export const FaqTopics = defineCapsule({
   name: 'FaqTopics',
   description:
-    "A 'Browse by Topic' category grid for a help-center / knowledge-base page: a left-aligned section heading above a responsive 1/2/3-column grid of clickable card buttons. Each card has a tinted rounded icon tile (rotating token tints — rocket, card, kanban, plugs, shield, code), a bold title, a short description, and an article-count link with a chevron that nudges on hover. Cards route through section-kit route links. Use as the topic/category browse section on SaaS knowledge bases, help centers, documentation landings, or support pages.",
+    "An 'Editorial Q&A' browse-by-topic ledger for a help-center / knowledge-base page: a mono-eyebrow section heading with a hairline meta rail (topic count) above a collapsed-border hairline grid of square (rounded-none) topic cells. Each cell leads with a giant ghost index numeral and a small mono icon, then a tight-tracked title, a short description, and an article-count link with a chevron that nudges on hover; the cell washes to muted on hover with press feedback. Cards route through section-kit route links. Use as the topic/category browse section on SaaS knowledge bases, help centers, documentation landings, or support pages.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -97,14 +100,6 @@ export const FaqTopics = defineCapsule({
       </svg>
     )
 
-    const topicTints = [
-      'bg-primary/10 text-primary',
-      'bg-chart-2/15 text-chart-2',
-      'bg-chart-4/15 text-chart-4',
-      'bg-chart-1/15 text-chart-1',
-      'bg-destructive/10 text-destructive',
-      'bg-chart-3/15 text-chart-3',
-    ]
     const topicIcons: ReactNode[] = [
       <svg
         key="rocket"
@@ -202,35 +197,68 @@ export const FaqTopics = defineCapsule({
     ]
 
     return (
-      <section className={cn('bg-muted/40 py-12 sm:py-16', props.className)}>
+      <section
+        className={cn(
+          'border-t border-border bg-muted/40 py-14 sm:py-20 lg:py-24',
+          props.className,
+        )}
+      >
         <Container>
-          <SectionHeading
-            align="left"
-            title={heading}
-            className="mb-8 gap-0"
-            titleClassName="text-lg font-semibold text-foreground"
-          />
+          <div className="mb-10 flex items-end justify-between gap-6 border-b border-border pb-5">
+            <SectionHeading
+              align="left"
+              eyebrow="Browse"
+              title={heading}
+              className="gap-2"
+              eyebrowClassName="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+              titleClassName="text-3xl font-extrabold tracking-tighter text-foreground sm:text-4xl"
+            />
+            <MonoTag
+              tone="faint"
+              aria-hidden="true"
+              className="hidden shrink-0 tabular-nums sm:block"
+            >
+              {String(items.length).padStart(2, '0')} Topics
+            </MonoTag>
+          </div>
 
-          <TopicGrid cols="1-2-3" className="gap-4">
+          <TopicGrid
+            cols="1-2-3"
+            className="gap-0 border-l border-t border-border"
+          >
             {items.map((topic, i) => (
               <TopicCard
                 key={topic.title}
                 asChild
-                className="p-6 text-left text-card-foreground transition-all hover:border-border/60 hover:shadow-sm"
+                className="rounded-none border-0 border-b border-r border-border bg-transparent text-left text-card-foreground transition-colors hover:bg-background"
               >
-                <NavbarRouteLink href={topic.title}>
-                  <TopicIcon className={cn(topicTints[i % topicTints.length])}>
-                    {topicIcons[i % topicIcons.length]}
-                  </TopicIcon>
-                  <h3 className="mb-1 font-semibold text-card-foreground">
+                <NavbarRouteLink
+                  href={topic.title}
+                  className="flex h-full flex-col p-6 transition-transform duration-150 active:translate-y-px sm:p-8"
+                >
+                  <div className="mb-6 flex items-start justify-between">
+                    <span
+                      aria-hidden="true"
+                      className="font-mono text-4xl font-bold tabular-nums leading-none tracking-tighter text-foreground/15 transition-colors group-hover:text-foreground/30 sm:text-5xl"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="text-muted-foreground transition-colors group-hover:text-foreground"
+                    >
+                      {topicIcons[i % topicIcons.length]}
+                    </span>
+                  </div>
+                  <h3 className="mb-1.5 text-lg font-semibold tracking-tight text-foreground">
                     {topic.title}
                   </h3>
-                  <p className="mb-3 text-sm text-muted-foreground">
+                  <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
                     {topic.description}
                   </p>
-                  <span className="inline-flex items-center text-sm font-medium text-foreground/80 group-hover:text-foreground">
+                  <span className="mt-auto inline-flex items-center border-t border-border pt-4 font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-foreground/80 group-hover:text-foreground">
                     {topic.count}
-                    <CaretRight className="ml-1 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                    <CaretRight className="ml-2 text-muted-foreground transition-transform group-hover:translate-x-1" />
                   </span>
                 </NavbarRouteLink>
               </TopicCard>

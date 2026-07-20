@@ -4,28 +4,32 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * LawFirmPracticeAreas — a centered-intro practice-areas grid for a law firm. A
- * tracked-uppercase eyebrow, serif heading and lead paragraph sit above a
- * responsive 3-up grid of bordered cards on the card surface; each card pairs a
- * squared icon tile that fills with the primary color on hover, a serif title,
- * a description, and a "Learn more →" link. Refined, authoritative editorial
- * aesthetic with sharp squared corners. Icons rotate through a built-in line-svg
- * set; each card link routes through section-kit route links. Use to showcase legal service
- * lines (corporate, litigation, employment, real estate, IP, tax) on law-firm,
- * attorney, consulting or professional-services pages. Renders fully with no
- * props via baked-in defaults.
+ * LawFirmPracticeAreas — a practice-areas ledger for a law firm. An asymmetric
+ * header (mono eyebrow, giant serif heading and lead paragraph left, tabular
+ * area count right) sits above a collapsed-border ledger grid on the card
+ * surface: each cell shares hairline column rules and carries a mono "No. 0x"
+ * case index, a quiet line-icon corner mark, a serif title, a description and a
+ * "Learn more →" routed link with press feedback, washing to muted on hover. A
+ * giant faint serif watermark bleeds behind the band. Authoritative,
+ * traditional-yet-modern newsprint aesthetic with sharp binary corners. Icons
+ * rotate through a built-in line-svg set; each link routes through section-kit
+ * route links. Use to showcase legal service lines (corporate, litigation,
+ * employment, real estate, IP, tax) on law-firm, attorney, consulting or
+ * professional-services pages. Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import {
   PracticeAreaGrid,
   PracticeAreaCard,
   PracticeAreaIcon,
 } from '#/section-kit/PracticeAreaGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 export const LawFirmPracticeAreas = defineCapsule({
   name: 'LawFirmPracticeAreas',
   description:
-    "Centered-intro practice-areas grid for a law firm: a tracked-uppercase eyebrow, serif heading and lead paragraph above a responsive 3-up grid of bordered cards on the card surface, each pairing a squared icon tile that fills with the primary color on hover, a serif title, a description and a 'Learn more →' link. Refined, authoritative editorial aesthetic with sharp squared corners; icons rotate through a built-in line-svg set and each card link routes through section-kit route links. Use to showcase legal service lines (corporate & securities, litigation, employment, real estate, intellectual property, tax & estates) on law-firm, attorney, consulting, accounting or professional-services pages.",
+    "Practice-areas ledger for a law firm: an asymmetric header (mono eyebrow, giant serif heading and lead paragraph left, tabular area count right) above a collapsed-border ledger grid on the card surface, each cell sharing hairline column rules and carrying a mono 'No. 0x' case index, a quiet line-icon corner mark, a serif title, a description and a 'Learn more →' routed link with press feedback, washing to muted on hover, behind a giant faint serif watermark. Authoritative, traditional-yet-modern newsprint aesthetic with sharp binary corners; icons rotate through a built-in line-svg set and each link routes through section-kit route links. Use to showcase legal service lines (corporate & securities, litigation, employment, real estate, intellectual property, tax & estates) on law-firm, attorney, consulting, accounting or professional-services pages.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -47,6 +51,7 @@ export const LawFirmPracticeAreas = defineCapsule({
     const description =
       props.description ??
       'Our attorneys provide strategic counsel across the full spectrum of business and personal legal needs, from complex M&A transactions to high-stakes litigation.'
+    const linkLabel = props.linkLabel ?? 'Learn more'
     const items = props.items?.length
       ? props.items
       : [
@@ -168,30 +173,65 @@ export const LawFirmPracticeAreas = defineCapsule({
       </svg>,
     ]
     return (
-      <section className={cn('bg-background py-24 lg:py-28', props.className)}>
-        <Container>
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            className="mb-20 max-w-3xl gap-0"
-            eyebrowClassName="mb-4 text-sm uppercase tracking-widest text-muted-foreground"
-            titleClassName="mb-6 font-serif text-3xl text-foreground lg:text-5xl"
-            subtitleClassName="text-lg leading-relaxed text-muted-foreground"
-          />
-          <PracticeAreaGrid cols="1-2-3">
+      <section
+        className={cn(
+          'relative overflow-hidden bg-background py-20 sm:py-24 lg:py-28',
+          props.className,
+        )}
+      >
+        <Watermark className="-right-6 top-8 font-serif text-[9rem] font-normal tracking-tight sm:text-[13rem] lg:text-[17rem]">
+          §
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-12 flex flex-col gap-6 sm:mb-16 md:flex-row md:items-end md:justify-between">
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={description}
+              className="max-w-3xl gap-0"
+              eyebrowClassName="mb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+              titleClassName="mb-6 font-serif text-4xl font-semibold tracking-tight text-foreground lg:text-5xl"
+              subtitleClassName="text-lg leading-relaxed text-muted-foreground"
+            />
+            <span
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] tabular-nums text-muted-foreground/60"
+            >
+              {String(items.length).padStart(2, '0')} areas
+            </span>
+          </div>
+          <PracticeAreaGrid
+            cols="1-2-3"
+            className="gap-0 border-l border-t border-border"
+          >
             {items.map((item, i) => (
-              <PracticeAreaCard key={item.title}>
-                <div className="flex flex-col gap-3 p-6">
-                  <PracticeAreaIcon className="mb-0 inline-flex size-11 items-center justify-center">
-                    {practiceIcons[i % practiceIcons.length]}
-                  </PracticeAreaIcon>
-                  <h3 className="text-lg font-semibold text-foreground">
+              <PracticeAreaCard
+                key={item.title}
+                className="rounded-none border-0 border-b border-r border-border bg-card transition-colors hover:bg-muted/40"
+              >
+                <div className="flex h-full flex-col gap-3 p-6 sm:p-7">
+                  <div className="mb-1 flex items-center justify-between">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.2em] tabular-nums text-muted-foreground/60">
+                      No. {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <PracticeAreaIcon className="mb-0 inline-flex size-7 rounded-none bg-transparent text-muted-foreground transition-colors group-hover:bg-transparent group-hover:text-primary">
+                      {practiceIcons[i % practiceIcons.length]}
+                    </PracticeAreaIcon>
+                  </div>
+                  <h3 className="font-serif text-xl text-foreground">
                     {item.title}
                   </h3>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm leading-relaxed text-muted-foreground">
                     {item.description}
                   </p>
+                  <NavbarRouteLink
+                    href={item.title}
+                    className="mt-auto inline-flex w-fit items-center gap-1.5 pt-2 font-mono text-[11px] uppercase tracking-[0.15em] text-foreground transition-all duration-150 hover:text-primary active:translate-y-px"
+                  >
+                    {linkLabel}
+                    <span aria-hidden="true">&rarr;</span>
+                  </NavbarRouteLink>
                 </div>
               </PracticeAreaCard>
             ))}

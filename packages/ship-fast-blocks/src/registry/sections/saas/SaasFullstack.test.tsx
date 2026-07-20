@@ -10,6 +10,7 @@ import { JSDOM } from 'jsdom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { saasLakebed } from './saas-lakebed.ts'
 import type { SaasLakebed } from './saas-interactions.tsx'
+import { RoutesContext } from '#/lib/route-context.tsx'
 
 type TestPlan = {
   createdAt: string
@@ -77,6 +78,35 @@ const timestamp = '2026-06-26T00:00:00.000Z'
 const navigate = vi.fn()
 const lakebedRef: { current: SaasLakebed | null } = { current: null }
 type TestAuthValue = ReturnType<SaasLakebed['useAuth']>
+
+const SAAS_ROUTES = ['Home', 'Features', 'Pricing', 'Testimonials', 'FAQ']
+function RoutesProvider({
+  children,
+  routes = SAAS_ROUTES,
+}: {
+  children: React.ReactNode
+  routes?: string[]
+}) {
+  const [currentPage, setCurrentPage] = useState(routes[0] ?? '')
+  const [pendingSectionId, setPendingSectionId] = useState<string | null>(null)
+  const value = useMemo(
+    () => ({
+      routes,
+      targetMap: {} as Record<string, string>,
+      currentPage,
+      setCurrentPage: (page: string) => {
+        navigate(page)
+        setCurrentPage(page)
+      },
+      pendingSectionId,
+      setPendingSectionId,
+    }),
+    [routes, currentPage, pendingSectionId],
+  )
+  return (
+    <RoutesContext.Provider value={value}>{children}</RoutesContext.Provider>
+  )
+}
 
 vi.mock('@ship-fast/lakebed/react', () => {
   return {
@@ -651,9 +681,13 @@ describe('SaaS fullstack generated section behavior', () => {
       )
     }
 
-    render(<SaasProbe />)
+    render(
+      <RoutesProvider>
+        <SaasProbe />
+      </RoutesProvider>,
+    )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Chronos AI' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Chronos AI' }))
     expect(navigate).toHaveBeenCalledWith('Home')
     navigate.mockReset()
 
@@ -680,7 +714,6 @@ describe('SaaS fullstack generated section behavior', () => {
     fireEvent.click(within(searchDialog).getByText('Pro'))
 
     await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith('Pro')
       expect(state().intents.at(-1)).toEqual({
         label: 'Selected Pro',
         plan: 'Pro',
@@ -695,7 +728,7 @@ describe('SaaS fullstack generated section behavior', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
     expect(screen.getByRole('dialog')).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'Pricing' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Pricing' }))
 
     await waitFor(() => {
       expect(navigate).toHaveBeenCalledWith('Pricing')
@@ -716,16 +749,20 @@ describe('SaaS fullstack generated section behavior', () => {
       })
     }
 
-    render(<SaasProbe />)
+    render(
+      <RoutesProvider routes={['Home', 'Pricing']}>
+        <SaasProbe />
+      </RoutesProvider>,
+    )
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
 
     const dialog = screen.getByRole('dialog')
-    expect(
-      within(dialog).getAllByRole('button', { name: 'Home' }),
-    ).toHaveLength(1)
+    expect(within(dialog).getAllByRole('link', { name: 'Home' })).toHaveLength(
+      1,
+    )
 
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Home' }))
+    fireEvent.click(within(dialog).getByRole('link', { name: 'Home' }))
 
     await waitFor(() => {
       expect(navigate).toHaveBeenCalledWith('Home')

@@ -13,22 +13,28 @@ import {
 } from '#/section-kit/SearchForm.tsx'
 
 /**
- * FoodDeliveryHero — split two-column hero band for a food-delivery / restaurant
- * landing page. On the left: a big two-line headline, a supporting paragraph, a
- * rounded-full delivery-address search input with a leading map-pin icon and a
- * filled "Find Food" submit button, plus a small serving-cities note. On the
- * right: a large rounded food photo with a floating "Order Confirmed / arriving
- * in N min" tracking card pinned to its bottom-left corner. The form submit
- * writes shared Lakebed delivery search state so restaurant results update below.
- * Use as the opening hero for food-delivery apps, restaurant aggregators,
- * online-ordering platforms, or grocery/takeout services.
+ * FoodDeliveryHero — playful-bold asymmetric 7:5 split hero for a food-delivery
+ * / restaurant landing page under a giant ghost "HUNGRY?" watermark. On the
+ * wide left: a mono index eyebrow + rotated live sticker chip, a big two-line
+ * headline whose last word sits on a tilted primary marker highlight, a
+ * supporting paragraph, a chunky 2px-bordered rounded-full delivery-address
+ * search input with a leading map-pin icon and a hard-shadowed "Find Food"
+ * submit pill with press feedback, plus a serving-cities note. On the narrow
+ * right: a large food photo in a tilted 2px-bordered plate floating over a
+ * primary-tinted offset frame, a rotated rounded-full ETA sticker, and a chunky
+ * bordered "Order Confirmed / arriving in N min" tracking card. The form submit
+ * writes shared Lakebed delivery search state so restaurant results update
+ * below; the food image is alt-driven. Use as the opening hero for food-delivery
+ * apps, restaurant aggregators, online-ordering platforms, or grocery/takeout
+ * services.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 export const FoodDeliveryHero = defineCapsule({
   name: 'FoodDeliveryHero',
   description:
-    "Split two-column hero band for a food-delivery / restaurant landing page: left column with a big two-line headline, a supporting paragraph, a rounded-full delivery-address search input (leading map-pin icon) and a filled Find Food submit button plus a serving-cities note; right column with a large rounded food photo and a floating 'Order Confirmed / arriving in N min' tracking card pinned to its bottom-left. Form-submit writes shared Lakebed delivery search state so restaurant results update below; the food image is alt-driven. Use as the opening hero for food-delivery apps, restaurant aggregators, online-ordering platforms, or grocery/takeout services.",
+    "Playful-bold asymmetric 7:5 split hero for a food-delivery / restaurant landing page under a giant ghost 'HUNGRY?' watermark: a wide left column with a mono index eyebrow + rotated live sticker chip, a two-line headline whose last word sits on a tilted primary marker highlight, a supporting paragraph, a chunky 2px-bordered rounded-full delivery-address search input (leading map-pin icon) and a hard-shadowed Find Food submit pill with press feedback plus a serving-cities note; a narrow right column with a large food photo in a tilted 2px-bordered plate over a primary-tinted offset frame, a rotated rounded-full ETA sticker, and a chunky bordered 'Order Confirmed / arriving in N min' tracking card. Form-submit writes shared Lakebed delivery search state so restaurant results update below; the food image is alt-driven. Use as the opening hero for food-delivery apps, restaurant aggregators, online-ordering platforms, or grocery/takeout services.",
   props: z.object({
     /** First headline line. */
     headingTop: z.string().optional(),
@@ -70,18 +76,54 @@ export const FoodDeliveryHero = defineCapsule({
     const badgeTitle = props.badgeTitle ?? 'Order Confirmed'
     const badgeSubtitle = props.badgeSubtitle ?? 'Arriving in 24 min'
     const addressValue = foodSearch.state?.address ?? ''
+    // Split the second headline line so its last word can carry the tilted
+    // primary marker highlight without changing the copy.
+    const bottomWords = headingBottom.trim().split(' ')
+    const bottomLast = bottomWords.length > 1 ? bottomWords.pop() : null
+    const bottomLead = bottomWords.join(' ')
     return (
       <HeroSection
         variant="split"
-        className={cn('pb-16 pt-20 lg:pb-24 lg:pt-28', props.className)}
+        className={cn(
+          'relative overflow-hidden bg-card pb-16 pt-20 lg:pb-24 lg:pt-28',
+          props.className,
+        )}
       >
-        <Container>
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-            <div className="max-w-2xl">
-              <h1 className="text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+        <Watermark className="-right-8 top-10 text-[6rem] sm:text-[10rem] lg:text-[14rem]">
+          HUNGRY?
+        </Watermark>
+        <Container className="relative">
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-14">
+            <div className="max-w-2xl lg:col-span-7">
+              <div className="mb-5 flex flex-wrap items-center gap-3">
+                <span className="inline-flex -rotate-1 items-center gap-2 rounded-full border-2 border-foreground bg-background px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-foreground shadow-[3px_3px_0_0] shadow-primary/40">
+                  <span
+                    aria-hidden="true"
+                    className="size-2 rounded-full bg-primary"
+                  />
+                  Live in your city
+                </span>
+                <MonoTag>01 / Order in</MonoTag>
+              </div>
+              <h1 className="text-4xl font-extrabold leading-[1.02] tracking-tighter text-foreground sm:text-5xl lg:text-6xl">
                 {headingTop}
                 <br />
-                {headingBottom}
+                {bottomLast ? (
+                  <>
+                    {bottomLead}{' '}
+                    <span className="relative inline-block whitespace-nowrap">
+                      <span
+                        aria-hidden="true"
+                        className="absolute -inset-x-2 inset-y-1 -rotate-1 bg-primary"
+                      />
+                      <span className="relative text-primary-foreground">
+                        {bottomLast}
+                      </span>
+                    </span>
+                  </>
+                ) : (
+                  headingBottom
+                )}
               </h1>
               <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground">
                 {heroSub}
@@ -114,13 +156,13 @@ export const FoodDeliveryHero = defineCapsule({
                     defaultValue={addressValue}
                     aria-label={addressPlaceholder}
                     placeholder={addressPlaceholder}
-                    className="rounded-full py-3.5 pl-11 transition-all focus:ring-ring/20"
+                    className="rounded-full border-2 border-foreground py-3.5 pl-11 transition-all focus:ring-ring/20"
                   />
                 </SearchField>
                 <SearchSubmit
                   aria-busy={foodSearch.isPending}
                   disabled={foodSearch.isPending}
-                  className="rounded-full bg-foreground px-6 py-3.5 text-sm text-background hover:bg-foreground/90"
+                  className="rounded-full border-2 border-foreground bg-foreground px-6 py-3.5 text-sm font-bold text-background shadow-[3px_3px_0_0] shadow-primary/40 transition-all hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0] hover:shadow-primary/40 active:translate-y-px active:shadow-none"
                 >
                   {foodSearch.isPending ? 'Finding' : searchCta}
                 </SearchSubmit>
@@ -133,22 +175,36 @@ export const FoodDeliveryHero = defineCapsule({
                   ? `Showing restaurants for ${addressValue}.`
                   : 'Search is shared with the restaurant results below.'}
               </p>
-              <p className="mt-4 text-sm text-muted-foreground">{serving}</p>
+              <p className="mt-4 font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground">
+                {serving}
+              </p>
             </div>
-            <div className="relative">
-              <Image
-                alt={heroImageAlt}
-                w={800}
-                h={600}
-                className="aspect-[4/3] w-full rounded-xl object-cover shadow-2xl"
-              />
-              <div className="absolute -bottom-6 -left-6 flex items-center gap-3 rounded-xl bg-card p-4 shadow-lg">
-                <div className="flex size-12 items-center justify-center rounded-full bg-primary/10">
+            <div className="relative lg:col-span-5">
+              <div className="relative rotate-1">
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 translate-x-3 translate-y-3 border-2 border-primary/40 bg-primary/10"
+                />
+                <Image
+                  alt={heroImageAlt}
+                  w={800}
+                  h={600}
+                  className="relative aspect-[4/3] w-full rounded-none border-2 border-foreground object-cover"
+                />
+                <span
+                  aria-hidden="true"
+                  className="absolute -right-3 -top-3 rotate-6 rounded-full border-2 border-foreground bg-primary px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.1em] text-primary-foreground shadow-[2px_2px_0_0] shadow-foreground"
+                >
+                  25 min
+                </span>
+              </div>
+              <div className="absolute -bottom-5 -left-4 flex -rotate-1 items-center gap-3 rounded-none border-2 border-foreground bg-background p-4 shadow-[4px_4px_0_0] shadow-foreground sm:-left-6">
+                <div className="flex size-11 shrink-0 items-center justify-center rounded-full border-2 border-foreground bg-primary text-primary-foreground">
                   <svg
-                    className="size-6 text-primary"
+                    className="size-5"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="2"
+                    strokeWidth="2.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     viewBox="0 0 24 24"
@@ -158,10 +214,10 @@ export const FoodDeliveryHero = defineCapsule({
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-card-foreground">
+                  <p className="text-sm font-bold text-foreground">
                     {badgeTitle}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="font-mono text-xs text-muted-foreground">
                     {badgeSubtitle}
                   </p>
                 </div>

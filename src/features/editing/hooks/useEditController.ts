@@ -205,7 +205,7 @@ export function useEditController(sessionId: string) {
 
       if (result.sessionId) {
         void navigate({
-          to: '/generate/$sessionId',
+          to: '/generate/$sessionId/$',
           params: { sessionId: result.sessionId },
         })
       }

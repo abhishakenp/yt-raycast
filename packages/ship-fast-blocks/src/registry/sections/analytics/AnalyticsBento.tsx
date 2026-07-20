@@ -5,27 +5,26 @@ import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import {
-  BentoGrid,
-  BentoTile,
-  BentoTileBody,
-  BentoTileTitle,
-  BentoTileDescription,
-} from '#/section-kit/BentoGrid.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
+
+const TILE_TICKS = ['w-8', 'w-5', 'w-10', 'w-6']
 
 /**
- * AnalyticsBento — bespoke asymmetric capability bento for an analytics product.
- * A padded section with an optional centered SectionHeading above a responsive
- * grid of token-styled card tiles: one large hero tile spanning two columns and
- * two rows that frames a product screenshot, plus four smaller supporting tiles
- * each carrying a heading and a short description. Sharp, data-forward and
- * marketing-grade. Use to showcase a mix of headline and supporting capabilities
- * on any analytics, BI, or data-product site. Renders fully with no props.
+ * AnalyticsBento — Swiss data-grid capability plate for an analytics product.
+ * An asymmetric header (left-aligned oversized title + lede, right-aligned
+ * mono figure index) above a collapsed-border 7:5 hairline composition: a
+ * large hero plate carries a mono figure label, title, description, and a
+ * product screenshot behind a hairline rule with a tabular axis strip, while
+ * four supporting cells stack in a 2x2 collapsed grid, each with a mono
+ * tabular index, ghost numeral watermark, title, description, and a primary
+ * tick-bar motif. Sharp corners, hairline precision, faint wash on hover. Use
+ * to showcase a mix of headline and supporting capabilities on any analytics,
+ * BI, or data-product site. Renders fully with no props.
  */
 export const AnalyticsBento = defineCapsule({
   name: 'AnalyticsBento',
   description:
-    'Bespoke asymmetric capability bento for an analytics product. A padded section with an optional centered SectionHeading above a responsive grid of token-styled card tiles: one large hero tile spanning two columns and two rows that frames a product screenshot, plus four smaller supporting tiles each carrying a heading and a short description. Sharp, data-forward and marketing-grade. Use to showcase a mix of headline and supporting capabilities on any analytics, BI, or data-product site.',
+    'Swiss data-grid capability plate for an analytics product: an asymmetric header (oversized title + lede left, mono figure index right) above a collapsed-border 7:5 hairline composition — a large hero plate with mono figure label, title, description, and a product screenshot over a tabular axis strip, plus four supporting cells in a 2x2 collapsed grid, each with a mono tabular index, ghost numeral watermark, title, description, and primary tick-bar motif. Sharp corners and hairline precision. Use to showcase a mix of headline and supporting capabilities on any analytics, BI, or data-product site.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -76,47 +75,108 @@ export const AnalyticsBento = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-background py-20 sm:py-24', props.className)}>
+      <section
+        className={cn(
+          'border-b border-border bg-background py-16 sm:py-20 lg:py-24',
+          props.className,
+        )}
+      >
         <Container size="xl">
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={subheading}
-            className="mb-14"
-          />
-          <BentoGrid
-            cols="1-md-3"
-            className="auto-rows-[minmax(0,1fr)] gap-5 md:grid-rows-2"
-          >
-            <BentoTile
-              span="md:col-span-2 md:row-span-2"
-              className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card"
+          <div className="mb-10 grid items-end gap-6 sm:mb-12 lg:grid-cols-12">
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={subheading}
+              className="gap-4 lg:col-span-8"
+              titleClassName="text-4xl font-bold tracking-tight sm:text-5xl"
+              subtitleClassName="max-w-xl text-lg"
+            />
+            <div
+              aria-hidden="true"
+              className="flex items-center justify-between gap-2 border-y border-border py-3 lg:col-span-4 lg:flex-col lg:items-end lg:justify-end lg:gap-1.5 lg:border-y-0 lg:py-0"
             >
-              <BentoTileBody className="p-7">
-                <BentoTileTitle className="text-xl">{heroTitle}</BentoTileTitle>
-                <BentoTileDescription className="max-w-md">
+              <MonoTag className="flex items-center gap-2">
+                <span className="size-1.5 bg-primary" />
+                Fig. index
+              </MonoTag>
+              <MonoTag tone="faint" className="tabular-nums">
+                01 — {String(tiles.length + 1).padStart(2, '0')}
+              </MonoTag>
+            </div>
+          </div>
+
+          <div className="grid border-l border-t border-border lg:grid-cols-12">
+            <div className="flex flex-col border-b border-r border-border lg:col-span-7">
+              <div className="p-6 sm:p-8">
+                <MonoTag tone="primary" className="tabular-nums">
+                  01
+                </MonoTag>
+                <h3 className="mt-4 text-2xl font-semibold tracking-tight text-foreground">
+                  {heroTitle}
+                </h3>
+                <p className="mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
                   {heroDescription}
-                </BentoTileDescription>
-              </BentoTileBody>
+                </p>
+              </div>
               <Image
                 alt="analytics explore chart drilldown dashboard"
                 w={1200}
                 h={680}
                 className="mt-auto block w-full flex-1 border-t border-border object-cover"
               />
-            </BentoTile>
-            {tiles.map((tile) => (
-              <BentoTile
-                key={tile.title}
-                className="flex flex-col rounded-2xl border border-border bg-card p-7"
+              <div
+                aria-hidden="true"
+                className="flex items-center justify-between border-t border-border px-6 py-2.5 font-mono text-[10px] tabular-nums text-muted-foreground/60"
               >
-                <BentoTileTitle className="text-base">
-                  {tile.title}
-                </BentoTileTitle>
-                <BentoTileDescription>{tile.description}</BentoTileDescription>
-              </BentoTile>
-            ))}
-          </BentoGrid>
+                <span>0</span>
+                <span>25</span>
+                <span>50</span>
+                <span>75</span>
+                <span>100</span>
+              </div>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:col-span-5">
+              {tiles.map((tile, i) => {
+                const index = String(i + 2).padStart(2, '0')
+                return (
+                  <div
+                    key={tile.title}
+                    className="group relative flex flex-col border-b border-r border-border p-6 transition-colors duration-150 hover:bg-muted/30 sm:p-7"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute right-4 top-3 select-none font-mono text-6xl font-bold tabular-nums text-foreground/[0.05]"
+                    >
+                      {index}
+                    </span>
+                    <MonoTag tone="primary" className="tabular-nums">
+                      {index}
+                    </MonoTag>
+                    <h3 className="mt-4 text-base font-semibold tracking-tight text-foreground">
+                      {tile.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                      {tile.description}
+                    </p>
+                    <span
+                      aria-hidden="true"
+                      className="mt-auto flex items-center gap-1 pt-5"
+                    >
+                      <span
+                        className={cn(
+                          'h-1 bg-primary',
+                          TILE_TICKS[i % TILE_TICKS.length],
+                        )}
+                      />
+                      <span className="h-1 w-1 bg-border" />
+                      <span className="h-1 w-1 bg-border" />
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
         </Container>
       </section>
     )

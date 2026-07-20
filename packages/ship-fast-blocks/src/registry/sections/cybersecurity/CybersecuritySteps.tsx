@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { Card } from '#/section-kit/Card.tsx'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
@@ -13,19 +12,23 @@ import {
 } from '#/section-kit/StepTimeline.tsx'
 
 /**
- * CybersecuritySteps — deploy-in-minutes timeline. A muted-band section with a
- * centered heading + subheading above a 3-column step layout connected by a
- * dashed horizontal rule (desktop). Each step shows a large numbered square
- * tile, a bold title, and a description; the first step adds an inline mono code
- * snippet, the second a check-marked checklist, and the third a pulsing
- * live-status indicator. Pure display, no links. Use to explain fast onboarding
- * for cybersecurity vendors, SOC/MDR providers, or any agent/API-deployed
- * security SaaS. Renders fully with no props via baked-in deployment defaults.
+ * CybersecuritySteps — terminal-stealth deploy sequence. A muted-wash band
+ * opening with a hairline mono meta rule ("DEPLOY SEQUENCE" + tabular phase
+ * count) above an asymmetric header (left-aligned heading + lede, mono
+ * "[ T-MINUS 24H ]" tag right). The three phases render as a square-edged,
+ * collapsed-border ledger: each cell shares hairline rules and carries a giant
+ * ghost phase numeral watermark, a mono "PHASE 0X" label, a bold title, and a
+ * description. Phase 1 embeds an ink-inverted mono terminal pane with the
+ * install one-liner, phase 2 a mono "[ OK ]" checklist, phase 3 a pulsing
+ * primary status square with the live label. Pure display, no links. Use to
+ * explain fast onboarding for cybersecurity vendors, SOC/MDR providers, or any
+ * agent/API-deployed security SaaS. Renders fully with no props via baked-in
+ * deployment defaults.
  */
 export const CybersecuritySteps = defineCapsule({
   name: 'CybersecuritySteps',
   description:
-    'Deploy-in-minutes timeline: a muted-band section with a centered heading + subheading above a 3-column step layout connected by a dashed horizontal rule (desktop). Each step has a large numbered square tile, bold title and description; step 1 adds an inline mono code snippet, step 2 a check-marked checklist, step 3 a pulsing live-status indicator. Pure display, no links. Use to explain fast onboarding for cybersecurity vendors, SOC/MDR providers, or any agent/API-deployed security SaaS.',
+    "Terminal-stealth deploy sequence: a muted-wash band with a mono meta rule and asymmetric left-aligned header above a square-edged, collapsed-border 3-phase ledger — each cell shares hairline rules and carries a ghost phase numeral, mono 'PHASE 0X' label, bold title and description; phase 1 embeds an ink-inverted mono terminal pane with the install snippet, phase 2 a mono '[ OK ]' checklist, phase 3 a pulsing live-status square. Pure display, no links. Use to explain fast onboarding for cybersecurity vendors, SOC/MDR providers, or any agent/API-deployed security SaaS.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -73,67 +76,103 @@ export const CybersecuritySteps = defineCapsule({
       : ['Asset inventory', 'Risk scoring', 'Baseline profiles']
     const liveLabel = props.liveLabel ?? 'Live protection active'
 
-    const Check = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M5 13l4 4L19 7" />
-      </svg>
-    )
-
     return (
-      <StepTimeline className={cn('bg-muted/50 py-24', props.className)}>
+      <StepTimeline
+        className={cn('bg-muted/40 py-16 sm:py-20 lg:py-24', props.className)}
+      >
         <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 text-3xl font-bold sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <StepTimelineGrid columns={3} className="gap-8 lg:gap-12">
+          <div className="mb-8 flex items-center justify-between gap-4 border-b border-border pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground sm:mb-10">
+            <span className="flex items-center gap-3">
+              <span aria-hidden="true" className="size-2 bg-primary" />
+              Deploy sequence
+            </span>
+            <span aria-hidden="true" className="tabular-nums">
+              {String(items.length).padStart(2, '0')} phases
+            </span>
+          </div>
+          <div className="mb-10 flex flex-col gap-6 sm:mb-14 md:flex-row md:items-end md:justify-between">
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-3"
+              titleClassName="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl"
+              subtitleClassName="max-w-xl text-base text-muted-foreground sm:text-lg"
+            />
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+            >
+              [ t-minus 24h ]
+            </p>
+          </div>
+          <StepTimelineGrid
+            columns={3}
+            className="gap-0 border-l border-t border-border bg-background"
+          >
             {items.map((step, i) => (
-              <StepItem key={step.title} className="relative">
-                {i < items.length - 1 && (
-                  <div
-                    aria-hidden="true"
-                    className="absolute left-full top-8 hidden w-full border-t-2 border-dashed border-border md:block"
-                  />
-                )}
-                <div className="mb-6 flex size-16 items-center justify-center rounded-2xl bg-foreground text-2xl font-bold text-background">
-                  {i + 1}
-                </div>
-                <h3 className="mb-3 text-xl font-bold">{step.title}</h3>
-                <p className="text-muted-foreground">{step.description}</p>
+              <StepItem
+                key={step.title}
+                className="relative flex flex-col border-b border-r border-border p-6 sm:p-8"
+              >
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute right-5 top-4 select-none font-mono text-7xl font-bold leading-none tracking-tighter text-foreground/[0.06] tabular-nums"
+                >
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <span className="mb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground tabular-nums">
+                  Phase {String(i + 1).padStart(2, '0')}
+                </span>
+                <h3 className="mb-3 text-xl font-bold tracking-tight">
+                  {step.title}
+                </h3>
+                <p className="leading-relaxed text-muted-foreground">
+                  {step.description}
+                </p>
                 {i === 0 && (
-                  <Card
-                    className="mt-4 font-mono text-xs text-muted-foreground rounded-lg p-4"
-                  >
-                    {snippet}
-                  </Card>
+                  <div className="mt-5 rounded-none bg-foreground p-4 font-mono text-xs text-background">
+                    <p
+                      aria-hidden="true"
+                      className="mb-2 flex items-center justify-between gap-3 text-[10px] uppercase tracking-[0.2em] text-background/50"
+                    >
+                      <span>[ sh ] install</span>
+                      <span className="inline-block h-2 w-6 bg-background/30" />
+                    </p>
+                    <p className="break-all">
+                      <span
+                        aria-hidden="true"
+                        className="mr-1.5 text-background/50"
+                      >
+                        $
+                      </span>
+                      {snippet}
+                    </p>
+                  </div>
                 )}
                 {i === 1 && (
-                  <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
+                  <ul className="mt-5 space-y-2">
                     {checklist.map((c) => (
-                      <StepItem key={c} className="flex items-center gap-2">
-                        <Check className="size-4 text-primary" />
+                      <li
+                        key={c}
+                        className="flex items-center gap-2.5 font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground"
+                      >
+                        <span aria-hidden="true" className="text-foreground">
+                          [ OK ]
+                        </span>
                         {c}
-                      </StepItem>
+                      </li>
                     ))}
                   </ul>
                 )}
                 {i === 2 && (
-                  <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-                    <span className="size-2 animate-pulse rounded-full bg-primary" />
+                  <p className="mt-5 flex items-center gap-2.5 font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
+                    <span
+                      aria-hidden="true"
+                      className="size-2 animate-pulse bg-primary"
+                    />
                     {liveLabel}
-                  </div>
+                  </p>
                 )}
               </StepItem>
             ))}

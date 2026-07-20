@@ -4,11 +4,12 @@ import { cn } from '#/lib/utils.ts'
 import {} from '#/section-kit/index.ts'
 
 /**
- * ElectronicsStoreStats — a compact horizontally-ruled stats band for an
- * electronics storefront. A 2-to-4 column grid of centered metrics, each a large
- * bold value over a muted label, framed by top and bottom borders. Use as a
- * social-proof / scale strip between sections on electronics stores, gadget
- * shops, consumer-tech retailers, or any product catalog.
+ * ElectronicsStoreStats — a tech-brutalist spec-sheet stats band for an
+ * electronics storefront. A mono index eyebrow above a 2-to-4 column
+ * collapsed-border ledger of left-aligned metrics, each a giant tabular numeral
+ * over a mono uppercase label, sharing hairline border-2 rules like a data table.
+ * Use as a social-proof / scale strip between sections on electronics stores,
+ * gadget shops, consumer-tech retailers, or any product catalog.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import {
@@ -20,7 +21,7 @@ import {
 export const ElectronicsStoreStats = defineCapsule({
   name: 'ElectronicsStoreStats',
   description:
-    'Compact horizontally-ruled stats band for an electronics storefront: a 2-to-4 column grid of centered metrics, each a large bold value over a muted label, framed by top and bottom borders. Use as a social-proof / scale strip (e.g. 50K+ Happy Customers, 1,200+ Products, 4.9 Average Rating, 24/7 Support) between sections on electronics stores, gadget shops, consumer-tech retailers, or any product catalog.',
+    'Tech-brutalist spec-sheet stats band for an electronics storefront: a mono index eyebrow above a 2-to-4 column collapsed-border ledger of left-aligned metrics, each a giant tabular numeral over a mono uppercase label, sharing hairline border-2 rules like a data table (e.g. 50K+ Happy Customers, 1,200+ Products, 4.9 Average Rating, 24/7 Support). Use as a social-proof / scale strip between sections on electronics stores, gadget shops, consumer-tech retailers, or any product catalog.',
   props: z.object({
     /** Stat cells. */
     stats: z
@@ -56,18 +57,38 @@ export const ElectronicsStoreStats = defineCapsule({
         ]
     return (
       <section
-        className={cn('border-y border-border py-16 lg:py-20', props.className)}
+        className={cn(
+          'border-y-2 border-foreground py-16 lg:py-20',
+          props.className,
+        )}
       >
         <Container>
-          <StatGrid columns={4} className={'lg:gap-12 gap-12'}>
+          <span className="mb-8 flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+            <span className="tabular-nums">[ 06 ]</span>
+            <span className="text-muted-foreground">By the numbers</span>
+          </span>
+          <StatGrid
+            columns={4}
+            className="gap-0 border-l-2 border-t-2 border-foreground"
+          >
             {stats.map((s) => {
               const __iv__ = s as { value: string; label: string }
               return (
-                <StatItem key={__iv__.label} align={'center'}>
-                  <StatValue weight={'semibold'} size={'default'}>
+                <StatItem
+                  key={__iv__.label}
+                  align={'left'}
+                  className="gap-2 border-b-2 border-r-2 border-foreground p-5 sm:p-6"
+                >
+                  <StatValue
+                    weight={'semibold'}
+                    size={'default'}
+                    className="text-4xl font-extrabold leading-none tracking-tight text-foreground md:text-5xl"
+                  >
                     {__iv__.value}
                   </StatValue>
-                  <StatLabel>{__iv__.label}</StatLabel>
+                  <StatLabel className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                    {__iv__.label}
+                  </StatLabel>
                 </StatItem>
               )
             })}

@@ -3,11 +3,14 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * CloudInfraGallery — developer-showcase image gallery for a cloud-infrastructure /
- * developer-platform SaaS landing page. A centered heading + description above a
- * responsive grid of 6 figure cards (4:3 aspect). Each figure is an alt-driven Image
- * with a caption overlay using a bottom-up gradient to foreground/80. Images zoom
- * on hover. Tokens-only. Renders fully on zero arguments.
+ * CloudInfraGallery — terminal-industrial showcase gallery for a cloud-
+ * infrastructure / developer-platform SaaS landing page. An asymmetric header
+ * (left-aligned heading + description, mono meta line right) above a staggered
+ * grid of square-cornered figure cards (2-col mobile, 3-col desktop; middle
+ * column shifted down on desktop). Each figure is an alt-driven Image with a
+ * mono `fig.` index chip stamped in the top-left and a mono uppercase caption
+ * bar along the bottom; images zoom slightly on hover. Tokens-only. Renders
+ * fully on zero arguments.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -21,7 +24,7 @@ import {
 export const CloudInfraGallery = defineCapsule({
   name: 'CloudInfraGallery',
   description:
-    'Developer-showcase image gallery for a cloud-infrastructure / developer-platform SaaS landing page: a centered heading plus description above a responsive grid of 6 figure cards (4:3 aspect). Each figure is an alt-driven Image with a caption overlay using a bottom-up gradient to foreground/80; images zoom on hover. Tokens-only. Use for portfolio, showcase, or proof-of-work galleries on cloud hosting, IaaS, PaaS, or developer-tooling sites.',
+    'Terminal-industrial showcase gallery for a cloud-infrastructure / developer-platform SaaS landing page: an asymmetric header (left heading plus description, mono meta right) above a staggered grid of square-cornered figure cards (2-col mobile, 3-col desktop with the middle column shifted down). Each figure is an alt-driven Image with a mono fig-index chip in the top-left and a mono uppercase caption bar; images zoom on hover. Tokens-only. Use for portfolio, showcase, or proof-of-work galleries on cloud hosting, IaaS, PaaS, or developer-tooling sites.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -79,18 +82,35 @@ export const CloudInfraGallery = defineCapsule({
           },
         ]
     return (
-      <section className={cn('py-20 lg:py-28', props.className)}>
+      <section
+        className={cn(
+          'overflow-hidden py-14 sm:py-20 lg:py-28',
+          props.className,
+        )}
+      >
         <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 tracking-tight sm:text-4xl"
-            subtitleClassName="text-lg"
-          />
+          <div className="mb-10 flex flex-col gap-4 sm:mb-14 md:flex-row md:items-end md:justify-between">
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-3"
+              titleClassName="text-3xl font-extrabold tracking-tight sm:text-4xl"
+              subtitleClassName="text-base sm:text-lg"
+            />
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+            >
+              [ archive ] field records
+            </p>
+          </div>
           <GalleryGrid>
-            <GalleryGridItems columns={3}>
-              {items.map((img) => {
+            <GalleryGridItems
+              columns={3}
+              className="grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 lg:pb-8"
+            >
+              {items.map((img, i) => {
                 const __iv__ = img as {
                   alt: string
                   caption?: string
@@ -98,10 +118,24 @@ export const CloudInfraGallery = defineCapsule({
                   location?: string
                 }
                 return (
-                  <GalleryTile key={__iv__.alt}>
+                  <GalleryTile
+                    key={__iv__.alt}
+                    className={cn(
+                      'rounded-none border-border',
+                      i % 3 === 1 && 'lg:translate-y-8',
+                    )}
+                  >
                     <GalleryTileImage alt={__iv__.alt} />
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-0 top-0 bg-foreground px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-background"
+                    >
+                      fig.{`0${i + 1}`.slice(-2)}
+                    </span>
                     {__iv__.caption && (
-                      <GalleryTileCaption>{__iv__.caption}</GalleryTileCaption>
+                      <GalleryTileCaption className="border-t border-border bg-background/90 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                        {__iv__.caption}
+                      </GalleryTileCaption>
                     )}
                   </GalleryTile>
                 )

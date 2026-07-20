@@ -12,14 +12,15 @@ import {
 } from '../commerce/commerce-interactions.tsx'
 
 /**
- * FashionStoreProducts — New Arrivals product grid for a minimalist fashion
- * store. A centered eyebrow + serif heading + description intro above a
- * responsive 2-to-4 column grid of portrait product cards, each with a hover
- * Quick-Add button overlay, optional New/Best Seller/Limited corner badge,
- * product name, price and variant label, closed by an underlined "View All"
- * link with an arrow. Every card and link routes through section-kit route links and all
- * imagery uses the alt-driven Image component. Use to showcase a curated
- * product drop for clothing brands, boutiques, or apparel shops.
+ * FashionStoreProducts — New Arrivals product grid for a luxury fashion store.
+ * A mono kicker + serif heading on the left with a right-aligned description in
+ * an asymmetric intro row, above a responsive 2-to-4 column grid of sharp
+ * portrait product cards, each with a hover mono Quick-Add button overlay, an
+ * optional square New/Best Seller/Limited corner badge, a serif product name,
+ * tabular price and mono variant label, closed by an underlined "View All"
+ * link with an arrow. Every card and link routes through section-kit route
+ * links and all imagery uses the alt-driven Image component. Use to showcase a
+ * curated product drop for clothing brands, boutiques, or apparel shops.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -38,7 +39,7 @@ import { NavbarRouteLink } from '#/section-kit/index.ts'
 export const FashionStoreProducts = defineCapsule({
   name: 'FashionStoreProducts',
   description:
-    "New Arrivals product grid for a minimalist fashion store: a centered eyebrow + serif heading + description intro above a responsive 2-to-4 column grid of portrait product cards, each with a hover Quick-Add button overlay, optional New/Best Seller/Limited corner badge, product name, price and variant label, closed by an underlined 'View All' link with an arrow. Every card and link routes through section-kit route links and all imagery uses the alt-driven Image component. Use to showcase a curated product drop for clothing brands, boutiques, apparel and accessories shops.",
+    "New Arrivals product grid for a luxury fashion store: a mono kicker + serif heading on the left with a right-aligned description in an asymmetric intro row, above a responsive 2-to-4 column grid of sharp portrait product cards, each with a hover mono Quick-Add button overlay, an optional square New/Best Seller/Limited corner badge, a serif product name, tabular price and mono variant label, closed by an underlined 'View All' link with an arrow. Every card and link routes through section-kit route links and all imagery uses the alt-driven Image component. Use to showcase a curated product drop for clothing brands, boutiques, apparel and accessories shops.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -153,7 +154,7 @@ export const FashionStoreProducts = defineCapsule({
       ],
     )
     const eyebrowCls =
-      'text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground'
+      'font-mono text-[11px] font-medium uppercase tracking-[0.24em] text-muted-foreground'
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         width="16"
@@ -176,20 +177,24 @@ export const FashionStoreProducts = defineCapsule({
         className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
       >
         <Container>
-          <SectionHeading
-            eyebrow={productsEyebrow}
-            title={productsHeading}
-            subtitle={productsDesc}
-            className="mb-16 gap-0"
-            eyebrowClassName={cn(eyebrowCls, 'mb-3')}
-            titleClassName="mb-4 font-serif text-4xl font-normal sm:text-5xl lg:text-6xl"
-            subtitleClassName="mx-auto max-w-md text-muted-foreground"
-          />
+          <div className="mb-16 grid items-end gap-8 lg:grid-cols-2 lg:gap-12">
+            <SectionHeading
+              align="left"
+              eyebrow={productsEyebrow}
+              title={productsHeading}
+              className="gap-0"
+              eyebrowClassName={cn(eyebrowCls, 'mb-3')}
+              titleClassName="font-serif text-4xl font-normal tracking-tight sm:text-5xl lg:text-6xl"
+            />
+            <p className="max-w-md text-muted-foreground lg:ml-auto lg:text-right">
+              {productsDesc}
+            </p>
+          </div>
 
           <ResponsiveGrid cols="2-lg-4" className="sm:gap-6 lg:gap-8 gap-4">
             {visibleProductItems.map((product) => (
-              <ProductCard key={product.name} className="group">
-                <ProductCardImage className="relative mb-4 aspect-[3/4] overflow-hidden bg-muted">
+              <ProductCard key={product.name} variant="none" className="group">
+                <ProductCardImage className="relative mb-4 aspect-[3/4] overflow-hidden rounded-none bg-muted">
                   <Image
                     alt={product.imageAlt}
                     w={800}
@@ -200,7 +205,7 @@ export const FashionStoreProducts = defineCapsule({
                   {product.badge ? (
                     <ProductCardBadge
                       className={cn(
-                        'absolute left-3 top-3 px-2 py-1 text-xs font-medium',
+                        'absolute left-3 top-3 rounded-none px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em]',
                         product.badge === 'Best Seller'
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-background text-foreground',
@@ -222,20 +227,20 @@ export const FashionStoreProducts = defineCapsule({
                           Adding
                         </>
                       }
-                      className="absolute inset-x-4 bottom-4 inline-flex items-center justify-center gap-2 bg-background py-3 text-sm font-medium text-foreground opacity-0 transition-opacity disabled:pointer-events-none disabled:opacity-70 group-hover:opacity-100"
+                      className="absolute inset-x-4 bottom-4 inline-flex items-center justify-center gap-2 rounded-none bg-background py-3 font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-foreground opacity-0 transition-[opacity,transform] duration-150 group-hover:opacity-100 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
                     >
                       {quickAdd}
                     </CommerceAddItemButton>
                   </ProductCardActions>
                 </ProductCardImage>
-                <ProductCardContent>
-                  <ProductCardTitle className="text-sm font-medium text-foreground">
+                <ProductCardContent className="p-0">
+                  <ProductCardTitle className="font-serif text-base font-normal text-foreground">
                     {product.name}
                   </ProductCardTitle>
-                  <ProductCardPrice className="mt-1 text-sm text-muted-foreground">
+                  <ProductCardPrice className="mt-1.5 text-sm text-foreground tabular-nums">
                     {product.price}
                   </ProductCardPrice>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mt-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                     {product.variant}
                   </p>
                 </ProductCardContent>
@@ -243,9 +248,9 @@ export const FashionStoreProducts = defineCapsule({
             ))}
           </ResponsiveGrid>
 
-          <div className="mt-12 text-center">
+          <div className="mt-14 border-t border-border pt-8 text-center">
             <NavbarRouteLink
-              className="inline-flex items-center border-b border-foreground pb-1 text-sm font-medium text-foreground transition-colors hover:border-muted-foreground hover:text-muted-foreground"
+              className="inline-flex items-center border-b border-foreground pb-1 font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-foreground transition-colors hover:border-muted-foreground hover:text-muted-foreground"
               href={productsViewAll}
             >
               {productsViewAll}

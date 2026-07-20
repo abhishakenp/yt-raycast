@@ -3,12 +3,16 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * ConstructionPricing — three-tier pricing table for a construction / general
- * contractor page. A centered section heading above a responsive 3-column
- * grid of pricing cards with a "Most Popular" highlight on the featured tier.
- * Each card lists features with check icons and a CTA button that routes
- * through section-kit route links. Use to present transparent project pricing for
- * construction firms, contractors, builders, or remodeling companies.
+ * ConstructionPricing — industrial-brutalist rate card for a construction /
+ * general contractor page. An asymmetric header (left mono eyebrow + extrabold
+ * uppercase heading, mono rate-card index right) above a collapsed-border
+ * spec-sheet ledger of three tiers framed by a 2px rule with a hard offset
+ * shadow: each tier carries a mono tier index, an uppercase name, a giant
+ * extrabold tabular price with its suffix and mono note, and hairline-ruled
+ * feature rows. The featured tier inverts to a foreground band with a square
+ * badge. Optional CTA buttons are square-edged with press feedback and route
+ * through section-kit route links. Use to present transparent project pricing
+ * for construction firms, contractors, builders, or remodeling companies.
  * Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
@@ -29,7 +33,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 export const ConstructionPricing = defineCapsule({
   name: 'ConstructionPricing',
   description:
-    "Three-tier pricing table for a construction / general contractor page: a centered section heading above a responsive 3-column grid of pricing cards with a 'Most Popular' highlight on the featured tier. Each card lists features with check icons and a CTA button that routes through section-kit route links. Use to present transparent project pricing for construction firms, contractors, builders, or remodeling companies.",
+    'Industrial-brutalist rate card for a construction / general contractor page: an asymmetric header (left mono eyebrow + extrabold uppercase heading, mono rate-card index right) above a collapsed-border spec-sheet ledger of three tiers framed by a 2px rule with a hard offset shadow — mono tier indexes, uppercase names, giant extrabold tabular prices with suffixes and mono notes, hairline-ruled feature rows, and a foreground-inverted featured tier with a square badge. Optional CTA buttons are square-edged with press feedback and route through section-kit route links. Use to present transparent project pricing for construction firms, contractors, builders, or remodeling companies.',
   props: z.object({
     /** Section eyebrow label. */
     eyebrow: z.string().optional(),
@@ -104,31 +108,34 @@ export const ConstructionPricing = defineCapsule({
           },
         ]
     return (
-      <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
+      <section
+        className={cn(
+          'overflow-hidden bg-muted/40 py-16 lg:py-24',
+          props.className,
+        )}
+      >
         <Container>
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            className="mx-auto mb-16 max-w-3xl gap-0"
-            eyebrowClassName="text-sm tracking-wider text-muted-foreground"
-            titleClassName="mb-4 mt-3 text-3xl font-bold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-
-          <PricingGrid
-            className={cn(
-              'mx-auto grid max-w-5xl gap-8 md:grid-cols-3',
-              props.className,
-            )}
-          >
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
             <SectionHeading
-              title={'Transparent pricing for every project'}
-              subtitle={
-                'Every project is unique. Here are typical starting points for our most common project types. Final pricing depends on scope, materials, and timeline.'
-              }
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-0"
+              eyebrowClassName="font-mono text-[11px] uppercase tracking-[0.2em] text-primary"
+              titleClassName="mb-4 mt-3 text-3xl font-extrabold uppercase tracking-tight text-foreground sm:text-4xl lg:text-5xl"
+              subtitleClassName="text-lg text-muted-foreground"
             />
-            {tiers.map((tier) => {
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] tabular-nums text-muted-foreground/60"
+            >
+              Rate card / {String(tiers.length).padStart(2, '0')} formats
+            </p>
+          </div>
+
+          <PricingGrid className="mx-auto max-w-5xl gap-0 border-2 border-foreground bg-card shadow-[10px_10px_0_0] shadow-foreground/15 md:grid-cols-3 xl:grid-cols-3">
+            {tiers.map((tier, i) => {
               const t = tier as {
                 name: string
                 price: string
@@ -153,46 +160,137 @@ export const ConstructionPricing = defineCapsule({
                 priceSuffix?: string
                 note?: string
               }
+              const isFeatured = t.highlighted || t.featured || t.popular
+              const ctaLabel = t.cta ?? props.cta
               return (
                 <PricingTier
                   key={t.name}
-                  variant={
-                    t.highlighted || t.featured || t.popular
-                      ? 'highlighted'
-                      : undefined
-                  }
+                  variant={isFeatured ? 'highlighted' : undefined}
+                  className={cn(
+                    'rounded-none border-0 border-b-2 border-foreground p-6 shadow-none ring-0 last:border-b-0 sm:p-8 md:border-b-0 md:border-r-2 md:last:border-r-0',
+                    isFeatured ? 'bg-foreground text-background' : 'bg-card',
+                  )}
                 >
-                  {t.highlighted || t.featured || t.popular ? (
-                    <PricingTierBadge>{t.badge ?? 'Popular'}</PricingTierBadge>
-                  ) : null}
+                  <div className="flex items-center justify-between">
+                    <span
+                      className={cn(
+                        'font-mono text-[11px] uppercase tracking-[0.2em] tabular-nums',
+                        isFeatured ? 'text-background/60' : 'text-primary',
+                      )}
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    {isFeatured ? (
+                      <PricingTierBadge className="rounded-none bg-primary px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-primary-foreground">
+                        {t.badge ?? props.popularLabel ?? 'Popular'}
+                      </PricingTierBadge>
+                    ) : (
+                      <span
+                        aria-hidden="true"
+                        className="h-1.5 w-8 bg-[repeating-linear-gradient(-45deg,currentColor_0,currentColor_4px,transparent_4px,transparent_8px)] text-foreground/25"
+                      />
+                    )}
+                  </div>
                   <PricingTierHeader>
-                    <PricingTierName>{t.name}</PricingTierName>
+                    <PricingTierName
+                      className={cn(
+                        'text-base font-extrabold uppercase tracking-tight',
+                        isFeatured && 'text-background',
+                      )}
+                    >
+                      {t.name}
+                    </PricingTierName>
                     {t.tagline && (
-                      <PricingTierTagline>{t.tagline}</PricingTierTagline>
+                      <PricingTierTagline
+                        className={cn(isFeatured && 'text-background/70')}
+                      >
+                        {t.tagline}
+                      </PricingTierTagline>
                     )}
                     {t.blurb && (
-                      <PricingTierTagline>{t.blurb}</PricingTierTagline>
+                      <PricingTierTagline
+                        className={cn(isFeatured && 'text-background/70')}
+                      >
+                        {t.blurb}
+                      </PricingTierTagline>
                     )}
                     {t.description && (
-                      <PricingTierTagline>{t.description}</PricingTierTagline>
+                      <PricingTierTagline
+                        className={cn(isFeatured && 'text-background/70')}
+                      >
+                        {t.description}
+                      </PricingTierTagline>
                     )}
                     {t.audience && (
-                      <PricingTierTagline>{t.audience}</PricingTierTagline>
+                      <PricingTierTagline
+                        className={cn(isFeatured && 'text-background/70')}
+                      >
+                        {t.audience}
+                      </PricingTierTagline>
                     )}
-                    <PricingTierPrice>{t.price}</PricingTierPrice>
+                    <span className="flex items-baseline gap-1">
+                      <PricingTierPrice
+                        className={cn(
+                          'text-4xl font-extrabold tracking-tight tabular-nums sm:text-5xl',
+                          isFeatured && 'text-background',
+                        )}
+                      >
+                        {t.price}
+                      </PricingTierPrice>
+                      {t.priceSuffix && (
+                        <span className="text-2xl font-extrabold text-primary">
+                          {t.priceSuffix}
+                        </span>
+                      )}
+                    </span>
+                    {t.note && (
+                      <PricingTierPeriod
+                        className={cn(
+                          'font-mono text-[11px] uppercase tracking-[0.15em]',
+                          isFeatured
+                            ? 'text-background/60'
+                            : 'text-muted-foreground',
+                        )}
+                      >
+                        {t.note}
+                      </PricingTierPeriod>
+                    )}
                     {t.period && (
-                      <PricingTierPeriod>{t.period}</PricingTierPeriod>
+                      <PricingTierPeriod
+                        className={cn(isFeatured && 'text-background/60')}
+                      >
+                        {t.period}
+                      </PricingTierPeriod>
                     )}
-                    {t.unit && <PricingTierPeriod>{t.unit}</PricingTierPeriod>}
+                    {t.unit && (
+                      <PricingTierPeriod
+                        className={cn(isFeatured && 'text-background/60')}
+                      >
+                        {t.unit}
+                      </PricingTierPeriod>
+                    )}
                     {t.cadence && (
-                      <PricingTierPeriod>{t.cadence}</PricingTierPeriod>
+                      <PricingTierPeriod
+                        className={cn(isFeatured && 'text-background/60')}
+                      >
+                        {t.cadence}
+                      </PricingTierPeriod>
                     )}
                     {t.suffix && (
-                      <PricingTierPeriod>{t.suffix}</PricingTierPeriod>
+                      <PricingTierPeriod
+                        className={cn(isFeatured && 'text-background/60')}
+                      >
+                        {t.suffix}
+                      </PricingTierPeriod>
                     )}
                   </PricingTierHeader>
                   {t.features && (
-                    <PricingTierFeatures>
+                    <PricingTierFeatures
+                      className={cn(
+                        'gap-0 border-t pt-2',
+                        isFeatured ? 'border-background/20' : 'border-border',
+                      )}
+                    >
                       {t.features.map((feature) => (
                         <PricingTierFeature
                           key={
@@ -200,7 +298,17 @@ export const ConstructionPricing = defineCapsule({
                               ? feature
                               : (feature as { label: string }).label
                           }
+                          className={cn(
+                            'border-b border-dashed py-2.5 last:border-b-0 [&>svg]:hidden',
+                            isFeatured
+                              ? 'border-background/15 text-background/70'
+                              : 'border-border',
+                          )}
                         >
+                          <span
+                            aria-hidden="true"
+                            className="mt-[7px] size-1.5 shrink-0 bg-current"
+                          />
                           {typeof feature === 'string'
                             ? feature
                             : (feature as { label: string }).label}
@@ -208,9 +316,17 @@ export const ConstructionPricing = defineCapsule({
                       ))}
                     </PricingTierFeatures>
                   )}
-                  {t.cta && (
-                    <PricingTierCta target={t.ctaTarget}>
-                      {t.cta}
+                  {ctaLabel && (
+                    <PricingTierCta
+                      target={t.ctaTarget}
+                      className={cn(
+                        'rounded-none font-mono text-xs font-bold uppercase tracking-[0.15em] transition-all duration-100 active:translate-y-px',
+                        isFeatured
+                          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                          : 'border-2 border-foreground bg-background text-foreground hover:bg-muted',
+                      )}
+                    >
+                      {ctaLabel}
                     </PricingTierCta>
                   )}
                 </PricingTier>

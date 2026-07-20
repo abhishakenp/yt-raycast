@@ -4,11 +4,12 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
 /**
- * DentalWhyChooseUs — numbered "why choose us" split for a dental practice site.
- * On a soft muted band: a two-column layout with a tall rounded clinic photo on
- * one side and, on the other, an eyebrow + heading + lede followed by a vertical
- * list of value props, each prefixed with a zero-padded numbered primary tile
- * (01, 02, …) beside a title and supporting copy. Imagery uses the alt-driven
+ * DentalWhyChooseUs — asymmetric 5/7 differentiators split for a dental
+ * practice site. On a soft muted wash: a square hairline-framed clinic photo
+ * with a restrained hard offset shadow on the left (5 cols) and, on the right
+ * (7 cols), a left-aligned mono eyebrow + extrabold heading + lede followed by
+ * an open hairline ledger of value props — each row pairing a zero-padded mono
+ * index numeral with a title and supporting copy. Imagery uses the alt-driven
  * Image component. Use to communicate differentiators (technology, comfort,
  * pricing, family care) for dentists, dental offices, or clinics.
  */
@@ -22,7 +23,7 @@ import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const DentalWhyChooseUs = defineCapsule({
   name: 'DentalWhyChooseUs',
   description:
-    'Numbered why-choose-us split for a dental practice site on a soft muted band: a two-column layout with a tall rounded clinic photo on one side and, on the other, an eyebrow + heading + lede followed by a vertical list of value props, each prefixed with a zero-padded numbered primary tile (01, 02, ...) beside a title and supporting copy. Imagery uses the Image component. Use to communicate differentiators (technology, comfort, pricing, family care) for dentists, dental offices, or clinics.',
+    'Asymmetric 5/7 differentiators split for a dental practice site on a soft muted wash: a square hairline-framed clinic photo with a restrained hard offset shadow on one side and, on the other, a left-aligned mono eyebrow + extrabold heading + lede followed by an open hairline ledger of value props, each row pairing a zero-padded mono index numeral with a title and supporting copy. Imagery uses the Image component. Use to communicate differentiators (technology, comfort, pricing, family care) for dentists, dental offices, or clinics.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -72,40 +73,58 @@ export const DentalWhyChooseUs = defineCapsule({
           },
         ]
     return (
-      <section className={cn('bg-muted py-24', props.className)}>
+      <section
+        className={cn('bg-muted/40 py-20 sm:py-24 lg:py-28', props.className)}
+      >
         <Container>
-          <WhyChooseUsGrid className="grid items-center gap-16 lg:grid-cols-2">
-            <div className="order-2 lg:order-1">
-              <div className="aspect-[4/5] overflow-hidden rounded-3xl shadow-xl">
-                <Image
-                  alt={whyImageAlt}
-                  w={800}
-                  h={1000}
-                  loading="lazy"
-                  className="size-full object-cover"
-                />
+          <WhyChooseUsGrid className="grid items-start gap-12 sm:grid-cols-1 lg:grid-cols-12 lg:gap-16">
+            <div className="order-2 lg:order-1 lg:col-span-5">
+              <div className="relative mr-2 sm:mr-3">
+                <div className="aspect-[4/5] overflow-hidden border border-border shadow-[8px_8px_0_0] shadow-foreground/10">
+                  <Image
+                    alt={whyImageAlt}
+                    w={800}
+                    h={1000}
+                    loading="lazy"
+                    className="size-full object-cover"
+                  />
+                </div>
               </div>
             </div>
-            <div className="order-1 lg:order-2">
+            <div className="order-1 lg:order-2 lg:col-span-7">
               <SectionHeading
                 align="left"
                 eyebrow={whyEyebrow}
                 title={whyHeading}
                 subtitle={whyDesc}
                 className="mb-10 gap-0"
-                eyebrowClassName="mb-3 inline-block text-xs font-semibold tracking-wider text-primary"
-                titleClassName="mb-6 text-3xl font-bold text-foreground sm:text-4xl"
-                subtitleClassName="text-lg leading-relaxed text-muted-foreground"
+                eyebrowClassName="mb-4 inline-block font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground"
+                titleClassName="mb-5 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-[2.75rem] lg:leading-[1.05]"
+                subtitleClassName="max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg"
               />
-              <ResponsiveGrid cols="1-2">
-                {whyItems.map((item) => (
-                  <WhyChooseUsCard key={item.title} className="rounded-xl">
-                    <h3 className="mb-2 font-semibold text-foreground">
-                      {item.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {item.description}
-                    </p>
+              <ResponsiveGrid
+                cols="1-2"
+                className="gap-0 border-t border-border sm:grid-cols-1"
+              >
+                {whyItems.map((item, i) => (
+                  <WhyChooseUsCard
+                    key={item.title}
+                    className="flex-row items-baseline gap-5 rounded-none border-0 border-b border-border bg-transparent py-5 sm:gap-8 sm:py-6"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="shrink-0 font-mono text-sm text-muted-foreground/60 tabular-nums sm:text-base"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span className="min-w-0">
+                      <h3 className="mb-1.5 text-lg font-bold tracking-tight text-foreground">
+                        {item.title}
+                      </h3>
+                      <p className="text-sm leading-relaxed text-muted-foreground sm:max-w-lg">
+                        {item.description}
+                      </p>
+                    </span>
                   </WhyChooseUsCard>
                 ))}
               </ResponsiveGrid>

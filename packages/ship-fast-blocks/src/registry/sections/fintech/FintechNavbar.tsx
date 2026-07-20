@@ -13,15 +13,17 @@ import {
 } from '#/section-kit/index.ts'
 
 /**
- * FintechNavbar — sticky site header for a fintech / neobank / digital-banking
- * landing page. A thin configuration over the shared `SiteNav` composite: an
- * inline shield brand mark beside the product wordmark, a horizontal row of
- * nav links on desktop, a primary "Get Started" pill CTA on the right, and a
- * real mobile drawer (Sheet) on small screens. Every link and CTA routes
- * through route hrefs so labels drive page-switching. Use as the header for
- * banking apps, digital wallets, payments products, lending platforms, or any
- * finance startup landing page. Renders fully with no props via baked-in
- * "Vault" defaults.
+ * FintechNavbar — Swiss-fintech sticky site header for a neobank / digital-
+ * banking landing page. A thin configuration over the shared `SiteNav`
+ * composite with hairline precision: an inline shield brand mark set as the
+ * wordmark's runtime-swappable logo image, a horizontal row of desktop nav
+ * links, and a single square (binary radius) primary "Get Started" CTA with
+ * mechanical press feedback on the right, plus a real mobile drawer (Sheet) on
+ * small screens. Backdrop-blur and the bottom hairline rule read as an
+ * institutional trust bar. Every link and CTA routes through route hrefs so
+ * labels drive page-switching. Use as the header for banking apps, digital
+ * wallets, payments products, lending platforms, or any finance startup
+ * landing page. Renders fully with no props via baked-in "Vault" defaults.
  */
 function ShieldMark({ className }: { className?: string }) {
   return (
@@ -44,7 +46,7 @@ function ShieldMark({ className }: { className?: string }) {
 export const FintechNavbar = defineCapsule({
   name: 'FintechNavbar',
   description:
-    "Sticky fintech / neobank site header built on the shared SiteNav composite: an inline shield brand mark + product wordmark, horizontal desktop nav links, a primary 'Get Started' pill CTA, and a real mobile drawer. All links and CTA route through route hrefs for page-switching. Use as the header for banking apps, digital wallets, payment products, lending platforms, or finance startup landing pages.",
+    "Swiss-fintech sticky neobank site header built on the shared SiteNav composite with hairline precision: an inline shield brand mark + product wordmark, horizontal desktop nav links, a single square (binary-radius) primary 'Get Started' CTA with mechanical press feedback, backdrop-blur and a bottom hairline rule that read as an institutional trust bar, and a real mobile drawer. All links and CTA route through route hrefs for page-switching. Use as the header for banking apps, digital wallets, payment products, lending platforms, or finance startup landing pages.",
   props: z.object({
     /** Brand / product name shown beside the shield mark. */
     brand: z.string().optional(),
@@ -68,24 +70,36 @@ export const FintechNavbar = defineCapsule({
     const homeTarget = props.homeTarget ?? nav[0]
     return (
       <SiteNav position="fixed" height="default" className={props.className}>
-        <NavbarBrand href={homeTarget} className="gap-3">
-          <ShieldMark className="size-8 text-primary" />
+        <NavbarBrand href={homeTarget} className="flex items-center gap-2">
           <Logo brand={brand}>
-            <LogoImage />
+            <LogoImage
+              className="size-7"
+              fallback={<ShieldMark className="size-7 text-primary" />}
+            />
             <LogoLabel className="text-xl font-semibold tracking-tight" />
           </Logo>
         </NavbarBrand>
-        <NavbarNav>
-          {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+        <NavbarNav className="gap-7">
+          {nav.map((label, i) => (
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="rounded-none text-[13px] tracking-tight"
+            >
+              <span
+                aria-hidden="true"
+                className="mr-1.5 font-mono text-[10px] tabular-nums text-muted-foreground/50"
+              >
+                {String(i + 1).padStart(2, '0')}
+              </span>
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
         <NavbarActions>
           <NavbarCta
-            variant="primary-pill"
-            className="hidden px-5 py-2.5 sm:inline-flex"
+            variant="primary"
+            className="hidden rounded-none px-5 py-2.5 text-[13px] tracking-tight transition-[transform,background-color] duration-150 active:translate-y-px motion-reduce:transform-none sm:inline-flex"
             href={ctaTarget}
           >
             {ctaLabel}

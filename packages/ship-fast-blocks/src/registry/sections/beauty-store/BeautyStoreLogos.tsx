@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
 import {
   LogoStrip,
   LogoStripLabel,
@@ -46,14 +47,16 @@ export const BeautyStoreLogos = defineCapsule({
       <LogoStrip
         className={cn('border-b border-border py-16', props.className)}
       >
-        <LogoStripLabel>{heading}</LogoStripLabel>
-        <LogoStripItems layout="flex" className="mt-8">
-          {brands.filter(Boolean).map((logo) => (
-            <LogoStripItem key={logo} variant="opacity-hover" asChild>
-              <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
-            </LogoStripItem>
-          ))}
-        </LogoStripItems>
+        <Container>
+          <LogoStripLabel>{heading}</LogoStripLabel>
+          <LogoStripItems layout="flex" className="mt-8">
+            {brands.filter(Boolean).map((logo) => (
+              <LogoStripItem key={logo} variant="opacity-hover" asChild>
+                <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
+              </LogoStripItem>
+            ))}
+          </LogoStripItems>
+        </Container>
       </LogoStrip>
     )
   },

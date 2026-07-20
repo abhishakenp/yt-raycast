@@ -9,18 +9,30 @@ import {
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
 /**
- * CleaningServiceFaq — a 7-item FAQ accordion for a home-cleaning / maid-service landing page. A muted-band background with a centered heading + lead paragraph above a stacked list of native HTML `details/summary` accordion items; each item animates open with a chevron rotation and reveals a paragraph answer beneath. No links, no images — pure informational disclosure. Use for FAQ / help / expectations sections for residential cleaning companies, maid services, housekeeping platforms, or any local home-service brand. Renders fully with no props via seven baked-in default questions.
+ * CleaningServiceFaq — playful-Swiss asymmetric FAQ ledger for a home-cleaning
+ * / maid-service landing page. A 4/8 split on a muted wash: the left rail
+ * holds a mono "06 / FAQ" eyebrow, the heading + lead, and a giant ghost
+ * question-mark watermark; the right column stacks native HTML
+ * `details/summary` items as a hairline-divided ledger framed by 2px top and
+ * bottom rules — each row pairs a mono tabular index numeral with a bold
+ * question and a plus icon that rotates to an X when open, revealing the
+ * answer indented under the numeral column. No links, no images — pure
+ * informational disclosure. Use for FAQ / help / expectations sections for
+ * residential cleaning companies, maid services, housekeeping platforms, or
+ * any local home-service brand. Renders fully with no props via seven baked-in
+ * default questions.
  */
 export const CleaningServiceFaq = defineCapsule({
   name: 'CleaningServiceFaq',
   description:
-    'A 7-item FAQ accordion for a home-cleaning / maid-service landing page: muted-band background with centered heading + lead above a stacked list of native HTML details/summary accordion items. Each item animates open with a chevron rotation and reveals a paragraph answer beneath. No links, no images — pure informational disclosure. Use for FAQ / help / expectations sections for residential cleaning, maid services, housekeeping, or local home-service brands.',
+    "Playful-Swiss asymmetric FAQ ledger for a home-cleaning / maid-service landing page: a 4/8 split on a muted wash — left rail with mono '06 / FAQ' eyebrow, heading + lead, and a giant ghost question-mark watermark; right column of native HTML details/summary items as a hairline-divided ledger framed by 2px rules, each row pairing a mono tabular index numeral with a bold question and a plus icon rotating to an X when open, answers indented under the numeral column. No links, no images — pure informational disclosure. Use for FAQ / help / expectations sections for residential cleaning, maid services, housekeeping, or local home-service brands.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -69,30 +81,51 @@ export const CleaningServiceFaq = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-muted/40 py-20 lg:py-28', props.className)}>
-        <Container className="max-w-4xl">
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 gap-0"
-            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <FaqAccordion>
-            {items.map((item) => (
-              <FaqItem key={item.q} variant="overflow-bordered">
-                <FaqQuestion className="p-6">
-                  <h3 className="text-lg font-semibold text-card-foreground">
-                    {item.q}
-                  </h3>
-                  <FaqQuestionIcon className="ml-6" />
-                </FaqQuestion>
-                <FaqAnswer asChild className="px-6 pb-6">
-                  <div>{item.a}</div>
-                </FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+      <section className={cn('bg-muted/30 py-16 lg:py-24', props.className)}>
+        <Container>
+          <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
+            <div className="relative lg:col-span-4">
+              <SectionHeading
+                align="left"
+                eyebrow="06 / FAQ"
+                title={heading}
+                subtitle={description}
+                className="gap-3"
+                titleClassName="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl"
+                subtitleClassName="text-lg text-muted-foreground"
+              />
+              <Watermark className="-bottom-8 right-0 hidden -rotate-6 font-mono text-[11rem] text-foreground/[0.05] lg:block">
+                ?
+              </Watermark>
+            </div>
+            <FaqAccordion
+              variant="divided"
+              className="border-y-2 border-foreground lg:col-span-8"
+            >
+              {items.map((item, i) => (
+                <FaqItem key={item.q} variant="divided" className="py-0">
+                  <FaqQuestion className="items-baseline gap-4 py-5 sm:gap-6">
+                    <span
+                      aria-hidden="true"
+                      className="w-8 shrink-0 self-start pt-0.5 font-mono text-xs font-bold tabular-nums tracking-[0.1em] text-primary"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <h3 className="flex-1 text-base font-bold tracking-tight text-foreground sm:text-lg">
+                      {item.q}
+                    </h3>
+                    <FaqQuestionIcon
+                      variant="plus"
+                      className="self-start text-foreground"
+                    />
+                  </FaqQuestion>
+                  <FaqAnswer asChild className="pb-6 pr-8 sm:pl-14">
+                    <div>{item.a}</div>
+                  </FaqAnswer>
+                </FaqItem>
+              ))}
+            </FaqAccordion>
+          </div>
         </Container>
       </section>
     )

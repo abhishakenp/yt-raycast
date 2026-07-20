@@ -10,21 +10,22 @@ import {
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
- * EventPlannerStats — impact band pairing a stats column with a photo collage. A
- * two-column layout: a left text column (uppercase eyebrow, thin light heading,
- * relaxed paragraph, and a 2x2 grid of large light KPI values with muted labels)
- * beside a right offset four-image collage in two staggered columns of rounded
- * photos. Imagery is alt-driven. Use to convey track record and credibility for
+ * EventPlannerStats — kinetic-poster impact band pairing a KPI ledger with a
+ * hard-framed photo collage. An asymmetric two-column layout: a left text column
+ * (a mono metadata rail with a primary square and hairline rule, a giant
+ * tight-tracked heading, a relaxed paragraph, and a 2x2 collapsed-border ledger
+ * of giant tabular KPI numerals with mono uppercase labels) beside a right offset
+ * four-image collage in two staggered columns of rounded-none bordered photos.
+ * Imagery is alt-driven. Use to convey track record and credibility for
  * event/wedding planners, agencies, or premium service businesses.
  */
 export const EventPlannerStats = defineCapsule({
   name: 'EventPlannerStats',
   description:
-    'Impact band pairing a stats column with a photo collage: a two-column layout with a left text column (uppercase eyebrow, thin light heading, relaxed paragraph, and a 2x2 grid of large light KPI values with muted labels) beside a right offset four-image collage in two staggered columns of rounded photos. All imagery is alt-driven. Use to convey track record and credibility for event/wedding planners, agencies, or premium service businesses.',
+    'Kinetic-poster impact band pairing a KPI ledger with a hard-framed photo collage: an asymmetric two-column layout with a left text column (a mono metadata rail with a primary square and hairline rule, a giant tight-tracked heading, a relaxed paragraph, and a 2x2 collapsed-border ledger of giant tabular KPI numerals with mono uppercase labels) beside a right offset four-image collage in two staggered columns of rounded-none bordered photos. All imagery is alt-driven. Use to convey track record and credibility for event/wedding planners, agencies, or premium service businesses.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -66,47 +67,62 @@ export const EventPlannerStats = defineCapsule({
         )}
       >
         <Container size="xl">
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
-            <div>
-              <SectionHeading
-                align="left"
-                eyebrow={statsEyebrow}
-                title={statsHeading}
-                subtitle={statsDesc}
-                className="mb-8 gap-0"
-                eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground"
-                titleClassName="mb-6 text-3xl font-light text-foreground sm:text-4xl lg:text-5xl"
-                subtitleClassName="text-lg leading-relaxed text-muted-foreground"
-              />
-              <StatGrid columns={2}>
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-7">
+              <div className="flex items-center gap-4">
+                <span
+                  aria-hidden="true"
+                  className="size-1.5 shrink-0 bg-primary"
+                />
+                <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  {statsEyebrow}
+                </span>
+                <span aria-hidden="true" className="h-px flex-1 bg-border" />
+              </div>
+              <h2 className="mt-6 text-4xl font-extrabold leading-[0.95] tracking-tighter text-foreground text-balance sm:text-5xl lg:text-6xl">
+                {statsHeading}
+              </h2>
+              <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">
+                {statsDesc}
+              </p>
+              <StatGrid
+                columns={2}
+                className="mt-10 gap-0 border-l border-t border-border"
+              >
                 {statsItems.map((s) => {
                   const __iv__ = s as { value: string; label: string }
                   return (
-                    <StatItem key={__iv__.label} align={'left'}>
-                      <StatValue weight={'light'} size={'large'}>
+                    <StatItem
+                      key={__iv__.label}
+                      align={'left'}
+                      className="gap-2 border-b border-r border-border p-5 sm:p-6"
+                    >
+                      <StatValue className="text-[clamp(2.25rem,5vw,3.5rem)] font-extrabold leading-none tracking-tight tabular-nums text-foreground">
                         {__iv__.value}
                       </StatValue>
-                      <StatLabel>{__iv__.label}</StatLabel>
+                      <StatLabel className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                        {__iv__.label}
+                      </StatLabel>
                     </StatItem>
                   )
                 })}
               </StatGrid>
             </div>
-            <ResponsiveGrid cols="2" className="gap-4">
+            <ResponsiveGrid cols="2" className="gap-4 lg:col-span-5">
               <div className="space-y-4">
                 <Image
                   alt={statsImageAlts[0]}
                   w={400}
                   h={500}
                   loading="lazy"
-                  className="h-64 w-full rounded-xl object-cover"
+                  className="h-64 w-full rounded-none border-2 border-foreground/15 object-cover"
                 />
                 <Image
                   alt={statsImageAlts[1]}
                   w={400}
                   h={350}
                   loading="lazy"
-                  className="h-48 w-full rounded-xl object-cover"
+                  className="h-48 w-full rounded-none border-2 border-foreground/15 object-cover"
                 />
               </div>
               <div className="space-y-4 pt-8">
@@ -115,14 +131,14 @@ export const EventPlannerStats = defineCapsule({
                   w={400}
                   h={350}
                   loading="lazy"
-                  className="h-48 w-full rounded-xl object-cover"
+                  className="h-48 w-full rounded-none border-2 border-foreground/15 object-cover"
                 />
                 <Image
                   alt={statsImageAlts[3]}
                   w={400}
                   h={500}
                   loading="lazy"
-                  className="h-64 w-full rounded-xl object-cover"
+                  className="h-64 w-full rounded-none border-2 border-foreground/15 object-cover"
                 />
               </div>
             </ResponsiveGrid>

@@ -164,7 +164,7 @@ export function HotelBookingBadge({
   return (
     <span
       className={cn(
-        'hidden max-w-44 truncate rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary lg:inline-flex',
+        'hidden max-w-44 truncate rounded-none border border-primary/30 bg-primary/10 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-primary lg:inline-flex',
         className,
       )}
     >
@@ -343,15 +343,17 @@ export function HotelMobileMenu({
         side="right"
         className="w-[min(100%,22rem)] border-l border-border bg-background p-0 text-foreground sm:max-w-[22rem]"
       >
-        <SheetHeader className="border-b border-border px-5 py-4 text-left">
-          <SheetTitle className="text-base font-semibold">{brand}</SheetTitle>
+        <SheetHeader className="border-b border-border px-5 py-5 text-left">
+          <SheetTitle className="font-serif text-xl font-normal tracking-tight">
+            {brand}
+          </SheetTitle>
           <SheetDescription className="sr-only">
             Navigate to a resort section.
           </SheetDescription>
         </SheetHeader>
-        <div className="flex flex-col gap-1 px-3 py-4">
+        <div className="flex flex-col px-3 py-4">
           <NavbarRouteLink
-            className="rounded-lg px-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            className="border-b border-border px-3 py-3.5 text-left text-sm text-foreground transition-colors hover:text-muted-foreground"
             href={homeTarget ?? nav[0]}
             onClick={() => setOpen(false)}
           >
@@ -360,7 +362,7 @@ export function HotelMobileMenu({
           {nav.map((item) => (
             <NavbarRouteLink
               key={item}
-              className="rounded-lg px-3 py-3 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="border-b border-border px-3 py-3.5 text-left text-sm text-muted-foreground transition-colors hover:text-foreground"
               href={item}
               onClick={() => setOpen(false)}
             >
@@ -379,7 +381,7 @@ export function HotelMobileMenu({
                 Sending
               </>
             }
-            className="mt-3 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70"
+            className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-none bg-foreground px-4 py-3 font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-background transition-[background-color,transform] duration-150 hover:bg-foreground/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
           >
             {ctaLabel}
           </HotelBookingActionButton>

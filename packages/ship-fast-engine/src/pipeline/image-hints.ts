@@ -2366,12 +2366,15 @@ function hydrateGradientCardMedia(
       usage.set(url, (usage.get(url) || 0) + 1)
       const alt = escapeHtmlAttribute(label.slice(0, 80) || 'Destination')
       const relAttrs = /\bclass\s*=/.test(attrs)
-        ? attrs.replace(/\bclass\s*=\s*(["'])([^"']*)\1/, (_: unknown, q: string, cls: string) => {
-            const nextCls = cls.includes('relative')
-              ? cls
-              : `relative overflow-hidden ${cls}`
-            return `class=${q}${nextCls}${q}`
-          })
+        ? attrs.replace(
+            /\bclass\s*=\s*(["'])([^"']*)\1/,
+            (_: unknown, q: string, cls: string) => {
+              const nextCls = cls.includes('relative')
+                ? cls
+                : `relative overflow-hidden ${cls}`
+              return `class=${q}${nextCls}${q}`
+            },
+          )
         : `${attrs} class="relative overflow-hidden"`
       return `<${tag}${relAttrs}><img src="${url}" alt="${alt}" class="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" /><div class="absolute inset-0 bg-black/45"></div><div class="relative">${inner}</div></${tag}>`
     },

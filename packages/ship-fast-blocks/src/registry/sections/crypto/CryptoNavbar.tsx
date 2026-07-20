@@ -14,19 +14,20 @@ import {
 } from '#/section-kit/index.ts'
 
 /**
- * CryptoNavbar — glassy sticky top navigation bar for a crypto / DeFi
- * infrastructure landing page. A backdrop-blurred, border-bottomed header
- * pinned to the top with a high-contrast brand bolt icon + protocol name on
- * the left, a horizontal set of nav links in the center, and a dual button
- * group on the right (secondary text link + primary filled CTA). Every link
- * and CTA routes through route hrefs for page-switching. Use as the sticky
- * site header for crypto protocols, layer-1/layer-2 chains, DeFi platforms,
- * bridges, staking networks, or Web3 infrastructure sites.
+ * CryptoNavbar — Web3-terminal sticky top navigation bar for a crypto / DeFi
+ * infrastructure landing page. A backdrop-blurred, hairline-bottomed header
+ * with a square inverted bolt mark + protocol wordmark on the left, mono
+ * uppercase nav links in the center, and a dual action group on the right
+ * (mono secondary documentation link hidden below xl + square-cornered
+ * inverted CTA with press feedback). Every link and CTA routes through route
+ * hrefs for page-switching. Use as the sticky site header for crypto
+ * protocols, layer-1/layer-2 chains, DeFi platforms, bridges, staking
+ * networks, or Web3 infrastructure sites.
  */
 export const CryptoNavbar = defineCapsule({
   name: 'CryptoNavbar',
   description:
-    'Glassy sticky top navigation bar for a crypto / DeFi infrastructure landing page: backdrop-blurred, border-bottomed header with a high-contrast brand bolt icon + protocol name on the left, horizontal nav links in the center, and a dual button group on the right (secondary text link + primary filled CTA). All links route through route hrefs. Use as the sticky site header for crypto protocols, layer-1/layer-2 chains, DeFi platforms, bridges, staking networks, or Web3 infrastructure sites.',
+    'Web3-terminal sticky top navigation bar for a crypto / DeFi infrastructure landing page: backdrop-blurred, hairline-bottomed header with a square inverted bolt mark + protocol wordmark on the left, mono uppercase nav links in the center, and a dual action group on the right (mono secondary documentation link + square-cornered inverted CTA with press feedback). All links route through route hrefs. Use as the sticky site header for crypto protocols, layer-1/layer-2 chains, DeFi platforms, bridges, staking networks, or Web3 infrastructure sites.',
   props: z.object({
     /** Brand / protocol name shown beside the logo icon. */
     brand: z.string().optional(),
@@ -76,24 +77,32 @@ export const CryptoNavbar = defineCapsule({
       <SiteNav
         position="sticky"
         height="compact"
-        className={cn('bg-background/80 backdrop-blur-md', props.className)}
+        className={cn(
+          'border-b border-border bg-background/80 backdrop-blur-md',
+          props.className,
+        )}
       >
-        <NavbarBrand href={homeTarget} className="gap-2">
-          <BrandLogo brand={brand}>
+        <NavbarBrand href={homeTarget}>
+          <BrandLogo brand={brand} className="flex items-center gap-2">
             <LogoImage
+              className="size-7"
               fallback={
-                <span className="grid size-8 place-items-center rounded-lg bg-foreground text-background">
-                  <BoltIcon className="size-5" />
+                <span className="grid size-7 place-items-center bg-foreground text-background">
+                  <BoltIcon className="size-4" />
                 </span>
               }
             />
-            <LogoLabel className="text-xl font-semibold tracking-tight" />
+            <LogoLabel className="text-lg font-semibold tracking-tight" />
           </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label} className="font-normal">
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="font-mono text-[12px] font-medium uppercase tracking-[0.15em]"
+            >
               {label}
             </NavbarNavLink>
           ))}
@@ -102,11 +111,15 @@ export const CryptoNavbar = defineCapsule({
         <NavbarActions>
           <NavbarRouteLink
             href={docTarget}
-            className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
+            className="hidden font-mono text-[12px] uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:text-foreground xl:block"
           >
             {docLabel}
           </NavbarRouteLink>
-          <NavbarCta variant="dark" href={ctaTarget} className="px-4 py-2">
+          <NavbarCta
+            variant="dark"
+            href={ctaTarget}
+            className="rounded-none px-4 py-2 font-mono text-[12px] font-semibold uppercase tracking-[0.15em] transition-transform duration-150 active:translate-y-px"
+          >
             {ctaLabel}
           </NavbarCta>
         </NavbarActions>

@@ -14,20 +14,23 @@ import {
 } from '#/section-kit/index.ts'
 
 /**
- * AboutNavbar — glassy sticky top navigation bar for a modern company / ABOUT
- * page. A backdrop-blurred, border-bottomed header pinned to the top of the
- * viewport: an indigo-to-violet gradient zap-glyph logo tile beside the brand
- * name on the left, a horizontal set of nav links in the center (desktop), and
- * a dark "Work with us" pill CTA with a trailing arrow on the right. Every nav
- * item and the CTA route through route hrefs so labels can drive page-switching.
- * Use as the sticky site header for startups, product studios, agencies, SaaS
- * companies, or any premium brand's about/company page. Renders fully with no
- * props via baked-in "Kinetic Labs" defaults.
+ * AboutNavbar — studio-editorial sticky top navigation bar for a modern
+ * company / ABOUT page. A backdrop-blurred, hairline-bordered header pinned to
+ * the top of the viewport: a sharp square primary-block zap-glyph brand mark
+ * beside an uppercase wide-tracked brand name on the left; centered desktop
+ * nav links set in tiny uppercase mono type, each prefixed with a numbered
+ * index ("01", "02"…) and underlined by a primary hairline that slides in on
+ * hover; and on the right a square hard-offset-shadow "Work with us" block
+ * button (mono uppercase, presses down on click) with a trailing arrow. Every
+ * nav item and the CTA route through route hrefs so labels can drive
+ * page-switching. Use as the sticky site header for product studios, agencies,
+ * startups, or any design-led brand's about/company page. Renders fully with
+ * no props via baked-in "Kinetic Labs" defaults.
  */
 export const AboutNavbar = defineCapsule({
   name: 'AboutNavbar',
   description:
-    "Glassy sticky top navigation bar for a modern company / ABOUT page: a backdrop-blurred, border-bottomed header pinned to the top with an indigo-to-violet gradient zap-glyph logo tile + brand name on the left, a horizontal set of nav links in the center (desktop), and a dark 'Work with us' pill CTA with a trailing arrow on the right. Every nav item and the CTA route through route hrefs for page-switching. Use as the sticky site header for startups, product studios, agencies, SaaS companies, or any premium brand's about/company page.",
+    "Studio-editorial sticky top navigation bar for a modern company / ABOUT page: a backdrop-blurred, hairline-bordered header pinned to the top with a sharp square primary-block zap-glyph brand mark + uppercase wide-tracked brand name on the left, centered desktop nav links in tiny uppercase mono type with numbered index prefixes and a primary slide-in hover underline, and a square hard-offset-shadow 'Work with us' block CTA (mono uppercase, mechanical press feedback) with a trailing arrow on the right. Every nav item and the CTA route through route hrefs for page-switching. Use as the sticky site header for product studios, agencies, startups, or any design-led brand's about/company page.",
   props: z.object({
     /** Brand / company name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -47,18 +50,18 @@ export const AboutNavbar = defineCapsule({
     const cta = props.cta ?? 'Work with us'
     const ctaTarget = props.ctaTarget ?? 'Get in touch'
 
-    // Shared brand mark — indigo→violet gradient tile + zap glyph (decorative brand asset).
+    // Shared brand mark — sharp primary block + zap glyph (decorative brand asset).
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          'grid size-7 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent text-primary-foreground',
+          'grid size-7 place-items-center rounded-none bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
       >
         <svg
-          width="16"
-          height="16"
+          width="15"
+          height="15"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -73,8 +76,8 @@ export const AboutNavbar = defineCapsule({
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
-        width="16"
-        height="16"
+        width="14"
+        height="14"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -94,14 +97,14 @@ export const AboutNavbar = defineCapsule({
         position="sticky"
         height="compact"
         className={cn(
-          'border-border/60 bg-background/75 supports-[backdrop-filter]:bg-background/60',
+          'border-border bg-background/80 supports-[backdrop-filter]:bg-background/65',
           props.className,
         )}
         containerClassName="max-w-6xl px-6 sm:px-8 lg:px-12"
       >
         <NavbarBrand
           href={nav[0]}
-          className="gap-2.5 text-[1.05rem] font-extrabold tracking-tight text-foreground"
+          className="gap-2.5 text-sm font-extrabold uppercase tracking-[0.08em] text-foreground"
         >
           <BrandLogo brand={brand}>
             <LogoImage fallback={<LogoMark />} />
@@ -109,13 +112,16 @@ export const AboutNavbar = defineCapsule({
           </BrandLogo>
         </NavbarBrand>
 
-        <NavbarNav className="gap-7 text-[0.92rem]">
-          {nav.map((label) => (
+        <NavbarNav className="gap-7">
+          {nav.map((label, i) => (
             <NavbarNavLink
               key={label}
               href={label}
-              className="font-normal hover:text-primary"
+              className="group relative rounded-none px-0.5 py-1 font-mono text-[11px] font-normal uppercase tracking-[0.18em] text-muted-foreground after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-left after:scale-x-0 after:bg-primary after:transition-transform after:duration-200 hover:bg-transparent hover:text-foreground hover:after:scale-x-100"
             >
+              <span aria-hidden="true" className="mr-1.5 text-primary/70">
+                {String(i + 1).padStart(2, '0')}
+              </span>
               {label}
             </NavbarNavLink>
           ))}
@@ -125,7 +131,7 @@ export const AboutNavbar = defineCapsule({
           <NavbarCta
             variant="dark"
             href={ctaTarget}
-            className="gap-2 px-4 py-2.5 font-semibold shadow-sm hover:-translate-y-px hover:shadow-md"
+            className="gap-2 rounded-none px-4 py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.15em] shadow-[4px_4px_0_0] shadow-primary/40 transition-all hover:-translate-y-px hover:bg-foreground active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
           >
             <span className="hidden sm:inline">{cta}</span>
             <ArrowRight />

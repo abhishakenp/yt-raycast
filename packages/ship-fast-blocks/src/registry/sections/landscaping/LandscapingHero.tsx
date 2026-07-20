@@ -13,24 +13,29 @@ import {
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { StarRating } from '#/section-kit/StarRating.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * LandscapingHero — calm, premium two-column hero for a landscaping / outdoor-
- * design company on a warm stone band. Left: a large headline, supporting
- * paragraph, dual pill CTAs (filled primary + outlined secondary), and a
- * star-rated social-proof row with overlapping customer avatars. Right: a tall
- * rounded garden photo with a floating "projects completed" stat card overlapping
- * its lower-left corner. Sage-green accent, amber stars, generous whitespace and
- * soft shadows. CTAs route through section-kit route links; all imagery uses the alt-driven
- * Image component. Use as the opening hero for landscapers, lawn-care and garden
- * design services. Renders fully with no props via baked-in "Earth & Edge"
- * defaults.
+ * LandscapingHero — organic-editorial opening hero for a landscaping / outdoor-
+ * design company on a layered muted wash. An asymmetric 5:7 split: on the left a
+ * hairline mono index rail ("01 / OUTDOOR DESIGN"), a large tight-tracked
+ * headline, a supporting paragraph, a pair of square editorial CTAs (filled sage
+ * primary + outlined secondary, both with mechanical press feedback), and a
+ * star-rated social-proof row with overlapping customer avatars; on the right a
+ * tall garden photo in a sharp offset double frame (rounded-none) with a
+ * botanical mono plate caption and a hard-shadowed "projects completed" stat
+ * card overlapping its lower-left corner, all over a giant faint "01" watermark
+ * numeral. Sage-green accent kept under ~5%, amber stars, tokens-only so it
+ * adapts to light/dark; CTAs route through section-kit route links and imagery
+ * uses the alt-driven Image component. Use as the opening hero for landscapers,
+ * lawn-care and yard-maintenance services, garden designers or hardscaping
+ * contractors. Renders fully with no props via baked-in "Earth & Edge" defaults.
  */
 export const LandscapingHero = defineCapsule({
   name: 'LandscapingHero',
   description:
-    'Calm, premium two-column hero for a landscaping / outdoor-design company on a warm stone band: left column with a large headline, supporting paragraph, dual pill CTAs (filled primary like Request Free Consultation + outlined secondary like View Our Work), and a star-rated social-proof row with overlapping customer avatars; right column with a tall rounded garden photo and a floating projects-completed stat card overlapping its lower-left corner. Sage-green accent, amber stars, generous whitespace and soft shadows; CTAs route through section-kit route links and imagery uses the alt-driven Image component. Use as the opening hero for landscapers, lawn-care and yard-maintenance services, garden designers or hardscaping contractors.',
+    'Organic-editorial opening hero for a landscaping / outdoor-design company on a layered muted wash: an asymmetric 5:7 split with a hairline mono index rail, a large tight-tracked headline, a supporting paragraph, a pair of square editorial CTAs (filled sage primary like Request Free Consultation + outlined secondary like View Our Work, both with mechanical press feedback), and a star-rated social-proof row with overlapping customer avatars on the left; on the right a tall garden photo in a sharp offset double frame (rounded-none) with a botanical mono plate caption and a hard-shadowed projects-completed stat card overlapping its lower-left corner, over a giant faint watermark numeral. Sage-green accent kept restrained, amber stars, tokens-only for light/dark; CTAs route through section-kit route links and imagery uses the alt-driven Image component. Use as the opening hero for landscapers, lawn-care and yard-maintenance services, garden designers or hardscaping contractors.',
   props: z.object({
     heading: z.string().optional(),
     subheading: z.string().optional(),
@@ -67,17 +72,39 @@ export const LandscapingHero = defineCapsule({
         ]
 
     return (
-      <HeroSection className={cn('relative bg-muted', props.className)}>
-        <Container size="xl" className="py-16 lg:py-24">
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-            <div className="space-y-8">
-              <HeroHeading className="font-semibold">{heading}</HeroHeading>
+      <HeroSection
+        className={cn('relative overflow-hidden bg-muted/40', props.className)}
+      >
+        {/* Layered organic washes + giant faint index watermark. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+        >
+          <div className="absolute inset-y-0 right-0 w-1/2 bg-muted/40" />
+          <Watermark className="-left-6 bottom-[-3rem] text-[11rem] leading-none sm:text-[16rem] lg:text-[22rem]">
+            01
+          </Watermark>
+        </div>
+
+        <Container size="xl" className="relative py-16 lg:py-24">
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="space-y-8 lg:col-span-5">
+              <div className="flex items-center gap-3">
+                <span aria-hidden="true" className="size-1.5 bg-primary" />
+                <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  01 / Outdoor Design
+                </span>
+                <span aria-hidden="true" className="h-px flex-1 bg-border" />
+              </div>
+              <HeroHeading className="font-semibold leading-[1.05] tracking-tight">
+                {heading}
+              </HeroHeading>
               <HeroSubheading className="max-w-xl">{subheading}</HeroSubheading>
               <HeroActions className="gap-4">
                 <HeroCta
                   asChild
                   variant="primary"
-                  className="rounded-full px-8 py-4 text-base shadow-sm"
+                  className="rounded-none px-7 py-3.5 text-base font-medium shadow-[5px_5px_0_0] shadow-primary/25 transition-[transform,box-shadow,background-color] duration-150 hover:bg-primary/90 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none motion-reduce:transform-none"
                 >
                   <NavbarRouteLink href={primaryCta}>
                     {primaryCta}
@@ -86,14 +113,14 @@ export const LandscapingHero = defineCapsule({
                 <HeroCta
                   asChild
                   variant="outline"
-                  className="rounded-full bg-background px-8 py-4 text-base text-primary hover:bg-accent"
+                  className="rounded-none border-foreground bg-background px-7 py-3.5 text-base font-medium text-foreground transition-[transform,background-color] duration-150 hover:bg-muted active:translate-y-px motion-reduce:transform-none"
                 >
                   <NavbarRouteLink href={secondaryCta}>
                     {secondaryCta}
                   </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
-              <div className="flex items-center gap-6 pt-4">
+              <div className="flex items-center gap-6 border-t border-border pt-6">
                 <div className="flex -space-x-2">
                   {avatars.map((alt) => (
                     <Image
@@ -113,18 +140,34 @@ export const LandscapingHero = defineCapsule({
                 </div>
               </div>
             </div>
-            <div className="relative">
-              <HeroMediaPanel
-                alt={imageAlt}
-                w={800}
-                h={600}
-                className="h-[400px] w-full shadow-xl lg:h-[500px] rounded-xl"
+
+            <div className="relative lg:col-span-7">
+              {/* Offset frame plate behind the photo (sharp, tokenized). */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 translate-x-4 translate-y-4 border border-foreground/20 bg-primary/[0.04]"
               />
-              <div className="absolute -bottom-6 -left-6 hidden rounded-xl bg-card p-6 shadow-lg sm:block">
-                <p className="text-3xl font-semibold text-primary">
+              <div className="relative">
+                <HeroMediaPanel
+                  alt={imageAlt}
+                  w={900}
+                  h={640}
+                  className="h-[380px] w-full rounded-none border border-foreground/10 lg:h-[520px]"
+                />
+                <span
+                  aria-hidden="true"
+                  className="absolute left-0 top-0 bg-background/85 px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground backdrop-blur-sm"
+                >
+                  Fig. 01 / Selected work
+                </span>
+              </div>
+              <div className="absolute -bottom-5 -left-4 hidden border border-foreground/15 bg-card px-6 py-5 shadow-[6px_6px_0_0] shadow-foreground/10 sm:block">
+                <p className="text-4xl font-semibold tabular-nums tracking-tight text-primary">
                   {statValue}
                 </p>
-                <p className="text-sm text-muted-foreground">{statLabel}</p>
+                <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                  {statLabel}
+                </p>
               </div>
             </div>
           </div>

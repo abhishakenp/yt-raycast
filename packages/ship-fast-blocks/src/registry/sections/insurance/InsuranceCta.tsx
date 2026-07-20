@@ -1,28 +1,34 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
+import { cn } from '#/lib/utils.ts'
 
+import { Watermark } from '#/section-kit/Decor.tsx'
 import {
   CtaBand,
   CtaBandInner,
   CtaBandTitle,
   CtaBandSubtitle,
+  CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * InsuranceCta — full-bleed closing call-to-action panel for an insurance page.
- * A rounded brand-colored panel with a subtle dotted overlay, centered heading
- * and lede, dual CTAs (a solid get-a-quote button and an outline phone button),
- * and a small footnote of trust points. Both CTAs route through section-kit route links.
- * Use as the final conversion push near the footer for insurance carriers,
- * insurtech, brokers, or financial-protection products. Renders fully with no
- * props via baked-in defaults.
+ * InsuranceCta — Swiss-trust closing call-to-action band for an insurance page.
+ * A full-width muted band framed by hairline top/bottom rules with a giant ghost
+ * shield watermark bleeding behind a left-aligned lockup: a tracking-tight
+ * heading, a supporting lede, a row of routable actions — one square (binary
+ * radius) get-a-quote primary CTA with a hard offset shadow and mechanical press
+ * feedback (the single accent moment) plus a square outline phone CTA — and a
+ * mono trust footnote. Both CTAs route through section-kit route links. Use as
+ * the final conversion push near the footer for insurance carriers, insurtech,
+ * brokers, or financial-protection products. Renders fully with no props via
+ * baked-in defaults.
  */
 export const InsuranceCta = defineCapsule({
   name: 'InsuranceCta',
   description:
-    'Full-bleed closing call-to-action panel for an insurance page: a rounded brand-colored panel with a subtle dotted overlay, centered heading and lede, dual CTAs (a solid get-a-quote button and an outline call/phone button), and a small footnote of trust points. Both CTAs route through section-kit route links. Use as the final conversion push near the footer for insurance carriers, insurtech startups, brokers, or financial-protection products.',
+    'Swiss-trust closing call-to-action band for an insurance page built on the shared CtaBand composite: a full-width muted band framed by hairline rules with a giant ghost shield watermark behind a left-aligned lockup — a tracking-tight heading, a lede, routable actions (one square get-a-quote primary CTA with a hard offset shadow and press feedback as the single accent, plus a square outline phone CTA), and a mono trust footnote. Both CTAs route through section-kit route links. Use as the final conversion push near the footer for insurance carriers, insurtech startups, brokers, or financial-protection products.',
   props: z.object({
     /** Panel heading. */
     heading: z.string().optional(),
@@ -86,51 +92,64 @@ export const InsuranceCta = defineCapsule({
 
     return (
       <CtaBand
-        tone="primary"
-        className={`bg-background text-foreground ${props.className ?? ''}`}
+        tone="muted"
+        className={cn(
+          'relative overflow-hidden border-y border-border',
+          props.className,
+        )}
       >
-        <CtaBandInner>
-          <CtaBandTitle>{heading}</CtaBandTitle>
-          <CtaBandSubtitle>{description}</CtaBandSubtitle>
-          <div className="relative overflow-hidden rounded-3xl bg-primary p-8 text-center lg:p-16">
-            <div
-              aria-hidden="true"
-              className="absolute inset-0 text-primary-foreground opacity-10"
-              style={{
-                backgroundImage:
-                  'radial-gradient(currentColor 1px, transparent 1px)',
-                backgroundSize: '16px 16px',
-              }}
-            />
-            <div className="relative z-10">
-              <div className="flex flex-col justify-center gap-4 sm:flex-row">
-                <CtaAction
-                  variant="primary"
-                  invert
-                  className="gap-2 rounded-xl px-8 py-4 text-base font-semibold text-primary shadow-lg hover:bg-muted"
-                  asChild
-                >
-                  <NavbarRouteLink href={primaryCta}>
-                    {primaryCta}
-                    <ArrowRight />
-                  </NavbarRouteLink>
-                </CtaAction>
-                <CtaAction
-                  variant="outline"
-                  className="gap-2 rounded-xl border-primary-foreground/30 bg-primary px-8 py-4 text-base font-semibold text-primary-foreground hover:bg-primary-foreground/10"
-                  asChild
-                >
-                  <NavbarRouteLink href={phone}>
-                    <Phone className="size-5" />
-                    {phoneCta}
-                  </NavbarRouteLink>
-                </CtaAction>
-              </div>
-              <p className="mt-6 text-sm text-primary-foreground/70">
-                {footnote}
-              </p>
-            </div>
-          </div>
+        <Watermark
+          aria-hidden="true"
+          className="-bottom-16 -right-8 hidden sm:block"
+        >
+          <svg
+            width="380"
+            height="380"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+        </Watermark>
+        <CtaBandInner
+          align="left"
+          className="relative max-w-6xl gap-5 sm:px-8 lg:px-8"
+        >
+          <CtaBandTitle className="max-w-2xl text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
+            {heading}
+          </CtaBandTitle>
+          <CtaBandSubtitle className="max-w-2xl text-muted-foreground opacity-100">
+            {description}
+          </CtaBandSubtitle>
+          <CtaBandActions align="left" className="mt-2 gap-4">
+            <CtaAction
+              variant="primary"
+              asChild
+              className="min-h-11 gap-2 rounded-none px-6 text-sm font-semibold shadow-[5px_5px_0_0] shadow-foreground transition-[transform,box-shadow,background-color] duration-150 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none motion-reduce:transform-none"
+            >
+              <NavbarRouteLink href={primaryCta}>
+                {primaryCta}
+                <ArrowRight />
+              </NavbarRouteLink>
+            </CtaAction>
+            <CtaAction
+              variant="outline"
+              asChild
+              className="min-h-11 gap-2 rounded-none border-foreground px-6 text-sm font-semibold shadow-[5px_5px_0_0] shadow-foreground/20 transition-[transform,box-shadow,background-color] duration-150 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none motion-reduce:transform-none"
+            >
+              <NavbarRouteLink href={phone}>
+                <Phone className="size-4 text-primary" />
+                {phoneCta}
+              </NavbarRouteLink>
+            </CtaAction>
+          </CtaBandActions>
+          <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+            {footnote}
+          </p>
         </CtaBandInner>
       </CtaBand>
     )

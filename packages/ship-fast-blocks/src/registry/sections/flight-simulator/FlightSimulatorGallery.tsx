@@ -5,26 +5,28 @@ import { z } from 'zod/v4'
 
 import {
   GalleryGrid,
-  GalleryGridItems,
   GalleryTile,
   GalleryTileImage,
   GalleryTileCaption,
 } from '#/section-kit/GalleryGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 
 /**
- * FlightSimulatorGallery — a screenshot showcase for a flight simulator landing
- * page. Thin configuration over the shared `GalleryGrid` composite: a centered
- * heading above a responsive grid of in-game captures, each driven by an
- * evocative alt prompt and a short caption naming the aircraft, airport, and
- * lighting. Six baked screenshots span airliners, bush flying, and night ops.
- * Use to flaunt the visual fidelity of a flight sim, airliner / combat sim, or
- * aviation title. Renders fully with no props via baked defaults.
+ * FlightSimulatorGallery — an instrument-framed screenshot showcase for a flight
+ * simulator landing page. An asymmetric mono HUD header (heading left, capture
+ * count right) sits above a sharp-cornered bento of in-game captures built from
+ * the shared `GalleryTile` slots — a large lead plate plus mixed wide and square
+ * tiles, each driven by an evocative alt prompt and a mono `CAM NN` capture strip
+ * that carries the original caption. Six baked screenshots span airliners, bush
+ * flying, and night ops. Use to flaunt the visual fidelity of a flight sim,
+ * airliner / combat sim, or aviation title. Renders fully with no props via
+ * baked defaults.
  */
 export const FlightSimulatorGallery = defineCapsule({
   name: 'FlightSimulatorGallery',
   description:
-    'Screenshot showcase for a flight-simulator landing page built on the shared GalleryGrid composite: a centered heading above a responsive grid of in-game captures, each driven by an evocative alt prompt and a short caption naming the aircraft, airport, and lighting. Six baked screenshots span airliners, bush flying, and night ops. Use to flaunt the visual fidelity of a flight sim, airliner / combat sim, or aviation title.',
+    'Instrument-framed screenshot showcase for a flight-simulator landing page built on the shared GalleryTile slots: an asymmetric mono HUD header above a sharp-cornered bento of in-game captures — a large lead plate plus mixed wide and square tiles, each driven by an evocative alt prompt and a mono CAM NN capture strip that carries the original caption. Six baked screenshots span airliners, bush flying, and night ops. Use to flaunt the visual fidelity of a flight sim, airliner / combat sim, or aviation title.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -67,18 +69,38 @@ export const FlightSimulatorGallery = defineCapsule({
           },
         ]
 
+    const spans = [
+      'lg:col-span-2 lg:row-span-2',
+      'lg:col-span-2',
+      'lg:col-span-1',
+      'lg:col-span-1',
+      'lg:col-span-2',
+      'lg:col-span-2',
+    ]
+
     return (
       <section
         className={cn(
-          'bg-background pt-28 pb-20 lg:pt-32 lg:pb-28',
+          'bg-background pb-20 pt-24 lg:pb-28 lg:pt-28',
           props.className,
         )}
       >
         <Container>
-          <GalleryGrid>
-            <SectionHeading title={heading} subtitle={props.subheading} />
-            <GalleryGridItems columns={3}>
-              {images.map((img) => {
+          <GalleryGrid className="gap-8">
+            <div className="flex flex-col gap-6 border-b border-border pb-6 md:flex-row md:items-end md:justify-between">
+              <SectionHeading
+                align="left"
+                title={heading}
+                subtitle={props.subheading}
+                titleClassName="text-3xl font-extrabold tracking-tight sm:text-4xl"
+                className="gap-3"
+              />
+              <MonoTag tone="faint" className="shrink-0 tabular-nums">
+                [ {String(images.length).padStart(2, '0')} captures ] rec
+              </MonoTag>
+            </div>
+            <div className="grid auto-rows-[10rem] grid-cols-2 gap-3 sm:auto-rows-[12rem] lg:grid-cols-4">
+              {images.map((img, i) => {
                 const __iv__ = img as {
                   alt: string
                   caption?: string
@@ -86,15 +108,32 @@ export const FlightSimulatorGallery = defineCapsule({
                   location?: string
                 }
                 return (
-                  <GalleryTile key={__iv__.alt}>
-                    <GalleryTileImage alt={__iv__.alt} />
+                  <GalleryTile
+                    key={__iv__.alt}
+                    className={cn(
+                      'aspect-auto h-full rounded-none border-border',
+                      spans[i % spans.length],
+                    )}
+                  >
+                    <GalleryTileImage
+                      alt={__iv__.alt}
+                      className="grayscale-[0.2] transition-[filter,transform] duration-300 group-hover:grayscale-0"
+                    />
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute left-2 top-2 z-10 bg-foreground/70 px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.15em] text-background backdrop-blur-sm"
+                    >
+                      CAM {String(i + 1).padStart(2, '0')}
+                    </span>
                     {__iv__.caption && (
-                      <GalleryTileCaption>{__iv__.caption}</GalleryTileCaption>
+                      <GalleryTileCaption className="bg-background/85 px-3 py-2 font-mono text-[11px] uppercase tracking-[0.1em] text-foreground">
+                        {__iv__.caption}
+                      </GalleryTileCaption>
                     )}
                   </GalleryTile>
                 )
               })}
-            </GalleryGridItems>
+            </div>
           </GalleryGrid>
         </Container>
       </section>

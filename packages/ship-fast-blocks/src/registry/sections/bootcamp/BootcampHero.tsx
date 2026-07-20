@@ -12,23 +12,27 @@ import {
   HeroStatBadgeSubtitle,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { DotGrid, Watermark } from '#/section-kit/Decor.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * BootcampHero — split-layout hero section for a coding bootcamp / career-school
- * landing page. A two-column band on a muted canvas with a soft gradient wash:
- * on the left, a pulsing live-cohort pill badge, a bold multi-line headline with
- * one phrase in the primary accent color, a supporting paragraph, dual CTAs
- * (filled primary + outlined secondary), and an inline trust-chip row beneath;
- * on the right, a glowing cohort photo with a floating stat card showing
- * graduate headshots and a placement count. CTAs route through section-kit route links.
- * Use as the opening hero for coding bootcamps, software-engineering academies,
- * dev courses, or career-switch programs.
+ * BootcampHero — "Terminal Classroom" landing hero for a coding bootcamp /
+ * career-school. An asymmetric 7:5 split over a dot-grid background with a
+ * giant ghost `</>` watermark: the left column opens with a square mono
+ * cohort chip (pulsing live dot), a decorative `$ enroll` prompt line, a
+ * giant fluid display headline whose second line is a highlight-marker
+ * phrase, a supporting paragraph, dual route-link CTAs (hard-offset-shadow
+ * primary block + bracketed mono ghost), and a mono `[x]` checklist trust
+ * row; the right column frames the cohort photo as a terminal window (three
+ * window dots, mono title bar, hard offset shadow) with a floating
+ * square stat card of graduate headshots and a mono placement count. Use as
+ * the opening hero for coding bootcamps, software-engineering academies, dev
+ * courses, or career-switch programs.
  */
 export const BootcampHero = defineCapsule({
   name: 'BootcampHero',
   description:
-    'Split-layout hero section for a coding bootcamp / career-school landing page: two-column band on a muted canvas with a soft gradient wash. Left side has a pulsing live-cohort pill badge, a bold multi-line headline with one phrase in primary accent, a supporting paragraph, dual CTAs (filled primary + outlined secondary), and an inline trust-chip row. Right side has a glowing cohort photo with a floating stat card showing graduate headshots and a placement count. CTAs route through section-kit route links. Use as the opening hero for coding bootcamps, software-engineering academies, dev courses, or career-switch programs.',
+    'Terminal-styled asymmetric 7:5 split hero for a coding bootcamp / career-school landing page: square mono cohort chip with pulsing live dot, decorative "$ enroll" prompt line, giant fluid display headline with a highlight-marker accent phrase, supporting paragraph, dual route-link CTAs (hard-offset-shadow primary block + bracketed mono ghost), and a mono "[x]" checklist trust row on the left; the cohort photo re-framed as a terminal window with window dots, mono title bar, hard offset shadow, and a floating square stat card of graduate headshots with a mono placement count on the right — all over a dot-grid background with a giant ghost "</>" watermark. CTAs route through section-kit route links. Use as the opening hero for coding bootcamps, software-engineering academies, dev courses, or career-switch programs.',
   props: z.object({
     /** Availability / cohort pill text. */
     badge: z.string().optional(),
@@ -70,106 +74,135 @@ export const BootcampHero = defineCapsule({
     const heroStatValue = props.statValue ?? '2,400+'
     const heroStatLabel = props.statLabel ?? 'graduates placed'
 
-    const Check = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        fill="currentColor"
-        viewBox="0 0 20 20"
-        aria-hidden="true"
-      >
-        <path
-          fillRule="evenodd"
-          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-          clipRule="evenodd"
-        />
-      </svg>
-    )
-
     return (
       <HeroSection
         variant="split"
-        className={cn('relative overflow-hidden bg-muted/40', props.className)}
+        className={cn(
+          'relative overflow-hidden bg-background',
+          props.className,
+        )}
       >
-        <div
+        <DotGrid tone="border" className="inset-0 opacity-40" />
+        <Watermark
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent"
-        />
-        <Container size="xl" className="relative py-20 lg:py-32">
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-            <div className="space-y-8">
-              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5">
-                <span className="size-2 animate-pulse rounded-full bg-primary" />
-                <span className="text-xs font-medium text-muted-foreground">
+          className="-right-6 top-8 font-mono text-[8rem] sm:-right-10 sm:text-[15rem]"
+        >
+          {'</>'}
+        </Watermark>
+        <Container size="xl" className="relative py-16 lg:py-24">
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
+            <div className="lg:col-span-7">
+              <div className="inline-flex items-center gap-2 rounded-none border border-border bg-background px-3 py-1.5">
+                <span
+                  aria-hidden="true"
+                  className="size-2 animate-pulse rounded-full bg-primary"
+                />
+                <span className="font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
                   {heroBadge}
                 </span>
               </div>
-              <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
+              <p
+                aria-hidden="true"
+                className="mt-6 font-mono text-sm text-muted-foreground"
+              >
+                <span className="text-primary">$</span> enroll --track
+                full-stack
+              </p>
+              <h1 className="mt-4 text-[clamp(2.5rem,6.5vw,5rem)] font-bold leading-[0.95] tracking-tighter text-foreground">
                 {heroHeadingTop}
                 <br />
-                <span className="text-primary">{heroHighlight}</span>
+                <span className="-mx-1 box-decoration-clone bg-primary/15 px-2">
+                  {heroHighlight}
+                </span>
               </h1>
-              <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
+              <p className="mt-6 max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg">
                 {heroSub}
               </p>
-              <div className="flex flex-col gap-4 sm:flex-row">
+              <div className="mt-8 grid grid-cols-1 gap-3 sm:flex sm:flex-row sm:items-center sm:gap-4">
                 <NavbarRouteLink
-                  className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3.5 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  className="inline-flex items-center justify-center rounded-none bg-primary px-4 py-4 font-mono text-sm font-semibold uppercase tracking-[0.12em] text-primary-foreground shadow-[6px_6px_0_0] shadow-primary/25 transition-[background-color,box-shadow,transform] duration-150 hover:bg-primary/90 active:translate-y-px active:shadow-none sm:px-7"
                   href={heroPrimary}
                 >
                   {heroPrimary}
                 </NavbarRouteLink>
                 <NavbarRouteLink
-                  className="inline-flex items-center justify-center rounded-lg border border-border bg-background px-6 py-3.5 font-medium text-foreground transition-colors hover:border-foreground/30"
+                  className="inline-flex items-center justify-center gap-2 rounded-none border border-border bg-background px-4 py-4 font-mono text-sm font-medium uppercase tracking-[0.12em] text-foreground transition-colors duration-150 hover:bg-foreground hover:text-background active:translate-y-px sm:px-7"
                   href={heroSecondary}
                 >
+                  <span aria-hidden="true">[</span>
                   {heroSecondary}
+                  <span aria-hidden="true">]</span>
                 </NavbarRouteLink>
               </div>
-              <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+              <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2">
                 {heroTrust.map((t) => (
                   <div key={t} className="flex items-center gap-2">
-                    <Check className="size-4 text-primary" />
-                    <span>{t}</span>
+                    <span
+                      aria-hidden="true"
+                      className="font-mono text-xs text-primary"
+                    >
+                      [x]
+                    </span>
+                    <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                      {t}
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="relative">
-              <div
-                aria-hidden="true"
-                className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-primary/20 to-accent/30 blur-2xl"
-              />
-              <Image
-                alt={heroImageAlt}
-                w={800}
-                h={600}
-                className="relative aspect-[4/3] w-full rounded-2xl border border-border object-cover shadow-lg"
-              />
-              <HeroStatBadge className="absolute -bottom-6 -left-6 flex items-center gap-3">
-                <HeroStatBadgeIcon className="flex -space-x-2 rounded-none bg-transparent">
-                  {[
-                    'professional headshot of a female graduate',
-                    'professional headshot of a male graduate',
-                    'professional headshot of a smiling graduate',
-                  ].map((a) => (
-                    <Image
-                      key={a}
-                      alt={a}
-                      w={80}
-                      h={80}
-                      className="size-8 rounded-full border-2 border-card object-cover"
+            <div className="lg:col-span-5">
+              <div className="relative pb-8">
+                <div className="overflow-hidden rounded-none border border-border bg-card shadow-[8px_8px_0_0] shadow-foreground/10">
+                  <div className="flex items-center gap-2 border-b border-border bg-muted px-4 py-2.5">
+                    <span
+                      aria-hidden="true"
+                      className="size-2.5 rounded-full bg-muted-foreground/40"
                     />
-                  ))}
-                </HeroStatBadgeIcon>
-                <HeroStatBadgeContent className="text-sm">
-                  <HeroStatBadgeTitle className="font-semibold">
-                    {heroStatValue}
-                  </HeroStatBadgeTitle>
-                  <HeroStatBadgeSubtitle className="text-muted-foreground">
-                    {heroStatLabel}
-                  </HeroStatBadgeSubtitle>
-                </HeroStatBadgeContent>
-              </HeroStatBadge>
+                    <span
+                      aria-hidden="true"
+                      className="size-2.5 rounded-full bg-muted-foreground/25"
+                    />
+                    <span
+                      aria-hidden="true"
+                      className="size-2.5 rounded-full bg-primary/60"
+                    />
+                    <span className="ml-2 truncate font-mono text-[11px] text-muted-foreground">
+                      cohort — live.session
+                    </span>
+                  </div>
+                  <Image
+                    alt={heroImageAlt}
+                    w={800}
+                    h={600}
+                    className="aspect-[4/3] w-full object-cover"
+                  />
+                </div>
+                <HeroStatBadge className="absolute -bottom-0 left-4 flex items-center gap-3 rounded-none border-border shadow-[6px_6px_0_0] shadow-foreground/10 sm:-left-6">
+                  <HeroStatBadgeIcon className="flex w-auto -space-x-2 rounded-none bg-transparent">
+                    {[
+                      'professional headshot of a female graduate',
+                      'professional headshot of a male graduate',
+                      'professional headshot of a smiling graduate',
+                    ].map((a) => (
+                      <Image
+                        key={a}
+                        alt={a}
+                        w={80}
+                        h={80}
+                        className="size-8 rounded-full border-2 border-card object-cover"
+                      />
+                    ))}
+                  </HeroStatBadgeIcon>
+                  <HeroStatBadgeContent className="text-sm">
+                    <HeroStatBadgeTitle className="font-mono font-semibold tabular-nums tracking-tight">
+                      {heroStatValue}
+                    </HeroStatBadgeTitle>
+                    <HeroStatBadgeSubtitle className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                      {heroStatLabel}
+                    </HeroStatBadgeSubtitle>
+                  </HeroStatBadgeContent>
+                </HeroStatBadge>
+              </div>
             </div>
           </div>
         </Container>

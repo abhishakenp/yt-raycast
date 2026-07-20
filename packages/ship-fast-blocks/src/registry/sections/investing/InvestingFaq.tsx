@@ -8,25 +8,27 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
 /**
- * InvestingFaq — accordion FAQ for an investing / fintech page. A narrow,
- * centered column with a heading + lead above a stack of native <details>
- * disclosure cards; each row shows a bold question with a chevron that rotates
- * when open, revealing a muted answer paragraph. Tokens only, no links, no JS.
- * Use to answer common questions about a brokerage or trading product —
- * commissions, security, markets, transfers, retirement accounts, AI features.
- * Renders fully with no props via six baked-in Q&As.
+ * InvestingFaq — Swiss-fintech asymmetric FAQ ledger for an investing /
+ * brokerage page. A 5/7 split: a sticky left column carries a mono micro-label
+ * eyebrow, a tracking-tight heading, a lede, and a mono meta rule; the right
+ * column is a hairline-divided stack of native <details> disclosure rows (binary
+ * radius, no cards) — each row a mono Q-index numeral beside a bold question with
+ * a plus icon that rotates when open, revealing a muted answer. Tokens only, no
+ * links, no JS. Use to answer common questions about a brokerage or trading
+ * product — commissions, security, markets, transfers, retirement accounts, AI
+ * features. Renders fully with no props via six baked-in Q&As.
  */
 export const InvestingFaq = defineCapsule({
   name: 'InvestingFaq',
   description:
-    'Accordion FAQ for an investing / fintech page: a narrow centered column with a heading + lead above a stack of native <details> disclosure cards, each showing a bold question with a chevron that rotates when open, revealing a muted answer paragraph. Tokens only, no links, no JS. Use to answer common questions about a brokerage or trading product (commissions, security, markets, transfers, retirement accounts, AI features).',
+    'Swiss-fintech asymmetric FAQ ledger for an investing / brokerage page: a 5/7 split with a sticky left column (mono micro-label eyebrow, tracking-tight heading, lede, mono meta rule) beside a right column that is a hairline-divided stack of native <details> disclosure rows (binary radius, no cards) — each a mono Q-index numeral beside a bold question with a plus icon that rotates when open, revealing a muted answer. Tokens only, no links, no JS. Use to answer common questions about a brokerage or trading product (commissions, security, markets, transfers, retirement accounts, AI features).',
   props: z.object({
     /** Brand / platform name woven into the lead paragraph. */
     brand: z.string().optional(),
@@ -81,28 +83,63 @@ export const InvestingFaq = defineCapsule({
         ]
 
     return (
-      <section id="faq" className={cn('bg-background py-24', props.className)}>
-        <Container size="sm">
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16  gap-0"
-            titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <FaqAccordion>
-            {items.map((item) => (
-              <FaqItem key={item.question} className="bg-muted/50">
-                <FaqQuestion className="p-6">
-                  <span className="font-semibold">{item.question}</span>
-                  <FaqQuestionIcon />
-                </FaqQuestion>
-                <FaqAnswer asChild className="px-6 pb-6">
-                  <div>{item.answer}</div>
-                </FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+      <section
+        id="faq"
+        className={cn('pt-24 pb-20 lg:pt-28 lg:pb-28', props.className)}
+      >
+        <Container>
+          <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
+            <div className="lg:col-span-5">
+              <div className="lg:sticky lg:top-28">
+                <MonoTag className="mb-4 block">
+                  FAQ
+                  <span aria-hidden="true" className="text-primary">
+                    {' '}
+                    / {String(items.length).padStart(2, '0')}
+                  </span>
+                </MonoTag>
+                <h2 className="text-3xl font-extrabold tracking-tight text-foreground text-balance sm:text-4xl">
+                  {heading}
+                </h2>
+                <p className="mt-4 text-lg text-muted-foreground text-pretty">
+                  {description}
+                </p>
+                <p
+                  aria-hidden="true"
+                  className="mt-8 border-t border-border pt-5 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+                >
+                  [ {String(items.length).padStart(2, '0')} answers ] · updated
+                  weekly
+                </p>
+              </div>
+            </div>
+            <div className="lg:col-span-7">
+              <FaqAccordion
+                variant="divided"
+                className="border-t border-border"
+              >
+                {items.map((item, i) => (
+                  <FaqItem key={item.question} variant="divided">
+                    <FaqQuestion className="items-start gap-4 py-5">
+                      <span
+                        aria-hidden="true"
+                        className="mt-0.5 font-mono text-[11px] font-semibold tabular-nums tracking-[0.2em] text-primary"
+                      >
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <span className="flex-1 text-base font-semibold tracking-tight text-foreground">
+                        {item.question}
+                      </span>
+                      <FaqQuestionIcon variant="plus" />
+                    </FaqQuestion>
+                    <FaqAnswer asChild className="pb-5 pl-9 pr-8">
+                      <div>{item.answer}</div>
+                    </FaqAnswer>
+                  </FaqItem>
+                ))}
+              </FaqAccordion>
+            </div>
+          </div>
         </Container>
       </section>
     )

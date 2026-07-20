@@ -2,31 +2,27 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import {
-  TestimonialGrid,
-  TestimonialCard,
-  TestimonialQuote,
-  TestimonialAuthor,
-  TestimonialName,
-  TestimonialMeta,
-} from '#/section-kit/TestimonialGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * CafeReviews — 3-up customer-review wall for a cozy cafe / coffee shop page.
- * A centered cap and serif heading above a responsive card grid. Each card
- * shows a 5-star rating row, a quoted testimonial, and an attribution row with
- * a round avatar, name, and role. Below the grid, a text link with an arrow
- * icon routes to a "more reviews" destination via section-kit route links. Use for
- * social-proof on cafes, bakeries, tea houses, or any local service business.
- * Renders fully with no props via baked-in defaults.
+ * CafeReviews — newsprint press-clipping review wall for a cozy cafe / coffee
+ * shop page. A mono dateline rail (cap stamp, hairline rule, clipping count)
+ * above the serif headline, over a giant serif ghost quotation-mark watermark.
+ * The reviews run as a 3-up grid of staggered hairline clipping cards (middle
+ * card nudged down on desktop, each slightly rotated in alternation): every
+ * card opens with a rotated mono five-star stamp chip, a serif italic quote,
+ * and a hairline-ruled attribution row with the name and a mono role line.
+ * Below, a mono underlined "more reviews" link with an arrow routes via
+ * section-kit route links. Use for social proof on cafes, bakeries, tea
+ * houses, or any local service business. Renders fully with no props via
+ * baked-in defaults.
  */
 export const CafeReviews = defineCapsule({
   name: 'CafeReviews',
   description:
-    "3-up customer-review wall for a cozy cafe page: centered cap and serif heading above a responsive card grid. Each card shows a 5-star rating row, a quoted testimonial, and an attribution row with a round avatar, name, and role. Below the grid, a text link with an arrow routes to a 'more reviews' destination via section-kit route links. Use for social-proof on cafes, bakeries, tea houses, or local service businesses.",
+    "Newsprint press-clipping review wall for a cozy cafe page: a mono dateline rail (cap stamp, hairline rule, clipping count) above a serif headline over a giant serif ghost quotation-mark watermark; reviews run as a 3-up grid of staggered, slightly rotated hairline clipping cards — each opening with a rotated mono five-star stamp chip, a serif italic quote, and a hairline-ruled attribution row with name and mono role. A mono underlined 'more reviews' arrow link routes via section-kit route links. Use for social proof on cafes, bakeries, tea houses, or local service businesses.",
   props: z.object({
     /** Eyebrow / cap text. */
     cap: z.string().optional(),
@@ -84,20 +80,31 @@ export const CafeReviews = defineCapsule({
         ]
 
     return (
-      <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
-        <Container size="xl" className="px-6">
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <SectionHeading
-              eyebrow={cap}
-              title={heading}
-              className="gap-0"
-              eyebrowClassName="mb-3 text-sm font-medium uppercase tracking-wider text-primary"
-              titleClassName="mb-6 font-serif text-3xl font-medium text-foreground sm:text-4xl lg:text-5xl"
-            />
+      <section
+        className={cn(
+          'relative overflow-hidden bg-background pt-24 pb-16 lg:pt-32 lg:pb-24',
+          props.className,
+        )}
+      >
+        <Watermark className="-top-16 left-[-2%] font-serif text-[14rem] text-foreground/[0.05] sm:text-[20rem] lg:text-[26rem]">
+          &ldquo;
+        </Watermark>
+
+        <Container size="xl" className="relative px-6">
+          <div className="flex items-center gap-4">
+            <MonoTag>{cap}</MonoTag>
+            <span aria-hidden="true" className="h-px flex-1 bg-border" />
+            <MonoTag tone="faint" className="hidden sm:inline">
+              Clippings 01–{String(items.length).padStart(2, '0')}
+            </MonoTag>
           </div>
 
-          <TestimonialGrid columns={3}>
-            {items.map((t) => {
+          <h2 className="mt-6 max-w-2xl font-serif text-4xl font-medium leading-[1.05] tracking-tight text-foreground sm:text-5xl">
+            {heading}
+          </h2>
+
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:mt-16 lg:grid-cols-3 lg:gap-8">
+            {items.map((t, i) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -108,29 +115,44 @@ export const CafeReviews = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
+                <figure
+                  key={__iv__.name}
+                  className={cn(
+                    'flex flex-col border border-foreground/20 bg-card p-6 sm:p-7',
+                    i % 2 === 1 ? 'rotate-[0.4deg]' : '-rotate-[0.4deg]',
+                    i === 1 && 'lg:translate-y-8',
+                  )}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="inline-flex w-fit -rotate-2 items-center border border-dashed border-primary/50 px-2.5 py-1 font-mono text-[10px] tracking-[0.25em] text-primary"
+                  >
+                    ★★★★★
+                  </span>
+                  <blockquote className="mt-5 flex-1 font-serif text-lg italic leading-relaxed text-foreground">
+                    &ldquo;{__iv__.quote}&rdquo;
+                  </blockquote>
+                  <figcaption className="mt-6 border-t border-border pt-4">
+                    <p className="font-medium text-foreground">{__iv__.name}</p>
                     {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
+                      <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                         {__iv__.role || __iv__.company || __iv__.meta}
-                      </TestimonialMeta>
+                      </p>
                     )}
-                  </TestimonialAuthor>
-                </TestimonialCard>
+                  </figcaption>
+                </figure>
               )
             })}
-          </TestimonialGrid>
+          </div>
 
-          <div className="mt-12 text-center">
+          <div className="mt-14 flex justify-center lg:mt-20">
             <NavbarRouteLink
-              className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              className="inline-flex items-center gap-2 border-b border-foreground/30 pb-1 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:border-primary hover:text-primary"
               href={moreTarget}
             >
               {moreLink}
               <svg
-                className="size-4"
+                className="size-3.5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"

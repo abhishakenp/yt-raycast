@@ -13,19 +13,22 @@ import {
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * KnowledgeBaseCategories — "browse by category" grid for a help center. A
- * centered heading + description above a responsive 1/2/4-up grid of bordered
- * card buttons, each with a rounded muted icon tile (rotating line glyphs),
- * a title, a short description and an article-count caption; cards lift and tint
- * their border on hover. Calm, light, organized documentation aesthetic. Every
- * category card routes through section-kit route links. Use to let visitors browse a
- * knowledge base / support portal by topic. Renders fully with no props via
- * baked-in defaults.
+ * KnowledgeBaseCategories — "Terminal-docs" browse-by-category ledger for a
+ * help center. A left-aligned SectionHeading sits under a mono meta rule
+ * (primary square, "sections" label, tabular category count) above a
+ * collapsed-border hairline grid built on the shared `CategoryGrid`: each cell
+ * carries a tabular mono index numeral and a small corner line glyph, a
+ * `#`-anchored bold title, a short description and a mono article-count
+ * caption; cells tint on hover instead of lifting. Calm, hairline-precise,
+ * organized documentation aesthetic; every category card routes through
+ * section-kit route links. Use to let visitors browse a knowledge base /
+ * support portal by topic. Renders fully with no props via baked-in defaults.
+ * Theme tokens only.
  */
 export const KnowledgeBaseCategories = defineCapsule({
   name: 'KnowledgeBaseCategories',
   description:
-    "'Browse by category' grid for a help center: a centered heading + description above a responsive 1/2/4-up grid of bordered card buttons, each with a rounded muted icon tile (rotating line glyphs), a title, a short description and an article-count caption; cards lift and tint their border on hover. Calm, light, organized documentation aesthetic; every category card routes through section-kit route links. Use to let visitors browse a knowledge base, support portal or docs site by topic.",
+    "Terminal-docs browse-by-category ledger for a help center: a left-aligned SectionHeading under a mono meta rule (primary square + 'sections' label + tabular category count) above a collapsed-border hairline grid built on the shared CategoryGrid — each cell carries a tabular mono index numeral and a small corner line glyph, a '#'-anchored bold title, a short description and a mono article-count caption; cells tint on hover. Calm, hairline-precise, organized documentation aesthetic; every category card routes through section-kit route links. Use to let visitors browse a knowledge base, support portal or docs site by topic. Theme tokens only.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -220,35 +223,68 @@ export const KnowledgeBaseCategories = defineCapsule({
         aria-labelledby="kb-categories-heading"
       >
         <Container>
+          {/* Mono meta rule: label left, tabular section count right. */}
+          <div className="mb-8 flex items-center justify-between gap-4 border-b border-border pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            <span className="flex items-center gap-3">
+              <span aria-hidden="true" className="size-1.5 bg-primary" />
+              Sections
+            </span>
+            <span
+              aria-hidden="true"
+              className="tabular-nums text-muted-foreground/60"
+            >
+              {String(items.length).padStart(2, '0')} /{' '}
+              {String(items.length).padStart(2, '0')}
+            </span>
+          </div>
+
           <SectionHeading
+            align="left"
             title={heading}
             subtitle={description}
-            className="mb-12 gap-0"
+            className="mb-10 max-w-2xl gap-3"
             titleId="kb-categories-heading"
-            titleClassName="mb-3 text-2xl font-semibold text-foreground sm:text-3xl"
-            subtitleClassName="mx-auto max-w-xl text-muted-foreground"
+            titleClassName="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl"
+            subtitleClassName="text-muted-foreground"
           />
-          <CategoryGrid cols="1-2-4">
+          <CategoryGrid
+            cols="1-2-4"
+            className="gap-0 border-l border-t border-border"
+          >
             {items.map((cat, i) => (
               <CategoryCard
                 asChild
                 key={cat.title}
-                className="cursor-pointer p-6 text-left transition-all hover:border-primary/30 hover:shadow-md"
+                className="cursor-pointer rounded-none border-0 border-b border-r border-border bg-transparent p-6 text-left transition-colors hover:bg-muted/40"
               >
                 <NavbarRouteLink
                   aria-label={`${cat.title} category, ${cat.count}`}
                   href={cat.title}
                 >
-                  <CategoryIcon className="bg-muted text-primary transition-colors group-hover:bg-accent">
-                    {categoryIcons[i % categoryIcons.length]}
-                  </CategoryIcon>
-                  <h3 className="mb-1 text-lg font-semibold text-card-foreground">
+                  <div className="flex items-start justify-between gap-3">
+                    <span
+                      aria-hidden="true"
+                      className="font-mono text-[11px] tabular-nums tracking-[0.2em] text-muted-foreground/60"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <CategoryIcon className="size-auto rounded-none bg-transparent p-0 text-muted-foreground/70 transition-colors group-hover:text-primary">
+                      {categoryIcons[i % categoryIcons.length]}
+                    </CategoryIcon>
+                  </div>
+                  <h3 className="mb-1 mt-8 text-lg font-bold tracking-tight text-card-foreground">
+                    <span
+                      aria-hidden="true"
+                      className="mr-2 font-mono font-normal text-primary/60"
+                    >
+                      #
+                    </span>
                     {cat.title}
                   </h3>
-                  <p className="mb-3 text-sm text-muted-foreground">
+                  <p className="mb-4 text-sm text-muted-foreground">
                     {cat.description}
                   </p>
-                  <span className="text-xs font-medium text-muted-foreground">
+                  <span className="font-mono text-[11px] uppercase tracking-[0.15em] tabular-nums text-muted-foreground">
                     {cat.count}
                   </span>
                 </NavbarRouteLink>

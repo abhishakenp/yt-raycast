@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { DotGrid, MonoTag } from '#/section-kit/Decor.tsx'
 import {
   GalleryGrid,
   GalleryGridItems,
@@ -14,19 +15,22 @@ import {
 } from '#/section-kit/GalleryGrid.tsx'
 
 /**
- * AiProductGallery — a product-screenshot showcase grid for a clean, light AI
- * SaaS / product page. A centered heading + paragraph above a responsive
- * 1 → 2 → 3 column grid of bordered cards, each a clickable tile with a 4:3
- * alt-driven image, a bold title, and a short caption, lifting on hover. Each
- * card routes through section-kit route links. Use to surface real in-app screenshots or
- * feature highlights for AI tools, SaaS apps, editors, dashboards, or any
- * product worth showing visually. Renders fully with no props via six built-in
+ * AiProductGallery — kinetic tech-editorial screenshot index for an AI SaaS /
+ * product page. An asymmetric header (left-aligned oversized tight heading +
+ * paragraph, mono "[ shots / in-app ]" meta right) above a staggered 1 → 2 → 3
+ * column grid of sharp-cornered hairline tiles that ride a vertical offset
+ * rhythm on desktop — each a clickable 4:3 alt-driven screenshot with a mono
+ * index chip pinned top-left and a mono uppercase caption bar bottom, edging
+ * to primary on hover — over a faint dot-grid field. Each card routes through
+ * section-kit route links. Use to surface real in-app screenshots or feature
+ * highlights for AI tools, SaaS apps, editors, dashboards, or any product
+ * worth showing visually. Renders fully with no props via six built-in
  * feature tiles.
  */
 export const AiProductGallery = defineCapsule({
   name: 'AiProductGallery',
   description:
-    'Product-screenshot showcase grid for a clean, light AI SaaS / product page: a centered heading and paragraph above a responsive 1 → 2 → 3 column grid of bordered cards, each a clickable tile with a 4:3 alt-driven image, a bold title, and a short caption, lifting with a shadow on hover. Each card routes through section-kit route links. Use to surface real in-app screenshots or feature highlights for AI tools, SaaS apps, editors, dashboards, or any product worth showing visually.',
+    'Kinetic tech-editorial screenshot index for an AI SaaS / product page: an asymmetric header (left-aligned oversized tight heading and paragraph, mono shots meta right) above a staggered 1 → 2 → 3 column grid of sharp-cornered hairline tiles riding a vertical offset rhythm on desktop, each a clickable 4:3 alt-driven screenshot with a mono index chip pinned top-left and a mono uppercase caption bar, edging to primary on hover, over a faint dot-grid field. Each card routes through section-kit route links. Use to surface real in-app screenshots or feature highlights for AI tools, SaaS apps, editors, dashboards, or any product worth showing visually.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -73,23 +77,42 @@ export const AiProductGallery = defineCapsule({
         ]
 
     return (
-      <section className={cn('py-20 lg:py-28', props.className)}>
-        <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0 lg:mb-20"
-            titleClassName="mb-4 tracking-tight sm:text-4xl"
-            subtitleClassName="text-lg"
-          />
-          <GalleryGrid>
-            <GalleryGridItems columns={3}>
+      <section
+        className={cn(
+          'relative overflow-hidden py-16 lg:py-28',
+          props.className,
+        )}
+      >
+        <DotGrid
+          tone="faint"
+          fade="right"
+          className="inset-y-0 right-0 w-1/2"
+        />
+        <Container className="relative">
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-4"
+              titleClassName="text-[clamp(2rem,4.5vw,3.5rem)] font-semibold leading-[0.95] tracking-tighter"
+              subtitleClassName="max-w-xl text-base sm:text-lg"
+            />
+            <MonoTag aria-hidden="true" className="shrink-0">
+              [ {String(items.length).padStart(2, '0')} shots / in-app ]
+            </MonoTag>
+          </div>
+          <GalleryGrid className="gap-0">
+            <GalleryGridItems
+              columns={3}
+              className="gap-5 sm:gap-6 lg:gap-8 lg:pb-12"
+            >
               {items
                 .map((item) => ({
                   alt: item.title,
                   caption: item.description,
                 }))
-                .map((img) => {
+                .map((img, i) => {
                   const __iv__ = img as {
                     alt: string
                     caption?: string
@@ -97,10 +120,24 @@ export const AiProductGallery = defineCapsule({
                     location?: string
                   }
                   return (
-                    <GalleryTile key={__iv__.alt}>
+                    <GalleryTile
+                      key={__iv__.alt}
+                      className={cn(
+                        'rounded-none transition-colors duration-150 hover:border-primary',
+                        i % 3 === 1 && 'lg:translate-y-12',
+                        i % 3 === 2 && 'lg:translate-y-6',
+                        i % 2 === 1 && 'sm:max-lg:translate-y-8',
+                      )}
+                    >
                       <GalleryTileImage alt={__iv__.alt} />
+                      <span
+                        aria-hidden="true"
+                        className="absolute left-0 top-0 bg-foreground px-2 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-background"
+                      >
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
                       {__iv__.caption && (
-                        <GalleryTileCaption>
+                        <GalleryTileCaption className="border-t border-border bg-background/85 font-mono text-[11px] uppercase tracking-[0.12em] text-foreground">
                           {__iv__.caption}
                         </GalleryTileCaption>
                       )}

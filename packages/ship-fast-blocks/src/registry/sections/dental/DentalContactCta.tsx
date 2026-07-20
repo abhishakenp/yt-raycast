@@ -1,12 +1,14 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { cn } from '#/lib/utils.ts'
 import {
   CtaBand,
   CtaBandInner,
   CtaBandTitle,
   CtaBandSubtitle,
 } from '#/section-kit/CtaBand.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import {
   LocalServiceBookingButton,
   LocalServiceMutationSpinner,
@@ -14,18 +16,21 @@ import {
 import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
- * DentalContactCta — bold closing call-to-action banner for a dental practice
- * site. A full-width primary-colored section with soft blurred corner glows, a
- * centered heading + supporting paragraph, a pair of pill buttons (an inverted
- * click-to-call button with a phone icon and a translucent online-booking button
- * with a calendar icon), and a row of check-marked reassurance perks. All
- * buttons route through section-kit route links. Use as the final conversion banner above
- * the footer on a dentist, dental office, or clinic site.
+ * DentalContactCta — inverted closing band for a dental practice site. The
+ * single full-inversion moment of the page: a bg-foreground/text-background
+ * band with a giant ghost "+" cross watermark, a left-aligned giant fluid
+ * extrabold heading + supporting paragraph, a pair of square buttons (a filled
+ * background-on-ink click-to-call button with a phone icon and a hairline
+ * outline online-booking button with a calendar icon, both with press
+ * feedback), and a hairline-topped mono row of reassurance perks with "+"
+ * tick glyphs. All buttons route through section-kit route links. Use as the
+ * final conversion banner above the footer on a dentist, dental office, or
+ * clinic site.
  */
 export const DentalContactCta = defineCapsule({
   name: 'DentalContactCta',
   description:
-    'Bold closing call-to-action banner for a dental practice site: a full-width primary-colored section with soft blurred corner glows, a centered heading + supporting paragraph, a pair of pill buttons (an inverted click-to-call button with a phone icon and a translucent online-booking button with a calendar icon), and a row of check-marked reassurance perks. All buttons route through section-kit route links. Use as the final conversion banner above the footer on a dentist, dental office, or clinic site.',
+    'Inverted closing band for a dental practice site — the single full-inversion moment of the page: a bg-foreground band with a giant ghost "+" cross watermark, a left-aligned giant fluid extrabold heading + supporting paragraph, a pair of square buttons (a filled background-on-ink click-to-call button with a phone icon and a hairline outline online-booking button with a calendar icon), and a hairline-topped mono row of reassurance perks with plus tick glyphs. All buttons route through section-kit route links. Use as the final conversion banner above the footer on a dentist, dental office, or clinic site.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -64,23 +69,31 @@ export const DentalContactCta = defineCapsule({
     return (
       <CtaBand
         tone="primary"
-        className={`relative overflow-hidden ${props.className ?? ''}`}
+        className={cn(
+          'relative overflow-hidden bg-foreground text-background',
+          props.className,
+        )}
       >
-        <CtaBandInner>
-          <CtaBandTitle>{contactHeading}</CtaBandTitle>
-          <CtaBandSubtitle>{contactDesc}</CtaBandSubtitle>
-          <div aria-hidden="true" className="absolute inset-0 opacity-10">
-            <div className="absolute left-0 top-0 size-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary-foreground blur-3xl" />
-            <div className="absolute bottom-0 right-0 size-96 translate-x-1/2 translate-y-1/2 rounded-full bg-primary-foreground blur-3xl" />
-          </div>
-          <div className="relative flex flex-col justify-center gap-4 sm:flex-row">
+        <Watermark className="-right-10 -top-24 text-[18rem] text-background/[0.05] sm:text-[26rem]">
+          +
+        </Watermark>
+        <CtaBandInner className="max-w-5xl items-start gap-7 py-20 text-left sm:py-24 lg:py-28">
+          <CtaBandTitle className="max-w-3xl text-[clamp(2.25rem,5vw,4rem)] font-extrabold leading-[1.02] tracking-tight">
+            {contactHeading}
+          </CtaBandTitle>
+          <CtaBandSubtitle className="max-w-2xl text-background/70 opacity-100">
+            {contactDesc}
+          </CtaBandSubtitle>
+          <div className="relative flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:gap-4">
             <LocalServiceBookingButton
               lakebed={lakebed}
               intentLabel={contactCallCta}
               service="Phone consultation"
               source="final-cta-phone"
-              pendingChildren={<LocalServiceMutationSpinner />}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-background px-8 py-4 text-lg font-semibold text-primary transition-colors hover:bg-muted"
+              pendingChildren={
+                <LocalServiceMutationSpinner className="text-foreground" />
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-none bg-background px-8 py-4 text-base font-semibold text-foreground transition-colors hover:bg-background/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
             >
               <PhoneIcon className="size-5" />
               {contactCallCta}
@@ -91,9 +104,9 @@ export const DentalContactCta = defineCapsule({
               service="Dental appointment"
               source="final-cta"
               pendingChildren={
-                <LocalServiceMutationSpinner className="text-primary-foreground" />
+                <LocalServiceMutationSpinner className="text-background" />
               }
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary-foreground/15 px-8 py-4 text-lg font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/25 disabled:pointer-events-none disabled:opacity-70"
+              className="inline-flex items-center justify-center gap-2 rounded-none border border-background/30 px-8 py-4 text-base font-semibold text-background transition-colors hover:bg-background/10 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
             >
               <svg
                 viewBox="0 0 24 24"
@@ -110,21 +123,12 @@ export const DentalContactCta = defineCapsule({
               {contactBookCta}
             </LocalServiceBookingButton>
           </div>
-          <div className="relative flex flex-wrap items-center justify-center gap-8 text-sm text-primary-foreground/80">
+          <div className="relative mt-2 flex w-full flex-wrap items-center gap-x-8 gap-y-3 border-t border-background/20 pt-6 font-mono text-[11px] uppercase tracking-[0.15em] text-background/60">
             {contactPerks.map((perk) => (
-              <div key={perk} className="flex items-center gap-2">
-                <svg
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  className="size-5"
-                  aria-hidden="true"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm3.707-9.293a1 1 0 0 0-1.414-1.414L9 10.586 7.707 9.293a1 1 0 0 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l4-4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+              <div key={perk} className="flex items-center gap-2.5">
+                <span aria-hidden="true" className="text-background/40">
+                  +
+                </span>
                 {perk}
               </div>
             ))}

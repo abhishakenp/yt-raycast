@@ -100,7 +100,7 @@ export const CoworkingNavbar = defineCapsule({
         )}
       >
         <NavbarBrand href={homeTarget} className="gap-3">
-          <Logo brand={brand} className="size-9">
+          <Logo brand={brand} className="flex items-center gap-2">
             <LogoImage
               className="size-9"
               fallback={<BrandTile letter={brand.charAt(0).toUpperCase()} />}
@@ -132,7 +132,7 @@ export const CoworkingNavbar = defineCapsule({
           {phone ? (
             <a
               href={`tel:${phone.replace(/[^\d+]/g, '')}`}
-              className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground lg:inline"
+              className="hidden font-mono text-xs tracking-wide text-muted-foreground transition-colors hover:text-foreground xl:inline"
             >
               {phone}
             </a>
@@ -141,7 +141,7 @@ export const CoworkingNavbar = defineCapsule({
           <NavbarCta
             variant="primary-pill"
             href={ctaTarget}
-            className="group relative hidden overflow-hidden px-5 py-2.5 font-semibold shadow-sm shadow-primary/25 transition-shadow duration-300 hover:shadow-md hover:shadow-primary/30 sm:inline-flex"
+            className="group relative hidden overflow-hidden px-5 py-2.5 font-semibold shadow-sm shadow-primary/25 transition-shadow duration-300 hover:shadow-md hover:shadow-primary/30 active:translate-y-px sm:inline-flex"
           >
             <span
               aria-hidden="true"

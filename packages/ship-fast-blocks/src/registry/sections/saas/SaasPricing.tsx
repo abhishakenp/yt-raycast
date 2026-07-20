@@ -4,7 +4,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { saasPlan, useSyncSaasPlans } from './saas-interactions.tsx'
+import {
+  SaasPlanActionButton,
+  SaasMutationSpinner,
+  saasPlan,
+  useSyncSaasPlans,
+} from './saas-interactions.tsx'
 import { saasLakebed } from './saas-lakebed.ts'
 import {
   PricingGrid,
@@ -17,7 +22,6 @@ import {
   PricingTierPeriod,
   PricingTierFeatures,
   PricingTierFeature,
-  PricingTierCta,
 } from '#/section-kit/PricingGrid.tsx'
 
 /**
@@ -207,9 +211,27 @@ export const SaasPricing = defineCapsule({
                     </PricingTierFeatures>
                   )}
                   {t.cta && (
-                    <PricingTierCta target={t.ctaTarget}>
+                    <SaasPlanActionButton
+                      lakebed={lakebed}
+                      intentLabel={t.cta}
+                      plan={t.name}
+                      source="pricing"
+                      aria-label={`${t.cta} for ${t.name}`}
+                      pendingChildren={
+                        <>
+                          <SaasMutationSpinner className="size-4" />
+                          Selecting
+                        </>
+                      }
+                      className={cn(
+                        'mt-auto inline-flex min-h-11 w-full items-center justify-center rounded-lg px-5 py-2.5 text-sm font-medium transition-colors',
+                        t.highlighted || t.featured || t.popular
+                          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                          : 'border border-border bg-background text-foreground hover:bg-muted',
+                      )}
+                    >
                       {t.cta}
-                    </PricingTierCta>
+                    </SaasPlanActionButton>
                   )}
                 </PricingTier>
               )

@@ -278,7 +278,9 @@ describe('runAllV3', () => {
     const tasks = JSON.parse(
       readFileSync(join(workspace, 'tasks.json'), 'utf8'),
     )
-    expect(tasks.tasks.map((t: { status: string }) => t.status)).toEqual(['DONE'])
+    expect(tasks.tasks.map((t: { status: string }) => t.status)).toEqual([
+      'DONE',
+    ])
 
     // generateText was called (high-confidence restaurant prompt).
     expect(generateTextMock).toHaveBeenCalled()

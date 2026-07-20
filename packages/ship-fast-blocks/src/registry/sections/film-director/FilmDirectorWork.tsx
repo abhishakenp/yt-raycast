@@ -10,16 +10,19 @@ import {
 } from '#/section-kit/PortfolioGrid.tsx'
 
 /**
- * FilmDirectorWork — an inverted, near-black "Selected Work" reel grid for a
- * film director / cinematographer portfolio. On a dark foreground band: a
- * header row pairing a thin heading + muted lede with a set of filter pill
- * buttons (first one outlined/active), a responsive 1/2/3-column grid of 16:9
- * project cards each with an overlaid darkening scrim, a centered circular play
- * button that brightens on hover, and bottom-anchored category tag / title /
- * role captions, plus a centered outlined load-more button. Cards, filters, and
- * the load-more route through section-kit route links; imagery uses the Image component. Use
- * as a cinematic portfolio / reel showcase for directors, cinematographers, DPs,
- * or production houses.
+ * FilmDirectorWork — an inverted, cinematic "Selected Work" reel grid for a film
+ * director / cinematographer portfolio. On a bg-foreground/text-background band
+ * (token-driven, theme-adaptive) over a giant faint "REEL" ghost watermark: a
+ * mono slate meta rule with a reel count, an asymmetric header pairing a giant
+ * credits-style extrabold heading + muted lede with a row of square mono filter
+ * chips (first active), a responsive 1/2/3-column grid of letterboxed 16:9
+ * project cards each carrying a mono "SC. 0X" slate index, a darkening scrim, a
+ * centered circular play button that brightens on hover, and bottom-anchored mono
+ * category / credits-style title / role captions, plus a centered square
+ * outlined load-more button with press feedback. Cards, filters, and load-more
+ * route through section-kit route links; imagery uses the Image component. Use as
+ * a cinematic portfolio / reel showcase for directors, cinematographers, DPs, or
+ * production houses.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -28,7 +31,7 @@ import { NavbarRouteLink } from '#/section-kit/index.ts'
 export const FilmDirectorWork = defineCapsule({
   name: 'FilmDirectorWork',
   description:
-    "Inverted, near-black 'Selected Work' reel grid for a film director / cinematographer portfolio: on a dark foreground band, a header row pairing a thin heading + muted lede with a set of filter pill buttons (first outlined/active), a responsive 1/2/3-column grid of 16:9 project cards each with an overlaid darkening scrim, a centered circular play button that brightens on hover, and bottom-anchored category tag / title / role captions, plus a centered outlined load-more button. Cards, filters, and load-more route through section-kit route links; imagery uses the Image component. Use as a cinematic portfolio / reel showcase for directors, cinematographers, DPs, or production houses.",
+    "Inverted, cinematic 'Selected Work' reel grid for a film director / cinematographer portfolio: on a bg-foreground/text-background band over a giant faint 'REEL' ghost watermark, a mono slate meta rule with a reel count, an asymmetric header pairing a giant credits-style extrabold heading + muted lede with square mono filter chips (first active), a responsive 1/2/3-column grid of letterboxed 16:9 project cards each with a mono 'SC. 0X' slate index, a darkening scrim, a centered circular play button, and bottom-anchored mono category / credits-style title / role captions, plus a centered square outlined load-more button with press feedback. Cards, filters, and load-more route through section-kit route links; imagery uses the Image component. Use as a cinematic portfolio / reel showcase for directors, cinematographers, DPs, or production houses.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -139,29 +142,44 @@ export const FilmDirectorWork = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-foreground py-20 text-background lg:py-28',
+          'relative overflow-hidden bg-foreground py-20 text-background lg:py-28',
           props.className,
         )}
       >
-        <Container>
-          <div className="mb-12 flex flex-col md:flex-row md:items-end md:justify-between">
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-8 top-1/2 -translate-y-1/2 select-none font-extrabold leading-none tracking-tighter text-background/[0.05] text-[22vw] lg:text-[16rem]"
+        >
+          REEL
+        </span>
+        <Container className="relative">
+          <div className="mb-8 flex items-center justify-between gap-4 border-b border-background/20 pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-background/50">
+            <span className="flex items-center gap-3">
+              <span aria-hidden="true" className="size-2 bg-primary" />
+              Selected Work
+            </span>
+            <span className="tabular-nums">
+              {String(workItems.length).padStart(2, '0')} reels
+            </span>
+          </div>
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <SectionHeading
               align="left"
               title={workHeading}
               subtitle={workDesc}
               className="gap-0"
-              titleClassName="mb-4 text-3xl font-light md:text-4xl"
+              titleClassName="mb-4 text-4xl font-extrabold tracking-tight text-background md:text-5xl"
               subtitleClassName="max-w-xl text-background/70"
             />
-            <div className="mt-6 flex gap-4 text-sm md:mt-0">
+            <div className="flex flex-wrap gap-2 text-sm">
               {workFilters.map((f, i) => (
                 <NavbarRouteLink
                   key={f}
                   className={cn(
-                    'rounded-md px-4 py-2 transition-colors',
+                    'rounded-none px-4 py-2 font-mono text-[11px] uppercase tracking-[0.2em] transition-colors',
                     i === 0
-                      ? 'border border-background hover:bg-background hover:text-foreground'
-                      : 'text-background/70 hover:text-background',
+                      ? 'bg-background text-foreground'
+                      : 'border border-background/25 text-background/70 hover:border-background hover:text-background',
                   )}
                   href={f}
                 >
@@ -172,14 +190,17 @@ export const FilmDirectorWork = defineCapsule({
           </div>
 
           <PortfolioGrid cols="1-md-2-3" className="gap-6">
-            {workItems.map((proj) => (
+            {workItems.map((proj, i) => (
               <PortfolioItem
                 key={proj.title}
                 className="group block w-full cursor-pointer text-left"
                 asChild
               >
                 <NavbarRouteLink href={proj.title}>
-                  <PortfolioMedia aspect="16-9" className="rounded-md bg-muted">
+                  <PortfolioMedia
+                    aspect="16-9"
+                    className="rounded-none bg-muted"
+                  >
                     <Image
                       alt={proj.imageAlt}
                       w={800}
@@ -188,16 +209,19 @@ export const FilmDirectorWork = defineCapsule({
                       className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-foreground/60 transition-colors group-hover:bg-foreground/40" />
+                    <span className="absolute left-3 top-3 z-10 font-mono text-[11px] uppercase tracking-[0.2em] text-background/80">
+                      SC. {String(i + 1).padStart(2, '0')}
+                    </span>
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="grid size-16 place-items-center rounded-full bg-background/20 transition-colors group-hover:bg-background/30">
                         <PlayIcon className="ml-1 size-8 text-background" />
                       </div>
                     </div>
                     <PortfolioCaption className="absolute inset-x-4 bottom-4">
-                      <span className="text-xs uppercase tracking-wider text-background/70">
+                      <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-background/70">
                         {proj.tag}
                       </span>
-                      <h3 className="mt-1 text-lg font-medium text-background">
+                      <h3 className="mt-1 text-lg font-extrabold tracking-tight text-background">
                         {proj.title}
                       </h3>
                       <p className="mt-1 text-sm text-background/70">
@@ -212,7 +236,7 @@ export const FilmDirectorWork = defineCapsule({
 
           <div className="mt-12 text-center">
             <NavbarRouteLink
-              className="rounded-md border border-border px-6 py-3 text-sm transition-colors hover:border-background"
+              className="inline-flex rounded-none border border-background/40 px-6 py-3 font-mono text-[11px] uppercase tracking-[0.2em] transition-[transform,border-color] duration-150 hover:border-background active:translate-y-px motion-reduce:transform-none"
               href={workLoadMore}
             >
               {workLoadMore}

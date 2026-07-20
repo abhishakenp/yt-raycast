@@ -14,21 +14,26 @@ import { Container } from '#/section-kit/Container.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * AccountingFirmHero — split, editorial hero band for a CPA / accounting-firm
- * landing page. A two-column section on a card surface: on the left an uppercase
- * "Est." eyebrow, a large two-line headline, a supporting paragraph, dual CTAs
- * (filled primary + secondary), and an inline check-marked trust-badge row; on
- * the right a 4:3 photo with a floating tax-savings stat card pinned to its
- * lower-left corner. Calm, trustworthy professional-services aesthetic. CTAs
- * route through section-kit route links; the photo uses the alt-driven Image component. Use
- * as the opening hero for accounting firms, CPA practices, tax-preparation
- * services, bookkeeping/payroll providers, or financial advisory practices.
- * Renders fully with no props via baked-in "Northridge" defaults.
+ * AccountingFirmHero — Swiss-ledger editorial hero for a CPA / accounting-firm
+ * landing page. An asymmetric 7:5 split over a faint graph-paper grid: on the
+ * left a boxed mono "Est." stamp chip, an oversized clamp-scaled headline whose
+ * second line drops into serif italic, a supporting paragraph, dual CTAs
+ * (square-edged solid primary with press feedback + an underline-slide text
+ * link), and a hairline-ruled trust strip with check glyphs in mono uppercase
+ * separated by vertical rules; on the right a strictly framed photo (hairline
+ * ink border over an offset primary-tinted block) with a sharp-cornered
+ * "ledger entry" stat card — mono label, giant tabular numeral, primary square
+ * tick — pinned to its lower-left corner. Typographic authority and grid
+ * discipline over loudness. CTAs route through section-kit route links; the
+ * photo uses the alt-driven Image component. Use as the opening hero for
+ * accounting firms, CPA practices, tax-preparation services,
+ * bookkeeping/payroll providers, or financial advisory practices. Renders fully
+ * with no props via baked-in "Northridge" defaults.
  */
 export const AccountingFirmHero = defineCapsule({
   name: 'AccountingFirmHero',
   description:
-    'Split editorial hero band for a CPA / accounting-firm landing page: two-column section on a card surface with an uppercase Est.-year eyebrow, a large two-line headline, a supporting paragraph, dual CTAs (filled primary + secondary), and an inline check-marked trust-badge row on the left; a 4:3 photo with a floating tax-savings stat card pinned to its lower-left corner on the right. Calm, trustworthy professional-services look; CTAs route through section-kit route links and the photo uses the alt-driven Image component. Use as the opening hero for accounting firms, CPA practices, tax-preparation services, bookkeeping/payroll providers, or financial advisory practices.',
+    'Swiss-ledger editorial hero for a CPA / accounting-firm landing page: an asymmetric 7:5 split over a faint graph-paper grid with a boxed mono Est.-stamp chip, an oversized clamp-scaled headline whose second line drops into serif italic, a supporting paragraph, dual CTAs (square-edged solid primary with press feedback + underline-slide text link), and a hairline trust strip with check glyphs in mono uppercase separated by vertical rules on the left; a strictly framed photo (hairline ink border over an offset primary-tinted block) with a sharp-cornered ledger-entry stat card (mono label + giant tabular numeral) pinned to its lower-left corner on the right. CTAs route through section-kit route links and the photo uses the alt-driven Image component. Use as the opening hero for accounting firms, CPA practices, tax-preparation services, bookkeeping/payroll providers, or financial advisory practices.',
   props: z.object({
     /** Uppercase eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -91,66 +96,103 @@ export const AccountingFirmHero = defineCapsule({
       <HeroSection
         variant="split"
         className={cn(
-          'relative border-b border-border bg-card',
+          'relative overflow-hidden border-b border-border bg-background',
           props.className,
         )}
       >
-        <Container size="xl" className="py-20 lg:py-32">
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-            <div className="max-w-2xl">
+        {/* Faint graph-paper grid — currentColor keeps it tokenized. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 text-border opacity-40 bg-[linear-gradient(to_right,currentColor_1px,transparent_1px),linear-gradient(to_bottom,currentColor_1px,transparent_1px)] [background-size:32px_32px]"
+        />
+
+        <Container className="relative py-14 sm:py-20 lg:py-28">
+          <div className="grid items-center gap-12 md:grid-cols-12 md:gap-10 lg:gap-12">
+            <div className="md:col-span-7">
               <Eyebrow
                 variant="text"
-                className="mb-4 block text-sm tracking-wider text-muted-foreground"
+                className="mb-8 inline-block border border-foreground px-2 py-0.5 font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-foreground"
               >
                 {eyebrow}
               </Eyebrow>
-              <h1 className="mb-6 text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+              <h1 className="mb-8 text-[clamp(2.75rem,6vw,5.5rem)] font-semibold leading-[0.95] tracking-tight text-foreground">
                 {headingTop}
                 <br />
-                {headingBottom}
+                <span className="font-serif font-normal italic">
+                  {headingBottom}
+                </span>
               </h1>
-              <p className="mb-8 max-w-xl text-lg leading-relaxed text-muted-foreground">
+              <p className="mb-10 max-w-xl text-lg leading-relaxed text-muted-foreground">
                 {subheading}
               </p>
-              <div className="flex flex-col gap-4 sm:flex-row">
+              <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-8 sm:gap-y-4">
                 <NavbarRouteLink
-                  className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3.5 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  className="inline-flex items-center justify-center whitespace-nowrap rounded-none bg-primary px-7 py-3.5 text-base font-medium text-primary-foreground transition-all duration-150 hover:bg-primary/90 active:translate-y-px"
                   href={primaryCta}
                 >
                   {primaryCta}
                 </NavbarRouteLink>
                 <NavbarRouteLink
-                  className="inline-flex items-center justify-center rounded-md bg-secondary px-6 py-3.5 text-base font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
+                  className="group relative inline-flex items-center justify-center whitespace-nowrap py-1 text-base font-medium text-foreground sm:justify-start"
                   href={secondaryCta}
                 >
-                  {secondaryCta}
+                  <span className="relative">
+                    {secondaryCta}
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-primary transition-transform duration-200 group-hover:scale-x-100"
+                    />
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="ml-2 transition-transform duration-200 group-hover:translate-x-1"
+                  >
+                    →
+                  </span>
                 </NavbarRouteLink>
               </div>
-              <div className="mt-10 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+              <div className="mt-10 flex flex-col divide-y divide-border border-t border-border lg:mt-12 lg:flex-row lg:flex-wrap lg:items-stretch lg:divide-x lg:divide-y-0">
                 {badges.map((badge) => (
-                  <div key={badge} className="flex items-center gap-2">
-                    <Check className="size-5 text-primary" />
+                  <div
+                    key={badge}
+                    className="flex items-center gap-2 px-0 py-3.5 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground lg:px-5 lg:py-4 lg:first:pl-0"
+                  >
+                    <Check className="size-3.5 shrink-0 text-primary" />
                     <span>{badge}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="relative">
-              <Image
-                alt={imageAlt}
-                w={800}
-                h={600}
-                className="aspect-[4/3] w-full rounded-lg object-cover shadow-xl"
-              />
-              <HeroStatBadge className="absolute -bottom-6 -left-6 hidden rounded-lg sm:block">
-                <HeroStatBadgeTitle className="text-3xl font-bold text-foreground">
-                  {statValue}
-                </HeroStatBadgeTitle>
-                <HeroStatBadgeSubtitle className="text-sm">
-                  {statLabel}
-                </HeroStatBadgeSubtitle>
-              </HeroStatBadge>
+            <div className="md:col-span-5">
+              <div className="relative mb-8 sm:mb-6 md:mb-0">
+                {/* Offset primary-tinted block behind the framed photo. */}
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 translate-x-4 translate-y-4 bg-primary/10"
+                />
+                <Image
+                  alt={imageAlt}
+                  w={800}
+                  h={600}
+                  className="relative aspect-[4/3] w-full rounded-none border border-foreground object-cover"
+                />
+                <HeroStatBadge className="absolute -bottom-8 left-0 w-52 rounded-none border-foreground p-4 shadow-none sm:-bottom-6 sm:-left-6 sm:w-60 sm:p-5">
+                  <div
+                    aria-hidden="true"
+                    className="mb-4 flex items-center gap-2"
+                  >
+                    <span className="size-2 shrink-0 bg-primary" />
+                    <span className="h-px flex-1 bg-border" />
+                  </div>
+                  <HeroStatBadgeTitle className="font-mono text-3xl font-bold tabular-nums tracking-tight text-foreground sm:text-4xl">
+                    {statValue}
+                  </HeroStatBadgeTitle>
+                  <HeroStatBadgeSubtitle className="mt-2 font-mono text-[10px] uppercase leading-relaxed tracking-[0.12em] text-muted-foreground">
+                    {statLabel}
+                  </HeroStatBadgeSubtitle>
+                </HeroStatBadge>
+              </div>
             </div>
           </div>
         </Container>

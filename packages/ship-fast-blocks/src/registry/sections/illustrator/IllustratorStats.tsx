@@ -9,19 +9,21 @@ import {
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 
 /**
- * IllustratorStats — a compact dark stats band for an illustrator /
- * visual-artist portfolio. A full-width foreground-colored band with inverted
- * type holds a centered responsive grid of big serif metric values over small
- * muted labels (books published, prints sold, happy clients, awards). Use as a
- * high-contrast achievements strip between content sections. Renders fully with
- * no props via baked-in defaults.
+ * IllustratorStats — the inverted achievements band for an illustrator /
+ * visual-artist portfolio. A bg-foreground / text-background band cut in on a
+ * slanted clip-path seam, with a mono meta header and a giant ghost numeral
+ * drifting behind. Metrics sit in a collapsed hairline ledger: each cell pairs a
+ * big serif tabular value with a mono uppercase label and a small tick-bar
+ * motif. Use as a high-contrast credibility strip between content sections.
+ * Renders fully with no props via baked-in defaults.
  */
 export const IllustratorStats = defineCapsule({
   name: 'IllustratorStats',
   description:
-    'Compact dark stats band for an illustrator / visual-artist portfolio: a full-width foreground-colored band with inverted type holding a centered responsive grid of big serif metric values over small muted labels (books published, prints sold, happy clients, awards). Use as a high-contrast achievements strip between content sections.',
+    'Inverted achievements band for an illustrator / visual-artist portfolio: a bg-foreground / text-background band cut in on a slanted clip-path seam, with a mono meta header and a giant ghost numeral behind, holding a collapsed hairline ledger of metrics where each cell pairs a big serif tabular value with a mono uppercase label and a small tick-bar motif (books published, prints sold, happy clients, awards). Use as a high-contrast credibility strip between content sections.',
   props: z.object({
     /** Metric items shown across the band. */
     items: z
@@ -38,32 +40,65 @@ export const IllustratorStats = defineCapsule({
           { value: '35', label: 'Happy Clients' },
           { value: '3', label: 'Industry Awards' },
         ]
+    const tickWidths = ['w-6', 'w-10', 'w-4', 'w-8', 'w-12', 'w-5']
 
     return (
       <section
         className={cn(
-          'bg-foreground px-4 py-16 text-background sm:px-6 sm:py-20 lg:px-8',
+          'relative isolate overflow-hidden bg-foreground py-16 pt-24 text-background [clip-path:polygon(0_2.5rem,100%_0,100%_100%,0_100%)] sm:py-20 sm:pt-28 lg:pt-32',
           props.className,
         )}
       >
-        <Container size="xl">
+        <Watermark className="-right-4 -top-2 text-[10rem] leading-none text-background/[0.05] sm:text-[15rem]">
+          &amp;
+        </Watermark>
+        <Container size="xl" className="relative">
+          <div className="mb-10 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <MonoTag tone="inverted" className="flex items-center gap-2">
+              <span aria-hidden="true">*</span>
+              By the numbers
+            </MonoTag>
+            <MonoTag className="text-background/40">[ studio ledger ]</MonoTag>
+          </div>
           <StatGrid
             columns={4}
-
-            className={'text-center sm:gap-12 gap-12'}
+            className="gap-0 border-l border-t border-background/20"
           >
-            {items.map((s) => {
+            {items.map((s, i) => {
               const __iv__ = s as { value: string; label: string }
               return (
-                <StatItem key={__iv__.label}>
+                <StatItem
+                  key={__iv__.label}
+                  align="left"
+                  className="gap-3 border-b border-r border-background/20 p-6 sm:p-8"
+                >
                   <StatValue
-                    fontFamily={'serif'}
-                    size={'large'}
-                    color={'inverted'}
+                    fontFamily="serif"
+                    size="large"
+                    color="inverted"
+                    className="mb-0 tabular-nums"
                   >
                     {__iv__.value}
                   </StatValue>
-                  <StatLabel color={'inverted'}>{__iv__.label}</StatLabel>
+                  <StatLabel
+                    color="inverted"
+                    className="font-mono text-[11px] uppercase tracking-[0.16em]"
+                  >
+                    {__iv__.label}
+                  </StatLabel>
+                  <span
+                    aria-hidden="true"
+                    className="mt-1 flex items-center gap-1"
+                  >
+                    <span
+                      className={cn(
+                        'h-1 bg-background',
+                        tickWidths[i % tickWidths.length],
+                      )}
+                    />
+                    <span className="h-1 w-1 bg-background/30" />
+                    <span className="h-1 w-1 bg-background/30" />
+                  </span>
                 </StatItem>
               )
             })}

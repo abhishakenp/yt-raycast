@@ -4,11 +4,12 @@ import { cn } from '#/lib/utils.ts'
 import {} from '#/section-kit/index.ts'
 
 /**
- * FashionStoreStats — slim brand stats strip for a minimalist fashion store. A
- * top-and-bottom bordered band with a centered 2-to-4 column grid of stat
- * blocks, each pairing a large serif value with a small muted label. Use to
- * surface headline metrics — customers, markets, ratings, sustainability — for
- * clothing brands, boutiques, or any premium retail storefront.
+ * FashionStoreStats — slim brand stats ledger for a luxury fashion store. A
+ * hairline top-and-bottom bordered band with a 2-to-4 column collapsed-border
+ * grid of stat cells divided by thin vertical rules, each pairing a large
+ * tabular-nums serif value with a small mono uppercase label. Use to surface
+ * headline metrics — customers, markets, ratings, sustainability — for clothing
+ * brands, boutiques, or any premium retail storefront.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import {
@@ -20,7 +21,7 @@ import {
 export const FashionStoreStats = defineCapsule({
   name: 'FashionStoreStats',
   description:
-    'Slim brand stats strip for a minimalist fashion store: a top-and-bottom bordered band with a centered 2-to-4 column grid of stat blocks, each pairing a large serif value with a small muted label. Use to surface headline metrics — happy customers, global markets, average rating, carbon neutrality — for clothing brands, boutiques, or any premium retail storefront.',
+    'Slim brand stats ledger for a luxury fashion store: a hairline top-and-bottom bordered band with a 2-to-4 column collapsed-border grid of stat cells divided by thin vertical rules, each pairing a large tabular-nums serif value with a small mono uppercase label. Use to surface headline metrics — happy customers, global markets, average rating, carbon neutrality — for clothing brands, boutiques, or any premium retail storefront.',
   props: z.object({
     items: z
       .array(
@@ -62,19 +63,26 @@ export const FashionStoreStats = defineCapsule({
         )}
       >
         <Container>
-          <StatGrid
-            columns={4}
-
-            className={'text-center lg:gap-12 gap-12'}
-          >
+          <StatGrid columns={4} className={'gap-0 divide-x divide-border'}>
             {statsItems.map((s) => {
               const __iv__ = s as { value: string; label: string }
               return (
-                <StatItem key={__iv__.label} align={'center'}>
-                  <StatValue weight={'bold'} size={'xl'}>
+                <StatItem
+                  key={__iv__.label}
+                  align={'center'}
+                  className="px-4 py-2"
+                >
+                  <StatValue
+                    weight={'medium'}
+                    size={'xl'}
+                    fontFamily={'serif'}
+                    className="font-normal"
+                  >
                     {__iv__.value}
                   </StatValue>
-                  <StatLabel>{__iv__.label}</StatLabel>
+                  <StatLabel className="mt-2 font-mono text-[11px] uppercase tracking-[0.2em]">
+                    {__iv__.label}
+                  </StatLabel>
                 </StatItem>
               )
             })}

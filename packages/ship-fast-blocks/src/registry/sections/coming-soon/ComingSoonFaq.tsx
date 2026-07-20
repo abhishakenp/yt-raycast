@@ -15,19 +15,21 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * ComingSoonFaq — accordion FAQ section for a "launching soon" / waitlist pre-launch
- * landing page. A centered heading and lead paragraph above a stacked list of
- * native <details> / <summary> accordion items on a card-colored band; each item
- * has a rounded bordered panel, the question in a bold heading, a chevron icon
- * that rotates on open, and the answer in relaxed body text. No links or external
- * dependencies. Use as the FAQ / questions section on SaaS waitlists, app pre-launch
- * pages, or beta sign-up landers. Renders fully with no props via five baked-in
- * default Q&As.
+ * ComingSoonFaq — kinetic Q&A index for a "launching soon" / waitlist
+ * pre-launch landing page. An asymmetric 4:8 split: a left rail with a big
+ * tight-tracked heading, lead paragraph, and mono "[ INDEX ]" meta (sticky on
+ * desktop), beside a hairline-divided stack of native details/summary
+ * accordion items — each row led by a mono index numeral ("Q.01"), the
+ * question in bold uppercase-tracked type, a plus icon that rotates on open,
+ * and the answer in relaxed body text. No links or external dependencies. Use
+ * as the FAQ / questions section on SaaS waitlists, app pre-launch pages, or
+ * beta sign-up landers. Renders fully with no props via five baked-in default
+ * Q&As.
  */
 export const ComingSoonFaq = defineCapsule({
   name: 'ComingSoonFaq',
   description:
-    "Accordion FAQ section for a 'launching soon' / waitlist pre-launch landing page: centered heading and lead above a stacked list of native details/summary accordion items on a card-colored band. Each item has a rounded bordered panel, bold question heading, chevron icon that rotates on open, and relaxed body-text answer. No links. Use as the FAQ / questions section on SaaS waitlists, app pre-launch pages, or beta sign-up landers.",
+    "Kinetic Q&A index for a 'launching soon' / waitlist pre-launch landing page: asymmetric 4:8 split with a left rail (big tight-tracked heading, lead paragraph, mono meta; sticky on desktop) beside a hairline-divided stack of native details/summary accordion items — each row led by a mono index numeral ('Q.01'), a bold question heading, a plus icon that rotates on open, and a relaxed body-text answer. No links. Use as the FAQ / questions section on SaaS waitlists, app pre-launch pages, or beta sign-up landers.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -77,38 +79,64 @@ export const ComingSoonFaq = defineCapsule({
     return (
       <section
         className={cn(
-          'w-full bg-card px-4 py-24 sm:px-6 lg:py-28 lg:px-8 xl:px-12',
+          'w-full px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-28 xl:px-12',
           props.className,
         )}
       >
-        <Container size="sm">
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 gap-0"
-            titleClassName="mb-4 text-2xl font-light text-foreground sm:text-3xl lg:text-4xl"
-            subtitleClassName="font-light text-muted-foreground"
-          />
+        <Container size="lg">
+          <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
+            {/* Left rail: heading + lead + mono meta, sticky on desktop. */}
+            <div className="lg:col-span-4">
+              <div className="lg:sticky lg:top-28">
+                <SectionHeading
+                  align="left"
+                  title={heading}
+                  subtitle={description}
+                  className="gap-4"
+                  titleClassName="text-4xl font-extrabold uppercase leading-[0.92] tracking-tighter text-foreground sm:text-5xl"
+                  subtitleClassName="max-w-sm text-base text-muted-foreground"
+                />
+                <p
+                  aria-hidden="true"
+                  className="mt-6 font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground/60"
+                >
+                  [ index ] {String(items.length).padStart(2, '0')} entries
+                </p>
+              </div>
+            </div>
 
-          <FaqAccordion>
-            {items.map((item) => (
-              <FaqItem
-                key={item.question}
-                variant="bordered-lg"
-                className="bg-muted open:bg-card"
-              >
-                <FaqQuestion className="p-6">
-                  <h3 className="pr-4 text-base font-medium text-foreground">
-                    {item.question}
-                  </h3>
-                  <FaqQuestionIcon />
-                </FaqQuestion>
-                <FaqAnswer asChild className="px-6 pb-6 text-sm">
-                  <div>{item.answer}</div>
-                </FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+            {/* Hairline-divided Q index. */}
+            <FaqAccordion
+              variant="divided"
+              className="border-y-2 border-foreground lg:col-span-8"
+            >
+              {items.map((item, i) => (
+                <FaqItem key={item.question} variant="divided" className="py-0">
+                  <FaqQuestion className="items-baseline gap-4 py-5 sm:gap-6 sm:py-6">
+                    <span
+                      aria-hidden="true"
+                      className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground tabular-nums"
+                    >
+                      Q.{String(i + 1).padStart(2, '0')}
+                    </span>
+                    <h3 className="flex-1 pr-2 text-base font-bold tracking-tight text-foreground sm:text-lg">
+                      {item.question}
+                    </h3>
+                    <FaqQuestionIcon
+                      variant="plus"
+                      className="self-center text-foreground"
+                    />
+                  </FaqQuestion>
+                  <FaqAnswer
+                    asChild
+                    className="pb-6 pl-0 pr-8 text-sm leading-relaxed sm:pl-[4.5rem]"
+                  >
+                    <div>{item.answer}</div>
+                  </FaqAnswer>
+                </FaqItem>
+              ))}
+            </FaqAccordion>
+          </div>
         </Container>
       </section>
     )

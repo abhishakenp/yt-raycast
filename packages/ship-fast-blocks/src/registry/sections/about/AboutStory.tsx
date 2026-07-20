@@ -15,20 +15,25 @@ import { PullQuoteText } from '#/section-kit/PullQuote.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
 /**
- * AboutStory — "our story" split band for a modern company / ABOUT page. A
- * left-aligned eyebrow pill + heading + lead above a two-column layout: on the
- * left an alt-driven 4:3 photo wrapped in a soft-shadowed token card with a
- * floating "founded" badge pill (calendar icon) over its bottom-left corner; on
- * the right one or more narrative paragraphs followed by an indigo-accented
- * pull-quote in a left-bordered tinted blockquote. Tokens-only, no links. Use
- * for an about page's origin story / company history / mission narrative paired
- * with a team or office photo. Renders fully with no props via baked-in
- * "Kinetic Labs" defaults.
+ * AboutStory — magazine-spread "our story" band for a modern company / ABOUT
+ * page. A mono metadata rail ("· OUR STORY —— CH. 02") with a hairline rule
+ * and chapter index sits above a huge black tight-tracked heading and lead,
+ * over a giant faint "02" watermark numeral. Below, an asymmetric 5:7
+ * editorial grid: on the left the alt-driven 4:3 photo in a sharp
+ * double-framed card tilted -1deg with a primary-tinted offset frame block
+ * behind it and a rotated mono "founded" sticker chip (calendar icon, hard
+ * primary offset shadow) overlapping its top-right corner; on the right the
+ * narrative paragraphs opening with an oversized drop cap, then — under a
+ * hairline rule and behind a giant faint serif quotation mark — an oversized
+ * italic serif pull-quote that stretches wider than the text column on
+ * desktop. Tokens-only, no links. Use for an about page's origin story /
+ * company history / mission narrative paired with a team or office photo.
+ * Renders fully with no props via baked-in "Kinetic Labs" defaults.
  */
 export const AboutStory = defineCapsule({
   name: 'AboutStory',
   description:
-    "'Our story' split band for a modern company / ABOUT page: a left-aligned eyebrow pill + heading + lead above a two-column layout with an alt-driven 4:3 photo in a soft-shadowed token card and a floating 'founded' badge pill (calendar icon) on the left, and one or more narrative paragraphs plus an indigo-accented left-bordered pull-quote on the right. Tokens-only, no links. Use for an about page's origin story / company history / mission narrative paired with a team or office photo.",
+    "Magazine-spread 'our story' band for a modern company / ABOUT page: a mono metadata rail with hairline rule and 'CH. 02' chapter index above a huge black tight-tracked heading and lead, over a giant faint '02' watermark numeral; then an asymmetric 5:7 editorial grid with the alt-driven 4:3 photo in a sharp -1deg-tilted double-framed card (primary-tinted offset frame behind, rotated mono 'founded' sticker chip with calendar icon and hard primary offset shadow overlapping its corner) on the left, and narrative paragraphs opening with an oversized drop cap plus an oversized italic serif pull-quote behind a giant faint quotation mark stretching wider than the text column on the right. Tokens-only, no links. Use for an about page's origin story / company history / mission narrative paired with a team or office photo.",
   props: z.object({
     /** Eyebrow pill text above the heading. */
     eyebrow: z.string().optional(),
@@ -67,8 +72,8 @@ export const AboutStory = defineCapsule({
 
     const SmallIcon = ({ children }: { children?: React.ReactNode }) => (
       <svg
-        width="14"
-        height="14"
+        width="13"
+        height="13"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -82,40 +87,77 @@ export const AboutStory = defineCapsule({
     )
 
     return (
-      <AboutSection className={cn('py-16 sm:py-20 lg:py-24', props.className)}>
-        <Container size="lg" className="px-6 sm:px-8 lg:px-12">
-          <div className="mb-10 max-w-2xl">
+      <AboutSection
+        className={cn(
+          // Subtle tonal band with a slanted top edge — the story chapter cuts
+          // in on a diagonal seam (clip-path is neighbor-independent).
+          'relative overflow-hidden bg-muted/40 py-16 pt-24 [clip-path:polygon(0_2.5rem,100%_0,100%_100%,0_100%)] sm:py-24 sm:pt-32 lg:py-32 lg:pt-40',
+          props.className,
+        )}
+      >
+        {/* Giant faint chapter watermark, continuing the hero's "01" grammar. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+        >
+          <span className="absolute -bottom-10 -left-4 select-none font-extrabold leading-none tracking-tighter text-foreground/[0.04] text-[10rem] sm:text-[14rem] lg:text-[18rem]">
+            02
+          </span>
+        </div>
+
+        <Container size="lg" className="relative px-6 sm:px-8 lg:px-12">
+          {/* Mono metadata rail: eyebrow label — hairline rule — chapter index. */}
+          <div className="flex items-center gap-4">
             <Eyebrow
-              variant="primary"
+              variant="text"
               icon={
-                <SmallIcon>
-                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                </SmallIcon>
+                <span
+                  aria-hidden="true"
+                  className="size-1.5 shrink-0 bg-primary"
+                />
               }
+              className="rounded-none font-mono text-[11px] font-normal tracking-[0.3em] text-muted-foreground"
             >
               {eyebrow}
             </Eyebrow>
-            <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
+            <span aria-hidden="true" className="h-px flex-1 bg-border" />
+            <span
+              aria-hidden="true"
+              className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground"
+            >
+              Ch. 02
+            </span>
+          </div>
+
+          <div className="mt-8 max-w-3xl">
+            <h2 className="text-4xl font-extrabold leading-[0.95] tracking-tighter text-foreground sm:text-5xl lg:text-6xl">
               {heading}
             </h2>
-            <p className="mt-2.5 text-lg leading-relaxed text-muted-foreground">
+            <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
               {description}
             </p>
           </div>
-          <AboutGrid className="items-center gap-10">
-            <Card
-              variant="muted"
-              className="relative overflow-hidden shadow-[0_20px_50px_rgba(15,23,42,0.12)] rounded-2xl p-0"
-            >
-              <Image
-                alt={imageAlt}
-                w={1200}
-                h={760}
-                loading="lazy"
-                className="aspect-[4/3] size-full object-cover"
+
+          <AboutGrid className="mt-10 items-start gap-12 sm:mt-14 md:grid-cols-12 md:gap-10 lg:mt-16 lg:grid-cols-12 lg:gap-12">
+            {/* Tilted photo plate with offset frame + rotated sticker chip. */}
+            <div className="relative -mx-1 -rotate-1 sm:mx-0 md:col-span-5">
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 translate-x-3 translate-y-3 border-2 border-primary/30 bg-primary/5"
               />
-              <span className="absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-lg border border-border/50 bg-background/90 px-3.5 py-2.5 text-sm font-bold text-foreground shadow-sm backdrop-blur">
+              <Card
+                variant="muted"
+                className="relative overflow-hidden rounded-none border-2 border-foreground/20 p-0 shadow-none"
+              >
+                <Image
+                  alt={imageAlt}
+                  w={1200}
+                  h={760}
+                  loading="lazy"
+                  className="aspect-[4/3] size-full object-cover"
+                />
+              </Card>
+              <span className="absolute -right-3 -top-4 inline-flex rotate-2 items-center gap-2 rounded-none border-2 border-foreground bg-background px-3.5 py-2 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-foreground shadow-[4px_4px_0_0] shadow-primary/30">
                 <SmallIcon>
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                   <line x1="16" y1="2" x2="16" y2="6" />
@@ -124,24 +166,36 @@ export const AboutStory = defineCapsule({
                 </SmallIcon>
                 {badge}
               </span>
-            </Card>
-            <AboutContent className="space-y-0">
+            </div>
+
+            <AboutContent className="space-y-0 md:col-span-7">
               <AboutBody className="space-y-0">
                 {paragraphs.map((para, i) => (
                   <p
                     key={i}
                     className={cn(
                       'leading-relaxed text-muted-foreground',
-                      i > 0 && 'mt-4',
+                      i === 0 &&
+                        'first-letter:float-left first-letter:mr-3 first-letter:text-6xl first-letter:font-extrabold first-letter:leading-[0.8] first-letter:tracking-tight first-letter:text-foreground',
+                      i > 0 && 'mt-5',
                     )}
                   >
                     {para}
                   </p>
                 ))}
               </AboutBody>
-              <PullQuoteText className="mt-5 block rounded-r-xl border-l-[3px] border-primary bg-primary/[0.06] px-4 py-4 font-semibold text-foreground">
-                &ldquo;{quote}&rdquo;
-              </PullQuoteText>
+              {/* Oversized serif pull-quote, breaking wider than the text column. */}
+              <div className="relative mt-8 border-t border-border pt-8 sm:mt-10 sm:pt-10 lg:-ml-24">
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -top-3 left-0 select-none font-serif text-[8rem] leading-none text-primary/10"
+                >
+                  &ldquo;
+                </span>
+                <PullQuoteText className="relative block font-serif text-3xl font-medium italic leading-[1.15] tracking-tight text-foreground sm:text-4xl">
+                  &ldquo;{quote}&rdquo;
+                </PullQuoteText>
+              </div>
             </AboutContent>
           </AboutGrid>
         </Container>

@@ -2,8 +2,10 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -14,17 +16,20 @@ import {
 } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
- * DevToolTestimonials — a 3-up developer testimonials grid for a developer tool
- * / API platform. A centered heading + intro above a responsive 1/3-column grid
- * of bordered cards, each with a 5-star brand-colored rating row, a blockquote,
- * and an author row (alt-driven circular avatar + name + role). Static (no
- * links). Use as social proof to surface engineering-team quotes for developer
- * tools, API platforms, or technical SaaS.
+ * DevToolTestimonials — commit-log testimonials grid for a developer tool /
+ * API platform. An asymmetric header (heading + intro left, aria-hidden mono
+ * "[ log ]" meta right) above a 1/3-column grid of sharp-cornered log cards —
+ * the middle card drops on desktop for a staggered rhythm. Each card opens
+ * with a mono header row (square alt-driven avatar, an aria-hidden mono
+ * "@handle" derived from the name, and a chart-1 "+1" diff chip), then the
+ * blockquote behind a hairline rule, and an author row with name + mono role.
+ * Static (no links). Use as social proof to surface engineering-team quotes
+ * for developer tools, API platforms, or technical SaaS.
  */
 export const DevToolTestimonials = defineCapsule({
   name: 'DevToolTestimonials',
   description:
-    '3-up developer testimonials grid for a developer tool / API platform: a centered heading + intro above a responsive 1/3-column grid of bordered cards, each with a 5-star brand-colored rating row, a blockquote, and an author row (alt-driven circular avatar + name + role). Use as social proof to surface engineering-team quotes for developer tools, API platforms, or technical SaaS.',
+    "Commit-log testimonials grid for a developer tool / API platform: an asymmetric header (heading + intro left, aria-hidden mono log meta right) above a 1/3-column grid of sharp log cards with a desktop stagger, each opening with a mono header row (square alt-driven avatar, aria-hidden '@handle' derived from the name, chart-1 '+1' diff chip), then the blockquote behind a hairline rule and an author row with name + mono role. Use as social proof to surface engineering-team quotes for developer tools, API platforms, or technical SaaS.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -74,22 +79,35 @@ export const DevToolTestimonials = defineCapsule({
           },
         ]
 
+    const toHandle = (name: string) =>
+      '@' +
+      name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '.')
+        .replace(/(^\.|\.$)/g, '')
+
     return (
       <section
-        className={cn('py-20 lg:py-28', props.className)}
+        className={cn('py-16 lg:py-24', props.className)}
         aria-labelledby="testimonials-heading"
       >
         <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            titleId="testimonials-heading"
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
+          <div className="mb-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-14">
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              titleId="testimonials-heading"
+              className="max-w-2xl gap-4"
+              titleClassName="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl"
+              subtitleClassName="text-lg text-muted-foreground"
+            />
+            <MonoTag aria-hidden="true" tone="faint" className="shrink-0">
+              [ log ] verified reviews
+            </MonoTag>
+          </div>
           <TestimonialGrid columns={3}>
-            {items.map((t) => {
+            {items.map((t, i) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -100,12 +118,44 @@ export const DevToolTestimonials = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
+                <TestimonialCard
+                  key={__iv__.name}
+                  className={cn(
+                    'gap-4 rounded-none border-foreground/15 bg-card p-6 hover:border-foreground/40',
+                    i % 3 === 1 && 'lg:translate-y-8',
+                  )}
+                >
+                  <div className="flex items-center gap-3 border-b border-border pb-4">
+                    {__iv__.avatarAlt ? (
+                      <Image
+                        alt={__iv__.avatarAlt}
+                        w={96}
+                        h={96}
+                        className="size-9 shrink-0 rounded-none border border-border object-cover"
+                      />
+                    ) : null}
+                    <span
+                      aria-hidden="true"
+                      className="truncate font-mono text-xs text-muted-foreground"
+                    >
+                      {toHandle(__iv__.name)}
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="ml-auto shrink-0 font-mono text-[11px] text-chart-1"
+                    >
+                      +1
+                    </span>
+                  </div>
+                  <TestimonialQuote className="text-sm leading-relaxed text-foreground/90">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="flex-col items-start gap-1 border-t border-border pt-4">
+                    <TestimonialName className="font-semibold text-foreground">
+                      {__iv__.name}
+                    </TestimonialName>
                     {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
+                      <TestimonialMeta className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
                         {__iv__.role || __iv__.company || __iv__.meta}
                       </TestimonialMeta>
                     )}

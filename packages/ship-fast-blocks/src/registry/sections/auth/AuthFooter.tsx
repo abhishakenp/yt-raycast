@@ -102,7 +102,7 @@ export const AuthFooter = defineCapsule({
         )}
       >
         <FooterContent className="px-5 py-14 sm:px-6 lg:px-8">
-          <FooterGrid className="gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,minmax(0,1fr))]">
+          <FooterGrid className="grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-2 sm:gap-10 lg:grid-cols-[1.4fr_repeat(4,minmax(0,1fr))]">
             <FooterBrand
               brand={props.brand ?? 'Authly'}
               brandMark={
@@ -111,7 +111,7 @@ export const AuthFooter = defineCapsule({
                 </span>
               }
               brandClassName={'text-xl font-semibold tracking-tight'}
-              className="min-w-0 sm:col-span-2 lg:col-span-1"
+              className="col-span-2 min-w-0 sm:col-span-2 lg:col-span-1"
             >
               <FooterTagline className="max-w-sm text-pretty leading-6">
                 {props.tagline ??
@@ -139,7 +139,7 @@ export const AuthFooter = defineCapsule({
                   />
                   {col.title}
                 </FooterColumnTitle>
-                <FooterColumnList className="mt-4 space-y-3">
+                <FooterColumnList className="mt-3 space-y-2.5 sm:mt-4 sm:space-y-3">
                   {col.links.map((link) => (
                     <li key={link}>
                       <FooterLink className="text-sm font-medium text-foreground/75 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">

@@ -6,6 +6,7 @@ import { Camera } from 'lucide-react'
 import { Image } from '#/lib/img.tsx'
 import { cn } from '#/lib/utils.ts'
 import { GridField } from '#/section-kit/motion.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -29,16 +30,19 @@ import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
  * glass caption plate fades up and the photo zooms softly — an exploratory,
  * editorial way to wander the space. Small screens and authored image lists
  * render a calm uniform grid honoring the column prop, with gentle zoom and
- * caption hovers. Every tile is an alt-driven Image with ring borders and a
- * soft gradient overlay; the backdrop continues the page's light-field
- * (hairline rails, seam hairline). SSR renders static equal panels with
- * captions visible. Use to let prospective members picture themselves in the
- * space for coworking spaces, shared offices, or flex-office providers.
+ * caption hovers. The header splits asymmetrically 7:5 (mono index eyebrow
+ * chip "02 / The space" + display heading left, supporting line right), and
+ * captions render as mono index plates ("01 — Open desks"). Every tile is an
+ * alt-driven Image with ring borders and a soft gradient overlay; the
+ * backdrop continues the page's light-field (hairline rails, seam hairline).
+ * SSR renders static equal panels with captions visible. Use to let
+ * prospective members picture themselves in the space for coworking spaces,
+ * shared offices, or flex-office providers.
  */
 export const CoworkingGallery = defineCapsule({
   name: 'CoworkingGallery',
   description:
-    'Immersive space-tour gallery for a coworking or shared-workspace page: with default content, six alt-driven photos form a hover-accordion row on desktop — the hovered panel eases wide while a glass caption plate fades up and the photo zooms softly; authored image lists or an explicit column count render a calm uniform grid with gentle zoom + caption hovers. Header with eyebrow chip, display heading, and supporting line over a connected light-field backdrop (hairline rails). All imagery is alt-driven via the Image component. Use to let prospective members picture themselves in the space for coworking spaces, shared offices, or flex-office providers.',
+    'Immersive space-tour gallery for a coworking or shared-workspace page: with default content, six alt-driven photos form a hover-accordion row on desktop — the hovered panel eases wide while a glass mono-index caption plate fades up and the photo zooms softly; authored image lists or an explicit column count render a calm uniform grid with gentle zoom + caption hovers. Asymmetric 7:5 editorial header (mono index eyebrow chip + display heading left, supporting line right) over a connected light-field backdrop (hairline rails). All imagery is alt-driven via the Image component. Use to let prospective members picture themselves in the space for coworking spaces, shared offices, or flex-office providers.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -105,7 +109,7 @@ export const CoworkingGallery = defineCapsule({
     const uniformCols =
       columns === 2 ? '1-2' : columns === 4 ? '1-2-4' : '1-2-3'
 
-    const captionPlate = (caption: string, visible: boolean) =>
+    const captionPlate = (caption: string, visible: boolean, index: number) =>
       caption ? (
         <div
           className={cn(
@@ -115,8 +119,16 @@ export const CoworkingGallery = defineCapsule({
               : 'translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100',
           )}
         >
-          <span className="rounded-full border border-border/40 bg-background/70 px-3.5 py-1.5 text-sm font-medium text-foreground shadow-sm backdrop-blur-md">
-            {caption}
+          <span className="inline-flex items-baseline gap-2 rounded-full border border-border/40 bg-background/70 px-3.5 py-1.5 shadow-sm backdrop-blur-md">
+            <span
+              aria-hidden="true"
+              className="font-mono text-[10px] tracking-[0.16em] text-muted-foreground"
+            >
+              {String(index + 1).padStart(2, '0')} —
+            </span>
+            <span className="text-sm font-medium text-foreground">
+              {caption}
+            </span>
           </span>
         </div>
       ) : null
@@ -155,20 +167,22 @@ export const CoworkingGallery = defineCapsule({
             className="pointer-events-none absolute inset-y-0 right-0 hidden w-px bg-gradient-to-b from-transparent via-border/70 to-transparent lg:block"
           />
 
-          <div className="mx-auto max-w-2xl text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/70 px-4 py-1.5 backdrop-blur">
-              <Camera className="size-3.5 text-primary" aria-hidden="true" />
-              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                The space
+          <div className="grid items-end gap-6 lg:grid-cols-[7fr_5fr] lg:gap-16">
+            <div>
+              <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/70 px-4 py-1.5 backdrop-blur">
+                <Camera className="size-3.5 text-primary" aria-hidden="true" />
+                <MonoTag>02 / The space</MonoTag>
               </span>
-            </span>
-            <SectionHeading
-              title={heading}
-              subtitle={description}
-              className="mt-5 gap-0"
-              titleClassName="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl"
-              subtitleClassName="mt-4 text-lg leading-relaxed text-muted-foreground"
-            />
+              <SectionHeading
+                align="left"
+                title={heading}
+                className="mt-5 max-w-xl gap-0"
+                titleClassName="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl"
+              />
+            </div>
+            <p className="text-lg leading-relaxed text-muted-foreground lg:pb-1">
+              {description}
+            </p>
           </div>
 
           {accordion ? (
@@ -194,15 +208,15 @@ export const CoworkingGallery = defineCapsule({
                         className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
                       {overlay}
-                      {captionPlate(image.caption, isExpanded)}
+                      {captionPlate(image.caption, isExpanded, index)}
                     </HoverAccordionPanel>
                   )
                 })}
               </HoverAccordion>
 
               {/* Small screens: calm 2-col grid of the same tiles. */}
-              <GalleryGrid>
-                <GalleryGridItems columns={3}>
+              <GalleryGrid className="mt-12 lg:hidden">
+                <GalleryGridItems columns={3} className="grid-cols-2 gap-3">
                   {images
                     .map((img) => ({
                       alt: img.alt,
@@ -243,7 +257,7 @@ export const CoworkingGallery = defineCapsule({
                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                   {overlay}
-                  {captionPlate(image.caption, false)}
+                  {captionPlate(image.caption, false, index)}
                 </div>
               ))}
             </ResponsiveGrid>

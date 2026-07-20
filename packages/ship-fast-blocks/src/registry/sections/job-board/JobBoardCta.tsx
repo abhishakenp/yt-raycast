@@ -7,6 +7,7 @@ import {
   CtaBandTitle,
   CtaBandSubtitle,
 } from '#/section-kit/CtaBand.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { jobBoardLakebed } from './job-board-lakebed.ts'
 import {
   JobBoardActionButton,
@@ -14,18 +15,20 @@ import {
 } from './job-board-interactions.tsx'
 
 /**
- * JobBoardCta — a dark conversion CTA panel for a job-board / careers site. A
- * centered rounded inverted card (foreground bg, background text) on a light
- * section, holding a heading, a supporting paragraph, a pair of buttons (a solid
- * inverted primary with a trailing arrow + an outlined secondary), and a small
- * reassurance note. Buttons record real Lakebed actions. Use as the closing
- * conversion block on job boards, hiring marketplaces or recruiting platforms.
- * Renders fully with no props.
+ * JobBoardCta — a newsprint "full-page ad" conversion band for a job-board /
+ * careers site. A paper band holding a heavy-bordered ad box with a hard offset
+ * shadow: a mono "Advertisement" rule row on top, a large serif headline, a
+ * supporting paragraph, a centered pair of sharp CTAs (a filled
+ * foreground-on-background primary with a trailing arrow + a hairline outlined
+ * secondary), both with press feedback, and a small mono reassurance note.
+ * Both buttons record real Lakebed actions. Use as the closing conversion block
+ * on job boards, hiring marketplaces or recruiting platforms. Renders fully with
+ * no props.
  */
 export const JobBoardCta = defineCapsule({
   name: 'JobBoardCta',
   description:
-    'Dark conversion CTA panel for a job-board / careers site: a centered rounded inverted card (foreground bg, background text) on a light section, holding a heading, supporting paragraph, a pair of buttons (a solid inverted primary with a trailing arrow + an outlined secondary) and a small reassurance note. Buttons record real Lakebed actions. Use as the closing conversion block on job boards, hiring marketplaces or recruiting platforms.',
+    'Newsprint full-page-ad conversion band for a job-board / careers site: a paper band holding a heavy-bordered ad box with a hard offset shadow — a mono Advertisement rule row on top, a large serif headline, a supporting paragraph, a centered pair of sharp CTAs (a filled foreground-on-background primary with a trailing arrow plus a hairline outlined secondary) both with press feedback, and a small mono reassurance note. Both buttons record real Lakebed actions. Use as the closing conversion block on job boards, hiring marketplaces or recruiting platforms.',
   lakebed: jobBoardLakebed,
   props: z.object({
     /** Panel heading. */
@@ -68,13 +71,30 @@ export const JobBoardCta = defineCapsule({
     )
 
     return (
-      <CtaBand tone="muted" className={props.className}>
-        <CtaBandInner className="max-w-5xl rounded-3xl bg-foreground p-8 sm:p-12 lg:p-16">
-          <CtaBandTitle className="text-background">{heading}</CtaBandTitle>
-          <CtaBandSubtitle className="text-background/60">
+      <CtaBand
+        tone="muted"
+        className={`bg-background px-4 py-16 text-foreground sm:px-6 lg:py-24 ${props.className ?? ''}`}
+      >
+        <CtaBandInner className="max-w-3xl gap-5 border-2 border-foreground bg-background px-6 py-12 shadow-[8px_8px_0_0] shadow-foreground/80 sm:px-10 lg:py-14">
+          <div
+            aria-hidden="true"
+            className="flex w-full items-center gap-3 border-b border-border pb-4"
+          >
+            <MonoTag tone="faint" className="shrink-0">
+              Advertisement
+            </MonoTag>
+            <span className="h-px flex-1 bg-border" />
+            <MonoTag tone="faint" className="shrink-0 tabular-nums">
+              Full page
+            </MonoTag>
+          </div>
+          <CtaBandTitle className="font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+            {heading}
+          </CtaBandTitle>
+          <CtaBandSubtitle className="text-muted-foreground opacity-100">
             {description}
           </CtaBandSubtitle>
-          <div className="flex flex-col justify-center gap-4 sm:flex-row">
+          <div className="flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row sm:gap-4">
             <JobBoardActionButton
               lakebed={lakebed}
               action={primary}
@@ -85,7 +105,7 @@ export const JobBoardCta = defineCapsule({
                   Recording
                 </>
               }
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-background px-8 py-4 font-semibold text-foreground transition-colors hover:bg-background/90 disabled:pointer-events-none disabled:opacity-70"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-none bg-foreground px-8 font-medium text-background transition-[background-color,transform] hover:bg-foreground/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
             >
               {primary}
               <ArrowRight className="size-5" />
@@ -100,12 +120,12 @@ export const JobBoardCta = defineCapsule({
                   Recording
                 </>
               }
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-background/30 px-8 py-4 font-semibold text-background transition-colors hover:bg-background/10 disabled:pointer-events-none disabled:opacity-70"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-none border-2 border-foreground bg-transparent px-8 font-medium text-foreground transition-[background-color,color,transform] hover:bg-foreground hover:text-background active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
             >
               {secondary}
             </JobBoardActionButton>
           </div>
-          <p className="text-sm text-background/50">{note}</p>
+          <p className="font-mono text-xs text-muted-foreground">{note}</p>
         </CtaBandInner>
       </CtaBand>
     )

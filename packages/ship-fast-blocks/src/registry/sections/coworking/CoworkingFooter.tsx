@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { Watermark } from '#/section-kit/Decor.tsx'
 import {
   SiteFooter,
   FooterContent,
@@ -113,33 +114,81 @@ export const CoworkingFooter = defineCapsule({
           ]
     ) as Array<{ title: string; links: string[] }>
     return (
-      <SiteFooter className={props.className}>
-        <FooterContent>
-          <FooterGrid>
+      <SiteFooter
+        className={`relative isolate overflow-hidden ${props.className ?? ''}`}
+      >
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent"
+        />
+        <Watermark className="bottom-[-0.12em] left-1/2 -z-10 -translate-x-1/2 text-[clamp(5rem,17vw,15rem)]">
+          {brand}
+        </Watermark>
+        <FooterContent className="relative">
+          <FooterGrid className="lg:grid-cols-[2fr_1fr_1fr_1fr_1.4fr] lg:gap-8">
             <FooterBrand
               brand={brand}
               brandMark={<BrandTile letter={brand[0] ?? 'C'} />}
             >
-              <FooterTagline>{tagline}</FooterTagline>
-              <FooterSocial>
+              <FooterTagline className="max-w-xs leading-relaxed">
+                {tagline}
+              </FooterTagline>
+              <FooterSocial className="mt-5">
                 {social.map((s) => (
-                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  <FooterSocialLink
+                    key={s.label}
+                    className="rounded-full border border-border/60 bg-card/60 px-3.5 py-1.5 backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:text-foreground active:translate-y-0"
+                  >
+                    {s.label}
+                  </FooterSocialLink>
                 ))}
               </FooterSocial>
             </FooterBrand>
             {columns.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
-                <FooterColumnList>
+                <FooterColumnTitle className="font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground">
+                  {col.title}
+                </FooterColumnTitle>
+                <FooterColumnList className="mt-4 space-y-2.5">
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink
+                      key={link}
+                      className="block w-fit transition-transform duration-200 hover:translate-x-0.5 hover:text-foreground"
+                    >
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
-          <FooterBottom>
-            <FooterCopyright>{note}</FooterCopyright>
+          <FooterBottom className="border-border/60">
+            <FooterCopyright>
+              &copy; {new Date().getFullYear()} {brand}. {note}
+            </FooterCopyright>
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                }
+              }}
+              className="inline-flex w-fit items-center gap-2 rounded-full border border-border/60 bg-card/60 px-4 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:text-foreground active:translate-y-0"
+            >
+              Back to top
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="size-3.5"
+                aria-hidden="true"
+              >
+                <path d="M12 19V5m0 0l-6 6m6-6l6 6" />
+              </svg>
+            </button>
           </FooterBottom>
         </FooterContent>
       </SiteFooter>

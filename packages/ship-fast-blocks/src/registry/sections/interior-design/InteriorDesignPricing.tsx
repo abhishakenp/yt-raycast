@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   PricingGrid,
   PricingTier,
@@ -11,24 +10,27 @@ import {
 } from '#/section-kit/PricingGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { CtaAction } from '#/section-kit/CtaBand.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { cn } from '#/lib/utils.ts'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * InteriorDesignPricing — inverted (foreground-surface) services + pricing list
- * for an upscale interior-design / architecture studio. A dramatic two-column
- * band on the dark foreground surface: on the left an uppercase eyebrow, a
- * light-weight heading, a supporting paragraph and a filled inverted CTA; on the
- * right a divided vertical list of service tiers, each with a title, a right-
- * aligned price and a short description. Editorial, refined and high-contrast.
- * The CTA routes through section-kit route links. Use to present service packages and
- * pricing for interior designers, design studios or architecture firms. Renders
- * fully with no props via baked-in defaults.
+ * InteriorDesignPricing — the page's inverted (ink-surface) services + pricing
+ * ledger for an upscale interior-design / architecture studio. A dramatic band on
+ * the dark foreground surface, cut in on a slanted clip-path seam with a giant
+ * ghost "&" watermark bleeding behind: an asymmetric 5:7 split pairs a mono
+ * "05 / SERVICES" rail, a light-weight heading, a supporting paragraph and a
+ * square inverted CTA with press feedback on the left, with a hairline-divided
+ * vertical list of service tiers on the right — each a mono index, a title, a
+ * right-aligned tabular price and a short description. Editorial, refined, high-
+ * contrast, binary radius. The CTA routes through section-kit route links. Use to
+ * present service packages and pricing for interior designers, design studios or
+ * architecture firms. Renders fully with no props via baked-in defaults.
  */
 export const InteriorDesignPricing = defineCapsule({
   name: 'InteriorDesignPricing',
   description:
-    'Inverted (foreground-surface) services + pricing list for an upscale interior-design / architecture studio: a dramatic two-column band on the dark foreground surface with an uppercase eyebrow, light-weight heading, supporting paragraph and a filled inverted CTA on the left, and a divided vertical list of service tiers — each with a title, right-aligned price and short description — on the right. Editorial, refined and high-contrast; the CTA routes through section-kit route links. Use to present service packages and pricing for interior designers, design studios or architecture firms.',
+    "The page's inverted (ink-surface) services + pricing ledger for an upscale interior-design / architecture studio: a dramatic band on the dark foreground surface, cut in on a slanted clip-path seam with a giant ghost '&' watermark, pairing an asymmetric 5:7 split — a mono '05 / SERVICES' rail, light-weight heading, supporting paragraph and a square inverted CTA with press feedback on the left, and a hairline-divided vertical list of service tiers (mono index, title, right-aligned tabular price, short description) on the right. Editorial, refined, high-contrast, binary radius; the CTA routes through section-kit route links. Use to present service packages and pricing for interior designers, design studios or architecture firms.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -84,51 +86,67 @@ export const InteriorDesignPricing = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-foreground py-20 text-background md:py-28',
+          // Slanted top seam: the inverted band cuts in on a diagonal
+          // (clip-path is neighbor-independent), with compensating top pad.
+          'relative overflow-hidden bg-foreground py-20 pt-28 text-background [clip-path:polygon(0_3rem,100%_0,100%_100%,0_100%)] md:py-28 md:pt-36',
           props.className,
         )}
       >
-        <Container size="xl">
-          <PricingGrid className="grid-cols-1 items-start gap-16 sm:gap-6 md:grid-cols-1 lg:grid-cols-2 lg:gap-24 xl:grid-cols-2">
-            <div>
-              <SectionHeading
-                eyebrow={eyebrow}
-                title={heading}
-                subtitle={description}
-                align="left"
-                eyebrowClassName="text-xs text-background/60 tracking-widest"
-                titleClassName="text-3xl font-light text-background md:text-4xl"
-                subtitleClassName="max-w-lg leading-relaxed text-background/70"
-                className="mb-12 gap-4"
-              />
+        <Watermark
+          aria-hidden="true"
+          className="-bottom-16 -right-4 text-background/[0.05] text-[16rem] leading-none sm:text-[22rem] lg:text-[30rem]"
+        >
+          &amp;
+        </Watermark>
+        <Container size="xl" className="relative">
+          <PricingGrid className="grid-cols-1 items-start gap-12 md:grid-cols-1 lg:grid-cols-12 lg:gap-20 xl:grid-cols-12">
+            <div className="lg:col-span-5">
+              <MonoTag
+                tone="inverted"
+                className="mb-6 flex items-center gap-3 tracking-[0.2em]"
+              >
+                <span aria-hidden="true" className="size-2 bg-primary" />
+                05 / {eyebrow}
+              </MonoTag>
+              <h2 className="mb-6 max-w-md text-balance text-3xl font-light tracking-tight text-background md:text-5xl">
+                {heading}
+              </h2>
+              <p className="mb-12 max-w-md text-pretty leading-relaxed text-background/70">
+                {description}
+              </p>
               <CtaAction
                 variant="primary"
                 invert
-                className="rounded-none px-8 py-4 text-sm font-medium"
+                className="rounded-none px-8 py-4 text-sm font-medium transition-all duration-150 active:translate-y-px"
                 asChild
               >
                 <NavbarRouteLink href={cta}>{cta}</NavbarRouteLink>
               </CtaAction>
             </div>
 
-            <div className="space-y-8">
+            <div className="border-t border-background/20 lg:col-span-7">
               {items.map((item, i) => (
                 <PricingTier
                   key={item.title}
-                  className={cn(
-                    'gap-0 rounded-none border-0 bg-transparent p-0 pb-8 shadow-none',
-                    i < items.length - 1 && 'border-b border-background/20',
-                  )}
+                  className="gap-0 rounded-none border-0 border-b border-background/20 bg-transparent p-0 py-8 shadow-none"
                 >
                   <div className="mb-4 flex items-start justify-between gap-4">
-                    <PricingTierName className="text-xl font-medium text-background">
-                      {item.title}
-                    </PricingTierName>
-                    <PricingTierPrice className="whitespace-nowrap text-sm font-normal text-background/60">
+                    <div className="flex items-baseline gap-4">
+                      <span
+                        aria-hidden="true"
+                        className="font-mono text-[11px] tabular-nums tracking-[0.2em] text-background/40"
+                      >
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <PricingTierName className="text-xl font-medium tracking-tight text-background">
+                        {item.title}
+                      </PricingTierName>
+                    </div>
+                    <PricingTierPrice className="whitespace-nowrap font-mono text-sm font-normal tabular-nums tracking-tight text-background/60">
                       {item.price}
                     </PricingTierPrice>
                   </div>
-                  <PricingTierTagline className="text-sm leading-relaxed text-background/70">
+                  <PricingTierTagline className="max-w-xl pl-9 text-sm leading-relaxed text-background/70">
                     {item.description}
                   </PricingTierTagline>
                 </PricingTier>

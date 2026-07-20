@@ -1,14 +1,14 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 /**
- * FashionStoreFooter — rich multi-column dark footer for a minimalist fashion
- * store. A foreground-colored closing section with a brand block (serif
- * wordmark + tagline + text social links) beside four link columns (Shop,
- * Company, Customer Care, Legal), closed by a bottom bar with a dynamic-year
- * copyright and a "We accept" row of small payment-mark chips. Every link,
- * social and the brand logo route through section-kit route links. Use as the closing
- * footer for clothing brands, boutiques, apparel and accessories shops, or any
- * premium minimalist retail storefront.
+ * FashionStoreFooter — refined multi-column hairline footer for a luxury
+ * fashion store. A quiet closing section with a brand block (large serif
+ * wordmark + tagline + mono text social links) beside four link columns with
+ * mono column heads (Shop, Company, Customer Care, Legal), closed by a
+ * hairline-topped bottom bar. Every link, social and the brand logo route
+ * through section-kit route links. Use as the closing footer for clothing
+ * brands, boutiques, apparel and accessories shops, or any premium minimalist
+ * retail storefront.
  */
 import {
   SiteFooter,
@@ -28,7 +28,7 @@ import {
 export const FashionStoreFooter = defineCapsule({
   name: 'FashionStoreFooter',
   description:
-    "Rich multi-column dark footer for a minimalist fashion store: a foreground-colored closing section with a brand block (serif wordmark + tagline + text social links) beside four link columns (Shop, Company, Customer Care, Legal), closed by a bottom bar with a dynamic-year copyright and a 'We accept' row of small payment-mark chips. Every link, social and the brand logo route through section-kit route links. Use as the closing footer for clothing brands, boutiques, apparel and accessories shops, or any premium minimalist retail storefront.",
+    'Refined multi-column hairline footer for a luxury fashion store: a quiet closing section with a brand block (large serif wordmark + tagline + mono text social links) beside four link columns with mono column heads (Shop, Company, Customer Care, Legal), closed by a hairline-topped bottom bar. Every link, social and the brand logo route through section-kit route links. Use as the closing footer for clothing brands, boutiques, apparel and accessories shops, or any premium minimalist retail storefront.',
   props: z.object({
     /** Brand / store name shown as the serif wordmark. */
     brand: z.string().optional(),
@@ -109,22 +109,36 @@ export const FashionStoreFooter = defineCapsule({
       <SiteFooter className={props.className}>
         <FooterContent>
           <FooterGrid>
-            <FooterBrand brand={brand}>
-              <FooterTagline>{footerTagline}</FooterTagline>
+            <FooterBrand
+              brand={brand}
+              brandClassName="font-serif text-2xl font-medium text-foreground"
+            >
+              <FooterTagline className="max-w-xs">
+                {footerTagline}
+              </FooterTagline>
               <FooterSocial>
                 {footerSocials
                   .map((s) => ({ label: s }))
                   .map((s) => (
-                    <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                    <FooterSocialLink
+                      key={s.label}
+                      className="font-mono text-[11px] uppercase tracking-[0.16em]"
+                    >
+                      {s.label}
+                    </FooterSocialLink>
                   ))}
               </FooterSocial>
             </FooterBrand>
             {footerColumns.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnTitle className="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                  {col.title}
+                </FooterColumnTitle>
                 <FooterColumnList>
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink key={link} className="block w-fit">
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>

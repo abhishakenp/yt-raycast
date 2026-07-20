@@ -128,7 +128,7 @@ export const AuthHero = defineCapsule({
               <span className="shrink-0">{eyebrow}</span>
             </HeroBadge>
 
-            <HeroHeading className="mt-6 max-w-2xl origin-left -rotate-1 text-balance text-4xl font-semibold leading-[1.02] tracking-[-0.04em] sm:text-5xl md:text-6xl lg:text-7xl">
+            <HeroHeading className="mt-6 max-w-2xl origin-left -rotate-1 text-balance text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.04em] sm:text-5xl md:text-6xl lg:text-7xl">
               {heading}
             </HeroHeading>
 
@@ -136,7 +136,7 @@ export const AuthHero = defineCapsule({
               {subheading}
             </HeroSubheading>
 
-            <HeroActions className="mt-9 grid grid-cols-1 gap-3 sm:inline-grid sm:w-fit sm:grid-cols-2">
+            <HeroActions className="mt-9 grid grid-cols-2 gap-3 sm:inline-grid sm:w-fit">
               <SaasPlanActionButton
                 lakebed={lakebed}
                 intentLabel={primaryTarget}
@@ -148,14 +148,14 @@ export const AuthHero = defineCapsule({
                     Starting
                   </>
                 }
-                className="inline-flex min-h-12 items-center justify-center rounded-xl bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-[background-color,transform] duration-150 ease-out hover:bg-primary/90 active:scale-[0.98] motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-70"
+                className="inline-flex min-h-12 items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-[background-color,transform] duration-150 ease-out hover:bg-primary/90 active:scale-[0.98] motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-70 sm:px-7"
               >
                 {primaryCta}
               </SaasPlanActionButton>
               <HeroCta
                 asChild
                 variant="outline"
-                className="min-h-12 rounded-xl bg-background/70 px-7 py-3 text-sm font-semibold backdrop-blur transition-[background-color,border-color,transform] duration-150 ease-out hover:border-foreground/25 active:scale-[0.98] motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="min-h-12 rounded-xl bg-background/70 px-4 py-3 text-sm font-semibold backdrop-blur transition-[background-color,border-color,transform] duration-150 ease-out hover:border-foreground/25 active:scale-[0.98] motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:px-7"
               >
                 <NavbarRouteLink href={secondaryTarget}>
                   {secondaryCta}
@@ -175,13 +175,13 @@ export const AuthHero = defineCapsule({
             />
             <span
               aria-hidden="true"
-              className="absolute -bottom-3 right-8 z-10 hidden bg-background px-2 font-mono text-[0.65rem] uppercase tracking-[0.14em] text-muted-foreground sm:inline sm:-bottom-[0.85rem]"
+              className="absolute -bottom-3 right-8 z-10 bg-background px-2 font-mono text-[0.65rem] uppercase tracking-[0.14em] text-muted-foreground sm:-bottom-[0.85rem]"
             >
               exhibit a
             </span>
             <span
               aria-hidden="true"
-              className="absolute -top-5 -left-4 z-20 hidden -rotate-6 rounded-lg border-[3px] border-double border-primary bg-background/85 px-3.5 py-1.5 font-mono text-xs font-bold uppercase tracking-[0.14em] text-primary backdrop-blur-sm md:inline-flex"
+              className="absolute -top-4 -left-2 z-20 inline-flex -rotate-6 rounded-lg border-[3px] border-double border-primary bg-background/85 px-2.5 py-1 font-mono text-[0.68rem] font-bold uppercase tracking-[0.14em] text-primary backdrop-blur-sm md:-top-5 md:-left-4 md:px-3.5 md:py-1.5 md:text-xs"
             >
               access granted
             </span>
@@ -240,7 +240,7 @@ export const AuthHero = defineCapsule({
             <Float
               amplitude={6}
               duration={5}
-              className="absolute -bottom-5 left-6 z-10 hidden md:block"
+              className="absolute -bottom-5 left-6 z-10 md:block"
             >
               <span
                 aria-hidden="true"

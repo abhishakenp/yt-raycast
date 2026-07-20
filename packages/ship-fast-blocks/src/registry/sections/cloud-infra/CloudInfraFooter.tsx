@@ -2,11 +2,15 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 /**
- * CloudInfraFooter — fat multi-column footer for a cloud-infrastructure / developer-
- * platform SaaS landing page. A bordered-top footer with a 5-column grid: the first
- * two columns show a brand logo tile + name, tagline, and social icons; the remaining
- * columns list link groups (title + links). Every button routes through section-kit route links.
- * Tokens-only. Renders fully on zero arguments.
+ * CloudInfraFooter — terminal-industrial multi-column footer for a cloud-
+ * infrastructure / developer-platform SaaS landing page. A hairline-topped
+ * footer with a 5-column grid: the first columns show a square brand logo
+ * tile + name, tagline, and square bordered mono social chips; the remaining
+ * columns list link groups under mono uppercase titles. A hairline-ruled
+ * bottom row pairs the copyright note with a mono status line and pulsing
+ * primary square. A faint giant brand watermark sits behind. Every button
+ * routes through section-kit route links. Tokens-only. Renders fully on zero
+ * arguments.
  */
 import {
   SiteFooter,
@@ -23,10 +27,11 @@ import {
   FooterBottom,
   FooterCopyright,
 } from '#/section-kit/SiteFooter.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 export const CloudInfraFooter = defineCapsule({
   name: 'CloudInfraFooter',
   description:
-    'Fat multi-column footer for a cloud-infrastructure / developer-platform SaaS landing page: a bordered-top footer with a 5-column grid. The first two columns show a brand logo tile plus name, a tagline paragraph, and social icon buttons; the remaining columns list link groups (title + routable links). Every button routes through section-kit route links. Use as the site footer for cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',
+    'Terminal-industrial multi-column footer for a cloud-infrastructure / developer-platform SaaS landing page: a hairline-topped footer with a 5-column grid — square brand logo tile plus name, tagline, and square bordered mono social chips in the first columns; link groups under mono uppercase titles in the rest. A hairline bottom row pairs the copyright note with a mono status line and pulsing primary square; a faint giant brand watermark sits behind. Every button routes through section-kit route links. Use as the site footer for cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',
   props: z.object({
     /** Brand / product name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -93,7 +98,7 @@ export const CloudInfraFooter = defineCapsule({
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          'grid place-items-center rounded-lg bg-primary text-primary-foreground',
+          'grid place-items-center rounded-none bg-foreground text-background',
           className,
         )}
         aria-hidden="true"
@@ -112,32 +117,68 @@ export const CloudInfraFooter = defineCapsule({
       </span>
     )
     return (
-      <SiteFooter className={props.className}>
-        <FooterContent>
-          <FooterGrid>
-            <FooterBrand brand={brand} brandMark={<LogoMark />}>
-              <FooterTagline>{tagline}</FooterTagline>
-              <FooterSocial>
+      <SiteFooter
+        className={cn(
+          'relative overflow-hidden bg-background',
+          props.className,
+        )}
+      >
+        <Watermark className="-bottom-4 right-0 font-mono text-[3.5rem] text-foreground/[0.03] sm:text-[6rem]">
+          {brand}
+        </Watermark>
+        <FooterContent className="relative">
+          <FooterGrid className="md:grid-cols-5">
+            <FooterBrand
+              brand={brand}
+              brandMark={<LogoMark className="size-7" />}
+              brandClassName="font-mono text-base font-bold tracking-tight"
+              className="md:col-span-2"
+            >
+              <FooterTagline className="max-w-xs text-sm leading-relaxed">
+                {tagline}
+              </FooterTagline>
+              <FooterSocial className="mt-5 gap-2">
                 {socials
                   .map((s) => ({ label: s }))
                   .map((s) => (
-                    <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                    <FooterSocialLink
+                      key={s.label}
+                      className="border border-border px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground active:translate-y-px"
+                    >
+                      {s.label}
+                    </FooterSocialLink>
                   ))}
               </FooterSocial>
             </FooterBrand>
             {groups.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
-                <FooterColumnList>
+                <FooterColumnTitle className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                  {col.title}
+                </FooterColumnTitle>
+                <FooterColumnList className="mt-4 flex flex-col items-start gap-2.5">
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink
+                      key={link}
+                      className="text-sm text-muted-foreground transition-colors hover:text-foreground active:translate-y-px"
+                    >
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
-          <FooterBottom>
-            <FooterCopyright>{note}</FooterCopyright>
+          <FooterBottom className="mt-10 flex flex-col gap-3 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+              {note}
+            </FooterCopyright>
+            <p
+              aria-hidden="true"
+              className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground/70"
+            >
+              <span className="size-1.5 animate-pulse bg-primary" />[ status ]
+              all systems operational
+            </p>
           </FooterBottom>
         </FooterContent>
       </SiteFooter>

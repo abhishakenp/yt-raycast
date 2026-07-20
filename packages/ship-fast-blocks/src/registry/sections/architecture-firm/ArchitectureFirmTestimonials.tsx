@@ -2,6 +2,8 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -15,20 +17,25 @@ import {
 } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
- * ArchitectureFirmTestimonials — client testimonials grid for an
- * architecture-studio / design-practice page. On a subtle card surface: a
- * centered eyebrow + light heading above a responsive 1/2/3-column grid of quote
- * cards; each card has a faint quotation-mark glyph, the quote, and a footer
- * pairing a round client portrait with name + role. Calm, editorial, monochrome.
- * Tokens-only, no links. Use as a testimonials / client-words / social-proof
- * section for architecture firms, design studios, interior designers,
- * contractors or any practice that wants to showcase client praise. Renders
- * fully with no props via three baked-in testimonials.
+ * ArchitectureFirmTestimonials — blueprint client-record grid for an
+ * architecture-studio / design-practice page. Behind a giant ghost serif
+ * quotation mark: an asymmetric header row — mono annotation rail ("04 /" +
+ * eyebrow + hairline rule) and huge ultra-thin heading on the left, an
+ * aria-hidden mono "TRANSCRIPTS" annotation on the right — above a staggered
+ * 1/2/3-column grid of sharp hairline record cards (the middle card drops on
+ * desktop). Each card is tagged with a mono "CLIENT 01" index, carries a
+ * light-weight quote, and closes with a hairline-topped footer pairing a
+ * square grayscale client portrait (color on card hover) with the name and a
+ * mono uppercase role. Precise, monochrome, drafting-table calm. Tokens-only,
+ * no links. Use as a testimonials / client-words / social-proof section for
+ * architecture firms, design studios, interior designers, contractors or any
+ * practice that wants to showcase client praise. Renders fully with no props
+ * via three baked-in testimonials.
  */
 export const ArchitectureFirmTestimonials = defineCapsule({
   name: 'ArchitectureFirmTestimonials',
   description:
-    'Client testimonials grid for an architecture-studio / design-practice page: on a subtle card surface, a centered eyebrow + light heading above a responsive 1/2/3-column grid of quote cards, each with a faint quotation-mark glyph, the quote, and a footer pairing a round client portrait with name + role. Calm, editorial, monochrome. Tokens-only, no links. Use as a testimonials / client-words / social-proof section for architecture firms, design studios, interior designers, contractors or any practice showcasing client praise.',
+    'Blueprint client-record grid for an architecture-studio / design-practice page: behind a giant ghost serif quotation mark, an asymmetric header row (mono annotation rail + huge ultra-thin heading left, aria-hidden mono "TRANSCRIPTS" annotation right) above a staggered 1/2/3-column grid of sharp hairline record cards (middle card dropped on desktop) — each tagged with a mono "CLIENT 01" index, carrying a light-weight quote and a hairline-topped footer pairing a square grayscale client portrait (color on hover) with name + mono uppercase role. Precise, monochrome, drafting-table calm. Tokens-only, no links. Use as a testimonials / client-words / social-proof section for architecture firms, design studios, interior designers, contractors or any practice showcasing client praise.',
   props: z.object({
     /** Wide letter-spaced eyebrow label. */
     eyebrow: z.string().optional(),
@@ -82,20 +89,46 @@ export const ArchitectureFirmTestimonials = defineCapsule({
     return (
       <section
         aria-labelledby="architecture-firm-testimonials-heading"
-        className={cn('bg-card py-24 lg:py-28', props.className)}
+        className={cn(
+          'relative overflow-hidden bg-card py-16 sm:py-24 lg:py-28',
+          props.className,
+        )}
       >
-        <Container>
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            titleId="architecture-firm-testimonials-heading"
-            className="mb-16 gap-0"
-            eyebrowClassName="mb-3 text-xs uppercase tracking-widest text-muted-foreground"
-            titleClassName="text-3xl font-light text-foreground sm:text-4xl"
-          />
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-16 right-0 select-none font-serif text-[14rem] leading-none text-foreground/[0.04] sm:text-[20rem] lg:-top-24 lg:text-[26rem]"
+        >
+          &rdquo;
+        </span>
+        <Container className="relative">
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <div className="max-w-2xl">
+              <div className="mb-6 flex items-center gap-4">
+                <MonoTag className="shrink-0 text-foreground">04 /</MonoTag>
+                <MonoTag className="shrink-0">{eyebrow}</MonoTag>
+                <span aria-hidden="true" className="h-px w-16 bg-border" />
+              </div>
+              <SectionHeading
+                align="left"
+                title={heading}
+                titleId="architecture-firm-testimonials-heading"
+                className="gap-0"
+                titleClassName="text-4xl font-extralight tracking-tight text-foreground sm:text-5xl lg:text-6xl"
+              />
+            </div>
+            <MonoTag
+              aria-hidden="true"
+              className="shrink-0 text-muted-foreground/50"
+            >
+              Transcripts / {String(items.length).padStart(2, '0')}
+            </MonoTag>
+          </div>
 
-          <TestimonialGrid columns={3}>
-            {items.map((t) => {
+          <TestimonialGrid
+            columns={3}
+            className="[&>div]:gap-6 [&>div]:lg:gap-8"
+          >
+            {items.map((t, i) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -106,15 +139,39 @@ export const ArchitectureFirmTestimonials = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
-                    {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
-                        {__iv__.role || __iv__.company || __iv__.meta}
-                      </TestimonialMeta>
-                    )}
+                <TestimonialCard
+                  key={__iv__.name}
+                  className={cn(
+                    'group gap-6 rounded-none border-border bg-background p-6 transition-colors duration-200 hover:border-foreground/40 sm:p-8',
+                    i % 3 === 1 && 'lg:translate-y-10',
+                  )}
+                >
+                  <MonoTag className="text-foreground">
+                    Client {String(i + 1).padStart(2, '0')}
+                  </MonoTag>
+                  <TestimonialQuote className="text-base font-light leading-relaxed text-foreground">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="border-t border-border pt-5">
+                    {__iv__.avatarAlt ? (
+                      <Image
+                        alt={__iv__.avatarAlt}
+                        w={96}
+                        h={96}
+                        loading="lazy"
+                        className="size-10 shrink-0 border border-border object-cover grayscale transition-[filter] duration-500 group-hover:grayscale-0"
+                      />
+                    ) : null}
+                    <span className="flex flex-col gap-1">
+                      <TestimonialName className="font-normal">
+                        {__iv__.name}
+                      </TestimonialName>
+                      {(__iv__.role || __iv__.company || __iv__.meta) && (
+                        <TestimonialMeta className="font-mono text-[10px] uppercase tracking-[0.15em]">
+                          {__iv__.role || __iv__.company || __iv__.meta}
+                        </TestimonialMeta>
+                      )}
+                    </span>
                   </TestimonialAuthor>
                 </TestimonialCard>
               )

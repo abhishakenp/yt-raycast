@@ -12,17 +12,18 @@ import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
- * IllustratorFaq — a narrow, centered FAQ list for an illustrator /
- * visual-artist portfolio on a raised card-colored band. A centered uppercase
- * accent eyebrow + serif heading sit above a constrained definition-list of
- * soft background-colored cards, each pairing a serif question with a relaxed
- * answer paragraph. Use to answer common commission, licensing, and shipping
- * questions. Renders fully with no props via baked-in defaults.
+ * IllustratorFaq — a narrow FAQ ledger for an illustrator / visual-artist
+ * portfolio on a raised card band. A mono index eyebrow + serif heading sit
+ * above a constrained definition-list whose rows are separated by dashed
+ * hand-drawn rules; each row leads with a big mono index numeral, then a serif
+ * question and a relaxed answer paragraph. Use to answer common commission,
+ * licensing, and shipping questions. Renders fully with no props via baked-in
+ * defaults.
  */
 export const IllustratorFaq = defineCapsule({
   name: 'IllustratorFaq',
   description:
-    'Narrow centered FAQ list for an illustrator / visual-artist portfolio on a raised card-colored band: a centered uppercase accent eyebrow + serif heading above a constrained definition-list of soft background-colored cards, each pairing a serif question with a relaxed answer paragraph. Use to answer common commission, licensing, and shipping questions.',
+    'Narrow FAQ ledger for an illustrator / visual-artist portfolio on a raised card band: a mono index eyebrow + serif heading above a constrained definition-list whose rows are separated by dashed hand-drawn rules, each leading with a big mono index numeral, then a serif question and a relaxed answer paragraph. Use to answer common commission, licensing, and shipping questions.',
   props: z.object({
     /** Uppercase accent eyebrow label. */
     eyebrow: z.string().optional(),
@@ -70,25 +71,31 @@ export const IllustratorFaq = defineCapsule({
         )}
       >
         <Container size="sm">
-          <div className="mb-16 text-center">
+          <div className="mb-14 text-center">
             <SectionHeading
               eyebrow={eyebrow}
               title={heading}
-              className="gap-0"
-              eyebrowClassName="mb-2 text-sm font-medium uppercase tracking-wider text-chart-3"
+              className="gap-3"
+              eyebrowClassName="font-mono text-[11px] uppercase tracking-[0.2em] text-primary"
               titleClassName="font-serif text-3xl sm:text-4xl lg:text-5xl"
             />
           </div>
           <FaqAccordion asChild>
-            <dl>
-              {items.map((item) => (
+            <dl className="border-t-2 border-dashed border-border">
+              {items.map((item, i) => (
                 <FaqItem
                   key={item.question}
                   asChild
                   variant="minimal"
-                  className="rounded-lg p-6"
+                  className="rounded-none border-b-2 border-dashed border-border bg-transparent py-6"
                 >
-                  <div>
+                  <div className="grid grid-cols-[auto_1fr] gap-x-4">
+                    <span
+                      aria-hidden="true"
+                      className="row-span-2 font-mono text-sm tabular-nums text-primary"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
                     <FaqQuestion asChild className="mb-2 font-serif text-lg">
                       <dt>{item.question}</dt>
                     </FaqQuestion>

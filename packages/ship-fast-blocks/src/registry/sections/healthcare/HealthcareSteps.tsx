@@ -3,16 +3,19 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * HealthcareSteps — "how it works" booking flow for a medical-clinic page. A
- * centered eyebrow chip, heading and intro above a responsive 1/3-column row of
- * numbered steps; each step has a solid primary rounded-square number tile, a
- * title and a description, with a faint connecting rule running between tiles on
- * desktop. Tokens-only, no links. Use for a booking / onboarding / "getting
- * started" section of a doctors' office, primary-care practice or telehealth
- * clinic. Renders fully with no props via baked-in 3-step booking defaults.
+ * HealthcareSteps — collapsed-border "how it works" booking ledger for a
+ * medical-clinic page. An asymmetric header (left-aligned mono eyebrow +
+ * heading + lede, mono "[ booking ]" meta right) above a hairline
+ * collapsed-border 1-to-3 column ledger of numbered steps; each square cell
+ * pairs a giant ghost zero-padded index numeral with a step title and a
+ * description, and a short primary tick dash under the number. Tokens-only, no
+ * links. Use for a booking / onboarding / "getting started" section of a
+ * doctors' office, primary-care practice or telehealth clinic. Renders fully
+ * with no props via baked-in 3-step booking defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   StepTimeline,
   StepTimelineGrid,
@@ -21,7 +24,7 @@ import {
 export const HealthcareSteps = defineCapsule({
   name: 'HealthcareSteps',
   description:
-    "'How it works' booking flow for a medical-clinic page: a centered eyebrow chip, heading and intro above a responsive 1/3-column row of numbered steps, each with a solid primary rounded-square number tile, a title and a description, and a faint connecting rule running between tiles on desktop. Tokens-only, no links. Use for a booking / onboarding / 'getting started' section of a doctors' office, primary-care practice or telehealth clinic.",
+    "Collapsed-border 'how it works' booking ledger for a medical-clinic page: an asymmetric header (left-aligned mono eyebrow + heading + lede, mono booking meta right) above a hairline collapsed-border 1-to-3 column ledger of numbered steps, each square cell pairing a giant ghost zero-padded index numeral with a step title, a description, and a short primary tick dash. Tokens-only, no links. Use for a booking / onboarding / 'getting started' section of a doctors' office, primary-care practice or telehealth clinic.",
   props: z.object({
     /** Eyebrow chip text above the heading. */
     eyebrow: z.string().optional(),
@@ -68,37 +71,51 @@ export const HealthcareSteps = defineCapsule({
     return (
       <StepTimeline
         id="booking"
-        className={cn('bg-background py-20 lg:py-28', props.className)}
+        className={cn('bg-background py-20 sm:py-24 lg:py-28', props.className)}
         aria-labelledby="booking-heading"
       >
         <Container>
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            titleId="booking-heading"
-            className="mb-16 max-w-3xl gap-0"
-            eyebrowClassName="mb-4 inline-block rounded-full bg-accent px-4 py-1.5 text-sm font-semibold text-accent-foreground"
-            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={description}
+              titleId="booking-heading"
+              className="max-w-2xl gap-0"
+              eyebrowClassName="mb-4 inline-block font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground"
+              titleClassName="mb-4 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-[2.75rem] lg:leading-[1.05]"
+              subtitleClassName="text-base text-muted-foreground sm:text-lg"
+            />
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="shrink-0 md:pb-1"
+            >
+              [ booking ]
+            </MonoTag>
+          </div>
 
-          <StepTimelineGrid columns={3} className="gap-8 lg:gap-12">
+          <StepTimelineGrid
+            columns={3}
+            className="gap-0 border-l border-t border-border"
+          >
             {items.map((step, i) => (
-              <StepItem key={step.title} className="relative">
-                <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-2xl bg-primary text-2xl font-bold text-primary-foreground md:mx-0">
-                  {i + 1}
-                </div>
-                {i < items.length - 1 ? (
-                  <div
-                    className="absolute left-20 right-0 top-8 hidden h-0.5 bg-primary/20 md:block"
-                    aria-hidden="true"
-                  />
-                ) : null}
-                <h3 className="mb-3 text-center text-xl font-bold text-foreground md:text-left">
+              <StepItem
+                key={step.title}
+                className="relative gap-4 border-b border-r border-border p-6 sm:p-8"
+              >
+                <span
+                  aria-hidden="true"
+                  className="text-[clamp(3rem,5vw,4.5rem)] font-extrabold leading-none tracking-tight text-foreground/[0.08] tabular-nums"
+                >
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <span aria-hidden="true" className="h-px w-8 bg-primary" />
+                <h3 className="text-xl font-bold tracking-tight text-foreground">
                   {step.title}
                 </h3>
-                <p className="text-center leading-relaxed text-muted-foreground md:text-left">
+                <p className="leading-relaxed text-muted-foreground">
                   {step.description}
                 </p>
               </StepItem>

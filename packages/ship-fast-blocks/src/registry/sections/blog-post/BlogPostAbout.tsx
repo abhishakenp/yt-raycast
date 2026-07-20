@@ -1,6 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { Image } from '#/lib/img.tsx'
+import { cn } from '#/lib/utils.ts'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { AboutSection } from '#/section-kit/AboutSection.tsx'
@@ -8,20 +10,25 @@ import { PullQuoteText } from '#/section-kit/PullQuote.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * BlogPostAbout — long-form editorial article body for a blog post detail page.
- * A centered long-form reading column with lead paragraphs (large, light),
- * intro paragraphs, body sections (each with a heading and ordered blocks:
- * paragraphs, h3 sub-headings, inline figures with captions, and highlighted
- * bullet callouts), an accented serif pull-quote after the first section,
- * closing paragraphs, tag/topic chips, and an author bio card. Section headings
- * use the shared SectionHeading (align="left"). All links route through
- * section-kit route links. Use as the main content area for blogs, journals, magazines,
- * essays, or editorial reading pages.
+ * BlogPostAbout — newsprint long-form article body for a blog post detail
+ * page. A serif reading column under a giant ghost pilcrow watermark: the lead
+ * opens with an oversized serif drop cap, body sections are introduced by a
+ * mono "§ 01" index rail with a hairline rule before each serif SectionHeading
+ * (align="left"), and sections are separated by ✦ ✦ ✦ ornament dividers.
+ * Blocks render as serif paragraphs, small-caps-feel h3 sub-headings, sharp
+ * hairline-framed figures with mono "Fig." caption rules, and callouts as
+ * double-ruled ledger boxes with mono index numerals and hairline row
+ * dividers. After the first section an oversized italic serif pull-quote
+ * stretches wider than the column behind a giant faint quotation mark. The
+ * article closes with square mono tag chips that invert on hover and a
+ * hairline byline ledger card with a square grayscale portrait. All links
+ * route through section-kit route links. Use as the main content area for
+ * blogs, journals, magazines, essays, or editorial reading pages.
  */
 export const BlogPostAbout = defineCapsule({
   name: 'BlogPostAbout',
   description:
-    'Long-form editorial article body with headings + pullquote for a blog post detail page: a centered long-form reading column with lead paragraphs (large, light), intro paragraphs, body sections (each with a SectionHeading and ordered blocks: paragraphs, h3 sub-headings, inline figures with captions, and highlighted bullet callouts), an accented serif pull-quote after the first section, closing paragraphs, tag/topic chips, and an author bio card. All interactive elements route through section-kit route links. Use as the main content area for blogs, journals, magazines, essays, or editorial reading pages.',
+    "Newsprint long-form article body with headings + pullquote for a blog post detail page: a serif reading column under a giant ghost pilcrow watermark, lead paragraphs opening with an oversized serif drop cap, body sections introduced by a mono '§ 01' index rail with hairline rule before each serif SectionHeading and separated by ornament dividers, ordered blocks (serif paragraphs, h3 sub-headings, sharp hairline-framed figures with mono 'Fig.' caption rules, and double-ruled ledger callouts with mono index numerals), an oversized italic serif pull-quote stretching wider than the column after the first section, closing paragraphs, square mono tag chips that invert on hover, and a hairline byline ledger card with a square grayscale portrait. All interactive elements route through section-kit route links. Use as the main content area for blogs, journals, magazines, essays, or editorial reading pages.",
   props: z.object({
     /** Lead paragraphs rendered above the first heading (large, light text). */
     lead: z.array(z.string()).optional(),
@@ -206,14 +213,23 @@ export const BlogPostAbout = defineCapsule({
       : ['Twitter', 'LinkedIn', 'Portfolio']
 
     return (
-      <AboutSection className={props.className}>
-        <Container asChild size="sm" className="px-6 pb-24 lg:px-6">
+      <AboutSection className={cn('relative overflow-hidden', props.className)}>
+        {/* Giant ghost pilcrow — the manuscript watermark behind the column. */}
+        <Watermark className="-top-10 left-[-0.05em] font-serif font-bold text-foreground/[0.04] text-[12rem] sm:text-[18rem]">
+          ¶
+        </Watermark>
+
+        <Container asChild size="sm" className="relative px-6 pb-24 lg:px-6">
           <article>
             <div className="max-w-none">
-              {lead.map((p) => (
+              {lead.map((p, i) => (
                 <p
                   key={p}
-                  className="mb-8 text-xl font-light leading-relaxed text-foreground/90 md:text-2xl"
+                  className={cn(
+                    'mb-8 font-serif text-xl leading-relaxed text-foreground/90 md:text-2xl',
+                    i === 0 &&
+                      'first-letter:float-left first-letter:mr-3 first-letter:font-serif first-letter:text-7xl first-letter:font-bold first-letter:leading-[0.75] first-letter:text-foreground md:first-letter:text-8xl',
+                  )}
                 >
                   {p}
                 </p>
@@ -222,7 +238,7 @@ export const BlogPostAbout = defineCapsule({
               {introParagraphs.map((p) => (
                 <p
                   key={p}
-                  className="mb-6 text-lg leading-relaxed text-muted-foreground"
+                  className="mb-6 font-serif text-lg leading-relaxed text-muted-foreground"
                 >
                   {p}
                 </p>
@@ -230,11 +246,29 @@ export const BlogPostAbout = defineCapsule({
 
               {sections.map((section, sIdx) => (
                 <div key={section.heading}>
+                  {/* Ornament divider before each chapter. */}
+                  <div
+                    aria-hidden="true"
+                    className="mt-14 mb-10 text-center font-serif text-sm tracking-[1em] text-muted-foreground/60"
+                  >
+                    ✦ ✦ ✦
+                  </div>
+
+                  {/* Mono section-index rail: § numeral — hairline rule. */}
+                  <div className="mb-4 flex items-center gap-4">
+                    <MonoTag className="shrink-0 text-foreground">
+                      § {String(sIdx + 1).padStart(2, '0')}
+                    </MonoTag>
+                    <span
+                      aria-hidden="true"
+                      className="h-px flex-1 bg-foreground/20"
+                    />
+                  </div>
                   <SectionHeading
                     title={section.heading}
                     align="left"
-                    className="mt-12 mb-6"
-                    titleClassName="text-2xl font-semibold tracking-tight md:text-3xl"
+                    className="mb-6"
+                    titleClassName="font-serif text-3xl font-bold tracking-tight md:text-4xl"
                   />
 
                   {section.blocks.map((block, bIdx) => {
@@ -242,8 +276,12 @@ export const BlogPostAbout = defineCapsule({
                       return (
                         <h3
                           key={`${section.heading}-h3-${bIdx}`}
-                          className="mt-8 mb-4 text-xl font-semibold text-foreground"
+                          className="mt-10 mb-4 flex items-baseline gap-3 text-xl font-semibold tracking-tight text-foreground"
                         >
+                          <span
+                            aria-hidden="true"
+                            className="size-1.5 shrink-0 translate-y-[-0.2em] bg-primary"
+                          />
                           {block.h3}
                         </h3>
                       )
@@ -252,18 +290,33 @@ export const BlogPostAbout = defineCapsule({
                       return (
                         <figure
                           key={`${section.heading}-fig-${bIdx}`}
-                          className="my-12"
+                          className="my-12 sm:-mx-6 lg:-mx-14"
                         >
-                          <Image
-                            alt={block.imageAlt}
-                            w={1200}
-                            h={675}
-                            loading="lazy"
-                            className="h-64 w-full rounded-lg object-cover md:h-80"
-                          />
+                          <div className="relative">
+                            <span
+                              aria-hidden="true"
+                              className="pointer-events-none absolute inset-0 translate-x-2.5 translate-y-2.5 border border-border"
+                            />
+                            <Image
+                              alt={block.imageAlt}
+                              w={1200}
+                              h={675}
+                              loading="lazy"
+                              className="relative h-64 w-full rounded-none border border-foreground/25 object-cover md:h-80"
+                            />
+                          </div>
                           {block.caption ? (
-                            <figcaption className="mt-3 text-center text-sm text-muted-foreground">
-                              {block.caption}
+                            <figcaption className="mt-4 flex items-baseline gap-3">
+                              <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.2em] text-foreground">
+                                Fig. {sIdx + 1}.{bIdx + 1}
+                              </span>
+                              <span
+                                aria-hidden="true"
+                                className="h-px w-8 shrink-0 self-center bg-border"
+                              />
+                              <span className="font-serif text-sm italic text-muted-foreground">
+                                {block.caption}
+                              </span>
                             </figcaption>
                           ) : null}
                         </figure>
@@ -273,21 +326,32 @@ export const BlogPostAbout = defineCapsule({
                       return (
                         <div
                           key={`${section.heading}-callout-${bIdx}`}
-                          className="my-12 rounded-lg bg-muted p-8"
+                          className="my-12 rounded-none border-y-[3px] border-x border-foreground/40 bg-muted/40 [border-top-style:double] [border-bottom-style:double] border-x-foreground/15 px-6 py-6 sm:px-8"
                         >
-                          <h4 className="mb-4 text-lg font-semibold text-foreground">
-                            {block.callout}
-                          </h4>
-                          <ul className="space-y-3 text-muted-foreground">
-                            {(block.items ?? []).map((item) => (
-                              <li key={item} className="flex items-start gap-3">
+                          <div className="mb-2 flex items-center gap-4">
+                            <MonoTag className="shrink-0 text-foreground">
+                              {block.callout}
+                            </MonoTag>
+                            <span
+                              aria-hidden="true"
+                              className="h-px flex-1 bg-foreground/15"
+                            />
+                          </div>
+                          <ul className="divide-y divide-foreground/10">
+                            {(block.items ?? []).map((item, iIdx) => (
+                              <li
+                                key={item}
+                                className="grid grid-cols-[auto_1fr] gap-4 py-4"
+                              >
                                 <span
-                                  className="mt-1 text-primary"
                                   aria-hidden="true"
+                                  className="font-serif text-2xl font-bold leading-none text-foreground/25"
                                 >
-                                  •
+                                  {String(iIdx + 1).padStart(2, '0')}
                                 </span>
-                                <span>{item}</span>
+                                <span className="font-serif leading-relaxed text-muted-foreground">
+                                  {item}
+                                </span>
                               </li>
                             ))}
                           </ul>
@@ -297,47 +361,64 @@ export const BlogPostAbout = defineCapsule({
                     return (
                       <p
                         key={`${section.heading}-p-${bIdx}`}
-                        className="mb-6 text-lg leading-relaxed text-muted-foreground"
+                        className="mb-6 font-serif text-lg leading-relaxed text-muted-foreground"
                       >
                         {block.p}
                       </p>
                     )
                   })}
 
-                  {/* Pull-quote after the first section */}
+                  {/* Pull-quote after the first section — wider than the column. */}
                   {sIdx === 0 ? (
-                    <PullQuoteText className="my-12 block border-l-4 border-primary py-2 pl-6">
-                      <p className="font-serif text-2xl italic leading-relaxed text-foreground md:text-3xl">
+                    <PullQuoteText className="relative my-14 block border-y border-foreground/20 py-10 sm:-mx-6 sm:px-6 lg:-mx-20 lg:px-10">
+                      <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute -top-4 left-0 select-none font-serif text-[7rem] leading-none text-primary/10 lg:left-4"
+                      >
+                        &ldquo;
+                      </span>
+                      <p className="relative font-serif text-2xl font-medium italic leading-[1.2] tracking-tight text-foreground md:text-3xl lg:text-4xl">
                         &ldquo;{pullQuote}&rdquo;
                       </p>
-                      <footer className="mt-4 text-sm text-muted-foreground">
-                        — {pullQuoteAttribution}
+                      <footer className="mt-6 flex items-center gap-3">
+                        <span
+                          aria-hidden="true"
+                          className="h-px w-8 bg-primary/60"
+                        />
+                        <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                          {pullQuoteAttribution}
+                        </span>
                       </footer>
                     </PullQuoteText>
                   ) : null}
                 </div>
               ))}
 
+              <div
+                aria-hidden="true"
+                className="mt-14 mb-10 text-center font-serif text-sm tracking-[1em] text-muted-foreground/60"
+              >
+                ✦ ✦ ✦
+              </div>
+
               {closing.map((p) => (
                 <p
                   key={p}
-                  className="mb-8 text-lg leading-relaxed text-muted-foreground"
+                  className="mb-8 font-serif text-lg leading-relaxed text-muted-foreground"
                 >
                   {p}
                 </p>
               ))}
             </div>
 
-            {/* Tags */}
-            <div className="mt-12 border-t border-border pt-8">
+            {/* Tags — square mono index chips. */}
+            <div className="mt-12 border-t border-foreground/20 pt-6">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="mr-2 text-sm text-muted-foreground">
-                  Tagged:
-                </span>
+                <MonoTag className="mr-2 shrink-0">Tagged:</MonoTag>
                 {tags.map((tag) => (
                   <NavbarRouteLink
                     key={tag}
-                    className="rounded-full bg-muted px-3 py-1 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                    className="rounded-none border border-foreground/25 px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:bg-foreground hover:text-background active:translate-y-px"
                     href={tag}
                   >
                     {tag}
@@ -346,27 +427,33 @@ export const BlogPostAbout = defineCapsule({
               </div>
             </div>
 
-            {/* Author bio */}
-            <div className="mt-12 rounded-lg bg-muted p-8">
+            {/* Author byline ledger. */}
+            <div className="mt-12 rounded-none border-y-[3px] border-x border-foreground/40 border-x-foreground/15 bg-muted/40 p-6 [border-top-style:double] [border-bottom-style:double] sm:p-8">
               <div className="flex flex-col items-start gap-6 sm:flex-row">
-                <Image
-                  alt={authorAvatarAlt}
-                  w={160}
-                  h={160}
-                  className="size-20 shrink-0 rounded-full object-cover"
-                />
+                <div className="relative shrink-0">
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 translate-x-2 translate-y-2 border border-border"
+                  />
+                  <Image
+                    alt={authorAvatarAlt}
+                    w={160}
+                    h={160}
+                    className="relative size-20 rounded-none border border-foreground/25 object-cover grayscale"
+                  />
+                </div>
                 <div>
-                  <h3 className="mb-2 text-lg font-semibold text-foreground">
+                  <h3 className="mb-2 font-serif text-xl font-bold tracking-tight text-foreground">
                     {authorName}
                   </h3>
-                  <p className="mb-4 leading-relaxed text-muted-foreground">
+                  <p className="mb-5 font-serif leading-relaxed text-muted-foreground">
                     {authorBio}
                   </p>
-                  <div className="flex gap-4">
+                  <div className="flex flex-wrap gap-x-5 gap-y-2">
                     {authorLinks.map((link) => (
                       <NavbarRouteLink
                         key={link}
-                        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                        className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground underline decoration-foreground/30 underline-offset-4 transition-colors hover:text-foreground hover:decoration-primary"
                         href={link}
                       >
                         {link}

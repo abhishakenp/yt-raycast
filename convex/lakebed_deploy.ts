@@ -160,13 +160,16 @@ export const deploy = action({
                 details,
               ),
             onProgress: (stageKey: string) => {
-              void ctx.runMutation(internal.sessions.updateExportArtifactProgress, {
-                sessionId: artifact.sessionId,
-                target: 'lakebed',
-                previewVersion: artifact.previewVersion,
-                stageKey,
-                willDeploy: true,
-              })
+              void ctx.runMutation(
+                internal.sessions.updateExportArtifactProgress,
+                {
+                  sessionId: artifact.sessionId,
+                  target: 'lakebed',
+                  previewVersion: artifact.previewVersion,
+                  stageKey,
+                  willDeploy: true,
+                },
+              )
             },
           })
           const result: unknown = await ctx.runMutation(

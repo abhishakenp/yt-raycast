@@ -8,21 +8,24 @@ import {
   CtaBandSubtitle,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * IllustratorContactCta — a centered closing contact call-to-action for an
- * illustrator / visual-artist portfolio. A large serif heading and supporting
- * paragraph sit above dual CTAs (a filled primary email button with a mail icon
- * + an outlined secondary action) and a centered row of text social links.
- * Every button and social link routes through section-kit route links. Use as the final
- * "let's work together" band before the footer. Renders fully with no props via
- * baked-in defaults.
+ * IllustratorContactCta — the closing contact call-to-action for an illustrator
+ * / visual-artist portfolio, framed like a torn-out sketchbook page (dashed top
+ * and bottom rules on a paper surface). A mono index micro-label leads a large
+ * serif heading and supporting paragraph, above sticker-style rounded-full CTAs
+ * with hard offset shadows that press flat (a filled email button with a mail
+ * icon + a dashed-outline secondary action) and a row of rotated social sticker
+ * chips. Every button and social link routes through route links. Use as the
+ * final "let's work together" band before the footer. Renders fully with no
+ * props via baked-in defaults.
  */
 export const IllustratorContactCta = defineCapsule({
   name: 'IllustratorContactCta',
   description:
-    "Centered closing contact call-to-action for an illustrator / visual-artist portfolio: a large serif heading and supporting paragraph above dual CTAs (a filled primary email button with a mail icon + an outlined secondary action) and a centered row of text social links, all routing through section-kit route links. Use as the final 'let's work together' band before the footer.",
+    "Closing contact call-to-action for an illustrator / visual-artist portfolio, framed like a torn-out sketchbook page (dashed top and bottom rules on a paper surface): a mono index micro-label above a large serif heading and supporting paragraph, above sticker-style rounded-full CTAs with hard offset shadows that press flat (a filled email button with a mail icon + a dashed-outline secondary action) and a row of rotated social sticker chips, all routing through route links. Use as the final 'let's work together' band before the footer.",
   props: z.object({
     /** Serif heading. */
     heading: z.string().optional(),
@@ -46,18 +49,23 @@ export const IllustratorContactCta = defineCapsule({
     const socials = props.socials?.length
       ? props.socials
       : ['Instagram', 'Pinterest', 'Behance', 'Dribbble']
+    const tilt = ['-rotate-2', 'rotate-1', '-rotate-1', 'rotate-2']
 
     return (
       <CtaBand
         tone="primary"
-        className={`bg-background text-foreground ${props.className ?? ''}`}
+        className={`border-y-2 border-dashed border-border bg-background text-foreground ${props.className ?? ''}`}
       >
-        <CtaBandInner>
+        <CtaBandInner className="gap-6">
+          <MonoTag className="flex items-center gap-2 text-primary">
+            <span aria-hidden="true">*</span>
+            Let&rsquo;s work together
+          </MonoTag>
           <CtaBandTitle className="font-serif">{heading}</CtaBandTitle>
           <CtaBandSubtitle>{description}</CtaBandSubtitle>
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
             <CtaAction
-              className="gap-2 rounded-full bg-foreground px-8 py-4 text-sm font-medium text-background hover:bg-muted-foreground"
+              className="gap-2 rounded-full bg-foreground px-8 py-4 text-sm font-medium text-background shadow-[4px_4px_0_0_var(--color-primary)] transition-[transform,box-shadow] duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_var(--color-primary)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none"
               asChild
             >
               <NavbarRouteLink href={email}>
@@ -80,7 +88,7 @@ export const IllustratorContactCta = defineCapsule({
             </CtaAction>
             <CtaAction
               variant="outline"
-              className="rounded-full border-foreground px-8 py-4 text-sm font-medium hover:bg-foreground hover:text-background"
+              className="rounded-full border-2 border-dashed border-foreground px-8 py-4 text-sm font-medium transition-colors hover:bg-foreground hover:text-background"
               asChild
             >
               <NavbarRouteLink href={secondaryCta}>
@@ -88,12 +96,12 @@ export const IllustratorContactCta = defineCapsule({
               </NavbarRouteLink>
             </CtaAction>
           </div>
-          <div className="flex justify-center gap-6">
-            {socials.map((social) => (
+          <div className="flex flex-wrap justify-center gap-3">
+            {socials.map((social, i) => (
               <NavbarRouteLink
                 key={social}
                 aria-label={social}
-                className="text-muted-foreground transition-colors hover:text-foreground"
+                className={`inline-flex rounded-full border-2 border-dashed border-foreground/40 bg-background px-4 py-1.5 font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground transition-[color,transform,border-color] duration-150 hover:-translate-y-0.5 hover:border-foreground hover:text-foreground ${tilt[i % tilt.length]}`}
                 href={social}
               >
                 {social}

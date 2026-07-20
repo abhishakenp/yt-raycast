@@ -1,5 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
+import { cn } from '#/lib/utils.ts'
 
 import {
   CtaBand,
@@ -12,19 +13,21 @@ import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * FilmDirectorContactCta — an inverted, near-black contact CTA band for a film
- * director or cinematographer. On a dark foreground band: a centered thin
- * headline + muted lede, a pair of CTA buttons (a filled email button with mail
- * icon + an outlined phone button with phone icon), and a bordered top divider
- * leading into a 3-column detail row (studio address, representation, and a row
- * of social links). All actions route through section-kit route links. Use as the closing
- * contact / booking call-to-action for filmmakers, directors, DPs, or production
- * houses.
+ * FilmDirectorContactCta — an inverted, cinematic "final cut" contact CTA band
+ * for a film director or cinematographer. On a bg-foreground/text-background band
+ * (token-driven, theme-adaptive) behind a giant faint "CUT" watermark: a mono
+ * slate tag, a giant credits-style extrabold headline + muted lede, a pair of
+ * square CTA buttons with press feedback (a filled email button with mail icon
+ * and an outlined phone button with phone icon), and a hairline top divider
+ * leading into a collapsed-border 3-column detail ledger (studio address,
+ * representation, and a stack of social links). All actions route through
+ * section-kit route links. Use as the closing contact / booking call-to-action
+ * for filmmakers, directors, DPs, or production houses.
  */
 export const FilmDirectorContactCta = defineCapsule({
   name: 'FilmDirectorContactCta',
   description:
-    'Inverted, near-black contact CTA band for a film director or cinematographer: on a dark foreground band, a centered thin headline + muted lede, a pair of CTA buttons (a filled email button with mail icon and an outlined phone button with phone icon), and a bordered top divider leading into a 3-column detail row (studio address, representation, and a row of social links). All actions route through section-kit route links. Use as the closing contact / booking call-to-action for filmmakers, directors, DPs, or production houses.',
+    'Inverted, cinematic "final cut" contact CTA band for a film director or cinematographer: on a bg-foreground/text-background band behind a giant faint "CUT" watermark, a mono slate tag, a giant credits-style extrabold headline + muted lede, a pair of square CTA buttons with press feedback (a filled email button with mail icon and an outlined phone button with phone icon), and a hairline top divider leading into a collapsed-border 3-column detail ledger (studio address, representation, and a stack of social links). All actions route through section-kit route links. Use as the closing contact / booking call-to-action for filmmakers, directors, DPs, or production houses.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -61,16 +64,32 @@ export const FilmDirectorContactCta = defineCapsule({
     return (
       <CtaBand
         tone="primary"
-        className={`bg-foreground text-background ${props.className ?? ''}`}
+        className={cn(
+          'relative overflow-hidden bg-foreground text-background',
+          props.className,
+        )}
       >
-        <CtaBandInner>
-          <CtaBandTitle>{contactHeading}</CtaBandTitle>
-          <CtaBandSubtitle>{contactDesc}</CtaBandSubtitle>
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-16 -right-6 select-none font-extrabold leading-none tracking-tighter text-background/[0.05] text-[16rem] lg:text-[24rem]"
+        >
+          CUT
+        </span>
+        <CtaBandInner className="relative">
+          <span className="font-mono text-[11px] uppercase tracking-[0.3em] text-background/50">
+            [ Final Cut ]
+          </span>
+          <CtaBandTitle className="text-4xl font-extrabold tracking-tight md:text-5xl">
+            {contactHeading}
+          </CtaBandTitle>
+          <CtaBandSubtitle className="text-background/70">
+            {contactDesc}
+          </CtaBandSubtitle>
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
             <CtaAction
               variant="primary"
               invert
-              className="rounded-md px-8 py-4 text-foreground"
+              className="rounded-none px-8 py-4 text-foreground transition-transform duration-150 active:translate-y-px motion-reduce:transform-none"
               asChild
             >
               <NavbarRouteLink href={contactEmail}>
@@ -91,7 +110,7 @@ export const FilmDirectorContactCta = defineCapsule({
             </CtaAction>
             <CtaAction
               variant="outline"
-              className="rounded-md border-border px-8 py-4 hover:border-background"
+              className="rounded-none border-background/40 px-8 py-4 text-background transition-[transform,border-color] duration-150 hover:border-background active:translate-y-px motion-reduce:transform-none"
               asChild
             >
               <NavbarRouteLink href={contactPhone}>
@@ -113,29 +132,29 @@ export const FilmDirectorContactCta = defineCapsule({
           </div>
           <ResponsiveGrid
             cols="1-md-3"
-            className="border-t border-border pt-16 text-left"
+            className="mt-4 gap-0 border-l border-t border-background/20 text-left"
           >
-            <div>
-              <p className="mb-2 text-sm text-primary-foreground/70">
+            <div className="border-b border-r border-background/20 p-6">
+              <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.2em] text-background/50">
                 {contactStudioLabel}
               </p>
-              <p className="text-sm">{contactStudio}</p>
+              <p className="text-sm text-background/90">{contactStudio}</p>
             </div>
-            <div>
-              <p className="mb-2 text-sm text-primary-foreground/70">
+            <div className="border-b border-r border-background/20 p-6">
+              <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.2em] text-background/50">
                 {contactRepLabel}
               </p>
-              <p className="text-sm">{contactRep}</p>
+              <p className="text-sm text-background/90">{contactRep}</p>
             </div>
-            <div>
-              <p className="mb-2 text-sm text-primary-foreground/70">
+            <div className="border-b border-r border-background/20 p-6">
+              <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.2em] text-background/50">
                 {contactSocialLabel}
               </p>
-              <div className="flex gap-4">
+              <div className="flex flex-col gap-2">
                 {contactSocial.map((s) => (
                   <NavbarRouteLink
                     key={s}
-                    className="text-sm transition-colors hover:text-primary-foreground/70"
+                    className="block w-fit font-mono text-[11px] uppercase tracking-[0.2em] text-background/70 transition-colors hover:text-background"
                     href={s}
                   >
                     {s}

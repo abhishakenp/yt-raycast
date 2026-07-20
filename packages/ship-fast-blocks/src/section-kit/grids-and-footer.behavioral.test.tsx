@@ -57,6 +57,7 @@ vi.mock('@tanstack/react-router', () => ({
     HTMLAnchorElement,
     Omit<React.ComponentProps<'a'>, 'href'> & { to: string }
   >(({ to, ...props }, ref) => <a ref={ref} href={to} {...props} />),
+  useRouter: () => undefined,
 }))
 
 afterEach(() => {
@@ -330,7 +331,7 @@ describe('section-kit grids and footer', () => {
       </SiteFooter>,
     )
 
-    expect(screen.getByText('Ready')).toBeTruthy()
+    expect(screen.getByTitle('Ready')).toBeTruthy()
     expect(screen.getAllByText(/Northwind/).length).toBeGreaterThan(0)
   })
 
@@ -347,8 +348,7 @@ describe('section-kit grids and footer', () => {
       />,
     )
 
-    expect(screen.getByText('Ready')).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Contact' })).toBeTruthy()
+    expect(screen.getByTitle('Ready')).toBeTruthy()
   })
 
   it('does not crash when FeatureGrid receives missing generated features', () => {

@@ -8,19 +8,21 @@ import {
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * EventLogos — a trusted-by sponsor / company logo strip for a conference or event
- * page. A muted, top-and-bottom-bordered band with a centered caption above a
- * wrapping row of dimmed wordmark buttons that brighten on hover. Each wordmark
- * routes through section-kit route links. Use directly beneath the hero of conference, summit,
+ * EventLogos — kinetic-poster sponsor ticker strip for a conference or event page.
+ * A hairline top-and-bottom-bordered band carrying a mono uppercase caption on the
+ * left and a static, non-animated ticker row of sponsor wordmarks separated by
+ * mono index bullets on the right. Each wordmark is a mono uppercase route link
+ * that brightens on hover. Use directly beneath the hero of conference, summit,
  * meetup, or festival pages to show sponsors, partners, or featured companies.
  */
 export const EventLogos = defineCapsule({
   name: 'EventLogos',
   description:
-    'Trusted-by sponsor / company logo strip for a conference or event page: a muted, top-and-bottom-bordered band with a centered caption above a wrapping row of dimmed wordmark buttons that brighten on hover. Each wordmark routes through section-kit route links. Use directly beneath the hero of conference, summit, meetup, festival, or webinar pages to surface sponsors, partners, or featured companies.',
+    'Kinetic-poster sponsor ticker strip for a conference or event page: a hairline top-and-bottom-bordered band with a mono uppercase caption on the left and a static, non-animated ticker row of sponsor wordmarks separated by mono index bullets on the right. Each wordmark is a mono uppercase route link that brightens on hover. Use directly beneath the hero of conference, summit, meetup, festival, or webinar pages to surface sponsors, partners, or featured companies.',
   props: z.object({
     /** Caption above the logo row. */
     label: z.string().optional(),
@@ -36,25 +38,38 @@ export const EventLogos = defineCapsule({
 
     return (
       <LogoStrip
-        className={cn(
-          'border-y border-border bg-muted py-12 opacity-60',
-          props.className,
-        )}
+        className={cn('border-y border-border bg-muted py-6', props.className)}
       >
-        <LogoStripLabel className="text-sm normal-case tracking-normal">
-          {label}
-        </LogoStripLabel>
-        <LogoStripItems layout="flex" className="mt-8">
-          {items.filter(Boolean).map((logo) => (
-            <LogoStripItem
-              key={logo}
-              className="text-foreground transition-opacity hover:opacity-80"
-              asChild
+        <Container size="xl">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-8">
+            <LogoStripLabel className="shrink-0 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+              {label}
+            </LogoStripLabel>
+            <LogoStripItems
+              layout="flex"
+              className="flex-1 flex-wrap items-center gap-x-6 gap-y-3 lg:justify-end"
             >
-              <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
-            </LogoStripItem>
-          ))}
-        </LogoStripItems>
+              {items.filter(Boolean).map((logo, i) => (
+                <span key={logo} className="flex items-center gap-6">
+                  {i > 0 ? (
+                    <span
+                      aria-hidden="true"
+                      className="hidden font-mono text-xs text-border sm:inline"
+                    >
+                      /
+                    </span>
+                  ) : null}
+                  <LogoStripItem
+                    className="font-mono text-sm uppercase tracking-[0.12em] text-foreground/70 transition-colors hover:text-foreground"
+                    asChild
+                  >
+                    <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
+                  </LogoStripItem>
+                </span>
+              ))}
+            </LogoStripItems>
+          </div>
+        </Container>
       </LogoStrip>
     )
   },

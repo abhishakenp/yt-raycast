@@ -11,11 +11,10 @@ import {
 } from '../commerce/commerce-interactions.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   MenuCategoryHeader,
   MenuCategoryTitle,
-  MenuCategoryDivider,
 } from '#/section-kit/MenuCategoryHeader.tsx'
 import {
   MenuItemRow,
@@ -33,20 +32,24 @@ import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * BarNightclubMenu — two-column drinks menu for a cocktail-bar / nightclub
- * page. A centered eyebrow + light-weight heading + lead, then a responsive
- * two-column grid of named menu sections (e.g. house signatures / classics &
- * premium); each column has an underlined uppercase header and a list of items
- * showing a name, muted description, right-aligned price, and scoped
- * add-to-cart control that writes to the shared Lakebed cart. Rows seed command
- * search, and the footnote link still routes through section-kit route links. Use to
- * present a cocktail / drinks list for bars, lounges, speakeasies, or
- * restaurants.
+ * BarNightclubMenu — inverted poster drinks ledger for a cocktail-bar /
+ * nightclub page. A full foreground-on-background inversion band whose top
+ * edge cuts in on a slanted clip-path seam (neighbor-independent), with a
+ * giant ghost "$" watermark. Asymmetric header: ticket-stub eyebrow chip and
+ * giant condensed uppercase heading left, lead paragraph and mono pour-count
+ * right. Below, a two-column ledger of named menu sections, each headed by a
+ * hollow index numeral + mono uppercase title over a dashed rule; every row is
+ * a hairline-divided ledger line with a bold uppercase name, muted
+ * description, mono tabular price, and a scoped ticket-chip add-to-cart
+ * control that writes to the shared Lakebed cart. Rows seed command search.
+ * Closes with a dashed ticket-stub footnote panel and a routable
+ * download-menu link. Use to present a cocktail / drinks list for bars,
+ * lounges, speakeasies, or restaurants.
  */
 export const BarNightclubMenu = defineCapsule({
   name: 'BarNightclubMenu',
   description:
-    'Two-column drinks menu for a cocktail-bar / nightclub page: a centered eyebrow, light-weight heading and lead, then a responsive two-column grid of named menu sections (such as house signatures and classics & premium), each with an underlined uppercase header and a list of items showing a name, muted description, right-aligned price, and scoped add-to-cart control that writes to the shared Lakebed cart. Rows seed command search. Closes with a bordered footnote panel and a routable download-menu link. Editorial, monochrome and hairline-bordered. Use to present a cocktail / drinks list for bars, lounges, speakeasies, or restaurants.',
+    'Inverted poster drinks ledger for a cocktail-bar / nightclub page: a full foreground-on-background inversion band with a slanted clip-path top seam and giant ghost "$" watermark, an asymmetric header (ticket-stub eyebrow chip + giant condensed uppercase heading left, lead and mono pour-count right), then a two-column ledger of named menu sections, each headed by a hollow index numeral and mono uppercase title over a dashed rule, with hairline-divided rows showing a bold uppercase name, muted description, mono tabular price, and a scoped ticket-chip add-to-cart control that writes to the shared Lakebed cart. Rows seed command search. Closes with a dashed ticket-stub footnote panel and a routable download-menu link. Use to present a cocktail / drinks list for bars, lounges, speakeasies, or restaurants.',
   props: z.object({
     /** Wide letter-spaced uppercase eyebrow. */
     eyebrow: z.string().optional(),
@@ -195,45 +198,90 @@ export const BarNightclubMenu = defineCapsule({
     return (
       <section
         className={cn(
-          'border-t border-border pt-28 pb-24 lg:pt-32 lg:pb-28',
+          // Slanted top seam: the inversion band cuts in on a diagonal,
+          // independent of whichever section sits above it.
+          'relative overflow-hidden bg-foreground pb-14 pt-24 text-background [clip-path:polygon(0_3rem,100%_0,100%_100%,0_100%)] sm:pb-20 sm:pt-32 lg:pb-24 lg:pt-36',
           props.className,
         )}
       >
-        <Container>
+        <Watermark className="-left-4 bottom-0 text-[10rem] text-background/[0.05] sm:text-[18rem]">
+          $
+        </Watermark>
+        <Container className="relative">
           <MenuList>
-            <SectionHeading
-              eyebrow={eyebrow}
-              title={heading}
-              subtitle={description}
-              className="mb-16 max-w-2xl gap-0"
-              eyebrowClassName="mb-4 text-sm uppercase tracking-[0.2em] text-muted-foreground"
-              titleClassName="mb-6 text-3xl font-light sm:text-4xl lg:text-5xl"
-              subtitleClassName="leading-relaxed text-muted-foreground"
-            />
+            <div className="mb-10 grid grid-cols-1 gap-6 sm:mb-14 lg:grid-cols-12 lg:items-end">
+              <div className="lg:col-span-7">
+                <span className="inline-flex items-center gap-3 border border-background/40 px-3 py-1.5">
+                  <MonoTag
+                    tone="inverted"
+                    className="text-[10px] text-background"
+                  >
+                    {eyebrow}
+                  </MonoTag>
+                  <span
+                    aria-hidden="true"
+                    className="h-3 border-l border-dashed border-background/40"
+                  />
+                  <span
+                    aria-hidden="true"
+                    className="size-1.5 rounded-full bg-primary"
+                  />
+                </span>
+                <h2 className="mt-4 text-4xl font-black uppercase leading-[0.9] tracking-tighter text-background sm:text-5xl lg:text-6xl">
+                  {heading}
+                </h2>
+              </div>
+              <div className="lg:col-span-5 lg:pb-1">
+                <p className="max-w-md leading-relaxed text-background/70">
+                  {description}
+                </p>
+                <MonoTag
+                  aria-hidden="true"
+                  tone="inverted"
+                  className="mt-3 block text-[10px] text-background/50"
+                >
+                  {String(allDrinks.length).padStart(2, '0')} / pours
+                </MonoTag>
+              </div>
+            </div>
 
-            <ResponsiveGrid cols="1-md-2" className="lg:gap-16 gap-12">
-              {columns.map((col) => (
+            <ResponsiveGrid cols="1-md-2" className="gap-10 lg:gap-16">
+              {columns.map((col, colIndex) => (
                 <div key={col.title}>
-                  <MenuCategoryHeader className="mb-8">
-                    <MenuCategoryTitle className="text-sm uppercase tracking-[0.2em] text-muted-foreground">
+                  <MenuCategoryHeader className="mb-6 gap-3 border-b-2 border-dashed border-background/30 pb-3">
+                    <span
+                      aria-hidden="true"
+                      className="select-none text-3xl font-black leading-none tracking-tighter text-background/60 [-webkit-text-fill-color:transparent] [-webkit-text-stroke-width:1.5px]"
+                    >
+                      {String(colIndex + 1).padStart(2, '0')}
+                    </span>
+                    <MenuCategoryTitle className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-background">
                       {col.title}
                     </MenuCategoryTitle>
-                    <MenuCategoryDivider />
                   </MenuCategoryHeader>
-                  <div className="space-y-6">
+                  <div>
                     {(col.items ?? []).map((drink) => (
-                      <MenuItemRow key={`${col.title}:${drink.name}`}>
+                      <MenuItemRow
+                        key={`${col.title}:${drink.name}`}
+                        className="group border-b border-background/15 py-4 transition-colors last:border-b-0 hover:bg-background/5"
+                      >
                         <MenuItemContent>
                           <MenuItemBody>
                             <MenuItemNameRow>
-                              <MenuItemName>{drink.name}</MenuItemName>
+                              <MenuItemName className="text-sm font-black uppercase tracking-tight text-background sm:text-base">
+                                {drink.name}
+                              </MenuItemName>
+                              <span
+                                aria-hidden="true"
+                                className="hidden h-px min-w-6 flex-1 border-b border-dotted border-background/30 sm:block"
+                              />
                             </MenuItemNameRow>
-                            <MenuItemRowDescription>
+                            <MenuItemRowDescription className="text-background/60">
                               {drink.description}
                             </MenuItemRowDescription>
                           </MenuItemBody>
                           <MenuItemPriceColumn>
-                            <MenuItemRowPrice className="whitespace-nowrap text-muted-foreground">
+                            <MenuItemRowPrice className="whitespace-nowrap font-mono text-base font-black tracking-tight text-background tabular-nums">
                               {drink.price}
                             </MenuItemRowPrice>
                             <MenuItemAction>
@@ -251,7 +299,7 @@ export const BarNightclubMenu = defineCapsule({
                                       Adding
                                     </>
                                   }
-                                  className="inline-flex h-8 items-center justify-center gap-1.5 border border-border px-3 text-xs tracking-wide text-foreground transition-colors hover:bg-foreground hover:text-background disabled:pointer-events-none disabled:opacity-70"
+                                  className="inline-flex h-8 items-center justify-center gap-1.5 border border-background/40 px-3 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-background transition-colors duration-100 hover:bg-background hover:text-foreground active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
                                 >
                                   {addLabel}
                                 </CommerceAddItemButton>
@@ -266,10 +314,10 @@ export const BarNightclubMenu = defineCapsule({
               ))}
             </ResponsiveGrid>
 
-            <div className="mt-16 border border-border p-8 text-center">
-              <p className="mb-4 text-muted-foreground">{footnote}</p>
+            <div className="mt-12 flex flex-col items-start gap-4 border-2 border-dashed border-background/40 p-6 sm:mt-16 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+              <p className="text-background/70">{footnote}</p>
               <NavbarRouteLink
-                className="border-b border-muted-foreground pb-1 text-sm tracking-wide transition-colors hover:border-foreground hover:text-foreground"
+                className="inline-flex items-center gap-2 border-b-2 border-background/50 pb-1 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-background transition-colors hover:border-background active:translate-y-px"
                 href={footnoteCta}
               >
                 {footnoteCta}

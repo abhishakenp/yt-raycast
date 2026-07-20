@@ -3,7 +3,8 @@ import { act, cleanup, renderHook, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@openuidev/lang-core', () => ({
-  mergeStatements: (prev: string, patch: string) => [prev, patch].filter(Boolean).join('\n'),
+  mergeStatements: (prev: string, patch: string) =>
+    [prev, patch].filter(Boolean).join('\n'),
 }))
 
 import { useGenUIStream } from './useGenUIStream'

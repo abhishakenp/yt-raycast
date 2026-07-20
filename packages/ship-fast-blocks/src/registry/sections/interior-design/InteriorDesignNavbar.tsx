@@ -14,21 +14,22 @@ import {
 } from '#/section-kit/index.ts'
 
 /**
- * InteriorDesignNavbar — fixed, translucent top navigation bar for an upscale
- * interior-design / architecture studio site. A backdrop-blurred, border-
- * bottomed header pinned to the top: a light-weight two-tone wordmark (bold mark
- * + faded suffix) on the left, a horizontal set of nav links in the center, and
- * an outlined square primary CTA on the right (desktop), with a hamburger menu
- * button on mobile. Every link and the CTA route through route hrefs so labels
- * can drive page-switching. Editorial, refined, gallery-like. Use as the sticky
- * site header for interior designers, design studios, architecture firms, home
- * staging or renovation businesses. Renders fully with no props via baked-in
- * "Atelier Studio" defaults.
+ * InteriorDesignNavbar — fixed, translucent editorial-spatial top navigation bar
+ * for an upscale interior-design / architecture studio site. A backdrop-blurred,
+ * hairline-ruled header pinned to the top: a square material-swatch brand mark
+ * (mono initials) beside the studio wordmark on the left, a horizontal set of
+ * lightly-tracked nav links in the center, and a sharp-cornered outlined primary
+ * CTA that inverts to the ink surface with press feedback on the right (desktop),
+ * plus a hamburger menu button on mobile. Every link and the CTA route through
+ * route hrefs so labels can drive page-switching. Refined, gallery-like, binary
+ * radius. Use as the sticky site header for interior designers, design studios,
+ * architecture firms, home staging or renovation businesses. Renders fully with
+ * no props via baked-in "Atelier Studio" defaults.
  */
 export const InteriorDesignNavbar = defineCapsule({
   name: 'InteriorDesignNavbar',
   description:
-    'Fixed translucent top navigation bar for an upscale interior-design / architecture studio site: backdrop-blurred, border-bottomed header pinned to the top with a light-weight two-tone wordmark (bold mark + faded suffix) on the left, horizontal nav links in the center, and an outlined square primary CTA on the right (desktop), plus a hamburger menu on mobile. Links and CTA route through route hrefs for page-switching. Editorial, refined and gallery-like. Use as the sticky site header for interior designers, design studios, architecture firms, home staging or renovation businesses.',
+    'Fixed translucent editorial-spatial top navigation bar for an upscale interior-design / architecture studio site: backdrop-blurred, hairline-ruled header pinned to the top with a square material-swatch brand mark (mono initials) + studio wordmark on the left, lightly-tracked horizontal nav links in the center, and a sharp-cornered outlined primary CTA that inverts to the ink surface with press feedback on the right (desktop), plus a hamburger menu on mobile. Links and CTA route through route hrefs for page-switching. Refined, gallery-like, binary radius. Use as the sticky site header for interior designers, design studios, architecture firms, home staging or renovation businesses.',
   props: z.object({
     /** Brand / studio name; split into bold mark + faded suffix on a space. */
     brand: z.string().optional(),
@@ -49,33 +50,44 @@ export const InteriorDesignNavbar = defineCapsule({
     const contactTarget =
       props.contactTarget ?? nav[nav.length - 1] ?? 'Contact'
 
-    const brandParts = brand.split(' ')
-    const brandMark = brandParts[0]
-    const brandSuffix = brandParts.slice(1).join(' ')
+    const SwatchMark = ({ className }: { className?: string }) => (
+      <span
+        aria-hidden="true"
+        className={cn(
+          'grid place-items-center border border-foreground font-mono text-[11px] font-semibold uppercase tracking-tight text-foreground',
+          className,
+        )}
+      >
+        {brand.slice(0, 2).toUpperCase()}
+      </span>
+    )
 
     return (
       <SiteNav
         position="fixed"
         height="default"
-        className={cn('bg-background/95', props.className)}
+        className={cn(
+          'border-b border-border bg-background/95 backdrop-blur-md',
+          props.className,
+        )}
       >
-        <NavbarBrand
-          href={nav[0]}
-          className="gap-2 text-2xl font-light tracking-tight"
-        >
-          <BrandLogo brand={brand} className="mr-2 size-7">
-            <LogoImage className="mr-2 size-7" />
-            <LogoLabel />
+        <NavbarBrand href={nav[0]} className="flex items-center gap-2.5">
+          <BrandLogo brand={brand} className="flex items-center gap-2.5">
+            <LogoImage
+              className="size-7 rounded-none"
+              fallback={<SwatchMark className="size-7" />}
+            />
+            <LogoLabel className="text-lg font-light tracking-tight text-foreground" />
           </BrandLogo>
-          <span className="text-foreground">{brandMark}</span>
-          {brandSuffix && (
-            <span className="text-muted-foreground">{brandSuffix}</span>
-          )}
         </NavbarBrand>
 
-        <NavbarNav>
+        <NavbarNav className="gap-7">
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="rounded-none px-0 text-sm font-normal tracking-wide text-muted-foreground hover:bg-transparent hover:text-foreground"
+            >
               {label}
             </NavbarNavLink>
           ))}
@@ -85,7 +97,7 @@ export const InteriorDesignNavbar = defineCapsule({
           <NavbarCta
             variant="outline"
             href={contactTarget}
-            className="hidden border-foreground px-6 py-2.5 text-foreground hover:bg-foreground hover:text-background md:inline-flex"
+            className="hidden rounded-none border-foreground px-6 py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-foreground transition-all duration-150 hover:bg-foreground hover:text-background active:translate-y-px md:inline-flex"
           >
             {cta}
           </NavbarCta>

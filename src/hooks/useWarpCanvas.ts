@@ -42,7 +42,8 @@ export function createWarpController(
   const SEG = 1.85
   const CYCLE = SEG + 2.0
   const lerp = (a: number, b: number, t: number) => a + (b - a) * t
-  const clamp = (v: number, lo: number, hi: number) => (v < lo ? lo : v > hi ? hi : v)
+  const clamp = (v: number, lo: number, hi: number) =>
+    v < lo ? lo : v > hi ? hi : v
   const easeOut = (t: number) => 1 - Math.pow(1 - t, 3)
   const col = (t: number) => {
     if (t < 0.34) {
@@ -56,7 +57,12 @@ export function createWarpController(
     const u = (t - 0.67) / 0.33
     return [lerp(130, 251, u) | 0, lerp(72, 191, u) | 0, lerp(237, 52, u) | 0]
   }
-  const bezierArc = (p0: { x: number; y: number }, p1: { x: number; y: number }, p2: { x: number; y: number }, p3: { x: number; y: number }) => {
+  const bezierArc = (
+    p0: { x: number; y: number },
+    p1: { x: number; y: number },
+    p2: { x: number; y: number },
+    p3: { x: number; y: number },
+  ) => {
     const pts: { x: number; y: number }[] = []
     const ns: { nx: number; ny: number }[] = []
     for (let i = 0; i <= PTS; i++) {

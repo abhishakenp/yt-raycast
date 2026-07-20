@@ -21,18 +21,19 @@ import {
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
- * AeoNavbar — sticky site header for an Answer-Engine-Optimization (AEO) SaaS.
- * Thin configuration over the shared SiteNav composite: a citation-spark brand
- * mark beside the product name, desktop nav links (Features, How it works,
- * Pricing, FAQ), and a single "Start Free" pill CTA that routes to pricing. A
- * real mobile drawer (Sheet) appears on small screens and every link routes via
- * route hrefs. Use as the sticky header for AEO, generative-search, or
- * brand-citation analytics products. Renders fully with no props via "Citeable"
- * defaults.
+ * AeoNavbar — "Answer Terminal" sticky header for an Answer-Engine-Optimization
+ * (AEO) SaaS. A sharp rounded-none primary brand block with a citation-spark
+ * glyph sits beside the product name; desktop nav links are mono uppercase
+ * micro-labels with a sliding primary underline; the right side keeps command
+ * plan search, the Shoo account dropdown, the selected-plan badge, a compact
+ * hard-offset-shadow "Start Free" fullstack CTA, and a real mobile drawer.
+ * Backdrop blur is preserved and every link routes via route hrefs. Use as the
+ * sticky header for AEO, generative-search, or brand-citation analytics
+ * products. Renders fully with no props via "Citeable" defaults.
  */
 const BrandMark = () => (
   <span
-    className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground"
+    className="grid size-8 place-items-center rounded-none bg-primary text-primary-foreground"
     aria-hidden="true"
   >
     <svg
@@ -54,7 +55,7 @@ const BrandMark = () => (
 export const AeoNavbar = defineCapsule({
   name: 'AeoNavbar',
   description:
-    "Sticky site header for an Answer-Engine-Optimization (AEO) SaaS with a citation-spark brand mark, centered desktop nav links (Features, How it works, Pricing, FAQ), command plan search, Shoo account dropdown, selected-plan badge, a fullstack 'Start Free' CTA, and a real mobile drawer. Navigation routes through route hrefs while search/auth/conversion state is shared through Lakebed. Use as the sticky header for AEO platforms, generative-search visibility tools, or brand-citation analytics products.",
+    "Terminal-styled sticky site header for an Answer-Engine-Optimization (AEO) SaaS: a rounded-none primary brand block with a citation-spark mark, mono uppercase nav micro-labels with sliding underline hovers (Features, How it works, Pricing, FAQ), command plan search, Shoo account dropdown, selected-plan badge, a hard-offset-shadow fullstack 'Start Free' CTA, and a real mobile drawer — all over a backdrop-blur hairline header. Navigation routes through route hrefs while search/auth/conversion state is shared through Lakebed. Use as the sticky header for AEO platforms, generative-search visibility tools, or brand-citation analytics products.",
   props: z.object({
     /** Brand / product name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -86,13 +87,17 @@ export const AeoNavbar = defineCapsule({
         <NavbarBrand href={props.homeTarget ?? brand} className="min-w-0 gap-3">
           <BrandLogo brand={brand}>
             <LogoImage fallback={<BrandMark />} />
-            <LogoLabel className="truncate text-lg font-semibold text-foreground" />
+            <LogoLabel className="truncate font-mono text-base font-semibold lowercase tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
-        <NavbarNav>
+        <NavbarNav className="gap-1">
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="relative rounded-none px-3 py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground transition-colors duration-150 after:absolute after:inset-x-3 after:bottom-0.5 after:h-px after:origin-left after:scale-x-0 after:bg-primary after:transition-transform after:duration-150 hover:bg-transparent hover:text-foreground hover:after:scale-x-100"
+            >
               {label}
             </NavbarNavLink>
           ))}
@@ -102,12 +107,16 @@ export const AeoNavbar = defineCapsule({
           <SaasIntentBadge lakebed={lakebed} />
           <SaasSearchButton
             lakebed={lakebed}
-            buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+            buttonClassName="inline-flex p-2 text-muted-foreground transition-colors duration-150 hover:text-foreground"
           />
-          <SaasAccountButton
-            lakebed={lakebed}
-            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"
-          />
+          {/* display:contents wrapper squares the kit's rounded Sign-in chip so
+              it follows the terminal design language (rounded-none surfaces). */}
+          <span className="contents [&_[data-slot=account-dropdown-unauthenticated]]:rounded-none [&_[data-slot=account-dropdown-unauthenticated]]:font-mono [&_[data-slot=account-dropdown-unauthenticated]]:text-[11px] [&_[data-slot=account-dropdown-unauthenticated]]:uppercase [&_[data-slot=account-dropdown-unauthenticated]]:tracking-[0.15em]">
+            <SaasAccountButton
+              lakebed={lakebed}
+              buttonClassName="p-2 text-muted-foreground transition-colors duration-150 hover:text-foreground"
+            />
+          </span>
           <SaasPlanActionButton
             lakebed={lakebed}
             intentLabel={ctaTarget}
@@ -119,7 +128,7 @@ export const AeoNavbar = defineCapsule({
                 Starting
               </>
             }
-            className="hidden items-center justify-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
+            className="hidden items-center justify-center gap-2 rounded-none bg-primary px-4 py-2 font-mono text-xs font-semibold uppercase tracking-[0.12em] text-primary-foreground shadow-[3px_3px_0_0] shadow-foreground/20 transition-[background-color,box-shadow,transform] duration-150 hover:bg-primary/90 active:translate-y-px active:shadow-none disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
           >
             {ctaLabel}
           </SaasPlanActionButton>
@@ -127,7 +136,7 @@ export const AeoNavbar = defineCapsule({
             brand={brand}
             nav={nav}
             homeTarget={props.homeTarget ?? brand}
-            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
+            buttonClassName="p-2 text-muted-foreground transition-colors duration-150 hover:text-foreground md:hidden"
           />
         </NavbarActions>
       </SiteNav>

@@ -18,21 +18,25 @@ import {
   FooterBottom,
   FooterCopyright,
 } from '#/section-kit/SiteFooter.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * FaqFooter — a five-column resource footer for a help-center / SaaS product page.
- * A spanning brand block (logo tile + name, tagline, and small social icon
- * buttons) sits beside four link columns (Product, Resources, Company, Legal) in a
- * responsive grid, with a bottom bar holding the copyright, a Status link, and a
- * green "All systems operational" status pill. All links route through section-kit route links.
- * Use as the global footer for SaaS knowledge bases, help centers, documentation
- * landings, or support pages. Renders fully with no props via baked-in "FlowSync"
- * defaults.
+ * FaqFooter — an "Editorial Q&A" five-column resource footer for a help-center /
+ * SaaS product page. A giant faint brand watermark bleeds behind a spanning brand
+ * block (sharp square rounded-none logo mark linking home, wordmark, tagline, and
+ * hairline-outlined mono social chips) beside four link columns (Product, Resources,
+ * Company, Legal) with mono uppercase column titles and block-fit links, over a
+ * hairline bottom bar holding the mono copyright, a Status route link, and an "All
+ * systems operational" status pill with a single primary live dot. All links route
+ * through section-kit route links. Use as the global footer for SaaS knowledge bases,
+ * help centers, documentation landings, or support pages. Renders fully with no props
+ * via baked-in "FlowSync" defaults.
  */
 export const FaqFooter = defineCapsule({
   name: 'FaqFooter',
   description:
-    "A five-column resource footer for a help-center / SaaS product page: a spanning brand block (logo tile + name, tagline, and small social icon buttons) beside four link columns (Product, Resources, Company, Legal) in a responsive grid, with a bottom bar holding the copyright, a Status link, and a green 'All systems operational' status pill. All links route through section-kit route links. Use as the global footer for SaaS knowledge bases, help centers, documentation landings, or support pages.",
+    "An 'Editorial Q&A' five-column resource footer for a help-center / SaaS product page: a giant faint brand watermark behind a spanning brand block (sharp square rounded-none logo mark linking home, wordmark, tagline, and hairline-outlined mono social chips) beside four link columns (Product, Resources, Company, Legal) with mono uppercase column titles and block-fit links, over a hairline bottom bar holding the mono copyright, a Status route link, and an 'All systems operational' status pill with a single primary live dot. All links route through section-kit route links. Use as the global footer for SaaS knowledge bases, help centers, documentation landings, or support pages.",
   props: z.object({
     /** Brand / product name shown beside the logo. */
     brand: z.string().optional(),
@@ -96,10 +100,13 @@ export const FaqFooter = defineCapsule({
     const copyright =
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand}, Inc. All rights reserved.`
+    const statusTarget = props.statusTarget ?? 'Status'
+    const statusLabel = props.statusLabel ?? 'All systems operational'
+    const homeTarget = props.homeTarget ?? 'Documentation'
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          'grid place-items-center rounded-lg bg-primary text-primary-foreground',
+          'grid place-items-center rounded-none bg-foreground text-background',
           className,
         )}
         aria-hidden="true"
@@ -121,32 +128,79 @@ export const FaqFooter = defineCapsule({
     )
 
     return (
-      <SiteFooter className={props.className}>
-        <FooterContent>
+      <SiteFooter className={cn('relative overflow-hidden', props.className)}>
+        {/* Giant faint brand watermark. */}
+        <Watermark className="-bottom-6 right-0 font-serif text-[5rem] leading-none sm:text-[8rem] lg:text-[10rem]">
+          {brand}
+        </Watermark>
+        <FooterContent className="relative">
           <FooterGrid>
-            <FooterBrand brand={brand} brandMark={<LogoMark />}>
-              <FooterTagline>{tagline}</FooterTagline>
-              <FooterSocial>
+            <FooterBrand
+              brand={brand}
+              brandMark={
+                <NavbarRouteLink
+                  aria-label={brand}
+                  href={homeTarget}
+                  className="inline-flex rounded-none active:translate-y-px"
+                >
+                  <LogoMark className="size-7" />
+                </NavbarRouteLink>
+              }
+              brandClassName="text-lg font-semibold tracking-tight"
+            >
+              <FooterTagline className="max-w-xs leading-relaxed">
+                {tagline}
+              </FooterTagline>
+              <FooterSocial className="mt-5 gap-2">
                 {socials
                   .map((s) => ({ label: s }))
                   .map((s) => (
-                    <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                    <FooterSocialLink
+                      key={s.label}
+                      className="rounded-none border border-border px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:border-foreground hover:text-foreground active:translate-y-px"
+                    >
+                      {s.label}
+                    </FooterSocialLink>
                   ))}
               </FooterSocial>
             </FooterBrand>
             {columns.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
-                <FooterColumnList>
+                <FooterColumnTitle className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                  {col.title}
+                </FooterColumnTitle>
+                <FooterColumnList className="mt-4 flex flex-col items-start gap-2.5">
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink
+                      key={link}
+                      className="block w-fit text-sm text-muted-foreground transition-colors hover:text-foreground active:translate-y-px"
+                    >
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
-          <FooterBottom>
-            <FooterCopyright>{copyright}</FooterCopyright>
+          <FooterBottom className="mt-12 border-t border-border pt-6">
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+              {copyright}
+            </FooterCopyright>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              <FooterLink
+                href={statusTarget}
+                className="block w-fit font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground active:translate-y-px"
+              >
+                {statusTarget}
+              </FooterLink>
+              <span className="inline-flex items-center gap-2 border border-border px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                <span
+                  aria-hidden="true"
+                  className="size-1.5 animate-pulse bg-primary"
+                />
+                {statusLabel}
+              </span>
+            </div>
           </FooterBottom>
         </FooterContent>
       </SiteFooter>

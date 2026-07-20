@@ -7,6 +7,7 @@ import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   NewsletterCtaDescription,
   NewsletterCtaFineprint,
@@ -15,17 +16,23 @@ import {
 import { SubscribeBand } from '#/section-kit/SubscribeBand.tsx'
 
 /**
- * BeautyStoreNewsletter — a dark newsletter CTA band for a beauty / skincare /
- * cosmetics storefront. A wide rounded-foreground card with a background image,
- * a centered eyebrow, a serif heading, a supporting paragraph, and a real email-
- * capture form (email input + submit button). Form submit writes to the shared
- * Lakebed subscriber list. Use as a list-building / first-order-discount
- * conversion block for e-commerce, beauty boxes, or DTC personal-care brands.
+ * BeautyStoreNewsletter — full-bleed inverted editorial subscribe band for a
+ * beauty / skincare / cosmetics storefront. The band flips to the foreground
+ * color and cuts in on a slanted top seam (clip-path), with the product
+ * photograph washed to low opacity behind and a giant ghost serif italic
+ * "Beauté" watermark. Content sits in an asymmetric 7:5 split: left carries a
+ * mono inverted eyebrow rail, a serif italic heading, and the supporting
+ * paragraph; right holds a real email-capture form — hairline-underlined
+ * transparent input plus a sharp uppercase-tracked background-colored submit
+ * button with press feedback — over the mono fine-print note. Form submit
+ * writes to the shared Lakebed subscriber list. Use as a list-building /
+ * first-order-discount conversion block for e-commerce, beauty boxes, or DTC
+ * personal-care brands.
  */
 export const BeautyStoreNewsletter = defineCapsule({
   name: 'BeautyStoreNewsletter',
   description:
-    'Dark newsletter CTA band for a beauty / skincare / cosmetics storefront: a wide rounded-foreground card with a background image, centered eyebrow, serif heading, supporting paragraph, and a real email-capture form (email input + submit button). Form submit writes to the shared Lakebed subscriber list so another subscribe block or admin view can react immediately. Use as a list-building / first-order-discount conversion block for e-commerce, beauty boxes, or DTC personal-care brands.',
+    'Full-bleed inverted editorial subscribe band for a beauty / skincare / cosmetics storefront: the band flips to the foreground color and cuts in on a slanted top seam, with the product photograph washed to low opacity behind and a giant ghost serif italic "Beauté" watermark. An asymmetric 7:5 split places a mono inverted eyebrow rail, serif italic heading, and supporting paragraph on the left, and a real email-capture form (hairline-underlined transparent input + sharp uppercase-tracked submit button with press feedback) over the mono fine-print note on the right. Form submit writes to the shared Lakebed subscriber list so another subscribe block or admin view can react immediately. Use as a list-building / first-order-discount conversion block for e-commerce, beauty boxes, or DTC personal-care brands.',
   props: z.object({
     /** Eyebrow text above heading. */
     eyebrow: z.string().optional(),
@@ -63,41 +70,60 @@ export const BeautyStoreNewsletter = defineCapsule({
     return (
       <SubscribeBand
         variant="inverted"
-        className={cn('py-20 lg:py-28', props.className)}
+        className={cn(
+          // Inverted band with a slanted top seam — neighbor-independent.
+          'relative overflow-hidden py-16 pt-24 [clip-path:polygon(0_3rem,100%_0,100%_100%,0_100%)] sm:pt-28 lg:py-28 lg:pt-36',
+          props.className,
+        )}
       >
-        <Container>
-          <div className="relative overflow-hidden rounded-xl bg-foreground">
-            <div aria-hidden="true" className="absolute inset-0 opacity-20">
-              <Image
-                alt={imageAlt}
-                w={1200}
-                h={600}
-                loading="lazy"
-                className="size-full object-cover"
-              />
-            </div>
-            <div className="relative px-8 py-16 text-center lg:px-16 lg:py-24">
-              <span className="mb-4 inline-block text-xs font-semibold uppercase tracking-widest text-primary">
-                {eyebrow}
-              </span>
-              <NewsletterCtaHeading className="mx-auto mb-6 max-w-2xl font-serif text-3xl font-semibold text-background sm:text-4xl lg:text-5xl">
+        {/* Low-opacity product photograph washing the whole band. */}
+        <div aria-hidden="true" className="absolute inset-0 opacity-15">
+          <Image
+            alt={imageAlt}
+            w={1200}
+            h={600}
+            loading="lazy"
+            className="size-full object-cover"
+          />
+        </div>
+        {/* Giant ghost serif italic watermark. */}
+        <Watermark className="-bottom-10 -left-4 font-serif text-[7rem] font-medium italic tracking-tight text-background/[0.06] sm:text-[11rem] lg:text-[15rem]">
+          Beauté
+        </Watermark>
+
+        <Container className="relative">
+          <div className="grid gap-10 lg:grid-cols-12 lg:items-center lg:gap-16">
+            <div className="lg:col-span-7">
+              {/* Mono inverted eyebrow rail. */}
+              <div className="mb-6 flex items-center gap-4">
+                <MonoTag tone="inverted" className="shrink-0 text-background">
+                  {eyebrow}
+                </MonoTag>
+                <span
+                  aria-hidden="true"
+                  className="h-px w-10 bg-background/30 sm:max-w-24 sm:flex-1"
+                />
+              </div>
+              <NewsletterCtaHeading className="max-w-2xl font-serif text-4xl font-medium italic tracking-tight text-background sm:text-5xl lg:text-6xl">
                 {heading}
               </NewsletterCtaHeading>
-              <NewsletterCtaDescription className="mx-auto mb-8 max-w-xl text-lg text-background/70">
+              <NewsletterCtaDescription className="mt-6 max-w-xl border-l border-background/30 pl-5 text-lg text-background/70">
                 {description}
               </NewsletterCtaDescription>
+            </div>
+            <div className="lg:col-span-5">
               <NewsletterSubscribeForm
                 lakebed={lakebed}
                 source={submitTarget}
                 placeholder={placeholder}
                 buttonLabel={submit}
                 successMessage="You're in. Your beauty offer and product edits will arrive by email."
-                className="mx-auto flex max-w-md flex-col gap-4 sm:flex-row"
-                inputClassName="flex-1 rounded-full border border-border bg-background/10 px-6 py-4 text-background placeholder:text-background/50 focus:outline-none focus:ring-2 focus:ring-primary"
-                buttonClassName="whitespace-nowrap rounded-full bg-primary px-8 py-4 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+                className="flex max-w-md flex-col gap-4 sm:flex-row sm:items-end sm:gap-3 lg:max-w-none"
+                inputClassName="flex-1 rounded-none border-0 border-b border-background/40 bg-transparent px-1 py-3 text-background placeholder:text-background/50 focus:border-background focus:outline-none"
+                buttonClassName="whitespace-nowrap rounded-none bg-background px-7 py-3.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground transition-all duration-150 hover:bg-background/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
                 statusClassName="text-background/60"
               />
-              <NewsletterCtaFineprint className="mt-4 text-sm text-background/60">
+              <NewsletterCtaFineprint className="mt-4 font-mono text-[10px] uppercase tracking-[0.14em] text-background/60">
                 {note}
               </NewsletterCtaFineprint>
             </div>

@@ -4,13 +4,16 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
 /**
- * ConstructionProjects — featured-projects gallery for a construction /
- * general contractor page. A centered section heading above a responsive grid
- * of clickable project cards; each card has an alt-driven image with a
- * category tag overlay, a title, and a meta line. Every card and the
- * "View all" link route through section-kit route links. Use to showcase completed
- * projects for construction firms, contractors, builders, or design-build
- * firms. Renders fully with no props via baked-in defaults.
+ * ConstructionProjects — industrial-brutalist build log for a construction /
+ * general contractor page. An asymmetric header (left mono eyebrow + extrabold
+ * uppercase heading, mono file index right) above a staggered grid of
+ * hard-edged project plates: every other column shifts down, each plate wraps
+ * its alt-driven photo in a 2px frame with a hard offset shadow, a mono index
+ * chip and a square category tag overlay, then an uppercase title and a mono
+ * spec meta line. Every card and the square-edged "View all" button route
+ * through section-kit route links. Use to showcase completed projects for
+ * construction firms, contractors, builders, or design-build firms. Renders
+ * fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -25,7 +28,7 @@ import { NavbarRouteLink } from '#/section-kit/index.ts'
 export const ConstructionProjects = defineCapsule({
   name: 'ConstructionProjects',
   description:
-    "Featured-projects gallery for a construction / general contractor page: a centered section heading above a responsive grid of clickable project cards, each with an alt-driven image with a category tag overlay, a title, and a meta line. Cards and the 'View all' link route through section-kit route links. Use to showcase completed projects for construction firms, contractors, builders, or design-build firms.",
+    "Industrial-brutalist build log for a construction / general contractor page: an asymmetric header (left mono eyebrow + extrabold uppercase heading, mono file index right) above a staggered grid of hard-edged project plates — 2px photo frames with hard offset shadows, mono index chips, square category tag overlays, uppercase titles, and mono spec meta lines. Cards and the square-edged 'View all' button route through section-kit route links. Use to showcase completed projects for construction firms, contractors, builders, or design-build firms.",
   props: z.object({
     /** Section eyebrow label. */
     eyebrow: z.string().optional(),
@@ -90,12 +93,12 @@ export const ConstructionProjects = defineCapsule({
         ]
     const ArrowRight = () => (
       <svg
-        width="20"
-        height="20"
+        width="18"
+        height="18"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"
         aria-hidden="true"
@@ -105,27 +108,51 @@ export const ConstructionProjects = defineCapsule({
       </svg>
     )
     return (
-      <section className={cn('bg-card py-20 lg:py-28', props.className)}>
+      <section
+        className={cn(
+          'overflow-hidden bg-card py-16 lg:py-24',
+          props.className,
+        )}
+      >
         <Container>
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            eyebrowClassName="text-sm font-semibold tracking-wider text-muted-foreground"
-            titleClassName="mb-4 mt-3 text-3xl font-bold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-0"
+              eyebrowClassName="font-mono text-[11px] uppercase tracking-[0.2em] text-primary"
+              titleClassName="mb-4 mt-3 text-3xl font-extrabold uppercase tracking-tight text-foreground sm:text-4xl lg:text-5xl"
+              subtitleClassName="text-lg text-muted-foreground"
+            />
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] tabular-nums text-muted-foreground/60"
+            >
+              File {String(items.length).padStart(2, '0')} / builds
+            </p>
+          </div>
 
-          <PortfolioGrid cols="1-md-2-3">
-            {items.map((proj) => (
+          <PortfolioGrid
+            cols="1-md-2-3"
+            className="gap-x-6 gap-y-10 md:gap-y-8 lg:pb-10"
+          >
+            {items.map((proj, i) => (
               <PortfolioItem
                 key={proj.title}
-                className="group block w-full text-left"
+                className={cn(
+                  'group block w-full text-left',
+                  i % 2 === 1 && 'md:translate-y-6 lg:translate-y-0',
+                  i % 3 === 1 && 'lg:translate-y-10',
+                )}
                 asChild
               >
                 <NavbarRouteLink href={proj.title}>
-                  <PortfolioMedia aspect="4-3" className="mb-4 rounded-xl">
+                  <PortfolioMedia
+                    aspect="4-3"
+                    className="mb-4 rounded-none border-2 border-foreground shadow-[6px_6px_0_0] shadow-foreground/20 transition-all duration-100 group-hover:-translate-y-1 group-hover:shadow-[8px_8px_0_0] group-hover:shadow-foreground/30"
+                  >
                     <Image
                       alt={proj.title}
                       w={800}
@@ -134,26 +161,31 @@ export const ConstructionProjects = defineCapsule({
                       className="h-64 w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent" />
+                    <span className="absolute left-0 top-0 bg-foreground px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] tabular-nums text-background">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
                     <div className="absolute inset-x-4 bottom-4">
-                      <span className="mb-2 inline-block rounded-full bg-background/90 px-3 py-1 text-xs font-semibold text-foreground">
+                      <span className="mb-2 inline-block rounded-none border border-foreground bg-background px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-foreground">
                         {proj.tag}
                       </span>
                     </div>
                   </PortfolioMedia>
                   <PortfolioCaption>
-                    <h3 className="text-lg font-semibold text-foreground">
+                    <h3 className="text-base font-extrabold uppercase tracking-tight text-foreground">
                       {proj.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground">{proj.meta}</p>
+                    <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
+                      {proj.meta}
+                    </p>
                   </PortfolioCaption>
                 </NavbarRouteLink>
               </PortfolioItem>
             ))}
           </PortfolioGrid>
 
-          <div className="mt-12 text-center">
+          <div className="mt-14 lg:mt-20">
             <NavbarRouteLink
-              className="inline-flex items-center gap-2 font-semibold text-foreground transition-all hover:gap-3"
+              className="inline-flex items-center gap-2 rounded-none border-2 border-foreground bg-background px-6 py-3.5 font-mono text-xs font-bold uppercase tracking-[0.15em] text-foreground shadow-[5px_5px_0_0] shadow-foreground transition-all duration-100 hover:-translate-y-px hover:gap-3 active:translate-x-px active:translate-y-px active:shadow-none"
               href={viewAll}
             >
               {viewAll}

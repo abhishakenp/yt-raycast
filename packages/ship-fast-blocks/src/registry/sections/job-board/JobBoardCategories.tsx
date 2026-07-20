@@ -3,16 +3,20 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 /**
- * JobBoardCategories — a browse-by-category icon grid for a job-board / careers
- * site. A centered heading + description above a responsive 2/3/4-column grid of
- * tappable category tiles, each with a rounded icon chip, a category title, and a
- * per-category job count; tiles lift on hover and route through section-kit route links. Use
- * to let visitors jump into a field (Engineering, Design, Marketing…) on job
- * boards, hiring marketplaces, talent networks or directory-style products.
- * Renders fully with no props; built-in line icons rotate across the items.
+ * JobBoardCategories — a classified-index category ledger for a job-board /
+ * careers site. A paper section with an asymmetric hairline header (serif
+ * heading + description left, mono "By field" meta right) above a collapsed-border
+ * 2-to-4-column ledger grid of clickable category cells: each sharp-cornered cell
+ * carries an index numeral, a hairline stamp-box icon, the category title, and a
+ * mono tabular job count; cells wash on hover and route through section-kit route
+ * links. Use to let visitors jump into a field (Engineering, Design, Marketing…)
+ * on job boards, hiring marketplaces, talent networks or directory-style
+ * products. Renders fully with no props; built-in line icons rotate across the
+ * items.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   CategoryGrid,
   CategoryCard,
@@ -23,7 +27,7 @@ import { NavbarRouteLink } from '#/section-kit/index.ts'
 export const JobBoardCategories = defineCapsule({
   name: 'JobBoardCategories',
   description:
-    'Browse-by-category icon grid for a job-board / careers site: a centered heading + description above a responsive 2/3/4-column grid of tappable category tiles, each with a rounded icon chip, a category title and a per-category job count; tiles lift on hover and route through section-kit route links. Use to let visitors jump into a field (Engineering, Design, Marketing…) on job boards, hiring marketplaces, talent networks or directory-style products.',
+    'Classified-index category ledger for a job-board / careers site: a paper section with an asymmetric hairline header (serif heading and description left, mono meta right) above a collapsed-border 2-to-4-column ledger grid of clickable category cells — each sharp-cornered cell carries an index numeral, a hairline stamp-box icon, the category title, and a mono tabular job count; cells wash on hover and route through section-kit route links. Use to let visitors jump into a field (Engineering, Design, Marketing…) on job boards, hiring marketplaces, talent networks or directory-style products.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -202,30 +206,55 @@ export const JobBoardCategories = defineCapsule({
       </svg>,
     ]
     return (
-      <section className={cn('bg-background py-20', props.className)}>
+      <section className={cn('bg-background py-16 lg:py-24', props.className)}>
         <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-12 gap-0"
-            titleClassName="mb-4 text-3xl font-semibold tracking-tight text-foreground"
-            subtitleClassName="mx-auto max-w-xl text-muted-foreground"
-          />
-          <CategoryGrid cols="2-3-4" className="gap-4">
+          <div className="mb-10 flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between lg:mb-12">
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-2"
+              titleClassName="font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
+              subtitleClassName="text-muted-foreground"
+            />
+            <MonoTag tone="faint" aria-hidden="true" className="shrink-0">
+              By field · Index
+            </MonoTag>
+          </div>
+
+          <CategoryGrid
+            cols="2-3-4"
+            className="gap-0 border-l border-t border-border"
+          >
             {items.map((cat, i) => (
               <CategoryCard
                 asChild
                 key={cat.title}
-                className="bg-muted/40 p-6 text-left transition-all hover:border-foreground/30 hover:shadow-md"
+                className="rounded-none border-0"
               >
-                <NavbarRouteLink href={cat.title}>
-                  <CategoryIcon className="bg-card text-foreground shadow-sm">
-                    {categoryIcons[i % categoryIcons.length]}
-                  </CategoryIcon>
-                  <h3 className="mb-1 font-semibold text-foreground">
+                <NavbarRouteLink
+                  href={cat.title}
+                  className="group relative block border-b border-r border-border bg-background p-4 text-left transition-colors hover:bg-muted/60 active:translate-y-px sm:p-5"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <CategoryIcon className="size-9 rounded-none border border-border bg-transparent text-muted-foreground transition-colors group-hover:border-foreground group-hover:text-foreground">
+                      <span className="size-4 [&>svg]:size-4">
+                        {categoryIcons[i % categoryIcons.length]}
+                      </span>
+                    </CategoryIcon>
+                    <span
+                      aria-hidden="true"
+                      className="font-mono text-[11px] tabular-nums text-muted-foreground/70"
+                    >
+                      {String(i + 1).padStart(3, '0')}
+                    </span>
+                  </div>
+                  <h3 className="mt-4 font-semibold tracking-tight text-foreground">
                     {cat.title}
                   </h3>
-                  <p className="text-sm text-muted-foreground">{cat.count}</p>
+                  <p className="mt-1 font-mono text-xs tabular-nums text-muted-foreground">
+                    {cat.count}
+                  </p>
                 </NavbarRouteLink>
               </CategoryCard>
             ))}

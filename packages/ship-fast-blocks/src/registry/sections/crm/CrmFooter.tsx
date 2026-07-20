@@ -1,18 +1,21 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
+import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 
 /**
- * CrmFooter — comprehensive 5-column site footer for a CRM / SaaS landing page.
- * A bordered-top band: a wide brand block (bar-chart glyph + name, a short
- * descriptor and a row of round social icon buttons) beside several link
- * columns, with an auto-updating copyright line and a row of legal links along a
- * divided bottom bar. The brand mark, social icons and every link route through
- * section-kit route links. Use as the closing footer for CRM, sales-pipeline or B2B SaaS
- * products. Renders fully with no props.
+ * CrmFooter — kinetic-SaaS ledger footer for a CRM / sales-platform landing
+ * page. A hairline-topped band with a giant ghost brand watermark bleeding off
+ * the bottom edge: an asymmetric 12-column grid pairs a wide brand block
+ * (bar-chart glyph + name, descriptor, and square mono social chips with hard
+ * hover borders) with mono-labeled link columns; below, a hairline-divided
+ * bottom bar carries the auto-updating copyright, mono legal links and a
+ * decorative "[ EOF ]" tag. The brand mark, social chips and every link route
+ * through section-kit route links. Use as the closing footer for CRM,
+ * sales-pipeline or B2B SaaS products. Renders fully with no props.
  */
 import {
   SiteFooter,
-  FooterContent,
   FooterGrid,
   FooterBrand,
   FooterTagline,
@@ -29,7 +32,7 @@ import {
 export const CrmFooter = defineCapsule({
   name: 'CrmFooter',
   description:
-    'Comprehensive 5-column site footer for a CRM / SaaS landing page: a bordered-top band with a wide brand block (bar-chart glyph + name, a short descriptor and a row of round social icon buttons) beside several link columns, plus an auto-updating copyright line and a row of legal links along a divided bottom bar. The brand mark, social icons and every link route through section-kit route links. Use as the closing footer for CRM, sales-pipeline or B2B SaaS products.',
+    'Kinetic-SaaS ledger footer for a CRM / sales-platform landing page: a hairline-topped band with a giant ghost brand watermark, an asymmetric 12-column grid pairing a wide brand block (bar-chart glyph + name, descriptor, square mono social chips) with mono-labeled link columns, and a hairline-divided bottom bar with auto-updating copyright and mono legal links. The brand mark, social chips and every link route through section-kit route links. Use as the closing footer for CRM, sales-pipeline or B2B SaaS products.',
   props: z.object({
     /** Brand / product name shown beside the logo glyph. */
     brand: z.string().optional(),
@@ -116,54 +119,92 @@ export const CrmFooter = defineCapsule({
     const legal = props.legal?.length
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
-    const LogoMark = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
-      </svg>
-    )
     return (
-      <SiteFooter className={props.className}>
-        <FooterContent>
-          <FooterGrid>
-            <FooterBrand brand={brand} brandMark={<LogoMark />}>
-              <FooterTagline>{description}</FooterTagline>
-              <FooterSocial>
+      <SiteFooter
+        className={
+          'relative overflow-hidden border-t border-border bg-background' +
+          (props.className ? ' ' + props.className : '')
+        }
+      >
+        {/* Giant ghost brand watermark bleeding off the bottom edge. */}
+        <Watermark className="-bottom-6 -right-2 text-[5rem] sm:text-[9rem] lg:text-[12rem]">
+          {brand}
+        </Watermark>
+        <Container className="relative py-14 lg:py-16">
+          <FooterGrid className="grid gap-10 md:grid-cols-12 lg:gap-8">
+            <FooterBrand
+              brand={brand}
+              brandMark={
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
+                </svg>
+              }
+              className="md:col-span-5 lg:col-span-6"
+            >
+              <FooterTagline className="max-w-sm">{description}</FooterTagline>
+              <FooterSocial className="mt-5 gap-2">
                 {socials
                   .map((s) => ({ label: s.label }))
                   .map((s) => (
-                    <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                    <FooterSocialLink
+                      key={s.label}
+                      className="rounded-none border border-border px-2.5 py-1 font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+                    >
+                      {s.label}
+                    </FooterSocialLink>
                   ))}
               </FooterSocial>
             </FooterBrand>
             {columns.map((col) => (
-              <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
-                <FooterColumnList>
+              <FooterColumn key={col.title} className="md:col-span-2">
+                <FooterColumnTitle className="font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground">
+                  <span aria-hidden="true" className="text-primary">
+                    /{' '}
+                  </span>
+                  {col.title}
+                </FooterColumnTitle>
+                <FooterColumnList className="mt-4 space-y-2.5">
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink
+                      key={link}
+                      className="block text-sm text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
-          <FooterBottom>
-            <FooterCopyright>{copyright}</FooterCopyright>
-            <FooterLegal>
-              {legal.map((l) => (
-                <FooterLink key={l}>{l}</FooterLink>
-              ))}
-            </FooterLegal>
+          <FooterBottom className="mt-12 flex flex-col justify-between gap-4 border-t border-border pt-6 sm:flex-row sm:items-center">
+            <FooterCopyright className="text-sm text-muted-foreground">
+              {copyright}
+            </FooterCopyright>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              <FooterLegal className="flex flex-wrap gap-x-5 gap-y-2">
+                {legal.map((l) => (
+                  <FooterLink
+                    key={l}
+                    className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {l}
+                  </FooterLink>
+                ))}
+              </FooterLegal>
+              <MonoTag tone="faint" aria-hidden="true">
+                [ EOF ]
+              </MonoTag>
+            </div>
           </FooterBottom>
-        </FooterContent>
+        </Container>
       </SiteFooter>
     )
   },

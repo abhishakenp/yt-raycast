@@ -6,18 +6,20 @@ import { directoryLakebed } from './directory-lakebed.ts'
 import { useDirectorySearch } from './directory-interactions.tsx'
 
 /**
- * DirectoryCategories — browse-by-category tile grid for a local-business
- * directory. A card-surface section with a centered heading + description, a
- * responsive 2-to-4-column grid of clickable category tiles (each a rounded
- * bordered card with a tinted rounded icon badge that scales on hover, a title,
- * and a listing-count caption), and a centered "View All" link with a chevron.
- * Icon badge tints rotate through chart-1..5 + primary/accent/secondary tokens.
- * Every tile writes shared Lakebed category search state; the view-all link
- * clears it. Use to let users browse listing categories on local directories,
- * marketplaces, or city guides.
+ * DirectoryCategories — classified-index category ledger for a local-business
+ * directory. A paper section with an asymmetric header (serif heading +
+ * description left, mono "24 sections" meta right) above a collapsed-border
+ * 2-to-4-column ledger grid of clickable category cells: each sharp-cornered
+ * cell carries an index numeral, a hairline stamp-box icon, the category title,
+ * and a mono tabular listing count; the active cell gains a muted wash and a
+ * rotated "Filed" stamp chip. A mono uppercase "View All" clear-filters action
+ * closes the ledger. Every cell writes shared Lakebed category search state;
+ * the view-all action clears it. Use to let users browse listing categories on
+ * local directories, marketplaces, or city guides.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   CategoryGrid,
   CategoryCard,
@@ -26,7 +28,7 @@ import {
 export const DirectoryCategories = defineCapsule({
   name: 'DirectoryCategories',
   description:
-    'Browse-by-category tile grid for a local-business DIRECTORY: a card-surface section with a centered heading and description, a responsive 2-to-4-column grid of clickable category tiles (each a rounded bordered card with a tinted rounded icon badge that scales on hover, a title, and a listing-count caption), and a centered View All link with a chevron. Icon badge tints rotate through chart-1..5 plus primary/accent/secondary tokens. Every tile writes shared Lakebed category state so featured listings react; the view-all link clears filters. Use to let users browse listing categories on local directories, business-listing marketplaces, find-a-service platforms, or city guides.',
+    'Classified-index category ledger for a local-business DIRECTORY: a paper section with an asymmetric header (serif heading and description left, mono meta right) above a collapsed-border 2-to-4-column ledger grid of clickable category cells — each sharp-cornered cell carries an index numeral, a hairline stamp-box icon, the category title, and a mono tabular listing count, and the active cell gains a muted wash plus a rotated Filed stamp chip. Every cell writes shared Lakebed category state so featured listings react; the mono View All action clears filters. Use to let users browse listing categories on local directories, business-listing marketplaces, find-a-service platforms, or city guides.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -201,58 +203,79 @@ export const DirectoryCategories = defineCapsule({
         <path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
       </svg>,
     ]
-    const categoryTints = [
-      'bg-chart-1/15 text-chart-1',
-      'bg-chart-2/15 text-chart-2',
-      'bg-chart-3/15 text-chart-3',
-      'bg-chart-4/15 text-chart-4',
-      'bg-chart-5/15 text-chart-5',
-      'bg-primary/10 text-primary',
-      'bg-accent text-accent-foreground',
-      'bg-secondary text-secondary-foreground',
-    ]
     return (
-      <section className={cn('bg-card py-16 lg:py-24', props.className)}>
+      <section className={cn('bg-background py-16 lg:py-24', props.className)}>
         <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-12 lg:mb-16 gap-0"
-            titleClassName="mb-4 text-3xl font-semibold text-foreground sm:text-4xl"
-            subtitleClassName="mx-auto max-w-2xl text-lg text-muted-foreground"
-          />
+          <div className="mb-10 flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between lg:mb-12">
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-2"
+              titleClassName="font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
+              subtitleClassName="text-muted-foreground"
+            />
+            <MonoTag tone="faint" aria-hidden="true" className="shrink-0">
+              Index · A–Z
+            </MonoTag>
+          </div>
 
-          <CategoryGrid cols="2-3-4" className="gap-4 sm:gap-6">
-            {items.map((cat, i) => (
-              <CategoryCard asChild key={cat.title}>
-                <button
-                  type="button"
-                  aria-pressed={directorySearch.state?.category === cat.title}
-                  onClick={() =>
-                    directorySearch.chooseSearch({
-                      category: cat.title,
-                      query: '',
-                    })
-                  }
-                  className="group rounded-xl border border-border bg-background p-6 text-left transition-all hover:border-muted-foreground/40 hover:shadow-sm"
-                >
-                  <CategoryIcon
-                    className={cn(categoryTints[i % categoryTints.length])}
+          <CategoryGrid
+            cols="2-3-4"
+            className="gap-0 border-l border-t border-border"
+          >
+            {items.map((cat, i) => {
+              const isActive = directorySearch.state?.category === cat.title
+              return (
+                <CategoryCard asChild key={cat.title}>
+                  <button
+                    type="button"
+                    aria-pressed={isActive}
+                    onClick={() =>
+                      directorySearch.chooseSearch({
+                        category: cat.title,
+                        query: '',
+                      })
+                    }
+                    className={cn(
+                      'group relative rounded-none border-b border-r border-l-0 border-t-0 border-border bg-background p-4 text-left transition-colors hover:bg-muted/60 active:translate-y-px sm:p-5',
+                      isActive && 'bg-muted',
+                    )}
                   >
-                    <span className="size-6 [&>svg]:size-6">
-                      {categoryIcons[i % categoryIcons.length]}
-                    </span>
-                  </CategoryIcon>
-                  <h3 className="mb-1 font-semibold text-foreground">
-                    {cat.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">{cat.count}</p>
-                </button>
-              </CategoryCard>
-            ))}
+                    <div className="flex items-start justify-between gap-2">
+                      <CategoryIcon className="size-9 rounded-none border border-border bg-transparent text-muted-foreground transition-colors group-hover:border-foreground group-hover:text-foreground">
+                        <span className="size-4 [&>svg]:size-4">
+                          {categoryIcons[i % categoryIcons.length]}
+                        </span>
+                      </CategoryIcon>
+                      <span
+                        aria-hidden="true"
+                        className="font-mono text-[11px] tabular-nums text-muted-foreground/70"
+                      >
+                        {String(i + 1).padStart(3, '0')}
+                      </span>
+                    </div>
+                    <h3 className="mt-4 font-semibold tracking-tight text-foreground">
+                      {cat.title}
+                    </h3>
+                    <p className="mt-1 font-mono text-xs tabular-nums text-muted-foreground">
+                      {cat.count}
+                    </p>
+                    {isActive ? (
+                      <span
+                        aria-hidden="true"
+                        className="absolute right-3 top-10 rotate-[-6deg] border border-primary px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em] text-primary"
+                      >
+                        Filed
+                      </span>
+                    ) : null}
+                  </button>
+                </CategoryCard>
+              )
+            })}
           </CategoryGrid>
 
-          <div className="mt-10 text-center">
+          <div className="mt-8 flex justify-end">
             <button
               type="button"
               onClick={() =>
@@ -261,10 +284,10 @@ export const DirectoryCategories = defineCapsule({
                   query: '',
                 })
               }
-              className="inline-flex items-center gap-2 font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="inline-flex items-center gap-2 border-b border-foreground pb-0.5 font-mono text-[11px] uppercase tracking-[0.14em] text-foreground transition-colors hover:text-muted-foreground active:translate-y-px"
             >
               {viewAll}
-              <ChevronRight className="size-4" />
+              <ChevronRight className="size-3.5" />
             </button>
           </div>
         </Container>

@@ -1036,7 +1036,9 @@ export default function FlightSimulator(cfg: FlightSimulatorProps) {
                   ? child.material[0]
                   : child.material
 
-                mat.onBeforeCompile = (shader: THREE.WebGLProgramParametersWithUniforms) => {
+                mat.onBeforeCompile = (
+                  shader: THREE.WebGLProgramParametersWithUniforms,
+                ) => {
                   shader.fragmentShader = shader.fragmentShader.replace(
                     '#include <dithering_fragment>',
                     `

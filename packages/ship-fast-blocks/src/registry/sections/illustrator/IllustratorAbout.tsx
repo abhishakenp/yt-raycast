@@ -13,18 +13,19 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 
 /**
- * IllustratorAbout — a split about / bio band for an illustrator / visual-artist
- * portfolio on a subtle muted band. Left: a tall 3:4 portrait photo with a
- * floating years-of-experience stat badge card anchored to the bottom-right.
- * Right: an uppercase accent eyebrow, serif heading, a stack of bio paragraphs,
- * and a bordered recognition / awards list with accent arrow bullets. Use to
- * tell the artist's personal story and surface awards. Renders fully with no
- * props via baked-in "Mira" defaults.
+ * IllustratorAbout — a split bio band for an illustrator / visual-artist
+ * portfolio on a paper-wash muted surface. Left (5 cols): a tall 3:4 portrait
+ * pinned in a hand-drawn dashed frame over an offset paper frame, with a rotated
+ * taped years-of-experience label. Right (7 cols): a mono index micro-label,
+ * serif heading, a stack of bio paragraphs, and a dashed-ruled recognition
+ * ledger whose rows carry mono index numerals. Use to tell the artist's personal
+ * story and surface awards. Renders fully with no props via baked-in "Mira"
+ * defaults.
  */
 export const IllustratorAbout = defineCapsule({
   name: 'IllustratorAbout',
   description:
-    "Split about / bio band for an illustrator / visual-artist portfolio on a subtle muted band: left a tall 3:4 portrait photo with a floating years-of-experience stat badge card anchored bottom-right; right an uppercase accent eyebrow, serif heading, a stack of bio paragraphs, and a bordered recognition / awards list with accent arrow bullets. Use to tell the artist's personal story and surface awards and honors.",
+    "Split bio band for an illustrator / visual-artist portfolio on a paper-wash muted surface: left a tall 3:4 portrait pinned in a hand-drawn dashed frame over an offset paper frame with a rotated taped years-of-experience label; right a mono index micro-label, serif heading, a stack of bio paragraphs, and a dashed-ruled recognition ledger whose rows carry mono index numerals. Use to tell the artist's personal story and surface awards and honors.",
   props: z.object({
     /** Uppercase accent eyebrow label. */
     eyebrow: z.string().optional(),
@@ -73,14 +74,18 @@ export const IllustratorAbout = defineCapsule({
     return (
       <AboutSection
         className={cn(
-          'bg-muted/50 px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-28',
+          'bg-muted/30 px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-28',
           props.className,
         )}
       >
         <Container size="xl">
-          <AboutGrid>
-            <div className="relative">
-              <div className="aspect-[3/4] overflow-hidden rounded-xl">
+          <AboutGrid className="items-start lg:grid-cols-12">
+            <div className="relative lg:col-span-5">
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 translate-x-3 translate-y-3 rounded-none border-2 border-dashed border-border"
+              />
+              <div className="relative aspect-[3/4] overflow-hidden rounded-none border-2 border-foreground">
                 <Image
                   alt={imageAlt}
                   w={700}
@@ -89,36 +94,47 @@ export const IllustratorAbout = defineCapsule({
                   className="size-full object-cover"
                 />
               </div>
-              <div className="absolute -bottom-4 -right-4 hidden max-w-xs rounded-lg bg-card p-6 shadow-lg sm:block">
-                <p className="mb-1 font-serif text-2xl text-card-foreground">
+              <div className="absolute -bottom-4 -right-4 hidden max-w-xs -rotate-3 rounded-none border-2 border-dashed border-foreground bg-background p-6 shadow-[5px_5px_0_0_var(--color-foreground)] sm:block">
+                <p className="mb-1 font-serif text-3xl tabular-nums text-foreground">
                   {badgeValue}
                 </p>
                 <p className="text-sm text-muted-foreground">{badgeLabel}</p>
               </div>
             </div>
-            <AboutContent className="space-y-0">
+            <AboutContent className="space-y-0 lg:col-span-7">
               <SectionHeading
                 eyebrow={eyebrow}
                 title={heading}
                 align="left"
-                eyebrowClassName="text-chart-1 tracking-wider"
+                eyebrowClassName="font-mono text-[11px] uppercase tracking-[0.2em] text-primary"
                 titleClassName="font-serif text-3xl sm:text-4xl lg:text-5xl"
-                className="mb-6 gap-4"
+                className="mb-6 gap-3"
               />
               <AboutBody className="space-y-4 leading-relaxed text-muted-foreground">
                 {paragraphs.map((para) => (
                   <p key={para.slice(0, 24)}>{para}</p>
                 ))}
               </AboutBody>
-              <div className="mt-8 border-t border-border/60 pt-8">
-                <h3 className="mb-4 font-serif text-lg">
+              <div className="mt-8 border-t-2 border-dashed border-border pt-8">
+                <h3 className="mb-4 flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  <span aria-hidden="true" className="text-primary">
+                    *
+                  </span>
                   {recognitionHeading}
                 </h3>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  {recognition.map((item) => (
-                    <li key={item} className="flex items-start gap-3">
-                      <span className="text-chart-2">&rarr;</span>
-                      {item}
+                <ul className="divide-y divide-dashed divide-border border-y border-dashed border-border">
+                  {recognition.map((item, i) => (
+                    <li
+                      key={item}
+                      className="flex items-baseline gap-4 py-3 text-sm text-muted-foreground"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="font-mono text-xs tabular-nums text-primary"
+                      >
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <span className="text-foreground">{item}</span>
                     </li>
                   ))}
                 </ul>

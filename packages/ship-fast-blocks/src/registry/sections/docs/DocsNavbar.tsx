@@ -1,7 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
+import { cn } from '#/lib/utils.ts'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
   NavbarActions,
@@ -13,14 +14,17 @@ import {
 } from '#/section-kit/index.ts'
 
 /**
- * DocsNavbar — sticky site header for a developer DOCUMENTATION / API-reference
- * site. Thin configuration over the shared `SiteNav` composite: a clean
- * stacked-blocks brand mark beside the product wordmark, desktop section links,
- * a "Get Started" CTA, and a real mobile drawer (Sheet) on small screens. Every
- * link routes through SiteNav's route hrefs so PageSwitch can swap pages, and
- * nav labels match site routes. Use as the sticky header for docs homes, API
- * references, SDK guides, developer portals, or knowledge bases. Renders fully
- * with no props via baked-in "StackForge" defaults.
+ * DocsNavbar — "Terminal-docs" sticky reference-manual header for a developer
+ * DOCUMENTATION / API-reference site. Built on the shared `SiteNav` composite:
+ * a stacked-blocks mark beside a mono wordmark, desktop nav links rendered as
+ * mono uppercase micro-labels with a `#` anchor glyph and a sliding hairline
+ * underline (labels past the fourth demote to lg to keep the bar airy), and a
+ * square hard-offset-shadow "Get Started" CTA with press feedback. Backdrop
+ * blur is preserved and every link routes through SiteNav's route hrefs so
+ * PageSwitch can swap pages; a real mobile drawer covers small screens. Use as
+ * the sticky header for docs homes, API references, SDK guides, developer
+ * portals, or knowledge bases. Renders fully with no props via baked-in
+ * "StackForge" defaults.
  */
 function StackedBlocksMark({ className }: { className?: string }) {
   return (
@@ -42,7 +46,7 @@ function StackedBlocksMark({ className }: { className?: string }) {
 export const DocsNavbar = defineCapsule({
   name: 'DocsNavbar',
   description:
-    "Sticky developer DOCUMENTATION / API-reference site header built on the shared SiteNav composite: a clean stacked-blocks brand mark + product wordmark, desktop section links, a 'Get Started' CTA, and a real mobile drawer. Links route through route hrefs for page-switching and nav labels match site routes. Use as the sticky header for docs homes, API references, SDK guides, developer portals, or knowledge bases.",
+    "Terminal-docs sticky reference-manual header for a developer DOCUMENTATION / API-reference site built on the shared SiteNav composite: a stacked-blocks mark beside a mono wordmark, desktop nav links as mono uppercase micro-labels with a '#' anchor glyph and sliding hairline underline, and a square hard-offset-shadow 'Get Started' CTA with press feedback, plus a real mobile drawer. Links route through route hrefs for page-switching and nav labels match site routes. Use as the sticky header for docs homes, API references, SDK guides, developer portals, or knowledge bases.",
   props: z.object({
     /** Brand / product name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -65,17 +69,30 @@ export const DocsNavbar = defineCapsule({
     const ctaTarget = props.ctaTarget ?? 'Getting Started'
     const homeTarget = props.homeTarget ?? nav[0]
     return (
-      <SiteNav position="fixed" height="default" className={props.className}>
-        <NavbarBrand href={homeTarget} className="gap-3">
-          <StackedBlocksMark className="size-8 text-primary" />
-          <Logo brand={brand}>
-            <LogoImage />
-            <LogoLabel className="text-xl font-medium text-foreground" />
-          </Logo>
+      <SiteNav
+        position="sticky"
+        height="default"
+        className={cn('bg-background/95', props.className)}
+      >
+        <NavbarBrand href={homeTarget} className="min-w-0">
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage
+              className="size-7"
+              fallback={<StackedBlocksMark className="size-7 text-primary" />}
+            />
+            <LogoLabel className="truncate font-mono text-base font-semibold tracking-tight text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
-        <NavbarNav>
-          {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+        <NavbarNav className="gap-1">
+          {nav.map((label, i) => (
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className={cn(
+                'relative items-center gap-1.5 whitespace-nowrap rounded-none px-3 py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground transition-colors duration-150 before:mr-0.5 before:font-normal before:text-muted-foreground/50 before:content-["#"] after:absolute after:inset-x-3 after:bottom-0.5 after:h-px after:origin-left after:scale-x-0 after:bg-primary after:transition-transform after:duration-150 hover:bg-transparent hover:text-foreground hover:after:scale-x-100',
+                i > 3 ? 'hidden lg:inline-flex' : 'inline-flex',
+              )}
+            >
               {label}
             </NavbarNavLink>
           ))}
@@ -83,7 +100,7 @@ export const DocsNavbar = defineCapsule({
         <NavbarActions>
           <NavbarCta
             variant="primary-pill"
-            className="hidden px-5 py-2.5 sm:inline-flex"
+            className="hidden rounded-none px-4 py-2 font-mono text-xs font-semibold uppercase tracking-[0.12em] shadow-[3px_3px_0_0] shadow-foreground/20 transition-[background-color,box-shadow,transform] duration-150 active:translate-y-px active:shadow-none sm:inline-flex"
             href={ctaTarget}
           >
             {ctaLabel}

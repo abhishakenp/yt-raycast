@@ -58,14 +58,7 @@ const StoryCardImage = React.forwardRef<
   }
 >(
   (
-    {
-      className,
-      asChild = false,
-      w = 600,
-      h = 400,
-      variant,
-      ...props
-    },
+    { className, asChild = false, w = 600, h = 400, variant, ...props },
     ref,
   ) => {
     if (asChild) {

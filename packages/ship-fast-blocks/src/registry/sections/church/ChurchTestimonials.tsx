@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -14,18 +15,22 @@ import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
- * ChurchTestimonials — a 3-up member testimonials wall for a church or faith-community
- * site. Centered header (eyebrow + heading + description), then a responsive grid of
- * quote cards with a blockquote, circular avatar headshot, name, and membership meta.
- * Warm, personal, and trust-building. Images use the Image component for avatar headshots.
- * Use for member stories, life-change testimonies, community impact quotes, or social
- * proof for churches, ministries, and nonprofits. Renders fully with no props via
- * baked-in defaults.
+ * ChurchTestimonials — serene editorial member-stories wall for a church or
+ * faith-community site, set on a soft muted wash behind a giant ghost serif
+ * quotation mark. An asymmetric header (mono metadata rail: eyebrow — hairline
+ * rule — "words from the family"; serif heading; hairline-ruled description),
+ * then a gently staggered 3-column grid (middle card drifts down on desktop)
+ * of sharp hairline-framed quote cards: each opens with a small serif
+ * quotation ornament, sets the quote in italic serif, and closes with a
+ * hairline-ruled author row (name + mono membership meta). Warm, personal,
+ * and trust-building. Use for member stories, life-change testimonies,
+ * community impact quotes, or social proof for churches, ministries, and
+ * nonprofits. Renders fully with no props via baked-in defaults.
  */
 export const ChurchTestimonials = defineCapsule({
   name: 'ChurchTestimonials',
   description:
-    '3-up member testimonials wall for a church or faith-community site: centered header (eyebrow + heading + description), then a responsive grid of quote cards with a blockquote, circular avatar headshot, name, and membership meta. Warm, personal, and trust-building. Images use the Image component for avatar headshots. Use for member stories, life-change testimonies, community impact quotes, or social proof for churches, ministries, and nonprofits.',
+    'Serene editorial member-stories wall for a church or faith-community site on a soft muted wash behind a giant ghost serif quotation mark: asymmetric header (mono metadata rail with hairline rule, serif heading, hairline-ruled description), then a gently staggered 3-column grid of sharp hairline-framed quote cards whose middle card drifts down on desktop — each with a small serif quotation ornament, an italic serif quote, and a hairline-ruled author row with name + mono membership meta. Use for member stories, life-change testimonies, community impact quotes, or social proof for churches, ministries, and nonprofits.',
   props: z.object({
     /** Small uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -84,22 +89,36 @@ export const ChurchTestimonials = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-muted pt-28 pb-24 lg:pt-32 lg:pb-28',
+          'relative overflow-hidden bg-muted/40 py-20 lg:py-28',
           props.className,
         )}
       >
-        <Container size="xl" className="px-6">
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground"
-            titleClassName="mb-6 text-3xl font-medium tracking-tight text-foreground sm:text-4xl"
-            subtitleClassName="text-lg leading-relaxed text-muted-foreground"
-          />
+        {/* Giant ghost quotation mark. */}
+        <Watermark className="-top-16 left-0 font-serif text-[16rem] font-medium text-foreground/[0.04] sm:text-[22rem]">
+          &ldquo;
+        </Watermark>
+        <Container size="xl" className="relative px-6">
+          <div className="mb-14 max-w-2xl lg:mb-16">
+            <div className="mb-5 flex items-center gap-4">
+              <MonoTag tone="primary" className="shrink-0">
+                {eyebrow}
+              </MonoTag>
+              <span aria-hidden="true" className="h-px flex-1 bg-border" />
+              <MonoTag tone="faint" className="hidden shrink-0 sm:inline">
+                Words from the family
+              </MonoTag>
+            </div>
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="gap-0"
+              titleClassName="mb-5 font-serif text-4xl font-medium leading-[1.08] tracking-tight text-foreground sm:text-5xl"
+              subtitleClassName="max-w-md border-l border-border pl-5 text-base leading-relaxed text-muted-foreground sm:text-lg"
+            />
+          </div>
           <TestimonialGrid columns={3}>
-            {items.map((t) => {
+            {items.map((t, i) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -110,12 +129,28 @@ export const ChurchTestimonials = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
+                <TestimonialCard
+                  key={__iv__.name}
+                  className={cn(
+                    'rounded-none border border-border bg-background p-7 shadow-none transition-colors duration-200 hover:border-foreground/40 sm:p-8',
+                    i % 3 === 1 && 'lg:translate-y-10',
+                  )}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="mb-4 block font-serif text-4xl leading-none text-primary/50"
+                  >
+                    &ldquo;
+                  </span>
+                  <TestimonialQuote className="font-serif text-base italic leading-relaxed tracking-tight sm:text-lg">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="mt-6 border-t border-border pt-5">
+                    <TestimonialName className="font-serif text-base font-medium tracking-tight">
+                      {__iv__.name}
+                    </TestimonialName>
                     {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
+                      <TestimonialMeta className="ml-auto font-mono text-[10px] uppercase tracking-[0.16em]">
                         {__iv__.role || __iv__.company || __iv__.meta}
                       </TestimonialMeta>
                     )}

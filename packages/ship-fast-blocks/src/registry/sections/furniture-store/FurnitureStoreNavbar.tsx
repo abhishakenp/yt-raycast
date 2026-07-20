@@ -19,21 +19,22 @@ import {
 } from '../commerce/commerce-interactions.tsx'
 
 /**
- * FurnitureStoreNavbar — sticky, backdrop-blurred top navigation bar for a warm
- * minimal furniture / home-decor e-commerce site. A bordered-bottom header pinned
- * to the top: a decorative house-glyph logo tile + store name on the left, a
- * horizontal set of category nav links (with a destructive-colored "Sale" link)
- * in the center, and a set of search / account / cart icon buttons (cart shows a
- * count badge) plus a mobile hamburger on the right. Links and icon buttons route
- * through route hrefs for page-switching. Use as the sticky site header for
- * furniture stores, home-decor or interiors brands, homewares retailers, or any
- * warm boutique-retail landing page. Renders fully with no props via baked-in
- * "Haven & Home" defaults.
+ * FurnitureStoreNavbar — sticky, backdrop-blurred editorial-catalog top
+ * navigation bar for a warm minimal furniture / home-decor store. A
+ * hairline-bottomed header pinned to the top: a house-glyph mark + store
+ * wordmark on the left, a horizontal set of small mono-tracked uppercase
+ * category nav links (with a destructive-colored "Sale" link) in the center,
+ * and a set of square hairline search / account / cart icon buttons (cart shows
+ * a count badge) with press feedback plus a mobile hamburger on the right. Links
+ * and icon buttons route through route hrefs for page-switching. Use as the
+ * sticky site header for furniture stores, home-decor or interiors brands,
+ * homewares retailers, or any warm boutique-retail landing page. Renders fully
+ * with no props via baked-in "Haven & Home" defaults.
  */
 export const FurnitureStoreNavbar = defineCapsule({
   name: 'FurnitureStoreNavbar',
   description:
-    "Sticky backdrop-blurred top navigation bar for a warm minimal furniture / home-decor e-commerce site: bordered-bottom header pinned to the top with a house-glyph logo tile + store name on the left, horizontal category nav links (with a destructive-colored 'Sale' link) in the center, and search / account / cart icon buttons (cart shows a count badge) plus a mobile hamburger on the right. Links and icon buttons route through route hrefs for page-switching. Use as the sticky site header for furniture stores, home-decor or interiors brands, homewares retailers, or any warm boutique-retail landing page.",
+    "Sticky backdrop-blurred editorial-catalog top navigation bar for a warm minimal furniture / home-decor store: a hairline-bottomed header pinned to the top with a house-glyph mark + store wordmark on the left, small mono-tracked uppercase category nav links (with a destructive-colored 'Sale' link) in the center, and square hairline search / account / cart icon buttons (cart shows a count badge) with press feedback plus a mobile hamburger on the right. Links and icon buttons route through route hrefs for page-switching. Use as the sticky site header for furniture stores, home-decor or interiors brands, homewares retailers, or any warm boutique-retail landing page.",
   props: z.object({
     /** Brand / store name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -68,25 +69,23 @@ export const FurnitureStoreNavbar = defineCapsule({
         height="responsive"
         className={cn('bg-background/95', props.className)}
       >
-        <NavbarBrand
-          href={brand}
-          className="gap-2"
-          aria-label={`${brand} - Return to homepage`}
-        >
-          <BrandLogo brand={brand}>
+        <NavbarBrand href={brand} aria-label={`${brand} - Return to homepage`}>
+          <BrandLogo brand={brand} className="flex items-center gap-2">
             <LogoImage
-              fallback={<LogoMark className="size-8 text-muted-foreground" />}
+              className="size-7"
+              fallback={<LogoMark className="size-7 text-foreground" />}
             />
-            <LogoLabel className="text-xl font-semibold tracking-tight lg:text-2xl" />
+            <LogoLabel className="text-lg font-semibold tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
-        <NavbarNav>
+        <NavbarNav className="gap-7">
           {nav.map((label) => (
             <NavbarNavLink
               key={label}
               href={label}
               className={cn(
+                'rounded-none px-0 py-0 text-[12px] font-medium uppercase tracking-[0.14em] hover:bg-transparent',
                 label.toLowerCase() === 'sale'
                   ? 'text-destructive hover:text-destructive/80'
                   : 'text-muted-foreground hover:text-foreground',
@@ -97,10 +96,10 @@ export const FurnitureStoreNavbar = defineCapsule({
           ))}
         </NavbarNav>
 
-        <NavbarActions className="gap-4">
+        <NavbarActions className="gap-2">
           <CommerceSearchButton
             lakebed={lakebed}
-            buttonClassName="rounded-full p-2 transition-colors hover:bg-muted"
+            buttonClassName="rounded-none p-2 transition-[color,background-color] duration-150 hover:bg-muted active:scale-95 motion-reduce:active:scale-100"
           >
             <svg
               className="size-5 text-muted-foreground"
@@ -117,7 +116,7 @@ export const FurnitureStoreNavbar = defineCapsule({
           </CommerceSearchButton>
           <CommerceAccountButton
             lakebed={lakebed}
-            buttonClassName="hidden rounded-full p-2 transition-colors hover:bg-muted sm:flex"
+            buttonClassName="hidden rounded-none p-2 transition-[color,background-color] duration-150 hover:bg-muted active:scale-95 motion-reduce:active:scale-100 sm:flex"
           >
             <svg
               className="size-5 text-muted-foreground"
@@ -136,7 +135,7 @@ export const FurnitureStoreNavbar = defineCapsule({
             lakebed={lakebed}
             fallbackCount={initialCartCount}
             label="Shopping cart"
-            buttonClassName="relative rounded-full p-2 transition-colors hover:bg-muted"
+            buttonClassName="relative rounded-none p-2 transition-[color,background-color] duration-150 hover:bg-muted active:scale-95 motion-reduce:active:scale-100"
           >
             <svg
               className="size-5 text-muted-foreground"
@@ -156,7 +155,7 @@ export const FurnitureStoreNavbar = defineCapsule({
             nav={nav}
             homeTarget={nav[0]}
             label="Menu"
-            buttonClassName="rounded-full p-2 transition-colors hover:bg-muted md:hidden"
+            buttonClassName="rounded-none p-2 transition-[color,background-color] duration-150 hover:bg-muted active:scale-95 motion-reduce:active:scale-100 md:hidden"
           >
             <svg
               className="size-5 text-muted-foreground"

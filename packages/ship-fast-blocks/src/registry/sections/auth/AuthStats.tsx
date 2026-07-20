@@ -47,9 +47,9 @@ export const AuthStats = defineCapsule({
         ]
     const statLayouts = [
       'md:col-span-2 xl:col-span-3',
-      'md:col-span-2 xl:col-span-3 xl:translate-y-5',
+      'md:col-span-2 xl:col-span-3 xl:translate-y-5 max-lg:translate-y-5',
       'md:col-span-2 xl:col-span-3',
-      'md:col-span-2 xl:col-span-3 xl:translate-y-5',
+      'md:col-span-2 xl:col-span-3 xl:translate-y-5 max-lg:translate-y-5',
     ]
 
     return (
@@ -107,7 +107,7 @@ export const AuthStats = defineCapsule({
               </div>
             </div>
           </div>
-          <div className="mt-10 grid grid-cols-1 items-start gap-x-8 gap-y-10 md:grid-cols-4 xl:grid-cols-12 sm:mt-14">
+          <div className="mt-10 grid grid-cols-2 items-start gap-x-5 gap-y-10 sm:gap-x-8 md:grid-cols-4 xl:grid-cols-12 sm:mt-14">
             {stats.map((stat, index) => (
               <StatItem
                 key={stat.label}
@@ -117,7 +117,7 @@ export const AuthStats = defineCapsule({
                 )}
                 align="left"
               >
-                <span className="mb-8 block font-mono text-[0.68rem] uppercase tracking-[0.14em] text-muted-foreground">
+                <span className="mb-5 block font-mono text-[0.68rem] uppercase tracking-[0.14em] text-muted-foreground md:mb-8">
                   signal {String(index + 1).padStart(2, '0')}
                 </span>
                 <StatValue

@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { Watermark } from '#/section-kit/Decor.tsx'
 import {
   SiteFooter,
   FooterContent,
@@ -19,11 +20,13 @@ import {
 } from '#/section-kit/SiteFooter.tsx'
 
 /**
- * FintechFooter — multi-column site footer for a fintech / neobank landing
- * page. A thin configuration over the shared SiteFooter composite: an inline
- * shield brand mark + wordmark, a tagline, Product / Company / Resources /
- * Legal link columns, a social row, and a compliance note in the bottom bar.
- * Every link routes through section-kit route links. Use as the page footer for banking
+ * FintechFooter — Swiss-fintech multi-column site footer for a neobank landing
+ * page. A thin configuration over the shared SiteFooter composite with hairline
+ * discipline: an inline shield brand mark + wordmark, a tagline, a giant ghost
+ * watermark of the brand bleeding behind the columns, mono index-numbered
+ * Product / Company / Resources / Legal columns whose links sit as block w-fit
+ * rows, a social row, and a mono compliance note in the hairline bottom bar.
+ * Every link routes through route links. Use as the page footer for banking
  * apps, wallets, payments, or lending products. Renders fully with no props via
  * baked-in "Vault" defaults.
  */
@@ -48,7 +51,7 @@ function ShieldMark({ className }: { className?: string }) {
 export const FintechFooter = defineCapsule({
   name: 'FintechFooter',
   description:
-    'Multi-column fintech / neobank site footer built on the shared SiteFooter composite: an inline shield brand mark + wordmark, a tagline, Product / Company / Resources / Legal link columns, a social row, and a compliance note in the bottom bar. Every link routes through section-kit route links. Use as the page footer for banking apps, wallets, payments, or lending products.',
+    'Swiss-fintech multi-column neobank site footer built on the shared SiteFooter composite with hairline discipline: an inline shield brand mark + wordmark, a tagline, a giant ghost brand watermark behind the columns, mono index-numbered Product / Company / Resources / Legal columns with block w-fit link rows, a social row, and a mono compliance note in the hairline bottom bar. Every link routes through route links. Use as the page footer for banking apps, wallets, payments, or lending products.',
   props: z.object({
     /** Brand / product name. */
     brand: z.string().optional(),
@@ -104,35 +107,63 @@ export const FintechFooter = defineCapsule({
 
     return (
       <SiteFooter className={props.className}>
-        <FooterContent>
-          <FooterGrid>
+        <FooterContent className="relative overflow-hidden">
+          <Watermark className="-bottom-10 -left-2 text-[9rem] leading-none sm:text-[13rem]">
+            {brand}
+          </Watermark>
+          <FooterGrid className="relative gap-10 md:grid-cols-[1.4fr_repeat(4,1fr)]">
             <FooterBrand
               brand={brand}
               brandMark={<ShieldMark className="size-7 text-primary" />}
             >
-              <FooterTagline>{tagline}</FooterTagline>
-              <FooterSocial>
+              <FooterTagline className="max-w-xs">{tagline}</FooterTagline>
+              <FooterSocial className="mt-5 gap-4">
                 {social.map((s) => (
-                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  <FooterSocialLink
+                    key={s.label}
+                    className="font-mono text-[11px] uppercase tracking-[0.2em]"
+                  >
+                    {s.label}
+                  </FooterSocialLink>
                 ))}
               </FooterSocial>
             </FooterBrand>
-            {columns.map((col) => (
+            {columns.map((col, ci) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
-                <FooterColumnList>
+                <FooterColumnTitle className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  <span
+                    aria-hidden="true"
+                    className="tabular-nums text-primary"
+                  >
+                    {String(ci + 1).padStart(2, '0')}
+                  </span>
+                  {col.title}
+                </FooterColumnTitle>
+                <FooterColumnList className="mt-4 space-y-2.5">
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink
+                      key={link}
+                      className="block w-fit text-[13px] tracking-tight"
+                    >
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
-          <FooterBottom>
-            <FooterCopyright>{note}</FooterCopyright>
-            <FooterLegal>
+          <FooterBottom className="relative mt-14 border-border">
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.16em]">
+              {note}
+            </FooterCopyright>
+            <FooterLegal className="gap-5">
               {legal.map((l) => (
-                <FooterLink key={l}>{l}</FooterLink>
+                <FooterLink
+                  key={l}
+                  className="block w-fit font-mono text-[11px] uppercase tracking-[0.16em]"
+                >
+                  {l}
+                </FooterLink>
               ))}
             </FooterLegal>
           </FooterBottom>

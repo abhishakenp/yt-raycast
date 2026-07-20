@@ -10,6 +10,7 @@ import { JSDOM } from 'jsdom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 import type { SaasLakebed } from '../saas/saas-interactions.tsx'
+import { RoutesContext, type RoutesContextValue } from '#/lib/route-context.tsx'
 
 type TestPlan = {
   createdAt: string
@@ -58,8 +59,35 @@ type MutationResult<TMutation> = TMutation extends (
   : never
 
 const timestamp = '2026-06-26T00:00:00.000Z'
-const navigate = vi.fn()
+// Navigation is asserted through the router boundary: capsule links resolve
+// route hrefs via RoutesContext and render @tanstack/react-router Links, so
+// the spy records the resolved `to` path (the old use-navigate hook is gone).
+const navigate = vi.hoisted(() => vi.fn())
 const lakebedRef: { current: SaasLakebed | null } = { current: null }
+
+vi.mock('@tanstack/react-router', async () => {
+  const React = await vi.importActual<typeof import('react')>('react')
+  type MockLinkProps = Omit<React.ComponentProps<'a'>, 'href'> & { to: string }
+  const Link = React.forwardRef<HTMLAnchorElement, MockLinkProps>(
+    function MockRouterLink({ to, children, onClick, ...rest }, ref) {
+      return React.createElement(
+        'a',
+        {
+          ...rest,
+          href: to,
+          ref,
+          onClick: (event: React.MouseEvent<HTMLAnchorElement>) => {
+            onClick?.(event)
+            event.preventDefault()
+            navigate(to)
+          },
+        },
+        children,
+      )
+    },
+  )
+  return { Link }
+})
 
 vi.mock('@ship-fast/lakebed/react', async () => {
   const actual = await vi.importActual<
@@ -521,6 +549,15 @@ describe('AEO fullstack generated section behavior', () => {
     const { lakebed, signInWithGoogle, state } = createAeoLakebedStub()
     lakebedRef.current = lakebed
 
+    const routesContextValue: RoutesContextValue = {
+      routes: ['Features', 'Pricing', 'Growth'],
+      targetMap: {},
+      currentPage: 'Features',
+      setCurrentPage: () => {},
+      pendingSectionId: null,
+      setPendingSectionId: () => {},
+    }
+
     function AeoProbe() {
       return (
         <>
@@ -558,7 +595,11 @@ describe('AEO fullstack generated section behavior', () => {
       )
     }
 
-    render(<AeoProbe />)
+    render(
+      <RoutesContext.Provider value={routesContextValue}>
+        <AeoProbe />
+      </RoutesContext.Provider>,
+    )
 
     await waitFor(() => {
       expect(state().plans).toEqual([
@@ -582,7 +623,7 @@ describe('AEO fullstack generated section behavior', () => {
     fireEvent.click(within(searchDialog).getByText('Growth'))
 
     await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith('Growth')
+      expect(navigate).toHaveBeenCalledWith('/growth')
       expect(state().intents.at(-1)).toEqual({
         label: 'Selected Growth',
         plan: 'Growth',
@@ -596,11 +637,11 @@ describe('AEO fullstack generated section behavior', () => {
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
-    expect(screen.getByRole('dialog')).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'Pricing' }))
+    const menuDialog = screen.getByRole('dialog')
+    fireEvent.click(within(menuDialog).getByRole('link', { name: 'Pricing' }))
 
     await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith('Pricing')
+      expect(navigate).toHaveBeenCalledWith('/pricing')
     })
   })
 

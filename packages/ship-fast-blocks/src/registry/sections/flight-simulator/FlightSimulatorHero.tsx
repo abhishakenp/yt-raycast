@@ -14,20 +14,22 @@ import { Container } from '#/section-kit/Container.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * FlightSimulatorHero — full-bleed, cinematic hero for a flight simulator
+ * FlightSimulatorHero — full-bleed, cinematic HUD hero for a flight simulator
  * landing page. A single immersive cockpit-above-the-clouds photograph fills the
- * band edge to edge with a token-based dark overlay so light text reads cleanly
- * on top. Centered content stacks an uppercase eyebrow pill, a large headline, a
- * supporting paragraph, dual CTAs (filled "Buy Now" + outlined translucent
- * "Watch Trailer"), and a divider-separated spec strip (aircraft count, scenery,
- * platforms). CTAs route through section-kit route links. Use as the opening hero for flight
- * simulators, airliner / combat sims, and immersive aviation titles. Renders
- * fully with no props via baked-in defaults.
+ * band edge to edge under a token-based dark overlay so light text reads cleanly,
+ * with an instrument-terminal overlay on top: corner HUD brackets, a giant ghost
+ * "FL350" flight-level watermark, and left-aligned content that stacks a mono
+ * square status chip, a large headline, a supporting paragraph, dual square CTAs
+ * with hard offset shadows and press feedback (filled "Buy Now" + translucent
+ * outlined "Watch Trailer"), and a collapsed-border HUD readout ledger
+ * (FLEET / WORLD / PLATFORMS). CTAs route through section-kit route links. Use as
+ * the opening hero for flight simulators, airliner / combat sims, and immersive
+ * aviation titles. Renders fully with no props via baked-in defaults.
  */
 export const FlightSimulatorHero = defineCapsule({
   name: 'FlightSimulatorHero',
   description:
-    "Full-bleed cinematic hero for a flight-simulator landing page: one immersive cockpit-above-the-clouds photo fills the band edge to edge under a token-based dark overlay so light text stays readable. Centered content has an uppercase eyebrow pill, a large headline, a supporting paragraph, dual CTAs (filled 'Buy Now' + outlined translucent 'Watch Trailer'), and a divider-separated spec strip (aircraft count, scenery, platforms). CTAs route through section-kit route links. Use as the opening hero for flight simulators, airliner / combat sims, and immersive aviation titles.",
+    "Full-bleed cinematic HUD hero for a flight-simulator landing page: one immersive cockpit-above-the-clouds photo fills the band edge to edge under a token-based dark overlay so light text stays readable, with an instrument-terminal overlay — corner HUD brackets, a giant ghost 'FL350' flight-level watermark, and left-aligned content: a mono square status chip, a large headline, a supporting paragraph, dual square CTAs with hard offset shadows and press feedback (filled 'Buy Now' + translucent outlined 'Watch Trailer'), and a collapsed-border HUD readout ledger (FLEET / WORLD / PLATFORMS). CTAs route through section-kit route links. Use as the opening hero for flight simulators, airliner / combat sims, and immersive aviation titles.",
   props: z.object({
     /** Small uppercase eyebrow pill above the headline. */
     eyebrow: z.string().optional(),
@@ -70,31 +72,65 @@ export const FlightSimulatorHero = defineCapsule({
     const heroScenery = props.scenery ?? 'Global photoreal scenery'
     const heroPlatforms = props.platforms ?? 'PC · Xbox · VR'
 
-    const specItems = [heroAircraft, heroScenery, heroPlatforms].filter(Boolean)
+    const specItems = [
+      { label: 'Fleet', value: heroAircraft },
+      { label: 'World', value: heroScenery },
+      { label: 'Platforms', value: heroPlatforms },
+    ].filter((item) => Boolean(item.value))
 
     return (
       <HeroSection variant="full-bleed" className={props.className}>
         <HeroBackgroundImage
           alt={heroImageAlt}
-          overlayClassName="bg-foreground/60"
-          gradientClassName="bg-gradient-to-t from-foreground/80 via-foreground/30 to-foreground/50"
+          overlayClassName="bg-foreground/65"
+          gradientClassName="bg-gradient-to-t from-foreground/85 via-foreground/35 to-foreground/55"
         />
 
-        <Container asChild>
-          <HeroContent className="flex flex-col items-center pb-28 pt-36 text-center sm:pt-40 lg:pb-32 lg:pt-48">
-            <HeroBadge variant="pill">{heroEyebrow}</HeroBadge>
+        {/* Giant ghost flight-level watermark. */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-2 bottom-6 z-0 select-none font-mono text-[7rem] font-extrabold leading-none tracking-tighter text-background/[0.06] sm:text-[10rem] lg:text-[13rem]"
+        >
+          FL350
+        </span>
 
-            <HeroHeading className="mt-8 max-w-3xl text-background">
+        {/* HUD corner brackets. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-6 z-0 hidden sm:block lg:inset-10"
+        >
+          <span className="absolute left-0 top-0 h-8 w-8 border-l-2 border-t-2 border-background/25" />
+          <span className="absolute right-0 top-0 h-8 w-8 border-r-2 border-t-2 border-background/25" />
+          <span className="absolute bottom-0 left-0 h-8 w-8 border-b-2 border-l-2 border-background/25" />
+          <span className="absolute bottom-0 right-0 h-8 w-8 border-b-2 border-r-2 border-background/25" />
+        </div>
+
+        <Container asChild>
+          <HeroContent className="flex flex-col items-start pb-24 pt-36 text-left sm:pt-40 lg:pb-32 lg:pt-48">
+            <HeroBadge
+              variant="pill"
+              className="gap-2 rounded-none border-background/30 font-mono tracking-[0.2em]"
+            >
+              <span
+                aria-hidden="true"
+                className="h-1.5 w-1.5 rounded-full bg-primary"
+              />
+              {heroEyebrow}
+            </HeroBadge>
+
+            <HeroHeading className="mt-8 max-w-3xl text-balance text-background">
               {heroHeading}
             </HeroHeading>
 
-            <HeroSubheading variant="light">{heroSub}</HeroSubheading>
+            <HeroSubheading variant="light" className="text-pretty">
+              {heroSub}
+            </HeroSubheading>
 
-            <HeroActions className="mt-10 flex-col gap-4 sm:flex-row">
+            <HeroActions className="mt-10 w-full flex-col gap-4 sm:w-auto sm:flex-row">
               <HeroCta
                 asChild
                 variant="primary"
-                className="rounded-full px-8 py-4 font-medium"
+                className="rounded-none px-8 py-4 font-mono text-xs font-semibold uppercase tracking-[0.15em] shadow-[5px_5px_0_0] shadow-background/30 transition-[transform,box-shadow] duration-150 hover:bg-primary active:translate-x-[3px] active:translate-y-[3px] active:shadow-none motion-reduce:transform-none"
               >
                 <NavbarRouteLink href={heroPrimaryTarget}>
                   {heroPrimary}
@@ -103,7 +139,7 @@ export const FlightSimulatorHero = defineCapsule({
               <HeroCta
                 asChild
                 variant="outline"
-                className="rounded-full border-border bg-card/10 px-8 py-4 font-medium text-background backdrop-blur-sm hover:bg-card/20"
+                className="rounded-none border-background/40 bg-background/10 px-8 py-4 font-mono text-xs font-semibold uppercase tracking-[0.15em] text-background backdrop-blur-sm transition-[transform,background-color] duration-150 hover:bg-background/20 active:translate-y-px motion-reduce:transform-none"
               >
                 <NavbarRouteLink href={heroSecondaryTarget}>
                   {heroSecondary}
@@ -111,16 +147,19 @@ export const FlightSimulatorHero = defineCapsule({
               </HeroCta>
             </HeroActions>
 
-            <div className="mt-14 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-background/80">
-              {specItems.map((item, i) => (
-                <div key={item} className="flex items-center gap-x-4">
-                  {i > 0 && (
-                    <span
-                      aria-hidden="true"
-                      className="hidden h-4 w-px bg-background/30 sm:block"
-                    />
-                  )}
-                  <span>{item}</span>
+            {/* Collapsed-border HUD readout ledger. */}
+            <div className="mt-14 grid w-full max-w-2xl grid-cols-3 border-l border-t border-background/25">
+              {specItems.map((item) => (
+                <div
+                  key={item.label}
+                  className="border-b border-r border-background/25 px-3 py-4 sm:px-5"
+                >
+                  <span className="block font-mono text-[10px] uppercase tracking-[0.2em] text-background/50">
+                    {item.label}
+                  </span>
+                  <span className="mt-1.5 block text-sm font-medium leading-snug text-background sm:text-base">
+                    {item.value}
+                  </span>
                 </div>
               ))}
             </div>

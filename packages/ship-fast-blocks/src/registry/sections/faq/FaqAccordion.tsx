@@ -10,23 +10,27 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { Watermark, MonoTag } from '#/section-kit/Decor.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * FaqAccordion — an expandable frequently-asked-questions accordion for a
- * help-center / support page. A centered heading with an intro line and an inline
- * underlined "contact support" link above a stacked list of native
- * details/summary items; each item is a rounded bordered panel (raised when open)
- * with the question in a medium heading, a circular chevron badge that rotates on
- * open, and one or more answer paragraphs in relaxed body text. The first item is
- * open by default. The contact link routes through section-kit route links. Use as the FAQ /
- * questions section on SaaS knowledge bases, help centers, or support pages.
- * Renders fully with no props via eight baked-in multi-paragraph Q&As.
+ * FaqAccordion — the "Editorial Q&A" ledger: a hairline-divided
+ * frequently-asked-questions accordion for a help-center / support page. An
+ * asymmetric 4/8 split with a sticky left rail (mono eyebrow, heading, intro line +
+ * underlined "contact support" link, and a mono question count) beside a right column
+ * of native details/summary rows separated only by hairline rules. Each row leads
+ * with an oversized ghost "Q.0N" mono numeral that lights up on open, the question in
+ * a tight-tracked heading, and a square plus icon that rotates to a cross; answers
+ * open under an "A." mono marker as relaxed body paragraphs. A giant faint "?"
+ * watermark bleeds behind the rail. The first item is open by default. The contact
+ * link routes through section-kit route links. Use as the FAQ / questions section on
+ * SaaS knowledge bases, help centers, or support pages. Renders fully with no props
+ * via eight baked-in multi-paragraph Q&As.
  */
 export const FaqAccordion = defineCapsule({
   name: 'FaqAccordion',
   description:
-    "An expandable frequently-asked-questions accordion for a help-center / support page: a centered heading with an intro line and an inline underlined 'contact support' link above a stacked list of native details/summary items. Each item is a rounded bordered panel (raised when open) with the question in a medium heading, a circular chevron badge that rotates on open, and one or more answer paragraphs in relaxed body text; the first item is open by default. The contact link routes through section-kit route links. Use as the FAQ / questions section on SaaS knowledge bases, help centers, or support pages.",
+    "The 'Editorial Q&A' ledger: a hairline-divided frequently-asked-questions accordion for a help-center / support page. An asymmetric 4/8 split with a sticky left rail (mono eyebrow, heading, intro line + underlined 'contact support' link, and a mono question count) beside a right column of native details/summary rows separated by hairline rules. Each row leads with an oversized ghost 'Q.0N' mono numeral that lights up on open, the question in a tight-tracked heading, and a square plus icon that rotates to a cross; answers open under an 'A.' mono marker as relaxed body paragraphs. A giant faint '?' watermark bleeds behind the rail; the first item is open by default. The contact link routes through section-kit route links. Use as the FAQ / questions section on SaaS knowledge bases, help centers, or support pages.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -120,46 +124,101 @@ export const FaqAccordion = defineCapsule({
     return (
       <section
         className={cn(
-          'border-t border-border bg-background py-12 sm:py-16',
+          'relative overflow-hidden border-t border-border bg-background py-14 sm:py-20 lg:py-24',
           props.className,
         )}
       >
-        <Container size="sm">
-          <div className="mb-12 text-center">
-            <h2 className="mb-3 text-2xl font-semibold text-foreground sm:text-3xl">
-              {heading}
-            </h2>
-            <p className="text-muted-foreground">
-              {intro}{' '}
-              <NavbarRouteLink
-                className="font-medium text-foreground underline underline-offset-2 hover:no-underline"
-                href={contactLink}
-              >
-                {contactLink}
-              </NavbarRouteLink>
-              .
-            </p>
-          </div>
+        {/* Giant ghost "?" watermark behind the rail. */}
+        <Watermark className="-left-8 top-24 font-serif text-[13rem] leading-none sm:text-[18rem] lg:text-[24rem]">
+          ?
+        </Watermark>
 
-          <KitFaqAccordion>
-            {items.map((item, i) => (
-              <FaqItem key={item.question} variant="open-raised" open={i === 0}>
-                <FaqQuestion className="p-5">
-                  <h3 className="pr-4 font-medium text-foreground">
-                    {item.question}
-                  </h3>
-                  <FaqQuestionIcon variant="chevron-badge" />
-                </FaqQuestion>
-                <FaqAnswer asChild className="space-y-3 px-5 pb-5 text-sm">
-                  <div>
-                    {item.answers.map((a, j) => (
-                      <p key={j}>{a}</p>
-                    ))}
-                  </div>
-                </FaqAnswer>
-              </FaqItem>
-            ))}
-          </KitFaqAccordion>
+        <Container className="relative">
+          <div className="grid gap-10 md:grid-cols-12 md:gap-12 lg:gap-16">
+            {/* Sticky editorial rail. */}
+            <div className="md:col-span-4">
+              <div className="md:sticky md:top-24">
+                <MonoTag>[ FAQ ] — Answers</MonoTag>
+                <h2 className="mt-5 text-3xl font-extrabold leading-[0.95] tracking-tighter text-foreground sm:text-4xl lg:text-5xl">
+                  {heading}
+                </h2>
+                <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
+                  {intro}{' '}
+                  <NavbarRouteLink
+                    className="font-medium text-foreground underline decoration-primary underline-offset-4 hover:decoration-2"
+                    href={contactLink}
+                  >
+                    {contactLink}
+                  </NavbarRouteLink>
+                  .
+                </p>
+                <div className="mt-8 flex items-center gap-3 border-t border-border pt-5">
+                  <span aria-hidden="true" className="size-1.5 bg-primary" />
+                  <MonoTag tone="faint" className="tabular-nums">
+                    {String(items.length).padStart(2, '0')} Questions
+                  </MonoTag>
+                </div>
+              </div>
+            </div>
+
+            {/* Hairline-divided Q&A ledger. */}
+            <div className="md:col-span-8">
+              <KitFaqAccordion variant="divided" className="border-t-0 md:mt-1">
+                {items.map((item, i) => (
+                  <FaqItem
+                    key={item.question}
+                    variant="divided"
+                    open={i === 0}
+                    className="group py-6"
+                  >
+                    <FaqQuestion className="items-start gap-5 py-0">
+                      <span className="flex flex-1 items-start gap-5">
+                        <span
+                          aria-hidden="true"
+                          className="shrink-0 font-mono text-xl tabular-nums leading-none tracking-tight text-foreground/25 transition-colors group-open:text-primary sm:text-2xl"
+                        >
+                          Q.{String(i + 1).padStart(2, '0')}
+                        </span>
+                        <span className="flex-1 pt-0.5 text-base font-semibold leading-snug tracking-tight text-foreground sm:text-lg">
+                          {item.question}
+                        </span>
+                      </span>
+                      <FaqQuestionIcon
+                        variant="plus"
+                        className="mt-1 flex size-8 items-center justify-center rounded-none border border-border text-muted-foreground transition-all group-open:border-foreground group-open:text-foreground"
+                      />
+                    </FaqQuestion>
+                    <FaqAnswer
+                      asChild
+                      className="mt-5 flex gap-5 pr-8 text-sm sm:pl-0"
+                    >
+                      <div>
+                        <span
+                          aria-hidden="true"
+                          className="hidden shrink-0 font-mono text-xl tabular-nums leading-none text-primary/30 sm:block sm:text-2xl"
+                        >
+                          A.
+                        </span>
+                        <div className="flex-1 space-y-3">
+                          {item.answers.map((a, j) => (
+                            <p
+                              key={j}
+                              className={cn(
+                                j === 0 &&
+                                  'font-serif text-base italic leading-relaxed text-foreground/90 sm:text-lg',
+                              )}
+                            >
+                              {a}
+                            </p>
+                          ))}
+                        </div>
+                      </div>
+                    </FaqAnswer>
+                  </FaqItem>
+                ))}
+              </KitFaqAccordion>
+            </div>
+          </div>
         </Container>
       </section>
     )

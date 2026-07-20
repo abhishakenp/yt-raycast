@@ -25,6 +25,8 @@ import DirectPreview from '@/components/GenUI/DirectPreview'
 import { Dashboard } from './Dashboard'
 
 const routerMocks = vi.hoisted(() => ({
+  canGoBack: false,
+  historyBack: vi.fn(),
   navigate: vi.fn(),
 }))
 
@@ -363,9 +365,13 @@ vi.mock('@tanstack/react-router', () => ({
       {children}
     </a>
   ),
+  useCanGoBack: () => routerMocks.canGoBack,
   useNavigate: () => routerMocks.navigate,
   useParams: () => ({}),
-  useRouter: () => ({ state: { location: { pathname: '/' } } }),
+  useRouter: () => ({
+    history: { back: routerMocks.historyBack },
+    state: { location: { pathname: '/' } },
+  }),
 }))
 
 vi.mock('@ship-fast/lakebed/react', () => ({
@@ -1370,6 +1376,8 @@ async function selectCorporateTheme(): Promise<void> {
 // ─── tests ─────────────────────────────────────────────────────────────────
 describe('Dashboard session workspace + Convex realtime + intro loader', () => {
   beforeEach(() => {
+    routerMocks.canGoBack = false
+    routerMocks.historyBack.mockReset()
     routerMocks.navigate.mockReset()
     restoreWindowLocation()
     ensureWindowStorage()
@@ -3823,9 +3831,9 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     render(<Dashboard sessionId="ready-session" />)
     await startStubDashboardTextDraft()
 
-    fireEvent.click(screen.getByRole('link', { name: 'Back to home' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }))
 
-    expect(routerMocks.navigate).toHaveBeenCalledWith('/')
+    expect(routerMocks.navigate).toHaveBeenCalledWith({ to: '/' })
     expectStubDashboardDraftDiscarded()
     expect(
       getConvexState().pendingTextEdit.cancel.mock.invocationCallOrder[0],

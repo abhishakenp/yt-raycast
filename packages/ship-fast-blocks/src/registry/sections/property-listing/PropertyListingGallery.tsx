@@ -284,9 +284,7 @@ export const PropertyListingGallery = defineCapsule({
               </ListingCard>
             ))}
             {!matchingListings.length ? (
-              <Card
-                className="border-dashed text-center text-sm text-muted-foreground sm:col-span-2 lg:col-span-3 rounded-2xl p-8"
-              >
+              <Card className="border-dashed text-center text-sm text-muted-foreground sm:col-span-2 lg:col-span-3 rounded-2xl p-8">
                 No listings match the current search.
               </Card>
             ) : null}

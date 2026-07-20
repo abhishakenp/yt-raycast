@@ -13,24 +13,28 @@ import {
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * InteriorDesignHero — refined split hero band for an upscale interior-design /
- * architecture studio landing page. A two-column layout: on the left an
- * uppercase tracked eyebrow, a large light-weight headline with an italic accent
- * word, a supporting paragraph, dual square CTAs (filled + outlined) and a row
- * of award badges with small icons; on the right a tall featured-project photo
- * with an overlaid translucent caption card (eyebrow + title + meta). Editorial,
- * airy and gallery-like. CTAs route through section-kit route links; the photo uses the alt-
- * driven Image component. Use as the opening hero for interior designers, design
- * studios, architecture firms, home staging or renovation businesses. Renders
- * fully with no props via baked-in "Atelier Studio" defaults.
+ * InteriorDesignHero — editorial-spatial split hero band for an upscale
+ * interior-design / architecture studio landing page. An asymmetric 7:5 grid: on
+ * the left a mono metadata rail (eyebrow — hairline rule — "N° 01" index), a large
+ * light-weight headline with an italic accent word, a supporting paragraph, dual
+ * square CTAs (filled ink + outlined-inverting, both with press feedback) and a
+ * row of mono swatch chips; on the right a tall featured-room photo cropped
+ * editorially over a primary-tinted offset frame block, with an overlaid hairline
+ * caption card (mono eyebrow + title + meta). A giant ghost "01" watermark bleeds
+ * behind. Refined, gallery-like, binary radius. CTAs route through section-kit
+ * route links; the photo uses the alt-driven Image component. Use as the opening
+ * hero for interior designers, design studios, architecture firms, home staging
+ * or renovation businesses. Renders fully with no props via baked-in "Atelier
+ * Studio" defaults.
  */
 export const InteriorDesignHero = defineCapsule({
   name: 'InteriorDesignHero',
   description:
-    'Refined split hero band for an upscale interior-design / architecture studio landing page: two-column layout with an uppercase tracked eyebrow, a large light-weight headline featuring an italic accent word, a supporting paragraph, dual square CTAs (filled + outlined) and a row of award badges with icons on the left, and a tall featured-project photo with an overlaid translucent caption card (eyebrow + title + meta) on the right. Editorial, airy and gallery-like; CTAs route through section-kit route links and the photo uses the alt-driven Image component. Use as the opening hero for interior designers, design studios, architecture firms, home staging or renovation businesses.',
+    'Editorial-spatial split hero band for an upscale interior-design / architecture studio landing page: an asymmetric 7:5 grid with a mono metadata rail (eyebrow — hairline rule — index), a large light-weight headline featuring an italic accent word, a supporting paragraph, dual square CTAs (filled ink + outlined-inverting, both with press feedback) and a row of mono swatch chips on the left, and a tall editorially-cropped featured-room photo over a primary-tinted offset frame block with an overlaid hairline caption card (mono eyebrow + title + meta) on the right, plus a giant ghost "01" watermark. Refined, gallery-like, binary radius; CTAs route through section-kit route links and the photo uses the alt-driven Image component. Use as the opening hero for interior designers, design studios, architecture firms, home staging or renovation businesses.',
   props: z.object({
     eyebrow: z.string().optional(),
     /** First heading line. */
@@ -72,17 +76,31 @@ export const InteriorDesignHero = defineCapsule({
     return (
       <HeroSection
         className={cn(
-          'px-4 pt-20 pb-20 sm:px-6 lg:px-8 lg:pt-28 lg:pb-28',
+          'relative overflow-hidden px-4 pt-24 pb-16 sm:px-6 sm:pb-20 lg:px-8 lg:pt-32 lg:pb-28',
           props.className,
         )}
       >
-        <Container size="xl">
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
-            <div className="space-y-8">
-              <p className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
-                {eyebrow}
-              </p>
-              <HeroHeading className="font-light">
+        <Watermark className="-left-2 bottom-0 text-[9rem] leading-[0.7] sm:text-[14rem] lg:text-[22rem]">
+          01
+        </Watermark>
+        <Container size="xl" className="relative">
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="space-y-8 lg:col-span-7">
+              <div className="flex items-center gap-4">
+                <MonoTag className="tracking-[0.2em]">{eyebrow}</MonoTag>
+                <span
+                  aria-hidden="true"
+                  className="hidden h-px flex-1 bg-border sm:block"
+                />
+                <MonoTag
+                  aria-hidden="true"
+                  tone="faint"
+                  className="hidden shrink-0 tabular-nums sm:block"
+                >
+                  N° 01
+                </MonoTag>
+              </div>
+              <HeroHeading className="text-5xl font-light leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl">
                 {headingTop}
                 <br />
                 <span className="font-extralight italic">
@@ -90,13 +108,13 @@ export const InteriorDesignHero = defineCapsule({
                 </span>{' '}
                 {headingEnd}
               </HeroHeading>
-              <HeroSubheading className="mt-0 max-w-lg">
+              <HeroSubheading className="mt-0 max-w-lg text-pretty">
                 {subheading}
               </HeroSubheading>
               <HeroActions className="mt-0 flex-wrap gap-4">
                 <HeroCta
                   asChild
-                  className="bg-foreground px-8 py-4 text-sm font-medium text-background hover:bg-foreground/90"
+                  className="rounded-none bg-foreground px-8 py-4 text-sm font-medium text-background transition-all duration-150 hover:bg-foreground/90 active:translate-y-px"
                 >
                   <NavbarRouteLink href={primaryCta}>
                     {primaryCta}
@@ -105,58 +123,44 @@ export const InteriorDesignHero = defineCapsule({
                 <HeroCta
                   asChild
                   variant="outline"
-                  className="px-8 py-4 text-sm font-medium hover:border-foreground hover:bg-foreground hover:text-background"
+                  className="rounded-none border-foreground px-8 py-4 text-sm font-medium transition-all duration-150 hover:bg-foreground hover:text-background active:translate-y-px"
                 >
                   <NavbarRouteLink href={secondaryCta}>
                     {secondaryCta}
                   </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
-              <HeroSocialProof className="mt-0 gap-8 pt-4">
+              <HeroSocialProof className="mt-0 gap-x-8 gap-y-3 pt-4">
                 {badges.map((badge, i) => (
-                  <HeroSocialProofItem key={badge}>
-                    {i === 0 ? (
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        aria-hidden="true"
-                      >
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                    ) : (
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        aria-hidden="true"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    )}
-                    <span>{badge}</span>
+                  <HeroSocialProofItem key={badge} className="gap-2.5">
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        'size-2.5 shrink-0',
+                        i === 0 ? 'bg-primary' : 'bg-muted-foreground/50',
+                      )}
+                    />
+                    <MonoTag className="tracking-[0.14em]">{badge}</MonoTag>
                   </HeroSocialProofItem>
                 ))}
               </HeroSocialProof>
             </div>
-            <div className="relative">
+            <div className="relative lg:col-span-5">
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -bottom-4 -right-4 -z-10 h-full w-full border border-primary/30 bg-primary/5"
+              />
               <HeroMediaPanel
                 alt={imageAlt}
-                w={1200}
-                h={800}
-                className="h-[400px] w-full rounded-none md:h-[500px] lg:h-[600px]"
+                w={1000}
+                h={1200}
+                className="h-[420px] w-full rounded-none border border-border md:h-[520px] lg:h-[600px]"
               />
-              <div className="absolute inset-x-6 bottom-6 bg-card/95 p-6 backdrop-blur-sm md:p-8">
-                <p className="mb-2 text-xs font-medium uppercase tracking-widest text-muted-foreground">
+              <div className="absolute inset-x-5 bottom-5 border border-border bg-card/95 p-6 backdrop-blur-sm md:p-7">
+                <MonoTag className="mb-2 block tracking-[0.2em]">
                   {featuredEyebrow}
-                </p>
-                <h3 className="mb-1 text-xl font-medium text-card-foreground">
+                </MonoTag>
+                <h3 className="mb-1 text-xl font-medium tracking-tight text-card-foreground">
                   {featuredTitle}
                 </h3>
                 <p className="text-sm text-muted-foreground">{featuredMeta}</p>

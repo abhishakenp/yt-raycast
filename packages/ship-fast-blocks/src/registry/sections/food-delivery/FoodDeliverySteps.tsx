@@ -3,21 +3,24 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * FoodDeliverySteps — numbered "how it works" band for a food-delivery /
- * restaurant-marketplace site. A centered heading + supporting paragraph above a
- * responsive 3-up grid of centered steps, each led by a large filled circular
- * number badge, then a title and a short description. Use to explain the 1-2-3
- * ordering flow (choose a restaurant, build your order, track and enjoy) for
- * food-delivery apps, restaurant aggregators, or online-ordering platforms.
- * Renders fully with no props via baked-in defaults.
+ * FoodDeliverySteps — playful-bold "how it works" band for a food-delivery /
+ * restaurant-marketplace site. An asymmetric header (mono eyebrow + extrabold
+ * heading + intro left, a mono "[ 1 · 2 · 3 ]" tag right) above a responsive
+ * 3-up grid of chunky 2px-bordered step cards that stagger in a checker rhythm,
+ * each led by a rounded-full sticker number badge and a mono step label, then a
+ * bold title and a short description, with a hard offset shadow lift on hover.
+ * Use to explain the 1-2-3 ordering flow (choose a restaurant, build your order,
+ * track and enjoy) for food-delivery apps, restaurant aggregators, or
+ * online-ordering platforms. Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { StepTimeline, StepTimelineGrid } from '#/section-kit/StepTimeline.tsx'
 export const FoodDeliverySteps = defineCapsule({
   name: 'FoodDeliverySteps',
   description:
-    "Numbered 'how it works' band for a food-delivery / restaurant-marketplace site: a centered heading + supporting paragraph above a responsive 3-up grid of centered steps, each led by a large filled circular number badge, then a title and a short description. Use to explain the 1-2-3 ordering flow (choose a restaurant, build your order, track and enjoy) for food-delivery apps, restaurant aggregators, online-ordering platforms, or takeout services.",
+    "Playful-bold 'how it works' band for a food-delivery / restaurant-marketplace site: an asymmetric header (mono eyebrow + extrabold heading + intro left, mono '[ 1 · 2 · 3 ]' tag right) above a responsive 3-up grid of chunky 2px-bordered step cards staggered in a checker rhythm, each led by a rounded-full sticker number badge and a mono step label, then a bold title and a short description, with a hard offset shadow lift on hover. Use to explain the 1-2-3 ordering flow (choose a restaurant, build your order, track and enjoy) for food-delivery apps, restaurant aggregators, online-ordering platforms, or takeout services.",
   props: z.object({
     /** Centered section heading. */
     heading: z.string().optional(),
@@ -60,26 +63,45 @@ export const FoodDeliverySteps = defineCapsule({
         ]
     return (
       <StepTimeline
-        className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
+        className={cn('pt-20 pb-16 lg:pt-28 lg:pb-24', props.className)}
       >
         <Container>
-          <SectionHeading
-            title={stepsHeading}
-            subtitle={stepsDesc}
-            className="mb-16 max-w-2xl gap-0"
-            titleClassName="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
-            subtitleClassName="mt-4 text-lg text-muted-foreground"
-          />
-          <StepTimelineGrid columns={3} className="gap-8 lg:gap-12">
+          <div className="mb-12 flex flex-col gap-4 sm:mb-16 md:flex-row md:items-end md:justify-between">
+            <SectionHeading
+              align="left"
+              eyebrow="How it works"
+              title={stepsHeading}
+              subtitle={stepsDesc}
+              className="max-w-2xl gap-3"
+              eyebrowClassName="font-mono text-[11px] uppercase tracking-[0.2em] text-primary"
+              titleClassName="text-3xl font-extrabold leading-[1.03] tracking-tighter text-foreground sm:text-4xl"
+              subtitleClassName="text-lg text-muted-foreground"
+            />
+            <MonoTag aria-hidden="true" tone="faint" className="shrink-0">
+              [ 1 · 2 · 3 ]
+            </MonoTag>
+          </div>
+          <StepTimelineGrid columns={3} className="gap-6 lg:gap-6">
             {stepItems.map((step, i) => (
-              <div key={step.title} className="text-center">
-                <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full bg-foreground text-2xl font-bold text-background">
+              <div
+                key={step.title}
+                className={cn(
+                  'group relative rounded-none border-2 border-foreground bg-background p-6 transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0_0] hover:shadow-foreground active:translate-y-px active:shadow-none motion-reduce:transform-none sm:p-7',
+                  i % 2 === 1 && 'md:translate-y-8',
+                )}
+              >
+                <div className="mb-5 flex size-14 -rotate-3 items-center justify-center rounded-full border-2 border-foreground bg-primary text-2xl font-extrabold text-primary-foreground shadow-[3px_3px_0_0] shadow-foreground tabular-nums">
                   {i + 1}
                 </div>
-                <h3 className="mb-2 text-lg font-semibold text-foreground">
+                <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  Step {String(i + 1).padStart(2, '0')}
+                </span>
+                <h3 className="mb-2 mt-2 text-xl font-extrabold tracking-tight text-foreground">
                   {step.title}
                 </h3>
-                <p className="text-muted-foreground">{step.description}</p>
+                <p className="leading-relaxed text-muted-foreground">
+                  {step.description}
+                </p>
               </div>
             ))}
           </StepTimelineGrid>

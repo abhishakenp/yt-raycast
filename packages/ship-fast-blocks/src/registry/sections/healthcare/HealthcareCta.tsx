@@ -1,12 +1,14 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { cn } from '#/lib/utils.ts'
 import {
   CtaBand,
   CtaBandInner,
   CtaBandTitle,
   CtaBandSubtitle,
 } from '#/section-kit/CtaBand.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import {
   LocalServiceBookingButton,
   LocalServiceMutationSpinner,
@@ -14,18 +16,21 @@ import {
 import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
- * HealthcareCta — full-bleed accent call-to-action band for a medical-clinic
- * page. A solid primary-colored strip with a centered large heading, a
- * supporting paragraph, two CTAs (a light "book" button + an outlined
- * phone-number button with a phone icon), and a small reassurance note beneath.
- * Both CTAs route through section-kit route links. Use as the closing conversion band before
+ * HealthcareCta — inverted closing band for a medical-clinic page. The single
+ * full-inversion moment of the page: a bg-foreground/text-background band cut
+ * by a slanted clip-path seam, carrying a giant ghost "+" cross watermark, a
+ * left-aligned giant fluid extrabold heading + supporting paragraph, a pair of
+ * square buttons (a filled background-on-ink "book" button with an arrow and a
+ * hairline outline click-to-call phone button with a phone icon, both with
+ * press feedback), and a small mono reassurance note beneath. Both buttons
+ * route through shared booking state. Use as the closing conversion band before
  * the footer of a doctors' office, primary-care practice or telehealth clinic.
  * Renders fully with no props via baked-in "Vitality Health Partners" defaults.
  */
 export const HealthcareCta = defineCapsule({
   name: 'HealthcareCta',
   description:
-    "Full-bleed accent call-to-action band for a medical-clinic page: a solid primary-colored strip with a centered large heading, a supporting paragraph, two CTAs (a light 'book' button + an outlined phone-number button with a phone icon), and a small reassurance note beneath. Both CTAs route through section-kit route links. Use as the closing conversion band before the footer of a doctors' office, primary-care practice or telehealth clinic.",
+    "Inverted closing band for a medical-clinic page — the single full-inversion moment of the page: a bg-foreground band cut by a slanted clip-path seam with a giant ghost '+' cross watermark, a left-aligned giant fluid extrabold heading + supporting paragraph, a pair of square buttons (a filled background-on-ink book button with an arrow and a hairline outline click-to-call phone button with a phone icon), and a small mono reassurance note beneath. Both buttons write to shared booking state. Use as the closing conversion band before the footer of a doctors' office, primary-care practice or telehealth clinic.",
   props: z.object({
     /** Heading text. */
     heading: z.string().optional(),
@@ -68,21 +73,36 @@ export const HealthcareCta = defineCapsule({
     )
 
     return (
-      <CtaBand tone="primary" className={props.className}>
-        <CtaBandInner>
-          <CtaBandTitle>{heading}</CtaBandTitle>
-          <CtaBandSubtitle>{description}</CtaBandSubtitle>
-          <div className="flex flex-col justify-center gap-4 sm:flex-row">
+      <CtaBand
+        tone="primary"
+        className={cn(
+          'relative overflow-hidden bg-foreground text-background [clip-path:polygon(0_3rem,100%_0,100%_100%,0_100%)]',
+          props.className,
+        )}
+      >
+        <Watermark className="-right-10 -top-16 text-[16rem] text-background/[0.05] sm:text-[24rem]">
+          +
+        </Watermark>
+        <CtaBandInner className="max-w-5xl items-start gap-7 pb-20 pt-24 text-left sm:pb-24 sm:pt-28 lg:pb-28 lg:pt-32">
+          <CtaBandTitle className="max-w-3xl text-[clamp(2.25rem,5vw,4rem)] font-extrabold leading-[1.02] tracking-tight">
+            {heading}
+          </CtaBandTitle>
+          <CtaBandSubtitle className="max-w-2xl text-background/70 opacity-100">
+            {description}
+          </CtaBandSubtitle>
+          <div className="relative flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:gap-4">
             <LocalServiceBookingButton
               lakebed={lakebed}
               intentLabel={primaryCta}
               service="Healthcare appointment"
               source="final-cta"
-              pendingChildren={<LocalServiceMutationSpinner />}
-              className="inline-flex items-center justify-center rounded-xl bg-background px-8 py-4 font-semibold text-primary shadow-lg transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
+              pendingChildren={
+                <LocalServiceMutationSpinner className="text-foreground" />
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-none bg-background px-8 py-4 text-base font-semibold text-foreground transition-colors hover:bg-background/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
             >
               {primaryCta}
-              <ArrowRight className="ml-2" />
+              <ArrowRight />
             </LocalServiceBookingButton>
             <LocalServiceBookingButton
               lakebed={lakebed}
@@ -90,12 +110,12 @@ export const HealthcareCta = defineCapsule({
               service="Phone consultation"
               source="final-cta-phone"
               pendingChildren={
-                <LocalServiceMutationSpinner className="text-primary-foreground" />
+                <LocalServiceMutationSpinner className="text-background" />
               }
-              className="inline-flex items-center justify-center rounded-xl border border-primary-foreground/30 bg-primary px-8 py-4 font-semibold text-primary-foreground transition-colors hover:bg-primary/80 disabled:pointer-events-none disabled:opacity-70"
+              className="inline-flex items-center justify-center gap-2 rounded-none border border-background/30 px-8 py-4 text-base font-semibold text-background transition-colors hover:bg-background/10 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
             >
               <svg
-                className="mr-2 size-5"
+                className="size-5"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -109,7 +129,9 @@ export const HealthcareCta = defineCapsule({
               {phone}
             </LocalServiceBookingButton>
           </div>
-          <p className="text-sm text-primary-foreground/70">{note}</p>
+          <p className="relative mt-2 font-mono text-[11px] uppercase tracking-[0.15em] text-background/60">
+            {note}
+          </p>
         </CtaBandInner>
       </CtaBand>
     )

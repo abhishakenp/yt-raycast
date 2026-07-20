@@ -20,18 +20,19 @@ import {
 
 /**
  * ElectronicsStoreNavbar — sticky translucent top navigation bar for a premium
- * electronics / gadgets e-commerce storefront. A blurred, border-bottomed header
- * pinned to the top with a bolt logo mark + store name on the left, a horizontal
- * row of category nav links, and utility icons on the right (product search,
- * Shoo account, cart drawer with a quantity badge, mobile hamburger). Nav links
- * route through route hrefs while utilities use shared Lakebed commerce state.
- * Use as the sticky site header for electronics stores, gadget shops,
- * consumer-tech retailers, audio/headphone shops, or camera/drone stores.
+ * electronics / gadgets e-commerce storefront, in a tech-brutalist key. A
+ * blurred header pinned to the top with a heavy border-b-2 rule, a squared bolt
+ * logo mark + extrabold store wordmark on the left, a horizontal row of category
+ * nav links, and utility icons on the right (product search, Shoo account, cart
+ * drawer with a squared quantity badge, mobile hamburger). Nav links route
+ * through route hrefs while utilities use shared Lakebed commerce state. Use as
+ * the sticky site header for electronics stores, gadget shops, consumer-tech
+ * retailers, audio/headphone shops, or camera/drone stores.
  */
 export const ElectronicsStoreNavbar = defineCapsule({
   name: 'ElectronicsStoreNavbar',
   description:
-    'Sticky translucent top navigation bar for a premium electronics / gadgets e-commerce storefront: a blurred, border-bottomed header pinned to the top with a bolt logo mark plus store name on the left, horizontal category nav links, and utility icons on the right (product command search, Shoo account dropdown, shared Lakebed cart drawer with a reactive quantity badge, mobile drawer). Nav links route through route hrefs while utilities use shared Lakebed commerce state. Use as the sticky site header for electronics stores, gadget shops, consumer-tech retailers, audio/headphone shops, camera/drone stores, or any modern product-catalog storefront.',
+    'Sticky translucent tech-brutalist top navigation bar for a premium electronics / gadgets e-commerce storefront: a blurred header pinned to the top with a heavy border-b-2 rule, a squared bolt logo mark plus extrabold store wordmark on the left, horizontal category nav links, and utility icons on the right (product command search, Shoo account dropdown, shared Lakebed cart drawer with a reactive squared quantity badge, mobile drawer). Nav links route through route hrefs while utilities use shared Lakebed commerce state. Use as the sticky site header for electronics stores, gadget shops, consumer-tech retailers, audio/headphone shops, camera/drone stores, or any modern product-catalog storefront.',
   props: z.object({
     /** Brand / store name shown in the navbar. */
     brand: z.string().optional(),
@@ -59,7 +60,7 @@ export const ElectronicsStoreNavbar = defineCapsule({
     const BoltMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          'grid place-items-center rounded-lg bg-foreground text-background',
+          'grid place-items-center rounded-none bg-foreground text-background',
           className,
         )}
         aria-hidden="true"
@@ -83,18 +84,31 @@ export const ElectronicsStoreNavbar = defineCapsule({
       <SiteNav
         position="sticky"
         height="compact"
-        className={cn('bg-background/95', props.className)}
+        className={cn(
+          'border-b-2 border-foreground bg-background/95',
+          props.className,
+        )}
       >
-        <NavbarBrand href={homeTarget} className="gap-2">
-          <BrandLogo brand={brand}>
-            <LogoImage fallback={<BoltMark className="size-8" />} />
-            <LogoLabel className="text-xl font-semibold text-foreground" />
+        <NavbarBrand href={homeTarget}>
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage
+              className="size-7"
+              fallback={<BoltMark className="size-7" />}
+            />
+            <LogoLabel className="text-xl font-extrabold tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav className="gap-6">
-          {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+          {nav.map((label, i) => (
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className={cn(
+                'rounded-none font-mono text-xs uppercase tracking-[0.14em]',
+                i >= 5 && 'hidden lg:inline-flex',
+              )}
+            >
               {label}
             </NavbarNavLink>
           ))}
@@ -140,7 +154,7 @@ export const ElectronicsStoreNavbar = defineCapsule({
             lakebed={lakebed}
             fallbackCount={initialCartCount}
             buttonClassName={cn('relative', utilityButtonClass)}
-            badgeClassName="right-1 top-1 bg-foreground text-background"
+            badgeClassName="right-1 top-1 rounded-none bg-foreground text-background"
           >
             <svg
               className="size-5"

@@ -113,4 +113,22 @@ describe('buildOpenUIHtmlExport — OpenUI source parsing', () => {
       buildOpenUIHtmlExport(baseInput({ source: 'just some plain text' })),
     ).rejects.toThrow(/OpenUI source/)
   })
+
+  it('compiles current app Tailwind utilities for section capsule exports', async () => {
+    const result = await buildOpenUIHtmlExport(
+      baseInput({
+        source: 'root = AeoHero()',
+        siteSpecJson: JSON.stringify({ projectName: 'AEO export' }),
+        includeBadge: false,
+      }),
+    )
+    const html = typeof result.body === 'string' ? result.body : ''
+    const style = html.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? ''
+
+    expect(html).toContain('Get cited by AI answers')
+    expect(style).toContain('.lg\\:col-span-7')
+    expect(style).toContain('grid-column: span 7 / span 7')
+    expect(style).toContain('font-size: clamp(2.75rem, 7vw, 6rem)')
+    expect(html).not.toContain('openui-preview-tailwind.css')
+  })
 })

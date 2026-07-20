@@ -1,33 +1,27 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
-import type { ReactNode } from 'react'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { z } from 'zod/v4'
 
-import {
-  FeatureGrid,
-  FeatureCard,
-  FeatureIcon,
-  FeatureTitle,
-  FeatureDescription,
-} from '#/section-kit/FeatureGrid.tsx'
-
 /**
- * BlogTopics — a clean, editorial "Browse by topic" grid for a blog or
- * publication home page. Thin configuration over the shared `FeatureGrid`
- * composite: a quiet "Explore topics" heading, a short supporting subheading,
- * and a responsive four-column grid of topic cards. Each card pairs a small
- * stroke glyph (rendered inside the kit's `bg-primary/10 text-primary` icon
- * tile), a topic title, and a one-line description, so readers can scan the
- * subjects you write about most and jump straight in. Icons are cycled from a
- * baked pool by index, and every prop is optional — drop it onto a blog,
- * newsletter, magazine, or docs home and it renders fully from warm,
- * theme-token defaults (no hex, clean editorial aesthetic).
+ * BlogTopics — newsprint "sections index" for a blog or publication home
+ * page. An asymmetric masthead header (serif heading left, supporting line
+ * right of a hairline rule, mono "INDEX" tag) sits on a heavy double rule
+ * above a collapsed-border broadsheet grid of section cells. Each cell reads
+ * like a newspaper section head: a giant ghost index numeral bleeding out of
+ * the corner, a mono "SEC." micro-label, a serif section title that underlines
+ * on hover, and a one-line description over a hairline byline rule. The
+ * `columns` prop drives the desktop column count and the whole band closes
+ * with a serif ornament divider (✦ ✦ ✦). Tokens-only, no icons, no card
+ * chrome — pure column rules. Use to let readers browse blog
+ * categories/topics (design, engineering, product, culture, tutorials,
+ * careers, …). Renders fully with no props from theme-token defaults.
  */
 export const BlogTopics = defineCapsule({
   name: 'BlogTopics',
   description:
-    "Editorial 'Browse by topic' grid for a blog or publication home page: a quiet heading and short subheading above a responsive grid of topic cards, each with a small stroke icon in a primary-tinted tile, a category title, and a one-line description. Wraps the shared FeatureGrid composite at four columns and cycles a baked icon pool by index. Use to let readers browse blog categories/topics (design, engineering, product, culture, tutorials, careers, …). Renders fully with no props from theme-token defaults.",
+    "Newsprint 'sections index' for a blog or publication home page: an asymmetric masthead header (serif heading left, supporting line right of a hairline rule, mono INDEX tag) on a heavy double rule, above a collapsed-border broadsheet grid of section cells. Each cell has a giant ghost index numeral bleeding from its corner, a mono 'SEC.' micro-label, a serif section title that underlines on hover, and a one-line description; the band closes with a serif ornament divider. The columns prop drives the desktop column count. Use to let readers browse blog categories/topics (design, engineering, product, culture, tutorials, careers, …). Renders fully with no props from theme-token defaults.",
   props: z.object({
     /** Section heading (maps to FeatureGrid heading). */
     heading: z.string().optional(),
@@ -78,136 +72,82 @@ export const BlogTopics = defineCapsule({
             },
           ]
 
-    const icons: ReactNode[] = [
-      // pen / design
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="size-5"
-        aria-hidden="true"
-      >
-        <path d="M12 19l7-7 3 3-7 7-3-3z" />
-        <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
-        <path d="M2 2l7.586 7.586" />
-        <circle cx="11" cy="11" r="2" />
-      </svg>,
-      // code / engineering
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="size-5"
-        aria-hidden="true"
-      >
-        <path d="M16 18l6-6-6-6" />
-        <path d="M8 6l-6 6 6 6" />
-      </svg>,
-      // box / product
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="size-5"
-        aria-hidden="true"
-      >
-        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-        <path d="M3.27 6.96L12 12.01l8.73-5.05" />
-        <path d="M12 22.08V12" />
-      </svg>,
-      // users / culture
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="size-5"
-        aria-hidden="true"
-      >
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-      </svg>,
-      // book / tutorials
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="size-5"
-        aria-hidden="true"
-      >
-        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-      </svg>,
-      // briefcase / careers
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="size-5"
-        aria-hidden="true"
-      >
-        <rect x="2" y="7" width="20" height="14" rx="2" />
-        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-        <path d="M2 13h20" />
-      </svg>,
-    ]
+    const heading = props.heading ?? 'Explore topics'
+    const subheading =
+      props.subheading ?? 'Dive into the subjects we write about most.'
+    const columns = props.columns ?? 4
 
     return (
-      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
-        <Container>
-          <FeatureGrid
-            heading={props.heading ?? 'Explore topics'}
-            subheading={
-              props.subheading ?? 'Dive into the subjects we write about most.'
-            }
-            columns={props.columns ?? 4}
+      <section
+        aria-label={heading}
+        className={cn(
+          'relative overflow-hidden bg-background py-16 lg:py-20',
+          props.className,
+        )}
+      >
+        <Container size="lg">
+          {/* Asymmetric masthead header on a heavy double rule. */}
+          <div className="flex flex-col gap-3 border-b-2 border-foreground pb-4 shadow-[0_3px_0_-2px] shadow-border sm:flex-row sm:items-end sm:justify-between sm:gap-8">
+            <div className="flex items-baseline gap-4">
+              <MonoTag tone="faint" className="shrink-0">
+                Index
+              </MonoTag>
+              <h2 className="font-serif text-3xl font-black tracking-tight text-foreground sm:text-4xl">
+                {heading}
+              </h2>
+            </div>
+            <p className="max-w-xs border-l border-border pl-4 text-sm leading-snug text-muted-foreground sm:pb-1 sm:text-right sm:border-l-0 sm:border-r sm:pl-0 sm:pr-4">
+              {subheading}
+            </p>
+          </div>
+
+          {/* Collapsed-border sections grid: cells own left+top hairlines. */}
+          <div
+            className={cn(
+              'mt-6 grid grid-cols-2 border-b border-r border-border',
+              columns === 2 && 'lg:grid-cols-2',
+              columns === 3 && 'lg:grid-cols-3',
+              columns === 4 && 'lg:grid-cols-4',
+            )}
           >
-            {topics
-              .map((t, i) => ({
-                title: t.title,
-                description: t.description,
-                icon: icons[i % icons.length],
-              }))
-              .map((f) => {
-                const __iv__ = f as {
-                  title: string
-                  description: string
-                  icon?: React.ReactNode
-                  points?: string[]
-                  cta?: string
-                  price?: string
-                  imageAlt?: string
-                }
-                return (
-                  <FeatureCard key={__iv__.title}>
-                    {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                    <FeatureTitle>{__iv__.title}</FeatureTitle>
-                    <FeatureDescription>
-                      {__iv__.description}
-                    </FeatureDescription>
-                  </FeatureCard>
-                )
-              })}
-          </FeatureGrid>
+            {topics.map((topic, i) => (
+              <div
+                key={topic.title}
+                className="group relative overflow-hidden border-l border-t border-border p-4 pb-5 transition-colors duration-200 hover:bg-muted/40 sm:p-6"
+              >
+                <Watermark className="-right-2 -top-5 font-serif text-[5.5rem] font-black text-foreground/[0.06] transition-colors duration-200 group-hover:text-primary/10">
+                  {String(i + 1).padStart(2, '0')}
+                </Watermark>
+                <MonoTag tone="faint" className="text-[10px]">
+                  Sec. {String(i + 1).padStart(2, '0')}
+                </MonoTag>
+                <h3 className="relative mt-3 font-serif text-xl font-black tracking-tight text-foreground underline-offset-4 group-hover:underline group-hover:decoration-2">
+                  {topic.title}
+                </h3>
+                <p className="relative mt-2.5 border-t border-border pt-2.5 text-sm leading-relaxed text-muted-foreground">
+                  {topic.description}
+                </p>
+              </div>
+            ))}
+            {topics.length % columns !== 0 && (
+              <div
+                aria-hidden="true"
+                className="hidden border-l border-t border-border lg:flex lg:items-center lg:justify-center [grid-column:auto/-1]"
+              >
+                <span className="font-serif text-2xl tracking-[0.5em] text-muted-foreground/40">
+                  ❦
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Serif ornament divider closing the index. */}
+          <div
+            aria-hidden="true"
+            className="pt-8 text-center font-serif text-base tracking-[1em] text-muted-foreground/60"
+          >
+            ✦ ✦ ✦
+          </div>
         </Container>
       </section>
     )

@@ -1,11 +1,26 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
+import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
+/**
+ * JobBoardFooter — newsprint colophon footer for a job-board / careers site. A
+ * paper-surface band under a heavy double rule with a giant ghost "CAREERS"
+ * watermark bleeding off the bottom edge. An asymmetric 12-column grid pairs a
+ * wide brand block (briefcase glyph + serif wordmark, tagline, and a row of
+ * square mono social chips with hard hover borders) with mono-labeled,
+ * index-numbered link columns of hairline ledger links; below, a hairline-divided
+ * bottom bar carries the copyright note, mono legal links, and a decorative
+ * "[ END OF INDEX ]" tag. The brand mark, social chips and every link route
+ * through section-kit route links. Use as the global footer for job boards,
+ * hiring marketplaces, recruiting platforms or talent networks. Renders fully
+ * with no props.
+ */
 import {
   SiteFooter,
-  FooterContent,
   FooterGrid,
-  FooterBrand,
-  FooterTagline,
   FooterSocial,
   FooterSocialLink,
   FooterColumn,
@@ -16,20 +31,10 @@ import {
   FooterCopyright,
   FooterLegal,
 } from '#/section-kit/SiteFooter.tsx'
-/**
- * JobBoardFooter — a fat, multi-column site footer for a job-board / careers
- * site. A muted top-bordered band: a wide brand column (briefcase mark + name,
- * tagline, and a row of square social icon buttons) beside several link columns
- * with titled headings, closing with a divided bottom row pairing a copyright
- * note with inline legal links. Brand, social buttons and every link route
- * through section-kit route links. Use as the global footer for job boards, hiring
- * marketplaces, recruiting platforms or talent networks. Renders fully with no
- * props.
- */
 export const JobBoardFooter = defineCapsule({
   name: 'JobBoardFooter',
   description:
-    'Fat, multi-column site footer for a job-board / careers site: a muted top-bordered band with a wide brand column (briefcase mark + name, tagline, and a row of square social icon buttons) beside several titled link columns, closing with a divided bottom row pairing a copyright note with inline legal links. Brand, social buttons and links route through section-kit route links. Use as the global footer for job boards, hiring marketplaces, recruiting platforms or talent networks.',
+    'Newsprint colophon footer for a job-board / careers site: a paper-surface band under a heavy double rule with a giant ghost CAREERS watermark, an asymmetric 12-column grid pairing a wide brand block (briefcase glyph + serif wordmark, tagline, and square mono social chips) with mono-labeled, index-numbered link columns, and a hairline-divided bottom bar with the copyright note, mono legal links, and an END OF INDEX tag. Brand, social buttons and links route through section-kit route links. Use as the global footer for job boards, hiring marketplaces, recruiting platforms or talent networks.',
   props: z.object({
     /** Brand / product name shown beside the briefcase mark. */
     brand: z.string().optional(),
@@ -91,40 +96,117 @@ export const JobBoardFooter = defineCapsule({
     const legal = props.legal?.length
       ? props.legal
       : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
+    const BriefcaseMark = ({ className }: { className?: string }) => (
+      <svg
+        className={className}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <rect x="2" y="7" width="20" height="14" rx="2" />
+        <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+      </svg>
+    )
+    const brandBlock = (
+      <BrandLogo brand={brand} className="flex items-center gap-2">
+        <LogoImage
+          className="size-7"
+          fallback={<BriefcaseMark className="size-7 text-foreground" />}
+        />
+        <LogoLabel className="font-serif text-xl font-bold tracking-tight text-foreground" />
+      </BrandLogo>
+    )
     return (
-      <SiteFooter className={props.className}>
-        <FooterContent>
-          <FooterGrid>
-            <FooterBrand brand={brand}>
-              <FooterTagline>{tagline}</FooterTagline>
-              <FooterSocial>
+      <SiteFooter
+        className={cn(
+          'relative overflow-hidden border-t-2 border-foreground bg-background',
+          props.className,
+        )}
+      >
+        {/* Second hairline of the newsprint double rule. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-1 border-t border-border"
+        />
+        {/* Giant ghost watermark bleeding off the bottom edge. */}
+        <Watermark className="-bottom-8 -right-3 font-serif text-[5rem] sm:text-[9rem] lg:text-[13rem]">
+          CAREERS
+        </Watermark>
+        <Container className="relative py-14 lg:py-16">
+          <FooterGrid className="grid gap-10 md:grid-cols-12 lg:gap-8">
+            <div className="md:col-span-5 lg:col-span-6">
+              {props.homeTarget ? (
+                <NavbarRouteLink
+                  href={props.homeTarget}
+                  className="inline-flex w-fit"
+                >
+                  {brandBlock}
+                </NavbarRouteLink>
+              ) : (
+                brandBlock
+              )}
+              <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
+                {tagline}
+              </p>
+              <FooterSocial className="mt-6 gap-2">
                 {socials
                   .map((s) => ({ label: s }))
                   .map((s) => (
-                    <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                    <FooterSocialLink
+                      key={s.label}
+                      className="rounded-none border border-border px-2.5 py-1 font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+                    >
+                      {s.label}
+                    </FooterSocialLink>
                   ))}
               </FooterSocial>
-            </FooterBrand>
-            {columns.map((col) => (
-              <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
-                <FooterColumnList>
+            </div>
+            {columns.map((col, colIndex) => (
+              <FooterColumn key={col.title} className="md:col-span-2">
+                <FooterColumnTitle className="flex items-baseline gap-2 font-mono text-[11px] font-normal uppercase tracking-[0.16em] text-muted-foreground">
+                  <span aria-hidden="true" className="tabular-nums">
+                    {String(colIndex + 1).padStart(2, '0')}
+                  </span>
+                  {col.title}
+                </FooterColumnTitle>
+                <FooterColumnList className="mt-4 space-y-2.5 border-l border-border pl-4">
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink
+                      key={link}
+                      className="block w-fit text-sm text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
-          <FooterBottom>
-            <FooterCopyright>{note}</FooterCopyright>
-            <FooterLegal>
-              {legal.map((l) => (
-                <FooterLink key={l}>{l}</FooterLink>
-              ))}
-            </FooterLegal>
+          <FooterBottom className="mt-12 flex flex-col justify-between gap-4 border-t border-border pt-6 sm:flex-row sm:items-center">
+            <FooterCopyright className="text-sm text-muted-foreground">
+              {note}
+            </FooterCopyright>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              <FooterLegal className="flex flex-wrap gap-x-5 gap-y-2">
+                {legal.map((l) => (
+                  <FooterLink
+                    key={l}
+                    className="block w-fit font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {l}
+                  </FooterLink>
+                ))}
+              </FooterLegal>
+              <MonoTag tone="faint" aria-hidden="true">
+                [ END OF INDEX ]
+              </MonoTag>
+            </div>
           </FooterBottom>
-        </FooterContent>
+        </Container>
       </SiteFooter>
     )
   },

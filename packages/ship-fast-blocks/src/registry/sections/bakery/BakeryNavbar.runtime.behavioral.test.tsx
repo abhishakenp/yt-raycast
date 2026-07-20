@@ -204,7 +204,7 @@ describe('BakeryNavbar generated runtime behavior', () => {
 
   it('routes the order CTA through PageSwitch', async () => {
     await renderGeneratedNavbar()
-    fireEvent.click(screen.getByRole('button', { name: 'Order Online' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Order Online' }))
     expect(await screen.findByText('Order page')).toBeTruthy()
     expect(screen.queryByText('Home bakery')).toBeNull()
   })

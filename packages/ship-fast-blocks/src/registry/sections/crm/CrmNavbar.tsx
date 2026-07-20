@@ -21,11 +21,12 @@ import {
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
- * CrmNavbar — sticky, translucent top navigation bar for a CRM / sales-platform
- * SaaS site. A backdrop-blurred, border-bottomed header pinned to the top: a
- * bar-chart brand glyph beside the product name on the left, a horizontal set of
- * nav links in the center (desktop), and a "Sign In" text link plus a rounded
- * primary "Start Free Trial" CTA on the right. Every link routes through
+ * CrmNavbar — sticky kinetic-SaaS top navigation bar for a CRM /
+ * sales-platform site. A backdrop-blurred, hairline-bottomed header pinned to
+ * the top: a bar-chart brand glyph beside the product name on the left, mono
+ * uppercase nav links in the center (desktop), and command plan search, Shoo
+ * profile dropdown, selected-plan badge plus a square hard-shadow "Start Free
+ * Trial" CTA with press feedback on the right. Every link routes through
  * route hrefs so labels can drive page-switching. Use as the site header for
  * CRM products, sales-pipeline tools, sales-enablement or B2B SaaS marketing
  * pages. Renders fully with no props via baked-in "Pipeline Pro" defaults.
@@ -33,7 +34,7 @@ import { saasLakebed } from '../saas/saas-lakebed.ts'
 export const CrmNavbar = defineCapsule({
   name: 'CrmNavbar',
   description:
-    'Sticky translucent top navigation bar for a CRM / sales-platform SaaS site: backdrop-blurred, border-bottomed header pinned to the top with a bar-chart brand glyph + product name, horizontal nav links, command plan search, Shoo profile dropdown, selected-plan badge, scoped fullstack trial CTA, and a reusable Sheet mobile drawer. Nav links route through route hrefs while conversion CTAs write to shared Lakebed state. Use as the site header for CRM products, sales-pipeline tools, sales-enablement or B2B SaaS marketing pages.',
+    'Sticky kinetic-SaaS top navigation bar for a CRM / sales-platform site: backdrop-blurred, hairline-bottomed header pinned to the top with a bar-chart brand glyph + product name, mono uppercase nav links, command plan search, Shoo profile dropdown, selected-plan badge, a square hard-shadow scoped fullstack trial CTA with press feedback, and a reusable Sheet mobile drawer. Nav links route through route hrefs while conversion CTAs write to shared Lakebed state. Use as the site header for CRM products, sales-pipeline tools, sales-enablement or B2B SaaS marketing pages.',
   props: z.object({
     /** Brand / product name shown beside the logo glyph. */
     brand: z.string().optional(),
@@ -76,30 +77,38 @@ export const CrmNavbar = defineCapsule({
       <SiteNav
         position="sticky"
         height="compact"
-        className={cn('bg-background/80 backdrop-blur-md', props.className)}
+        className={cn(
+          'border-b border-border bg-background/80 backdrop-blur-md',
+          props.className,
+        )}
       >
         <NavbarBrand href={homeTarget} className="gap-2">
-          <BrandLogo brand={brand}>
+          <BrandLogo brand={brand} className="flex items-center gap-2">
             <LogoImage
-              fallback={<LogoMark className="size-8 text-primary" />}
+              className="size-7"
+              fallback={<LogoMark className="size-7 text-primary" />}
             />
-            <LogoLabel className="text-xl font-semibold text-foreground" />
+            <LogoLabel className="text-lg font-bold tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="font-mono text-xs uppercase tracking-[0.14em]"
+            >
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
 
-        <NavbarActions className="gap-4">
+        <NavbarActions className="gap-3">
           <SaasIntentBadge lakebed={lakebed} />
           <SaasSearchButton
             lakebed={lakebed}
-            buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+            buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground lg:inline-flex"
           />
           <SaasAccountButton
             lakebed={lakebed}
@@ -117,7 +126,7 @@ export const CrmNavbar = defineCapsule({
                 Starting
               </>
             }
-            className="hidden items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
+            className="hidden items-center gap-2 whitespace-nowrap rounded-none bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-[3px_3px_0_0] shadow-foreground transition-[transform,box-shadow,background-color] duration-150 hover:bg-primary/90 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none motion-reduce:transform-none disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
           >
             {cta}
           </SaasPlanActionButton>

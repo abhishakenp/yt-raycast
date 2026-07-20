@@ -719,7 +719,10 @@ export function createLakebedClient<
       >[typeof name]
 
       const runMutationWithLifecycle = useCallback(
-        async (lifecycle: LakebedMutationLifecycle | undefined, ...args: MutationArgs<ActiveMutation>) => {
+        async (
+          lifecycle: LakebedMutationLifecycle | undefined,
+          ...args: MutationArgs<ActiveMutation>
+        ) => {
           setLastError(null)
 
           if (!handler) {
@@ -738,13 +741,19 @@ export function createLakebedClient<
                 const baseData = (coordinator.data ??
                   data ??
                   {}) as LakebedDataOf<NonNullable<TDefinition>>
-                const rememberMergedData = async (patch: Record<string, unknown>) => {
-                  const nextData = await setData(patch as Partial<LakebedDataOf<NonNullable<TDefinition>>>)
+                const rememberMergedData = async (
+                  patch: Record<string, unknown>,
+                ) => {
+                  const nextData = await setData(
+                    patch as Partial<LakebedDataOf<NonNullable<TDefinition>>>,
+                  )
                   coordinator.data = nextData as JsonRecord
                   return nextData
                 }
                 const rememberReplacedData = async (nextData: unknown) => {
-                  const replacedData = await replaceData(nextData as LakebedDataOf<NonNullable<TDefinition>>)
+                  const replacedData = await replaceData(
+                    nextData as LakebedDataOf<NonNullable<TDefinition>>,
+                  )
                   coordinator.data = replacedData as JsonRecord
                   return replacedData
                 }
@@ -806,7 +815,8 @@ export function createLakebedClient<
         setLastError(null)
       }, [])
       const mutation = useMemo(() => {
-        const run = (...args: MutationArgs<ActiveMutation>) => runMutationWithLifecycle(undefined, ...args)
+        const run = (...args: MutationArgs<ActiveMutation>) =>
+          runMutationWithLifecycle(undefined, ...args)
         const mutationState: Pick<
           LakebedMutationFunction<ActiveMutation>,
           | 'isPending'
@@ -819,8 +829,10 @@ export function createLakebedClient<
           lastError: null,
           pendingCount: 0,
           reset,
-          runWithLifecycle: (lifecycle: LakebedMutationLifecycle, ...args: MutationArgs<ActiveMutation>) =>
-            runMutationWithLifecycle(lifecycle, ...args),
+          runWithLifecycle: (
+            lifecycle: LakebedMutationLifecycle,
+            ...args: MutationArgs<ActiveMutation>
+          ) => runMutationWithLifecycle(lifecycle, ...args),
         }
         return Object.assign(run, mutationState)
       }, [reset, runMutationWithLifecycle])

@@ -9,25 +9,28 @@ import {
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
 /**
- * CrowdfundingFaq — a native-disclosure accordion FAQ for a crowdfunding /
- * campaign landing page. On a card surface in a narrow column: a centered
- * uppercase eyebrow + heading above a stack of bordered <details> items, each
- * a clickable question summary with a chevron that rotates open and a muted
- * answer body that expands. No JS required (uses the browser <details>
- * element). Use to answer shipping, fulfillment, sourcing, refund and other
- * backer questions on a Kickstarter/Indiegogo-style raise, pre-order, or
- * fundraiser.
+ * CrowdfundingFaq — a playful-bold native-disclosure FAQ for a crowdfunding /
+ * campaign landing page. An asymmetric 4:8 split under a giant ghost "?"
+ * watermark: on the left a sticky header rail with a mono eyebrow, extrabold
+ * tight-tracked heading, and a mono "[ backer desk ]" tag; on the right a
+ * stack of sharp 2px-bordered <details> cards, each summary pairing a rotated
+ * mono "Q1"-style index chip with the bold question and a plus icon that
+ * rotates to an × when open, above a muted answer body. No JS required (uses
+ * the browser <details> element). Use to answer shipping, fulfillment,
+ * sourcing, refund and other backer questions on a Kickstarter/Indiegogo-style
+ * raise, pre-order, or fundraiser.
  */
 export const CrowdfundingFaq = defineCapsule({
   name: 'CrowdfundingFaq',
   description:
-    'A native-disclosure accordion FAQ for a crowdfunding / campaign landing page on a card surface in a narrow column: a centered uppercase eyebrow + heading above a stack of bordered details items, each a clickable question summary with a chevron that rotates open and a muted answer body that expands. No JS required (uses the browser details element). Use to answer shipping, fulfillment, sourcing, refund and other backer questions on a Kickstarter/Indiegogo-style raise, pre-order, or fundraiser.',
+    "A playful-bold native-disclosure FAQ for a crowdfunding / campaign landing page: an asymmetric 4:8 split under a giant ghost '?' watermark with a sticky header rail (mono eyebrow, extrabold heading, mono '[ backer desk ]' tag) on the left and a stack of sharp 2px-bordered details cards on the right, each summary pairing a rotated mono 'Q1'-style index chip with the bold question and a plus icon rotating to an × when open, above a muted answer body. No JS required (uses the browser details element). Use to answer shipping, fulfillment, sourcing, refund and other backer questions on a Kickstarter/Indiegogo-style raise, pre-order, or fundraiser.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -67,29 +70,69 @@ export const CrowdfundingFaq = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-card py-20 lg:py-28', props.className)}>
-        <Container size="sm">
-          <SectionHeading
-            eyebrow={faqEyebrow}
-            title={faqHeading}
-            className="mb-16 gap-0"
-            eyebrowClassName="text-sm font-medium uppercase tracking-wider text-primary"
-            titleClassName="mt-3 text-3xl font-semibold sm:text-4xl"
-          />
+      <section
+        className={cn(
+          'relative overflow-hidden bg-card py-16 sm:py-20 lg:py-28',
+          props.className,
+        )}
+      >
+        <Watermark className="-left-8 top-4 font-serif text-[10rem] sm:text-[14rem] lg:text-[18rem]">
+          ?
+        </Watermark>
+        <Container className="relative">
+          <div className="grid gap-10 lg:grid-cols-12 lg:gap-12">
+            <div className="lg:col-span-4">
+              <div className="lg:sticky lg:top-28">
+                <SectionHeading
+                  eyebrow={faqEyebrow}
+                  title={faqHeading}
+                  align="left"
+                  className="gap-3"
+                  eyebrowClassName="font-mono text-[11px] uppercase tracking-[0.2em] text-primary"
+                  titleClassName="text-3xl font-extrabold leading-[1.02] tracking-tighter sm:text-4xl"
+                />
+                <MonoTag
+                  aria-hidden="true"
+                  tone="faint"
+                  className="mt-4 inline-block"
+                >
+                  [ backer desk ]
+                </MonoTag>
+              </div>
+            </div>
 
-          <FaqAccordion>
-            {faqItems.map((item) => (
-              <FaqItem key={item.q} variant="overflow-bordered">
-                <FaqQuestion className="bg-card p-6 transition-colors hover:bg-muted">
-                  <span className="font-medium">{item.q}</span>
-                  <FaqQuestionIcon />
-                </FaqQuestion>
-                <FaqAnswer asChild className="px-6 pb-6">
-                  <div>{item.a}</div>
-                </FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+            <FaqAccordion className="space-y-4 lg:col-span-8">
+              {faqItems.map((item, i) => (
+                <FaqItem
+                  key={item.q}
+                  variant="overflow-bordered"
+                  className="rounded-none border-2 border-foreground/25 bg-background transition-colors open:border-foreground"
+                >
+                  <FaqQuestion className="gap-3 bg-background p-5 transition-colors hover:bg-muted/60 active:translate-y-px sm:p-6">
+                    <span className="flex items-center gap-3">
+                      <span
+                        aria-hidden="true"
+                        className={cn(
+                          'inline-flex shrink-0 rounded-full border-2 border-foreground/60 bg-background px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.12em]',
+                          i % 2 === 0 ? '-rotate-2' : 'rotate-2',
+                        )}
+                      >
+                        Q{i + 1}
+                      </span>
+                      <span className="font-bold tracking-tight">{item.q}</span>
+                    </span>
+                    <FaqQuestionIcon variant="plus" />
+                  </FaqQuestion>
+                  <FaqAnswer
+                    asChild
+                    className="border-t-2 border-foreground/10 px-5 pb-6 pt-4 sm:px-6"
+                  >
+                    <div>{item.a}</div>
+                  </FaqAnswer>
+                </FaqItem>
+              ))}
+            </FaqAccordion>
+          </div>
         </Container>
       </section>
     )

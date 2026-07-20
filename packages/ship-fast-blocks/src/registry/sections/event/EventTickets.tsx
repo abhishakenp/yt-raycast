@@ -27,19 +27,23 @@ import { TicketGrid } from '#/section-kit/TicketGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
 /**
- * EventTickets — a 3-tier ticket pricing block for a conference or event page. A
- * centered heading + description above a 3-column grid of pricing cards (the
- * featured tier gets a thicker border and a "Most Popular" badge), each with
- * name, availability, big price + unit, a checklist of included features (and an
- * optional crossed-out excluded list), and a CTA button that disables when sold
- * out. Purchasable CTAs write Lakebed ticket actions and the catalog is shared
- * across event sections. A note line with an inline link sits below. Use to sell Early Bird /
- * Regular / VIP passes on tech conference, summit, workshop, or festival pages.
+ * EventTickets — kinetic-poster ticket-stub pricing block for a conference or event
+ * page backed by shared Lakebed state. An asymmetric header (mono index eyebrow +
+ * oversized heading + lede) above a 3-up grid of square-edged ticket-stub cards:
+ * each carries a mono tier index, name, availability line, a giant tabular price +
+ * unit, a perforated dashed divider, a checklist of included features (and an
+ * optional crossed-out excluded list), and a square-edged CTA with a hard offset
+ * shadow that becomes a disabled "Sold Out" state when flagged. The featured tier
+ * inverts to a hairline-outlined dark stub with a "Most Popular" badge. Purchasable
+ * CTAs write Lakebed ticket actions and the catalog is shared across event
+ * sections. A note line with an inline contact action sits below. Use to sell
+ * Early Bird / Regular / VIP passes on tech conference, summit, workshop, or
+ * festival pages.
  */
 export const EventTickets = defineCapsule({
   name: 'EventTickets',
   description:
-    "Three-tier ticket pricing block for a conference or event page backed by shared Lakebed event state: a centered heading + description above a 3-column grid of pricing cards (the featured tier gets a thicker border and a 'Most Popular' badge), each with a tier name, availability line, a big price + unit, a checklist of included features and an optional crossed-out excluded list, and a CTA button that becomes a disabled 'Sold Out' state when flagged. Purchasable CTAs write Lakebed ticket actions and the catalog is shared across event sections. A note line with an inline contact action sits below. Use to sell Early Bird / Regular / VIP passes on tech conference, summit, workshop, meetup, or festival pages.",
+    "Kinetic-poster ticket-stub pricing block for a conference or event page backed by shared Lakebed event state: an asymmetric header (mono index eyebrow + oversized heading + lede) above a 3-up grid of square-edged ticket-stub cards, each with a mono tier index, name, availability line, a giant tabular price + unit, a perforated dashed divider, a checklist of included features and an optional crossed-out excluded list, and a square-edged CTA with a hard offset shadow that becomes a disabled 'Sold Out' state when flagged. The featured tier gets a 'Most Popular' badge. Purchasable CTAs write Lakebed ticket actions and the catalog is shared across event sections. A note line with an inline contact action sits below. Use to sell Early Bird / Regular / VIP passes on tech conference, summit, workshop, meetup, or festival pages.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -162,41 +166,51 @@ export const EventTickets = defineCapsule({
       <section className={cn('py-20 lg:py-28', props.className)}>
         <Container size="lg">
           <SectionHeading
+            align="left"
+            eyebrow="05 / Passes"
             title={heading}
             subtitle={description}
-            align="center"
-            titleClassName="tracking-tight"
-            subtitleClassName="text-lg"
-            className="mx-auto mb-12 max-w-2xl gap-6"
+            className="mb-12 max-w-2xl gap-4"
+            eyebrowClassName="text-muted-foreground"
+            titleClassName="text-4xl font-extrabold tracking-tight sm:text-5xl"
+            subtitleClassName="text-lg text-muted-foreground"
           />
-          <TicketGrid cols="1-3" className="mx-auto max-w-5xl gap-8">
-            {tiers.map((tier) => (
+          <TicketGrid cols="1-3" className="gap-6">
+            {tiers.map((tier, i) => (
               <PricingCard
                 key={tier.name}
                 variant="plain"
-                highlight={tier.featured ? 'foreground' : 'none'}
-                className={cn(tier.featured ? '' : 'border border-border')}
+                highlight="none"
+                className={cn(
+                  'rounded-none border p-7',
+                  tier.featured
+                    ? 'border-foreground bg-card shadow-[8px_8px_0_0] shadow-foreground'
+                    : 'border-border bg-card',
+                )}
               >
-                {tier.badge ? (
-                  <PricingCardBadge className="bg-foreground text-background">
-                    {tier.badge}
-                  </PricingCardBadge>
-                ) : null}
-                <PricingCardName className="mb-2 text-card-foreground">
+                <div className="mb-6 flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                  <span>Pass {String(i + 1).padStart(2, '0')}</span>
+                  {tier.badge ? (
+                    <PricingCardBadge className="static rounded-none bg-foreground px-2 py-0.5 text-[10px] font-bold text-background">
+                      {tier.badge}
+                    </PricingCardBadge>
+                  ) : null}
+                </div>
+                <PricingCardName className="mb-1 text-xl font-extrabold tracking-tight text-card-foreground">
                   {tier.name}
                 </PricingCardName>
-                <PricingCardTagline className="mb-6">
+                <PricingCardTagline className="mb-6 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
                   {tier.availability}
                 </PricingCardTagline>
                 <PricingCardPrice className="mb-6">
-                  <PricingCardPriceValue className="text-4xl font-bold text-card-foreground tracking-normal">
+                  <PricingCardPriceValue className="text-5xl font-extrabold tabular-nums tracking-tight text-card-foreground">
                     {tier.price}
                   </PricingCardPriceValue>
-                  <PricingCardPriceUnit className="">
+                  <PricingCardPriceUnit className="font-mono text-xs uppercase tracking-[0.12em]">
                     {tier.unit}
                   </PricingCardPriceUnit>
                 </PricingCardPrice>
-                <PricingCardFeatures className="mb-8 space-y-3 text-sm text-muted-foreground">
+                <PricingCardFeatures className="mb-8 space-y-3 border-t border-dashed border-border pt-6 text-sm text-muted-foreground">
                   {tier.features.map((f) => (
                     <PricingCardFeature key={f} className="gap-3">
                       <PricingCardCheckIcon className="mt-0 size-5" />
@@ -204,18 +218,18 @@ export const EventTickets = defineCapsule({
                     </PricingCardFeature>
                   ))}
                   {(tier.excluded ?? []).map((f) => (
-                    <PricingCardFeature key={f} className="gap-3">
+                    <PricingCardFeature key={f} className="gap-3 line-through">
                       <CrossIcon />
                       {f}
                     </PricingCardFeature>
                   ))}
                 </PricingCardFeatures>
-                <PricingCardCta asChild>
+                <PricingCardCta asChild className="mt-auto">
                   {tier.soldOut ? (
                     <button
                       type="button"
                       disabled
-                      className="w-full cursor-not-allowed rounded-lg bg-muted px-4 py-3 font-medium text-muted-foreground"
+                      className="w-full cursor-not-allowed rounded-none border border-border bg-muted px-4 py-3 font-mono text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground"
                     >
                       {tier.cta}
                     </button>
@@ -234,10 +248,10 @@ export const EventTickets = defineCapsule({
                         </>
                       }
                       className={cn(
-                        'block w-full rounded-lg px-4 py-3 text-center font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
+                        'flex w-full items-center justify-center gap-2 rounded-none border border-foreground px-4 py-3 text-center font-mono text-xs font-bold uppercase tracking-[0.14em] shadow-[4px_4px_0_0] shadow-foreground transition-[transform,box-shadow] duration-150 hover:-translate-y-px hover:shadow-[6px_6px_0_0] hover:shadow-foreground active:translate-x-[4px] active:translate-y-[4px] active:shadow-none disabled:pointer-events-none disabled:opacity-70',
                         tier.featured
-                          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                          : 'bg-foreground text-background hover:bg-foreground/90',
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-foreground text-background',
                       )}
                     >
                       {tier.cta}
@@ -247,8 +261,8 @@ export const EventTickets = defineCapsule({
               </PricingCard>
             ))}
           </TicketGrid>
-          <div className="mt-12 text-center">
-            <p className="text-sm text-muted-foreground">
+          <div className="mt-12">
+            <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
               {note.split(noteLink)[0]}
               <EventActionButton
                 lakebed={lakebed}
@@ -256,7 +270,7 @@ export const EventTickets = defineCapsule({
                 label={noteLink}
                 intentKey="tickets-contact"
                 source="tickets-note"
-                className="text-foreground underline hover:no-underline"
+                className="text-foreground underline decoration-primary underline-offset-4 hover:no-underline"
               >
                 {noteLink}
               </EventActionButton>

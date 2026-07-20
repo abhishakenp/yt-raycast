@@ -14,19 +14,21 @@ import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
- * CybersecurityFaq — accordion FAQ. A narrow, muted-band section with a
- * centered heading + subheading above a vertical stack of bordered card rows.
- * Each row is a full-width toggle button (question + a chevron that rotates when
- * open) that expands to reveal its answer; the first item is open by default and
- * only one stays open at a time. Self-contained interactive state, no links.
- * Use to answer buyer objections for cybersecurity vendors, SOC/MDR providers,
- * or any B2B security SaaS. Renders fully with no props via baked-in
- * security-FAQ defaults.
+ * CybersecurityFaq — terminal-stealth interrogation ledger. An asymmetric 4:8
+ * split on a muted wash: the left rail holds a mono meta rule ("QUERY LOG"), a
+ * left-aligned heading + lede, and a decorative mono redaction-bar line; the
+ * right column stacks the questions as a hairline-divided, square-edged ledger.
+ * Each row is a full-width toggle with a mono tabular "Q.0X" index, the
+ * question, and a rotating chevron; the answer expands beneath, indented past
+ * the index gutter. First item open by default, one open at a time.
+ * Self-contained interactive state, no links. Use to answer buyer objections
+ * for cybersecurity vendors, SOC/MDR providers, or any B2B security SaaS.
+ * Renders fully with no props via baked-in security-FAQ defaults.
  */
 export const CybersecurityFaq = defineCapsule({
   name: 'CybersecurityFaq',
   description:
-    'Accordion FAQ: a narrow, muted-band section with a centered heading + subheading above a vertical stack of bordered card rows, each a full-width toggle button (question + rotating chevron) that expands to reveal its answer; the first item opens by default and only one stays open at a time. Self-contained interactive state, no links. Use to answer buyer objections for cybersecurity vendors, SOC/MDR providers, or any B2B security SaaS.',
+    "Terminal-stealth interrogation-ledger FAQ: an asymmetric 4:8 split on a muted wash with a left rail (mono meta rule, left-aligned heading + lede, decorative redaction line) beside a hairline-divided, square-edged question ledger — each row a full-width toggle with a mono tabular 'Q.0X' index, the question, and a rotating chevron; the first item opens by default and only one stays open at a time. Self-contained interactive state, no links. Use to answer buyer objections for cybersecurity vendors, SOC/MDR providers, or any B2B security SaaS.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -72,49 +74,91 @@ export const CybersecurityFaq = defineCapsule({
     const [openFaq, setOpenFaq] = useState<number | null>(0)
 
     return (
-      <section className={cn('bg-muted/50 py-24', props.className)}>
-        <Container className="max-w-4xl">
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16  gap-0"
-            titleClassName="mb-4 text-3xl font-bold sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <FaqAccordion>
-            {items.map((item, i) => {
-              const open = openFaq === i
-              return (
-                <FaqItem key={item.q} asChild variant="overflow-bordered">
-                  <div>
-                    <FaqQuestion
+      <section
+        className={cn('bg-muted/40 py-16 sm:py-20 lg:py-24', props.className)}
+      >
+        <Container>
+          <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
+            <div className="lg:col-span-4">
+              <div className="mb-6 flex items-center gap-3 border-b border-border pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                <span aria-hidden="true" className="size-2 bg-primary" />
+                Query log
+              </div>
+              <SectionHeading
+                align="left"
+                title={heading}
+                subtitle={description}
+                className="gap-3"
+                titleClassName="text-3xl font-extrabold tracking-tight sm:text-4xl"
+                subtitleClassName="text-base text-muted-foreground sm:text-lg"
+              />
+              <p
+                aria-hidden="true"
+                className="mt-6 flex flex-wrap items-center gap-x-2 gap-y-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60"
+              >
+                <span>declassified</span>
+                <span className="inline-block h-2.5 w-10 bg-foreground" />
+                <span>rev</span>
+                <span className="tabular-nums">
+                  {String(items.length).padStart(2, '0')}
+                </span>
+              </p>
+            </div>
+            <div className="lg:col-span-8">
+              <FaqAccordion className="space-y-0 divide-y divide-border border-y border-border">
+                {items.map((item, i) => {
+                  const open = openFaq === i
+                  return (
+                    <FaqItem
+                      key={item.q}
                       asChild
-                      className="w-full cursor-pointer p-6 text-left transition-colors hover:bg-muted/50"
+                      variant="overflow-bordered"
+                      className="rounded-none border-0 bg-transparent"
                     >
-                      <button
-                        type="button"
-                        aria-expanded={open}
-                        onClick={() => setOpenFaq(open ? null : i)}
-                      >
-                        <span className="text-lg font-semibold">{item.q}</span>
-                        <FaqQuestionIcon
-                          className={cn(
-                            'shrink-0 transition-transform',
-                            open && 'rotate-180',
-                          )}
-                        />
-                      </button>
-                    </FaqQuestion>
-                    {open && (
-                      <FaqAnswer asChild className="px-6 pb-6">
-                        <div>{item.a}</div>
-                      </FaqAnswer>
-                    )}
-                  </div>
-                </FaqItem>
-              )
-            })}
-          </FaqAccordion>
+                      <div>
+                        <FaqQuestion
+                          asChild
+                          className="w-full cursor-pointer gap-4 px-1 py-5 text-left transition-colors hover:bg-muted/50 sm:px-4"
+                        >
+                          <button
+                            type="button"
+                            aria-expanded={open}
+                            onClick={() => setOpenFaq(open ? null : i)}
+                          >
+                            <span className="flex min-w-0 items-baseline gap-4">
+                              <span
+                                aria-hidden="true"
+                                className="shrink-0 font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground tabular-nums"
+                              >
+                                Q.{String(i + 1).padStart(2, '0')}
+                              </span>
+                              <span className="text-base font-bold tracking-tight sm:text-lg">
+                                {item.q}
+                              </span>
+                            </span>
+                            <FaqQuestionIcon
+                              className={cn(
+                                'shrink-0 transition-transform',
+                                open && 'rotate-180',
+                              )}
+                            />
+                          </button>
+                        </FaqQuestion>
+                        {open && (
+                          <FaqAnswer
+                            asChild
+                            className="px-1 pb-6 sm:px-4 sm:pl-[4.25rem]"
+                          >
+                            <div>{item.a}</div>
+                          </FaqAnswer>
+                        )}
+                      </div>
+                    </FaqItem>
+                  )
+                })}
+              </FaqAccordion>
+            </div>
+          </div>
         </Container>
       </section>
     )

@@ -11,21 +11,23 @@ import { dashboardLakebed } from './dashboard-lakebed.ts'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * DashboardSidebar — a fixed left navigation rail for a SaaS admin dashboard. A
- * full-height bordered card column (hidden below md, with a slide-in mobile
- * drawer + scrim toggled by an exposed hamburger button) holding an indigo brand
- * tile + product name at top, a primary line-icon nav group with an active state
- * and a count badge on the Orders item, a "Support" sub-group below it, and a
- * bottom user footer (avatar, name, email, sign-out). Every nav item, the brand
- * through section-kit route links and the footer account button uses Shoo/Lakebed auth.
- * Use as the persistent left rail for an authenticated admin area, back office,
- * analytics console, CRM or internal SaaS tool. Renders fully with no props via
- * baked-in "Orbit" defaults.
+ * DashboardSidebar — Swiss-data left navigation rail for a SaaS admin
+ * dashboard. A full-height hairline-bordered rounded-none column (hidden below
+ * md, with a slide-in mobile drawer + scrim toggled by an exposed hamburger
+ * button): an ink-square brand mark + product name over a hairline rule, a
+ * mono "Nav · NN" micro-label above the primary line-icon group — the active
+ * item carries a primary left rule and tinted wash, the Orders item a square
+ * mono tabular count badge — a mono support-group label below, and a bottom
+ * hairline footer (square avatar, name, mono email, sign-out). Every nav item
+ * and the brand route through section-kit route links; the footer account
+ * button uses Shoo/Lakebed auth. Use as the persistent left rail for an
+ * authenticated admin area, back office, analytics console, CRM or internal
+ * SaaS tool. Renders fully with no props via baked-in "Orbit" defaults.
  */
 export const DashboardSidebar = defineCapsule({
   name: 'DashboardSidebar',
   description:
-    "A fixed left navigation rail for a SaaS admin dashboard: a full-height bordered card column (hidden below md, with a slide-in mobile drawer + scrim toggled by an exposed hamburger button) holding an indigo brand tile + product name, a primary line-icon nav group with an active state and a count badge on the Orders item, a 'Support' sub-group, and a bottom user footer wired to Shoo/Lakebed auth. Nav items and the brand route through section-kit route links for page-switching. Use as the persistent left rail for an authenticated admin area, back office, analytics console, CRM or internal SaaS tool.",
+    'Swiss-data left navigation rail for a SaaS admin dashboard: a full-height hairline-bordered rounded-none column (hidden below md, with a slide-in mobile drawer + scrim toggled by an exposed hamburger button) holding an ink-square brand mark + product name, a mono "Nav · NN" micro-label above the primary line-icon group with a primary-left-rule active state and a square mono tabular count badge on the Orders item, a mono support-group label, and a bottom hairline footer (square avatar, name, mono email) wired to Shoo/Lakebed auth. Nav items and the brand route through section-kit route links for page-switching. Use as the persistent left rail for an authenticated admin area, back office, analytics console, CRM or internal SaaS tool.',
   props: z.object({
     /** Brand / product name shown at the top of the sidebar. */
     brand: z.string().optional(),
@@ -103,18 +105,18 @@ export const DashboardSidebar = defineCapsule({
     const [activeNav, setActiveNav] = useState(nav[0])
     const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
-    // ── Brand mark — indigo tile + orbit glyph (decorative brand asset). ──
+    // ── Brand mark — ink square + orbit glyph (decorative brand asset). ──
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          'grid size-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm',
+          'grid size-8 place-items-center rounded-none bg-foreground text-background',
           className,
         )}
         aria-hidden="true"
       >
         <svg
-          width="18"
-          height="18"
+          width="16"
+          height="16"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -197,10 +199,10 @@ export const DashboardSidebar = defineCapsule({
         <NavbarRouteLink
           aria-label={badgeText ? `${label} ${badgeText}` : label}
           className={cn(
-            'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors',
+            'flex w-full items-center gap-3 rounded-none border-l-2 px-3 py-2 text-sm transition-colors duration-150 active:translate-y-px',
             active
-              ? 'bg-primary/10 font-semibold text-primary'
-              : 'text-muted-foreground hover:bg-primary/10 hover:text-primary',
+              ? 'border-primary bg-primary/[0.06] font-medium text-foreground'
+              : 'border-transparent text-muted-foreground hover:bg-muted hover:text-foreground',
           )}
           onClick={() => {
             setActiveNav(label)
@@ -209,8 +211,8 @@ export const DashboardSidebar = defineCapsule({
           href={label}
         >
           <svg
-            width="18"
-            height="18"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -218,12 +220,13 @@ export const DashboardSidebar = defineCapsule({
             strokeLinecap="round"
             strokeLinejoin="round"
             aria-hidden="true"
+            className={cn(active ? 'text-primary' : 'text-muted-foreground/70')}
           >
             {navIcon(label)}
           </svg>
           {label}
           {badgeText ? (
-            <span className="ml-auto rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+            <span className="ml-auto rounded-none border border-border bg-background px-1.5 py-0.5 font-mono text-[10px] font-medium tabular-nums text-muted-foreground">
               {badgeText}
             </span>
           ) : null}
@@ -233,16 +236,25 @@ export const DashboardSidebar = defineCapsule({
 
     const sidebarBody = (
       <>
-        <div className="flex h-16 items-center border-b border-border/60 px-6">
-          <NavbarRouteLink className="flex items-center gap-3" href={nav[0]}>
+        <div className="flex h-14 items-center border-b border-border px-4">
+          <NavbarRouteLink className="flex items-center gap-2.5" href={nav[0]}>
             <BrandLogo brand={brand}>
               <LogoImage fallback={<LogoMark />} />
-              <LogoLabel className="text-lg font-bold tracking-tight text-foreground" />
+              <LogoLabel className="text-base font-bold tracking-tight text-foreground" />
             </BrandLogo>
           </NavbarRouteLink>
         </div>
 
-        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+        <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4">
+          <p
+            aria-hidden="true"
+            className="flex items-center justify-between px-3 pb-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground/60"
+          >
+            <span>Nav</span>
+            <span className="tabular-nums">
+              · {String(primaryNav.length).padStart(2, '0')}
+            </span>
+          </p>
           {primaryNav.map((label) => (
             <NavButton key={label} label={label} />
           ))}
@@ -252,7 +264,7 @@ export const DashboardSidebar = defineCapsule({
               <Eyebrow
                 asChild
                 variant="text"
-                className="block px-3 pb-2 pt-4 tracking-wider text-muted-foreground/70"
+                className="block border-t border-border px-3 pb-2 pt-4 font-mono text-[10px] font-normal tracking-[0.14em] text-muted-foreground/60"
               >
                 <div>{supportLabel}</div>
               </Eyebrow>
@@ -263,19 +275,19 @@ export const DashboardSidebar = defineCapsule({
           ) : null}
         </nav>
 
-        <div className="border-t border-border/60 p-4">
+        <div className="border-t border-border p-4">
           <div className="flex items-center gap-3">
             <Image
               alt={userAvatarAlt}
               w={72}
               h={72}
-              className="size-9 rounded-full object-cover ring-2 ring-primary/20 ring-offset-2 ring-offset-card"
+              className="size-9 rounded-none border border-border object-cover"
             />
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-foreground">
                 {userName}
               </p>
-              <p className="truncate text-xs text-muted-foreground">
+              <p className="truncate font-mono text-[10px] tracking-[0.02em] text-muted-foreground">
                 {userEmail}
               </p>
             </div>
@@ -283,7 +295,7 @@ export const DashboardSidebar = defineCapsule({
               type="button"
               aria-label={isSignedIn ? 'Sign out' : 'Sign in with Shoo'}
               onClick={runAuthAction}
-              className="ml-auto text-muted-foreground transition-colors hover:text-foreground"
+              className="ml-auto rounded-none p-1 text-muted-foreground transition-colors duration-150 hover:text-foreground active:translate-y-px"
             >
               <svg
                 width="16"
@@ -313,7 +325,7 @@ export const DashboardSidebar = defineCapsule({
           type="button"
           aria-label="Open menu"
           onClick={() => setMobileNavOpen(true)}
-          className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground md:hidden"
+          className="rounded-none border border-border p-2 text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground active:translate-y-px md:hidden"
         >
           <svg
             width="20"
@@ -334,7 +346,7 @@ export const DashboardSidebar = defineCapsule({
         {/* Sidebar (desktop) */}
         <NavSidebar
           variant="card"
-          className="z-30 hidden w-64 shrink-0 md:flex"
+          className="z-30 hidden w-64 shrink-0 rounded-none md:flex"
         >
           {sidebarBody}
         </NavSidebar>
@@ -349,7 +361,7 @@ export const DashboardSidebar = defineCapsule({
             />
             <NavSidebar
               variant="card"
-              className="fixed inset-y-0 left-0 z-30 w-64 md:hidden"
+              className="fixed inset-y-0 left-0 z-30 w-64 rounded-none md:hidden"
             >
               {sidebarBody}
             </NavSidebar>

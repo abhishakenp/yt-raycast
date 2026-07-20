@@ -15,20 +15,22 @@ import { Container } from '#/section-kit/Container.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * CorporateHero — split-layout enterprise hero section for a corporate B2B
- * marketing page. A white canvas with a muted band: left side holds a live
- * trust badge with a pulsing dot, a large multi-line headline, a supporting
- * paragraph, dual CTAs (filled primary + outlined secondary), and SOC 2 / ISO
- * compliance check-marks; right side shows a showcase photo with a floating
- * ROI stat card. Clean, authoritative, and conversion-focused. All CTAs route
- * through section-kit route links. Use as the opening hero for enterprise software, cloud
- * infrastructure, IT consultancies, or any corporate site that needs Fortune 500
- * credibility.
+ * CorporateHero — Swiss-corporate asymmetric 7/5 hero for a corporate B2B
+ * marketing page. Opens with a hairline mono meta rule (primary index square +
+ * trust badge text left, ghost index numeral right), then a strict 12-column
+ * split: left column carries a giant clamped display headline, supporting
+ * lede, dual square-edged CTAs with press feedback, and SOC 2 / ISO
+ * compliance marks as mono micro-labels with primary tick squares; the right
+ * column holds a hairline-framed showcase photo with an offset ghost frame
+ * (the section's calculated rupture) and a square stat plate breaching the
+ * photo's bottom-left edge. All CTAs route through section-kit route links.
+ * Use as the opening hero for enterprise software, cloud infrastructure, IT
+ * consultancies, or any corporate site that needs Fortune 500 credibility.
  */
 export const CorporateHero = defineCapsule({
   name: 'CorporateHero',
   description:
-    'Split-layout enterprise hero section for a corporate B2B marketing page: left side with a live trust badge (pulsing dot), authoritative headline, supporting paragraph, dual CTAs, and SOC 2 / ISO compliance check-marks; right side with a showcase office photo and a floating ROI stat card. Clean, trustworthy, conversion-focused. CTAs route through section-kit route links. Use as the opening hero for enterprise software, cloud infrastructure, IT consultancies, or any corporate site.',
+    'Swiss-corporate asymmetric 7/5 hero for a corporate B2B marketing page: a hairline mono meta rule (primary index square + trust badge text) above a 12-column split — giant clamped display headline, lede, dual square-edged CTAs with press feedback, and SOC 2 / ISO compliance mono micro-labels on the left; a hairline-framed showcase photo with an offset ghost frame and a square stat plate breaching its bottom-left edge on the right. CTAs route through section-kit route links. Use as the opening hero for enterprise software, cloud infrastructure, IT consultancies, or any corporate site.',
   props: z.object({
     /** Trust badge text above the headline. */
     badge: z.string().optional(),
@@ -68,77 +70,80 @@ export const CorporateHero = defineCapsule({
     const heroStatLabel = props.statLabel ?? 'Average ROI'
     const heroStatValue = props.statValue ?? '340%'
 
-    const Check = ({ className }: { className?: string }) => (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className={className}
-        aria-hidden="true"
-      >
-        <path d="M5 13l4 4L19 7" />
-      </svg>
-    )
-
     return (
       <HeroSection
         variant="split"
-        className={cn('relative overflow-hidden bg-muted/50', props.className)}
+        className={cn(
+          'relative overflow-hidden border-b border-border bg-background',
+          props.className,
+        )}
       >
-        <Container size="xl" className="py-20 lg:py-32">
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-            <div className="space-y-8">
-              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1">
-                <span className="size-2 animate-pulse rounded-full bg-primary" />
-                <span className="text-xs font-medium text-muted-foreground">
-                  {heroBadge}
-                </span>
-              </div>
-              <h1 className="text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+        <Container size="xl" className="relative py-14 sm:py-20 lg:py-28">
+          <div className="mb-10 flex items-center justify-between gap-4 border-b border-border pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground sm:mb-14">
+            <span className="flex min-w-0 items-center gap-3">
+              <span aria-hidden="true" className="size-2 shrink-0 bg-primary" />
+              <span className="truncate">{heroBadge}</span>
+            </span>
+            <span
+              aria-hidden="true"
+              className="shrink-0 tabular-nums text-muted-foreground/60"
+            >
+              01 / Overview
+            </span>
+          </div>
+
+          <div className="grid items-center gap-14 lg:grid-cols-12 lg:gap-10">
+            <div className="lg:col-span-7 lg:pr-6">
+              <h1 className="text-[clamp(2.5rem,6vw,4.75rem)] font-semibold leading-[0.98] tracking-tight text-foreground">
                 {heroHeading}
               </h1>
-              <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">
+              <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
                 {heroSub}
               </p>
-              <div className="flex flex-col gap-4 sm:flex-row">
+              <div className="mt-8 grid grid-cols-1 gap-3 sm:flex sm:flex-row">
                 <NavbarRouteLink
-                  className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  className="inline-flex items-center justify-center whitespace-nowrap rounded-none bg-primary px-7 py-3.5 text-base font-medium text-primary-foreground transition-all duration-150 hover:bg-primary/90 active:translate-y-px"
                   href={heroPrimary}
                 >
                   {heroPrimary}
                 </NavbarRouteLink>
                 <NavbarRouteLink
-                  className="inline-flex items-center justify-center rounded-lg border border-border bg-background px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted"
+                  className="inline-flex items-center justify-center whitespace-nowrap rounded-none border border-border bg-background px-7 py-3.5 text-base font-medium text-foreground transition-all duration-150 hover:bg-muted active:translate-y-px"
                   href={heroSecondary}
                 >
                   {heroSecondary}
                 </NavbarRouteLink>
               </div>
-              <div className="flex flex-wrap items-center gap-6 pt-4 text-sm text-muted-foreground">
+              <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-border pt-5">
                 {heroBadges.map((b) => (
-                  <span key={b} className="flex items-center gap-2">
-                    <Check className="size-5 text-primary" />
+                  <span
+                    key={b}
+                    className="flex items-center gap-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="size-1.5 shrink-0 bg-primary"
+                    />
                     {b}
                   </span>
                 ))}
               </div>
             </div>
 
-            <div className="relative">
+            <div className="relative lg:col-span-5">
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute -right-3 -top-3 hidden size-full border border-border sm:block"
+              />
               <Image
                 alt={heroImageAlt}
                 w={800}
                 h={600}
                 loading="eager"
-                className="aspect-[4/3] w-full rounded-xl object-cover shadow-2xl"
+                className="relative aspect-[4/3] w-full rounded-none border border-border object-cover"
               />
-              <HeroStatBadge className="absolute -bottom-6 -left-6 hidden items-center gap-3 sm:flex">
-                <HeroStatBadgeIcon>
+              <HeroStatBadge className="absolute -bottom-6 -left-3 flex items-center gap-3 rounded-none border-border bg-background p-4 shadow-none sm:-left-6">
+                <HeroStatBadgeIcon className="rounded-none bg-foreground text-background">
                   <svg
                     width="20"
                     height="20"
@@ -154,10 +159,10 @@ export const CorporateHero = defineCapsule({
                   </svg>
                 </HeroStatBadgeIcon>
                 <HeroStatBadgeContent>
-                  <HeroStatBadgeSubtitle className="text-xs">
+                  <HeroStatBadgeSubtitle className="font-mono text-[10px] uppercase tracking-[0.16em]">
                     {heroStatLabel}
                   </HeroStatBadgeSubtitle>
-                  <HeroStatBadgeTitle className="text-lg font-semibold">
+                  <HeroStatBadgeTitle className="text-xl font-semibold tabular-nums tracking-tight">
                     {heroStatValue}
                   </HeroStatBadgeTitle>
                 </HeroStatBadgeContent>

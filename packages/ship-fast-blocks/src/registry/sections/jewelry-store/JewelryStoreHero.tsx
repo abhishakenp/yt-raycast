@@ -4,6 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -14,20 +15,23 @@ import {
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * JewelryStoreHero — full-bleed cinematic hero for a luxury fine-jewelry
- * boutique. A dimmed full-cover background image with a left-to-right
- * fade-to-background gradient overlay, fronting a left-aligned column with a
- * wide letter-spaced gold heritage eyebrow, an oversized two-line serif
- * display headline, a relaxed subheading, and dual CTAs (a solid gold primary
- * button + a bordered ghost button). A floating bottom-right featured-piece
- * card shows a label, serif piece name, and price. Use as the opening hero
- * for fine jewelers, diamond houses, engagement-ring boutiques, watch or
- * high-jewelry maisons. Renders fully with no props via baked-in defaults.
+ * JewelryStoreHero — full-bleed vitrine hero for a luxury fine-jewelry maison.
+ * A dimmed full-cover photograph under a left-to-right fade-to-background scrim
+ * and a giant ghost serif watermark, fronting a generous left-aligned column: a
+ * hairline rule beside a mono heritage micro-label, an oversized two-line serif
+ * display headline, a light supporting paragraph, and dual square CTAs (a solid
+ * dark primary + a hairline-outline ghost, both with press feedback). A floating
+ * bottom-right featured-piece vitrine card — a hairline glass-case frame with a
+ * single restrained hard offset shadow — carries a mono label, serif piece name,
+ * tabular price, and a Lakebed add-to-cart button. Both CTAs route through
+ * section-kit route links and the background uses the alt-driven Image component.
+ * Use as the opening hero for fine jewelers, diamond houses, engagement-ring
+ * boutiques, watch or high-jewelry maisons. Renders fully with no props.
  */
 export const JewelryStoreHero = defineCapsule({
   name: 'JewelryStoreHero',
   description:
-    'Full-bleed cinematic hero for a luxury fine-jewelry boutique: a dimmed full-cover background image with a left-to-right fade-to-background gradient overlay, fronting a left-aligned column with a wide letter-spaced gold heritage eyebrow, an oversized two-line serif display headline, a relaxed subheading, and dual CTAs (solid gold primary + bordered ghost). A floating bottom-right featured-piece card shows a label, serif piece name, and price. Use as the opening hero for fine jewelers, diamond houses, engagement-ring boutiques, watch or high-jewelry maisons, or any premium luxury-retail brand.',
+    'Full-bleed vitrine hero for a luxury fine-jewelry maison: a dimmed full-cover photograph under a left-to-right fade-to-background scrim and a giant ghost serif watermark, fronting a generous left-aligned column with a hairline rule beside a mono heritage micro-label, an oversized two-line serif display headline, a light supporting paragraph, and dual square CTAs (a solid dark primary + a hairline-outline ghost, both with press feedback). A floating bottom-right featured-piece vitrine card — a hairline glass-case frame with a single restrained hard offset shadow — carries a mono label, serif piece name, tabular price, and a Lakebed add-to-cart button. Both CTAs route through section-kit route links. Use as the opening hero for fine jewelers, diamond houses, engagement-ring boutiques, watch or high-jewelry maisons, or any premium luxury-retail brand.',
   lakebed: commerceCartLakebed,
   props: z.object({
     eyebrow: z.string().optional(),
@@ -80,31 +84,37 @@ export const JewelryStoreHero = defineCapsule({
           />
           <div
             aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent"
+            className="absolute inset-0 bg-gradient-to-r from-background via-background/85 to-transparent"
           />
         </div>
+        <Watermark className="-left-2 bottom-[-0.12em] font-serif text-[26vw] font-normal tracking-tighter">
+          Éclat
+        </Watermark>
         <HeroContent className="w-full px-6 py-32 lg:px-12 lg:py-0 xl:px-20">
           <div className="max-w-3xl">
-            <p className="mb-6 text-sm uppercase tracking-[0.3em] text-primary">
-              {eyebrow}
-            </p>
-            <h1 className="mb-8 font-serif text-5xl leading-[1.1] text-foreground sm:text-6xl lg:text-7xl xl:text-8xl">
+            <div className="mb-8 flex items-center gap-4">
+              <span aria-hidden="true" className="h-px w-12 bg-primary" />
+              <p className="font-mono text-[11px] font-medium uppercase tracking-[0.28em] text-muted-foreground">
+                {eyebrow}
+              </p>
+            </div>
+            <h1 className="font-serif text-5xl font-normal leading-[1.02] tracking-tight text-foreground sm:text-6xl lg:text-7xl xl:text-8xl">
               {headingTop}
               <br />
               {headingBottom}
             </h1>
-            <p className="mb-12 max-w-xl text-lg leading-relaxed text-muted-foreground lg:text-xl">
+            <p className="mt-8 max-w-xl text-lg font-light leading-relaxed text-muted-foreground lg:text-xl">
               {subheading}
             </p>
-            <div className="flex flex-col gap-4 sm:flex-row">
+            <div className="mt-10 flex flex-col gap-3 sm:flex-row">
               <NavbarRouteLink
-                className="inline-flex items-center justify-center bg-primary px-8 py-4 text-sm font-medium uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary/90"
+                className="inline-flex items-center justify-center rounded-none bg-foreground px-8 py-4 font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-background transition-[background-color,transform] duration-150 hover:bg-foreground/90 active:translate-y-px"
                 href={primaryCta}
               >
                 {primaryCta}
               </NavbarRouteLink>
               <NavbarRouteLink
-                className="inline-flex items-center justify-center border border-border px-8 py-4 text-sm font-medium uppercase tracking-widest text-foreground transition-colors hover:border-primary hover:text-primary"
+                className="inline-flex items-center justify-center rounded-none border border-border px-8 py-4 font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-foreground transition-[border-color,color,transform] duration-150 hover:border-foreground active:translate-y-px"
                 href={secondaryCta}
               >
                 {secondaryCta}
@@ -113,14 +123,16 @@ export const JewelryStoreHero = defineCapsule({
           </div>
         </HeroContent>
         <div className="absolute bottom-12 right-6 hidden lg:right-20 lg:block">
-          <div className="text-right">
-            <p className="mb-2 text-sm uppercase tracking-widest text-primary">
+          <div className="w-64 border border-border bg-background/95 p-6 text-right shadow-[10px_10px_0_0] shadow-foreground/10 backdrop-blur-sm">
+            <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
               {featuredLabel}
             </p>
-            <p className="font-serif text-2xl text-foreground">
+            <p className="mt-3 font-serif text-2xl text-foreground">
               {featuredName}
             </p>
-            <p className="mt-1 text-muted-foreground">{featuredPrice}</p>
+            <p className="mt-1 text-sm text-foreground tabular-nums">
+              {featuredPrice}
+            </p>
             <CommerceAddItemButton
               lakebed={lakebed}
               item={{ label: featuredName, price: featuredPrice }}
@@ -128,7 +140,7 @@ export const JewelryStoreHero = defineCapsule({
               pendingChildren={
                 <CommerceMutationSpinner className="text-primary-foreground" />
               }
-              className="mt-5 inline-flex items-center justify-center bg-primary px-5 py-3 text-xs font-medium uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+              className="mt-5 inline-flex w-full items-center justify-center rounded-none bg-primary px-5 py-3 font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-primary-foreground transition-[background-color,transform] duration-150 hover:bg-primary/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
             >
               Add featured
             </CommerceAddItemButton>

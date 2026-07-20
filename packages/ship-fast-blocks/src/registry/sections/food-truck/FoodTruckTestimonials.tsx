@@ -2,6 +2,8 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -14,17 +16,20 @@ import { Container } from '#/section-kit/Container.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * FoodTruckTestimonials — a customer-reviews section with a press-logo strip. A
- * centered eyebrow + heading sits above a 3-up grid of muted quote cards, each with a
- * five-star row, an italicized quote and an avatar + name + role byline, followed by a
- * centered row of clickable press / publication logos. Avatars use the alt-driven
- * Image component; logos route through section-kit route links. Use as the social-proof section for
- * food trucks, restaurants, caterers or street-food vendors showing reviews and press.
+ * FoodTruckTestimonials — a sticker-poster customer-reviews section with a press-logo
+ * stamp strip. Under a giant ghost quotation watermark, a rotated rubber-stamp caption +
+ * mono index eyebrow and an extrabold slab heading sit above a 3-up grid of hard-bordered
+ * rounded-none quote slabs, alternately tilted with hard offset token shadows, each with a
+ * five-star row, a quote and an avatar + name + role byline; a centered row of clickable
+ * press / publication logos rendered as stamp chips follows. Avatars use the alt-driven
+ * Image component; logos route through section-kit route links. Use as the social-proof
+ * section for food trucks, restaurants, caterers or street-food vendors showing reviews
+ * and press.
  */
 export const FoodTruckTestimonials = defineCapsule({
   name: 'FoodTruckTestimonials',
   description:
-    'Customer-reviews section with a press-logo strip: a centered eyebrow + heading above a 3-up grid of muted quote cards, each with a five-star row, a quote and an avatar + name + role byline, followed by a centered row of clickable press / publication logos. Avatars use the alt-driven Image component; logos route through section-kit route links. Use as the social-proof / testimonials section for food trucks, restaurants, caterers or street-food vendors showing reviews and press mentions.',
+    'Sticker-poster customer-reviews section with a press-logo stamp strip: under a giant ghost quotation watermark, a rotated rubber-stamp caption + mono index eyebrow and an extrabold slab heading above a 3-up grid of hard-bordered rounded-none quote slabs, alternately tilted with hard offset token shadows, each with a five-star row, a quote and an avatar + name + role byline, followed by a centered row of clickable press / publication logos rendered as stamp chips. Avatars use the alt-driven Image component; logos route through section-kit route links. Use as the social-proof / testimonials section for food trucks, restaurants, caterers or street-food vendors showing reviews and press mentions.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -83,11 +88,47 @@ export const FoodTruckTestimonials = defineCapsule({
       rating: 5,
     }))
 
+    const tilts = ['-rotate-1', 'rotate-1', '-rotate-2']
+
+    const Stars = ({ count }: { count: number }) => (
+      <div className="flex gap-0.5 text-primary" aria-hidden="true">
+        {Array.from({ length: count }).map((_, i) => (
+          <svg
+            key={i}
+            width="16"
+            height="16"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>
+        ))}
+      </div>
+    )
+
     return (
-      <section className={cn('px-6 pt-28 pb-20', props.className)}>
-        <Container size="lg">
-          <TestimonialGrid eyebrow={testEyebrow} heading={testHeading}>
-            {gridItems.map((t) => {
+      <section
+        className={cn(
+          'relative overflow-hidden px-6 pt-24 pb-20',
+          props.className,
+        )}
+      >
+        <Watermark className="-left-2 top-2 text-[12rem] leading-none sm:text-[16rem] lg:text-[20rem]">
+          &ldquo;
+        </Watermark>
+        <Container size="lg" className="relative">
+          <div className="mb-12 flex flex-wrap items-center gap-3">
+            <span className="inline-flex rotate-1 items-center rounded-full border-2 border-foreground bg-background px-3.5 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-foreground shadow-[3px_3px_0_0] shadow-primary/40">
+              {testEyebrow}
+            </span>
+            <MonoTag>Word on the street</MonoTag>
+          </div>
+          <h2 className="mb-12 text-4xl font-extrabold tracking-tighter md:text-5xl">
+            {testHeading}
+          </h2>
+
+          <TestimonialGrid>
+            {gridItems.map((t, i) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -100,27 +141,46 @@ export const FoodTruckTestimonials = defineCapsule({
               return (
                 <TestimonialCard
                   key={__iv__.name}
-                  className={'bg-muted border-0 p-6'}
+                  className={cn(
+                    'gap-4 rounded-none border-2 border-foreground bg-card p-6 shadow-[5px_5px_0_0] shadow-foreground transition-transform duration-150 hover:-translate-y-1 motion-reduce:transform-none',
+                    tilts[i % tilts.length],
+                  )}
                 >
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
-                    {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
-                        {__iv__.role || __iv__.company || __iv__.meta}
-                      </TestimonialMeta>
+                  <Stars count={__iv__.rating ?? 5} />
+                  <TestimonialQuote className="font-medium">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="border-t-2 border-dashed border-foreground/20 pt-4">
+                    {__iv__.avatarAlt && (
+                      <Image
+                        alt={__iv__.avatarAlt}
+                        w={96}
+                        h={96}
+                        loading="lazy"
+                        className="size-10 rounded-none border-2 border-foreground object-cover"
+                      />
                     )}
+                    <div className="flex flex-col">
+                      <TestimonialName className="font-extrabold">
+                        {__iv__.name}
+                      </TestimonialName>
+                      {(__iv__.role || __iv__.company || __iv__.meta) && (
+                        <TestimonialMeta className="font-mono text-[11px] uppercase tracking-[0.1em]">
+                          {__iv__.role || __iv__.company || __iv__.meta}
+                        </TestimonialMeta>
+                      )}
+                    </div>
                   </TestimonialAuthor>
                 </TestimonialCard>
               )
             })}
           </TestimonialGrid>
 
-          <div className="mt-12 flex flex-wrap items-center justify-center gap-6">
+          <div className="mt-14 flex flex-wrap items-center justify-center gap-4">
             {pressLogos.map((logo) => (
               <NavbarRouteLink
                 key={logo}
-                className="text-sm font-semibold uppercase tracking-wide text-muted-foreground/60 transition-colors hover:text-foreground"
+                className="rounded-full border-2 border-foreground bg-background px-4 py-1.5 font-mono text-xs font-bold uppercase tracking-[0.12em] text-foreground transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[3px_3px_0_0] hover:shadow-foreground active:translate-y-px active:shadow-none"
                 href={logo}
               >
                 {logo}

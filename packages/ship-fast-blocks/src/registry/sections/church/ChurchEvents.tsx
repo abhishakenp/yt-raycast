@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { EventList } from '#/section-kit/EventList.tsx'
 import { ImageTile } from '#/section-kit/ImageTile.tsx'
 import { Container } from '#/section-kit/Container.tsx'
@@ -10,18 +11,24 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * ChurchEvents — featured-events grid for a church or faith-community site. A
- * responsive 6-card grid (2-col tablet, 3-col desktop) with header row (eyebrow +
- * heading + "View all" CTA), and event cards that each show a date badge, time,
- * title, description, and a CTA with arrow. Images lazily load and scale on hover.
- * All CTAs route through section-kit route links. Use for upcoming events, classes, workshops,
- * baptisms, or outreach drives on church, ministry, or community organization pages.
+ * ChurchEvents — serene editorial featured-events grid for a church or
+ * faith-community site. A generous, airy section with a giant ghost serif
+ * "This Season" watermark: the header row pairs a mono metadata rail
+ * (eyebrow — hairline rule) and serif heading on the left with a quiet
+ * mono "View all" link on the right. Events sit in a gently staggered
+ * 3-column grid (middle column drifts down on desktop, alternate cards drift
+ * on tablet) — each card a hairline-framed photo plate with a faint serif
+ * index numeral chip, then a mono date/time ledger row under a hairline rule,
+ * a serif title, description, and an uppercase-mono CTA with arrow. Images
+ * lazily load and scale softly on hover. All CTAs route through section-kit
+ * route links. Use for upcoming events, classes, workshops, baptisms, or
+ * outreach drives on church, ministry, or community organization pages.
  * Renders fully with no props via baked-in defaults.
  */
 export const ChurchEvents = defineCapsule({
   name: 'ChurchEvents',
   description:
-    "Featured-events grid for a church or faith-community site: a responsive 6-card grid with header row (eyebrow + heading + 'View all' CTA) and event cards that each show a date badge, time, title, description, and a CTA with arrow. Images lazily load and scale on hover. All CTAs route through section-kit route links. Use for upcoming events, classes, workshops, baptisms, or outreach drives on church, ministry, or community organization pages.",
+    "Serene editorial featured-events grid for a church or faith-community site: an airy section with a giant ghost serif 'This Season' watermark, a header row pairing a mono metadata rail + serif heading (left) with a quiet mono 'View all' link (right), and a gently staggered 3-column grid whose middle column drifts down on desktop. Each card is a hairline-framed photo plate with a faint serif index numeral chip, a mono date/time ledger row under a hairline rule, a serif title, description, and an uppercase-mono CTA with arrow. Images lazily load and scale softly on hover. All CTAs route through section-kit route links. Use for upcoming events, classes, workshops, baptisms, or outreach drives on church, ministry, or community organization pages.",
   props: z.object({
     /** Small uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -131,56 +138,94 @@ export const ChurchEvents = defineCapsule({
     )
 
     return (
-      <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
-        <Container size="xl" className="px-6">
-          <div className="mb-16 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-            <SectionHeading
-              align="left"
-              eyebrow={eyebrow}
-              title={heading}
-              className="gap-0"
-              eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground"
-              titleClassName="text-3xl font-medium tracking-tight text-foreground sm:text-4xl"
-            />
+      <section
+        className={cn(
+          'relative overflow-hidden py-20 lg:py-28',
+          props.className,
+        )}
+      >
+        <Watermark className="-top-8 right-0 font-serif text-[5rem] font-medium italic text-foreground/[0.04] sm:text-[8rem] lg:text-[11rem]">
+          This Season
+        </Watermark>
+        <Container size="xl" className="relative px-6">
+          <div className="mb-14 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+            <div className="max-w-xl">
+              <div className="mb-5 flex items-center gap-4">
+                <MonoTag tone="primary" className="shrink-0">
+                  {eyebrow}
+                </MonoTag>
+                <span
+                  aria-hidden="true"
+                  className="h-px w-16 bg-border sm:w-24"
+                />
+              </div>
+              <SectionHeading
+                align="left"
+                title={heading}
+                className="gap-0"
+                titleClassName="font-serif text-4xl font-medium leading-[1.08] tracking-tight text-foreground sm:text-5xl"
+              />
+            </div>
             <NavbarRouteLink
-              className="inline-flex items-center text-sm font-medium text-foreground hover:text-muted-foreground"
+              className="inline-flex items-center gap-1.5 border-b border-foreground/40 pb-1 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground transition-colors hover:border-foreground hover:text-muted-foreground"
               href={viewAll}
             >
               {viewAll}
-              <ArrowRight className="ml-1 size-4" />
+              <ArrowRight className="size-3.5" />
             </NavbarRouteLink>
           </div>
-          <EventList variant="card" className="gap-8">
-            {items.map((ev) => (
+          <EventList
+            variant="card"
+            className="grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            {items.map((ev, i) => (
               <NavbarRouteLink
                 key={ev.title}
-                className="group block w-full cursor-pointer text-left"
+                className={cn(
+                  'group block w-full cursor-pointer text-left',
+                  // Gentle stagger: middle column drifts down on desktop,
+                  // right column drifts on tablet.
+                  i % 3 === 1 && 'lg:translate-y-10',
+                  i % 2 === 1 && 'sm:max-lg:translate-y-8',
+                )}
                 href={ev.title}
               >
-                <ImageTile className="mb-5 aspect-[16/10] rounded-xl bg-muted">
-                  <Image
-                    alt={ev.imageAlt}
-                    w={800}
-                    h={500}
-                    loading="lazy"
-                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </ImageTile>
-                <div className="mb-3 flex items-center gap-3 text-sm text-muted-foreground">
-                  <span className="rounded-full bg-muted px-3 py-1 font-medium text-muted-foreground">
+                <div className="relative">
+                  <ImageTile className="aspect-[16/10] rounded-none border border-border bg-muted">
+                    <Image
+                      alt={ev.imageAlt}
+                      w={800}
+                      h={500}
+                      loading="lazy"
+                      className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                    />
+                  </ImageTile>
+                  {/* Faint serif index chip breaching the plate's corner. */}
+                  <span
+                    aria-hidden="true"
+                    className="absolute -bottom-4 right-4 border border-border bg-background px-2.5 py-1 font-serif text-lg font-medium italic leading-none text-muted-foreground"
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                </div>
+                <div className="mt-6 flex items-baseline gap-3 border-t border-border pt-4">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-foreground">
                     {ev.date}
                   </span>
-                  <span>{ev.time}</span>
+                  <span aria-hidden="true" className="h-px w-4 bg-border" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                    {ev.time}
+                  </span>
                 </div>
-                <h3 className="mb-2 text-xl font-medium text-foreground transition-colors group-hover:text-muted-foreground">
+                <h3 className="mt-3 font-serif text-xl font-medium tracking-tight text-foreground transition-colors group-hover:text-muted-foreground sm:text-2xl">
                   {ev.title}
                 </h3>
-                <p className="mb-4 leading-relaxed text-muted-foreground">
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground sm:text-base">
                   {ev.description}
                 </p>
-                <span className="inline-flex items-center text-sm font-medium text-foreground">
+                <span className="mt-4 inline-flex items-center gap-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground">
                   {ev.cta}
-                  <ArrowRight className="ml-1 size-4" />
+                  <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-1" />
                 </span>
               </NavbarRouteLink>
             ))}

@@ -28,20 +28,22 @@ import {
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * JewelryStorePieces — featured-pieces product grid for a luxury jewelry
- * boutique. A header row pairs a gold eyebrow + serif heading with a
- * right-aligned underlined "View All" link, above a responsive grid (1/2/4
- * cols) of product cards: a clickable square image/title that routes to the
- * piece, an optional status badge, a serif title, muted spec line, gold price,
- * and a Lakebed-backed add-to-cart button. The View All link routes through
- * section-kit route links. Use to merchandise individual pieces (rings, necklaces,
- * earrings, bracelets) for fine jewelers, diamond houses, or watch maisons.
- * Renders fully with no props via baked-in defaults.
+ * JewelryStorePieces — featured-pieces vitrine cabinet for a luxury jewelry
+ * maison. A header row pairs a mono micro-label kicker + serif heading with a
+ * right-aligned underlined mono "View All" link, above a collapsed-border grid
+ * (2 cols mobile, 4 desktop, gap-0) whose shared hairlines read like the
+ * compartments of a glass display case. Each cell holds a clickable square
+ * image/title that routes to the piece, an optional square corner badge (New =
+ * primary, others = an inverted foreground chip), a serif title, a mono spec
+ * line, a tabular price, and a hairline Lakebed add-to-cart button that fills on
+ * hover. The View All link routes through section-kit route links. Use to
+ * merchandise individual pieces (rings, necklaces, earrings, bracelets) for fine
+ * jewelers, diamond houses, or watch maisons. Renders fully with no props.
  */
 export const JewelryStorePieces = defineCapsule({
   name: 'JewelryStorePieces',
   description:
-    'Featured-pieces product grid for a luxury jewelry boutique: a header row pairing a gold eyebrow + serif heading with a right-aligned underlined View All link, above a responsive grid (1/2/4 cols) of product cards, each with a clickable square image/title that routes to the piece, an optional corner status badge (New = primary, others = secondary), a serif title, muted spec line, gold price, and a Lakebed-backed add-to-cart button that updates the shared cart. The View All link routes through section-kit route links. Use to merchandise individual pieces (rings, necklaces, earrings, bracelets) for fine jewelers, diamond houses, or watch maisons.',
+    'Featured-pieces vitrine cabinet for a luxury jewelry maison: a header row pairing a mono micro-label kicker + serif heading with a right-aligned underlined mono View All link, above a collapsed-border grid (2 cols mobile, 4 desktop, gap-0) whose shared hairlines read like the compartments of a glass display case. Each cell holds a clickable square image/title that routes to the piece, an optional square corner badge (New = primary, others = an inverted foreground chip), a serif title, a mono spec line, a tabular price, and a hairline Lakebed add-to-cart button that fills on hover and updates the shared cart. The View All link routes through section-kit route links. Use to merchandise individual pieces (rings, necklaces, earrings, bracelets) for fine jewelers, diamond houses, or watch maisons.',
   lakebed: commerceCartLakebed,
   props: z.object({
     eyebrow: z.string().optional(),
@@ -155,31 +157,34 @@ export const JewelryStorePieces = defineCapsule({
         )}
       >
         <Container size="xl" className="sm:px-4">
-          <div className="mb-16 flex flex-col lg:flex-row lg:items-end lg:justify-between">
+          <div className="mb-16 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <SectionHeading
               align="left"
               eyebrow={eyebrow}
               title={heading}
               className="gap-0"
-              eyebrowClassName="mb-4 text-sm uppercase tracking-[0.3em] text-primary"
-              titleClassName="font-serif text-4xl text-foreground lg:text-5xl"
+              eyebrowClassName="mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.24em] text-muted-foreground"
+              titleClassName="font-serif text-4xl font-normal tracking-tight text-foreground lg:text-5xl"
             />
             <NavbarRouteLink
-              className="mt-6 inline-block w-fit border-b border-primary pb-0.5 text-sm uppercase tracking-widest text-primary lg:mt-0"
+              className="inline-flex w-fit items-center border-b border-foreground pb-1 font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-foreground transition-colors hover:border-muted-foreground hover:text-muted-foreground"
               href={viewAll}
             >
               {viewAll}
             </NavbarRouteLink>
           </div>
-          <PiecesGrid className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <PiecesGrid className="grid grid-cols-2 gap-0 border-l border-t border-border lg:grid-cols-4">
             {visibleItems.map((p) => (
               <PiecesCard asChild key={p.title}>
-                <ProductCard variant="none" className="w-full text-left">
+                <ProductCard
+                  variant="none"
+                  className="w-full rounded-none border-0 border-b border-r border-border bg-background p-5 text-left"
+                >
                   <NavbarRouteLink
                     className="block w-full text-left"
                     href={p.title}
                   >
-                    <ProductCardImage className="mb-5">
+                    <ProductCardImage className="mb-5 aspect-square bg-muted">
                       <Image
                         alt={p.imageAlt}
                         w={600}
@@ -190,22 +195,24 @@ export const JewelryStorePieces = defineCapsule({
                       {p.badge ? (
                         <ProductCardBadge
                           className={cn(
-                            'left-4 px-3 py-1 uppercase tracking-widest',
+                            'left-0 top-0 rounded-none px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em]',
                             p.badge === 'New'
                               ? 'bg-primary text-primary-foreground'
-                              : 'bg-secondary text-secondary-foreground',
+                              : 'bg-foreground text-background',
                           )}
                         >
                           {p.badge}
                         </ProductCardBadge>
                       ) : null}
                     </ProductCardImage>
-                    <ProductCardTitle className="mb-1 font-serif text-lg text-foreground">
+                    <ProductCardTitle className="mb-1.5 font-serif text-lg font-normal text-foreground">
                       {p.title}
                     </ProductCardTitle>
                   </NavbarRouteLink>
-                  <PieceSpecs className="mb-2 mt-0">{p.spec}</PieceSpecs>
-                  <ProductCardPrice className="text-primary">
+                  <PieceSpecs className="mb-2 mt-0 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                    {p.spec}
+                  </PieceSpecs>
+                  <ProductCardPrice className="text-foreground tabular-nums">
                     {p.price}
                   </ProductCardPrice>
                   <CommerceAddItemButton
@@ -217,7 +224,7 @@ export const JewelryStorePieces = defineCapsule({
                         Adding
                       </>
                     }
-                    className="mt-4 inline-flex w-full items-center justify-center gap-2 border border-primary px-4 py-2.5 text-xs uppercase tracking-widest text-primary transition-colors hover:bg-primary hover:text-primary-foreground disabled:pointer-events-none disabled:opacity-70"
+                    className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-none border border-border px-4 py-2.5 font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-foreground transition-[background-color,border-color,color,transform] duration-150 hover:border-foreground hover:bg-foreground hover:text-background active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
                   >
                     {addToCartLabel}
                   </CommerceAddItemButton>

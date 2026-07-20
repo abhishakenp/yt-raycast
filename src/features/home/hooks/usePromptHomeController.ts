@@ -315,7 +315,7 @@ export const usePromptHomeController = () => {
               })
             })
           await navigate({
-            to: '/generate/$sessionId',
+            to: '/generate/$sessionId/$',
             params: { sessionId: cached.sessionId },
           })
           return
@@ -368,7 +368,7 @@ export const usePromptHomeController = () => {
       }
 
       await navigate({
-        to: '/generate/$sessionId',
+        to: '/generate/$sessionId/$',
         params: {
           sessionId,
         },

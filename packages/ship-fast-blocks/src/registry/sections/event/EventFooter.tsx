@@ -17,17 +17,19 @@ import {
   FooterLegal,
 } from '#/section-kit/SiteFooter.tsx'
 /**
- * EventFooter — a rich, dark multi-column footer for a conference or event page.
- * A full-bleed inverted (foreground-background) band with a brand block (square
- * initials mark, name, tagline, social icons) plus link columns, a contact
- * column, and a bottom bar with a copyright note and legal links. The brand mark,
- * social icons, and every link route through section-kit route links. Use as the closing site
- * footer for tech conference, summit, festival, meetup, or workshop pages.
+ * EventFooter — kinetic-poster inverted multi-column footer for a conference or
+ * event page. A full-bleed inverted (foreground background, light text) band with a
+ * brand block (square initials mark, event name, tagline, square social chips) plus
+ * mono-titled link columns, a contact column, and a hairline bottom bar carrying a
+ * copyright note and legal links. Every link sits as a block w-fit hit target and
+ * the brand mark, social chips, and links route through section-kit route links.
+ * Use as the closing site footer for tech conference, summit, festival, meetup, or
+ * workshop pages.
  */
 export const EventFooter = defineCapsule({
   name: 'EventFooter',
   description:
-    'Rich, dark multi-column footer for a conference or event page: a full-bleed inverted (foreground background, light text) band with a brand block (square brand-initials mark, event name, tagline, Twitter/LinkedIn/YouTube social icons), one or more link columns, a contact column, and a bottom bar with a copyright note and legal links. The brand mark, social icons, and every link route through section-kit route links. Use as the closing site footer for tech conference, summit, festival, meetup, or workshop pages.',
+    'Kinetic-poster inverted multi-column footer for a conference or event page: a full-bleed inverted (foreground background, light text) band with a brand block (square brand-initials mark, event name, tagline, Twitter/LinkedIn/YouTube square social chips), one or more mono-titled link columns, a contact column, and a hairline bottom bar with a copyright note and legal links. Every link is a block w-fit hit target and the brand mark, social chips, and links route through section-kit route links. Use as the closing site footer for tech conference, summit, festival, meetup, or workshop pages.',
   props: z.object({
     /** Brand / event name shown in the footer. */
     brand: z.string().optional(),
@@ -87,31 +89,44 @@ export const EventFooter = defineCapsule({
         <FooterContent>
           <FooterGrid>
             <FooterBrand brand={brand}>
-              <FooterTagline>{tagline}</FooterTagline>
+              <FooterTagline className="text-pretty">{tagline}</FooterTagline>
               <FooterSocial>
                 {socials
                   .map((s) => ({ label: s }))
                   .map((s) => (
-                    <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                    <FooterSocialLink
+                      key={s.label}
+                      className="rounded-none border border-background/20 transition-colors hover:border-background hover:bg-background hover:text-foreground"
+                    >
+                      {s.label}
+                    </FooterSocialLink>
                   ))}
               </FooterSocial>
             </FooterBrand>
             {columns.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnTitle className="font-mono text-[11px] uppercase tracking-[0.18em]">
+                  {col.title}
+                </FooterColumnTitle>
                 <FooterColumnList>
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink key={link} className="block w-fit">
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
           <FooterBottom>
-            <FooterCopyright>{note}</FooterCopyright>
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.12em]">
+              {note}
+            </FooterCopyright>
             <FooterLegal>
               {legal.map((l) => (
-                <FooterLink key={l}>{l}</FooterLink>
+                <FooterLink key={l} className="block w-fit">
+                  {l}
+                </FooterLink>
               ))}
             </FooterLegal>
           </FooterBottom>

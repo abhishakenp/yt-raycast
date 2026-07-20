@@ -294,14 +294,16 @@ export function DirectoryMobileMenu({
         className="w-[min(100%,22rem)] border-l border-border bg-background p-0 text-foreground sm:max-w-[22rem]"
       >
         <SheetHeader className="border-b border-border px-5 py-4 text-left">
-          <SheetTitle className="text-base font-semibold">{brand}</SheetTitle>
+          <SheetTitle className="font-serif text-base font-bold tracking-tight">
+            {brand}
+          </SheetTitle>
           <SheetDescription className="sr-only">
             Navigate to a directory section.
           </SheetDescription>
         </SheetHeader>
-        <div className="flex flex-col gap-1 px-3 py-4">
+        <div className="flex flex-col divide-y divide-border px-3 py-2">
           <NavbarRouteLink
-            className="rounded-lg px-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            className="rounded-none px-3 py-3.5 text-left font-mono text-xs uppercase tracking-[0.14em] text-foreground transition-colors hover:bg-muted"
             href={homeTarget ?? nav[0]}
             onClick={() => setOpen(false)}
           >
@@ -310,7 +312,7 @@ export function DirectoryMobileMenu({
           {nav.map((item) => (
             <NavbarRouteLink
               key={item}
-              className="rounded-lg px-3 py-3 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="rounded-none px-3 py-3.5 text-left font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               href={item}
               onClick={() => setOpen(false)}
             >

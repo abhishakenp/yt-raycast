@@ -14,18 +14,19 @@ import {
 
 /**
  * CrowdfundingNavbar — sticky, backdrop-blurred top navigation for a
- * crowdfunding / campaign landing page. A border-bottomed header pinned to the
- * top with a decorative leaf/sparkle brand mark in an emerald-token tile beside
- * the campaign name on the left, a horizontal set of muted nav links in the
- * center (hidden on mobile), and a primary "Back This Project" pill CTA on the
- * right. Every link and CTA routes through route hrefs so PageSwitch can swap
- * pages. Use as the sticky site header for Kickstarter / Indiegogo-style
- * campaigns, pre-order launches, fundraisers, or maker/hardware projects.
+ * crowdfunding / campaign landing page in a playful-bold campaign language: a
+ * hard 2px bottom-ruled header with the leaf/sparkle brand mark beside an
+ * extrabold campaign wordmark on the left, bold nav links in the center
+ * (hidden on mobile), and a rounded-full "Back This Project" pill CTA with a
+ * hard offset shadow and press feedback on the right. Every link and CTA
+ * routes through route hrefs so PageSwitch can swap pages. Use as the sticky
+ * site header for Kickstarter / Indiegogo-style campaigns, pre-order launches,
+ * fundraisers, or maker/hardware projects.
  */
 export const CrowdfundingNavbar = defineCapsule({
   name: 'CrowdfundingNavbar',
   description:
-    "Sticky, backdrop-blurred top navigation for a crowdfunding / campaign landing page: a border-bottomed header pinned to the top with a decorative leaf/sparkle brand mark in an emerald-token tile beside the campaign name on the left, a horizontal set of muted nav links in the center (hidden on mobile), and a primary 'Back This Project' pill CTA on the right. Every link and CTA routes through route hrefs so PageSwitch can swap pages. Use as the sticky site header for Kickstarter / Indiegogo-style campaigns, pre-order launches, fundraisers, or maker/hardware projects.",
+    "Sticky, backdrop-blurred top navigation for a crowdfunding / campaign landing page in a playful-bold campaign language: a hard 2px bottom-ruled header with the leaf/sparkle brand mark beside an extrabold campaign wordmark on the left, bold nav links in the center (hidden on mobile), and a rounded-full 'Back This Project' pill CTA with a hard offset shadow and press feedback on the right. Every link and CTA routes through route hrefs so PageSwitch can swap pages. Use as the sticky site header for Kickstarter / Indiegogo-style campaigns, pre-order launches, fundraisers, or maker/hardware projects.",
   props: z.object({
     /** Brand / campaign name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -57,8 +58,8 @@ export const CrowdfundingNavbar = defineCapsule({
         aria-hidden="true"
       >
         <svg
-          width="20"
-          height="20"
+          width="16"
+          height="16"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -75,25 +76,39 @@ export const CrowdfundingNavbar = defineCapsule({
       <SiteNav
         position="sticky"
         height="compact"
-        className={cn('bg-background/95 backdrop-blur', props.className)}
+        className={cn(
+          'border-b-2 border-foreground/80 bg-background/95 backdrop-blur',
+          props.className,
+        )}
       >
-        <NavbarBrand href={homeTarget} className="gap-2">
-          <BrandLogo brand={brand}>
-            <LogoImage fallback={<LeafMark className="size-8" />} />
-            <LogoLabel className="text-xl font-semibold tracking-tight" />
+        <NavbarBrand href={homeTarget} className="active:translate-y-px">
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage
+              className="size-7"
+              fallback={<LeafMark className="size-7" />}
+            />
+            <LogoLabel className="text-lg font-extrabold tracking-tight" />
           </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label} className="font-normal">
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground active:translate-y-px"
+            >
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
 
         <NavbarActions>
-          <NavbarCta variant="primary" href={ctaTarget} className="px-5 py-2.5">
+          <NavbarCta
+            variant="primary"
+            href={ctaTarget}
+            className="rounded-full border-2 border-foreground bg-primary px-5 py-2 font-bold text-primary-foreground shadow-[3px_3px_0_0] shadow-foreground/25 transition-all hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0] hover:shadow-foreground/25 active:translate-y-px active:shadow-none"
+          >
             {ctaLabel}
           </NavbarCta>
         </NavbarActions>

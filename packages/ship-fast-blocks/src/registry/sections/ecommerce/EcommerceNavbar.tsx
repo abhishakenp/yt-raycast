@@ -20,18 +20,20 @@ import {
 } from '../commerce/commerce-interactions.tsx'
 
 /**
- * EcommerceNavbar — sticky store header for a general online marketplace or
- * retail shop. Renders a bold sans-serif wordmark, category nav, product
- * command search, Shoo account dropdown, shared cart drawer with reactive badge,
- * and a real mobile drawer on small screens. Nav items route through route hrefs
- * so labels can drive page-switching. Use as the site header for online stores, marketplaces,
- * electronics/home-goods shops, or any clean modern retail storefront. Renders
- * fully with no props via baked-in "Marketplace" defaults.
+ * EcommerceNavbar — editorial-commerce store header for a general online
+ * marketplace or retail shop. A sticky, hairline-ruled bar with an extrabold
+ * uppercase wordmark, mono uppercase micro-label category nav, product command
+ * search, Shoo account dropdown, shared cart drawer with a square tabular
+ * quantity badge, a square ink "Shop" CTA with press feedback, and a real
+ * mobile drawer on small screens. Nav items route through route hrefs so
+ * labels can drive page-switching. Use as the site header for online stores,
+ * marketplaces, electronics/home-goods shops, or any sharp editorial retail
+ * storefront. Renders fully with no props via baked-in "Marketplace" defaults.
  */
 export const EcommerceNavbar = defineCapsule({
   name: 'EcommerceNavbar',
   description:
-    "Sticky store header for a general online marketplace or retail shop: a bold sans-serif wordmark, category nav (Shop, Categories, Deals, New, Sale), product command search, Shoo account dropdown, shared Lakebed cart drawer with a reactive quantity badge, a primary 'Shop' CTA pill, and a real mobile drawer. Nav items and the CTA route through route hrefs and labels match the nav array so PageSwitch can swap pages. Use as the site header for online stores, marketplaces, electronics, home goods, multi-category retail, or any clean modern storefront.",
+    "Editorial-commerce store header for a general online marketplace or retail shop: a sticky hairline-ruled bar with an extrabold uppercase wordmark, mono uppercase micro-label category nav (Shop, Categories, Deals, New, Sale), product command search, Shoo account dropdown, shared Lakebed cart drawer with a square tabular quantity badge, a square ink 'Shop' CTA with press feedback, and a real mobile drawer. Nav items and the CTA route through route hrefs and labels match the nav array so PageSwitch can swap pages. Use as the site header for online stores, marketplaces, electronics, home goods, multi-category retail, or any sharp editorial storefront.",
   props: z.object({
     /** Brand / store name shown as the bold wordmark. */
     brand: z.string().optional(),
@@ -113,23 +115,30 @@ export const EcommerceNavbar = defineCapsule({
       >
         <NavbarBrand
           href={homeTarget}
-          className="text-xl font-bold tracking-tight text-foreground lg:text-2xl"
+          className="text-lg font-extrabold uppercase tracking-tight text-foreground"
         >
-          <BrandLogo brand={brand} className="mr-2 size-7 align-middle">
-            <LogoImage className="mr-2 size-7 align-middle" />
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage className="size-7" />
             <LogoLabel />
           </BrandLogo>
         </NavbarBrand>
 
-        <NavbarNav className="gap-6">
-          {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+        <NavbarNav className="gap-1">
+          {nav.map((label, i) => (
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className={cn(
+                'rounded-none px-2.5 py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:bg-transparent hover:text-foreground',
+                i > 3 && 'hidden lg:inline-flex',
+              )}
+            >
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
 
-        <NavbarActions className="gap-2 sm:gap-3">
+        <NavbarActions className="gap-1 sm:gap-1.5">
           <CommerceMobileMenu
             brand={brand}
             nav={nav}
@@ -152,13 +161,14 @@ export const EcommerceNavbar = defineCapsule({
             lakebed={lakebed}
             fallbackCount={initialCartCount}
             buttonClassName="relative p-2 text-muted-foreground transition-colors hover:text-foreground"
+            badgeClassName="rounded-none bg-primary font-mono text-[10px] font-semibold tabular-nums text-primary-foreground"
           >
             <CartIcon />
           </CommerceCartButton>
           <NavbarCta
-            variant="primary-pill"
+            variant="dark"
             href={props.shopTarget ?? shopCta}
-            className="hidden px-5 py-2.5 sm:inline-flex"
+            className="ml-2 hidden h-9 rounded-none px-5 font-mono text-[11px] font-semibold uppercase tracking-[0.15em] transition-all duration-150 active:translate-y-px sm:inline-flex"
           >
             {shopCta}
           </NavbarCta>

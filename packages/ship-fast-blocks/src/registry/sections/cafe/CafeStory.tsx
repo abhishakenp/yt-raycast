@@ -3,31 +3,27 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import {
-  StorySection,
-  StorySplitGrid,
-  StoryMedia,
-  StoryContent,
-  StoryEyebrow,
-  StoryHeading,
-  StoryBody,
-  StoryFooter,
-  StoryImageTile,
-} from '#/section-kit/StorySection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 
 /**
- * CafeStory — split founder / origin story section for a cozy cafe / coffee
- * shop page. Left side: two vertically offset 3:4 photos in a 2-column grid.
- * Right side: an eyebrow cap, a serif heading, multiple paragraphs of narrative
- * copy, and a founder attribution row with a round avatar, name, and role.
- * No links. Use to present a cafe's origin, values, or team story. Renders
- * fully with no props via baked-in "Little Owl Coffee" defaults.
+ * CafeStory — newsprint feature-article origin story for a cozy cafe / coffee
+ * shop page. A mono dateline rail (cap stamp, hairline rule, "No. 03 —
+ * Feature" edition label) sits above the serif headline, over a giant serif
+ * italic ghost watermark of the cap text. Below, an asymmetric 5:7 editorial
+ * grid: the left column stacks two vertically offset photos in kraft-washed
+ * hairline frame plates with mono "Fig." caption rows (the second plate
+ * offset down and pulled toward the gutter); the right column runs the
+ * narrative paragraphs — the first opening with an oversized serif drop cap —
+ * and closes with a hairline-ruled founder attribution row (round avatar,
+ * name, mono role). No links. Use to present a cafe's origin, values, or team
+ * story. Renders fully with no props via baked-in "Little Owl Coffee"
+ * defaults.
  */
 export const CafeStory = defineCapsule({
   name: 'CafeStory',
   description:
-    "Split founder / origin story section for a cozy cafe page: left side shows two vertically offset 3:4 photos in a 2-column grid; right side has an eyebrow cap, serif heading, multiple narrative paragraphs, and a founder attribution row with a round avatar, name, and role. No links. Use to present a cafe's origin, values, or team story.",
+    "Newsprint feature-article origin story for a cozy cafe page: a mono dateline rail (cap stamp, hairline rule, edition label) above a serif headline over a giant serif italic ghost watermark; then an asymmetric 5:7 editorial grid — left column stacks two vertically offset photos in kraft-washed hairline frame plates with mono 'Fig.' caption rows, right column runs narrative paragraphs opening with an oversized serif drop cap and closes with a hairline-ruled founder attribution row (round avatar, name, mono role). No links. Use to present a cafe's origin, values, or team story.",
   props: z.object({
     /** Eyebrow / cap text. */
     cap: z.string().optional(),
@@ -69,44 +65,91 @@ export const CafeStory = defineCapsule({
       props.imageAlt2 ??
       'Coffee shop interior during golden hour, showing warm lighting, potted plants, and communal seating'
 
+    const PhotoPlate = ({
+      alt,
+      caption,
+      className,
+    }: {
+      alt: string
+      caption: string
+      className?: string
+    }) => (
+      <div className={cn('border border-foreground/20 bg-card p-2', className)}>
+        <div className="aspect-[3/4] overflow-hidden">
+          <Image
+            alt={alt}
+            w={500}
+            h={667}
+            loading="lazy"
+            className="size-full object-cover"
+          />
+        </div>
+        <div className="flex items-center gap-2 px-0.5 pt-2">
+          <MonoTag tone="faint" className="text-[10px]">
+            {caption}
+          </MonoTag>
+          <span aria-hidden="true" className="h-px flex-1 bg-border" />
+        </div>
+      </div>
+    )
+
     return (
-      <StorySection
-        className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
+      <section
+        className={cn(
+          'relative overflow-hidden bg-background pt-24 pb-16 lg:pt-32 lg:pb-24',
+          props.className,
+        )}
       >
-        <Container size="xl" className="px-6">
-          <StorySplitGrid>
-            <div className="order-2 lg:order-1">
-              <StoryMedia>
-                <StoryImageTile offset>
-                  <Image
-                    alt={imageAlt1}
-                    w={500}
-                    h={667}
-                    loading="lazy"
-                    className="size-full object-cover"
-                  />
-                </StoryImageTile>
-                <StoryImageTile>
-                  <Image
-                    alt={imageAlt2}
-                    w={500}
-                    h={667}
-                    loading="lazy"
-                    className="size-full object-cover"
-                  />
-                </StoryImageTile>
-              </StoryMedia>
+        <Watermark className="top-10 left-[-2%] font-serif text-[5rem] font-medium italic tracking-tight text-foreground/[0.04] sm:text-[8rem] lg:text-[12rem]">
+          {cap}
+        </Watermark>
+
+        <Container size="xl" className="relative px-6">
+          {/* Mono dateline rail. */}
+          <div className="flex items-center gap-4">
+            <MonoTag>{cap}</MonoTag>
+            <span aria-hidden="true" className="h-px flex-1 bg-border" />
+            <MonoTag tone="faint" className="hidden sm:inline">
+              No. 03 — Feature
+            </MonoTag>
+          </div>
+
+          <h2 className="mt-6 max-w-3xl font-serif text-4xl font-medium leading-[1.05] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+            {heading}
+          </h2>
+
+          <div className="mt-12 grid gap-12 lg:mt-16 lg:grid-cols-12 lg:gap-14">
+            {/* Offset photo plates. */}
+            <div className="grid grid-cols-2 items-start gap-4 lg:col-span-5 lg:gap-5">
+              <PhotoPlate
+                alt={imageAlt1}
+                caption="Fig. 01"
+                className="-ml-2 sm:ml-0"
+              />
+              <PhotoPlate
+                alt={imageAlt2}
+                caption="Fig. 02"
+                className="translate-y-8 lg:translate-y-12"
+              />
             </div>
 
-            <StoryContent className="order-1 lg:order-2">
-              <StoryEyebrow>{cap}</StoryEyebrow>
-              <StoryHeading>{heading}</StoryHeading>
-              <StoryBody>
+            {/* Article column with drop cap + founder byline. */}
+            <div className="lg:col-span-7">
+              <div className="space-y-5">
                 {paragraphs.map((p, i) => (
-                  <p key={i}>{p}</p>
+                  <p
+                    key={i}
+                    className={cn(
+                      'leading-relaxed text-muted-foreground',
+                      i === 0 &&
+                        'first-letter:float-left first-letter:mr-3 first-letter:font-serif first-letter:text-6xl first-letter:font-medium first-letter:leading-[0.85] first-letter:text-foreground',
+                    )}
+                  >
+                    {p}
+                  </p>
                 ))}
-              </StoryBody>
-              <StoryFooter>
+              </div>
+              <div className="mt-8 flex items-center gap-4 border-t border-border pt-6">
                 <Image
                   alt={founderAvatarAlt}
                   w={100}
@@ -114,14 +157,25 @@ export const CafeStory = defineCapsule({
                   className="size-14 rounded-full object-cover"
                 />
                 <div>
-                  <p className="font-medium text-foreground">{founderName}</p>
-                  <p className="text-sm text-muted-foreground">{founderRole}</p>
+                  <p className="font-serif text-lg font-medium text-foreground">
+                    {founderName}
+                  </p>
+                  <p className="font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
+                    {founderRole}
+                  </p>
                 </div>
-              </StoryFooter>
-            </StoryContent>
-          </StorySplitGrid>
+                <span aria-hidden="true" className="h-px flex-1 bg-border" />
+                <span
+                  aria-hidden="true"
+                  className="hidden font-serif text-xl italic text-muted-foreground/60 sm:inline"
+                >
+                  ✳
+                </span>
+              </div>
+            </div>
+          </div>
         </Container>
-      </StorySection>
+      </section>
     )
   },
 })

@@ -4,27 +4,33 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { RewardList, RewardItem } from '#/section-kit/RewardList.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * CrowdfundingRewards — a 4-tier REWARDS / pledge grid with a stretch-goals
- * checklist for a crowdfunding / campaign landing page. On a card surface: a
- * centered eyebrow + heading + intro above a responsive 1/2/4-column grid of
- * bordered pledge cards (claimed-count meta, tier name, big price, description,
- * check-marked perk list, and a select CTA), with one highlighted "Best Value"
- * tier wearing a primary border, tinted fill and a floating badge. Below sits a
- * muted stretch-goals panel listing unlocked goals (check icon, card surface)
- * and dimmed in-progress goals (question-mark icon, secondary surface) with a
- * status label each. All buttons route through section-kit route links. Use as the pricing
- * / pledge tiers for a Kickstarter/Indiegogo-style raise, pre-order, or
- * fundraiser where reward levels and stretch goals must be front and center.
+ * CrowdfundingRewards — a playful-bold 4-tier REWARDS / pledge board with a
+ * stretch-goals progress track for a crowdfunding / campaign landing page. An
+ * asymmetric header (mono eyebrow + extrabold heading + intro left, mono
+ * "[ pledge board ]" tag right) above a 1/2/4-column grid of sharp
+ * 2px-bordered pledge cards that stagger downward in a checker rhythm on
+ * desktop. Each card carries a mono claimed-count micro-label over a tiny
+ * token-built claim bar, tier name, giant extrabold tabular price, muted
+ * description, check-marked perk list, and a hard-shadowed block CTA with
+ * press feedback; the featured "Best Value" tier tilts -1°, wears a
+ * primary-shadowed border and a rotated rounded-full sticker badge. Below, a
+ * hard-bordered stretch-goals panel runs a vertical progress rail of goal rows
+ * — rounded-full checkpoint dots (filled primary when unlocked), bold titles,
+ * muted descriptions, and rotated mono status sticker chips. All buttons route
+ * through section-kit route links. Use as the pricing / pledge tiers for a
+ * Kickstarter/Indiegogo-style raise, pre-order, or fundraiser where reward
+ * levels and stretch goals must be front and center.
  */
 export const CrowdfundingRewards = defineCapsule({
   name: 'CrowdfundingRewards',
   description:
-    "A 4-tier REWARDS / pledge grid with a stretch-goals checklist for a crowdfunding / campaign landing page on a card surface: a centered eyebrow + heading + intro above a responsive 1/2/4-column grid of bordered pledge cards (claimed-count meta, tier name, big price, description, check-marked perk list, and a select CTA), with one highlighted 'Best Value' tier wearing a primary border, tinted fill and a floating badge. Below sits a muted stretch-goals panel listing unlocked goals (check icon, card surface) and dimmed in-progress goals (question-mark icon, secondary surface) with a status label each. All buttons route through section-kit route links. Use as the pricing / pledge tiers for a Kickstarter/Indiegogo-style raise, pre-order, or fundraiser where reward levels and stretch goals must be front and center.",
+    "A playful-bold 4-tier REWARDS / pledge board with a stretch-goals progress track for a crowdfunding / campaign landing page: an asymmetric header (mono eyebrow + extrabold heading + intro left, mono '[ pledge board ]' tag right) above a 1/2/4-column grid of sharp 2px-bordered pledge cards staggered in a checker rhythm, each with a mono claimed-count micro-label over a tiny token-built claim bar, tier name, giant extrabold tabular price, muted description, check-marked perk list, and a hard-shadowed block CTA with press feedback — the featured 'Best Value' tier tilts -1° with a primary-shadowed border and rotated rounded-full sticker badge. Below, a hard-bordered stretch-goals panel runs a vertical progress rail of goal rows with rounded-full checkpoint dots (filled primary when unlocked), bold titles, muted descriptions, and rotated mono status sticker chips. All buttons route through section-kit route links. Use as the pricing / pledge tiers for a Kickstarter/Indiegogo-style raise, pre-order, or fundraiser where reward levels and stretch goals must be front and center.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -166,53 +172,84 @@ export const CrowdfundingRewards = defineCapsule({
       </svg>
     )
 
-    return (
-      <section className={cn('bg-card py-20 lg:py-28', props.className)}>
-        <Container>
-          <SectionHeading
-            eyebrow={rewardsEyebrow}
-            title={rewardsHeading}
-            subtitle={rewardsDesc}
-            className="mb-16 gap-0"
-            eyebrowClassName="text-sm font-medium uppercase tracking-wider text-primary"
-            titleClassName="mb-4 mt-3 text-3xl font-semibold sm:text-4xl"
-            subtitleClassName="mx-auto max-w-2xl text-lg text-muted-foreground"
-          />
+    const claimWidths = ['w-2/3', 'w-4/5', 'w-11/12', 'w-1/3']
 
-          <ResponsiveGrid cols="1-md-2-4" className="gap-6">
-            {rewardTiers.map((tier) => (
+    return (
+      <section
+        className={cn('bg-card py-16 sm:py-20 lg:py-28', props.className)}
+      >
+        <Container>
+          <div className="mb-12 flex flex-col gap-4 sm:mb-16 md:flex-row md:items-end md:justify-between">
+            <SectionHeading
+              eyebrow={rewardsEyebrow}
+              title={rewardsHeading}
+              subtitle={rewardsDesc}
+              align="left"
+              className="max-w-2xl gap-3"
+              eyebrowClassName="font-mono text-[11px] uppercase tracking-[0.2em] text-primary"
+              titleClassName="text-3xl font-extrabold leading-[1.02] tracking-tighter sm:text-4xl"
+              subtitleClassName="text-lg text-muted-foreground"
+            />
+            <MonoTag aria-hidden="true" tone="faint" className="shrink-0">
+              [ pledge board ]
+            </MonoTag>
+          </div>
+
+          <ResponsiveGrid cols="1-md-2-4" className="gap-6 lg:gap-5">
+            {rewardTiers.map((tier, i) => (
               <div
                 key={tier.name}
                 className={cn(
-                  'relative rounded-xl border-2 p-6 transition-colors',
+                  'relative flex flex-col border-2 bg-background p-6 transition-all',
                   tier.featured
-                    ? 'border-primary bg-primary/5'
-                    : 'border-border hover:border-primary',
+                    ? 'z-10 -rotate-1 border-foreground shadow-[6px_6px_0_0] shadow-primary/40'
+                    : 'border-foreground/25 hover:-translate-y-1 hover:border-foreground hover:shadow-[4px_4px_0_0] hover:shadow-foreground/15 motion-reduce:transform-none',
+                  !tier.featured && i % 2 === 1 && 'lg:translate-y-6',
                 )}
               >
                 {tier.badge ? (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
+                  <div className="absolute -top-4 right-4 rotate-3 rounded-full border-2 border-foreground bg-primary px-3.5 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-primary-foreground shadow-[2px_2px_0_0] shadow-foreground/30">
                     {tier.badge}
                   </div>
                 ) : null}
-                <div
-                  className={cn(
-                    'mb-2 text-sm',
-                    tier.featured
-                      ? 'font-medium text-primary'
-                      : 'text-muted-foreground',
-                  )}
-                >
-                  {tier.meta}
+                <div className="mb-2">
+                  <span
+                    className={cn(
+                      'font-mono text-[11px] uppercase tracking-[0.12em]',
+                      tier.featured
+                        ? 'font-bold text-primary'
+                        : 'text-muted-foreground',
+                    )}
+                  >
+                    {tier.meta}
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="mt-1.5 block h-1.5 w-full bg-muted"
+                  >
+                    <span
+                      className={cn(
+                        'block h-full bg-primary/70',
+                        claimWidths[i % claimWidths.length],
+                      )}
+                    />
+                  </span>
                 </div>
-                <h3 className="mb-2 text-xl font-semibold">{tier.name}</h3>
-                <div className="mb-4 text-3xl font-bold">{tier.price}</div>
-                <p className="mb-6 text-sm text-muted-foreground">
+                <h3 className="mb-1 text-xl font-bold tracking-tight">
+                  {tier.name}
+                </h3>
+                <div className="mb-4 text-4xl font-extrabold tracking-tight tabular-nums">
+                  {tier.price}
+                </div>
+                <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
                   {tier.description}
                 </p>
                 <RewardList className="mb-6 space-y-2 text-sm text-muted-foreground">
                   {tier.perks.map((perk) => (
-                    <RewardItem key={perk} className="flex items-center gap-2">
+                    <RewardItem
+                      key={perk}
+                      className="flex flex-row items-center gap-2"
+                    >
                       <Check className="size-4 shrink-0 text-primary" />
                       {perk}
                     </RewardItem>
@@ -220,10 +257,10 @@ export const CrowdfundingRewards = defineCapsule({
                 </RewardList>
                 <NavbarRouteLink
                   className={cn(
-                    'w-full rounded-lg py-3 font-medium transition-colors',
+                    'mt-auto w-full border-2 border-foreground py-3 text-center font-bold transition-all active:translate-y-px active:shadow-none',
                     tier.featured
-                      ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                      : 'border-2 border-foreground text-foreground hover:bg-foreground hover:text-background',
+                      ? 'bg-foreground text-background shadow-[4px_4px_0_0] shadow-primary/40 hover:-translate-y-0.5'
+                      : 'bg-background text-foreground hover:bg-foreground hover:text-background',
                   )}
                   href={tier.name}
                 >
@@ -233,44 +270,51 @@ export const CrowdfundingRewards = defineCapsule({
             ))}
           </ResponsiveGrid>
 
-          {/* Stretch goals */}
-          <div className="mt-16 rounded-xl bg-muted p-8">
-            <h3 className="mb-6 text-center text-xl font-semibold">
-              {stretchHeading}
-            </h3>
-            <div className="space-y-4">
+          {/* Stretch goals — vertical progress track */}
+          <div className="mt-16 border-2 border-foreground bg-muted/40 p-6 sm:p-8 lg:mt-20">
+            <div className="mb-8 flex items-center gap-4">
+              <h3 className="text-xl font-extrabold tracking-tight">
+                {stretchHeading}
+              </h3>
+              <span aria-hidden="true" className="h-px flex-1 bg-border" />
+            </div>
+            <div className="relative space-y-6 pl-2">
+              <span
+                aria-hidden="true"
+                className="absolute bottom-3 left-[1.1rem] top-3 w-0.5 bg-foreground/15"
+              />
               {stretchItems.map((goal) => (
                 <div
                   key={goal.title}
-                  className={cn(
-                    'flex items-center gap-4 rounded-xl p-4',
-                    goal.unlocked ? 'bg-card' : 'bg-secondary opacity-60',
-                  )}
+                  className="relative grid grid-cols-[auto_1fr] items-start gap-4 sm:grid-cols-[auto_1fr_auto] sm:items-center"
                 >
-                  <div
+                  <span
                     className={cn(
-                      'grid size-10 shrink-0 place-items-center rounded-full',
+                      'relative z-10 grid size-9 shrink-0 place-items-center rounded-full border-2',
                       goal.unlocked
-                        ? 'bg-primary/10 text-primary'
-                        : 'bg-muted text-muted-foreground',
+                        ? 'border-foreground bg-primary text-primary-foreground'
+                        : 'border-dashed border-foreground/40 bg-background text-muted-foreground',
                     )}
                   >
                     {goal.unlocked ? (
-                      <Check className="size-5" />
+                      <Check className="size-4" />
                     ) : (
                       <span className="text-sm font-bold">?</span>
                     )}
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium">{goal.title}</div>
+                  </span>
+                  <div className={cn(!goal.unlocked && 'opacity-60')}>
+                    <div className="font-bold tracking-tight">{goal.title}</div>
                     <p className="text-sm text-muted-foreground">
                       {goal.description}
                     </p>
                   </div>
                   <span
                     className={cn(
-                      'text-sm font-medium',
-                      goal.unlocked ? 'text-primary' : 'text-muted-foreground',
+                      'col-start-2 justify-self-start sm:col-start-3 sm:justify-self-end',
+                      'inline-flex rounded-full border-2 px-3 py-0.5 font-mono text-[11px] font-bold uppercase tracking-[0.12em]',
+                      goal.unlocked
+                        ? 'rotate-1 border-foreground bg-background text-foreground shadow-[2px_2px_0_0] shadow-primary/40'
+                        : 'border-foreground/30 bg-background text-muted-foreground',
                     )}
                   >
                     {goal.status}

@@ -1,9 +1,9 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
+import { Container } from '#/section-kit/Container.tsx'
 import {
   SiteFooter,
-  FooterContent,
   FooterGrid,
   FooterBrand,
   FooterTagline,
@@ -98,7 +98,7 @@ export const NewsroomFooter = defineCapsule({
       : ['Privacy', 'Terms', 'Cookies']
     return (
       <SiteFooter className={props.className}>
-        <FooterContent>
+        <Container className="py-12">
           <FooterGrid>
             <FooterBrand brand={brand}>
               <FooterTagline>{blurb}</FooterTagline>
@@ -131,7 +131,7 @@ export const NewsroomFooter = defineCapsule({
               ))}
             </FooterLegal>
           </FooterBottom>
-        </FooterContent>
+        </Container>
       </SiteFooter>
     )
   },

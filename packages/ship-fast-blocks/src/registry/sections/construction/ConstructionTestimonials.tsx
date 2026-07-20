@@ -1,15 +1,18 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
+import { Watermark } from '#/section-kit/Decor.tsx'
 
 /**
- * ConstructionTestimonials — star-rated client testimonials grid for a
- * construction / general contractor page. A centered section heading above a
- * responsive grid of quote cards, each with five star icons, a quote, an
- * avatar, and an attribution name+role. All images use the alt-driven Image
- * component. Use as a social-proof reviews section for construction firms,
- * contractors, builders, or any service business. Renders fully with no
- * props via baked-in defaults.
+ * ConstructionTestimonials — industrial-brutalist field-report wall for a
+ * construction / general contractor page. An asymmetric header (left mono
+ * eyebrow + extrabold uppercase heading, mono report index right) with a giant
+ * ghost quotation-mark watermark behind a staggered grid of hard-edged report
+ * cards: 2px borders, zero radius, hard offset shadows, every other card
+ * shifted down, each opening with a mono report number + token-built hazard
+ * tick, then the quote and a hairline-ruled mono attribution row. Use as a
+ * social-proof reviews section for construction firms, contractors, builders,
+ * or any service business. Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -24,7 +27,7 @@ import {
 export const ConstructionTestimonials = defineCapsule({
   name: 'ConstructionTestimonials',
   description:
-    'Star-rated client testimonials grid for a construction / general contractor page: a centered section heading above a responsive grid of quote cards, each with five star icons, a quote, an alt-driven avatar, and an attribution name+role. Use as a social-proof reviews section for construction firms, contractors, builders, or any service business.',
+    'Industrial-brutalist field-report testimonial wall for a construction / general contractor page: an asymmetric header (left mono eyebrow + extrabold uppercase heading, mono report index right), a giant ghost quotation-mark watermark, and a staggered grid of hard-edged report cards — 2px borders, zero radius, hard offset shadows, mono report numbers with token-built hazard ticks, quotes, and hairline-ruled mono attribution rows. Use as a social-proof reviews section for construction firms, contractors, builders, or any service business.',
   props: z.object({
     /** Section eyebrow label. */
     eyebrow: z.string().optional(),
@@ -96,20 +99,37 @@ export const ConstructionTestimonials = defineCapsule({
           },
         ]
     return (
-      <section className={cn('bg-card py-20 lg:py-28', props.className)}>
-        <Container>
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            eyebrowClassName="text-sm font-semibold tracking-wider text-muted-foreground"
-            titleClassName="mb-4 mt-3 text-3xl font-bold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
+      <section
+        className={cn(
+          'relative overflow-hidden bg-background py-16 lg:py-24',
+          props.className,
+        )}
+      >
+        <Watermark className="-top-10 right-0 text-[clamp(10rem,30vw,24rem)]">
+          &rdquo;
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-0"
+              eyebrowClassName="font-mono text-[11px] uppercase tracking-[0.2em] text-primary"
+              titleClassName="mb-4 mt-3 text-3xl font-extrabold uppercase tracking-tight text-foreground sm:text-4xl lg:text-5xl"
+              subtitleClassName="text-lg text-muted-foreground"
+            />
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] tabular-nums text-muted-foreground/60"
+            >
+              [ {String(items.length).padStart(2, '0')} ] field reports
+            </p>
+          </div>
 
-          <TestimonialGrid columns={3}>
-            {items.map((t) => {
+          <TestimonialGrid columns={3} className="lg:pb-10">
+            {items.map((t, i) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -120,13 +140,32 @@ export const ConstructionTestimonials = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
+                <TestimonialCard
+                  key={__iv__.name}
+                  className={cn(
+                    'rounded-none border-2 border-foreground bg-card p-6 shadow-[6px_6px_0_0] shadow-foreground/20 transition-all duration-100 hover:-translate-y-1 hover:border-foreground hover:shadow-[8px_8px_0_0] hover:shadow-foreground/30 motion-reduce:transform-none sm:p-7',
+                    i % 3 === 1 && 'lg:translate-y-10',
+                  )}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[11px] uppercase tracking-[0.2em] tabular-nums text-primary">
+                      Report {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="h-1.5 w-8 bg-[repeating-linear-gradient(-45deg,currentColor_0,currentColor_4px,transparent_4px,transparent_8px)] text-foreground/25"
+                    />
+                  </div>
+                  <TestimonialQuote className="text-sm leading-relaxed sm:text-base">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="flex-wrap items-baseline gap-x-2 gap-y-1 border-t border-dashed border-foreground/20 pt-4">
+                    <TestimonialName className="font-mono text-[11px] font-bold uppercase tracking-[0.15em]">
+                      {__iv__.name}
+                    </TestimonialName>
                     {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
-                        {__iv__.role || __iv__.company || __iv__.meta}
+                      <TestimonialMeta className="font-mono text-[10px] uppercase tracking-[0.08em]">
+                        / {__iv__.role || __iv__.company || __iv__.meta}
                       </TestimonialMeta>
                     )}
                   </TestimonialAuthor>

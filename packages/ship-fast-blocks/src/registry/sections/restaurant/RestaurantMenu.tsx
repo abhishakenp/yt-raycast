@@ -229,7 +229,6 @@ export const RestaurantMenu = defineCapsule({
                   </MenuCategoryHeader>
                   <ResponsiveGrid
                     cols="1-md-2"
-
                     className="gap-x-12 gap-y-6 gap-0"
                   >
                     {(category.items ?? []).map((item) => (

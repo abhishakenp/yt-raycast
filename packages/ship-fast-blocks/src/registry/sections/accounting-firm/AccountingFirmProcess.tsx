@@ -13,19 +13,23 @@ import {
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * AccountingFirmProcess — "how we work" steps band for a CPA / accounting-firm
- * site. A centered heading + lede above a responsive 3-up numbered process grid
- * (filled circular step badges with connecting rules between them on desktop),
- * followed by a bordered inline booking-CTA panel (heading + blurb + filled
- * button). Calm, trustworthy professional-services aesthetic. The CTA routes
- * through section-kit route links. Use to explain engagement flow on accounting firms, CPA
- * practices, tax/bookkeeping providers, audit firms, or advisory practices.
- * Renders fully with no props via baked-in defaults.
+ * AccountingFirmProcess — Swiss-ledger dark process band for a CPA /
+ * accounting-firm site. The page's full ink inversion (foreground background,
+ * background text): a mono uppercase meta rule with a primary square and a
+ * tabular step count above a left-aligned oversized heading + lede, then a
+ * 3-column collapsed-border step ledger — each cell sharing hairline rules with
+ * a giant ghost numeral watermark, a mono primary step label, a title, and a
+ * description — followed by a hairline-bordered booking strip whose
+ * square-edged button inverts back to the light surface with press feedback.
+ * Financial-broadsheet gravitas: the dark band anchors the page rhythm. The CTA
+ * routes through section-kit route links. Use to explain engagement flow on
+ * accounting firms, CPA practices, tax/bookkeeping providers, audit firms, or
+ * advisory practices. Renders fully with no props via baked-in defaults.
  */
 export const AccountingFirmProcess = defineCapsule({
   name: 'AccountingFirmProcess',
   description:
-    'How-we-work process band for a CPA / accounting-firm site: a centered heading + lede above a responsive 3-up numbered process grid with filled circular step badges and connecting rules on desktop, followed by a bordered inline booking-CTA panel (heading + blurb + filled button). Calm professional-services look; the CTA routes through section-kit route links. Use to explain the engagement flow on accounting firms, CPA practices, tax/bookkeeping providers, audit firms, or advisory practices.',
+    'Swiss-ledger dark process band for a CPA / accounting-firm site: a full ink-inverted section (foreground background, background text) with a mono uppercase meta rule + tabular step count, a left-aligned oversized heading + lede, a 3-column collapsed-border step ledger whose cells share hairline rules and carry giant ghost numeral watermarks, mono primary step labels, titles, and descriptions, then a hairline-bordered booking strip with a square-edged light button with press feedback. The CTA routes through section-kit route links. Use to explain the engagement flow on accounting firms, CPA practices, tax/bookkeeping providers, audit firms, or advisory practices.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -75,49 +79,75 @@ export const AccountingFirmProcess = defineCapsule({
 
     return (
       <ProcessTimeline
-        className={cn('bg-background py-20 lg:py-28', props.className)}
+        variant="inverted"
+        className={cn(
+          // Slanted top edge: the inverted band starts on a diagonal seam
+          // (clip-path on the band itself keeps it neighbor-independent).
+          'relative overflow-hidden py-16 pt-24 [clip-path:polygon(0_0,100%_3rem,100%_100%,0_100%)] sm:py-20 sm:pt-28 lg:py-28 lg:pt-36',
+          props.className,
+        )}
       >
-        <Container>
+        <Container className="relative">
+          <div className="mb-10 flex items-center justify-between gap-4 border-b border-background/20 pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-background/50">
+            <span className="flex items-center gap-3">
+              <span aria-hidden="true" className="size-2 bg-primary" />
+              Process
+            </span>
+            <span className="tabular-nums">
+              {String(steps.length).padStart(2, '0')} steps
+            </span>
+          </div>
+
           <SectionHeading
+            align="left"
             title={heading}
             subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 tracking-tight sm:text-4xl"
-            subtitleClassName="text-lg"
+            className="mb-10 max-w-3xl gap-4 sm:mb-14 lg:mb-16"
+            titleClassName="text-4xl font-semibold tracking-tight text-background sm:text-5xl"
+            subtitleClassName="max-w-xl text-lg text-background/60"
           />
 
-          <ProcessGrid columns={3} className="gap-8 lg:gap-12">
+          <ProcessGrid
+            columns={3}
+            className="gap-0 border-l border-t border-background/20"
+          >
             {steps.map((step, i) => (
-              <ProcessStep key={step.title} className="relative">
-                <div className="mb-6 flex size-12 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground">
-                  {i + 1}
-                </div>
-                <h3 className="mb-3 text-xl font-semibold text-foreground">
+              <ProcessStep
+                key={step.title}
+                className="relative border-b border-r border-background/20 p-6 sm:p-8 lg:p-10"
+              >
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute right-5 top-5 select-none font-mono text-7xl font-bold tabular-nums leading-none text-background/15 sm:right-6 sm:top-6"
+                >
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+                  Step {String(i + 1).padStart(2, '0')}
+                </span>
+                <h3 className="mt-4 text-xl font-semibold tracking-tight text-background">
                   {step.title}
                 </h3>
-                <p className="leading-relaxed text-muted-foreground">
+                <p className="mt-3 leading-relaxed text-background/70">
                   {step.description}
                 </p>
-                {i < steps.length - 1 && (
-                  <div
-                    aria-hidden="true"
-                    className="absolute left-[calc(100%+1.5rem)] top-6 hidden h-px w-[calc(100%-3rem)] -translate-y-1/2 bg-border md:block"
-                  />
-                )}
               </ProcessStep>
             ))}
           </ProcessGrid>
 
-          <Card variant="muted" className="mt-16 rounded-lg p-8">
-            <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
+          <Card
+            variant="outline"
+            className="mt-10 rounded-none border-background/20 p-6 text-background sm:mt-16 sm:p-8"
+          >
+            <div className="flex flex-col items-stretch justify-between gap-6 md:flex-row md:items-center">
               <div>
-                <h4 className="mb-2 text-xl font-semibold text-foreground">
+                <h4 className="mb-2 text-xl font-semibold tracking-tight text-background">
                   {ctaHeading}
                 </h4>
-                <p className="text-muted-foreground">{ctaDescription}</p>
+                <p className="text-background/70">{ctaDescription}</p>
               </div>
               <NavbarRouteLink
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-md bg-primary px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                className="inline-flex w-full items-center justify-center whitespace-nowrap rounded-none bg-background px-7 py-3.5 text-base font-medium text-foreground transition-all duration-150 hover:bg-background/90 active:translate-y-px md:w-auto"
                 href={ctaButton}
               >
                 {ctaButton}

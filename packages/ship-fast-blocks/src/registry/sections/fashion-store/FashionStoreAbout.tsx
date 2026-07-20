@@ -4,13 +4,14 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
 /**
- * FashionStoreAbout — split brand-philosophy / about band for a minimalist
- * fashion store. A two-column layout with a text column (eyebrow + multi-line
- * serif heading + body paragraphs + a top-bordered three-stat trio) beside a
- * staggered 2x2 image collage of mixed portrait / square photographs with an
- * offset second column. All imagery uses the alt-driven Image component. Use
- * to tell the brand story and craftsmanship of clothing brands, boutiques,
- * or sustainable apparel labels.
+ * FashionStoreAbout — image-forward brand-philosophy band for a luxury fashion
+ * store. An asymmetric 5:7 split with a narrower text column (mono kicker +
+ * multi-line serif heading + body paragraphs + a hairline-topped three-stat
+ * ledger with serif figures and mono labels) beside a wider staggered 2x2
+ * collage of mixed portrait / square photographs, sharp-edged with an offset
+ * second column. All imagery uses the alt-driven Image component. Use to tell
+ * the brand story and craftsmanship of clothing brands, boutiques, or
+ * sustainable apparel labels.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import {
@@ -23,7 +24,7 @@ import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const FashionStoreAbout = defineCapsule({
   name: 'FashionStoreAbout',
   description:
-    'Split brand-philosophy / about band for a minimalist fashion store: a two-column layout with a text column (eyebrow + multi-line serif heading + body paragraphs + a top-bordered three-stat trio) beside a staggered 2x2 image collage of mixed portrait / square photographs with an offset second column. All imagery uses the alt-driven Image component. Use to tell the brand story, philosophy and craftsmanship of clothing brands, boutiques, or sustainable apparel labels.',
+    'Image-forward brand-philosophy band for a luxury fashion store: an asymmetric 5:7 split with a narrower text column (mono kicker + multi-line serif heading + body paragraphs + a hairline-topped three-stat ledger with serif figures and mono labels) beside a wider staggered 2x2 collage of mixed portrait / square photographs, sharp-edged with an offset second column. All imagery uses the alt-driven Image component. Use to tell the brand story, philosophy and craftsmanship of clothing brands, boutiques, or sustainable apparel labels.',
   props: z.object({
     eyebrow: z.string().optional(),
     headingLines: z.array(z.string()).optional(),
@@ -76,17 +77,20 @@ export const FashionStoreAbout = defineCapsule({
           'Fashion design sketches and fabric samples on clean white desk',
         ]
     const eyebrowCls =
-      'text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground'
+      'font-mono text-[11px] font-medium uppercase tracking-[0.24em] text-muted-foreground'
     return (
       <AboutSection
         aria-label="Our philosophy"
         className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
       >
         <Container>
-          <AboutGrid>
+          <AboutGrid className="items-start lg:grid-cols-[5fr_7fr] lg:gap-16">
             <AboutContent className="space-y-0">
-              <p className={cn(eyebrowCls, 'mb-4')}>{aboutEyebrow}</p>
-              <h2 className="mb-8 font-serif text-4xl font-normal leading-tight sm:text-5xl lg:text-6xl">
+              <div className="mb-4 flex items-center gap-4">
+                <p className={eyebrowCls}>{aboutEyebrow}</p>
+                <span aria-hidden="true" className="h-px flex-1 bg-border" />
+              </div>
+              <h2 className="mb-8 font-serif text-4xl font-normal leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
                 {aboutHeadingLines.map((line, i) => (
                   <span key={line}>
                     {line}
@@ -94,19 +98,19 @@ export const FashionStoreAbout = defineCapsule({
                   </span>
                 ))}
               </h2>
-              <AboutBody className="space-y-6 text-muted-foreground">
+              <AboutBody className="space-y-6 leading-relaxed text-muted-foreground">
                 {aboutParagraphs.map((p) => (
                   <p key={p}>{p}</p>
                 ))}
               </AboutBody>
               <div className="mt-10 border-t border-border pt-10">
-                <ResponsiveGrid cols="3">
+                <ResponsiveGrid cols="3" className="gap-6">
                   {aboutStats.map((s) => (
                     <div key={s.label}>
-                      <p className="font-serif text-3xl text-foreground">
+                      <p className="font-serif text-3xl font-normal text-foreground tabular-nums">
                         {s.value}
                       </p>
-                      <p className="mt-1 text-sm text-muted-foreground">
+                      <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
                         {s.label}
                       </p>
                     </div>
@@ -116,7 +120,13 @@ export const FashionStoreAbout = defineCapsule({
             </AboutContent>
             <ResponsiveGrid cols="2" className="gap-4">
               <div className="space-y-4">
-                <div className="aspect-[3/4] overflow-hidden">
+                <div className="relative aspect-[3/4] overflow-hidden rounded-none bg-muted">
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute left-3 top-3 z-10 font-mono text-[10px] uppercase tracking-[0.2em] text-background/80"
+                  >
+                    Fig. 01
+                  </span>
                   <Image
                     alt={aboutImageAlts[0] ?? 'Fashion brand boutique interior'}
                     w={800}
@@ -125,7 +135,7 @@ export const FashionStoreAbout = defineCapsule({
                     className="size-full object-cover"
                   />
                 </div>
-                <div className="aspect-square overflow-hidden">
+                <div className="aspect-square overflow-hidden rounded-none bg-muted">
                   <Image
                     alt={aboutImageAlts[1] ?? 'Garment craftsmanship detail'}
                     w={800}
@@ -135,8 +145,8 @@ export const FashionStoreAbout = defineCapsule({
                   />
                 </div>
               </div>
-              <div className="space-y-4 pt-8">
-                <div className="aspect-square overflow-hidden">
+              <div className="space-y-4 pt-10">
+                <div className="aspect-square overflow-hidden rounded-none bg-muted">
                   <Image
                     alt={aboutImageAlts[2] ?? 'Natural fabric rolls in studio'}
                     w={800}
@@ -145,7 +155,7 @@ export const FashionStoreAbout = defineCapsule({
                     className="size-full object-cover"
                   />
                 </div>
-                <div className="aspect-[3/4] overflow-hidden">
+                <div className="aspect-[3/4] overflow-hidden rounded-none bg-muted">
                   <Image
                     alt={
                       aboutImageAlts[3] ??

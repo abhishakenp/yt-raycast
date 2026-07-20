@@ -18,7 +18,7 @@ type BillingStatus =
   | 'authenticated'
   | 'past_due'
   | 'cancelled'
-type RazorpayPartnerMutation = {
+type PartnerMutation = {
   idempotencyKey: string
   partnerEvent:
     | {
@@ -38,7 +38,7 @@ type RazorpayPartnerMutation = {
         remainingAmount: number
         refundId: string
       }
-  provider: 'razorpay'
+  provider: 'razorpay' | 'stripe'
 }
 
 const MAX_WEBHOOK_BODY_BYTES = 1_048_576
@@ -259,7 +259,7 @@ function currencyCode(value: unknown): string | null {
 
 function razorpayPartnerPayloadToMutation(
   event: unknown,
-): RazorpayPartnerMutation | null {
+): PartnerMutation | null {
   const eventRecord = asRecord(event)
   const payload = asRecord(eventRecord?.payload)
   const eventName =
@@ -352,6 +352,48 @@ function razorpayPartnerPayloadToMutation(
   return null
 }
 
+// Stripe equivalent of razorpayPartnerPayloadToMutation: a paid subscription
+// invoice becomes a Dub "sale" so partner-referred Stripe customers earn
+// commissions too. Attribution to a partner happens in the Convex mutation
+// (via the subscription → user → dub_partner acquisition lookup).
+function stripePartnerPayloadToMutation(
+  event: unknown,
+): PartnerMutation | null {
+  const eventRecord = asRecord(event)
+  const eventName =
+    typeof eventRecord?.type === 'string' ? eventRecord.type : ''
+  if (
+    eventName !== 'invoice.paid' &&
+    eventName !== 'invoice.payment_succeeded'
+  ) {
+    return null
+  }
+  const object = asRecord(asRecord(eventRecord?.data)?.object)
+  if (!object) return null
+
+  const invoiceId = String(object.id ?? '')
+  const subscriptionId = String(object.subscription ?? '')
+  const paymentId = String(object.payment_intent ?? object.charge ?? '')
+  const amount = positiveInteger(object.amount_paid)
+  const currency = currencyCode(object.currency)
+  if (!invoiceId || !subscriptionId || amount === null || currency === null) {
+    return null
+  }
+
+  return {
+    idempotencyKey: `invoice.paid:${invoiceId}`,
+    partnerEvent: {
+      amount,
+      currency,
+      invoiceId,
+      kind: 'sale',
+      providerPaymentId: paymentId,
+      providerSubscriptionId: subscriptionId,
+    },
+    provider: 'stripe',
+  }
+}
+
 export async function createWebhookApiResponse(
   request: Request,
   provider: Provider,
@@ -394,9 +436,10 @@ export async function createWebhookApiResponse(
     return json({ error: 'Invalid webhook body.' }, { status: 400 })
   }
   const partnerMutationPayload =
-    provider === 'razorpay' &&
     env.DUB_PARTNERS_ENABLED?.trim().toLowerCase() === 'true'
-      ? razorpayPartnerPayloadToMutation(event)
+      ? provider === 'razorpay'
+        ? razorpayPartnerPayloadToMutation(event)
+        : stripePartnerPayloadToMutation(event)
       : null
   if (partnerMutationPayload !== null) {
     const client = clientOverride ?? createRuntimeConvexHttpClient()

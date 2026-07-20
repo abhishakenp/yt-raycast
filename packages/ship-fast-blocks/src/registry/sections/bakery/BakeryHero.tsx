@@ -4,10 +4,8 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import {
   HeroSection,
-  HeroHeading,
   HeroSubheading,
   HeroActions,
-  HeroCta,
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
@@ -19,22 +17,31 @@ import {
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
+import { DotGrid, MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 
 /**
- * BakeryHero — split, two-column hero band for an artisan-bakery landing page,
- * on a soft muted surface. Left column: an uppercase "Est." eyebrow, a large
- * serif-leaning display headline, a supporting paragraph, dual CTAs (filled
- * dark primary + outlined secondary), and an open-hours + address chip row with
- * clock/pin icons. Right column: a large rounded hero photo with a floating
- * "Certified Organic" badge card overlapping its corner. Warm, editorial, light
- * and craft-forward. CTAs route through section-kit route links; the photo is alt-driven.
- * Use as the opening hero for bakeries, patisseries, cafes, or pastry shops.
- * Renders fully with no props via baked-in "Flour & Stone" defaults.
+ * BakeryHero — playful-geometric warm hero for an artisan-bakery landing page.
+ * Asymmetric 7:5 split on a background washed with a giant blurred primary
+ * blob, a faint dot grid, and an oversized ghost "❋" flour-star watermark. The
+ * left column opens with a slightly-rotated sticker eyebrow chip (chunky 2px
+ * border + soft offset shadow) mirrored by a mono "01 / Bakehouse" index, then
+ * an oversized serif display headline, the supporting paragraph, two chunky
+ * rounded-full pill CTAs (solid primary + outlined, both with 2px borders,
+ * offset shadows, and mechanical press feedback), a rotated "today's bake"
+ * ticket card with serif italic price and a real add-to-cart chip, and a
+ * dotted-rule hours + address mono strip. The right column is an arch-topped
+ * (rounded-t-full) hero photo with a chunky border and offset shadow over an
+ * offset primary-wash arch echo, plus a counter-rotated sticker badge card
+ * overlapping its corner. CTAs route through section-kit route links; the
+ * photo is alt-driven and the featured bake seeds the shared commerce catalog
+ * and Lakebed cart. Use as the opening hero for bakeries, patisseries, cafes,
+ * or pastry shops. Renders fully with no props via baked-in "Flour & Stone"
+ * defaults.
  */
 export const BakeryHero = defineCapsule({
   name: 'BakeryHero',
   description:
-    "Split two-column hero band for an artisan-bakery landing page on a soft muted surface: left column has an uppercase 'Est.' eyebrow, a large display headline, a supporting paragraph, dual CTAs (filled dark primary + outlined secondary), and an open-hours + address chip row with clock/pin icons; right column is a large rounded hero photo with a floating 'Certified Organic' badge card overlapping its corner. Warm, editorial, light and craft-forward; CTAs route through section-kit route links and the photo is alt-driven. Use as the opening hero for bakeries, patisseries, sourdough/artisan-bread shops, cafes, or pastry kitchens.",
+    "Playful-geometric warm hero for an artisan-bakery landing page: an asymmetric 7:5 split over a blurred primary wash, faint dot grid and giant ghost flour-star watermark — left column has a rotated sticker eyebrow chip with chunky border and offset shadow, a mono index tag, an oversized serif display headline, a supporting paragraph, two chunky rounded-full pill CTAs with press feedback, a rotated 'today's bake' ticket card with serif italic price and a real add-to-cart chip, and a dotted-rule hours + address mono strip; right column is an arch-topped photo with chunky border and offset shadow over a primary-wash arch echo, plus a counter-rotated sticker badge card overlapping its corner. CTAs route through section-kit route links, the photo is alt-driven, and the featured bake seeds the shared commerce catalog and Lakebed cart. Use as the opening hero for bakeries, patisseries, sourdough/artisan-bread shops, cafes, or pastry kitchens.",
   props: z.object({
     /** Uppercase eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -119,8 +126,8 @@ export const BakeryHero = defineCapsule({
 
     const ClockIcon = () => (
       <svg
-        width="20"
-        height="20"
+        width="16"
+        height="16"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -135,8 +142,8 @@ export const BakeryHero = defineCapsule({
 
     const PinIcon = () => (
       <svg
-        width="20"
-        height="20"
+        width="16"
+        height="16"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -151,40 +158,83 @@ export const BakeryHero = defineCapsule({
     )
 
     return (
-      <HeroSection className={cn('relative bg-muted', props.className)}>
-        <Container size="xl" className="py-16 lg:py-24">
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-            <div className="space-y-8">
-              <div className="space-y-4">
-                <p className="text-sm font-medium uppercase tracking-wider text-primary">
+      <HeroSection
+        className={cn(
+          'relative overflow-hidden border-b-2 border-foreground/10 bg-background',
+          props.className,
+        )}
+      >
+        {/* Warm wash blob + dot grid + giant flour-star ghost. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+        >
+          <div className="absolute -top-32 right-[-10rem] size-[26rem] rounded-full bg-primary/10 blur-3xl sm:size-[34rem]" />
+          <DotGrid
+            density="loose"
+            fade="bottom"
+            className="inset-x-0 top-0 h-72"
+          />
+          <Watermark className="-bottom-20 -left-10 font-serif text-[14rem] italic text-foreground/[0.05] sm:text-[20rem] lg:text-[26rem]">
+            ❋
+          </Watermark>
+        </div>
+
+        <Container className="relative py-14 sm:py-16 lg:py-24">
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
+            <div className="lg:col-span-7">
+              <div className="flex items-center justify-between gap-4">
+                <span className="inline-flex -rotate-1 items-center gap-2 rounded-full border-2 border-foreground bg-background px-4 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-foreground shadow-[3px_3px_0_0] shadow-foreground/20">
+                  <span
+                    aria-hidden="true"
+                    className="size-2 rounded-full bg-primary"
+                  />
                   {eyebrow}
-                </p>
-                <HeroHeading className="font-semibold">{heading}</HeroHeading>
-                <HeroSubheading className="mt-0 max-w-xl">
-                  {subheading}
-                </HeroSubheading>
+                </span>
+                <MonoTag
+                  aria-hidden="true"
+                  className="hidden shrink-0 sm:inline"
+                >
+                  01 / Bakehouse
+                </MonoTag>
               </div>
-              <HeroActions className="mt-0 flex-wrap gap-4">
-                <HeroCta
-                  asChild
-                  className="rounded-lg bg-foreground px-6 py-3 font-medium text-background hover:bg-foreground/90"
+
+              <h1 className="mt-7 max-w-2xl font-serif text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[1.02] tracking-tight text-foreground">
+                {heading}
+              </h1>
+              <HeroSubheading className="mt-6 max-w-xl">
+                {subheading}
+              </HeroSubheading>
+
+              <HeroActions className="mt-8 items-center gap-4">
+                <NavbarRouteLink
+                  className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-foreground bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground shadow-[4px_4px_0_0] shadow-foreground transition-all duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0] hover:shadow-foreground active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+                  href={primaryTarget}
                 >
-                  <NavbarRouteLink href={primaryTarget}>
-                    {primaryCta}
-                    <span className="ml-2">
-                      <ArrowRight />
-                    </span>
-                  </NavbarRouteLink>
-                </HeroCta>
-                <HeroCta
-                  asChild
-                  variant="outline"
-                  className="rounded-lg px-6 py-3 font-medium hover:bg-card"
+                  {primaryCta}
+                  <ArrowRight />
+                </NavbarRouteLink>
+                <NavbarRouteLink
+                  className="inline-flex items-center justify-center rounded-full border-2 border-foreground bg-background px-7 py-3 text-sm font-semibold text-foreground shadow-[4px_4px_0_0] shadow-foreground/20 transition-all duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0] hover:shadow-foreground/20 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+                  href={secondaryTarget}
                 >
-                  <NavbarRouteLink href={secondaryTarget}>
-                    {secondaryCta}
-                  </NavbarRouteLink>
-                </HeroCta>
+                  {secondaryCta}
+                </NavbarRouteLink>
+              </HeroActions>
+
+              {/* Today's bake ticket — sharp sticker card against the round pills. */}
+              <div className="mt-8 flex max-w-full -rotate-1 flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl rounded-bl-none border-2 border-foreground/15 bg-card p-4 pr-5 shadow-[5px_5px_0_0] shadow-foreground/10 sm:inline-flex sm:gap-5">
+                <div className="min-w-0 flex-1 basis-40 sm:flex-none sm:basis-auto">
+                  <MonoTag className="text-[10px]">
+                    {featuredItemSubtitle}
+                  </MonoTag>
+                  <p className="mt-1 font-serif text-lg font-medium text-card-foreground sm:truncate">
+                    {featuredItemName}
+                  </p>
+                </div>
+                <span className="shrink-0 font-serif text-3xl italic text-foreground">
+                  {featuredItemPrice}
+                </span>
                 <CommerceAddItemButton
                   lakebed={lakebed}
                   item={{
@@ -193,19 +243,20 @@ export const BakeryHero = defineCapsule({
                   }}
                   aria-label={`${addLabel} ${featuredItemName}`}
                   pendingChildren={<CommerceMutationSpinner />}
-                  className="inline-flex items-center rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+                  className="inline-flex shrink-0 items-center justify-center rounded-full border-2 border-foreground bg-background px-4 py-2 text-xs font-semibold text-foreground transition-all duration-100 hover:bg-foreground hover:text-background active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
                 >
                   {addLabel}
                 </CommerceAddItemButton>
-              </HeroActions>
-              <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
+              </div>
+
+              <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 border-t-2 border-dotted border-foreground/20 pt-5">
+                <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
                   <span className="text-primary">
                     <ClockIcon />
                   </span>
                   <span>{hoursChip}</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
                   <span className="text-primary">
                     <PinIcon />
                   </span>
@@ -213,19 +264,25 @@ export const BakeryHero = defineCapsule({
                 </div>
               </div>
             </div>
-            <div className="relative">
+
+            <div className="relative mx-auto w-full max-w-md lg:col-span-5 lg:max-w-none">
+              {/* Arch echo behind the photo. */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -left-4 top-5 h-full w-full rounded-t-full rounded-b-[2.5rem] bg-primary/15 sm:-left-6 sm:top-6"
+              />
               <HeroMediaPanel
                 alt={imageAlt}
                 w={800}
-                h={600}
-                className="h-[400px] w-full shadow-xl lg:h-[500px] rounded-xl"
+                h={1000}
+                className="relative h-[22rem] w-full rounded-t-full rounded-b-[2.5rem] border-2 border-foreground shadow-[7px_7px_0_0] shadow-foreground/15 sm:h-[26rem] lg:h-[32rem]"
               />
-              <div className="absolute -bottom-6 -left-6 hidden rounded-xl bg-card p-4 shadow-lg sm:block">
+              <div className="absolute -bottom-5 -left-3 -rotate-3 rounded-2xl rounded-tr-none border-2 border-foreground bg-card p-3.5 shadow-[5px_5px_0_0] shadow-foreground/20 sm:-left-8 sm:p-4">
                 <div className="flex items-center gap-3">
-                  <div className="grid size-12 place-items-center rounded-full bg-primary/10 text-primary">
+                  <div className="grid size-10 shrink-0 place-items-center rounded-full border-2 border-foreground/15 bg-primary/10 text-primary sm:size-12">
                     <svg
-                      width="24"
-                      height="24"
+                      width="22"
+                      height="22"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
@@ -238,10 +295,10 @@ export const BakeryHero = defineCapsule({
                     </svg>
                   </div>
                   <div>
-                    <p className="font-semibold text-card-foreground">
+                    <p className="font-serif text-base font-medium text-card-foreground">
                       {badgeTitle}
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
                       {badgeSubtitle}
                     </p>
                   </div>

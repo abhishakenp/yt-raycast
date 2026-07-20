@@ -5,6 +5,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   LocationBlock,
@@ -14,17 +15,21 @@ import {
 import { MapOverlay, MapPin } from '#/section-kit/MapBlock.tsx'
 
 /**
- * ContactOfficeMap — split office information and photo section for a contact page.
- * A two-column card: left side shows a heading, description, and icon-prefixed meta
- * rows (transit, parking, accessibility); right side shows a large cover photo
- * with a gradient overlay and a floating map-pin glyph. Use to present physical
- * location details on agency, SaaS, or startup contact pages. Renders fully with
- * no props via baked-in defaults.
+ * ContactOfficeMap — slanted-seam office band for a contact page. The whole
+ * section sits on a muted wash that cuts in on a diagonal clip-path seam, with
+ * a giant ghost "→" watermark and a mono "02 / Visit" metadata rail over a
+ * hairline rule. Inside, a sharp collapsed-border split card (asymmetric
+ * 1:1.3): left panel carries the left-aligned heading, description, and a
+ * hairline ledger of meta rows — mono index numeral + icon + line (transit,
+ * parking, accessibility); right panel is a large cover photo with gradient
+ * overlay and a squared map-pin chip. Tokens only, no soft shadows. Use to
+ * present physical location details on agency, SaaS, or startup contact
+ * pages. Renders fully with no props via baked-in defaults.
  */
 export const ContactOfficeMap = defineCapsule({
   name: 'ContactOfficeMap',
   description:
-    'Split office information and photo section for a contact page: a two-column card with a heading, description, and icon-prefixed meta rows (transit, parking, accessibility) on the left; a large cover photo with gradient overlay and a floating map-pin glyph on the right. Use to present physical location details on agency, SaaS, or startup contact pages.',
+    'Slanted-seam office band for a contact page: a muted wash cutting in on a diagonal clip-path seam with a giant ghost "→" watermark and mono "02 / Visit" metadata rail, holding a sharp collapsed-border split card (asymmetric 1:1.3) — left panel with left-aligned heading, description, and a hairline ledger of meta rows (mono index numeral + icon + line for transit, parking, accessibility); right panel a large cover photo with gradient overlay and squared map-pin chip. Tokens only, no soft shadows. Use to present physical location details on agency, SaaS, or startup contact pages.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -53,12 +58,12 @@ export const ContactOfficeMap = defineCapsule({
     const metaIcons: ReactNode[] = [
       <svg
         key="nav"
-        width="18"
-        height="18"
+        width="16"
+        height="16"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
         aria-hidden="true"
@@ -67,12 +72,12 @@ export const ContactOfficeMap = defineCapsule({
       </svg>,
       <svg
         key="car"
-        width="18"
-        height="18"
+        width="16"
+        height="16"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
         aria-hidden="true"
@@ -83,12 +88,12 @@ export const ContactOfficeMap = defineCapsule({
       </svg>,
       <svg
         key="access"
-        width="18"
-        height="18"
+        width="16"
+        height="16"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
         aria-hidden="true"
@@ -101,25 +106,51 @@ export const ContactOfficeMap = defineCapsule({
     ]
 
     return (
-      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
-        <Container>
-          <LocationBlock className="grid overflow-hidden rounded-2xl border border-border shadow-[0_24px_64px_rgba(0,0,0,0.45)] md:grid-cols-[1fr_1.3fr]">
-            <div className="flex flex-col justify-center bg-card p-11">
+      <section
+        className={cn(
+          'relative overflow-hidden bg-muted/40 py-14 pt-24 [clip-path:polygon(0_3rem,100%_0,100%_100%,0_100%)] sm:py-20 sm:pt-28 lg:py-24 lg:pt-32',
+          props.className,
+        )}
+      >
+        <Watermark className="-right-6 -bottom-20 text-[12rem] sm:text-[18rem]">
+          →
+        </Watermark>
+
+        <Container className="relative">
+          {/* Mono metadata rail */}
+          <div className="mb-8 flex items-center gap-4 sm:mb-10">
+            <MonoTag aria-hidden="true" className="text-foreground">
+              02 / Visit
+            </MonoTag>
+            <span aria-hidden="true" className="h-px flex-1 bg-border" />
+            <MonoTag aria-hidden="true" tone="faint">
+              On-site
+            </MonoTag>
+          </div>
+
+          <LocationBlock className="grid overflow-hidden rounded-none border border-border bg-card shadow-none md:grid-cols-[1fr_1.3fr]">
+            <div className="flex flex-col justify-center border-b border-border p-7 sm:p-10 md:border-b-0 md:border-r lg:p-12">
               <SectionHeading
                 align="left"
                 title={heading}
                 subtitle={description}
                 className="gap-0"
-                titleClassName="mb-2.5 text-2xl font-bold text-foreground"
-                subtitleClassName="mb-6 text-[0.95rem] leading-[1.7] text-muted-foreground"
+                titleClassName="mb-3 text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl"
+                subtitleClassName="mb-7 text-[0.95rem] leading-[1.7] text-muted-foreground"
               />
-              <LocationContact className="flex flex-col gap-3.5">
+              <LocationContact className="flex flex-col">
                 {meta.map((line, i) => (
                   <div
                     key={line}
-                    className="flex items-center gap-2.5 text-[0.92rem] text-muted-foreground"
+                    className="flex items-center gap-4 border-t border-border py-3.5 text-sm text-foreground"
                   >
-                    <span className="text-primary">
+                    <span
+                      aria-hidden="true"
+                      className="font-mono text-[11px] tracking-[0.2em] text-muted-foreground/60"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span className="text-muted-foreground">
                       {metaIcons[i % metaIcons.length]}
                     </span>
                     {line}
@@ -127,7 +158,7 @@ export const ContactOfficeMap = defineCapsule({
                 ))}
               </LocationContact>
             </div>
-            <LocationMap className="h-auto min-h-[260px] overflow-visible rounded-none md:min-h-[340px]">
+            <LocationMap className="h-auto min-h-[260px] overflow-hidden rounded-none md:min-h-[340px]">
               <Image
                 alt={imageAlt}
                 w={900}
@@ -136,7 +167,7 @@ export const ContactOfficeMap = defineCapsule({
                 className="absolute inset-0 size-full object-cover"
               />
               <MapOverlay />
-              <MapPin />
+              <MapPin className="rounded-none bg-foreground text-background shadow-none" />
             </LocationMap>
           </LocationBlock>
         </Container>

@@ -73,7 +73,8 @@ let userImagesValue:
 const originalFetch = globalThis.fetch
 
 vi.mock('@/lib/stock-image', () => ({
-  searchStockImages: (...args: unknown[]) => searchStockImagesMock(...(args as [])),
+  searchStockImages: (...args: unknown[]) =>
+    searchStockImagesMock(...(args as [])),
 }))
 vi.mock('convex/react', () => ({
   useMutation: (fn: unknown) => {

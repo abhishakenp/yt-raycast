@@ -14,20 +14,22 @@ import {
 } from '#/section-kit/index.ts'
 
 /**
- * KidsEducationNavbar — sticky, translucent top navigation bar for a bright,
- * playful kids / family learning platform. A backdrop-blurred header pinned to
- * the top: an animated open-book brand mark + platform name on the left,
- * horizontal nav links in the center (desktop), and a "Sign In" text link plus
- * a rounded pill primary CTA on the right. Every link and CTA route through
- * route hrefs so labels drive page-switching. Use as the sticky site header for
- * kids-education startups, children's e-learning platforms, family learning
+ * KidsEducationNavbar — sticky, backdrop-blurred top navigation bar for a
+ * playful-primary kids / family learning platform. A pinned header: a chunky
+ * sharp-cornered open-book brand block (2px foreground border, bg-primary mark
+ * that tilts on hover) beside the extrabold wordmark on the left, whitespace-
+ * nowrap nav links in the center (desktop), and a ghost "Sign In" link plus a
+ * sharp dark pill CTA with a hard primary offset shadow and mechanical press
+ * feedback on the right. Every link and CTA route through route hrefs so labels
+ * drive page-switching; auth wiring is preserved. Use as the sticky site header
+ * for kids-education startups, children's e-learning platforms, family learning
  * apps, tutoring or homeschool services, and playful course marketplaces.
  * Renders fully with no props via baked-in "WonderLearn" defaults.
  */
 export const KidsEducationNavbar = defineCapsule({
   name: 'KidsEducationNavbar',
   description:
-    "Sticky translucent top navigation bar for a bright, playful kids / family learning platform: backdrop-blurred header with an animated open-book brand mark + platform name on the left, horizontal nav links in the center (desktop), and a 'Sign In' text link plus a rounded pill primary CTA on the right. Every link and CTA route through route hrefs for page-switching. Use as the sticky site header for kids-education startups, children's e-learning platforms, family learning apps, tutoring or homeschool services, and playful course marketplaces.",
+    "Sticky backdrop-blurred top navigation bar for a playful-primary kids / family learning platform: a chunky sharp-cornered open-book brand block (2px foreground border, bg-primary mark that tilts on hover) beside an extrabold wordmark on the left, whitespace-nowrap nav links in the center (desktop), and a ghost 'Sign In' link plus a sharp dark pill CTA with a hard primary offset shadow and mechanical press feedback on the right. Every link and CTA route through route hrefs for page-switching; auth wiring is preserved. Use as the sticky site header for kids-education startups, children's e-learning platforms, family learning apps, tutoring or homeschool services, and playful course marketplaces.",
   props: z.object({
     /** Brand / platform name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -56,7 +58,7 @@ export const KidsEducationNavbar = defineCapsule({
     const BookMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          'grid place-items-center rounded-xl bg-gradient-to-br from-primary to-secondary text-primary-foreground',
+          'grid place-items-center rounded-none border-2 border-foreground bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -83,13 +85,14 @@ export const KidsEducationNavbar = defineCapsule({
         className={cn('bg-background/90 backdrop-blur-md', props.className)}
       >
         <NavbarBrand href={homeTarget} className="group gap-2">
-          <BrandLogo brand={brand}>
+          <BrandLogo brand={brand} className="flex items-center gap-2">
             <LogoImage
+              className="size-7"
               fallback={
-                <BookMark className="size-10 transition-transform duration-300 group-hover:rotate-12" />
+                <BookMark className="size-7 transition-transform duration-200 group-hover:-rotate-6" />
               }
             />
-            <LogoLabel className="text-xl font-bold text-foreground" />
+            <LogoLabel className="text-xl font-extrabold tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
@@ -110,7 +113,7 @@ export const KidsEducationNavbar = defineCapsule({
           <NavbarCta
             variant="dark-pill"
             href={ctaTarget}
-            className="px-5 py-2.5 shadow-sm"
+            className="border-2 border-foreground px-5 py-2.5 font-semibold shadow-[3px_3px_0_0] shadow-primary/40 transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0] hover:shadow-primary/40 active:translate-y-px active:shadow-none motion-reduce:transform-none"
           >
             {ctaLabel}
           </NavbarCta>

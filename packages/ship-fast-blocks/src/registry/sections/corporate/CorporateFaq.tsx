@@ -13,16 +13,19 @@ import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
- * CorporateFaq — accordion FAQ section for an enterprise / corporate B2B site.
- * A centered section heading above a stacked set of native HTML5 details/summary
- * items with a smooth open ring highlight and a chevron icon that rotates on open.
- * Use to answer common questions about pricing, security, deployment, and support
- * on SaaS and enterprise product pages.
+ * CorporateFaq — Swiss-corporate asymmetric FAQ ledger for an enterprise /
+ * corporate B2B site. A 4/8 split: the left rail holds a mono "07 / FAQ"
+ * index, the left-aligned heading, the lede, and a tabular question count,
+ * staying sticky on desktop; the right column stacks square-edged native
+ * HTML5 details/summary items separated by hairline rules, each summary led
+ * by a giant mono tabular question numeral with a chevron icon that rotates
+ * on open. Use to answer common questions about pricing, security,
+ * deployment, and support on SaaS and enterprise product pages.
  */
 export const CorporateFaq = defineCapsule({
   name: 'CorporateFaq',
   description:
-    'Accordion FAQ section for an enterprise / corporate B2B site: centered heading above a stacked set of native HTML5 details/summary items with a smooth open ring highlight and a chevron icon that rotates on open. Use to answer common questions about pricing, security, deployment, and support on SaaS and enterprise product pages.',
+    'Swiss-corporate asymmetric FAQ ledger for an enterprise / corporate B2B site: a 4/8 split with a sticky left rail (mono index, left-aligned heading, lede, tabular question count) beside a right column of square-edged native HTML5 details/summary items separated by hairline rules, each summary led by a giant mono tabular question numeral and a chevron icon that rotates on open. Use to answer common questions about pricing, security, deployment, and support on SaaS and enterprise product pages.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -67,31 +70,63 @@ export const CorporateFaq = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-muted/50 py-20 lg:py-28', props.className)}>
-        <Container size="sm">
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 gap-0"
-            titleClassName="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <FaqAccordion>
-            {items.map((item) => (
-              <FaqItem
-                key={item.q}
-                className="bg-background open:ring-1 open:ring-border"
-              >
-                <FaqQuestion className="select-none p-6">
-                  <h3 className="font-medium text-foreground">{item.q}</h3>
-                  <FaqQuestionIcon />
-                </FaqQuestion>
-                <FaqAnswer asChild className="px-6 pb-6 leading-relaxed">
-                  <div>{item.a}</div>
-                </FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+      <section className={cn('bg-background py-16 lg:py-28', props.className)}>
+        <Container>
+          <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
+            <div className="lg:col-span-4">
+              <div className="lg:sticky lg:top-28">
+                <span
+                  aria-hidden="true"
+                  className="mb-4 block font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+                >
+                  07 / FAQ
+                </span>
+                <SectionHeading
+                  align="left"
+                  title={heading}
+                  subtitle={description}
+                  className="gap-3"
+                  titleClassName="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
+                  subtitleClassName="text-lg text-muted-foreground"
+                />
+                <p
+                  aria-hidden="true"
+                  className="mt-8 border-t border-border pt-4 font-mono text-[11px] uppercase tracking-[0.2em] tabular-nums text-muted-foreground/60"
+                >
+                  {String(items.length).padStart(2, '0')} questions
+                </p>
+              </div>
+            </div>
+            <FaqAccordion className="space-y-0 border-t border-border lg:col-span-8">
+              {items.map((item, i) => (
+                <FaqItem
+                  key={item.q}
+                  className="rounded-none border-x-0 border-b border-t-0 border-border bg-background"
+                >
+                  <FaqQuestion className="select-none gap-4 px-0 py-6">
+                    <span className="flex min-w-0 items-baseline gap-4">
+                      <span
+                        aria-hidden="true"
+                        className="shrink-0 font-mono text-2xl font-semibold leading-none tracking-tight tabular-nums text-muted-foreground/50"
+                      >
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <h3 className="font-medium tracking-tight text-foreground">
+                        {item.q}
+                      </h3>
+                    </span>
+                    <FaqQuestionIcon />
+                  </FaqQuestion>
+                  <FaqAnswer
+                    asChild
+                    className="px-0 pb-6 leading-relaxed lg:pl-12"
+                  >
+                    <div>{item.a}</div>
+                  </FaqAnswer>
+                </FaqItem>
+              ))}
+            </FaqAccordion>
+          </div>
         </Container>
       </section>
     )

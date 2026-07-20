@@ -15,6 +15,7 @@ import {
   HeroStatLabel,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -25,20 +26,24 @@ import {
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * FurnitureStoreHero — split, two-column hero for a warm minimal furniture /
- * home-decor store. A soft muted band with a tall left column (uppercase
- * collection eyebrow, large serif-style headline, supporting paragraph, primary +
- * secondary CTA buttons, and a bordered KPI strip) beside a full-bleed lifestyle
- * room photo with a floating featured-product price card pinned to its corner.
- * Stacks the photo above the copy on mobile. CTAs route through section-kit route links. Use
- * as the top hero for furniture stores, home-decor or interiors brands, or any
- * warm boutique-retail landing page needing a product-forward lifestyle shot.
- * Renders fully with no props via baked-in "Haven & Home" defaults.
+ * FurnitureStoreHero — editorial-catalog asymmetric hero for a warm minimal
+ * furniture / home-decor store. On the adaptive background, an asymmetric 5:7
+ * split over a giant faint ghost "01" watermark: a narrower left copy column
+ * (mono index-numbered collection micro-label rail with a hairline rule, large
+ * tight-tracked headline, supporting paragraph, square primary + hairline
+ * secondary CTA buttons with press feedback, and a collapsed hairline KPI
+ * ledger of tabular-num stats) beside a larger full-bleed lifestyle room plate
+ * with an offset hairline frame and a floating museum-label placard (mono
+ * caption + tabular-num price + add-to-cart) pinned to its corner. Stacks the
+ * plate above the copy on mobile. CTAs route through section-kit route links.
+ * Use as the top hero for furniture stores, home-decor or interiors brands, or
+ * any warm boutique-retail landing page needing a product-forward lifestyle
+ * shot. Renders fully with no props via baked-in "Haven & Home" defaults.
  */
 export const FurnitureStoreHero = defineCapsule({
   name: 'FurnitureStoreHero',
   description:
-    'Split two-column hero for a warm minimal furniture / home-decor store: a soft muted band with a tall left column (uppercase collection eyebrow, large headline, supporting paragraph, primary + secondary CTA buttons, bordered KPI strip) beside a full-bleed lifestyle room photo with a floating featured-product price card pinned to its corner; photo stacks above copy on mobile. CTAs route through section-kit route links. Use as the top hero for furniture stores, home-decor or interiors brands, or any warm boutique-retail landing page needing a product-forward lifestyle shot.',
+    'Editorial-catalog asymmetric hero for a warm minimal furniture / home-decor store: on the adaptive background an asymmetric 5:7 split over a giant faint ghost "01" watermark, a narrower left copy column (mono index-numbered collection micro-label rail with a hairline rule, large tight-tracked headline, supporting paragraph, square primary + hairline secondary CTA buttons with press feedback, and a collapsed hairline KPI ledger of tabular-num stats) beside a larger full-bleed lifestyle room plate with an offset hairline frame and a floating museum-label placard (mono caption + tabular-num price + add-to-cart) pinned to its corner; the plate stacks above the copy on mobile. CTAs route through section-kit route links. Use as the top hero for furniture stores, home-decor or interiors brands, or any warm boutique-retail landing page needing a product-forward lifestyle shot.',
   lakebed: commerceCartLakebed,
   props: z.object({
     eyebrow: z.string().optional(),
@@ -106,29 +111,43 @@ export const FurnitureStoreHero = defineCapsule({
 
     return (
       <HeroSection
-        className={cn('relative bg-muted', props.className)}
+        className={cn(
+          'relative overflow-hidden bg-background',
+          props.className,
+        )}
         aria-labelledby="furniture-hero-heading"
       >
-        <Container size="xl">
-          <div className="grid min-h-[70vh] lg:min-h-[80vh] lg:grid-cols-2">
-            <div className="order-2 flex flex-col justify-center px-4 py-12 sm:px-6 lg:order-1 lg:px-12 lg:py-0">
-              <p className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-                {eyebrow}
-              </p>
+        {/* Giant faint ghost catalog numeral behind the copy column. */}
+        <Watermark className="-left-4 bottom-0 text-[12rem] leading-none sm:text-[16rem] lg:text-[22rem]">
+          01
+        </Watermark>
+        <Container size="xl" className="relative">
+          <div className="grid items-center gap-10 py-12 sm:py-16 lg:min-h-[40rem] lg:grid-cols-12 lg:gap-12 lg:py-16">
+            <div className="order-2 flex flex-col justify-center lg:order-1 lg:col-span-5">
+              {/* Mono index micro-label rail with hairline rule. */}
+              <div className="mb-6 flex items-center gap-4">
+                <MonoTag className="tracking-[0.2em]">
+                  <span aria-hidden="true" className="text-primary">
+                    01&nbsp;/&nbsp;
+                  </span>
+                  {eyebrow}
+                </MonoTag>
+                <span aria-hidden="true" className="h-px flex-1 bg-border" />
+              </div>
               <HeroHeading
                 id="furniture-hero-heading"
-                className="mb-6 font-medium"
+                className="mb-6 text-4xl font-medium leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl"
               >
                 {heading}
               </HeroHeading>
-              <HeroSubheading className="mb-8 mt-0 max-w-md">
+              <HeroSubheading className="mb-8 mt-0 max-w-md leading-relaxed">
                 {subheading}
               </HeroSubheading>
-              <HeroActions className="mt-0 flex-wrap gap-4">
+              <HeroActions className="mt-0 flex-wrap gap-3">
                 <HeroCta
                   asChild
                   variant="primary"
-                  className="rounded-md px-6 py-3 text-sm"
+                  className="rounded-none px-6 py-3.5 text-sm transition-[background-color,transform] duration-150 active:translate-y-px motion-reduce:active:translate-y-0"
                 >
                   <NavbarRouteLink href={primaryCta}>
                     {primaryCta}
@@ -138,45 +157,62 @@ export const FurnitureStoreHero = defineCapsule({
                 <HeroCta
                   asChild
                   variant="outline"
-                  className="rounded-md px-6 py-3 text-sm hover:bg-accent hover:text-accent-foreground"
+                  className="rounded-none border-foreground/20 px-6 py-3.5 text-sm transition-[background-color,transform] duration-150 hover:bg-muted active:translate-y-px motion-reduce:active:translate-y-0"
                 >
                   <NavbarRouteLink href={secondaryCta}>
                     {secondaryCta}
                   </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
-              <HeroStats className="mt-12 flex gap-8 pt-8">
+              <HeroStats className="mt-12 grid grid-cols-3 gap-0 border-l border-t border-border pt-0">
                 {stats.map((s: { value: string; label: string }) => (
-                  <HeroStat key={s.label}>
-                    <HeroStatValue className="text-2xl font-semibold">
+                  <HeroStat
+                    key={s.label}
+                    className="border-b border-r border-border p-4"
+                  >
+                    <HeroStatValue className="text-2xl font-semibold tabular-nums tracking-tight">
                       {s.value}
                     </HeroStatValue>
-                    <HeroStatLabel className="mt-0">{s.label}</HeroStatLabel>
+                    <HeroStatLabel className="mt-1 font-mono text-[10px] uppercase tracking-[0.16em]">
+                      {s.label}
+                    </HeroStatLabel>
                   </HeroStat>
                 ))}
               </HeroStats>
             </div>
-            <div className="relative order-1 h-[50vh] lg:order-2 lg:h-auto">
-              <HeroMediaPanel
-                alt={imageAlt}
-                w={1200}
-                h={800}
-                className="absolute inset-0 size-full rounded-none"
+            <div className="relative order-1 lg:order-2 lg:col-span-7">
+              {/* Offset hairline frame behind the plate. */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 translate-x-3 translate-y-3 border border-foreground/20 lg:translate-x-4 lg:translate-y-4"
               />
-              <div className="absolute bottom-6 right-6 hidden rounded-lg bg-card/95 p-4 shadow-lg backdrop-blur-sm sm:block">
-                <p className="text-sm font-medium text-card-foreground">
-                  {featuredLabel}
-                </p>
-                <p className="text-sm text-muted-foreground">{featuredPrice}</p>
-                <CommerceAddItemButton
-                  lakebed={lakebed}
-                  item={{ label: featuredName, price: featuredPrice }}
-                  aria-label={`Add ${featuredName} to cart`}
-                  pendingChildren={<CommerceMutationSpinner />}
-                  className="mt-3 inline-flex items-center rounded-md bg-primary px-3 py-2 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
-                >
-                  Add featured
-                </CommerceAddItemButton>
+              <div className="relative aspect-[4/3] lg:aspect-[7/6]">
+                <HeroMediaPanel
+                  alt={imageAlt}
+                  w={1200}
+                  h={800}
+                  className="absolute inset-0 size-full rounded-none"
+                />
+                <div className="absolute -bottom-5 right-4 hidden max-w-[15rem] rounded-none border border-border bg-card p-4 text-card-foreground shadow-[6px_6px_0_0] shadow-foreground/10 sm:block">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                    <span aria-hidden="true" className="text-primary">
+                      01&nbsp;/&nbsp;
+                    </span>
+                    {featuredLabel}
+                  </p>
+                  <p className="mt-1 text-sm font-medium tabular-nums text-card-foreground">
+                    {featuredPrice}
+                  </p>
+                  <CommerceAddItemButton
+                    lakebed={lakebed}
+                    item={{ label: featuredName, price: featuredPrice }}
+                    aria-label={`Add ${featuredName} to cart`}
+                    pendingChildren={<CommerceMutationSpinner />}
+                    className="mt-3 inline-flex items-center rounded-none bg-foreground px-3 py-2 text-xs font-medium text-background transition-[background-color,transform] duration-150 hover:bg-foreground/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70 motion-reduce:active:translate-y-0"
+                  >
+                    Add featured
+                  </CommerceAddItemButton>
+                </div>
               </div>
             </div>
           </div>

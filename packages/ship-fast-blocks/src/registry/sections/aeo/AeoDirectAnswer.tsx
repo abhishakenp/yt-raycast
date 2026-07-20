@@ -7,10 +7,19 @@ import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { DirectAnswer } from '#/section-kit/DirectAnswer.tsx'
 
+/**
+ * AeoDirectAnswer — "Answer Terminal" direct-answer band styled as an AI answer
+ * card: a mono "DIRECT ANSWER" header row with a primary square bullet, the
+ * answer paragraph set large inside a hairline rounded-none card with a thick
+ * primary left rule, and the who-this-is-for line rendered as a cited-source
+ * footnote row with a "[1]" citation chip. Use immediately after the hero on
+ * home and key landing pages of AEO, generative-search, or brand-citation
+ * products.
+ */
 export const AeoDirectAnswer = defineCapsule({
   name: 'AeoDirectAnswer',
   description:
-    'A concise direct-answer band for answer-engine optimization: a short overview paragraph near the top of a page that clearly states what the product or site does, plus an optional who-this-is-for line. Use immediately after the hero on home and key landing pages.',
+    'A direct-answer band styled as an AI answer card for answer-engine optimization: a mono "DIRECT ANSWER" header with a primary square bullet, a large answer paragraph inside a hairline rounded-none card with a primary left rule, and an optional who-this-is-for line rendered as a cited-source footnote row with a "[1]" citation chip. Use immediately after the hero on home and key landing pages.',
   props: z.object({
     answer: z.string().optional(),
     whoFor: z.string().optional(),
@@ -39,17 +48,33 @@ export const AeoDirectAnswer = defineCapsule({
             <SectionHeading
               title={heading}
               align="left"
-              titleClassName="text-2xl font-semibold sm:text-3xl"
+              titleClassName="text-2xl font-semibold tracking-tight sm:text-3xl"
               className="mb-4"
             />
           ) : null}
-          <DirectAnswer className="mb-6">
-            <p className="text-base leading-relaxed text-foreground sm:text-lg">
+          <DirectAnswer className="-mx-2 mb-6 rounded-none border border-l-4 border-border border-l-primary bg-card p-0 sm:mx-0">
+            <div className="flex items-center gap-2 border-b border-border px-6 py-3">
+              <span aria-hidden="true" className="size-2 shrink-0 bg-primary" />
+              <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                Direct answer
+              </span>
+            </div>
+            <p className="px-6 pt-5 text-lg leading-relaxed text-foreground sm:text-xl">
               {answer}
             </p>
-            <p className="mt-4 text-sm text-muted-foreground">
-              <strong className="text-foreground">Who this is for:</strong>{' '}
-              {whoFor}
+            <p className="flex items-start gap-2 px-6 pb-6 pt-4 text-sm text-muted-foreground">
+              <sup
+                aria-hidden="true"
+                className="mt-1 inline-flex shrink-0 items-center rounded-full bg-primary/10 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-primary"
+              >
+                [1]
+              </sup>
+              <span>
+                <strong className="font-mono text-xs uppercase tracking-[0.12em] text-foreground">
+                  Who this is for:
+                </strong>{' '}
+                {whoFor}
+              </span>
             </p>
           </DirectAnswer>
         </Container>

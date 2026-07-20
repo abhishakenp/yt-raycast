@@ -16,19 +16,21 @@ import {
 import { hotelResortLakebed } from './hotel-resort-lakebed.ts'
 
 /**
- * HotelResortCta — full-bleed image call-to-action band for a luxury hotel /
- * resort & spa site. A centered section over a full-cover background photo with
- * a darkening token overlay: an uppercase eyebrow, a thin oversized headline, a
- * light supporting paragraph, and dual CTAs (solid light primary + glassy
- * outlined secondary, e.g. book + call). Cinematic and conversion-focused; CTAs
- * write Lakebed booking/inquiry intent. Use as a closing booking push for hotels, resorts,
- * spa retreats, villas, or inns. Background uses the alt-driven Image component.
- * Renders fully with no props via baked-in resort defaults.
+ * HotelResortCta — full-bleed image call-to-action band for a luxury-editorial
+ * hotel / resort & spa site. A centered section over a full-cover background
+ * photo under a darkening token overlay and a giant ghost serif watermark: a
+ * mono eyebrow above a hairline rule, a thin oversized serif headline, a light
+ * supporting paragraph, and dual sharp-cornered CTAs (solid light primary +
+ * hairline-outline glass ghost, both with press feedback, e.g. book + call).
+ * Cinematic and conversion-focused; CTAs write Lakebed booking/inquiry intent.
+ * Use as a closing booking push for hotels, resorts, spa retreats, villas, or
+ * inns. Background uses the alt-driven Image component. Renders fully with no
+ * props via baked-in resort defaults.
  */
 export const HotelResortCta = defineCapsule({
   name: 'HotelResortCta',
   description:
-    'Full-bleed image call-to-action band for a luxury hotel / resort & spa site: a centered section over a full-cover background photo with a darkening token overlay, an uppercase eyebrow, a thin oversized headline, a light supporting paragraph, and dual scoped Lakebed CTAs (solid light primary booking action + glassy outlined secondary inquiry action, e.g. book + call). Cinematic and conversion-focused; the background uses the alt-driven Image component. Use as a closing booking push for hotels, resorts, spa retreats, villas, or boutique inns.',
+    'Full-bleed image call-to-action band for a luxury-editorial hotel / resort & spa site: a centered section over a full-cover background photo under a darkening token overlay and a giant ghost serif watermark, with a mono eyebrow above a hairline rule, a thin oversized serif headline, a light supporting paragraph, and dual sharp-cornered scoped Lakebed CTAs (solid light primary booking action + hairline-outline glass secondary inquiry action, both with press feedback, e.g. book + call). Cinematic and conversion-focused; the background uses the alt-driven Image component. Use as a closing booking push for hotels, resorts, spa retreats, villas, or boutique inns.',
   props: z.object({
     /** Uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -62,14 +64,21 @@ export const HotelResortCta = defineCapsule({
         tone="muted"
         className={`relative overflow-hidden ${props.className ?? ''}`}
       >
-        <CtaBandInner>
-          <CtaBandEyebrow className="text-background/80 normal-case tracking-widest">
+        <CtaBandInner className="max-w-3xl px-6 py-28 lg:py-36">
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute -bottom-[0.14em] left-1/2 -translate-x-1/2 select-none font-serif text-[24vw] font-normal leading-none tracking-tighter text-background/[0.07]"
+          >
+            {heading.split(' ')[0]}
+          </span>
+          <CtaBandEyebrow className="font-mono text-[11px] font-medium normal-case tracking-[0.22em] text-background/80">
             {eyebrow}
           </CtaBandEyebrow>
-          <CtaBandTitle className="text-background font-light md:text-4xl lg:text-5xl">
+          <div aria-hidden="true" className="h-px w-16 bg-background/50" />
+          <CtaBandTitle className="font-serif text-4xl font-normal tracking-tight text-background md:text-5xl lg:text-6xl">
             {heading}
           </CtaBandTitle>
-          <CtaBandSubtitle className="text-background/80 font-light">
+          <CtaBandSubtitle className="font-light text-background/80">
             {description}
           </CtaBandSubtitle>
           <div className="absolute inset-0 -z-10">
@@ -80,9 +89,12 @@ export const HotelResortCta = defineCapsule({
               loading="lazy"
               className="size-full object-cover"
             />
-            <div className="absolute inset-0 bg-foreground/50" />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 bg-foreground/55"
+            />
           </div>
-          <div className="flex flex-col justify-center gap-4 sm:flex-row">
+          <div className="mt-2 flex flex-col justify-center gap-3 sm:flex-row">
             <HotelBookingActionButton
               lakebed={lakebed}
               intentLabel={primaryCta}
@@ -94,7 +106,7 @@ export const HotelResortCta = defineCapsule({
                   Sending
                 </>
               }
-              className="inline-flex items-center justify-center gap-2 rounded-md bg-background px-10 py-4 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
+              className="inline-flex items-center justify-center gap-2 rounded-none bg-background px-10 py-4 font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-foreground transition-[background-color,transform] duration-150 hover:bg-background/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
             >
               {primaryCta}
             </HotelBookingActionButton>
@@ -110,7 +122,7 @@ export const HotelResortCta = defineCapsule({
                   Sending
                 </>
               }
-              className="inline-flex items-center justify-center gap-2 rounded-md border border-background/30 bg-background/10 px-10 py-4 text-sm font-medium text-background backdrop-blur-sm transition-colors hover:bg-background/20 disabled:pointer-events-none disabled:opacity-70"
+              className="inline-flex items-center justify-center gap-2 rounded-none border border-background/70 px-10 py-4 font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-background backdrop-blur-sm transition-[background-color,color,transform] duration-150 hover:bg-background hover:text-foreground active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
             >
               {secondaryCta}
             </HotelBookingActionButton>

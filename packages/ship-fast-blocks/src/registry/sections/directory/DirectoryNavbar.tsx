@@ -19,18 +19,20 @@ import {
 } from './directory-interactions.tsx'
 
 /**
- * DirectoryNavbar — clean horizontal top navigation bar for a local-business
- * directory / listings site. A bordered card-surface header with a location-pin
- * glyph + wordmark on the left, a centered row of category nav links, and a
- * right-side cluster of a text "Sign In" action plus a filled primary
- * "List Your Business" CTA. Every link and CTA routes through route hrefs.
- * Use as the site header for local directories, business-listing marketplaces,
- * find-a-service platforms, review-and-discovery sites, or city guides.
+ * DirectoryNavbar — newsprint masthead navigation for a local-business
+ * directory / listings site. A paper-surface sticky header with a location-pin
+ * glyph + serif wordmark on the left, mono uppercase index-style category
+ * links in the center, and a right-side cluster of square hairline search /
+ * account chips plus a sharp-cornered primary "List Your Business" stamp CTA
+ * with press feedback. Every link and CTA routes through route hrefs; links
+ * beyond the fifth demote to large screens. Use as the site header for local
+ * directories, business-listing marketplaces, find-a-service platforms,
+ * review-and-discovery sites, or city guides.
  */
 export const DirectoryNavbar = defineCapsule({
   name: 'DirectoryNavbar',
   description:
-    'Clean horizontal top navigation bar for a local-business DIRECTORY / listings site: a bordered card-surface header with a location-pin glyph plus wordmark on the left, a centered row of category nav links, and a right-side cluster of a text Sign In action and a filled primary List Your Business CTA. Every link and CTA routes through route hrefs. Use as the site header for local directories, business-listing marketplaces, find-a-service / find-a-pro platforms, review-and-discovery sites, city guides, or yellow-pages-style apps.',
+    'Newsprint masthead navigation for a local-business DIRECTORY / listings site: a paper-surface sticky header with a location-pin glyph plus serif wordmark on the left, mono uppercase index-style category links in the center, and a right-side cluster of square hairline search and account chips plus a sharp-cornered primary List Your Business CTA with press feedback. Every link and CTA routes through route hrefs. Use as the site header for local directories, business-listing marketplaces, find-a-service / find-a-pro platforms, review-and-discovery sites, city guides, or yellow-pages-style apps.',
   props: z.object({
     /** Brand / directory name shown in the navbar. */
     brand: z.string().optional(),
@@ -72,20 +74,28 @@ export const DirectoryNavbar = defineCapsule({
       <SiteNav
         position="sticky"
         height="compact"
-        className={cn('bg-card', props.className)}
+        className={cn('bg-background', props.className)}
       >
-        <NavbarBrand href={homeTarget} className="gap-2">
-          <BrandLogo brand={brand}>
+        <NavbarBrand href={homeTarget}>
+          <BrandLogo brand={brand} className="flex items-center gap-2">
             <LogoImage
-              fallback={<PinLogo className="size-8 text-foreground" />}
+              className="size-7"
+              fallback={<PinLogo className="size-7 text-foreground" />}
             />
-            <LogoLabel className="text-xl font-semibold text-foreground" />
+            <LogoLabel className="font-serif text-xl font-bold tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
-        <NavbarNav>
-          {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+        <NavbarNav className="gap-1">
+          {nav.map((label, i) => (
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className={cn(
+                'rounded-none font-mono text-[11px] uppercase tracking-[0.14em]',
+                i >= 5 && 'hidden lg:inline-flex',
+              )}
+            >
               {label}
             </NavbarNavLink>
           ))}
@@ -94,19 +104,19 @@ export const DirectoryNavbar = defineCapsule({
         <NavbarActions className="gap-2 sm:gap-3">
           <DirectorySearchButton
             lakebed={lakebed}
-            buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            buttonClassName="inline-flex size-9 items-center justify-center rounded-none border border-border text-muted-foreground transition-colors hover:border-foreground hover:text-foreground active:translate-y-px"
           />
           <DirectoryAccountButton
             lakebed={lakebed}
             label={signIn}
-            buttonClassName="hidden size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
+            buttonClassName="hidden size-9 items-center justify-center rounded-none border border-border text-muted-foreground transition-colors hover:border-foreground hover:text-foreground active:translate-y-px sm:inline-flex"
           />
           <DirectoryLeadButton
             lakebed={lakebed}
             action={listCta}
             source="navbar"
             pendingChildren={<DirectoryMutationSpinner />}
-            className="hidden min-h-10 items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-60 md:inline-flex"
+            className="hidden min-h-9 items-center justify-center whitespace-nowrap rounded-none bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-60 md:inline-flex"
           >
             {listCta}
           </DirectoryLeadButton>
@@ -114,7 +124,7 @@ export const DirectoryNavbar = defineCapsule({
             brand={brand}
             homeTarget={homeTarget}
             nav={nav}
-            buttonClassName="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+            buttonClassName="inline-flex size-9 items-center justify-center rounded-none border border-border text-muted-foreground transition-colors hover:border-foreground hover:text-foreground active:translate-y-px md:hidden"
           />
         </NavbarActions>
       </SiteNav>

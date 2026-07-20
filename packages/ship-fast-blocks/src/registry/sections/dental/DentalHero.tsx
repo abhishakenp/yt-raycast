@@ -15,6 +15,7 @@ import {
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   LocalServiceBookingButton,
   LocalServiceMutationSpinner,
@@ -23,21 +24,25 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * DentalHero — split, two-column hero for a dental practice / dentist landing
- * page. On a soft muted band with blurred mint blobs: a left text column with a
- * pulsing "now accepting new patients" pill, a big headline whose middle word is
- * accented in the primary color, a lede paragraph, a filled primary "Schedule
- * Your Visit" CTA plus an outlined click-to-call phone button, and a row of
- * check-marked trust badges; the right column shows a rounded treatment-room
- * photo with a floating ratings card (overlapping dentist avatars + a star
- * rating). All CTAs route through section-kit route links; imagery uses the alt-driven
- * Image component. Use as the top hero for dentists, dental offices,
- * orthodontists, or family / cosmetic dental clinics.
+ * DentalHero — clinical Swiss-clean, asymmetric 7/5 hero for a dental practice
+ * / dentist landing page. On an airy background with a giant ghost "+" cross
+ * watermark: a left column with a square hairline status chip (mono
+ * "now accepting new patients" micro-label + single primary dot), a giant
+ * fluid-clamp extrabold headline whose middle word is accented in the primary
+ * color, a lede paragraph, a square filled-primary "Schedule Your Visit" CTA
+ * plus a square hairline click-to-call phone button (both with press
+ * feedback), and a hairline ledger row of trust items with primary tick
+ * dashes; the right column shows a hairline double-framed treatment-room photo
+ * with a square ratings card (overlapping dentist avatars + a star rating in
+ * tabular numerals) overlapping its corner. All CTAs route through section-kit
+ * route links; imagery uses the alt-driven Image component. Use as the top
+ * hero for dentists, dental offices, orthodontists, or family / cosmetic
+ * dental clinics.
  */
 export const DentalHero = defineCapsule({
   name: 'DentalHero',
   description:
-    'Split two-column hero for a dental practice / dentist landing page on a soft muted band with blurred mint blobs: a left text column with a pulsing now-accepting-new-patients pill, a big headline with an accented middle word, a lede paragraph, a filled primary Schedule-Your-Visit CTA plus an outlined click-to-call phone button, and a row of check-marked trust badges; a right column with a rounded treatment-room photo and a floating ratings card showing overlapping dentist avatars and a star rating. CTAs route through section-kit route links; imagery uses the Image component. Use as the top hero for dentists, dental offices, orthodontists, or family / cosmetic dental clinics.',
+    'Clinical Swiss-clean asymmetric 7/5 hero for a dental practice / dentist landing page: an airy band with a giant ghost "+" cross watermark, a left column with a square hairline status chip (mono now-accepting-new-patients micro-label), a giant fluid extrabold headline with an accented middle word, a lede paragraph, a square filled-primary Schedule-Your-Visit CTA plus a square hairline click-to-call phone button, and a hairline ledger row of trust items with primary tick dashes; a right column with a hairline double-framed treatment-room photo and a square ratings card showing overlapping dentist avatars and a tabular star rating. CTAs route through section-kit route links; imagery uses the Image component. Use as the top hero for dentists, dental offices, orthodontists, or family / cosmetic dental clinics.',
   props: z.object({
     badge: z.string().optional(),
     headingPre: z.string().optional(),
@@ -110,29 +115,32 @@ export const DentalHero = defineCapsule({
 
     return (
       <HeroSection
-        className={cn('relative overflow-hidden bg-muted', props.className)}
+        className={cn(
+          'relative overflow-hidden border-b border-border bg-background',
+          props.className,
+        )}
       >
-        <div aria-hidden="true" className="absolute inset-0 opacity-30">
-          <div className="absolute -right-40 -top-40 size-96 rounded-full bg-primary/20 blur-3xl" />
-          <div className="absolute -left-20 top-20 size-72 rounded-full bg-secondary/40 blur-3xl" />
-        </div>
-        <Container size="xl" className="relative py-20 lg:py-32">
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-            <div className="text-center lg:text-left">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-background px-4 py-2 shadow-sm">
-                <span className="size-2 animate-pulse rounded-full bg-primary" />
-                <span className="text-sm font-medium text-muted-foreground">
-                  {heroBadge}
-                </span>
+        <Watermark className="-top-16 right-[-4.5rem] text-[14rem] text-foreground/[0.04] sm:right-[-6rem] sm:text-[19rem] lg:-top-24 lg:text-[24rem]">
+          +
+        </Watermark>
+        <Container size="xl" className="relative py-16 sm:py-20 lg:py-28">
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-7">
+              <div className="mb-7 inline-flex items-center gap-2.5 border border-border bg-background px-3.5 py-2">
+                <span
+                  aria-hidden="true"
+                  className="size-1.5 rounded-full bg-primary"
+                />
+                <MonoTag>{heroBadge}</MonoTag>
               </div>
-              <HeroHeading className="mb-6">
+              <HeroHeading className="mb-6 max-w-2xl text-[clamp(2.5rem,6vw,4.75rem)] font-extrabold leading-[0.98] tracking-tight">
                 {heroPre} <HeroHighlight>{heroHighlight}</HeroHighlight>{' '}
                 {heroPost}
               </HeroHeading>
-              <HeroSubheading className="mx-auto mb-8 mt-0 max-w-xl lg:mx-0">
+              <HeroSubheading className="mb-9 mt-0 max-w-xl text-base leading-relaxed sm:text-lg">
                 {heroSub}
               </HeroSubheading>
-              <HeroActions className="mt-0 flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
+              <HeroActions className="mt-0 flex flex-col gap-3 sm:flex-row sm:gap-4">
                 <LocalServiceBookingButton
                   lakebed={lakebed}
                   intentLabel={heroPrimary}
@@ -141,7 +149,7 @@ export const DentalHero = defineCapsule({
                   pendingChildren={
                     <LocalServiceMutationSpinner className="text-primary-foreground" />
                   }
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-4 text-lg font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+                  className="inline-flex items-center justify-center gap-2 rounded-none bg-primary px-7 py-3.5 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
                 >
                   {heroPrimary}
                   <svg
@@ -160,7 +168,7 @@ export const DentalHero = defineCapsule({
                 <HeroCta
                   asChild
                   variant="outline"
-                  className="gap-2 rounded-full bg-background px-8 py-4 text-lg font-semibold"
+                  className="gap-2 rounded-none border-foreground/25 bg-background px-7 py-3.5 text-base font-semibold text-foreground transition-colors hover:bg-muted active:translate-y-px"
                 >
                   <NavbarRouteLink href={`Call ${heroPhone}`}>
                     <PhoneIcon className="size-5" />
@@ -168,57 +176,54 @@ export const DentalHero = defineCapsule({
                   </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
-              <HeroSocialProof className="mt-10 justify-center gap-6 lg:justify-start">
+              <HeroSocialProof className="mt-12 grid max-w-xl grid-cols-1 gap-0 border-t border-border sm:grid-cols-3">
                 {heroBadges.map((b) => (
-                  <HeroSocialProofItem key={b}>
-                    <svg
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      className="size-5 text-primary"
+                  <HeroSocialProofItem
+                    key={b}
+                    className="gap-3 border-b border-border py-3.5 text-sm text-muted-foreground sm:border-b-0 sm:pr-4"
+                  >
+                    <span
                       aria-hidden="true"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm3.707-9.293a1 1 0 0 0-1.414-1.414L9 10.586 7.707 9.293a1 1 0 0 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l4-4z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
+                      className="h-px w-4 shrink-0 bg-primary"
+                    />
                     <span>{b}</span>
                   </HeroSocialProofItem>
                 ))}
               </HeroSocialProof>
             </div>
-            <div className="relative">
+            <div className="relative lg:col-span-5">
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -inset-3 border border-border sm:-inset-4"
+              />
               <HeroMediaPanel
                 alt={heroImageAlt}
                 w={1200}
                 h={900}
-                className="aspect-[4/3] shadow-2xl rounded-3xl"
+                className="aspect-[4/3] rounded-none border border-border"
               />
-              <div className="absolute -bottom-6 -left-6 max-w-xs rounded-2xl bg-background p-6 shadow-xl">
-                <div className="flex items-center gap-4">
-                  <div className="flex -space-x-3">
-                    {avatars.slice(0, 3).map((alt) => (
-                      <Image
-                        key={alt}
-                        alt={alt}
-                        w={100}
-                        h={100}
-                        className="size-10 rounded-full border-2 border-background object-cover"
-                      />
-                    ))}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1">
-                      <Star className="size-5 text-primary" />
-                      <span className="font-bold text-foreground">
-                        {heroRating}
-                      </span>
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      {heroReviews}
+              <div className="absolute -bottom-6 -left-3 flex max-w-xs items-center gap-4 border border-border bg-background p-5 sm:-left-10">
+                <div className="flex -space-x-3">
+                  {avatars.slice(0, 3).map((alt) => (
+                    <Image
+                      key={alt}
+                      alt={alt}
+                      w={100}
+                      h={100}
+                      className="size-10 rounded-full border-2 border-background object-cover"
+                    />
+                  ))}
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <Star className="size-4 text-primary" />
+                    <span className="text-lg font-extrabold tracking-tight text-foreground tabular-nums">
+                      {heroRating}
                     </span>
                   </div>
+                  <MonoTag tone="faint" className="tracking-[0.12em]">
+                    {heroReviews}
+                  </MonoTag>
                 </div>
               </div>
             </div>

@@ -14,25 +14,29 @@ import {
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * KidsEducationHero — bright, playful split hero for a kids / family learning
- * platform. Left side: a live-learners pill with a pulsing dot, a bold headline
- * with a gradient "adventure" highlight, a supporting paragraph, dual rounded
- * CTAs (filled primary with arrow + outlined play-icon secondary), and an
- * inline trust-points row with check icons. Right side: a large rounded hero
- * photo with a soft overlay plus two floating cards — a star-rating card anchored
- * bottom-left and an avatar-stack "+2k today" card anchored top-right. Decorative
- * blurred glow orbs sit behind everything. Every CTA routes through section-kit route links.
- * Use as the opening hero for kids-education startups, children's e-learning,
- * family learning apps, and playful course platforms. Renders fully with no
- * props via baked-in "WonderLearn" defaults.
+ * KidsEducationHero — playful-primary split hero for a kids / family learning
+ * platform under a giant ghost watermark, on an asymmetric 7:5 grid. Left side:
+ * a rotated sticker status pill (pulsing dot), an extrabold headline whose
+ * highlight word sits on a tilted bg-primary marker block, a supporting
+ * paragraph, dual sharp-cornered block CTAs (dark primary with arrow + outlined
+ * play-icon secondary, both with hard offset token shadows and mechanical press
+ * feedback), and an inline trust-points row with check icons. Right side: the
+ * hero photo in a tilted 2px-bordered sharp plate floating over a primary-tinted
+ * offset frame, plus two sharp-bordered sticker cards with hard shadows — a
+ * star-rating card bottom-left and an avatar-stack "+2k today" card top-right.
+ * Every CTA routes through section-kit route links. Use as the opening hero for
+ * kids-education startups, children's e-learning, family learning apps, and
+ * playful course platforms. Renders fully with no props via baked-in
+ * "WonderLearn" defaults.
  */
 export const KidsEducationHero = defineCapsule({
   name: 'KidsEducationHero',
   description:
-    "Bright, playful split hero for a kids / family learning platform: left side with a live-learners pill (pulsing dot), bold headline with a gradient 'adventure' highlight, supporting paragraph, dual rounded CTAs (filled primary with arrow + outlined play-icon secondary), and an inline trust-points row with check icons; right side has a large rounded hero photo with soft overlay plus two floating cards (a star-rating card bottom-left and an avatar-stack '+2k today' card top-right). Decorative blurred glow orbs sit behind. CTAs route through section-kit route links. Use as the opening hero for kids-education startups, children's e-learning, family learning apps, and playful course platforms.",
+    "Playful-primary split hero for a kids / family learning platform under a giant ghost watermark on an asymmetric 7:5 grid: left side with a rotated sticker status pill (pulsing dot), an extrabold headline whose highlight word sits on a tilted bg-primary marker block, a supporting paragraph, dual sharp-cornered block CTAs (dark primary with arrow + outlined play-icon secondary, hard offset token shadows + press feedback), and an inline trust-points row with check icons; right side with the hero photo in a tilted 2px-bordered sharp plate floating over a primary-tinted offset frame, plus two sharp-bordered sticker cards with hard shadows (a star-rating card bottom-left and an avatar-stack '+2k today' card top-right). CTAs route through section-kit route links. Use as the opening hero for kids-education startups, children's e-learning, family learning apps, and playful course platforms.",
   props: z.object({
     /** Live-learners status pill text. */
     badge: z.string().optional(),
@@ -130,49 +134,49 @@ export const KidsEducationHero = defineCapsule({
 
     return (
       <HeroSection
-        className={cn(
-          'relative overflow-hidden bg-background',
-          props.className,
-        )}
+        className={cn('relative overflow-hidden bg-card', props.className)}
       >
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/10 opacity-70"
-        />
-        <div
-          aria-hidden="true"
-          className="absolute left-10 top-20 size-72 rounded-full bg-primary/20 opacity-30 blur-3xl"
-        />
-        <div
-          aria-hidden="true"
-          className="absolute bottom-20 right-10 size-96 rounded-full bg-secondary/20 opacity-30 blur-3xl"
-        />
+        <Watermark className="-right-8 top-4 text-[7rem] sm:text-[11rem] lg:text-[15rem]">
+          LEARN
+        </Watermark>
+        <Container size="xl" className="relative py-16 lg:py-24">
+          <div className="grid items-center gap-14 lg:grid-cols-12 lg:gap-10">
+            {/* Copy — the wide 7-col side */}
+            <div className="order-1 lg:col-span-7">
+              <div className="mb-6 flex flex-wrap items-center gap-3">
+                <HeroBadge
+                  variant="pulsing-dot"
+                  className="-rotate-1 gap-2 rounded-full border-2 border-foreground bg-background px-3.5 py-1.5 shadow-[3px_3px_0_0] shadow-primary/40"
+                >
+                  <span className="size-2 animate-pulse rounded-full bg-primary" />
+                  <span className="font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-foreground">
+                    {badge}
+                  </span>
+                </HeroBadge>
+                <MonoTag className="hidden sm:inline">Ages 4-12</MonoTag>
+              </div>
 
-        <Container size="xl" className="relative py-20 lg:py-32">
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-            <div className="text-center lg:text-left">
-              <HeroBadge
-                variant="pulsing-dot"
-                className="mb-6 bg-background shadow-sm"
-              >
-                <span className="size-2 animate-pulse rounded-full bg-secondary" />
-                <span className="text-sm font-medium text-muted-foreground">
-                  {badge}
-                </span>
-              </HeroBadge>
-              <HeroHeading className="mb-6">
+              <HeroHeading className="mb-5 text-4xl font-extrabold leading-[0.98] tracking-tighter text-foreground sm:text-5xl lg:text-6xl">
                 {headingTop}{' '}
-                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                  {highlight}
+                <span className="relative inline-block whitespace-nowrap">
+                  <span
+                    aria-hidden="true"
+                    className="absolute -inset-x-2 inset-y-0.5 -rotate-1 bg-primary"
+                  />
+                  <span className="relative text-primary-foreground">
+                    {highlight}
+                  </span>
                 </span>
               </HeroHeading>
-              <HeroSubheading className="mx-auto mb-8 mt-0 max-w-xl sm:text-xl lg:mx-0">
+
+              <HeroSubheading className="mb-8 mt-0 max-w-xl text-lg">
                 {subheading}
               </HeroSubheading>
-              <HeroActions className="mt-0 flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
+
+              <HeroActions className="mt-0 grid grid-cols-1 gap-4 sm:flex sm:flex-wrap">
                 <HeroCta
                   asChild
-                  className="gap-2 rounded-full bg-foreground px-8 py-4 font-semibold text-background shadow-lg transition-all hover:bg-foreground/90"
+                  className="gap-2 rounded-none border-2 border-foreground bg-foreground px-7 py-3.5 text-base font-bold text-background shadow-[5px_5px_0_0] shadow-primary/40 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0] hover:shadow-primary/40 active:translate-y-px active:shadow-none motion-reduce:transform-none"
                 >
                   <NavbarRouteLink href={primaryCta}>
                     {primaryCta}
@@ -182,7 +186,7 @@ export const KidsEducationHero = defineCapsule({
                 <HeroCta
                   asChild
                   variant="outline"
-                  className="gap-2 rounded-full border-2 border-border bg-card px-8 py-4 font-semibold transition-all hover:border-foreground/20 hover:bg-muted"
+                  className="gap-2 rounded-none border-2 border-foreground bg-background px-7 py-3.5 text-base font-bold text-foreground shadow-[5px_5px_0_0] shadow-foreground/20 transition-all duration-150 hover:-translate-y-0.5 hover:bg-muted hover:shadow-[6px_6px_0_0] hover:shadow-foreground/20 active:translate-y-px active:shadow-none motion-reduce:transform-none"
                 >
                   <NavbarRouteLink href={secondaryCta}>
                     <PlayIcon />
@@ -190,55 +194,57 @@ export const KidsEducationHero = defineCapsule({
                   </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
-              <HeroSocialProof className="mt-8 justify-center gap-6 lg:justify-start">
+
+              <HeroSocialProof className="mt-8 gap-x-6 gap-y-2">
                 {trustPoints.map((point) => (
-                  <HeroSocialProofItem key={point}>
-                    <CheckCircle className="size-5 text-secondary" />
-                    <span>{point}</span>
+                  <HeroSocialProofItem key={point} className="gap-2">
+                    <CheckCircle className="size-5 text-primary" />
+                    <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                      {point}
+                    </span>
                   </HeroSocialProofItem>
                 ))}
               </HeroSocialProof>
             </div>
 
-            <div className="relative">
-              <div className="relative overflow-hidden rounded-3xl shadow-2xl">
-                <Image
-                  alt={imageAlt}
-                  w={800}
-                  h={600}
-                  loading="eager"
-                  className="h-auto w-full object-cover"
-                />
-                <div
+            {/* Media — the narrow 5-col side */}
+            <div className="order-2 lg:col-span-5">
+              <div className="relative rotate-1 lg:mt-6">
+                <span
                   aria-hidden="true"
-                  className="absolute inset-0 bg-gradient-to-t from-foreground/20 to-transparent"
+                  className="pointer-events-none absolute inset-0 translate-x-3 translate-y-3 border-2 border-primary/40 bg-primary/10"
                 />
-              </div>
-              <div className="absolute -bottom-6 -left-6 flex items-center gap-3 rounded-2xl bg-card p-4 shadow-xl">
-                <div className="grid size-12 place-items-center rounded-xl bg-primary/15 text-primary">
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                  </svg>
+                <div className="relative overflow-hidden rounded-none border-2 border-foreground bg-muted">
+                  <Image
+                    alt={imageAlt}
+                    w={800}
+                    h={600}
+                    loading="eager"
+                    className="aspect-[4/3] size-full object-cover"
+                  />
                 </div>
-                <div>
-                  <p className="font-bold text-card-foreground">
-                    {ratingValue}
-                  </p>
-                  <p className="text-sm text-muted-foreground">{ratingLabel}</p>
+                <div className="absolute -bottom-5 -left-3 flex -rotate-2 items-center gap-3 rounded-none border-2 border-foreground bg-background p-3.5 shadow-[4px_4px_0_0] shadow-foreground sm:-left-5">
+                  <div className="grid size-11 shrink-0 place-items-center rounded-none border-2 border-foreground bg-primary text-primary-foreground">
+                    <svg
+                      width="22"
+                      height="22"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-extrabold tabular-nums text-foreground">
+                      {ratingValue}
+                    </p>
+                    <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
+                      {ratingLabel}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="absolute -right-4 -top-4 rounded-2xl bg-card p-4 shadow-xl">
-                <div className="flex items-center gap-2">
+                <div className="absolute -right-2 -top-4 flex rotate-2 items-center gap-2 rounded-none border-2 border-foreground bg-background p-2.5 shadow-[4px_4px_0_0] shadow-primary/40">
                   <div className="flex -space-x-2">
                     {[
                       'Happy child learning',
@@ -250,11 +256,11 @@ export const KidsEducationHero = defineCapsule({
                         alt={a}
                         w={100}
                         h={100}
-                        className="size-8 rounded-full border-2 border-card object-cover"
+                        className="size-8 rounded-full border-2 border-foreground object-cover"
                       />
                     ))}
                   </div>
-                  <span className="text-sm font-medium text-muted-foreground">
+                  <span className="font-mono text-[11px] font-bold uppercase tracking-[0.1em] text-foreground">
                     {avatarBadge}
                   </span>
                 </div>

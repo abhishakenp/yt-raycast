@@ -11,18 +11,20 @@ import {
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * AutoDealershipLogos — trusted-brands wordmark strip for an auto dealership
- * site. A bordered, card-surfaced band with a small uppercase caption above a
- * responsive 3-up / 6-up grid of brand-name wordmarks (BMW, Mercedes, Audi,
- * Lexus, Tesla, Toyota) rendered at reduced opacity with a hover-to-full state.
- * Each wordmark routes through section-kit route links. Use as a social-proof / inventory-
- * coverage strip directly under the hero for dealerships, used-car lots, or
- * multi-marque showrooms. Renders fully with no props via baked-in defaults.
+ * AutoDealershipLogos — showroom-kinetic marque strip for an auto dealership
+ * site. A hairline border-bottomed band where a mono uppercase caption with a
+ * primary skew tick sits on the left and a row of oversized italic font-black
+ * uppercase brand wordmarks (BMW, Mercedes, Audi, Lexus, Tesla, Toyota)
+ * stretches across the rest of the band at ghost opacity, snapping to full
+ * foreground on hover. Each wordmark routes through section-kit route links.
+ * Use as a social-proof / inventory-coverage strip directly under the hero for
+ * dealerships, used-car lots, or multi-marque showrooms. Renders fully with no
+ * props via baked-in defaults.
  */
 export const AutoDealershipLogos = defineCapsule({
   name: 'AutoDealershipLogos',
   description:
-    'Trusted-brands wordmark strip for an auto dealership site: a bordered, card-surfaced band with a small uppercase caption above a responsive 3-up / 6-up grid of brand-name wordmarks (BMW, Mercedes, Audi, Lexus, Tesla, Toyota) at reduced opacity with a hover-to-full state. Each wordmark routes through section-kit route links. Use as a social-proof / inventory-coverage strip directly under the hero for dealerships, used-car lots, or multi-marque showrooms.',
+    'Showroom-kinetic marque strip for an auto dealership site: a hairline border-bottomed band with a mono uppercase caption and primary skew tick on the left and a row of oversized italic font-black uppercase brand wordmarks (BMW, Mercedes, Audi, Lexus, Tesla, Toyota) at ghost opacity that snap to full foreground on hover. Each wordmark routes through section-kit route links. Use as a social-proof / inventory-coverage strip directly under the hero for dealerships, used-car lots, or multi-marque showrooms.',
   props: z.object({
     /** Uppercase caption above the wordmark grid. */
     heading: z.string().optional(),
@@ -39,18 +41,34 @@ export const AutoDealershipLogos = defineCapsule({
     return (
       <LogoStrip
         className={cn(
-          'border-b border-border bg-card px-4 py-12 sm:px-6 lg:px-8',
+          'border-b border-border bg-background px-4 py-10 sm:px-6 lg:px-8',
           props.className,
         )}
       >
-        <LogoStripLabel className="tracking-wider">{heading}</LogoStripLabel>
-        <LogoStripItems layout="grid" className="mt-8">
-          {brands.filter(Boolean).map((logo) => (
-            <LogoStripItem key={logo} variant="opacity-hover" asChild>
-              <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
-            </LogoStripItem>
-          ))}
-        </LogoStripItems>
+        <div className="mx-auto flex max-w-7xl flex-col gap-6 lg:flex-row lg:items-center lg:gap-12">
+          <LogoStripLabel className="flex shrink-0 items-center gap-3 text-left font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground">
+            <span
+              aria-hidden="true"
+              className="inline-block h-2 w-6 -skew-x-12 bg-primary"
+            />
+            {heading}
+          </LogoStripLabel>
+          <LogoStripItems
+            layout="flex"
+            className="flex-1 justify-start gap-x-8 gap-y-3 lg:justify-between"
+          >
+            {brands.filter(Boolean).map((logo) => (
+              <LogoStripItem
+                key={logo}
+                variant="opacity-hover"
+                asChild
+                className="text-xl font-black uppercase italic tracking-tight text-foreground/25 transition-colors duration-150 hover:text-foreground sm:text-2xl"
+              >
+                <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
+              </LogoStripItem>
+            ))}
+          </LogoStripItems>
+        </div>
       </LogoStrip>
     )
   },

@@ -19,27 +19,32 @@ import {
 } from '../commerce/commerce-interactions.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { StarRating } from '#/section-kit/StarRating.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * BeautyStoreProducts — shoppable bestsellers product grid for a beauty / skincare /
- * cosmetics e-commerce landing page. A section eyebrow + heading on the left with a
- * "view all" link on the right, above a responsive 2-to-4-column grid of product
- * cards. Each card has an alt-driven square product photo zooming on hover, an
- * optional status badge (Bestseller / Clean / New mapped to primary / secondary /
- * accent), a floating add-to-cart button that appears on hover, the brand name,
- * product title, star rating strip + review count, and price. Add-to-cart writes
- * to the shared Lakebed cart; view-all routes through section-kit route links. Use on beauty store homepages, product showcase
- * sections, skincare shop grids, makeup bestsellers, or any e-commerce product
- * listing. Renders fully with no props via 8 clean-beauty baked-in defaults.
+ * BeautyStoreProducts — editorial-vogue shoppable bestsellers grid for a beauty /
+ * skincare / cosmetics e-commerce landing page. A hairline-underlined masthead row:
+ * mono index rail ("N° 02" — rule — eyebrow) and a serif italic heading on the left
+ * with an uppercase mono "view all" link on the right. Below, a staggered 2-to-4
+ * column grid of sharp-edged product plates — every even plate drops on a lower
+ * baseline — each with an alt-driven square product photo zooming slowly on hover,
+ * an optional hairline mono status chip (Bestseller in primary, Clean / New in
+ * foreground), a floating sharp add-to-cart button appearing on hover, mono
+ * uppercase brand name, product title, star rating strip + review count under a
+ * hairline rule, and a serif price. Add-to-cart writes to the shared Lakebed cart;
+ * view-all routes through section-kit route links. Use on beauty store homepages,
+ * product showcase sections, skincare shop grids, makeup bestsellers, or any
+ * e-commerce product listing. Renders fully with no props via 8 clean-beauty
+ * baked-in defaults.
  */
 export const BeautyStoreProducts = defineCapsule({
   name: 'BeautyStoreProducts',
   description:
-    "Shoppable bestsellers product grid for a beauty / skincare / cosmetics e-commerce landing page: a section eyebrow and heading on the left with a 'view all' link on the right, above a responsive 2-to-4-column grid of product cards. Each card has an alt-driven square product photo that zooms on hover, an optional status badge (Bestseller / Clean / New), a floating add-to-cart button that appears on hover and writes to the shared Lakebed cart, brand name, product title, star rating strip + review count, and price. Use on beauty store homepages, skincare shop grids, makeup bestsellers, or any e-commerce product listing.",
+    "Editorial-vogue shoppable bestsellers grid for a beauty / skincare / cosmetics e-commerce landing page: a hairline-underlined masthead row with a mono index rail and serif italic heading on the left and an uppercase mono 'view all' link on the right, above a staggered 2-to-4-column grid of sharp-edged product plates where every even plate drops to a lower baseline. Each plate has an alt-driven square product photo that zooms slowly on hover, an optional hairline mono status chip (Bestseller / Clean / New), a floating sharp add-to-cart button that appears on hover and writes to the shared Lakebed cart, mono uppercase brand name, product title, star rating strip + review count under a hairline rule, and a serif price. Use on beauty store homepages, skincare shop grids, makeup bestsellers, or any e-commerce product listing.",
   props: z.object({
     /** Section eyebrow label. */
     eyebrow: z.string().optional(),
@@ -172,52 +177,68 @@ export const BeautyStoreProducts = defineCapsule({
       </svg>
     )
 
-    const badgeClass = (badge: string) => {
-      if (badge === 'Clean') return 'bg-secondary text-secondary-foreground'
-      if (badge === 'New') return 'bg-accent text-accent-foreground'
-      return 'bg-primary text-primary-foreground'
-    }
+    const badgeClass = (badge: string) =>
+      badge === 'Bestseller' ? 'text-primary' : 'text-foreground'
 
     return (
-      <section className={cn('bg-muted/40 py-20 lg:py-28', props.className)}>
+      <section
+        className={cn(
+          'bg-muted/40 py-16 pb-24 sm:py-20 lg:py-24 lg:pb-36',
+          props.className,
+        )}
+      >
         <Container>
-          <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <SectionHeading
-              align="left"
-              eyebrow={eyebrow}
-              title={heading}
-              className="gap-0"
-              eyebrowClassName="mb-2 block text-xs font-semibold uppercase tracking-widest text-primary"
-              titleClassName="font-serif text-3xl font-semibold text-foreground sm:text-4xl"
-            />
-            <NavbarRouteLink
-              className="flex items-center gap-1 text-sm font-medium text-foreground transition-colors hover:text-primary"
-              href={viewAll}
-            >
-              {viewAll}
-              <ArrowRight className="size-4" />
-            </NavbarRouteLink>
+          <div className="mb-10 border-b border-border pb-6 sm:mb-14">
+            {/* Mono index rail above the masthead row. */}
+            <div className="mb-5 flex items-center gap-4">
+              <MonoTag className="shrink-0 text-foreground">N° 02</MonoTag>
+              <span
+                aria-hidden="true"
+                className="h-px w-10 bg-border sm:max-w-24 sm:flex-1"
+              />
+              <MonoTag tone="primary" className="min-w-0">
+                {eyebrow}
+              </MonoTag>
+            </div>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <SectionHeading
+                align="left"
+                title={heading}
+                className="gap-0"
+                titleClassName="font-serif text-4xl font-medium italic tracking-tight text-foreground sm:text-5xl"
+              />
+              <NavbarRouteLink
+                className="group flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-foreground transition-colors hover:text-primary"
+                href={viewAll}
+              >
+                {viewAll}
+                <ArrowRight className="size-3.5 transition-transform duration-150 group-hover:translate-x-1" />
+              </NavbarRouteLink>
+            </div>
           </div>
 
-          <ResponsiveGrid cols="2-lg-4" className="sm:gap-6 lg:gap-8 gap-4">
+          <ResponsiveGrid
+            cols="2-lg-4"
+            className="gap-4 sm:gap-6 lg:gap-8 [&>*:nth-child(even)]:translate-y-6 lg:[&>*:nth-child(even)]:translate-y-12"
+          >
             {visibleItems.map((product) => (
               <ProductCard
                 key={product.title}
                 variant="elevated"
-                className="shadow-sm transition-shadow hover:shadow-lg"
+                className="rounded-none border border-border shadow-none transition-colors duration-150 hover:border-foreground/40"
               >
-                <ProductCardImage>
+                <ProductCardImage className="rounded-none">
                   <Image
                     alt={`${product.brand} ${product.title} product photo`}
                     w={600}
                     h={600}
                     loading="lazy"
-                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="size-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
                   />
                   {product.badge ? (
                     <ProductCardBadge
                       className={cn(
-                        'rounded-full font-semibold',
+                        'rounded-none border border-foreground/20 bg-background/90 font-mono text-[9px] font-semibold uppercase tracking-[0.2em] backdrop-blur-sm',
                         badgeClass(product.badge),
                       )}
                     >
@@ -232,33 +253,35 @@ export const BeautyStoreProducts = defineCapsule({
                         price: product.price,
                       }}
                       aria-label={`Add ${product.title} to cart`}
-                      className="flex size-10 items-center justify-center rounded-full bg-card text-card-foreground opacity-0 shadow-md transition-opacity hover:bg-foreground hover:text-background disabled:pointer-events-none disabled:opacity-70 group-hover:opacity-100"
+                      className="flex size-10 items-center justify-center rounded-none border border-foreground/20 bg-background/90 text-foreground opacity-0 backdrop-blur-sm transition-opacity hover:bg-foreground hover:text-background active:translate-y-px disabled:pointer-events-none disabled:opacity-70 group-hover:opacity-100"
                     >
                       <PlusIcon />
                     </CommerceAddItemButton>
                   </ProductCardActions>
                 </ProductCardImage>
-                <ProductCardContent className="p-4">
-                  <p className="mb-1 text-xs text-muted-foreground">
+                <ProductCardContent className="p-4 sm:p-5">
+                  <p className="mb-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
                     {product.brand}
                   </p>
-                  <h3 className="mb-2 line-clamp-2 font-medium text-card-foreground">
+                  <h3 className="mb-3 line-clamp-2 text-sm font-medium leading-snug text-card-foreground sm:text-base">
                     {product.title}
                   </h3>
-                  <div className="mb-3 flex items-center gap-2">
-                    <StarRating
-                      rating={5}
-                      size="sm"
-                      color="primary"
-                      className="[&_svg]:size-3"
-                    />
-                    <span className="text-xs text-muted-foreground">
-                      {product.reviews}
-                    </span>
+                  <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5 border-t border-border pt-3">
+                    <div className="flex items-center gap-2">
+                      <StarRating
+                        rating={5}
+                        size="sm"
+                        color="primary"
+                        className="[&_svg]:size-3"
+                      />
+                      <span className="font-mono text-[10px] text-muted-foreground">
+                        {product.reviews}
+                      </span>
+                    </div>
+                    <p className="font-serif text-lg font-medium text-card-foreground">
+                      {product.price}
+                    </p>
                   </div>
-                  <p className="font-semibold text-card-foreground">
-                    {product.price}
-                  </p>
                 </ProductCardContent>
               </ProductCard>
             ))}

@@ -11,22 +11,25 @@ import {
 } from '#/section-kit/PortfolioGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * IllustratorWork — a selected-work project gallery for an illustrator /
- * visual-artist portfolio on a raised card-colored band. A header row pairs an
- * uppercase accent eyebrow + serif heading with a "view all" link (arrow) on
- * the right, above a responsive 3-up grid of clickable projects; each project
- * is a tall 4:5 image that zooms on hover with a serif title and a small meta
- * line beneath. Every item and the view-all link route through section-kit route links. Use
- * to showcase an artist's recent books, editorial spreads, campaigns, and
- * personal projects. Renders fully with no props via baked-in defaults.
+ * IllustratorWork — a selected-work gallery for an illustrator / visual-artist
+ * portfolio on a raised card band. A header row pairs a mono index micro-label +
+ * serif heading with a rounded-full "view all" sticker link, above a responsive
+ * 3-up grid of clickable projects laid out with a staggered vertical rhythm;
+ * each project is a tall 4:5 image pinned in a hand-drawn dashed frame that
+ * lifts on hover, captioned with a serif title and a mono meta line. A giant
+ * ghost "work" watermark drifts behind. Every item and the view-all link route
+ * through route links. Use to showcase an artist's recent books, editorial
+ * spreads, campaigns, and personal projects. Renders fully with no props via
+ * baked-in defaults.
  */
 export const IllustratorWork = defineCapsule({
   name: 'IllustratorWork',
   description:
-    "Selected-work project gallery for an illustrator / visual-artist portfolio on a raised card-colored band: a header row pairing an uppercase accent eyebrow + serif heading with a 'view all' arrow link, above a responsive 3-up grid of clickable projects, each a tall 4:5 image that zooms on hover with a serif title and small meta line. Items and the view-all link route through section-kit route links. Use to showcase an artist's recent books, editorial spreads, campaigns, and personal projects.",
+    "Selected-work gallery for an illustrator / visual-artist portfolio on a raised card band: a header row pairing a mono index micro-label + serif heading with a rounded-full 'view all' sticker link, above a responsive 3-up grid of clickable projects with a staggered vertical rhythm, each a tall 4:5 image pinned in a hand-drawn dashed frame that lifts on hover, captioned with a serif title and a mono meta line, with a giant ghost 'work' watermark behind. Items and the view-all link route through route links. Use to showcase an artist's recent books, editorial spreads, campaigns, and personal projects.",
   props: z.object({
     /** Uppercase accent eyebrow label. */
     eyebrow: z.string().optional(),
@@ -78,33 +81,46 @@ export const IllustratorWork = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-card px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-28',
+          'relative isolate overflow-hidden bg-card px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-28',
           props.className,
         )}
       >
-        <Container size="xl">
-          <div className="mb-12 flex flex-col justify-between gap-4 sm:mb-16 sm:flex-row sm:items-end">
+        <Watermark className="-left-4 bottom-4 text-[10rem] leading-none sm:text-[16rem]">
+          work
+        </Watermark>
+        <Container size="xl" className="relative">
+          <div className="mb-12 flex flex-col justify-between gap-4 border-b-2 border-dashed border-border pb-8 sm:mb-16 sm:flex-row sm:items-end">
             <SectionHeading
               align="left"
               eyebrow={eyebrow}
               title={heading}
               className="gap-0"
-              eyebrowClassName="mb-2 text-sm font-medium uppercase tracking-wider text-chart-1"
+              eyebrowClassName="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-primary"
               titleClassName="font-serif text-3xl sm:text-4xl lg:text-5xl"
             />
             <NavbarRouteLink
-              className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="inline-flex w-fit -rotate-1 items-center gap-1.5 rounded-full border-2 border-dashed border-foreground/60 px-4 py-2 font-mono text-xs uppercase tracking-[0.12em] text-foreground transition-[transform,border-color] duration-150 hover:-translate-y-0.5 hover:border-foreground active:translate-y-0"
               href={viewAll}
             >
               {viewAll}
               <ArrowRight className="size-4" />
             </NavbarRouteLink>
           </div>
-          <PortfolioGrid cols="1-2-3" className="gap-4 sm:gap-6">
-            {items.map((proj) => (
-              <PortfolioItem key={proj.title} className="block w-full" asChild>
+          <PortfolioGrid cols="1-2-3" className="gap-6 sm:gap-8">
+            {items.map((proj, i) => (
+              <PortfolioItem
+                key={proj.title}
+                className={cn(
+                  'block w-full',
+                  i % 3 === 1 && 'md:translate-y-10',
+                )}
+                asChild
+              >
                 <NavbarRouteLink href={proj.title}>
-                  <PortfolioMedia aspect="4-5" className="mb-4">
+                  <PortfolioMedia
+                    aspect="4-5"
+                    className="mb-4 rounded-none border-2 border-dashed border-foreground/50 transition-[transform,box-shadow] duration-200 group-hover:-translate-y-1 group-hover:border-foreground group-hover:shadow-[6px_6px_0_0_var(--color-foreground)]"
+                  >
                     <Image
                       alt={proj.title}
                       w={600}
@@ -115,7 +131,15 @@ export const IllustratorWork = defineCapsule({
                   </PortfolioMedia>
                   <PortfolioCaption>
                     <h3 className="mb-1 font-serif text-lg">{proj.title}</h3>
-                    <p className="text-sm text-muted-foreground">{proj.meta}</p>
+                    <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                      <span
+                        aria-hidden="true"
+                        className="mr-1.5 text-muted-foreground/60"
+                      >
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      {proj.meta}
+                    </p>
                   </PortfolioCaption>
                 </NavbarRouteLink>
               </PortfolioItem>

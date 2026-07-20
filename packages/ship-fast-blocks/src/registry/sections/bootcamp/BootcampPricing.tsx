@@ -2,17 +2,22 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 /**
- * BootcampPricing — 3-tier pricing / financing comparison for a coding bootcamp /
- * career-school landing page. A centered eyebrow, heading and description above
- * a responsive 3-column grid of plan cards; each card shows a name, blurb, price,
- * feature list with check-icon bullets, and a CTA button. One plan can be
- * highlighted with a primary border and a floating badge. A footnote row with a
- * clickable CTA link sits below the grid. Every interaction routes through
- * section-kit route links. Use as the pricing table for bootcamps, academies, or vocational
- * programs offering multiple payment options.
+ * BootcampPricing — "Terminal Classroom" tuition ledger for a coding
+ * bootcamp / career-school landing page. An asymmetric header (left-aligned
+ * heading beside a decorative `$ tuition --compare` prompt) above a
+ * collapsed-border 3-column comparison of sharp plan cards: mono uppercase
+ * plan names, giant mono tabular prices with bracketed mono unit labels, and
+ * check feature lists. The featured plan inverts to a foreground-on-
+ * background card that breaks the row vertically with a hard offset shadow
+ * and a square mono badge; ghost plans get bracketed mono CTAs, the featured
+ * plan a solid primary block — all with press feedback and route-link
+ * targets. A hairline footnote row with a mono CTA link closes the section.
+ * Use as the pricing table for bootcamps, academies, or vocational programs
+ * offering multiple payment options.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import {
   PricingGrid,
   PricingTier,
@@ -31,7 +36,7 @@ import { NavbarRouteLink } from '#/section-kit/index.ts'
 export const BootcampPricing = defineCapsule({
   name: 'BootcampPricing',
   description:
-    '3-tier pricing / financing comparison for a coding bootcamp / career-school landing page: centered eyebrow, heading and description above a responsive 3-column grid of plan cards. Each card shows name, blurb, price, feature list with check-icon bullets, and a CTA button. One plan can be highlighted with a primary border and floating badge. A footnote row with a clickable CTA link sits below. All routes through section-kit route links. Use as the pricing table for bootcamps, academies, or vocational programs offering multiple payment options.',
+    "Terminal-styled collapsed-border tuition ledger for a coding bootcamp / career-school landing page: asymmetric left-aligned header with a decorative '$ tuition --compare' prompt, above a 3-column comparison of sharp plan cards with mono uppercase names, giant mono tabular prices, bracketed mono unit labels, and check feature lists. The featured plan inverts to a foreground-on-background card that breaks the row with a hard offset shadow and square mono badge; CTAs are bracketed mono ghosts or a solid primary block with press feedback, all routing through section-kit route links. A hairline footnote row with a mono CTA link closes the section. Use as the pricing table for bootcamps, academies, or vocational programs offering multiple payment options.",
   props: z.object({
     /** Section eyebrow label. */
     eyebrow: z.string().optional(),
@@ -113,23 +118,35 @@ export const BootcampPricing = defineCapsule({
       'Scholarships available for underrepresented groups in tech.'
     const pricingFootnoteCta = props.footnoteCta ?? 'Learn more →'
     return (
-      <section className={cn('bg-muted/40 py-20 lg:py-28', props.className)}>
-        <Container>
-          <SectionHeading
-            eyebrow={pricingEyebrow}
-            title={pricingHeading}
-            subtitle={pricingDesc}
-            className="mb-16 lg:mb-20 max-w-3xl gap-0"
-            eyebrowClassName="mb-4 inline-block text-xs font-semibold tracking-wider text-primary"
-            titleClassName="mb-4 text-3xl font-bold sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <PricingGrid
-            className={cn(
-              'mx-auto grid max-w-5xl gap-8 md:grid-cols-3',
-              props.className,
-            )}
-          >
+      <section
+        className={cn(
+          'relative overflow-hidden bg-background py-16 lg:py-24',
+          props.className,
+        )}
+      >
+        <Watermark className="-left-6 top-4 font-mono text-[9rem] sm:text-[16rem]">
+          $
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-10 grid items-end gap-6 lg:mb-16 lg:grid-cols-12">
+            <SectionHeading
+              align="left"
+              eyebrow={pricingEyebrow}
+              title={pricingHeading}
+              subtitle={pricingDesc}
+              className="max-w-2xl gap-0 lg:col-span-8"
+              eyebrowClassName="mb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+              titleClassName="mb-4 text-3xl font-bold tracking-tight sm:text-5xl"
+              subtitleClassName="text-base text-muted-foreground sm:text-lg"
+            />
+            <p
+              aria-hidden="true"
+              className="hidden justify-self-end font-mono text-sm text-muted-foreground lg:col-span-4 lg:block"
+            >
+              <span className="text-primary">$</span> tuition --compare
+            </p>
+          </div>
+          <PricingGrid className="mx-auto grid max-w-5xl grid-cols-1 items-stretch gap-6 md:grid-cols-3 md:gap-0 xl:grid-cols-3">
             {pricingItems.map((tier) => {
               const t = tier as {
                 name: string
@@ -155,46 +172,113 @@ export const BootcampPricing = defineCapsule({
                 priceSuffix?: string
                 note?: string
               }
+              const isFeatured = Boolean(
+                t.highlighted || t.featured || t.popular,
+              )
               return (
                 <PricingTier
                   key={t.name}
-                  variant={
-                    t.highlighted || t.featured || t.popular
-                      ? 'highlighted'
-                      : undefined
-                  }
+                  variant={isFeatured ? 'highlighted' : undefined}
+                  className={cn(
+                    'relative flex flex-col rounded-none p-6 lg:p-8',
+                    isFeatured
+                      ? 'z-10 border-2 border-foreground bg-foreground text-background shadow-[8px_8px_0_0] shadow-primary/25 ring-0 md:-my-5 md:py-12'
+                      : 'border border-border bg-card md:border-r-0 md:first:border-r md:last:border-l-0 md:last:border-r',
+                  )}
                 >
-                  {t.highlighted || t.featured || t.popular ? (
-                    <PricingTierBadge>{t.badge ?? 'Popular'}</PricingTierBadge>
+                  {isFeatured ? (
+                    <PricingTierBadge className="absolute -top-3 left-6 rounded-none bg-primary px-2.5 font-mono text-[10px] uppercase tracking-[0.15em]">
+                      {t.badge ?? 'Popular'}
+                    </PricingTierBadge>
                   ) : null}
                   <PricingTierHeader>
-                    <PricingTierName>{t.name}</PricingTierName>
+                    <PricingTierName
+                      className={cn(
+                        'font-mono text-sm font-semibold uppercase tracking-[0.15em]',
+                        isFeatured && 'text-background',
+                      )}
+                    >
+                      {t.name}
+                    </PricingTierName>
                     {t.tagline && (
-                      <PricingTierTagline>{t.tagline}</PricingTierTagline>
+                      <PricingTierTagline
+                        className={cn(isFeatured && 'text-background/70')}
+                      >
+                        {t.tagline}
+                      </PricingTierTagline>
                     )}
                     {t.blurb && (
-                      <PricingTierTagline>{t.blurb}</PricingTierTagline>
+                      <PricingTierTagline
+                        className={cn(isFeatured && 'text-background/70')}
+                      >
+                        {t.blurb}
+                      </PricingTierTagline>
                     )}
                     {t.description && (
-                      <PricingTierTagline>{t.description}</PricingTierTagline>
+                      <PricingTierTagline
+                        className={cn(isFeatured && 'text-background/70')}
+                      >
+                        {t.description}
+                      </PricingTierTagline>
                     )}
                     {t.audience && (
-                      <PricingTierTagline>{t.audience}</PricingTierTagline>
+                      <PricingTierTagline
+                        className={cn(isFeatured && 'text-background/70')}
+                      >
+                        {t.audience}
+                      </PricingTierTagline>
                     )}
-                    <PricingTierPrice>{t.price}</PricingTierPrice>
+                    <PricingTierPrice
+                      className={cn(
+                        'mt-2 font-mono text-5xl font-bold tabular-nums tracking-tighter',
+                        isFeatured && 'text-background',
+                      )}
+                    >
+                      {t.price}
+                    </PricingTierPrice>
                     {t.period && (
-                      <PricingTierPeriod>{t.period}</PricingTierPeriod>
+                      <PricingTierPeriod
+                        className={cn(
+                          'font-mono text-[11px] uppercase tracking-[0.15em]',
+                          isFeatured && 'text-background/60',
+                        )}
+                      >
+                        {t.period}
+                      </PricingTierPeriod>
                     )}
-                    {t.unit && <PricingTierPeriod>{t.unit}</PricingTierPeriod>}
+                    {t.unit && (
+                      <PricingTierPeriod
+                        className={cn(
+                          'font-mono text-[11px] uppercase tracking-[0.15em]',
+                          isFeatured && 'text-background/60',
+                        )}
+                      >
+                        {t.unit}
+                      </PricingTierPeriod>
+                    )}
                     {t.cadence && (
-                      <PricingTierPeriod>{t.cadence}</PricingTierPeriod>
+                      <PricingTierPeriod
+                        className={cn(
+                          'font-mono text-[11px] uppercase tracking-[0.15em]',
+                          isFeatured && 'text-background/60',
+                        )}
+                      >
+                        {t.cadence}
+                      </PricingTierPeriod>
                     )}
                     {t.suffix && (
-                      <PricingTierPeriod>{t.suffix}</PricingTierPeriod>
+                      <PricingTierPeriod
+                        className={cn(
+                          'font-mono text-[11px] uppercase tracking-[0.15em]',
+                          isFeatured && 'text-background/60',
+                        )}
+                      >
+                        {t.suffix}
+                      </PricingTierPeriod>
                     )}
                   </PricingTierHeader>
                   {t.features && (
-                    <PricingTierFeatures>
+                    <PricingTierFeatures className="mt-6 border-t border-border/60 pt-6">
                       {t.features.map((feature) => (
                         <PricingTierFeature
                           key={
@@ -202,6 +286,7 @@ export const BootcampPricing = defineCapsule({
                               ? feature
                               : (feature as { label: string }).label
                           }
+                          className={cn(isFeatured && 'text-background/75')}
                         >
                           {typeof feature === 'string'
                             ? feature
@@ -211,18 +296,28 @@ export const BootcampPricing = defineCapsule({
                     </PricingTierFeatures>
                   )}
                   {t.cta && (
-                    <PricingTierCta target={t.ctaTarget}>
+                    <PricingTierCta
+                      target={t.ctaTarget}
+                      className={cn(
+                        'mt-8 gap-2 rounded-none font-mono text-sm font-semibold uppercase tracking-[0.12em] transition-[transform,box-shadow,background-color,color] duration-150 active:translate-y-px',
+                        isFeatured
+                          ? 'bg-primary text-primary-foreground shadow-[4px_4px_0_0] shadow-background/20 hover:bg-primary/90 active:shadow-none'
+                          : 'border border-border bg-transparent text-foreground hover:bg-foreground hover:text-background',
+                      )}
+                    >
+                      {isFeatured ? null : <span aria-hidden="true">[</span>}
                       {t.cta}
+                      {isFeatured ? null : <span aria-hidden="true">]</span>}
                     </PricingTierCta>
                   )}
                 </PricingTier>
               )
             })}
           </PricingGrid>
-          <p className="mt-8 text-center text-sm text-muted-foreground">
+          <p className="mx-auto mt-12 max-w-5xl border-t border-border pt-5 text-sm text-muted-foreground">
             {pricingFootnote}{' '}
             <NavbarRouteLink
-              className="text-primary hover:underline"
+              className="font-mono text-primary underline-offset-4 hover:underline"
               href={pricingFootnoteCta}
             >
               {pricingFootnoteCta}

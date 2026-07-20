@@ -4,15 +4,17 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
 /**
- * FurnitureStoreRooms — a "shop by room" inspiration gallery on a soft muted
- * band. A header row (eyebrow + heading on the left, arrow "view all" link on the
- * right) above a responsive 1/2/3-column grid of tall 4:5 image tiles; each tile
- * zooms on hover under a bottom-anchored foreground-to-transparent gradient with
- * the room name and a product count. Tiles and the view-all link route through
- * section-kit route links. A baked-in alt-text lookup supplies rich photo descriptions for the
- * default room names, falling back to a generated alt for custom names. Use to
- * present room/category inspiration for furniture, home-decor, or interiors
- * brands. Renders fully with no props via baked-in "Haven & Home" defaults.
+ * FurnitureStoreRooms — an editorial "shop by room" inspiration gallery on a
+ * soft muted band. An asymmetric header row (mono index eyebrow + heading left,
+ * arrow "view all" link right) above a responsive 1/2/3-column bento grid whose
+ * first plate spans two columns; each rounded-none image plate zooms on hover
+ * under a bottom-anchored foreground-to-transparent gradient carrying a mono
+ * index numeral and a museum-label caption (room name + tabular-num product
+ * count). Tiles and the view-all link route through section-kit route links. A
+ * baked-in alt-text lookup supplies rich photo descriptions for the default
+ * room names, falling back to a generated alt for custom names. Use to present
+ * room/category inspiration for furniture, home-decor, or interiors brands.
+ * Renders fully with no props via baked-in "Haven & Home" defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -22,7 +24,7 @@ import { NavbarRouteLink } from '#/section-kit/index.ts'
 export const FurnitureStoreRooms = defineCapsule({
   name: 'FurnitureStoreRooms',
   description:
-    "'Shop by room' inspiration gallery on a soft muted band: a header row (eyebrow + heading left, arrow 'view all' link right) above a responsive 1/2/3-column grid of tall 4:5 image tiles; each tile zooms on hover under a bottom-anchored foreground-to-transparent gradient with the room name and product count; tiles and view-all route through section-kit route links. A baked-in alt-text lookup supplies rich photo descriptions for default room names. Use to present room/category inspiration for furniture, home-decor, or interiors brands.",
+    "Editorial 'shop by room' inspiration gallery on a soft muted band: an asymmetric header row (mono index eyebrow + heading left, arrow 'view all' link right) above a responsive 1/2/3-column bento grid whose first plate spans two columns; each rounded-none image plate zooms on hover under a bottom-anchored foreground-to-transparent gradient carrying a mono index numeral and a museum-label caption (room name + tabular-num product count); tiles and view-all route through section-kit route links. A baked-in alt-text lookup supplies rich photo descriptions for default room names. Use to present room/category inspiration for furniture, home-decor, or interiors brands.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -105,7 +107,7 @@ export const FurnitureStoreRooms = defineCapsule({
         aria-labelledby="furniture-rooms-heading"
       >
         <Container>
-          <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="mb-12 flex flex-col gap-4 border-b border-border pb-8 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <SectionHeading
                 align="left"
@@ -113,24 +115,31 @@ export const FurnitureStoreRooms = defineCapsule({
                 title={heading}
                 titleId="furniture-rooms-heading"
                 className="gap-0"
-                eyebrowClassName="mb-3 text-sm font-medium uppercase tracking-widest text-muted-foreground"
-                titleClassName="text-3xl font-medium lg:text-4xl"
+                eyebrowClassName="mb-3 font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground"
+                titleClassName="text-3xl font-medium tracking-tight lg:text-4xl"
               />
             </div>
             <NavbarRouteLink
-              className="inline-flex items-center text-sm font-medium text-foreground transition-colors hover:text-muted-foreground"
+              className="inline-flex items-center font-mono text-[11px] uppercase tracking-[0.16em] text-foreground transition-colors hover:text-muted-foreground"
               href={viewAll}
             >
               {viewAll}
-              <ArrowRight className="ml-1 size-4" />
+              <ArrowRight className="ml-1.5 size-4" />
             </NavbarRouteLink>
           </div>
 
           <RoomGrid cols="1-2-3" className="gap-6">
-            {items.map((room) => (
-              <RoomCard key={room.name} asChild>
+            {items.map((room, i) => (
+              <RoomCard
+                key={room.name}
+                asChild
+                className={cn(i === 0 && 'sm:col-span-2 lg:col-span-2')}
+              >
                 <NavbarRouteLink
-                  className="group relative block aspect-[4/5] overflow-hidden rounded-lg text-left"
+                  className={cn(
+                    'group relative block overflow-hidden rounded-none text-left',
+                    i === 0 ? 'aspect-[4/5] sm:aspect-[16/9]' : 'aspect-[4/5]',
+                  )}
                   href={room.name}
                 >
                   <Image
@@ -145,13 +154,21 @@ export const FurnitureStoreRooms = defineCapsule({
                   />
                   <div
                     aria-hidden="true"
-                    className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-transparent"
+                    className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/10 to-transparent"
                   />
+                  <span
+                    aria-hidden="true"
+                    className="absolute left-5 top-4 font-mono text-[11px] tabular-nums tracking-[0.2em] text-background/80"
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
                   <div className="absolute inset-x-0 bottom-0 p-6">
-                    <h3 className="mb-1 text-xl font-medium text-background">
+                    <h3 className="mb-1 text-xl font-medium tracking-tight text-background">
                       {room.name}
                     </h3>
-                    <p className="text-sm text-background/80">{room.count}</p>
+                    <p className="font-mono text-[11px] uppercase tracking-[0.14em] tabular-nums text-background/80">
+                      {room.count}
+                    </p>
                   </div>
                 </NavbarRouteLink>
               </RoomCard>

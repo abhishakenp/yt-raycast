@@ -15,18 +15,19 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * FilmDirectorFaq — a narrow, centered FAQ accordion for a film director or
- * cinematographer. A centered header (thin heading + muted lede) above a
- * constrained-width stack of native <details> disclosure cards, each a bordered
- * rounded summary row with a question and a chevron that rotates open, revealing
- * a muted answer paragraph. Use to answer common questions (timelines,
- * international work, equipment, music licensing, agency collaboration,
+ * FilmDirectorFaq — a narrow, cinematic FAQ accordion for a film director or
+ * cinematographer. Behind a giant faint "FAQ" watermark, a mono slate meta rule
+ * sits above a giant credits-style extrabold header, over a constrained-width
+ * stack of native <details> disclosure cards — each a square hairline summary row
+ * carrying a mono "Q.0X" index, the question, and a chevron that rotates open to
+ * reveal a muted answer paragraph. Tokens-only. Use to answer common questions
+ * (timelines, international work, equipment, music licensing, agency collaboration,
  * deliverables) for filmmakers, directors, DPs, or production houses.
  */
 export const FilmDirectorFaq = defineCapsule({
   name: 'FilmDirectorFaq',
   description:
-    'Narrow, centered FAQ accordion for a film director or cinematographer: a centered header (thin heading + muted lede) above a constrained-width stack of native details disclosure cards, each a bordered rounded summary row with a question and a chevron that rotates open, revealing a muted answer paragraph. Use to answer common questions (timelines, international work, equipment, music licensing, agency collaboration, deliverables) for filmmakers, directors, DPs, or production houses.',
+    'Narrow, cinematic FAQ accordion for a film director or cinematographer: behind a giant faint "FAQ" watermark, a mono slate meta rule above a giant credits-style extrabold header, over a constrained-width stack of native details disclosure cards each a square hairline summary row with a mono "Q.0X" index, the question, and a chevron that rotates open to reveal a muted answer paragraph. Tokens-only. Use to answer common questions (timelines, international work, equipment, music licensing, agency collaboration, deliverables) for filmmakers, directors, DPs, or production houses.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -75,23 +76,52 @@ export const FilmDirectorFaq = defineCapsule({
         ]
 
     return (
-      <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
-        <Container size="sm">
+      <section
+        className={cn(
+          'relative overflow-hidden pt-28 pb-20 lg:pt-32 lg:pb-28',
+          props.className,
+        )}
+      >
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -left-4 top-16 select-none font-extrabold leading-none tracking-tighter text-foreground/[0.04] text-[14rem] lg:text-[22rem]"
+        >
+          FAQ
+        </span>
+        <Container size="sm" className="relative">
+          <div className="mb-8 flex items-center justify-between gap-4 border-b border-border pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            <span className="flex items-center gap-3">
+              <span aria-hidden="true" className="size-2 bg-primary" />
+              Common Questions
+            </span>
+            <span className="tabular-nums">
+              {String(faqItems.length).padStart(2, '0')} entries
+            </span>
+          </div>
           <SectionHeading
+            align="left"
             title={faqHeading}
             subtitle={faqDesc}
-            className="mb-16 gap-0"
-            titleClassName="mb-4 text-3xl font-light md:text-4xl"
+            className="mb-12 gap-0 sm:mb-16"
+            titleClassName="mb-4 text-4xl font-extrabold tracking-tight md:text-5xl"
             subtitleClassName="text-muted-foreground"
           />
           <FaqAccordion>
-            {faqItems.map((item) => (
+            {faqItems.map((item, i) => (
               <FaqItem
                 key={item.question}
-                className="rounded-md open:border-muted-foreground"
+                className="rounded-none open:border-foreground/40"
               >
-                <FaqQuestion className="p-6">
-                  <span className="font-medium">{item.question}</span>
+                <FaqQuestion className="gap-4 p-6">
+                  <span
+                    aria-hidden="true"
+                    className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+                  >
+                    Q.{String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span className="flex-1 font-extrabold tracking-tight">
+                    {item.question}
+                  </span>
                   <FaqQuestionIcon />
                 </FaqQuestion>
                 <FaqAnswer asChild className="px-6 pb-6 text-sm">

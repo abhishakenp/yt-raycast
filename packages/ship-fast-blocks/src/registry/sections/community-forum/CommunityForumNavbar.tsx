@@ -15,17 +15,19 @@ import {
 } from '#/section-kit/index.ts'
 
 /**
- * CommunityForumNavbar — sticky translucent top navigation bar for a
- * community-platform / discussion-forum marketing site. Blurred, border-bottomed
- * header with a brand mark + product name on the left, a horizontal row of nav
- * links on desktop, and a sign-in text button + primary CTA button on the right.
- * Every link and the CTA route through route hrefs. Use as the sticky site header
- * for community platforms, SaaS forums, knowledge bases, or membership networks.
+ * CommunityForumNavbar — sticky translucent playful-geometric top navigation
+ * bar for a community-platform / discussion-forum marketing site. Blurred,
+ * border-bottomed header with a three-dot brand mark + bold product name on
+ * the left, a row of mono uppercase micro-label nav links on desktop, and a
+ * sign-in text button + rounded-full primary CTA pill with a hard offset
+ * shadow and press feedback on the right. Every link and the CTA route
+ * through route hrefs. Use as the sticky site header for community platforms,
+ * SaaS forums, knowledge bases, or membership networks.
  */
 export const CommunityForumNavbar = defineCapsule({
   name: 'CommunityForumNavbar',
   description:
-    'Sticky translucent top navigation bar for a community-platform / discussion-forum marketing site: blurred, border-bottomed header with a brand mark + product name on the left, a horizontal row of nav links on desktop, and a sign-in text button + primary CTA button on the right. Every link and the CTA route through route hrefs. Use as the sticky site header for community platforms, SaaS forums, knowledge bases, or membership networks.',
+    'Sticky translucent playful-geometric top navigation bar for a community-platform / discussion-forum marketing site: blurred, border-bottomed header with a three-dot brand mark + bold product name on the left, a row of mono uppercase micro-label nav links on desktop, and a sign-in text button + rounded-full primary CTA pill with hard offset shadow and press feedback on the right. Every link and the CTA route through route hrefs. Use as the sticky site header for community platforms, SaaS forums, knowledge bases, or membership networks.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -68,17 +70,22 @@ export const CommunityForumNavbar = defineCapsule({
         containerClassName="max-w-6xl"
       >
         <NavbarBrand href={homeTarget} className="gap-2">
-          <BrandLogo brand={brand}>
+          <BrandLogo brand={brand} className="flex items-center gap-2">
             <LogoImage
-              fallback={<BrandMark className="size-8 text-foreground" />}
+              fallback={<BrandMark className="size-7 text-foreground" />}
+              className="size-7"
             />
-            <LogoLabel className="text-xl font-semibold text-foreground" />
+            <LogoLabel className="text-xl font-extrabold tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
-        <NavbarNav>
+        <NavbarNav className="gap-6">
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground"
+            >
               {label}
             </NavbarNavLink>
           ))}
@@ -90,7 +97,11 @@ export const CommunityForumNavbar = defineCapsule({
             label={signIn}
             className="hidden text-sm font-medium sm:inline-flex"
           />
-          <NavbarCta variant="primary" href={navCta}>
+          <NavbarCta
+            variant="primary"
+            href={navCta}
+            className="rounded-full px-5 font-semibold shadow-[3px_3px_0_0] shadow-foreground/20 transition-all duration-150 hover:-translate-y-0.5 active:translate-y-px active:shadow-none"
+          >
             {navCta}
           </NavbarCta>
           <MobileNavDrawer

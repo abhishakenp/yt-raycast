@@ -20,21 +20,23 @@ import {
 } from '../commerce/commerce-interactions.tsx'
 
 /**
- * JewelryStoreNavbar — fixed, translucent top navigation bar for a luxury
- * fine-jewelry boutique on a near-black canvas. A backdrop-blurred bordered
- * header pinned to the top: a serif gold maison wordmark on the left,
- * wide letter-spaced uppercase nav links in the center (desktop), and a
- * product command search, Shoo account dropdown, shared cart drawer, mobile
- * drawer, and an underlined "Book Appointment" CTA on the right. Every link and
- * the CTA route through route hrefs so labels drive page-switching. Use as the
- * sticky site header for fine jewelers, diamond houses, engagement-ring
- * boutiques, watch or high-jewelry maisons. Renders fully with no props via
- * baked-in "Maison Noir" defaults.
+ * JewelryStoreNavbar — fixed, backdrop-blurred vitrine top navigation bar for a
+ * luxury fine-jewelry maison. A hairline-bottomed translucent header pinned to
+ * the top on the airiest chrome in the catalog: a large serif maison wordmark
+ * on the left as the luxury signature, quietly spaced mono micro-label uppercase
+ * nav links on the center-right (desktop), a trio of minimal-chrome commerce
+ * icon actions (product command search, Shoo account dropdown, shared Lakebed
+ * cart drawer with a reactive quantity badge), an underlined mono Book
+ * Appointment CTA, and a real mobile drawer below lg. Every link and the CTA
+ * route through route hrefs so labels drive page-switching. Use as the sticky
+ * site header for fine jewelers, diamond houses, engagement-ring boutiques,
+ * watch or high-jewelry maisons. Renders fully with no props via baked-in
+ * "Maison Noir" defaults.
  */
 export const JewelryStoreNavbar = defineCapsule({
   name: 'JewelryStoreNavbar',
   description:
-    'Fixed translucent top navigation bar for a luxury fine-jewelry boutique on a near-black canvas: backdrop-blurred bordered header with a serif gold maison wordmark on the left, wide letter-spaced uppercase nav links in the center (desktop), product command search, Shoo account dropdown, shared Lakebed cart drawer with a reactive quantity badge, a real mobile drawer, and an underlined Book Appointment CTA on the right. Every link and CTA route through route hrefs for page-switching. Use as the sticky site header for fine jewelers, diamond houses, engagement-ring boutiques, watch or high-jewelry maisons, or any premium luxury-retail brand.',
+    'Fixed, backdrop-blurred vitrine top navigation bar for a luxury fine-jewelry maison: a hairline-bottomed translucent header pinned to the top with a large serif maison wordmark on the left as the luxury signature, quietly spaced mono micro-label uppercase nav links on the center-right (desktop), a trio of minimal-chrome commerce actions on the right (product command search, Shoo account dropdown, shared Lakebed cart drawer with a reactive quantity badge), an underlined mono Book Appointment CTA, and a real mobile drawer below lg. Every link and CTA route through route hrefs for page-switching. Use as the sticky site header for fine jewelers, diamond houses, engagement-ring boutiques, watch or high-jewelry maisons, or any premium luxury-retail brand.',
   props: z.object({
     /** Maison / brand name shown as the wordmark. */
     brand: z.string().optional(),
@@ -61,7 +63,7 @@ export const JewelryStoreNavbar = defineCapsule({
     const ctaTarget = props.ctaTarget ?? 'Book Private Appointment'
     const initialCartCount = Number.parseInt(props.cartCount ?? '0', 10) || 0
     const utilityButtonClass =
-      'text-muted-foreground transition-colors hover:text-primary'
+      'p-2 text-muted-foreground transition-colors hover:text-foreground'
 
     return (
       <SiteNav
@@ -70,25 +72,26 @@ export const JewelryStoreNavbar = defineCapsule({
         className={cn('bg-background/90', props.className)}
         containerClassName="px-6 lg:px-12 xl:px-20"
       >
-        <NavbarBrand
-          href={homeTarget}
-          className="font-serif text-2xl tracking-wider text-primary"
-        >
-          <BrandLogo brand={brand} className="mr-2 size-7 align-middle">
-            <LogoImage className="mr-2 size-7 align-middle" />
-            <LogoLabel />
+        <NavbarBrand href={homeTarget} className="flex items-center gap-2">
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage className="size-7" />
+            <LogoLabel className="font-serif text-2xl tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
-        <NavbarNav className="[&>button]:uppercase [&>button]:tracking-widest [&>button]:hover:text-primary">
+        <NavbarNav breakpoint="lg" className="gap-10">
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="rounded-none px-0 py-1 font-mono text-[11px] font-medium uppercase tracking-[0.24em] hover:bg-transparent hover:text-foreground"
+            >
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
 
-        <NavbarActions className="gap-6">
+        <NavbarActions className="gap-5">
           <CommerceSearchButton
             lakebed={lakebed}
             buttonClassName={utilityButtonClass}
@@ -150,7 +153,7 @@ export const JewelryStoreNavbar = defineCapsule({
           </CommerceCartButton>
           <NavbarRouteLink
             href={ctaTarget}
-            className="hidden border-b border-primary pb-0.5 text-sm uppercase tracking-widest text-primary sm:block"
+            className="hidden border-b border-foreground pb-1 font-mono text-[11px] font-medium uppercase tracking-[0.24em] text-foreground transition-colors hover:border-muted-foreground hover:text-muted-foreground lg:inline-block"
           >
             {ctaLabel}
           </NavbarRouteLink>
@@ -158,7 +161,7 @@ export const JewelryStoreNavbar = defineCapsule({
             brand={brand}
             nav={nav}
             homeTarget={homeTarget}
-            buttonClassName="text-muted-foreground transition-colors hover:text-primary md:hidden"
+            buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground lg:hidden"
           />
         </NavbarActions>
       </SiteNav>

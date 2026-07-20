@@ -5,7 +5,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { DotGrid, MonoTag } from '#/section-kit/Decor.tsx'
 import {
   StepTimeline,
   StepTimelineGrid,
@@ -13,20 +13,24 @@ import {
 } from '#/section-kit/StepTimeline.tsx'
 
 /**
- * BakerySteps — "how to order" 3-step guide for an artisan-bakery page, on a
- * card surface. A centered heading + lead paragraph above a responsive 3-up
- * grid of step cards; each card has a giant faded ordinal number bleeding off
- * the corner, a rounded tinted icon tile (rotating inline line-icons: device,
- * phone, pin), a title, a description, and an accent-colored note line. Warm,
- * editorial, light and craft-forward. Tokens-only, no links. Use to explain a
- * bakery's ordering options — pre-order online, call ahead, walk in — or any
- * "how it works" / process steps block for food makers. Renders fully with no
- * props via three baked-in default steps.
+ * BakerySteps — "how to order" 3-step guide for an artisan-bakery page, in a
+ * playful-geometric warm language. An asymmetric heading row (mono "05 /
+ * Order" index + oversized serif heading left, lead paragraph right) above a
+ * 3-up grid of staggered step cards — the middle card drops on desktop for a
+ * broken-grid rhythm. Each card is chunky-bordered with a soft offset shadow
+ * and an alternating blob corner, carries a giant serif italic ghost ordinal
+ * bleeding off its top-right corner, a rotated rounded-full sticker icon tile
+ * (rotating inline line-icons: device, phone, pin), a serif title, a
+ * description, and the note line as a rounded-full primary-washed mono chip.
+ * A faint dot grid fades in behind the band. Tokens-only, no links. Use to
+ * explain a bakery's ordering options — pre-order online, call ahead, walk in
+ * — or any "how it works" / process steps block for food makers. Renders
+ * fully with no props via three baked-in default steps.
  */
 export const BakerySteps = defineCapsule({
   name: 'BakerySteps',
   description:
-    "'How to order' 3-step guide for an artisan-bakery page on a card surface: a centered heading and lead paragraph above a responsive 3-up grid of step cards, each with a giant faded ordinal number bleeding off the corner, a rounded tinted icon tile (rotating inline line-icons: device, phone, pin), a title, a description, and an accent-colored note line. Warm, editorial, light and craft-forward; tokens-only, no links. Use to explain a bakery's ordering options (pre-order online, call ahead, walk in) or any 'how it works' / process steps block for food makers.",
+    "'How to order' 3-step guide for an artisan-bakery page in a playful-geometric warm language: an asymmetric heading row with a mono index tag and oversized serif heading beside the lead paragraph, above a 3-up grid of staggered step cards (middle card drops on desktop) — each chunky-bordered with soft offset shadow and an alternating blob corner, a giant serif italic ghost ordinal bleeding off the top-right corner, a rotated rounded-full sticker icon tile (rotating inline line-icons: device, phone, pin), a serif title, a description, and the note line as a rounded-full primary-washed mono chip — over a faint fading dot grid. Tokens-only, no links. Use to explain a bakery's ordering options (pre-order online, call ahead, walk in) or any 'how it works' / process steps block for food makers.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -117,36 +121,70 @@ export const BakerySteps = defineCapsule({
       </svg>,
     ]
 
+    const cardShapes = [
+      'rounded-[2rem] rounded-tl-none',
+      'rounded-[2rem] rounded-br-none lg:translate-y-10',
+      'rounded-[2rem] rounded-bl-none',
+    ]
+    const iconTilt = ['-rotate-3', 'rotate-3', '-rotate-2']
+
     return (
-      <StepTimeline className={cn('bg-card py-20 lg:py-28', props.className)}>
-        <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 lg:text-4xl"
-            subtitleClassName="text-lg"
-          />
-          <StepTimelineGrid columns={3} className="gap-8">
+      <StepTimeline
+        className={cn(
+          'relative overflow-hidden bg-background py-16 lg:py-24 lg:pb-32',
+          props.className,
+        )}
+      >
+        <DotGrid
+          density="loose"
+          fade="bottom"
+          className="inset-x-0 top-0 h-64"
+        />
+        <Container className="relative">
+          <div className="mb-12 grid gap-5 lg:mb-16 lg:grid-cols-12 lg:items-end lg:gap-10">
+            <div className="lg:col-span-7">
+              <MonoTag>05 / Order</MonoTag>
+              <h2 className="mt-4 font-serif text-3xl font-medium tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+                {heading}
+              </h2>
+            </div>
+            <p className="max-w-sm text-base leading-relaxed text-muted-foreground lg:col-span-5 lg:justify-self-end lg:text-right">
+              {description}
+            </p>
+          </div>
+
+          <StepTimelineGrid columns={3} className="gap-6 lg:gap-8">
             {items.map((step, i) => (
-              <StepItem key={step.title} className="relative">
-                <div className="absolute -left-2 -top-4 text-6xl font-bold text-muted">
+              <StepItem
+                key={step.title}
+                className={cn(
+                  'relative overflow-hidden border-2 border-foreground/15 bg-card p-6 shadow-[6px_6px_0_0] shadow-foreground/10 transition-transform duration-150 hover:-translate-y-0.5 sm:p-8',
+                  cardShapes[i % cardShapes.length],
+                )}
+              >
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -right-2 -top-6 select-none font-serif text-[6rem] italic leading-none text-foreground/[0.07]"
+                >
                   {String(i + 1).padStart(2, '0')}
+                </span>
+                <div
+                  className={cn(
+                    'relative mb-6 grid size-12 place-items-center rounded-full border-2 border-foreground/15 bg-primary/10 text-primary shadow-[3px_3px_0_0] shadow-foreground/10',
+                    iconTilt[i % iconTilt.length],
+                  )}
+                >
+                  {stepIcons[i % stepIcons.length]}
                 </div>
-                <div className="relative h-full rounded-xl bg-muted p-8">
-                  <div className="mb-6 grid size-12 place-items-center rounded-xl bg-primary/10 text-primary">
-                    {stepIcons[i % stepIcons.length]}
-                  </div>
-                  <h3 className="mb-3 text-xl font-semibold text-foreground">
-                    {step.title}
-                  </h3>
-                  <p className="mb-4 leading-relaxed text-muted-foreground">
-                    {step.description}
-                  </p>
-                  <p className="text-sm font-medium text-primary">
-                    {step.note}
-                  </p>
-                </div>
+                <h3 className="relative mb-3 font-serif text-xl font-medium text-card-foreground sm:text-2xl">
+                  {step.title}
+                </h3>
+                <p className="relative mb-5 leading-relaxed text-muted-foreground">
+                  {step.description}
+                </p>
+                <p className="relative inline-flex items-center rounded-full border-2 border-foreground/10 bg-primary/10 px-3.5 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-foreground">
+                  {step.note}
+                </p>
               </StepItem>
             ))}
           </StepTimelineGrid>

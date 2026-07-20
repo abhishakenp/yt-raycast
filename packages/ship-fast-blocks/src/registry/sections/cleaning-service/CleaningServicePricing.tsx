@@ -8,7 +8,19 @@ import {
 import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
- * CleaningServicePricing — a 3-tier transparent pricing table for a home-cleaning / maid-service landing page. A muted-band background with a centered heading + lead paragraph above a responsive 3-column grid of pricing cards: the middle "Most Popular" plan is elevated, highlighted with the primary brand color and a badge pill; side plans sit on card surfaces with secondary CTAs. A footnote row with a phone-icon link sits below the grid. Every CTA and the footnote link route through section-kit route links. Use for service-pricing / plan-selection blocks for residential cleaning companies, maid services, or any local home-service business. Renders fully with no props via three baked-in default plans.
+ * CleaningServicePricing — playful-Swiss collapsed-border pricing ledger for a
+ * home-cleaning / maid-service landing page. An asymmetric header row (left
+ * mono "04 / Pricing" eyebrow + heading + lead, right tabular mono plan count)
+ * above a single hard-shadow framed ledger of 1/3-column plan cells sharing
+ * 2px rules: each cell carries a mono index label, a bold plan name, a blurb,
+ * a giant extrabold tabular price with mono period, a hairline feature list,
+ * and a square invert-on-hover CTA with press feedback. The featured plan is a
+ * full ink-inverted cell (foreground background, background text) wearing a
+ * rotated primary badge chip. An optional footnote strip with a routable CTA
+ * link renders below when provided. Use for service-pricing / plan-selection
+ * blocks for residential cleaning companies, maid services, or any local
+ * home-service business. Renders fully with no props via three baked-in
+ * default plans.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import {
@@ -25,10 +37,11 @@ import {
   PricingTierCta,
 } from '#/section-kit/PricingGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 export const CleaningServicePricing = defineCapsule({
   name: 'CleaningServicePricing',
   description:
-    "A 3-tier transparent pricing table for a home-cleaning / maid-service landing page: muted-band background with centered heading + lead above a responsive 3-column grid of pricing cards. Middle 'Most Popular' plan is brand-colored, elevated, and badged; side plans sit on card surfaces with secondary CTAs. Footnote row with phone-icon link below. CTAs and footnote link route through section-kit route links. Use for service-pricing / plan-selection blocks for residential cleaning, maid services, or local home-service businesses.",
+    "Playful-Swiss collapsed-border pricing ledger for a home-cleaning / maid-service landing page: asymmetric header row (left mono '04 / Pricing' eyebrow + heading + lead, right tabular mono plan count) above a hard-shadow framed ledger of 1/3-column plan cells sharing 2px rules — each with a mono index label, bold plan name, blurb, giant extrabold tabular price with mono period, hairline feature list, and a square invert-on-hover CTA with press feedback. The featured plan is a full ink-inverted cell with a rotated primary badge chip. Optional footnote strip with routable CTA link below. Use for service-pricing / plan-selection blocks for residential cleaning, maid services, or local home-service businesses.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -118,23 +131,35 @@ export const CleaningServicePricing = defineCapsule({
       ),
     )
     return (
-      <section className={cn('bg-muted/40 py-20 lg:py-28', props.className)}>
+      <section className={cn('bg-muted/30 py-16 lg:py-24', props.className)}>
         <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mx-auto mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <PricingGrid className={props.className}>
+          <div className="mb-10 flex flex-col gap-4 sm:mb-14 md:flex-row md:items-end md:justify-between">
             <SectionHeading
-              title={'Transparent pricing, no surprises'}
-              subtitle={
-                'Choose the plan that fits your home and budget. All plans include our satisfaction guarantee.'
-              }
+              align="left"
+              eyebrow="04 / Pricing"
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-3"
+              titleClassName="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl"
+              subtitleClassName="max-w-xl text-lg text-muted-foreground"
             />
-            {plans.map((tier) => {
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/70"
+            >
+              <span className="tabular-nums">
+                {String(plans.length).padStart(2, '0')}
+              </span>{' '}
+              plans · guarantee included
+            </p>
+          </div>
+          <PricingGrid
+            className={cn(
+              'gap-0 border-2 border-foreground bg-card shadow-[8px_8px_0_0] shadow-foreground md:grid-cols-3 xl:grid-cols-3',
+              props.className,
+            )}
+          >
+            {plans.map((tier, i) => {
               const t = tier as {
                 name: string
                 price: string
@@ -159,35 +184,83 @@ export const CleaningServicePricing = defineCapsule({
                 priceSuffix?: string
                 note?: string
               }
+              const featured = Boolean(t.highlighted || t.featured || t.popular)
               return (
                 <PricingTier
                   key={t.name}
-                  variant={
-                    t.highlighted || t.featured || t.popular
-                      ? 'highlighted'
-                      : undefined
-                  }
+                  className={cn(
+                    'gap-6 rounded-none border-0 border-b-2 border-foreground p-6 shadow-none ring-0 last:border-b-0 sm:p-8 md:border-b-0 md:border-r-2 md:last:border-r-0',
+                    featured ? 'bg-foreground text-background' : 'bg-card',
+                  )}
                 >
-                  {t.highlighted || t.featured || t.popular ? (
-                    <PricingTierBadge>{t.badge ?? 'Popular'}</PricingTierBadge>
-                  ) : null}
+                  {featured ? (
+                    <PricingTierBadge className="w-fit -rotate-2 rounded-none border-2 border-background bg-primary px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-primary-foreground">
+                      {t.badge ?? 'Popular'}
+                    </PricingTierBadge>
+                  ) : (
+                    <span
+                      aria-hidden="true"
+                      className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                  )}
                   <PricingTierHeader>
-                    <PricingTierName>{t.name}</PricingTierName>
+                    <PricingTierName
+                      className={cn(
+                        'text-lg font-bold tracking-tight',
+                        featured ? 'text-background' : 'text-foreground',
+                      )}
+                    >
+                      {t.name}
+                    </PricingTierName>
                     {t.tagline && (
-                      <PricingTierTagline>{t.tagline}</PricingTierTagline>
+                      <PricingTierTagline
+                        className={featured ? 'text-background/70' : undefined}
+                      >
+                        {t.tagline}
+                      </PricingTierTagline>
                     )}
                     {t.blurb && (
-                      <PricingTierTagline>{t.blurb}</PricingTierTagline>
+                      <PricingTierTagline
+                        className={featured ? 'text-background/70' : undefined}
+                      >
+                        {t.blurb}
+                      </PricingTierTagline>
                     )}
                     {t.description && (
-                      <PricingTierTagline>{t.description}</PricingTierTagline>
+                      <PricingTierTagline
+                        className={featured ? 'text-background/70' : undefined}
+                      >
+                        {t.description}
+                      </PricingTierTagline>
                     )}
                     {t.audience && (
-                      <PricingTierTagline>{t.audience}</PricingTierTagline>
+                      <PricingTierTagline
+                        className={featured ? 'text-background/70' : undefined}
+                      >
+                        {t.audience}
+                      </PricingTierTagline>
                     )}
-                    <PricingTierPrice>{t.price}</PricingTierPrice>
+                    <PricingTierPrice
+                      className={cn(
+                        'mt-2 text-5xl font-extrabold tabular-nums tracking-tight',
+                        featured ? 'text-background' : 'text-foreground',
+                      )}
+                    >
+                      {t.price}
+                    </PricingTierPrice>
                     {t.period && (
-                      <PricingTierPeriod>{t.period}</PricingTierPeriod>
+                      <PricingTierPeriod
+                        className={cn(
+                          'font-mono text-[11px] uppercase tracking-[0.14em]',
+                          featured
+                            ? 'text-background/60'
+                            : 'text-muted-foreground',
+                        )}
+                      >
+                        {t.period}
+                      </PricingTierPeriod>
                     )}
                     {t.unit && <PricingTierPeriod>{t.unit}</PricingTierPeriod>}
                     {t.cadence && (
@@ -198,7 +271,12 @@ export const CleaningServicePricing = defineCapsule({
                     )}
                   </PricingTierHeader>
                   {t.features && (
-                    <PricingTierFeatures>
+                    <PricingTierFeatures
+                      className={cn(
+                        'gap-0 border-t pt-1',
+                        featured ? 'border-background/20' : 'border-border',
+                      )}
+                    >
                       {t.features.map((feature) => (
                         <PricingTierFeature
                           key={
@@ -206,6 +284,12 @@ export const CleaningServicePricing = defineCapsule({
                               ? feature
                               : (feature as { label: string }).label
                           }
+                          className={cn(
+                            'border-b py-2.5 text-sm last:border-b-0',
+                            featured
+                              ? 'border-background/20 text-background/70'
+                              : 'border-border text-muted-foreground',
+                          )}
                         >
                           {typeof feature === 'string'
                             ? feature
@@ -215,7 +299,15 @@ export const CleaningServicePricing = defineCapsule({
                     </PricingTierFeatures>
                   )}
                   {t.cta && (
-                    <PricingTierCta target={t.ctaTarget}>
+                    <PricingTierCta
+                      target={t.ctaTarget}
+                      className={cn(
+                        'rounded-none border-2 py-3 text-sm font-bold transition-all duration-150 active:translate-y-px',
+                        featured
+                          ? 'border-background bg-background text-foreground hover:bg-background/90'
+                          : 'border-foreground bg-background text-foreground hover:bg-foreground hover:text-background',
+                      )}
+                    >
                       {t.cta}
                     </PricingTierCta>
                   )}
@@ -223,6 +315,23 @@ export const CleaningServicePricing = defineCapsule({
               )
             })}
           </PricingGrid>
+          {(props.footnote || props.footnoteCta) && (
+            <div className="mt-10 flex flex-col items-start justify-between gap-4 border-2 border-foreground bg-card p-5 shadow-[4px_4px_0_0] shadow-foreground sm:flex-row sm:items-center sm:p-6">
+              {props.footnote && (
+                <p className="text-sm text-muted-foreground">
+                  {props.footnote}
+                </p>
+              )}
+              {props.footnoteCta && (
+                <NavbarRouteLink
+                  href={props.footnoteCta}
+                  className="inline-flex items-center whitespace-nowrap font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-foreground underline decoration-primary decoration-2 underline-offset-4 transition-colors hover:text-primary active:translate-y-px"
+                >
+                  {props.footnoteCta}
+                </NavbarRouteLink>
+              )}
+            </div>
+          )}
         </Container>
       </section>
     )

@@ -16,6 +16,7 @@ import {
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { DotGrid, Watermark } from '#/section-kit/Decor.tsx'
 import {
   LocalServiceBookingButton,
   LocalServiceMutationSpinner,
@@ -24,12 +25,25 @@ import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * CleaningServiceHero — split-layout hero section for a home-cleaning / maid-service landing page. A muted-band background with a left text column (trust pill with checkmark icon, bold multi-line headline with an accent-colored highlight phrase, supporting paragraph, dual pill CTAs, and three trust badges with checkmarks) and a right image column (showcase photo with a floating star-rating card that overlaps the image edge, showing stacked avatars + a star icon + rating value + review count). Every CTA routes through section-kit route links. Use as the primary above-the-fold hero for residential cleaning companies, maid services, housekeeping platforms, or local home-service brands. Renders fully with no props via baked-in "PureSpace" defaults.
+ * CleaningServiceHero — playful-Swiss asymmetric hero for a home-cleaning /
+ * maid-service landing page. A 7/5 split on a crisp background with a faint
+ * dot-grid wash and a giant ghost sparkle watermark: the left column stacks a
+ * slightly rotated mono checkbox trust chip, an oversized extrabold headline
+ * whose highlight phrase sits inside a tilted bright primary block, a
+ * supporting paragraph, square hard-shadow CTAs with press feedback, and a
+ * mono checklist trust row built from bordered checkbox squares. The right
+ * column carries the showcase photo in a square 2px frame with a hard offset
+ * shadow plus an overlapping, slightly rotated star-rating card (stacked
+ * avatars + rating + review count) that stays visible on mobile. Every CTA
+ * routes through section-kit route links. Use as the primary above-the-fold
+ * hero for residential cleaning companies, maid services, housekeeping
+ * platforms, or local home-service brands. Renders fully with no props via
+ * baked-in "PureSpace" defaults.
  */
 export const CleaningServiceHero = defineCapsule({
   name: 'CleaningServiceHero',
   description:
-    'Split-layout hero section for a home-cleaning / maid-service landing page: muted-band background with left text column (trust pill with checkmark, bold multi-line headline with accent-colored highlight, supporting paragraph, dual pill CTAs, three trust badges) and right image column (showcase photo with floating star-rating card showing stacked avatars, star icon, and review count). CTAs route through section-kit route links. Use as the primary hero for residential cleaning, maid services, housekeeping, or local home-service brands.',
+    'Playful-Swiss asymmetric 7/5 hero for a home-cleaning / maid-service landing page: dot-grid washed background with a giant ghost sparkle watermark, a rotated mono checkbox trust chip, an oversized extrabold headline with a tilted bright primary highlight block, supporting paragraph, square hard-shadow CTAs with press feedback, and a mono checklist trust row of bordered checkbox squares. Right column shows the photo in a square 2px hard-shadow frame with an overlapping rotated star-rating card (stacked avatars, rating, review count). CTAs route through section-kit route links. Use as the primary hero for residential cleaning, maid services, housekeeping, or local home-service brands.',
   props: z.object({
     /** Trust-pill text above the headline. */
     badge: z.string().optional(),
@@ -72,20 +86,26 @@ export const CleaningServiceHero = defineCapsule({
       ? props.trustBadges
       : ['Vetted Cleaners', 'Insured & Bonded', 'Satisfaction Guarantee']
 
-    const CheckCircle = () => (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 20 20"
-        fill="currentColor"
+    const CheckSquare = ({ className }: { className?: string }) => (
+      <span
         aria-hidden="true"
+        className={cn(
+          'grid size-4 shrink-0 place-items-center border-2 border-foreground bg-background text-primary',
+          className,
+        )}
       >
-        <path
-          fillRule="evenodd"
-          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-          clipRule="evenodd"
-        />
-      </svg>
+        <svg
+          width="10"
+          height="10"
+          viewBox="0 0 20 20"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="3.5"
+          strokeLinecap="square"
+        >
+          <path d="M3 11l4 4 10-11" />
+        </svg>
+      </span>
     )
 
     const ArrowRight = ({ className }: { className?: string }) => (
@@ -107,8 +127,8 @@ export const CleaningServiceHero = defineCapsule({
 
     const Star = () => (
       <svg
-        width="20"
-        height="20"
+        width="18"
+        height="18"
         viewBox="0 0 20 20"
         fill="currentColor"
         className="text-primary"
@@ -119,23 +139,39 @@ export const CleaningServiceHero = defineCapsule({
     )
 
     return (
-      <HeroSection className={cn('relative bg-muted/40', props.className)}>
-        <Container size="xl" className="py-16 lg:py-24">
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-            <div className="space-y-8">
-              <HeroBadge variant="solid" className="gap-2 py-2">
-                <CheckCircle />
+      <HeroSection
+        className={cn(
+          'relative overflow-hidden bg-background',
+          props.className,
+        )}
+      >
+        <DotGrid
+          density="loose"
+          tone="faint"
+          fade="left"
+          className="inset-y-0 right-0 w-1/2"
+        />
+        <Watermark className="-right-10 top-4 rotate-12 text-[11rem] text-foreground/[0.05] sm:text-[16rem]">
+          ✱
+        </Watermark>
+        <Container size="xl" className="relative py-14 sm:py-16 lg:py-24">
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
+            <div className="space-y-7 lg:col-span-7">
+              <HeroBadge className="inline-flex -rotate-1 items-center gap-2.5 rounded-none border-2 border-foreground bg-background px-3.5 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-foreground shadow-[3px_3px_0_0] shadow-foreground">
+                <CheckSquare />
                 {badge}
               </HeroBadge>
-              <HeroHeading>
+              <HeroHeading className="text-[clamp(2.75rem,7vw,5.25rem)] font-extrabold leading-[0.98] tracking-tight text-foreground">
                 {headingTop}
                 <br />
-                <HeroHighlight>{highlight}</HeroHighlight>
+                <HeroHighlight className="mt-2 inline-block -rotate-1 bg-primary px-3 pb-1 text-primary-foreground">
+                  {highlight}
+                </HeroHighlight>
               </HeroHeading>
-              <HeroSubheading className="mt-0 max-w-lg">
+              <HeroSubheading className="mt-0 max-w-lg text-lg leading-relaxed text-muted-foreground">
                 {subheading}
               </HeroSubheading>
-              <HeroActions className="mt-0 flex flex-col gap-4 sm:flex-row">
+              <HeroActions className="mt-0 grid grid-cols-1 gap-4 sm:flex sm:flex-row">
                 <LocalServiceBookingButton
                   lakebed={lakebed}
                   intentLabel={primaryCta}
@@ -144,69 +180,73 @@ export const CleaningServiceHero = defineCapsule({
                   pendingChildren={
                     <LocalServiceMutationSpinner className="text-primary-foreground" />
                   }
-                  className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+                  className="inline-flex items-center justify-center rounded-none border-2 border-foreground bg-primary px-7 py-3.5 text-base font-bold text-primary-foreground shadow-[5px_5px_0_0] shadow-foreground transition-all duration-150 hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:pointer-events-none disabled:opacity-70"
                 >
                   {primaryCta}
                   <ArrowRight className="ml-2 size-5" />
                 </LocalServiceBookingButton>
                 <HeroCta
                   asChild
-                  variant="outline"
-                  className="rounded-full bg-background px-8 py-4 text-base font-semibold"
+                  className="rounded-none border-2 border-foreground bg-background px-7 py-3.5 text-base font-bold text-foreground transition-all duration-150 hover:bg-foreground hover:text-background active:translate-y-px"
                 >
                   <NavbarRouteLink href={secondaryCta}>
                     {secondaryCta}
                   </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
-              <HeroSocialProof className="mt-0 gap-6">
+              <HeroSocialProof className="mt-0 flex flex-col items-start justify-start gap-3 border-t border-border pt-5 sm:flex-row sm:flex-wrap sm:gap-x-7">
                 {trustBadges.map((item) => (
-                  <HeroSocialProofItem key={item}>
-                    <span className="text-primary">
-                      <CheckCircle />
-                    </span>
+                  <HeroSocialProofItem
+                    key={item}
+                    className="flex items-center gap-2.5 font-mono text-[11px] uppercase tracking-[0.14em] text-foreground"
+                  >
+                    <CheckSquare />
                     <span>{item}</span>
                   </HeroSocialProofItem>
                 ))}
               </HeroSocialProof>
             </div>
-            <div className="relative">
+            <div className="relative mb-10 lg:col-span-5 lg:mb-0">
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -right-3 -top-3 h-full w-full rotate-1 border-2 border-foreground/20 bg-primary/5"
+              />
               <HeroMediaPanel
                 alt={imageAlt}
                 w={800}
                 h={600}
-                className="aspect-[4/3] w-full shadow-2xl"
+                className="relative aspect-[4/3] w-full rounded-none border-2 border-foreground shadow-[8px_8px_0_0] shadow-foreground"
               />
-              <div className="absolute -bottom-6 -left-6 hidden rounded-xl bg-card p-4 shadow-xl sm:block sm:p-6">
-                <div className="flex items-center gap-4">
+              <div className="absolute -bottom-8 left-4 -rotate-2 rounded-none border-2 border-foreground bg-card p-3 shadow-[4px_4px_0_0] shadow-foreground sm:-left-6 sm:p-5">
+                <div className="flex items-center gap-3.5">
                   <div className="flex -space-x-3">
                     <Image
                       alt="professional headshot of a smiling woman with dark hair"
                       w={100}
                       h={100}
-                      className="size-10 rounded-full border-2 border-card object-cover"
+                      className="size-9 rounded-full border-2 border-card object-cover sm:size-10"
                     />
                     <Image
                       alt="professional headshot of a smiling man with short brown hair"
                       w={100}
                       h={100}
-                      className="size-10 rounded-full border-2 border-card object-cover"
+                      className="size-9 rounded-full border-2 border-card object-cover sm:size-10"
                     />
                     <Image
                       alt="professional headshot of a smiling woman with blonde hair"
                       w={100}
                       h={100}
-                      className="size-10 rounded-full border-2 border-card object-cover"
+                      className="size-9 rounded-full border-2 border-card object-cover sm:size-10"
                     />
                   </div>
                   <div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5">
                       <Star />
-                      <span className="font-semibold text-card-foreground">
+                      <span className="font-mono text-lg font-bold tabular-nums text-card-foreground">
                         {rating}
                       </span>
                     </div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                       {ratingNote}
                     </p>
                   </div>

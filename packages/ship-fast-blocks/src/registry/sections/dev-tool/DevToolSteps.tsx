@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   StepTimeline,
@@ -11,17 +12,21 @@ import {
 } from '#/section-kit/StepTimeline.tsx'
 
 /**
- * DevToolSteps — a 3-step "get started in minutes" timeline for a developer
- * tool / API platform. A muted-banded section with a centered heading + intro
- * above a responsive 3-column grid of numbered steps, each with a filled circular
- * brand-colored number badge, a title, and a description, connected by a thin
- * horizontal rule on desktop. Static (no links). Use to explain onboarding /
- * quickstart flow for developer tools, API platforms, or technical SaaS.
+ * DevToolSteps — shell-session quickstart for a developer tool / API platform.
+ * A muted band with an asymmetric 4/8 split: a left rail holding the heading,
+ * intro, and an aria-hidden mono "[ quickstart ]" step-count meta (sticky on
+ * desktop), beside a single sharp-cornered terminal window pane — mono title
+ * bar with square chrome dots and a "~/quickstart" tab — whose body lists each
+ * step as a hairline-divided prompt row: a mono "$ step 01" prompt line with a
+ * giant ghost tabular numeral, the step title, and its description, closing
+ * with an aria-hidden "[ done ] exit 0" status row. Static (no links). Use to
+ * explain onboarding / quickstart flow for developer tools, API platforms, or
+ * technical SaaS.
  */
 export const DevToolSteps = defineCapsule({
   name: 'DevToolSteps',
   description:
-    "3-step 'get started in minutes' timeline for a developer tool / API platform: a muted-banded section with a centered heading + intro above a responsive 3-column grid of numbered steps, each with a filled circular brand-colored number badge, title, and description, connected by a thin horizontal rule on desktop. Use to explain onboarding / quickstart flow for developer tools, API platforms, or technical SaaS.",
+    "Shell-session quickstart for a developer tool / API platform: a muted band with an asymmetric 4/8 split — a sticky left rail with the heading, intro, and aria-hidden mono step-count meta beside a single sharp terminal window pane (mono title bar, square chrome dots, '~/quickstart' tab) listing each step as a hairline-divided prompt row with a mono '$ step 01' line, a giant ghost tabular numeral, the step title, and description, closing with an aria-hidden '[ done ] exit 0' status row. Use to explain onboarding / quickstart flow for developer tools, API platforms, or technical SaaS.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -57,39 +62,86 @@ export const DevToolSteps = defineCapsule({
 
     return (
       <StepTimeline
-        className={cn('bg-muted/40 py-20 lg:py-28', props.className)}
+        className={cn('bg-muted/40 py-16 lg:py-24', props.className)}
         aria-labelledby="steps-heading"
       >
         <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            titleId="steps-heading"
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <StepTimelineGrid columns={3} className="gap-8">
-            {items.map((step, i) => (
-              <StepItem key={step.title} className="relative">
-                {i < items.length - 1 ? (
-                  <div
-                    aria-hidden="true"
-                    className="absolute left-12 top-6 -z-10 hidden h-0.5 w-full bg-border md:block"
-                  />
-                ) : null}
-                <div className="mb-4 grid size-12 place-items-center rounded-full bg-primary font-bold text-primary-foreground">
-                  {i + 1}
+          <div className="grid gap-10 lg:grid-cols-12 lg:gap-12">
+            <div className="lg:col-span-4">
+              <div className="lg:sticky lg:top-24">
+                <MonoTag aria-hidden="true" tone="faint" className="mb-4 block">
+                  [ quickstart ] {String(items.length).padStart(2, '0')} steps
+                </MonoTag>
+                <SectionHeading
+                  align="left"
+                  title={heading}
+                  subtitle={description}
+                  titleId="steps-heading"
+                  className="gap-4"
+                  titleClassName="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl"
+                  subtitleClassName="text-lg text-muted-foreground"
+                />
+              </div>
+            </div>
+
+            {/* Terminal session pane */}
+            <div className="overflow-hidden border border-foreground/20 bg-card lg:col-span-8">
+              <div className="flex items-center gap-2 border-b border-border bg-muted px-4 py-3">
+                <div className="flex gap-1.5" aria-hidden="true">
+                  <div className="size-2 bg-foreground/25" />
+                  <div className="size-2 bg-foreground/25" />
+                  <div className="size-2 bg-foreground/50" />
                 </div>
-                <h3 className="mb-2 text-lg font-semibold text-foreground">
-                  {step.title}
-                </h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  {step.description}
-                </p>
-              </StepItem>
-            ))}
-          </StepTimelineGrid>
+                <span className="ml-2 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                  ~/quickstart
+                </span>
+                <span
+                  aria-hidden="true"
+                  className="ml-auto font-mono text-[11px] text-muted-foreground/60"
+                >
+                  — sh
+                </span>
+              </div>
+              <StepTimelineGrid
+                columns={3}
+                className="grid-cols-1 gap-0 divide-y divide-border md:grid-cols-1"
+              >
+                {items.map((step, i) => (
+                  <StepItem
+                    key={step.title}
+                    className="relative overflow-hidden p-6 sm:p-8"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute -right-2 -top-5 select-none font-mono text-8xl font-bold tabular-nums leading-none text-foreground/[0.06]"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <p
+                      aria-hidden="true"
+                      className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+                    >
+                      <span className="text-primary">$ </span>
+                      step {String(i + 1).padStart(2, '0')}
+                    </p>
+                    <h3 className="mt-3 font-mono text-lg font-bold tracking-tight text-foreground">
+                      {step.title}
+                    </h3>
+                    <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
+                      {step.description}
+                    </p>
+                  </StepItem>
+                ))}
+              </StepTimelineGrid>
+              <div
+                aria-hidden="true"
+                className="flex items-center justify-between border-t border-border px-6 py-3 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground/70 sm:px-8"
+              >
+                <span className="text-chart-1">[ done ]</span>
+                <span>exit 0</span>
+              </div>
+            </div>
+          </div>
         </Container>
       </StepTimeline>
     )

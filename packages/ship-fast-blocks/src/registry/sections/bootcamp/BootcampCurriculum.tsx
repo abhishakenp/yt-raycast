@@ -1,22 +1,23 @@
 import { defineCapsule } from '#/capsules/openui.ts'
-import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * BootcampCurriculum — 6-up curriculum / modules grid for a coding bootcamp /
- * career-school landing page. A centered eyebrow, heading and description above
- * a responsive 1/2/3-column grid of rounded cards; each card has a rotated inline
- * line-icon tile in primary tint, a module title, a week-range description, and a
- * bullet list of key skills. Cards subtly highlight on hover. Use to present a
- * bootcamp's syllabus, course modules, or week-by-week curriculum breakdown.
+ * BootcampCurriculum — "Terminal Classroom" module ledger for a coding
+ * bootcamp / career-school landing page. An asymmetric header (left-aligned
+ * heading beside a decorative div-built syllabus progress bar) sits above a
+ * collapsed-border 1/2/3-column module grid: every cell carries a mono
+ * `MOD 01` index tag, a segmented progress-tick strip that fills as modules
+ * advance, a ghost index numeral in the corner, the module title, a
+ * week-range description, and a `+`-prefixed skills list. A giant ghost "16"
+ * watermark bleeds behind the grid. Use to present a bootcamp's syllabus,
+ * course modules, or week-by-week curriculum breakdown.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
-  FeatureGrid,
   FeatureCard,
-  FeatureIcon,
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
@@ -27,7 +28,7 @@ import {
 export const BootcampCurriculum = defineCapsule({
   name: 'BootcampCurriculum',
   description:
-    "6-up curriculum / modules grid for a coding bootcamp / career-school landing page: centered eyebrow, heading and description above a responsive 1/2/3-column grid of rounded cards. Each card has a rotated inline line-icon tile in primary tint, a module title, a week-range description, and a bullet list of key skills. Cards subtly highlight on hover. Use to present a bootcamp's syllabus, course modules, or week-by-week curriculum breakdown.",
+    "Terminal-styled collapsed-border module ledger for a coding bootcamp / career-school landing page: asymmetric left-aligned header with a decorative div-built syllabus progress bar, above a hairline 1/2/3-column grid of modules. Each cell has a mono 'MOD 01' index tag, a segmented progress-tick strip, a ghost corner numeral, the module title, a week-range description, and a '+'-prefixed skills list; a giant ghost '16' watermark bleeds behind. Use to present a bootcamp's syllabus, course modules, or week-by-week curriculum breakdown.",
   props: z.object({
     /** Section eyebrow label. */
     eyebrow: z.string().optional(),
@@ -124,136 +125,101 @@ export const BootcampCurriculum = defineCapsule({
             ],
           },
         ]
-    const moduleIcons: ReactNode[] = [
-      <svg
-        key="code"
-        className="size-6"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
-        />
-      </svg>,
-      <svg
-        key="cube"
-        className="size-6"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"
-        />
-      </svg>,
-      <svg
-        key="server"
-        className="size-6"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"
-        />
-      </svg>,
-      <svg
-        key="db"
-        className="size-6"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"
-        />
-      </svg>,
-      <svg
-        key="ship"
-        className="size-6"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
-        />
-      </svg>,
-      <svg
-        key="briefcase"
-        className="size-6"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-        />
-      </svg>,
-    ]
+    const total = curriculumItems.length
     return (
-      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
-        <Container>
-          <SectionHeading
-            eyebrow={curriculumEyebrow}
-            title={curriculumHeading}
-            subtitle={curriculumDesc}
-            className="mb-16 lg:mb-20 max-w-3xl gap-0"
-            eyebrowClassName="mb-4 inline-block text-xs font-semibold tracking-wider text-primary"
-            titleClassName="mb-4 text-3xl font-bold sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <FeatureGrid className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <section
+        className={cn(
+          'relative overflow-hidden bg-background py-16 lg:py-24',
+          props.className,
+        )}
+      >
+        <Watermark className="-right-4 -top-6 font-mono text-[9rem] sm:text-[16rem]">
+          16
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-10 grid items-end gap-6 lg:mb-14 lg:grid-cols-12">
+            <SectionHeading
+              align="left"
+              eyebrow={curriculumEyebrow}
+              title={curriculumHeading}
+              subtitle={curriculumDesc}
+              className="max-w-2xl gap-0 lg:col-span-8"
+              eyebrowClassName="mb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+              titleClassName="mb-4 text-3xl font-bold tracking-tight sm:text-5xl"
+              subtitleClassName="text-base text-muted-foreground sm:text-lg"
+            />
+            <div
+              aria-hidden="true"
+              className="hidden w-full max-w-xs justify-self-end lg:col-span-4 lg:block"
+            >
+              <div className="flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                <span>syllabus.load</span>
+                <span className="text-primary">wk 12/16</span>
+              </div>
+              <div className="mt-2 flex gap-1">
+                {Array.from({ length: 16 }).map((_, j) => (
+                  <span
+                    key={j}
+                    className={cn(
+                      'h-1.5 flex-1',
+                      j < 12 ? 'bg-foreground/70' : 'bg-border',
+                    )}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="grid border-l border-t border-border sm:grid-cols-2 lg:grid-cols-3">
             {curriculumItems.map((mod, i) => (
               <FeatureCard
                 key={mod.title}
-                className="gap-0 rounded-2xl bg-muted/40 p-6 transition-colors hover:border-primary/30 lg:p-8"
+                className="relative gap-0 rounded-none border-0 border-b border-r border-border bg-transparent p-6 transition-colors hover:bg-muted/40 lg:p-8"
               >
-                <FeatureIcon className="mb-6 grid size-12 place-items-center rounded-xl bg-primary/10 text-primary">
-                  {moduleIcons[i % moduleIcons.length]}
-                </FeatureIcon>
-                <FeatureTitle className="mb-3 text-xl font-semibold">
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute right-4 top-3 select-none font-mono text-6xl font-bold leading-none text-foreground/[0.05]"
+                >
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <MonoTag tone="primary">
+                  mod {String(i + 1).padStart(2, '0')}
+                </MonoTag>
+                <div aria-hidden="true" className="mt-3 flex gap-1">
+                  {Array.from({ length: total }).map((_, j) => (
+                    <span
+                      key={j}
+                      className={cn(
+                        'h-1 w-4',
+                        j <= i ? 'bg-primary/70' : 'bg-border',
+                      )}
+                    />
+                  ))}
+                </div>
+                <FeatureTitle className="mt-5 text-xl font-semibold tracking-tight">
                   {mod.title}
                 </FeatureTitle>
-                <FeatureDescription className="mb-4">
+                <FeatureDescription className="mt-2">
                   {mod.description}
                 </FeatureDescription>
-                <CurriculumList className="space-y-2 text-sm text-muted-foreground">
+                <CurriculumList className="mt-4 gap-2 text-sm text-muted-foreground">
                   {mod.points.map((p) => (
-                    <CurriculumItem key={p} className="flex items-center gap-2">
-                      <span className="size-1.5 rounded-full bg-primary" />
+                    <CurriculumItem
+                      key={p}
+                      className="flex-row items-start gap-2"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="font-mono text-primary"
+                      >
+                        +
+                      </span>
                       {p}
                     </CurriculumItem>
                   ))}
                 </CurriculumList>
               </FeatureCard>
             ))}
-          </FeatureGrid>
+          </div>
         </Container>
       </section>
     )

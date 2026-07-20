@@ -88,7 +88,6 @@ export const WebinarAuthors = defineCapsule({
               <PersonCard
                 key={`${speaker.name}-${i}`}
                 variant="outlined"
-
                 className="items-center p-8 text-center rounded-2xl"
               >
                 <Image

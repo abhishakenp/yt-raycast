@@ -9,21 +9,22 @@ import {
   FaqQuestion,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 
 /**
- * InsuranceFaq — frequently-asked-questions stack for an insurance page. On a
- * soft muted canvas: a centered eyebrow chip + heading + lede above a narrow
- * column of bordered question/answer cards, each showing the question as a bold
- * heading over a muted answer paragraph. Use to address common coverage,
- * claims, billing and cancellation questions for insurance carriers, insurtech,
+ * InsuranceFaq — Swiss-trust FAQ ledger for an insurance page. On a soft muted
+ * canvas: an asymmetric header (mono eyebrow + left-aligned heading + lede, mono
+ * question count right) sits above a hairline-divided stack of question/answer
+ * rows, each an asymmetric split of a giant mono index numeral beside the bold
+ * question over a muted answer paragraph. Use to address common coverage, claims,
+ * billing, premium and cancellation questions for insurance carriers, insurtech,
  * brokers, or financial-protection products. Renders fully with no props via
  * baked-in defaults.
  */
 export const InsuranceFaq = defineCapsule({
   name: 'InsuranceFaq',
   description:
-    'Frequently-asked-questions stack for an insurance page on a soft muted canvas: a centered eyebrow chip + heading + lede above a narrow column of bordered question/answer cards, each showing the question as a bold heading over a muted answer paragraph. Use to address common coverage, claims, billing, premium and cancellation questions for insurance carriers, insurtech startups, brokers, or financial-protection products.',
+    'Swiss-trust FAQ ledger for an insurance page on a soft muted canvas: an asymmetric header (mono eyebrow + left-aligned heading + lede, mono question count right) above a hairline-divided stack of question/answer rows, each an asymmetric split of a giant mono index numeral beside the bold question over a muted answer paragraph. Use to address common coverage, claims, billing, premium and cancellation questions for insurance carriers, insurtech startups, brokers, or financial-protection products.',
   props: z.object({
     /** Eyebrow chip above the heading. */
     eyebrow: z.string().optional(),
@@ -85,31 +86,53 @@ export const InsuranceFaq = defineCapsule({
 
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
-        <Container className="max-w-4xl">
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            eyebrowClassName="mb-4 inline-block rounded-full border border-border bg-background px-4 py-1.5 text-sm font-semibold text-primary"
-            titleClassName="mb-6 text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <FaqAccordion>
-            {items.map((item) => (
+        <Container className="max-w-5xl">
+          <div className="mb-12 flex flex-col gap-6 border-b border-border pb-6 md:flex-row md:items-end md:justify-between lg:mb-14">
+            <div className="max-w-2xl">
+              <MonoTag className="mb-4 block">
+                {eyebrow}
+                <span aria-hidden="true" className="text-primary">
+                  {' '}
+                  / help
+                </span>
+              </MonoTag>
+              <h2 className="text-3xl font-extrabold tracking-tight text-foreground text-balance sm:text-4xl lg:text-5xl">
+                {heading}
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground text-pretty">
+                {description}
+              </p>
+            </div>
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="shrink-0 tabular-nums"
+            >
+              [ {String(items.length).padStart(2, '0')} answers ]
+            </MonoTag>
+          </div>
+          <FaqAccordion variant="divided">
+            {items.map((item, i) => (
               <FaqItem
                 key={item.question}
                 asChild
-                className="bg-background p-6 shadow-sm"
+                variant="divided"
+                className="grid grid-cols-[auto_1fr] gap-x-5 gap-y-2 py-6 sm:gap-x-8"
               >
                 <div>
+                  <span
+                    aria-hidden="true"
+                    className="row-span-2 font-mono text-2xl font-extrabold leading-none tabular-nums tracking-tight text-primary sm:text-3xl"
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
                   <FaqQuestion
                     asChild
-                    className="mb-3 text-lg font-semibold text-foreground"
+                    className="col-start-2 text-lg font-semibold tracking-tight text-foreground"
                   >
                     <h3>{item.question}</h3>
                   </FaqQuestion>
-                  <FaqAnswer className="leading-relaxed">
+                  <FaqAnswer className="col-start-2 leading-relaxed">
                     {item.answer}
                   </FaqAnswer>
                 </div>

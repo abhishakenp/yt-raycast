@@ -20,15 +20,18 @@ import {
 } from '../commerce/commerce-interactions.tsx'
 
 /**
- * FurnitureStoreProducts — a best-sellers product grid. A header row (eyebrow +
- * heading left, arrow "shop all" link right) above a responsive 1/2/4-column grid
- * of product cards; each card has a square image that zooms on hover, an optional
- * corner badge (Sale tinted destructive, otherwise primary), a hover-revealed
- * add-to-cart button, a product name link, a variant subtitle, and a price line
- * that shows a struck-through original price when on sale. Card links and view-all
- * route through section-kit route links; add-to-cart writes to the shared Lakebed cart. Use as
- * the product / shop grid for furniture, home-decor, or any retail store. Renders
- * fully with no props via baked-in "Haven & Home" defaults.
+ * FurnitureStoreProducts — an editorial-catalog best-sellers product grid. An
+ * asymmetric header row (mono index eyebrow + heading left, arrow "shop all"
+ * link right) above a responsive 1/2/4-column grid of column-staggered product
+ * plates; each plate has a square rounded-none image that zooms on hover, an
+ * optional square corner badge (Sale tinted destructive, otherwise primary), a
+ * hover-revealed square add-to-cart button, and a museum-label caption block
+ * (mono index numeral + product name link, mono variant subtitle, and a
+ * tabular-num price line that shows a struck-through original price when on
+ * sale). Card links and view-all route through section-kit route links;
+ * add-to-cart writes to the shared Lakebed cart. Use as the product / shop grid
+ * for furniture, home-decor, or any retail store. Renders fully with no props
+ * via baked-in "Haven & Home" defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -38,7 +41,7 @@ import { NavbarRouteLink } from '#/section-kit/index.ts'
 export const FurnitureStoreProducts = defineCapsule({
   name: 'FurnitureStoreProducts',
   description:
-    "Best-sellers product grid: a header row (eyebrow + heading left, arrow 'shop all' link right) above a responsive 1/2/4-column grid of product cards; each card has a square image that zooms on hover, an optional corner badge (Sale tinted destructive, else primary), a hover-revealed add-to-cart button that writes to the shared Lakebed cart, a product name link, a variant subtitle, and a price line showing a struck-through original price when on sale. Card links and view-all route through section-kit route links. Use as the product / shop grid for furniture, home-decor, or any retail store.",
+    "Editorial-catalog best-sellers product grid: an asymmetric header row (mono index eyebrow + heading left, arrow 'shop all' link right) above a responsive 1/2/4-column grid of column-staggered product plates; each plate has a square rounded-none image that zooms on hover, an optional square corner badge (Sale tinted destructive, else primary), a hover-revealed square add-to-cart button that writes to the shared Lakebed cart, and a museum-label caption (mono index numeral + product name link, mono variant subtitle, and a tabular-num price line showing a struck-through original price when on sale). Card links and view-all route through section-kit route links. Use as the product / shop grid for furniture, home-decor, or any retail store.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -155,7 +158,7 @@ export const FurnitureStoreProducts = defineCapsule({
         aria-labelledby="furniture-bestsellers-heading"
       >
         <Container>
-          <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="mb-12 flex flex-col gap-4 border-b border-border pb-8 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <SectionHeading
                 align="left"
@@ -163,23 +166,27 @@ export const FurnitureStoreProducts = defineCapsule({
                 title={heading}
                 titleId="furniture-bestsellers-heading"
                 className="gap-0"
-                eyebrowClassName="mb-3 text-sm font-medium uppercase tracking-widest text-muted-foreground"
-                titleClassName="text-3xl font-medium lg:text-4xl"
+                eyebrowClassName="mb-3 font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground"
+                titleClassName="text-3xl font-medium tracking-tight lg:text-4xl"
               />
             </div>
             <NavbarRouteLink
-              className="inline-flex items-center text-sm font-medium text-foreground transition-colors hover:text-muted-foreground"
+              className="inline-flex items-center font-mono text-[11px] uppercase tracking-[0.16em] text-foreground transition-colors hover:text-muted-foreground"
               href={viewAll}
             >
               {viewAll}
-              <ArrowRight className="ml-1 size-4" />
+              <ArrowRight className="ml-1.5 size-4" />
             </NavbarRouteLink>
           </div>
 
-          <ResponsiveGrid cols="1-2-4" className="gap-6">
-            {visibleItems.map((product) => (
-              <ProductCard key={product.name} variant="none">
-                <ProductCardImage className="mb-4 rounded-lg">
+          <ResponsiveGrid cols="1-2-4" className="items-start gap-x-6 gap-y-12">
+            {visibleItems.map((product, i) => (
+              <ProductCard
+                key={product.name}
+                variant="none"
+                className={cn(i % 2 === 1 && 'lg:mt-12')}
+              >
+                <ProductCardImage className="mb-4 rounded-none">
                   <NavbarRouteLink
                     className="block size-full"
                     aria-label={product.name}
@@ -196,6 +203,7 @@ export const FurnitureStoreProducts = defineCapsule({
                   {product.badge ? (
                     <ProductCardBadge
                       className={cn(
+                        'rounded-none font-mono text-[10px] uppercase tracking-[0.12em]',
                         product.badge.toLowerCase() === 'sale'
                           ? 'bg-destructive text-destructive-foreground'
                           : 'bg-primary text-primary-foreground',
@@ -211,7 +219,7 @@ export const FurnitureStoreProducts = defineCapsule({
                         label: product.name,
                         price: product.price,
                       }}
-                      className="grid size-10 place-items-center rounded-full bg-card p-2 opacity-0 shadow transition-opacity disabled:pointer-events-none disabled:opacity-70 group-hover:opacity-100"
+                      className="grid size-10 place-items-center rounded-none border border-border bg-card p-2 opacity-0 transition-[opacity,transform] duration-150 hover:bg-muted active:scale-95 disabled:pointer-events-none disabled:opacity-70 group-hover:opacity-100 motion-reduce:active:scale-100"
                       aria-label={`Add ${product.name} to cart`}
                     >
                       <svg
@@ -229,18 +237,26 @@ export const FurnitureStoreProducts = defineCapsule({
                     </CommerceAddItemButton>
                   </ProductCardActions>
                 </ProductCardImage>
-                <ProductCardTitle asChild className="mb-1">
-                  <NavbarRouteLink
-                    className="transition-colors hover:text-muted-foreground"
-                    href={product.name}
+                <div className="flex items-baseline gap-2">
+                  <span
+                    aria-hidden="true"
+                    className="font-mono text-[10px] tabular-nums tracking-[0.16em] text-muted-foreground"
                   >
-                    {product.name}
-                  </NavbarRouteLink>
-                </ProductCardTitle>
-                <ProductCardSubtitle className="mb-2 mt-0">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <ProductCardTitle asChild className="mb-0">
+                    <NavbarRouteLink
+                      className="text-sm transition-colors hover:text-muted-foreground"
+                      href={product.name}
+                    >
+                      {product.name}
+                    </NavbarRouteLink>
+                  </ProductCardTitle>
+                </div>
+                <ProductCardSubtitle className="mb-2 ml-6 mt-1 font-mono text-[11px] uppercase tracking-[0.1em]">
                   {product.variant}
                 </ProductCardSubtitle>
-                <ProductCardPrice>
+                <ProductCardPrice className="ml-6 text-sm tabular-nums">
                   {product.oldPrice ? (
                     <span className="mr-2 text-muted-foreground/70 line-through">
                       {product.oldPrice}

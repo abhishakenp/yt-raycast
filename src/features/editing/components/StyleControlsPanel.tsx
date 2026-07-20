@@ -160,7 +160,10 @@ export function StyleControlsPanel({
     }
   }
 
-  const setPaddingValue = (side: 'top' | 'right' | 'bottom' | 'left', value: string) => {
+  const setPaddingValue = (
+    side: 'top' | 'right' | 'bottom' | 'left',
+    value: string,
+  ) => {
     const next = paddingLinked
       ? { top: value, right: value, bottom: value, left: value }
       : { ...padding, [side]: value }
@@ -179,7 +182,10 @@ export function StyleControlsPanel({
     )
   }
 
-  const setMarginValue = (side: 'top' | 'right' | 'bottom' | 'left', value: string) => {
+  const setMarginValue = (
+    side: 'top' | 'right' | 'bottom' | 'left',
+    value: string,
+  ) => {
     const next = marginLinked
       ? { top: value, right: value, bottom: value, left: value }
       : { ...margin, [side]: value }

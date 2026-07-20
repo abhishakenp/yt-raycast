@@ -19,18 +19,21 @@ import {
 import { publicationLakebed } from './publication-lakebed.ts'
 
 /**
- * BlogNavbar — sticky editorial site header for a blog, magazine, newsroom, or
- * content hub. A clean wordmark beside a gradient brand tile + inline mark,
- * horizontal nav links with a home highlight on desktop, command article search,
- * a Shoo profile dropdown, a Lakebed subscribe drawer, and a real mobile drawer
- * (Sheet) on small screens. No phone number — editorial publications don't show
- * one. Use as the header for blogs, publications, journals, or any content site.
- * Renders fully with no props.
+ * BlogNavbar — sticky newsprint masthead header for a blog, magazine,
+ * newsroom, or content hub. A serif wordmark beside a square ink-block quill
+ * mark, mono small-caps nav links separated by hairline column rules on
+ * desktop, command article search, a Shoo profile dropdown, a Lakebed
+ * subscribe drawer behind a square invert-on-hover "Subscribe" button, and a
+ * real mobile drawer (Sheet) on small screens. The bar keeps its backdrop blur
+ * and closes with a heavy masthead rule (thick + hairline double border). No
+ * phone number — editorial publications don't show one. Use as the header for
+ * blogs, publications, journals, or any content site. Renders fully with no
+ * props.
  */
 function QuillMark({ className }: { className?: string }) {
   return (
     <span
-      className={`grid size-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-sm ${className ?? ''}`}
+      className={`grid size-8 shrink-0 place-items-center rounded-none bg-foreground text-background ${className ?? ''}`}
     >
       <svg
         width="16"
@@ -54,7 +57,7 @@ function QuillMark({ className }: { className?: string }) {
 export const BlogNavbar = defineCapsule({
   name: 'BlogNavbar',
   description:
-    "Sticky editorial site header for a blog, magazine, newsroom, or content hub: a clean wordmark beside a gradient brand tile + inline mark, horizontal desktop nav links with a home highlight, command article search, a Shoo profile dropdown, a Lakebed subscribe drawer, and a real mobile drawer. No phone number — editorial publications don't show one. Use as the header for blogs, publications, journals, or any content site.",
+    "Sticky newsprint masthead header for a blog, magazine, newsroom, or content hub: a serif wordmark beside a square ink-block quill mark, mono small-caps desktop nav links separated by hairline column rules, command article search, a Shoo profile dropdown, a Lakebed subscribe drawer behind a square invert-on-hover Subscribe button, and a real mobile drawer. Keeps backdrop blur and closes with a heavy double masthead rule. No phone number — editorial publications don't show one. Use as the header for blogs, publications, journals, or any content site.",
   props: z.object({
     /** Brand / publication name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -82,25 +85,28 @@ export const BlogNavbar = defineCapsule({
       <SiteNav
         position="sticky"
         height="compact"
-        className={cn('bg-background/95', props.className)}
+        className={cn(
+          'border-b-2 border-foreground bg-background/95 shadow-[0_2px_0_0] shadow-border',
+          props.className,
+        )}
       >
-        <NavbarBrand href={homeTarget} className="min-w-0 gap-3">
-          <BrandLogo brand={brand}>
-            <LogoImage
-              fallback={<QuillMark className="size-8 text-primary" />}
-            />
-            <LogoLabel className="truncate text-xl font-bold tracking-tight text-foreground" />
+        <NavbarBrand href={homeTarget} className="min-w-0">
+          <BrandLogo brand={brand} className="flex items-center gap-2.5">
+            <LogoImage fallback={<QuillMark />} className="size-8" />
+            <LogoLabel className="font-serif text-xl font-bold tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
-        <NavbarNav>
-          {nav.map((label) => (
+        <NavbarNav className="gap-0">
+          {nav.map((label, i) => (
             <NavbarNavLink
               key={label}
               href={label}
               className={cn(
+                'px-3 font-mono text-[11px] font-normal uppercase tracking-[0.18em] transition-colors hover:text-foreground',
+                i > 0 && 'border-l border-border',
                 label === homeTarget
-                  ? 'text-foreground'
+                  ? 'text-foreground underline decoration-2 underline-offset-4'
                   : 'text-muted-foreground',
               )}
             >
@@ -109,7 +115,7 @@ export const BlogNavbar = defineCapsule({
           ))}
         </NavbarNav>
 
-        <NavbarActions className="gap-3">
+        <NavbarActions className="gap-2.5">
           <PublicationSearchButton
             lakebed={lakebed}
             buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
@@ -122,7 +128,7 @@ export const BlogNavbar = defineCapsule({
             lakebed={lakebed}
             buttonLabel={ctaLabel}
             source={ctaTarget}
-            buttonClassName="hidden rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
+            buttonClassName="hidden rounded-none border border-foreground bg-foreground px-4 py-2 font-mono text-[11px] uppercase tracking-[0.16em] text-background transition-colors duration-150 hover:bg-background hover:text-foreground active:translate-y-px sm:inline-flex"
           />
           <PublicationMobileMenu
             brand={brand}

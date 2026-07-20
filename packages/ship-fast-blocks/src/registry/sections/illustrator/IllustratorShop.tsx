@@ -12,6 +12,7 @@ import {
 import { ShopGrid, ShopCard } from '#/section-kit/ShopGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -23,19 +24,22 @@ import {
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * IllustratorShop — an art-print shop section for an illustrator / visual-artist
- * portfolio. A centered uppercase accent eyebrow + serif heading + paragraph
- * sit above a responsive 4-up grid of product cards; each card has a square
- * product image that zooms on hover, a serif title, a small meta line, and a
- * price beside a pill "add to cart" button, with a centered outlined
- * "visit full shop" CTA beneath. Add-to-cart writes to the shared commerce
- * Lakebed cart/catalog while the shop CTA routes through section-kit route links. Use to sell limited-edition prints, greeting cards, and
- * illustrated goods. Renders fully with no props via baked-in defaults.
+ * IllustratorShop — a hand-made art-print shop for an illustrator / visual-artist
+ * portfolio. An asymmetric header pairs a mono index micro-label + serif heading
+ * + paragraph on the left with a mono "print shop" tag on the right, above a
+ * responsive 4-up grid of product cards drawn as sketchbook frames (rounded-none
+ * dashed borders, hard offset shadows, staggered vertical rhythm); each card has
+ * a square image that zooms on hover, a serif title, a mono meta line, and a
+ * price beside a rounded-full sticker "add to cart" button that presses flat.
+ * A sticker "visit full shop" CTA sits beneath. Add-to-cart writes to the shared
+ * commerce Lakebed cart/catalog while the shop CTA routes through route links.
+ * Use to sell limited-edition prints, greeting cards, and illustrated goods.
+ * Renders fully with no props via baked-in defaults.
  */
 export const IllustratorShop = defineCapsule({
   name: 'IllustratorShop',
   description:
-    "Art-print shop section for an illustrator / visual-artist portfolio: a centered uppercase accent eyebrow + serif heading + paragraph above a responsive 4-up grid of product cards, each with a square product image that zooms on hover, a serif title, small meta line, and a price beside a pill 'add to cart' button, plus a centered outlined 'visit full shop' CTA beneath. Add-to-cart writes to the shared commerce Lakebed cart/catalog while the shop CTA routes through section-kit route links. Use to sell limited-edition prints, greeting cards, and illustrated goods.",
+    "Hand-made art-print shop for an illustrator / visual-artist portfolio: an asymmetric header pairing a mono index micro-label + serif heading + paragraph with a mono 'print shop' tag, above a responsive 4-up grid of product cards drawn as sketchbook frames (rounded-none dashed borders, hard offset shadows, staggered vertical rhythm), each with a square image that zooms on hover, a serif title, a mono meta line, and a price beside a rounded-full sticker 'add to cart' button that presses flat, plus a sticker 'visit full shop' CTA beneath. Add-to-cart writes to the shared commerce Lakebed cart/catalog while the shop CTA routes through route links. Use to sell limited-edition prints, greeting cards, and illustrated goods.",
   lakebed: commerceCartLakebed,
   props: z.object({
     /** Uppercase accent eyebrow label. */
@@ -134,25 +138,32 @@ export const IllustratorShop = defineCapsule({
         )}
       >
         <Container size="xl">
-          <div className="mx-auto mb-12 max-w-3xl text-center sm:mb-16">
+          <div className="mb-12 flex flex-col justify-between gap-6 border-b-2 border-dashed border-border pb-8 sm:mb-16 sm:flex-row sm:items-end">
             <SectionHeading
+              align="left"
               eyebrow={eyebrow}
               title={heading}
               subtitle={description}
-              className="gap-0"
-              eyebrowClassName="mb-2 text-sm font-medium uppercase tracking-wider text-chart-2"
-              titleClassName="mb-6 font-serif text-3xl sm:text-4xl lg:text-5xl"
+              className="max-w-2xl gap-0"
+              eyebrowClassName="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-primary"
+              titleClassName="mb-4 font-serif text-3xl sm:text-4xl lg:text-5xl"
               subtitleClassName="text-lg text-muted-foreground"
             />
+            <MonoTag className="shrink-0 self-start text-muted-foreground/70 sm:self-end">
+              [ print shop ]
+            </MonoTag>
           </div>
           <ShopGrid className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {visibleItems.map((item) => (
+            {visibleItems.map((item, i) => (
               <ShopCard asChild key={item.title}>
                 <ProductCard
                   variant="outlined"
-                  className="border-border/60 transition-shadow hover:shadow-lg"
+                  className={cn(
+                    'rounded-none border-2 border-dashed border-foreground/50 transition-[transform,box-shadow] duration-150 hover:-translate-y-1 hover:border-foreground hover:shadow-[6px_6px_0_0_var(--color-foreground)]',
+                    i % 2 === 1 && 'lg:translate-y-6',
+                  )}
                 >
-                  <ProductCardImage>
+                  <ProductCardImage className="border-b-2 border-dashed border-foreground/40">
                     <Image
                       alt={item.title}
                       w={500}
@@ -165,11 +176,11 @@ export const IllustratorShop = defineCapsule({
                     <ProductCardTitle className="mb-1 font-serif text-lg text-card-foreground">
                       {item.title}
                     </ProductCardTitle>
-                    <p className="mb-3 text-xs text-muted-foreground">
+                    <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
                       {item.meta}
                     </p>
                     <div className="flex items-center justify-between">
-                      <span className="font-medium text-card-foreground">
+                      <span className="font-mono font-semibold tabular-nums text-card-foreground">
                         {item.price}
                       </span>
                       <CommerceAddItemButton
@@ -185,7 +196,7 @@ export const IllustratorShop = defineCapsule({
                             Adding
                           </>
                         }
-                        className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-sm text-background transition-colors hover:bg-muted-foreground disabled:pointer-events-none disabled:opacity-70"
+                        className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-sm text-background shadow-[3px_3px_0_0_var(--color-primary)] transition-[transform,box-shadow] duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[5px_5px_0_0_var(--color-primary)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:pointer-events-none disabled:opacity-70"
                       >
                         {addToCart}
                       </CommerceAddItemButton>
@@ -195,9 +206,9 @@ export const IllustratorShop = defineCapsule({
               </ShopCard>
             ))}
           </ShopGrid>
-          <div className="mt-12 text-center">
+          <div className="mt-14 text-center">
             <NavbarRouteLink
-              className="inline-flex items-center gap-2 rounded-full border border-foreground px-8 py-4 text-sm font-medium text-foreground transition-colors hover:bg-foreground hover:text-background"
+              className="inline-flex -rotate-1 items-center gap-2 rounded-full border-2 border-dashed border-foreground px-8 py-4 text-sm font-medium text-foreground shadow-[4px_4px_0_0_var(--color-foreground)] transition-[transform,box-shadow,color,background-color] duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-foreground hover:text-background hover:shadow-[6px_6px_0_0_var(--color-primary)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none"
               href={cta}
             >
               {cta}

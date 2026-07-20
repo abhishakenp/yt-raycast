@@ -1,12 +1,18 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 /**
- * CorporateTestimonials — 3-up customer testimonial grid for an enterprise /
- * corporate B2B site. A centered section heading above a responsive 1/2/3-column
- * grid of cards with star ratings, a quote, and an avatar + name + role footer.
- * Use to build social proof on SaaS, consultancy, or managed services landing pages.
+ * CorporateTestimonials — Swiss-corporate proof ledger for an enterprise /
+ * corporate B2B site. A double-rule asymmetric header (mono "05 / Proof"
+ * index, left-aligned heading, lede in the offset right column) above a
+ * 1/2/3-column grid of square-edged hairline testimonial cards; the middle
+ * card rises on a calculated offset (the section's rupture). Each card opens
+ * with a mono tabular index numeral and a giant ghost quote mark, carries the
+ * quote, and closes with a hairline-topped footer of a square grayscale
+ * avatar photo, name, and mono role label. Use to build social proof on SaaS,
+ * consultancy, or managed services landing pages.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -21,7 +27,7 @@ import {
 export const CorporateTestimonials = defineCapsule({
   name: 'CorporateTestimonials',
   description:
-    '3-up customer testimonial grid for an enterprise / corporate B2B site: centered heading above a responsive 1/2/3-column grid of cards with a 5-star rating row, a quote, and an avatar + name + role footer. Use to build social proof on SaaS, consultancy, or managed services landing pages.',
+    'Swiss-corporate proof ledger for an enterprise / corporate B2B site: a double-rule asymmetric header (mono index, left-aligned heading, offset lede) above a 1/2/3-column grid of square-edged hairline testimonial cards with the middle card offset upward. Each card opens with a mono tabular index numeral and a giant ghost quote mark, carries the quote, and closes with a hairline-topped footer of square grayscale avatar photo, name, and mono role label. Use to build social proof on SaaS, consultancy, or managed services landing pages.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -74,17 +80,29 @@ export const CorporateTestimonials = defineCapsule({
           },
         ]
     return (
-      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+      <section className={cn('bg-background py-16 lg:py-28', props.className)}>
         <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 tracking-tight sm:text-4xl"
-            subtitleClassName="text-lg"
-          />
+          <div className="mb-10 grid gap-6 border-b border-border pb-8 sm:mb-14 lg:mb-20 lg:grid-cols-12 lg:gap-10">
+            <div className="lg:col-span-5">
+              <span
+                aria-hidden="true"
+                className="mb-4 block font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+              >
+                05 / Proof
+              </span>
+              <SectionHeading
+                align="left"
+                title={heading}
+                className="gap-0"
+                titleClassName="text-3xl font-semibold tracking-tight sm:text-4xl"
+              />
+            </div>
+            <p className="text-lg leading-relaxed text-muted-foreground lg:col-span-6 lg:col-start-7 lg:self-end">
+              {description}
+            </p>
+          </div>
           <TestimonialGrid columns={3}>
-            {items.map((t) => {
+            {items.map((t, i) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -95,15 +113,43 @@ export const CorporateTestimonials = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
+                <TestimonialCard
+                  key={__iv__.name}
+                  className={cn(
+                    'relative gap-5 overflow-hidden rounded-none bg-background p-6 sm:p-8',
+                    i % 3 === 1 && 'lg:-translate-y-6',
+                  )}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -right-2 -top-7 select-none font-serif text-[7rem] leading-none text-foreground/[0.05]"
+                  >
+                    &ldquo;
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="font-mono text-[11px] uppercase tracking-[0.2em] tabular-nums text-primary"
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
                   <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
-                    {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
-                        {__iv__.role || __iv__.company || __iv__.meta}
-                      </TestimonialMeta>
+                  <TestimonialAuthor className="border-t border-border pt-5">
+                    {__iv__.avatarAlt && (
+                      <Image
+                        alt={__iv__.avatarAlt}
+                        w={80}
+                        h={80}
+                        className="size-10 shrink-0 rounded-none border border-border object-cover grayscale"
+                      />
                     )}
+                    <span className="flex min-w-0 flex-col">
+                      <TestimonialName>{__iv__.name}</TestimonialName>
+                      {(__iv__.role || __iv__.company || __iv__.meta) && (
+                        <TestimonialMeta className="mt-0.5 truncate font-mono text-[10px] uppercase tracking-[0.14em]">
+                          {__iv__.role || __iv__.company || __iv__.meta}
+                        </TestimonialMeta>
+                      )}
+                    </span>
                   </TestimonialAuthor>
                 </TestimonialCard>
               )

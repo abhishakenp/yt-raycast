@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { Card } from '#/section-kit/Card.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   NavSidebar,
   NavSidebarSection,
@@ -20,22 +21,25 @@ import { useDocsSearch, useSyncDocsCatalog } from './docs-interactions.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * DocsSidebar — persistent left navigation sidebar for a developer
- * DOCUMENTATION / API-reference site. A sticky, scrollable, right-bordered
- * column (hidden on mobile): a search box with an inline magnifier icon at the
- * top that queries a shared Lakebed docs catalog and surfaces matching articles
- * inline, several grouped link sections (uppercase group title + a vertical list
- * of page links, the first link highlighted as active), and a documentation-version
- * <select> at the bottom. The search submit writes shared Lakebed search state and
- * renders matching docs articles inline; every link routes through section-kit route links
- * (never a dead "#"). Use as the left rail of a sidebar-driven docs layout, API
+ * DocsSidebar — "Terminal-docs" persistent left navigation rail for a
+ * developer DOCUMENTATION / API-reference site. A sticky, scrollable,
+ * right-bordered column (hidden on mobile) styled as a mono file-tree: a
+ * `~/docs` mono meta strip over a square hairline mono search box (its form
+ * submit queries a shared Lakebed docs catalog and surfaces matching articles
+ * in a collapsed-border result ledger), then grouped nav sections — each a
+ * `##`-prefixed mono group label above a hairline left rail of page links
+ * whose active entry carries a primary rail notch — and a square mono
+ * documentation-version <select> under a `[ version ]` tag at the bottom. The
+ * search submit writes shared Lakebed search state and renders matching docs
+ * articles inline; every link routes through section-kit route links (never a
+ * dead "#"). Use as the left rail of a sidebar-driven docs layout, API
  * reference, SDK guide, or knowledge base. Renders fully with no props via
  * baked-in StackForge section groups.
  */
 export const DocsSidebar = defineCapsule({
   name: 'DocsSidebar',
   description:
-    'Persistent left navigation sidebar for a developer DOCUMENTATION / API-reference site: a sticky, scrollable, right-bordered column (hidden on mobile) with a search box + inline magnifier icon at the top that queries a shared Lakebed docs catalog and surfaces matching articles inline, several grouped link sections (uppercase group title + vertical list of page links, the first highlighted as active — e.g. Overview / Core Concepts / SDKs & Tools / Resources) and a documentation-version select at the bottom. The search submit writes shared Lakebed search state and renders matching docs articles inline; every link routes through section-kit route links. Use as the left rail of a sidebar-driven docs layout, API reference, SDK guide, or knowledge base.',
+    "Terminal-docs persistent left navigation rail for a developer DOCUMENTATION / API-reference site: a sticky, scrollable, right-bordered column (hidden on mobile) styled as a mono file-tree — a '~/docs' mono meta strip over a square hairline mono search box that queries a shared Lakebed docs catalog and surfaces matching articles in a collapsed-border result ledger, grouped nav sections with '##'-prefixed mono group labels above hairline left rails of page links (the active entry carries a primary rail notch — e.g. Overview / Core Concepts / SDKs & Tools / Resources), and a square mono documentation-version select at the bottom. The search submit writes shared Lakebed search state and renders matching docs articles inline; every link routes through section-kit route links. Use as the left rail of a sidebar-driven docs layout, API reference, SDK guide, or knowledge base.",
   props: z.object({
     /** Search input placeholder text. */
     searchPlaceholder: z.string().optional(),
@@ -257,7 +261,16 @@ export const DocsSidebar = defineCapsule({
         variant="default"
         className={cn('hidden w-64 shrink-0 lg:block', props.className)}
       >
-        <div className="sticky top-16 max-h-[calc(100vh-4rem)] overflow-y-auto p-6">
+        <div className="sticky top-16 max-h-[calc(100vh-4rem)] overflow-y-auto p-5">
+          {/* Mono path strip — the rail's file-tree header. */}
+          <div
+            aria-hidden="true"
+            className="mb-4 flex items-baseline justify-between gap-2 border-b border-border pb-3"
+          >
+            <MonoTag className="normal-case">~/docs</MonoTag>
+            <MonoTag className="text-muted-foreground/50">nav</MonoTag>
+          </div>
+
           {/* Search */}
           <SearchForm
             className="mb-6"
@@ -279,38 +292,44 @@ export const DocsSidebar = defineCapsule({
                 name="query"
                 defaultValue={queryValue}
                 placeholder={searchPlaceholder}
-                className="rounded-lg py-2 pl-9 pr-4 text-sm focus:border-ring focus:ring-2 focus:ring-ring"
+                className="rounded-none py-2 pl-9 pr-3 font-mono text-xs shadow-none focus:border-ring focus:ring-2 focus:ring-ring"
               />
             </SearchField>
           </SearchForm>
 
           {showingResults ? (
-            <Card className="mb-6 p-1.5 rounded-lg p-0" aria-live="polite">
-              <p className="px-2 py-1.5 text-xs text-muted-foreground">
+            <Card className="mb-6 rounded-none p-0" aria-live="polite">
+              <p className="border-b border-border px-3 py-2 font-mono text-[11px] text-muted-foreground">
                 {matchingArticles.length} article
                 {matchingArticles.length === 1 ? '' : 's'} match{' '}
                 <span className="font-medium text-foreground">
                   {queryValue}
                 </span>
               </p>
-              <ul className="max-h-60 overflow-y-auto">
+              <ul className="max-h-60 divide-y divide-border overflow-y-auto">
                 {matchingArticles.map((article) => (
                   <li key={article.slug}>
                     <NavbarRouteLink
-                      className="flex w-full flex-col gap-0.5 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-muted"
+                      className="flex w-full flex-col gap-0.5 rounded-none px-3 py-2 text-left transition-colors hover:bg-muted/60"
                       href={article.title}
                     >
                       <span className="truncate text-sm font-medium text-foreground">
+                        <span
+                          aria-hidden="true"
+                          className="mr-1.5 font-mono font-normal text-muted-foreground/50"
+                        >
+                          #
+                        </span>
                         {article.title}
                       </span>
-                      <span className="truncate text-xs text-muted-foreground">
+                      <span className="truncate font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
                         {article.category}
                       </span>
                     </NavbarRouteLink>
                   </li>
                 ))}
                 {!matchingArticles.length ? (
-                  <li className="px-2 py-3 text-center text-xs text-muted-foreground">
+                  <li className="px-3 py-3 text-center text-xs text-muted-foreground">
                     No articles match the current search.
                   </li>
                 ) : null}
@@ -318,18 +337,18 @@ export const DocsSidebar = defineCapsule({
             </Card>
           ) : null}
 
-          {/* Navigation groups */}
-          <nav className="space-y-6" aria-label="Sidebar navigation">
+          {/* Navigation groups — mono tree with hairline left rails. */}
+          <nav className="space-y-7" aria-label="Sidebar navigation">
             {groups.map((group, gi) => (
               <NavSidebarSection key={group.title} className="p-0">
                 <Eyebrow
                   asChild
-                  variant="text"
-                  className="mb-3 block tracking-wider text-muted-foreground"
+                  variant="mono"
+                  className="mb-2.5 block tracking-[0.18em] text-muted-foreground/80 before:mr-1.5 before:font-normal before:text-muted-foreground/40 before:content-['##']"
                 >
                   <h3>{group.title}</h3>
                 </Eyebrow>
-                <ul className="space-y-1">
+                <ul className="space-y-0 border-l border-border">
                   {(group.items ?? []).map((item, ii) => {
                     const active = gi === 0 && ii === 0
                     return (
@@ -337,10 +356,10 @@ export const DocsSidebar = defineCapsule({
                         <NavSidebarLink asChild active={active}>
                           <NavbarRouteLink
                             className={cn(
-                              'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors',
+                              '-ml-px flex w-full items-center gap-2 rounded-none border-l-2 py-1.5 pl-3 pr-2 text-left text-[13px] transition-colors',
                               active
-                                ? 'bg-muted font-medium text-foreground'
-                                : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
+                                ? 'border-primary bg-muted font-medium text-foreground'
+                                : 'border-transparent text-muted-foreground hover:border-border hover:bg-muted/40 hover:text-foreground',
                             )}
                             href={item}
                           >
@@ -356,13 +375,16 @@ export const DocsSidebar = defineCapsule({
           </nav>
 
           {/* Version selector */}
-          <div className="mt-8 border-t border-border pt-6">
+          <div className="mt-8 border-t border-border pt-5">
+            <MonoTag aria-hidden="true" className="text-muted-foreground/60">
+              [ version ]
+            </MonoTag>
             <label htmlFor="docs-version" className="sr-only">
               Documentation version
             </label>
             <select
               id="docs-version"
-              className="w-full appearance-none rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring"
+              className="mt-2.5 w-full appearance-none rounded-none border border-input bg-background px-3 py-2 font-mono text-xs text-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring"
             >
               {versions.map((v) => (
                 <option key={v} className="bg-background">

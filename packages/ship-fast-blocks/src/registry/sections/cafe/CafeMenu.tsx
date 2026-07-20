@@ -2,30 +2,10 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import {
-  MenuCategoryHeader,
-  MenuCategoryIcon,
-  MenuCategoryTitle,
-} from '#/section-kit/MenuCategoryHeader.tsx'
-import {
-  MenuItemRow,
-  MenuItemContent,
-  MenuItemBody,
-  MenuItemNameRow,
-  MenuItemName,
-  MenuItemRowDescription,
-  MenuItemPriceColumn,
-  MenuItemRowPrice,
-  MenuItemAction,
-} from '#/section-kit/MenuItemRow.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import {
-  MenuList,
-  MenuItemDescription,
-  MenuItemPrice,
-} from '#/section-kit/MenuList.tsx'
+import { MenuList } from '#/section-kit/MenuList.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -36,21 +16,28 @@ import {
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * CafeMenu — printed-style food and drink menu for a neighborhood cafe /
- * coffee shop page. A centered cap / heading / description above a two-column
- * grid: the left column lists coffee drinks, the right lists pastries and light
- * fare. Each item is a live add-to-cart row with a name, description, and price
- * separated by a border divider. Below the two-column grid, a teas and
- * non-coffee band shows four centered cards. Rows seed the shared product
- * command search catalog and add into the shared Lakebed cart used by the cafe
- * navigation. Use for cafes, bakeries, tea houses, brunch spots, or any
- * cozy eatery wanting a readable, conversion-focused menu section. Renders
- * fully with no props via baked-in defaults.
+ * CafeMenu — warm newsprint-menu ledger for a neighborhood cafe / coffee shop
+ * page. Opens with a full-bleed inverted foreground-on-background heading band
+ * whose bottom edge is cut on a diagonal clip-path seam: inside, a mono
+ * dateline row (cap text as a mono stamp beside a hairline rule and edition
+ * label) above an asymmetric 7:5 pairing of the oversized serif heading with
+ * the right-aligned lead paragraph, over a giant serif ghost "Menu" watermark.
+ * Below, a two-column ledger separated by a newspaper column rule: each column
+ * is headed by a mono index numeral + serif title over a double rule, then
+ * ledger rows — serif item name (routing to the menu target), dotted price
+ * leader, serif italic price, muted description, and a square mono add-to-cart
+ * stamp chip that floods dark on hover with press feedback. A teas &
+ * non-coffee band closes the section as a collapsed-border 2/4-column grid of
+ * hairline cells. Rows seed the shared product command search catalog and add
+ * into the shared Lakebed cart used by the cafe navigation. Use for cafes,
+ * bakeries, tea houses, brunch spots, or any cozy eatery wanting a readable,
+ * conversion-focused menu section. Renders fully with no props via baked-in
+ * defaults.
  */
 export const CafeMenu = defineCapsule({
   name: 'CafeMenu',
   description:
-    'Printed-style food and drink menu for a cozy cafe page: centered cap, heading, and description above a two-column grid of coffee drinks and pastries/light fare. Each item is a live add-to-cart row with name, description, price, and a scoped loading button. Below, a teas and non-coffee band shows four centered cards. Rows seed the shared product command search catalog and mutate the shared Lakebed cart used by cafe navigation. Use for cafes, bakeries, tea houses, brunch spots, or cozy eateries wanting a readable menu section.',
+    'Warm newsprint-menu ledger for a cozy cafe page: a full-bleed inverted heading band with a diagonal clip-path bottom seam holds a mono dateline row (cap stamp, hairline rule, edition label) above an asymmetric 7:5 serif heading + right-aligned lead pairing over a giant serif ghost watermark; below, a two-column ledger split by a newspaper column rule — each column headed by a mono index numeral and serif title over a double rule, with ledger rows of serif item names (routing to the menu target), dotted price leaders, serif italic prices, muted descriptions, and square mono add-to-cart stamp chips with press feedback — then a teas & non-coffee collapsed-border grid of hairline cells. Rows seed the shared product command search catalog and mutate the shared Lakebed cart used by cafe navigation. Use for cafes, bakeries, tea houses, brunch spots, or cozy eateries wanting a readable menu section.',
   props: z.object({
     /** Eyebrow / cap text above the heading. */
     cap: z.string().optional(),
@@ -281,110 +268,158 @@ export const CafeMenu = defineCapsule({
             Adding
           </>
         }
-        className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full border border-border bg-background px-3 text-xs font-medium text-foreground transition-colors hover:bg-primary hover:text-primary-foreground disabled:pointer-events-none disabled:opacity-70"
+        className="inline-flex h-7 shrink-0 items-center justify-center gap-1.5 border border-foreground/25 bg-background px-3 font-mono text-[10px] font-semibold uppercase tracking-[0.15em] text-foreground transition-colors duration-150 hover:border-foreground hover:bg-foreground hover:text-background active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
       >
         {addLabel}
       </CommerceAddItemButton>
     )
 
-    return (
-      <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
-        <Container size="xl" className="px-6">
-          <MenuList>
-            <SectionHeading
-              eyebrow={cap}
-              title={heading}
-              subtitle={description}
-              align="center"
-              eyebrowClassName="text-primary tracking-wider"
-              titleClassName="mb-6 font-serif text-3xl font-medium sm:text-4xl lg:text-5xl"
-              className="mx-auto mb-16 max-w-2xl gap-6"
-            />
+    const MenuLedgerRow = ({
+      item,
+    }: {
+      item: { name: string; description: string; price: string }
+    }) => (
+      <div>
+        <div className="flex items-baseline gap-3">
+          <NavbarRouteLink
+            className="font-serif text-base font-medium text-foreground transition-colors hover:text-primary sm:text-lg"
+            href={menuTarget}
+          >
+            {item.name}
+          </NavbarRouteLink>
+          <span
+            aria-hidden="true"
+            className="mb-1 min-w-4 flex-1 border-b border-dotted border-foreground/30"
+          />
+          <span className="shrink-0 font-serif text-lg italic text-foreground">
+            {item.price}
+          </span>
+        </div>
+        <div className="mt-1 flex items-end justify-between gap-4">
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            {item.description}
+          </p>
+          <MenuAddButton item={item} />
+        </div>
+      </div>
+    )
 
-            <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
+    const ColumnHeader = ({
+      index,
+      title,
+    }: {
+      index: string
+      title: string
+    }) => (
+      <div className="border-b-[3px] border-double border-foreground/25 pb-3">
+        <MonoTag tone="primary">{index}</MonoTag>
+        <h3 className="mt-1.5 font-serif text-2xl font-medium tracking-tight text-foreground sm:text-3xl">
+          {title}
+        </h3>
+      </div>
+    )
+
+    return (
+      <section className={cn('bg-background pb-16 lg:pb-24', props.className)}>
+        <MenuList>
+          {/* Inverted heading band, cut on a diagonal seam at the bottom. */}
+          <div className="relative overflow-hidden bg-foreground pt-24 pb-20 text-background [clip-path:polygon(0_0,100%_0,100%_calc(100%-3rem),0_100%)] lg:pt-28 lg:pb-24">
+            <Watermark className="-bottom-8 right-[-2%] font-serif text-[6rem] italic tracking-tight text-background/[0.06] sm:text-[9rem] lg:text-[13rem]">
+              {heading.split(' ')[0] ?? ''}
+            </Watermark>
+            <Container size="xl" className="relative px-6">
+              <div className="flex items-center gap-4">
+                <MonoTag tone="inverted">{cap}</MonoTag>
+                <span
+                  aria-hidden="true"
+                  className="h-px flex-1 bg-background/20"
+                />
+                <MonoTag
+                  tone="inverted"
+                  className="hidden text-background/50 sm:inline"
+                >
+                  No. 02 — Daily
+                </MonoTag>
+              </div>
+              <SectionHeading
+                title={heading}
+                subtitle={description}
+                align="left"
+                className="mt-5 grid max-w-none gap-4 lg:grid-cols-12 lg:items-end lg:gap-10"
+                titleClassName="font-serif text-4xl font-medium tracking-tight text-background sm:text-5xl lg:col-span-7 lg:text-6xl"
+                subtitleClassName="max-w-md text-base leading-relaxed text-background/70 lg:col-span-5 lg:justify-self-end lg:text-right"
+              />
+            </Container>
+          </div>
+
+          <Container size="xl" className="mt-12 px-6 lg:mt-16">
+            {/* Two-column ledger with a newspaper column rule. */}
+            <div className="grid gap-12 lg:grid-cols-2 lg:gap-0">
               {[
-                { title: coffeeTitle, items: coffee },
-                { title: foodTitle, items: food },
-              ].map((col) => (
-                <div key={col.title} className="space-y-8">
-                  <MenuCategoryHeader>
-                    <MenuCategoryIcon>
-                      {
-                        <svg
-                          className="size-6"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          aria-hidden="true"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="1.5"
-                            d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 2.829a4.978 4.978 0 01-1.414-2.83M6 12a6 6 0 0112 0v1H6v-1z"
-                          />
-                        </svg>
-                      }
-                    </MenuCategoryIcon>
-                    <MenuCategoryTitle>{col.title}</MenuCategoryTitle>
-                  </MenuCategoryHeader>
+                { index: '01', title: coffeeTitle, items: coffee },
+                { index: '02', title: foodTitle, items: food },
+              ].map((col, colIdx) => (
+                <div
+                  key={col.title}
+                  className={cn(
+                    'space-y-7',
+                    colIdx === 1 &&
+                      'lg:border-l lg:border-foreground/15 lg:pl-14',
+                    colIdx === 0 && 'lg:pr-14',
+                  )}
+                >
+                  <ColumnHeader index={col.index} title={col.title} />
                   <div className="space-y-6">
                     {(col.items ?? []).map((item) => (
-                      <MenuItemRow key={`${col.title}:${item.name}`}>
-                        <MenuItemContent>
-                          <MenuItemBody>
-                            <MenuItemNameRow>
-                              <MenuItemName asChild>
-                                <NavbarRouteLink href={menuTarget}>
-                                  {item.name}
-                                </NavbarRouteLink>
-                              </MenuItemName>
-                            </MenuItemNameRow>
-                            <MenuItemRowDescription>
-                              {item.description}
-                            </MenuItemRowDescription>
-                          </MenuItemBody>
-                          <MenuItemPriceColumn>
-                            <MenuItemRowPrice>{item.price}</MenuItemRowPrice>
-                            <MenuItemAction>
-                              {<MenuAddButton item={item} />}
-                            </MenuItemAction>
-                          </MenuItemPriceColumn>
-                        </MenuItemContent>
-                      </MenuItemRow>
+                      <MenuLedgerRow
+                        key={`${col.title}:${item.name}`}
+                        item={item}
+                      />
                     ))}
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Teas & Non-Coffee */}
-            <div className="mt-16 border-t border-border pt-16">
-              <h3 className="mb-8 text-center font-serif text-xl font-medium text-foreground">
-                {teaTitle}
-              </h3>
-              <ResponsiveGrid cols="1-2-4" className="gap-6">
+            {/* Teas & non-coffee — collapsed-border hairline grid. */}
+            <div className="mt-16 lg:mt-20">
+              <div className="flex items-center gap-4">
+                <MonoTag tone="primary">03</MonoTag>
+                <h3 className="font-serif text-2xl font-medium tracking-tight text-foreground">
+                  {teaTitle}
+                </h3>
+                <span aria-hidden="true" className="h-px flex-1 bg-border" />
+              </div>
+              <div className="mt-6 grid grid-cols-1 border-t border-l border-foreground/15 sm:grid-cols-2 lg:grid-cols-4">
                 {teas.map((tea) => (
                   <div
                     key={tea.name}
-                    className="rounded-xl bg-muted p-6 text-center"
+                    className="flex flex-col border-r border-b border-foreground/15 bg-muted/30 p-5 sm:p-6"
                   >
-                    <h4 className="mb-1 font-medium text-foreground">
-                      {tea.name}
-                    </h4>
-                    <MenuItemDescription className="mb-2">
+                    <div className="flex items-baseline gap-3">
+                      <h4 className="font-serif text-base font-medium text-foreground">
+                        {tea.name}
+                      </h4>
+                      <span
+                        aria-hidden="true"
+                        className="mb-1 min-w-3 flex-1 border-b border-dotted border-foreground/30"
+                      />
+                      <span className="shrink-0 font-serif italic text-foreground">
+                        {tea.price}
+                      </span>
+                    </div>
+                    <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
                       {tea.description}
-                    </MenuItemDescription>
-                    <MenuItemPrice>{tea.price}</MenuItemPrice>
-                    <div className="mt-4 flex justify-center">
+                    </p>
+                    <div className="mt-4 flex justify-end">
                       <MenuAddButton item={tea} />
                     </div>
                   </div>
                 ))}
-              </ResponsiveGrid>
+              </div>
             </div>
-          </MenuList>
-        </Container>
+          </Container>
+        </MenuList>
       </section>
     )
   },

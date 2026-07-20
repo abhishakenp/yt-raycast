@@ -21,13 +21,17 @@ import {
 } from '../commerce/commerce-interactions.tsx'
 
 /**
- * ElectronicsStoreProducts — a "Trending Products" catalog grid on a muted band
- * for an electronics storefront. A header row pairs a heading with filter chips
- * (first chip primary-active), above a 1-to-4 column grid of product cards: a
- * square image with an optional corner badge and a floating round add-to-cart
- * button, then title, subtitle, price and a star rating. A centered outlined
- * "View All" button closes the section. Add-to-cart writes to the shared
- * Lakebed cart; chips and view-all route through section-kit route links. Use as the main catalog grid on electronics or gadget storefronts.
+ * ElectronicsStoreProducts — a tech-brutalist "Trending Products" catalog grid on
+ * a muted band for an electronics storefront. A header row pairs a mono index
+ * eyebrow + extrabold heading with squared border-2 filter chips (first chip
+ * primary-active), above a 1-to-4 column grid of hard-shadow spec cards: a square
+ * image with an optional squared corner badge and a squared add-to-cart button
+ * that writes to the shared Lakebed cart, then a border-t-2 spec block with a
+ * mono index row, title, mono subtitle, an oversized tabular price and a star
+ * rating. A squared hard-shadow "View All" button closes the section.
+ * Add-to-cart writes to the shared Lakebed cart; chips and view-all route through
+ * section-kit route links. Use as the main catalog grid on electronics or gadget
+ * storefronts.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -35,7 +39,7 @@ import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const ElectronicsStoreProducts = defineCapsule({
   name: 'ElectronicsStoreProducts',
   description:
-    'Trending Products catalog grid on a muted band for an electronics storefront: a header row pairs a heading with filter chips (first chip primary-active), above a 1-to-4 column grid of product cards — square image with an optional corner badge (Best Seller / New) and a floating round add-to-cart button that writes to the shared Lakebed cart, then title, subtitle, price and a star rating. A centered outlined View All button closes the section. Chips and view-all route through section-kit route links; imagery is alt-driven. Use as the main catalog grid on electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.',
+    'Tech-brutalist Trending Products catalog grid on a muted band for an electronics storefront: a header row pairs a mono index eyebrow + extrabold heading with squared border-2 filter chips (first chip primary-active), above a 1-to-4 column grid of hard-shadow spec cards — square image with an optional squared corner badge (Best Seller / New) and a squared add-to-cart button that writes to the shared Lakebed cart, then a border-t-2 spec block with a mono index row, title, mono subtitle, an oversized tabular price and a star rating. A squared hard-shadow View All button closes the section. Chips and view-all route through section-kit route links; imagery is alt-driven. Use as the main catalog grid on electronics stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -184,20 +188,26 @@ export const ElectronicsStoreProducts = defineCapsule({
     return (
       <section className={cn('bg-muted/40 py-16 lg:py-24', props.className)}>
         <Container>
-          <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <SectionHeading
-              align="left"
-              title={heading}
-              className="gap-0"
-              titleClassName="text-2xl font-semibold text-foreground"
-            />
-            <div className="flex gap-2">
+          <div className="mb-10 flex flex-col gap-6 border-b-2 border-foreground pb-6 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <span className="mb-3 flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+                <span className="tabular-nums">[ 02 ]</span>
+                <span className="text-muted-foreground">Catalog</span>
+              </span>
+              <SectionHeading
+                align="left"
+                title={heading}
+                className="gap-0"
+                titleClassName="text-3xl font-extrabold tracking-tight text-foreground md:text-4xl"
+              />
+            </div>
+            <div className="flex flex-wrap gap-2">
               {filters.map((f, i) => (
                 <FilterChip
                   key={f}
                   active={i === 0}
                   variant={i === 0 ? 'default' : 'outline'}
-                  className="rounded-lg"
+                  className="rounded-none border-2 border-foreground font-mono text-[11px] uppercase tracking-[0.14em] transition-all active:translate-y-px"
                   asChild
                 >
                   <NavbarRouteLink href={f}>{f}</NavbarRouteLink>
@@ -207,13 +217,13 @@ export const ElectronicsStoreProducts = defineCapsule({
           </div>
 
           <ResponsiveGrid cols="1-2-4" className="gap-6">
-            {visibleItems.map((p) => (
+            {visibleItems.map((p, i) => (
               <ProductCard
                 key={p.title}
                 variant="elevated"
-                className="transition-shadow hover:shadow-lg"
+                className="rounded-none border-2 border-foreground shadow-[6px_6px_0_0] shadow-foreground transition-all duration-150 hover:-translate-y-1 hover:shadow-[9px_9px_0_0] motion-reduce:transform-none"
               >
-                <ProductCardImage className="overflow-visible">
+                <ProductCardImage className="overflow-visible border-b-2 border-foreground">
                   <Image
                     alt={p.imageAlt}
                     w={400}
@@ -224,7 +234,7 @@ export const ElectronicsStoreProducts = defineCapsule({
                   {p.badge ? (
                     <ProductCardBadge
                       className={cn(
-                        'rounded',
+                        'rounded-none border-2 border-foreground font-mono text-[10px] uppercase tracking-[0.14em]',
                         p.badge === 'Best Seller'
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-foreground text-background',
@@ -241,7 +251,7 @@ export const ElectronicsStoreProducts = defineCapsule({
                         price: p.price,
                       }}
                       aria-label={`Add ${p.title} to cart`}
-                      className="grid size-10 place-items-center rounded-full bg-card text-card-foreground shadow-md transition-colors hover:bg-foreground hover:text-background disabled:pointer-events-none disabled:opacity-70"
+                      className="grid size-10 place-items-center rounded-none border-2 border-foreground bg-card text-card-foreground transition-all duration-150 hover:bg-foreground hover:text-background active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
                     >
                       <svg
                         className="size-5"
@@ -259,22 +269,27 @@ export const ElectronicsStoreProducts = defineCapsule({
                   </ProductCardActions>
                 </ProductCardImage>
                 <ProductCardContent className="p-4">
-                  <ProductCardTitle className="mb-1 text-card-foreground">
-                    {p.title}
-                  </ProductCardTitle>
-                  <ProductCardSubtitle className="mb-3 mt-0">
-                    {p.subtitle}
-                  </ProductCardSubtitle>
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-semibold text-card-foreground">
-                      {p.price}
+                  <span className="mb-2 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                    <span className="tabular-nums">
+                      MDL-{String(i + 1).padStart(2, '0')}
                     </span>
-                    <div className="flex items-center gap-1">
-                      <Star className="text-chart-4" />
-                      <span className="text-sm text-muted-foreground">
+                    <span className="inline-flex items-center gap-1">
+                      <Star className="size-3 text-chart-4" />
+                      <span className="tabular-nums text-foreground">
                         {p.rating}
                       </span>
-                    </div>
+                    </span>
+                  </span>
+                  <ProductCardTitle className="mb-1 font-semibold text-card-foreground">
+                    {p.title}
+                  </ProductCardTitle>
+                  <ProductCardSubtitle className="mb-3 mt-0 font-mono text-xs uppercase tracking-[0.08em]">
+                    {p.subtitle}
+                  </ProductCardSubtitle>
+                  <div className="mt-auto border-t-2 border-dotted border-border pt-3">
+                    <span className="text-xl font-extrabold tabular-nums tracking-tight text-card-foreground">
+                      {p.price}
+                    </span>
                   </div>
                 </ProductCardContent>
               </ProductCard>
@@ -283,7 +298,7 @@ export const ElectronicsStoreProducts = defineCapsule({
 
           <div className="mt-12 text-center">
             <NavbarRouteLink
-              className="inline-flex items-center justify-center rounded-lg border border-border bg-card px-6 py-3 font-medium text-card-foreground transition-colors hover:bg-accent"
+              className="inline-flex items-center justify-center rounded-none border-2 border-foreground bg-card px-7 py-3.5 font-semibold text-card-foreground shadow-[6px_6px_0_0] shadow-foreground transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[8px_8px_0_0] active:translate-y-0 active:shadow-[3px_3px_0_0] motion-reduce:transform-none"
               href={viewAll}
             >
               {viewAll}

@@ -11,22 +11,26 @@ import {
 } from '#/section-kit/PersonCard.tsx'
 
 /**
- * HealthcareDoctors — physician team grid for a medical-clinic page. A centered
- * eyebrow chip, heading and intro above a responsive 1/2/4-column grid of
- * profile cards; each card has a tall 3:4 alt-driven headshot that gently zooms
- * on hover, the doctor's name, an accent-colored specialty line, and a short
- * bio. Tokens-only, no links. Use for a "meet our physicians" / care-team /
- * provider-bios section of a doctors' office, family-medicine practice,
- * pediatric / women's-health clinic, hospital or medical group. Renders fully
- * with no props via baked-in board-certified-physician defaults.
+ * HealthcareDoctors — staggered physician-team grid for a medical-clinic page.
+ * An asymmetric header (left-aligned mono eyebrow + heading + lede, mono
+ * clinician-count meta right) above a responsive 1/2/4-column grid of bare
+ * (surfaceless) profile cards where alternate cards step down on desktop for a
+ * calm stagger. Each card pairs a tall 3:4 hairline-framed alt-driven headshot
+ * that gently zooms on hover with a zero-padded mono index, the doctor's name,
+ * a mono uppercase primary specialty line, and a short bio. Tokens-only, no
+ * links. Use for a "meet our physicians" / care-team / provider-bios section of
+ * a doctors' office, family-medicine practice, pediatric / women's-health
+ * clinic, hospital or medical group. Renders fully with no props via baked-in
+ * board-certified-physician defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const HealthcareDoctors = defineCapsule({
   name: 'HealthcareDoctors',
   description:
-    "Physician team grid for a medical-clinic page: a centered eyebrow chip, heading and intro above a responsive 1/2/4-column grid of profile cards, each with a tall 3:4 alt-driven headshot that gently zooms on hover, the doctor's name, an accent-colored specialty line, and a short bio. Tokens-only, no links. Use for a 'meet our physicians' / care-team / provider-bios section of a doctors' office, family-medicine practice, pediatric / women's-health clinic, hospital or medical group.",
+    "Staggered physician-team grid for a medical-clinic page: an asymmetric header (left-aligned mono eyebrow + heading + lede, mono clinician-count meta right) above a responsive 1/2/4-column grid of bare (surfaceless) profile cards where alternate cards step down on desktop, each pairing a tall 3:4 hairline-framed alt-driven headshot that gently zooms on hover with a zero-padded mono index, the doctor's name, a mono uppercase primary specialty line, and a short bio. Tokens-only, no links. Use for a 'meet our physicians' / care-team / provider-bios section of a doctors' office, family-medicine practice, pediatric / women's-health clinic, hospital or medical group.",
   props: z.object({
     /** Eyebrow chip text above the heading. */
     eyebrow: z.string().optional(),
@@ -87,30 +91,42 @@ export const HealthcareDoctors = defineCapsule({
         ]
     return (
       <section
-        className={cn('bg-background py-20 lg:py-28', props.className)}
+        className={cn('bg-background py-20 sm:py-24 lg:py-28', props.className)}
         aria-labelledby="doctors-heading"
       >
         <Container>
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            titleId="doctors-heading"
-            className="mb-16 max-w-3xl gap-0"
-            eyebrowClassName="mb-4 inline-block rounded-full bg-accent px-4 py-1.5 text-sm font-semibold text-accent-foreground"
-            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={description}
+              titleId="doctors-heading"
+              className="max-w-2xl gap-0"
+              eyebrowClassName="mb-4 inline-block font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground"
+              titleClassName="mb-4 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-[2.75rem] lg:leading-[1.05]"
+              subtitleClassName="text-base text-muted-foreground sm:text-lg"
+            />
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="shrink-0 md:pb-1"
+            >
+              {String(items.length).padStart(2, '0')} / clinicians
+            </MonoTag>
+          </div>
 
-          <ResponsiveGrid cols="1-md-2-4">
-            {items.map((doc) => (
+          <ResponsiveGrid cols="1-md-2-4" className="gap-6 lg:gap-8">
+            {items.map((doc, i) => (
               <PersonCard
                 key={doc.name}
                 variant="bare"
-
-                className="group rounded-none"
+                className={cn(
+                  'group rounded-none',
+                  i % 2 === 1 && 'lg:translate-y-8',
+                )}
               >
-                <PersonCardAvatar className="mb-6 aspect-[3/4] rounded-2xl bg-muted">
+                <PersonCardAvatar className="relative mb-6 aspect-[3/4] rounded-none border border-border bg-muted">
                   <Image
                     alt={doc.photoAlt}
                     w={600}
@@ -118,14 +134,21 @@ export const HealthcareDoctors = defineCapsule({
                     loading="lazy"
                     className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
+                  <MonoTag
+                    aria-hidden="true"
+                    tone="inverted"
+                    className="absolute left-3 top-3 bg-foreground/70 px-2 py-1 tracking-[0.12em] backdrop-blur-sm"
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </MonoTag>
                 </PersonCardAvatar>
-                <PersonCardName className="mb-1 text-xl font-bold">
+                <PersonCardName className="mb-2 text-lg font-bold tracking-tight">
                   {doc.name}
                 </PersonCardName>
-                <PersonCardRole className="mb-2 text-base font-medium text-primary">
+                <PersonCardRole className="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
                   {doc.specialty}
                 </PersonCardRole>
-                <PersonCardBio className="leading-relaxed">
+                <PersonCardBio className="text-sm leading-relaxed">
                   {doc.bio}
                 </PersonCardBio>
               </PersonCard>

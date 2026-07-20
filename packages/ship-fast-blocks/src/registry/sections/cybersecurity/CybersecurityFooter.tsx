@@ -1,8 +1,9 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
+import { Container } from '#/section-kit/Container.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import {
   SiteFooter,
-  FooterContent,
   FooterGrid,
   FooterBrand,
   FooterTagline,
@@ -17,19 +18,21 @@ import {
   FooterLegal,
 } from '#/section-kit/SiteFooter.tsx'
 /**
- * CybersecurityFooter — dark, full-bleed 5-column mega-footer. A brand-surface
- * footer: a wide brand column (shield logo + name, tagline, and social links)
- * beside several link-list columns, then a bordered-top bottom row with an
- * auto-updating copyright line and a set of legal links. The brand button,
- * every column link, social link and legal link route through section-kit route links. Use
- * as the closing site footer for cybersecurity vendors, SOC/MDR providers, or
- * any enterprise B2B security SaaS. Renders fully with no props via baked-in
- * "SentinelGuard" defaults.
+ * CybersecurityFooter — terminal-stealth site registry footer. A
+ * hairline-topped footer on the base surface with a giant "//"-glyph ghost
+ * watermark: an asymmetric grid gives the brand column (shield logo + name,
+ * tagline, mono square-chip social links) roughly double width beside four
+ * link-list columns with mono uppercase titles, then a hairline-topped bottom
+ * row pairing the copyright note and a decorative mono "[ EOF ]" tag with the
+ * legal links. Every column link and legal link routes through section-kit
+ * route links. Use as the closing site footer for cybersecurity vendors,
+ * SOC/MDR providers, or any enterprise B2B security SaaS. Renders fully with
+ * no props via baked-in "SentinelGuard" defaults.
  */
 export const CybersecurityFooter = defineCapsule({
   name: 'CybersecurityFooter',
   description:
-    'Dark full-bleed 5-column mega-footer on the brand surface: a wide brand column (shield logo + name, tagline, social links) beside several link-list columns, then a bordered-top bottom row with an auto-updating copyright line and legal links. The brand button, column links, social links and legal links route through section-kit route links. Use as the closing site footer for cybersecurity vendors, SOC/MDR providers, or any enterprise B2B security SaaS.',
+    "Terminal-stealth site registry footer: a hairline-topped footer with a giant ghost watermark and an asymmetric grid — a double-width brand column (shield logo + name, tagline, mono square-chip social links) beside four link-list columns with mono uppercase titles, then a hairline-topped bottom row with the copyright note, a decorative mono '[ EOF ]' tag, and legal links. Column links, social links and legal links route through section-kit route links. Use as the closing site footer for cybersecurity vendors, SOC/MDR providers, or any enterprise B2B security SaaS.",
   props: z.object({
     /** Brand / product name shown beside the shield logo. */
     brand: z.string().optional(),
@@ -100,39 +103,82 @@ export const CybersecurityFooter = defineCapsule({
       ? props.social
       : ['Twitter', 'LinkedIn', 'GitHub']
     return (
-      <SiteFooter className={props.className}>
-        <FooterContent>
-          <FooterGrid>
-            <FooterBrand brand={brand}>
-              <FooterTagline>{tagline}</FooterTagline>
-              <FooterSocial>
+      <SiteFooter
+        className={
+          'relative overflow-hidden border-t border-border bg-background' +
+          (props.className ? ' ' + props.className : '')
+        }
+      >
+        <Watermark className="-bottom-10 -right-6 text-[8rem] sm:text-[12rem]">
+          {'//'}
+        </Watermark>
+        <Container className="relative py-12 sm:py-16">
+          <FooterGrid className="gap-x-8 gap-y-10 grid-cols-2 md:grid-cols-3 lg:grid-cols-[1.8fr_1fr_1fr_1fr_1fr]">
+            <FooterBrand
+              brand={brand}
+              className="col-span-2 md:col-span-3 lg:col-span-1"
+            >
+              <FooterTagline className="mt-4 max-w-xs text-sm leading-relaxed">
+                {tagline}
+              </FooterTagline>
+              <FooterSocial className="mt-5 gap-2">
                 {social
                   .map((s) => ({ label: s }))
                   .map((s) => (
-                    <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                    <FooterSocialLink
+                      key={s.label}
+                      className="border border-border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.15em] transition-colors hover:border-foreground hover:text-foreground"
+                    >
+                      {s.label}
+                    </FooterSocialLink>
                   ))}
               </FooterSocial>
             </FooterBrand>
-            {columns.map((col) => (
+            {columns.map((col, colIndex) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
-                <FooterColumnList>
+                <FooterColumnTitle className="flex items-baseline gap-2 font-mono text-[11px] font-semibold uppercase tracking-[0.2em]">
+                  <span
+                    aria-hidden="true"
+                    className="text-muted-foreground/50 tabular-nums"
+                  >
+                    {String(colIndex + 1).padStart(2, '0')}
+                  </span>
+                  {col.title}
+                </FooterColumnTitle>
+                <FooterColumnList className="mt-4 space-y-2.5">
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink key={link} className="block w-fit">
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
-          <FooterBottom>
-            <FooterCopyright>{note}</FooterCopyright>
-            <FooterLegal>
+          <FooterBottom className="mt-12 border-t border-border pt-6">
+            <span className="flex items-center gap-4">
+              <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.15em]">
+                {note}
+              </FooterCopyright>
+              <span
+                aria-hidden="true"
+                className="font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground/50"
+              >
+                [ EOF ]
+              </span>
+            </span>
+            <FooterLegal className="gap-4">
               {legal.map((l) => (
-                <FooterLink key={l}>{l}</FooterLink>
+                <FooterLink
+                  key={l}
+                  className="font-mono text-[11px] uppercase tracking-[0.12em]"
+                >
+                  {l}
+                </FooterLink>
               ))}
             </FooterLegal>
           </FooterBottom>
-        </FooterContent>
+        </Container>
       </SiteFooter>
     )
   },

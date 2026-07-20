@@ -3,8 +3,9 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
-  FeatureGrid,
   FeatureCard,
   FeatureIcon,
   FeatureTitle,
@@ -12,19 +13,22 @@ import {
 } from '#/section-kit/FeatureGrid.tsx'
 
 /**
- * InteriorDesignServices — left-aligned three-up design-services grid for an
- * upscale interior-design / architecture studio. A light-weight section heading
- * with a supporting paragraph above a responsive three-column grid of services,
- * each with a circular muted icon tile (rotating line icons: home, briefcase,
- * sofa), a medium title and a relaxed-leading description. Editorial, airy and
- * gallery-like. Use to present core offerings — residential design, commercial
- * spaces, furniture curation — for interior designers, design studios or
- * architecture firms. Renders fully with no props via baked-in defaults.
+ * InteriorDesignServices — editorial-spatial design-services ledger for an
+ * upscale interior-design / architecture studio. An asymmetric header (mono
+ * "02 / SERVICES" rail + light-weight heading on the left, supporting paragraph
+ * on the right) above a collapsed-hairline three-column grid of service cells,
+ * each a giant faint index numeral watermark with a hairline line icon (home /
+ * briefcase / sofa), a mono index label, a medium title and a relaxed
+ * description, cells sharing borders and washing to muted on hover. Editorial,
+ * airy, binary radius — no icon tiles. Use to present core offerings —
+ * residential design, commercial spaces, furniture curation — for interior
+ * designers, design studios or architecture firms. Renders fully with no props
+ * via baked-in defaults.
  */
 export const InteriorDesignServices = defineCapsule({
   name: 'InteriorDesignServices',
   description:
-    'Left-aligned three-up design-services grid for an upscale interior-design / architecture studio: a light-weight section heading with a supporting paragraph above a responsive three-column grid of services, each with a circular muted icon tile (rotating home / briefcase / sofa line icons), a medium title and a relaxed description. Editorial and airy. Use to present core offerings such as residential design, commercial spaces and furniture curation for interior designers, design studios or architecture firms.',
+    'Editorial-spatial design-services ledger for an upscale interior-design / architecture studio: an asymmetric header (mono "02 / SERVICES" rail + light-weight heading on the left, supporting paragraph on the right) above a collapsed-hairline three-column grid of service cells, each with a giant faint index numeral watermark, a hairline line icon (home / briefcase / sofa), a mono index label, a medium title and a relaxed description, cells sharing borders and washing to muted on hover. Editorial, airy, binary radius — no icon tiles. Use to present core offerings such as residential design, commercial spaces and furniture curation for interior designers, design studios or architecture firms.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -61,8 +65,8 @@ export const InteriorDesignServices = defineCapsule({
     const icons: ReactNode[] = [
       <svg
         key="home"
-        width="24"
-        height="24"
+        width="22"
+        height="22"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -75,8 +79,8 @@ export const InteriorDesignServices = defineCapsule({
       </svg>,
       <svg
         key="briefcase"
-        width="24"
-        height="24"
+        width="22"
+        height="22"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -89,8 +93,8 @@ export const InteriorDesignServices = defineCapsule({
       </svg>,
       <svg
         key="furniture"
-        width="24"
-        height="24"
+        width="22"
+        height="22"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -104,39 +108,72 @@ export const InteriorDesignServices = defineCapsule({
     ]
 
     return (
-      <FeatureGrid
-        heading={heading}
-        subheading={description}
-        columns={3}
+      <section
         className={cn(
-          'px-4 pt-28 pb-20 sm:px-6 md:pt-32 md:pb-28 lg:px-8',
+          'px-4 pt-24 pb-16 sm:px-6 md:pt-28 md:pb-24 lg:px-8',
           props.className,
         )}
       >
-        {items
-          .map((item, i) => ({
-            ...item,
-            icon: icons[i % icons.length],
-          }))
-          .map((f) => {
-            const __iv__ = f as {
-              title: string
-              description: string
-              icon?: React.ReactNode
-              points?: string[]
-              cta?: string
-              price?: string
-              imageAlt?: string
-            }
-            return (
-              <FeatureCard key={__iv__.title}>
-                {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                <FeatureTitle>{__iv__.title}</FeatureTitle>
-                <FeatureDescription>{__iv__.description}</FeatureDescription>
-              </FeatureCard>
-            )
-          })}
-      </FeatureGrid>
+        <Container size="xl">
+          <div className="mb-12 grid gap-6 md:mb-16 md:grid-cols-12 md:items-end md:gap-10">
+            <div className="md:col-span-7">
+              <MonoTag className="mb-5 flex items-center gap-3 tracking-[0.2em]">
+                <span aria-hidden="true" className="size-2 bg-primary" />
+                02 / Services
+              </MonoTag>
+              <h2 className="max-w-xl text-balance text-3xl font-light tracking-tight text-foreground md:text-5xl">
+                {heading}
+              </h2>
+            </div>
+            <p className="max-w-md text-pretty leading-relaxed text-muted-foreground md:col-span-5 md:justify-self-end">
+              {description}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 border-l border-t border-border md:grid-cols-3">
+            {items
+              .map((item, i) => ({ ...item, icon: icons[i % icons.length] }))
+              .map((f, i) => {
+                const __iv__ = f as {
+                  title: string
+                  description: string
+                  icon?: React.ReactNode
+                  points?: string[]
+                  cta?: string
+                  price?: string
+                  imageAlt?: string
+                }
+                return (
+                  <FeatureCard
+                    key={__iv__.title}
+                    className="group relative gap-4 overflow-hidden rounded-none border-0 border-b border-r border-border bg-transparent p-8 transition-colors duration-200 hover:translate-y-0 hover:bg-muted/40 md:p-10"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute -right-1 -top-3 select-none font-mono text-7xl font-light leading-none tabular-nums text-foreground/[0.05]"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    {__iv__.icon && (
+                      <FeatureIcon className="size-auto rounded-none bg-transparent text-foreground">
+                        {__iv__.icon}
+                      </FeatureIcon>
+                    )}
+                    <MonoTag tone="faint" className="tracking-[0.2em]">
+                      No. {String(i + 1).padStart(2, '0')}
+                    </MonoTag>
+                    <FeatureTitle className="text-xl font-medium tracking-tight">
+                      {__iv__.title}
+                    </FeatureTitle>
+                    <FeatureDescription className="leading-relaxed">
+                      {__iv__.description}
+                    </FeatureDescription>
+                  </FeatureCard>
+                )
+              })}
+          </div>
+        </Container>
+      </section>
     )
   },
 })

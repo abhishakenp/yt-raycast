@@ -5,21 +5,24 @@ import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import { RoadmapTimeline } from '#/section-kit/RoadmapTimeline.tsx'
 
 /**
- * CryptoRoadmap — vertical phased timeline for a crypto / DeFi development
- * roadmap. A centered heading + description followed by a vertical timeline
- * with colored status nodes (Completed/In Progress/Planned), connecting lines,
- * status chips, quarter labels, bold titles, and descriptive paragraphs. The
- * node shows a check mark for Completed or the quarter prefix for other
- * statuses. Use as a product roadmap for protocols, chains, token projects,
- * or infrastructure platforms.
+ * CryptoRoadmap — Web3-terminal phased changelog for a crypto / DeFi
+ * development roadmap. An asymmetric 4/8 split: left column holds a sticky
+ * left-aligned heading + description with a mono "[ LOG ] PHASED DELIVERY"
+ * meta line and a ghost quarter watermark; right column is a hairline
+ * vertical rail of entries, each with a square status node (inverted check
+ * block for Completed, primary-outlined pulsing block for In Progress,
+ * hairline block for Planned), a mono uppercase status chip + tabular
+ * quarter label, a bold title, and a description. Use as a product roadmap
+ * for protocols, chains, token projects, or infrastructure platforms.
  */
 export const CryptoRoadmap = defineCapsule({
   name: 'CryptoRoadmap',
   description:
-    'Vertical phased timeline for a crypto / DeFi development roadmap: centered heading + description, then a vertical timeline with colored status nodes (Completed/In Progress/Planned), connecting lines, status chips with quarter labels, bold titles, and descriptive paragraphs. Completed nodes show a check mark; others show the quarter prefix. Use as a product roadmap for protocols, chains, token projects, or infrastructure platforms.',
+    'Web3-terminal phased changelog for a crypto / DeFi development roadmap: asymmetric 4/8 split with a sticky left-aligned heading + mono meta line and ghost watermark, and a hairline vertical rail of entries on the right — each with a square status node (inverted check for Completed, primary-outlined pulsing for In Progress, hairline for Planned), mono uppercase status chip with tabular quarter label, bold title, and description. Use as a product roadmap for protocols, chains, token projects, or infrastructure platforms.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -108,84 +111,121 @@ export const CryptoRoadmap = defineCapsule({
     const statusStyle = (status: string) => {
       if (status === 'Completed')
         return {
-          node: 'bg-primary/15 text-primary',
-          line: 'bg-primary/30',
-          chip: 'text-primary bg-primary/10',
+          node: 'bg-foreground text-background',
+          line: 'bg-foreground/25',
+          chip: 'border-foreground/25 text-foreground',
+          pulse: false,
           showCheck: true,
         }
       if (status === 'In Progress')
         return {
-          node: 'bg-accent text-accent-foreground',
+          node: 'border border-primary text-primary',
           line: 'bg-border',
-          chip: 'text-accent-foreground bg-accent',
+          chip: 'border-primary/40 text-primary',
+          pulse: true,
           showCheck: false,
         }
       return {
-        node: 'bg-muted text-muted-foreground',
+        node: 'border border-border text-muted-foreground',
         line: 'bg-border',
-        chip: 'text-muted-foreground bg-muted',
+        chip: 'border-border text-muted-foreground',
+        pulse: false,
         showCheck: false,
       }
     }
 
     return (
-      <section className={cn('py-20 lg:py-28', props.className)}>
-        <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 tracking-tight sm:text-4xl"
-            subtitleClassName="text-lg"
-          />
-          <RoadmapTimeline className="mx-auto max-w-4xl space-y-8">
-            {items.map((item, i) => {
-              const s = statusStyle(item.status)
-              const isLast = i === items.length - 1
-              return (
-                <div key={item.title} className="flex gap-6">
-                  <div className="flex flex-col items-center">
-                    <div
-                      className={cn(
-                        'grid size-10 place-items-center rounded-full',
-                        s.node,
-                      )}
+      <section
+        className={cn(
+          'relative overflow-hidden py-16 lg:py-28',
+          props.className,
+        )}
+      >
+        <Container className="relative">
+          <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-4">
+              <div className="lg:sticky lg:top-24">
+                <SectionHeading
+                  align="left"
+                  title={heading}
+                  subtitle={description}
+                  className="gap-3"
+                  titleClassName="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl"
+                  subtitleClassName="text-lg"
+                />
+                <p
+                  aria-hidden="true"
+                  className="mt-6 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+                >
+                  [ log ] phased delivery
+                </p>
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none mt-8 hidden select-none font-mono text-[8rem] font-extrabold leading-none tracking-tighter text-foreground/[0.04] tabular-nums lg:block"
+                >
+                  {items[items.length - 1]?.quarter.split(' ')[0] ?? 'Q4'}
+                </span>
+              </div>
+            </div>
+            <div className="lg:col-span-8">
+              <RoadmapTimeline className="relative flex flex-col">
+                <Watermark className="-right-4 -top-10 font-mono text-[7rem] tabular-nums sm:text-[10rem] lg:hidden">
+                  {items[items.length - 1]?.quarter.split(' ')[0] ?? 'Q4'}
+                </Watermark>
+                {items.map((item, i) => {
+                  const s = statusStyle(item.status)
+                  const isLast = i === items.length - 1
+                  return (
+                    <li
+                      key={item.title}
+                      className="relative flex gap-5 sm:gap-8"
                     >
-                      {s.showCheck ? (
-                        <Check className="size-5" />
-                      ) : (
-                        <span className="text-sm font-medium">
-                          {item.quarter.split(' ')[0]}
-                        </span>
-                      )}
-                    </div>
-                    {!isLast && (
-                      <div className={cn('mt-2 h-full w-px', s.line)} />
-                    )}
-                  </div>
-                  <div className={cn('flex-1', !isLast && 'pb-8')}>
-                    <div className="mb-2 flex flex-wrap items-center gap-2">
-                      <span
-                        className={cn(
-                          'rounded px-2 py-1 text-sm font-medium',
-                          s.chip,
+                      <div className="flex flex-col items-center">
+                        <div
+                          className={cn(
+                            'grid size-10 shrink-0 place-items-center font-mono text-xs font-semibold tabular-nums',
+                            s.node,
+                          )}
+                        >
+                          {s.showCheck ? (
+                            <Check className="size-4" />
+                          ) : (
+                            <span className={cn(s.pulse && 'animate-pulse')}>
+                              {item.quarter.split(' ')[0]}
+                            </span>
+                          )}
+                        </div>
+                        {!isLast && (
+                          <div className={cn('mt-2 h-full w-px', s.line)} />
                         )}
-                      >
-                        {item.status}
-                      </span>
-                      <span className="text-sm text-muted-foreground">
-                        {item.quarter}
-                      </span>
-                    </div>
-                    <h3 className="mb-2 text-lg font-semibold">{item.title}</h3>
-                    <p className="text-sm leading-relaxed text-muted-foreground">
-                      {item.description}
-                    </p>
-                  </div>
-                </div>
-              )
-            })}
-          </RoadmapTimeline>
+                      </div>
+                      <div className={cn('flex-1', !isLast && 'pb-10')}>
+                        <div className="mb-3 flex flex-wrap items-center gap-3">
+                          <span
+                            className={cn(
+                              'border px-2 py-1 font-mono text-[10px] uppercase tracking-[0.2em]',
+                              s.chip,
+                            )}
+                          >
+                            {item.status}
+                          </span>
+                          <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground tabular-nums">
+                            {item.quarter}
+                          </span>
+                        </div>
+                        <h3 className="mb-2 text-xl font-bold tracking-tight">
+                          {item.title}
+                        </h3>
+                        <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
+                          {item.description}
+                        </p>
+                      </div>
+                    </li>
+                  )
+                })}
+              </RoadmapTimeline>
+            </div>
+          </div>
         </Container>
       </section>
     )

@@ -2,6 +2,8 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -12,19 +14,20 @@ import {
 } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
- * HotelResortTestimonials — guest testimonials grid for a luxury hotel /
- * resort & spa site. A muted-surface section with a centered eyebrow + thin
- * heading + paragraph, then a 3-up grid of cards, each with a 5-star rating row
- * in the primary color, a quote, and an avatar beside the guest name and
- * location/date meta. Warm and reassuring. Use to surface reviews and social
- * proof for hotels, resorts, spa retreats, inns, or wellness destinations.
- * Avatars use the alt-driven Image component. Renders fully with no props via
+ * HotelResortTestimonials — guest pull-quotes for a luxury-editorial hotel /
+ * resort & spa site. A muted-surface section carrying a giant ghost serif
+ * quotation-mark watermark and an asymmetric intro row (mono eyebrow + thin
+ * serif heading on the left, supporting paragraph on the right), then a
+ * staggered 3-up grid of sharp-cornered cards, each a serif quote over a
+ * hairline rule with the guest name and mono location/date meta. Warm and
+ * reassuring. Use to surface reviews and social proof for hotels, resorts, spa
+ * retreats, inns, or wellness destinations. Renders fully with no props via
  * baked-in guest defaults.
  */
 export const HotelResortTestimonials = defineCapsule({
   name: 'HotelResortTestimonials',
   description:
-    'Guest testimonials grid for a luxury hotel / resort & spa site: a muted-surface section with a centered uppercase eyebrow + thin heading + paragraph, then a 3-up grid of cards each with a 5-star rating row in the primary color, a quote, and an avatar beside the guest name and location/date meta. Warm and reassuring; avatars use the alt-driven Image component. Use to surface reviews and social proof for hotels, resorts, spa retreats, inns, or wellness destinations.',
+    'Guest pull-quotes for a luxury-editorial hotel / resort & spa site: a muted-surface section with a giant ghost serif quotation-mark watermark and an asymmetric intro row (mono eyebrow + thin serif heading on the left, supporting paragraph on the right), then a staggered 3-up grid of sharp-cornered cards each a serif quote over a hairline rule with the guest name and mono location/date meta. Warm and reassuring. Use to surface reviews and social proof for hotels, resorts, spa retreats, inns, or wellness destinations.',
   props: z.object({
     /** Uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -81,52 +84,76 @@ export const HotelResortTestimonials = defineCapsule({
         ]
 
     return (
-      <TestimonialGrid
-        eyebrow={eyebrow}
-        heading={heading}
-        subheading={description}
-        columns={3}
+      <section
         className={cn(
-          'bg-muted pt-28 pb-24 lg:pt-32 lg:pb-28',
+          'relative overflow-hidden bg-muted pt-24 pb-24 lg:pt-28 lg:pb-28',
           props.className,
         )}
       >
-        {items
-          .map((t) => ({
-            quote: t.quote,
-            name: t.name,
-            role: t.meta,
-            rating: 5,
-            avatarAlt: t.avatarAlt,
-          }))
-          .map((t) => {
-            const __iv__ = t as {
-              quote: string
-              name: string
-              role?: string
-              company?: string
-              meta?: string
-              rating?: number
-              avatarAlt?: string
-            }
-            return (
-              <TestimonialCard
-                key={__iv__.name}
-                className={'rounded-lg bg-card p-8'}
-              >
-                <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                <TestimonialAuthor>
-                  <TestimonialName>{__iv__.name}</TestimonialName>
-                  {(__iv__.role || __iv__.company || __iv__.meta) && (
-                    <TestimonialMeta>
-                      {__iv__.role || __iv__.company || __iv__.meta}
-                    </TestimonialMeta>
-                  )}
-                </TestimonialAuthor>
-              </TestimonialCard>
-            )
-          })}
-      </TestimonialGrid>
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-16 right-2 select-none font-serif text-[18rem] font-normal leading-none text-foreground/[0.05] lg:text-[26rem]"
+        >
+          &rdquo;
+        </span>
+        <Container size="xl" className="relative px-6">
+          <div className="mb-16 grid items-end gap-8 lg:grid-cols-12 lg:gap-12">
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              className="gap-3 lg:col-span-7"
+              eyebrowClassName="font-mono text-[11px] font-medium uppercase tracking-[0.22em] text-muted-foreground"
+              titleClassName="font-serif text-4xl font-normal text-foreground tracking-tight lg:text-5xl"
+            />
+            <p className="text-base leading-relaxed text-muted-foreground lg:col-span-5 lg:pb-1">
+              {description}
+            </p>
+          </div>
+          <TestimonialGrid columns={3} className="gap-6">
+            {items
+              .map((t) => ({
+                quote: t.quote,
+                name: t.name,
+                role: t.meta,
+                rating: 5,
+                avatarAlt: t.avatarAlt,
+              }))
+              .map((t, i) => {
+                const __iv__ = t as {
+                  quote: string
+                  name: string
+                  role?: string
+                  company?: string
+                  meta?: string
+                  rating?: number
+                  avatarAlt?: string
+                }
+                return (
+                  <TestimonialCard
+                    key={__iv__.name}
+                    className={cn(
+                      'rounded-none border-border bg-card p-8 hover:border-foreground/40',
+                      i % 3 === 1 && 'lg:translate-y-8',
+                    )}
+                  >
+                    <TestimonialQuote className="font-serif text-lg font-normal leading-relaxed">
+                      {__iv__.quote}
+                    </TestimonialQuote>
+                    <TestimonialAuthor className="mt-6 flex-col items-start gap-1 border-t border-border pt-5">
+                      <TestimonialName>{__iv__.name}</TestimonialName>
+                      {(__iv__.role || __iv__.company || __iv__.meta) && (
+                        <TestimonialMeta className="font-mono text-[11px] uppercase tracking-[0.12em]">
+                          {__iv__.role || __iv__.company || __iv__.meta}
+                        </TestimonialMeta>
+                      )}
+                    </TestimonialAuthor>
+                  </TestimonialCard>
+                )
+              })}
+          </TestimonialGrid>
+        </Container>
+      </section>
     )
   },
 })

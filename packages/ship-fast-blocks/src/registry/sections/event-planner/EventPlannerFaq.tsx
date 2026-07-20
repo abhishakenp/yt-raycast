@@ -8,24 +8,24 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
 /**
- * EventPlannerFaq — centered accordion of common questions. A narrow centered
- * intro (uppercase eyebrow, thin light heading, lede) above a vertical stack of
- * native <details> disclosure cards on muted rounded panels, each with a question
- * summary, a chevron that rotates when open, and a relaxed answer paragraph. No JS
- * required. Use to answer common pre-booking questions for event/wedding planners,
- * agencies, or service businesses.
+ * EventPlannerFaq — kinetic-poster editorial Q&A. An asymmetric 5:7 two-column
+ * layout: a left column with a mono metadata rail eyebrow, a giant tight-tracked
+ * heading and lede (sticky on desktop), beside a right column stack of native
+ * <details> disclosure rows joined by hairline top rules — each row carrying a
+ * mono index numeral, a bold question summary, a chevron that rotates when open,
+ * and a relaxed answer paragraph. No JS required. Use to answer common pre-booking
+ * questions for event/wedding planners, agencies, or service businesses.
  */
 export const EventPlannerFaq = defineCapsule({
   name: 'EventPlannerFaq',
   description:
-    'Centered accordion of common questions: a narrow centered intro (uppercase eyebrow, thin light heading, lede) above a vertical stack of native <details> disclosure cards on muted rounded panels, each with a question summary, a chevron that rotates when open, and a relaxed answer paragraph. Pure CSS disclosure, no JS. Use to answer common pre-booking questions for event/wedding planners, agencies, or premium service businesses.',
+    'Kinetic-poster editorial Q&A: an asymmetric 5:7 two-column layout with a left column (a mono metadata rail eyebrow, a giant tight-tracked heading and lede, sticky on desktop) beside a right column stack of native <details> disclosure rows joined by hairline top rules, each row carrying a mono index numeral, a bold question summary, a chevron that rotates when open, and a relaxed answer paragraph. Pure CSS disclosure, no JS. Use to answer common pre-booking questions for event/wedding planners, agencies, or premium service businesses.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -87,33 +87,54 @@ export const EventPlannerFaq = defineCapsule({
           props.className,
         )}
       >
-        <Container size="4xl">
-          <SectionHeading
-            eyebrow={faqEyebrow}
-            title={faqHeading}
-            subtitle={faqDesc}
-            className="mb-16 max-w-3xl lg:mb-24 gap-0"
-            eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground"
-            titleClassName="mb-6 text-3xl font-light text-foreground sm:text-4xl lg:text-5xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <FaqAccordion variant="wide">
-            {faqItems.map((item) => (
-              <FaqItem
-                key={item.question}
-                variant="muted"
-                className="bg-muted p-6"
-              >
-                <FaqQuestion>
-                  <h3 className="text-lg font-medium text-foreground">
-                    {item.question}
-                  </h3>
-                  <FaqQuestionIcon />
-                </FaqQuestion>
-                <FaqAnswer className="mt-4">{item.answer}</FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+        <Container size="xl">
+          <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-5">
+              <div className="lg:sticky lg:top-28">
+                <div className="flex items-center gap-4">
+                  <span
+                    aria-hidden="true"
+                    className="size-1.5 shrink-0 bg-primary"
+                  />
+                  <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                    {faqEyebrow}
+                  </span>
+                  <span aria-hidden="true" className="h-px flex-1 bg-border" />
+                </div>
+                <h2 className="mt-6 text-4xl font-extrabold leading-[0.95] tracking-tighter text-foreground text-balance sm:text-5xl lg:text-6xl">
+                  {faqHeading}
+                </h2>
+                <p className="mt-5 max-w-md text-lg leading-relaxed text-muted-foreground">
+                  {faqDesc}
+                </p>
+              </div>
+            </div>
+            <div className="lg:col-span-7">
+              <FaqAccordion variant="wide" className="gap-0">
+                {faqItems.map((item, i) => (
+                  <FaqItem
+                    key={item.question}
+                    variant="muted"
+                    className="rounded-none border-0 border-t border-border bg-transparent p-0 py-5"
+                  >
+                    <FaqQuestion className="items-start gap-4">
+                      <span
+                        aria-hidden="true"
+                        className="mt-0.5 shrink-0 font-mono text-[11px] font-semibold tabular-nums tracking-[0.14em] text-primary"
+                      >
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <h3 className="flex-1 text-lg font-bold tracking-tight text-foreground">
+                        {item.question}
+                      </h3>
+                      <FaqQuestionIcon />
+                    </FaqQuestion>
+                    <FaqAnswer className="mt-4 pl-9">{item.answer}</FaqAnswer>
+                  </FaqItem>
+                ))}
+              </FaqAccordion>
+            </div>
+          </div>
         </Container>
       </section>
     )

@@ -20,20 +20,21 @@ import {
 } from '../commerce/commerce-interactions.tsx'
 
 /**
- * BarNightclubNavbar — fixed, translucent top navigation bar for a moody
- * cocktail-bar / nightclub site. A backdrop-blurred, hairline border-bottomed
- * header pinned to the top: a light-weight, wide letter-spaced uppercase brand
- * wordmark on the left, a horizontal set of muted nav links in the center
- * (desktop), command search, Shoo account dropdown, shared Lakebed cart drawer,
- * an outlined "book a table" CTA on the right, and a real mobile drawer. Brand,
- * links, and CTA route through route hrefs so labels can drive page-switching.
- * Use as the sticky site header for cocktail bars, nightclubs, lounges,
- * speakeasies, or any dark, premium after-dark venue page.
+ * BarNightclubNavbar — fixed poster-marquee top navigation bar for a
+ * dark-kinetic cocktail-bar / nightclub site. A backdrop-blurred header pinned
+ * to the top with a heavy 2px bottom rule: a black-weight, wide letter-spaced
+ * uppercase brand wordmark on the left, mono uppercase ticket-counter nav
+ * links in the center (desktop), command search, Shoo account dropdown, shared
+ * Lakebed cart drawer, a sharp inverted "book a table" block CTA with press
+ * feedback on the right, and a real mobile drawer. Brand, links, and CTA route
+ * through route hrefs so labels can drive page-switching. Use as the sticky
+ * site header for cocktail bars, nightclubs, lounges, speakeasies, or any
+ * dark, premium after-dark venue page.
  */
 export const BarNightclubNavbar = defineCapsule({
   name: 'BarNightclubNavbar',
   description:
-    "Fixed translucent top navigation bar for a moody cocktail-bar / nightclub site: backdrop-blurred, hairline border-bottomed header pinned to the top with a light-weight wide letter-spaced uppercase brand wordmark on the left, horizontal muted nav links in the center (desktop), command search, Shoo account dropdown, shared Lakebed cart drawer with reactive badge, an outlined 'book a table' CTA on the right, and a real mobile drawer. Brand, links, and CTA route through route hrefs for page-switching. Use as the sticky site header for cocktail bars, nightclubs, lounges, speakeasies, or any dark premium after-dark venue page.",
+    "Fixed poster-marquee top navigation bar for a dark-kinetic cocktail-bar / nightclub site: backdrop-blurred header pinned to the top with a heavy 2px bottom rule, a black-weight wide letter-spaced uppercase brand wordmark on the left, mono uppercase ticket-counter nav links in the center (desktop), command search, Shoo account dropdown, shared Lakebed cart drawer with reactive badge, a sharp inverted 'book a table' block CTA with press feedback on the right, and a real mobile drawer. Brand, links, and CTA route through route hrefs for page-switching. Use as the sticky site header for cocktail bars, nightclubs, lounges, speakeasies, or any dark premium after-dark venue page.",
   props: z.object({
     /** Bar / venue name shown as the uppercase wordmark. */
     brand: z.string().optional(),
@@ -64,19 +65,22 @@ export const BarNightclubNavbar = defineCapsule({
       <SiteNav
         position="fixed"
         height="responsive"
-        className={cn('bg-background/80 backdrop-blur-md', props.className)}
+        className={cn(
+          'border-b-2 border-foreground bg-background/85 backdrop-blur-md',
+          props.className,
+        )}
       >
         <NavbarBrand
           href={homeTarget}
-          className="text-2xl font-light uppercase tracking-[0.2em] text-foreground"
+          className="text-xl font-black uppercase tracking-[0.3em] text-foreground"
         >
-          <BrandLogo brand={brand} className="mr-2 size-7 align-middle">
-            <LogoImage className="mr-2 size-7 align-middle" />
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage className="size-7" />
             <LogoLabel />
           </BrandLogo>
         </NavbarBrand>
 
-        <NavbarNav className="[&>button]:tracking-wide">
+        <NavbarNav className="[&>button]:font-mono [&>button]:text-[11px] [&>button]:font-semibold [&>button]:uppercase [&>button]:tracking-[0.2em]">
           {nav.map((label) => (
             <NavbarNavLink key={label} href={label}>
               {label}
@@ -101,7 +105,7 @@ export const BarNightclubNavbar = defineCapsule({
           <NavbarCta
             variant="outline"
             href={ctaTarget}
-            className="hidden border-foreground px-6 py-2 tracking-wide hover:bg-foreground hover:text-background md:inline-flex"
+            className="hidden rounded-none border-2 border-foreground bg-foreground px-5 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-background transition-all duration-100 hover:bg-background hover:text-foreground active:translate-y-px md:inline-flex"
           >
             {cta}
           </NavbarCta>

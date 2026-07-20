@@ -12,17 +12,19 @@ import {
 } from '#/section-kit/StepTimeline.tsx'
 
 /**
- * CryptoSteps — 3-step numbered process flow for a crypto / DeFi onboarding
- * landing page. A centered heading + description followed by a responsive
- * three-column grid with oversized numbered circles (with connecting border
- * lines on desktop), a bold title, and a description paragraph beneath each
- * step. Use for deploy/connect/onboard flows, integration guides, or getting-
+ * CryptoSteps — Web3-terminal deploy sequence ledger for a crypto / DeFi
+ * onboarding landing page. An asymmetric header (left-aligned heading +
+ * description, mono "[ SEQ ] 3 STEPS" meta right) above a collapsed-border
+ * three-column ledger: each square cell carries a giant ghost step numeral,
+ * an inverted square step chip, a bold title, and a description, separated
+ * by hairline rules that collapse into a stacked bordered ledger on mobile.
+ * Use for deploy/connect/onboard flows, integration guides, or getting-
  * started sequences.
  */
 export const CryptoSteps = defineCapsule({
   name: 'CryptoSteps',
   description:
-    '3-step numbered process flow for a crypto / DeFi onboarding landing page: centered heading + description, then a responsive three-column grid with oversized numbered circles (with connecting border lines on desktop), a bold title, and a description paragraph beneath each step. Use for deploy/connect/onboard flows, integration guides, or getting-started sequences.',
+    'Web3-terminal deploy sequence ledger for a crypto / DeFi onboarding landing page: asymmetric left-aligned header with mono sequence meta, then a collapsed-border three-column ledger — each square cell with a giant ghost step numeral, inverted square step chip, bold title, and description, hairline-ruled and stacking into a bordered ledger on mobile. Use for deploy/connect/onboard flows, integration guides, or getting-started sequences.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -62,31 +64,54 @@ export const CryptoSteps = defineCapsule({
     return (
       <StepTimeline
         className={cn(
-          'border-y border-border bg-card py-20 lg:py-28',
+          'border-y border-border bg-card py-16 lg:py-28',
           props.className,
         )}
       >
         <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 tracking-tight sm:text-4xl"
-            subtitleClassName="text-lg"
-          />
-          <StepTimelineGrid columns={3} className="gap-8 lg:gap-12">
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-3"
+              titleClassName="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl"
+              subtitleClassName="text-lg"
+            />
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+            >
+              [ seq ] {items.length} steps
+            </p>
+          </div>
+          <StepTimelineGrid
+            columns={3}
+            className="gap-0 border-l border-t border-border"
+          >
             {items.map((step, i) => (
-              <StepItem key={step.title} className="relative">
-                <div className="mb-4 flex items-center gap-4">
-                  <div className="grid size-12 place-items-center rounded-xl bg-foreground text-lg font-semibold text-background">
+              <StepItem
+                key={step.title}
+                className="relative overflow-hidden border-b border-r border-border bg-background p-7 sm:p-8"
+              >
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -right-3 -top-7 select-none font-mono text-[7rem] font-extrabold leading-none tracking-tighter text-foreground/[0.05] tabular-nums"
+                >
+                  0{i + 1}
+                </span>
+                <div className="relative mb-5 flex items-center gap-3">
+                  <div className="grid size-10 place-items-center bg-foreground font-mono text-sm font-semibold text-background tabular-nums">
                     {i + 1}
                   </div>
-                  {i < items.length - 1 && (
-                    <div className="hidden h-px flex-1 bg-border md:block" />
-                  )}
+                  <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                    step / 0{i + 1}
+                  </span>
                 </div>
-                <h3 className="mb-2 text-lg font-semibold">{step.title}</h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">
+                <h3 className="relative mb-2 text-lg font-bold tracking-tight">
+                  {step.title}
+                </h3>
+                <p className="relative text-sm leading-relaxed text-muted-foreground">
                   {step.description}
                 </p>
               </StepItem>

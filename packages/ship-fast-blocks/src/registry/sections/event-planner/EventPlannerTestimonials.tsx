@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -13,17 +14,19 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 
 /**
- * EventPlannerTestimonials — client-love testimonials grid on a muted band. A
- * centered intro (uppercase eyebrow, thin light heading, lede) above a responsive
- * 2-up/3-up grid of rounded card quotes, each with a five-star primary rating row,
- * an italic quote, and a footer pairing a circular headshot with the client name
- * and role/context. Imagery is alt-driven. Use to surface social proof for
+ * EventPlannerTestimonials — kinetic-poster client-love wall on a muted band. An
+ * asymmetric intro (a mono metadata rail with a primary square, hairline rule and
+ * count above a giant tight-tracked heading and lede) above a staggered 2-up/3-up
+ * grid of hard-framed rounded-none quote cards, each with a five-star primary
+ * rating row, a serif-italic quote behind a giant faint quotation mark, and a
+ * footer pairing a squared alt-driven headshot with the client name and a mono
+ * role/context label. Imagery is alt-driven. Use to surface social proof for
  * event/wedding planners, gala organizers, or premium hospitality services.
  */
 export const EventPlannerTestimonials = defineCapsule({
   name: 'EventPlannerTestimonials',
   description:
-    'Client-love testimonials grid on a muted band: a centered intro (uppercase eyebrow, thin light heading, lede) above a responsive 2-up/3-up grid of rounded card quotes, each with a five-star primary rating row, an italic quote, and a footer pairing a circular headshot with the client name and role/context. All imagery is alt-driven. Use to surface social proof for event/wedding planners, gala organizers, or premium hospitality services.',
+    'Kinetic-poster client-love wall on a muted band: an asymmetric intro (a mono metadata rail with a primary square, hairline rule and count above a giant tight-tracked heading and lede) above a staggered 2-up/3-up grid of hard-framed rounded-none quote cards, each with a five-star primary rating row, a serif-italic quote behind a giant faint quotation mark, and a footer pairing a squared alt-driven headshot with the client name and a mono role/context label. All imagery is alt-driven. Use to surface social proof for event/wedding planners, gala organizers, or premium hospitality services.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -113,12 +116,32 @@ export const EventPlannerTestimonials = defineCapsule({
         )}
       >
         <Container size="xl">
-          <TestimonialGrid
-            eyebrow={testimonialsEyebrow}
-            heading={testimonialsHeading}
-            subheading={testimonialsDesc}
-          >
-            {gridItems.map((t) => {
+          <div className="mb-14 max-w-3xl lg:mb-16">
+            <div className="flex items-center gap-4">
+              <span
+                aria-hidden="true"
+                className="size-1.5 shrink-0 bg-primary"
+              />
+              <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                {testimonialsEyebrow}
+              </span>
+              <span aria-hidden="true" className="h-px flex-1 bg-border" />
+              <span
+                aria-hidden="true"
+                className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60 tabular-nums"
+              >
+                {String(gridItems.length).padStart(2, '0')} / reviews
+              </span>
+            </div>
+            <h2 className="mt-6 text-4xl font-extrabold leading-[0.95] tracking-tighter text-foreground text-balance sm:text-5xl lg:text-6xl">
+              {testimonialsHeading}
+            </h2>
+            <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
+              {testimonialsDesc}
+            </p>
+          </div>
+          <TestimonialGrid>
+            {gridItems.map((t, i) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -128,19 +151,60 @@ export const EventPlannerTestimonials = defineCapsule({
                 rating?: number
                 avatarAlt?: string
               }
+              const stars = Math.max(0, Math.min(5, __iv__.rating ?? 5))
               return (
                 <TestimonialCard
                   key={__iv__.name}
-                  className={'rounded-2xl border-0 shadow-sm p-8'}
+                  className={cn(
+                    'relative gap-5 overflow-hidden rounded-none border-2 border-foreground/15 bg-background p-8 transition-transform duration-150 hover:-translate-y-1 motion-reduce:transform-none',
+                    i % 3 === 1 && 'lg:translate-y-8',
+                  )}
                 >
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
-                    {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
-                        {__iv__.role || __iv__.company || __iv__.meta}
-                      </TestimonialMeta>
-                    )}
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -right-2 -top-6 select-none font-serif text-[7rem] leading-none text-primary/10"
+                  >
+                    &rdquo;
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="flex items-center gap-0.5 text-primary"
+                  >
+                    {Array.from({ length: stars }).map((_, s) => (
+                      <svg
+                        key={s}
+                        className="size-4"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path d="M12 2l2.9 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l7.1-1.01L12 2z" />
+                      </svg>
+                    ))}
+                  </span>
+                  <TestimonialQuote className="relative font-serif text-lg italic leading-relaxed text-foreground">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="mt-auto flex items-center gap-3 border-t border-border pt-5">
+                    {__iv__.avatarAlt ? (
+                      <Image
+                        alt={__iv__.avatarAlt}
+                        w={96}
+                        h={96}
+                        loading="lazy"
+                        className="size-11 shrink-0 rounded-none border-2 border-foreground/15 object-cover"
+                      />
+                    ) : null}
+                    <span className="min-w-0">
+                      <TestimonialName className="block truncate font-bold tracking-tight text-foreground">
+                        {__iv__.name}
+                      </TestimonialName>
+                      {(__iv__.role || __iv__.company || __iv__.meta) && (
+                        <TestimonialMeta className="mt-0.5 block truncate font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                          {__iv__.role || __iv__.company || __iv__.meta}
+                        </TestimonialMeta>
+                      )}
+                    </span>
                   </TestimonialAuthor>
                 </TestimonialCard>
               )

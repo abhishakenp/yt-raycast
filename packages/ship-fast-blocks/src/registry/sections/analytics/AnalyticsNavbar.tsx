@@ -39,18 +39,20 @@ const brandMark = (
 )
 
 /**
- * AnalyticsNavbar — sharp, data-forward top navigation header for an analytics
- * product marketing site. Composes the shared SiteNav kit composite to render a
- * bar-chart brand mark, a crisp wordmark, a desktop link row (Product, Features,
- * Pricing, Docs), and a sticky filled-primary "Start Free" call to action with a
- * real mobile drawer. Every link and CTA routes through route hrefs. Use it as
- * the first band of any analytics, BI, dashboard, or data-product landing page
- * for a consistent, route-aware site header. Renders fully with no props.
+ * AnalyticsNavbar — Swiss data-grid top navigation header for an analytics
+ * product marketing site. Composes the shared SiteNav kit composite (sticky,
+ * backdrop-blurred, hairline border-bottom) to render a bar-chart brand mark,
+ * a crisp wordmark, a desktop link row set in mono uppercase micro-labels
+ * (Product, Features, Pricing, Docs), and a sharp-cornered filled-primary
+ * "Start Free" call to action with press feedback and a real mobile drawer.
+ * Every link and CTA routes through route hrefs. Use it as the first band of
+ * any analytics, BI, dashboard, or data-product landing page for a
+ * consistent, route-aware site header. Renders fully with no props.
  */
 export const AnalyticsNavbar = defineCapsule({
   name: 'AnalyticsNavbar',
   description:
-    "Sharp, data-forward top navigation header for an analytics product marketing site. Renders a bar-chart brand mark, crisp wordmark, desktop link row (Product, Features, Pricing, Docs), command plan search, Shoo account dropdown, selected-plan badge, and a sticky filled-primary fullstack 'Start Free' call to action with a real mobile drawer. Nav routes use route hrefs while auth/search/conversion use shared Lakebed state. Use it as the first band of any analytics, BI, dashboard, or data-product landing page.",
+    "Swiss data-grid top navigation header for an analytics product marketing site: sticky backdrop-blurred hairline bar with a bar-chart brand mark, crisp wordmark, mono-uppercase desktop link row (Product, Features, Pricing, Docs), command plan search, Shoo account dropdown, selected-plan badge, and a sharp-cornered filled-primary fullstack 'Start Free' call to action with press feedback and a real mobile drawer. Nav routes use route hrefs while auth/search/conversion use shared Lakebed state. Use it as the first band of any analytics, BI, dashboard, or data-product landing page.",
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -91,7 +93,11 @@ export const AnalyticsNavbar = defineCapsule({
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="font-mono text-[11px] uppercase tracking-[0.18em]"
+            >
               {label}
             </NavbarNavLink>
           ))}
@@ -126,7 +132,7 @@ export const AnalyticsNavbar = defineCapsule({
                 Starting
               </>
             }
-            className="hidden items-center justify-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
+            className="hidden items-center justify-center gap-2 rounded-none bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-[background-color,transform] duration-150 hover:bg-primary/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
           >
             {ctaLabel}
           </SaasPlanActionButton>

@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { ArticleGrid } from '#/section-kit/ArticleGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { StoryGrid } from '#/section-kit/StoryGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
@@ -21,17 +20,23 @@ import { publicationLakebed } from './publication-lakebed.ts'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * BlogStoryGrid — responsive story-grid for an editorial blog / publication.
- * A section header with a heading and a "view all" arrow-link above a 1/2/3-column
- * grid of story cards. Each card has a tagged cover image that zooms on hover, a
- * title, clamped excerpt, and an author/date footer. Cards and the view-all link
- * route through section-kit route links. Use as the story grid / latest-stories / article-listing
- * section on blog homepages, magazine indexes, or editorial landing pages.
+ * BlogStoryGrid — collapsed-border newsprint story grid for an editorial blog
+ * / publication. A serif section header sits on a heavy double masthead rule
+ * beside a mono small-caps "view all" arrow-link; below, the stories share
+ * hairline column and row rules like a broadsheet page (no gaps, no card
+ * chrome) with the lead story spanning two columns on desktop and the final
+ * story closing the band as a full-width horizontal ledger row. Each cell
+ * carries a mono index + dateline row (№ 01 · tag · date), a hairline-framed
+ * grayscale cover that regains color on hover, a serif headline, a clamped
+ * excerpt, and a small-caps "By author" byline rule. Cards and the view-all
+ * link route through section-kit route links. Use as the story grid /
+ * latest-stories / article-listing section on blog homepages, magazine
+ * indexes, or editorial landing pages.
  */
 export const BlogStoryGrid = defineCapsule({
   name: 'BlogStoryGrid',
   description:
-    "Responsive story-grid section for an editorial blog or publication: a section header with a heading and a 'view all' arrow-link above a 1/2/3-column grid of story cards. Each card has a tagged cover image that zooms on hover, a title, clamped excerpt, and an author/date footer. Cards and the view-all link route through section-kit route links. Use as the story grid / latest-stories / article-listing section on blog homepages, magazine indexes, or editorial landing pages.",
+    "Collapsed-border newsprint story grid for an editorial blog or publication: a serif section header on a heavy double masthead rule beside a mono small-caps 'view all' arrow-link, above a broadsheet grid where stories share hairline column and row rules (no gaps, no card chrome), the lead story spans two columns on desktop, and the final story closes the band as a full-width horizontal ledger row. Each cell has a mono index + dateline row (№ 01 · tag · date), a hairline-framed grayscale cover that regains color on hover, a serif headline, a clamped excerpt, and a small-caps 'By author' byline rule. Cards and the view-all link route through section-kit route links. Use as the story grid / latest-stories / article-listing section on blog homepages, magazine indexes, or editorial landing pages.",
   props: z.object({
     /** Section heading text. */
     title: z.string().optional(),
@@ -154,18 +159,19 @@ export const BlogStoryGrid = defineCapsule({
     return (
       <StoryGrid
         aria-label="Latest articles"
-        className={cn('pb-14', props.className)}
+        className={cn('pb-16', props.className)}
       >
         <Container size="lg">
-          <div className="flex flex-col items-start gap-1.5 py-5 sm:flex-row sm:items-baseline sm:justify-between">
+          {/* Section header on a heavy double masthead rule. */}
+          <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1.5 border-b-2 border-foreground pb-3 shadow-[0_3px_0_-2px] shadow-border">
             <SectionHeading
               align="left"
               title={title}
               className="gap-0"
-              titleClassName="font-serif text-2xl font-bold tracking-tight text-foreground"
+              titleClassName="font-serif text-2xl font-black tracking-tight text-foreground sm:text-3xl"
             />
             <NavbarRouteLink
-              className="group inline-flex items-center gap-2 text-[0.85rem] font-semibold text-primary"
+              className="group inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] text-foreground transition-colors hover:text-primary"
               href={viewAllTarget}
             >
               {viewAll}
@@ -173,53 +179,105 @@ export const BlogStoryGrid = defineCapsule({
             </NavbarRouteLink>
           </div>
 
-          <ArticleGrid cols="1-2-3">
-            {posts.map((post) => (
-              <StoryCard
-                key={`${post.tag}:${post.title}`}
-                variant="bordered"
-                asChild
-              >
-                <NavbarRouteLink href={postTarget}>
-                  <StoryCardImageContainer>
-                    <StoryCardImage
-                      alt={post.alt}
-                      w={800}
-                      h={500}
-                      className="h-[12.5rem]"
-                      variant="bordered"
-                    />
-                    <StoryCardMeta>
-                      {
-                        <span className="absolute left-3 top-3 rounded-full bg-background/90 px-2.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.06em] text-foreground shadow-sm backdrop-blur">
+          {/* Broadsheet grid: cells draw their own left+top hairlines, the
+              container closes right+bottom — collapse survives any span. */}
+          <div className="mt-6 grid border-b border-r border-border sm:grid-cols-2 lg:grid-cols-3">
+            {posts.map((post, i) => {
+              const isLead = i === 0
+              // The final story closes the page as a full-width horizontal
+              // ledger row, so the broadsheet never ends on a ragged row.
+              const isCloser = i === posts.length - 1 && posts.length > 3
+              return (
+                <StoryCard
+                  key={`${post.tag}:${post.title}`}
+                  variant="simple"
+                  asChild
+                  className={cn(
+                    'group rounded-none border-l border-t border-border',
+                    isLead && 'sm:col-span-2 lg:col-span-2',
+                    isCloser && 'sm:col-span-full',
+                  )}
+                >
+                  <NavbarRouteLink href={postTarget}>
+                    <div className="flex h-full flex-col p-5 sm:p-6">
+                      {/* Mono index + dateline row. */}
+                      <div className="flex items-baseline gap-3 border-b border-border pb-3">
+                        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60">
+                          № {String(i + 1).padStart(2, '0')}
+                        </span>
+                        <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
                           {post.tag}
                         </span>
-                      }
-                    </StoryCardMeta>
-                  </StoryCardImageContainer>
-                  <StoryCardBody>
-                    <StoryCardTitle>{post.title}</StoryCardTitle>
-                    <StoryCardExcerpt>{post.excerpt}</StoryCardExcerpt>
-                    <StoryCardFooter>
-                      {
-                        <div className="mt-4 flex items-center justify-between border-t border-border pt-3.5">
-                          <span className="inline-flex items-center gap-2.5 text-[0.82rem] font-semibold text-foreground">
-                            <span className="grid size-7 place-items-center rounded-full bg-gradient-to-br from-primary to-accent text-[0.625rem] font-bold text-primary-foreground">
-                              {post.author.charAt(0)}
-                            </span>
-                            {post.author}
-                          </span>
-                          <span className="text-[0.78rem] text-muted-foreground">
-                            {post.date}
-                          </span>
-                        </div>
-                      }
-                    </StoryCardFooter>
-                  </StoryCardBody>
-                </NavbarRouteLink>
-              </StoryCard>
-            ))}
-          </ArticleGrid>
+                        <span
+                          aria-hidden="true"
+                          className="h-px flex-1 bg-border"
+                        />
+                        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                          {post.date}
+                        </span>
+                      </div>
+                      <div
+                        className={cn(
+                          'flex flex-1 flex-col',
+                          isCloser && 'sm:flex-row sm:items-stretch sm:gap-8',
+                        )}
+                      >
+                        <StoryCardImageContainer
+                          className={cn(
+                            'mt-5 border border-foreground/25',
+                            isCloser && 'sm:w-[38%] sm:shrink-0',
+                          )}
+                        >
+                          <StoryCardImage
+                            alt={post.alt}
+                            w={800}
+                            h={500}
+                            className={cn(
+                              'h-[11rem] grayscale transition-[filter] duration-500 group-hover:grayscale-0',
+                              isLead && 'sm:h-[15rem]',
+                              isCloser && 'sm:h-full sm:min-h-[12rem]',
+                            )}
+                            variant="simple"
+                          />
+                          <StoryCardMeta />
+                        </StoryCardImageContainer>
+                        <StoryCardBody className="flex flex-1 flex-col p-0 pt-5">
+                          <StoryCardTitle
+                            className={cn(
+                              'font-serif text-xl font-black leading-snug tracking-tight underline-offset-4 group-hover:underline group-hover:decoration-2',
+                              (isLead || isCloser) && 'sm:text-2xl lg:text-3xl',
+                            )}
+                          >
+                            {post.title}
+                          </StoryCardTitle>
+                          <StoryCardExcerpt
+                            className={cn('mt-2.5', isCloser && 'sm:max-w-2xl')}
+                          >
+                            {post.excerpt}
+                          </StoryCardExcerpt>
+                          <StoryCardFooter>
+                            {
+                              <div className="mt-auto flex items-baseline justify-between gap-3 pt-5">
+                                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-foreground">
+                                  By {post.author}
+                                </span>
+                                <span
+                                  aria-hidden="true"
+                                  className="font-serif text-sm leading-none text-muted-foreground/50"
+                                >
+                                  ✦
+                                </span>
+                              </div>
+                            }
+                          </StoryCardFooter>
+                        </StoryCardBody>
+                      </div>
+                    </div>
+                  </NavbarRouteLink>
+                </StoryCard>
+              )
+            })}
+          </div>
         </Container>
       </StoryGrid>
     )

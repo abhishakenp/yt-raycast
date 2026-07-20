@@ -9,24 +9,27 @@ import {
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
 /**
- * DirectoryFaq — accordion FAQ section for a local-business directory. A
- * narrow-width background section with a centered heading + description and a
- * stack of native disclosure cards (details/summary) on card surfaces: each row
- * shows a bold question with a chevron that rotates open, expanding to a muted
- * answer paragraph. Static, no links. Use to answer listing, review-verification,
- * pricing, and coverage questions on local directories, find-a-service platforms,
- * or review-and-discovery sites.
+ * DirectoryFaq — index-style Q&A ledger for a local-business directory. A
+ * paper section split asymmetrically 4/8: left, a sticky serif heading with
+ * description and a mono "Reader questions" tag; right, a hairline-divided
+ * stack of native disclosure rows (details/summary), each led by a mono Q
+ * index numeral with the question in bold and a plus icon that rotates open,
+ * expanding to a muted answer paragraph indented under the numeral. Static,
+ * no links. Use to answer listing, review-verification, pricing, and coverage
+ * questions on local directories, find-a-service platforms, or
+ * review-and-discovery sites.
  */
 export const DirectoryFaq = defineCapsule({
   name: 'DirectoryFaq',
   description:
-    'Accordion FAQ section for a local-business DIRECTORY: a narrow-width background section with a centered heading and description and a stack of native disclosure cards (details/summary) on card surfaces — each row shows a bold question with a chevron that rotates when open, expanding to a muted answer paragraph. Static, no links. Use to answer listing, review-verification, pricing, and coverage questions on local directories, business-listing marketplaces, find-a-service platforms, or review-and-discovery sites.',
+    'Index-style Q&A ledger for a local-business DIRECTORY: a paper section split asymmetrically 4/8 — left, a sticky serif heading with description and a mono Reader-questions tag; right, a hairline-divided stack of native disclosure rows (details/summary), each led by a mono Q index numeral with the question in bold and a plus icon that rotates open, expanding to a muted answer paragraph indented under the numeral. Static, no links. Use to answer listing, review-verification, pricing, and coverage questions on local directories, business-listing marketplaces, find-a-service platforms, or review-and-discovery sites.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -74,34 +77,53 @@ export const DirectoryFaq = defineCapsule({
 
     return (
       <section className={cn('bg-background py-16 lg:py-24', props.className)}>
-        <Container size="sm">
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-12 gap-0"
-            titleClassName="mb-4 text-3xl font-semibold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
+        <Container>
+          <div className="grid gap-10 lg:grid-cols-12 lg:gap-12">
+            <div className="lg:col-span-4">
+              <div className="lg:sticky lg:top-24">
+                <SectionHeading
+                  align="left"
+                  title={heading}
+                  subtitle={description}
+                  className="gap-3"
+                  titleClassName="font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
+                  subtitleClassName="text-muted-foreground"
+                />
+                <MonoTag
+                  tone="faint"
+                  aria-hidden="true"
+                  className="mt-6 block border-t border-border pt-4"
+                >
+                  Reader questions · {String(items.length).padStart(2, '0')}{' '}
+                  filed
+                </MonoTag>
+              </div>
+            </div>
 
-          <FaqAccordion>
-            {items.map((item) => (
-              <FaqItem
-                key={item.question}
-                variant="bordered-lg"
-                className="overflow-hidden"
-              >
-                <FaqQuestion className="p-6">
-                  <span className="font-semibold text-card-foreground">
-                    {item.question}
-                  </span>
-                  <FaqQuestionIcon />
-                </FaqQuestion>
-                <FaqAnswer asChild className="px-6 pb-6">
-                  <div>{item.answer}</div>
-                </FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+            <div className="lg:col-span-8">
+              <FaqAccordion variant="divided">
+                {items.map((item, i) => (
+                  <FaqItem key={item.question} variant="divided">
+                    <FaqQuestion className="items-baseline gap-4 py-1">
+                      <span
+                        aria-hidden="true"
+                        className="shrink-0 font-mono text-[11px] tabular-nums text-muted-foreground"
+                      >
+                        Q.{String(i + 1).padStart(2, '0')}
+                      </span>
+                      <span className="flex-1 text-base font-semibold tracking-tight text-foreground sm:text-lg">
+                        {item.question}
+                      </span>
+                      <FaqQuestionIcon variant="plus" className="self-center" />
+                    </FaqQuestion>
+                    <FaqAnswer asChild className="pl-11 pt-3 sm:pl-12">
+                      <div>{item.answer}</div>
+                    </FaqAnswer>
+                  </FaqItem>
+                ))}
+              </FaqAccordion>
+            </div>
+          </div>
         </Container>
       </section>
     )

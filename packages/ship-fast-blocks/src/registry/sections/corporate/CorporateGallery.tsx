@@ -3,11 +3,15 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * CorporateGallery — global office / presence gallery for an enterprise /
- * corporate B2B site. A centered section heading above a responsive 2/3-column
- * grid of image cards with gradient-caption overlays; each card has a hover
- * scale effect and is clickable via section-kit route links. Use to showcase global
- * presence, workspace culture, or location hubs for large organizations.
+ * CorporateGallery — Swiss-corporate global presence plates for an enterprise /
+ * corporate B2B site. A double-rule asymmetric header (mono "04 / Locations"
+ * index, left-aligned heading, lede in the offset right column) above an
+ * asymmetric bento grid of hairline-framed, square-edged office plates — the
+ * first plate spans two columns (the section's calculated rupture) — each
+ * with a museum-label caption bar beneath the photo carrying a mono tabular
+ * index numeral, the office title, and its caption line. Use to showcase
+ * global presence, workspace culture, or location hubs for large
+ * organizations.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -21,7 +25,7 @@ import {
 export const CorporateGallery = defineCapsule({
   name: 'CorporateGallery',
   description:
-    'Global office / presence gallery for an enterprise / corporate B2B site: centered heading above a responsive 2/3-column grid of image cards with gradient-caption overlays, hover scale effect, and clickable buttons via section-kit route links. Use to showcase global presence, workspace culture, or location hubs for large organizations.',
+    'Swiss-corporate global presence plates for an enterprise / corporate B2B site: a double-rule asymmetric header (mono index, left-aligned heading, offset lede) above an asymmetric bento grid of hairline-framed square-edged office plates — the first spanning two columns — each with a museum-label caption bar beneath the photo carrying a mono tabular index numeral, the office title, and its caption line. Use to showcase global presence, workspace culture, or location hubs for large organizations.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -82,37 +86,79 @@ export const CorporateGallery = defineCapsule({
           },
         ]
     return (
-      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+      <section className={cn('bg-background py-16 lg:py-28', props.className)}>
         <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 tracking-tight sm:text-4xl"
-            subtitleClassName="text-lg"
-          />
+          <div className="mb-10 grid gap-6 border-b border-border pb-8 sm:mb-14 lg:grid-cols-12 lg:gap-10">
+            <div className="lg:col-span-5">
+              <span
+                aria-hidden="true"
+                className="mb-4 block font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+              >
+                04 / Locations
+              </span>
+              <SectionHeading
+                align="left"
+                title={heading}
+                className="gap-0"
+                titleClassName="text-3xl font-semibold tracking-tight sm:text-4xl"
+              />
+            </div>
+            <p className="text-lg leading-relaxed text-muted-foreground lg:col-span-6 lg:col-start-7 lg:self-end">
+              {description}
+            </p>
+          </div>
           <GalleryGrid>
-            <GalleryGridItems columns={3}>
+            <GalleryGridItems
+              columns={3}
+              className="gap-x-4 gap-y-8 sm:gap-x-6"
+            >
               {items
                 .map((item) => ({
                   alt: item.imageAlt,
                   caption: item.title,
+                  subCaption: item.caption,
                 }))
-                .map((img) => {
+                .map((img, i) => {
                   const __iv__ = img as {
                     alt: string
                     caption?: string
+                    subCaption?: string
                     title?: string
                     location?: string
                   }
                   return (
-                    <GalleryTile key={__iv__.alt}>
-                      <GalleryTileImage alt={__iv__.alt} />
-                      {__iv__.caption && (
-                        <GalleryTileCaption>
-                          {__iv__.caption}
-                        </GalleryTileCaption>
+                    <GalleryTile
+                      key={__iv__.alt}
+                      className={cn(
+                        'aspect-auto overflow-visible rounded-none border-0',
+                        i === 0 && 'sm:col-span-2',
                       )}
+                    >
+                      <GalleryTileImage
+                        alt={__iv__.alt}
+                        className={cn(
+                          'aspect-[4/3] rounded-none border border-border group-hover:scale-100',
+                          i === 0 && 'sm:aspect-[8/3.05]',
+                        )}
+                      />
+                      <GalleryTileCaption className="static inset-x-auto grid grid-cols-[auto_1fr] gap-x-3 border-b border-border bg-transparent px-0 py-3 backdrop-blur-none">
+                        <span
+                          aria-hidden="true"
+                          className="row-span-2 self-start font-mono text-[11px] uppercase leading-5 tracking-[0.2em] tabular-nums text-primary"
+                        >
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                        {__iv__.caption && (
+                          <span className="block text-sm font-semibold tracking-tight text-foreground">
+                            {__iv__.caption}
+                          </span>
+                        )}
+                        {__iv__.subCaption && (
+                          <span className="block font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                            {__iv__.subCaption}
+                          </span>
+                        )}
+                      </GalleryTileCaption>
                     </GalleryTile>
                   )
                 })}

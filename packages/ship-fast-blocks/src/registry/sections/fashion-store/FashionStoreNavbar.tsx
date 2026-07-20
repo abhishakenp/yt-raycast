@@ -18,19 +18,21 @@ import {
 } from '../commerce/commerce-interactions.tsx'
 
 /**
- * FashionStoreNavbar — fixed, backdrop-blurred top navigation bar for a
- * minimalist fashion / apparel store. A border-bottomed translucent header
- * pinned to the top with a centered serif wordmark logo, a hamburger menu
- * button on mobile, horizontal nav links (desktop), and a trio of icon
+ * FashionStoreNavbar — fixed, backdrop-blurred Vogue-editorial top navigation
+ * bar for a luxury fashion / apparel store. A hairline-bottomed translucent
+ * header pinned to the top, carrying a large serif wordmark logo as the
+ * editorial signature, a real shadcn mobile drawer button on mobile, quietly
+ * spaced horizontal nav links on desktop, and a trio of minimal-chrome icon
  * actions on the right (search, account, shopping bag with an item-count
- * badge). Search/account/cart use shared Lakebed commerce primitives; nav links route through route hrefs. Use as the
- * sticky site header for clothing brands, boutiques, apparel and accessories
- * shops, or any premium minimalist retail storefront.
+ * badge). Search/account/cart use shared Lakebed commerce primitives; nav
+ * links route through route hrefs. Use as the sticky site header for clothing
+ * brands, boutiques, apparel and accessories shops, or any premium minimalist
+ * retail storefront.
  */
 export const FashionStoreNavbar = defineCapsule({
   name: 'FashionStoreNavbar',
   description:
-    'Fixed, backdrop-blurred top navigation bar for a minimalist fashion / apparel store: a border-bottomed translucent header pinned to the top with a centered serif wordmark logo, a real shadcn mobile drawer button on mobile, horizontal nav links on desktop, and a trio of fullstack commerce actions on the right (product command search, Shoo account dropdown, shopping bag with reactive item-count badge and shadcn cart drawer). Nav links route through route hrefs and labels match the nav array so PageSwitch can swap pages. Use as the sticky site header for clothing brands, boutiques, apparel and accessories shops, lookbook commerce, or any premium minimalist retail storefront.',
+    'Fixed, backdrop-blurred Vogue-editorial top navigation bar for a luxury fashion / apparel store: a hairline-bottomed translucent header pinned to the top with a large serif wordmark logo as the editorial signature, a real shadcn mobile drawer button on mobile, quietly spaced horizontal nav links on desktop, and a trio of minimal-chrome fullstack commerce actions on the right (product command search, Shoo account dropdown, shopping bag with reactive item-count badge and shadcn cart drawer). Nav links route through route hrefs and labels match the nav array so PageSwitch can swap pages. Use as the sticky site header for clothing brands, boutiques, apparel and accessories shops, lookbook commerce, or any premium minimalist retail storefront.',
   props: z.object({
     /** Brand / store name shown as the serif wordmark. */
     brand: z.string().optional(),
@@ -101,19 +103,20 @@ export const FashionStoreNavbar = defineCapsule({
         height="responsive"
         className={cn('bg-background/95', props.className)}
       >
-        <NavbarBrand href={nav[0]} className="items-center">
-          <BrandLogo brand={brand} className="mr-2 size-8">
-            <LogoImage className="mr-2 size-8" />
-            <LogoLabel />
+        <NavbarBrand href={nav[0]} className="items-center gap-2">
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage className="size-7" />
+            <LogoLabel className="font-serif text-2xl font-medium tracking-tight lg:text-3xl" />
           </BrandLogo>
-          <span className="font-serif text-2xl font-medium tracking-tight lg:text-3xl">
-            {brand}
-          </span>
         </NavbarBrand>
 
-        <NavbarNav breakpoint="lg">
+        <NavbarNav breakpoint="lg" className="gap-9">
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="rounded-none px-0 py-1 font-mono text-[11px] font-medium uppercase tracking-[0.2em] hover:bg-transparent"
+            >
               {label}
             </NavbarNavLink>
           ))}

@@ -75,7 +75,13 @@ function mockCtx(input: {
           : (rewards as Array<Record<string, unknown>>)
 
       const builder = {
-        withIndex: (_indexName: string, applyIndex: (index: { eq: (field: string, value: unknown) => unknown; gt?: (field: string, value: number) => void }) => void) => {
+        withIndex: (
+          _indexName: string,
+          applyIndex: (index: {
+            eq: (field: string, value: unknown) => unknown
+            gt?: (field: string, value: number) => void
+          }) => void,
+        ) => {
           const filters = new Map<string, unknown>()
           const index = {
             eq: (field: string, value: unknown) => {

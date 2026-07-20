@@ -5,12 +5,15 @@ import { SolutionGrid, SolutionCard } from '#/section-kit/SolutionGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { cn } from '#/lib/utils.ts'
 /**
- * CorporateSolutions — enterprise solutions / feature grid for a corporate B2B
- * homepage. A centered section heading + lead paragraph above a responsive 1/2/3
- * column grid of bordered cards, each with a solid dark icon tile (rotating
- * inline SVGs), a title, a description, and a "Learn more" text button with
- * an arrow. Cards gain a subtle hover border change. Use to present enterprise
- * offerings (cloud infrastructure, security, analytics, transformation, managed
+ * CorporateSolutions — Swiss-corporate solutions ledger for a corporate B2B
+ * homepage. An asymmetric 5/7 header split (left-aligned heading on the left,
+ * lede pushed to the offset right column above a hairline rule) over a
+ * collapsed-border 1/2/3-column ledger of square-edged solution cells. Each
+ * cell shares hairline rules with its neighbors and carries a mono primary
+ * index label ("01"), a giant ghost numeral watermark, an ink icon tile
+ * (rotating inline SVGs), a title, a description, and an underlined
+ * "Learn more" link with press feedback. Use to present enterprise offerings
+ * (cloud infrastructure, security, analytics, transformation, managed
  * services, risk) on SaaS, IT, or consultancy sites.
  */
 import { Container } from '#/section-kit/Container.tsx'
@@ -19,7 +22,7 @@ import { NavbarRouteLink } from '#/section-kit/index.ts'
 export const CorporateSolutions = defineCapsule({
   name: 'CorporateSolutions',
   description:
-    "Enterprise solutions / feature grid for a corporate B2B homepage: centered section heading and lead above a responsive 1/2/3-column grid of bordered cards, each with a solid dark icon tile (rotating inline SVGs), a title, description, and a 'Learn more' text button with an arrow. Cards gain subtle hover border change. Use to present enterprise offerings on SaaS, IT, or consultancy sites. All card links route through section-kit route links.",
+    "Swiss-corporate solutions ledger for a corporate B2B homepage: an asymmetric 5/7 header split (heading left, lede in the offset right column above a hairline rule) over a collapsed-border 1/2/3-column ledger of square-edged cells, each with a mono primary index label, a giant ghost numeral watermark, an ink icon tile (rotating inline SVGs), a title, description, and an underlined 'Learn more' link with press feedback. Use to present enterprise offerings on SaaS, IT, or consultancy sites. All card links route through section-kit route links.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -193,40 +196,61 @@ export const CorporateSolutions = defineCapsule({
         <path d="M9 5l7 7-7 7" />
       </svg>
     )
-    const sectionHead = (title: string, desc: string) => (
-      <SectionHeading
-        title={title}
-        subtitle={desc}
-        className="mb-16 max-w-3xl gap-0"
-        titleClassName="mb-4 tracking-tight sm:text-4xl"
-        subtitleClassName="text-lg"
-      />
-    )
     return (
-      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+      <section className={cn('bg-background py-16 lg:py-28', props.className)}>
         <Container>
-          {sectionHead(heading, description)}
-          <SolutionGrid cols="1-md-2-3" className="grid gap-8">
+          <div className="mb-10 grid gap-6 border-b border-border pb-8 sm:mb-14 lg:grid-cols-12 lg:gap-10">
+            <div className="lg:col-span-5">
+              <span
+                aria-hidden="true"
+                className="mb-4 block font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+              >
+                02 / Solutions
+              </span>
+              <SectionHeading
+                align="left"
+                title={heading}
+                className="gap-0"
+                titleClassName="text-3xl font-semibold tracking-tight sm:text-4xl"
+              />
+            </div>
+            <p className="text-lg leading-relaxed text-muted-foreground lg:col-span-6 lg:col-start-7 lg:self-end">
+              {description}
+            </p>
+          </div>
+          <SolutionGrid
+            cols="1-md-2-3"
+            className="grid gap-0 border-l border-t border-border"
+          >
             {items.map((item, i) => (
               <SolutionCard
                 key={item.title}
-                className="bg-muted/50 p-8 transition-colors hover:border-border/60"
+                className="relative overflow-hidden rounded-none border-b border-l-0 border-r border-t-0 border-border bg-background p-6 transition-colors duration-150 hover:bg-muted/40 sm:p-8"
               >
-                <div className="mb-6 grid size-12 place-items-center rounded-lg bg-foreground text-background">
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -right-1 -top-3 select-none font-mono text-7xl font-bold tabular-nums leading-none text-foreground/[0.05]"
+                >
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <span className="mb-6 font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <div className="mb-6 mt-4 grid size-11 place-items-center rounded-none bg-foreground text-background">
                   {solutionIcons[i % solutionIcons.length]}
                 </div>
-                <h3 className="mb-3 text-xl font-semibold text-foreground">
+                <h3 className="mb-3 text-xl font-semibold tracking-tight text-foreground">
                   {item.title}
                 </h3>
-                <p className="mb-4 leading-relaxed text-muted-foreground">
+                <p className="mb-5 leading-relaxed text-muted-foreground">
                   {item.description}
                 </p>
                 <NavbarRouteLink
-                  className="inline-flex items-center text-sm font-medium text-foreground transition-colors hover:text-muted-foreground"
+                  className="mt-auto inline-flex w-fit items-center gap-1 text-sm font-medium text-foreground underline decoration-primary decoration-2 underline-offset-4 transition-all duration-150 hover:text-muted-foreground active:translate-y-px"
                   href={item.title}
                 >
                   Learn more
-                  <ArrowRight className="ml-1 size-4" />
+                  <ArrowRight className="size-4" />
                 </NavbarRouteLink>
               </SolutionCard>
             ))}

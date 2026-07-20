@@ -12,23 +12,26 @@ import {
 } from '#/section-kit/PersonCard.tsx'
 
 /**
- * DentalTeam — meet-the-team grid for a dental practice site. On a soft muted
- * band: a centered eyebrow + heading + lede above a responsive 1-to-4 column
- * grid of card-framed dentist profiles, each with a tall headshot photo, name,
- * primary-colored role, short bio, and a round LinkedIn icon button that
- * brightens to the primary color on hover. Links route through section-kit route links;
- * headshots use the alt-driven Image component. Use to introduce
+ * DentalTeam — staggered meet-the-team grid for a dental practice site. On a
+ * soft muted wash: an asymmetric header (left-aligned mono eyebrow + heading +
+ * lede, mono member-count meta right) above a 1-to-4 column grid of softly
+ * elevated dentist cards — alternate cards drop down a step on desktop for a
+ * calm stagger. Each card pairs a tall headshot with a bold name, a mono
+ * uppercase primary role label, a short bio, and a round LinkedIn chip that
+ * fills with the primary color on hover. Links route through section-kit route
+ * links; headshots use the alt-driven Image component. Use to introduce
  * board-certified dentists, orthodontists, or oral surgeons for a clinic site.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 export const DentalTeam = defineCapsule({
   name: 'DentalTeam',
   description:
-    'Meet-the-team grid for a dental practice site on a soft muted band: a centered eyebrow + heading + lede above a responsive 1-to-4 column grid of card-framed dentist profiles, each with a tall headshot photo, name, primary-colored role, short bio, and a round LinkedIn icon button that brightens to the primary color on hover. Links route through section-kit route links; headshots use the Image component. Use to introduce board-certified dentists, orthodontists, or oral surgeons for a clinic site.',
+    'Staggered meet-the-team grid for a dental practice site on a soft muted wash: an asymmetric header (left-aligned mono eyebrow + heading + lede, mono member-count meta right) above a 1-to-4 column grid of softly elevated dentist cards where alternate cards drop a step on desktop. Each card pairs a tall headshot with a bold name, a mono uppercase primary role label, a short bio, and a round LinkedIn chip that fills with the primary color on hover. Links route through section-kit route links; headshots use the Image component. Use to introduce board-certified dentists, orthodontists, or oral surgeons for a clinic site.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -84,23 +87,35 @@ export const DentalTeam = defineCapsule({
           },
         ]
     return (
-      <section className={cn('bg-muted py-24', props.className)}>
+      <section
+        className={cn('bg-muted/40 py-20 sm:py-24 lg:py-28', props.className)}
+      >
         <Container>
-          <SectionHeading
-            eyebrow={teamEyebrow}
-            title={teamHeading}
-            subtitle={teamDesc}
-            className="mb-16 max-w-3xl gap-0"
-            eyebrowClassName="mb-3 inline-block text-xs font-semibold tracking-wider text-primary"
-            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <ResponsiveGrid cols="1-2-4">
-            {teamMembers.map((m) => (
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <SectionHeading
+              align="left"
+              eyebrow={teamEyebrow}
+              title={teamHeading}
+              subtitle={teamDesc}
+              className="max-w-2xl gap-0"
+              eyebrowClassName="mb-4 inline-block font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground"
+              titleClassName="mb-4 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-[2.75rem] lg:leading-[1.05]"
+              subtitleClassName="text-base text-muted-foreground sm:text-lg"
+            />
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="shrink-0 md:pb-1"
+            >
+              {String(teamMembers.length).padStart(2, '0')} / clinicians
+            </MonoTag>
+          </div>
+          <ResponsiveGrid cols="1-2-4" className="gap-6 lg:gap-8">
+            {teamMembers.map((m, i) => (
               <PersonCard
                 key={m.name}
                 variant="elevated"
-                className="transition-shadow hover:shadow-xl rounded-2xl"
+                className={cn('rounded-2xl', i % 2 === 1 && 'lg:translate-y-8')}
               >
                 <PersonCardAvatar className="aspect-[3/4]">
                   <Image
@@ -112,18 +127,18 @@ export const DentalTeam = defineCapsule({
                   />
                 </PersonCardAvatar>
                 <PersonCardContent className="p-6">
-                  <PersonCardName className="mb-1 text-xl font-bold text-card-foreground">
+                  <PersonCardName className="mb-2 text-lg font-bold tracking-tight text-card-foreground">
                     {m.name}
                   </PersonCardName>
-                  <PersonCardRole className="mb-3 text-base font-medium text-primary">
+                  <PersonCardRole className="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
                     {m.role}
                   </PersonCardRole>
-                  <PersonCardBio className="mb-4 leading-relaxed">
+                  <PersonCardBio className="mb-4 text-sm leading-relaxed">
                     {m.bio}
                   </PersonCardBio>
                   <NavbarRouteLink
                     aria-label={`LinkedIn profile of ${m.name}`}
-                    className="grid size-8 place-items-center rounded-full bg-secondary text-secondary-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
+                    className="grid size-8 place-items-center rounded-full bg-secondary text-secondary-foreground transition-colors hover:bg-primary hover:text-primary-foreground active:translate-y-px"
                     href={`${m.name} on LinkedIn`}
                   >
                     <svg

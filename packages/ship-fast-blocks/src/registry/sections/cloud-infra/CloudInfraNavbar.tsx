@@ -20,19 +20,20 @@ import {
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
- * CloudInfraNavbar — sticky translucent top navigation bar for a cloud
+ * CloudInfraNavbar — terminal-industrial sticky top navigation bar for a cloud
  * infrastructure / developer-platform SaaS site. A blurred, border-bottomed
- * header pinned to the top: a cloud-glyph logo tile beside the brand name on
- * the left, horizontal nav links in the center, and a "Sign in" text link +
- * "Get Started" primary pill CTA on the right (desktop). Every nav link and
- * CTA routes through route hrefs so labels drive page-switching. Use as the
- * sticky site header for cloud hosting, PaaS, IaaS, serverless, DevOps, or any
- * engineering-focused landing page.
+ * header pinned to the top: a square cloud-glyph logo tile beside a mono brand
+ * wordmark on the left, mono uppercase nav links in the center, and command
+ * search / account controls plus a square inverted "Get Started" CTA with
+ * press feedback on the right (desktop). Every nav link and CTA routes through
+ * route hrefs so labels drive page-switching. Use as the sticky site header
+ * for cloud hosting, PaaS, IaaS, serverless, DevOps, or any engineering-
+ * focused landing page.
  */
 export const CloudInfraNavbar = defineCapsule({
   name: 'CloudInfraNavbar',
   description:
-    "Sticky translucent top navigation bar for a cloud / developer-platform SaaS site: blurred backdrop, border-bottomed header with a cloud-glyph logo tile + brand name, horizontal desktop nav links, command plan search, Shoo account dropdown, selected-plan badge, a fullstack 'Get Started' CTA, and a real mobile drawer. Navigation routes through route hrefs while auth/search/conversion state is shared through Lakebed. Use as the site header for cloud hosting, PaaS, IaaS, serverless, DevOps, or engineering-focused landing pages.",
+    "Terminal-industrial sticky top navigation bar for a cloud / developer-platform SaaS site: blurred backdrop, border-bottomed header with a square cloud-glyph logo tile + mono brand wordmark, mono uppercase desktop nav links, command plan search, Shoo account dropdown, selected-plan badge, a square inverted fullstack 'Get Started' CTA with press feedback, and a real mobile drawer. Navigation routes through route hrefs while auth/search/conversion state is shared through Lakebed. Use as the site header for cloud hosting, PaaS, IaaS, serverless, DevOps, or engineering-focused landing pages.",
   props: z.object({
     /** Brand / product name shown beside the logo tile and in nav buttons. */
     brand: z.string().optional(),
@@ -57,7 +58,7 @@ export const CloudInfraNavbar = defineCapsule({
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          'grid place-items-center rounded-lg bg-primary text-primary-foreground',
+          'grid place-items-center rounded-none bg-foreground text-background',
           className,
         )}
         aria-hidden="true"
@@ -82,15 +83,22 @@ export const CloudInfraNavbar = defineCapsule({
         className={cn('bg-background/95', props.className)}
       >
         <NavbarBrand href={homeTarget} className="gap-2">
-          <BrandLogo brand={brand}>
-            <LogoImage fallback={<LogoMark className="size-8" />} />
-            <LogoLabel className="text-xl font-semibold tracking-tight" />
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage
+              className="size-7"
+              fallback={<LogoMark className="size-7" />}
+            />
+            <LogoLabel className="font-mono text-base font-bold tracking-tight" />
           </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="font-mono text-[12px] uppercase tracking-[0.14em]"
+            >
               {label}
             </NavbarNavLink>
           ))}
@@ -117,7 +125,7 @@ export const CloudInfraNavbar = defineCapsule({
                 Starting
               </>
             }
-            className="hidden items-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
+            className="hidden items-center gap-2 rounded-none bg-foreground px-4 py-2 font-mono text-xs font-semibold uppercase tracking-[0.12em] text-background transition-colors hover:bg-foreground/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
           >
             {ctaLabel}
           </SaasPlanActionButton>

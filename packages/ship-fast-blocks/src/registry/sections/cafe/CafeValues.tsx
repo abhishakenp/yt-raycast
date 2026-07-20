@@ -3,20 +3,23 @@ import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { ValuesGrid, ValuesCard } from '#/section-kit/ValuesGrid.tsx'
+import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 
 /**
- * CafeValues — 4-up values / highlights grid for a cozy cafe / coffee shop
- * page, on a subtle card-colored band. Each of the four columns centers an
- * inline decorative icon inside a muted circular tile, a serif title, and a
- * small description. Icons rotate via index modulo four. No links. Use as a
- * trust / ethos block for cafes, bakeries, tea houses, or any small
+ * CafeValues — collapsed-border values ledger for a cozy cafe / coffee shop
+ * page on a kraft-toned muted wash. A mono "House Rules" rail with a hairline
+ * rule leads a shared-hairline grid (2-up on small screens, 4-up on desktop):
+ * each cell carries a mono index numeral ("01"–"04") beside a small inline
+ * decorative icon, a serif title, and a muted description, with hover lifting
+ * the cell onto a card wash. Icons rotate via index modulo four. No links. Use
+ * as a trust / ethos block for cafes, bakeries, tea houses, or any small
  * food-and-drink business. Renders fully with no props via baked-in defaults.
  */
 export const CafeValues = defineCapsule({
   name: 'CafeValues',
   description:
-    '4-up values / highlights grid for a cozy cafe page on a card-colored band: each column centers an inline decorative icon inside a muted circular tile, a serif title, and a small description. Icons rotate via index modulo four. No links. Use as a trust / ethos block for cafes, bakeries, tea houses, or any small food-and-drink business.',
+    'Collapsed-border values ledger for a cozy cafe page on a kraft-toned muted wash: a mono rail with hairline rule leads a shared-hairline grid (2-up small screens, 4-up desktop) where each cell carries a mono index numeral beside a small inline decorative icon, a serif title, and a muted description, with a card-wash hover. Icons rotate via index modulo four. No links. Use as a trust / ethos block for cafes, bakeries, tea houses, or any small food-and-drink business.',
   props: z.object({
     /** Value cards: title + description. */
     items: z
@@ -51,7 +54,7 @@ export const CafeValues = defineCapsule({
     const valueIcons: ReactNode[] = [
       <svg
         key="signal"
-        className="size-7"
+        className="size-5"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -66,7 +69,7 @@ export const CafeValues = defineCapsule({
       </svg>,
       <svg
         key="clock"
-        className="size-7"
+        className="size-5"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -81,7 +84,7 @@ export const CafeValues = defineCapsule({
       </svg>,
       <svg
         key="community"
-        className="size-7"
+        className="size-5"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -96,7 +99,7 @@ export const CafeValues = defineCapsule({
       </svg>,
       <svg
         key="sparkle"
-        className="size-7"
+        className="size-5"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -112,22 +115,42 @@ export const CafeValues = defineCapsule({
     ]
 
     return (
-      <ValuesGrid
-        cols="1-2-4"
-        className={cn('bg-card pt-28 pb-20', props.className)}
+      <section
+        className={cn(
+          'bg-muted/40 pt-16 pb-16 lg:pt-20 lg:pb-20',
+          props.className,
+        )}
       >
-        {items.map((v, i) => (
-          <ValuesCard key={v.title}>
-            <div className="flex flex-col items-center gap-3 p-6 text-center">
-              <div className="inline-flex size-12 items-center justify-center rounded-full bg-muted text-foreground">
-                {valueIcons[i % valueIcons.length]}
+        <Container size="xl" className="px-6">
+          <div className="flex items-center gap-4">
+            <MonoTag>House Rules</MonoTag>
+            <span aria-hidden="true" className="h-px flex-1 bg-border" />
+          </div>
+          <div className="mt-6 grid grid-cols-1 border-t border-l border-foreground/15 sm:grid-cols-2 lg:grid-cols-4">
+            {items.map((v, i) => (
+              <div
+                key={v.title}
+                className="group border-r border-b border-foreground/15 bg-background/60 p-6 transition-colors duration-150 hover:bg-card sm:p-7"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <MonoTag tone="primary">
+                    {String(i + 1).padStart(2, '0')}
+                  </MonoTag>
+                  <span className="text-muted-foreground transition-colors duration-150 group-hover:text-foreground">
+                    {valueIcons[i % valueIcons.length]}
+                  </span>
+                </div>
+                <h3 className="mt-5 font-serif text-xl font-medium tracking-tight text-foreground">
+                  {v.title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  {v.description}
+                </p>
               </div>
-              <h3 className="text-lg font-serif text-foreground">{v.title}</h3>
-              <p className="text-sm text-muted-foreground">{v.description}</p>
-            </div>
-          </ValuesCard>
-        ))}
-      </ValuesGrid>
+            ))}
+          </div>
+        </Container>
+      </section>
     )
   },
 })

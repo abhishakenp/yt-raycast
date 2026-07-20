@@ -5,17 +5,21 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
 /**
- * KidsEducationActivities — playful activities / features grid for a kids /
- * family learning platform. A centered eyebrow + heading + description intro
- * above a responsive 3-up grid of rounded cards; each card has a photo with a
- * floating count badge, a rotating soft-tint icon tile (science, art, coding,
- * math, reading, nature), a title, a description, and an arrow "explore" link.
- * Cards lift and the photo zooms on hover. Every explore link routes through
- * section-kit route links. Use to showcase course categories / subjects for kids-education
- * startups, children's e-learning platforms, STEM programs, and family learning
- * apps. Renders fully with no props via baked-in defaults.
+ * KidsEducationActivities — playful-primary activities grid for a kids / family
+ * learning platform. An asymmetric mono-labeled header (eyebrow + heading left,
+ * index meta right) above a staggered 3-up grid of chunky sharp-cornered
+ * 2px-bordered cards that step up and down the baseline; each card has a
+ * sharp-bordered photo topped with a rotated sticker count badge, a sharp
+ * soft-tint subject block (science, art, coding, math, reading, nature), a bold
+ * title, a description, and a mono arrow "explore" link with press feedback.
+ * Cards gain a hard offset token shadow and the photo zooms on hover. Every
+ * explore link routes through section-kit route links. Use to showcase course
+ * categories / subjects for kids-education startups, children's e-learning
+ * platforms, STEM programs, and family learning apps. Renders fully with no
+ * props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   ActivityGrid,
@@ -31,7 +35,7 @@ import { NavbarRouteLink } from '#/section-kit/index.ts'
 export const KidsEducationActivities = defineCapsule({
   name: 'KidsEducationActivities',
   description:
-    "Playful activities / features grid for a kids / family learning platform: a centered eyebrow + heading + description intro above a responsive 3-up grid of rounded cards; each card has a photo with a floating count badge, a rotating soft-tint icon tile (science, art, coding, math, reading, nature), a title, a description, and an arrow 'explore' link, lifting and zooming the photo on hover. Explore links route through section-kit route links. Use to showcase course categories / subjects for kids-education startups, children's e-learning platforms, STEM programs, and family learning apps.",
+    "Playful-primary activities grid for a kids / family learning platform: an asymmetric mono-labeled header (eyebrow + heading left, index meta right) above a staggered 3-up grid of chunky sharp-cornered 2px-bordered cards that step up and down the baseline; each card has a sharp-bordered photo topped with a rotated sticker count badge, a sharp soft-tint subject block (science, art, coding, math, reading, nature), a bold title, a description, and a mono arrow 'explore' link with press feedback, gaining a hard offset token shadow and zooming the photo on hover. Explore links route through section-kit route links. Use to showcase course categories / subjects for kids-education startups, children's e-learning platforms, STEM programs, and family learning apps.",
   props: z.object({
     /** Uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -228,22 +232,45 @@ export const KidsEducationActivities = defineCapsule({
       </svg>
     )
     return (
-      <section className={cn('bg-background py-24', props.className)}>
-        <Container>
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            eyebrowClassName="mb-3 inline-block text-sm font-semibold tracking-wider text-secondary"
-            titleClassName="mb-6 text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
+      <section
+        className={cn(
+          'relative overflow-hidden bg-background py-20 lg:py-24',
+          props.className,
+        )}
+      >
+        <Watermark className="-right-6 top-8 text-[7rem] sm:text-[10rem] lg:text-[13rem]">
+          EXPLORE
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-14 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-0"
+              eyebrowClassName="mb-3 inline-block font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground"
+              titleClassName="mb-5 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl"
+              subtitleClassName="text-lg text-muted-foreground"
+            />
+            <MonoTag
+              aria-hidden="true"
+              className="shrink-0 text-muted-foreground/60"
+            >
+              [ {items.length} subjects ]
+            </MonoTag>
+          </div>
 
-          <ActivityGrid cols="1-2-3" className="gap-8">
+          <ActivityGrid cols="1-2-3" className="items-start gap-8">
             {items.map((item, i) => (
-              <ActivityTile key={item.title}>
-                <ActivityTileMedia>
+              <ActivityTile
+                key={item.title}
+                className={cn(
+                  'rounded-none border-2 border-foreground bg-card p-5 shadow-[5px_5px_0_0] shadow-transparent transition-[transform,box-shadow] duration-150 hover:-translate-y-1 hover:bg-card hover:shadow-foreground motion-reduce:transform-none',
+                  i % 3 === 1 && 'lg:mt-10',
+                )}
+              >
+                <ActivityTileMedia className="mb-5 rounded-none border-2 border-foreground">
                   <Image
                     alt={item.imageAlt}
                     w={600}
@@ -251,17 +278,26 @@ export const KidsEducationActivities = defineCapsule({
                     loading="lazy"
                     className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <ActivityTileBadge>{item.badge}</ActivityTileBadge>
+                  <ActivityTileBadge className="left-3 top-3 -rotate-2 rounded-full border-2 border-foreground bg-background px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.1em] text-foreground shadow-[2px_2px_0_0] shadow-primary/40">
+                    {item.badge}
+                  </ActivityTileBadge>
                 </ActivityTileMedia>
-                <ActivityTileIcon className={iconTints[i % iconTints.length]}>
+                <ActivityTileIcon
+                  className={cn(
+                    'mb-4 size-11 rounded-none border-2 border-foreground',
+                    iconTints[i % iconTints.length],
+                  )}
+                >
                   {activityIcons[i % activityIcons.length]}
                 </ActivityTileIcon>
-                <ActivityTileTitle>{item.title}</ActivityTileTitle>
+                <ActivityTileTitle className="text-xl font-extrabold tracking-tight">
+                  {item.title}
+                </ActivityTileTitle>
                 <ActivityTileDescription>
                   {item.description}
                 </ActivityTileDescription>
                 <NavbarRouteLink
-                  className="inline-flex items-center gap-2 font-semibold text-foreground transition-colors hover:text-secondary"
+                  className="mt-auto inline-flex w-fit items-center gap-2 border-b-2 border-transparent pb-0.5 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-foreground transition-colors hover:border-primary active:translate-y-px motion-reduce:transform-none"
                   href={item.cta}
                 >
                   {item.cta}

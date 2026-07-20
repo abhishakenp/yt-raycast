@@ -4,7 +4,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
-import { KpisGrid } from '#/section-kit/KpisGrid.tsx'
+import { KpisGrid, KpiTrendArrow } from '#/section-kit/KpisGrid.tsx'
 import {
   StatValue,
   StatLabel,
@@ -16,20 +16,24 @@ import {
 import { dashboardLakebed } from './dashboard-lakebed.ts'
 
 /**
- * DashboardKpis — a 4-up KPI stat-card row for a SaaS admin dashboard. A
- * responsive 1/2/4-column grid of bordered card tiles, each pairing a label,
- * a large bold value and an up/down trend badge (green chart styling for up,
- * destructive for down, with a directional arrow + optional caption) on the
- * left, and a tone-tinted colored icon tile on the right. Tones rotate across
- * the data-viz tokens (primary / orange / sky / violet / emerald). Tokens-only,
- * no links. Use as the headline-metric summary row at the top of a dashboard —
- * revenue, orders, customers, average order value. Renders fully with no props
- * via four baked-in default KPIs.
+ * DashboardKpis — Swiss-data KPI ledger row for a SaaS admin dashboard. A
+ * mono "Metrics · Live" meta rail with a tabular indicator count sits above a
+ * collapsed-border hairline grid of square stat cells (no gaps, shared rules,
+ * rounded-none). The first KPI is the hero: it spans two columns and carries an
+ * oversized tabular numeral; the rest stay dense. Every cell pairs a mono
+ * uppercase label, a big tabular-nums value, a bare trend delta (chart-green
+ * up / destructive down, with a directional arrow + optional mono caption) and
+ * a div-built spark bar strip whose last tick takes the trend color; a quiet
+ * hairline-framed line icon sits top-right. The Orders KPI reads shared
+ * Lakebed dashboard order state so generated admin counters react to
+ * mutations. Use as the headline-metric summary row at the top of a dashboard
+ * — revenue, orders, customers, average order value. Renders fully with no
+ * props via four baked-in default KPIs.
  */
 export const DashboardKpis = defineCapsule({
   name: 'DashboardKpis',
   description:
-    'A 4-up KPI stat-card row for a SaaS admin dashboard: a responsive 1/2/4-column grid of bordered card tiles, each pairing a label, a large bold value and an up/down trend badge (green chart styling for up, destructive for down, with a directional arrow + optional caption) on the left, and a tone-tinted colored icon tile on the right. The Orders KPI reads shared Lakebed dashboard order state so generated admin counters react to mutations. Tones rotate across the data-viz tokens (primary / orange / sky / violet / emerald). Tokens-only, no links. Use as the headline-metric summary row at the top of a dashboard — revenue, orders, customers, average order value.',
+    'Swiss-data KPI ledger row for a SaaS admin dashboard: a mono "Metrics · Live" meta rail with a tabular indicator count above a collapsed-border hairline grid of square stat cells — the first KPI is a two-column hero with an oversized tabular numeral, the rest stay dense. Each cell pairs a mono uppercase label, a tabular-nums value, a bare up/down trend delta (chart-green up, destructive down, directional arrow + optional caption) and a div-built spark bar strip whose last tick takes the trend color, plus a quiet hairline line icon. The Orders KPI reads shared Lakebed dashboard order state so generated admin counters react to mutations. Tokens-only, no links. Use as the headline-metric summary row at the top of a dashboard — revenue, orders, customers, average order value.',
   props: z.object({
     /** KPI stat cards. `tone` colors the icon tile; `trendUp` true = green up trend, false = red down trend. */
     kpis: z
@@ -96,14 +100,7 @@ export const DashboardKpis = defineCapsule({
         : kpi,
     )
 
-    // ── KPI icon tints (data-viz tokens for a multi-color decorative set). ──
-    const kpiTones: Record<string, string> = {
-      primary: 'bg-primary/10 text-primary',
-      orange: 'bg-chart-3/10 text-chart-3',
-      sky: 'bg-chart-2/10 text-chart-2',
-      violet: 'bg-chart-5/10 text-chart-5',
-      emerald: 'bg-chart-1/10 text-chart-1',
-    }
+    // ── Quiet hairline-framed line icons (glyph chosen by tone key). ──
     const kpiIcons: Record<string, ReactNode> = {
       primary: (
         <>
@@ -140,66 +137,81 @@ export const DashboardKpis = defineCapsule({
       ),
     }
 
+    // ── Deterministic spark-bar heights (percent), rotated per cell. ──
+    const sparkBase = [34, 52, 40, 66, 48, 74, 58, 82, 70, 95]
+
     return (
-      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
+      <section className={cn('bg-background py-10 sm:py-14', props.className)}>
         <Container>
-          <KpisGrid cols="1-2-4" className="gap-4">
-            {kpis.map((kpi) => {
+          <div
+            aria-hidden="true"
+            className="mb-6 flex items-center justify-between gap-4 border-b border-border pb-3 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground"
+          >
+            <span className="flex items-center gap-2.5">
+              <span className="size-1.5 bg-primary" />
+              Metrics · Live
+            </span>
+            <span className="tabular-nums text-muted-foreground/60">
+              {String(kpis.length).padStart(2, '0')} indicators
+            </span>
+          </div>
+          <KpisGrid
+            cols="1-2-4"
+            className="grid grid-cols-2 gap-0 border-l border-t border-border lg:grid-cols-5"
+          >
+            {kpis.map((kpi, i) => {
               const tone = kpi.tone ?? 'primary'
               const up = kpi.trendUp ?? true
+              const hero = i === 0
+              // Fill the collapsed grid's last mobile row when the non-hero
+              // cell count is odd (hero already spans both columns).
+              const fillsLastRow =
+                i === kpis.length - 1 && (kpis.length - 1) % 2 === 1
               return (
                 <StatCard
                   key={kpi.label}
                   aria-label={`${kpi.label}: ${kpi.value}`}
-                  className="p-5 transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08),0_4px_10px_-4px_rgba(0,0,0,0.04)] p-4"
+                  className={cn(
+                    'rounded-none border-0 border-b border-r border-border bg-card p-4 sm:p-5',
+                    hero && 'col-span-2',
+                    !hero && fillsLastRow && 'col-span-2 lg:col-span-1',
+                  )}
                 >
-                  <StatCardHeader>
-                    <div>
-                      <StatLabel className="text-sm font-medium">
+                  <StatCardHeader className="gap-3">
+                    <div className="min-w-0">
+                      <StatLabel className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                         {kpi.label}
                       </StatLabel>
-                      <StatValue className="mt-1 text-2xl">
+                      <StatValue
+                        className={cn(
+                          'mt-2 block leading-none',
+                          hero
+                            ? 'text-4xl font-extrabold sm:text-5xl'
+                            : 'text-2xl font-bold sm:text-3xl',
+                        )}
+                      >
                         {kpi.value}
                       </StatValue>
-                      <div className="mt-2 flex items-center gap-1">
-                        <StatDelta trend={up ? 'up' : 'down'}>
-                          <svg
-                            width="12"
-                            height="12"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            aria-hidden="true"
-                            className="mr-0.5"
-                          >
-                            {up ? (
-                              <>
-                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-                                <polyline points="17 6 23 6 23 12" />
-                              </>
-                            ) : (
-                              <>
-                                <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />
-                                <polyline points="17 18 23 18 23 12" />
-                              </>
-                            )}
-                          </svg>
+                      <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <StatDelta
+                          trend={up ? 'up' : 'down'}
+                          bare
+                          className="gap-1 bg-transparent font-mono text-[11px] font-semibold tabular-nums"
+                        >
+                          <KpiTrendArrow trend={up ? 'up' : 'down'} size={12} />
                           {kpi.delta}
                         </StatDelta>
                         {kpi.deltaNote ? (
-                          <span className="text-xs text-muted-foreground">
+                          <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-muted-foreground/70">
                             {kpi.deltaNote}
                           </span>
                         ) : null}
                       </div>
                     </div>
-                    <StatIcon className={cn(kpiTones[tone])}>
+                    <StatIcon className="size-8 shrink-0 rounded-none border border-border bg-transparent text-muted-foreground/60">
                       <svg
-                        width="20"
-                        height="20"
+                        width="16"
+                        height="16"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
@@ -212,6 +224,29 @@ export const DashboardKpis = defineCapsule({
                       </svg>
                     </StatIcon>
                   </StatCardHeader>
+                  <span
+                    aria-hidden="true"
+                    className="mt-4 flex h-6 items-end gap-px"
+                  >
+                    {sparkBase.map((_, j) => {
+                      const h = sparkBase[(i * 3 + j) % sparkBase.length]
+                      const last = j === sparkBase.length - 1
+                      return (
+                        <span
+                          key={j}
+                          className={cn(
+                            'w-1.5',
+                            last
+                              ? up
+                                ? 'bg-chart-1'
+                                : 'bg-destructive'
+                              : 'bg-foreground/15',
+                          )}
+                          style={{ height: `${h}%` }}
+                        />
+                      )
+                    })}
+                  </span>
                 </StatCard>
               )
             })}

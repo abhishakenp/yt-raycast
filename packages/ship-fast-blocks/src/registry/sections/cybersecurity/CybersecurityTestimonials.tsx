@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -15,18 +16,23 @@ import {
 } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
- * CybersecurityTestimonials — CISO / security-leader testimonial wall. A light
- * section with a centered heading + subheading above a responsive 2-to-3 column
- * grid of muted, bordered quote cards. Each card stacks a 5-star rating, a
- * verbatim quote, then an alt-driven avatar beside the leader's name and role.
- * Pure display, no links. Use to deliver authoritative social proof for
- * cybersecurity vendors, SOC/MDR providers, or any enterprise B2B security
- * SaaS. Renders fully with no props via baked-in CISO-quote defaults.
+ * CybersecurityTestimonials — terminal-stealth field-report wall. A light
+ * section opening with a hairline mono meta rule ("FIELD REPORTS" + tabular
+ * source count) above an asymmetric header (left-aligned heading + lede, mono
+ * "[ SOURCES VERIFIED ]" tag right). Reports render as square-edged, bordered
+ * transmission cards in a staggered 2-to-3 column grid (middle column shifts
+ * down at desktop): each card opens with a mono "[ VERIFIED ]" + "TX-0X" meta
+ * row over a hairline rule, then the verbatim quote, and closes with the
+ * alt-driven grayscale avatar beside the leader's name and mono role line.
+ * Pure display, no links, no star ratings, no glows. Use to deliver
+ * authoritative social proof for cybersecurity vendors, SOC/MDR providers, or
+ * any enterprise B2B security SaaS. Renders fully with no props via baked-in
+ * CISO-quote defaults.
  */
 export const CybersecurityTestimonials = defineCapsule({
   name: 'CybersecurityTestimonials',
   description:
-    "CISO / security-leader testimonial wall: a light section with a centered heading + subheading above a responsive 2-to-3 column grid of muted, bordered quote cards, each stacking a 5-star rating, a verbatim quote, then an alt-driven avatar beside the leader's name and role. Pure display, no links. Use to deliver authoritative social proof for cybersecurity vendors, SOC/MDR providers, or any enterprise B2B security SaaS.",
+    "Terminal-stealth field-report testimonial wall: a light section with a mono meta rule and asymmetric left-aligned header above a staggered 2-to-3 column grid of square-edged transmission cards, each opening with a mono '[ VERIFIED ]' + 'TX-0X' meta row, then the verbatim quote, then an alt-driven grayscale avatar beside the leader's name and mono role. Pure display, no links. Use to deliver authoritative social proof for cybersecurity vendors, SOC/MDR providers, or any enterprise B2B security SaaS.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -104,17 +110,37 @@ export const CybersecurityTestimonials = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-background py-24', props.className)}>
+      <section
+        className={cn('bg-background py-16 sm:py-20 lg:py-24', props.className)}
+      >
         <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 text-3xl font-bold sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <TestimonialGrid columns={3}>
-            {items.map((t) => {
+          <div className="mb-8 flex items-center justify-between gap-4 border-b border-border pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground sm:mb-10">
+            <span className="flex items-center gap-3">
+              <span aria-hidden="true" className="size-2 bg-primary" />
+              Field reports
+            </span>
+            <span aria-hidden="true" className="tabular-nums">
+              n={String(items.length).padStart(2, '0')}
+            </span>
+          </div>
+          <div className="mb-10 flex flex-col gap-6 sm:mb-14 md:flex-row md:items-end md:justify-between">
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-3"
+              titleClassName="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl"
+              subtitleClassName="max-w-xl text-base text-muted-foreground sm:text-lg"
+            />
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+            >
+              [ sources verified ]
+            </p>
+          </div>
+          <TestimonialGrid columns={3} className="lg:pb-8">
+            {items.map((t, i) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -125,15 +151,44 @@ export const CybersecurityTestimonials = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
-                    {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
-                        {__iv__.role || __iv__.company || __iv__.meta}
-                      </TestimonialMeta>
+                <TestimonialCard
+                  key={__iv__.name}
+                  className={cn(
+                    'gap-4 rounded-none border-border bg-card p-6 transition-colors duration-150 hover:border-foreground/40 sm:p-7',
+                    i % 3 === 1 && 'lg:translate-y-8',
+                  )}
+                >
+                  <p
+                    aria-hidden="true"
+                    className="flex items-center justify-between gap-4 border-b border-border pb-3 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70"
+                  >
+                    <span>[ verified ]</span>
+                    <span className="tabular-nums">
+                      tx-{String(i + 1).padStart(2, '0')}
+                    </span>
+                  </p>
+                  <TestimonialQuote className="text-[15px] leading-relaxed">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="gap-3 border-t border-border pt-4">
+                    {__iv__.avatarAlt && (
+                      <Image
+                        alt={__iv__.avatarAlt}
+                        w={80}
+                        h={80}
+                        className="size-10 shrink-0 rounded-none border border-border object-cover grayscale"
+                      />
                     )}
+                    <span className="flex min-w-0 flex-col gap-0.5">
+                      <TestimonialName className="font-bold tracking-tight">
+                        {__iv__.name}
+                      </TestimonialName>
+                      {(__iv__.role || __iv__.company || __iv__.meta) && (
+                        <TestimonialMeta className="font-mono text-[10px] uppercase tracking-[0.12em]">
+                          {__iv__.role || __iv__.company || __iv__.meta}
+                        </TestimonialMeta>
+                      )}
+                    </span>
                   </TestimonialAuthor>
                 </TestimonialCard>
               )

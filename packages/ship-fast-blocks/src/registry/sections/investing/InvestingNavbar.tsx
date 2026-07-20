@@ -13,20 +13,22 @@ import {
 } from '#/section-kit/index.ts'
 
 /**
- * InvestingNavbar — sticky, blurred top navigation bar for a modern investing /
- * fintech brokerage site. A backdrop-blurred, border-bottomed header pinned to
- * the top of the viewport: a trend-line brand glyph tile beside the platform
- * name on the left, a horizontal set of nav links in the center (desktop), and a
- * subtle "Sign in" link plus a filled "Get started" primary button on the right.
- * Every link and CTA routes through route hrefs so labels can drive page
- * switching. Use as the sticky site header for stock brokerages, trading apps,
- * robo-advisors, crypto exchanges, wealth-management or any fintech product.
- * Renders fully with no props via baked-in "Vestora" defaults.
+ * InvestingNavbar — Swiss-fintech sticky, backdrop-blurred top navigation bar
+ * for a modern investing / brokerage site. A hairline-ruled institutional trust
+ * bar: a square (binary-radius) trend-line brand glyph tile beside the platform
+ * wordmark on the left, a horizontal row of mono index-numbered nav links in the
+ * center (desktop), and a subtle "Sign in" link plus a single square filled
+ * "Get started" primary CTA with mechanical press feedback on the right. Every
+ * link and CTA routes through route hrefs so labels can drive page switching.
+ * Precise, calm, conviction-forward; use as the sticky site header for stock
+ * brokerages, trading apps, robo-advisors, crypto exchanges, wealth-management
+ * or any fintech product. Renders fully with no props via baked-in "Vestora"
+ * defaults.
  */
 export const InvestingNavbar = defineCapsule({
   name: 'InvestingNavbar',
   description:
-    "Sticky backdrop-blurred top navigation bar for a modern investing / fintech brokerage site: a trend-line brand glyph tile + platform name on the left, horizontal nav links in the center (desktop), and a subtle 'Sign in' link plus a filled 'Get started' primary button on the right. Links and CTAs route through route hrefs for page-switching. Use as the sticky site header for stock brokerages, trading apps, robo-advisors, crypto exchanges or wealth-management products.",
+    "Swiss-fintech sticky backdrop-blurred top navigation bar for a modern investing / brokerage site: a square trend-line brand glyph tile + platform wordmark on the left, mono index-numbered horizontal nav links in the center (desktop), and a subtle 'Sign in' link plus a single square filled 'Get started' primary CTA with press feedback on the right, over a hairline bottom rule that reads as an institutional trust bar. Links and CTAs route through route hrefs for page-switching. Use as the sticky site header for stock brokerages, trading apps, robo-advisors, crypto exchanges or wealth-management products.",
   props: z.object({
     /** Brand / platform name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -48,7 +50,7 @@ export const InvestingNavbar = defineCapsule({
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          'grid place-items-center rounded-lg bg-primary text-primary-foreground',
+          'grid place-items-center rounded-none bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -72,16 +74,26 @@ export const InvestingNavbar = defineCapsule({
         height="compact"
         className={cn('bg-background/80 backdrop-blur-md', props.className)}
       >
-        <NavbarBrand href={nav[0]} className="gap-2">
-          <BrandLogo brand={brand}>
-            <LogoImage fallback={<LogoMark className="size-8" />} />
+        <NavbarBrand href={nav[0]} className="flex items-center gap-2">
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage fallback={<LogoMark className="size-7" />} />
             <LogoLabel className="text-xl font-semibold tracking-tight" />
           </BrandLogo>
         </NavbarBrand>
 
-        <NavbarNav>
-          {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+        <NavbarNav className="gap-7">
+          {nav.map((label, i) => (
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="rounded-none text-[13px] tracking-tight"
+            >
+              <span
+                aria-hidden="true"
+                className="mr-1.5 font-mono text-[10px] tabular-nums text-muted-foreground/50"
+              >
+                {String(i + 1).padStart(2, '0')}
+              </span>
               {label}
             </NavbarNavLink>
           ))}
@@ -91,9 +103,13 @@ export const InvestingNavbar = defineCapsule({
           <SignInButton
             variant="ghost"
             label={signIn}
-            className="hidden text-sm font-medium sm:block"
+            className="hidden text-[13px] font-medium tracking-tight sm:block"
           />
-          <NavbarCta variant="primary" href={getStarted} className="px-4 py-2">
+          <NavbarCta
+            variant="primary"
+            href={getStarted}
+            className="rounded-none px-5 py-2.5 text-[13px] tracking-tight transition-[transform,background-color] duration-150 active:translate-y-px motion-reduce:transform-none"
+          >
             {getStarted}
           </NavbarCta>
         </NavbarActions>

@@ -11,17 +11,19 @@ import {
   FooterLegal,
 } from '#/section-kit/SiteFooter.tsx'
 /**
- * BeautyStoreFooter — slim bottom footer for a beauty / skincare / cosmetics
- * storefront. A single bordered-top row (stacks on mobile): serif brand name on
- * the left, an auto-updating copyright line in the center, and a row of legal /
- * utility links on the right. The brand button and every link route through
- * section-kit route links. Use as the closing site footer for beauty stores, skincare shops,
- * cosmetics brands, or any clean e-commerce landing page.
+ * BeautyStoreFooter — slim editorial-vogue colophon footer for a beauty /
+ * skincare / cosmetics storefront. A hairline-topped row (stacks on mobile)
+ * with the brand wordmark in serif italic on the left, a mono auto-updating
+ * copyright line, and legal / utility links set as tiny uppercase mono labels
+ * with wide letter-spacing on the right. The brand button and every link route
+ * through section-kit route links. Use as the closing site footer for beauty
+ * stores, skincare shops, cosmetics brands, or any clean e-commerce landing
+ * page.
  */
 export const BeautyStoreFooter = defineCapsule({
   name: 'BeautyStoreFooter',
   description:
-    'Slim bottom footer for a beauty / skincare / cosmetics storefront: a single bordered-top row (stacks on mobile) with a serif brand name on the left, an auto-updating copyright line in the center, and a row of legal / utility links on the right. The brand button and every link route through section-kit route links. Use as the closing site footer for beauty stores, skincare shops, cosmetics brands, or any clean e-commerce landing page.',
+    'Slim editorial-vogue colophon footer for a beauty / skincare / cosmetics storefront: a hairline-topped row (stacks on mobile) with the brand wordmark in serif italic on the left, a mono auto-updating copyright line, and legal / utility links set as tiny uppercase mono labels with wide letter-spacing on the right. The brand button and every link route through section-kit route links. Use as the closing site footer for beauty stores, skincare shops, cosmetics brands, or any clean e-commerce landing page.',
   props: z.object({
     /** Brand / store name shown in the footer. */
     brand: z.string().optional(),
@@ -43,13 +45,23 @@ export const BeautyStoreFooter = defineCapsule({
       <SiteFooter className={props.className}>
         <FooterContent>
           <FooterGrid>
-            <FooterBrand brand={brand} />
+            <FooterBrand
+              brand={brand}
+              brandClassName="font-serif text-2xl font-medium italic tracking-tight"
+            />
           </FooterGrid>
           <FooterBottom>
-            <FooterCopyright>{note}</FooterCopyright>
+            <FooterCopyright className="font-mono text-[10px] uppercase tracking-[0.14em]">
+              {note}
+            </FooterCopyright>
             <FooterLegal>
               {links.map((l) => (
-                <FooterLink key={l}>{l}</FooterLink>
+                <FooterLink
+                  key={l}
+                  className="font-mono text-[10px] uppercase tracking-[0.18em]"
+                >
+                  {l}
+                </FooterLink>
               ))}
             </FooterLegal>
           </FooterBottom>

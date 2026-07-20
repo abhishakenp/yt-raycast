@@ -3,14 +3,16 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { directoryLakebed } from './directory-lakebed.ts'
 /**
- * DirectoryPricing — 3-tier business-listing pricing table for a local-business
- * directory. A card-surface section with a centered heading + description and a
- * responsive 3-column grid of plan cards: each has an uppercase plan name, a big
- * price with optional period, a tagline, an included-features list with primary
- * check icons plus an excluded-features list with muted cross icons, and a
- * full-width CTA button. A highlighted "Most Popular" plan inverts to a dark
- * foreground surface with a floating badge. CTAs record real Lakebed lead
- * actions. Use as the listing/subscription pricing section on local directories,
+ * DirectoryPricing — "advertising rates" pricing ledger for a local-business
+ * directory. A muted-wash section with an asymmetric hairline header (serif
+ * heading + description left, mono "Rate card" meta right) and a 3-column
+ * grid of sharp-cornered rate cards: each has a mono uppercase plan name with
+ * an index numeral, a giant serif price with mono period, a tagline, a
+ * hairline-divided ledger of included features with check icons plus excluded
+ * lines with muted struck-through crosses, and a full-width square CTA with
+ * press feedback. The featured plan carries a heavy border, a hard offset
+ * shadow, and a rotated stamp badge. CTAs record real Lakebed lead actions.
+ * Use as the listing/subscription pricing section on local directories,
  * marketplaces, or find-a-service platforms.
  */
 import { Container } from '#/section-kit/Container.tsx'
@@ -27,6 +29,7 @@ import {
   PricingTierFeature,
 } from '#/section-kit/PricingGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   DirectoryLeadButton,
   DirectoryMutationSpinner,
@@ -34,7 +37,7 @@ import {
 export const DirectoryPricing = defineCapsule({
   name: 'DirectoryPricing',
   description:
-    '3-tier business-listing pricing table for a local-business DIRECTORY: a card-surface section with a centered heading and description and a responsive 3-column grid of plan cards — each has an uppercase plan name, a big price with optional period, a tagline, an included-features list with primary check icons plus an excluded-features list with muted cross icons, and a full-width CTA button. A highlighted Most Popular plan inverts to a dark foreground surface with a floating badge. CTAs record real Lakebed lead actions. Use as the listing or subscription pricing section on local directories, business-listing marketplaces, or find-a-service platforms.',
+    'Advertising-rates pricing ledger for a local-business DIRECTORY: a muted-wash section with an asymmetric hairline header (serif heading and description left, mono meta right) and a 3-column grid of sharp-cornered rate cards — each has a mono uppercase plan name with an index numeral, a giant serif price with mono period, a tagline, a hairline-divided ledger of included features with check icons plus excluded lines with muted struck-through crosses, and a full-width square CTA with press feedback. The featured plan carries a heavy border, hard offset shadow, and rotated stamp badge. CTAs record real Lakebed lead actions. Use as the listing or subscription pricing section on local directories, business-listing marketplaces, or find-a-service platforms.',
   lakebed: directoryLakebed,
   props: z.object({
     /** Section heading. */
@@ -117,29 +120,38 @@ export const DirectoryPricing = defineCapsule({
             badge: '',
           },
         ]
+    const Cross = ({ className }: { className?: string }) => (
+      <svg
+        className={className}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M18 6L6 18M6 6l12 12" />
+      </svg>
+    )
     return (
-      <section className={cn('bg-card py-16 lg:py-24', props.className)}>
+      <section className={cn('bg-muted/40 py-16 lg:py-24', props.className)}>
         <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-12 gap-0 lg:mb-16"
-            titleClassName="mb-4 text-3xl font-semibold text-foreground sm:text-4xl"
-            subtitleClassName="mx-auto max-w-2xl text-lg text-muted-foreground"
-          />
-          <PricingGrid
-            className={cn(
-              'mx-auto grid max-w-5xl gap-6 md:grid-cols-3 lg:gap-8',
-              props.className,
-            )}
-          >
+          <div className="mb-10 flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between lg:mb-14">
             <SectionHeading
-              title={'List Your Business'}
-              subtitle={
-                'Choose the plan that works for your business. Start free and upgrade as you grow.'
-              }
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-2"
+              titleClassName="font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
+              subtitleClassName="text-muted-foreground"
             />
-            {plans.map((tier) => {
+            <MonoTag tone="faint" aria-hidden="true" className="shrink-0">
+              Rate card · Per listing
+            </MonoTag>
+          </div>
+          <PricingGrid className="mx-auto grid max-w-5xl gap-6 md:grid-cols-3 lg:gap-8">
+            {plans.map((tier, tierIndex) => {
               const t = tier as {
                 name: string
                 price: string
@@ -164,20 +176,35 @@ export const DirectoryPricing = defineCapsule({
                 priceSuffix?: string
                 note?: string
               }
+              const isFeatured = t.highlighted || t.featured || t.popular
               return (
                 <PricingTier
                   key={t.name}
-                  variant={
-                    t.highlighted || t.featured || t.popular
-                      ? 'highlighted'
-                      : undefined
-                  }
+                  variant={isFeatured ? 'highlighted' : undefined}
+                  className={cn(
+                    'rounded-none bg-background p-6 shadow-none ring-0 sm:p-7',
+                    isFeatured
+                      ? 'border-2 border-foreground bg-background shadow-[8px_8px_0_0] shadow-foreground/80 md:-translate-y-3'
+                      : 'border-border',
+                  )}
                 >
-                  {t.highlighted || t.featured || t.popular ? (
-                    <PricingTierBadge>{t.badge ?? 'Popular'}</PricingTierBadge>
+                  {isFeatured ? (
+                    <PricingTierBadge className="absolute -top-3.5 left-6 rotate-[-3deg] rounded-none border border-foreground bg-background px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-foreground">
+                      {t.badge ?? 'Popular'}
+                    </PricingTierBadge>
                   ) : null}
-                  <PricingTierHeader>
-                    <PricingTierName>{t.name}</PricingTierName>
+                  <PricingTierHeader className="gap-1.5">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <PricingTierName className="font-mono text-xs uppercase tracking-[0.16em] text-foreground">
+                        {t.name}
+                      </PricingTierName>
+                      <span
+                        aria-hidden="true"
+                        className="font-mono text-[11px] tabular-nums text-muted-foreground/60"
+                      >
+                        {String(tierIndex + 1).padStart(2, '0')}
+                      </span>
+                    </div>
                     {t.tagline && (
                       <PricingTierTagline>{t.tagline}</PricingTierTagline>
                     )}
@@ -190,20 +217,34 @@ export const DirectoryPricing = defineCapsule({
                     {t.audience && (
                       <PricingTierTagline>{t.audience}</PricingTierTagline>
                     )}
-                    <PricingTierPrice>{t.price}</PricingTierPrice>
-                    {t.period && (
-                      <PricingTierPeriod>{t.period}</PricingTierPeriod>
-                    )}
-                    {t.unit && <PricingTierPeriod>{t.unit}</PricingTierPeriod>}
-                    {t.cadence && (
-                      <PricingTierPeriod>{t.cadence}</PricingTierPeriod>
-                    )}
-                    {t.suffix && (
-                      <PricingTierPeriod>{t.suffix}</PricingTierPeriod>
-                    )}
+                    <div className="mt-3 flex items-baseline gap-1 border-t border-border pt-4">
+                      <PricingTierPrice className="font-serif text-4xl font-bold tabular-nums tracking-tight sm:text-5xl">
+                        {t.price}
+                      </PricingTierPrice>
+                      {t.period && (
+                        <PricingTierPeriod className="font-mono text-xs">
+                          {t.period}
+                        </PricingTierPeriod>
+                      )}
+                      {t.unit && (
+                        <PricingTierPeriod className="font-mono text-xs">
+                          {t.unit}
+                        </PricingTierPeriod>
+                      )}
+                      {t.cadence && (
+                        <PricingTierPeriod className="font-mono text-xs">
+                          {t.cadence}
+                        </PricingTierPeriod>
+                      )}
+                      {t.suffix && (
+                        <PricingTierPeriod className="font-mono text-xs">
+                          {t.suffix}
+                        </PricingTierPeriod>
+                      )}
+                    </div>
                   </PricingTierHeader>
                   {t.features && (
-                    <PricingTierFeatures>
+                    <PricingTierFeatures className="gap-0 divide-y divide-border border-y border-border">
                       {t.features.map((feature) => (
                         <PricingTierFeature
                           key={
@@ -211,11 +252,23 @@ export const DirectoryPricing = defineCapsule({
                               ? feature
                               : (feature as { label: string }).label
                           }
+                          className="py-2.5"
                         >
                           {typeof feature === 'string'
                             ? feature
                             : (feature as { label: string }).label}
                         </PricingTierFeature>
+                      ))}
+                      {(t.excluded ?? []).map((excludedFeature) => (
+                        <li
+                          key={excludedFeature}
+                          className="flex min-w-0 items-start gap-2 py-2.5 text-sm leading-6 text-muted-foreground/70"
+                        >
+                          <Cross className="mt-1 size-4 shrink-0 text-muted-foreground/50" />
+                          <span className="line-through decoration-muted-foreground/40">
+                            {excludedFeature}
+                          </span>
+                        </li>
                       ))}
                     </PricingTierFeatures>
                   )}
@@ -231,10 +284,10 @@ export const DirectoryPricing = defineCapsule({
                         </>
                       }
                       className={cn(
-                        'mt-auto inline-flex min-h-11 w-full items-center justify-center rounded-lg px-5 py-2.5 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
-                        t.highlighted || t.featured || t.popular
-                          ? 'bg-background text-foreground hover:bg-background/90'
-                          : 'border border-border text-foreground hover:bg-muted',
+                        'mt-auto inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-none px-5 py-2.5 text-sm font-medium transition-[background-color,color,transform] active:translate-y-px disabled:pointer-events-none disabled:opacity-70',
+                        isFeatured
+                          ? 'bg-foreground text-background hover:bg-foreground/90'
+                          : 'border border-foreground text-foreground hover:bg-foreground hover:text-background',
                       )}
                     >
                       {t.cta}

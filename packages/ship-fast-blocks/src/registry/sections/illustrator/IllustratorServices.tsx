@@ -1,30 +1,28 @@
 import { defineCapsule } from '#/capsules/openui.ts'
-import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import {
   ServicesGrid,
   ServiceCard,
-  ServiceIcon,
   ServiceTitle,
   ServiceDescription,
 } from '#/section-kit/ServicesGrid.tsx'
 
 /**
- * IllustratorServices — a centered-heading "what I create" services grid for an
- * illustrator / visual-artist portfolio. A serif section title and supporting
- * paragraph sit above a responsive 3-up grid of bordered cards; each card has a
- * rounded tinted icon tile (rotating pastel accent tints) that scales on hover,
- * a serif title, and a descriptive paragraph, with the card border tinting on
- * hover. Use to outline an artist's offerings — children's books, editorial
- * illustration, art prints & products, commissions. Renders fully with no props
- * via baked-in defaults.
+ * IllustratorServices — a "what I create" offerings grid for an illustrator /
+ * visual-artist portfolio. A serif section title and supporting paragraph sit
+ * above a responsive 3-up grid of sketchbook cards (rounded-none dashed borders,
+ * hard offset shadows on hover, a staggered vertical rhythm); each card leads
+ * with a big ghost index numeral instead of an icon tile, then a serif title and
+ * a descriptive paragraph. Use to outline an artist's offerings — children's
+ * books, editorial illustration, art prints & products, commissions. Renders
+ * fully with no props via baked-in defaults.
  */
 export const IllustratorServices = defineCapsule({
   name: 'IllustratorServices',
   description:
-    "Centered-heading 'what I create' services grid for an illustrator / visual-artist portfolio: a serif section title and supporting paragraph above a responsive 3-up grid of bordered cards, each with a rounded tinted icon tile (rotating pastel accent tints) that scales on hover, a serif title, and a descriptive paragraph, with the card border tinting on hover. Use to outline an artist's offerings — children's books, editorial illustration, art prints & products, commissions.",
+    "'What I create' offerings grid for an illustrator / visual-artist portfolio: a serif section title and supporting paragraph above a responsive 3-up grid of sketchbook cards (rounded-none dashed borders, hard offset shadows on hover, a staggered vertical rhythm), each led by a big ghost index numeral instead of an icon tile, then a serif title and a descriptive paragraph. Use to outline an artist's offerings — children's books, editorial illustration, art prints & products, commissions.",
   props: z.object({
     /** Serif section heading. */
     heading: z.string().optional(),
@@ -61,87 +59,44 @@ export const IllustratorServices = defineCapsule({
           },
         ]
 
-    const icons: ReactNode[] = [
-      // book
-      <svg
-        key="book"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-      </svg>,
-      // pencil
-      <svg
-        key="pencil"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-      </svg>,
-      // image
-      <svg
-        key="image"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg>,
-    ]
-
     return (
       <ServicesGrid
         heading={heading}
         subheading={description}
         columns={3}
         className={cn(
-          'px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-28',
+          'px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-28 [&_[data-slot=section-heading-eyebrow]]:font-mono [&_[data-slot=section-heading-title]]:font-serif',
           props.className,
         )}
       >
-        {items
-          .map((item, i) => ({
-            ...item,
-            icon: icons[i % icons.length],
-          }))
-          .map((f) => {
-            const __iv__ = f as {
-              title: string
-              description: string
-              icon?: React.ReactNode
-              points?: string[]
-              cta?: string
-              price?: string
-              imageAlt?: string
-            }
-            return (
-              <ServiceCard key={__iv__.title}>
-                {__iv__.icon && <ServiceIcon>{__iv__.icon}</ServiceIcon>}
-                <ServiceTitle>{__iv__.title}</ServiceTitle>
-                <ServiceDescription>{__iv__.description}</ServiceDescription>
-              </ServiceCard>
-            )
-          })}
+        {items.map((item, i) => {
+          const __iv__ = item
+          return (
+            <ServiceCard
+              key={__iv__.title}
+              className={cn(
+                'relative gap-4 overflow-hidden rounded-none border-2 border-dashed border-foreground/50 bg-card p-7 transition-[transform,box-shadow] duration-150 hover:-translate-y-1 hover:border-foreground hover:shadow-[6px_6px_0_0_var(--color-foreground)]',
+                i % 2 === 1 && 'md:translate-y-8',
+              )}
+            >
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute -right-2 -top-6 select-none font-serif text-8xl leading-none text-foreground/[0.06]"
+              >
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+                {String(i + 1).padStart(2, '0')} / craft
+              </span>
+              <ServiceTitle className="font-serif text-xl text-card-foreground">
+                {__iv__.title}
+              </ServiceTitle>
+              <ServiceDescription className="leading-relaxed">
+                {__iv__.description}
+              </ServiceDescription>
+            </ServiceCard>
+          )
+        })}
       </ServicesGrid>
     )
   },

@@ -1,5 +1,4 @@
 import { defineCapsule } from '#/capsules/openui.ts'
-import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
@@ -10,20 +9,25 @@ import { analyticsAdminLakebed } from './analytics-admin-lakebed.ts'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * AnalyticsSidebar — fixed left dashboard sidebar for a SaaS analytics / admin
- * product. A full-height, bordered card column (hidden below lg) with a brand
- * header (solid token logo tile + product name), a primary nav list with
- * line-icons, an active first item, and a count badge on the Notifications item,
- * plus a bottom user profile card (avatar, name, role). Nav items route through
- * section-kit route links; notification count and profile auth use shared Lakebed state. Use as
- * the persistent left rail for analytics dashboards, admin panels, BI consoles,
- * or any data-product control surface. Renders fully with no props via baked-in
+ * AnalyticsSidebar — Swiss data-grid left sidebar rail for a SaaS analytics /
+ * admin product. An inline, hairline-bordered column (hidden below lg — mobile
+ * navigation is served by the header's hamburger drawer) that stays contained
+ * within its own section bounds when stacked, with a brand header (sharp solid
+ * token logo tile + product name), a primary nav ledger where each row pairs
+ * an aria-hidden mono tabular index numeral with its label — the active first
+ * row floods with a full ink inversion and a primary left rule, and the
+ * Notifications row carries a sharp tabular count badge — plus a
+ * hairline-topped bottom user profile row (square avatar, name, mono
+ * uppercase role). Nav items route through section-kit route links;
+ * notification count and profile auth use shared Lakebed state. Use as the
+ * left rail column of analytics dashboards, admin panels, BI consoles, or any
+ * data-product control surface. Renders fully with no props via baked-in
  * "DataFlow" defaults.
  */
 export const AnalyticsSidebar = defineCapsule({
   name: 'AnalyticsSidebar',
   description:
-    'Fixed left dashboard sidebar for a SaaS analytics / admin product: a full-height bordered card column (hidden below lg) with a brand header (solid token logo tile + product name), a primary nav list with line-icons and an active first item, a shared Lakebed count badge on the Notifications item, and a bottom Shoo/Lakebed profile card. Nav items route through section-kit route links for page-switching. Use as the persistent left rail for analytics dashboards, admin panels, business-intelligence consoles, or any data-product control surface.',
+    "Swiss data-grid left dashboard sidebar rail for a SaaS analytics / admin product: an inline hairline-bordered column (hidden below lg — mobile navigation comes from the header's hamburger drawer) contained within its own section bounds, with a brand header (sharp solid token logo tile + product name), a primary nav ledger pairing mono tabular index numerals with labels — active first row flooded with full ink inversion and a primary left rule, shared Lakebed count badge on the Notifications row — and a hairline-topped bottom Shoo/Lakebed profile row with a square avatar and mono uppercase role. Nav items route through section-kit route links for page-switching. Use as the left rail column of analytics dashboards, admin panels, business-intelligence consoles, or any data-product control surface.",
   props: z.object({
     /** Brand / product name shown in the sidebar header. */
     brand: z.string().optional(),
@@ -69,11 +73,11 @@ export const AnalyticsSidebar = defineCapsule({
       props.user?.avatarAlt ??
       'Professional headshot of a product manager with short brown hair and a friendly smile'
 
-    // Brand logo tile — solid token mark with the brand initial (decorative).
+    // Brand logo tile — sharp solid token mark with the brand initial.
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          'grid place-items-center rounded-lg bg-primary font-black text-primary-foreground',
+          'grid place-items-center rounded-none bg-primary font-black text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -82,58 +86,11 @@ export const AnalyticsSidebar = defineCapsule({
       </span>
     )
 
-    // ---- Inline icons (decorative, currentColor) ----
-    const iconProps = {
-      width: 20,
-      height: 20,
-      viewBox: '0 0 24 24',
-      fill: 'none',
-      stroke: 'currentColor',
-      strokeWidth: 2,
-      strokeLinecap: 'round' as const,
-      strokeLinejoin: 'round' as const,
-      'aria-hidden': true,
-    }
-
-    const navIcons: Record<string, ReactNode> = {
-      Dashboard: (
-        <svg {...iconProps}>
-          <path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-        </svg>
-      ),
-      Customers: (
-        <svg {...iconProps}>
-          <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-        </svg>
-      ),
-      Analytics: (
-        <svg {...iconProps}>
-          <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-        </svg>
-      ),
-      Reports: (
-        <svg {...iconProps}>
-          <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      ),
-      Notifications: (
-        <svg {...iconProps}>
-          <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-        </svg>
-      ),
-      Settings: (
-        <svg {...iconProps}>
-          <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-          <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-      ),
-    }
-
     return (
       <NavSidebar
         variant="card"
         className={cn(
-          'fixed left-0 top-0 z-50 hidden h-full w-64 lg:flex',
+          'relative hidden min-h-[32rem] w-64 flex-col rounded-none lg:flex',
           props.className,
         )}
       >
@@ -141,29 +98,41 @@ export const AnalyticsSidebar = defineCapsule({
           <div className="flex items-center gap-3">
             <BrandLogo brand={brand}>
               <LogoImage fallback={<LogoMark className="size-8 text-sm" />} />
-              <LogoLabel className="text-lg font-semibold text-card-foreground" />
+              <LogoLabel className="text-lg font-semibold tracking-tight text-card-foreground" />
             </BrandLogo>
           </div>
         </div>
 
-        <nav className="flex-1 space-y-1 p-4">
+        <nav className="flex-1 p-4">
           {nav.map((label, i) => {
             const active = i === 0
             return (
               <NavbarRouteLink
                 key={label}
                 className={cn(
-                  'flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors',
+                  'flex w-full items-center gap-3 rounded-none border-l-2 px-4 py-3 text-sm font-medium transition-colors',
                   active
-                    ? 'bg-accent text-accent-foreground'
-                    : 'text-muted-foreground hover:bg-muted',
+                    ? 'border-primary bg-foreground text-background'
+                    : 'border-transparent text-muted-foreground hover:border-border hover:bg-muted/40 hover:text-foreground',
                 )}
                 href={label}
               >
-                {navIcons[label] ?? navIcons.Dashboard}
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    'font-mono text-[10px] tabular-nums tracking-[0.1em]',
+                    active ? 'text-background/60' : 'text-muted-foreground/60',
+                  )}
+                >
+                  {String(i + 1).padStart(2, '0')}
+                </span>
                 <span>{label}</span>
                 {label === 'Notifications' ? (
-                  <span className="ml-auto rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">
+                  <span
+                    className={cn(
+                      'ml-auto rounded-none bg-primary px-2 py-0.5 font-mono text-xs tabular-nums text-primary-foreground',
+                    )}
+                  >
                     {notificationCount}
                   </span>
                 ) : null}
@@ -184,19 +153,21 @@ export const AnalyticsSidebar = defineCapsule({
 
               void lakebed.signInWithGoogle()
             }}
-            className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-muted"
+            className="flex w-full items-center gap-3 rounded-none border border-transparent px-4 py-3 text-left transition-colors hover:border-border hover:bg-muted/40"
           >
             <Image
               alt={userAvatarAlt}
               w={80}
               h={80}
-              className="size-10 rounded-full object-cover"
+              className="size-10 rounded-none object-cover"
             />
             <div>
-              <p className="text-sm font-medium text-card-foreground">
+              <p className="text-sm font-medium tracking-tight text-card-foreground">
                 {userName}
               </p>
-              <p className="text-xs text-muted-foreground">{userRole}</p>
+              <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                {userRole}
+              </p>
             </div>
           </button>
         </div>

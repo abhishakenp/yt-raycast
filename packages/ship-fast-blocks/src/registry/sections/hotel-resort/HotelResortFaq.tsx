@@ -15,19 +15,19 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * HotelResortFaq — accordion FAQ for a luxury hotel / resort & spa site. A
- * narrow centered column with an eyebrow + thin heading + paragraph, then a
- * stack of native <details> accordions on muted cards: each row shows a
- * question with a chevron that rotates on open to reveal the answer. Quiet and
- * editorial. Use to answer pre-booking questions — cancellation, breakfast,
- * dietary needs, check-in/out, parking, pets — for hotels, resorts, spa
- * retreats, inns, or wellness destinations. Renders fully with no props via
- * baked-in resort defaults.
+ * HotelResortFaq — accordion FAQ for a luxury-editorial hotel / resort & spa
+ * site. An asymmetric two-column layout: a sticky mono eyebrow + thin serif
+ * heading + paragraph on the left, and on the right a stack of native <details>
+ * accordions as hairline-ruled rows, each mono-index-numbered with a question
+ * and a chevron that rotates on open to reveal the answer. Quiet and editorial.
+ * Use to answer pre-booking questions — cancellation, breakfast, dietary needs,
+ * check-in/out, parking, pets — for hotels, resorts, spa retreats, inns, or
+ * wellness destinations. Renders fully with no props via baked-in resort defaults.
  */
 export const HotelResortFaq = defineCapsule({
   name: 'HotelResortFaq',
   description:
-    'Accordion FAQ for a luxury hotel / resort & spa site: a narrow centered column with an uppercase eyebrow + thin heading + paragraph, then a stack of native details accordions on muted cards, each showing a question with a chevron that rotates on open to reveal the answer. Quiet and editorial. Use to answer pre-booking questions — cancellation, breakfast, dietary needs, check-in/out, parking, pets — for hotels, resorts, spa retreats, inns, or wellness destinations.',
+    'Accordion FAQ for a luxury-editorial hotel / resort & spa site: an asymmetric two-column layout with a sticky mono eyebrow + thin serif heading + paragraph on the left, and on the right a stack of native details accordions as hairline-ruled rows, each mono-index-numbered with a question and a chevron that rotates on open to reveal the answer. Quiet and editorial. Use to answer pre-booking questions — cancellation, breakfast, dietary needs, check-in/out, parking, pets — for hotels, resorts, spa retreats, inns, or wellness destinations.',
   props: z.object({
     /** Uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -75,32 +75,48 @@ export const HotelResortFaq = defineCapsule({
         ]
 
     return (
-      <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
-        <Container size="sm" className="px-6 lg:px-6">
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            className="mb-16 gap-0"
-            eyebrowClassName="mb-3 text-sm uppercase tracking-widest text-muted-foreground"
-            titleClassName="mb-4 text-3xl font-light text-foreground lg:text-4xl"
-            subtitleClassName="leading-relaxed text-muted-foreground"
-          />
-          <FaqAccordion>
-            {items.map((item) => (
-              <FaqItem
-                key={item.q}
-                variant="muted"
-                className="rounded-lg bg-muted p-6"
-              >
-                <FaqQuestion>
-                  <span className="font-medium">{item.q}</span>
-                  <FaqQuestionIcon />
-                </FaqQuestion>
-                <FaqAnswer className="mt-4 text-sm">{item.a}</FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+      <section className={cn('pt-24 pb-24 lg:pt-28 lg:pb-28', props.className)}>
+        <Container size="xl" className="px-6">
+          <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-4">
+              <SectionHeading
+                align="left"
+                eyebrow={eyebrow}
+                title={heading}
+                subtitle={description}
+                className="gap-0 lg:sticky lg:top-28"
+                eyebrowClassName="mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.22em] text-muted-foreground"
+                titleClassName="mb-4 font-serif text-4xl font-normal text-foreground tracking-tight lg:text-5xl"
+                subtitleClassName="leading-relaxed text-muted-foreground"
+              />
+            </div>
+            <div className="lg:col-span-8">
+              <FaqAccordion className="border-t border-border">
+                {items.map((item, i) => (
+                  <FaqItem
+                    key={item.q}
+                    variant="muted"
+                    className="rounded-none border-b border-border bg-transparent px-0 py-5"
+                  >
+                    <FaqQuestion>
+                      <span className="flex items-baseline gap-4">
+                        <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                        <span className="font-serif text-lg font-normal tracking-tight">
+                          {item.q}
+                        </span>
+                      </span>
+                      <FaqQuestionIcon />
+                    </FaqQuestion>
+                    <FaqAnswer className="mt-4 pl-9 text-sm leading-relaxed">
+                      {item.a}
+                    </FaqAnswer>
+                  </FaqItem>
+                ))}
+              </FaqAccordion>
+            </div>
+          </div>
         </Container>
       </section>
     )

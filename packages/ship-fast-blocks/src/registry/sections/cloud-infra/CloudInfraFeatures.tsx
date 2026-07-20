@@ -3,11 +3,13 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * CloudInfraFeatures — product capabilities grid for a cloud-infrastructure /
- * developer-platform SaaS landing page. A centered heading + description above
- * a responsive 3-column card grid. Each card has a rounded tinted icon tile with
- * an inline SVG, a title, and a description. Cards lift with a primary border
- * tint on hover. Tokens-only. Renders fully on zero arguments.
+ * CloudInfraFeatures — terminal-industrial capabilities ledger for a cloud-
+ * infrastructure / developer-platform SaaS landing page. An asymmetric header
+ * (left-aligned heading + description, mono `$`-command meta line on the
+ * right) above a collapsed-border module ledger: hairline-separated cells
+ * (2-col on mobile, 3-col on desktop), each with a mono index tag, a status
+ * square, a title, and a description. A giant ghost `>_` watermark sits
+ * behind. Tokens-only. Renders fully on zero arguments.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -18,10 +20,11 @@ import {
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 export const CloudInfraFeatures = defineCapsule({
   name: 'CloudInfraFeatures',
   description:
-    'Product capabilities grid for a cloud-infrastructure / developer-platform SaaS landing page: a centered heading plus description above a responsive 3-column card grid. Each card has a rounded tinted icon tile with an inline SVG, a title, and a description; cards lift with a primary border tint on hover. Tokens-only. Use for feature grids on cloud hosting, IaaS, PaaS, serverless, container, DevOps, or developer-tooling sites.',
+    'Terminal-industrial capabilities ledger for a cloud-infrastructure / developer-platform SaaS landing page: an asymmetric header (left-aligned heading plus description, mono command meta on the right) above a collapsed-border module ledger of hairline-separated cells (2-col mobile, 3-col desktop), each with a mono index tag, status square, title, and description. Giant ghost watermark behind. Tokens-only. Use for feature grids on cloud hosting, IaaS, PaaS, serverless, container, DevOps, or developer-tooling sites.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -78,17 +81,37 @@ export const CloudInfraFeatures = defineCapsule({
           },
         ]
     return (
-      <section className={cn('py-20 lg:py-28', props.className)}>
-        <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 tracking-tight sm:text-4xl"
-            subtitleClassName="text-lg"
-          />
-          <FeatureGrid columns={3}>
-            {items.map((f) => {
+      <section
+        className={cn(
+          'relative overflow-hidden py-14 sm:py-20 lg:py-28',
+          props.className,
+        )}
+      >
+        <Watermark className="-right-8 -top-6 font-mono text-[8rem] sm:text-[12rem] lg:text-[16rem]">
+          &gt;_
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-10 flex flex-col gap-4 sm:mb-14 md:flex-row md:items-end md:justify-between">
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-3"
+              titleClassName="text-3xl font-extrabold tracking-tight sm:text-4xl"
+              subtitleClassName="text-base sm:text-lg"
+            />
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+            >
+              <span className="text-primary">$</span> cloudshift services --list
+            </p>
+          </div>
+          <FeatureGrid
+            columns={3}
+            className="[&>div]:grid-cols-2 [&>div]:gap-px [&>div]:border [&>div]:border-border [&>div]:bg-border [&>div]:lg:grid-cols-3"
+          >
+            {items.map((f, i) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -99,10 +122,26 @@ export const CloudInfraFeatures = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
+                <FeatureCard
+                  key={__iv__.title}
+                  className="group gap-3 rounded-none border-0 bg-background p-5 shadow-none transition-colors hover:bg-muted/40 sm:p-7"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/70">
+                      {`0${i + 1}`.slice(-2)} /
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="size-1.5 bg-primary opacity-40 transition-opacity group-hover:opacity-100"
+                    />
+                  </div>
                   {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                  <FeatureTitle className="text-base font-semibold tracking-tight sm:text-lg">
+                    {__iv__.title}
+                  </FeatureTitle>
+                  <FeatureDescription className="text-sm leading-relaxed">
+                    {__iv__.description}
+                  </FeatureDescription>
                 </FeatureCard>
               )
             })}

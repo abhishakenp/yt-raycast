@@ -40,7 +40,9 @@ function upsertManifest(
     }
   }
   if (!manifest.pages) manifest.pages = []
-  manifest.pages = manifest.pages.filter((p: unknown) => (p as Record<string, unknown>).route !== route)
+  manifest.pages = manifest.pages.filter(
+    (p: unknown) => (p as Record<string, unknown>).route !== route,
+  )
   manifest.pages.push({
     route,
     title,

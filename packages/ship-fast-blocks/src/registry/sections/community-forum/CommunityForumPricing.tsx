@@ -17,19 +17,26 @@ import {
 } from '#/section-kit/PricingGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 
 /**
- * CommunityForumPricing — 3-tier pricing table for a community-platform / discussion-forum
- * landing page. Thin configuration over the shared `PricingGrid` composite: a centered
- * heading + description above a responsive 3-column grid of pricing cards on a muted band;
- * one tier can be highlighted. Each card shows a name, price, cadence, feature list with
- * checkmarks, and a CTA button. All buttons route through section-kit route links. Use as the pricing
- * section for SaaS community-platform products, subscription services, or membership tools.
+ * CommunityForumPricing — playful-geometric 3-tier pricing table for a
+ * community-platform / discussion-forum landing page. A muted band with a
+ * giant ghost "$" watermark and an asymmetric header (mono "07 / pricing"
+ * rail + left-aligned tight-tracked heading and lead, mono "[ no hidden
+ * fees ]" meta right) above the shared `PricingGrid`: sharp-cornered
+ * bordered tier cards, the featured tier tilted -1deg, raised, and sitting on
+ * a hard offset primary shadow with a rotated rounded-full sticker badge.
+ * Each card shows the tier name, a giant extrabold price with mono cadence,
+ * a mono-labeled description, a checkmark feature list, and a rounded-full
+ * CTA pill with press feedback. All buttons route through section-kit route
+ * links. Use as the pricing section for SaaS community-platform products,
+ * subscription services, or membership tools.
  */
 export const CommunityForumPricing = defineCapsule({
   name: 'CommunityForumPricing',
   description:
-    '3-tier pricing table for a community-platform / discussion-forum landing page: a centered heading and description above a responsive 3-column grid of bordered pricing cards on a muted band, with one tier highlighted (dark foreground theme). Each card shows a badge, name, price, cadence, description, feature list with checkmarks, and a CTA button; all buttons route through section-kit route links. Use as the pricing section for SaaS community-platform products, subscription services, or membership tools.',
+    'Playful-geometric 3-tier pricing table for a community-platform / discussion-forum landing page: a muted band with a giant ghost "$" watermark and an asymmetric header (mono metadata rail + left-aligned tight-tracked heading, mono meta tag right) above sharp-cornered bordered tier cards — the featured tier tilted, raised, and sitting on a hard offset primary shadow with a rotated rounded-full sticker badge. Each card shows the tier name, a giant extrabold price with cadence, description, checkmark feature list, and a rounded-full CTA pill with press feedback; all buttons route through section-kit route links. Use as the pricing section for SaaS community-platform products, subscription services, or membership tools.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -111,11 +118,44 @@ export const CommunityForumPricing = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-muted py-24 lg:py-28', props.className)}>
-        <Container size="lg">
+      <section
+        className={cn(
+          'relative overflow-hidden bg-muted py-16 sm:py-20 lg:py-28',
+          props.className,
+        )}
+      >
+        <Watermark className="-right-6 bottom-4 text-[10rem] sm:text-[15rem] lg:text-[20rem]">
+          $
+        </Watermark>
+        <Container size="lg" className="relative">
+          <div className="mb-12 flex flex-col gap-6 sm:mb-16 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-2xl">
+              <div className="mb-5 flex items-center gap-4">
+                <MonoTag>07 / Pricing</MonoTag>
+                <span
+                  aria-hidden="true"
+                  className="h-px w-16 bg-border sm:w-24"
+                />
+              </div>
+              <SectionHeading
+                align="left"
+                title={heading}
+                subtitle={description}
+                className="gap-0"
+                titleClassName="mb-4 text-3xl font-extrabold tracking-tighter text-foreground sm:text-4xl lg:text-5xl"
+                subtitleClassName="text-lg text-muted-foreground"
+              />
+            </div>
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="shrink-0 md:mb-2"
+            >
+              [ no hidden fees ]
+            </MonoTag>
+          </div>
           <div className="mx-auto max-w-5xl">
-            <PricingGrid>
-              <SectionHeading title={heading} subtitle={description} />
+            <PricingGrid className="items-stretch gap-5 pt-4 sm:gap-6">
               {tiers
                 .map((tier) => ({
                   name: tier.name,
@@ -124,8 +164,10 @@ export const CommunityForumPricing = defineCapsule({
                   features: tier.features,
                   cta: tier.cta,
                   highlighted: tier.featured,
+                  description: tier.description,
+                  badge: tier.badge,
                 }))
-                .map((tier) => {
+                .map((tier, i) => {
                   const t = tier as {
                     name: string
                     price: string
@@ -150,22 +192,39 @@ export const CommunityForumPricing = defineCapsule({
                     priceSuffix?: string
                     note?: string
                   }
+                  const isFeatured = t.highlighted || t.featured || t.popular
                   return (
                     <PricingTier
                       key={t.name}
-                      variant={
-                        t.highlighted || t.featured || t.popular
-                          ? 'highlighted'
-                          : undefined
-                      }
+                      variant={isFeatured ? 'highlighted' : undefined}
+                      className={cn(
+                        'gap-6 rounded-none border-2 bg-card p-6 shadow-none sm:p-7',
+                        isFeatured
+                          ? 'z-10 -rotate-1 border-foreground bg-card shadow-[6px_6px_0_0] shadow-primary/30 ring-0 lg:-translate-y-4'
+                          : 'border-foreground/15',
+                        i === 0 && 'lg:rotate-1',
+                        i === 2 && 'lg:rotate-1 lg:translate-y-2',
+                      )}
                     >
-                      {t.highlighted || t.featured || t.popular ? (
-                        <PricingTierBadge>
+                      {isFeatured ? (
+                        <PricingTierBadge className="absolute -top-3.5 right-5 rotate-2 rounded-full border-2 border-background px-3.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] shadow-[2px_2px_0_0] shadow-foreground/25">
                           {t.badge ?? 'Popular'}
                         </PricingTierBadge>
                       ) : null}
-                      <PricingTierHeader>
-                        <PricingTierName>{t.name}</PricingTierName>
+                      <PricingTierHeader className="gap-3">
+                        <PricingTierName className="font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                          {t.name}
+                        </PricingTierName>
+                        <span className="flex items-baseline gap-2">
+                          <PricingTierPrice className="text-5xl font-extrabold leading-none tracking-tighter tabular-nums sm:text-6xl">
+                            {t.price}
+                          </PricingTierPrice>
+                          {t.period && (
+                            <PricingTierPeriod className="font-mono text-[11px] uppercase tracking-[0.12em]">
+                              {t.period}
+                            </PricingTierPeriod>
+                          )}
+                        </span>
                         {t.tagline && (
                           <PricingTierTagline>{t.tagline}</PricingTierTagline>
                         )}
@@ -180,10 +239,6 @@ export const CommunityForumPricing = defineCapsule({
                         {t.audience && (
                           <PricingTierTagline>{t.audience}</PricingTierTagline>
                         )}
-                        <PricingTierPrice>{t.price}</PricingTierPrice>
-                        {t.period && (
-                          <PricingTierPeriod>{t.period}</PricingTierPeriod>
-                        )}
                         {t.unit && (
                           <PricingTierPeriod>{t.unit}</PricingTierPeriod>
                         )}
@@ -195,7 +250,7 @@ export const CommunityForumPricing = defineCapsule({
                         )}
                       </PricingTierHeader>
                       {t.features && (
-                        <PricingTierFeatures>
+                        <PricingTierFeatures className="border-t border-border pt-5">
                           {t.features.map((feature) => (
                             <PricingTierFeature
                               key={
@@ -212,7 +267,15 @@ export const CommunityForumPricing = defineCapsule({
                         </PricingTierFeatures>
                       )}
                       {t.cta && (
-                        <PricingTierCta target={t.ctaTarget}>
+                        <PricingTierCta
+                          target={t.ctaTarget}
+                          className={cn(
+                            'rounded-full text-sm font-semibold transition-all duration-150 active:translate-y-px',
+                            isFeatured
+                              ? 'bg-primary text-primary-foreground shadow-[3px_3px_0_0] shadow-foreground/20 hover:-translate-y-0.5 active:shadow-none'
+                              : 'border-2 border-foreground/20 bg-background text-foreground hover:border-foreground/40 hover:bg-muted',
+                          )}
+                        >
                           {t.cta}
                         </PricingTierCta>
                       )}

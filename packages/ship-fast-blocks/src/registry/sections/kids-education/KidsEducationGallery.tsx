@@ -3,15 +3,17 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * KidsEducationGallery — "learning in action" masonry photo gallery for a kids /
- * family learning platform. A centered eyebrow + heading + description intro
- * above a responsive masonry grid of square photo tiles (the 2nd tile spans 2x2,
- * a later tile spans 2 columns); each tile zooms on hover and reveals a caption
- * over a soft bottom gradient. Use to show joyful candid learner photos for
- * kids-education startups, children's e-learning platforms, camps, and family
- * learning apps. Renders fully with no props via baked-in defaults.
+ * KidsEducationGallery — "learning in action" playful-primary bento photo
+ * gallery for a kids / family learning platform. An asymmetric mono-labeled
+ * header (eyebrow + heading left, index meta right) above a bento grid of
+ * sharp-cornered 2px-bordered photo tiles (two tiles run double-wide) that zoom
+ * on hover under a sharp mono sticker caption bar. Use to show joyful candid
+ * learner photos for kids-education startups, children's e-learning platforms,
+ * camps, and family learning apps. Renders fully with no props via baked-in
+ * defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   GalleryGrid,
@@ -23,7 +25,7 @@ import {
 export const KidsEducationGallery = defineCapsule({
   name: 'KidsEducationGallery',
   description:
-    "Learning-in-action masonry photo gallery for a kids / family learning platform: a centered eyebrow + heading + description intro above a responsive masonry grid of square photo tiles (the 2nd tile spans 2x2, a later tile spans 2 columns); each tile zooms on hover and reveals a caption over a soft bottom gradient. Use to show joyful candid learner photos for kids-education startups, children's e-learning platforms, camps, and family learning apps.",
+    "Learning-in-action playful-primary bento photo gallery for a kids / family learning platform: an asymmetric mono-labeled header (eyebrow + heading left, index meta right) above a bento grid of sharp-cornered 2px-bordered photo tiles (two tiles run double-wide) that zoom on hover under a sharp mono sticker caption bar. Use to show joyful candid learner photos for kids-education startups, children's e-learning platforms, camps, and family learning apps.",
   props: z.object({
     /** Uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -93,26 +95,43 @@ export const KidsEducationGallery = defineCapsule({
           },
         ]
     return (
-      <section className={cn('bg-background py-24', props.className)}>
-        <Container>
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            eyebrowClassName="mb-3 inline-block text-sm font-semibold tracking-wider text-secondary"
-            titleClassName="mb-6 text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
+      <section
+        className={cn(
+          'relative overflow-hidden bg-background py-20 lg:py-24',
+          props.className,
+        )}
+      >
+        <Watermark className="-right-6 top-6 text-[7rem] sm:text-[10rem] lg:text-[13rem]">
+          IN ACTION
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-14 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-0"
+              eyebrowClassName="mb-3 inline-block font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground"
+              titleClassName="mb-5 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl"
+              subtitleClassName="text-lg text-muted-foreground"
+            />
+            <MonoTag
+              aria-hidden="true"
+              className="shrink-0 text-muted-foreground/60"
+            >
+              [ 04 ] gallery
+            </MonoTag>
+          </div>
 
           <GalleryGrid>
-            <GalleryGridItems columns={3}>
+            <GalleryGridItems columns={3} className="auto-rows-fr gap-4">
               {items
                 .map((item) => ({
                   alt: item.imageAlt,
                   caption: item.caption,
                 }))
-                .map((img) => {
+                .map((img, i) => {
                   const __iv__ = img as {
                     alt: string
                     caption?: string
@@ -120,10 +139,19 @@ export const KidsEducationGallery = defineCapsule({
                     location?: string
                   }
                   return (
-                    <GalleryTile key={__iv__.alt}>
+                    <GalleryTile
+                      key={__iv__.alt}
+                      className={cn(
+                        'rounded-none border-2 border-foreground transition-[transform,box-shadow] duration-150 hover:-translate-y-1 hover:shadow-[6px_6px_0_0] hover:shadow-foreground motion-reduce:transform-none',
+                        (i === 1 || i === 6) && 'sm:col-span-2',
+                      )}
+                    >
                       <GalleryTileImage alt={__iv__.alt} />
                       {__iv__.caption && (
-                        <GalleryTileCaption>
+                        <GalleryTileCaption className="inset-x-0 bottom-0 border-t-2 border-foreground bg-background px-3 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-foreground backdrop-blur-none">
+                          <span aria-hidden="true" className="text-primary">
+                            /{' '}
+                          </span>
                           {__iv__.caption}
                         </GalleryTileCaption>
                       )}

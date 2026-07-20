@@ -3,16 +3,18 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * JobBoardSteps — a 3-step "how it works" timeline for a job-board / careers
- * site. A muted band with a centered heading + description above a 3-column grid
- * connected by a horizontal rule on desktop, each step showing a numbered round
- * primary badge, a title, and a supporting paragraph. Use to explain the
+ * JobBoardSteps — "How it works" index ledger for a job-board / careers site. A
+ * muted paper band with a giant ghost "HOW" watermark and an asymmetric hairline
+ * header (serif heading + description left, mono step-count meta right) above a
+ * collapsed-border 3-column ledger of steps: each sharp-cornered cell carries a
+ * huge ghost serif numeral bleeding out of its corner, a mono "Step 01" tag, the
+ * step title, and a supporting paragraph. Static (no links). Use to explain the
  * candidate journey (create profile, discover & apply, get hired) on job boards,
- * hiring marketplaces or recruiting platforms. Static (no links). Renders fully
- * with no props.
+ * hiring marketplaces or recruiting platforms.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   StepTimeline,
   StepTimelineGrid,
@@ -21,7 +23,7 @@ import {
 export const JobBoardSteps = defineCapsule({
   name: 'JobBoardSteps',
   description:
-    "3-step 'how it works' timeline for a job-board / careers site: a muted band with a centered heading + description above a 3-column grid connected by a horizontal rule on desktop, each step showing a numbered round primary badge, a title and a supporting paragraph. Use to explain the candidate journey (create profile, discover & apply, get hired) on job boards, hiring marketplaces or recruiting platforms.",
+    'How-it-works index ledger for a job-board / careers site: a muted paper band with a giant ghost HOW watermark and an asymmetric hairline header (serif heading and description left, mono step-count meta right) above a collapsed-border 3-column ledger of steps — each sharp-cornered cell carries a huge ghost serif numeral bleeding out of its corner, a mono Step tag, the step title and a supporting paragraph. Static (no links). Use to explain the candidate journey (create profile, discover & apply, get hired) on job boards, hiring marketplaces or recruiting platforms.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -62,29 +64,52 @@ export const JobBoardSteps = defineCapsule({
           },
         ]
     return (
-      <StepTimeline className={cn('bg-muted/40 py-20', props.className)}>
-        <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 gap-0"
-            titleClassName="mb-4 text-3xl font-semibold tracking-tight text-foreground"
-            subtitleClassName="mx-auto max-w-xl text-muted-foreground"
-          />
-          <StepTimelineGrid columns={3} className="relative gap-8">
-            <div
-              aria-hidden="true"
-              className="absolute left-1/6 right-1/6 top-16 hidden h-0.5 bg-border md:block"
+      <StepTimeline
+        className={cn(
+          'relative overflow-hidden bg-muted/40 py-16 lg:py-24',
+          props.className,
+        )}
+      >
+        <Watermark className="-left-4 bottom-0 font-serif text-[7rem] sm:text-[10rem] lg:text-[14rem]">
+          HOW
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-10 flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between lg:mb-12">
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-2"
+              titleClassName="font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
+              subtitleClassName="text-muted-foreground"
             />
+            <MonoTag tone="faint" aria-hidden="true" className="shrink-0">
+              {String(items.length).padStart(2, '0')} steps · No account needed
+            </MonoTag>
+          </div>
+
+          <StepTimelineGrid
+            columns={3}
+            className="gap-0 border-l border-t border-border bg-background"
+          >
             {items.map((step, i) => (
-              <StepItem key={step.title} className="relative text-center">
-                <div className="relative z-10 mx-auto mb-6 grid size-12 place-items-center rounded-full bg-primary text-lg font-bold text-primary-foreground">
-                  {i + 1}
-                </div>
-                <h3 className="mb-3 text-lg font-semibold text-foreground">
+              <StepItem
+                key={step.title}
+                className="overflow-hidden border-b border-r border-border p-6 sm:p-8"
+              >
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -right-2 -top-6 select-none font-serif text-[6rem] font-bold leading-none text-foreground/[0.06] sm:text-[7rem]"
+                >
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <MonoTag tone="muted" className="tabular-nums">
+                  Step {String(i + 1).padStart(2, '0')}
+                </MonoTag>
+                <h3 className="relative mt-4 text-xl font-extrabold tracking-tight text-foreground">
                   {step.title}
                 </h3>
-                <p className="leading-relaxed text-muted-foreground">
+                <p className="relative mt-3 max-w-sm leading-relaxed text-muted-foreground">
                   {step.description}
                 </p>
               </StepItem>

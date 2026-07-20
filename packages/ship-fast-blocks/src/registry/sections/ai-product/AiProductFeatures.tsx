@@ -5,28 +5,25 @@ import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import {
-  FeatureGrid,
-  FeatureCard,
-  FeatureIcon,
-  FeatureTitle,
-  FeatureDescription,
-} from '#/section-kit/FeatureGrid.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 
 /**
- * AiProductFeatures — a centered-intro feature grid for a clean, light AI SaaS /
- * product page. A heading + supporting paragraph centered above a responsive
- * 1 → 2 → 3 column grid of features, each with a rounded muted icon tile (a
- * rotating set of line glyphs that tint to accent on hover), a bold title, and a
- * relaxed description. Generous whitespace, neutral surfaces. Use to showcase a
- * product's core capabilities on AI writing assistants, AI copilots,
- * generative-AI tools, developer-AI products, or any modern SaaS site. Renders
- * fully with no props via six built-in writing-assistant features.
+ * AiProductFeatures — kinetic tech-editorial capability index for an AI SaaS /
+ * product page. An asymmetric header (left-aligned oversized tight heading +
+ * supporting paragraph, mono "[ 01 / capabilities ]" meta on the right) above
+ * a collapsed-border editorial grid
+ * (1 → 2 → 3 columns, hairline-celebrated cells). Each cell leads with a giant
+ * ghost mono index numeral, then a bold tight title and relaxed description;
+ * on hover the cell washes muted and its numeral inks to primary. A giant
+ * "fn()" watermark ghosts behind the grid. Use to showcase a product's core
+ * capabilities on AI writing assistants, AI copilots, generative-AI tools,
+ * developer-AI products, or any modern SaaS site. Renders fully with no props
+ * via six built-in writing-assistant features.
  */
 export const AiProductFeatures = defineCapsule({
   name: 'AiProductFeatures',
   description:
-    "Centered-intro feature grid for a clean, light AI SaaS / product page: a heading and supporting paragraph centered above a responsive 1 → 2 → 3 column grid of features, each with a rounded muted icon tile (rotating line glyphs that tint to accent on hover), a bold title, and a relaxed description. Generous whitespace and neutral surfaces. Use to showcase a product's core capabilities on AI writing assistants, AI copilots, generative-AI tools, developer-AI products, or any modern SaaS marketing site.",
+    "Kinetic tech-editorial capability index for an AI SaaS / product page: an asymmetric header (left-aligned oversized tight heading and supporting paragraph, mono capability meta right) above a collapsed-border editorial grid of 1 → 2 → 3 column hairline cells, each led by a giant ghost mono index numeral over a bold tight title and relaxed description, washing muted with a primary-inked numeral on hover, with a giant 'fn()' watermark ghosting behind. Use to showcase a product's core capabilities on AI writing assistants, AI copilots, generative-AI tools, developer-AI products, or any modern SaaS marketing site.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -79,17 +76,31 @@ export const AiProductFeatures = defineCapsule({
         ]
 
     return (
-      <section className={cn('py-20 lg:py-28', props.className)}>
-        <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0 lg:mb-20"
-            titleClassName="mb-4 tracking-tight sm:text-4xl"
-            subtitleClassName="text-lg"
-          />
-          <FeatureGrid columns={3}>
-            {items.map((f) => {
+      <section
+        className={cn(
+          'relative overflow-hidden py-16 lg:py-28',
+          props.className,
+        )}
+      >
+        <Watermark className="-left-6 bottom-0 font-mono text-[8rem] sm:text-[16rem]">
+          fn()
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-4"
+              titleClassName="text-[clamp(2rem,4.5vw,3.5rem)] font-semibold leading-[0.95] tracking-tighter"
+              subtitleClassName="max-w-xl text-base sm:text-lg"
+            />
+            <MonoTag aria-hidden="true" className="shrink-0">
+              [ 01 / capabilities ]
+            </MonoTag>
+          </div>
+          <div className="grid grid-cols-1 border-l border-t border-border sm:grid-cols-2 lg:grid-cols-3">
+            {items.map((f, i) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -100,14 +111,33 @@ export const AiProductFeatures = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
-                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
-                </FeatureCard>
+                <div
+                  key={__iv__.title}
+                  className="group relative grid grid-cols-[auto_1fr] items-start gap-x-4 border-b border-r border-border p-5 transition-colors duration-150 hover:bg-muted/40 sm:block sm:p-8"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="font-mono text-3xl font-bold leading-none text-foreground/10 transition-colors duration-150 group-hover:text-primary sm:text-5xl"
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <div>
+                    {__iv__.icon && (
+                      <span className="block text-foreground sm:mt-4">
+                        {__iv__.icon}
+                      </span>
+                    )}
+                    <h3 className="text-lg font-semibold tracking-tight text-foreground sm:mt-4">
+                      {__iv__.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                      {__iv__.description}
+                    </p>
+                  </div>
+                </div>
               )
             })}
-          </FeatureGrid>
+          </div>
         </Container>
       </section>
     )

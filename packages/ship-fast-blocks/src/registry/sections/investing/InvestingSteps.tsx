@@ -4,16 +4,20 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
 /**
- * InvestingSteps — onboarding timeline + transfer CTA for an investing / fintech
- * page. A centered heading + lead above a responsive 3-step horizontal timeline
- * (large numbered primary tiles with connecting lines on desktop), followed by a
- * muted rounded panel pairing a portfolio-transfer headline + paragraph and an
- * arrow link with a supporting dashboard photo. The transfer link routes through
- * section-kit route links. Use to explain how to get started — create account, fund,
- * trade — on a brokerage or trading-app page. Renders fully with no props.
+ * InvestingSteps — Swiss-fintech onboarding ledger + transfer panel for an
+ * investing / brokerage page. An asymmetric mono header (heading + lede left,
+ * tabular step count right) sits above a collapsed-border 3-step ledger whose
+ * cells share hairline rules and carry a giant ghost numeral watermark, a mono
+ * primary "step 01" label, a title, and a description, followed by a
+ * hairline-framed transfer panel on an asymmetric 7/5 split pairing a
+ * portfolio-transfer headline + paragraph and a square arrow CTA (hard offset
+ * shadow, press feedback) with a supporting dashboard photo. The transfer CTA
+ * routes through route links. Use to explain how to get started — create
+ * account, fund, trade — on a brokerage or trading-app page. Renders fully with
+ * no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { StepTimeline, StepItem } from '#/section-kit/StepTimeline.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
@@ -21,7 +25,7 @@ import { NavbarRouteLink } from '#/section-kit/index.ts'
 export const InvestingSteps = defineCapsule({
   name: 'InvestingSteps',
   description:
-    'Onboarding timeline + transfer CTA for an investing / fintech page: a centered heading + lead above a responsive 3-step horizontal timeline (large numbered primary tiles with connecting lines on desktop), followed by a muted rounded panel pairing a portfolio-transfer headline + paragraph and an arrow link with a supporting dashboard photo. The transfer link routes through section-kit route links. Use to explain how to get started (create account, fund, trade) on a brokerage or trading-app page.',
+    'Swiss-fintech onboarding ledger + transfer panel for an investing / brokerage page: an asymmetric mono header (heading + lede left, tabular step count right) above a collapsed-border 3-step ledger whose cells share hairline rules and carry a giant ghost numeral watermark, a mono primary step label, a title and a description, followed by a hairline-framed transfer panel on a 7/5 split pairing a portfolio-transfer headline + paragraph and a square arrow CTA (hard offset shadow, press feedback) with a supporting dashboard photo. The transfer CTA routes through section-kit route links. Use to explain how to get started (create account, fund, trade) on a brokerage or trading-app page.',
   props: z.object({
     /** Brand / platform name woven into the transfer copy. */
     brand: z.string().optional(),
@@ -97,59 +101,82 @@ export const InvestingSteps = defineCapsule({
       </svg>
     )
     return (
-      <StepTimeline className={cn('bg-background py-24', props.className)}>
+      <StepTimeline
+        className={cn('pt-24 pb-20 lg:pt-28 lg:pb-28', props.className)}
+      >
         <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-2xl gap-0"
-            titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <ResponsiveGrid cols="1-lg-3" className="lg:gap-12">
+          <div className="mb-12 flex flex-col gap-6 border-b border-border pb-6 md:flex-row md:items-end md:justify-between lg:mb-14">
+            <div className="max-w-2xl">
+              <MonoTag className="mb-4 block">
+                Getting started
+                <span aria-hidden="true" className="text-primary">
+                  {' '}
+                  / {String(items.length).padStart(2, '0')}
+                </span>
+              </MonoTag>
+              <h2 className="text-3xl font-extrabold tracking-tight text-foreground text-balance sm:text-4xl">
+                {heading}
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground text-pretty">
+                {description}
+              </p>
+            </div>
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="shrink-0 tabular-nums"
+            >
+              [ {String(items.length).padStart(2, '0')} steps ]
+            </MonoTag>
+          </div>
+
+          <ResponsiveGrid
+            cols="1-md-3"
+            className="gap-0 border-l border-t border-border"
+          >
             {items.map((step, i) => (
-              <StepItem key={step.title} className="relative">
-                <div className="flex items-start gap-6 lg:flex-col lg:items-center">
-                  <div className="grid size-16 flex-shrink-0 place-items-center rounded-2xl bg-primary text-2xl font-semibold text-primary-foreground">
-                    {i + 1}
-                  </div>
-                  <div className="flex-1 lg:text-center">
-                    <h3 className="mb-2 text-xl font-semibold">{step.title}</h3>
-                    <p className="leading-relaxed text-muted-foreground">
-                      {step.description}
-                    </p>
-                  </div>
-                </div>
-                {i < items.length - 1 && (
-                  <div
-                    aria-hidden="true"
-                    className="absolute left-full top-8 hidden h-0.5 w-full -translate-x-8 bg-border lg:block"
-                  >
-                    <div className="absolute -top-1.5 right-0 size-3 rounded-full bg-muted-foreground/40" />
-                  </div>
-                )}
+              <StepItem
+                key={step.title}
+                className="relative overflow-hidden border-b border-r border-border p-7 sm:p-8"
+              >
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute right-4 top-3 select-none font-mono text-7xl font-extrabold leading-none tabular-nums text-foreground/[0.06]"
+                >
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <MonoTag className="text-primary">
+                  Step {String(i + 1).padStart(2, '0')}
+                </MonoTag>
+                <h3 className="mt-4 text-xl font-semibold tracking-tight text-foreground">
+                  {step.title}
+                </h3>
+                <p className="mt-3 leading-relaxed text-muted-foreground">
+                  {step.description}
+                </p>
               </StepItem>
             ))}
           </ResponsiveGrid>
 
-          <div className="mt-16 rounded-2xl bg-muted/50 p-8 lg:p-12">
-            <div className="grid items-center gap-8 lg:grid-cols-2">
-              <div>
-                <h3 className="mb-4 text-2xl font-semibold">
+          <div className="relative mt-10 overflow-hidden border border-border bg-muted/40">
+            <div className="grid items-stretch lg:grid-cols-12">
+              <div className="p-8 lg:col-span-7 lg:p-12">
+                <MonoTag className="mb-4 block">Transfer</MonoTag>
+                <h3 className="text-2xl font-extrabold tracking-tight text-foreground">
                   {transferHeading}
                 </h3>
-                <p className="mb-6 leading-relaxed text-muted-foreground">
+                <p className="mb-8 mt-4 leading-relaxed text-muted-foreground">
                   {transferDescription}
                 </p>
                 <NavbarRouteLink
-                  className="group inline-flex items-center gap-2 font-medium text-foreground transition-all hover:gap-3"
+                  className="group inline-flex items-center gap-2 rounded-none border border-foreground bg-background px-5 py-3 text-sm font-medium text-foreground shadow-[4px_4px_0_0] shadow-foreground transition-[transform,box-shadow,background-color] duration-150 hover:bg-muted active:translate-x-[2px] active:translate-y-[2px] active:shadow-none motion-reduce:transform-none"
                   href={transferCta}
                 >
                   {transferCta}
-                  <ArrowRight className="size-5" />
+                  <ArrowRight className="size-4 transition-transform duration-150 group-hover:translate-x-0.5 motion-reduce:transform-none" />
                 </NavbarRouteLink>
               </div>
-              <div className="relative h-64 overflow-hidden rounded-xl lg:h-80">
+              <div className="relative min-h-[240px] lg:col-span-5 lg:min-h-full">
                 <Image
                   alt={transferImageAlt}
                   w={800}

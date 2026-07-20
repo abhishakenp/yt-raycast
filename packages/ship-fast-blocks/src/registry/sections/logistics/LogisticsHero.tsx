@@ -243,9 +243,7 @@ export const LogisticsHero = defineCapsule({
                   className="size-full object-cover"
                 />
               </div>
-              <Card
-                className="absolute -bottom-6 -left-6 p-4 shadow-lg"
-              >
+              <Card className="absolute -bottom-6 -left-6 p-4 shadow-lg">
                 <div className="flex items-center gap-3">
                   <div className="grid size-12 place-items-center rounded-full bg-primary/10 text-primary">
                     <svg

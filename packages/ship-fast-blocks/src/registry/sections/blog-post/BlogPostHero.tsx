@@ -3,23 +3,28 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * BlogPostHero — bespoke single-article masthead for an editorial blog post
- * detail page. A narrow reading column with a small category/eyebrow kicker,
- * a large editorial headline (routable via section-kit route links), an optional dek, and
- * a byline row (author avatar + name, publish date, and reading-time, separated
- * by dots), followed by a wide rounded cover image that folds into the hero.
- * Uses semantic tokens only. Use as the article masthead for blogs, journals,
- * magazines, or editorial reading pages.
+ * BlogPostHero — newsprint front-page masthead for a single-article blog post
+ * detail page. A double-ruled mono dateline row (category kicker with a small
+ * primary square on the left, publication date on the right) sits above a huge
+ * serif headline (routable via section-kit route links) set over a giant ghost
+ * serif watermark of the headline's first letter. The dek reads against a
+ * hairline column rule, and the byline is a ruled ledger row — square
+ * grayscale author portrait, "By <author>" in serif, and a mono reading-time
+ * stamp. The wide cover photograph breaks wider than the reading column in a
+ * sharp hairline frame over an offset outline, finished with a mono "Fig. 01"
+ * caption rule. Uses semantic tokens only. Use as the article masthead for
+ * blogs, journals, magazines, or editorial reading pages.
  */
 export const BlogPostHero = defineCapsule({
   name: 'BlogPostHero',
   description:
-    'Bespoke single-article hero for an editorial blog post detail page: a narrow reading column with an uppercase category/eyebrow kicker, a large editorial headline (routable via section-kit route links), an optional dek/subtitle, and a byline row showing an author avatar, name, publication date, and reading-time separated by dots, followed by a wide rounded cover image. Use as the article masthead for blogs, journals, magazines, or editorial reading pages.',
+    "Newsprint front-page masthead for a single-article blog post detail page: a double-ruled mono dateline row (category kicker + publication date) above a huge serif headline (routable via section-kit route links) over a giant ghost serif first-letter watermark, an optional dek set against a hairline column rule, and a ruled byline ledger row with a square grayscale author portrait, 'By <author>' in serif, and a mono reading-time stamp — followed by a wide sharp-framed cover image breaking wider than the reading column with a mono 'Fig. 01' caption rule. Use as the article masthead for blogs, journals, magazines, or editorial reading pages.",
   props: z.object({
     /** Category / topic eyebrow kicker label. */
     kicker: z.string().optional(),
@@ -58,49 +63,91 @@ export const BlogPostHero = defineCapsule({
     return (
       <HeroSection
         variant="default"
-        className={cn('bg-background py-16 lg:py-24', props.className)}
+        className={cn(
+          'relative overflow-hidden border-b border-border bg-background py-14 lg:py-20',
+          props.className,
+        )}
       >
-        <Container asChild size="sm" className="px-6 lg:px-6">
+        {/* Giant ghost first letter of the headline — the front-page initial. */}
+        <Watermark className="-top-6 right-[2%] font-serif font-bold text-foreground/[0.05] text-[11rem] sm:text-[16rem] lg:text-[22rem]">
+          {title.charAt(0)}
+        </Watermark>
+
+        <Container asChild size="sm" className="relative px-6 lg:px-6">
           <HeroContent>
-            <p className="mb-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              {kicker}
-            </p>
-            <h1 className="mb-6 font-serif text-4xl font-semibold leading-tight tracking-tight text-foreground md:text-5xl lg:text-6xl">
+            {/* Double-ruled dateline: kicker — rule — date. */}
+            <div className="border-y-[3px] border-foreground/40 [border-top-style:double] [border-bottom-style:double] py-2.5">
+              <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-1">
+                <MonoTag className="flex items-center gap-2 text-foreground">
+                  <span
+                    aria-hidden="true"
+                    className="size-1.5 shrink-0 bg-primary"
+                  />
+                  {kicker}
+                </MonoTag>
+                <MonoTag>
+                  <time>{date}</time>
+                </MonoTag>
+              </div>
+            </div>
+
+            <h1 className="mt-8 font-serif text-4xl font-bold leading-[1.04] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
               <NavbarRouteLink className="text-left" href={title}>
                 {title}
               </NavbarRouteLink>
             </h1>
-            <p className="mb-8 text-lg leading-relaxed text-muted-foreground md:text-xl">
+
+            {/* Dek against a hairline column rule. */}
+            <p className="mt-6 max-w-xl border-l border-foreground/25 pl-5 font-serif text-lg italic leading-relaxed text-muted-foreground md:text-xl">
               {dek}
             </p>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
-              <span className="flex items-center gap-3">
+
+            {/* Byline ledger row. */}
+            <div className="mt-8 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-y border-foreground/20 py-3">
+              <span className="flex min-w-0 items-center gap-3">
                 <Image
                   alt={authorAvatarAlt}
                   w={80}
                   h={80}
-                  className="size-9 rounded-full object-cover"
+                  className="size-9 shrink-0 rounded-none border border-foreground/20 object-cover grayscale"
                 />
-                <span className="font-medium text-foreground">{author}</span>
+                <span className="truncate font-serif text-base text-foreground">
+                  <span className="italic text-muted-foreground">By </span>
+                  <span className="font-semibold">{author}</span>
+                </span>
               </span>
-              <span className="text-border" aria-hidden="true">
-                &middot;
-              </span>
-              <time>{date}</time>
-              <span className="text-border" aria-hidden="true">
-                &middot;
-              </span>
-              <span>{readingTime}</span>
+              <MonoTag className="shrink-0">{readingTime}</MonoTag>
             </div>
           </HeroContent>
         </Container>
-        <div className="mx-auto mt-12 max-w-5xl px-6 lg:px-8">
-          <Image
-            alt={coverAlt}
-            w={1600}
-            h={900}
-            className="aspect-[16/9] w-full rounded-2xl object-cover"
-          />
+
+        {/* Cover plate breaking wider than the reading column. */}
+        <div className="relative mx-auto mt-12 max-w-5xl px-6 lg:px-8">
+          <div className="relative">
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 translate-x-3 translate-y-3 border border-border"
+            />
+            <Image
+              alt={coverAlt}
+              w={1600}
+              h={900}
+              className="relative aspect-[16/9] w-full rounded-none border border-foreground/25 object-cover"
+            />
+          </div>
+          {/* Mono figure caption rule. */}
+          <span
+            aria-hidden="true"
+            className="mt-4 flex items-center gap-3 text-border"
+          >
+            <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+              Fig. 01
+            </span>
+            <span className="h-px flex-1 bg-current" />
+            <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60">
+              Cover
+            </span>
+          </span>
         </div>
       </HeroSection>
     )

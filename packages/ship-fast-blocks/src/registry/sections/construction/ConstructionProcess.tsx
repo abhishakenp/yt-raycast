@@ -3,16 +3,20 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * ConstructionProcess — six-step numbered process timeline for a construction /
- * general contractor page. A centered section heading above a responsive grid
- * of numbered cards, each showing a large step number watermark, a title, a
- * description, and a duration note. Use as a "how we bring your vision to
- * life" section for construction companies, contractors, builders, or any
- * service business with a multi-phase workflow. Renders fully with no props via
- * baked-in defaults.
+ * ConstructionProcess — industrial-brutalist phase ledger for a construction /
+ * general contractor page. A blueprint graph-paper band opened by a mono meta
+ * rule (primary marker square + "Phase index" + tabular phase count) and a
+ * left-aligned extrabold uppercase heading. Steps sit in a collapsed-border
+ * ledger (1/2/3 columns) whose cells share hairline rules: each carries a
+ * giant ghost numeral watermark, a mono primary "Phase NN" label, an uppercase
+ * title, a description, and a hairline-ruled mono duration row. Use as a "how
+ * we bring your vision to life" section for construction companies,
+ * contractors, builders, or any service business with a multi-phase workflow.
+ * Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { GraphPaper } from '#/section-kit/Decor.tsx'
 import {
   ProcessTimeline,
   ProcessGrid,
@@ -21,7 +25,7 @@ import {
 export const ConstructionProcess = defineCapsule({
   name: 'ConstructionProcess',
   description:
-    "Six-step numbered process timeline for a construction / general contractor page: a centered section heading above a responsive grid of numbered cards, each showing a large step number watermark, a title, a description, and a duration note. Use as a 'how we bring your vision to life' section for construction firms, contractors, builders, or any service business with a multi-phase workflow.",
+    "Industrial-brutalist phase ledger for a construction / general contractor page: a blueprint graph-paper band with a mono meta rule (primary marker + tabular phase count), a left-aligned extrabold uppercase heading, and a collapsed-border ledger of phase cells sharing hairline rules — each with a giant ghost numeral watermark, a mono primary 'Phase NN' label, an uppercase title, a description, and a hairline-ruled mono duration row. Use as a 'how we bring your vision to life' section for construction firms, contractors, builders, or any service business with a multi-phase workflow.",
   props: z.object({
     /** Section eyebrow label. */
     eyebrow: z.string().optional(),
@@ -89,33 +93,58 @@ export const ConstructionProcess = defineCapsule({
         ]
     return (
       <ProcessTimeline
-        className={cn('bg-muted py-20 lg:py-28', props.className)}
+        className={cn(
+          'relative overflow-hidden bg-muted/40 py-16 lg:py-24',
+          props.className,
+        )}
       >
-        <Container>
+        <GraphPaper className="inset-0 text-foreground/[0.05]" />
+        <Container className="relative">
+          <div className="mb-10 flex items-center justify-between gap-4 border-b border-foreground/15 pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            <span className="flex items-center gap-3">
+              <span aria-hidden="true" className="size-2 bg-primary" />
+              {eyebrow}
+            </span>
+            <span className="tabular-nums">
+              {String(steps.length).padStart(2, '0')} phases
+            </span>
+          </div>
+
           <SectionHeading
-            eyebrow={eyebrow}
+            align="left"
             title={heading}
             subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            eyebrowClassName="text-sm font-semibold tracking-wider text-muted-foreground"
-            titleClassName="mb-4 mt-3 text-3xl font-bold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
+            className="mb-10 max-w-3xl gap-4 lg:mb-14"
+            titleClassName="text-3xl font-extrabold uppercase tracking-tight text-foreground sm:text-4xl lg:text-5xl"
+            subtitleClassName="max-w-xl text-lg text-muted-foreground"
           />
 
-          <ProcessGrid columns={2} className="gap-8 lg:grid-cols-3">
+          <ProcessGrid
+            columns={2}
+            className="gap-0 border-2 border-foreground bg-card shadow-[8px_8px_0_0] shadow-foreground/15 lg:grid-cols-3"
+          >
             {steps.map((step, i) => (
-              <ProcessStep key={step.title} className="relative">
-                <div className="absolute -left-2 -top-4 text-6xl font-bold text-foreground/10">
+              <ProcessStep
+                key={step.title}
+                className="relative flex flex-col border-b border-r border-foreground/15 p-6 sm:p-8"
+              >
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute right-4 top-4 select-none font-mono text-6xl font-extrabold tabular-nums leading-none text-foreground/[0.08] sm:right-6 sm:top-6 sm:text-7xl"
+                >
                   {String(i + 1).padStart(2, '0')}
-                </div>
-                <div className="relative rounded-xl bg-card p-8 shadow-sm">
-                  <h3 className="mb-3 text-xl font-semibold text-foreground">
-                    {step.title}
-                  </h3>
-                  <p className="leading-relaxed text-muted-foreground">
-                    {step.description}
-                  </p>
-                  <div className="mt-4 text-sm text-muted-foreground">
+                </span>
+                <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+                  Phase {String(i + 1).padStart(2, '0')}
+                </span>
+                <h3 className="mt-4 text-lg font-extrabold uppercase tracking-tight text-foreground">
+                  {step.title}
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                  {step.description}
+                </p>
+                <div className="mt-auto pt-5">
+                  <div className="border-t border-dashed border-foreground/20 pt-3 font-mono text-[11px] uppercase tracking-[0.15em] tabular-nums text-muted-foreground">
                     {step.duration}
                   </div>
                 </div>

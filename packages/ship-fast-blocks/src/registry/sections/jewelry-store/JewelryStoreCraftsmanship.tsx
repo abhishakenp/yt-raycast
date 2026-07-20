@@ -20,20 +20,21 @@ import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
 /**
- * JewelryStoreCraftsmanship — split craftsmanship / values band for a luxury
- * jewelry maison on a subtle muted band. Two columns: left holds a gold
- * eyebrow, serif heading, lead paragraph, and a stacked list of value props
- * (each a circular gold icon chip + serif title + description, icons rotated
- * from a local set: check-badge, star, shield, sparkle); right holds a
- * staggered two-column photo collage of atelier images (mixed 3:4 / square
- * aspect ratios, one column nudged down). Use to communicate ethical sourcing,
- * master artisanship, lifetime warranty, and bespoke design for fine jewelers,
- * diamond houses, or high-jewelry maisons. Renders fully with no props.
+ * JewelryStoreCraftsmanship — asymmetric craftsmanship / values band for a
+ * luxury jewelry maison on a subtle muted band. A 5:7 split: the narrower left
+ * column holds a mono micro-label kicker, serif heading, lead paragraph, and a
+ * stacked list of value props (each a hairline square vitrine icon chip in gold
+ * + serif title + muted description, icons rotated from a local set: check-badge,
+ * star, shield, sparkle); the wider right column holds a staggered two-column
+ * photo collage of atelier images set in hairline vitrine mats (mixed 3:4 /
+ * square aspect ratios, one column nudged down). Use to communicate ethical
+ * sourcing, master artisanship, lifetime warranty, and bespoke design for fine
+ * jewelers, diamond houses, or high-jewelry maisons. Renders fully with no props.
  */
 export const JewelryStoreCraftsmanship = defineCapsule({
   name: 'JewelryStoreCraftsmanship',
   description:
-    'Split craftsmanship / values band for a luxury jewelry maison on a subtle muted band: a left column with a gold eyebrow, serif heading, lead paragraph, and a stacked list of value props (each a circular gold icon chip + serif title + description, icons rotated from a local check-badge / star / shield / sparkle set), and a right column with a staggered two-column photo collage of atelier images (mixed 3:4 / square aspect ratios, one column nudged down). Use to communicate ethical sourcing, master artisanship, lifetime warranty, and bespoke design for fine jewelers, diamond houses, or high-jewelry maisons.',
+    'Asymmetric craftsmanship / values band for a luxury jewelry maison on a subtle muted band: a 5:7 split with a narrower left column holding a mono micro-label kicker, serif heading, lead paragraph, and a stacked list of value props (each a hairline square vitrine icon chip in gold + serif title + muted description, icons rotated from a local check-badge / star / shield / sparkle set), and a wider right column holding a staggered two-column photo collage of atelier images set in hairline vitrine mats (mixed 3:4 / square aspect ratios, one column nudged down). Use to communicate ethical sourcing, master artisanship, lifetime warranty, and bespoke design for fine jewelers, diamond houses, or high-jewelry maisons.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -145,21 +146,23 @@ export const JewelryStoreCraftsmanship = defineCapsule({
     )
     const icons = [CheckBadge, StarIcon, ShieldIcon, SparkleIcon]
 
+    const frameCls = 'overflow-hidden border border-border bg-background p-2'
+    const imgCls = 'h-full w-full object-cover'
     return (
       <SplitStory
         variant="muted"
         className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}
       >
         <Container size="xl" className="sm:px-4">
-          <SplitStoryGrid className="gap-20">
+          <SplitStoryGrid className="items-start gap-16 lg:grid-cols-[5fr_7fr]">
             <SplitStoryContent className="space-y-0">
               <SectionHeading
                 eyebrow={eyebrow}
                 title={heading}
                 subtitle={description}
                 align="left"
-                eyebrowClassName="text-primary tracking-[0.3em]"
-                titleClassName="mb-4 font-serif text-4xl lg:text-5xl"
+                eyebrowClassName="font-mono text-[11px] font-medium uppercase tracking-[0.24em] text-muted-foreground"
+                titleClassName="mb-4 font-serif text-4xl font-normal tracking-tight lg:text-5xl"
                 subtitleClassName="text-lg leading-relaxed"
                 className="mb-12 gap-4"
               />
@@ -169,16 +172,16 @@ export const JewelryStoreCraftsmanship = defineCapsule({
                   return (
                     <FeatureListItem key={item.title} className="gap-6">
                       <FeatureListItemIcon
-                        shape="circle"
-                        className="bg-card text-primary"
+                        shape="square"
+                        className="rounded-none border border-border bg-background text-primary"
                       >
                         {<Icon />}
                       </FeatureListItemIcon>
                       <FeatureListItemBody>
-                        <FeatureListItemTitle>
+                        <FeatureListItemTitle className="font-serif text-lg font-normal">
                           {item.title}
                         </FeatureListItemTitle>
-                        <FeatureListItemDescription>
+                        <FeatureListItemDescription className="mt-1 leading-relaxed">
                           {item.description}
                         </FeatureListItemDescription>
                       </FeatureListItemBody>
@@ -189,42 +192,42 @@ export const JewelryStoreCraftsmanship = defineCapsule({
             </SplitStoryContent>
             <ResponsiveGrid cols="2" className="gap-4">
               <div className="space-y-4">
-                <div className="aspect-[3/4] overflow-hidden bg-card">
+                <div className={cn('aspect-[3/4]', frameCls)}>
                   <Image
                     alt={imageAlts[0]}
                     w={600}
                     h={800}
                     loading="lazy"
-                    className="h-full w-full object-cover"
+                    className={imgCls}
                   />
                 </div>
-                <div className="aspect-square overflow-hidden bg-card">
+                <div className={cn('aspect-square', frameCls)}>
                   <Image
                     alt={imageAlts[1]}
                     w={600}
                     h={600}
                     loading="lazy"
-                    className="h-full w-full object-cover"
+                    className={imgCls}
                   />
                 </div>
               </div>
               <div className="space-y-4 pt-12">
-                <div className="aspect-square overflow-hidden bg-card">
+                <div className={cn('aspect-square', frameCls)}>
                   <Image
                     alt={imageAlts[2]}
                     w={600}
                     h={600}
                     loading="lazy"
-                    className="h-full w-full object-cover"
+                    className={imgCls}
                   />
                 </div>
-                <div className="aspect-[3/4] overflow-hidden bg-card">
+                <div className={cn('aspect-[3/4]', frameCls)}>
                   <Image
                     alt={imageAlts[3]}
                     w={600}
                     h={800}
                     loading="lazy"
-                    className="h-full w-full object-cover"
+                    className={imgCls}
                   />
                 </div>
               </div>

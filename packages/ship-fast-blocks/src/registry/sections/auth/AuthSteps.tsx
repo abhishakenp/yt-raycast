@@ -71,9 +71,9 @@ export const AuthSteps = defineCapsule({
           },
         ]
     const stepLayouts = [
-      'md:col-span-3 xl:col-span-4 xl:-rotate-1',
-      'md:col-span-3 xl:col-span-4 xl:translate-y-6 xl:rotate-1',
-      'md:col-span-6 xl:col-span-4 xl:-rotate-[0.5deg]',
+      'md:col-span-3 xl:col-span-4 xl:-rotate-1 max-lg:-rotate-1',
+      'md:col-span-3 xl:col-span-4 xl:translate-y-6 xl:rotate-1 max-lg:rotate-1 max-lg:translate-x-1.5',
+      'md:col-span-6 xl:col-span-4 xl:-rotate-[0.5deg] max-lg:-rotate-[0.6deg] max-lg:-translate-x-1.5',
     ]
 
     return (
@@ -97,7 +97,7 @@ export const AuthSteps = defineCapsule({
                 <span>path preview</span>
                 <span>{steps.length} steps</span>
               </div>
-              <div className="mt-3 grid gap-2 sm:grid-cols-3">
+              <div className="mt-3 grid grid-cols-3 gap-2">
                 {steps.slice(0, 3).map((step, index) => (
                   <div
                     key={step.title}

@@ -9,24 +9,31 @@ import {
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
 /**
- * KnowledgeBaseFaq — native expand/collapse FAQ accordion for a help center. A
- * centered heading + description above a narrow stack of bordered card
- * <details>/<summary> rows: each summary shows the question with a chevron that
- * rotates when open, revealing the answer paragraph below. Uses native HTML
- * disclosure (no JS state). Calm, light, editorial. Use as the FAQ section of a
- * knowledge base, support portal, docs site or any page answering common
- * questions. Renders fully with no props via baked-in defaults.
+ * KnowledgeBaseFaq — "Terminal-docs" accessible, JS-free FAQ ledger for a help
+ * center. An asymmetric 4:8 split under a giant ghost `?` watermark: the left
+ * rail (sticky on lg) holds a left-aligned SectionHeading — mono "FAQ" eyebrow,
+ * extrabold title, muted subtitle — plus a tabular mono entry count over a
+ * hairline rule. The right column is a collapsed hairline question ledger of
+ * native <details>/<summary> rows: each summary pairs a tabular mono `Q index`
+ * numeral with the question and a plus glyph that rotates 45° on open, and the
+ * answer reveals under a hairline left rail indented to the question column.
+ * Pure semantic HTML (no JS state) so it stays keyboard- and screen-reader-
+ * accessible by default; the first item opens by default. Use as the FAQ
+ * section of a knowledge base, support portal, docs site or any page answering
+ * common questions. Renders fully with no props via baked-in defaults. Theme
+ * tokens only.
  */
 export const KnowledgeBaseFaq = defineCapsule({
   name: 'KnowledgeBaseFaq',
   description:
-    'Native expand/collapse FAQ accordion for a help center: a centered heading + description above a narrow stack of bordered card <details>/<summary> rows — each summary shows the question with a chevron that rotates when open, revealing the answer paragraph. Uses native HTML disclosure (no JS state). Calm, light, editorial. Use as the FAQ section of a knowledge base, support portal, docs site or any page answering common questions.',
+    "Terminal-docs accessible, JS-free FAQ ledger for a help center: an asymmetric 4:8 split under a giant ghost '?' watermark — a sticky left rail with a left-aligned SectionHeading (mono 'FAQ' eyebrow, extrabold title, muted subtitle) and a tabular mono entry count over a hairline rule, beside a collapsed hairline ledger of native <details>/<summary> rows. Each summary pairs a tabular mono index numeral with the question and a plus glyph rotating 45° on open; the answer reveals under a hairline left rail indented to the question column. Pure semantic HTML — keyboard- and screen-reader-accessible by default, no client state; the first item opens by default. Use as the FAQ section of a knowledge base, support portal, docs site or any page answering common questions. Theme tokens only.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -76,35 +83,70 @@ export const KnowledgeBaseFaq = defineCapsule({
         ]
     return (
       <section
-        className={cn('bg-background py-16 sm:py-20', props.className)}
+        className={cn(
+          'relative overflow-hidden bg-background py-16 sm:py-20',
+          props.className,
+        )}
         aria-labelledby="kb-faq-heading"
       >
-        <Container size="sm">
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-12 gap-0"
-            titleId="kb-faq-heading"
-            titleClassName="mb-3 text-2xl font-semibold text-foreground sm:text-3xl"
-            subtitleClassName="text-muted-foreground"
-          />
-          <FaqAccordion>
-            {items.map((item) => (
-              <FaqItem key={item.question} variant="overflow-bordered">
-                <FaqQuestion className="p-6 transition-colors hover:bg-muted">
-                  <span className="pr-8 text-base font-medium text-card-foreground">
-                    {item.question}
-                  </span>
-                  <FaqQuestionIcon />
-                </FaqQuestion>
-                <FaqAnswer asChild className="px-6 pb-6">
-                  <div>
-                    <p>{item.answer}</p>
-                  </div>
-                </FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+        {/* Giant ghost question mark — the section's reading anchor. */}
+        <Watermark className="-bottom-16 -left-6 font-mono text-[14rem] sm:text-[18rem] lg:text-[24rem]">
+          ?
+        </Watermark>
+
+        <Container className="relative">
+          <div className="grid gap-10 lg:grid-cols-12 lg:gap-12">
+            {/* Left rail: heading + mono meta, sticky on lg. */}
+            <div className="lg:col-span-4">
+              <div className="lg:sticky lg:top-24">
+                <SectionHeading
+                  eyebrow="FAQ"
+                  title={heading}
+                  subtitle={description}
+                  align="left"
+                  className="gap-3"
+                  titleId="kb-faq-heading"
+                  eyebrowClassName="font-mono text-[11px] font-normal uppercase tracking-[0.22em] text-muted-foreground"
+                  titleClassName="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl"
+                  subtitleClassName="text-muted-foreground"
+                />
+                <p
+                  aria-hidden="true"
+                  className="mt-6 border-t border-border pt-4 font-mono text-[11px] uppercase tracking-[0.2em] tabular-nums text-muted-foreground/60"
+                >
+                  [ {String(items.length).padStart(2, '0')} entries ]
+                </p>
+              </div>
+            </div>
+
+            {/* Right column: collapsed hairline question ledger. */}
+            <div className="lg:col-span-8">
+              <FaqAccordion variant="divided" className="space-y-0">
+                {items.map((item, index) => (
+                  <FaqItem
+                    key={item.question}
+                    open={index === 0}
+                    variant="divided"
+                    className="rounded-none border-0 bg-transparent"
+                  >
+                    <FaqQuestion className="items-baseline gap-4 rounded-none px-0 text-base font-semibold tracking-tight text-card-foreground transition-colors hover:text-foreground">
+                      <span
+                        aria-hidden="true"
+                        className="shrink-0 font-mono text-[11px] font-normal tabular-nums tracking-[0.2em] text-muted-foreground/60"
+                      >
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <span className="flex-1">{item.question}</span>
+                      <FaqQuestionIcon variant="plus" className="self-center" />
+                    </FaqQuestion>
+                    <FaqAnswer className="ml-8 mt-3 border-l-2 border-border pl-4 text-sm leading-relaxed">
+                      {item.answer}
+                    </FaqAnswer>
+                  </FaqItem>
+                ))}
+              </FaqAccordion>
+            </div>
+          </div>
         </Container>
       </section>
     )

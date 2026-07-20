@@ -2,6 +2,8 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -12,19 +14,18 @@ import {
 } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
- * JewelryStoreTestimonials — client testimonials grid for a luxury jewelry
- * maison on a subtle muted band. A centered gold eyebrow + serif heading
- * introduce a responsive 1/3-column grid of quote cards, each on a raised
- * background surface with a five-star gold rating row, a serif-styled quote
- * wrapped in typographic quotation marks, and a round avatar beside the
- * client name and location. Use as social proof for fine jewelers, diamond
- * houses, engagement-ring boutiques, or high-jewelry maisons. Renders fully
- * with no props via baked-in defaults.
+ * JewelryStoreTestimonials — client testimonials wall for a luxury jewelry
+ * maison on a subtle muted band. A left-aligned mono micro-label kicker + serif
+ * heading introduce a responsive 1/3-column grid of hairline-framed vitrine quote
+ * cards, each opening with an oversized serif quotation mark, a relaxed serif
+ * quote, and a mono client name + location caption. Use as social proof for fine
+ * jewelers, diamond houses, engagement-ring boutiques, or high-jewelry maisons.
+ * Renders fully with no props via baked-in defaults.
  */
 export const JewelryStoreTestimonials = defineCapsule({
   name: 'JewelryStoreTestimonials',
   description:
-    'Client testimonials grid for a luxury jewelry maison on a subtle muted band: a centered gold eyebrow + serif heading introduce a responsive 1/3-column grid of quote cards, each on a raised background surface with a five-star gold rating row, a quote wrapped in typographic quotation marks, and a round avatar beside the client name and location. Use as social proof for fine jewelers, diamond houses, engagement-ring boutiques, or high-jewelry maisons.',
+    'Client testimonials wall for a luxury jewelry maison on a subtle muted band: a left-aligned mono micro-label kicker + serif heading introduce a responsive 1/3-column grid of hairline-framed vitrine quote cards, each opening with an oversized serif quotation mark, a relaxed serif quote, and a mono client name + location caption. Use as social proof for fine jewelers, diamond houses, engagement-ring boutiques, or high-jewelry maisons.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -73,51 +74,70 @@ export const JewelryStoreTestimonials = defineCapsule({
         ]
 
     return (
-      <TestimonialGrid
-        eyebrow={eyebrow}
-        heading={heading}
-        columns={3}
+      <section
         className={cn(
           'bg-muted pt-28 pb-20 lg:pt-32 lg:pb-28',
           props.className,
         )}
       >
-        {items
-          .map((t) => ({
-            quote: t.quote,
-            name: t.name,
-            role: t.location,
-            rating: 5,
-            avatarAlt: t.avatarAlt,
-          }))
-          .map((t) => {
-            const __iv__ = t as {
-              quote: string
-              name: string
-              role?: string
-              company?: string
-              meta?: string
-              rating?: number
-              avatarAlt?: string
-            }
-            return (
-              <TestimonialCard
-                key={__iv__.name}
-                className={'bg-background p-8 lg:p-10'}
-              >
-                <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                <TestimonialAuthor>
-                  <TestimonialName>{__iv__.name}</TestimonialName>
-                  {(__iv__.role || __iv__.company || __iv__.meta) && (
-                    <TestimonialMeta>
-                      {__iv__.role || __iv__.company || __iv__.meta}
-                    </TestimonialMeta>
-                  )}
-                </TestimonialAuthor>
-              </TestimonialCard>
-            )
-          })}
-      </TestimonialGrid>
+        <Container>
+          <SectionHeading
+            align="left"
+            eyebrow={eyebrow}
+            title={heading}
+            className="mb-16 max-w-2xl gap-0"
+            eyebrowClassName="mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.24em] text-muted-foreground"
+            titleClassName="font-serif text-4xl font-normal tracking-tight text-foreground lg:text-5xl"
+          />
+          <TestimonialGrid columns={3} className="gap-0">
+            {items
+              .map((t) => ({
+                quote: t.quote,
+                name: t.name,
+                role: t.location,
+                rating: 5,
+                avatarAlt: t.avatarAlt,
+              }))
+              .map((t) => {
+                const __iv__ = t as {
+                  quote: string
+                  name: string
+                  role?: string
+                  company?: string
+                  meta?: string
+                  rating?: number
+                  avatarAlt?: string
+                }
+                return (
+                  <TestimonialCard
+                    key={__iv__.name}
+                    className="gap-5 rounded-none border-border bg-background p-8 transition-[border-color] duration-150 hover:border-foreground/30 lg:p-10"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="font-serif text-6xl leading-[0.6] text-border"
+                    >
+                      &ldquo;
+                    </span>
+                    <TestimonialQuote className="font-serif text-lg font-normal leading-relaxed">
+                      {__iv__.quote}
+                    </TestimonialQuote>
+                    <TestimonialAuthor className="mt-auto block">
+                      <TestimonialName className="font-medium text-foreground">
+                        {__iv__.name}
+                      </TestimonialName>
+                      {(__iv__.role || __iv__.company || __iv__.meta) && (
+                        <TestimonialMeta className="mt-1 block font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                          {__iv__.role || __iv__.company || __iv__.meta}
+                        </TestimonialMeta>
+                      )}
+                    </TestimonialAuthor>
+                  </TestimonialCard>
+                )
+              })}
+          </TestimonialGrid>
+        </Container>
+      </section>
     )
   },
 })

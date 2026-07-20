@@ -3,12 +3,15 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * CloudInfraSteps — "deploy in minutes" 3-step onboarding guide for a cloud-
- * infrastructure / developer-platform SaaS landing page. A centered heading +
- * description above a 3-column step grid. Each step has a numbered circle, a title,
- * a description, and a step-specific content block: step 1 shows a CLI code box;
- * step 2 shows a checklist; step 3 shows a metrics panel. Tokens-only. Renders
- * fully on zero arguments.
+ * CloudInfraSteps — terminal-industrial "deploy in minutes" 3-step onboarding
+ * ledger for a cloud-infrastructure / developer-platform SaaS landing page.
+ * An asymmetric header (left-aligned heading + description, mono `$ init`
+ * meta on the right) above a collapsed-border 3-column step ledger. Each cell
+ * carries a square inverted step index chip beside a giant ghost numeral, a
+ * title, a description, and step-specific terminal content: step 1 shows an
+ * inverted chamfered CLI pane with a `$` prompt; step 2 shows mono `[ok]`
+ * checklist rows; step 3 shows a hairline metrics ledger with tabular
+ * numerals. Tokens-only. Renders fully on zero arguments.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -20,7 +23,7 @@ import {
 export const CloudInfraSteps = defineCapsule({
   name: 'CloudInfraSteps',
   description:
-    'Three-step onboarding guide for a cloud-infrastructure / developer-platform SaaS landing page: a centered heading plus description above a 3-column step grid. Each step has a numbered circle, a title, a description, and step-specific content (CLI code box for step 1, checklist for step 2, metrics panel for step 3). Tokens-only. Use to showcase quick-start or getting-started flows on cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',
+    'Terminal-industrial three-step onboarding ledger for a cloud-infrastructure / developer-platform SaaS landing page: an asymmetric header (left heading plus description, mono command meta right) above a collapsed-border 3-column step ledger. Each cell has a square inverted step index chip beside a giant ghost numeral, a title, a description, and step-specific terminal content (inverted chamfered CLI pane for step 1, mono `[ok]` checklist for step 2, hairline metrics ledger for step 3). Tokens-only. Use to showcase quick-start or getting-started flows on cloud hosting, IaaS, PaaS, serverless, or developer-tooling sites.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -64,78 +67,95 @@ export const CloudInfraSteps = defineCapsule({
           },
         ]
     const code = props.code ?? 'curl -sSL https://cloudshift.io/install | sh'
-    const Check = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M5 13l4 4L19 7" />
-      </svg>
-    )
     return (
       <StepTimeline
-        className={cn('bg-muted/40 py-20 lg:py-28', props.className)}
+        className={cn('bg-muted/40 py-14 sm:py-20 lg:py-28', props.className)}
       >
         <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 tracking-tight sm:text-4xl"
-            subtitleClassName="text-lg"
-          />
-          <StepTimelineGrid columns={3} className="gap-8 lg:gap-12">
+          <div className="mb-10 flex flex-col gap-4 sm:mb-14 md:flex-row md:items-end md:justify-between">
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-3"
+              titleClassName="text-3xl font-extrabold tracking-tight sm:text-4xl"
+              subtitleClassName="text-base sm:text-lg"
+            />
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+            >
+              <span className="text-primary">$</span> cloudshift init
+            </p>
+          </div>
+          <StepTimelineGrid
+            columns={3}
+            className="gap-px border border-border bg-border"
+          >
             {items.map((step, i) => (
-              <StepItem key={step.title} className="relative">
-                <div className="mb-6 flex items-center gap-4">
-                  <div className="grid size-12 place-items-center rounded-full bg-primary text-lg font-semibold text-primary-foreground">
+              <StepItem
+                key={step.title}
+                className="relative flex flex-col overflow-hidden bg-background p-5 sm:p-7"
+              >
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -right-2 -top-5 select-none font-mono text-[6rem] font-extrabold leading-none tracking-tighter text-foreground/[0.05]"
+                >
+                  {`0${i + 1}`.slice(-2)}
+                </span>
+                <div className="mb-5 flex items-center gap-3">
+                  <span className="grid size-8 place-items-center bg-foreground font-mono text-sm font-semibold text-background">
                     {i + 1}
-                  </div>
-                  {i < items.length - 1 && (
-                    <div
-                      aria-hidden="true"
-                      className="hidden h-px flex-1 bg-border md:block"
-                    />
-                  )}
+                  </span>
+                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
+                    step / {`0${i + 1}`.slice(-2)}
+                  </span>
                 </div>
-                <h3 className="mb-3 text-xl font-semibold text-foreground">
+                <h3 className="mb-2 text-lg font-semibold tracking-tight text-foreground sm:text-xl">
                   {step.title}
                 </h3>
-                <p className="mb-4 text-muted-foreground">{step.description}</p>
+                <p className="mb-5 text-sm leading-relaxed text-muted-foreground">
+                  {step.description}
+                </p>
                 {i === 0 && (
-                  <div className="overflow-x-auto rounded-lg bg-primary p-4 font-mono text-sm text-primary-foreground/80">
-                    <code>{code}</code>
+                  <div className="mt-auto overflow-x-auto bg-foreground p-4 font-mono text-xs text-background [clip-path:polygon(0_0,100%_0,100%_calc(100%-0.875rem),calc(100%-0.875rem)_100%,0_100%)] sm:text-sm">
+                    <code>
+                      <span aria-hidden="true" className="text-background/60">
+                        ${' '}
+                      </span>
+                      {code}
+                    </code>
                   </div>
                 )}
                 {i === 1 && (
-                  <ul className="space-y-2 text-sm text-muted-foreground">
+                  <ul className="mt-auto space-y-2 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
                     <li className="flex items-center gap-2">
-                      <Check className="size-4 text-chart-2" />
+                      <span aria-hidden="true" className="text-primary">
+                        [ok]
+                      </span>
                       Auto-detects Node.js, Python, Go, Ruby
                     </li>
                     <li className="flex items-center gap-2">
-                      <Check className="size-4 text-chart-2" />
+                      <span aria-hidden="true" className="text-primary">
+                        [ok]
+                      </span>
                       Generates optimal resource profiles
                     </li>
                   </ul>
                 )}
                 {i === 2 && (
-                  <div className="rounded-lg bg-primary/10 p-4">
-                    <p className="text-sm text-muted-foreground">
-                      Average cold start:{' '}
-                      <span className="font-semibold text-foreground">
+                  <div className="mt-auto border border-border">
+                    <p className="flex items-baseline justify-between gap-3 px-3 py-2 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
+                      Average cold start
+                      <span className="font-semibold text-foreground tabular-nums">
                         89ms
                       </span>
                     </p>
-                    <p className="text-sm text-muted-foreground">
-                      Regions available:{' '}
-                      <span className="font-semibold text-foreground">35</span>
+                    <p className="flex items-baseline justify-between gap-3 border-t border-border px-3 py-2 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
+                      Regions available
+                      <span className="font-semibold text-foreground tabular-nums">
+                        35
+                      </span>
                     </p>
                   </div>
                 )}

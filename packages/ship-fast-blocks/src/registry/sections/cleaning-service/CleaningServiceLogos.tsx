@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
 import {
   LogoStrip,
   LogoStripLabel,
@@ -11,12 +12,21 @@ import {
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * CleaningServiceLogos — a "trusted by" logos strip for a home-cleaning / maid-service landing page. A single-row bordered section with a centered uppercase label above a responsive 2/4/6-column grid of clickable company-name pills. Each item routes through section-kit route links on click. Use as social-proof / credibility strip immediately below the hero for residential cleaning companies, local services, or small-business landing pages. Renders fully with no props via baked-in defaults.
+ * CleaningServiceLogos — playful-Swiss "trusted by" ledger strip for a
+ * home-cleaning / maid-service landing page. A hairline-banded section with a
+ * left-aligned mono micro-label (with a small primary square) sitting above a
+ * collapsed-border 2/3/6-column ledger of clickable company wordmark cells —
+ * each cell shares hairline rules with its neighbors and each wordmark tilts
+ * slightly and gains ink on hover, with press feedback on click. Each item
+ * routes through section-kit route links. Use as social-proof / credibility
+ * strip immediately below the hero for residential cleaning companies, local
+ * services, or small-business landing pages. Renders fully with no props via
+ * baked-in defaults.
  */
 export const CleaningServiceLogos = defineCapsule({
   name: 'CleaningServiceLogos',
   description:
-    "A 'trusted by' logos strip for a home-cleaning / maid-service landing page: single-row bordered section with a centered uppercase label above a responsive 2/4/6-column grid of clickable company-name pills. Each item routes through section-kit route links on click. Use as social-proof credibility strip below the hero for residential cleaning companies, local services, or small-business landing pages.",
+    "Playful-Swiss 'trusted by' ledger strip for a home-cleaning / maid-service landing page: hairline-banded section with a left-aligned mono micro-label (small primary square) above a collapsed-border 2/3/6-column ledger of clickable company wordmark cells sharing hairline rules; wordmarks tilt slightly and gain ink on hover with press feedback. Each item routes through section-kit route links. Use as social-proof credibility strip below the hero for residential cleaning companies, local services, or small-business landing pages.",
   props: z.object({
     /** Uppercase label above the logo grid. */
     label: z.string().optional(),
@@ -32,16 +42,32 @@ export const CleaningServiceLogos = defineCapsule({
 
     return (
       <LogoStrip
-        className={cn('border-b border-border bg-background', props.className)}
+        className={cn(
+          'border-b border-border bg-background py-10 sm:py-12',
+          props.className,
+        )}
       >
-        <LogoStripLabel>{label}</LogoStripLabel>
-        <LogoStripItems layout="flex" className="mt-8">
-          {items.filter(Boolean).map((logo) => (
-            <LogoStripItem key={logo} variant="opacity-hover" asChild>
-              <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
-            </LogoStripItem>
-          ))}
-        </LogoStripItems>
+        <Container>
+          <LogoStripLabel className="flex items-center gap-3 text-left font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            <span aria-hidden="true" className="size-2 shrink-0 bg-primary" />
+            {label}
+          </LogoStripLabel>
+          <LogoStripItems
+            layout="grid"
+            className="mt-6 grid-cols-2 gap-0 border-l border-t border-border sm:grid-cols-3 md:grid-cols-6"
+          >
+            {items.filter(Boolean).map((logo) => (
+              <LogoStripItem
+                key={logo}
+                variant="opacity-hover"
+                asChild
+                className="flex h-16 items-center justify-center border-b border-r border-border text-base font-bold tracking-tight text-muted-foreground transition-all duration-150 hover:-rotate-1 hover:bg-muted/40 hover:text-foreground active:translate-y-px"
+              >
+                <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
+              </LogoStripItem>
+            ))}
+          </LogoStripItems>
+        </Container>
       </LogoStrip>
     )
   },

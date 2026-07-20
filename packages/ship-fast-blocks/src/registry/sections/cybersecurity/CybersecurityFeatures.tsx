@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 import {
   FeatureGrid,
   FeatureCard,
@@ -14,19 +15,23 @@ import {
 } from '#/section-kit/FeatureGrid.tsx'
 
 /**
- * CybersecurityFeatures — security-capability grid. A light section with a
- * centered heading + supporting paragraph above a responsive 2-to-3 column grid
- * of bordered cards. Each card has a rounded icon tile (cycling through a set of
- * security glyphs that invert color on hover), a bold title, a descriptive
- * paragraph, and an arrowed "Learn more" link that routes through section-kit route links.
- * Use to lay out core platform capabilities for cybersecurity vendors,
- * SOC/MDR/XDR providers, zero-trust, cloud-security, or compliance-automation
- * products. Renders fully with no props via baked-in capability defaults.
+ * CybersecurityFeatures — terminal-stealth capability ledger. A light section
+ * opening with a hairline mono meta rule ("CAPABILITY MATRIX" + tabular module
+ * count) above an asymmetric header (left-aligned heading + lede, mono
+ * clearance tag right). Capabilities render as a square-edged,
+ * collapsed-border 1-2-3 column grid: every cell shares hairline rules and
+ * carries a ghost mono index numeral watermark, a mono "CAP.0X" micro-label, a
+ * bold title, a description, and (when a link label is supplied) an arrowed
+ * mono link that routes through section-kit route links. Cells wash to muted
+ * on hover — no icon tiles, no glows. Use to lay out core platform
+ * capabilities for cybersecurity vendors, SOC/MDR/XDR providers, zero-trust,
+ * cloud-security, or compliance-automation products. Renders fully with no
+ * props via baked-in capability defaults.
  */
 export const CybersecurityFeatures = defineCapsule({
   name: 'CybersecurityFeatures',
   description:
-    "Security-capability grid: a light section with a centered heading + supporting paragraph above a responsive 2-to-3 column grid of bordered cards, each with a rounded icon tile (cycling security glyphs that invert color on hover), a bold title, a description, and an arrowed 'Learn more' link routing through section-kit route links. Use to lay out core platform capabilities for cybersecurity vendors, SOC/MDR/XDR providers, zero-trust, cloud-security, or compliance-automation products.",
+    "Terminal-stealth capability ledger: a light section with a mono meta rule and asymmetric left-aligned header above a square-edged, collapsed-border capability grid — each cell shares hairline rules and carries a ghost index numeral, mono 'CAP.0X' micro-label, bold title, description, and an optional arrowed mono link routing through section-kit route links; cells wash to muted on hover. Use to lay out core platform capabilities for cybersecurity vendors, SOC/MDR/XDR providers, zero-trust, cloud-security, or compliance-automation products.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -81,17 +86,40 @@ export const CybersecurityFeatures = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-background py-24', props.className)}>
+      <section
+        className={cn('bg-background py-16 sm:py-20 lg:py-24', props.className)}
+      >
         <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 text-3xl font-bold sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <FeatureGrid columns={3}>
-            {items.map((f) => {
+          <div className="mb-8 flex items-center justify-between gap-4 border-b border-border pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground sm:mb-10">
+            <span className="flex items-center gap-3">
+              <span aria-hidden="true" className="size-2 bg-primary" />
+              Capability matrix
+            </span>
+            <span aria-hidden="true" className="tabular-nums">
+              {String(items.length).padStart(2, '0')} modules
+            </span>
+          </div>
+          <div className="mb-10 flex flex-col gap-6 sm:mb-14 md:flex-row md:items-end md:justify-between">
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-3"
+              titleClassName="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl"
+              subtitleClassName="max-w-xl text-base text-muted-foreground sm:text-lg"
+            />
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+            >
+              [ all layers covered ]
+            </p>
+          </div>
+          <FeatureGrid
+            columns={3}
+            className="gap-0 [&>div]:gap-0 [&>div]:border-l [&>div]:border-t [&>div]:border-border [&>div]:sm:grid-cols-2 [&>div]:md:grid-cols-3"
+          >
+            {items.map((f, i) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -102,10 +130,35 @@ export const CybersecurityFeatures = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
+                <FeatureCard
+                  key={__iv__.title}
+                  className="group relative gap-3 rounded-none border-0 border-b border-r border-border bg-transparent p-6 transition-colors hover:translate-y-0 hover:border-border hover:bg-muted/40 sm:p-8"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute right-5 top-4 select-none font-mono text-6xl font-bold leading-none tracking-tighter text-foreground/[0.06] tabular-nums"
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70 tabular-nums">
+                    cap.{String(i + 1).padStart(2, '0')}
+                  </span>
                   {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                  <FeatureTitle className="text-lg font-bold tracking-tight">
+                    {__iv__.title}
+                  </FeatureTitle>
+                  <FeatureDescription className="leading-relaxed">
+                    {__iv__.description}
+                  </FeatureDescription>
+                  {(props.cta ?? __iv__.cta) && (
+                    <NavbarRouteLink
+                      href={__iv__.title}
+                      className="mt-2 inline-flex w-fit items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-foreground underline decoration-border underline-offset-4 transition-colors hover:decoration-foreground active:translate-y-px"
+                    >
+                      {props.cta ?? __iv__.cta}
+                      <span aria-hidden="true">→</span>
+                    </NavbarRouteLink>
+                  )}
                 </FeatureCard>
               )
             })}

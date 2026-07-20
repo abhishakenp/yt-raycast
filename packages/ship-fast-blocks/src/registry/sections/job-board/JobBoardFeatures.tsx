@@ -3,27 +3,28 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * JobBoardFeatures — a centered 3-up "why choose us" feature row for a job-board
- * / careers site. A muted band with a centered heading + description above a
- * 3-column grid of centered feature cards, each with a rounded outlined icon
- * chip, a bold title, and a supporting paragraph. Use to explain the value
+ * JobBoardFeatures — a newsprint "why choose us" column ledger for a job-board /
+ * careers site. A muted paper band with an asymmetric hairline header (serif
+ * heading + description left, mono meta right) above a 3-column row of
+ * open-ledger feature entries, each opened by a heavy top rule with a mono index
+ * numeral, a serif title, and a supporting paragraph. Use to explain the value
  * proposition (verified employers, one-click apply, smart alerts) on job boards,
  * hiring marketplaces or recruiting platforms. Static (no links). Renders fully
- * with no props; built-in line icons rotate across the items.
+ * with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   FeatureGrid,
   FeatureCard,
-  FeatureIcon,
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
 export const JobBoardFeatures = defineCapsule({
   name: 'JobBoardFeatures',
   description:
-    "Centered 3-up 'why choose us' feature row for a job-board / careers site: a muted band with a centered heading + description above a 3-column grid of centered feature cards, each with a rounded outlined icon chip, a bold title and a supporting paragraph. Use to explain the value proposition (verified employers, one-click apply, smart alerts) on job boards, hiring marketplaces or recruiting platforms.",
+    "Newsprint 'why choose us' column ledger for a job-board / careers site: a muted paper band with an asymmetric hairline header (serif heading and description left, mono meta right) above a 3-column row of open-ledger feature entries, each opened by a heavy top rule with a mono index numeral, a serif title and a supporting paragraph. Use to explain the value proposition (verified employers, one-click apply, smart alerts) on job boards, hiring marketplaces or recruiting platforms.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -65,17 +66,23 @@ export const JobBoardFeatures = defineCapsule({
           },
         ]
     return (
-      <section className={cn('bg-muted/40 py-20', props.className)}>
+      <section className={cn('bg-muted/40 py-16 lg:py-24', props.className)}>
         <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 gap-0"
-            titleClassName="mb-4 text-3xl font-semibold tracking-tight text-foreground"
-            subtitleClassName="mx-auto max-w-xl text-muted-foreground"
-          />
-          <FeatureGrid columns={3}>
-            {items.map((f) => {
+          <div className="mb-10 flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between lg:mb-14">
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-2"
+              titleClassName="font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
+              subtitleClassName="text-muted-foreground"
+            />
+            <MonoTag tone="faint" aria-hidden="true" className="shrink-0">
+              The difference
+            </MonoTag>
+          </div>
+          <FeatureGrid columns={3} className="gap-0">
+            {items.map((f, i) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -86,10 +93,22 @@ export const JobBoardFeatures = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
-                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                <FeatureCard
+                  key={__iv__.title}
+                  className="gap-3 rounded-none border-0 border-t-2 border-foreground bg-transparent p-0 pt-5 transition-none hover:translate-y-0 hover:border-foreground"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="font-mono text-[11px] tabular-nums text-muted-foreground/70"
+                  >
+                    {String(i + 1).padStart(3, '0')}
+                  </span>
+                  <FeatureTitle className="font-serif text-xl font-bold tracking-tight text-foreground">
+                    {__iv__.title}
+                  </FeatureTitle>
+                  <FeatureDescription className="leading-relaxed text-muted-foreground">
+                    {__iv__.description}
+                  </FeatureDescription>
                 </FeatureCard>
               )
             })}

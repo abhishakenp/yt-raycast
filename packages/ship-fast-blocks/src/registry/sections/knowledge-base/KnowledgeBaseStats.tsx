@@ -13,18 +13,21 @@ import {
 } from '#/section-kit/StatGrid.tsx'
 
 /**
- * KnowledgeBaseStats — compact stats band for a help center on a raised card
- * surface with top/bottom borders. A centered 2-up (mobile) / 4-up (desktop)
- * grid of big numeric values over small muted labels — e.g. help articles,
- * video tutorials, monthly readers and self-service rate. Calm, light,
- * editorial; purely presentational (no links). Use between content sections of
- * a knowledge base, support portal or docs site to signal depth and trust.
- * Renders fully with no props via baked-in defaults.
+ * KnowledgeBaseStats — "Terminal-docs" hairline metrics ledger for a help
+ * center. A calm card band (top/bottom borders) opens with a mono meta rule
+ * (primary square, "index" label, tabular entry count) above a collapsed-border
+ * grid of left-aligned stat cells: each carries a tabular mono index numeral,
+ * a giant extrabold tabular numeral value, a mono uppercase label, and a small
+ * div-built tick-bar motif keyed on the primary accent — e.g. help articles,
+ * video tutorials, monthly readers and self-service rate. Swiss, hairline,
+ * purely presentational (no links). Use between content sections of a
+ * knowledge base, support portal or docs site to signal depth and trust.
+ * Renders fully with no props via baked-in defaults. Theme tokens only.
  */
 export const KnowledgeBaseStats = defineCapsule({
   name: 'KnowledgeBaseStats',
   description:
-    'Compact stats band for a help center on a raised card surface with top/bottom borders: a centered 2-up (mobile) / 4-up (desktop) grid of big numeric values over small muted labels — e.g. help articles, video tutorials, monthly readers and self-service rate. Calm, light, editorial and purely presentational. Use between content sections of a knowledge base, support portal or docs site to signal depth and trust.',
+    "Terminal-docs hairline metrics ledger for a help center: a calm card band with a mono meta rule (primary square + 'index' label + tabular entry count) above a collapsed-border grid of left-aligned stat cells, each with a tabular mono index numeral, a giant extrabold tabular numeral value, a mono uppercase label, and a small div-built tick-bar motif keyed on the primary accent — e.g. help articles, video tutorials, monthly readers and self-service rate. Swiss, hairline and purely presentational. Use between content sections of a knowledge base, support portal or docs site to signal depth and trust.",
   props: z.object({
     items: z
       .array(z.object({ value: z.string(), label: z.string() }))
@@ -40,6 +43,7 @@ export const KnowledgeBaseStats = defineCapsule({
           { value: '2.4M', label: 'Monthly Readers' },
           { value: '94%', label: 'Self-Service Rate' },
         ]
+    const tickWidths = ['w-8', 'w-5', 'w-10', 'w-6', 'w-12', 'w-4']
 
     return (
       <section
@@ -50,15 +54,63 @@ export const KnowledgeBaseStats = defineCapsule({
         aria-label="Help center statistics"
       >
         <Container>
-          <StatGrid columns={4} className="gap-12">
-            {items.map((s) => {
+          {/* Mono meta rule: label left, tabular entry count right. */}
+          <div className="mb-8 flex items-center justify-between gap-4 border-b border-border pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            <span className="flex items-center gap-3">
+              <span aria-hidden="true" className="size-1.5 bg-primary" />
+              Index
+            </span>
+            <span
+              aria-hidden="true"
+              className="tabular-nums text-muted-foreground/60"
+            >
+              {String(items.length).padStart(2, '0')} /{' '}
+              {String(items.length).padStart(2, '0')}
+            </span>
+          </div>
+
+          <StatGrid
+            columns={4}
+            className="gap-0 border-l border-t border-border"
+          >
+            {items.map((s, i) => {
               const __iv__ = s as { value: string; label: string }
               return (
-                <StatItem key={__iv__.label} align={'center'}>
-                  <StatValue weight={'semibold'} size={'default'}>
+                <StatItem
+                  key={__iv__.label}
+                  align={'left'}
+                  className="gap-3 border-b border-r border-border p-5 sm:p-8"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="font-mono text-[11px] tabular-nums tracking-[0.2em] text-muted-foreground/60"
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <StatValue
+                    weight={'semibold'}
+                    size={'default'}
+                    className="mb-0 text-[clamp(2.5rem,5vw,4rem)] font-extrabold leading-none tracking-tight text-foreground tabular-nums"
+                  >
                     {__iv__.value}
                   </StatValue>
-                  <StatLabel>{__iv__.label}</StatLabel>
+                  <StatLabel className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                    {__iv__.label}
+                  </StatLabel>
+                  <span
+                    aria-hidden="true"
+                    className="mt-1 flex items-center gap-1"
+                  >
+                    <span
+                      className={cn(
+                        'h-1 bg-primary',
+                        tickWidths[i % tickWidths.length],
+                      )}
+                    />
+                    <span className="h-1 w-1 bg-border" />
+                    <span className="h-1 w-1 bg-border" />
+                    <span className="h-1 w-1 bg-border" />
+                  </span>
                 </StatItem>
               )
             })}

@@ -15,18 +15,19 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * DentalFaq — FAQ accordion for a dental practice site. A narrow centered column
- * with an eyebrow + heading + lede above a stack of native details/summary
- * accordion rows on soft muted cards; each row shows a question with a chevron
- * that rotates open to reveal the answer. No JavaScript required (uses the
- * native disclosure element). Use to answer common patient questions about
- * insurance, visit frequency, whitening, emergencies, sedation, or implants for
- * dentists, dental offices, or clinics.
+ * DentalFaq — asymmetric 4/8 FAQ ledger for a dental practice site. A
+ * left-aligned rail (mono eyebrow + heading + lede, sticky on desktop) beside
+ * a hairline-divided stack of native details/summary rows; each row pairs a
+ * zero-padded mono index numeral with the question and a chevron that rotates
+ * open to reveal the answer, indented under the question. No JavaScript
+ * required (uses the native disclosure element). Use to answer common patient
+ * questions about insurance, visit frequency, whitening, emergencies,
+ * sedation, or implants for dentists, dental offices, or clinics.
  */
 export const DentalFaq = defineCapsule({
   name: 'DentalFaq',
   description:
-    'FAQ accordion for a dental practice site: a narrow centered column with an eyebrow + heading + lede above a stack of native details/summary accordion rows on soft muted cards; each row shows a question with a chevron that rotates open to reveal the answer. No JavaScript required. Use to answer common patient questions about insurance, visit frequency, whitening, emergencies, sedation, or implants for dentists, dental offices, or clinics.',
+    'Asymmetric 4/8 FAQ ledger for a dental practice site: a left-aligned rail (mono eyebrow + heading + lede, sticky on desktop) beside a hairline-divided stack of native details/summary rows, each pairing a zero-padded mono index numeral with the question and a chevron that rotates open to reveal the indented answer. No JavaScript required. Use to answer common patient questions about insurance, visit frequency, whitening, emergencies, sedation, or implants for dentists, dental offices, or clinics.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -78,32 +79,56 @@ export const DentalFaq = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-background py-24', props.className)}>
-        <Container className="max-w-4xl">
-          <SectionHeading
-            eyebrow={faqEyebrow}
-            title={faqHeading}
-            subtitle={faqDesc}
-            className="mb-16 gap-0"
-            eyebrowClassName="mb-3 inline-block text-xs font-semibold tracking-wider text-primary"
-            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <FaqAccordion>
-            {faqItems.map((item) => (
-              <FaqItem key={item.question} variant="muted" className="bg-muted">
-                <FaqQuestion className="p-6">
-                  <span className="pr-8 font-semibold text-foreground">
-                    {item.question}
-                  </span>
-                  <FaqQuestionIcon className="transition" />
-                </FaqQuestion>
-                <FaqAnswer asChild className="px-6 pb-6">
-                  <div>{item.answer}</div>
-                </FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+      <section
+        className={cn('bg-background py-20 sm:py-24 lg:py-28', props.className)}
+      >
+        <Container>
+          <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-4">
+              <SectionHeading
+                align="left"
+                eyebrow={faqEyebrow}
+                title={faqHeading}
+                subtitle={faqDesc}
+                className="gap-0 lg:sticky lg:top-28"
+                eyebrowClassName="mb-4 inline-block font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground"
+                titleClassName="mb-4 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl"
+                subtitleClassName="text-base text-muted-foreground sm:text-lg"
+              />
+            </div>
+            <div className="lg:col-span-8">
+              <FaqAccordion className="space-y-0 divide-y divide-border border-y border-border">
+                {faqItems.map((item, i) => (
+                  <FaqItem
+                    key={item.question}
+                    variant="muted"
+                    className="rounded-none bg-transparent"
+                  >
+                    <FaqQuestion className="gap-6 py-5 sm:py-6">
+                      <span className="flex min-w-0 items-baseline gap-4 pr-4 sm:gap-6">
+                        <span
+                          aria-hidden="true"
+                          className="shrink-0 font-mono text-sm text-muted-foreground/60 tabular-nums"
+                        >
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                        <span className="font-semibold text-foreground">
+                          {item.question}
+                        </span>
+                      </span>
+                      <FaqQuestionIcon className="transition" />
+                    </FaqQuestion>
+                    <FaqAnswer
+                      asChild
+                      className="pb-6 pl-9 pr-4 leading-relaxed text-muted-foreground sm:pl-12"
+                    >
+                      <div>{item.answer}</div>
+                    </FaqAnswer>
+                  </FaqItem>
+                ))}
+              </FaqAccordion>
+            </div>
+          </div>
         </Container>
       </section>
     )

@@ -204,7 +204,7 @@ describe('usePromptHomeController submit guard', () => {
       state.createSession.mock.calls[1]?.[0].workspace,
     )
     expect(state.navigate).toHaveBeenCalledWith({
-      to: '/generate/$sessionId',
+      to: '/generate/$sessionId/$',
       params: { sessionId: 'session_retry_success' },
     })
   })
@@ -238,7 +238,7 @@ describe('usePromptHomeController submit guard', () => {
     )
     expect(state.createSession).not.toHaveBeenCalled()
     expect(state.navigate).toHaveBeenCalledWith({
-      to: '/generate/$sessionId',
+      to: '/generate/$sessionId/$',
       params: { sessionId: 'session_server_preview' },
     })
   })
@@ -263,11 +263,11 @@ describe('usePromptHomeController submit guard', () => {
 
     expect(state.createSession).toHaveBeenCalledTimes(1)
     expect(state.navigate).toHaveBeenCalledWith({
-      to: '/generate/$sessionId',
+      to: '/generate/$sessionId/$',
       params: { sessionId: 'session_double_submit_guard' },
     })
     expect(state.navigate).not.toHaveBeenCalledWith({
-      to: '/generate/$sessionId',
+      to: '/generate/$sessionId/$',
       params: { sessionId: undefined },
     })
   })
@@ -297,11 +297,11 @@ describe('usePromptHomeController submit guard', () => {
 
     expect(state.createSession).toHaveBeenCalledTimes(1)
     expect(state.navigate).toHaveBeenCalledWith({
-      to: '/generate/$sessionId',
+      to: '/generate/$sessionId/$',
       params: { sessionId: 'session_double_submit_guard' },
     })
     expect(state.navigate).not.toHaveBeenCalledWith({
-      to: '/generate/$sessionId',
+      to: '/generate/$sessionId/$',
       params: { sessionId: undefined },
     })
   })
@@ -415,7 +415,7 @@ describe('usePromptHomeController submit guard', () => {
     )
     expect(state.createSession).not.toHaveBeenCalled()
     expect(state.navigate).toHaveBeenCalledWith({
-      to: '/generate/$sessionId',
+      to: '/generate/$sessionId/$',
       params: { sessionId: 'session_ready_cache' },
     })
   })
@@ -444,7 +444,7 @@ describe('usePromptHomeController submit guard', () => {
 
     expect(state.createSession).not.toHaveBeenCalled()
     expect(state.navigate).toHaveBeenCalledWith({
-      to: '/generate/$sessionId',
+      to: '/generate/$sessionId/$',
       params: { sessionId: 'session_instant_cache' },
     })
   })
@@ -484,7 +484,7 @@ describe('usePromptHomeController submit guard', () => {
 
     expect(state.createSession).not.toHaveBeenCalled()
     expect(state.navigate).toHaveBeenCalledWith({
-      to: '/generate/$sessionId',
+      to: '/generate/$sessionId/$',
       params: { sessionId: 'session_stale_cache' },
     })
     expect(
@@ -550,7 +550,7 @@ describe('usePromptHomeController submit guard', () => {
     expect(state.createSession).not.toHaveBeenCalled()
     expect(state.mutationRefs).toEqual([])
     expect(state.navigate).toHaveBeenCalledWith({
-      to: '/generate/$sessionId',
+      to: '/generate/$sessionId/$',
       params: { sessionId: 'session_created_by_http' },
     })
   })

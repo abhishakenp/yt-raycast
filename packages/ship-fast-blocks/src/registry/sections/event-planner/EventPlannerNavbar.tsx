@@ -17,19 +17,20 @@ import {
 } from '../contact/inquiry-interactions.tsx'
 
 /**
- * EventPlannerNavbar — fixed translucent top navigation for a luxury event-planning
- * agency site. A backdrop-blurred, border-bottomed header pinned to the top with a
- * thin clock-glyph logo + light-weight brand name on the left, horizontal nav links
- * in the center-right (desktop), a filled primary pill "Book Consultation" CTA, and
- * a hamburger menu button on mobile. Nav links route through route hrefs while
- * consultation CTAs record real Lakebed contact actions. Use as the sticky site
- * header for wedding/event planners, party and gala organizers, or any premium
- * hospitality service.
+ * EventPlannerNavbar — fixed kinetic-poster top navigation for an elegant
+ * event-planning studio. A backdrop-blurred, hairline-bottomed header pinned to
+ * the top with a thin clock-glyph mark + tight-tracked wordmark on the left,
+ * horizontal nav links on the right (desktop), a squared-off ticket-stub
+ * "Book Consultation" CTA carrying a hard primary offset shadow with mechanical
+ * press feedback, and a hamburger menu button on mobile. Nav links route through
+ * route hrefs while consultation CTAs record real Lakebed contact actions. Use as
+ * the sticky site header for wedding/event planners, party and gala organizers,
+ * or any premium celebration studio.
  */
 export const EventPlannerNavbar = defineCapsule({
   name: 'EventPlannerNavbar',
   description:
-    "Fixed translucent top navigation bar for a luxury event-planning agency site: backdrop-blurred, border-bottomed header with a thin clock-glyph logo + light-weight brand name on the left, horizontal nav links on the right (desktop), a filled primary pill 'Book Consultation' CTA, and a hamburger menu button on mobile. Nav links route through route hrefs while consultation CTAs record real Lakebed contact actions. Use as the sticky site header for wedding/event planners, party, celebration, corporate-event and gala organizers, or any premium hospitality service.",
+    "Fixed kinetic-poster top navigation bar for an elegant event-planning studio: backdrop-blurred, hairline-bottomed header with a thin clock-glyph mark + tight-tracked wordmark on the left, horizontal nav links on the right (desktop), a squared-off ticket-stub 'Book Consultation' CTA with a hard primary offset shadow and mechanical press feedback, and a hamburger menu button on mobile. Nav links route through route hrefs while consultation CTAs record real Lakebed contact actions. Use as the sticky site header for wedding/event planners, party, celebration, corporate-event and gala organizers, or any premium hospitality service.",
   lakebed: inquiryLakebed,
   props: z.object({
     /** Brand / studio name shown beside the logo. */
@@ -70,16 +71,17 @@ export const EventPlannerNavbar = defineCapsule({
         height="default"
         className={cn('bg-background/95', props.className)}
       >
-        <NavbarBrand href={nav[0]} className="gap-2">
-          <BrandLogo brand={brand}>
+        <NavbarBrand href={nav[0]}>
+          <BrandLogo brand={brand} className="flex items-center gap-2">
             <LogoImage
-              fallback={<Clock className="size-8 text-foreground/80" />}
+              className="size-7"
+              fallback={<Clock className="size-7 text-foreground" />}
             />
-            <LogoLabel className="text-xl font-light tracking-tight text-foreground" />
+            <LogoLabel className="text-lg font-bold tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
-        <NavbarNav>
+        <NavbarNav className="lg:gap-7">
           {nav.map((label) => (
             <NavbarNavLink key={label} href={label}>
               {label}
@@ -97,7 +99,7 @@ export const EventPlannerNavbar = defineCapsule({
                 Recording
               </>
             }
-            className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+            className="inline-flex items-center gap-2 rounded-none border-2 border-foreground bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-[3px_3px_0_0] shadow-foreground transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[5px_5px_0_0] active:translate-y-0 active:shadow-[1px_1px_0_0] disabled:pointer-events-none disabled:opacity-70"
           >
             {ctaLabel}
           </InquiryActionButton>
@@ -122,7 +124,7 @@ export const EventPlannerNavbar = defineCapsule({
                   Recording
                 </>
               }
-              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-none border-2 border-foreground bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-[3px_3px_0_0] shadow-foreground transition-all duration-150 active:translate-y-px active:shadow-[1px_1px_0_0] disabled:pointer-events-none disabled:opacity-70"
             >
               {ctaLabel}
             </InquiryActionButton>

@@ -11,17 +11,19 @@ import { NavbarRouteLink } from '#/section-kit/index.ts'
 /**
  * JewelryStoreAppointmentCta — private-appointment closing CTA for a luxury
  * jewelry maison. A muted band with a dimmed full-cover background image and a
- * bottom-up fade-to-background gradient, fronting a centered column: a gold
- * eyebrow, an oversized serif headline, a relaxed subheading, and dual CTAs
- * (solid gold primary + bordered ghost). A bottom row lists boutique locations
- * (city + address) in up to three columns. Both CTAs route through section-kit route links.
- * Use as the conversion-focused booking band for fine jewelers, diamond houses,
- * engagement-ring boutiques, or high-jewelry maisons. Renders fully with no props.
+ * bottom-up fade-to-background gradient, fronting a generous centered column: a
+ * mono micro-label kicker, an oversized serif headline, a relaxed subheading, and
+ * dual square CTAs (a solid dark primary + a hairline-outline ghost, both with
+ * press feedback). A bottom row lists boutique locations as museum labels (serif
+ * city + mono address) in up to three columns. Both CTAs route through
+ * section-kit route links. Use as the conversion-focused booking band for fine
+ * jewelers, diamond houses, engagement-ring boutiques, or high-jewelry maisons.
+ * Renders fully with no props.
  */
 export const JewelryStoreAppointmentCta = defineCapsule({
   name: 'JewelryStoreAppointmentCta',
   description:
-    'Private-appointment closing CTA for a luxury jewelry maison: a muted band with a dimmed full-cover background image and a bottom-up fade-to-background gradient, fronting a centered column with a gold eyebrow, an oversized serif headline, a relaxed subheading, and dual CTAs (solid gold primary + bordered ghost). A bottom row lists boutique locations (city + address) in up to three columns. Both CTAs route through section-kit route links. Use as the conversion-focused booking band for fine jewelers, diamond houses, engagement-ring boutiques, or high-jewelry maisons.',
+    'Private-appointment closing CTA for a luxury jewelry maison: a muted band with a dimmed full-cover background image and a bottom-up fade-to-background gradient, fronting a generous centered column with a mono micro-label kicker, an oversized serif headline, a relaxed subheading, and dual square CTAs (a solid dark primary + a hairline-outline ghost, both with press feedback). A bottom row lists boutique locations as museum labels (serif city + mono address) in up to three columns. Both CTAs route through section-kit route links. Use as the conversion-focused booking band for fine jewelers, diamond houses, engagement-ring boutiques, or high-jewelry maisons.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -56,15 +58,15 @@ export const JewelryStoreAppointmentCta = defineCapsule({
     return (
       <AppointmentBand
         variant="muted"
-        className={`relative overflow-hidden py-20 lg:py-28 ${props.className ?? ''}`}
+        className={`relative overflow-hidden py-24 lg:py-32 ${props.className ?? ''}`}
       >
         <SectionHeading
           eyebrow={eyebrow}
           title={heading}
           subtitle={description}
           className="mb-10 gap-0"
-          eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-primary"
-          titleClassName="mb-6 max-w-2xl font-serif text-4xl font-bold text-foreground sm:text-5xl lg:text-6xl"
+          eyebrowClassName="mb-4 font-mono text-[11px] font-medium uppercase tracking-[0.24em] text-muted-foreground"
+          titleClassName="mb-6 max-w-2xl font-serif text-4xl font-normal tracking-tight text-foreground sm:text-5xl lg:text-6xl"
           subtitleClassName="max-w-2xl text-lg leading-relaxed text-muted-foreground"
         />
         <div className="absolute inset-0 -z-10">
@@ -80,17 +82,17 @@ export const JewelryStoreAppointmentCta = defineCapsule({
             className="absolute inset-0 bg-gradient-to-t from-background via-muted/90 to-muted/70"
           />
         </div>
-        <div className="flex flex-col justify-center gap-4 sm:flex-row">
+        <div className="flex flex-col justify-center gap-3 sm:flex-row">
           <CtaAction
             variant="primary"
-            className="rounded-none px-10 py-4 text-sm font-medium uppercase tracking-widest"
+            className="rounded-none bg-foreground px-10 py-4 font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-background transition-[background-color,transform] duration-150 hover:bg-foreground/90 active:translate-y-px"
             asChild
           >
             <NavbarRouteLink href={primaryCta}>{primaryCta}</NavbarRouteLink>
           </CtaAction>
           <CtaAction
             variant="outline"
-            className="rounded-none px-10 py-4 text-sm font-medium uppercase tracking-widest hover:border-primary hover:text-primary"
+            className="rounded-none border border-border bg-transparent px-10 py-4 font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-foreground transition-[border-color,color,transform] duration-150 hover:border-foreground hover:text-foreground active:translate-y-px"
             asChild
           >
             <NavbarRouteLink href={secondaryCta}>
@@ -98,11 +100,18 @@ export const JewelryStoreAppointmentCta = defineCapsule({
             </NavbarRouteLink>
           </CtaAction>
         </div>
-        <ResponsiveGrid cols="1-3" className="mx-auto max-w-3xl text-center">
+        <ResponsiveGrid
+          cols="1-3"
+          className="mx-auto mt-6 max-w-3xl gap-8 border-t border-border pt-10 text-center"
+        >
           {locations.map((loc) => (
             <div key={loc.city}>
-              <p className="mb-1 font-medium text-foreground">{loc.city}</p>
-              <p className="text-sm text-muted-foreground">{loc.address}</p>
+              <p className="font-serif text-xl font-normal text-foreground">
+                {loc.city}
+              </p>
+              <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                {loc.address}
+              </p>
             </div>
           ))}
         </ResponsiveGrid>

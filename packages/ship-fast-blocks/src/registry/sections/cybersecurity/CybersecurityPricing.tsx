@@ -2,7 +2,12 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { saasPlan, useSyncSaasPlans } from '../saas/saas-interactions.tsx'
+import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+  saasPlan,
+  useSyncSaasPlans,
+} from '../saas/saas-interactions.tsx'
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
@@ -17,24 +22,27 @@ import {
   PricingTierPeriod,
   PricingTierFeatures,
   PricingTierFeature,
-  PricingTierCta,
 } from '#/section-kit/PricingGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
- * CybersecurityPricing — three-tier pricing table. A muted-band section with a
- * centered heading + subheading above a 3-column grid of plan cards. The
- * featured plan inverts to the dark brand surface, lifts upward, and shows a
- * floating badge; each card lists a name, blurb, large price + period,
- * check-marked feature list, and a full-width CTA routing through section-kit route links.
- * Use to present subscription tiers for cybersecurity vendors, SOC/MDR
- * providers, or any B2B security SaaS. Renders fully with no props via baked-in
- * Starter / Professional / Enterprise defaults.
+ * CybersecurityPricing — terminal-stealth clearance-tier ledger. A muted-wash
+ * band opening with a hairline mono meta rule ("PRICING LEDGER" + tabular tier
+ * count) above an asymmetric header (left-aligned heading + lede, mono
+ * clearance tag right). Tiers render as a square-edged, collapsed-border
+ * ledger grid: each cell carries a mono tier index, bold name, blurb, a giant
+ * tabular price with mono period, a hairline rule, and a check feature list.
+ * The featured tier fully inverts to the ink surface with a mono
+ * "[ MOST POPULAR ]" chip and hard-offset CTA shadow. Every CTA is a scoped
+ * Lakebed plan-action button with press feedback. Use to present subscription
+ * tiers for cybersecurity vendors, SOC/MDR providers, or any B2B security
+ * SaaS. Renders fully with no props via baked-in Starter / Professional /
+ * Enterprise defaults.
  */
 export const CybersecurityPricing = defineCapsule({
   name: 'CybersecurityPricing',
   description:
-    'Three-tier pricing table backed by shared Lakebed conversion state: a muted-band section with a centered heading + subheading above plan cards. Plans seed command search and each CTA records selected plan or sales intent with scoped loading. Use to present subscription tiers for cybersecurity vendors, SOC/MDR providers, or any B2B security SaaS.',
+    'Terminal-stealth clearance-tier pricing ledger backed by shared Lakebed conversion state: a mono meta rule and asymmetric left-aligned header above a square-edged, collapsed-border tier grid with giant tabular prices; the featured tier inverts to the ink surface with a mono badge and hard-offset CTA. Plans seed command search and each CTA records selected plan or sales intent with scoped loading and press feedback. Use to present subscription tiers for cybersecurity vendors, SOC/MDR providers, or any B2B security SaaS.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -128,23 +136,37 @@ export const CybersecurityPricing = defineCapsule({
     )
 
     return (
-      <section className={cn('bg-muted/50 py-24', props.className)}>
+      <section
+        className={cn('bg-muted/40 py-16 sm:py-20 lg:py-24', props.className)}
+      >
         <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mx-auto mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 text-3xl font-bold sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <PricingGrid>
+          <div className="mb-8 flex items-center justify-between gap-4 border-b border-border pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground sm:mb-10">
+            <span className="flex items-center gap-3">
+              <span aria-hidden="true" className="size-2 bg-primary" />
+              Pricing ledger
+            </span>
+            <span aria-hidden="true" className="tabular-nums">
+              {String(plans.length).padStart(2, '0')} tiers
+            </span>
+          </div>
+          <div className="mb-10 flex flex-col gap-6 sm:mb-14 md:flex-row md:items-end md:justify-between">
             <SectionHeading
-              title={'Simple, transparent pricing'}
-              subtitle={
-                'Choose the plan that fits your security needs. All plans include our core AI detection engine.'
-              }
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-3"
+              titleClassName="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl"
+              subtitleClassName="max-w-xl text-base text-muted-foreground sm:text-lg"
             />
-            {plans.map((tier) => {
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+            >
+              [ clearance: select one ]
+            </p>
+          </div>
+          <PricingGrid className="grid-cols-1 gap-0 border-l border-t border-border md:grid-cols-3 xl:grid-cols-3">
+            {plans.map((tier, tierIndex) => {
               const t = tier as {
                 name: string
                 price: string
@@ -169,46 +191,102 @@ export const CybersecurityPricing = defineCapsule({
                 priceSuffix?: string
                 note?: string
               }
+              const featured = Boolean(t.highlighted || t.featured || t.popular)
+              const period = t.period ?? t.unit ?? t.cadence ?? t.suffix
               return (
                 <PricingTier
                   key={t.name}
-                  variant={
-                    t.highlighted || t.featured || t.popular
-                      ? 'highlighted'
-                      : undefined
-                  }
+                  variant={featured ? 'highlighted' : undefined}
+                  className={cn(
+                    'gap-5 rounded-none border-0 border-b border-r border-border p-6 shadow-none sm:p-8',
+                    featured
+                      ? 'relative border-foreground bg-foreground text-background ring-0 max-md:z-10 max-md:-mx-2 max-md:border max-md:shadow-[6px_6px_0_0] max-md:shadow-foreground/25'
+                      : 'bg-background',
+                  )}
                 >
-                  {t.highlighted || t.featured || t.popular ? (
-                    <PricingTierBadge>{t.badge ?? 'Popular'}</PricingTierBadge>
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      'font-mono text-[11px] uppercase tracking-[0.2em] tabular-nums',
+                      featured
+                        ? 'text-background/50'
+                        : 'text-muted-foreground/60',
+                    )}
+                  >
+                    Tier {String(tierIndex + 1).padStart(2, '0')}
+                  </span>
+                  {featured ? (
+                    <PricingTierBadge className="absolute -top-3 right-6 rounded-none bg-primary font-mono text-[10px] uppercase tracking-[0.15em] text-primary-foreground shadow-[3px_3px_0_0] shadow-foreground/30">
+                      [ {t.badge ?? 'Popular'} ]
+                    </PricingTierBadge>
                   ) : null}
-                  <PricingTierHeader>
-                    <PricingTierName>{t.name}</PricingTierName>
+                  <PricingTierHeader className="gap-2">
+                    <PricingTierName
+                      className={cn(
+                        'text-xl font-bold tracking-tight',
+                        featured && 'text-background',
+                      )}
+                    >
+                      {t.name}
+                    </PricingTierName>
                     {t.tagline && (
-                      <PricingTierTagline>{t.tagline}</PricingTierTagline>
+                      <PricingTierTagline
+                        className={featured ? 'text-background/60' : undefined}
+                      >
+                        {t.tagline}
+                      </PricingTierTagline>
                     )}
                     {t.blurb && (
-                      <PricingTierTagline>{t.blurb}</PricingTierTagline>
+                      <PricingTierTagline
+                        className={featured ? 'text-background/60' : undefined}
+                      >
+                        {t.blurb}
+                      </PricingTierTagline>
                     )}
                     {t.description && (
-                      <PricingTierTagline>{t.description}</PricingTierTagline>
+                      <PricingTierTagline
+                        className={featured ? 'text-background/60' : undefined}
+                      >
+                        {t.description}
+                      </PricingTierTagline>
                     )}
                     {t.audience && (
-                      <PricingTierTagline>{t.audience}</PricingTierTagline>
+                      <PricingTierTagline
+                        className={featured ? 'text-background/60' : undefined}
+                      >
+                        {t.audience}
+                      </PricingTierTagline>
                     )}
-                    <PricingTierPrice>{t.price}</PricingTierPrice>
-                    {t.period && (
-                      <PricingTierPeriod>{t.period}</PricingTierPeriod>
-                    )}
-                    {t.unit && <PricingTierPeriod>{t.unit}</PricingTierPeriod>}
-                    {t.cadence && (
-                      <PricingTierPeriod>{t.cadence}</PricingTierPeriod>
-                    )}
-                    {t.suffix && (
-                      <PricingTierPeriod>{t.suffix}</PricingTierPeriod>
-                    )}
+                    <span className="mt-2 flex flex-wrap items-baseline gap-2">
+                      <PricingTierPrice
+                        className={cn(
+                          'text-4xl font-extrabold tracking-tight tabular-nums sm:text-5xl md:text-3xl lg:text-4xl xl:text-5xl',
+                          featured && 'text-background',
+                        )}
+                      >
+                        {t.price}
+                      </PricingTierPrice>
+                      {period && (
+                        <PricingTierPeriod
+                          className={cn(
+                            'font-mono text-xs uppercase tracking-[0.15em]',
+                            featured && 'text-background/60',
+                          )}
+                        >
+                          {period}
+                        </PricingTierPeriod>
+                      )}
+                    </span>
                   </PricingTierHeader>
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      'block h-px w-full',
+                      featured ? 'bg-background/20' : 'bg-border',
+                    )}
+                  />
                   {t.features && (
-                    <PricingTierFeatures>
+                    <PricingTierFeatures className="gap-2.5">
                       {t.features.map((feature) => (
                         <PricingTierFeature
                           key={
@@ -216,6 +294,12 @@ export const CybersecurityPricing = defineCapsule({
                               ? feature
                               : (feature as { label: string }).label
                           }
+                          className={cn(
+                            'gap-2.5 text-sm leading-6',
+                            featured
+                              ? 'text-background/75 [&>svg]:text-background'
+                              : 'text-muted-foreground [&>svg]:text-foreground',
+                          )}
                         >
                           {typeof feature === 'string'
                             ? feature
@@ -225,9 +309,27 @@ export const CybersecurityPricing = defineCapsule({
                     </PricingTierFeatures>
                   )}
                   {t.cta && (
-                    <PricingTierCta target={t.ctaTarget}>
+                    <SaasPlanActionButton
+                      lakebed={lakebed}
+                      intentLabel={t.ctaTarget ?? t.cta}
+                      plan={t.name}
+                      source="pricing"
+                      aria-label={`${t.cta} for ${t.name}`}
+                      pendingChildren={
+                        <>
+                          <SaasMutationSpinner className="size-4" />
+                          Selecting
+                        </>
+                      }
+                      className={cn(
+                        'mt-auto inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-none px-5 py-3 font-mono text-xs font-semibold uppercase tracking-[0.15em] transition-all duration-150 active:translate-y-px disabled:pointer-events-none disabled:opacity-70',
+                        featured
+                          ? 'bg-background text-foreground shadow-[4px_4px_0_0] shadow-background/25 hover:bg-background/90 active:shadow-none'
+                          : 'border border-foreground/25 bg-transparent text-foreground hover:border-foreground hover:bg-muted',
+                      )}
+                    >
                       {t.cta}
-                    </PricingTierCta>
+                    </SaasPlanActionButton>
                   )}
                 </PricingTier>
               )

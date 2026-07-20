@@ -2,30 +2,32 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   FeatureGrid,
   FeatureCard,
-  FeatureIcon,
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
 /**
- * HotelResortAmenities — editorial amenities grid for a luxury hotel / resort &
- * spa site. A left-aligned eyebrow + thin heading + supporting paragraph, then
- * a 2-up / 3-up grid of cards, each a rounded image that gently zooms on hover
- * above a title and a short description. Airy and high-end. Use to showcase
- * resort amenities — spa & wellness, dining, pools, fitness, beach access,
- * events — for hotels, resorts, spa retreats, inns, or wellness destinations.
- * Imagery uses the alt-driven Image component. Renders fully with no props via
- * baked-in resort defaults.
+ * HotelResortAmenities — editorial amenities plates for a luxury-editorial
+ * hotel / resort & spa site. An asymmetric intro row (mono eyebrow + thin serif
+ * heading on the left, supporting paragraph on the right), then a staggered 2-up
+ * / 3-up grid of full-bleed photo plates, each a sharp-cornered image that
+ * gently zooms on hover, tagged with a mono index numeral, above a serif title
+ * and a short description. Airy, photography-forward and high-end. Use to
+ * showcase resort amenities — spa & wellness, dining, pools, fitness, beach
+ * access, events — for hotels, resorts, spa retreats, inns, or wellness
+ * destinations. Imagery uses the alt-driven Image component. Renders fully with
+ * no props via baked-in resort defaults.
  */
 export const HotelResortAmenities = defineCapsule({
   name: 'HotelResortAmenities',
   description:
-    'Editorial amenities grid for a luxury hotel / resort & spa site: a left-aligned uppercase eyebrow + thin heading + supporting paragraph, then a 2-up / 3-up grid of cards, each a rounded image that gently zooms on hover above a title and short description. Airy and high-end; imagery uses the alt-driven Image component. Use to showcase resort amenities — spa & wellness, dining, pools, fitness, beach access, events — for hotels, resorts, spa retreats, inns, or wellness destinations.',
+    'Editorial amenities plates for a luxury-editorial hotel / resort & spa site: an asymmetric intro row (mono eyebrow + thin serif heading on the left, supporting paragraph on the right), then a staggered 2-up / 3-up grid of full-bleed photo plates, each a sharp-cornered image that gently zooms on hover, tagged with a mono index numeral, above a serif title and short description. Airy, photography-forward and high-end; imagery uses the alt-driven Image component. Use to showcase resort amenities — spa & wellness, dining, pools, fitness, beach access, events — for hotels, resorts, spa retreats, inns, or wellness destinations.',
   props: z.object({
     /** Uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -99,44 +101,50 @@ export const HotelResortAmenities = defineCapsule({
         ]
 
     return (
-      <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
+      <section className={cn('pt-24 pb-24 lg:pt-28 lg:pb-28', props.className)}>
         <Container size="xl" className="px-6">
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            align="left"
-            eyebrowClassName="text-muted-foreground"
-            titleClassName="text-3xl font-light lg:text-4xl"
-            subtitleClassName="leading-relaxed"
-            className="mb-16 max-w-2xl gap-4"
-          />
-          <FeatureGrid columns={3}>
-            {items
-              .map((item) => ({
-                title: item.title,
-                description: item.description,
-              }))
-              .map((f) => {
-                const __iv__ = f as {
-                  title: string
-                  description: string
-                  icon?: React.ReactNode
-                  points?: string[]
-                  cta?: string
-                  price?: string
-                  imageAlt?: string
-                }
-                return (
-                  <FeatureCard key={__iv__.title}>
-                    {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                    <FeatureTitle>{__iv__.title}</FeatureTitle>
-                    <FeatureDescription>
-                      {__iv__.description}
-                    </FeatureDescription>
-                  </FeatureCard>
-                )
-              })}
+          <div className="mb-16 grid items-end gap-8 lg:grid-cols-12 lg:gap-12">
+            <SectionHeading
+              eyebrow={eyebrow}
+              title={heading}
+              align="left"
+              eyebrowClassName="font-mono text-[11px] font-medium tracking-[0.22em] text-muted-foreground"
+              titleClassName="font-serif text-4xl font-normal tracking-tight lg:text-5xl"
+              className="gap-3 lg:col-span-7"
+            />
+            <p className="text-base leading-relaxed text-muted-foreground lg:col-span-5 lg:pb-1">
+              {description}
+            </p>
+          </div>
+          <FeatureGrid columns={3} className="gap-x-6 gap-y-12">
+            {items.map((item, i) => (
+              <FeatureCard
+                key={item.title}
+                className={cn(
+                  'gap-0 rounded-none border-0 bg-transparent p-0 hover:translate-y-0',
+                  i % 3 === 1 && 'lg:translate-y-10',
+                )}
+              >
+                <div className="group relative mb-5 aspect-[4/3] overflow-hidden bg-muted">
+                  <Image
+                    alt={item.imageAlt}
+                    w={800}
+                    h={600}
+                    loading="lazy"
+                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <span className="absolute left-3 top-3 font-mono text-[11px] uppercase tracking-[0.14em] text-background/90">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                </div>
+                <FeatureTitle className="font-serif text-xl font-normal tracking-tight text-foreground">
+                  {item.title}
+                </FeatureTitle>
+                <FeatureDescription className="mt-2 leading-relaxed">
+                  {item.description}
+                </FeatureDescription>
+              </FeatureCard>
+            ))}
           </FeatureGrid>
         </Container>
       </section>

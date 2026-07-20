@@ -15,9 +15,12 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * ConstructionFaq — six-item FAQ accordion for a construction / general
- * contractor page. A centered section heading above a responsive stack of
- * expandable details cards with animated chevron icons. Use as a common
+ * ConstructionFaq — industrial-brutalist site-manual Q&A for a construction /
+ * general contractor page. An asymmetric 4/8 split: the left rail carries a
+ * mono meta rule (primary marker + tabular entry count), a left-aligned
+ * extrabold uppercase heading, and a token-built hazard bar; the right column
+ * stacks hairline-ruled expandable entries, each led by a mono primary index
+ * numeral beside the question with an animated chevron. Use as a common
  * questions section for construction firms, contractors, builders, or any
  * service business that needs to address client concerns transparently.
  * Renders fully with no props via baked-in defaults.
@@ -25,7 +28,7 @@ import { cn } from '#/lib/utils.ts'
 export const ConstructionFaq = defineCapsule({
   name: 'ConstructionFaq',
   description:
-    'Six-item FAQ accordion for a construction / general contractor page: a centered section heading above a responsive stack of expandable details cards with animated chevron icons. Use as a common questions section for construction firms, contractors, builders, or any service business that needs to address client concerns transparently.',
+    'Industrial-brutalist site-manual FAQ for a construction / general contractor page: an asymmetric 4/8 split with a left rail (mono meta rule with primary marker + tabular entry count, extrabold uppercase heading, token-built hazard bar) beside a right column of hairline-ruled expandable entries, each led by a mono primary index numeral with an animated chevron. Use as a common questions section for construction firms, contractors, builders, or any service business that needs to address client concerns transparently.',
   props: z.object({
     /** Section eyebrow label. */
     eyebrow: z.string().optional(),
@@ -73,33 +76,61 @@ export const ConstructionFaq = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
-        <Container size="sm">
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            className="mb-16  gap-0"
-            eyebrowClassName="text-sm font-semibold tracking-wider text-muted-foreground"
-            titleClassName="mb-4 mt-3 text-3xl font-bold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
+      <section className={cn('bg-muted/40 py-16 lg:py-24', props.className)}>
+        <Container>
+          <div className="grid gap-10 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-4">
+              <div className="mb-6 flex items-center gap-3 border-b border-foreground/15 pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                <span aria-hidden="true" className="size-2 bg-primary" />
+                {eyebrow}
+                <span className="ml-auto tabular-nums">
+                  {String(items.length).padStart(2, '0')} entries
+                </span>
+              </div>
+              <SectionHeading
+                align="left"
+                title={heading}
+                subtitle={description}
+                className="gap-0"
+                titleClassName="mb-4 text-3xl font-extrabold uppercase tracking-tight text-foreground sm:text-4xl"
+                subtitleClassName="text-lg text-muted-foreground"
+              />
+              <span
+                aria-hidden="true"
+                className="mt-8 hidden h-2 w-24 bg-[repeating-linear-gradient(-45deg,currentColor_0,currentColor_8px,transparent_8px,transparent_16px)] text-primary lg:block"
+              />
+            </div>
 
-          <FaqAccordion>
-            {items.map((item) => (
-              <FaqItem key={item.q} className="shadow-sm">
-                <FaqQuestion className="p-6">
-                  <h3 className="pr-4 text-lg font-semibold text-foreground">
-                    {item.q}
-                  </h3>
-                  <FaqQuestionIcon />
-                </FaqQuestion>
-                <FaqAnswer asChild className="px-6 pb-6">
-                  <div>{item.a}</div>
-                </FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+            <div className="lg:col-span-8">
+              <FaqAccordion className="space-y-0 border-t-2 border-foreground">
+                {items.map((item, i) => (
+                  <FaqItem
+                    key={item.q}
+                    className="rounded-none border-x-0 border-b border-t-0 border-border bg-transparent shadow-none"
+                  >
+                    <FaqQuestion className="items-baseline gap-4 px-0 py-5 sm:py-6">
+                      <span
+                        aria-hidden="true"
+                        className="shrink-0 font-mono text-[11px] font-bold uppercase tracking-[0.2em] tabular-nums text-primary"
+                      >
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <h3 className="flex-1 pr-4 text-base font-extrabold uppercase tracking-tight text-foreground sm:text-lg">
+                        {item.q}
+                      </h3>
+                      <FaqQuestionIcon />
+                    </FaqQuestion>
+                    <FaqAnswer
+                      asChild
+                      className="px-0 pb-6 pl-8 text-muted-foreground sm:pl-9"
+                    >
+                      <div>{item.a}</div>
+                    </FaqAnswer>
+                  </FaqItem>
+                ))}
+              </FaqAccordion>
+            </div>
+          </div>
         </Container>
       </section>
     )

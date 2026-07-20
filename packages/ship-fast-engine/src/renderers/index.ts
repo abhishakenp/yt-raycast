@@ -602,7 +602,9 @@ function renderItems(items: any[] = []): string {
         : ''
       const features = Array.isArray(item?.features)
         ? `<ul class="mt-4 space-y-2 text-sm text-zinc-300">${item.features
-            .map((feature: unknown) => `<li>+ ${escapeHtml(String(feature))}</li>`)
+            .map(
+              (feature: unknown) => `<li>+ ${escapeHtml(String(feature))}</li>`,
+            )
             .join('')}</ul>`
         : ''
       return `<article class="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20">${value}<h3 class="text-xl font-bold text-white">${title}</h3>${body ? `<p class="mt-3 text-sm leading-6 text-zinc-300">${body}</p>` : ''}${features}</article>`
@@ -617,10 +619,13 @@ function renderStaticHomepage(
 ): string {
   const home = Array.isArray(spec.pages) ? spec.pages[0] : null
   const sections = Array.isArray(home?.sections) ? home.sections : []
-  const nav = sections.find((section: Record<string, unknown>) => section?.type === 'navbar')
+  const nav = sections.find(
+    (section: Record<string, unknown>) => section?.type === 'navbar',
+  )
   const links = Array.isArray(nav?.links) ? nav.links : []
   const bodySections = sections.filter(
-    (section: Record<string, unknown>) => section?.type !== 'navbar' && section?.type !== 'footer',
+    (section: Record<string, unknown>) =>
+      section?.type !== 'navbar' && section?.type !== 'footer',
   )
 
   return `
@@ -696,10 +701,12 @@ export function renderProject(
     spec.modules && typeof spec.modules === 'object'
       ? spec.modules
       : Object.fromEntries(
-          (Array.isArray(spec.pages) ? spec.pages : []).map((page: Record<string, unknown>, index: number) => [
-            page.id || page.route || `page-${index + 1}`,
-            page.title || page.name || page.route || `Page ${index + 1}`,
-          ]),
+          (Array.isArray(spec.pages) ? spec.pages : []).map(
+            (page: Record<string, unknown>, index: number) => [
+              page.id || page.route || `page-${index + 1}`,
+              page.title || page.name || page.route || `Page ${index + 1}`,
+            ],
+          ),
         )
   const moduleNames = Object.keys(modules)
 

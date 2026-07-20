@@ -1,8 +1,9 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
+import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   SiteFooter,
-  FooterContent,
   FooterGrid,
   FooterBrand,
   FooterTagline,
@@ -17,17 +18,20 @@ import {
   FooterLegal,
 } from '#/section-kit/SiteFooter.tsx'
 /**
- * DevToolFooter — a 5-column footer for a developer tool / API platform. A
- * top-bordered section with a brand logo (blue bolt tile) + name + about blurb +
- * social icon buttons spanning two columns on the left, followed by three titled
- * link columns, plus a bottom copyright / legal bar. Every brand button, link,
- * and social icon routes through section-kit route links. Use as the closing site footer for
+ * DevToolFooter — terminal-ledger footer for a developer tool / API platform.
+ * A hairline-topped band with a giant ghost brand watermark bleeding off the
+ * bottom edge: an asymmetric 12-column grid pairs a wide brand block (square
+ * primary bolt tile + mono wordmark, about blurb, and square mono social chips
+ * with hard hover borders) with three "--flag"-titled mono link columns; below,
+ * a hairline-divided bottom bar carries the copyright, mono legal links, and a
+ * decorative "$ exit 0" tag. Every brand button, link, and social chip routes
+ * through section-kit route links. Use as the closing site footer for
  * developer tools, API platforms, backend-as-a-service, or technical SaaS.
  */
 export const DevToolFooter = defineCapsule({
   name: 'DevToolFooter',
   description:
-    '5-column footer for a developer tool / API platform: a top-bordered section with a brand logo (blue bolt tile) + name + about blurb + social icon buttons spanning two columns on the left, followed by three titled link columns, plus a bottom copyright/legal bar. Every brand button, link, and social icon routes through section-kit route links. Use as the closing site footer for developer tools, API platforms, backend-as-a-service, or technical SaaS.',
+    "Terminal-ledger footer for a developer tool / API platform: a hairline-topped band with a giant ghost brand watermark, an asymmetric 12-column grid pairing a wide brand block (square primary bolt tile + mono wordmark, about blurb, square mono social chips) with three '--flag'-titled mono link columns, and a hairline-divided bottom bar with copyright, mono legal links, and a decorative '$ exit 0' tag. Every brand button, link, and social chip routes through section-kit route links. Use as the closing site footer for developer tools, API platforms, backend-as-a-service, or technical SaaS.",
   props: z.object({
     /** Brand / product name shown in the footer. */
     brand: z.string().optional(),
@@ -97,39 +101,97 @@ export const DevToolFooter = defineCapsule({
       props.copyright ??
       `© ${new Date().getFullYear()} ${brand} Inc. All rights reserved.`
     return (
-      <SiteFooter className={props.className}>
-        <FooterContent>
-          <FooterGrid>
-            <FooterBrand brand={brand}>
-              <FooterTagline>{blurb}</FooterTagline>
-              <FooterSocial>
+      <SiteFooter
+        className={
+          'relative overflow-hidden border-t border-border bg-background' +
+          (props.className ? ' ' + props.className : '')
+        }
+      >
+        <Watermark className="-bottom-8 -right-2 font-mono text-[5rem] sm:text-[9rem] lg:text-[12rem]">
+          {brand}
+        </Watermark>
+        <Container className="relative py-14 lg:py-16">
+          <FooterGrid className="grid gap-10 md:grid-cols-12 lg:gap-8">
+            <FooterBrand
+              brand={brand}
+              brandMark={
+                <span
+                  aria-hidden="true"
+                  className="grid size-7 place-items-center rounded-none bg-primary text-primary-foreground"
+                >
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </span>
+              }
+              brandClassName="font-mono text-lg font-bold tracking-tight"
+              className="md:col-span-5 lg:col-span-6"
+            >
+              <FooterTagline className="max-w-sm">{blurb}</FooterTagline>
+              <FooterSocial className="mt-5 gap-2">
                 {socials
                   .map((s) => ({ label: s.label }))
                   .map((s) => (
-                    <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                    <FooterSocialLink
+                      key={s.label}
+                      className="rounded-none border border-border px-2.5 py-1 font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+                    >
+                      {s.label}
+                    </FooterSocialLink>
                   ))}
               </FooterSocial>
             </FooterBrand>
             {columns.map((col) => (
-              <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
-                <FooterColumnList>
+              <FooterColumn key={col.title} className="md:col-span-2">
+                <FooterColumnTitle className="font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground">
+                  <span aria-hidden="true" className="text-primary">
+                    --
+                  </span>
+                  {col.title}
+                </FooterColumnTitle>
+                <FooterColumnList className="mt-4 space-y-2.5">
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink
+                      key={link}
+                      className="block w-fit text-sm text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
-          <FooterBottom>
-            <FooterCopyright>{copyright}</FooterCopyright>
-            <FooterLegal>
-              {legalLinks.map((l) => (
-                <FooterLink key={l}>{l}</FooterLink>
-              ))}
-            </FooterLegal>
+          <FooterBottom className="mt-12 flex flex-col justify-between gap-4 border-t border-border pt-6 sm:flex-row sm:items-center">
+            <FooterCopyright className="font-mono text-xs text-muted-foreground">
+              {copyright}
+            </FooterCopyright>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              <FooterLegal className="flex flex-wrap gap-x-5 gap-y-2">
+                {legalLinks.map((l) => (
+                  <FooterLink
+                    key={l}
+                    className="block w-fit font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {l}
+                  </FooterLink>
+                ))}
+              </FooterLegal>
+              <MonoTag tone="faint" aria-hidden="true">
+                $ exit 0
+              </MonoTag>
+            </div>
           </FooterBottom>
-        </FooterContent>
+        </Container>
       </SiteFooter>
     )
   },

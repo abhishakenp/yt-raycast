@@ -14,17 +14,18 @@ import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * IllustratorTestimonials — a client testimonials wall for an illustrator /
- * visual-artist portfolio on a raised card-colored band. A centered uppercase
- * accent eyebrow + serif heading sit above a responsive 3-up grid of quote
- * cards; each card is a soft background-colored panel with a curly-quoted
- * blockquote and a footer pairing a round avatar with the reviewer's name and
- * role. Use to surface social proof from editors, art directors, and
+ * visual-artist portfolio on a raised card band. A mono index eyebrow + serif
+ * heading sit above a responsive 3-up grid of quote cards drawn as sketchbook
+ * frames (rounded-none dashed borders, hard offset shadows on hover, gentle
+ * rotations and a staggered rhythm); each card carries a giant ghost quotation
+ * mark, a blockquote, and a footer pairing the reviewer's name with a mono role
+ * label. Use to surface social proof from editors, art directors, and
  * collectors. Renders fully with no props via baked-in defaults.
  */
 export const IllustratorTestimonials = defineCapsule({
   name: 'IllustratorTestimonials',
   description:
-    "Client testimonials wall for an illustrator / visual-artist portfolio on a raised card-colored band: a centered uppercase accent eyebrow + serif heading above a responsive 3-up grid of quote cards, each a soft background-colored panel with a curly-quoted blockquote and a footer pairing a round avatar with the reviewer's name and role. Use to surface social proof from editors, art directors, and collectors.",
+    "Client testimonials wall for an illustrator / visual-artist portfolio on a raised card band: a mono index eyebrow + serif heading above a responsive 3-up grid of quote cards drawn as sketchbook frames (rounded-none dashed borders, hard offset shadows on hover, gentle rotations and a staggered rhythm), each with a giant ghost quotation mark, a blockquote, and a footer pairing the reviewer's name with a mono role label. Use to surface social proof from editors, art directors, and collectors.",
   props: z.object({
     /** Uppercase accent eyebrow label. */
     eyebrow: z.string().optional(),
@@ -74,6 +75,7 @@ export const IllustratorTestimonials = defineCapsule({
               'Professional headshot of Elena Rodriguez, new mother and art collector with kind eyes',
           },
         ]
+    const tilt = ['-rotate-1', 'rotate-1', '-rotate-1']
 
     return (
       <section
@@ -83,8 +85,12 @@ export const IllustratorTestimonials = defineCapsule({
         )}
       >
         <Container size="xl">
-          <TestimonialGrid eyebrow={eyebrow} heading={heading}>
-            {items.map((t) => {
+          <TestimonialGrid
+            eyebrow={eyebrow}
+            heading={heading}
+            className="[&_[data-slot=section-heading-eyebrow]]:font-mono [&_[data-slot=section-heading-eyebrow]]:tracking-[0.2em] [&_[data-slot=section-heading-title]]:font-serif"
+          >
+            {items.map((t, i) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -97,13 +103,27 @@ export const IllustratorTestimonials = defineCapsule({
               return (
                 <TestimonialCard
                   key={__iv__.name}
-                  className={'bg-background border-0 p-8'}
+                  className={cn(
+                    'relative gap-4 overflow-hidden rounded-none border-2 border-dashed border-foreground/50 bg-background p-8 transition-[transform,box-shadow] duration-150 hover:-translate-y-1 hover:rotate-0 hover:border-foreground hover:shadow-[6px_6px_0_0_var(--color-foreground)]',
+                    tilt[i % tilt.length],
+                    i % 3 === 1 && 'md:translate-y-8',
+                  )}
                 >
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute right-3 top-0 select-none font-serif text-8xl leading-none text-foreground/[0.06]"
+                  >
+                    &rdquo;
+                  </span>
+                  <TestimonialQuote className="relative">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="flex-col items-start gap-0.5 border-t-2 border-dashed border-border pt-4">
+                    <TestimonialName className="font-serif text-base">
+                      {__iv__.name}
+                    </TestimonialName>
                     {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
+                      <TestimonialMeta className="font-mono text-[10px] uppercase tracking-[0.14em]">
                         {__iv__.role || __iv__.company || __iv__.meta}
                       </TestimonialMeta>
                     )}

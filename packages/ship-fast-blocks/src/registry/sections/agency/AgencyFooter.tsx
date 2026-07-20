@@ -14,18 +14,20 @@ import {
 } from '#/section-kit/SiteFooter.tsx'
 
 /**
- * AgencyFooter — slim bottom footer for a creative digital-agency site. A
- * single bordered-top row (stacks on mobile): a gradient brand-initial logo
- * tile + studio name on the left, an auto-updating copyright line in the
- * center, and a set of legal/utility links on the right. The brand button and
- * every link route through section-kit route links. Use as the closing site footer for
- * agencies, studios, branding shops, or any minimal premium landing page.
- * Renders fully with no props via baked-in "Studio Rise" defaults.
+ * AgencyFooter — slim neo-brutalist bottom footer for a creative
+ * digital-agency site. A single row under a thick 2px top border (stacks on
+ * mobile): a tilted sharp primary brand-initial tile (2px border, hard offset
+ * shadow) + bold uppercase studio name on the left, an auto-updating mono
+ * copyright line in the center, and mono uppercase legal/utility links on the
+ * right. The brand button and every link route through section-kit route
+ * links. Use as the closing site footer for agencies, studios, branding
+ * shops, or any bold portfolio landing page. Renders fully with no props via
+ * baked-in "Studio Rise" defaults.
  */
 export const AgencyFooter = defineCapsule({
   name: 'AgencyFooter',
   description:
-    'Slim bottom footer for a creative digital-agency site: a single bordered-top row (stacks on mobile) with a gradient brand-initial logo tile + studio name on the left, an auto-updating copyright line in the center, and a set of legal/utility links on the right. The brand button and every link route through section-kit route links. Use as the closing site footer for agencies, studios, branding shops, or any minimal premium landing page.',
+    'Slim neo-brutalist bottom footer for a creative digital-agency site: a single row under a thick 2px top border (stacks on mobile) with a tilted sharp primary brand-initial tile with hard offset shadow + bold uppercase studio name on the left, an auto-updating mono copyright line in the center, and mono uppercase legal/utility links on the right. The brand button and every link route through section-kit route links. Use as the closing site footer for agencies, studios, branding shops, or any minimal premium landing page.',
   props: z.object({
     /** Brand / studio name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -44,7 +46,7 @@ export const AgencyFooter = defineCapsule({
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          'grid place-items-center rounded-lg bg-gradient-to-br from-primary to-accent font-black text-primary-foreground',
+          'grid -rotate-3 place-items-center rounded-none border-2 border-foreground bg-primary font-black text-primary-foreground shadow-[3px_3px_0_0] shadow-foreground',
           className,
         )}
         aria-hidden="true"
@@ -54,16 +56,32 @@ export const AgencyFooter = defineCapsule({
     )
 
     return (
-      <SiteFooter className={props.className}>
+      <SiteFooter
+        className={cn(
+          'border-t-2 border-foreground bg-background',
+          props.className,
+        )}
+      >
         <FooterContent>
           <FooterGrid>
-            <FooterBrand brand={brand} brandMark={<LogoMark />} />
+            <FooterBrand
+              brand={brand}
+              brandMark={<LogoMark />}
+              brandClassName="font-black uppercase tracking-tight"
+            />
           </FooterGrid>
-          <FooterBottom>
-            <FooterCopyright>{note}</FooterCopyright>
+          <FooterBottom className="border-t-2 border-foreground">
+            <FooterCopyright className="font-mono text-xs uppercase tracking-[0.12em]">
+              {note}
+            </FooterCopyright>
             <FooterLegal>
               {links.map((l) => (
-                <FooterLink key={l}>{l}</FooterLink>
+                <FooterLink
+                  key={l}
+                  className="font-mono text-xs font-bold uppercase tracking-[0.12em] underline-offset-4 hover:underline hover:decoration-primary hover:decoration-2"
+                >
+                  {l}
+                </FooterLink>
               ))}
             </FooterLegal>
           </FooterBottom>

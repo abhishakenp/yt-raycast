@@ -12,6 +12,7 @@ import {
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -19,21 +20,25 @@ import {
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
- * CybersecurityHero — split, two-column hero for an enterprise security
- * platform. Left column stacks a live-status pill (pulsing dot + certification
- * microcopy), a large bold headline, a long reassuring subheading, dual CTAs
- * (solid primary + outlined secondary), and a row of check-marked trust proofs.
- * Right column shows a security command-center photo on a rotated gradient
- * backdrop with a floating "Threat Blocked" alert card overlapping its corner.
- * Both CTAs and the trust chips route through section-kit route links. Use as the opening
- * hero for cybersecurity vendors, SOC/MDR/XDR providers, threat-detection,
- * zero-trust, or cloud-security SaaS. Renders fully with no props via baked-in
- * "SentinelGuard" defaults.
+ * CybersecurityHero — terminal-stealth asymmetric hero (7:5 split) for an
+ * enterprise security platform. A giant "//"-glyph ghost watermark sits behind
+ * the band. Left column: a hairline status rule (pulsing primary square + mono
+ * badge microcopy + decorative "[ CLEARANCE: L4 ]" tag), an oversized
+ * extrabold display headline, the subheading, a decorative mono
+ * redaction-bar intercept line (solid censor blocks over non-essential words),
+ * dual square-edged CTAs (ink-inverted primary with hard-offset shadow +
+ * hairline secondary, both with press feedback), and mono "[ OK ]" trust
+ * proofs. Right column: the command-center photo on a solid offset ink block
+ * with a vertical mono feed rail and a square incident-log alert card
+ * (destructive status mark) overlapping its corner. CTA buttons record scoped
+ * Lakebed intent. Use as the opening hero for cybersecurity vendors,
+ * SOC/MDR/XDR providers, threat-detection, zero-trust, or cloud-security SaaS.
+ * Renders fully with no props via baked-in "SentinelGuard" defaults.
  */
 export const CybersecurityHero = defineCapsule({
   name: 'CybersecurityHero',
   description:
-    "Split two-column hero for an enterprise cybersecurity platform: left column stacks a live-status pill, headline, subheading, scoped Lakebed demo/platform CTAs and trust proofs; right column shows a security command-center photo with a floating 'Threat Blocked' alert. CTA buttons record intent instead of colliding with navigation.",
+    "Terminal-stealth asymmetric 7:5 hero for an enterprise cybersecurity platform: left column stacks a mono status rule with clearance tag, oversized extrabold display headline, subheading, decorative redaction-bar intercept line, scoped Lakebed demo/platform CTAs (square-edged, hard-offset shadow, press feedback) and mono '[ OK ]' trust proofs; right column shows the command-center photo on a solid offset ink block with a vertical mono rail and a square 'Threat Blocked' incident-log card. CTA buttons record intent instead of colliding with navigation.",
   props: z.object({
     /** Live-status pill microcopy. */
     badge: z.string().optional(),
@@ -76,21 +81,6 @@ export const CybersecurityHero = defineCapsule({
     const alertSubtitle = props.alertSubtitle ?? 'Ransomware attempt'
     const alertMeta = props.alertMeta ?? 'Just now • Acme Corp infrastructure'
 
-    const Check = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M5 13l4 4L19 7" />
-      </svg>
-    )
-
     return (
       <HeroSection
         className={cn(
@@ -98,20 +88,41 @@ export const CybersecurityHero = defineCapsule({
           props.className,
         )}
       >
-        <Container size="xl" className="py-24 lg:py-32">
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-            <div className="max-w-2xl">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-muted px-4 py-2">
-                <span className="size-2 animate-pulse rounded-full bg-primary" />
-                <span className="text-sm font-medium text-muted-foreground">
-                  {badge}
+        <Watermark className="-right-10 top-2 text-[9rem] sm:text-[14rem] lg:-right-4 lg:text-[20rem]">
+          {'//'}
+        </Watermark>
+        <Container size="xl" className="relative py-16 pb-24 sm:py-20 lg:py-28">
+          <div className="grid items-center gap-14 lg:grid-cols-12 lg:gap-10">
+            <div className="lg:col-span-7">
+              <div className="mb-8 flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-border pb-4">
+                <span className="flex items-center gap-2.5">
+                  <span
+                    aria-hidden="true"
+                    className="size-2 animate-pulse bg-primary"
+                  />
+                  <MonoTag className="text-foreground">{badge}</MonoTag>
                 </span>
+                <MonoTag aria-hidden="true" tone="faint">
+                  [ clearance: L4 ]
+                </MonoTag>
               </div>
-              <HeroHeading className="mb-6">{heading}</HeroHeading>
-              <HeroSubheading className="mb-8 mt-0 sm:text-xl">
+              <HeroHeading className="mb-6 text-[clamp(2.5rem,6.5vw,5rem)] font-extrabold leading-[0.95] tracking-tight">
+                {heading}
+              </HeroHeading>
+              <HeroSubheading className="mb-6 mt-0 max-w-xl text-base sm:text-lg">
                 {subheading}
               </HeroSubheading>
-              <HeroActions className="mt-0 flex flex-col gap-4 sm:flex-row">
+              <p
+                aria-hidden="true"
+                className="mb-8 flex flex-wrap items-center gap-x-2 gap-y-1.5 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/70"
+              >
+                <span>intercepted</span>
+                <span className="inline-block h-3 w-14 bg-foreground" />
+                <span>neutralized</span>
+                <span className="inline-block h-3 w-9 bg-foreground" />
+                <span>02:14 utc</span>
+              </p>
+              <HeroActions className="mt-0 grid grid-cols-1 gap-3 sm:flex sm:flex-row sm:gap-4">
                 <SaasPlanActionButton
                   lakebed={lakebed}
                   intentLabel={primaryCta}
@@ -123,7 +134,7 @@ export const CybersecurityHero = defineCapsule({
                       Scheduling
                     </>
                   }
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 text-center font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+                  className="inline-flex items-center justify-center gap-2 rounded-none bg-foreground px-8 py-4 text-center font-mono text-xs font-semibold uppercase tracking-[0.15em] text-background shadow-[5px_5px_0_0] shadow-foreground/25 transition-all duration-150 hover:bg-foreground/90 active:translate-y-px active:shadow-none disabled:pointer-events-none disabled:opacity-70"
                 >
                   {primaryCta}
                 </SaasPlanActionButton>
@@ -137,57 +148,57 @@ export const CybersecurityHero = defineCapsule({
                       Opening
                     </>
                   }
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-input bg-background px-8 py-4 text-center font-semibold text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
+                  className="inline-flex items-center justify-center gap-2 rounded-none border border-foreground/25 bg-background px-8 py-4 text-center font-mono text-xs font-semibold uppercase tracking-[0.15em] text-foreground transition-all duration-150 hover:border-foreground hover:bg-muted active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
                 >
                   {secondaryCta}
                 </SaasPlanActionButton>
               </HeroActions>
-              <HeroSocialProof className="gap-6">
+              <HeroSocialProof className="mt-8 gap-x-6 gap-y-2">
                 {proofs.map((proof) => (
-                  <HeroSocialProofItem key={proof}>
-                    <Check className="size-5 text-primary" />
+                  <HeroSocialProofItem
+                    key={proof}
+                    className="gap-2 font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground"
+                  >
+                    <span aria-hidden="true" className="text-foreground">
+                      [ OK ]
+                    </span>
                     {proof}
                   </HeroSocialProofItem>
                 ))}
               </HeroSocialProof>
             </div>
-            <div className="relative">
+            <div className="relative lg:col-span-5">
               <div
                 aria-hidden="true"
-                className="absolute inset-0 rotate-3 rounded-3xl bg-gradient-to-br from-muted to-accent"
+                className="absolute inset-0 translate-x-3 translate-y-3 bg-foreground"
               />
+              <span
+                aria-hidden="true"
+                className="absolute -right-7 top-0 hidden select-none font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60 [writing-mode:vertical-rl] xl:block"
+              >
+                sentinel feed // live
+              </span>
               <HeroMediaPanel
                 alt={imageAlt}
                 w={800}
                 h={600}
-                className="relative aspect-[4/3] w-full shadow-2xl"
+                className="relative aspect-[4/3] w-full rounded-none border border-foreground/20"
               />
-              <div className="absolute -bottom-6 -left-6 max-w-xs rounded-xl bg-card p-4 shadow-xl sm:p-6">
-                <div className="mb-2 flex items-center gap-3">
-                  <div className="flex size-10 items-center justify-center rounded-full bg-destructive/10">
-                    <svg
-                      className="size-5 text-destructive"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-card-foreground">
-                      {alertTitle}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {alertSubtitle}
-                    </p>
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground">{alertMeta}</p>
+              <div className="absolute -bottom-8 -left-2 max-w-xs rounded-none border border-border bg-card p-4 shadow-[6px_6px_0_0] shadow-foreground/20 sm:-left-6 sm:p-5">
+                <p
+                  aria-hidden="true"
+                  className="mb-3 flex items-center justify-between gap-4 border-b border-border pb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground"
+                >
+                  <span>// incident-log</span>
+                  <span className="size-2 bg-destructive" />
+                </p>
+                <p className="font-bold tracking-tight text-card-foreground">
+                  {alertTitle}
+                </p>
+                <p className="text-sm text-muted-foreground">{alertSubtitle}</p>
+                <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground/70">
+                  {alertMeta}
+                </p>
               </div>
             </div>
           </div>

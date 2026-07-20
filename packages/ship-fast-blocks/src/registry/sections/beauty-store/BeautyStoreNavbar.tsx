@@ -19,18 +19,19 @@ import {
 } from '../commerce/commerce-interactions.tsx'
 
 /**
- * BeautyStoreNavbar — sticky translucent top navigation bar for a beauty / skincare /
- * cosmetics e-commerce storefront. A blurred, border-bottomed header pinned to the top
- * with the store name (serif) on the left, a horizontal row of category nav links in the
- * center, and utility icons (search, account, cart with badge, mobile menu) on the
- * right. Every link and icon routes through route hrefs. Use as the sticky site header
- * for beauty stores, skincare shops, cosmetics brands, clean beauty retailers, or premium
- * personal-care DTC storefronts.
+ * BeautyStoreNavbar — sticky editorial-vogue masthead bar for a beauty / skincare /
+ * cosmetics e-commerce storefront. A blurred, hairline-bordered header pinned to the
+ * top with the store wordmark in serif italic on the left, a centered row of tiny
+ * uppercase mono category links with wide letter-spacing, and utility icons (search,
+ * account, cart with badge, mobile menu) on the right. Every link and icon routes
+ * through route hrefs. Use as the sticky site header for beauty stores, skincare
+ * shops, cosmetics brands, clean beauty retailers, or premium personal-care DTC
+ * storefronts.
  */
 export const BeautyStoreNavbar = defineCapsule({
   name: 'BeautyStoreNavbar',
   description:
-    'Sticky translucent top navigation bar for a beauty / skincare / cosmetics e-commerce storefront: a blurred, border-bottomed header pinned to the top with the store name in serif on the left, horizontal category nav links in the center, and utility icons (search, account, cart with a quantity badge, mobile hamburger) on the right. Every link and icon routes through route hrefs. Use as the sticky site header for beauty stores, skincare shops, cosmetics brands, clean beauty retailers, or premium personal-care DTC storefronts.',
+    'Sticky editorial-vogue masthead bar for a beauty / skincare / cosmetics e-commerce storefront: a blurred, hairline-bordered header pinned to the top with the store wordmark in serif italic on the left, centered tiny uppercase mono category links with wide letter-spacing, and utility icons (search, account, cart with a quantity badge, mobile hamburger) on the right. Every link and icon routes through route hrefs. Use as the sticky site header for beauty stores, skincare shops, cosmetics brands, clean beauty retailers, or premium personal-care DTC storefronts.',
   props: z.object({
     /** Brand / store name shown in the navbar (serif). */
     brand: z.string().optional(),
@@ -112,17 +113,21 @@ export const BeautyStoreNavbar = defineCapsule({
       >
         <NavbarBrand
           href={homeTarget}
-          className="gap-2 font-serif text-2xl font-semibold tracking-tight text-foreground"
+          className="gap-2 font-serif text-2xl font-medium italic tracking-tight text-foreground"
         >
-          <BrandLogo brand={brand} className="mr-2 size-7 align-middle">
-            <LogoImage className="mr-2 size-7 align-middle" />
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage className="size-7" />
             <LogoLabel />
           </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="font-mono text-[11px] uppercase tracking-[0.18em]"
+            >
               {label}
             </NavbarNavLink>
           ))}

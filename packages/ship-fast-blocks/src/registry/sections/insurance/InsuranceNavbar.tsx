@@ -13,20 +13,21 @@ import {
 } from '#/section-kit/index.ts'
 
 /**
- * InsuranceNavbar — sticky top navigation bar for an insurance / fintech site.
- * A backdrop-blurred, border-bottomed header pinned to the top of the viewport
- * with a shield logo tile + brand name on the left, horizontal nav links in the
- * center, and a phone link plus a primary "Get a Quote" CTA on the right
- * (desktop). Every link and CTA routes through route hrefs so labels can drive
- * page-switching. Clean, trustworthy, corporate aesthetic on a light canvas
- * with a single brand-blue accent. Use as the sticky site header for insurance
- * carriers, insurtech startups, brokers, or financial-protection products.
- * Renders fully with no props via baked-in defaults.
+ * InsuranceNavbar — Swiss-trust sticky site header for an insurance / fintech
+ * page. A backdrop-blurred, bottom-hairline header pinned to the top with an
+ * inline shield mark + wordmark on the left, a horizontal row of desktop nav
+ * links each carrying a mono index numeral, and a phone link (demoted below lg)
+ * plus a single square (binary-radius) primary "Get a Quote" CTA with mechanical
+ * press feedback on the right. Every link and CTA routes through route hrefs so
+ * labels drive page-switching. Precise, calm, institutional trust bar on a light
+ * canvas with a single restrained brand accent. Use as the sticky site header
+ * for insurance carriers, insurtech startups, brokers, or financial-protection
+ * products. Renders fully with no props via baked-in defaults.
  */
 export const InsuranceNavbar = defineCapsule({
   name: 'InsuranceNavbar',
   description:
-    "Sticky top navigation bar for an insurance / fintech site: backdrop-blurred, border-bottomed header with a shield logo tile + brand name on the left, horizontal nav links in the center, and a phone link plus a primary 'Get a Quote' CTA on the right (desktop). Links and CTA route through route hrefs for page-switching. Clean, trustworthy corporate aesthetic on a light canvas with a single brand-blue accent. Use as the sticky site header for insurance carriers, insurtech startups, brokers, or financial-protection products.",
+    "Swiss-trust sticky site header for an insurance / fintech page: a backdrop-blurred, bottom-hairline header with an inline shield mark + wordmark on the left, horizontal nav links each carrying a mono index numeral, and a phone link (demoted below lg) plus a single square (binary-radius) primary 'Get a Quote' CTA with mechanical press feedback on the right. Links and CTA route through route hrefs for page-switching. Precise, calm, institutional trust bar on a light canvas with one restrained brand accent. Use as the sticky site header for insurance carriers, insurtech startups, brokers, or financial-protection products.",
   props: z.object({
     /** Brand / company name shown beside the shield logo. */
     brand: z.string().optional(),
@@ -48,23 +49,21 @@ export const InsuranceNavbar = defineCapsule({
 
     const Shield = ({ className }: { className?: string }) => (
       <span
-        className={cn(
-          'grid place-items-center rounded-lg bg-primary text-primary-foreground',
-          className,
-        )}
+        className={cn('grid place-items-center text-primary', className)}
         aria-hidden="true"
       >
         <svg
-          width="60%"
-          height="60%"
+          width="100%"
+          height="100%"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          strokeWidth="2"
+          strokeWidth="1.7"
           strokeLinecap="round"
           strokeLinejoin="round"
         >
-          <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          <path d="m9 12 2 2 4-4" />
         </svg>
       </span>
     )
@@ -92,16 +91,29 @@ export const InsuranceNavbar = defineCapsule({
         height="responsive"
         className={cn('bg-background/95', props.className)}
       >
-        <NavbarBrand href={brand} className="gap-2">
-          <BrandLogo brand={brand}>
-            <LogoImage fallback={<Shield className="size-8" />} />
-            <LogoLabel className="text-xl font-semibold text-foreground" />
+        <NavbarBrand href={brand}>
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage
+              className="size-7"
+              fallback={<Shield className="size-7" />}
+            />
+            <LogoLabel className="text-xl font-semibold tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
-        <NavbarNav>
-          {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+        <NavbarNav className="gap-7">
+          {nav.map((label, i) => (
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="rounded-none text-[13px] tracking-tight"
+            >
+              <span
+                aria-hidden="true"
+                className="mr-1.5 font-mono text-[10px] tabular-nums text-muted-foreground/50"
+              >
+                {String(i + 1).padStart(2, '0')}
+              </span>
               {label}
             </NavbarNavLink>
           ))}
@@ -110,12 +122,16 @@ export const InsuranceNavbar = defineCapsule({
         <NavbarActions>
           <a
             href={`tel:${phone.replace(/[^\d+]/g, '')}`}
-            className="hidden items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:flex"
+            className="hidden items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground lg:flex"
           >
-            <Phone className="size-4" />
+            <Phone className="size-4 text-primary" />
             {phone}
           </a>
-          <NavbarCta variant="primary" href={ctaLabel} className="px-4 py-2">
+          <NavbarCta
+            variant="primary"
+            href={ctaLabel}
+            className="rounded-none px-4 py-2 text-[13px] tracking-tight transition-[transform,background-color] duration-150 active:translate-y-px motion-reduce:transform-none"
+          >
             {ctaLabel}
           </NavbarCta>
         </NavbarActions>

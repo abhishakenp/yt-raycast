@@ -12,19 +12,21 @@ import {
 } from '#/section-kit/index.ts'
 
 /**
- * FilmDirectorNavbar — fixed, backdrop-blurred top navigation bar for a film
- * director / cinematographer / DP portfolio. A border-bottomed translucent
- * header pinned to the top with the director's UPPERCASE name on the left, a
- * row of thin minimal text links on the right (desktop), the LAST nav item
- * rendered as a filled primary pill CTA, and a hamburger menu button on mobile.
- * Every link and CTA routes through route hrefs. Use as the sticky site header
- * for filmmakers, directors, cinematographers, DPs, or video production houses
- * wanting a clean, editorial, light-canvas aesthetic.
+ * FilmDirectorNavbar — fixed, backdrop-blurred cinematic top navigation bar for
+ * a film director / cinematographer / DP portfolio. A hairline-bottomed
+ * translucent header pinned to the top pairing the director's giant credits-style
+ * UPPERCASE extrabold wordmark on the left with a row of mono, tracked slate-label
+ * nav links on the right (desktop); the LAST nav item becomes a square-edged
+ * inverted (bg-foreground/text-background) mono CTA with press feedback, and a
+ * hamburger drawer button on mobile. Every link and CTA routes through route
+ * hrefs. Tokens-only so the dark-cinematic treatment flips cleanly between light
+ * and dark generated themes. Use as the sticky site header for filmmakers,
+ * directors, cinematographers, DPs, or video production houses.
  */
 export const FilmDirectorNavbar = defineCapsule({
   name: 'FilmDirectorNavbar',
   description:
-    "Fixed, backdrop-blurred top navigation bar for a film director / cinematographer / DP portfolio: a border-bottomed translucent header with the director's UPPERCASE name on the left, a row of thin minimal text links on the right (desktop), the last nav item rendered as a filled primary pill CTA, and a hamburger menu button on mobile. All links and CTAs route through route hrefs. Use as the sticky site header for filmmakers, directors, cinematographers, DPs, or video production houses wanting a clean, editorial, light-canvas aesthetic.",
+    "Fixed, backdrop-blurred cinematic top navigation bar for a film director / cinematographer / DP portfolio: a hairline-bottomed translucent header pairing the director's giant credits-style UPPERCASE extrabold wordmark with a row of mono tracked slate-label nav links (desktop); the last nav item renders as a square-edged inverted mono CTA with press feedback, plus a hamburger drawer on mobile. All links and CTAs route through route hrefs; tokens-only so the treatment flips between light and dark themes. Use as the sticky site header for filmmakers, directors, cinematographers, DPs, or video production houses.",
   props: z.object({
     /** Director / studio name shown in the navbar (rendered uppercase). */
     brand: z.string().optional(),
@@ -44,27 +46,27 @@ export const FilmDirectorNavbar = defineCapsule({
         rowClassName="md:h-20"
         className={cn('bg-background/90 backdrop-blur-sm', props.className)}
       >
-        <NavbarBrand
-          href={brand}
-          className="inline-flex items-center text-lg font-medium tracking-tight md:text-xl"
-        >
-          <BrandLogo brand={brand} className="mr-2 size-7">
-            <LogoImage className="mr-2 size-7" />
-            <LogoLabel />
+        <NavbarBrand href={brand} className="gap-2">
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage className="size-7" />
+            <LogoLabel className="text-lg font-extrabold uppercase tracking-tight md:text-xl" />
           </BrandLogo>
-          {brand.toUpperCase()}
         </NavbarBrand>
 
-        <NavbarNav>
+        <NavbarNav className="gap-6 lg:gap-8">
           {nav.slice(0, -1).map((label) => (
-            <NavbarNavLink key={label} href={label} className="font-normal">
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="rounded-none px-1 font-mono text-[11px] uppercase tracking-[0.2em]"
+            >
               {label}
             </NavbarNavLink>
           ))}
           <NavbarCta
-            variant="primary"
+            variant="dark"
             href={nav[nav.length - 1]}
-            className="rounded-md px-4 py-2"
+            className="rounded-none px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.2em] transition-transform duration-150 active:translate-y-px motion-reduce:transform-none"
           >
             {nav[nav.length - 1]}
           </NavbarCta>

@@ -2,22 +2,27 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import {
+  LocalServiceBookingButton,
+  LocalServiceMutationSpinner,
   localServiceItem,
   useSyncLocalServices,
 } from '../local-service/local-service-interactions.tsx'
 import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
- * DentalServices — 6-up services grid for a dental practice / dentist site. A
- * centered eyebrow + heading + lede intro above a responsive 1-to-3 column grid
- * of soft muted cards, each with a rounded tinted icon tile (rotating through
- * shield / sparkle / implant / smile / crown / alert glyphs), a service title, a
- * description, and a check-marked bullet list; cards lift and brighten on hover.
+ * DentalServices — collapsed-border services ledger for a dental practice /
+ * dentist site. An asymmetric header (left-aligned mono eyebrow + heading +
+ * lede, mono index meta on the right) above a hairline collapsed-border 1-to-3
+ * column grid of square cells. Each cell carries a zero-padded mono index
+ * numeral, a service title, a description, a hairline-divided tick list of
+ * inclusions (primary tick dashes), and a quiet square outline "Book Now"
+ * button that inverts to the foreground color on hover with press feedback.
  * Use as the core services overview for dentists, dental offices,
  * orthodontists, or cosmetic / restorative dental clinics.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   ServicesGrid,
   ServiceCard,
@@ -28,7 +33,7 @@ import {
 export const DentalServices = defineCapsule({
   name: 'DentalServices',
   description:
-    '6-up services grid for a dental practice / dentist site: a centered eyebrow + heading + lede intro above a responsive 1-to-3 column grid of soft muted cards, each with a rounded tinted icon tile (rotating shield / sparkle / implant / smile / crown / alert glyphs), a service title, a description, and a check-marked bullet list; cards lift and brighten on hover. Use as the core services overview for dentists, dental offices, orthodontists, or cosmetic / restorative dental clinics.',
+    'Collapsed-border services ledger for a dental practice / dentist site: an asymmetric header (left-aligned mono eyebrow + heading + lede, mono index meta right) above a hairline collapsed-border 1-to-3 column grid of square cells, each with a zero-padded mono index numeral, a service title, a description, a hairline-divided tick list of inclusions, and a quiet square outline Book-Now button that inverts on hover. Use as the core services overview for dentists, dental offices, orthodontists, or cosmetic / restorative dental clinics.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -126,36 +131,87 @@ export const DentalServices = defineCapsule({
       ),
     )
     return (
-      <section className={cn('bg-background py-24', props.className)}>
+      <section
+        className={cn('bg-background py-20 sm:py-24 lg:py-28', props.className)}
+      >
         <Container>
-          <SectionHeading
-            eyebrow={servicesEyebrow}
-            title={servicesHeading}
-            subtitle={servicesDesc}
-            className="mb-16 max-w-3xl gap-0"
-            eyebrowClassName="mb-3 inline-block text-xs font-semibold tracking-wider text-primary"
-            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <ServicesGrid columns={3}>
-            {serviceItems.map((f) => {
-              const __iv__ = f as {
-                title: string
-                description: string
-                icon?: React.ReactNode
-                points?: string[]
-                cta?: string
-                price?: string
-                imageAlt?: string
-              }
-              return (
-                <ServiceCard key={__iv__.title}>
-                  {__iv__.icon && <ServiceIcon>{__iv__.icon}</ServiceIcon>}
-                  <ServiceTitle>{__iv__.title}</ServiceTitle>
-                  <ServiceDescription>{__iv__.description}</ServiceDescription>
-                </ServiceCard>
-              )
-            })}
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <SectionHeading
+              align="left"
+              eyebrow={servicesEyebrow}
+              title={servicesHeading}
+              subtitle={servicesDesc}
+              className="max-w-2xl gap-0"
+              eyebrowClassName="mb-4 inline-block font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground"
+              titleClassName="mb-4 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-[2.75rem] lg:leading-[1.05]"
+              subtitleClassName="text-base text-muted-foreground sm:text-lg"
+            />
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="shrink-0 md:pb-1"
+            >
+              {String(serviceItems.length).padStart(2, '0')} / index
+            </MonoTag>
+          </div>
+          <ServicesGrid columns={3} className="gap-0">
+            <div className="col-span-full grid grid-cols-1 border-l border-t border-border sm:grid-cols-2 lg:grid-cols-3">
+              {serviceItems.map((f, i) => {
+                const __iv__ = f as {
+                  title: string
+                  description: string
+                  icon?: React.ReactNode
+                  points?: string[]
+                  cta?: string
+                  price?: string
+                  imageAlt?: string
+                }
+                return (
+                  <ServiceCard
+                    key={__iv__.title}
+                    className="gap-4 rounded-none border-0 border-b border-r border-border bg-background p-6 sm:p-8"
+                  >
+                    <MonoTag aria-hidden="true" tone="faint">
+                      {String(i + 1).padStart(2, '0')}
+                    </MonoTag>
+                    {__iv__.icon && <ServiceIcon>{__iv__.icon}</ServiceIcon>}
+                    <ServiceTitle className="text-xl font-bold tracking-tight">
+                      {__iv__.title}
+                    </ServiceTitle>
+                    <ServiceDescription className="leading-relaxed">
+                      {__iv__.description}
+                    </ServiceDescription>
+                    {__iv__.points?.length ? (
+                      <ul className="mt-1 divide-y divide-border border-y border-border">
+                        {__iv__.points.map((point) => (
+                          <li
+                            key={point}
+                            className="flex items-center gap-3 py-2.5 text-sm text-muted-foreground"
+                          >
+                            <span
+                              aria-hidden="true"
+                              className="h-px w-3.5 shrink-0 bg-primary"
+                            />
+                            {point}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                    <LocalServiceBookingButton
+                      lakebed={lakebed}
+                      intentLabel={__iv__.title}
+                      service={__iv__.title}
+                      source="services"
+                      aria-label={__iv__.title}
+                      pendingChildren={<LocalServiceMutationSpinner />}
+                      className="mt-auto inline-flex w-fit items-center justify-center rounded-none border border-foreground/25 bg-transparent px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-foreground hover:text-background active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
+                    >
+                      Book Now
+                    </LocalServiceBookingButton>
+                  </ServiceCard>
+                )
+              })}
+            </div>
           </ServicesGrid>
         </Container>
       </section>

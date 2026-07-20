@@ -21,21 +21,25 @@ import { PageHeader } from '#/section-kit/PageHeader.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * AnalyticsHeader — sticky top header bar for a SaaS analytics dashboard. A
- * blurred, border-bottomed row pinned to the top: on the left a mobile
- * hamburger toggle plus the page title and a subtitle/greeting; on the right an
- * inline search field (md+), a date-filter icon button, and a solid primary
- * Export action with a download glyph. Search/date/export record shared
- * Lakebed actions, notifications open a real Sheet, and mobile navigation uses
- * a Sheet menu. Use as the page-level toolbar above
- * dashboard content for analytics overviews, admin panels, reporting consoles,
- * or any data-product surface that needs a title + search + export row. Renders
- * fully with no props via baked-in "Dashboard Overview" defaults.
+ * AnalyticsHeader — Swiss data-grid sticky top header bar for a SaaS analytics
+ * dashboard. A backdrop-blurred, hairline border-bottomed row pinned to the
+ * top: on the left a mobile hamburger toggle plus a bold tracking-tight page
+ * title over a mono uppercase subtitle/greeting; on the right a
+ * hairline-framed mono search field (md+), a notification action with a sharp
+ * tabular count badge, a date-filter icon button, and a sharp-cornered filled
+ * primary Export action with a download glyph and press feedback — every
+ * control square-cornered with hairline hover frames. Search/date/export
+ * record shared Lakebed actions, notifications open a real Sheet, and mobile
+ * navigation uses a Sheet menu with a primary rule on the active row. Use as
+ * the page-level toolbar above dashboard content for analytics overviews,
+ * admin panels, reporting consoles, or any data-product surface that needs a
+ * title + search + export row. Renders fully with no props via baked-in
+ * "Dashboard Overview" defaults.
  */
 export const AnalyticsHeader = defineCapsule({
   name: 'AnalyticsHeader',
   description:
-    'Sticky top header bar for a SaaS analytics dashboard: a backdrop-blurred, border-bottomed row pinned to the top with a mobile Sheet menu plus page title and subtitle/greeting on the left, and an inline search field (md+), notification Sheet, date-filter action, and a solid primary Export action with a download glyph on the right. Search/date/export record shared Lakebed actions instead of fake routing. Use as the page-level toolbar above dashboard content for analytics overviews, admin panels, reporting consoles, or any data-product surface needing a title + search + export row.',
+    'Swiss data-grid sticky top header bar for a SaaS analytics dashboard: a backdrop-blurred hairline row pinned to the top with a mobile Sheet menu plus a bold tracking-tight page title over a mono uppercase subtitle/greeting on the left, and a hairline-framed mono search field (md+), notification Sheet with a sharp tabular count badge, date-filter action, and a sharp-cornered solid primary Export action with a download glyph and press feedback on the right. Search/date/export record shared Lakebed actions instead of fake routing. Use as the page-level toolbar above dashboard content for analytics overviews, admin panels, reporting consoles, or any data-product surface needing a title + search + export row.',
   props: z.object({
     /** Page title shown on the left. */
     title: z.string().optional(),
@@ -174,17 +178,19 @@ export const AnalyticsHeader = defineCapsule({
               type="button"
               aria-label="Toggle menu"
               onClick={() => setMenuOpen(true)}
-              className="-ml-2 rounded-lg p-2 text-muted-foreground hover:bg-muted lg:hidden"
+              className="-ml-2 rounded-none border border-transparent p-2 text-muted-foreground transition-colors hover:border-border hover:bg-muted/40 lg:hidden"
             >
               <svg {...iconProps} width={24} height={24}>
                 <path d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
             <div>
-              <h1 className="text-xl font-semibold text-foreground">
+              <h1 className="text-xl font-bold tracking-tight text-foreground">
                 {headerTitle}
               </h1>
-              <p className="text-sm text-muted-foreground">{headerSubtitle}</p>
+              <p className="mt-0.5 font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
+                {headerSubtitle}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -202,7 +208,7 @@ export const AnalyticsHeader = defineCapsule({
                   query,
                 )
               }}
-              className="hidden items-center gap-2 rounded-lg bg-muted px-3 py-2 md:flex"
+              className="hidden items-center gap-2 rounded-none border border-border bg-transparent px-3 py-2 transition-colors focus-within:border-foreground/40 md:flex"
             >
               <svg
                 {...iconProps}
@@ -217,21 +223,21 @@ export const AnalyticsHeader = defineCapsule({
                 name="query"
                 placeholder={searchPlaceholder}
                 aria-label="Search analytics"
-                className="w-48 bg-transparent text-sm text-foreground placeholder-muted-foreground outline-none"
+                className="w-48 bg-transparent font-mono text-sm text-foreground placeholder-muted-foreground outline-none"
               />
             </form>
             <button
               type="button"
               aria-label="Notifications"
               onClick={() => setNotificationsOpen(true)}
-              className="relative rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted"
+              className="relative rounded-none border border-transparent p-2 text-muted-foreground transition-colors hover:border-border hover:bg-muted/40"
             >
               <svg {...iconProps}>
                 <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 0 0-4-5.7V5a2 2 0 1 0-4 0v.3A6 6 0 0 0 6 11v3.2a2 2 0 0 1-.6 1.4L4 17h11Z" />
                 <path d="M9 17a3 3 0 0 0 6 0" />
               </svg>
               {unreadCount > 0 ? (
-                <span className="absolute -right-1 -top-1 rounded-full bg-primary px-1.5 py-0.5 text-[0.625rem] font-medium leading-none text-primary-foreground">
+                <span className="absolute -right-1 -top-1 rounded-none bg-primary px-1.5 py-0.5 font-mono text-[0.625rem] font-medium leading-none tabular-nums text-primary-foreground">
                   {unreadCount}
                 </span>
               ) : null}
@@ -244,7 +250,7 @@ export const AnalyticsHeader = defineCapsule({
               onClick={() => {
                 runAction('date-filter', 'Date filter', 'header')
               }}
-              className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted"
+              className="rounded-none border border-transparent p-2 text-muted-foreground transition-colors hover:border-border hover:bg-muted/40"
             >
               <svg {...iconProps}>
                 <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -257,7 +263,7 @@ export const AnalyticsHeader = defineCapsule({
               onClick={() => {
                 runAction('export', exportLabel, 'header')
               }}
-              className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+              className="flex items-center gap-2 rounded-none bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-[background-color,transform] duration-150 hover:bg-primary/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
             >
               <svg {...iconProps} width={16} height={16}>
                 <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -279,7 +285,7 @@ export const AnalyticsHeader = defineCapsule({
             </SheetHeader>
             <nav className="flex flex-col gap-1 px-3 py-4">
               <NavbarRouteLink
-                className="rounded-lg px-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                className="rounded-none border-l-2 border-primary px-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted/40"
                 onClick={() => {
                   setMenuOpen(false)
                 }}
@@ -290,7 +296,7 @@ export const AnalyticsHeader = defineCapsule({
               {nav.map((label) => (
                 <NavbarRouteLink
                   key={label}
-                  className="rounded-lg px-3 py-3 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  className="rounded-none border-l-2 border-transparent px-3 py-3 text-left text-sm font-medium text-muted-foreground transition-colors hover:border-border hover:bg-muted/40 hover:text-foreground"
                   onClick={() => {
                     setMenuOpen(false)
                   }}
@@ -324,7 +330,7 @@ export const AnalyticsHeader = defineCapsule({
                   return (
                     <Card
                       key={notification.id}
-                      className={cn(!read && 'bg-muted/40', 'rounded-lg p-4')}
+                      className={cn(!read && 'bg-muted/40', 'rounded-none p-4')}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
@@ -355,7 +361,7 @@ export const AnalyticsHeader = defineCapsule({
                   )
                 })
               ) : (
-                <div className="rounded-lg border border-dashed border-border bg-muted/40 px-6 py-12 text-center">
+                <div className="rounded-none border border-dashed border-border bg-muted/40 px-6 py-12 text-center">
                   <p className="text-sm font-semibold text-foreground">
                     All caught up
                   </p>
@@ -374,7 +380,7 @@ export const AnalyticsHeader = defineCapsule({
                   onClick={() => {
                     void clearAllNotifications.run('clear-all')
                   }}
-                  className="inline-flex w-full items-center justify-center rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-60"
+                  className="inline-flex w-full items-center justify-center rounded-none border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-[background-color,transform] duration-150 hover:bg-muted active:translate-y-px disabled:pointer-events-none disabled:opacity-60"
                 >
                   Clear all
                 </button>

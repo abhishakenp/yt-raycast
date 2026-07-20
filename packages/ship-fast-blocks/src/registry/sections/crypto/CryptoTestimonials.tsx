@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -15,17 +16,20 @@ import {
 } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
- * CryptoTestimonials — 6-up customer testimonial grid for a crypto / DeFi
- * landing page. A centered heading + description in a bordered card band
- * followed by a responsive three-column card grid. Each card shows an alt-
- * driven avatar image, the person's name and role, and a quoted paragraph.
- * Use for social proof from protocol users, institutional clients, or
- * developer partners.
+ * CryptoTestimonials — Web3-terminal signal-log testimonial grid for a
+ * crypto / DeFi landing page. An asymmetric header (left-aligned heading +
+ * description, mono "[ SIGNALS ] VERIFIED SOURCES" meta right) above a
+ * three-column grid of square-cornered hairline cards; even desktop cards
+ * are staggered downward. Each card opens with a mono zero-padded log index
+ * and a primary tick, then the quote, and closes with a hairline-topped
+ * author row (mono uppercase name + role). A giant ghost quote watermark
+ * backs the band. Use for social proof from protocol users, institutional
+ * clients, or developer partners.
  */
 export const CryptoTestimonials = defineCapsule({
   name: 'CryptoTestimonials',
   description:
-    "6-up customer testimonial grid for a crypto / DeFi landing page: centered heading + description in a bordered card band, then a responsive three-column card grid. Each card shows an alt-driven avatar image, the person's name and role, and a quoted paragraph. Use for social proof from protocol users, institutional clients, or developer partners.",
+    'Web3-terminal signal-log testimonial grid for a crypto / DeFi landing page: asymmetric left-aligned header with mono meta label, then a three-column grid of square-cornered hairline cards with staggered even columns — each opening with a mono zero-padded log index and primary tick, the quote, and a hairline-topped author row with mono uppercase name + role, backed by a giant ghost quote watermark. Use for social proof from protocol users, institutional clients, or developer partners.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -105,20 +109,32 @@ export const CryptoTestimonials = defineCapsule({
     return (
       <section
         className={cn(
-          'border-y border-border bg-card py-20 lg:py-28',
+          'relative overflow-hidden border-y border-border bg-card py-16 lg:py-28',
           props.className,
         )}
       >
-        <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 tracking-tight sm:text-4xl"
-            subtitleClassName="text-lg"
-          />
+        <Watermark className="-left-6 top-4 font-serif text-[10rem] sm:text-[16rem]">
+          &ldquo;
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-3"
+              titleClassName="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl"
+              subtitleClassName="text-lg"
+            />
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+            >
+              [ signals ] verified sources
+            </p>
+          </div>
           <TestimonialGrid columns={3}>
-            {items.map((t) => {
+            {items.map((t, i) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -129,12 +145,28 @@ export const CryptoTestimonials = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
+                <TestimonialCard
+                  key={__iv__.name}
+                  className={cn(
+                    'gap-5 rounded-none bg-background p-7 hover:border-foreground/30',
+                    i % 2 === 1 && 'lg:mt-8',
+                  )}
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground tabular-nums">
+                      log/0{i + 1}
+                    </span>
+                    <span aria-hidden="true" className="h-1 w-6 bg-primary" />
+                  </div>
+                  <TestimonialQuote className="text-base leading-relaxed">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="flex-col items-start gap-1 border-t border-border pt-4">
+                    <TestimonialName className="font-mono text-xs font-semibold uppercase tracking-[0.15em]">
+                      {__iv__.name}
+                    </TestimonialName>
                     {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
+                      <TestimonialMeta className="font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
                         {__iv__.role || __iv__.company || __iv__.meta}
                       </TestimonialMeta>
                     )}

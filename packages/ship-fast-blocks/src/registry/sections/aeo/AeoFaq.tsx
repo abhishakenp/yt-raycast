@@ -13,18 +13,20 @@ import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
- * AeoFaq — bespoke, accessible FAQ section for an Answer-Engine-Optimization
- * (AEO) SaaS built on native <details> disclosures. A centered heading sits
- * above expandable Q&A items covering what AEO is, which engines are supported,
- * how it differs from SEO, and what optimization involves. The first item is
- * open by default and each summary toggles a card surface. Use on AEO,
+ * AeoFaq — "Answer Terminal" FAQ for an Answer-Engine-Optimization (AEO) SaaS
+ * built on native <details> disclosures over a dot-grid background. A
+ * left-aligned header with a mono index eyebrow sits above hairline rounded-none
+ * Q&A items: each question is prefixed with a mono "Q.01" index, the plus icon
+ * lives in a bordered square that rotates 45° on open, and answers carry a
+ * primary left hairline rule. The first item is open by default. Use on AEO,
  * generative-search visibility, or brand-citation landing and FAQ pages.
- * Distinct from AeoFaqSection. Renders fully with no props.
+ * Distinct from AeoFaqSection (which is a plain hairline list). Renders fully
+ * with no props.
  */
 export const AeoFaq = defineCapsule({
   name: 'AeoFaq',
   description:
-    'Bespoke accessible FAQ section for an Answer-Engine-Optimization (AEO) product using native <details> disclosures: a centered heading above expandable Q&A items covering what AEO is, which engines are tracked, how AEO differs from SEO, what optimization involves, and how results are measured. The first item is open by default. Use on AEO, generative-search visibility, or brand-citation landing and FAQ pages.',
+    'Terminal-styled accessible FAQ for an Answer-Engine-Optimization (AEO) product using native <details> disclosures over a dot-grid background: a left-aligned mono-labeled header above hairline rounded-none Q&A items with mono "Q.01" indices, bordered-square plus icons that rotate 45° on open, and answers with a primary left rule — covering what AEO is, which engines are tracked, how AEO differs from SEO, what optimization involves, and how results are measured. The first item is open by default. Use on AEO, generative-search visibility, or brand-citation landing and FAQ pages.',
   props: z.object({
     heading: z.string().optional(),
     intro: z.string().optional(),
@@ -76,30 +78,58 @@ export const AeoFaq = defineCapsule({
     return (
       <section
         className={cn(
-          'border-t border-border bg-background py-12 sm:py-16',
+          'relative overflow-hidden border-t border-border bg-background py-12 sm:py-16',
           props.className,
         )}
       >
-        <Container size="sm">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 text-border"
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(currentColor_1px,transparent_1px)] [background-size:24px_24px] opacity-40" />
+        </div>
+        <Container size="sm" className="relative">
           <SectionHeading
+            align="left"
+            eyebrow="## FAQ"
             title={heading}
             subtitle={intro}
             className="mb-10 gap-0"
-            titleClassName="mb-3 text-2xl font-semibold text-foreground sm:text-3xl"
+            eyebrowClassName="mb-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+            titleClassName="mb-3 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl"
             subtitleClassName="text-muted-foreground"
           />
-          <FaqAccordion>
+          <FaqAccordion className="space-y-3">
             {items.map((item, i) => (
-              <FaqItem key={item.question} variant="open-raised" open={i === 0}>
-                <FaqQuestion className="p-5">
-                  <h3 className="pr-4 font-medium text-foreground">
+              <FaqItem
+                key={`${item.question}-${i}`}
+                variant="open-raised"
+                open={i === 0}
+                className="rounded-none bg-card open:border-foreground/25 open:shadow-none"
+              >
+                <FaqQuestion className="p-4 sm:p-5">
+                  <h3 className="flex min-w-0 items-baseline gap-3 pr-4 font-medium text-foreground">
+                    <span
+                      aria-hidden="true"
+                      className="shrink-0 font-mono text-[11px] uppercase tracking-[0.12em] text-primary tabular-nums"
+                    >
+                      Q.{String(i + 1).padStart(2, '0')}
+                    </span>
                     {item.question}
                   </h3>
-                  <FaqQuestionIcon variant="plus" />
+                  <FaqQuestionIcon
+                    variant="plus"
+                    className="grid size-8 shrink-0 place-items-center rounded-none border border-border bg-background [&>svg]:size-4"
+                  />
                 </FaqQuestion>
-                <FaqAnswer asChild className="px-5 pb-5 text-sm">
+                <FaqAnswer
+                  asChild
+                  className="px-4 pb-4 text-sm sm:px-5 sm:pb-5"
+                >
                   <div>
-                    <p>{item.answer}</p>
+                    <p className="border-l-2 border-primary pl-4">
+                      {item.answer}
+                    </p>
                   </div>
                 </FaqAnswer>
               </FaqItem>

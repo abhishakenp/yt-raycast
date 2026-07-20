@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { cn } from '#/lib/utils.ts'
 import {
@@ -11,21 +12,22 @@ import {
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * DevToolFeatures — a 6-up product features grid for a developer tool / API
- * platform. A centered heading + intro paragraph above a responsive 1/2/3-column
- * grid of bordered cards, each with a tinted square icon tile, a title, a
- * description, and a "Learn more" chevron link. Icons rotate through a built-in
- * developer set (auth, database, real-time, serverless, edge, observability).
- * Every card link routes through section-kit route links. Use to showcase platform
- * capabilities for developer tools, API platforms, backend-as-a-service, or
- * technical SaaS.
+ * DevToolFeatures — "--flag" ledger features grid for a developer tool / API
+ * platform. An asymmetric header (left-aligned heading + intro, aria-hidden
+ * mono "[ modules ]" count meta right) above a collapsed-border 1/2/3-column
+ * ledger of sharp-cornered cells sharing hairline borders. Each cell carries a
+ * mono index, an aria-hidden "--slug" flag derived from the title, the feature
+ * title, a description, and a mono "Learn more →" route link. A giant ghost
+ * "--" watermark bleeds off the edge. Use to showcase platform capabilities
+ * for developer tools, API platforms, backend-as-a-service, or technical SaaS.
  */
 export const DevToolFeatures = defineCapsule({
   name: 'DevToolFeatures',
   description:
-    "6-up product features grid for a developer tool / API platform: a centered heading + intro paragraph above a responsive 1/2/3-column grid of bordered cards, each with a tinted square icon tile, title, description, and a 'Learn more' chevron link. Built-in developer icon set (auth, database, real-time, serverless, edge, observability) rotates across cards. Card links route through section-kit route links. Use to showcase platform capabilities for developer tools, API platforms, backend-as-a-service, or technical SaaS.",
+    "'--flag' ledger features grid for a developer tool / API platform: an asymmetric header (heading + intro left, aria-hidden mono module-count meta right) above a collapsed-border 1/2/3-column ledger of sharp cells sharing hairline borders, each with a mono index, an aria-hidden '--slug' flag derived from the title, the feature title, a description, and a mono 'Learn more' route link; a giant ghost '--' watermark bleeds off the edge. Use to showcase platform capabilities for developer tools, API platforms, backend-as-a-service, or technical SaaS.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -40,6 +42,7 @@ export const DevToolFeatures = defineCapsule({
     const description =
       props.description ??
       'One platform for authentication, storage, real-time events, and serverless functions. No more stitching together multiple services.'
+    const learnMore = props.learnMore ?? 'Learn more'
     const items = props.items?.length
       ? props.items
       : [
@@ -75,22 +78,44 @@ export const DevToolFeatures = defineCapsule({
           },
         ]
 
+    const toFlag = (title: string) =>
+      '--' +
+      title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '')
+
     return (
       <section
-        className={cn('py-20 lg:py-28', props.className)}
+        className={cn(
+          'relative overflow-hidden py-16 lg:py-24',
+          props.className,
+        )}
         aria-labelledby="features-heading"
       >
-        <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            titleId="features-heading"
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <FeatureGrid columns={3}>
-            {items.map((f) => {
+        <Watermark className="-right-8 top-2 font-mono text-[10rem] sm:text-[14rem]">
+          --
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-14">
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              titleId="features-heading"
+              className="max-w-2xl gap-4"
+              titleClassName="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl"
+              subtitleClassName="text-lg text-muted-foreground"
+            />
+            <MonoTag aria-hidden="true" tone="faint" className="shrink-0">
+              [ modules ] {String(items.length).padStart(2, '0')} loaded
+            </MonoTag>
+          </div>
+          <FeatureGrid
+            columns={3}
+            className="gap-0 [&>div]:gap-0 [&>div]:border-l [&>div]:border-t [&>div]:border-border"
+          >
+            {items.map((f, i) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -101,10 +126,39 @@ export const DevToolFeatures = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
-                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                <FeatureCard
+                  key={__iv__.title}
+                  className="gap-3 rounded-none border-0 border-b border-r border-border bg-transparent p-6 hover:translate-y-0 hover:border-border hover:bg-muted/50 sm:p-7"
+                >
+                  <div className="flex items-baseline justify-between gap-3">
+                    <MonoTag tone="faint" aria-hidden="true">
+                      {String(i + 1).padStart(2, '0')}
+                    </MonoTag>
+                    <span
+                      aria-hidden="true"
+                      className="truncate font-mono text-[11px] tracking-[0.06em] text-primary"
+                    >
+                      {toFlag(__iv__.title)}
+                    </span>
+                  </div>
+                  {__iv__.icon && (
+                    <FeatureIcon className="rounded-none">
+                      {__iv__.icon}
+                    </FeatureIcon>
+                  )}
+                  <FeatureTitle className="text-lg font-bold tracking-tight text-foreground">
+                    {__iv__.title}
+                  </FeatureTitle>
+                  <FeatureDescription className="text-sm leading-relaxed text-muted-foreground">
+                    {__iv__.description}
+                  </FeatureDescription>
+                  <NavbarRouteLink
+                    href={__iv__.title}
+                    className="mt-auto inline-flex w-fit items-center gap-1.5 pt-2 font-mono text-[11px] uppercase tracking-[0.12em] text-foreground transition-colors hover:text-primary active:translate-y-px motion-reduce:transform-none"
+                  >
+                    {learnMore}
+                    <span aria-hidden="true">→</span>
+                  </NavbarRouteLink>
                 </FeatureCard>
               )
             })}

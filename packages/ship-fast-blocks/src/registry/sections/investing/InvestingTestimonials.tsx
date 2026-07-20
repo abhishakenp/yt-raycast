@@ -3,15 +3,17 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * InvestingTestimonials — star-rated testimonial wall for an investing / fintech
- * page. A muted section band with a centered heading + lead above a responsive
- * 1/2/3-column grid of review cards; each card has a five-star rating row, a
- * quote, and an investor avatar with name + role. Tokens only, no links. Use to
- * present social proof from customers of a brokerage, trading app, robo-advisor
- * or crypto exchange. Renders fully with no props via six baked-in reviews.
+ * InvestingTestimonials — Swiss-fintech social-proof ledger for an investing /
+ * brokerage page. An asymmetric header (heading + lede left, mono meta right)
+ * sits above a collapsed-border grid of quote cells sharing hairline rules
+ * (binary radius, no gaps); each cell carries a mono index, a primary star
+ * rating, the quote, and a name + role byline, with a giant ghost quotation
+ * watermark bleeding behind the band. Tokens only, no links. Use as calm,
+ * trustworthy social proof for a brokerage, trading app, robo-advisor or crypto
+ * exchange. Renders fully with no props via six baked-in reviews.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -23,7 +25,7 @@ import {
 export const InvestingTestimonials = defineCapsule({
   name: 'InvestingTestimonials',
   description:
-    'Star-rated testimonial wall for an investing / fintech page: a muted section band with a centered heading + lead above a responsive 1/2/3-column grid of review cards, each with a five-star rating row, a quote, and an investor avatar with name + role. Tokens only, no links. Use to present social proof from customers of a brokerage, trading app, robo-advisor or crypto exchange.',
+    'Swiss-fintech social-proof ledger for an investing / brokerage page: an asymmetric header (heading + lede left, mono meta right) above a collapsed-border grid of quote cells sharing hairline rules, each with a mono index, a primary star rating, the quote, and a name + role byline, behind a giant ghost quotation watermark. Tokens only, no links. Use as calm, trustworthy social proof for a brokerage, trading app, robo-advisor or crypto exchange.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -102,18 +104,44 @@ export const InvestingTestimonials = defineCapsule({
     return (
       <section
         id="reviews"
-        className={cn('bg-muted/50 py-24', props.className)}
+        className={cn(
+          'relative overflow-hidden bg-muted/30 pt-24 pb-20 lg:pt-28 lg:pb-28',
+          props.className,
+        )}
       >
-        <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-2xl gap-0"
-            titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <TestimonialGrid columns={3}>
-            {items.map((t) => {
+        <Watermark className="-top-16 left-2 text-[18rem] leading-none sm:text-[24rem]">
+          &ldquo;
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-12 flex flex-col gap-6 border-b border-border pb-6 md:flex-row md:items-end md:justify-between lg:mb-14">
+            <div className="max-w-2xl">
+              <MonoTag className="mb-4 block">
+                Testimonials
+                <span aria-hidden="true" className="text-primary">
+                  {' '}
+                  / 4.9 avg
+                </span>
+              </MonoTag>
+              <h2 className="text-3xl font-extrabold tracking-tight text-foreground text-balance sm:text-4xl">
+                {heading}
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground text-pretty">
+                {description}
+              </p>
+            </div>
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="shrink-0 tabular-nums"
+            >
+              [ {String(items.length).padStart(2, '0')} verified ]
+            </MonoTag>
+          </div>
+          <TestimonialGrid
+            columns={3}
+            className="gap-0 [&>div]:gap-0 [&>div]:border-l [&>div]:border-t [&>div]:border-border"
+          >
+            {items.map((t, i) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -123,14 +151,59 @@ export const InvestingTestimonials = defineCapsule({
                 rating?: number
                 avatarAlt?: string
               }
+              const rating = Math.max(
+                0,
+                Math.min(5, Math.round(__iv__.rating ?? 5)),
+              )
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
+                <TestimonialCard
+                  key={__iv__.name}
+                  className="gap-4 rounded-none border-0 border-b border-r border-border bg-background/60 p-7 transition-colors duration-150 hover:bg-background sm:p-8"
+                >
+                  <div className="flex items-center justify-between">
+                    <span
+                      className="flex items-center gap-0.5"
+                      role="img"
+                      aria-label={`${rating} out of 5 stars`}
+                    >
+                      {Array.from({ length: 5 }).map((_, s) => (
+                        <svg
+                          key={s}
+                          viewBox="0 0 24 24"
+                          className={cn(
+                            'size-3.5',
+                            s < rating
+                              ? 'fill-primary text-primary'
+                              : 'fill-transparent text-border',
+                          )}
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          aria-hidden="true"
+                        >
+                          <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14l-5-4.87 6.91-1.01L12 2z" />
+                        </svg>
+                      ))}
+                    </span>
+                    <MonoTag
+                      aria-hidden="true"
+                      tone="faint"
+                      className="tabular-nums"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </MonoTag>
+                  </div>
+                  <TestimonialQuote className="leading-relaxed">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="mt-auto flex-col items-start gap-1 border-t border-border pt-4">
+                    <TestimonialName className="tracking-tight">
+                      {__iv__.name}
+                    </TestimonialName>
                     {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
-                        {__iv__.role || __iv__.company || __iv__.meta}
+                      <TestimonialMeta className="font-mono text-[11px] uppercase tracking-[0.14em]">
+                        {[__iv__.role, __iv__.company]
+                          .filter(Boolean)
+                          .join(' · ') || __iv__.meta}
                       </TestimonialMeta>
                     )}
                   </TestimonialAuthor>

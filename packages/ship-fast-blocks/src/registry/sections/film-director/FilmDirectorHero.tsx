@@ -15,23 +15,27 @@ import {
   HeroStatLabel,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { Watermark, MonoTag } from '#/section-kit/Decor.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * FilmDirectorHero — full-height split hero for a film director / cinematographer
- * portfolio. A two-column layout with a left text column (uppercase tracked
- * eyebrow label, a thin light display headline where one emphasized phrase is
- * rendered in medium weight, a lede paragraph, a play-icon primary CTA + an
- * outlined secondary CTA, and a 3-up KPI strip above a top border) beside a tall
- * 4:5 portrait photo with a soft bottom-up gradient overlay. CTAs route through
- * section-kit route links; the portrait uses the alt-driven Image component. Use as the top
- * hero for filmmakers, directors, cinematographers, DPs, or video production
- * portfolios on a clean, editorial, light canvas.
+ * FilmDirectorHero — a full-height, dark-cinematic split hero for a film director
+ * / cinematographer portfolio. An asymmetric 7:5 grid with, on the left, a mono
+ * slate rail (eyebrow + "SC. 01 / TAKE 03" timecode), a giant credits-style
+ * extrabold headline whose emphasized phrase renders in serif italic, a lede, a
+ * play-icon primary CTA plus an outlined secondary CTA (both press-responsive),
+ * and a mono tabular KPI ledger; on the right, a letterboxed portrait (thin
+ * bg-foreground bars top/bottom, a corner slate chip and a RUNTIME timecode) with
+ * a soft bottom-up gradient. A giant faint "REEL" watermark ghosts behind the
+ * band. CTAs route through section-kit route links; the portrait uses the
+ * alt-driven Image component. Tokens-only so the treatment flips between light
+ * and dark themes. Use as the top hero for filmmakers, directors, cinematographers,
+ * DPs, or video production portfolios.
  */
 export const FilmDirectorHero = defineCapsule({
   name: 'FilmDirectorHero',
   description:
-    'Full-height split hero for a film director / cinematographer portfolio: a two-column layout with a left text column (uppercase tracked eyebrow label, a thin light display headline with one emphasized phrase rendered in medium weight, a lede paragraph, a play-icon primary CTA plus an outlined secondary CTA, and a 3-up KPI strip above a top border) beside a tall 4:5 portrait photo with a soft bottom-up gradient overlay. CTAs route through section-kit route links; the portrait uses the Image component. Use as the top hero for filmmakers, directors, cinematographers, DPs, or video production portfolios on a clean, editorial, light canvas.',
+    'Full-height, dark-cinematic split hero for a film director / cinematographer portfolio: an asymmetric 7:5 grid pairing a left text column (mono slate rail with eyebrow + "SC. 01 / TAKE 03" timecode, a giant credits-style extrabold headline whose emphasized phrase renders in serif italic, a lede, a play-icon primary CTA plus an outlined secondary CTA with press feedback, and a mono tabular KPI ledger) with a right letterboxed portrait (thin bg-foreground bars top/bottom, corner slate chip, RUNTIME timecode, soft bottom-up gradient) over a giant faint "REEL" watermark. CTAs route through section-kit route links; the portrait uses the Image component; tokens-only and theme-adaptive. Use as the top hero for filmmakers, directors, cinematographers, DPs, or video production portfolios.',
   props: z.object({
     eyebrow: z.string().optional(),
     /** Heading text; the `highlight` phrase within it is rendered emphasized. */
@@ -87,7 +91,7 @@ export const FilmDirectorHero = defineCapsule({
       return (
         <>
           {heroHeading.slice(0, idx)}
-          <span className="font-medium">{heroHighlight}</span>
+          <span className="font-serif font-medium italic">{heroHighlight}</span>
           {heroHeading.slice(idx + heroHighlight.length)}
         </>
       )
@@ -95,15 +99,27 @@ export const FilmDirectorHero = defineCapsule({
 
     return (
       <HeroSection
-        className={cn('flex min-h-screen items-center', props.className)}
+        className={cn(
+          'relative flex min-h-screen items-center overflow-hidden',
+          props.className,
+        )}
       >
-        <Container size="xl" className="py-12 md:py-24">
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
-            <div className="order-2 lg:order-1">
-              <p className="mb-4 text-sm uppercase tracking-widest text-muted-foreground">
-                {heroEyebrow}
-              </p>
-              <HeroHeading className="mb-6 font-light">
+        <Watermark className="-right-6 bottom-2 text-[26vw] leading-none lg:text-[18rem]">
+          REEL
+        </Watermark>
+        <Container size="xl" className="relative py-12 md:py-24">
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="order-2 lg:order-1 lg:col-span-7">
+              <div className="flex items-center gap-4">
+                <MonoTag className="text-muted-foreground">
+                  {heroEyebrow}
+                </MonoTag>
+                <span aria-hidden="true" className="h-px flex-1 bg-border" />
+                <MonoTag aria-hidden="true" tone="faint">
+                  SC. 01 / TAKE 03
+                </MonoTag>
+              </div>
+              <HeroHeading className="mb-6 mt-6 text-5xl font-extrabold leading-[0.95] tracking-tighter sm:text-6xl lg:text-7xl">
                 {renderHeading()}
               </HeroHeading>
               <HeroSubheading className="mb-8 mt-0 max-w-xl">
@@ -113,7 +129,7 @@ export const FilmDirectorHero = defineCapsule({
                 <HeroCta
                   asChild
                   variant="primary"
-                  className="rounded-md px-6 py-3"
+                  className="rounded-none px-6 py-3 transition-transform duration-150 active:translate-y-px motion-reduce:transform-none"
                 >
                   <NavbarRouteLink href={heroPrimary}>
                     <PlayIcon className="mr-2 size-5" />
@@ -123,33 +139,46 @@ export const FilmDirectorHero = defineCapsule({
                 <HeroCta
                   asChild
                   variant="outline"
-                  className="rounded-md px-6 py-3 hover:border-foreground"
+                  className="rounded-none px-6 py-3 transition-[transform,border-color] duration-150 hover:border-foreground active:translate-y-px motion-reduce:transform-none"
                 >
                   <NavbarRouteLink href={heroSecondary}>
                     {heroSecondary}
                   </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
-              <HeroStats className="mt-12 grid-cols-3 pt-8 md:grid-cols-3">
+              <HeroStats className="mt-12 grid-cols-3 gap-0 border-l border-t border-border pt-0 md:grid-cols-3">
                 {heroStats.map((s) => (
-                  <HeroStat key={s.label}>
-                    <HeroStatValue className="text-2xl font-light">
+                  <HeroStat
+                    key={s.label}
+                    className="border-b border-r border-border p-4"
+                  >
+                    <HeroStatValue className="text-3xl font-extrabold tabular-nums tracking-tight">
                       {s.value}
                     </HeroStatValue>
-                    <HeroStatLabel className="mt-0">{s.label}</HeroStatLabel>
+                    <HeroStatLabel className="mt-1 font-mono text-[11px] uppercase tracking-[0.2em]">
+                      {s.label}
+                    </HeroStatLabel>
                   </HeroStat>
                 ))}
               </HeroStats>
             </div>
-            <div className="order-1 lg:order-2">
-              <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-muted">
-                <HeroMediaPanel
-                  alt={heroImageAlt}
-                  w={800}
-                  h={1000}
-                  className="size-full rounded-md rounded-xl"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-foreground/30 to-transparent" />
+            <div className="order-1 lg:order-2 lg:col-span-5">
+              <div className="relative bg-foreground py-5">
+                <span className="absolute left-4 top-8 z-10 font-mono text-[11px] uppercase tracking-[0.2em] text-background/70">
+                  SC. 01
+                </span>
+                <span className="absolute bottom-8 right-4 z-10 font-mono text-[11px] uppercase tracking-[0.2em] text-background/70">
+                  Runtime 02:14
+                </span>
+                <div className="relative aspect-[4/5] overflow-hidden">
+                  <HeroMediaPanel
+                    alt={heroImageAlt}
+                    w={800}
+                    h={1000}
+                    className="size-full rounded-none"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-foreground/40 to-transparent" />
+                </div>
               </div>
             </div>
           </div>

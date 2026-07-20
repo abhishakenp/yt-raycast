@@ -11,19 +11,24 @@ import {
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 
 /**
- * BootcampFaq — accordion FAQ section for a coding bootcamp / career-school
- * landing page. A centered eyebrow, heading and description above a stacked
- * set of native <details> disclosure widgets; each item has a bold question
- * summary with a chevron that rotates on open, and a muted paragraph answer.
- * No links. Use to answer common questions about programs, pricing, time
- * commitment, prerequisites, job guarantees and remote options.
+ * BootcampFaq — "Terminal Classroom" man-page FAQ for a coding bootcamp /
+ * career-school landing page. An asymmetric 4:8 split: the left rail holds a
+ * left-aligned mono-labeled header, a decorative `$ man bootcamp` prompt
+ * line, and a giant ghost `?` watermark; the right column stacks native
+ * <details> disclosure rows divided by hairlines — each summary leads with a
+ * mono primary index numeral (`01`), the bold question, and a plus icon that
+ * rotates to an × on open, with the muted answer indented beneath the
+ * numeral gutter. No links. Use to answer common questions about programs,
+ * pricing, time commitment, prerequisites, job guarantees and remote
+ * options.
  */
 export const BootcampFaq = defineCapsule({
   name: 'BootcampFaq',
   description:
-    'Accordion FAQ section for a coding bootcamp / career-school landing page: centered eyebrow, heading and description above a stacked set of native details disclosure widgets. Each item has a bold question summary with a chevron that rotates on open, and a muted paragraph answer. No links. Use to answer common questions about programs, pricing, time commitment, prerequisites, job guarantees and remote options.',
+    "Terminal-styled man-page FAQ for a coding bootcamp / career-school landing page: asymmetric 4:8 split with a left rail (mono-labeled header, decorative '$ man bootcamp' prompt, giant ghost '?' watermark) beside hairline-divided native details disclosure rows. Each summary leads with a mono primary index numeral, the bold question, and a plus icon rotating to an × on open; the muted answer indents beneath the numeral gutter. No links. Use to answer common questions about programs, pricing, time commitment, prerequisites, job guarantees and remote options.",
   props: z.object({
     /** Section eyebrow label. */
     eyebrow: z.string().optional(),
@@ -71,32 +76,66 @@ export const BootcampFaq = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
-        <Container size="sm">
-          <SectionHeading
-            eyebrow={faqEyebrow}
-            title={faqHeading}
-            subtitle={faqDesc}
-            className="mb-16 lg:mb-20  gap-0"
-            eyebrowClassName="mb-4 inline-block text-xs font-semibold tracking-wider text-primary"
-            titleClassName="mb-4 text-3xl font-bold sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <FaqAccordion>
-            {faqItems.map((item) => (
-              <FaqItem key={item.q} variant="muted">
-                <FaqQuestion className="p-6">
-                  <span className="font-semibold">{item.q}</span>
-                  <FaqQuestionIcon className="text-foreground" />
-                </FaqQuestion>
-                <FaqAnswer asChild className="px-6 pb-6">
-                  <div>
-                    <p>{item.a}</p>
-                  </div>
-                </FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+      <section
+        className={cn(
+          'relative overflow-hidden bg-background py-16 lg:py-24',
+          props.className,
+        )}
+      >
+        <Container>
+          <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
+            <div className="relative lg:col-span-4">
+              <Watermark className="-left-6 -top-10 font-mono text-[10rem] sm:text-[14rem]">
+                ?
+              </Watermark>
+              <SectionHeading
+                align="left"
+                eyebrow={faqEyebrow}
+                title={faqHeading}
+                subtitle={faqDesc}
+                className="relative gap-0"
+                eyebrowClassName="mb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+                titleClassName="mb-4 text-3xl font-bold tracking-tight sm:text-4xl"
+                subtitleClassName="text-base text-muted-foreground sm:text-lg"
+              />
+              <p
+                aria-hidden="true"
+                className="relative mt-6 font-mono text-sm text-muted-foreground"
+              >
+                <span className="text-primary">$</span> man bootcamp
+              </p>
+            </div>
+            <div className="lg:col-span-8">
+              <FaqAccordion variant="divided">
+                {faqItems.map((item, i) => (
+                  <FaqItem key={item.q} variant="divided">
+                    <FaqQuestion className="items-baseline gap-4">
+                      <span
+                        aria-hidden="true"
+                        className="shrink-0 font-mono text-sm tabular-nums text-primary"
+                      >
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <span className="flex-1 font-semibold tracking-tight">
+                        {item.q}
+                      </span>
+                      <FaqQuestionIcon
+                        variant="plus"
+                        className="self-center text-foreground"
+                      />
+                    </FaqQuestion>
+                    <FaqAnswer asChild className="pl-9 pt-3">
+                      <div>
+                        <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                          {item.a}
+                        </p>
+                      </div>
+                    </FaqAnswer>
+                  </FaqItem>
+                ))}
+              </FaqAccordion>
+            </div>
+          </div>
         </Container>
       </section>
     )

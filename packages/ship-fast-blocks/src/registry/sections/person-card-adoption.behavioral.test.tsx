@@ -34,14 +34,16 @@ function firstCard(root: HTMLElement) {
 }
 
 describe('PersonCard adoption — capsules render person cards', () => {
-  it('AccountingFirmTeam: 4 outlined rounded-lg cards with name/role/bio', () => {
+  // Swiss Ledger redesign (2026-07): team cards use the square rounded-none
+  // radius language instead of rounded-lg.
+  it('AccountingFirmTeam: 4 outlined rounded-none cards with name/role/bio', () => {
     const { container } = render(<AccountingFirmTeam.component props={{}} />)
     expect(cards(container)).toHaveLength(4)
     const card = firstCard(container)
     expect(card.tagName).toBe('ARTICLE')
     expect(card.className).toContain('border')
     expect(card.className).toContain('bg-card')
-    expect(card.className).toContain('rounded-lg')
+    expect(card.className).toContain('rounded-none')
     expect(container.textContent).toContain('Robert Northridge')
     expect(container.textContent).toContain('Founder & Managing Partner, CPA')
     // sub-slots present

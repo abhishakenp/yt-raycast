@@ -1,5 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
+import { cn } from '#/lib/utils.ts'
 
 import {
   CtaBand,
@@ -14,18 +15,20 @@ import {
 } from './food-delivery-interactions.tsx'
 
 /**
- * FoodDeliveryCta — inverted app-download CTA panel for a food-delivery /
- * restaurant-marketplace site. A centered rounded foreground-on-background dark
- * card with a heading, a supporting paragraph, and two app-store buttons (Apple
- * App Store + Google Play, each with its brand glyph) on a light surface. Both
- * buttons route through section-kit route links. Use as a final conversion push to drive app
- * installs for food-delivery apps, restaurant aggregators, or online-ordering
- * platforms. Renders fully with no props via baked-in defaults.
+ * FoodDeliveryCta — playful-bold inverted app-download CTA panel for a
+ * food-delivery / restaurant-marketplace site. A sharp foreground-on-background
+ * dark card with a chunky border and a hard offset shadow floating on a muted
+ * surface, carrying a rounded-full "$0 delivery" sticker, a heading, a
+ * supporting paragraph, and two chunky bordered app-store buttons (Apple App
+ * Store + Google Play, each with its brand glyph) with press feedback. Both
+ * buttons route through section-kit route links. Use as a final conversion push
+ * to drive app installs for food-delivery apps, restaurant aggregators, or
+ * online-ordering platforms. Renders fully with no props via baked-in defaults.
  */
 export const FoodDeliveryCta = defineCapsule({
   name: 'FoodDeliveryCta',
   description:
-    'Inverted app-download CTA panel for a food-delivery / restaurant-marketplace site: a centered rounded foreground-on-background dark card with a heading, a supporting paragraph, and two app-store buttons (Apple App Store + Google Play, each with its brand glyph) on a light surface. Both buttons route through section-kit route links. Use as a final conversion push to drive app installs for food-delivery apps, restaurant aggregators, online-ordering platforms, or takeout services.',
+    'Playful-bold inverted app-download CTA panel for a food-delivery / restaurant-marketplace site: a sharp foreground-on-background dark card with a chunky border and a hard offset shadow floating on a muted surface, carrying a rounded-full "$0 delivery" sticker, a heading, a supporting paragraph, and two chunky bordered app-store buttons (Apple App Store + Google Play, each with its brand glyph) with press feedback. Both buttons route through section-kit route links. Use as a final conversion push to drive app installs for food-delivery apps, restaurant aggregators, online-ordering platforms, or takeout services.',
   props: z.object({
     /** CTA heading. */
     heading: z.string().optional(),
@@ -47,9 +50,18 @@ export const FoodDeliveryCta = defineCapsule({
     const ctaGooglePlay = props.googlePlay ?? 'Google Play'
 
     return (
-      <CtaBand tone="muted" className={props.className}>
-        <CtaBandInner className="max-w-5xl rounded-xl bg-foreground p-8 sm:p-12 lg:p-16">
-          <CtaBandTitle className="text-background">{ctaHeading}</CtaBandTitle>
+      <CtaBand tone="muted" className={cn('py-16 lg:py-20', props.className)}>
+        <CtaBandInner className="max-w-5xl gap-6 rounded-none border-2 border-foreground bg-foreground p-8 text-center shadow-[8px_8px_0_0] shadow-primary/40 sm:p-12 lg:p-16">
+          <span
+            aria-hidden="true"
+            className="inline-flex -rotate-2 items-center gap-1.5 rounded-full border-2 border-background bg-foreground px-3.5 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-background"
+          >
+            <span className="size-2 rounded-full bg-background" />
+            $0 delivery
+          </span>
+          <CtaBandTitle className="text-3xl font-extrabold tracking-tighter text-background md:text-4xl">
+            {ctaHeading}
+          </CtaBandTitle>
           <CtaBandSubtitle className="text-background/70">
             {ctaDesc}
           </CtaBandSubtitle>
@@ -59,7 +71,7 @@ export const FoodDeliveryCta = defineCapsule({
               action={ctaAppStore}
               source="cta"
               pendingChildren={<FoodDeliveryMutationSpinner />}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-background px-6 py-3 font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-none border-2 border-background bg-background px-6 py-3 font-bold text-foreground transition-all hover:-translate-y-0.5 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
             >
               <svg
                 className="size-6"
@@ -76,7 +88,7 @@ export const FoodDeliveryCta = defineCapsule({
               action={ctaGooglePlay}
               source="cta"
               pendingChildren={<FoodDeliveryMutationSpinner />}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-background px-6 py-3 font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-none border-2 border-background bg-background px-6 py-3 font-bold text-foreground transition-all hover:-translate-y-0.5 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
             >
               <svg
                 className="size-6"

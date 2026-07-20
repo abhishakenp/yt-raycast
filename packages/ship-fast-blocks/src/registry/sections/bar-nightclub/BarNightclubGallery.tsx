@@ -4,7 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   GalleryGrid,
   GalleryGridItems,
@@ -14,19 +14,24 @@ import {
 } from '#/section-kit/GalleryGrid.tsx'
 
 /**
- * BarNightclubGallery — masonry-style photo gallery for a cocktail-bar /
- * nightclub page. A split header (eyebrow + light-weight heading on the left, a
- * right-aligned lead on the right), then a responsive grid where the first
- * image spans two columns and rows to anchor the composition and the rest tile
- * at a fixed height. All photos use the alt-driven Image component. Moody,
- * editorial, monochrome. Use to show interior atmosphere, bar craft, the dance
- * floor, or ambient details for bars, nightclubs, lounges, or speakeasies.
- * Renders fully with no props via baked-in defaults.
+ * BarNightclubGallery — staggered poster contact sheet for a cocktail-bar /
+ * nightclub page. An asymmetric header (ticket-stub eyebrow chip + giant
+ * condensed uppercase heading left, lead paragraph and mono frame-count
+ * right), then an asymmetric 12-column grid of hard-bordered photo plates: the
+ * first frame anchors wide (7 cols), the second runs tall and drops on a
+ * staggered offset, and the rest tile beneath with alternating vertical
+ * offsets that persist on mobile's offset 2-up grid. Every plate is sharp
+ * cornered with a 2px border, a mono index chip in the corner, and a
+ * blurred-backdrop mono caption strip; a giant ghost heading watermark floats
+ * behind. All photos use the alt-driven Image component. Use to show interior
+ * atmosphere, bar craft, the dance floor, or ambient details for bars,
+ * nightclubs, lounges, or speakeasies. Renders fully with no props via
+ * baked-in defaults.
  */
 export const BarNightclubGallery = defineCapsule({
   name: 'BarNightclubGallery',
   description:
-    'Masonry-style photo gallery for a cocktail-bar / nightclub page: a split header (eyebrow + light-weight heading on the left, right-aligned lead on the right), then a responsive grid where the first image spans two columns and rows to anchor the composition and the rest tile at a fixed height. All photos use the alt-driven Image component. Moody, editorial and monochrome. Use to show interior atmosphere, bar craft, the dance floor, or ambient details for bars, nightclubs, lounges, or speakeasies.',
+    "Staggered poster contact sheet for a cocktail-bar / nightclub page: an asymmetric header (ticket-stub eyebrow chip + giant condensed uppercase heading left, lead paragraph and mono frame-count right), then an asymmetric 12-column grid of hard-bordered photo plates — the first frame anchors wide, the second runs tall on a staggered offset, and the rest tile with alternating vertical offsets that persist on mobile's offset 2-up grid. Every plate is sharp-cornered with a 2px border, mono index chip and blurred-backdrop mono caption strip; a giant ghost heading watermark floats behind. All photos use the alt-driven Image component. Use to show interior atmosphere, bar craft, the dance floor, or ambient details for bars, nightclubs, lounges, or speakeasies.",
   props: z.object({
     /** Wide letter-spaced uppercase eyebrow. */
     eyebrow: z.string().optional(),
@@ -54,33 +59,69 @@ export const BarNightclubGallery = defineCapsule({
           'Backlit bar shelves with premium liquor bottles glowing in amber light',
         ]
 
+    const spanFor = (i: number) => {
+      const slot = i % 5
+      if (slot === 0) return 'col-span-2 lg:col-span-7'
+      if (slot === 1) return 'lg:col-span-5 translate-y-4 lg:translate-y-10'
+      if (slot === 2) return 'lg:col-span-4'
+      if (slot === 3) return 'lg:col-span-4 translate-y-4 lg:translate-y-8'
+      return 'lg:col-span-4'
+    }
+    const aspectFor = (i: number) => {
+      const slot = i % 5
+      if (slot === 0) return 'aspect-[16/10]'
+      if (slot === 1) return 'aspect-[4/3] lg:aspect-[4/5]'
+      return 'aspect-[4/3]'
+    }
+
     return (
       <section
         className={cn(
-          'border-t border-border pt-28 pb-24 lg:pt-32 lg:pb-28',
+          'relative overflow-hidden py-14 sm:py-20 lg:py-24',
           props.className,
         )}
       >
-        <Container>
-          <div className="mb-16 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-            <SectionHeading
-              align="left"
-              eyebrow={eyebrow}
-              title={heading}
-              className="gap-0"
-              eyebrowClassName="mb-4 text-sm uppercase tracking-[0.2em] text-muted-foreground"
-              titleClassName="text-3xl font-light sm:text-4xl lg:text-5xl"
-            />
-            <p className="max-w-md text-muted-foreground md:text-right">
-              {description}
-            </p>
-          </div>
+        <Watermark className="-left-6 top-2 text-[5.5rem] uppercase sm:text-[10rem]">
+          {heading}
+        </Watermark>
+        <Container className="relative">
+          <GalleryGrid className="gap-0">
+            <div className="mb-10 grid grid-cols-1 gap-6 sm:mb-12 lg:grid-cols-12 lg:items-end">
+              <div className="lg:col-span-7">
+                <span className="inline-flex items-center gap-3 border border-foreground/40 px-3 py-1.5">
+                  <MonoTag className="text-[10px] text-foreground">
+                    {eyebrow}
+                  </MonoTag>
+                  <span
+                    aria-hidden="true"
+                    className="h-3 border-l border-dashed border-foreground/40"
+                  />
+                  <span
+                    aria-hidden="true"
+                    className="size-1.5 rounded-full bg-primary"
+                  />
+                </span>
+                <h2 className="mt-4 text-4xl font-black uppercase leading-[0.9] tracking-tighter sm:text-5xl lg:text-6xl">
+                  {heading}
+                </h2>
+              </div>
+              <div className="lg:col-span-5 lg:pb-1 lg:text-right">
+                <p className="max-w-md leading-relaxed text-muted-foreground lg:ml-auto">
+                  {description}
+                </p>
+                <MonoTag aria-hidden="true" className="mt-3 block text-[10px]">
+                  {String(images.length).padStart(2, '0')} / frames
+                </MonoTag>
+              </div>
+            </div>
 
-          <GalleryGrid>
-            <GalleryGridItems columns={3}>
+            <GalleryGridItems
+              columns={3}
+              className="grid-cols-2 gap-3 pb-6 sm:gap-4 lg:grid-cols-12 lg:pb-12"
+            >
               {images
                 .map((alt) => ({ alt }))
-                .map((img) => {
+                .map((img, i) => {
                   const __iv__ = img as {
                     alt: string
                     caption?: string
@@ -88,13 +129,26 @@ export const BarNightclubGallery = defineCapsule({
                     location?: string
                   }
                   return (
-                    <GalleryTile key={__iv__.alt}>
-                      <GalleryTileImage alt={__iv__.alt} />
-                      {__iv__.caption && (
-                        <GalleryTileCaption>
-                          {__iv__.caption}
-                        </GalleryTileCaption>
+                    <GalleryTile
+                      key={__iv__.alt}
+                      className={cn(
+                        'rounded-none border-2 border-foreground',
+                        spanFor(i),
+                        aspectFor(i),
                       )}
+                    >
+                      <GalleryTileImage alt={__iv__.alt} />
+                      <span
+                        aria-hidden="true"
+                        className="absolute left-0 top-0 bg-foreground px-2 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-background"
+                      >
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <GalleryTileCaption className="hidden border-t border-foreground/20 bg-background/85 font-mono text-[9px] uppercase tracking-[0.14em] text-foreground/70 sm:block">
+                        <span className="block truncate">
+                          {__iv__.caption ?? __iv__.alt}
+                        </span>
+                      </GalleryTileCaption>
                     </GalleryTile>
                   )
                 })}

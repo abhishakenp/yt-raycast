@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   NavbarActions,
   NavbarBrand,
@@ -21,19 +22,20 @@ import {
 import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
- * DentalNavbar — sticky translucent top navigation bar for a dental practice /
- * dentist site. A backdrop-blurred, border-bottomed header pinned to the top
- * with a rounded mint-primary tooth-glyph logo tile + practice name and a small
- * "Dental Care" eyebrow on the left, horizontal nav links on the right
- * (desktop), a filled primary pill CTA (the last nav item, e.g. "Book
- * Appointment"), and a hamburger menu button on mobile. Every link and CTA
+ * DentalNavbar — clinical Swiss-clean sticky navigation for a dental practice /
+ * dentist site. A backdrop-blurred, hairline-bordered header pinned to the top:
+ * a square primary tooth-glyph logo tile + practice wordmark with the tagline
+ * as a mono micro-label behind a hairline divider on the left, quiet nav links
+ * on the right (desktop), a square filled-primary CTA built from the last nav
+ * item (e.g. "Book Appointment") with press feedback, square hairline
+ * search / account chips, and a hamburger menu on mobile. Every link and CTA
  * routes through route hrefs. Use as the sticky site header for dentists,
  * dental offices, orthodontists, or cosmetic / pediatric dental clinics.
  */
 export const DentalNavbar = defineCapsule({
   name: 'DentalNavbar',
   description:
-    "Sticky translucent top navigation bar for a dental practice / dentist site: backdrop-blurred, border-bottomed header with a rounded mint-primary tooth-glyph logo tile + practice name and a 'Dental Care' eyebrow on the left, horizontal nav links on the right (desktop), a filled primary pill CTA built from the last nav item (e.g. 'Book Appointment'), and a hamburger menu button on mobile. All links and CTAs route through route hrefs. Use as the sticky site header for dentists, dental offices, orthodontists, or cosmetic / pediatric dental clinics.",
+    "Clinical Swiss-clean sticky navigation bar for a dental practice / dentist site: a backdrop-blurred, hairline-bordered header with a square primary tooth-glyph logo tile + practice wordmark and a mono micro-label tagline behind a hairline divider on the left, quiet nav links on the right (desktop), a square filled-primary CTA built from the last nav item (e.g. 'Book Appointment') with press feedback, square hairline search / account chips, and a hamburger menu button on mobile. All links and CTAs route through route hrefs. Use as the sticky site header for dentists, dental offices, orthodontists, or cosmetic / pediatric dental clinics.",
   props: z.object({
     /** Practice / brand name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -53,8 +55,8 @@ export const DentalNavbar = defineCapsule({
 
     const ToothMark = () => (
       <svg
-        width="24"
-        height="24"
+        width="16"
+        height="16"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -70,7 +72,7 @@ export const DentalNavbar = defineCapsule({
     const LogoBadge = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          'grid place-items-center rounded-xl bg-primary text-primary-foreground',
+          'grid place-items-center rounded-none bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -83,29 +85,30 @@ export const DentalNavbar = defineCapsule({
       <SiteNav
         position="sticky"
         height="default"
-        className={cn('bg-background/95', props.className)}
+        className={cn('bg-background/90', props.className)}
       >
         <NavbarBrand href={nav[0]} className="gap-3 text-left">
-          <BrandLogo brand={brand} className="size-10">
+          <BrandLogo brand={brand} className="flex items-center gap-2">
             <LogoImage
-              className="size-10"
-              fallback={<LogoBadge className="size-10" />}
+              className="size-7"
+              fallback={<LogoBadge className="size-7" />}
             />
-            <LogoLabel />
+            <LogoLabel className="text-lg font-bold tracking-tight" />
           </BrandLogo>
-          <span className="leading-tight">
-            <span className="block text-xl font-semibold text-foreground">
-              {brand}
-            </span>
-            <span className="-mt-1 block text-sm text-muted-foreground">
-              {tagline}
-            </span>
-          </span>
+          <span
+            aria-hidden="true"
+            className="hidden h-4 w-px bg-border lg:block"
+          />
+          <MonoTag className="hidden lg:inline-block">{tagline}</MonoTag>
         </NavbarBrand>
 
-        <NavbarNav className="[&>button]:font-medium">
+        <NavbarNav className="gap-7 [&>button]:font-medium">
           {nav.slice(0, -1).map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
               {label}
             </NavbarNavLink>
           ))}
@@ -117,7 +120,7 @@ export const DentalNavbar = defineCapsule({
             pendingChildren={
               <LocalServiceMutationSpinner className="text-primary-foreground" />
             }
-            className="rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+            className="rounded-none bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
           >
             {nav[nav.length - 1]}
           </LocalServiceBookingButton>
@@ -127,17 +130,17 @@ export const DentalNavbar = defineCapsule({
           <LocalServiceIntentBadge lakebed={lakebed} />
           <LocalServiceSearchButton
             lakebed={lakebed}
-            buttonClassName="hidden size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:inline-flex"
+            buttonClassName="hidden size-9 items-center justify-center rounded-none border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:translate-y-px md:inline-flex"
           />
           <LocalServiceAccountButton
             lakebed={lakebed}
-            buttonClassName="hidden size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:inline-flex"
+            buttonClassName="hidden size-9 items-center justify-center rounded-none border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:translate-y-px md:inline-flex"
           />
           <LocalServiceMobileMenu
             brand={brand}
             homeTarget={nav[0]}
             nav={nav}
-            buttonClassName="inline-flex size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+            buttonClassName="inline-flex size-9 items-center justify-center rounded-none border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:translate-y-px md:hidden"
           />
         </NavbarActions>
       </SiteNav>

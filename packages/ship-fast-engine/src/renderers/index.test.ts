@@ -282,7 +282,10 @@ globalThis.__paymentResult = await createPaymentSessions("cart_123", "stripe");
             },
           },
           payment: {
-            initiatePaymentSession: async (cart: unknown, options: Record<string, unknown>) => {
+            initiatePaymentSession: async (
+              cart: unknown,
+              options: Record<string, unknown>,
+            ) => {
               g.__initiatedPaymentCart = cart
               g.__initiatedPaymentOptions = options
               return {

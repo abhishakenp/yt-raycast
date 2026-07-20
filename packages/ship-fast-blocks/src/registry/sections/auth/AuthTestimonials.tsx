@@ -91,9 +91,9 @@ export const AuthTestimonials = defineCapsule({
       rating: r.rating,
     }))
     const quoteLayouts = [
-      'xl:col-span-7 xl:-rotate-1',
-      'xl:col-span-5 xl:translate-y-8 xl:rotate-1',
-      'xl:col-span-8 xl:col-start-3 xl:rotate-[0.5deg]',
+      'xl:col-span-7 xl:-rotate-1 max-lg:-rotate-1',
+      'xl:col-span-5 xl:translate-y-8 xl:rotate-1 max-lg:rotate-1 max-lg:translate-x-2',
+      'xl:col-span-8 xl:col-start-3 xl:rotate-[0.5deg] max-lg:-rotate-[0.6deg] max-lg:-translate-x-2',
     ]
 
     return (

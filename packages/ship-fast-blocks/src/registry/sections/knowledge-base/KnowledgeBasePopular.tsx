@@ -15,21 +15,24 @@ import {
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * KnowledgeBasePopular — popular-articles list beside a sticky-style support
- * sidebar for a help center. A two-thirds column lists the most-viewed articles
- * as full-width row buttons (eye-icon tile, title, description, view-count +
- * updated meta, trailing chevron) under a heading + description with a
- * "view all" link; a one-third aside stacks a muted "Trending Topics" panel
- * (title + percent-change rows) and a bordered "Need more help?" card of
- * chat/contact links. Calm, light, editorial. Every article, trending row and
- * help link routes through section-kit route links. Use as the browse-popular section of a
+ * KnowledgeBasePopular — "Terminal-docs" most-viewed article ledger beside a
+ * hairline-railed support index for a help center. A naturally sidebar-
+ * asymmetric 2:1 split: the two-thirds column is a collapsed-border article
+ * ledger whose rows each pair a tabular mono index numeral with a `#`-anchored
+ * bold title, a one-line description, a mono view-count + updated meta row and
+ * an arrow that slides on hover, under a left-aligned heading with a mono
+ * "view all" link; the one-third aside is an index rail (hairline left border)
+ * stacking a mono `## Trending` list (title + percent-change rows) and a
+ * square "Need more help?" panel of chat/contact links. Calm, hairline,
+ * reference aesthetic; every article, trending row and help link routes
+ * through section-kit route links. Use as the browse-popular section of a
  * knowledge base or support portal. Renders fully with no props via baked-in
- * defaults.
+ * defaults. Theme tokens only.
  */
 export const KnowledgeBasePopular = defineCapsule({
   name: 'KnowledgeBasePopular',
   description:
-    "Popular-articles list beside a support sidebar for a help center: a two-thirds column lists the most-viewed articles as full-width row buttons (eye-icon tile, title, description, view-count + updated meta, trailing chevron) under a heading + description with a 'view all' link; a one-third aside stacks a muted 'Trending Topics' panel (title + percent-change rows) and a bordered 'Need more help?' card of chat/contact links. Calm, light, editorial; every article, trending row and help link routes through section-kit route links. Use as the browse-popular section of a knowledge base, support portal or docs site.",
+    "Terminal-docs most-viewed article ledger beside a hairline-railed support index for a help center: a sidebar-asymmetric 2:1 split — the two-thirds column is a collapsed-border article ledger whose rows each pair a tabular mono index numeral with a '#'-anchored bold title, a one-line description, a mono view-count + updated meta row and an arrow that slides on hover, under a left-aligned heading with a mono 'view all' link; the one-third aside is an index rail (hairline left border) stacking a mono '## Trending' list (title + percent-change rows) and a square 'Need more help?' panel of chat/contact links. Calm, hairline, reference aesthetic; every article, trending row and help link routes through section-kit route links. Use as the browse-popular section of a knowledge base, support portal or docs site.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -196,35 +199,52 @@ export const KnowledgeBasePopular = defineCapsule({
         <Container>
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-3">
             <div className="lg:col-span-2">
-              <SectionHeading
-                align="left"
-                title={heading}
-                subtitle={description}
-                className="gap-0"
-                titleId="kb-popular-heading"
-                titleClassName="mb-3 text-2xl font-semibold text-foreground sm:text-3xl"
-                subtitleClassName="mb-8 text-muted-foreground"
-              />
-              <div className="space-y-4">
-                {items.map((art) => (
+              <div className="mb-8 flex items-end justify-between gap-6">
+                <SectionHeading
+                  align="left"
+                  title={heading}
+                  subtitle={description}
+                  className="gap-3"
+                  titleId="kb-popular-heading"
+                  titleClassName="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl"
+                  subtitleClassName="text-muted-foreground"
+                />
+                <p
+                  aria-hidden="true"
+                  className="hidden shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] tabular-nums text-muted-foreground/60 sm:block"
+                >
+                  [ {String(items.length).padStart(2, '0')} entries ]
+                </p>
+              </div>
+              <div className="divide-y divide-border border-y border-border">
+                {items.map((art, i) => (
                   <PopularItem key={art.title}>
                     <PopularCard
                       asChild
-                      className="group w-full items-start rounded-lg border-0 bg-transparent hover:bg-muted"
+                      className="group w-full items-start gap-4 rounded-none border-0 bg-transparent px-0 py-5 transition-colors hover:bg-muted/40"
                     >
                       <NavbarRouteLink href={art.title}>
-                        <span className="grid size-10 flex-shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground transition-colors group-hover:bg-accent">
-                          <EyeIcon />
+                        <span
+                          aria-hidden="true"
+                          className="mt-0.5 shrink-0 font-mono text-[11px] tabular-nums tracking-[0.2em] text-muted-foreground/60"
+                        >
+                          {String(i + 1).padStart(2, '0')}
                         </span>
                         <span className="min-w-0 flex-1">
-                          <span className="block text-base font-medium text-foreground transition-colors group-hover:text-muted-foreground">
+                          <span className="block text-base font-bold tracking-tight text-foreground">
+                            <span
+                              aria-hidden="true"
+                              className="mr-2 font-mono font-normal text-muted-foreground/50 transition-colors group-hover:text-primary"
+                            >
+                              #
+                            </span>
                             {art.title}
                           </span>
                           <span className="mt-1 block text-sm text-muted-foreground">
                             {art.description}
                           </span>
                           <PopularMeta asChild>
-                            <span className="mt-2 flex items-center gap-3">
+                            <span className="mt-2 flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.12em]">
                               <span className="flex items-center gap-1">
                                 <EyeIcon />
                                 {art.views}
@@ -233,7 +253,7 @@ export const KnowledgeBasePopular = defineCapsule({
                             </span>
                           </PopularMeta>
                         </span>
-                        <ChevronRight className="size-5 flex-shrink-0 text-muted-foreground transition-colors group-hover:text-foreground" />
+                        <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-[transform,color] duration-150 group-hover:translate-x-1 group-hover:text-primary" />
                       </NavbarRouteLink>
                     </PopularCard>
                   </PopularItem>
@@ -241,7 +261,7 @@ export const KnowledgeBasePopular = defineCapsule({
               </div>
               <div className="mt-8">
                 <NavbarRouteLink
-                  className="inline-flex items-center gap-2 text-sm font-medium text-foreground transition-colors hover:text-muted-foreground"
+                  className="inline-flex items-center gap-2 font-mono text-[11px] font-medium uppercase tracking-[0.15em] text-foreground transition-colors hover:text-primary active:translate-y-px"
                   href={viewAll}
                 >
                   {viewAll}
@@ -251,33 +271,43 @@ export const KnowledgeBasePopular = defineCapsule({
             </div>
 
             <aside
-              className="lg:col-span-1"
+              className="lg:col-span-1 lg:border-l lg:border-border lg:pl-8"
               aria-label="Trending topics and support links"
             >
-              <div className="mb-6 rounded-xl bg-muted p-6">
-                <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-foreground">
+              <div className="mb-10">
+                <h3 className="mb-4 font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                   {trendingHeading}
                 </h3>
-                <div className="space-y-3">
-                  {trending.map((t) => (
+                <div className="divide-y divide-border border-y border-border">
+                  {trending.map((t, i) => (
                     <NavbarRouteLink
                       key={t.title}
-                      className="group block w-full text-left"
+                      className="group flex w-full items-baseline gap-3 py-3 text-left"
                       href={t.title}
                     >
-                      <span className="block text-sm font-medium text-secondary-foreground transition-colors group-hover:text-foreground">
-                        {t.title}
+                      <span
+                        aria-hidden="true"
+                        className="shrink-0 font-mono text-[11px] tabular-nums text-muted-foreground/50"
+                      >
+                        {String(i + 1).padStart(2, '0')}
                       </span>
-                      <PopularMeta asChild>
-                        <span className="mt-0.5 block">{t.change}</span>
-                      </PopularMeta>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-medium text-secondary-foreground transition-colors group-hover:text-foreground">
+                          {t.title}
+                        </span>
+                        <PopularMeta asChild>
+                          <span className="mt-0.5 block font-mono text-[11px] uppercase tracking-[0.12em] tabular-nums text-primary">
+                            {t.change}
+                          </span>
+                        </PopularMeta>
+                      </span>
                     </NavbarRouteLink>
                   ))}
                 </div>
               </div>
 
-              <Card>
-                <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-foreground">
+              <Card className="rounded-none">
+                <h3 className="mb-4 font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                   {helpHeading}
                 </h3>
                 <PopularList className="space-y-3">

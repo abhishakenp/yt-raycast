@@ -1,7 +1,10 @@
 import { expect, test } from 'vitest'
 import { z } from 'zod/v4'
 import { string, table } from '@ship-fast/lakebed/server'
-import type { LakebedDataFromSchema, LakebedQueryContext } from '@ship-fast/lakebed/server'
+import type {
+  LakebedDataFromSchema,
+  LakebedQueryContext,
+} from '@ship-fast/lakebed/server'
 import { createGoogleAuthFromToken } from '../../../packages/ship-fast-lakebed/src/auth-shared.ts'
 import { defineCapsule } from '@ship-fast/blocks/capsules'
 
@@ -54,7 +57,10 @@ test('capsule lakebed query data is inferred from schema tables', () => {
     lakebed: {
       schema: probeSchema,
       queries: {
-        favoriteProductNames: ({ auth, data }: LakebedQueryContext<Record<string, never>, ProbeData>) => {
+        favoriteProductNames: ({
+          auth,
+          data,
+        }: LakebedQueryContext<Record<string, never>, ProbeData>) => {
           const userId: string = auth.user.id
           // @ts-expect-error ctx.auth.user.id is a string.
           const numericUserId: number = auth.user.id

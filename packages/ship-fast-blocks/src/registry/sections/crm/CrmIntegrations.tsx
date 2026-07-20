@@ -2,15 +2,18 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 /**
- * CrmIntegrations — centered integrations grid for a CRM / SaaS landing page. A
- * heading + supporting paragraph above a dense responsive (2/4/6-up) grid of
- * bordered tiles, each a soft tinted grid-glyph icon above an integration name
- * and a short capability label; tiles lift on hover and route through
- * section-kit route links. Use to advertise the ecosystem / app marketplace of a CRM,
+ * CrmIntegrations — collapsed-border integrations matrix for a CRM / SaaS
+ * landing page. An asymmetric header (left-aligned heading with a tilted
+ * primary marker block behind the key word, mono "[ ECOSYSTEM ]" meta right)
+ * over a giant ghost "200+" watermark, above a sharp hairline-collapsed
+ * 2/4/6-up matrix of square tiles: each cell pairs a sharp grid-glyph chip
+ * with an integration name and a mono capability label, washes to muted and
+ * gains a primary hairline on hover, and routes through section-kit route
+ * links. Use to advertise the ecosystem / app marketplace of a CRM,
  * sales-pipeline or B2B SaaS product. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   IntegrationGrid,
   IntegrationCard,
@@ -20,7 +23,7 @@ import { NavbarRouteLink } from '#/section-kit/index.ts'
 export const CrmIntegrations = defineCapsule({
   name: 'CrmIntegrations',
   description:
-    'Centered integrations grid for a CRM / SaaS landing page: a heading + supporting paragraph above a dense responsive (2/4/6-up) grid of bordered tiles, each a soft tinted grid-glyph icon above an integration name and a short capability label; tiles lift on hover and route through section-kit route links. Use to advertise the ecosystem / app marketplace of a CRM, sales-pipeline or B2B SaaS product.',
+    'Collapsed-border integrations matrix for a CRM / SaaS landing page: an asymmetric header (marker-highlighted heading left, mono ecosystem meta right) over a giant ghost 200+ watermark, above a sharp hairline-collapsed 2/4/6-up matrix of square tiles, each pairing a sharp grid-glyph chip with an integration name and mono capability label; tiles wash to muted with a primary hairline on hover and route through section-kit route links. Use to advertise the ecosystem / app marketplace of a CRM, sales-pipeline or B2B SaaS product.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -94,27 +97,70 @@ export const CrmIntegrations = defineCapsule({
             label: 'View all',
           },
         ]
+    const headingWords = heading.split(' ')
+    const headingLead = headingWords.slice(0, -1).join(' ')
+    const headingMark = headingWords.at(-1) ?? ''
     return (
-      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
-        <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <IntegrationGrid cols="2-4-6">
+      <section
+        className={cn(
+          'relative overflow-hidden bg-background py-16 lg:py-24',
+          props.className,
+        )}
+      >
+        <Watermark className="-top-4 right-0 text-[7rem] sm:text-[10rem] lg:text-[14rem]">
+          200+
+        </Watermark>
+        <Container className="relative">
+          {/* Asymmetric header: marker-highlighted heading left, mono meta right. */}
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <div className="max-w-2xl">
+              <MonoTag className="mb-4 block">
+                Ecosystem
+                <span aria-hidden="true" className="text-primary">
+                  {' '}
+                  · 200+ apps
+                </span>
+              </MonoTag>
+              <h2 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+                {headingLead}{' '}
+                <span className="relative ml-[0.12em] inline-block whitespace-nowrap">
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-[-0.15em] inset-y-[0.05em] rotate-1 bg-primary"
+                  />
+                  <span className="relative text-primary-foreground">
+                    {headingMark}
+                  </span>
+                </span>
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">
+                {description}
+              </p>
+            </div>
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+            >
+              [ connect ] two-way sync
+            </p>
+          </div>
+          <IntegrationGrid
+            cols="2-4-6"
+            className="gap-0 border-l border-t border-border"
+          >
             {items.map((item) => (
               <IntegrationCard
                 asChild
                 key={item.name}
-                className="rounded-lg p-6 items-center text-center transition-all hover:shadow-md"
+                className="rounded-none border-0 border-b border-r border-border bg-card p-5 shadow-none transition-colors duration-150 hover:bg-muted/60 sm:p-6"
               >
                 <NavbarRouteLink href={item.name}>
-                  <div className="mb-3 grid size-12 place-items-center rounded-lg bg-primary/10 text-primary">
+                  <span
+                    aria-hidden="true"
+                    className="mb-3 grid size-9 place-items-center border border-border text-muted-foreground"
+                  >
                     <svg
-                      className="size-6"
+                      className="size-4"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
@@ -128,11 +174,11 @@ export const CrmIntegrations = defineCapsule({
                       <rect x="3" y="14" width="7" height="7" rx="1" />
                       <rect x="14" y="14" width="7" height="7" rx="1" />
                     </svg>
-                  </div>
-                  <span className="font-medium text-card-foreground">
+                  </span>
+                  <span className="text-sm font-semibold tracking-tight text-card-foreground">
                     {item.name}
                   </span>
-                  <span className="mt-1 text-xs text-muted-foreground">
+                  <span className="mt-1 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
                     {item.label}
                   </span>
                 </NavbarRouteLink>

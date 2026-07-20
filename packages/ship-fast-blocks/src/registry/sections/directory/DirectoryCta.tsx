@@ -8,6 +8,7 @@ import {
   CtaBandSubtitle,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { directoryLakebed } from './directory-lakebed.ts'
 import {
   DirectoryLeadButton,
@@ -16,18 +17,20 @@ import {
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * DirectoryCta — dark inverted conversion CTA band for a local-business
- * directory. A foreground-on-background inverted section with a large centered
- * headline, a supporting paragraph in muted inverted text, and a centered pair
- * of CTAs (a filled background-surface primary button + an outlined secondary
- * button). Both CTAs route through section-kit route links. Use as the closing
- * list-your-business / sign-up conversion band on local directories,
- * marketplaces, or find-a-service platforms.
+ * DirectoryCta — newsprint "full-page ad" conversion band for a local-business
+ * directory. A paper band holding a heavy-bordered ad box with a hard offset
+ * shadow: a mono "Advertisement" rule row on top, a large centered serif
+ * headline, a supporting paragraph, and a centered pair of square CTAs (a
+ * filled foreground-on-background primary button + a hairline outlined
+ * secondary button), both with press feedback. The primary CTA records a real
+ * Lakebed lead; the secondary routes through section-kit route links. Use as
+ * the closing list-your-business / sign-up conversion band on local
+ * directories, marketplaces, or find-a-service platforms.
  */
 export const DirectoryCta = defineCapsule({
   name: 'DirectoryCta',
   description:
-    'Dark inverted conversion CTA band for a local-business DIRECTORY: a foreground-on-background inverted section with a large centered headline, a supporting paragraph in muted inverted text, and a centered pair of CTAs (a filled background-surface primary button plus an outlined secondary button). Both CTAs route through section-kit route links. Use as the closing list-your-business or sign-up conversion band on local directories, business-listing marketplaces, find-a-service platforms, or review-and-discovery sites.',
+    'Newsprint full-page-ad conversion band for a local-business DIRECTORY: a paper band holding a heavy-bordered ad box with a hard offset shadow — a mono Advertisement rule row on top, a large centered serif headline, a supporting paragraph, and a centered pair of square CTAs (a filled foreground-on-background primary button plus a hairline outlined secondary button), both with press feedback. The primary CTA records a real Lakebed lead; the secondary routes through section-kit route links. Use as the closing list-your-business or sign-up conversion band on local directories, business-listing marketplaces, find-a-service platforms, or review-and-discovery sites.',
   props: z.object({
     /** CTA heading. */
     heading: z.string().optional(),
@@ -50,25 +53,41 @@ export const DirectoryCta = defineCapsule({
 
     return (
       <CtaBand
-        tone="primary"
-        className={`bg-foreground text-background ${props.className ?? ''}`}
+        tone="muted"
+        className={`bg-background px-4 py-16 text-foreground sm:px-6 lg:py-24 ${props.className ?? ''}`}
       >
-        <CtaBandInner>
-          <CtaBandTitle>{heading}</CtaBandTitle>
-          <CtaBandSubtitle>{description}</CtaBandSubtitle>
-          <div className="flex flex-col justify-center gap-4 sm:flex-row">
+        <CtaBandInner className="max-w-3xl gap-5 border-2 border-foreground bg-background px-6 py-12 shadow-[8px_8px_0_0] shadow-foreground/80 sm:px-10 lg:py-14">
+          <div
+            aria-hidden="true"
+            className="flex w-full items-center gap-3 border-b border-border pb-4"
+          >
+            <MonoTag tone="faint" className="shrink-0">
+              Advertisement
+            </MonoTag>
+            <span className="h-px flex-1 bg-border" />
+            <MonoTag tone="faint" className="shrink-0 tabular-nums">
+              Full page
+            </MonoTag>
+          </div>
+          <CtaBandTitle className="font-serif text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
+            {heading}
+          </CtaBandTitle>
+          <CtaBandSubtitle className="text-muted-foreground opacity-100">
+            {description}
+          </CtaBandSubtitle>
+          <div className="flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row sm:gap-4">
             <DirectoryLeadButton
               lakebed={lakebed}
               action={primaryCta}
               source="cta"
               pendingChildren={<DirectoryMutationSpinner />}
-              className="inline-flex min-h-14 items-center justify-center rounded-lg bg-background px-8 py-4 font-medium text-foreground transition-colors hover:bg-background/90 disabled:pointer-events-none disabled:opacity-70"
+              className="inline-flex min-h-12 items-center justify-center rounded-none bg-foreground px-8 font-medium text-background transition-[background-color,transform] hover:bg-foreground/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
             >
               {primaryCta}
             </DirectoryLeadButton>
             <CtaAction
               variant="outline"
-              className="rounded-lg border-background/40 px-8 py-4 font-medium text-background hover:border-background/70"
+              className="min-h-12 rounded-none border-foreground bg-transparent px-8 font-medium text-foreground transition-[background-color,color,transform] hover:bg-foreground hover:text-background active:translate-y-px"
               asChild
             >
               <NavbarRouteLink href={secondaryCta}>

@@ -5,6 +5,7 @@ import { cn } from '#/lib/utils.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   FeatureGrid,
   FeatureCard,
@@ -14,18 +15,21 @@ import {
 } from '#/section-kit/FeatureGrid.tsx'
 
 /**
- * CrowdfundingFeatures — a 6-up product FEATURES grid for a crowdfunding /
- * campaign landing page. On a card surface: a centered uppercase eyebrow +
- * heading above a responsive 1/2/3-column grid of muted feature cards, each
- * with a rounded primary-tinted icon tile (rotating through a set of outline
- * glyphs), a bold title, and a muted description. Use to spell out the product
- * specs / benefits of a launching product, hardware/maker project, or any
- * campaign where concrete feature bullets build buyer confidence.
+ * CrowdfundingFeatures — a playful-bold 6-up product FEATURES grid for a
+ * crowdfunding / campaign landing page. An asymmetric header — mono eyebrow +
+ * extrabold left-aligned heading on the left, a mono "[ spec sheet ]" tag on
+ * the right — above a 3-column grid of sharp 2px-bordered spec cards whose
+ * middle column staggers downward on desktop. Each card opens with a mono
+ * index numeral riding a tiny token-built progress-tick bar (the campaign's
+ * bar motif in miniature), then a bold title and muted description; cards lift
+ * on hover with a hard offset shadow. Use to spell out the product specs /
+ * benefits of a launching product, hardware/maker project, or any campaign
+ * where concrete feature bullets build buyer confidence.
  */
 export const CrowdfundingFeatures = defineCapsule({
   name: 'CrowdfundingFeatures',
   description:
-    'A 6-up product FEATURES grid for a crowdfunding / campaign landing page on a card surface: a centered uppercase eyebrow + heading above a responsive 1/2/3-column grid of muted feature cards, each with a rounded primary-tinted icon tile (rotating through a set of outline glyphs), a bold title, and a muted description. Use to spell out the product specs / benefits of a launching product, hardware/maker project, or any campaign where concrete feature bullets build buyer confidence.',
+    "A playful-bold 6-up product FEATURES grid for a crowdfunding / campaign landing page: an asymmetric header (mono eyebrow + extrabold left-aligned heading left, mono '[ spec sheet ]' tag right) above a 3-column grid of sharp 2px-bordered spec cards whose middle column staggers downward on desktop, each opening with a mono index numeral on a tiny token-built progress-tick bar before a bold title and muted description, lifting on hover with a hard offset shadow. Use to spell out the product specs / benefits of a launching product, hardware/maker project, or any campaign where concrete feature bullets build buyer confidence.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -73,19 +77,29 @@ export const CrowdfundingFeatures = defineCapsule({
           },
         ]
 
+    const tickWidths = ['w-8', 'w-5', 'w-10', 'w-6', 'w-9', 'w-4']
+
     return (
-      <section className={cn('bg-card py-20 lg:py-28', props.className)}>
+      <section
+        className={cn('bg-card py-16 sm:py-20 lg:py-28', props.className)}
+      >
         <Container>
-          <SectionHeading
-            eyebrow={featuresEyebrow}
-            title={featuresHeading}
-            className="mb-16 gap-0"
-            eyebrowClassName="text-sm font-medium uppercase tracking-wider text-primary"
-            titleClassName="mb-4 mt-3 text-3xl font-semibold sm:text-4xl"
-          />
+          <div className="mb-12 flex flex-col gap-4 sm:mb-16 md:flex-row md:items-end md:justify-between">
+            <SectionHeading
+              eyebrow={featuresEyebrow}
+              title={featuresHeading}
+              align="left"
+              className="max-w-2xl gap-3"
+              eyebrowClassName="font-mono text-[11px] uppercase tracking-[0.2em] text-primary"
+              titleClassName="text-3xl font-extrabold leading-[1.02] tracking-tighter sm:text-4xl"
+            />
+            <MonoTag aria-hidden="true" tone="faint" className="shrink-0">
+              [ spec sheet ]
+            </MonoTag>
+          </div>
 
           <FeatureGrid columns={3}>
-            {featureItems.map((f) => {
+            {featureItems.map((f, i) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -96,9 +110,33 @@ export const CrowdfundingFeatures = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
+                <FeatureCard
+                  key={__iv__.title}
+                  className={cn(
+                    'rounded-none border-2 border-foreground/20 bg-background p-6 transition-all hover:-translate-y-1 hover:border-foreground hover:shadow-[5px_5px_0_0] hover:shadow-foreground/15 motion-reduce:transform-none',
+                    i % 3 === 1 && 'lg:translate-y-8',
+                  )}
+                >
+                  <span className="flex items-center gap-3">
+                    <MonoTag>{String(i + 1).padStart(2, '0')}</MonoTag>
+                    <span
+                      aria-hidden="true"
+                      className="flex items-center gap-1"
+                    >
+                      <span
+                        className={cn(
+                          'h-1.5 bg-primary',
+                          tickWidths[i % tickWidths.length],
+                        )}
+                      />
+                      <span className="h-1.5 w-1.5 bg-foreground/20" />
+                      <span className="h-1.5 w-1.5 bg-foreground/20" />
+                    </span>
+                  </span>
                   {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
+                  <FeatureTitle className="text-lg font-bold tracking-tight">
+                    {__iv__.title}
+                  </FeatureTitle>
                   <FeatureDescription>{__iv__.description}</FeatureDescription>
                 </FeatureCard>
               )

@@ -19,18 +19,19 @@ import {
 import { eventLakebed } from './event-lakebed.ts'
 
 /**
- * EventNavbar — sticky translucent top navigation bar for a conference / event
- * landing page. A blurred, border-bottomed header pinned to the top with a square
- * brand-initials mark plus the event name on the left, a horizontal row of nav
- * links in the center, a shared registration badge, a real mobile Sheet menu,
- * and a primary "Get Tickets" CTA on the right. Nav links route through
- * route hrefs; the CTA records a Lakebed event/ticket action. Use as the sticky site header for tech conferences,
- * summits, meetups, workshops, festivals, webinars, or any ticketed event.
+ * EventNavbar — sticky kinetic-poster top navigation bar for a conference / event
+ * landing page. A blurred, hairline-bottomed header pinned to the top with a
+ * square brand-initials mark plus the event name on the left, a horizontal row of
+ * nav links, a shared registration badge, a real mobile Sheet menu, and a
+ * square-edged mono-uppercase "Get Tickets" CTA on the right that carries a hard
+ * offset shadow and presses down on click. Nav links route through route hrefs;
+ * the CTA records a Lakebed event/ticket action. Use as the sticky site header for
+ * tech conferences, summits, meetups, workshops, festivals, or any ticketed event.
  */
 export const EventNavbar = defineCapsule({
   name: 'EventNavbar',
   description:
-    "Sticky translucent top navigation bar for a conference / event landing page: a blurred, border-bottomed header pinned to the top with a square brand-initials mark plus the event name on the left, a horizontal row of nav links in the center, a shared Lakebed registration badge, a real mobile Sheet menu, and a primary 'Get Tickets' CTA button on the right. Nav links route through route hrefs, and the CTA records a Lakebed event/ticket action. Use as the sticky site header for tech conferences, summits, meetups, workshops, festivals, webinars, hackathons, or any ticketed event.",
+    "Sticky kinetic-poster top navigation bar for a conference / event landing page: a blurred, hairline-bottomed header pinned to the top with a square brand-initials mark plus the event name on the left, a horizontal row of nav links, a shared Lakebed registration badge, a real mobile Sheet menu, and a square-edged mono-uppercase 'Get Tickets' CTA button with a hard offset shadow and press feedback on the right. Nav links route through route hrefs, and the CTA records a Lakebed event/ticket action. Use as the sticky site header for tech conferences, summits, meetups, workshops, festivals, webinars, hackathons, or any ticketed event.",
   props: z.object({
     /** Brand / event name shown in the navbar. */
     brand: z.string().optional(),
@@ -58,26 +59,30 @@ export const EventNavbar = defineCapsule({
       <SiteNav
         position="sticky"
         height="compact"
-        className={cn('bg-background/95 backdrop-blur', props.className)}
+        className={cn(
+          'border-border bg-background/90 backdrop-blur',
+          props.className,
+        )}
         containerClassName="max-w-6xl px-4 sm:px-6 lg:px-8"
       >
-        <NavbarBrand href={homeTarget} className="gap-2">
-          <BrandLogo brand={brand}>
+        <NavbarBrand href={homeTarget}>
+          <BrandLogo brand={brand} className="flex items-center gap-2">
             <LogoImage
+              className="size-7"
               fallback={
                 <span
-                  className="grid size-8 place-items-center rounded-lg bg-foreground text-sm font-bold text-background"
+                  className="grid size-7 place-items-center rounded-none bg-foreground text-[11px] font-extrabold tracking-tight text-background"
                   aria-hidden="true"
                 >
                   {brand.slice(0, 2).toUpperCase()}
                 </span>
               }
             />
-            <LogoLabel className="text-lg font-semibold tracking-tight" />
+            <LogoLabel className="text-lg font-extrabold tracking-tight" />
           </BrandLogo>
         </NavbarBrand>
 
-        <NavbarNav className="[&>button]:font-normal">
+        <NavbarNav className="[&>a]:font-mono [&>a]:text-[11px] [&>a]:uppercase [&>a]:tracking-[0.14em] [&>button]:font-mono [&>button]:text-[11px] [&>button]:uppercase [&>button]:tracking-[0.14em]">
           {nav.map((label) => (
             <NavbarNavLink key={label} href={label}>
               {label}
@@ -86,7 +91,10 @@ export const EventNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-3">
-          <EventRegistrationBadge lakebed={lakebed} />
+          <EventRegistrationBadge
+            lakebed={lakebed}
+            className="rounded-none border-primary/30 font-mono text-[11px] uppercase tracking-[0.12em]"
+          />
           <EventActionButton
             lakebed={lakebed}
             action="ticket"
@@ -100,7 +108,7 @@ export const EventNavbar = defineCapsule({
                 Reserving
               </>
             }
-            className="hidden items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
+            className="hidden items-center gap-2 rounded-none border border-foreground bg-primary px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-primary-foreground shadow-[3px_3px_0_0] shadow-foreground transition-[transform,box-shadow] duration-150 hover:-translate-y-px hover:shadow-[4px_4px_0_0] hover:shadow-foreground active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
           >
             {ctaLabel}
           </EventActionButton>
@@ -110,7 +118,7 @@ export const EventNavbar = defineCapsule({
             homeTarget={homeTarget}
             lakebed={lakebed}
             nav={nav}
-            buttonClassName="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+            buttonClassName="rounded-none p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
           />
         </NavbarActions>
       </SiteNav>

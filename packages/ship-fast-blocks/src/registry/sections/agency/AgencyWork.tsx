@@ -13,21 +13,27 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 
 /**
- * AgencyWork — selected-work / case-study gallery for a creative digital-agency
- * page, on a subtle muted band. A heading + lead on the left with a "view all"
- * link on the right, above a 2-column grid of clickable project cards: each has
- * a 4:3 alt-driven image that zooms on hover, a "View case study" overlay pill
- * that fades in, a title (color-shifts on hover), a description, and a category
- * tag chip. Every card and the view-all link route through section-kit route links. Use to
- * showcase an agency's portfolio, case studies, featured projects, or selected
- * work. Renders fully with no props via four baked-in default projects.
+ * AgencyWork — neo-brutalist staggered case-study gallery for a creative
+ * digital-agency page, on a muted band. An asymmetric header (slab uppercase
+ * heading + lead left, mono "04 / Selected work" index and a bordered block
+ * "view all" button with hard offset shadow right) above a 2-column staggered
+ * grid of clickable project plates: each is a sharp 2px-bordered card with a
+ * hard 8px offset shadow and alternating micro-rotation that lifts on hover,
+ * holding an alt-driven image with a thick bottom rule, a mono index numeral,
+ * a slab uppercase title, a description, and a rotated sticker category chip
+ * overlapping the plate's top edge; a mono "View case study" strip appears
+ * over the image on hover. Every card and the view-all button route through
+ * section-kit route links. Use to showcase an agency's portfolio, case
+ * studies, featured projects, or selected work. Renders fully with no props
+ * via four baked-in default projects.
  */
 export const AgencyWork = defineCapsule({
   name: 'AgencyWork',
   description:
-    "Selected-work / case-study gallery for a creative digital-agency page on a subtle muted band: a heading and lead paragraph on the left with a 'view all' link on the right, above a 2-column grid of clickable project cards. Each card has a 4:3 alt-driven image that zooms on hover, a 'View case study' overlay pill that fades in, a title that color-shifts on hover, a description, and a category tag chip. Cards and the view-all link route through section-kit route links. Use to showcase an agency's portfolio, case studies, featured projects, or selected work.",
+    "Neo-brutalist staggered case-study gallery for a creative digital-agency page on a muted band: an asymmetric header (slab uppercase heading + lead left, mono index and a bordered block 'view all' button with hard offset shadow right) above a 2-column staggered grid of clickable project plates — sharp 2px-bordered cards with hard 8px offset shadows and alternating micro-rotations that lift on hover, each holding an alt-driven image with a thick bottom rule, a mono index numeral, a slab uppercase title, a description, and a rotated sticker category chip overlapping the plate edge; a mono 'View case study' strip appears over the image on hover. Cards and the view-all button route through section-kit route links. Use to showcase an agency's portfolio, case studies, featured projects, or selected work.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -102,63 +108,88 @@ export const AgencyWork = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-muted/30 pt-28 pb-24 lg:pt-32 lg:pb-28',
+          'overflow-hidden border-b-2 border-foreground bg-muted/40 py-14 sm:py-20 lg:py-28',
           props.className,
         )}
       >
-        <Container size="xl" className="px-6 lg:px-6">
-          <div className="mb-16 flex flex-col justify-between gap-6 md:flex-row md:items-end">
-            <SectionHeading
-              align="left"
-              title={heading}
-              subtitle={description}
-              className="gap-0"
-              titleClassName="mb-4 text-4xl font-bold tracking-tight sm:text-5xl"
-              subtitleClassName="max-w-xl text-lg text-muted-foreground"
-            />
+        <Container size="xl" className="px-6">
+          <div className="mb-12 flex flex-col justify-between gap-6 sm:mb-16 md:flex-row md:items-end">
+            <div>
+              <MonoTag aria-hidden="true">04 / Selected work</MonoTag>
+              <SectionHeading
+                align="left"
+                title={heading}
+                subtitle={description}
+                className="mt-3 gap-3"
+                titleClassName="text-4xl font-black uppercase leading-[0.95] tracking-tighter sm:text-6xl"
+                subtitleClassName="max-w-xl text-base text-muted-foreground sm:text-lg"
+              />
+            </div>
             <NavbarRouteLink
-              className="inline-flex items-center gap-2 font-medium text-primary transition-colors hover:text-primary/80"
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-none border-2 border-foreground bg-background px-6 py-3 font-mono text-xs font-bold uppercase tracking-[0.18em] text-foreground shadow-[4px_4px_0_0] shadow-foreground transition-all duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0] hover:shadow-foreground active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
               href={viewAll}
             >
               {viewAll} <ArrowRight />
             </NavbarRouteLink>
           </div>
 
-          <PortfolioGrid cols="1-md-2">
-            {items.map((proj) => (
+          <PortfolioGrid
+            cols="1-md-2"
+            className="gap-10 sm:gap-x-10 sm:gap-y-12 md:gap-x-12"
+          >
+            {items.map((proj, i) => (
               <PortfolioItem
                 key={proj.title}
-                className="block w-full cursor-pointer"
+                className={cn(
+                  'block w-full cursor-pointer',
+                  i % 2 === 1 && 'md:translate-y-12',
+                )}
                 asChild
               >
                 <NavbarRouteLink href={proj.title}>
-                  <PortfolioMedia aspect="4-3" className="mb-6 rounded-2xl">
-                    <Image
-                      alt={proj.title}
-                      w={800}
-                      h={600}
-                      loading="lazy"
-                      className="size-full rounded-2xl object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 flex items-end rounded-2xl bg-gradient-to-t from-background/60 to-transparent p-6 opacity-0 transition-opacity group-hover:opacity-100">
-                      <span className="rounded-full bg-accent/80 px-4 py-2 text-sm font-medium text-accent-foreground backdrop-blur">
-                        View case study
-                      </span>
-                    </div>
-                  </PortfolioMedia>
-                  <PortfolioCaption className="flex items-start justify-between gap-4">
-                    <div>
-                      <h3 className="mb-2 text-2xl font-semibold transition-colors group-hover:text-primary">
-                        {proj.title}
-                      </h3>
-                      <p className="text-muted-foreground">
-                        {proj.description}
-                      </p>
-                    </div>
-                    <PortfolioTag className="mt-2 whitespace-nowrap rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
+                  <div
+                    className={cn(
+                      'relative border-2 border-foreground bg-background shadow-[8px_8px_0_0] shadow-foreground transition-all duration-150 group-hover:-translate-x-0.5 group-hover:-translate-y-0.5 group-hover:shadow-[12px_12px_0_0] group-hover:shadow-foreground',
+                      i % 2 === 0 ? 'rotate-[0.4deg]' : '-rotate-[0.4deg]',
+                    )}
+                  >
+                    <PortfolioTag className="absolute -top-3.5 right-4 z-10 inline-flex rotate-3 items-center whitespace-nowrap rounded-full border-2 border-foreground bg-background px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-foreground shadow-[3px_3px_0_0] shadow-foreground sm:right-6">
                       {proj.tag}
                     </PortfolioTag>
-                  </PortfolioCaption>
+                    <PortfolioMedia
+                      aspect="4-3"
+                      className="rounded-none border-b-2 border-foreground"
+                    >
+                      <Image
+                        alt={proj.title}
+                        w={800}
+                        h={600}
+                        loading="lazy"
+                        className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                      />
+                      <div className="absolute inset-x-0 bottom-0 flex opacity-0 transition-opacity group-hover:opacity-100">
+                        <span className="inline-flex items-center gap-2 border-r-2 border-t-2 border-foreground bg-foreground px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-background">
+                          View case study
+                        </span>
+                      </div>
+                    </PortfolioMedia>
+                    <PortfolioCaption className="flex items-start gap-4 p-5 sm:p-6">
+                      <MonoTag
+                        aria-hidden="true"
+                        className="mt-1 shrink-0 text-foreground/40"
+                      >
+                        {String(i + 1).padStart(2, '0')}
+                      </MonoTag>
+                      <div>
+                        <h3 className="mb-2 text-xl font-black uppercase tracking-tight underline-offset-4 group-hover:underline group-hover:decoration-primary group-hover:decoration-4 sm:text-2xl">
+                          {proj.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground sm:text-base">
+                          {proj.description}
+                        </p>
+                      </div>
+                    </PortfolioCaption>
+                  </div>
                 </NavbarRouteLink>
               </PortfolioItem>
             ))}

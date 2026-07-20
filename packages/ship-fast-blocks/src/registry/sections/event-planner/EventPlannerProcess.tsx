@@ -3,30 +3,27 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import {
-  ProcessBadge,
-  ProcessConnector,
   ProcessStep,
-  ProcessContent,
   ProcessTimeline,
   ProcessGrid,
-  ProcessTimelineHeader,
 } from '#/section-kit/ProcessTimeline.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
- * EventPlannerProcess — numbered "how we work" process row on a muted band. A
- * centered intro (uppercase eyebrow, thin light heading, lede) above a responsive
- * 2-up/4-up grid of steps, each with a large primary-filled zero-padded numeral
- * circle, a medium-weight title, a relaxed description, and a thin horizontal
- * connector line bridging steps on desktop. Use to explain a planning workflow
- * (Discovery, Design, Planning, Execution) for event/wedding planners or
- * service businesses.
+ * EventPlannerProcess — kinetic-poster inverted "how we work" band. A full ink
+ * inversion (foreground background, background text) that cuts in on a slanted
+ * clip-path seam: a mono uppercase meta rule with a primary square and a tabular
+ * step count above a left-aligned giant tight-tracked heading and lede, then a
+ * 4-column collapsed-border step ledger whose cells share hairline rules and
+ * carry giant ghost numeral watermarks, mono primary step labels, bold titles,
+ * and relaxed descriptions. Use to explain a planning workflow (Discovery,
+ * Design, Planning, Execution) for event/wedding planners or service businesses.
  */
 export const EventPlannerProcess = defineCapsule({
   name: 'EventPlannerProcess',
   description:
-    "Numbered 'how we work' process row on a muted band: a centered intro (uppercase eyebrow, thin light heading, lede) above a responsive 2-up/4-up grid of steps, each with a large primary-filled zero-padded numeral circle, a medium-weight title, a relaxed description, and a thin horizontal connector line bridging steps on desktop. Use to explain a planning workflow (e.g. Discovery, Design, Planning, Execution) for event/wedding planners, agencies, or service businesses.",
+    "Kinetic-poster inverted 'how we work' band: a full ink-inverted section (foreground background, background text) that cuts in on a slanted clip-path seam, with a mono uppercase meta rule + primary square + tabular step count, a left-aligned giant tight-tracked heading and lede, and a 4-column collapsed-border step ledger whose cells share hairline rules and carry giant ghost numeral watermarks, mono primary step labels, bold titles, and relaxed descriptions. Use to explain a planning workflow (e.g. Discovery, Design, Planning, Execution) for event/wedding planners, agencies, or service businesses.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -69,42 +66,58 @@ export const EventPlannerProcess = defineCapsule({
 
     return (
       <ProcessTimeline
-        variant="muted"
-        className={cn('px-4 py-20 sm:px-6 lg:px-8 lg:py-28', props.className)}
+        variant="inverted"
+        className={cn(
+          // Slanted top edge: the inverted band starts on a diagonal seam
+          // (clip-path on the band itself keeps it neighbor-independent).
+          'relative overflow-hidden py-16 pt-24 [clip-path:polygon(0_0,100%_3rem,100%_100%,0_100%)] sm:py-20 sm:pt-28 lg:py-28 lg:pt-36',
+          props.className,
+        )}
       >
-        <Container size="xl">
-          <ProcessTimelineHeader className="max-w-3xl">
-            <SectionHeading
-              align="left"
-              eyebrow={processEyebrow}
-              title={processHeading}
-              subtitle={processDesc}
-              className="gap-0"
-              eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground"
-              titleClassName="mb-6 text-3xl font-light text-foreground sm:text-4xl lg:text-5xl"
-              subtitleClassName="text-lg text-muted-foreground"
-            />
-          </ProcessTimelineHeader>
-          <ProcessGrid columns={4} className="lg:gap-6">
+        <Container size="xl" className="relative">
+          <div className="mb-10 flex items-center justify-between gap-4 border-b border-background/20 pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-background/50">
+            <span className="flex items-center gap-3">
+              <span aria-hidden="true" className="size-2 bg-primary" />
+              {processEyebrow}
+            </span>
+            <span className="tabular-nums">
+              {String(processSteps.length).padStart(2, '0')} steps
+            </span>
+          </div>
+
+          <SectionHeading
+            align="left"
+            title={processHeading}
+            subtitle={processDesc}
+            className="mb-10 max-w-3xl gap-4 sm:mb-14 lg:mb-16"
+            titleClassName="text-4xl font-extrabold tracking-tighter text-background sm:text-5xl lg:text-6xl"
+            subtitleClassName="max-w-xl text-lg text-background/60"
+          />
+
+          <ProcessGrid
+            columns={4}
+            className="gap-0 border-l border-t border-background/20"
+          >
             {processSteps.map((step, i) => (
-              <ProcessStep key={step.title} className="relative">
-                <ProcessBadge
-                  index={i}
-                  variant="filled-circle"
-                  pad
-                  className="mb-6"
-                />
-                <ProcessContent>
-                  <h3 className="mb-3 text-xl font-medium text-foreground">
-                    {step.title}
-                  </h3>
-                  <p className="leading-relaxed text-muted-foreground">
-                    {step.description}
-                  </p>
-                </ProcessContent>
-                {i < processSteps.length - 1 && (
-                  <ProcessConnector className="left-full top-8 hidden w-full -translate-y-1/2 lg:block" />
-                )}
+              <ProcessStep
+                key={step.title}
+                className="relative border-b border-r border-background/20 p-6 sm:p-8"
+              >
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute right-4 top-4 select-none font-mono text-6xl font-bold tabular-nums leading-none text-background/15 sm:right-5 sm:top-5 sm:text-7xl"
+                >
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+                  Step {String(i + 1).padStart(2, '0')}
+                </span>
+                <h3 className="mt-4 text-xl font-bold tracking-tight text-background">
+                  {step.title}
+                </h3>
+                <p className="mt-3 leading-relaxed text-background/70">
+                  {step.description}
+                </p>
               </ProcessStep>
             ))}
           </ProcessGrid>

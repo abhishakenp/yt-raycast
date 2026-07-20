@@ -3,17 +3,19 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * InvestingFeatures — capabilities grid for an investing / fintech page. A muted
- * section band with a centered heading + lead above a responsive 1/2/3-column
- * grid of hover-lift cards; each card has a rounded tinted icon tile (rotating
- * inline line-icons in rotating token tints), a title and a description. Tokens
- * only, no links. Use to present a brokerage's core features — advanced
- * charting, zero commission, AI insights, security, social investing,
- * auto-invest — or any "everything you need" feature block. Renders fully with
- * no props via six baked-in default features.
+ * InvestingFeatures — Swiss-fintech collapsed-border capability ledger for an
+ * investing / brokerage page. An asymmetric header (left-aligned heading + lede,
+ * mono meta count right) sits above a sharp-cornered, collapsed-border 3-column
+ * grid whose cells share hairline rules (binary radius, no gaps); each cell
+ * carries a mono index numeral, a title, and a description, with the ink
+ * hairline thickening on hover. No icon tiles — the ledger structure and mono
+ * indexing carry the rhythm. Tokens only, no links. Use to present a brokerage's
+ * core capabilities — advanced charting, zero commission, AI insights, security,
+ * social investing, auto-invest — or any "everything you need" feature block.
+ * Renders fully with no props via six baked-in default features.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   FeatureGrid,
   FeatureCard,
@@ -24,7 +26,7 @@ import {
 export const InvestingFeatures = defineCapsule({
   name: 'InvestingFeatures',
   description:
-    "Capabilities grid for an investing / fintech page: a muted section band with a centered heading + lead above a responsive 1/2/3-column grid of hover-lift cards, each with a rounded tinted icon tile (rotating inline line-icons in rotating token tints), a title and a description. Tokens only, no links. Use to present a brokerage's core features (advanced charting, zero commission, AI insights, security, social investing, auto-invest) or any 'everything you need' feature block.",
+    "Swiss-fintech collapsed-border capability ledger for an investing / brokerage page: an asymmetric header (left-aligned heading + lede, mono meta count right) above a sharp-cornered, collapsed-border 3-column grid whose cells share hairline rules and carry a mono index numeral, a title and a description with an ink-hairline hover. No icon tiles — the ledger structure carries the rhythm. Tokens only, no links. Use to present a brokerage's core capabilities (advanced charting, zero commission, AI insights, security, social investing, auto-invest) or any 'everything you need' feature block.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -83,18 +85,38 @@ export const InvestingFeatures = defineCapsule({
     return (
       <section
         id="features"
-        className={cn('bg-muted/50 py-24', props.className)}
+        className={cn('pt-24 pb-20 lg:pt-28 lg:pb-28', props.className)}
       >
         <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-2xl gap-0"
-            titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <FeatureGrid columns={3}>
-            {items.map((f) => {
+          <div className="mb-12 flex flex-col gap-6 border-b border-border pb-6 md:flex-row md:items-end md:justify-between lg:mb-14">
+            <div className="max-w-2xl">
+              <MonoTag className="mb-4 block">
+                Capabilities
+                <span aria-hidden="true" className="text-primary">
+                  {' '}
+                  / {String(items.length).padStart(2, '0')}
+                </span>
+              </MonoTag>
+              <h2 className="text-3xl font-extrabold tracking-tight text-foreground text-balance sm:text-4xl">
+                {heading}
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground text-pretty">
+                {description}
+              </p>
+            </div>
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="shrink-0 tabular-nums"
+            >
+              [ {String(items.length).padStart(2, '0')} modules ]
+            </MonoTag>
+          </div>
+          <FeatureGrid
+            columns={3}
+            className="gap-0 border-l border-t border-border"
+          >
+            {items.map((f, i) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -105,10 +127,29 @@ export const InvestingFeatures = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
+                <FeatureCard
+                  key={__iv__.title}
+                  className="gap-3 rounded-none border-0 border-b border-r border-border bg-transparent p-7 transition-colors duration-150 hover:border-foreground/30 hover:bg-muted/30 sm:p-8"
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      aria-hidden="true"
+                      className="font-mono text-[11px] font-semibold tabular-nums tracking-[0.2em] text-primary"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="h-px flex-1 bg-border"
+                    />
+                  </div>
                   {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                  <FeatureTitle className="text-lg font-semibold tracking-tight">
+                    {__iv__.title}
+                  </FeatureTitle>
+                  <FeatureDescription className="leading-relaxed">
+                    {__iv__.description}
+                  </FeatureDescription>
                 </FeatureCard>
               )
             })}

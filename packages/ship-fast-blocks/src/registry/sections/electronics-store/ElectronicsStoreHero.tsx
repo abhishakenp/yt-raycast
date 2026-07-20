@@ -19,22 +19,27 @@ import {
   HeroStatBadgeSubtitle,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { DotGrid } from '#/section-kit/Decor.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * ElectronicsStoreHero — split storefront hero for a premium electronics /
- * gadgets shop on a soft muted band. Two-column layout: left carries a pill
- * badge, a large headline, a supporting paragraph, dual CTAs (filled primary
- * Shop Now with arrow + outlined View Deals) and a bordered inline KPI strip
- * (Happy Customers / Free Shipping / Easy Returns); right shows a square product
- * image with a floating best-seller product card (star icon + title + rating
- * meta). CTAs route through section-kit route links. Use as the opening hero for electronics
- * stores, gadget shops, consumer-tech retailers, or audio/camera storefronts.
+ * ElectronicsStoreHero — tech-brutalist split storefront hero for a premium
+ * electronics / gadgets shop on a muted band. Asymmetric 7/5 grid: the left
+ * column stacks a mono index eyebrow rule, a squared bg-foreground badge chip, a
+ * giant extrabold headline, a supporting paragraph, dual CTAs (filled primary
+ * Shop Now with a hard offset shadow + press feedback and an outlined border-2
+ * View Deals) and a collapsed-border spec ledger of KPIs (Happy Customers / Free
+ * Shipping / Easy Returns) with mono labels and tabular values; the right column
+ * frames a square product image in a border-2 hard-shadow plate behind a giant
+ * ghost model numeral, with a floating squared spec card (best-seller title,
+ * rating meta, oversized tabular price). CTAs route through section-kit route
+ * links. Use as the opening hero for electronics stores, gadget shops,
+ * consumer-tech retailers, or audio/camera storefronts.
  */
 export const ElectronicsStoreHero = defineCapsule({
   name: 'ElectronicsStoreHero',
   description:
-    'Split storefront hero for a premium electronics / gadgets shop on a soft muted band: a two-column layout where the left carries a pill badge, large headline, supporting paragraph, dual CTAs (filled primary Shop Now with an arrow + outlined View Deals) and a bordered inline KPI strip (e.g. 50K+ Happy Customers / 2-Day Free Shipping / 30-Day Easy Returns); the right shows a square product image with a floating best-seller product card (star icon + product title + rating meta). CTAs route through section-kit route links; imagery is alt-driven. Use as the opening hero for electronics stores, gadget shops, consumer-tech retailers, audio/headphone shops, or camera/drone storefronts.',
+    'Tech-brutalist split storefront hero for a premium electronics / gadgets shop on a muted band: an asymmetric 7/5 grid where the left column stacks a mono index eyebrow rule, a squared bg-foreground badge chip, a giant extrabold headline, a supporting paragraph, dual CTAs (filled primary Shop Now with a hard offset shadow + press feedback and an outlined border-2 View Deals) and a collapsed-border spec ledger of KPIs (e.g. 50K+ Happy Customers / 2-Day Free Shipping / 30-Day Easy Returns) with mono labels and tabular values; the right column frames a square product image in a border-2 hard-shadow plate behind a giant ghost model numeral, with a floating squared spec card (best-seller title, rating meta, oversized tabular price). CTAs route through section-kit route links; imagery is alt-driven. Use as the opening hero for electronics stores, gadget shops, consumer-tech retailers, audio/headphone shops, or camera/drone storefronts.',
   props: z.object({
     /** Pill badge above the headline. */
     badge: z.string().optional(),
@@ -123,52 +128,77 @@ export const ElectronicsStoreHero = defineCapsule({
         variant="split"
         className={cn('relative overflow-hidden bg-muted/40', props.className)}
       >
-        <Container size="xl" className="py-16 lg:py-24">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
-            <div className="max-w-xl">
-              <span className="mb-6 inline-block rounded-full bg-foreground px-3 py-1 text-xs font-medium text-background">
+        <DotGrid
+          density="default"
+          tone="border"
+          fade="bottom"
+          className="inset-x-0 top-0 h-64"
+        />
+        <Container size="xl" className="relative py-16 lg:py-24">
+          <div className="grid items-center gap-12 lg:grid-cols-12">
+            <div className="max-w-xl lg:col-span-7">
+              <div className="mb-6 flex items-center gap-3 border-b-2 border-foreground pb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                <span className="tabular-nums text-foreground">[ 01 ]</span>
+                <span>Storefront</span>
+                <span
+                  aria-hidden="true"
+                  className="ml-auto hidden tabular-nums text-muted-foreground/70 sm:inline"
+                >
+                  IN STOCK
+                </span>
+              </div>
+              <span className="mb-6 inline-block rounded-none bg-foreground px-3 py-1 font-mono text-[11px] uppercase tracking-[0.2em] text-background">
                 {badge}
               </span>
-              <h1 className="mb-6 text-4xl font-semibold leading-tight text-foreground lg:text-5xl">
+              <h1 className="mb-6 text-balance text-5xl font-extrabold leading-[0.95] tracking-tight text-foreground lg:text-7xl">
                 {heading}
               </h1>
-              <p className="mb-8 text-lg leading-relaxed text-muted-foreground">
+              <p className="mb-8 max-w-md text-lg leading-relaxed text-muted-foreground">
                 {subheading}
               </p>
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap">
                 <CommerceAddItemButton
                   lakebed={lakebed}
                   item={{ label: floatTitle, price: floatPrice }}
                   pendingChildren={
                     <CommerceMutationSpinner className="text-primary-foreground" />
                   }
-                  className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+                  className="inline-flex items-center justify-center rounded-none bg-primary px-6 py-3.5 font-semibold text-primary-foreground shadow-[6px_6px_0_0] shadow-foreground transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[8px_8px_0_0] active:translate-y-0 active:shadow-[3px_3px_0_0] disabled:pointer-events-none disabled:opacity-70 motion-reduce:transform-none"
                 >
                   {primaryCta}
                   <ArrowRight />
                 </CommerceAddItemButton>
                 <NavbarRouteLink
-                  className="inline-flex items-center justify-center rounded-lg border border-border px-6 py-3 font-medium text-foreground transition-colors hover:bg-accent"
+                  className="inline-flex items-center justify-center rounded-none border-2 border-foreground px-6 py-3.5 font-semibold text-foreground transition-all duration-150 hover:bg-foreground hover:text-background active:translate-y-px"
                   href={secondaryCta}
                 >
                   {secondaryCta}
                 </NavbarRouteLink>
               </div>
-              <div className="mt-10 flex items-center gap-8 border-t border-border pt-8">
+              <dl className="mt-10 grid grid-cols-3 border-2 border-foreground">
                 {stats.map((s) => (
-                  <div key={s.label}>
-                    <div className="text-2xl font-semibold text-foreground">
+                  <div
+                    key={s.label}
+                    className="border-r-2 border-foreground p-4 last:border-r-0"
+                  >
+                    <dt className="text-2xl font-extrabold tabular-nums tracking-tight text-foreground">
                       {s.value}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
+                    </dt>
+                    <dd className="mt-1 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
                       {s.label}
-                    </div>
+                    </dd>
                   </div>
                 ))}
-              </div>
+              </dl>
             </div>
-            <div className="relative">
-              <div className="aspect-square overflow-hidden rounded-xl bg-muted">
+            <div className="relative lg:col-span-5">
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute -top-10 right-0 select-none font-mono text-[7rem] font-extrabold leading-none tracking-tighter text-foreground/[0.06] sm:text-[10rem] lg:-top-16"
+              >
+                01
+              </span>
+              <div className="relative aspect-square overflow-hidden rounded-none border-2 border-foreground bg-muted shadow-[10px_10px_0_0] shadow-foreground">
                 <Image
                   alt={imageAlt}
                   w={800}
@@ -176,17 +206,23 @@ export const ElectronicsStoreHero = defineCapsule({
                   className="size-full object-cover"
                 />
               </div>
-              <HeroStatBadge className="absolute -bottom-6 -left-6 flex max-w-xs items-center gap-3">
-                <HeroStatBadgeIcon className="size-12 text-muted-foreground">
+              <HeroStatBadge className="absolute -bottom-6 -left-4 flex max-w-xs items-center gap-3 rounded-none border-2 border-foreground shadow-[6px_6px_0_0] shadow-foreground sm:-left-6">
+                <HeroStatBadgeIcon className="size-12 rounded-none bg-foreground text-background">
                   <Star className="size-6" />
                 </HeroStatBadgeIcon>
                 <HeroStatBadgeContent>
-                  <HeroStatBadgeTitle asChild className="text-sm font-medium">
+                  <HeroStatBadgeTitle asChild className="text-sm font-semibold">
                     <div>{floatTitle}</div>
                   </HeroStatBadgeTitle>
-                  <HeroStatBadgeSubtitle asChild className="text-xs">
+                  <HeroStatBadgeSubtitle
+                    asChild
+                    className="font-mono text-[10px] uppercase tracking-[0.14em]"
+                  >
                     <div>{floatMeta}</div>
                   </HeroStatBadgeSubtitle>
+                  <div className="mt-1 text-lg font-extrabold tabular-nums tracking-tight text-foreground">
+                    {floatPrice}
+                  </div>
                 </HeroStatBadgeContent>
               </HeroStatBadge>
             </div>

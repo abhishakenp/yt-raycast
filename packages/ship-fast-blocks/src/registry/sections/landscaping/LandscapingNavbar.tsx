@@ -13,21 +13,22 @@ import {
 } from '#/section-kit/index.ts'
 
 /**
- * LandscapingNavbar — sticky, translucent top navigation bar for a landscaping /
- * outdoor-design company. A backdrop-blurred, border-bottomed header pinned to
- * the top: a layered-diamond brand mark + wordmark on the left, a horizontal set
- * of nav links in the center, and a pill-shaped primary CTA on the right
- * (desktop), with a hamburger menu button on mobile. Calm, organic and premium
- * on a warm stone canvas with a sage-green accent. Every link and the CTA route
- * through route hrefs so labels can drive page-switching. Use as the sticky site
- * header for landscapers, lawn-care and yard-maintenance services, garden
- * designers, hardscaping/patio contractors or grounds-keeping companies. Renders
- * fully with no props via baked-in "Earth & Edge" defaults.
+ * LandscapingNavbar — sticky, backdrop-blurred site header for a landscaping /
+ * outdoor-design company in the "Organic editorial" language. A hairline-
+ * bottomed bar on an adaptive translucent surface: a layered-diamond line mark
+ * beside a tight-tracked wordmark on the left (exact BrandLogo compound
+ * pattern), a horizontal row of quiet mono-hover nav links in the center, and a
+ * calm sage-accent pill CTA with mechanical press feedback on the right; a
+ * hamburger drawer takes over on mobile. Every link and the CTA route through
+ * route hrefs so labels can drive page-switching. Use as the sticky site header
+ * for landscapers, lawn-care and yard-maintenance services, garden designers,
+ * hardscaping/patio contractors, irrigation specialists or grounds-keeping
+ * companies. Renders fully with no props via baked-in "Earth & Edge" defaults.
  */
 export const LandscapingNavbar = defineCapsule({
   name: 'LandscapingNavbar',
   description:
-    'Sticky translucent top navigation bar for a landscaping / outdoor-design company: backdrop-blurred, border-bottomed header pinned to the top with a layered-diamond brand mark + wordmark on the left, horizontal nav links in the center, and a pill-shaped primary CTA on the right (desktop), plus a hamburger menu on mobile. Calm, organic and premium on a warm stone canvas with a sage-green accent. Links and CTA route through route hrefs for page-switching. Use as the sticky site header for landscapers, lawn-care and yard-maintenance services, garden designers, hardscaping/patio contractors, irrigation specialists or grounds-keeping companies.',
+    'Sticky, backdrop-blurred site header for a landscaping / outdoor-design company in an organic-editorial language: a hairline-bottomed bar on an adaptive translucent surface with a layered-diamond line mark beside a tight-tracked wordmark on the left, a horizontal row of quiet nav links in the center, and a calm sage-accent pill CTA with mechanical press feedback on the right (desktop), plus a hamburger drawer on mobile. Links and CTA route through route hrefs for page-switching. Use as the sticky site header for landscapers, lawn-care and yard-maintenance services, garden designers, hardscaping/patio contractors, irrigation specialists or grounds-keeping companies.',
   props: z.object({
     /** Brand / company name shown beside the mark. */
     brand: z.string().optional(),
@@ -72,19 +73,22 @@ export const LandscapingNavbar = defineCapsule({
         height="responsive"
         className={cn('bg-background/90 backdrop-blur-md', props.className)}
       >
-        <NavbarBrand href={homeTarget} className="gap-2">
-          <BrandLogo brand={brand}>
-            <LogoImage fallback={<LogoMark className="size-8" />} />
-            <LogoLabel className="text-xl font-semibold tracking-tight text-foreground" />
+        <NavbarBrand href={homeTarget}>
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage
+              className="size-7"
+              fallback={<LogoMark className="size-7" />}
+            />
+            <LogoLabel className="text-lg font-semibold tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
-        <NavbarNav>
+        <NavbarNav className="gap-6">
           {nav.slice(0, -1).map((label) => (
             <NavbarNavLink
               key={label}
               href={label}
-              className="hover:text-primary"
+              className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground hover:bg-transparent hover:text-primary"
             >
               {label}
             </NavbarNavLink>
@@ -92,7 +96,7 @@ export const LandscapingNavbar = defineCapsule({
           <NavbarCta
             variant="primary-pill"
             href={contactTarget}
-            className="px-5 py-2.5"
+            className="px-5 py-2.5 transition-[transform,background-color] duration-150 active:translate-y-px motion-reduce:transform-none"
           >
             {cta}
           </NavbarCta>

@@ -9,23 +9,26 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { NewsletterCtaFineprint } from '#/section-kit/NewsletterCta.tsx'
 import { SubscribeBand } from '#/section-kit/SubscribeBand.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { NavbarRouteLink } from '#/section-kit/index.ts'
 
 /**
- * FurnitureStoreNewsletter — a centered newsletter subscribe CTA on a soft muted
- * band. A narrow column with a heading + description, an inline email form (label
- * is screen-reader-only, primary submit button, stacks on mobile), a fine-print
- * note, and a centered row of social icon buttons. The form submit and each
- * social route through section-kit route links; baked-in Instagram / Pinterest / Facebook
- * glyphs are matched by name, with any unknown social rendered as its text label.
- * Use as a closing email-capture / follow-us CTA for furniture, home-decor, or
- * any retail brand. Renders fully with no props via baked-in "Haven & Home"
- * defaults.
+ * FurnitureStoreNewsletter — an editorial newsletter subscribe CTA on a soft
+ * muted band over a giant faint ghost watermark. A narrow centered column with a
+ * mono "[ NEWSLETTER ]" micro-label, a heading + description, an inline email
+ * form (screen-reader-only label, square rounded-none submit button with press
+ * feedback, stacks on mobile), a mono fine-print note, and a centered row of
+ * square hairline social icon buttons. The form submit and each social route
+ * through section-kit route links; baked-in Instagram / Pinterest / Facebook
+ * glyphs are matched by name, with any unknown social rendered as its text
+ * label. Use as a closing email-capture / follow-us CTA for furniture,
+ * home-decor, or any retail brand. Renders fully with no props via baked-in
+ * "Haven & Home" defaults.
  */
 export const FurnitureStoreNewsletter = defineCapsule({
   name: 'FurnitureStoreNewsletter',
   description:
-    'Centered newsletter subscribe CTA on a soft muted band: a narrow column with heading + description, an inline email form (screen-reader-only label, primary submit button, stacks on mobile), a fine-print note, and a centered row of social icon buttons; form submit writes to the shared Lakebed subscriber list and socials route through section-kit route links, with baked-in Instagram / Pinterest / Facebook glyphs matched by name and unknown socials shown as text. Use as a closing email-capture / follow-us CTA for furniture, home-decor, or any retail brand.',
+    'Editorial newsletter subscribe CTA on a soft muted band over a giant faint ghost watermark: a narrow centered column with a mono "[ NEWSLETTER ]" micro-label, a heading + description, an inline email form (screen-reader-only label, square rounded-none submit button with press feedback, stacks on mobile), a mono fine-print note, and a centered row of square hairline social icon buttons; form submit writes to the shared Lakebed subscriber list and socials route through section-kit route links, with baked-in Instagram / Pinterest / Facebook glyphs matched by name and unknown socials shown as text. Use as a closing email-capture / follow-us CTA for furniture, home-decor, or any retail brand.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -86,16 +89,26 @@ export const FurnitureStoreNewsletter = defineCapsule({
     return (
       <SubscribeBand
         variant="muted"
-        className={cn('py-16 lg:py-24', props.className)}
+        className={cn(
+          'relative overflow-hidden py-16 lg:py-24',
+          props.className,
+        )}
         aria-labelledby="furniture-newsletter-heading"
       >
-        <Container size="sm" className="text-center">
+        {/* Giant faint ghost watermark for editorial gravitas. */}
+        <Watermark className="-bottom-10 left-1/2 -translate-x-1/2 text-[9rem] leading-none sm:text-[13rem]">
+          &amp;
+        </Watermark>
+        <Container size="sm" className="relative text-center">
+          <MonoTag className="mb-6 inline-block tracking-[0.2em]">
+            [ Newsletter ]
+          </MonoTag>
           <SectionHeading
             title={heading}
             subtitle={description}
             align="center"
             titleId="furniture-newsletter-heading"
-            titleClassName="text-3xl font-medium lg:text-4xl"
+            titleClassName="text-3xl font-medium tracking-tight lg:text-4xl"
             subtitleClassName="text-lg"
             className="mb-8 gap-6"
           />
@@ -107,19 +120,19 @@ export const FurnitureStoreNewsletter = defineCapsule({
             buttonLabel={submit}
             successMessage="You're subscribed. New room edits and early access will arrive by email."
             className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
-            inputClassName="flex-1 rounded-md border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
-            buttonClassName="rounded-md bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+            inputClassName="flex-1 rounded-none border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring"
+            buttonClassName="rounded-none bg-foreground px-6 py-3 font-medium text-background transition-[background-color,transform] duration-150 hover:bg-foreground/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70 motion-reduce:active:translate-y-0"
           />
 
-          <NewsletterCtaFineprint className="mt-4 text-sm text-muted-foreground">
+          <NewsletterCtaFineprint className="mt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
             {note}
           </NewsletterCtaFineprint>
 
-          <div className="mt-8 flex justify-center gap-6">
+          <div className="mt-8 flex justify-center gap-3">
             {socials.map((social) => (
               <NavbarRouteLink
                 key={social}
-                className="text-muted-foreground transition-colors hover:text-foreground"
+                className="grid size-10 place-items-center rounded-none border border-border text-muted-foreground transition-[color,background-color,transform] duration-150 hover:bg-background hover:text-foreground active:scale-95 motion-reduce:active:scale-100"
                 aria-label={social}
                 href={social}
               >
