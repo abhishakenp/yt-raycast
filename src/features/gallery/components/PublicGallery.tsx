@@ -160,6 +160,7 @@ function getGalleryPreviewImageSrc(session: GallerySession): string {
 
 function GalleryCardPreview({ session }: { session: GallerySession }) {
   const title = getPromptTitle(session.prompt)
+  const [hasImageError, setHasImageError] = useState(false)
 
   return (
     <div
@@ -170,14 +171,17 @@ function GalleryCardPreview({ session }: { session: GallerySession }) {
         className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.16),transparent_34%),radial-gradient(circle_at_78%_30%,rgba(168,85,247,0.16),transparent_36%),linear-gradient(135deg,#050816,#111827)]"
         aria-label={title}
       />
-      <img
-        src={getGalleryPreviewImageSrc(session)}
-        alt=""
-        loading="lazy"
-        decoding="async"
-        fetchPriority="low"
-        className="absolute inset-0 h-full w-full object-cover"
-      />
+      {hasImageError ? null : (
+        <img
+          src={getGalleryPreviewImageSrc(session)}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          fetchPriority="low"
+          className="absolute inset-0 h-full w-full object-cover"
+          onError={() => setHasImageError(true)}
+        />
+      )}
       <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/8" />
     </div>
   )

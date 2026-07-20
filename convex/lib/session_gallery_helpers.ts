@@ -180,6 +180,44 @@ function resolveGalleryOpenUISource(artifacts: PublicGalleryArtifacts): string {
         '')
 }
 
+function containsPublicGalleryBlockedPreviewText(
+  text: string | undefined | null,
+): boolean {
+  if (typeof text !== 'string' || text.trim().length === 0) return false
+  return /(?:failed to render|openui-error|does not support|unsupported|cannot render)/i.test(
+    text,
+  )
+}
+
+function hasBareOpenUiComponentCall(source: string): boolean {
+  return source
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0 && !line.startsWith('//'))
+    .some((line) => /^[A-Z][A-Za-z0-9_]*\s*\(/.test(line))
+}
+
+export function hasRenderablePublicGalleryArtifact(
+  artifacts: PublicGalleryArtifacts,
+): boolean {
+  const previewHtml = artifacts.preview?.html
+  if (
+    typeof previewHtml === 'string' &&
+    previewHtml.trim().length > 0 &&
+    !isUnsafePublicPreviewHtml(previewHtml) &&
+    !containsPublicGalleryBlockedPreviewText(previewHtml)
+  ) {
+    return true
+  }
+
+  const source = resolveGalleryOpenUISource(artifacts).trim()
+  if (!source) return false
+  if (containsPublicGalleryBlockedPreviewText(source)) return false
+  if (hasBareOpenUiComponentCall(source)) return false
+
+  return isLikelyOpenUISource(source)
+}
+
 function applyGalleryEditsToSource(
   source: string,
   edits: Doc<'edits'>[] | null | undefined,
@@ -327,7 +365,16 @@ export async function listPublicGallerySessions(
       ? scannedPublicSessions
       : await buildPublicSessionQuery().collect()
   const visibleSessions = publicSessions.filter(isGalleryVisibleSession)
-  const searchFilteredSessions = visibleSessions.filter((session) =>
+  const renderableSessionRecords = await Promise.all(
+    visibleSessions.map(async (session) => ({
+      artifacts: await loadPublicGalleryBaseArtifacts(ctx, session._id),
+      session,
+    })),
+  )
+  const renderableSessions = renderableSessionRecords
+    .filter(({ artifacts }) => hasRenderablePublicGalleryArtifact(artifacts))
+    .map(({ session }) => session)
+  const searchFilteredSessions = renderableSessions.filter((session) =>
     matchesGalleryFilters(session, args.search, undefined),
   )
   const availableCategories = getGalleryCategoryOptions(searchFilteredSessions)
@@ -374,6 +421,8 @@ export async function loadPublicGallerySession(
     session._id,
     session.preferredLanguage,
   )
+  if (!hasRenderablePublicGalleryArtifact(artifacts)) return null
+
   if (
     artifacts.preview !== null &&
     isUnsafePublicPreviewHtml(artifacts.preview.html) &&
