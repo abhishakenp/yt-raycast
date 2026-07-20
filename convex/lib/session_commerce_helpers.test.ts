@@ -410,6 +410,7 @@ describe('session commerce helpers', () => {
     const configJson = JSON.stringify({
       adminPassword: 'admin-password',
       adminToken: 'admin-token',
+      publishableKey: 'pk_configured',
       medusaTenant: {
         publishableKey: 'pk_session',
         webhookSecret: 'webhook-secret',
@@ -447,6 +448,28 @@ describe('session commerce helpers', () => {
     expect(serialized).not.toContain('admin-password')
     expect(serialized).not.toContain('admin-token')
     expect(serialized).not.toContain('webhook-secret')
+  })
+
+  it('resolves a session gateway from a root storefront publishable key', async () => {
+    const { ctx } = await ctxFor({
+      configs: [
+        commerceDoc({
+          configJson: JSON.stringify({ publishableKey: 'pk_configured' }),
+        }),
+      ],
+    })
+
+    await expect(
+      resolveSessionCommerceGatewayConfig(ctx, {
+        anonymousOwnerSecret: 'owner-secret',
+        sessionId,
+      }),
+    ).resolves.toEqual({
+      backendUrl: 'https://backend.old.test',
+      publishableKey: 'pk_configured',
+      scope: 'sessions',
+      tenant: sessionId,
+    })
   })
 
   it('rejects a session gateway request without matching ownership', async () => {

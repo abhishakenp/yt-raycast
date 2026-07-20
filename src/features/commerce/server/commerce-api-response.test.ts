@@ -228,6 +228,7 @@ describe('createSessionMedusaProvisionResponse', () => {
     const [, args] = mutation.mock.calls[0]
     expect(JSON.parse(args.configJson)).toMatchObject({
       provider: 'medusa',
+      publishableKey: 'pk_medusa',
       tenantId: 'session_123',
       tenantMode: 'session',
     })
@@ -546,6 +547,7 @@ describe('createSessionMedusaProvisionResponse', () => {
     )
     const [, args] = mutation.mock.calls[0]
     expect(JSON.parse(args.configJson)).toMatchObject({
+      publishableKey: 'pk_tenant_session',
       productSync: {
         requested: 1,
         synced: 1,

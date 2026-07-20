@@ -25,8 +25,11 @@ function sessionPublishableKey(configJson: string | undefined) {
 
   try {
     const config: unknown = JSON.parse(configJson)
-    if (!isRecord(config) || !isRecord(config.medusaTenant)) return undefined
-    return nonBlankString(config.medusaTenant.publishableKey)
+    if (!isRecord(config)) return undefined
+    const tenantPublishableKey = isRecord(config.medusaTenant)
+      ? nonBlankString(config.medusaTenant.publishableKey)
+      : undefined
+    return tenantPublishableKey ?? nonBlankString(config.publishableKey)
   } catch {
     return undefined
   }

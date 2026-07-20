@@ -1,4 +1,5 @@
 import type { MedusaCommerceProduct } from './medusa-store-product'
+import { assertPublicUrl } from '@ship-fast/engine/clone/security'
 import {
   medusaStoreProductFields,
   normalizeMedusaStoreProduct,
@@ -37,6 +38,7 @@ export type UpdateCommerceItemInput = {
 }
 
 type MedusaCommerceGatewayOptions = {
+  allowPrivateBackendInDevelopment?: boolean
   bindCarts?: boolean
   correlationId: string
   fetch?: FetchLike
@@ -121,9 +123,13 @@ export class MedusaCommerceGateway {
       })
     }
 
+    const requestUrl = `${this.tenant.backendUrl}${path}`
+    await this.assertProviderUrl(requestUrl)
+
     let response: Response
+    let requestSignal: AbortSignal | null | undefined
     try {
-      response = await this.fetchImpl(`${this.tenant.backendUrl}${path}`, {
+      const requestInit: RequestInit = {
         ...init,
         headers: this.providerHeaders(
           isRecord(init.headers)
@@ -135,8 +141,21 @@ export class MedusaCommerceGateway {
               )
             : {},
         ),
-        signal: init.signal ?? AbortSignal.timeout(this.timeoutMs),
-      })
+      }
+      if (requestInit.signal === undefined) {
+        Object.defineProperty(requestInit, 'signal', {
+          enumerable: false,
+          value: AbortSignal.timeout(this.timeoutMs),
+        })
+      }
+      requestSignal = requestInit.signal
+      if (requestInit.redirect === undefined) {
+        Object.defineProperty(requestInit, 'redirect', {
+          enumerable: false,
+          value: 'error',
+        })
+      }
+      response = await this.fetchImpl(requestUrl, requestInit)
     } catch (error) {
       if (isTimeoutError(error)) {
         throw this.failure(
@@ -182,7 +201,35 @@ export class MedusaCommerceGateway {
       })
     }
 
-    const text = await response.text()
+    let text: string
+    try {
+      text = await response.text()
+    } catch (error) {
+      if (
+        isTimeoutError(error) ||
+        (requestSignal?.aborted === true &&
+          isTimeoutError(requestSignal.reason))
+      ) {
+        throw this.failure(
+          {
+            code: 'COMMERCE_PROVIDER_TIMEOUT',
+            message: 'Commerce provider request timed out.',
+            retryable: true,
+            status: 504,
+          },
+          error,
+        )
+      }
+      throw this.failure(
+        {
+          code: 'COMMERCE_PROVIDER_UNAVAILABLE',
+          message: 'Commerce provider is unavailable.',
+          retryable: true,
+          status: 502,
+        },
+        error,
+      )
+    }
     if (
       new TextEncoder().encode(text).byteLength > MAX_PROVIDER_RESPONSE_BYTES
     ) {
@@ -208,6 +255,57 @@ export class MedusaCommerceGateway {
     }
   }
 
+  private async assertProviderUrl(requestUrl: string): Promise<void> {
+    let backendUrl: URL
+    try {
+      backendUrl = new URL(this.tenant.backendUrl)
+    } catch (error) {
+      throw this.failure(
+        {
+          code: 'COMMERCE_PROVIDER_BLOCKED',
+          message: 'Commerce provider URL is not allowed.',
+          status: 502,
+        },
+        error,
+      )
+    }
+
+    const isOriginOnly =
+      (backendUrl.protocol === 'http:' || backendUrl.protocol === 'https:') &&
+      backendUrl.username === '' &&
+      backendUrl.password === '' &&
+      (backendUrl.pathname === '' || backendUrl.pathname === '/') &&
+      backendUrl.search === '' &&
+      backendUrl.hash === ''
+    if (!isOriginOnly) {
+      throw this.failure({
+        code: 'COMMERCE_PROVIDER_BLOCKED',
+        message: 'Commerce provider URL is not allowed.',
+        status: 502,
+      })
+    }
+
+    if (
+      this.options.allowPrivateBackendInDevelopment === true &&
+      process.env.NODE_ENV !== 'production'
+    ) {
+      return
+    }
+
+    try {
+      await assertPublicUrl(requestUrl)
+    } catch (error) {
+      throw this.failure(
+        {
+          code: 'COMMERCE_PROVIDER_BLOCKED',
+          message: 'Commerce provider URL is not allowed.',
+          status: 502,
+        },
+        error,
+      )
+    }
+  }
+
   private requireResourceId(
     value: string,
     kind: 'cart' | 'line' | 'variant',
@@ -219,6 +317,20 @@ export class MedusaCommerceGateway {
       message: `Commerce ${kind} identifier is invalid.`,
       status: 400,
     })
+  }
+
+  private assertMutableCartInput(input: JsonRecord): void {
+    if (
+      isRecord(input.metadata) &&
+      (Object.hasOwn(input.metadata, 'ship_fast_scope') ||
+        Object.hasOwn(input.metadata, 'ship_fast_tenant'))
+    ) {
+      throw this.failure({
+        code: 'RESERVED_CART_METADATA',
+        message: 'Commerce tenant metadata cannot be changed.',
+        status: 400,
+      })
+    }
   }
 
   private requireBoundCart(
@@ -272,7 +384,26 @@ export class MedusaCommerceGateway {
   }
 
   private async defaultRegionId(): Promise<string> {
-    const payload = await this.request('/store/regions')
+    let payload: unknown
+    try {
+      payload = await this.request('/store/regions')
+    } catch (error) {
+      if (
+        error instanceof CommerceFailure &&
+        error.commerceError.code === 'COMMERCE_PROVIDER_ERROR'
+      ) {
+        throw this.failure(
+          {
+            code: 'COMMERCE_REGION_ERROR',
+            message: 'Commerce provider rejected the region request.',
+            retryable: error.commerceError.retryable,
+            status: error.status,
+          },
+          error,
+        )
+      }
+      throw error
+    }
     if (!isRecord(payload) || !Array.isArray(payload.regions)) {
       throw this.failure({
         code: 'COMMERCE_PROVIDER_MALFORMED',
@@ -358,6 +489,7 @@ export class MedusaCommerceGateway {
     input: JsonRecord,
   ): Promise<CommerceCartEnvelope> {
     const normalizedCartId = this.requireResourceId(cartId, 'cart')
+    this.assertMutableCartInput(input)
     if (this.validateCartBeforeMutation) {
       await this.boundCart(normalizedCartId)
     }
@@ -392,8 +524,8 @@ export class MedusaCommerceGateway {
       `/store/carts/${encodeURIComponent(normalizedCartId)}/line-items`,
       {
         body: JSON.stringify({
-          quantity: input.quantity,
           variant_id: variantId,
+          quantity: input.quantity,
         }),
         headers: { 'Content-Type': 'application/json' },
         method: 'POST',

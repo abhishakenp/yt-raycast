@@ -211,6 +211,7 @@ async function validateMedusaStoreApi(
 function createDefaultMedusaConfigJson(
   sessionId: string,
   availability: MedusaStoreApiAvailability,
+  publishableKey: string,
   productSync?: {
     medusaTenant?: {
       apiKeyId: string
@@ -221,10 +222,16 @@ function createDefaultMedusaConfigJson(
     synced: number
   },
 ): string {
+  const effectivePublishableKey =
+    productSync?.medusaTenant?.publishableKey ?? publishableKey.trim()
+
   return JSON.stringify({
     provider: 'medusa',
     tenantMode: 'session',
     tenantId: sessionId,
+    ...(effectivePublishableKey
+      ? { publishableKey: effectivePublishableKey }
+      : {}),
     publishableKeyConfigured: availability.publishableKeyConfigured,
     liveStoreApiReady: availability.liveStoreApiReady,
     ...(productSync === undefined
@@ -395,13 +402,18 @@ export async function createSessionMedusaProvisionResponse(
       configJson:
         body.config === undefined
           ? (stringValue(body, 'configJson') ??
-            createDefaultMedusaConfigJson(sessionId, availability, {
-              ...(productSync.tenant === undefined
-                ? {}
-                : { medusaTenant: productSync.tenant }),
-              requested: generatedProducts.length,
-              synced: productSync.synced,
-            }))
+            createDefaultMedusaConfigJson(
+              sessionId,
+              availability,
+              publishableKey,
+              {
+                ...(productSync.tenant === undefined
+                  ? {}
+                  : { medusaTenant: productSync.tenant }),
+                requested: generatedProducts.length,
+                synced: productSync.synced,
+              },
+            ))
           : JSON.stringify(body.config),
     }
     const result = await client
