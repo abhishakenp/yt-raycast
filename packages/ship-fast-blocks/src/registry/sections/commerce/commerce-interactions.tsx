@@ -111,20 +111,66 @@ export function CommerceAddItemButton({
 }) {
   const commerce = useCommerce()
   const addItem = useKeyedLakebedMutation(lakebed, 'addItem')
+  const [livePending, setLivePending] = useState(false)
   const itemKey = commerceCartItemKey(item)
-  const isButtonPending = addItem.isPending(itemKey)
-  const mutationInput = { ...item, itemKey }
+  const liveVariantId = useMemo(() => {
+    const stableKey = item.itemKey?.trim()
+    if (!stableKey || commerce.mode === 'demo') return undefined
+
+    for (const { product, purchasable } of commerce.catalog) {
+      if (!purchasable) continue
+
+      const productMatches =
+        product.sourceId === stableKey ||
+        product.id === stableKey ||
+        product.handle === stableKey ||
+        product.sourceHandle === stableKey
+      if (productMatches) {
+        return product.variants.find((variant) => variant.id !== undefined)?.id
+      }
+
+      const matchingVariant = product.variants.find(
+        (variant) =>
+          variant.id === stableKey ||
+          variant.sourceId === stableKey ||
+          variant.sku === stableKey,
+      )
+      if (matchingVariant?.id !== undefined) return matchingVariant.id
+    }
+
+    return undefined
+  }, [commerce.catalog, commerce.mode, item.itemKey])
   const demoPurchasingEnabled = commerce.mode === 'demo'
+  const livePurchasingEnabled =
+    !demoPurchasingEnabled &&
+    commerce.status === 'ready' &&
+    liveVariantId !== undefined
+  const isButtonPending = demoPurchasingEnabled
+    ? addItem.isPending(itemKey)
+    : livePending
+  const mutationInput = { ...item, itemKey }
 
   return (
     <button
       {...buttonProps}
       type={type}
       aria-busy={isButtonPending}
-      disabled={disabled || isButtonPending || !demoPurchasingEnabled}
+      disabled={
+        disabled ||
+        isButtonPending ||
+        (!demoPurchasingEnabled && !livePurchasingEnabled)
+      }
       onClick={() => {
-        if (!demoPurchasingEnabled) return
-        void addItem.run(itemKey, mutationInput).catch(() => {})
+        if (demoPurchasingEnabled) {
+          void addItem.run(itemKey, mutationInput).catch(() => {})
+          return
+        }
+        if (liveVariantId === undefined) return
+        setLivePending(true)
+        void commerce
+          .addItem({ quantity: 1, variantId: liveVariantId })
+          .catch(() => {})
+          .finally(() => setLivePending(false))
       }}
     >
       {isButtonPending
@@ -183,8 +229,8 @@ export function useCommerceSearch(lakebed: CommerceLakebed) {
     })
   }, [setCommerceSearch])
 
-  const chooseSearch = useCallback(
-    (input: CommerceSearchInput) => {
+  const chooseSearch = useCallback<(input: CommerceSearchInput) => void>(
+    (input) => {
       if (!input.selectedLabel) {
         latestQueryRef.current = input
         flushLatestQuery()
