@@ -1,0 +1,10 @@
+/Users/livio/Documents/ship-fast/wasm-particles/target/wasm32-unknown-unknown/release/deps/js_sys-836d22ee80e4015e.d: /Users/livio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/js-sys-0.3.103/src/lib.rs /Users/livio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/js-sys-0.3.103/src/futures/mod.rs /Users/livio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/js-sys-0.3.103/src/futures/queue.rs /Users/livio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/js-sys-0.3.103/src/futures/task/singlethread.rs
+
+/Users/livio/Documents/ship-fast/wasm-particles/target/wasm32-unknown-unknown/release/deps/libjs_sys-836d22ee80e4015e.rlib: /Users/livio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/js-sys-0.3.103/src/lib.rs /Users/livio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/js-sys-0.3.103/src/futures/mod.rs /Users/livio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/js-sys-0.3.103/src/futures/queue.rs /Users/livio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/js-sys-0.3.103/src/futures/task/singlethread.rs
+
+/Users/livio/Documents/ship-fast/wasm-particles/target/wasm32-unknown-unknown/release/deps/libjs_sys-836d22ee80e4015e.rmeta: /Users/livio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/js-sys-0.3.103/src/lib.rs /Users/livio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/js-sys-0.3.103/src/futures/mod.rs /Users/livio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/js-sys-0.3.103/src/futures/queue.rs /Users/livio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/js-sys-0.3.103/src/futures/task/singlethread.rs
+
+/Users/livio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/js-sys-0.3.103/src/lib.rs:
+/Users/livio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/js-sys-0.3.103/src/futures/mod.rs:
+/Users/livio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/js-sys-0.3.103/src/futures/queue.rs:
+/Users/livio/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/js-sys-0.3.103/src/futures/task/singlethread.rs:
