@@ -57,6 +57,21 @@ type MutationResult<TMutation> = TMutation extends (
 const timestamp = '2026-06-26T00:00:00.000Z'
 const navigate = vi.fn()
 const lakebedRef: { current: CommerceLakebed | null } = { current: null }
+const authRuntime = vi.hoisted(() => ({
+  signInWithGoogle: vi.fn(async () => ({
+    bundle: { challenge: '', state: '', verifier: '' },
+    url: '',
+  })),
+  signOut: vi.fn(),
+  state: {
+    displayName: '',
+    email: '',
+    isAuthenticated: false,
+    isGuest: true,
+    isLoading: false,
+    picture: '',
+  },
+}))
 
 vi.mock('@ship-fast/lakebed/react', async () => {
   const actual = await vi.importActual<
@@ -71,6 +86,9 @@ vi.mock('@ship-fast/lakebed/react', async () => {
       }
       return lakebedRef.current
     }),
+    signInWithGoogle: authRuntime.signInWithGoogle,
+    signOut: authRuntime.signOut,
+    useAuth: () => authRuntime.state,
   }
 })
 
@@ -171,11 +189,8 @@ function createCommerceLakebedStub() {
     },
   }
   const listeners = new Set<() => void>()
-  const signInWithGoogle = vi.fn(async () => ({
-    bundle: { challenge: '', state: '', verifier: '' },
-    url: '',
-  }))
-  const signOut = vi.fn()
+  const signInWithGoogle = authRuntime.signInWithGoogle
+  const signOut = authRuntime.signOut
   const notify = () => {
     version += 1
     for (const listener of listeners) listener()
@@ -571,6 +586,8 @@ afterEach(() => {
   cleanup()
   setSectionKitNavClickFallback(null)
   navigate.mockReset()
+  authRuntime.signInWithGoogle.mockReset()
+  authRuntime.signOut.mockReset()
   lakebedRef.current = null
   document.body.removeAttribute('style')
 })
@@ -639,7 +656,7 @@ describe('FashionStore fullstack commerce behavior', () => {
     })
     expect(navigate).not.toHaveBeenCalledWith('Black Wool Coat')
 
-    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
+    fireEvent.click(screen.getAllByRole('button', { name: 'Sign in' })[0])
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
 
     fireEvent.click(
@@ -701,11 +718,15 @@ describe('FashionStore fullstack commerce behavior', () => {
       </QueryClientProvider>,
     )
 
-    fireEvent.click(screen.getByRole('link', { name: 'Shop the Collection' }))
-    fireEvent.click(screen.getByRole('link', { name: 'View Lookbook' }))
+    const collectionLink = screen.getByRole('link', {
+      name: 'Shop the Collection',
+    })
+    const lookbookLink = screen.getByRole('link', { name: 'View Lookbook' })
 
-    expect(navigate).toHaveBeenCalledWith('Shop the Collection')
-    expect(navigate).toHaveBeenCalledWith('View Lookbook')
+    expect(collectionLink.getAttribute('href')).toBe('#shop-the-collection')
+    expect(lookbookLink.getAttribute('href')).toBe('#view-lookbook')
+    expect(navigate).not.toHaveBeenCalledWith('Shop the Collection')
+    expect(navigate).not.toHaveBeenCalledWith('View Lookbook')
     expect(state().items).toEqual([])
 
     fireEvent.click(
