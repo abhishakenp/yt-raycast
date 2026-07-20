@@ -1,5 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
+import { createSessionDownloadResponse } from '@/features/exports/server/export-api-response'
+
 export const Route = createFileRoute(
   '/api/sessions/$sessionId/download/$target',
 )({
@@ -11,15 +13,12 @@ export const Route = createFileRoute(
       }: {
         params: { sessionId: string; target: string }
         request: Request
-      }) => {
-        const { createSessionDownloadResponse } =
-          await import('@/features/exports/server/export-api-response')
-        return await createSessionDownloadResponse(
+      }) =>
+        await createSessionDownloadResponse(
           params.sessionId,
           params.target,
           request,
-        )
-      },
+        ),
     },
   },
 })

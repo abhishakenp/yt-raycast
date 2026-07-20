@@ -1,5 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
+import { createSessionExportResponse } from '@/features/exports/server/export-api-response'
+
 export const Route = createFileRoute('/api/sessions/$sessionId/export')({
   server: {
     handlers: {
@@ -9,11 +11,7 @@ export const Route = createFileRoute('/api/sessions/$sessionId/export')({
       }: {
         params: { sessionId: string }
         request: Request
-      }) => {
-        const { createSessionExportResponse } =
-          await import('@/features/exports/server/export-api-response')
-        return await createSessionExportResponse(params.sessionId, request)
-      },
+      }) => await createSessionExportResponse(params.sessionId, request),
     },
   },
 })
