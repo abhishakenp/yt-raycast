@@ -5,22 +5,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { LaunchBackdrop } from '@/components/launch-backdrop'
 
-vi.mock('@/components/launch-backdrop-wasm', () => {
-  const memory = new WebAssembly.Memory({ initial: 1 })
-  const frame = new Float32Array(memory.buffer, 0, 7)
-  frame.set([0, 0, 8, 3, 0.9, 190, 0.4])
-  return {
-    LAUNCH_BACKDROP_PARTICLE_STRIDE: 7,
-    loadLaunchBackdropWasm: vi.fn(async () => ({
-      memory,
-      backdrop_init: vi.fn(() => 1),
-      backdrop_resize: vi.fn(() => 1),
-      backdrop_step: vi.fn(() => 0),
-      backdrop_count: vi.fn(() => 1),
-    })),
-  }
-})
-
 vi.mock('@tanstack/react-router', () => ({
   Link: ({
     children,
@@ -106,26 +90,14 @@ describe('homepage gallery section', () => {
       )
       HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({
         setTransform: vi.fn(),
-        clearRect: vi.fn(),
-        closePath: vi.fn(),
-        drawImage: vi.fn(),
-        fill: vi.fn(),
         fillRect: vi.fn(),
         beginPath: vi.fn(),
-        arc: vi.fn(),
         moveTo: vi.fn(),
         lineTo: vi.fn(),
-        translate: vi.fn(),
-        rotate: vi.fn(),
-        scale: vi.fn(),
-        save: vi.fn(),
-        restore: vi.fn(),
         stroke: vi.fn(),
         fillStyle: '',
         strokeStyle: '',
         lineWidth: 0,
-        lineCap: 'round',
-        lineJoin: 'round',
         globalCompositeOperation: '',
         globalAlpha: 1,
       }) as unknown as typeof originalGetContext
