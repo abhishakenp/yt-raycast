@@ -5,7 +5,11 @@ import { brotliDecompressSync } from 'node:zlib'
 import { zipSync, strToU8 } from 'fflate'
 import ts from 'typescript'
 import type { ElementNode } from '@openuidev/lang-core'
-import { buildImageSearchQuery, library } from '@ship-fast/blocks'
+import {
+  buildImageSearchQuery,
+  library,
+  sanitizeProps,
+} from '@ship-fast/blocks'
 import {
   lakebedExportDepsBase64,
   lakebedExportDepsEncoding,
@@ -2981,8 +2985,18 @@ ${renderRouteNodeChildren(props.children)}
   }
   if (!value.typeName || value.typeName === 'PageSwitch') return ''
 
+  // Repair the capsule's props against its declared Zod schema before emitting
+  // the native block, exactly as `defineCapsule` does at runtime. Generated
+  // programs frequently mis-nest a sole object argument under the first
+  // positional param (e.g. `ProductDetailHero({"title":"Aurora Pro"})` parses to
+  // `{ title: { title: "Aurora Pro" } }`); without this repair the exported
+  // component receives an object where a string is expected and throws
+  // (`title.split is not a function`) on render. Keyed off the declared schema,
+  // never a component name.
+  const capsuleSchema = library.components[value.typeName]?.props
+  const safeProps = capsuleSchema ? sanitizeProps(props, capsuleSchema) : props
   return `<${toIdentifier(value.typeName)}Block props={${JSON.stringify(
-    props,
+    safeProps,
   )}} lakebed={input.lakebed} />`
 }
 
