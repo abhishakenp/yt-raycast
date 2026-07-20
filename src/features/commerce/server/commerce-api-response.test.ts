@@ -41,13 +41,88 @@ describe('createSessionMedusaProvisionResponse', () => {
     expect(JSON.stringify(body)).not.toContain('craft beer brewery')
   })
 
+  it('returns 403 before provisioning side effects for an invalid owner', async () => {
+    const query = vi.fn().mockRejectedValue(new Error('FORBIDDEN'))
+    const mutation = vi.fn()
+    const fetchImpl = vi.fn()
+    const containerProvider = {
+      findRunning: vi.fn(),
+      provision: vi.fn(),
+    }
+
+    const response = await createSessionMedusaProvisionResponse(
+      'session_123',
+      new Request(
+        'http://ship-fast.test/api/sessions/session_123/provision/medusa',
+        {
+          headers: { 'x-ship-fast-owner-secret': 'wrong-secret' },
+          method: 'POST',
+        },
+      ),
+      { mutation, query },
+      {
+        containerProvider,
+        env: { MEDUSA_BACKEND_URL: 'https://backend.medusa.test' },
+        fetch: fetchImpl,
+        metaEnv: {},
+      },
+    )
+
+    expect(response.status).toBe(403)
+    expect(query).toHaveBeenCalledWith(expect.anything(), {
+      anonymousOwnerSecret: 'wrong-secret',
+      sessionId: 'session_123',
+    })
+    expect(containerProvider.findRunning).not.toHaveBeenCalled()
+    expect(containerProvider.provision).not.toHaveBeenCalled()
+    expect(fetchImpl).not.toHaveBeenCalled()
+    expect(mutation).not.toHaveBeenCalled()
+  })
+
+  it('returns 404 before provisioning side effects for a missing session', async () => {
+    const query = vi.fn().mockRejectedValue(new Error('NOT_FOUND'))
+    const mutation = vi.fn()
+    const fetchImpl = vi.fn()
+    const containerProvider = {
+      findRunning: vi.fn(),
+      provision: vi.fn(),
+    }
+
+    const response = await createSessionMedusaProvisionResponse(
+      'missing_session',
+      new Request(
+        'http://ship-fast.test/api/sessions/missing_session/provision/medusa',
+        { method: 'POST' },
+      ),
+      { mutation, query },
+      {
+        containerProvider,
+        env: { MEDUSA_BACKEND_URL: 'https://backend.medusa.test' },
+        fetch: fetchImpl,
+        metaEnv: {},
+      },
+    )
+
+    expect(response.status).toBe(404)
+    expect(containerProvider.findRunning).not.toHaveBeenCalled()
+    expect(containerProvider.provision).not.toHaveBeenCalled()
+    expect(fetchImpl).not.toHaveBeenCalled()
+    expect(mutation).not.toHaveBeenCalled()
+  })
+
   it('provisions commerce from server Medusa settings without URL input', async () => {
     const mutation = vi.fn().mockResolvedValue({ sessionId: 'session_123' })
+    const query = vi.fn().mockResolvedValue({ sessionId: 'session_123' })
     const fetchImpl = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ regions: [{ id: 'reg_1' }] }), {
         status: 200,
       }),
     )
+    const containerProvider = mockContainerProvider({
+      MEDUSA_ADMIN_URL: 'https://admin.medusa.test',
+      MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
+      MEDUSA_STOREFRONT_URL: 'https://store.medusa.test',
+    })
 
     const response = await createSessionMedusaProvisionResponse(
       'session_123',
@@ -58,7 +133,7 @@ describe('createSessionMedusaProvisionResponse', () => {
           headers: { 'x-ship-fast-owner-secret': 'owner_secret' },
         },
       ),
-      { mutation, query: vi.fn() },
+      { mutation, query },
       {
         env: {
           MEDUSA_ADMIN_URL: 'https://admin.medusa.test',
@@ -66,17 +141,20 @@ describe('createSessionMedusaProvisionResponse', () => {
           MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
           MEDUSA_STOREFRONT_URL: 'https://store.medusa.test',
         },
-        containerProvider: mockContainerProvider({
-          MEDUSA_ADMIN_URL: 'https://admin.medusa.test',
-          MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
-          MEDUSA_STOREFRONT_URL: 'https://store.medusa.test',
-        }),
+        containerProvider,
         fetch: fetchImpl,
         metaEnv: {},
       },
     )
 
     expect(response.status).toBe(200)
+    expect(query).toHaveBeenCalledWith(expect.anything(), {
+      anonymousOwnerSecret: 'owner_secret',
+      sessionId: 'session_123',
+    })
+    expect(query.mock.invocationCallOrder[0]).toBeLessThan(
+      containerProvider.findRunning.mock.invocationCallOrder[0],
+    )
     expect(fetchImpl).toHaveBeenCalledWith(
       'https://backend.medusa.test/store/regions',
       {
@@ -426,7 +504,7 @@ describe('createSessionMedusaProvisionResponse', () => {
     })
   })
 
-  it('returns Medusa handoff when products sync but ownerless Convex persistence is forbidden', async () => {
+  it('returns 403 when an authorized provision cannot persist due to ownership denial', async () => {
     const mutation = vi.fn().mockRejectedValue(new Error('FORBIDDEN'))
     const fetchImpl = vi
       .fn()
@@ -497,7 +575,10 @@ describe('createSessionMedusaProvisionResponse', () => {
           method: 'POST',
         },
       ),
-      { mutation, query: vi.fn() },
+      {
+        mutation,
+        query: vi.fn().mockResolvedValue({ sessionId: 'session_123' }),
+      },
       {
         env: {
           MEDUSA_ADMIN_EMAIL: 'admin@test.com',
@@ -517,22 +598,14 @@ describe('createSessionMedusaProvisionResponse', () => {
       },
     )
 
-    expect(response.status).toBe(200)
-    expect(await response.json()).toMatchObject({
-      handoff: {
-        adminUrl: 'http://localhost:9000/app',
-        backendUrl: 'http://localhost:9000',
-        storefrontUrl: 'http://localhost:8001',
-        tenantId: 'session_123',
-      },
-      liveStoreApiReady: true,
-      persisted: false,
-      syncedProducts: 1,
+    expect(response.status).toBe(403)
+    expect(await response.json()).toEqual({
+      error: 'Commerce provisioning failed.',
     })
   })
 
   it('creates a tenant key before Store API is globally configured', async () => {
-    const mutation = vi.fn().mockRejectedValue(new Error('FORBIDDEN'))
+    const mutation = vi.fn().mockResolvedValue({ sessionId: 'session_123' })
     const fetchImpl = vi
       .fn()
       .mockResolvedValueOnce(
@@ -631,11 +704,12 @@ describe('createSessionMedusaProvisionResponse', () => {
         headers: { 'x-publishable-api-key': 'pk_tenant_session' },
       },
     )
-    expect(await response.json()).toMatchObject({
+    const payload = await response.json()
+    expect(payload).toMatchObject({
       liveStoreApiReady: true,
-      persisted: false,
       syncedProducts: 1,
     })
+    expect(payload).not.toHaveProperty('persisted')
   })
 
   it('retries the Convex config upsert without productCount for older validators', async () => {

@@ -6,6 +6,7 @@ import {
   assertCanMutateSession,
   canReadPrivateSession,
   hashOwnerSecret,
+  isSessionOwner,
 } from './session_access_helpers'
 
 type CommerceMutationCtx = MutationCtx
@@ -64,6 +65,11 @@ export type UpsertSessionCommerceConfigInput = {
   configJson?: string
   errorMessage?: string
   productCount?: number
+}
+
+export type AuthorizeSessionCommerceProvisionInput = {
+  sessionId: Id<'sessions'>
+  anonymousOwnerSecret?: string
 }
 
 export type ProvisionMedusaTenantInput = {
@@ -254,6 +260,28 @@ export async function upsertSessionCommerceConfig(
       productCount: args.productCount,
       createdAt: now,
       updatedAt: now,
+    })
+  }
+
+  return { sessionId: args.sessionId }
+}
+
+export async function authorizeSessionCommerceProvision(
+  ctx: CommerceQueryCtx,
+  args: AuthorizeSessionCommerceProvisionInput,
+) {
+  const session = await ctx.db.get(args.sessionId)
+  if (session === null) {
+    throw new ConvexError({
+      code: 'NOT_FOUND',
+      message: 'Session not found',
+    })
+  }
+
+  if (!(await isSessionOwner(ctx, session, args.anonymousOwnerSecret))) {
+    throw new ConvexError({
+      code: 'FORBIDDEN',
+      message: 'You do not own this session',
     })
   }
 
