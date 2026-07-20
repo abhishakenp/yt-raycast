@@ -6,8 +6,16 @@
 [phases.setup]
 nixPkgs = ["nodejs_22", "bun"]
 
+[variables]
+# Keep Playwright's Chromium inside node_modules so the browser binary built by
+# Nixpacks is present when the Nitro server starts on the VPS.
+PLAYWRIGHT_BROWSERS_PATH = "0"
+
 [phases.install]
-cmds = ["bun install --no-save"]
+cmds = [
+  "bun install --no-save",
+  "bunx playwright install --with-deps chromium",
+]
 
 [phases.build]
 # 1. Build the frontend. 2. Deploy Convex functions to the self-hosted backend
