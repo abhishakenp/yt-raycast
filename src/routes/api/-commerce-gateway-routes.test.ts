@@ -153,4 +153,94 @@ describe('canonical commerce gateway routes', () => {
       tenant: 'tenant-a',
     })
   })
+
+  it('delegates checkout shipping, payment, and completion routes', async () => {
+    const { Route: shippingOptionsRoute } =
+      await import('./commerce.$scope.$tenant.carts.$cartId.shipping-options')
+    const { Route: shippingMethodsRoute } =
+      await import('./commerce.$scope.$tenant.carts.$cartId.shipping-methods')
+    const { Route: paymentProvidersRoute } =
+      await import('./commerce.$scope.$tenant.carts.$cartId.payment-providers')
+    const { Route: paymentSessionsRoute } =
+      await import('./commerce.$scope.$tenant.carts.$cartId.payment-sessions')
+    const { Route: completeRoute } =
+      await import('./commerce.$scope.$tenant.carts.$cartId.complete')
+    const getShippingRequest = request('GET')
+    const postShippingRequest = request('POST')
+    const getProvidersRequest = request('GET')
+    const postPaymentRequest = request('POST')
+    const postCompleteRequest = request('POST')
+    const params = {
+      cartId: 'cart_1',
+      scope: 'deployments',
+      tenant: 'tenant-a',
+    }
+
+    await callRouteHandler(shippingOptionsRoute, 'GET', {
+      params,
+      request: getShippingRequest,
+    })
+    await callRouteHandler(shippingMethodsRoute, 'POST', {
+      params,
+      request: postShippingRequest,
+    })
+    await callRouteHandler(paymentProvidersRoute, 'GET', {
+      params,
+      request: getProvidersRequest,
+    })
+    await callRouteHandler(paymentSessionsRoute, 'POST', {
+      params,
+      request: postPaymentRequest,
+    })
+    await callRouteHandler(completeRoute, 'POST', {
+      params,
+      request: postCompleteRequest,
+    })
+
+    expect(shippingOptionsRoute).toMatchObject({
+      path: '/api/commerce/$scope/$tenant/carts/$cartId/shipping-options',
+    })
+    expect(shippingMethodsRoute).toMatchObject({
+      path: '/api/commerce/$scope/$tenant/carts/$cartId/shipping-methods',
+    })
+    expect(paymentProvidersRoute).toMatchObject({
+      path: '/api/commerce/$scope/$tenant/carts/$cartId/payment-providers',
+    })
+    expect(paymentSessionsRoute).toMatchObject({
+      path: '/api/commerce/$scope/$tenant/carts/$cartId/payment-sessions',
+    })
+    expect(completeRoute).toMatchObject({
+      path: '/api/commerce/$scope/$tenant/carts/$cartId/complete',
+    })
+    expect(mocks.handle).toHaveBeenNthCalledWith(1, {
+      operation: { cartId: 'cart_1', type: 'shipping-options' },
+      request: getShippingRequest,
+      scope: 'deployments',
+      tenant: 'tenant-a',
+    })
+    expect(mocks.handle).toHaveBeenNthCalledWith(2, {
+      operation: { cartId: 'cart_1', type: 'add-shipping-method' },
+      request: postShippingRequest,
+      scope: 'deployments',
+      tenant: 'tenant-a',
+    })
+    expect(mocks.handle).toHaveBeenNthCalledWith(3, {
+      operation: { cartId: 'cart_1', type: 'payment-providers' },
+      request: getProvidersRequest,
+      scope: 'deployments',
+      tenant: 'tenant-a',
+    })
+    expect(mocks.handle).toHaveBeenNthCalledWith(4, {
+      operation: { cartId: 'cart_1', type: 'create-payment-sessions' },
+      request: postPaymentRequest,
+      scope: 'deployments',
+      tenant: 'tenant-a',
+    })
+    expect(mocks.handle).toHaveBeenNthCalledWith(5, {
+      operation: { cartId: 'cart_1', type: 'complete-cart' },
+      request: postCompleteRequest,
+      scope: 'deployments',
+      tenant: 'tenant-a',
+    })
+  })
 })

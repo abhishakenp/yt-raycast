@@ -212,4 +212,83 @@ describe('HostedCommerceAdapter', () => {
       'Commerce cart is unavailable.',
     )
   })
+
+  it('implements checkout operations over explicit shopper choices', async () => {
+    const axios = axiosClient()
+    const storage = memoryStorage()
+    storage.setItem(
+      'ship-fast:commerce:sessions:k574ms14ma9f94keq30r7dq24x89n1k2',
+      'cart_123',
+    )
+    axios.get
+      .mockResolvedValueOnce({ data: { shippingOptions: [] } })
+      .mockResolvedValueOnce({ data: { paymentProviders: [] } })
+    axios.post
+      .mockResolvedValueOnce({ data: { cart: { id: 'cart_123' } } })
+      .mockResolvedValueOnce({
+        data: { paymentAction: { type: 'none' }, paymentSessions: [] },
+      })
+      .mockResolvedValueOnce({ data: { order: { id: 'order_123' } } })
+    const adapter = new HostedCommerceAdapter({
+      axios: axios.client,
+      scope: 'sessions',
+      storage,
+      tenant: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+    })
+    const base = '/api/commerce/sessions/k574ms14ma9f94keq30r7dq24x89n1k2'
+    const requestConfig = { headers: {} }
+
+    await expect(adapter.getShippingOptions()).resolves.toEqual({
+      shippingOptions: [],
+    })
+    await expect(
+      adapter.addShippingMethod({ shippingOptionId: 'so_1' }),
+    ).resolves.toEqual({ cart: { id: 'cart_123' } })
+    await expect(adapter.getPaymentProviders()).resolves.toEqual({
+      paymentProviders: [],
+    })
+    await expect(
+      adapter.createPaymentSessions({ providerId: 'pp_system' }),
+    ).resolves.toEqual({
+      paymentAction: { type: 'none' },
+      paymentSessions: [],
+    })
+    await expect(
+      adapter.completeCart({ idempotencyKey: 'idem_1' }),
+    ).resolves.toEqual({ order: { id: 'order_123' } })
+
+    expect(axios.get).toHaveBeenNthCalledWith(
+      1,
+      `${base}/carts/cart_123/shipping-options`,
+      requestConfig,
+    )
+    expect(axios.post).toHaveBeenNthCalledWith(
+      1,
+      `${base}/carts/cart_123/shipping-methods`,
+      { shippingOptionId: 'so_1' },
+      requestConfig,
+    )
+    expect(axios.get).toHaveBeenNthCalledWith(
+      2,
+      `${base}/carts/cart_123/payment-providers`,
+      requestConfig,
+    )
+    expect(axios.post).toHaveBeenNthCalledWith(
+      2,
+      `${base}/carts/cart_123/payment-sessions`,
+      { providerId: 'pp_system' },
+      requestConfig,
+    )
+    expect(axios.post).toHaveBeenNthCalledWith(
+      3,
+      `${base}/carts/cart_123/complete`,
+      { idempotencyKey: 'idem_1' },
+      requestConfig,
+    )
+    expect(
+      storage.getItem(
+        'ship-fast:commerce:sessions:k574ms14ma9f94keq30r7dq24x89n1k2',
+      ),
+    ).toBeNull()
+  })
 })
