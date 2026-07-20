@@ -21,6 +21,460 @@ describe('medusa product sync', () => {
     expect(parsePriceToMedusaAmount('$79')).toBe(79)
   })
 
+  it('creates an exact rich Admin product payload with every generated variant', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ shipping_profiles: [{ id: 'sp_default' }] }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            sales_channels: [
+              {
+                id: 'sc_tenant',
+                name: 'Ship Fast session_abc123456789',
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            api_keys: [
+              {
+                id: 'apk_tenant',
+                sales_channels: [{ id: 'sc_tenant' }],
+                title: 'Ship Fast session_abc123456789',
+                token: 'pk_tenant_session',
+                type: 'publishable',
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ products: [] }), { status: 200 }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ product: { id: 'prod_1' } }), {
+          status: 200,
+        }),
+      )
+
+    const result = await syncGeneratedProductsToMedusa({
+      adminApiToken: 'admin-token',
+      backendUrl: 'http://localhost:9000',
+      fetch: fetchImpl,
+      products: [
+        {
+          collections: [
+            {
+              handle: 'summer-edit',
+              sourceId: 'pcol_summer',
+              title: 'Summer Edit',
+            },
+          ],
+          description: 'A breathable everyday tee',
+          handle: 'linen-tee',
+          images: [
+            {
+              alt: 'Linen tee front',
+              sourceId: 'image_front',
+              url: 'https://cdn.example.com/linen-front.jpg',
+            },
+            { url: 'https://cdn.example.com/linen-back.jpg' },
+          ],
+          options: [{ title: 'Size', values: ['Small', 'Large'] }],
+          price: 29,
+          sourceId: 'product_linen_tee',
+          tags: [{ sourceId: 'ptag_linen', value: 'Linen' }],
+          thumbnail: 'https://cdn.example.com/linen-thumb.jpg',
+          title: 'Linen Tee',
+          variants: [
+            {
+              manageInventory: false,
+              optionValues: { Size: 'Small' },
+              prices: [
+                { amount: 29, currencyCode: 'USD' },
+                { amount: 27, currencyCode: 'eur' },
+              ],
+              sku: 'LINEN-S',
+              sourceId: 'variant_small',
+              title: 'Small',
+            },
+            {
+              manageInventory: false,
+              optionValues: { Size: 'Large' },
+              prices: [{ amount: 32, currencyCode: 'GBP' }],
+              sku: 'LINEN-L',
+              sourceId: 'variant_large',
+              title: 'Large',
+            },
+          ],
+        },
+      ],
+      sessionId: 'session_abc123456789',
+    })
+
+    expect(result.synced).toBe(1)
+    const createCall = fetchImpl.mock.calls.find(
+      ([url]) => url === 'http://localhost:9000/admin/products',
+    )
+    expect(JSON.parse(String(createCall?.[1]?.body))).toEqual({
+      collection_id: 'pcol_summer',
+      description: 'A breathable everyday tee',
+      handle: 'ship-fast-session-abc123456789-linen-tee',
+      images: [
+        { url: 'https://cdn.example.com/linen-front.jpg' },
+        { url: 'https://cdn.example.com/linen-back.jpg' },
+      ],
+      metadata: {
+        ship_fast_generated_handle: 'linen-tee',
+        ship_fast_generated_product: true,
+        ship_fast_generated_source_id: 'product_linen_tee',
+        ship_fast_session_id: 'session_abc123456789',
+      },
+      options: [{ title: 'Size', values: ['Small', 'Large'] }],
+      sales_channels: [{ id: 'sc_tenant' }],
+      shipping_profile_id: 'sp_default',
+      status: 'published',
+      tags: [{ id: 'ptag_linen' }],
+      thumbnail: 'https://cdn.example.com/linen-thumb.jpg',
+      title: 'Linen Tee',
+      variants: [
+        {
+          manage_inventory: false,
+          metadata: {
+            ship_fast_generated_source_id: 'variant_small',
+          },
+          options: { Size: 'Small' },
+          prices: [
+            { amount: 29, currency_code: 'usd' },
+            { amount: 27, currency_code: 'eur' },
+          ],
+          sku: 'LINEN-S',
+          title: 'Small',
+        },
+        {
+          manage_inventory: false,
+          metadata: {
+            ship_fast_generated_source_id: 'variant_large',
+          },
+          options: { Size: 'Large' },
+          prices: [{ amount: 32, currency_code: 'gbp' }],
+          sku: 'LINEN-L',
+          title: 'Large',
+        },
+      ],
+    })
+  })
+
+  it('initializes requested inventory only for managed variants using an explicit idempotent sequence', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ shipping_profiles: [{ id: 'sp_default' }] }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            sales_channels: [
+              {
+                id: 'sc_tenant',
+                name: 'Ship Fast session_abc123456789',
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            api_keys: [
+              {
+                id: 'apk_tenant',
+                sales_channels: [{ id: 'sc_tenant' }],
+                title: 'Ship Fast session_abc123456789',
+                token: 'pk_tenant_session',
+                type: 'publishable',
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ products: [] }), { status: 200 }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ stock_locations: [{ id: 'sloc_tenant' }] }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ inventory_items: [] }), { status: 200 }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ inventory_item: { id: 'iitem_small' } }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ inventory_levels: [] }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ inventory_level: { id: 'ilev_small' } }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            product: {
+              id: 'prod_1',
+              variants: [
+                { id: 'variant_small', sku: 'LINEN-S' },
+                {
+                  id: 'variant_large',
+                  sku: 'SHIP-FAST-SESSION-ABC123456789-LINEN-TEE-VARIANT-LARGE',
+                },
+              ],
+            },
+          }),
+          { status: 200 },
+        ),
+      )
+
+    const result = await syncGeneratedProductsToMedusa({
+      adminApiToken: 'admin-token',
+      backendUrl: 'http://localhost:9000',
+      fetch: fetchImpl,
+      products: [
+        {
+          handle: 'linen-tee',
+          price: 29,
+          title: 'Linen Tee',
+          variants: [
+            {
+              inventoryQuantity: 7,
+              manageInventory: true,
+              optionValues: { Size: 'Small' },
+              prices: [{ amount: 29, currencyCode: 'usd' }],
+              sku: 'LINEN-S',
+              sourceId: 'variant_small',
+              title: 'Small',
+            },
+            {
+              manageInventory: false,
+              optionValues: { Size: 'Large' },
+              prices: [{ amount: 32, currencyCode: 'usd' }],
+              sourceId: 'variant_large',
+              title: 'Large',
+            },
+          ],
+        },
+      ],
+      sessionId: 'session_abc123456789',
+    })
+
+    expect(result.synced).toBe(1)
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'http://localhost:9000/admin/stock-locations?limit=1',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          authorization: 'Bearer admin-token',
+        }),
+      }),
+    )
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'http://localhost:9000/admin/inventory-items?sku=LINEN-S&limit=1',
+      expect.anything(),
+    )
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'http://localhost:9000/admin/inventory-items',
+      expect.objectContaining({
+        body: JSON.stringify({
+          metadata: {
+            ship_fast_generated_source_id: 'variant_small',
+            ship_fast_session_id: 'session_abc123456789',
+          },
+          sku: 'LINEN-S',
+          title: 'Linen Tee — Small',
+        }),
+        method: 'POST',
+      }),
+    )
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'http://localhost:9000/admin/inventory-levels?inventory_item_id=iitem_small&location_id=sloc_tenant&limit=1',
+      expect.anything(),
+    )
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'http://localhost:9000/admin/inventory-items/iitem_small/location-levels',
+      expect.objectContaining({
+        body: JSON.stringify({
+          location_id: 'sloc_tenant',
+          stocked_quantity: 7,
+        }),
+        method: 'POST',
+      }),
+    )
+    expect(
+      fetchImpl.mock.calls.some(([url]) =>
+        String(url).includes('VARIANT-LARGE'),
+      ),
+    ).toBe(false)
+    const createProductCall = fetchImpl.mock.calls.find(
+      ([url]) => url === 'http://localhost:9000/admin/products',
+    )
+    expect(
+      JSON.parse(String(createProductCall?.[1]?.body)).variants,
+    ).toMatchObject([
+      {
+        inventory_items: [
+          { inventory_item_id: 'iitem_small', required_quantity: 1 },
+        ],
+        manage_inventory: true,
+        sku: 'LINEN-S',
+      },
+      {
+        manage_inventory: false,
+        sku: 'SHIP-FAST-SESSION-ABC123456789-LINEN-TEE-VARIANT-LARGE',
+      },
+    ])
+    expect(JSON.parse(String(createProductCall?.[1]?.body)).options).toEqual([
+      { title: 'Size', values: ['Small', 'Large'] },
+    ])
+  })
+
+  it('reuses existing inventory items and levels after a partial seed retry', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ shipping_profiles: [{ id: 'sp_default' }] }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            sales_channels: [
+              {
+                id: 'sc_tenant',
+                name: 'Ship Fast session_abc123456789',
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            api_keys: [
+              {
+                id: 'apk_tenant',
+                sales_channels: [{ id: 'sc_tenant' }],
+                title: 'Ship Fast session_abc123456789',
+                token: 'pk_tenant_session',
+                type: 'publishable',
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ products: [] }), { status: 200 }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ stock_locations: [{ id: 'sloc_tenant' }] }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ inventory_items: [{ id: 'iitem_small' }] }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ inventory_levels: [{ id: 'ilev_small' }] }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ product: { id: 'prod_1' } }), {
+          status: 200,
+        }),
+      )
+
+    const result = await syncGeneratedProductsToMedusa({
+      adminApiToken: 'admin-token',
+      backendUrl: 'http://localhost:9000',
+      fetch: fetchImpl,
+      products: [
+        {
+          handle: 'linen-tee',
+          price: 29,
+          title: 'Linen Tee',
+          variants: [
+            {
+              inventoryQuantity: 7,
+              manageInventory: true,
+              optionValues: {},
+              prices: [{ amount: 29, currencyCode: 'usd' }],
+              sku: 'LINEN-S',
+              sourceId: 'variant_small',
+              title: 'Small',
+            },
+          ],
+        },
+      ],
+      sessionId: 'session_abc123456789',
+    })
+
+    expect(result.synced).toBe(1)
+    expect(
+      fetchImpl.mock.calls.filter(
+        ([url, init]) =>
+          url === 'http://localhost:9000/admin/inventory-items' &&
+          typeof init === 'object' &&
+          init !== null &&
+          'method' in init &&
+          init.method === 'POST',
+      ),
+    ).toHaveLength(0)
+    expect(
+      fetchImpl.mock.calls.filter(
+        ([url, init]) =>
+          String(url).endsWith('/location-levels') &&
+          typeof init === 'object' &&
+          init !== null &&
+          'method' in init &&
+          init.method === 'POST',
+      ),
+    ).toHaveLength(0)
+  })
+
   it('upserts generated products into a session tenant sales channel and publishable key', async () => {
     const fetchImpl = vi
       .fn()
@@ -132,7 +586,8 @@ describe('medusa product sync', () => {
       ([url]) => url === 'http://localhost:9000/admin/products',
     )
     expect(createCall).toBeTruthy()
-    expect(JSON.parse(String(createCall?.[1]?.body))).toMatchObject({
+    const createdProduct = JSON.parse(String(createCall?.[1]?.body))
+    expect(createdProduct).toMatchObject({
       handle: 'ship-fast-session-abc123456789-truffle-box',
       metadata: {
         ship_fast_generated_product: true,
@@ -147,6 +602,18 @@ describe('medusa product sync', () => {
         },
       ],
     })
+    expect(createdProduct.variants).toEqual([
+      {
+        manage_inventory: false,
+        metadata: {
+          ship_fast_generated_source_id: 'variant:truffle-box:default',
+        },
+        options: { Default: 'Default' },
+        prices: [{ amount: 79, currency_code: 'eur' }],
+        sku: 'SHIP-FAST-SESSION-ABC123456789-TRUFFLE-BOX-VARIANT-TRUFFLE-BOX-DEFAULT',
+        title: 'Default',
+      },
+    ])
   })
 
   it('uses email/password auth instead of a stale configured admin token when both are available', async () => {

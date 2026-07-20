@@ -8,6 +8,7 @@ import {
   createDeploymentMedusaPullResponse,
   createDeploymentMedusaWebhookResponse,
 } from './commerce-tenant-api-response'
+import { createSessionMedusaProductsResponse } from './medusa-product-read'
 
 const tenantConfig = {
   tenantId: 'commerce_tenant',
@@ -61,7 +62,7 @@ describe('deployment Medusa tenant API responses', () => {
     )
 
     expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toMatchObject({
+    await expect(response.json()).resolves.toEqual({
       config: tenantConfig,
       deploymentSlug: 'deployed-store',
       enabled: true,
@@ -134,7 +135,27 @@ describe('deployment Medusa tenant API responses', () => {
     expect(provisioner.syncInitialProducts).toHaveBeenCalledWith(
       expect.objectContaining({
         deploymentSlug: 'deployed-store',
-        products: [{ handle: 'truffle-box', price: 79, title: 'Truffle Box' }],
+        products: [
+          {
+            collections: [],
+            handle: 'truffle-box',
+            images: [],
+            options: [],
+            price: 79,
+            sourceId: 'product:truffle-box',
+            tags: [],
+            title: 'Truffle Box',
+            variants: [
+              {
+                manageInventory: false,
+                optionValues: {},
+                prices: [{ amount: 79, currencyCode: 'usd' }],
+                sourceId: 'variant:truffle-box:default',
+                title: 'Default',
+              },
+            ],
+          },
+        ],
         tenant: expect.objectContaining({
           backendUrl: 'https://backend.tenant.test',
         }),
@@ -150,6 +171,107 @@ describe('deployment Medusa tenant API responses', () => {
         productCount: 1,
         publishableKey: 'pk_seeded',
         webhookSecret: 'tenant-webhook-secret',
+      }),
+    )
+  })
+
+  it('preserves rich generated products at the deployment provisioning boundary', async () => {
+    const client = createClient()
+    const provisioner = {
+      provision: vi.fn().mockResolvedValue({
+        adminUrl: 'https://admin.tenant.test',
+        backendUrl: 'https://backend.tenant.test',
+        provider: 'manual',
+        storefrontUrl: 'https://storefront.tenant.test',
+      }),
+      syncInitialProducts: vi.fn().mockResolvedValue({ synced: 1 }),
+    }
+    const richProduct = {
+      collections: [
+        {
+          handle: 'summer-edit',
+          sourceId: 'collection_summer',
+          title: 'Summer Edit',
+        },
+      ],
+      description: 'A breathable everyday tee',
+      handle: 'linen-tee',
+      images: [
+        {
+          alt: 'Linen tee front',
+          sourceId: 'image_front',
+          url: 'https://cdn.example.com/linen-front.jpg',
+        },
+        { url: 'https://cdn.example.com/linen-back.jpg' },
+      ],
+      options: [{ title: 'Size', values: ['Small', 'Large'] }],
+      price: 29,
+      sourceId: 'product_linen_tee',
+      tags: [{ value: 'Linen' }],
+      thumbnail: 'https://cdn.example.com/linen-thumb.jpg',
+      title: 'Linen Tee',
+      variants: [
+        {
+          inventoryQuantity: 7,
+          manageInventory: true,
+          optionValues: { Size: 'Small' },
+          prices: [
+            { amount: 29, currencyCode: 'USD' },
+            { amount: 27, currencyCode: 'eur' },
+          ],
+          sku: 'LINEN-S',
+          sourceId: 'variant_small',
+          title: 'Small',
+        },
+        {
+          inventoryQuantity: 0,
+          manageInventory: true,
+          optionValues: { Size: 'Large' },
+          prices: [{ amount: 32, currencyCode: 'GBP' }],
+          sku: 'LINEN-L',
+          sourceId: 'variant_large',
+          title: 'Large',
+        },
+      ],
+    }
+
+    const response = await createDeploymentMedusaProvisionResponse(
+      'deployed-store',
+      new Request(
+        'https://ship-fast.test/api/deployments/deployed-store/provision/medusa',
+        {
+          body: JSON.stringify({
+            anonymousOwnerSecret: 'owner-secret',
+            products: [richProduct],
+          }),
+          method: 'POST',
+        },
+      ),
+      client,
+      provisioner,
+    )
+
+    expect(response.status).toBe(200)
+    expect(provisioner.syncInitialProducts).toHaveBeenCalledWith(
+      expect.objectContaining({
+        products: [
+          {
+            ...richProduct,
+            variants: [
+              {
+                ...richProduct.variants[0],
+                prices: [
+                  { amount: 29, currencyCode: 'usd' },
+                  { amount: 27, currencyCode: 'eur' },
+                ],
+              },
+              {
+                ...richProduct.variants[1],
+                prices: [{ amount: 32, currencyCode: 'gbp' }],
+              },
+            ],
+          },
+        ],
       }),
     )
   })
@@ -196,7 +318,7 @@ describe('deployment Medusa tenant API responses', () => {
     )
 
     expect(response.status).toBe(403)
-    await expect(response.json()).resolves.toEqual({
+    await expect(response.json()).resolves.toMatchObject({
       deploymentSlug: 'deployed-store',
       error: 'Commerce tenant access denied.',
     })
@@ -225,7 +347,7 @@ describe('deployment Medusa tenant API responses', () => {
     )
 
     expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toEqual({
+    await expect(response.json()).resolves.toMatchObject({
       deploymentSlug: 'deployed-store',
       products: [
         {
@@ -242,6 +364,114 @@ describe('deployment Medusa tenant API responses', () => {
       {
         headers: { 'x-publishable-api-key': 'pk_tenant' },
       },
+    )
+  })
+
+  it('keeps deployment and session Store readback on the same rich normalization contract', async () => {
+    const richPayload = {
+      products: [
+        {
+          handle: 'admin-linen-tee',
+          id: 'prod_linen',
+          images: [{ id: 'pimg_front', url: 'https://cdn.test/front.jpg' }],
+          metadata: {},
+          title: 'Admin Linen Tee',
+          variants: [
+            {
+              calculated_price: {
+                calculated_amount: 29,
+                currency_code: 'USD',
+                original_amount: 35,
+              },
+              id: 'variant_small',
+              inventory_quantity: 4,
+              manage_inventory: true,
+              prices: [{ amount: 29, currency_code: 'USD' }],
+              sku: 'LINEN-S',
+              title: 'Small',
+            },
+            {
+              calculated_price: {
+                calculated_amount: 32,
+                currency_code: 'EUR',
+                original_amount: 32,
+              },
+              id: 'variant_large',
+              inventory_quantity: 0,
+              manage_inventory: false,
+              prices: [{ amount: 32, currency_code: 'EUR' }],
+              sku: 'LINEN-L',
+              title: 'Large',
+            },
+          ],
+        },
+      ],
+    }
+    const createFetch = () =>
+      vi
+        .fn()
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({ regions: [{ id: 'reg_1' }] }), {
+            status: 200,
+          }),
+        )
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify(richPayload), { status: 200 }),
+        )
+    const deploymentFetch = createFetch()
+    const sessionFetch = createFetch()
+
+    const deploymentResponse = await createDeploymentMedusaProductsResponse(
+      'deployed-store',
+      { fetch: deploymentFetch },
+      createClient(),
+    )
+    const sessionResponse = await createSessionMedusaProductsResponse(
+      'deployed-store',
+      {
+        containerFinder: () => Promise.resolve(undefined),
+        env: {
+          MEDUSA_BACKEND_URL: 'https://backend.tenant.test',
+          MEDUSA_PUBLISHABLE_API_KEY: 'pk_tenant',
+        },
+        fetch: sessionFetch,
+        metaEnv: {},
+      },
+      {
+        mutation: vi.fn(),
+        query: vi.fn().mockResolvedValue(null),
+      },
+    )
+    const deploymentBody = await deploymentResponse.json()
+    const sessionBody = await sessionResponse.json()
+
+    expect(deploymentBody.products).toEqual(sessionBody.products)
+    expect(deploymentBody.products[0]).toMatchObject({
+      id: 'prod_linen',
+      images: [{ sourceId: 'pimg_front', url: 'https://cdn.test/front.jpg' }],
+      sourceHandle: 'admin-linen-tee',
+      sourceId: 'prod_linen',
+      variants: [
+        {
+          id: 'variant_small',
+          inventoryQuantity: 4,
+          sourceId: 'variant_small',
+        },
+        {
+          available: true,
+          id: 'variant_large',
+          sourceId: 'variant_large',
+        },
+      ],
+    })
+    expect(
+      new URL(String(deploymentFetch.mock.calls[1]?.[0])).searchParams.get(
+        'fields',
+      ),
+    ).toBe(
+      new URL(String(sessionFetch.mock.calls[1]?.[0])).searchParams.get(
+        'fields',
+      ),
     )
   })
 

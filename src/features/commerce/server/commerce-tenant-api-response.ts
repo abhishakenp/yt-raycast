@@ -2,7 +2,10 @@ import type { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
-import type { GeneratedCommerceProduct } from '../services/generated-commerce-products'
+import {
+  type GeneratedCommerceProduct,
+  normalizeGeneratedCommerceProductInput,
+} from '../services/generated-commerce-products'
 import {
   getMedusaAdminApiToken,
   getMedusaAdminEmail,
@@ -10,6 +13,11 @@ import {
   type MedusaEnv,
 } from './medusa-store-env'
 import { syncGeneratedProductsToMedusa } from './medusa-product-sync'
+import {
+  type MedusaCommerceProduct,
+  medusaStoreProductFields,
+  normalizeMedusaStoreProduct,
+} from './medusa-store-product'
 
 type FetchLike = typeof fetch
 type CommerceApiClient = Pick<ConvexHttpClient, 'query' | 'mutation'>
@@ -68,14 +76,6 @@ type CommerceTenantConfig = {
   updatedAt: number
 }
 
-type DeploymentProduct = {
-  currencyCode?: string
-  description?: string
-  handle: string
-  price?: number
-  title: string
-}
-
 type PullSource = 'manual' | 'webhook'
 
 type PullOptions = {
@@ -119,10 +119,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function stringValue(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim() ? value.trim() : undefined
-}
-
-function numberValue(value: unknown): number | undefined {
-  return typeof value === 'number' && Number.isFinite(value) ? value : undefined
 }
 
 function interpolateTenantTemplate(
@@ -182,21 +178,7 @@ function createWebhookSecret(): string {
 function generatedProductValue(
   value: unknown,
 ): GeneratedCommerceProduct | undefined {
-  if (!isRecord(value)) return undefined
-
-  const title = stringValue(value.title)
-  const handle = stringValue(value.handle)
-  const price = numberValue(value.price)
-  const description = stringValue(value.description)
-
-  if (!title || !handle || price === undefined) return undefined
-
-  return {
-    ...(description === undefined ? {} : { description }),
-    handle,
-    price,
-    title,
-  }
+  return normalizeGeneratedCommerceProductInput(value)
 }
 
 function readGeneratedProducts(
@@ -337,52 +319,13 @@ async function readDefaultRegionId({
   return region?.id
 }
 
-function readProductPrice(product: Record<string, unknown>): {
-  currencyCode?: string
-  price?: number
-} {
-  const variants = Array.isArray(product.variants) ? product.variants : []
-  for (const variant of variants) {
-    if (!isRecord(variant)) continue
-    const calculatedPrice = isRecord(variant.calculated_price)
-      ? variant.calculated_price
-      : undefined
-    const price = numberValue(calculatedPrice?.calculated_amount)
-    const currencyCode = stringValue(calculatedPrice?.currency_code)
-    if (price !== undefined) {
-      return {
-        ...(currencyCode === undefined ? {} : { currencyCode }),
-        price,
-      }
-    }
-  }
-  return {}
-}
-
-function normalizeTenantProduct(value: unknown): DeploymentProduct | undefined {
-  if (!isRecord(value)) return undefined
-
-  const title = stringValue(value.title)
-  const handle = stringValue(value.handle)
-  if (!title || !handle) return undefined
-
-  const description = stringValue(value.description)
-
-  return {
-    ...(description === undefined ? {} : { description }),
-    ...readProductPrice(value),
-    handle,
-    title,
-  }
-}
-
 async function readTenantProducts({
   fetchImpl,
   tenant,
 }: {
   fetchImpl: FetchLike
   tenant: CommerceTenantConfig
-}): Promise<Array<DeploymentProduct>> {
+}): Promise<Array<MedusaCommerceProduct>> {
   const publishableKey = trim(tenant.publishableKey)
   if (publishableKey === undefined) {
     throw new Error('Medusa tenant publishable key is not configured.')
@@ -398,7 +341,7 @@ async function readTenantProducts({
     regionId === undefined ? '' : `&region_id=${encodeURIComponent(regionId)}`
   const response = await fetchImpl(
     `${backendUrl}/store/products?limit=100${regionQuery}&fields=${encodeURIComponent(
-      '*variants.calculated_price',
+      medusaStoreProductFields,
     )}`,
     {
       headers: { 'x-publishable-api-key': publishableKey },
@@ -417,7 +360,9 @@ async function readTenantProducts({
   }
 
   return payload.products
-    .map(normalizeTenantProduct)
+    .map((product) =>
+      normalizeMedusaStoreProduct(tenant.deploymentSlug, product),
+    )
     .filter((product) => product !== undefined)
 }
 

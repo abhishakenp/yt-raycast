@@ -558,6 +558,146 @@ describe('createSessionMedusaProvisionResponse', () => {
     })
   })
 
+  it('preserves rich products from the session request through the Admin create body', async () => {
+    const mutation = vi.fn().mockResolvedValue({ sessionId: 'session_123' })
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ regions: [{ currency_code: 'usd', id: 'reg_1' }] }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ token: 'admin-token' }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ shipping_profiles: [{ id: 'sp_default' }] }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            sales_channels: [
+              { id: 'sc_tenant', name: 'Ship Fast session_123' },
+            ],
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            api_keys: [
+              {
+                id: 'apk_tenant',
+                sales_channels: [{ id: 'sc_tenant' }],
+                title: 'Ship Fast session_123',
+                token: 'pk_tenant_session',
+                type: 'publishable',
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ products: [] }), { status: 200 }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ product: { id: 'prod_1' } }), {
+          status: 200,
+        }),
+      )
+
+    const response = await createSessionMedusaProvisionResponse(
+      'session_123',
+      new Request(
+        'http://ship-fast.test/api/sessions/session_123/provision/medusa',
+        {
+          body: JSON.stringify({
+            products: [
+              {
+                handle: 'linen-tee',
+                images: [
+                  { url: 'https://cdn.example.com/linen-front.jpg' },
+                  { url: 'https://cdn.example.com/linen-back.jpg' },
+                ],
+                options: [{ title: 'Size', values: ['Small', 'Large'] }],
+                sourceId: 'product_linen_tee',
+                title: 'Linen Tee',
+                variants: [
+                  {
+                    manageInventory: false,
+                    optionValues: { Size: 'Small' },
+                    prices: [{ amount: 29, currencyCode: 'USD' }],
+                    sku: 'LINEN-S',
+                    sourceId: 'variant_small',
+                    title: 'Small',
+                  },
+                  {
+                    manageInventory: false,
+                    optionValues: { Size: 'Large' },
+                    prices: [{ amount: 32, currencyCode: 'EUR' }],
+                    sku: 'LINEN-L',
+                    sourceId: 'variant_large',
+                    title: 'Large',
+                  },
+                ],
+              },
+            ],
+          }),
+          method: 'POST',
+        },
+      ),
+      { mutation, query: vi.fn(), setAuth: vi.fn() },
+      {
+        containerProvider: mockContainerProvider({
+          MEDUSA_ADMIN_URL: 'http://localhost:9000/app',
+          MEDUSA_BACKEND_URL: 'http://localhost:9000',
+          MEDUSA_STOREFRONT_URL: 'http://localhost:8001',
+        }),
+        env: {
+          MEDUSA_ADMIN_EMAIL: 'admin@test.com',
+          MEDUSA_ADMIN_PASSWORD: 'supersecret',
+          MEDUSA_BACKEND_URL: 'http://localhost:9000',
+          MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
+        },
+        fetch: fetchImpl,
+        metaEnv: {},
+      },
+    )
+
+    expect(response.status).toBe(200)
+    const createCall = fetchImpl.mock.calls.find(
+      ([url]) => url === 'http://localhost:9000/admin/products',
+    )
+    expect(JSON.parse(String(createCall?.[1]?.body))).toMatchObject({
+      images: [
+        { url: 'https://cdn.example.com/linen-front.jpg' },
+        { url: 'https://cdn.example.com/linen-back.jpg' },
+      ],
+      metadata: {
+        ship_fast_generated_source_id: 'product_linen_tee',
+      },
+      options: [{ title: 'Size', values: ['Small', 'Large'] }],
+      variants: [
+        {
+          sku: 'LINEN-S',
+          title: 'Small',
+        },
+        {
+          sku: 'LINEN-L',
+          title: 'Large',
+        },
+      ],
+    })
+  })
+
   it('returns 403 when an authorized provision cannot persist due to ownership denial', async () => {
     const mutation = vi.fn().mockRejectedValue(new Error('FORBIDDEN'))
     const fetchImpl = vi

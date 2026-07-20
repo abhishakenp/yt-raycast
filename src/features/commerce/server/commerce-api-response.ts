@@ -15,7 +15,10 @@ import {
   findRunningSessionContainer,
   provisionSessionMedusaContainer,
 } from './medusa-container-provisioner'
-import type { GeneratedCommerceProduct } from '../services/generated-commerce-products'
+import {
+  type GeneratedCommerceProduct,
+  normalizeGeneratedCommerceProductInput,
+} from '../services/generated-commerce-products'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
 type CommerceApiClient = Pick<
@@ -123,29 +126,7 @@ function getBearerToken(request: Request): string | null {
 function generatedProductValue(
   value: unknown,
 ): GeneratedCommerceProduct | undefined {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return undefined
-  }
-
-  const product = value as Record<string, unknown>
-  const title = typeof product.title === 'string' ? product.title.trim() : ''
-  const handle = typeof product.handle === 'string' ? product.handle.trim() : ''
-  const price = typeof product.price === 'number' ? product.price : undefined
-  const description =
-    typeof product.description === 'string' && product.description.trim()
-      ? product.description.trim()
-      : undefined
-
-  if (!title || !handle || price === undefined || !Number.isFinite(price)) {
-    return undefined
-  }
-
-  return {
-    ...(description === undefined ? {} : { description }),
-    handle,
-    price,
-    title,
-  }
+  return normalizeGeneratedCommerceProductInput(value)
 }
 
 function getGeneratedProducts(
