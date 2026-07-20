@@ -33,6 +33,8 @@ import {
   loadSessionCommerceConfig,
   recordDeploymentCommerceTenantPull,
   provisionSessionMedusaTenant,
+  resolveDeploymentCommerceGatewayConfig,
+  resolveSessionCommerceGatewayConfig,
   syncSessionMedusaProducts,
   upsertDeploymentCommerceTenant,
   upsertSessionCommerceConfig,
@@ -903,6 +905,11 @@ export const getCommerceConfig = query({
   handler: (ctx, args) => loadSessionCommerceConfig(ctx, args.sessionId),
 })
 
+export const resolveCommerceSessionGateway = query({
+  args: ownedSessionArgs,
+  handler: (ctx, args) => resolveSessionCommerceGatewayConfig(ctx, args),
+})
+
 export const upsertCommerceTenant = mutation({
   args: upsertCommerceTenantArgs,
   handler: (ctx, args) => upsertDeploymentCommerceTenant(ctx, args),
@@ -912,6 +919,12 @@ export const getCommerceTenantByDeploymentSlug = query({
   args: commerceTenantDeploymentSlugArgs,
   handler: (ctx, args) =>
     loadDeploymentCommerceTenantBySlug(ctx, args.deploymentSlug),
+})
+
+export const resolveCommerceDeploymentGateway = query({
+  args: commerceTenantDeploymentSlugArgs,
+  handler: (ctx, args) =>
+    resolveDeploymentCommerceGatewayConfig(ctx, args.deploymentSlug),
 })
 
 export const authorizeCommerceTenantProvision = query({

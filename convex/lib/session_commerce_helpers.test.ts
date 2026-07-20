@@ -11,6 +11,8 @@ import {
   loadOwnedDeploymentCommerceTenantBySlug,
   loadSessionCommerceConfig,
   recordDeploymentCommerceTenantPull,
+  resolveDeploymentCommerceGatewayConfig,
+  resolveSessionCommerceGatewayConfig,
   upsertDeploymentCommerceTenant,
   provisionSessionMedusaTenant,
   syncSessionMedusaProducts,
@@ -399,6 +401,75 @@ describe('session commerce helpers', () => {
     })
   })
 
+  it('resolves a session gateway only for the authenticated or anonymous owner without leaking secrets', async () => {
+    const ownerId = 'https://auth.test|owner'
+    const session = {
+      ...(await sessionDoc()),
+      userId: ownerId,
+    }
+    const configJson = JSON.stringify({
+      adminPassword: 'admin-password',
+      adminToken: 'admin-token',
+      medusaTenant: {
+        publishableKey: 'pk_session',
+        webhookSecret: 'webhook-secret',
+      },
+    })
+    const { ctx } = await ctxFor({
+      configs: [commerceDoc({ configJson })],
+      identity: { tokenIdentifier: ownerId },
+      session,
+    })
+
+    await expect(
+      resolveSessionCommerceGatewayConfig(ctx, { sessionId }),
+    ).resolves.toEqual({
+      backendUrl: 'https://backend.old.test',
+      publishableKey: 'pk_session',
+      scope: 'sessions',
+      tenant: sessionId,
+    })
+    await expect(
+      resolveSessionCommerceGatewayConfig(ctx, {
+        anonymousOwnerSecret: 'owner-secret',
+        sessionId,
+      }),
+    ).resolves.toEqual({
+      backendUrl: 'https://backend.old.test',
+      publishableKey: 'pk_session',
+      scope: 'sessions',
+      tenant: sessionId,
+    })
+
+    const serialized = JSON.stringify(
+      await resolveSessionCommerceGatewayConfig(ctx, { sessionId }),
+    )
+    expect(serialized).not.toContain('admin-password')
+    expect(serialized).not.toContain('admin-token')
+    expect(serialized).not.toContain('webhook-secret')
+  })
+
+  it('rejects a session gateway request without matching ownership', async () => {
+    const { ctx } = await ctxFor({
+      configs: [
+        commerceDoc({
+          configJson: JSON.stringify({
+            medusaTenant: { publishableKey: 'pk_session' },
+          }),
+        }),
+      ],
+    })
+
+    await expect(
+      resolveSessionCommerceGatewayConfig(ctx, {
+        anonymousOwnerSecret: 'wrong-secret',
+        sessionId,
+      }),
+    ).rejects.toMatchObject({
+      data: { code: 'FORBIDDEN' },
+    })
+  })
+
   it('provisions a Medusa tenant config with zero products by default', async () => {
     const { ctx, configs } = await ctxFor()
 
@@ -587,6 +658,67 @@ describe('session commerce helpers', () => {
     expect(serialized).not.toHaveProperty('webhookSecretHash')
   })
 
+  it('resolves only ready public deployment gateways without leaking tenant secrets', async () => {
+    const tenant = commerceTenantDoc({
+      databaseRef: 'db_private',
+      secretRef: 'secret_private',
+      webhookSecretHash: await hashOwnerSecret('webhook-secret'),
+    })
+    const { ctx } = await ctxFor({
+      deployments: [deploymentDoc()],
+      tenants: [tenant],
+    })
+
+    await expect(
+      resolveDeploymentCommerceGatewayConfig(ctx, deploymentSlug),
+    ).resolves.toEqual({
+      backendUrl: 'https://backend.tenant.test',
+      publishableKey: 'pk_tenant',
+      scope: 'deployments',
+      tenant: deploymentSlug,
+    })
+
+    const serialized = JSON.stringify(
+      await resolveDeploymentCommerceGatewayConfig(ctx, deploymentSlug),
+    )
+    expect(serialized).not.toContain('db_private')
+    expect(serialized).not.toContain('secret_private')
+    expect(serialized).not.toContain('webhook-secret')
+  })
+
+  it('rejects inactive, private, and degraded deployment gateways', async () => {
+    const privateSession = {
+      ...(await sessionDoc()),
+      isPrivate: true,
+    }
+    const inactive = await ctxFor({
+      deployments: [deploymentDoc({ status: 'updating' })],
+      tenants: [commerceTenantDoc()],
+    })
+    const privateDeployment = await ctxFor({
+      deployments: [deploymentDoc()],
+      session: privateSession,
+      tenants: [commerceTenantDoc()],
+    })
+    const degraded = await ctxFor({
+      deployments: [deploymentDoc()],
+      tenants: [commerceTenantDoc({ status: 'degraded' })],
+    })
+
+    await expect(
+      resolveDeploymentCommerceGatewayConfig(inactive.ctx, deploymentSlug),
+    ).resolves.toBeNull()
+    await expect(
+      resolveDeploymentCommerceGatewayConfig(
+        privateDeployment.ctx,
+        deploymentSlug,
+      ),
+    ).resolves.toBeNull()
+    await expect(
+      resolveDeploymentCommerceGatewayConfig(degraded.ctx, deploymentSlug),
+    ).resolves.toBeNull()
+  })
+
   it('loads an owned deployment commerce tenant only for the deployment owner', async () => {
     const { ctx } = await ctxFor({
       deployments: [deploymentDoc()],
@@ -761,6 +893,8 @@ describe('session commerce helpers', () => {
       loadDeploymentCommerceTenantBySlug: vi.fn(async () => null),
       loadOwnedDeploymentCommerceTenantBySlug: vi.fn(async () => null),
       loadDeploymentCommerceTenantBySlugForWebhook: vi.fn(async () => null),
+      resolveDeploymentCommerceGatewayConfig: vi.fn(async () => null),
+      resolveSessionCommerceGatewayConfig: vi.fn(async () => null),
       recordDeploymentCommerceTenantPull: vi.fn(async () => null),
     }))
     try {
@@ -776,6 +910,8 @@ describe('session commerce helpers', () => {
         getCommerceTenantByDeploymentSlug,
         getOwnedCommerceTenantByDeploymentSlug,
         getCommerceTenantByDeploymentSlugForWebhook,
+        resolveCommerceDeploymentGateway,
+        resolveCommerceSessionGateway,
         recordCommerceTenantPull,
       } = await import('../sessions')
       const mockedModule = await import('./session_commerce_helpers')
@@ -811,6 +947,12 @@ describe('session commerce helpers', () => {
       )
       const mockedRecordDeploymentCommerceTenantPull = vi.mocked(
         mockedModule.recordDeploymentCommerceTenantPull,
+      )
+      const mockedResolveDeploymentCommerceGatewayConfig = vi.mocked(
+        mockedModule.resolveDeploymentCommerceGatewayConfig,
+      )
+      const mockedResolveSessionCommerceGatewayConfig = vi.mocked(
+        mockedModule.resolveSessionCommerceGatewayConfig,
       )
       const ctx = { db: {} } as unknown as MutationCtx
       const queryCtx = { db: {} } as unknown as QueryCtx
@@ -848,6 +990,14 @@ describe('session commerce helpers', () => {
       expect(mockedLoadSessionCommerceConfig).toHaveBeenCalledWith(
         queryCtx,
         getArgs.sessionId,
+      )
+
+      const sessionGatewayHandler =
+        resolveCommerceSessionGateway as unknown as QueryHandler<OwnedSessionArgs>
+      await sessionGatewayHandler(queryCtx, sessionAuthorizationArgs)
+      expect(mockedResolveSessionCommerceGatewayConfig).toHaveBeenCalledWith(
+        queryCtx,
+        sessionAuthorizationArgs,
       )
 
       const provisionArgs: ProvisionMedusaTenantArgs = {
@@ -912,6 +1062,16 @@ describe('session commerce helpers', () => {
         }>
       await tenantQueryHandler(queryCtx, { deploymentSlug })
       expect(mockedLoadDeploymentCommerceTenantBySlug).toHaveBeenCalledWith(
+        queryCtx,
+        deploymentSlug,
+      )
+
+      const deploymentGatewayHandler =
+        resolveCommerceDeploymentGateway as unknown as QueryHandler<{
+          deploymentSlug: string
+        }>
+      await deploymentGatewayHandler(queryCtx, { deploymentSlug })
+      expect(mockedResolveDeploymentCommerceGatewayConfig).toHaveBeenCalledWith(
         queryCtx,
         deploymentSlug,
       )
