@@ -213,4 +213,17 @@ describe('commerce operation begin policy', () => {
       ),
     ).toEqual({ type: 'execute', attempt: 2, reset: true })
   })
+
+  test('allows a new request hash once retention expires', () => {
+    expect(
+      decideCommerceOperationBegin(
+        {
+          ...baseOperation,
+          expiresAt: 1_000,
+        },
+        HASH_A,
+        1_000,
+      ),
+    ).toEqual({ type: 'execute', attempt: 2, reset: true })
+  })
 })
