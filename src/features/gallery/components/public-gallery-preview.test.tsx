@@ -16,10 +16,11 @@ vi.mock('@tanstack/react-router', () => ({
     to?: string
     [key: string]: unknown
   }) => {
-    const href =
+    const rawHref =
       to !== undefined && params?.sessionId !== undefined
         ? to.replace('$sessionId', encodeURIComponent(params.sessionId))
         : to
+    const href = rawHref?.replace(/\/\$$/, '')
 
     void preload
 
