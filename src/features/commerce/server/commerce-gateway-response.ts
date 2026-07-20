@@ -1,7 +1,14 @@
 import {
+  type AddCommerceShippingMethodInput,
   type AddCommerceItemInput,
+  type CommerceOrderEnvelope,
   type CommerceCartEnvelope,
   type CommerceCatalogEnvelope,
+  type CommercePaymentProvidersEnvelope,
+  type CommercePaymentSessionsEnvelope,
+  type CommerceShippingOptionsEnvelope,
+  type CompleteCommerceCartInput,
+  type CreateCommercePaymentSessionsInput,
   type CreateCommerceCartInput,
   MedusaCommerceGateway,
   type UpdateCommerceItemInput,
@@ -23,9 +30,27 @@ export type CommerceGatewayOperations = {
     cartId: string,
     input: AddCommerceItemInput,
   ) => Promise<CommerceCartEnvelope>
+  addShippingMethod: (
+    cartId: string,
+    input: AddCommerceShippingMethodInput,
+  ) => Promise<CommerceCartEnvelope>
   catalog: () => Promise<CommerceCatalogEnvelope>
+  completeCart: (
+    cartId: string,
+    input?: CompleteCommerceCartInput,
+  ) => Promise<CommerceOrderEnvelope>
   createCart: (input?: CreateCommerceCartInput) => Promise<CommerceCartEnvelope>
+  createPaymentSessions: (
+    cartId: string,
+    input: CreateCommercePaymentSessionsInput,
+  ) => Promise<CommercePaymentSessionsEnvelope>
   getCart: (cartId: string) => Promise<CommerceCartEnvelope>
+  getPaymentProviders: (
+    cartId: string,
+  ) => Promise<CommercePaymentProvidersEnvelope>
+  getShippingOptions: (
+    cartId: string,
+  ) => Promise<CommerceShippingOptionsEnvelope>
   removeItem: (cartId: string, lineId: string) => Promise<CommerceCartEnvelope>
   updateCart: (
     cartId: string,
@@ -41,7 +66,12 @@ export type CommerceGatewayOperations = {
 export type CommerceGatewayOperation =
   | { type: 'catalog' }
   | { type: 'create-cart' }
+  | { cartId: string; type: 'add-shipping-method' }
+  | { cartId: string; type: 'complete-cart' }
+  | { cartId: string; type: 'create-payment-sessions' }
   | { cartId: string; type: 'get-cart' }
+  | { cartId: string; type: 'payment-providers' }
+  | { cartId: string; type: 'shipping-options' }
   | { cartId: string; type: 'update-cart' }
   | { cartId: string; type: 'add-item' }
   | { cartId: string; lineId: string; type: 'update-item' }
@@ -135,12 +165,30 @@ function requiredNumber(
   throw requestFailure(correlationId, 400)
 }
 
+function optionalRecord(
+  body: Record<string, unknown>,
+  key: string,
+  correlationId: string,
+): Record<string, unknown> | undefined {
+  const value = body[key]
+  if (value === undefined) return undefined
+  if (isRecord(value)) return value
+  throw requestFailure(correlationId, 400)
+}
+
 async function runOperation(
   gateway: CommerceGatewayOperations,
   operation: CommerceGatewayOperation,
   request: Request,
   correlationId: string,
-): Promise<CommerceCartEnvelope | CommerceCatalogEnvelope> {
+): Promise<
+  | CommerceCartEnvelope
+  | CommerceCatalogEnvelope
+  | CommerceOrderEnvelope
+  | CommercePaymentProvidersEnvelope
+  | CommercePaymentSessionsEnvelope
+  | CommerceShippingOptionsEnvelope
+> {
   switch (operation.type) {
     case 'catalog':
       return await gateway.catalog()
@@ -164,6 +212,40 @@ async function runOperation(
         quantity: requiredNumber(body, 'quantity', correlationId),
         variantId: requiredString(body, 'variantId', correlationId),
       })
+    }
+    case 'shipping-options':
+      return await gateway.getShippingOptions(operation.cartId)
+    case 'add-shipping-method': {
+      const body = await readBody(request, correlationId)
+      return await gateway.addShippingMethod(operation.cartId, {
+        shippingOptionId: requiredString(
+          body,
+          'shippingOptionId',
+          correlationId,
+        ),
+      })
+    }
+    case 'payment-providers':
+      return await gateway.getPaymentProviders(operation.cartId)
+    case 'create-payment-sessions': {
+      const body = await readBody(request, correlationId)
+      const data = optionalRecord(body, 'data', correlationId)
+      return await gateway.createPaymentSessions(operation.cartId, {
+        ...(data === undefined ? {} : { data }),
+        providerId: requiredString(body, 'providerId', correlationId),
+      })
+    }
+    case 'complete-cart': {
+      const body = await readBody(request, correlationId)
+      const idempotencyKey = optionalString(
+        body,
+        'idempotencyKey',
+        correlationId,
+      )
+      return await gateway.completeCart(
+        operation.cartId,
+        idempotencyKey === undefined ? {} : { idempotencyKey },
+      )
     }
     case 'update-item': {
       const body = await readBody(request, correlationId)

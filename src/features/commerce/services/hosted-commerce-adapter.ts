@@ -1,9 +1,16 @@
 import axios, { type AxiosInstance } from 'axios'
 
 import type {
+  AddCommerceShippingMethodInput,
   AddCommerceItemInput,
   CommerceCartEnvelope,
   CommerceCatalogEnvelope,
+  CommerceOrderEnvelope,
+  CommercePaymentProvidersEnvelope,
+  CommercePaymentSessionsEnvelope,
+  CommerceShippingOptionsEnvelope,
+  CompleteCommerceCartInput,
+  CreateCommercePaymentSessionsInput,
   CreateCommerceCartInput,
   UpdateCommerceItemInput,
 } from '../server/commerce-gateway'
@@ -78,6 +85,14 @@ export class HostedCommerceAdapter implements CommerceAdapter {
       this.storage?.setItem(this.cartStorageKey, cartId)
     } catch {
       // Storage is optional. The caller can continue with the returned cart ID.
+    }
+  }
+
+  private clearStoredCartId(): void {
+    try {
+      this.storage?.removeItem(this.cartStorageKey)
+    } catch {
+      // Storage is optional. The completed order is still authoritative.
     }
   }
 
@@ -167,6 +182,73 @@ export class HostedCommerceAdapter implements CommerceAdapter {
       )}/items/${encodeURIComponent(lineId)}`,
       this.requestConfig,
     )
+    return response.data
+  }
+
+  async getShippingOptions(
+    cartId?: string,
+  ): Promise<CommerceShippingOptionsEnvelope> {
+    const response = await this.axios.get<CommerceShippingOptionsEnvelope>(
+      `${this.basePath}/carts/${encodeURIComponent(
+        this.cartId(cartId),
+      )}/shipping-options`,
+      this.requestConfig,
+    )
+    return response.data
+  }
+
+  async addShippingMethod(
+    input: AddCommerceShippingMethodInput,
+    cartId?: string,
+  ): Promise<CommerceCartEnvelope> {
+    const response = await this.axios.post<CommerceCartEnvelope>(
+      `${this.basePath}/carts/${encodeURIComponent(
+        this.cartId(cartId),
+      )}/shipping-methods`,
+      input,
+      this.requestConfig,
+    )
+    return response.data
+  }
+
+  async getPaymentProviders(
+    cartId?: string,
+  ): Promise<CommercePaymentProvidersEnvelope> {
+    const response = await this.axios.get<CommercePaymentProvidersEnvelope>(
+      `${this.basePath}/carts/${encodeURIComponent(
+        this.cartId(cartId),
+      )}/payment-providers`,
+      this.requestConfig,
+    )
+    return response.data
+  }
+
+  async createPaymentSessions(
+    input: CreateCommercePaymentSessionsInput,
+    cartId?: string,
+  ): Promise<CommercePaymentSessionsEnvelope> {
+    const response = await this.axios.post<CommercePaymentSessionsEnvelope>(
+      `${this.basePath}/carts/${encodeURIComponent(
+        this.cartId(cartId),
+      )}/payment-sessions`,
+      input,
+      this.requestConfig,
+    )
+    return response.data
+  }
+
+  async completeCart(
+    input: CompleteCommerceCartInput = {},
+    cartId?: string,
+  ): Promise<CommerceOrderEnvelope> {
+    const response = await this.axios.post<CommerceOrderEnvelope>(
+      `${this.basePath}/carts/${encodeURIComponent(
+        this.cartId(cartId),
+      )}/complete`,
+      input,
+      this.requestConfig,
+    )
+    this.clearStoredCartId()
     return response.data
   }
 }

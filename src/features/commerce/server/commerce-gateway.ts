@@ -1,12 +1,26 @@
 import type { MedusaCommerceProduct } from './medusa-store-product'
-import { assertPublicUrl } from '@ship-fast/engine/clone/security'
+import { assertPublicUrl } from '@ship-fast/engine/clone/security.ts'
 import {
   medusaStoreProductFields,
   normalizeMedusaStoreProduct,
 } from './medusa-store-product'
+import {
+  normalizeMedusaOrder,
+  normalizeMedusaPaymentAction,
+  normalizeMedusaPaymentProviders,
+  normalizeMedusaPaymentSessions,
+  normalizeMedusaShippingOptions,
+} from './medusa-store-checkout'
 import { isValidMedusaResourceId } from './medusa-store-request'
 import { CommerceFailure } from './commerce-error'
 import type { ResolvedCommerceTenant } from './commerce-tenant-resolver'
+import type {
+  CommerceOrder,
+  CommercePaymentProvider,
+  CommercePaymentSession,
+  CommerceShippingOption,
+  PaymentAction,
+} from '../contracts'
 
 const DEFAULT_PROVIDER_TIMEOUT_MS = 8_000
 const MAX_PROVIDER_RESPONSE_BYTES = 2_000_000
@@ -35,6 +49,36 @@ export type AddCommerceItemInput = {
 
 export type UpdateCommerceItemInput = {
   quantity: number
+}
+
+export type AddCommerceShippingMethodInput = {
+  shippingOptionId: string
+}
+
+export type CommerceShippingOptionsEnvelope = {
+  shippingOptions: Array<CommerceShippingOption>
+}
+
+export type CommercePaymentProvidersEnvelope = {
+  paymentProviders: Array<CommercePaymentProvider>
+}
+
+export type CreateCommercePaymentSessionsInput = {
+  data?: Record<string, unknown>
+  providerId: string
+}
+
+export type CommercePaymentSessionsEnvelope = {
+  paymentAction: PaymentAction
+  paymentSessions: Array<CommercePaymentSession>
+}
+
+export type CompleteCommerceCartInput = {
+  idempotencyKey?: string
+}
+
+export type CommerceOrderEnvelope = {
+  order: CommerceOrder
 }
 
 type MedusaCommerceGatewayOptions = {
@@ -310,7 +354,13 @@ export class MedusaCommerceGateway {
 
   private requireResourceId(
     value: string,
-    kind: 'cart' | 'line' | 'variant',
+    kind:
+      | 'cart'
+      | 'line'
+      | 'payment collection'
+      | 'provider'
+      | 'shipping option'
+      | 'variant',
   ): string {
     const normalized = value.trim()
     if (isValidMedusaResourceId(normalized)) return normalized
@@ -379,6 +429,53 @@ export class MedusaCommerceGateway {
       `/store/carts/${encodeURIComponent(normalizedCartId)}`,
     )
     return this.requireBoundCart(payload, normalizedCartId)
+  }
+
+  private storeRef() {
+    return this.tenant.scope === 'sessions'
+      ? {
+          kind: 'sessions' as const,
+          sessionId: this.tenant.tenant,
+        }
+      : {
+          deploymentSlug: this.tenant.tenant,
+          kind: 'deployments' as const,
+        }
+  }
+
+  private cartCurrency(cart: JsonRecord): string {
+    if (typeof cart.currency_code === 'string') return cart.currency_code
+    throw this.failure({
+      code: 'COMMERCE_PROVIDER_MALFORMED',
+      message: 'Commerce provider returned an invalid cart.',
+      retryable: true,
+      status: 502,
+    })
+  }
+
+  private cartRegionId(cart: JsonRecord): string {
+    if (
+      typeof cart.region_id === 'string' &&
+      isValidMedusaResourceId(cart.region_id)
+    ) {
+      return cart.region_id
+    }
+    throw this.failure({
+      code: 'COMMERCE_REGION_UNAVAILABLE',
+      message: 'Commerce region is unavailable.',
+      retryable: true,
+      status: 502,
+    })
+  }
+
+  private paymentCollectionId(cart: JsonRecord): string | undefined {
+    const paymentCollection = isRecord(cart.payment_collection)
+      ? cart.payment_collection
+      : undefined
+    const id = paymentCollection?.id
+    return typeof id === 'string' && isValidMedusaResourceId(id)
+      ? id
+      : undefined
   }
 
   private async defaultRegionId(): Promise<string> {
@@ -578,5 +675,157 @@ export class MedusaCommerceGateway {
       { method: 'DELETE' },
     )
     return this.requireBoundCart(payload, normalizedCartId, 'parent')
+  }
+
+  async getShippingOptions(
+    cartId: string,
+  ): Promise<CommerceShippingOptionsEnvelope> {
+    const normalizedCartId = this.requireResourceId(cartId, 'cart')
+    const { cart } = await this.boundCart(normalizedCartId)
+    const payload = await this.request(
+      `/store/shipping-options?cart_id=${encodeURIComponent(normalizedCartId)}`,
+    )
+    return {
+      shippingOptions: normalizeMedusaShippingOptions(
+        this.cartCurrency(cart),
+        payload,
+      ),
+    }
+  }
+
+  async addShippingMethod(
+    cartId: string,
+    input: AddCommerceShippingMethodInput,
+  ): Promise<CommerceCartEnvelope> {
+    const normalizedCartId = this.requireResourceId(cartId, 'cart')
+    const shippingOptionId = this.requireResourceId(
+      input.shippingOptionId,
+      'shipping option',
+    )
+    if (this.validateCartBeforeMutation) {
+      await this.boundCart(normalizedCartId)
+    }
+    const payload = await this.request(
+      `/store/carts/${encodeURIComponent(normalizedCartId)}/shipping-methods`,
+      {
+        body: JSON.stringify({ data: {}, option_id: shippingOptionId }),
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+      },
+    )
+    return this.requireBoundCart(payload, normalizedCartId)
+  }
+
+  async getPaymentProviders(
+    cartId: string,
+  ): Promise<CommercePaymentProvidersEnvelope> {
+    const normalizedCartId = this.requireResourceId(cartId, 'cart')
+    const { cart } = await this.boundCart(normalizedCartId)
+    const payload = await this.request(
+      `/store/payment-providers?region_id=${encodeURIComponent(
+        this.cartRegionId(cart),
+      )}`,
+    )
+    return { paymentProviders: normalizeMedusaPaymentProviders(payload) }
+  }
+
+  async createPaymentSessions(
+    cartId: string,
+    input: CreateCommercePaymentSessionsInput,
+  ): Promise<CommercePaymentSessionsEnvelope> {
+    const normalizedCartId = this.requireResourceId(cartId, 'cart')
+    const providerId = this.requireResourceId(input.providerId, 'provider')
+    const { cart } = await this.boundCart(normalizedCartId)
+    const existingPaymentCollectionId = this.paymentCollectionId(cart)
+    const paymentCollectionId =
+      existingPaymentCollectionId ??
+      this.requireCreatedPaymentCollectionId(
+        await this.request('/store/payment-collections', {
+          body: JSON.stringify({ cart_id: normalizedCartId }),
+          headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
+        }),
+      )
+    const payload = await this.request(
+      `/store/payment-collections/${encodeURIComponent(
+        paymentCollectionId,
+      )}/payment-sessions`,
+      {
+        body: JSON.stringify({
+          ...(input.data === undefined ? {} : { data: input.data }),
+          provider_id: providerId,
+        }),
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+      },
+    )
+    const paymentCollection = isRecord(payload)
+      ? payload.payment_collection
+      : undefined
+    const paymentSessions = normalizeMedusaPaymentSessions({
+      payment_sessions: isRecord(paymentCollection)
+        ? paymentCollection.payment_sessions
+        : undefined,
+    })
+    const paymentAction =
+      paymentSessions.find((session) => session.status === 'requires_action') ??
+      paymentSessions[0]
+
+    return {
+      paymentAction:
+        paymentAction === undefined
+          ? { type: 'none' }
+          : normalizeMedusaPaymentAction(paymentAction),
+      paymentSessions,
+    }
+  }
+
+  private requireCreatedPaymentCollectionId(payload: unknown): string {
+    const paymentCollection = isRecord(payload)
+      ? payload.payment_collection
+      : undefined
+    const id = isRecord(paymentCollection) ? paymentCollection.id : undefined
+    if (typeof id === 'string' && isValidMedusaResourceId(id)) return id
+    throw this.failure({
+      code: 'COMMERCE_PROVIDER_MALFORMED',
+      message: 'Commerce provider returned invalid payment data.',
+      retryable: true,
+      status: 502,
+    })
+  }
+
+  async completeCart(
+    cartId: string,
+    input: CompleteCommerceCartInput = {},
+  ): Promise<CommerceOrderEnvelope> {
+    const normalizedCartId = this.requireResourceId(cartId, 'cart')
+    if (this.validateCartBeforeMutation) {
+      await this.boundCart(normalizedCartId)
+    }
+    const payload = await this.request(
+      `/store/carts/${encodeURIComponent(normalizedCartId)}/complete`,
+      {
+        headers:
+          input.idempotencyKey === undefined
+            ? {}
+            : { 'Idempotency-Key': input.idempotencyKey },
+        method: 'POST',
+      },
+    )
+    if (!isRecord(payload) || payload.type !== 'order') {
+      throw this.failure({
+        code: 'COMMERCE_CHECKOUT_INCOMPLETE',
+        message: 'Commerce checkout could not be completed.',
+        retryable: true,
+        status: 409,
+      })
+    }
+    return {
+      order: normalizeMedusaOrder(
+        this.storeRef(),
+        normalizedCartId,
+        payload.order,
+      ),
+    }
   }
 }

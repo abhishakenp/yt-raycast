@@ -119,7 +119,7 @@ type NormalizeFulfillmentStatus = (
 ) => CommerceOrderFulfillmentStatus | undefined
 type NormalizeDisplayId = (value: unknown) => string | undefined
 
-const isRecord: IsRecord = (value) =>
+const isRecord: IsRecord = (value): value is RecordValue =>
   value !== null && typeof value === 'object' && !Array.isArray(value)
 
 const fail: Fail = (code) => {
@@ -421,10 +421,17 @@ export const normalizeMedusaPaymentProviders: NormalizePaymentProviders = (
   })
 }
 
-type SafeProviderValue = null | boolean | number | string | SafeProviderData
-type SafeProviderData =
-  | Array<SafeProviderValue>
-  | Record<string, SafeProviderValue>
+type SafeProviderValue =
+  | SafeProviderArray
+  | SafeProviderObject
+  | boolean
+  | null
+  | number
+  | string
+interface SafeProviderArray extends Array<SafeProviderValue> {}
+interface SafeProviderObject {
+  [key: string]: SafeProviderValue
+}
 type SanitizeProviderValue = (
   value: unknown,
   depth: number,

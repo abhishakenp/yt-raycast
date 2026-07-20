@@ -15,9 +15,29 @@ const tenant = {
 
 const gatewayOperations = (): CommerceGatewayOperations => ({
   addItem: vi.fn().mockResolvedValue({ cart: { id: 'cart_1' } }),
+  addShippingMethod: vi.fn().mockResolvedValue({ cart: { id: 'cart_1' } }),
   catalog: vi.fn().mockResolvedValue({ products: [{ id: 'prod_1' }] }),
+  completeCart: vi.fn().mockResolvedValue({ order: { id: 'order_1' } }),
   createCart: vi.fn().mockResolvedValue({ cart: { id: 'cart_1' } }),
+  createPaymentSessions: vi.fn().mockResolvedValue({
+    paymentAction: { type: 'none' },
+    paymentSessions: [
+      { id: 'payses_1', provider: 'pp_system', status: 'pending' },
+    ],
+  }),
   getCart: vi.fn().mockResolvedValue({ cart: { id: 'cart_1' } }),
+  getPaymentProviders: vi.fn().mockResolvedValue({
+    paymentProviders: [{ id: 'pp_system', name: 'System' }],
+  }),
+  getShippingOptions: vi.fn().mockResolvedValue({
+    shippingOptions: [
+      {
+        amount: { amount: 5, currencyCode: 'usd' },
+        id: 'so_1',
+        name: 'Standard',
+      },
+    ],
+  }),
   removeItem: vi.fn().mockResolvedValue({ cart: { id: 'cart_1' } }),
   updateCart: vi.fn().mockResolvedValue({ cart: { id: 'cart_1' } }),
   updateItem: vi.fn().mockResolvedValue({ cart: { id: 'cart_1' } }),
@@ -105,6 +125,66 @@ describe('commerce gateway HTTP response', () => {
       quantity: 3,
     })
     expect(gateway.removeItem).toHaveBeenCalledWith('cart_1', 'line_1')
+  })
+
+  it('routes checkout operations without silently selecting shopper choices', async () => {
+    const gateway = gatewayOperations()
+    const resolveTenant = vi.fn().mockResolvedValue(tenant)
+    const createGateway = vi.fn(() => gateway)
+    const operations = [
+      {
+        operation: { cartId: 'cart_1', type: 'shipping-options' as const },
+        request: requestFor(),
+      },
+      {
+        operation: { cartId: 'cart_1', type: 'add-shipping-method' as const },
+        request: requestFor({ shippingOptionId: 'so_1' }),
+      },
+      {
+        operation: { cartId: 'cart_1', type: 'payment-providers' as const },
+        request: requestFor(),
+      },
+      {
+        operation: {
+          cartId: 'cart_1',
+          type: 'create-payment-sessions' as const,
+        },
+        request: requestFor({
+          data: { payment_method_id: 'pm_1' },
+          providerId: 'pp_system',
+        }),
+      },
+      {
+        operation: { cartId: 'cart_1', type: 'complete-cart' as const },
+        request: requestFor({ idempotencyKey: 'idem_1' }),
+      },
+    ]
+
+    for (const input of operations) {
+      const response = await handleCommerceGatewayRequest(
+        {
+          operation: input.operation,
+          request: input.request,
+          scope: 'deployments',
+          tenant: 'tenant-a',
+        },
+        { createGateway, resolveTenant },
+      )
+      expect(response.status).toBe(200)
+    }
+
+    expect(gateway.getShippingOptions).toHaveBeenCalledWith('cart_1')
+    expect(gateway.addShippingMethod).toHaveBeenCalledWith('cart_1', {
+      shippingOptionId: 'so_1',
+    })
+    expect(gateway.getPaymentProviders).toHaveBeenCalledWith('cart_1')
+    expect(gateway.createPaymentSessions).toHaveBeenCalledWith('cart_1', {
+      data: { payment_method_id: 'pm_1' },
+      providerId: 'pp_system',
+    })
+    expect(gateway.completeCart).toHaveBeenCalledWith('cart_1', {
+      idempotencyKey: 'idem_1',
+    })
   })
 
   it('rejects malformed and oversized bodies without calling a cart operation', async () => {

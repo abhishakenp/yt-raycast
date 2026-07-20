@@ -562,4 +562,166 @@ describe('Medusa commerce gateway', () => {
       body: JSON.stringify({ region_id: 'reg_a' }),
     })
   })
+
+  it('executes shipping, payment, and completion through Medusa v2 checkout APIs', async () => {
+    const cart = boundCart(tenantA, {
+      currency_code: 'usd',
+      id: 'cart_123',
+      payment_collection: { id: 'paycol_123' },
+      region_id: 'reg_a',
+    })
+    const line = {
+      id: 'line_1',
+      product: {
+        handle: 'linen-shirt',
+        id: 'prod_1',
+        metadata: { ship_fast_generated_source_id: 'product:linen' },
+        title: 'Linen Shirt',
+      },
+      quantity: 1,
+      total: 29,
+      unit_price: 29,
+      variant: {
+        id: 'variant_1',
+        options: [],
+        title: 'Default',
+      },
+    }
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({ cart }))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          shipping_options: [
+            { amount: 5, id: 'so_standard', name: 'Standard' },
+          ],
+        }),
+      )
+      .mockResolvedValueOnce(jsonResponse({ cart }))
+      .mockResolvedValueOnce(jsonResponse({ cart }))
+      .mockResolvedValueOnce(jsonResponse({ cart }))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          payment_providers: [{ id: 'pp_system_default', name: 'System' }],
+        }),
+      )
+      .mockResolvedValueOnce(jsonResponse({ cart }))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          payment_collection: {
+            id: 'paycol_123',
+            payment_sessions: [
+              {
+                id: 'payses_1',
+                provider_id: 'pp_system_default',
+                status: 'pending',
+              },
+            ],
+          },
+        }),
+      )
+      .mockResolvedValueOnce(jsonResponse({ cart: { ...cart, items: [line] } }))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          order: {
+            cart_id: 'cart_123',
+            currency_code: 'usd',
+            id: 'order_123',
+            items: [line],
+            status: 'completed',
+            subtotal: 29,
+            total: 29,
+          },
+          type: 'order',
+        }),
+      )
+    const gateway = new MedusaCommerceGateway(tenantA, {
+      correlationId: 'checkout-correlation',
+      fetch,
+    })
+
+    await expect(gateway.getShippingOptions('cart_123')).resolves.toEqual({
+      shippingOptions: [
+        {
+          amount: { amount: 5, currencyCode: 'usd' },
+          id: 'so_standard',
+          name: 'Standard',
+        },
+      ],
+    })
+    await expect(
+      gateway.addShippingMethod('cart_123', {
+        shippingOptionId: 'so_standard',
+      }),
+    ).resolves.toEqual({ cart })
+    await expect(gateway.getPaymentProviders('cart_123')).resolves.toEqual({
+      paymentProviders: [{ id: 'pp_system_default', name: 'System' }],
+    })
+    await expect(
+      gateway.createPaymentSessions('cart_123', {
+        providerId: 'pp_system_default',
+      }),
+    ).resolves.toEqual({
+      paymentAction: { type: 'none' },
+      paymentSessions: [
+        {
+          id: 'payses_1',
+          provider: 'pp_system_default',
+          status: 'pending',
+        },
+      ],
+    })
+    await expect(
+      gateway.completeCart('cart_123', { idempotencyKey: 'idem_123' }),
+    ).resolves.toMatchObject({
+      order: {
+        id: 'order_123',
+        lines: [{ id: 'line_1' }],
+        status: 'completed',
+        store: { deploymentSlug: 'tenant-a', kind: 'deployments' },
+      },
+    })
+
+    expect(fetch).toHaveBeenNthCalledWith(
+      2,
+      'https://8.8.8.8/store/shipping-options?cart_id=cart_123',
+      expect.objectContaining({
+        headers: { 'x-publishable-api-key': 'pk_tenant_a' },
+      }),
+    )
+    expect(fetch).toHaveBeenNthCalledWith(
+      4,
+      'https://8.8.8.8/store/carts/cart_123/shipping-methods',
+      expect.objectContaining({
+        body: JSON.stringify({ data: {}, option_id: 'so_standard' }),
+        method: 'POST',
+      }),
+    )
+    expect(fetch).toHaveBeenNthCalledWith(
+      6,
+      'https://8.8.8.8/store/payment-providers?region_id=reg_a',
+      expect.objectContaining({
+        headers: { 'x-publishable-api-key': 'pk_tenant_a' },
+      }),
+    )
+    expect(fetch).toHaveBeenNthCalledWith(
+      8,
+      'https://8.8.8.8/store/payment-collections/paycol_123/payment-sessions',
+      expect.objectContaining({
+        body: JSON.stringify({ provider_id: 'pp_system_default' }),
+        method: 'POST',
+      }),
+    )
+    expect(fetch).toHaveBeenNthCalledWith(
+      10,
+      'https://8.8.8.8/store/carts/cart_123/complete',
+      expect.objectContaining({
+        headers: {
+          'Idempotency-Key': 'idem_123',
+          'x-publishable-api-key': 'pk_tenant_a',
+        },
+        method: 'POST',
+      }),
+    )
+  })
 })

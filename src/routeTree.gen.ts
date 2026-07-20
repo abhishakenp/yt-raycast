@@ -87,7 +87,12 @@ import { Route as ApiCommerceScopeTenantCatalogRouteImport } from './routes/api/
 import { Route as ApiCommerceScopeTenantCartsRouteImport } from './routes/api/commerce.$scope.$tenant.carts'
 import { Route as ApiSessionsSessionIdHistoryVersionRestoreRouteImport } from './routes/api/sessions.$sessionId.history.$version.restore'
 import { Route as ApiCommerceScopeTenantCartsCartIdRouteImport } from './routes/api/commerce.$scope.$tenant.carts.$cartId'
+import { Route as ApiCommerceScopeTenantCartsCartIdShippingOptionsRouteImport } from './routes/api/commerce.$scope.$tenant.carts.$cartId.shipping-options'
+import { Route as ApiCommerceScopeTenantCartsCartIdShippingMethodsRouteImport } from './routes/api/commerce.$scope.$tenant.carts.$cartId.shipping-methods'
+import { Route as ApiCommerceScopeTenantCartsCartIdPaymentSessionsRouteImport } from './routes/api/commerce.$scope.$tenant.carts.$cartId.payment-sessions'
+import { Route as ApiCommerceScopeTenantCartsCartIdPaymentProvidersRouteImport } from './routes/api/commerce.$scope.$tenant.carts.$cartId.payment-providers'
 import { Route as ApiCommerceScopeTenantCartsCartIdItemsRouteImport } from './routes/api/commerce.$scope.$tenant.carts.$cartId.items'
+import { Route as ApiCommerceScopeTenantCartsCartIdCompleteRouteImport } from './routes/api/commerce.$scope.$tenant.carts.$cartId.complete'
 import { Route as ApiCommerceScopeTenantCartsCartIdItemsLineIdRouteImport } from './routes/api/commerce.$scope.$tenant.carts.$cartId.items.$lineId'
 
 const TermsRoute = TermsRouteImport.update({
@@ -508,10 +513,40 @@ const ApiCommerceScopeTenantCartsCartIdRoute =
     path: '/$cartId',
     getParentRoute: () => ApiCommerceScopeTenantCartsRoute,
   } as any)
+const ApiCommerceScopeTenantCartsCartIdShippingOptionsRoute =
+  ApiCommerceScopeTenantCartsCartIdShippingOptionsRouteImport.update({
+    id: '/shipping-options',
+    path: '/shipping-options',
+    getParentRoute: () => ApiCommerceScopeTenantCartsCartIdRoute,
+  } as any)
+const ApiCommerceScopeTenantCartsCartIdShippingMethodsRoute =
+  ApiCommerceScopeTenantCartsCartIdShippingMethodsRouteImport.update({
+    id: '/shipping-methods',
+    path: '/shipping-methods',
+    getParentRoute: () => ApiCommerceScopeTenantCartsCartIdRoute,
+  } as any)
+const ApiCommerceScopeTenantCartsCartIdPaymentSessionsRoute =
+  ApiCommerceScopeTenantCartsCartIdPaymentSessionsRouteImport.update({
+    id: '/payment-sessions',
+    path: '/payment-sessions',
+    getParentRoute: () => ApiCommerceScopeTenantCartsCartIdRoute,
+  } as any)
+const ApiCommerceScopeTenantCartsCartIdPaymentProvidersRoute =
+  ApiCommerceScopeTenantCartsCartIdPaymentProvidersRouteImport.update({
+    id: '/payment-providers',
+    path: '/payment-providers',
+    getParentRoute: () => ApiCommerceScopeTenantCartsCartIdRoute,
+  } as any)
 const ApiCommerceScopeTenantCartsCartIdItemsRoute =
   ApiCommerceScopeTenantCartsCartIdItemsRouteImport.update({
     id: '/items',
     path: '/items',
+    getParentRoute: () => ApiCommerceScopeTenantCartsCartIdRoute,
+  } as any)
+const ApiCommerceScopeTenantCartsCartIdCompleteRoute =
+  ApiCommerceScopeTenantCartsCartIdCompleteRouteImport.update({
+    id: '/complete',
+    path: '/complete',
     getParentRoute: () => ApiCommerceScopeTenantCartsCartIdRoute,
   } as any)
 const ApiCommerceScopeTenantCartsCartIdItemsLineIdRoute =
@@ -600,7 +635,12 @@ export interface FileRoutesByFullPath {
   '/api/sessions/$sessionId/provision/medusa': typeof ApiSessionsSessionIdProvisionMedusaRoute
   '/api/commerce/$scope/$tenant/carts/$cartId': typeof ApiCommerceScopeTenantCartsCartIdRouteWithChildren
   '/api/sessions/$sessionId/history/$version/restore': typeof ApiSessionsSessionIdHistoryVersionRestoreRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/complete': typeof ApiCommerceScopeTenantCartsCartIdCompleteRoute
   '/api/commerce/$scope/$tenant/carts/$cartId/items': typeof ApiCommerceScopeTenantCartsCartIdItemsRouteWithChildren
+  '/api/commerce/$scope/$tenant/carts/$cartId/payment-providers': typeof ApiCommerceScopeTenantCartsCartIdPaymentProvidersRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/payment-sessions': typeof ApiCommerceScopeTenantCartsCartIdPaymentSessionsRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/shipping-methods': typeof ApiCommerceScopeTenantCartsCartIdShippingMethodsRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/shipping-options': typeof ApiCommerceScopeTenantCartsCartIdShippingOptionsRoute
   '/api/commerce/$scope/$tenant/carts/$cartId/items/$lineId': typeof ApiCommerceScopeTenantCartsCartIdItemsLineIdRoute
 }
 export interface FileRoutesByTo {
@@ -681,7 +721,12 @@ export interface FileRoutesByTo {
   '/api/sessions/$sessionId/provision/medusa': typeof ApiSessionsSessionIdProvisionMedusaRoute
   '/api/commerce/$scope/$tenant/carts/$cartId': typeof ApiCommerceScopeTenantCartsCartIdRouteWithChildren
   '/api/sessions/$sessionId/history/$version/restore': typeof ApiSessionsSessionIdHistoryVersionRestoreRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/complete': typeof ApiCommerceScopeTenantCartsCartIdCompleteRoute
   '/api/commerce/$scope/$tenant/carts/$cartId/items': typeof ApiCommerceScopeTenantCartsCartIdItemsRouteWithChildren
+  '/api/commerce/$scope/$tenant/carts/$cartId/payment-providers': typeof ApiCommerceScopeTenantCartsCartIdPaymentProvidersRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/payment-sessions': typeof ApiCommerceScopeTenantCartsCartIdPaymentSessionsRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/shipping-methods': typeof ApiCommerceScopeTenantCartsCartIdShippingMethodsRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/shipping-options': typeof ApiCommerceScopeTenantCartsCartIdShippingOptionsRoute
   '/api/commerce/$scope/$tenant/carts/$cartId/items/$lineId': typeof ApiCommerceScopeTenantCartsCartIdItemsLineIdRoute
 }
 export interface FileRoutesById {
@@ -764,7 +809,12 @@ export interface FileRoutesById {
   '/api/sessions/$sessionId/provision/medusa': typeof ApiSessionsSessionIdProvisionMedusaRoute
   '/api/commerce/$scope/$tenant/carts/$cartId': typeof ApiCommerceScopeTenantCartsCartIdRouteWithChildren
   '/api/sessions/$sessionId/history/$version/restore': typeof ApiSessionsSessionIdHistoryVersionRestoreRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/complete': typeof ApiCommerceScopeTenantCartsCartIdCompleteRoute
   '/api/commerce/$scope/$tenant/carts/$cartId/items': typeof ApiCommerceScopeTenantCartsCartIdItemsRouteWithChildren
+  '/api/commerce/$scope/$tenant/carts/$cartId/payment-providers': typeof ApiCommerceScopeTenantCartsCartIdPaymentProvidersRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/payment-sessions': typeof ApiCommerceScopeTenantCartsCartIdPaymentSessionsRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/shipping-methods': typeof ApiCommerceScopeTenantCartsCartIdShippingMethodsRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/shipping-options': typeof ApiCommerceScopeTenantCartsCartIdShippingOptionsRoute
   '/api/commerce/$scope/$tenant/carts/$cartId/items/$lineId': typeof ApiCommerceScopeTenantCartsCartIdItemsLineIdRoute
 }
 export interface FileRouteTypes {
@@ -848,7 +898,12 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/provision/medusa'
     | '/api/commerce/$scope/$tenant/carts/$cartId'
     | '/api/sessions/$sessionId/history/$version/restore'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/complete'
     | '/api/commerce/$scope/$tenant/carts/$cartId/items'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/payment-providers'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/payment-sessions'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/shipping-methods'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/shipping-options'
     | '/api/commerce/$scope/$tenant/carts/$cartId/items/$lineId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -929,7 +984,12 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/provision/medusa'
     | '/api/commerce/$scope/$tenant/carts/$cartId'
     | '/api/sessions/$sessionId/history/$version/restore'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/complete'
     | '/api/commerce/$scope/$tenant/carts/$cartId/items'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/payment-providers'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/payment-sessions'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/shipping-methods'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/shipping-options'
     | '/api/commerce/$scope/$tenant/carts/$cartId/items/$lineId'
   id:
     | '__root__'
@@ -1011,7 +1071,12 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/provision/medusa'
     | '/api/commerce/$scope/$tenant/carts/$cartId'
     | '/api/sessions/$sessionId/history/$version/restore'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/complete'
     | '/api/commerce/$scope/$tenant/carts/$cartId/items'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/payment-providers'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/payment-sessions'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/shipping-methods'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/shipping-options'
     | '/api/commerce/$scope/$tenant/carts/$cartId/items/$lineId'
   fileRoutesById: FileRoutesById
 }
@@ -1619,11 +1684,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCommerceScopeTenantCartsCartIdRouteImport
       parentRoute: typeof ApiCommerceScopeTenantCartsRoute
     }
+    '/api/commerce/$scope/$tenant/carts/$cartId/shipping-options': {
+      id: '/api/commerce/$scope/$tenant/carts/$cartId/shipping-options'
+      path: '/shipping-options'
+      fullPath: '/api/commerce/$scope/$tenant/carts/$cartId/shipping-options'
+      preLoaderRoute: typeof ApiCommerceScopeTenantCartsCartIdShippingOptionsRouteImport
+      parentRoute: typeof ApiCommerceScopeTenantCartsCartIdRoute
+    }
+    '/api/commerce/$scope/$tenant/carts/$cartId/shipping-methods': {
+      id: '/api/commerce/$scope/$tenant/carts/$cartId/shipping-methods'
+      path: '/shipping-methods'
+      fullPath: '/api/commerce/$scope/$tenant/carts/$cartId/shipping-methods'
+      preLoaderRoute: typeof ApiCommerceScopeTenantCartsCartIdShippingMethodsRouteImport
+      parentRoute: typeof ApiCommerceScopeTenantCartsCartIdRoute
+    }
+    '/api/commerce/$scope/$tenant/carts/$cartId/payment-sessions': {
+      id: '/api/commerce/$scope/$tenant/carts/$cartId/payment-sessions'
+      path: '/payment-sessions'
+      fullPath: '/api/commerce/$scope/$tenant/carts/$cartId/payment-sessions'
+      preLoaderRoute: typeof ApiCommerceScopeTenantCartsCartIdPaymentSessionsRouteImport
+      parentRoute: typeof ApiCommerceScopeTenantCartsCartIdRoute
+    }
+    '/api/commerce/$scope/$tenant/carts/$cartId/payment-providers': {
+      id: '/api/commerce/$scope/$tenant/carts/$cartId/payment-providers'
+      path: '/payment-providers'
+      fullPath: '/api/commerce/$scope/$tenant/carts/$cartId/payment-providers'
+      preLoaderRoute: typeof ApiCommerceScopeTenantCartsCartIdPaymentProvidersRouteImport
+      parentRoute: typeof ApiCommerceScopeTenantCartsCartIdRoute
+    }
     '/api/commerce/$scope/$tenant/carts/$cartId/items': {
       id: '/api/commerce/$scope/$tenant/carts/$cartId/items'
       path: '/items'
       fullPath: '/api/commerce/$scope/$tenant/carts/$cartId/items'
       preLoaderRoute: typeof ApiCommerceScopeTenantCartsCartIdItemsRouteImport
+      parentRoute: typeof ApiCommerceScopeTenantCartsCartIdRoute
+    }
+    '/api/commerce/$scope/$tenant/carts/$cartId/complete': {
+      id: '/api/commerce/$scope/$tenant/carts/$cartId/complete'
+      path: '/complete'
+      fullPath: '/api/commerce/$scope/$tenant/carts/$cartId/complete'
+      preLoaderRoute: typeof ApiCommerceScopeTenantCartsCartIdCompleteRouteImport
       parentRoute: typeof ApiCommerceScopeTenantCartsCartIdRoute
     }
     '/api/commerce/$scope/$tenant/carts/$cartId/items/$lineId': {
@@ -1768,13 +1868,28 @@ const ApiCommerceScopeTenantCartsCartIdItemsRouteWithChildren =
   )
 
 interface ApiCommerceScopeTenantCartsCartIdRouteChildren {
+  ApiCommerceScopeTenantCartsCartIdCompleteRoute: typeof ApiCommerceScopeTenantCartsCartIdCompleteRoute
   ApiCommerceScopeTenantCartsCartIdItemsRoute: typeof ApiCommerceScopeTenantCartsCartIdItemsRouteWithChildren
+  ApiCommerceScopeTenantCartsCartIdPaymentProvidersRoute: typeof ApiCommerceScopeTenantCartsCartIdPaymentProvidersRoute
+  ApiCommerceScopeTenantCartsCartIdPaymentSessionsRoute: typeof ApiCommerceScopeTenantCartsCartIdPaymentSessionsRoute
+  ApiCommerceScopeTenantCartsCartIdShippingMethodsRoute: typeof ApiCommerceScopeTenantCartsCartIdShippingMethodsRoute
+  ApiCommerceScopeTenantCartsCartIdShippingOptionsRoute: typeof ApiCommerceScopeTenantCartsCartIdShippingOptionsRoute
 }
 
 const ApiCommerceScopeTenantCartsCartIdRouteChildren: ApiCommerceScopeTenantCartsCartIdRouteChildren =
   {
+    ApiCommerceScopeTenantCartsCartIdCompleteRoute:
+      ApiCommerceScopeTenantCartsCartIdCompleteRoute,
     ApiCommerceScopeTenantCartsCartIdItemsRoute:
       ApiCommerceScopeTenantCartsCartIdItemsRouteWithChildren,
+    ApiCommerceScopeTenantCartsCartIdPaymentProvidersRoute:
+      ApiCommerceScopeTenantCartsCartIdPaymentProvidersRoute,
+    ApiCommerceScopeTenantCartsCartIdPaymentSessionsRoute:
+      ApiCommerceScopeTenantCartsCartIdPaymentSessionsRoute,
+    ApiCommerceScopeTenantCartsCartIdShippingMethodsRoute:
+      ApiCommerceScopeTenantCartsCartIdShippingMethodsRoute,
+    ApiCommerceScopeTenantCartsCartIdShippingOptionsRoute:
+      ApiCommerceScopeTenantCartsCartIdShippingOptionsRoute,
   }
 
 const ApiCommerceScopeTenantCartsCartIdRouteWithChildren =
