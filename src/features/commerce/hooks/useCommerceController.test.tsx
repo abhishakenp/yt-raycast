@@ -9,8 +9,18 @@ const commerceState = vi.hoisted(() => ({
   config: undefined as unknown,
 }))
 
+const authState = vi.hoisted(() => ({
+  getToken: vi.fn(),
+  isLoaded: true,
+  isSignedIn: false,
+}))
+
 vi.mock('convex/react', () => ({
   useQuery: () => commerceState.config,
+}))
+
+vi.mock('@/shared/auth/use-optional-auth', () => ({
+  useOptionalAuth: () => authState,
 }))
 
 vi.mock('../../../../convex/_generated/api', () => ({
@@ -38,6 +48,8 @@ const originalFetch = globalThis.fetch
 
 describe('useCommerceController', () => {
   beforeEach(() => {
+    authState.getToken.mockReset()
+    authState.isSignedIn = false
     commerceState.config = undefined
     window.localStorage.clear()
     globalThis.fetch = vi.fn()
@@ -108,11 +120,40 @@ describe('useCommerceController', () => {
         }),
       },
     )
+    expect(authState.getToken).not.toHaveBeenCalled()
     await waitFor(() => {
       expect(result.current.commerceHandoff?.tenantId).toBe(sessionId)
     })
     expect(result.current.commerceError).toBeUndefined()
     expect(result.current.isSaving).toBe(false)
+  })
+
+  it('requests a Convex token and sends it when provisioning as a signed-in owner', async () => {
+    const sessionId = 'k577jbx9tbkcc3bhs1fvqepf9989fm0w'
+    authState.isSignedIn = true
+    authState.getToken.mockResolvedValue('convex-token')
+    vi.mocked(fetch).mockResolvedValueOnce(Response.json({}))
+    const { result } = renderHook(() => useCommerceController(sessionId))
+
+    await act(async () => {
+      await result.current.provisionCommerce()
+    })
+
+    expect(authState.getToken).toHaveBeenCalledWith({ template: 'convex' })
+    expect(fetch).toHaveBeenCalledWith(
+      `/api/sessions/${sessionId}/provision/medusa`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer convex-token',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          products: [],
+        }),
+      },
+    )
+    expect(result.current.commerceError).toBeUndefined()
   })
 
   it('surfaces Medusa provision errors and clears the saving state', async () => {
