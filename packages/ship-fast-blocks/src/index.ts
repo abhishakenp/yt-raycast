@@ -22,6 +22,7 @@ export {
   buildPropPatch,
   type CapsulePropContext,
 } from './capsules/prop-text-matcher.ts'
+export { sanitizeProps } from './capsules/sanitize-props.ts'
 export {
   BrandLogoProvider,
   Logo,

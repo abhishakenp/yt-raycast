@@ -116,9 +116,12 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { FoodTruckHero } = await import('./FoodTruckHero.tsx')
 const { FoodTruckMenu } = await import('./FoodTruckMenu.tsx')
 const { FoodTruckNavbar } = await import('./FoodTruckNavbar.tsx')
+const { FoodTruckTestimonials } = await import('./FoodTruckTestimonials.tsx')
 
 function createFoodTruckLakebedStub() {
   let version = 0
@@ -281,15 +284,53 @@ function createFoodTruckLakebedStub() {
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   navigate.mockReset()
   lakebedRef.current = null
   document.body.removeAttribute('style')
 })
 
 describe('Food-truck fullstack commerce behavior', () => {
+  it('renders explicit foreground tokens for light-mode capsule text', () => {
+    const { lakebed } = createFoodTruckLakebedStub()
+    lakebedRef.current = lakebed
+    const Hero = FoodTruckHero.client.component
+    const Navbar = FoodTruckNavbar.client.component
+    const Testimonials = FoodTruckTestimonials.client.component
+
+    const { container } = render(
+      <>
+        <Navbar
+          props={{ brand: 'Curb Club' }}
+          statementId="food_truck_navbar"
+        />
+        <Hero props={{}} statementId="food_truck_hero" />
+        <Testimonials props={{}} statementId="food_truck_testimonials" />
+      </>,
+    )
+
+    const navbar = container.querySelector('[data-slot="site-nav"]')
+    const heroHeading = screen.getByRole('heading', { level: 1 })
+    const testimonialHeading = screen.getByRole('heading', {
+      name: 'What People Say',
+    })
+    const quote = screen.getByText(/Had them cater our company lunch/)
+    const quoteCard = quote.closest('figure')
+
+    expect(navbar?.classList.contains('text-foreground')).toBe(true)
+    expect(
+      screen.getByText('Curb Club').classList.contains('text-foreground'),
+    ).toBe(true)
+    expect(heroHeading.classList.contains('text-foreground')).toBe(true)
+    expect(testimonialHeading.classList.contains('text-foreground')).toBe(true)
+    expect(quote.classList.contains('text-card-foreground')).toBe(true)
+    expect(quoteCard?.classList.contains('text-card-foreground')).toBe(true)
+  })
+
   it('shares menu catalog, Shoo account, add-to-cart, cart drawer, and mobile navigation state', async () => {
     const { lakebed, signInWithGoogle, state } = createFoodTruckLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Hero = FoodTruckHero.client.component
     const Navbar = FoodTruckNavbar.client.component
     const Menu = FoodTruckMenu.client.component
@@ -364,12 +405,12 @@ describe('Food-truck fullstack commerce behavior', () => {
     fireEvent.click(within(searchDialog).getByText('Korean Short Rib'))
     expect(navigate).not.toHaveBeenCalledWith('Korean Short Rib')
 
-    const menuButtons = screen.getAllByRole('button', { name: 'Menu' })
-    fireEvent.click(menuButtons[0])
-    fireEvent.click(menuButtons[1])
-    const locationButtons = screen.getAllByRole('button', { name: 'Locations' })
-    fireEvent.click(locationButtons[0])
-    fireEvent.click(locationButtons[1])
+    const menuLinks = screen.getAllByRole('link', { name: 'Menu' })
+    fireEvent.click(menuLinks[0])
+    fireEvent.click(menuLinks[1])
+    const locationLinks = screen.getAllByRole('link', { name: 'Locations' })
+    fireEvent.click(locationLinks[0])
+    fireEvent.click(locationLinks[1])
 
     await waitFor(() => {
       expect(navigate).toHaveBeenCalledWith('Menu')
@@ -411,7 +452,11 @@ describe('Food-truck fullstack commerce behavior', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Cart' }))
     const cartDrawer = await screen.findByRole('dialog')
-    expect(within(cartDrawer).getByText('Your cart')).toBeTruthy()
+    // The drawer header renders "Your cart" as both a mono eyebrow and the title,
+    // so target the title heading (SheetTitle -> h2) to stay unambiguous.
+    expect(
+      within(cartDrawer).getByRole('heading', { name: 'Your cart' }),
+    ).toBeTruthy()
     expect(within(cartDrawer).getByText('Smash Burger Special')).toBeTruthy()
     expect(within(cartDrawer).getByText('Korean Short Rib')).toBeTruthy()
     expect(
@@ -424,9 +469,7 @@ describe('Food-truck fullstack commerce behavior', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
     const menuDrawer = await screen.findByRole('dialog')
     expect(within(menuDrawer).getByText('Curb Club')).toBeTruthy()
-    fireEvent.click(
-      within(menuDrawer).getByRole('button', { name: 'Catering' }),
-    )
+    fireEvent.click(within(menuDrawer).getByRole('link', { name: 'Catering' }))
 
     await waitFor(() => {
       expect(navigate).toHaveBeenCalledWith('Catering')

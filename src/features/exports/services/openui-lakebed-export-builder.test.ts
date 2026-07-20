@@ -481,6 +481,51 @@ render(h(HomePageBlock, { props: {}, lakebed }), document.getElementById("app"))
     expect(Object.keys(serverCapsule?.mutations ?? {})).toContain('addItem')
   })
 
+  it('repairs a mis-nested object-argument prop so exported blocks render defaults instead of throwing', async () => {
+    // Generated programs frequently pass a sole object literal that the parser
+    // nests under the first positional param (e.g. EcommerceNavbar({"brand":...})
+    // parses to `{ brand: { brand: "CocoaCraft" } }`). The runtime playground
+    // repairs this via `sanitizeProps` inside `defineCapsule`; the exported
+    // native block must match that behaviour and never receive an object where a
+    // string is expected. Keyed off the schema, this must hold for any capsule.
+    const built = await buildOpenUILakebedProjectFiles({
+      source: `root = PageSwitch(["Home"], [home])
+homeNav = EcommerceNavbar({"brand":"CocoaCraft","nav":["Shop","Deals"]})
+home = Stack([homeNav])`,
+      siteSpecJson: JSON.stringify({ projectName: 'Mis-nested Prop Export' }),
+      sessionId: 'lakebed-misnested-prop',
+      target: 'lakebed',
+    })
+
+    // The exported block must render without throwing. `renderLakebedClientEntryText`
+    // asserts `.not.toThrow()` internally, so an unrepaired object-valued string
+    // prop (the previous TypeError: `brand.charAt`/`.split` is not a function)
+    // fails this test. This is the behavioral guard for the sanitize-at-export fix.
+    const renderedText = await renderLakebedClientEntryText(
+      built.files,
+      `import { h, render } from "preact";
+import { HomePageBlock } from "./client/components/HomePage";
+
+const lakebed = {
+  useQuery() {
+    return undefined;
+  },
+  useMutation() {
+    return async () => undefined;
+  },
+  useAuth() {
+    return { isLoading: false, isAuthenticated: false, user: null };
+  },
+  signInWithGoogle() {},
+  signOut() {},
+};
+
+render(h(HomePageBlock, { props: {}, lakebed }), document.getElementById("app"));
+`,
+    )
+    expect(renderedText.length).toBeGreaterThan(0)
+  })
+
   it('normalizes numeric schema defaults to string defaults in Lakebed exports', async () => {
     const built = await buildOpenUILakebedProjectFiles({
       source: 'root = EcommerceHero()',
@@ -1770,6 +1815,21 @@ export function signOut() { globalThis.__lakebedSignedOut = true; }
     expect(built.files['client/index.tsx']).toContain('PurrSpecs')
     expect(Object.values(built.files).join('\n')).not.toContain('root =')
     expect(Object.values(built.files).join('\n')).not.toContain('@openuidev')
+  })
+
+  it('packages section-kit nav helpers without OpenUI source references', async () => {
+    const built = await buildOpenUILakebedProjectFiles({
+      source:
+        'root = EcommerceNavbar({"brand":"CocoaCraft","nav":["Shop","Deals"],"cartCount":"0"})',
+      siteSpecJson: JSON.stringify({ projectName: 'CocoaCraft' }),
+      sessionId: 'demo',
+      target: 'lakebed',
+    })
+
+    const navHrefSource = built.files['client/section-kit/nav-href.tsx']
+    expect(navHrefSource).toBeDefined()
+    expect(navHrefSource).not.toMatch(/openui/i)
+    expect(navHrefSource).not.toContain('@openuidev')
   })
 
   it('formats every Lakebed export file with the shared Ship Fast prettier config (no semis, single quotes)', async () => {
