@@ -18,6 +18,8 @@ export const Route = createFileRoute('/api/clear-prompt-cache')({
           return Response.json({ error: 'Missing prompt' }, { status: 400 })
         }
 
+        // Browser storage is unavailable on the server. This response asks the
+        // requesting browser to clear its own origin storage instead.
         return Response.json(
           { success: true },
           {
