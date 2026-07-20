@@ -87,6 +87,32 @@ export type CommerceCatalogAdapter = {
   catalog: () => Promise<CommerceCatalogEnvelope>
 }
 
+export type CreateCommerceCartInput = {
+  regionId?: string
+}
+
+export type AddCommerceItemInput = {
+  quantity: number
+  variantId: string
+}
+
+export type UpdateCommerceItemInput = {
+  quantity: number
+}
+
+export type AddCommerceShippingMethodInput = {
+  shippingOptionId: string
+}
+
+export type CreateCommercePaymentSessionsInput = {
+  data?: Record<string, unknown>
+  providerId: string
+}
+
+export type CompleteCommerceCartInput = {
+  idempotencyKey?: string
+}
+
 export type CommerceRuntimeMode = 'demo' | 'disabled' | 'hosted' | 'sdk'
 
 export type CommerceTotals = {
@@ -106,6 +132,21 @@ export type CommerceCartLine = {
   variant: CommerceProductVariant
 }
 
+export type CommerceRuntimeCartLineRef = {
+  id: string
+}
+
+export type CommerceRuntimeCart = {
+  id: string
+  items?: Array<CommerceRuntimeCartLineRef>
+  lines?: Array<CommerceRuntimeCartLineRef>
+  [key: string]: unknown
+}
+
+export type CommerceCartEnvelope = {
+  cart: CommerceRuntimeCart
+}
+
 export type CommerceCart = CommerceTotals & {
   completedAt?: string
   currencyCode: string
@@ -123,6 +164,10 @@ export type CommerceShippingOption = {
   name: string
 }
 
+export type CommerceShippingOptionsEnvelope = {
+  shippingOptions: Array<CommerceShippingOption>
+}
+
 export type CommercePaymentSession = {
   data?: Record<string, unknown>
   id: string
@@ -133,6 +178,10 @@ export type CommercePaymentSession = {
 export type CommercePaymentProvider = {
   id: string
   name: string
+}
+
+export type CommercePaymentProvidersEnvelope = {
+  paymentProviders: Array<CommercePaymentProvider>
 }
 
 export type PaymentAction =
@@ -148,6 +197,11 @@ export type PaymentAction =
       provider: string
       type: 'client-session'
     }
+
+export type CommercePaymentSessionsEnvelope = {
+  paymentAction: PaymentAction
+  paymentSessions: Array<CommercePaymentSession>
+}
 
 export type CommerceOrderStatus = 'canceled' | 'completed' | 'pending'
 
@@ -179,10 +233,51 @@ export type CommerceOrder = CommerceTotals & {
   store: CommerceStoreRef
 }
 
+export type CommerceOrderEnvelope = {
+  order: CommerceOrder
+}
+
 export type CommerceError = {
   code: string
   correlationId: string
   fieldErrors?: Record<string, Array<string>>
   message: string
   retryable: boolean
+}
+
+export type CommerceAdapter = CommerceCatalogAdapter & {
+  addItem: (
+    input: AddCommerceItemInput,
+    cartId?: string,
+  ) => Promise<CommerceCartEnvelope>
+  addShippingMethod: (
+    input: AddCommerceShippingMethodInput,
+    cartId?: string,
+  ) => Promise<CommerceCartEnvelope>
+  completeCart: (
+    input?: CompleteCommerceCartInput,
+    cartId?: string,
+  ) => Promise<CommerceOrderEnvelope>
+  createCart: (input?: CreateCommerceCartInput) => Promise<CommerceCartEnvelope>
+  createPaymentSessions: (
+    input: CreateCommercePaymentSessionsInput,
+    cartId?: string,
+  ) => Promise<CommercePaymentSessionsEnvelope>
+  getCart: (cartId?: string) => Promise<CommerceCartEnvelope>
+  getPaymentProviders: (
+    cartId?: string,
+  ) => Promise<CommercePaymentProvidersEnvelope>
+  getShippingOptions: (
+    cartId?: string,
+  ) => Promise<CommerceShippingOptionsEnvelope>
+  removeItem: (lineId: string, cartId?: string) => Promise<CommerceCartEnvelope>
+  updateCart: (
+    input: Record<string, unknown>,
+    cartId?: string,
+  ) => Promise<CommerceCartEnvelope>
+  updateItem: (
+    lineId: string,
+    input: UpdateCommerceItemInput,
+    cartId?: string,
+  ) => Promise<CommerceCartEnvelope>
 }
