@@ -43,6 +43,24 @@ describe('image route', () => {
 
     expect(Route.path).toBe('/api/images/$sessionId')
     expect(await response.text()).toBe('png bytes')
-    expect(routeMocks.image).toHaveBeenCalledWith('session-1')
+    expect(routeMocks.image).toHaveBeenCalledWith('session-1', {
+      cacheVersion: null,
+    })
+  })
+
+  it('passes the updatedAt cache version through to the image response', async () => {
+    routeMocks.image.mockResolvedValue(new Response('png bytes'))
+
+    const mod = await import('./api/images.$sessionId')
+    const Route = mod.Route as unknown as RouteWithHandlers
+    const request = new Request('https://ship-fast.io/api/images/session-1?v=9')
+    await Route.options.server.handlers.GET({
+      params: { sessionId: 'session-1' },
+      request,
+    })
+
+    expect(routeMocks.image).toHaveBeenLastCalledWith('session-1', {
+      cacheVersion: '9',
+    })
   })
 })

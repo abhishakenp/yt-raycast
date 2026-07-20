@@ -14,6 +14,7 @@ import type * as contentCache from "../contentCache.js";
 import type * as customLanguages from "../customLanguages.js";
 import type * as exportRenderCache from "../exportRenderCache.js";
 import type * as export_artifacts from "../export_artifacts.js";
+import type * as gallery_preview_images from "../gallery_preview_images.js";
 import type * as generation from "../generation.js";
 import type * as generationConfig from "../generationConfig.js";
 import type * as github from "../github.js";
@@ -84,6 +85,7 @@ declare const fullApi: ApiFromModules<{
   customLanguages: typeof customLanguages;
   exportRenderCache: typeof exportRenderCache;
   export_artifacts: typeof export_artifacts;
+  gallery_preview_images: typeof gallery_preview_images;
   generation: typeof generation;
   generationConfig: typeof generationConfig;
   github: typeof github;

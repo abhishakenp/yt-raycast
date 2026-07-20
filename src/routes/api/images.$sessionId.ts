@@ -5,8 +5,17 @@ import { createGalleryPreviewImageResponse } from '@/features/gallery/server/gal
 export const Route = createFileRoute('/api/images/$sessionId')({
   server: {
     handlers: {
-      GET: async ({ params }: { params: { sessionId: string } }) => {
-        return await createGalleryPreviewImageResponse(params.sessionId)
+      GET: async ({
+        params,
+        request,
+      }: {
+        params: { sessionId: string }
+        request: Request
+      }) => {
+        const cacheVersion = new URL(request.url).searchParams.get('v')
+        return await createGalleryPreviewImageResponse(params.sessionId, {
+          cacheVersion,
+        })
       },
     },
   },

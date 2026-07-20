@@ -90,4 +90,35 @@ describe('LaunchBackdrop', () => {
     expect(context.setTransform).toHaveBeenCalled()
     expect(container.querySelector('canvas')).toBeTruthy()
   })
+
+  it('stops the canvas renderer after the active animation window', async () => {
+    const context = {
+      beginPath: vi.fn(),
+      fillRect: vi.fn(),
+      lineTo: vi.fn(),
+      moveTo: vi.fn(),
+      setTransform: vi.fn(),
+      stroke: vi.fn(),
+      set fillStyle(_value: string) {},
+      set globalAlpha(_value: number) {},
+      set globalCompositeOperation(_value: string) {},
+      set lineWidth(_value: number) {},
+      set strokeStyle(_value: string) {},
+    } as unknown as CanvasRenderingContext2D
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(context)
+    let frameCallback: FrameRequestCallback | undefined
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+      frameCallback = callback
+      return 7
+    })
+    const cancelAnimationFrame = vi
+      .spyOn(window, 'cancelAnimationFrame')
+      .mockImplementation(() => {})
+
+    render(<LaunchBackdrop />)
+    await vi.advanceTimersByTimeAsync(1_750)
+    frameCallback?.(10_000)
+
+    expect(cancelAnimationFrame).toHaveBeenCalledWith(7)
+  })
 })
