@@ -1,4 +1,5 @@
 import type { GeneratedCommerceProduct } from '../services/generated-commerce-products'
+import type { CommerceProductVariant } from '../contracts'
 
 type FetchLike = typeof fetch
 
@@ -87,6 +88,16 @@ function firstStringId(
 
 function createTenantName(sessionId: string): string {
   return `Ship Fast ${sessionId}`
+}
+
+function deterministicVariantSku(
+  handle: string,
+  variant: Pick<CommerceProductVariant, 'sku' | 'sourceId' | 'title'>,
+): string {
+  return (
+    variant.sku ??
+    `${slugify(handle)}-${slugify(variant.sourceId || variant.title)}`.toUpperCase()
+  )
 }
 
 function hasSalesChannel(
@@ -365,46 +376,307 @@ async function findExistingProductId({
   return typeof productId === 'string' ? productId : undefined
 }
 
+async function loadStockLocationId({
+  backendUrl,
+  fetchImpl,
+  headers,
+}: {
+  backendUrl: string
+  fetchImpl: FetchLike
+  headers: Record<string, string>
+}): Promise<string> {
+  const response = await fetchImpl(
+    `${backendUrl}/admin/stock-locations?limit=1`,
+    { headers },
+  )
+  if (!response.ok) {
+    throw new Error(`Medusa stock locations unavailable (${response.status}).`)
+  }
+  const payload = await readJson<{
+    stock_locations?: Array<{ id?: unknown }>
+  }>(response)
+  const stockLocationId = firstStringId(payload.stock_locations)
+  if (stockLocationId === undefined) {
+    throw new Error('Medusa stock location not found.')
+  }
+  return stockLocationId
+}
+
+async function getOrCreateInventoryItem({
+  backendUrl,
+  fetchImpl,
+  headers,
+  product,
+  sessionId,
+  sku,
+  variant,
+}: {
+  backendUrl: string
+  fetchImpl: FetchLike
+  headers: Record<string, string>
+  product: GeneratedCommerceProduct
+  sessionId: string
+  sku: string
+  variant: CommerceProductVariant
+}): Promise<string> {
+  const lookupResponse = await fetchImpl(
+    `${backendUrl}/admin/inventory-items?sku=${encodeURIComponent(sku)}&limit=1`,
+    { headers },
+  )
+  if (!lookupResponse.ok) {
+    throw new Error(
+      `Medusa inventory item lookup failed (${lookupResponse.status}).`,
+    )
+  }
+  const lookupPayload = await readJson<{
+    inventory_items?: Array<{ id?: unknown }>
+  }>(lookupResponse)
+  const existingInventoryItemId = firstStringId(lookupPayload.inventory_items)
+  if (existingInventoryItemId !== undefined) return existingInventoryItemId
+
+  const createResponse = await fetchImpl(
+    `${backendUrl}/admin/inventory-items`,
+    {
+      body: JSON.stringify({
+        metadata: {
+          ship_fast_generated_source_id: variant.sourceId,
+          ship_fast_session_id: sessionId,
+        },
+        sku,
+        title: `${product.title} — ${variant.title}`,
+      }),
+      headers,
+      method: 'POST',
+    },
+  )
+  if (!createResponse.ok) {
+    throw new Error(
+      `Medusa inventory item creation failed (${createResponse.status}).`,
+    )
+  }
+  const createPayload = await readJson<{
+    inventory_item?: { id?: unknown }
+  }>(createResponse)
+  const inventoryItemId = createPayload.inventory_item?.id
+  if (typeof inventoryItemId !== 'string') {
+    throw new Error('Medusa inventory item id not found.')
+  }
+  return inventoryItemId
+}
+
+async function ensureInventoryLevel({
+  backendUrl,
+  fetchImpl,
+  headers,
+  inventoryItemId,
+  locationId,
+  stockedQuantity,
+}: {
+  backendUrl: string
+  fetchImpl: FetchLike
+  headers: Record<string, string>
+  inventoryItemId: string
+  locationId: string
+  stockedQuantity: number
+}): Promise<void> {
+  const lookupResponse = await fetchImpl(
+    `${backendUrl}/admin/inventory-levels?inventory_item_id=${encodeURIComponent(
+      inventoryItemId,
+    )}&location_id=${encodeURIComponent(locationId)}&limit=1`,
+    { headers },
+  )
+  if (!lookupResponse.ok) {
+    throw new Error(
+      `Medusa inventory level lookup failed (${lookupResponse.status}).`,
+    )
+  }
+  const lookupPayload = await readJson<{
+    inventory_levels?: Array<{ id?: unknown }>
+  }>(lookupResponse)
+  if (firstStringId(lookupPayload.inventory_levels) !== undefined) return
+
+  const createResponse = await fetchImpl(
+    `${backendUrl}/admin/inventory-items/${encodeURIComponent(
+      inventoryItemId,
+    )}/location-levels`,
+    {
+      body: JSON.stringify({
+        location_id: locationId,
+        stocked_quantity: stockedQuantity,
+      }),
+      headers,
+      method: 'POST',
+    },
+  )
+  if (!createResponse.ok) {
+    throw new Error(
+      `Medusa inventory level creation failed (${createResponse.status}).`,
+    )
+  }
+}
+
+async function prepareMedusaVariantInventory({
+  backendUrl,
+  fetchImpl,
+  handle,
+  product,
+  sessionId,
+  token,
+}: {
+  backendUrl: string
+  fetchImpl: FetchLike
+  handle: string
+  product: GeneratedCommerceProduct
+  sessionId: string
+  token: string
+}): Promise<Map<string, string>> {
+  const managedVariants =
+    product.variants?.filter((variant) => variant.manageInventory) ?? []
+  if (managedVariants.length === 0) return new Map()
+
+  const headers = createAdminHeaders(token)
+  const locationId = await loadStockLocationId({
+    backendUrl,
+    fetchImpl,
+    headers,
+  })
+  const inventoryItemIds = new Map<string, string>()
+
+  for (const variant of managedVariants) {
+    const sku = deterministicVariantSku(handle, variant)
+    const inventoryItemId = await getOrCreateInventoryItem({
+      backendUrl,
+      fetchImpl,
+      headers,
+      product,
+      sessionId,
+      sku,
+      variant,
+    })
+    await ensureInventoryLevel({
+      backendUrl,
+      fetchImpl,
+      headers,
+      inventoryItemId,
+      locationId,
+      stockedQuantity: variant.inventoryQuantity ?? 0,
+    })
+    inventoryItemIds.set(variant.sourceId, inventoryItemId)
+  }
+
+  return inventoryItemIds
+}
+
 function createProductBody({
   currencyCode,
   defaults,
   handle,
+  inventoryItemIds,
   product,
   sessionId,
 }: {
   currencyCode: string
   defaults: MedusaProductDefaults
   handle: string
+  inventoryItemIds: Map<string, string>
   product: GeneratedCommerceProduct
   sessionId: string
 }) {
+  const variants =
+    product.variants && product.variants.length > 0
+      ? product.variants
+      : [
+          {
+            manageInventory: false,
+            optionValues: { Default: 'Default' },
+            prices: [{ amount: product.price, currencyCode }],
+            sourceId: `variant:${product.handle}:default`,
+            title: 'Default',
+          },
+        ]
+  const derivedOptions = new Map<string, Array<string>>()
+  for (const variant of variants) {
+    for (const [title, value] of Object.entries(variant.optionValues)) {
+      const values = derivedOptions.get(title) ?? []
+      if (!values.includes(value)) values.push(value)
+      derivedOptions.set(title, values)
+    }
+  }
+  const options =
+    product.options && product.options.length > 0
+      ? product.options.map(({ title, values }) => ({ title, values }))
+      : derivedOptions.size > 0
+        ? Array.from(derivedOptions, ([title, values]) => ({ title, values }))
+        : [{ title: 'Default', values: ['Default'] }]
+
   return {
-    title: product.title,
-    handle,
+    ...(product.collections?.find(
+      (collection) => collection.sourceId !== undefined,
+    )?.sourceId === undefined
+      ? {}
+      : {
+          collection_id: product.collections.find(
+            (collection) => collection.sourceId !== undefined,
+          )?.sourceId,
+        }),
     ...(product.description === undefined
       ? {}
       : { description: product.description }),
+    handle,
+    ...(product.images === undefined
+      ? {}
+      : { images: product.images.map(({ url }) => ({ url })) }),
     metadata: {
       ship_fast_generated_handle: product.handle,
       ship_fast_generated_product: true,
+      ship_fast_generated_source_id:
+        product.sourceId ?? `product:${product.handle}`,
       ship_fast_session_id: sessionId,
     },
-    options: [{ title: 'Default', values: ['Default'] }],
-    shipping_profile_id: defaults.shippingProfileId,
+    options,
     sales_channels: [{ id: defaults.tenant.salesChannelId }],
+    shipping_profile_id: defaults.shippingProfileId,
     status: 'published',
-    variants: [
-      {
-        title: 'Default',
-        options: { Default: 'Default' },
-        prices: [
-          {
-            amount: parsePriceToMedusaAmount(product.price),
-            currency_code: currencyCode,
-          },
-        ],
-      },
-    ],
+    ...(product.tags === undefined
+      ? {}
+      : {
+          tags: product.tags.flatMap((tag) =>
+            tag.sourceId === undefined ? [] : [{ id: tag.sourceId }],
+          ),
+        }),
+    ...(product.thumbnail === undefined
+      ? {}
+      : { thumbnail: product.thumbnail }),
+    title: product.title,
+    variants: variants.map((variant) => {
+      const inventoryItemId = inventoryItemIds.get(variant.sourceId)
+      return {
+        ...(inventoryItemId === undefined
+          ? {}
+          : {
+              inventory_items: [
+                {
+                  inventory_item_id: inventoryItemId,
+                  required_quantity: 1,
+                },
+              ],
+            }),
+        manage_inventory: variant.manageInventory,
+        metadata: {
+          ship_fast_generated_source_id: variant.sourceId,
+        },
+        options:
+          Object.keys(variant.optionValues).length > 0
+            ? variant.optionValues
+            : { Default: 'Default' },
+        prices: variant.prices.map((price) => ({
+          amount: parsePriceToMedusaAmount(price.amount),
+          currency_code: price.currencyCode.toLowerCase(),
+        })),
+        sku: deterministicVariantSku(handle, variant),
+        title: variant.title,
+      }
+    }),
   }
 }
 
@@ -467,6 +739,14 @@ export async function syncGeneratedProductsToMedusa({
         continue
       }
 
+      const inventoryItemIds = await prepareMedusaVariantInventory({
+        backendUrl: normalizedBackendUrl,
+        fetchImpl,
+        handle,
+        product,
+        sessionId,
+        token: auth.token,
+      })
       const response = await fetchImpl(
         `${normalizedBackendUrl}/admin/products`,
         {
@@ -475,6 +755,7 @@ export async function syncGeneratedProductsToMedusa({
               currencyCode,
               defaults,
               handle,
+              inventoryItemIds,
               product,
               sessionId,
             }),

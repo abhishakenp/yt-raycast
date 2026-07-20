@@ -508,6 +508,12 @@ function productFromSiteSpec(
   }
 }
 
+export function normalizeGeneratedCommerceProductInput(
+  value: unknown,
+): NormalizedGeneratedCommerceProduct | undefined {
+  return isRecord(value) ? productFromSiteSpec(value) : undefined
+}
+
 function productFromObjectText(
   directObjectText: string,
 ): NormalizedGeneratedCommerceProduct | undefined {
