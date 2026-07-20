@@ -147,80 +147,12 @@ function initLaunchBackdrop(
   let raf = 0
   let lastFrameAt = 0
   let running = false
-<<<<<<< Updated upstream
-
-  function noise2d(x: number, y: number) {
-    const n = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453
-    return n - Math.floor(n)
-  }
-
-  function smoothNoise(x: number, y: number) {
-    const ix = Math.floor(x)
-    const iy = Math.floor(y)
-    const fx = x - ix
-    const fy = y - iy
-    const a = noise2d(ix, iy)
-    const b = noise2d(ix + 1, iy)
-    const c = noise2d(ix, iy + 1)
-    const d = noise2d(ix + 1, iy + 1)
-    const ux = fx * fx * (3 - 2 * fx)
-    const uy = fy * fy * (3 - 2 * fy)
-    return a + (b - a) * ux + (c - a) * uy + (a - b - c + d) * ux * uy
-  }
-
-  function resetParticle(p: (typeof particles)[number], edge?: 'left' | 'middle' | 'right') {
-    const section = edge || (Math.random() > 0.75 ? 'left' : Math.random() > 0.25 ? 'middle' : 'right')
-    
-    if (section === 'left') {
-      p.x = Math.random() * (width * 0.25)
-    } else if (section === 'middle') {
-      p.x = (width * 0.25) + Math.random() * (width * 0.5)
-    } else {
-      p.x = (width * 0.75) + Math.random() * (width * 0.25)
-    }
-    
-    p.y = Math.random() * height
-    p.life = 0.45 + Math.random() * 0.55
-    p.speed = 0.45 + Math.random() * 1.35
-    p.size = 0.45 + Math.random() * 1.05
-    p.seed = Math.random() * 200
-    p.hue = Math.random() > 0.42 ? 190 : 310
-    p.alpha =
-      p.hue === 310 ? 0.45 + Math.random() * 0.35 : 0.08 + Math.random() * 0.18
-  }
-=======
   let wasm: LaunchBackdropWasmExports | undefined
   let sprites: RocketSpriteSet | undefined
->>>>>>> Stashed changes
 
   function resize() {
     width = Math.max(1, window.innerWidth)
     height = Math.max(1, window.innerHeight)
-<<<<<<< Updated upstream
-    canvas.width = Math.floor(width * dpr)
-    canvas.height = Math.floor(height * dpr)
-    context.setTransform(dpr, 0, 0, dpr, 0, 0)
-
-    const target = Math.max(
-      width < 760 ? 540 : 960, // 10x more particles
-      Math.min(width < 760 ? 1200 : 2100, Math.floor((width * height) / 1200)), // 10x more particles
-    )
-    while (particles.length < target) {
-      const p = {
-        x: 0,
-        y: 0,
-        life: 0,
-        speed: 0,
-        size: 0,
-        seed: 0,
-        hue: 0,
-        alpha: 0,
-      }
-      resetParticle(p)
-      particles.push(p)
-    }
-    particles.length = target
-=======
     trailCanvas.width = Math.floor(width * dpr)
     trailCanvas.height = Math.floor(height * dpr)
     rocketCanvas.width = trailCanvas.width
@@ -228,7 +160,6 @@ function initLaunchBackdrop(
     trailContext.setTransform(dpr, 0, 0, dpr, 0, 0)
     rocketContext.setTransform(dpr, 0, 0, dpr, 0, 0)
     wasm?.backdrop_resize(width, height)
->>>>>>> Stashed changes
   }
 
   function draw(now = performance.now()) {
@@ -291,27 +222,6 @@ function initLaunchBackdrop(
       trailContext.lineWidth = frame[offset + 4]
       trailContext.stroke()
 
-<<<<<<< Updated upstream
-      if (
-        p.life <= 0 ||
-        p.x < -40 ||
-        p.x > width + 40 ||
-        p.y < -40 ||
-        p.y > height + 40
-      ) {
-        resetParticle(p)
-        continue
-      }
-
-      const pulse = 0.65 + Math.sin(tick * 0.035 + p.seed) * 0.35
-      const alpha = Math.max(0, p.life) * p.alpha * pulse
-      context.beginPath()
-      context.moveTo(px, py)
-      context.lineTo(p.x, p.y)
-      context.strokeStyle = `hsla(${p.hue}, 100%, ${p.hue === 310 ? 80 : 62}%, ${alpha})`
-      context.lineWidth = p.size
-      context.stroke()
-=======
       const size = Math.max(1.3, frame[offset + 4] * 1.95)
       const angle = Math.atan2(dy, dx)
       const sprite = getRocketSprite(sprites, isMagenta, size, angle)
@@ -321,7 +231,6 @@ function initLaunchBackdrop(
         toX - sprite.offset,
         toY - sprite.offset,
       )
->>>>>>> Stashed changes
     }
 
     trailContext.globalAlpha = 1
