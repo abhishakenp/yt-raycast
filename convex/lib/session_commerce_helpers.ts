@@ -12,6 +12,26 @@ import {
 type CommerceMutationCtx = MutationCtx
 type CommerceQueryCtx = Pick<QueryCtx, 'auth' | 'db'>
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function nonBlankString(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined
+}
+
+function sessionPublishableKey(configJson: string | undefined) {
+  if (configJson === undefined) return undefined
+
+  try {
+    const config: unknown = JSON.parse(configJson)
+    if (!isRecord(config) || !isRecord(config.medusaTenant)) return undefined
+    return nonBlankString(config.medusaTenant.publishableKey)
+  } catch {
+    return undefined
+  }
+}
+
 function assertNonNegativeInteger(
   value: number | undefined,
   field: string,
@@ -304,12 +324,87 @@ export async function loadSessionCommerceConfig(
   return config === null ? null : serializeCommerceConfig(config)
 }
 
+export async function resolveSessionCommerceGatewayConfig(
+  ctx: CommerceQueryCtx,
+  args: AuthorizeSessionCommerceProvisionInput,
+) {
+  const session = await ctx.db.get(args.sessionId)
+  if (session === null) {
+    throw new ConvexError({
+      code: 'NOT_FOUND',
+      message: 'Session not found',
+    })
+  }
+
+  if (!(await isSessionOwner(ctx, session, args.anonymousOwnerSecret))) {
+    throw new ConvexError({
+      code: 'FORBIDDEN',
+      message: 'You do not own this session',
+    })
+  }
+
+  const config = await loadCommerceConfigDoc(ctx, args.sessionId)
+  const backendUrl = nonBlankString(config?.backendUrl)
+  const publishableKey = sessionPublishableKey(config?.configJson)
+  if (
+    config?.status !== 'ready' ||
+    backendUrl === undefined ||
+    publishableKey === undefined
+  ) {
+    return null
+  }
+
+  return {
+    backendUrl,
+    publishableKey,
+    scope: 'sessions' as const,
+    tenant: args.sessionId,
+  }
+}
+
 export async function loadDeploymentCommerceTenantBySlug(
   ctx: CommerceQueryCtx,
   deploymentSlug: string,
 ) {
   const { tenant } = await loadDeploymentTenantPair(ctx, deploymentSlug)
   return tenant === null ? null : serializeCommerceTenant(tenant)
+}
+
+export async function resolveDeploymentCommerceGatewayConfig(
+  ctx: CommerceQueryCtx,
+  deploymentSlug: string,
+) {
+  const { deployment, tenant } = await loadDeploymentTenantPair(
+    ctx,
+    deploymentSlug,
+  )
+  if (
+    deployment === null ||
+    deployment.status !== 'ready' ||
+    tenant === null ||
+    tenant.status !== 'ready'
+  ) {
+    return null
+  }
+
+  const session = await ctx.db.get(deployment.sessionId)
+  const backendUrl = nonBlankString(tenant.backendUrl)
+  const publishableKey = nonBlankString(tenant.publishableKey)
+  if (
+    session === null ||
+    session.isPrivate === true ||
+    backendUrl === undefined ||
+    publishableKey === undefined
+  ) {
+    return null
+  }
+
+  return {
+    backendUrl,
+    publishableKey,
+    scope: 'deployments' as const,
+    tenant: deployment.slug,
+  }
 }
 
 export async function authorizeDeploymentCommerceTenantProvision(

@@ -83,7 +83,12 @@ import { Route as ApiSessionsSessionIdGithubPushRouteImport } from './routes/api
 import { Route as ApiSessionsSessionIdDownloadTargetRouteImport } from './routes/api/sessions.$sessionId.download.$target'
 import { Route as ApiSessionsSessionIdDeployLakebedRouteImport } from './routes/api/sessions.$sessionId.deploy.lakebed'
 import { Route as ApiDeploymentsDeploymentSlugProvisionMedusaRouteImport } from './routes/api/deployments.$deploymentSlug.provision.medusa'
+import { Route as ApiCommerceScopeTenantCatalogRouteImport } from './routes/api/commerce.$scope.$tenant.catalog'
+import { Route as ApiCommerceScopeTenantCartsRouteImport } from './routes/api/commerce.$scope.$tenant.carts'
 import { Route as ApiSessionsSessionIdHistoryVersionRestoreRouteImport } from './routes/api/sessions.$sessionId.history.$version.restore'
+import { Route as ApiCommerceScopeTenantCartsCartIdRouteImport } from './routes/api/commerce.$scope.$tenant.carts.$cartId'
+import { Route as ApiCommerceScopeTenantCartsCartIdItemsRouteImport } from './routes/api/commerce.$scope.$tenant.carts.$cartId.items'
+import { Route as ApiCommerceScopeTenantCartsCartIdItemsLineIdRouteImport } from './routes/api/commerce.$scope.$tenant.carts.$cartId.items.$lineId'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -479,11 +484,41 @@ const ApiDeploymentsDeploymentSlugProvisionMedusaRoute =
     path: '/api/deployments/$deploymentSlug/provision/medusa',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiCommerceScopeTenantCatalogRoute =
+  ApiCommerceScopeTenantCatalogRouteImport.update({
+    id: '/api/commerce/$scope/$tenant/catalog',
+    path: '/api/commerce/$scope/$tenant/catalog',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiCommerceScopeTenantCartsRoute =
+  ApiCommerceScopeTenantCartsRouteImport.update({
+    id: '/api/commerce/$scope/$tenant/carts',
+    path: '/api/commerce/$scope/$tenant/carts',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiSessionsSessionIdHistoryVersionRestoreRoute =
   ApiSessionsSessionIdHistoryVersionRestoreRouteImport.update({
     id: '/$version/restore',
     path: '/$version/restore',
     getParentRoute: () => ApiSessionsSessionIdHistoryRoute,
+  } as any)
+const ApiCommerceScopeTenantCartsCartIdRoute =
+  ApiCommerceScopeTenantCartsCartIdRouteImport.update({
+    id: '/$cartId',
+    path: '/$cartId',
+    getParentRoute: () => ApiCommerceScopeTenantCartsRoute,
+  } as any)
+const ApiCommerceScopeTenantCartsCartIdItemsRoute =
+  ApiCommerceScopeTenantCartsCartIdItemsRouteImport.update({
+    id: '/items',
+    path: '/items',
+    getParentRoute: () => ApiCommerceScopeTenantCartsCartIdRoute,
+  } as any)
+const ApiCommerceScopeTenantCartsCartIdItemsLineIdRoute =
+  ApiCommerceScopeTenantCartsCartIdItemsLineIdRouteImport.update({
+    id: '/$lineId',
+    path: '/$lineId',
+    getParentRoute: () => ApiCommerceScopeTenantCartsCartIdItemsRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -556,12 +591,17 @@ export interface FileRoutesByFullPath {
   '/api/sessions/$sessionId/preview-raw': typeof ApiSessionsSessionIdPreviewRawRoute
   '/api/sessions/$sessionId/section-edit': typeof ApiSessionsSessionIdSectionEditRoute
   '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
+  '/api/commerce/$scope/$tenant/carts': typeof ApiCommerceScopeTenantCartsRouteWithChildren
+  '/api/commerce/$scope/$tenant/catalog': typeof ApiCommerceScopeTenantCatalogRoute
   '/api/deployments/$deploymentSlug/provision/medusa': typeof ApiDeploymentsDeploymentSlugProvisionMedusaRoute
   '/api/sessions/$sessionId/deploy/lakebed': typeof ApiSessionsSessionIdDeployLakebedRoute
   '/api/sessions/$sessionId/download/$target': typeof ApiSessionsSessionIdDownloadTargetRoute
   '/api/sessions/$sessionId/github/push': typeof ApiSessionsSessionIdGithubPushRoute
   '/api/sessions/$sessionId/provision/medusa': typeof ApiSessionsSessionIdProvisionMedusaRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId': typeof ApiCommerceScopeTenantCartsCartIdRouteWithChildren
   '/api/sessions/$sessionId/history/$version/restore': typeof ApiSessionsSessionIdHistoryVersionRestoreRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/items': typeof ApiCommerceScopeTenantCartsCartIdItemsRouteWithChildren
+  '/api/commerce/$scope/$tenant/carts/$cartId/items/$lineId': typeof ApiCommerceScopeTenantCartsCartIdItemsLineIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -632,12 +672,17 @@ export interface FileRoutesByTo {
   '/api/sessions/$sessionId/preview-raw': typeof ApiSessionsSessionIdPreviewRawRoute
   '/api/sessions/$sessionId/section-edit': typeof ApiSessionsSessionIdSectionEditRoute
   '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
+  '/api/commerce/$scope/$tenant/carts': typeof ApiCommerceScopeTenantCartsRouteWithChildren
+  '/api/commerce/$scope/$tenant/catalog': typeof ApiCommerceScopeTenantCatalogRoute
   '/api/deployments/$deploymentSlug/provision/medusa': typeof ApiDeploymentsDeploymentSlugProvisionMedusaRoute
   '/api/sessions/$sessionId/deploy/lakebed': typeof ApiSessionsSessionIdDeployLakebedRoute
   '/api/sessions/$sessionId/download/$target': typeof ApiSessionsSessionIdDownloadTargetRoute
   '/api/sessions/$sessionId/github/push': typeof ApiSessionsSessionIdGithubPushRoute
   '/api/sessions/$sessionId/provision/medusa': typeof ApiSessionsSessionIdProvisionMedusaRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId': typeof ApiCommerceScopeTenantCartsCartIdRouteWithChildren
   '/api/sessions/$sessionId/history/$version/restore': typeof ApiSessionsSessionIdHistoryVersionRestoreRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/items': typeof ApiCommerceScopeTenantCartsCartIdItemsRouteWithChildren
+  '/api/commerce/$scope/$tenant/carts/$cartId/items/$lineId': typeof ApiCommerceScopeTenantCartsCartIdItemsLineIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -710,12 +755,17 @@ export interface FileRoutesById {
   '/api/sessions/$sessionId/preview-raw': typeof ApiSessionsSessionIdPreviewRawRoute
   '/api/sessions/$sessionId/section-edit': typeof ApiSessionsSessionIdSectionEditRoute
   '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
+  '/api/commerce/$scope/$tenant/carts': typeof ApiCommerceScopeTenantCartsRouteWithChildren
+  '/api/commerce/$scope/$tenant/catalog': typeof ApiCommerceScopeTenantCatalogRoute
   '/api/deployments/$deploymentSlug/provision/medusa': typeof ApiDeploymentsDeploymentSlugProvisionMedusaRoute
   '/api/sessions/$sessionId/deploy/lakebed': typeof ApiSessionsSessionIdDeployLakebedRoute
   '/api/sessions/$sessionId/download/$target': typeof ApiSessionsSessionIdDownloadTargetRoute
   '/api/sessions/$sessionId/github/push': typeof ApiSessionsSessionIdGithubPushRoute
   '/api/sessions/$sessionId/provision/medusa': typeof ApiSessionsSessionIdProvisionMedusaRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId': typeof ApiCommerceScopeTenantCartsCartIdRouteWithChildren
   '/api/sessions/$sessionId/history/$version/restore': typeof ApiSessionsSessionIdHistoryVersionRestoreRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/items': typeof ApiCommerceScopeTenantCartsCartIdItemsRouteWithChildren
+  '/api/commerce/$scope/$tenant/carts/$cartId/items/$lineId': typeof ApiCommerceScopeTenantCartsCartIdItemsLineIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -789,12 +839,17 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/preview-raw'
     | '/api/sessions/$sessionId/section-edit'
     | '/api/sessions/$sessionId/stream'
+    | '/api/commerce/$scope/$tenant/carts'
+    | '/api/commerce/$scope/$tenant/catalog'
     | '/api/deployments/$deploymentSlug/provision/medusa'
     | '/api/sessions/$sessionId/deploy/lakebed'
     | '/api/sessions/$sessionId/download/$target'
     | '/api/sessions/$sessionId/github/push'
     | '/api/sessions/$sessionId/provision/medusa'
+    | '/api/commerce/$scope/$tenant/carts/$cartId'
     | '/api/sessions/$sessionId/history/$version/restore'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/items'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/items/$lineId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -865,12 +920,17 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/preview-raw'
     | '/api/sessions/$sessionId/section-edit'
     | '/api/sessions/$sessionId/stream'
+    | '/api/commerce/$scope/$tenant/carts'
+    | '/api/commerce/$scope/$tenant/catalog'
     | '/api/deployments/$deploymentSlug/provision/medusa'
     | '/api/sessions/$sessionId/deploy/lakebed'
     | '/api/sessions/$sessionId/download/$target'
     | '/api/sessions/$sessionId/github/push'
     | '/api/sessions/$sessionId/provision/medusa'
+    | '/api/commerce/$scope/$tenant/carts/$cartId'
     | '/api/sessions/$sessionId/history/$version/restore'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/items'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/items/$lineId'
   id:
     | '__root__'
     | '/'
@@ -942,12 +1002,17 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/preview-raw'
     | '/api/sessions/$sessionId/section-edit'
     | '/api/sessions/$sessionId/stream'
+    | '/api/commerce/$scope/$tenant/carts'
+    | '/api/commerce/$scope/$tenant/catalog'
     | '/api/deployments/$deploymentSlug/provision/medusa'
     | '/api/sessions/$sessionId/deploy/lakebed'
     | '/api/sessions/$sessionId/download/$target'
     | '/api/sessions/$sessionId/github/push'
     | '/api/sessions/$sessionId/provision/medusa'
+    | '/api/commerce/$scope/$tenant/carts/$cartId'
     | '/api/sessions/$sessionId/history/$version/restore'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/items'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/items/$lineId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1001,6 +1066,8 @@ export interface RootRouteChildren {
   ApiGithubConnectStartRoute: typeof ApiGithubConnectStartRoute
   ApiPaymentsRazorpayWebhookRoute: typeof ApiPaymentsRazorpayWebhookRoute
   ApiPaymentsStripeWebhookRoute: typeof ApiPaymentsStripeWebhookRoute
+  ApiCommerceScopeTenantCartsRoute: typeof ApiCommerceScopeTenantCartsRouteWithChildren
+  ApiCommerceScopeTenantCatalogRoute: typeof ApiCommerceScopeTenantCatalogRoute
   ApiDeploymentsDeploymentSlugProvisionMedusaRoute: typeof ApiDeploymentsDeploymentSlugProvisionMedusaRoute
 }
 
@@ -1524,12 +1591,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDeploymentsDeploymentSlugProvisionMedusaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/commerce/$scope/$tenant/catalog': {
+      id: '/api/commerce/$scope/$tenant/catalog'
+      path: '/api/commerce/$scope/$tenant/catalog'
+      fullPath: '/api/commerce/$scope/$tenant/catalog'
+      preLoaderRoute: typeof ApiCommerceScopeTenantCatalogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/commerce/$scope/$tenant/carts': {
+      id: '/api/commerce/$scope/$tenant/carts'
+      path: '/api/commerce/$scope/$tenant/carts'
+      fullPath: '/api/commerce/$scope/$tenant/carts'
+      preLoaderRoute: typeof ApiCommerceScopeTenantCartsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/sessions/$sessionId/history/$version/restore': {
       id: '/api/sessions/$sessionId/history/$version/restore'
       path: '/$version/restore'
       fullPath: '/api/sessions/$sessionId/history/$version/restore'
       preLoaderRoute: typeof ApiSessionsSessionIdHistoryVersionRestoreRouteImport
       parentRoute: typeof ApiSessionsSessionIdHistoryRoute
+    }
+    '/api/commerce/$scope/$tenant/carts/$cartId': {
+      id: '/api/commerce/$scope/$tenant/carts/$cartId'
+      path: '/$cartId'
+      fullPath: '/api/commerce/$scope/$tenant/carts/$cartId'
+      preLoaderRoute: typeof ApiCommerceScopeTenantCartsCartIdRouteImport
+      parentRoute: typeof ApiCommerceScopeTenantCartsRoute
+    }
+    '/api/commerce/$scope/$tenant/carts/$cartId/items': {
+      id: '/api/commerce/$scope/$tenant/carts/$cartId/items'
+      path: '/items'
+      fullPath: '/api/commerce/$scope/$tenant/carts/$cartId/items'
+      preLoaderRoute: typeof ApiCommerceScopeTenantCartsCartIdItemsRouteImport
+      parentRoute: typeof ApiCommerceScopeTenantCartsCartIdRoute
+    }
+    '/api/commerce/$scope/$tenant/carts/$cartId/items/$lineId': {
+      id: '/api/commerce/$scope/$tenant/carts/$cartId/items/$lineId'
+      path: '/$lineId'
+      fullPath: '/api/commerce/$scope/$tenant/carts/$cartId/items/$lineId'
+      preLoaderRoute: typeof ApiCommerceScopeTenantCartsCartIdItemsLineIdRouteImport
+      parentRoute: typeof ApiCommerceScopeTenantCartsCartIdItemsRoute
     }
   }
 }
@@ -1650,6 +1752,51 @@ const ApiSessionsSessionIdRouteChildren: ApiSessionsSessionIdRouteChildren = {
 const ApiSessionsSessionIdRouteWithChildren =
   ApiSessionsSessionIdRoute._addFileChildren(ApiSessionsSessionIdRouteChildren)
 
+interface ApiCommerceScopeTenantCartsCartIdItemsRouteChildren {
+  ApiCommerceScopeTenantCartsCartIdItemsLineIdRoute: typeof ApiCommerceScopeTenantCartsCartIdItemsLineIdRoute
+}
+
+const ApiCommerceScopeTenantCartsCartIdItemsRouteChildren: ApiCommerceScopeTenantCartsCartIdItemsRouteChildren =
+  {
+    ApiCommerceScopeTenantCartsCartIdItemsLineIdRoute:
+      ApiCommerceScopeTenantCartsCartIdItemsLineIdRoute,
+  }
+
+const ApiCommerceScopeTenantCartsCartIdItemsRouteWithChildren =
+  ApiCommerceScopeTenantCartsCartIdItemsRoute._addFileChildren(
+    ApiCommerceScopeTenantCartsCartIdItemsRouteChildren,
+  )
+
+interface ApiCommerceScopeTenantCartsCartIdRouteChildren {
+  ApiCommerceScopeTenantCartsCartIdItemsRoute: typeof ApiCommerceScopeTenantCartsCartIdItemsRouteWithChildren
+}
+
+const ApiCommerceScopeTenantCartsCartIdRouteChildren: ApiCommerceScopeTenantCartsCartIdRouteChildren =
+  {
+    ApiCommerceScopeTenantCartsCartIdItemsRoute:
+      ApiCommerceScopeTenantCartsCartIdItemsRouteWithChildren,
+  }
+
+const ApiCommerceScopeTenantCartsCartIdRouteWithChildren =
+  ApiCommerceScopeTenantCartsCartIdRoute._addFileChildren(
+    ApiCommerceScopeTenantCartsCartIdRouteChildren,
+  )
+
+interface ApiCommerceScopeTenantCartsRouteChildren {
+  ApiCommerceScopeTenantCartsCartIdRoute: typeof ApiCommerceScopeTenantCartsCartIdRouteWithChildren
+}
+
+const ApiCommerceScopeTenantCartsRouteChildren: ApiCommerceScopeTenantCartsRouteChildren =
+  {
+    ApiCommerceScopeTenantCartsCartIdRoute:
+      ApiCommerceScopeTenantCartsCartIdRouteWithChildren,
+  }
+
+const ApiCommerceScopeTenantCartsRouteWithChildren =
+  ApiCommerceScopeTenantCartsRoute._addFileChildren(
+    ApiCommerceScopeTenantCartsRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ExamplesRoute: ExamplesRouteWithChildren,
@@ -1705,18 +1852,12 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGithubConnectStartRoute: ApiGithubConnectStartRoute,
   ApiPaymentsRazorpayWebhookRoute: ApiPaymentsRazorpayWebhookRoute,
   ApiPaymentsStripeWebhookRoute: ApiPaymentsStripeWebhookRoute,
+  ApiCommerceScopeTenantCartsRoute:
+    ApiCommerceScopeTenantCartsRouteWithChildren,
+  ApiCommerceScopeTenantCatalogRoute: ApiCommerceScopeTenantCatalogRoute,
   ApiDeploymentsDeploymentSlugProvisionMedusaRoute:
     ApiDeploymentsDeploymentSlugProvisionMedusaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
