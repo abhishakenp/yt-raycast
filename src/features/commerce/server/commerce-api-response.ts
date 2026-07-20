@@ -6,6 +6,9 @@ import {
   getMedusaAdminApiToken,
   getMedusaAdminEmail,
   getMedusaAdminPassword,
+  getConfiguredMedusaAdminUrl,
+  getConfiguredMedusaBackendUrl,
+  getConfiguredMedusaStorefrontUrl,
   getMedusaPublishableKey,
   hasConfiguredMedusaBackendUrl,
   type MedusaEnv,
@@ -62,6 +65,11 @@ type MedusaHandoff = {
   backendUrl: string
   storefrontUrl: string
   tenantId: string
+}
+type MedusaProvisionTarget = {
+  adminUrl?: string
+  backendUrl?: string
+  storefrontUrl?: string
 }
 
 const medusaStoreApiUnavailableWarning = 'Medusa Store API is unavailable.'
@@ -284,6 +292,61 @@ function createMedusaHandoff(
   }
 }
 
+function isProductionMedusaProvision(
+  env?: MedusaEnv,
+  metaEnv?: MedusaEnv,
+): boolean {
+  return env?.NODE_ENV === 'production' || metaEnv?.PROD === 'true'
+}
+
+async function resolveMedusaProvisionTarget({
+  adminEmail,
+  adminPassword,
+  containerProvider,
+  env,
+  fetchImpl,
+  metaEnv,
+  sessionId,
+}: {
+  adminEmail?: string
+  adminPassword?: string
+  containerProvider: MedusaContainerProvider
+  env?: MedusaEnv
+  fetchImpl: FetchLike
+  metaEnv?: MedusaEnv
+  sessionId: string
+}): Promise<MedusaProvisionTarget> {
+  const configuredBackendUrl = getConfiguredMedusaBackendUrl(env, metaEnv)
+  if (configuredBackendUrl !== undefined) {
+    return {
+      adminUrl: getConfiguredMedusaAdminUrl(env, metaEnv),
+      backendUrl: configuredBackendUrl,
+      storefrontUrl:
+        getConfiguredMedusaStorefrontUrl(env, metaEnv) ?? configuredBackendUrl,
+    }
+  }
+
+  try {
+    const running = await containerProvider.findRunning(sessionId)
+    const container =
+      running ??
+      (await containerProvider.provision(sessionId, {
+        adminEmail,
+        adminPassword,
+        fetch: fetchImpl,
+      }))
+
+    return {
+      adminUrl: container.adminUrl,
+      backendUrl: container.backendUrl,
+      storefrontUrl: container.storefrontUrl,
+    }
+  } catch (error) {
+    if (isProductionMedusaProvision(env, metaEnv)) throw error
+    return {}
+  }
+}
+
 export async function createSessionMedusaConfigResponse(
   sessionId: string,
   clientOverride?: CommerceApiClient,
@@ -320,7 +383,7 @@ export async function createSessionMedusaProvisionResponse(
     const authToken = getBearerToken(request)
     if (authToken !== null) client.setAuth(authToken)
     await client.query(api.sessions.authorizeSessionCommerceProvision, {
-      sessionId,
+      sessionId: sessionId as Id<'sessions'>,
       anonymousOwnerSecret,
     })
 
@@ -328,11 +391,6 @@ export async function createSessionMedusaProvisionResponse(
     const fetchImpl = options.fetch ?? fetch
     const adminEmail = getMedusaAdminEmail(options.env, options.metaEnv)
     const adminPassword = getMedusaAdminPassword(options.env, options.metaEnv)
-
-    // Container-per-tenant: each session gets its own isolated Medusa
-    // instance with its own database, admin UI, and products. Reuse an
-    // already-running container if the session re-provisions. Tests can
-    // inject a mock containerProvider to bypass Docker.
     const containerProvider = options.containerProvider ?? {
       findRunning: findRunningSessionContainer,
       provision: (sid, opts) =>
@@ -341,18 +399,20 @@ export async function createSessionMedusaProvisionResponse(
           opts,
         ) as Promise<MedusaContainerInfo>,
     }
-    let container = await containerProvider.findRunning(sessionId)
-    if (container === undefined) {
-      container = await containerProvider.provision(sessionId, {
-        adminEmail,
-        adminPassword,
-        fetch: fetchImpl,
-      })
-    }
 
-    const backendUrl = container.backendUrl
-    const adminUrl = container.adminUrl
-    const storefrontUrl = container.storefrontUrl
+    const target = await resolveMedusaProvisionTarget({
+      adminEmail,
+      adminPassword,
+      containerProvider,
+      env: options.env,
+      fetchImpl,
+      metaEnv: options.metaEnv,
+      sessionId,
+    })
+
+    const backendUrl = target.backendUrl
+    const adminUrl = target.adminUrl
+    const storefrontUrl = target.storefrontUrl
     const publishableKey = getMedusaPublishableKey(options.env, options.metaEnv)
     const handoff = createMedusaHandoff(
       sessionId,
@@ -362,13 +422,16 @@ export async function createSessionMedusaProvisionResponse(
       options.env,
       options.metaEnv,
     )
-    let availability = await validateMedusaStoreApi(
-      backendUrl,
-      publishableKey,
-      fetchImpl,
-    )
+    let availability =
+      backendUrl === undefined
+        ? {
+            liveStoreApiReady: false,
+            publishableKeyConfigured: false,
+            warning: 'Medusa Store API not configured.',
+          }
+        : await validateMedusaStoreApi(backendUrl, publishableKey, fetchImpl)
     const productSync =
-      generatedProducts.length > 0
+      generatedProducts.length > 0 && backendUrl !== undefined
         ? await syncGeneratedProductsToMedusa({
             adminApiToken: getMedusaAdminApiToken(options.env, options.metaEnv),
             adminEmail,
@@ -380,7 +443,11 @@ export async function createSessionMedusaProvisionResponse(
             sessionId,
           })
         : { synced: 0 }
-    if (productSync.tenant !== undefined && !availability.liveStoreApiReady) {
+    if (
+      backendUrl !== undefined &&
+      productSync.tenant !== undefined &&
+      !availability.liveStoreApiReady
+    ) {
       availability = await validateMedusaStoreApi(
         backendUrl,
         productSync.tenant.publishableKey,

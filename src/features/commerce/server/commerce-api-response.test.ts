@@ -161,7 +161,8 @@ describe('createSessionMedusaProvisionResponse', () => {
       anonymousOwnerSecret: undefined,
       sessionId: 'session_123',
     })
-    expect(containerProvider.findRunning).toHaveBeenCalledWith('session_123')
+    expect(containerProvider.findRunning).not.toHaveBeenCalled()
+    expect(containerProvider.provision).not.toHaveBeenCalled()
   })
 
   it('provisions commerce from server Medusa settings without URL input', async () => {
@@ -206,9 +207,8 @@ describe('createSessionMedusaProvisionResponse', () => {
       anonymousOwnerSecret: 'owner_secret',
       sessionId: 'session_123',
     })
-    expect(query.mock.invocationCallOrder[0]).toBeLessThan(
-      containerProvider.findRunning.mock.invocationCallOrder[0],
-    )
+    expect(containerProvider.findRunning).not.toHaveBeenCalled()
+    expect(containerProvider.provision).not.toHaveBeenCalled()
     expect(fetchImpl).toHaveBeenCalledWith(
       'https://backend.medusa.test/store/regions',
       {
@@ -232,6 +232,58 @@ describe('createSessionMedusaProvisionResponse', () => {
       tenantId: 'session_123',
       tenantMode: 'session',
     })
+  })
+
+  it('uses configured Medusa URLs without requiring Docker container provisioning', async () => {
+    const mutation = vi.fn().mockResolvedValue({ sessionId: 'session_123' })
+    const query = vi.fn().mockResolvedValue({ sessionId: 'session_123' })
+    const fetchImpl = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ regions: [{ currency_code: 'usd' }] }), {
+        status: 200,
+      }),
+    )
+    const containerProvider = {
+      findRunning: vi.fn(),
+      provision: vi.fn(),
+    }
+
+    const response = await createSessionMedusaProvisionResponse(
+      'session_123',
+      new Request(
+        'http://ship-fast.test/api/sessions/session_123/provision/medusa',
+        { method: 'POST' },
+      ),
+      { mutation, query, setAuth: vi.fn() },
+      {
+        containerProvider,
+        env: {
+          MEDUSA_ADMIN_URL: 'https://admin.medusa.test',
+          MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
+          MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
+          MEDUSA_STOREFRONT_URL: 'https://store.medusa.test',
+        },
+        fetch: fetchImpl,
+        metaEnv: {},
+      },
+    )
+
+    expect(response.status).toBe(200)
+    expect(containerProvider.findRunning).not.toHaveBeenCalled()
+    expect(containerProvider.provision).not.toHaveBeenCalled()
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'https://backend.medusa.test/store/regions',
+      {
+        headers: { 'x-publishable-api-key': 'pk_medusa' },
+      },
+    )
+    expect(mutation).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        adminUrl: 'https://admin.medusa.test',
+        backendUrl: 'https://backend.medusa.test',
+        storefrontUrl: 'https://store.medusa.test',
+      }),
+    )
   })
 
   it('provisions visual commerce with a warning when Medusa is not configured', async () => {
@@ -269,7 +321,7 @@ describe('createSessionMedusaProvisionResponse', () => {
     )
     const [, args] = mutation.mock.calls[0]
     expect(args.adminUrl).toBeUndefined()
-    expect(args.storefrontUrl).toBeUndefined()
+    expect(args.storefrontUrl).toBe('https://backend.medusa.test')
   })
 
   it('does not return localhost handoff links when Medusa backend is not configured', async () => {
@@ -297,6 +349,50 @@ describe('createSessionMedusaProvisionResponse', () => {
     expect(args.backendUrl).toBeUndefined()
     expect(args.adminUrl).toBeUndefined()
     expect(args.storefrontUrl).toBeUndefined()
+  })
+
+  it('keeps visual commerce provisionable when Docker is unavailable and no Medusa backend is configured', async () => {
+    const mutation = vi.fn().mockResolvedValue({ sessionId: 'session_123' })
+    const containerProvider = {
+      findRunning: vi.fn().mockRejectedValue(new Error('docker unavailable')),
+      provision: vi.fn(),
+    }
+
+    const response = await createSessionMedusaProvisionResponse(
+      'session_123',
+      new Request(
+        'http://ship-fast.test/api/sessions/session_123/provision/medusa',
+        { method: 'POST' },
+      ),
+      {
+        mutation,
+        query: vi.fn().mockResolvedValue({ sessionId: 'session_123' }),
+        setAuth: vi.fn(),
+      },
+      {
+        containerProvider,
+        env: {},
+        fetch: vi.fn(),
+        metaEnv: {},
+      },
+    )
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({
+      liveStoreApiReady: false,
+      status: 'ready',
+      warning: 'Medusa Store API not configured.',
+    })
+    expect(containerProvider.findRunning).toHaveBeenCalledWith('session_123')
+    expect(containerProvider.provision).not.toHaveBeenCalled()
+    expect(mutation).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        backendUrl: undefined,
+        errorMessage: 'Medusa Store API not configured.',
+        sessionId: 'session_123',
+      }),
+    )
   })
 
   it('provisions visual commerce with a warning when Medusa returns a non-ok response', async () => {
