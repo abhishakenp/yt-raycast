@@ -687,11 +687,11 @@ describe('createSessionMedusaProvisionResponse', () => {
       options: [{ title: 'Size', values: ['Small', 'Large'] }],
       variants: [
         {
-          sku: 'LINEN-S',
+          sku: 'SHIP-FAST-SESSION-123-LINEN-TEE-LINEN-S',
           title: 'Small',
         },
         {
-          sku: 'LINEN-L',
+          sku: 'SHIP-FAST-SESSION-123-LINEN-TEE-LINEN-L',
           title: 'Large',
         },
       ],

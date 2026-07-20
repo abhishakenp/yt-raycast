@@ -13,6 +13,7 @@ export const medusaStoreProductFields = [
   '+metadata',
   '*images',
   '*collection',
+  '+collection.metadata',
   '*tags',
   '*options',
   '*options.values',
@@ -48,10 +49,9 @@ function nonNegativeNumber(value: unknown): number | undefined {
 
 function sourceId(value: Record<string, unknown>): string | undefined {
   return (
-    stringValue(value.id) ??
     (isRecord(value.metadata)
       ? stringValue(value.metadata.ship_fast_generated_source_id)
-      : undefined)
+      : undefined) ?? stringValue(value.id)
   )
 }
 
@@ -95,8 +95,11 @@ function normalizeCollections(
   ]
   return candidates.flatMap((collection) => {
     if (!isRecord(collection)) return []
+    const metadata = isRecord(collection.metadata) ? collection.metadata : {}
     const title = stringValue(collection.title)
-    const handle = stringValue(collection.handle)
+    const handle =
+      stringValue(metadata.ship_fast_generated_handle) ??
+      stringValue(collection.handle)
     if (title === undefined || handle === undefined) return []
     const collectionSourceId = sourceId(collection)
     return [
