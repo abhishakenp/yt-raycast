@@ -11,7 +11,6 @@ import {
 } from 'react'
 
 import { LaunchBackdrop } from '@/components/launch-backdrop'
-import { HomeGallerySection } from '@/features/gallery/components/PublicGallery'
 import { isPartnerProgramClientEnabled } from '@/features/partners/lib/partner-config'
 import { usePromptHomeController } from '@/features/home/hooks/usePromptHomeController'
 import {
@@ -60,6 +59,12 @@ const LANGUAGE_OPTIONS = [
 
 const DEFAULT_LANGUAGE_OPTION = LANGUAGE_OPTIONS[0]
 const DEFAULT_LANGUAGE_OPTIONS = [DEFAULT_LANGUAGE_OPTION]
+
+const HomeGallerySection = lazy(() =>
+  import('@/features/gallery/components/PublicGallery').then((module) => ({
+    default: module.HomeGallerySection,
+  })),
+)
 
 const EXAMPLE_CHIPS = [
   [
@@ -977,7 +982,9 @@ export const HomePage = () => {
             </div>
           </section>
 
-          <HomeGallerySection />
+          <Suspense fallback={null}>
+            <HomeGallerySection />
+          </Suspense>
         </div>
       </div>
 

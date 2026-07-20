@@ -177,11 +177,11 @@ describe('HomePage rendered entry surface', () => {
     )
   })
 
-  it('renders the static gallery section immediately on the homepage', () => {
-    const { container, getByText } = render(createElement(HomePage))
+  it('renders the static gallery section on the homepage', async () => {
+    const { container, findByText } = render(createElement(HomePage))
 
-    expect(getByText('See what other speedsters generated')).toBeTruthy()
-    expect(getByText('Static home gallery preview')).toBeTruthy()
+    expect(await findByText('See what other speedsters generated')).toBeTruthy()
+    expect(await findByText('Static home gallery preview')).toBeTruthy()
     expect(container.querySelector('.sf-gallery-grid')).not.toBeNull()
     expect(
       container.querySelector(
