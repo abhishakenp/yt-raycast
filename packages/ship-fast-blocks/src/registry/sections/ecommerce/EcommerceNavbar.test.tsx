@@ -124,6 +124,8 @@ const { setSectionKitNavClickFallback } =
 const { EcommerceHero } = await import('./EcommerceHero.tsx')
 const { EcommerceNavbar } = await import('./EcommerceNavbar.tsx')
 const { EcommerceGallery } = await import('./EcommerceGallery.tsx')
+const { FashionStoreProducts } =
+  await import('../fashion-store/FashionStoreProducts.tsx')
 
 function createCommerceLakebedStub() {
   let version = 0
@@ -336,6 +338,74 @@ afterEach(() => {
 })
 
 describe('EcommerceNavbar fullstack commerce behavior', () => {
+  it('never mutates the demo Lakebed cart across hosted commerce sections', async () => {
+    const { lakebed, state } = createCommerceLakebedStub()
+    lakebedRef.current = lakebed
+    const Hero = EcommerceHero.client.component
+    const Navbar = EcommerceNavbar.client.component
+    const Gallery = EcommerceGallery.client.component
+
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <CommerceProvider
+          fallbackProducts={[]}
+          mode="hosted"
+          scope="sessions"
+          tenant="hosted-session"
+        >
+          <Navbar
+            props={{ brand: 'Market', nav: ['Shop'], cartCount: '0' }}
+            statementId="hosted_navbar"
+          />
+          <Hero
+            props={{
+              addLabel: 'Add deal',
+              featuredProductName: 'Portable Speaker',
+              featuredProductPrice: '$79',
+            }}
+            statementId="hosted_hero"
+          />
+          <Gallery
+            props={{
+              addToCartLabel: 'Add to cart',
+              products: [
+                {
+                  name: 'Wireless Headphones',
+                  price: '$129',
+                },
+              ],
+            }}
+            statementId="hosted_gallery"
+          />
+          <FashionStoreProducts.component
+            props={{
+              items: [
+                {
+                  name: 'Black Wool Coat',
+                  price: '$420',
+                  variant: 'Black · S-L',
+                },
+              ],
+              quickAdd: 'Quick Add',
+            }}
+          />
+        </CommerceProvider>
+      </QueryClientProvider>,
+    )
+
+    const addButtons = [
+      screen.getByRole('button', { name: 'Add deal Portable Speaker' }),
+      screen.getByRole('button', { name: 'Add to cart' }),
+      ...screen.getAllByRole('button', { name: 'Quick Add' }),
+    ]
+    for (const button of addButtons) {
+      expect(button.hasAttribute('disabled')).toBe(true)
+      fireEvent.click(button)
+    }
+    await Promise.resolve()
+    expect(state().items).toEqual([])
+  })
+
   it('uses gallery catalog and cart data through search, account, and cart controls', async () => {
     const { lakebed, signInWithGoogle, state } = createCommerceLakebedStub()
     lakebedRef.current = lakebed

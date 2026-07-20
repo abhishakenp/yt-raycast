@@ -31,6 +31,7 @@ import { I18nProvider, T } from './_providers/translation'
 import { preprocessOpenUIRuntimeResponse } from './openui-runtime-preprocess'
 import { extractGeneratedCommerceProducts } from '@/features/commerce/services/generated-commerce-products'
 import { HostedCommerceAdapter } from '@/features/commerce/services/hosted-commerce-adapter'
+import { useCommerceBearerToken } from '@/features/commerce/hooks/use-commerce-bearer-token'
 
 // NOTE: We use a plain QueryClientProvider here (not PersistQueryClientProvider).
 // The persist provider from @tanstack/react-query-persist-client resolved a
@@ -294,20 +295,26 @@ export default function OpenUIViewer({
     scope: 'sessions' as const,
     tenant: sessionId ?? 'preview',
   }
+  const commerceAuth = useCommerceBearerToken(commerceRuntime.mode === 'hosted')
   const commerceAdapter = useMemo(
     () =>
-      commerceRuntime.mode === 'hosted'
+      commerceRuntime.mode === 'hosted' && commerceAuth.isReady
         ? new HostedCommerceAdapter({
             ...(commerceRuntime.anonymousOwnerSecret === undefined
               ? {}
               : {
                   anonymousOwnerSecret: commerceRuntime.anonymousOwnerSecret,
                 }),
+            ...(commerceAuth.bearerToken === undefined
+              ? {}
+              : { bearerToken: commerceAuth.bearerToken }),
             scope: commerceRuntime.scope,
             tenant: commerceRuntime.tenant,
           })
         : undefined,
     [
+      commerceAuth.bearerToken,
+      commerceAuth.isReady,
       commerceRuntime.anonymousOwnerSecret,
       commerceRuntime.mode,
       commerceRuntime.scope,

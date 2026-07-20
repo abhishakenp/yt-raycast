@@ -58,6 +58,7 @@ import type {
   CommerceSearchInput,
 } from './cart-lakebed.ts'
 import { commerceCartItemKey } from './cart-lakebed.ts'
+import { useCommerce } from './commerce-provider.tsx'
 
 export type CommerceLakebed = LakebedClientRuntime<typeof commerceCartLakebed>
 
@@ -108,18 +109,21 @@ export function CommerceAddItemButton({
   lakebed: CommerceLakebed
   pendingChildren?: ReactNode
 }) {
+  const commerce = useCommerce()
   const addItem = useKeyedLakebedMutation(lakebed, 'addItem')
   const itemKey = commerceCartItemKey(item)
   const isButtonPending = addItem.isPending(itemKey)
   const mutationInput = { ...item, itemKey }
+  const demoPurchasingEnabled = commerce.mode === 'demo'
 
   return (
     <button
       {...buttonProps}
       type={type}
       aria-busy={isButtonPending}
-      disabled={disabled || isButtonPending}
+      disabled={disabled || isButtonPending || !demoPurchasingEnabled}
       onClick={() => {
+        if (!demoPurchasingEnabled) return
         void addItem.run(itemKey, mutationInput).catch(() => {})
       }}
     >

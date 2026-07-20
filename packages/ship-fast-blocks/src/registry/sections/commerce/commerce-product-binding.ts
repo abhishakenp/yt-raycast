@@ -22,13 +22,22 @@ const availableVariant = (product: CommerceCatalogProduct): boolean =>
         variant.inventoryQuantity > 0),
   )
 
-const matchesSlot = (
+const findSlotProduct = (
   slot: CommerceProductSlot,
-  product: CommerceCatalogProduct,
-): boolean =>
-  product.sourceId === slot.sourceId ||
-  product.sourceHandle === slot.handle ||
-  product.handle === slot.handle
+  liveProducts: Array<CommerceCatalogProduct>,
+  consumedProducts?: Set<CommerceCatalogProduct>,
+): CommerceCatalogProduct | undefined => {
+  const availableProducts =
+    consumedProducts === undefined
+      ? liveProducts
+      : liveProducts.filter((product) => !consumedProducts.has(product))
+
+  return (
+    availableProducts.find((product) => product.sourceId === slot.sourceId) ??
+    availableProducts.find((product) => product.sourceHandle === slot.handle) ??
+    availableProducts.find((product) => product.handle === slot.handle)
+  )
+}
 
 const fallbackBinding = (
   slot: CommerceProductSlot,
@@ -57,7 +66,7 @@ export const bindCommerceProductSlot = (
 ): BoundCommerceProduct => {
   if (state !== 'ready') return fallbackBinding(slot, state)
 
-  const product = liveProducts.find((candidate) => matchesSlot(slot, candidate))
+  const product = findSlotProduct(slot, liveProducts)
   return product === undefined
     ? {
         availability: 'unavailable',
@@ -78,10 +87,7 @@ export const bindCommerceCatalog = (
 
   const consumedProducts = new Set<CommerceCatalogProduct>()
   const boundSlots = slots.flatMap((slot) => {
-    const product = liveProducts.find(
-      (candidate) =>
-        !consumedProducts.has(candidate) && matchesSlot(slot, candidate),
-    )
+    const product = findSlotProduct(slot, liveProducts, consumedProducts)
     if (product === undefined) return []
     consumedProducts.add(product)
     return [liveBinding(product, slot)]

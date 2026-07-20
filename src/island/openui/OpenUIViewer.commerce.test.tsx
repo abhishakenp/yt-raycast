@@ -1,11 +1,16 @@
 // @vitest-environment jsdom
-import { act, cleanup, render } from '@testing-library/react'
+import { act, cleanup, render, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const state = vi.hoisted(() => ({
   adapterOptions: [] as Array<Record<string, unknown>>,
   aiCapsules: [] as Array<unknown>,
+  auth: {
+    getToken: vi.fn<() => Promise<string | null>>(),
+    isLoaded: true,
+    isSignedIn: false,
+  },
   commerceProps: [] as Array<Record<string, unknown>>,
   generatedProducts: [
     {
@@ -71,6 +76,10 @@ vi.mock('@/features/commerce/services/generated-commerce-products', () => ({
   extractGeneratedCommerceProducts: () => state.generatedProducts,
 }))
 
+vi.mock('@/shared/auth/use-optional-auth', () => ({
+  useOptionalAuth: () => state.auth,
+}))
+
 vi.mock('convex/react', () => ({
   useQuery: () => state.aiCapsules,
 }))
@@ -90,6 +99,9 @@ describe('OpenUIViewer commerce runtime', () => {
   beforeEach(() => {
     state.adapterOptions.length = 0
     state.commerceProps.length = 0
+    state.auth.getToken.mockReset()
+    state.auth.getToken.mockResolvedValue(null)
+    state.auth.isSignedIn = false
     vi.stubGlobal(
       'fetch',
       vi
@@ -161,5 +173,34 @@ describe('OpenUIViewer commerce runtime', () => {
       scope: 'sessions',
       tenant: 'session-a',
     })
+  })
+
+  it('uses the current signed-in token without exposing it through commerce props', async () => {
+    state.auth.isSignedIn = true
+    state.auth.getToken.mockResolvedValue('signed-in-token')
+
+    render(
+      <OpenUIViewer
+        commerce={{
+          mode: 'hosted',
+          scope: 'sessions',
+          tenant: 'session-a',
+        }}
+        response="root = StorePage()"
+        sessionId="session-a"
+      />,
+    )
+
+    await waitFor(() =>
+      expect(state.adapterOptions).toEqual([
+        {
+          bearerToken: 'signed-in-token',
+          scope: 'sessions',
+          tenant: 'session-a',
+        },
+      ]),
+    )
+    expect(state.auth.getToken).toHaveBeenCalledWith({ template: 'convex' })
+    expect(state.commerceProps.at(-1)).not.toHaveProperty('bearerToken')
   })
 })

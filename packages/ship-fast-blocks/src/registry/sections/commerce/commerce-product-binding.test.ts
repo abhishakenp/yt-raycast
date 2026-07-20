@@ -88,6 +88,35 @@ describe('commerce product binding', () => {
     ).toEqual(['medusa_product_1', 'medusa_product_2'])
   })
 
+  it('prefers an exact source ID globally over an earlier handle collision', () => {
+    const generatedSlot = slot(
+      'product:generated',
+      'generated-handle',
+      'Generated',
+    )
+    const adminCollision = product(
+      'medusa_product_admin',
+      'generated-handle',
+      'Admin Collision',
+    )
+    const exactSeededProduct = product(
+      'product:generated',
+      'admin-edited-handle',
+      'Exact Seeded Product',
+    )
+    const liveProducts = [adminCollision, exactSeededProduct]
+
+    expect(
+      bindCommerceProductSlot(generatedSlot, liveProducts, 'ready').product
+        .sourceId,
+    ).toBe('product:generated')
+    expect(
+      bindCommerceCatalog([generatedSlot], liveProducts, 'ready').map(
+        ({ product: boundProduct }) => boundProduct.sourceId,
+      ),
+    ).toEqual(['product:generated', 'medusa_product_admin'])
+  })
+
   it('removes missing grid products while product slots become unavailable', () => {
     const removedSlot = slot('product:removed', 'removed', 'Removed')
 

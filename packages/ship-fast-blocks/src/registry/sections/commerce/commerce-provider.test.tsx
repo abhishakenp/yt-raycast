@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react'
 import type { PropsWithChildren } from 'react'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import type {
   CommerceCatalogAdapter,
@@ -55,11 +55,24 @@ const CatalogState = () => {
           : 'no'}
       </output>
       <output data-testid="message">{commerce.error?.message ?? ''}</output>
+      <output data-testid="details">
+        {JSON.stringify(
+          commerce.catalog.map(({ product }) => ({
+            image: product.images[0]?.url,
+            price: product.variants[0]?.prices[0]?.amount,
+            sourceId: product.sourceId,
+            title: product.title,
+          })),
+        )}
+      </output>
     </>
   )
 }
 
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  vi.useRealTimers()
+})
 
 describe('CommerceProvider', () => {
   it('loads and binds a hosted catalog through the tenant query', async () => {
@@ -132,6 +145,120 @@ describe('CommerceProvider', () => {
     expect(screen.getByTestId('titles').textContent).toBe('Fallback Shirt')
     expect(screen.getByTestId('purchasable').textContent).toBe('no')
     expect(screen.getByTestId('message').textContent).toBe('Medusa timed out')
+  })
+
+  it('polls hosted catalogs for authoritative edits, additions, deletions, and degraded recovery', async () => {
+    vi.useFakeTimers()
+    const fallbackShirt = fallbackProduct('product:shirt', 'Fallback Shirt')
+    const fallbackHat = fallbackProduct('product:hat', 'Fallback Hat')
+    const initialShirt = {
+      ...fallbackShirt,
+      images: [{ url: '/old-shirt.jpg' }],
+      title: 'Initial Shirt',
+    }
+    const initialHat = {
+      ...fallbackHat,
+      images: [{ url: '/hat.jpg' }],
+      title: 'Initial Hat',
+    }
+    const editedShirt = {
+      ...fallbackShirt,
+      images: [{ url: '/edited-shirt.jpg' }],
+      title: 'Edited Shirt',
+      variants: [
+        {
+          ...fallbackShirt.variants[0],
+          prices: [{ amount: 39, currencyCode: 'usd' }],
+        },
+      ],
+    }
+    const adminProduct = fallbackProduct(
+      'medusa_product_admin',
+      'Admin Product',
+    )
+    const catalog = vi
+      .fn<CommerceCatalogAdapter['catalog']>()
+      .mockResolvedValueOnce({ products: [initialShirt, initialHat] })
+      .mockResolvedValueOnce({ products: [editedShirt, adminProduct] })
+      .mockRejectedValueOnce(new Error('Medusa refresh failed'))
+    const adapter: CommerceCatalogAdapter = { catalog }
+
+    render(
+      <CommerceProvider
+        adapter={adapter}
+        fallbackProducts={[fallbackShirt, fallbackHat]}
+        mode="hosted"
+        scope="sessions"
+        tenant="session-polling"
+      >
+        <CatalogState />
+      </CommerceProvider>,
+      { wrapper },
+    )
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0)
+    })
+    expect(screen.getByTestId('status').textContent).toBe('ready')
+    expect(screen.getByTestId('titles').textContent).toBe(
+      'Initial Shirt|Initial Hat',
+    )
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5_001)
+    })
+    expect(screen.getByTestId('details').textContent).toBe(
+      JSON.stringify([
+        {
+          image: '/edited-shirt.jpg',
+          price: 39,
+          sourceId: 'product:shirt',
+          title: 'Edited Shirt',
+        },
+        {
+          price: 12,
+          sourceId: 'medusa_product_admin',
+          title: 'Admin Product',
+        },
+      ]),
+    )
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5_001)
+    })
+    expect(screen.getByTestId('status').textContent).toBe('degraded')
+    expect(screen.getByTestId('titles').textContent).toBe(
+      'Fallback Shirt|Fallback Hat',
+    )
+    expect(screen.getByTestId('message').textContent).toBe(
+      'Medusa refresh failed',
+    )
+    expect(catalog).toHaveBeenCalledTimes(3)
+  })
+
+  it('does not poll demo catalogs', async () => {
+    vi.useFakeTimers()
+    const adapter: CommerceCatalogAdapter = {
+      catalog: vi.fn(async () => ({ products: [] })),
+    }
+
+    render(
+      <CommerceProvider
+        adapter={adapter}
+        fallbackProducts={[]}
+        mode="demo"
+        scope="sessions"
+        tenant="session-demo"
+      >
+        <CatalogState />
+      </CommerceProvider>,
+      { wrapper },
+    )
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(30_000)
+    })
+    expect(adapter.catalog).toHaveBeenCalledTimes(1)
   })
 
   it('does not call an adapter when commerce is disabled', async () => {

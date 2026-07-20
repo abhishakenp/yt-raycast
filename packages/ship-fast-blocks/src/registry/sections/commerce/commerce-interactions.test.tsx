@@ -1,6 +1,13 @@
 // @vitest-environment jsdom
 
-import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
+import {
+  type ReactNode,
+  useCallback,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { LakebedMutationFunction } from '@ship-fast/lakebed/react'
 import {
   createLakebedMutationStub,
@@ -118,6 +125,21 @@ const {
   CommerceSearchButton,
   useCommerceFilteredProducts,
 } = await import('./commerce-interactions.tsx')
+const { CommerceProvider } = await import('./commerce-provider.tsx')
+
+const renderDemoCommerce = (children: ReactNode) =>
+  render(
+    <QueryClientProvider client={new QueryClient()}>
+      <CommerceProvider
+        fallbackProducts={[]}
+        mode="demo"
+        scope="sessions"
+        tenant="commerce-interactions-test"
+      >
+        {children}
+      </CommerceProvider>
+    </QueryClientProvider>,
+  )
 
 type TestCartItem = {
   createdAt: string
@@ -1511,7 +1533,7 @@ describe('commerce interaction surfaces', () => {
       },
     })
 
-    render(
+    renderDemoCommerce(
       <>
         <CommerceAddItemButton
           lakebed={lakebed}
@@ -1564,7 +1586,7 @@ describe('commerce interaction surfaces', () => {
   it('adds duplicate product labels as distinct cart rows when item keys differ', async () => {
     const { lakebed, state } = createCommerceLakebedStub()
 
-    render(
+    renderDemoCommerce(
       <>
         <CommerceAddItemButton
           lakebed={lakebed}
@@ -1637,7 +1659,7 @@ describe('commerce interaction surfaces', () => {
       },
     })
 
-    render(
+    renderDemoCommerce(
       <>
         <CommerceAddItemButton
           lakebed={lakebed}

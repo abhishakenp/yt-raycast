@@ -8,8 +8,10 @@ import {
 } from '@ship-fast/lakebed/test-helpers'
 import { guestAuthContext } from '@ship-fast/lakebed/server'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import type { CommerceLakebed } from '../commerce/commerce-interactions.tsx'
+import { CommerceProvider } from '../commerce/commerce-provider.tsx'
 
 type TestCartItem = {
   createdAt: string
@@ -580,34 +582,41 @@ describe('FashionStore fullstack commerce behavior', () => {
     setSectionKitNavClickFallback(navigate)
 
     render(
-      <>
-        <FashionStoreNavbar.component
-          props={{ bagCount: '0', nav: ['Collections', 'Lookbook'] }}
-        />
-        <FashionStoreHero.component
-          props={{
-            featuredName: 'Archive Linen Capsule',
-            featuredPrice: '$485',
-            featuredVariant: 'Cream · XS-XL',
-            imageAlt: 'Cream linen capsule wardrobe editorial',
-            primaryCta: 'Shop the Collection',
-            secondaryCta: 'View Lookbook',
-          }}
-        />
-        <FashionStoreProducts.component
-          props={{
-            items: [
-              {
-                imageAlt: 'Black wool coat on model',
-                name: 'Black Wool Coat',
-                price: '$420',
-                variant: 'Black · S-L',
-              },
-            ],
-            quickAdd: 'Quick Add',
-          }}
-        />
-      </>,
+      <QueryClientProvider client={new QueryClient()}>
+        <CommerceProvider
+          fallbackProducts={[]}
+          mode="demo"
+          scope="sessions"
+          tenant="fashion-store-test"
+        >
+          <FashionStoreNavbar.component
+            props={{ bagCount: '0', nav: ['Collections', 'Lookbook'] }}
+          />
+          <FashionStoreHero.component
+            props={{
+              featuredName: 'Archive Linen Capsule',
+              featuredPrice: '$485',
+              featuredVariant: 'Cream · XS-XL',
+              imageAlt: 'Cream linen capsule wardrobe editorial',
+              primaryCta: 'Shop the Collection',
+              secondaryCta: 'View Lookbook',
+            }}
+          />
+          <FashionStoreProducts.component
+            props={{
+              items: [
+                {
+                  imageAlt: 'Black wool coat on model',
+                  name: 'Black Wool Coat',
+                  price: '$420',
+                  variant: 'Black · S-L',
+                },
+              ],
+              quickAdd: 'Quick Add',
+            }}
+          />
+        </CommerceProvider>
+      </QueryClientProvider>,
     )
 
     await waitFor(() => {
@@ -673,14 +682,23 @@ describe('FashionStore fullstack commerce behavior', () => {
     setSectionKitNavClickFallback(navigate)
 
     render(
-      <FashionStoreHero.component
-        props={{
-          featuredName: 'Tailored Travel Capsule',
-          featuredPrice: '$520',
-          primaryCta: 'Shop the Collection',
-          secondaryCta: 'View Lookbook',
-        }}
-      />,
+      <QueryClientProvider client={new QueryClient()}>
+        <CommerceProvider
+          fallbackProducts={[]}
+          mode="demo"
+          scope="sessions"
+          tenant="fashion-store-hero-test"
+        >
+          <FashionStoreHero.component
+            props={{
+              featuredName: 'Tailored Travel Capsule',
+              featuredPrice: '$520',
+              primaryCta: 'Shop the Collection',
+              secondaryCta: 'View Lookbook',
+            }}
+          />
+        </CommerceProvider>
+      </QueryClientProvider>,
     )
 
     fireEvent.click(screen.getByRole('link', { name: 'Shop the Collection' }))
