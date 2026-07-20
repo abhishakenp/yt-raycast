@@ -130,6 +130,11 @@ export type CommercePaymentSession = {
   status: 'authorized' | 'canceled' | 'error' | 'pending' | 'requires_action'
 }
 
+export type CommercePaymentProvider = {
+  id: string
+  name: string
+}
+
 export type PaymentAction =
   | {
       type: 'none'
@@ -144,14 +149,33 @@ export type PaymentAction =
       type: 'client-session'
     }
 
+export type CommerceOrderStatus = 'canceled' | 'completed' | 'pending'
+
+export type CommerceOrderPaymentStatus =
+  | 'authorized'
+  | 'canceled'
+  | 'captured'
+  | 'failed'
+  | 'pending'
+  | 'refunded'
+
+export type CommerceOrderFulfillmentStatus =
+  | 'canceled'
+  | 'delivered'
+  | 'fulfilled'
+  | 'partially_fulfilled'
+  | 'pending'
+  | 'returned'
+  | 'shipped'
+
 export type CommerceOrder = CommerceTotals & {
   displayId?: string
   email?: string
-  fulfillmentStatus?: string
+  fulfillmentStatus?: CommerceOrderFulfillmentStatus
   id: string
   lines: Array<CommerceCartLine>
-  paymentStatus?: string
-  status: string
+  paymentStatus?: CommerceOrderPaymentStatus
+  status: CommerceOrderStatus
   store: CommerceStoreRef
 }
 
