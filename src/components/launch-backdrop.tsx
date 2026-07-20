@@ -2,6 +2,9 @@ import { useEffect, useRef } from 'react'
 
 const BACKDROP_START_DELAY_MS = 550
 const BACKDROP_IDLE_TIMEOUT_MS = 1200
+const BACKDROP_MAX_FPS = 20
+const BACKDROP_FRAME_INTERVAL_MS = 1000 / BACKDROP_MAX_FPS
+const BACKDROP_ACTIVE_DURATION_MS = 7500
 
 type IdleWindow = Window & {
   requestIdleCallback?: (
@@ -32,6 +35,8 @@ function initLaunchBackdrop(canvas: HTMLCanvasElement) {
   let height = 0
   let tick = 0
   let raf = 0
+  let startedAt = 0
+  let lastFrameAt = 0
   let running = false
 
   function noise2d(x: number, y: number) {
@@ -93,10 +98,19 @@ function initLaunchBackdrop(canvas: HTMLCanvasElement) {
     particles.length = target
   }
 
-  function draw() {
+  function draw(now = performance.now()) {
     if (!running) return
-    if (!document.body.contains(canvas)) return
+    if (!document.body.contains(canvas)) {
+      stop()
+      return
+    }
+    if (now - startedAt >= BACKDROP_ACTIVE_DURATION_MS) {
+      stop()
+      return
+    }
     raf = window.requestAnimationFrame(draw)
+    if (now - lastFrameAt < BACKDROP_FRAME_INTERVAL_MS) return
+    lastFrameAt = now
     tick += 1
 
     context.globalCompositeOperation = 'source-over'
@@ -143,6 +157,8 @@ function initLaunchBackdrop(canvas: HTMLCanvasElement) {
   function start() {
     if (running) return
     running = true
+    startedAt = performance.now()
+    lastFrameAt = 0
     draw()
   }
 
@@ -234,13 +250,13 @@ export function LaunchBackdrop() {
       }}
     >
       <div
-        className="absolute inset-[-12%_-18%_-18%_-24%] z-0 pointer-events-none opacity-58 blur-[7px] saturate-[1.4] animate-pulse"
+        className="absolute inset-[-12%_-18%_-18%_-24%] z-0 pointer-events-none opacity-58 blur-[7px] saturate-[1.4]"
         style={{
           background: `
           radial-gradient(circle at 67% 39%, rgba(28, 206, 255, 0.18), transparent 30rem),
           radial-gradient(circle at 78% 28%, rgba(255, 55, 221, 0.12), transparent 24rem)
         `,
-          animation: 'heroAuraOnly 5.5s ease-in-out infinite alternate',
+          animation: 'heroAuraOnly 5.5s ease-in-out 2 alternate forwards',
         }}
       />
       <canvas

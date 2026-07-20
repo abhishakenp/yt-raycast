@@ -687,6 +687,19 @@ export default defineSchema({
     createdAt: v.number(),
   }).index('by_sessionId', ['sessionId']),
 
+  // One cached public-gallery preview PNG per session. The blob lives in
+  // Convex file storage; this row is replaced in-place when session updatedAt
+  // changes so storage grows by session count, not by every cache-bust version.
+  galleryPreviewImages: defineTable({
+    sessionId: v.id('sessions'),
+    storageId: v.id('_storage'),
+    cacheVersion: v.string(),
+    contentType: v.string(),
+    size: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index('by_sessionId', ['sessionId']),
+
   // AI-generated custom languages created from the dashboard language picker.
   // When a user types a language not in the static KNOWN_LANGUAGES list, the
   // AI generates a native-script name + font family and stores it here so all
