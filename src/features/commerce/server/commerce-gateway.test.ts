@@ -304,25 +304,29 @@ describe('Medusa commerce gateway', () => {
     expect(invalidFetch).not.toHaveBeenCalled()
   })
 
-  it('rejects cart metadata attempts to rebind tenant A to tenant B before provider access', async () => {
+  it('rejects every cart metadata update before provider access', async () => {
     const fetch = vi.fn()
     const gateway = new MedusaCommerceGateway(tenantA, {
       correlationId: 'metadata-correlation',
       fetch,
     })
 
-    await expect(
-      gateway.updateCart('cart_123', {
-        metadata: {
-          gift_message: 'Happy birthday',
-          ship_fast_scope: 'deployments',
-          ship_fast_tenant: 'tenant-b',
-        },
-      }),
-    ).rejects.toMatchObject({
-      commerceError: { code: 'RESERVED_CART_METADATA' },
-      status: 400,
-    })
+    for (const metadata of [
+      null,
+      { gift_message: 'Happy birthday' },
+      {
+        gift_message: 'Happy birthday',
+        ship_fast_scope: 'deployments',
+        ship_fast_tenant: 'tenant-b',
+      },
+    ]) {
+      await expect(
+        gateway.updateCart('cart_123', { metadata }),
+      ).rejects.toMatchObject({
+        commerceError: { code: 'RESERVED_CART_METADATA' },
+        status: 400,
+      })
+    }
     expect(fetch).not.toHaveBeenCalled()
   })
 
@@ -503,6 +507,24 @@ describe('Medusa commerce gateway', () => {
       commerceError: { code: 'COMMERCE_PROVIDER_BLOCKED' },
       status: 502,
     })
+    expect(fetch).toHaveBeenCalledOnce()
+    vi.unstubAllEnvs()
+  })
+
+  it('allows a private provider from explicit trusted server configuration in production', async () => {
+    const localTenant = { ...tenantA, backendUrl: 'http://localhost:9000' }
+    const fetch = vi
+      .fn()
+      .mockResolvedValue(jsonResponse({ cart: boundCart(localTenant) }))
+
+    vi.stubEnv('NODE_ENV', 'production')
+    await expect(
+      new MedusaCommerceGateway(localTenant, {
+        allowPrivateBackendFromTrustedConfiguration: true,
+        correlationId: 'trusted-production-provider',
+        fetch,
+      }).getCart('cart_123'),
+    ).resolves.toMatchObject({ cart: { id: 'cart_123' } })
     expect(fetch).toHaveBeenCalledOnce()
     vi.unstubAllEnvs()
   })

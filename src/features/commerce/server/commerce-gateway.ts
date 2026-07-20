@@ -38,6 +38,7 @@ export type UpdateCommerceItemInput = {
 }
 
 type MedusaCommerceGatewayOptions = {
+  allowPrivateBackendFromTrustedConfiguration?: boolean
   allowPrivateBackendInDevelopment?: boolean
   bindCarts?: boolean
   correlationId: string
@@ -286,8 +287,9 @@ export class MedusaCommerceGateway {
     }
 
     if (
-      this.options.allowPrivateBackendInDevelopment === true &&
-      process.env.NODE_ENV !== 'production'
+      this.options.allowPrivateBackendFromTrustedConfiguration === true ||
+      (this.options.allowPrivateBackendInDevelopment === true &&
+        process.env.NODE_ENV !== 'production')
     ) {
       return
     }
@@ -320,11 +322,7 @@ export class MedusaCommerceGateway {
   }
 
   private assertMutableCartInput(input: JsonRecord): void {
-    if (
-      isRecord(input.metadata) &&
-      (Object.hasOwn(input.metadata, 'ship_fast_scope') ||
-        Object.hasOwn(input.metadata, 'ship_fast_tenant'))
-    ) {
+    if (Object.hasOwn(input, 'metadata')) {
       throw this.failure({
         code: 'RESERVED_CART_METADATA',
         message: 'Commerce tenant metadata cannot be changed.',
