@@ -20,8 +20,7 @@ import {
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { DotGrid } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * ElectronicsStoreHero — tech-brutalist split storefront hero for a premium
  * electronics / gadgets shop on a muted band. Asymmetric 7/5 grid: the left

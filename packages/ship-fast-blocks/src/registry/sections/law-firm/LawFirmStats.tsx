@@ -1,8 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import {} from '#/section-kit/index.ts'
-
 /**
  * LawFirmStats — the page's full ink inversion: a bg-foreground / text-background
  * credentials band that cuts in on a slanted clip-path seam. A mono uppercase

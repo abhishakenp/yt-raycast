@@ -9,21 +9,24 @@ import {
   FaqQuestion,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
- * ManufacturingFaq — a static FAQ list for a precision-manufacturing site. On a
- * muted band, a centered eyebrow + heading intro sits above a narrow column of
- * bordered card rows, each a definition-list question/answer pair with a bold
- * card-foreground question over muted answer copy. Clean, neutral, readable. Use
- * to answer common procurement questions (file formats, lead times, certs,
- * tolerances, ITAR, finishes, assembly, tracking) on machine-shop or fabricator
- * pages. Renders fully with no props via baked-in defaults.
+ * ManufacturingFaq — a heavy-industrial FAQ spec ledger for a precision-
+ * manufacturing site. On a muted band, an asymmetric header (mono index eyebrow +
+ * giant heading left, mono count right) sits above a collapsed, thick-hairline
+ * definition list: each row is an asymmetric 5/7 split pairing a giant mono Q
+ * index + bold uppercase question on the left with the muted answer copy on the
+ * right. Tech-brutalist, binary-radius, readable. Use to answer common
+ * procurement questions (file formats, lead times, certs, tolerances, ITAR,
+ * finishes, assembly, tracking) on machine-shop or fabricator pages. Renders
+ * fully with no props via baked-in defaults.
  */
 export const ManufacturingFaq = defineCapsule({
   name: 'ManufacturingFaq',
   description:
-    'A static FAQ list for a precision-manufacturing site: on a muted band, a centered eyebrow + heading intro above a narrow column of bordered card rows, each a definition-list question/answer pair with a bold card-foreground question over muted answer copy. Clean, neutral, readable. Use to answer common procurement questions (file formats, lead times, certs, tolerances, ITAR, finishes, assembly, tracking) on machine-shop or fabricator pages.',
+    'A heavy-industrial FAQ spec ledger for a precision-manufacturing site: on a muted band, an asymmetric header (mono index eyebrow + giant heading left, mono count right) above a collapsed thick-hairline definition list where each row is an asymmetric 5/7 split pairing a giant mono Q index + bold uppercase question on the left with muted answer copy on the right. Tech-brutalist, binary-radius, readable. Use to answer common procurement questions (file formats, lead times, certs, tolerances, ITAR, finishes, assembly, tracking) on machine-shop or fabricator pages.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -82,26 +85,53 @@ export const ManufacturingFaq = defineCapsule({
 
     return (
       <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
-        <Container className="max-w-4xl">
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            className="mb-16 max-w-3xl gap-0"
-            eyebrowClassName="tracking-wider text-muted-foreground"
-            titleClassName="mt-3 tracking-tight sm:text-4xl"
-          />
+        <Container className="max-w-5xl">
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              className="max-w-3xl gap-0"
+              eyebrowClassName="font-mono uppercase tracking-[0.2em] text-muted-foreground"
+              titleClassName="mt-3 font-extrabold uppercase tracking-tight sm:text-4xl"
+            />
+            <MonoTag
+              aria-hidden="true"
+              className="shrink-0 md:mb-2 md:text-right"
+            >
+              {String(items.length).padStart(2, '0')} / Answers
+            </MonoTag>
+          </div>
           <FaqAccordion asChild>
-            <dl>
-              {items.map((item) => (
-                <FaqItem key={item.question} asChild variant="bordered-lg">
-                  <div>
-                    <FaqQuestion
+            <dl className="border-t-2 border-foreground">
+              {items.map((item, i) => (
+                <FaqItem
+                  key={item.question}
+                  asChild
+                  variant="bordered-lg"
+                  className="rounded-none border-0 border-b-2 border-foreground bg-transparent p-0"
+                >
+                  <div className="grid grid-cols-1 gap-3 py-6 md:grid-cols-12 md:gap-8">
+                    <div className="md:col-span-5">
+                      <div className="flex items-start gap-4">
+                        <span
+                          aria-hidden="true"
+                          className="font-mono text-2xl font-extrabold tabular-nums leading-none text-foreground/20"
+                        >
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                        <FaqQuestion
+                          asChild
+                          className="font-bold uppercase tracking-tight text-foreground"
+                        >
+                          <dt>{item.question}</dt>
+                        </FaqQuestion>
+                      </div>
+                    </div>
+                    <FaqAnswer
                       asChild
-                      className="mb-2 font-semibold text-card-foreground"
+                      className="text-muted-foreground md:col-span-7"
                     >
-                      <dt>{item.question}</dt>
-                    </FaqQuestion>
-                    <FaqAnswer asChild>
                       <dd>{item.answer}</dd>
                     </FaqAnswer>
                   </div>

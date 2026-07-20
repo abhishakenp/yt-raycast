@@ -16,8 +16,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { DonationBand } from '#/section-kit/DonationBand.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * ChurchGive — serene editorial generosity / give section for a church or
  * faith-community site, with a giant ghost serif "Give" watermark. An

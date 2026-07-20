@@ -11,8 +11,7 @@ import {
   PersonCardBio,
 } from '#/section-kit/PersonCard.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * BlogPostAuthors — newsprint byline-ledger "About the author" card for the
  * end of an editorial blog article. A sharp hairline card in the reading

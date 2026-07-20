@@ -31,8 +31,7 @@ import {
   PricingTierFeature,
   PricingTierCta,
 } from '#/section-kit/PricingGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const BootcampPricing = defineCapsule({
   name: 'BootcampPricing',
   description:

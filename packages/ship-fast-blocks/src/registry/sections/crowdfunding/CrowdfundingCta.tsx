@@ -11,8 +11,7 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * CrowdfundingCta — a playful-bold inverted closing CTA band for a
  * crowdfunding / campaign landing page. A full-width bg-foreground inversion

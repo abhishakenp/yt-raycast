@@ -1,5 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
+import { cn } from '#/lib/utils.ts'
 import {
   OverviewSection,
   OverviewGrid,
@@ -17,12 +18,12 @@ import {
   OverviewStatLabel,
   OverviewMediaPanel,
 } from '#/section-kit/OverviewSection.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { Watermark } from '#/section-kit/Decor.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const WeddingOverview = defineCapsule({
   name: 'WeddingOverview',
   description:
-    'Reusable overview / hero section for the Wedding page family. Derived from the section template catalog to provide section-level coverage without new HTML generation: eyebrow, large heading, supporting copy, dual CTAs, feature pills, KPI strip, and an image panel rendered through the alt-driven Image component. Use when composing a wedding page or adding a focused wedding band to a larger generated site.',
+    'Reusable romantic-editorial overview / hero section for the Wedding page family. Derived from the section template catalog to provide section-level coverage without new HTML generation: on a soft muted wash with a giant ghost watermark word, a mono eyebrow chip, a serif-italic heading, supporting copy, dual sharp-cornered CTAs with press feedback, hairline feature chips, a tabular KPI strip, and an image panel rendered through the alt-driven Image component. Use when composing a wedding page or adding a focused wedding band to a larger generated site.',
   props: z.object({
     brand: z.string().optional(),
     eyebrow: z.string().optional(),
@@ -72,37 +73,57 @@ export const WeddingOverview = defineCapsule({
         ]
 
     return (
-      <OverviewSection className={props.className}>
-        <OverviewGrid>
+      <OverviewSection
+        className={cn('relative overflow-hidden bg-muted/30', props.className)}
+      >
+        <Watermark className="-top-4 -right-4 font-serif text-[10rem] font-normal italic leading-none sm:text-[15rem]">
+          &amp;
+        </Watermark>
+        <OverviewGrid className="relative">
           <OverviewContent>
-            <OverviewEyebrow>{eyebrow}</OverviewEyebrow>
-            <OverviewBrand>{brand}</OverviewBrand>
-            <OverviewHeading>{heading}</OverviewHeading>
+            <OverviewEyebrow className="rounded-none border-border bg-background px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.2em]">
+              {eyebrow}
+            </OverviewEyebrow>
+            <OverviewBrand className="font-mono text-[11px] tracking-[0.2em]">
+              {brand}
+            </OverviewBrand>
+            <OverviewHeading className="font-serif text-4xl font-normal italic leading-[1.05] tracking-tight sm:text-5xl">
+              {heading}
+            </OverviewHeading>
             <OverviewSubheading>{subheading}</OverviewSubheading>
             <OverviewFeatures>
               {features.map((feature: string) => (
-                <OverviewFeature key={feature}>{feature}</OverviewFeature>
+                <OverviewFeature
+                  key={feature}
+                  className="rounded-none border-border bg-background font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground"
+                >
+                  {feature}
+                </OverviewFeature>
               ))}
             </OverviewFeatures>
             <OverviewCta>
               <NavbarRouteLink
-                className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+                className="inline-flex items-center justify-center rounded-none bg-primary px-7 py-3.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 active:translate-y-px"
                 href={primaryCta}
               >
                 {primaryCta}
               </NavbarRouteLink>
               <NavbarRouteLink
-                className="rounded-full border border-border bg-background px-6 py-3 text-sm font-semibold text-foreground transition hover:bg-muted"
+                className="inline-flex items-center justify-center rounded-none border border-border bg-background px-7 py-3.5 text-sm font-medium text-foreground transition-colors hover:bg-muted active:translate-y-px"
                 href={secondaryCta}
               >
                 {secondaryCta}
               </NavbarRouteLink>
             </OverviewCta>
-            <OverviewStats>
+            <OverviewStats className="border-border">
               {stats.map((stat: { value: string; label: string }) => (
                 <OverviewStat key={stat.label}>
-                  <OverviewStatValue>{stat.value}</OverviewStatValue>
-                  <OverviewStatLabel>{stat.label}</OverviewStatLabel>
+                  <OverviewStatValue className="font-serif text-3xl font-normal tabular-nums">
+                    {stat.value}
+                  </OverviewStatValue>
+                  <OverviewStatLabel className="font-mono text-[11px] uppercase tracking-[0.12em]">
+                    {stat.label}
+                  </OverviewStatLabel>
                 </OverviewStat>
               ))}
             </OverviewStats>

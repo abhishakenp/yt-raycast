@@ -4,7 +4,9 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
-import { Card, ResponsiveGrid, NavbarRouteLink } from '#/section-kit/index.ts'
+import { Card } from '#/section-kit/Card.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 import { DashboardChart } from '#/section-kit/DashboardChart.tsx'
 import { Watermark } from '#/section-kit/Decor.tsx'
 

@@ -10,8 +10,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 function CodeMark({ className }: { className?: string }) {
   return (
     <svg
@@ -33,7 +32,7 @@ function CodeMark({ className }: { className?: string }) {
 export const PortfolioDevNavbar = defineCapsule({
   name: 'PortfolioDevNavbar',
   description:
-    "Sticky developer-portfolio header built on the shared SiteNav composite: a mono wordmark beside an inline </> code mark, centered desktop nav links, and a 'Hire Me' CTA that routes to Contact. Includes a real mobile drawer on small screens and omits the phone slot, matching how engineers, freelancers, and indie hackers present themselves. Use as the site-wide header for developer, engineer, or freelancer portfolios; renders fully with no props via baked-in 'alex.dev' defaults.",
+    "Sticky editorial-terminal developer-portfolio header on the shared SiteNav composite: a mono wordmark whose logo mark is an inline </> code glyph (runtime-swappable brand slot), monospace uppercase nav links, and a square-cornered mono 'Hire Me' CTA with a hard offset shadow and mechanical press feedback that routes to Contact. Includes a real mobile drawer on small screens and omits the phone slot, matching how engineers, freelancers, and indie hackers present themselves. Use as the site-wide header for developer, engineer, or freelancer portfolios; renders fully with no props via baked-in 'alex.dev' defaults.",
   props: z.object({
     /** Developer / brand handle shown as the mono wordmark. */
     brand: z.string().optional(),
@@ -58,16 +57,22 @@ export const PortfolioDevNavbar = defineCapsule({
 
     return (
       <SiteNav position="fixed" height="default" className={props.className}>
-        <NavbarBrand href={homeTarget} className="gap-3">
-          <CodeMark className="size-7 text-primary" />
+        <NavbarBrand href={homeTarget} className="gap-2.5">
           <Logo brand={brand}>
-            <LogoImage />
-            <LogoLabel className="font-mono text-lg font-semibold" />
+            <LogoImage
+              className="size-7"
+              fallback={<CodeMark className="size-7 text-primary" />}
+            />
+            <LogoLabel className="font-mono text-lg font-semibold tracking-tight" />
           </Logo>
         </NavbarBrand>
-        <NavbarNav>
+        <NavbarNav className="gap-6">
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="rounded-none font-mono text-xs uppercase tracking-[0.12em]"
+            >
               {label}
             </NavbarNavLink>
           ))}
@@ -75,7 +80,7 @@ export const PortfolioDevNavbar = defineCapsule({
         <NavbarActions>
           <NavbarCta
             variant="primary-pill"
-            className="hidden px-5 py-2.5 sm:inline-flex"
+            className="hidden rounded-none px-5 py-2.5 font-mono text-xs font-semibold uppercase tracking-[0.12em] shadow-[3px_3px_0_0] shadow-foreground transition-[transform,box-shadow,background-color] duration-150 hover:bg-primary/90 active:translate-x-[1.5px] active:translate-y-[1.5px] active:shadow-none motion-reduce:transform-none sm:inline-flex"
             href={ctaTarget}
           >
             {ctaLabel}

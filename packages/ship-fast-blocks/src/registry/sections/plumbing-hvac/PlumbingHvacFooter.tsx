@@ -19,24 +19,26 @@ import {
 } from '#/section-kit/SiteFooter.tsx'
 
 /**
- * PlumbingHvacFooter — a multi-column site footer for a plumbing & HVAC trade
- * site. Thin configuration over the shared `SiteFooter` composite: a pipe/
- * droplet brand mark + wordmark, a tagline, a social row, and a responsive grid
- * of link columns (Services / Service Area / Company / Contact with address,
- * phone, and email); below, a bordered-top bottom bar with an auto-updating
- * copyright line and optional legal links. The brand, every column link, and
- * each social link route through section-kit route links. Use as the closing footer for
- * plumber, HVAC, or other home-service sites. Renders fully with no props via
- * baked-in "Pipeworks Plumbing & HVAC" defaults.
+ * PlumbingHvacFooter — a trade-industrial multi-column site footer for a
+ * plumbing & HVAC site. Thin configuration over the shared `SiteFooter`
+ * composite in a tech-brutalist-lite key: a border-t-2 top rule over a squared
+ * pipe/droplet brand mark + wordmark, a tagline, a mono social row, and a
+ * responsive grid of link columns (Services / Service Area / Company / Contact
+ * with address, phone, and email) with mono uppercase border-b-2 column titles
+ * and block w-fit links; below, a border-t-2 bottom bar with a mono
+ * auto-updating copyright line and optional mono legal links. The brand, every
+ * column link, and each social link route through section-kit route links. Use
+ * as the closing footer for plumber, HVAC, or other home-service sites. Renders
+ * fully with no props via baked-in "Pipeworks Plumbing & HVAC" defaults.
  */
 const PipeMark = () => (
   <span
-    className="grid size-9 place-items-center rounded-lg bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm"
+    className="grid size-7 place-items-center rounded-none bg-foreground text-background"
     aria-hidden="true"
   >
     <svg
-      width="20"
-      height="20"
+      width="18"
+      height="18"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -52,7 +54,7 @@ const PipeMark = () => (
 export const PlumbingHvacFooter = defineCapsule({
   name: 'PlumbingHvacFooter',
   description:
-    'Multi-column site footer for a plumbing & HVAC trade site built on the shared SiteFooter composite: a pipe/droplet brand mark + wordmark, a tagline, a social row, and a responsive grid of link columns (Services / Service Area / Company / Contact with address, phone, and email); below, a bordered-top bottom bar with an auto-updating copyright line and optional legal links. The brand, every column link, and each social link route through section-kit route links. Use as the closing footer for plumber, HVAC, or other home-service sites.',
+    'Trade-industrial multi-column site footer for a plumbing & HVAC site built on the shared SiteFooter composite: a border-t-2 top rule over a squared pipe/droplet brand mark + wordmark, a tagline, a mono social row, and a responsive grid of link columns (Services / Service Area / Company / Contact with address, phone, and email) with mono uppercase border-b-2 column titles and block w-fit links; below, a border-t-2 bottom bar with a mono auto-updating copyright line and optional mono legal links. The brand, every column link, and each social link route through section-kit route links. Use as the closing footer for plumber, HVAC, or other home-service sites.',
   props: z.object({
     /** Brand / company name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -121,42 +123,61 @@ export const PlumbingHvacFooter = defineCapsule({
       : ['Privacy', 'Terms', 'Licensing']
 
     return (
-      <SiteFooter className={props.className}>
+      <SiteFooter
+        className={`border-t-2 border-foreground ${props.className ?? ''}`}
+      >
         <FooterContent>
           <FooterGrid>
             <FooterBrand
               brand={brand}
               brandMark={<PipeMark />}
-              brandClassName={'text-lg font-bold'}
+              brandClassName={'text-lg font-extrabold tracking-tight'}
             >
-              <FooterTagline>
+              <FooterTagline className="max-w-xs">
                 {props.tagline ??
                   'Licensed, insured, and available 24/7 for all your plumbing and HVAC needs. Honest work, fair prices, guaranteed.'}
               </FooterTagline>
               <FooterSocial>
                 {social.map((s) => (
-                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  <FooterSocialLink
+                    key={s.label}
+                    className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {s.label}
+                  </FooterSocialLink>
                 ))}
               </FooterSocial>
             </FooterBrand>
             {columns.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
-                <FooterColumnList>
+                <FooterColumnTitle className="border-b-2 border-foreground pb-2 font-mono text-[11px] uppercase tracking-[0.2em] text-foreground">
+                  {col.title}
+                </FooterColumnTitle>
+                <FooterColumnList className="mt-4">
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink
+                      key={link}
+                      className="block w-fit transition-colors hover:text-foreground"
+                    >
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
-          <FooterBottom>
-            <FooterCopyright>
+          <FooterBottom className="border-t-2 border-foreground">
+            <FooterCopyright className="font-mono text-xs uppercase tracking-[0.12em]">
               {props.note ?? 'License #PL-0042189 • All rights reserved.'}
             </FooterCopyright>
             <FooterLegal>
               {legal.map((l) => (
-                <FooterLink key={l}>{l}</FooterLink>
+                <FooterLink
+                  key={l}
+                  className="block w-fit font-mono text-xs uppercase tracking-[0.12em] transition-colors hover:text-foreground"
+                >
+                  {l}
+                </FooterLink>
               ))}
             </FooterLegal>
           </FooterBottom>

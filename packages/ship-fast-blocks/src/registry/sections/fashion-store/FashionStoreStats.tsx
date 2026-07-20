@@ -1,8 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import {} from '#/section-kit/index.ts'
-
 /**
  * FashionStoreStats — slim brand stats ledger for a luxury fashion store. A
  * hairline top-and-bottom bordered band with a 2-to-4 column collapsed-border

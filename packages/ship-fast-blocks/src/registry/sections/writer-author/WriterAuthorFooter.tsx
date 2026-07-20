@@ -19,12 +19,13 @@ import {
 } from '#/section-kit/SiteFooter.tsx'
 
 /**
- * WriterAuthorFooter — a rich, multi-column closing footer for a literary
- * author or novelist site. Thin configuration over the shared `SiteFooter`
- * composite: a serif wordmark beside an inline open-book feather mark, a
- * tagline, a social row (Instagram, Twitter, Goodreads), and a responsive grid
- * of link columns covering Books, About, and Connect. A small legal row
- * (Privacy, Terms) and an auto-updating copyright line sit in the bottom bar.
+ * WriterAuthorFooter — a rich, literary-editorial closing footer for a
+ * novelist site. Thin configuration over the shared `SiteFooter` composite: a
+ * serif wordmark beside an inline open-book feather mark, a tagline, a social
+ * row (Instagram, Twitter, Goodreads), and a responsive grid of link columns
+ * (Books, About, Connect) whose titles read as mono manuscript labels and whose
+ * links stack as block, hover-underlined w-fit rows. A mono legal row (Privacy,
+ * Terms) and an auto-updating copyright line sit in the bordered bottom bar.
  * Use as the site-wide footer for author landing pages, book-launch microsites,
  * poets, essayists, or any writer's personal brand. Renders fully with no props
  * via baked-in "Eleanor Vance" defaults.
@@ -49,10 +50,15 @@ function FeatherMark({ className }: { className?: string }) {
   )
 }
 
+const columnTitleClassName =
+  'font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground'
+const footerLinkClassName =
+  'block w-fit text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline'
+
 export const WriterAuthorFooter = defineCapsule({
   name: 'WriterAuthorFooter',
   description:
-    'Rich, multi-column closing footer for a literary author or novelist site: a responsive grid with a brand block (serif wordmark + open-book feather mark + tagline + social row of Instagram, Twitter, Goodreads), plus Books, About, and Connect link columns; a bordered-top bottom bar holds a Privacy/Terms legal row and an auto-updating copyright line. Every brand, social, and column link routes through section-kit route links. Use as the site-wide footer for author landing pages, book-launch microsites, poets, or essayists.',
+    'Rich, literary-editorial closing footer for a novelist site: a responsive grid with a brand block (serif wordmark + open-book feather mark + tagline + social row of Instagram, Twitter, Goodreads), plus Books, About, and Connect link columns whose titles read as mono manuscript labels and whose links stack as block, hover-underlined w-fit rows; a bordered-top bottom bar holds a mono Privacy/Terms legal row and an auto-updating copyright line. Every brand, social, and column link routes through section-kit route links. Use as the site-wide footer for author landing pages, book-launch microsites, poets, or essayists.',
   props: z.object({
     /** Author / brand name shown as the serif wordmark. */
     brand: z.string().optional(),
@@ -104,39 +110,53 @@ export const WriterAuthorFooter = defineCapsule({
           <FooterGrid>
             <FooterBrand
               brand={props.brand ?? 'Eleanor Vance'}
-              brandMark={<FeatherMark className="size-8 text-primary" />}
-              brandClassName={'font-serif text-xl font-medium'}
+              brandMark={<FeatherMark className="size-7 text-primary" />}
+              brandClassName={'font-serif text-xl font-medium tracking-tight'}
             >
-              <FooterTagline>
+              <FooterTagline className="mt-3 font-serif text-sm italic text-muted-foreground">
                 {props.tagline ??
                   'Novelist. Storyteller. Letters from the page.'}
               </FooterTagline>
               <FooterSocial>
                 {social.map((s) => (
-                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  <FooterSocialLink
+                    key={s.label}
+                    className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground"
+                  >
+                    {s.label}
+                  </FooterSocialLink>
                 ))}
               </FooterSocial>
             </FooterBrand>
             {columns.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnTitle className={columnTitleClassName}>
+                  {col.title}
+                </FooterColumnTitle>
                 <FooterColumnList>
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink key={link} className={footerLinkClassName}>
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
           <FooterBottom>
-            <FooterCopyright>
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
               {props.note ?? 'All rights reserved.'}
             </FooterCopyright>
             <FooterLegal>
               {props.legal?.length
                 ? props.legal
                 : ['Privacy', 'Terms'].map((l) => (
-                    <FooterLink key={l}>{l}</FooterLink>
+                    <FooterLink
+                      key={l}
+                      className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground"
+                    >
+                      {l}
+                    </FooterLink>
                   ))}
             </FooterLegal>
           </FooterBottom>

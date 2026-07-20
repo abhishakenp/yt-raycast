@@ -1,5 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
+import { cn } from '#/lib/utils.ts'
 import {
   OverviewSection,
   OverviewGrid,
@@ -17,12 +18,12 @@ import {
   OverviewStatLabel,
   OverviewMediaPanel,
 } from '#/section-kit/OverviewSection.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { DotGrid, Watermark } from '#/section-kit/Decor.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const PortfolioDevOverview = defineCapsule({
   name: 'PortfolioDevOverview',
   description:
-    'Reusable overview / hero section for the Portfolio Dev page family. Derived from the section template catalog to provide section-level coverage without new HTML generation: eyebrow, large heading, supporting copy, dual CTAs, feature pills, KPI strip, and an image panel rendered through the alt-driven Image component. Use when composing a portfolio dev page or adding a focused portfolio dev band to a larger generated site.',
+    'Reusable editorial-terminal overview / hero band for the Portfolio Dev page family. Derived from the section template catalog to provide section-level coverage without new HTML generation: a mono eyebrow and brand rule, a giant extrabold heading, supporting copy, dual square-cornered mono CTAs with press feedback, monospace feature chips, a tabular KPI strip, and an alt-driven image panel — over a faint dot grid and a giant ghost `</>` watermark. Use when composing a portfolio dev page or adding a focused portfolio dev band to a larger generated site.',
   props: z.object({
     brand: z.string().optional(),
     eyebrow: z.string().optional(),
@@ -73,37 +74,62 @@ export const PortfolioDevOverview = defineCapsule({
         ]
 
     return (
-      <OverviewSection className={props.className}>
-        <OverviewGrid>
+      <OverviewSection className={cn('relative bg-muted/40', props.className)}>
+        <DotGrid
+          density="default"
+          tone="faint"
+          fade="bottom"
+          className="inset-x-0 top-0 h-56"
+        />
+        <Watermark className="-bottom-14 -left-4 font-mono text-[8rem] leading-none sm:text-[13rem]">
+          {'</>'}
+        </Watermark>
+        <OverviewGrid className="relative">
           <OverviewContent>
-            <OverviewEyebrow>{eyebrow}</OverviewEyebrow>
-            <OverviewBrand>{brand}</OverviewBrand>
-            <OverviewHeading>{heading}</OverviewHeading>
+            <OverviewEyebrow className="mb-5 inline-flex items-center gap-2 rounded-none border-0 bg-transparent p-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+              <span aria-hidden="true" className="size-2 bg-primary" />
+              {eyebrow}
+            </OverviewEyebrow>
+            <OverviewBrand className="mb-4 font-mono text-[11px] tracking-[0.2em]">
+              {brand}
+            </OverviewBrand>
+            <OverviewHeading className="text-4xl font-extrabold leading-[0.95] tracking-tighter sm:text-5xl">
+              {heading}
+            </OverviewHeading>
             <OverviewSubheading>{subheading}</OverviewSubheading>
             <OverviewFeatures>
               {features.map((feature: string) => (
-                <OverviewFeature key={feature}>{feature}</OverviewFeature>
+                <OverviewFeature
+                  key={feature}
+                  className="rounded-none border-border bg-background font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground"
+                >
+                  {feature}
+                </OverviewFeature>
               ))}
             </OverviewFeatures>
             <OverviewCta>
               <NavbarRouteLink
-                className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+                className="inline-flex items-center justify-center rounded-none bg-primary px-6 py-3 font-mono text-xs font-semibold uppercase tracking-[0.12em] text-primary-foreground shadow-[4px_4px_0_0] shadow-foreground transition-[transform,box-shadow,background-color] duration-150 hover:bg-primary/90 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none motion-reduce:transform-none"
                 href={primaryCta}
               >
                 {primaryCta}
               </NavbarRouteLink>
               <NavbarRouteLink
-                className="rounded-full border border-border bg-background px-6 py-3 text-sm font-semibold text-foreground transition hover:bg-muted"
+                className="inline-flex items-center justify-center rounded-none border border-foreground/25 bg-background px-6 py-3 font-mono text-xs font-semibold uppercase tracking-[0.12em] text-foreground transition-[background-color,transform] duration-150 hover:bg-muted active:translate-y-px motion-reduce:transform-none"
                 href={secondaryCta}
               >
                 {secondaryCta}
               </NavbarRouteLink>
             </OverviewCta>
-            <OverviewStats>
+            <OverviewStats className="border-border">
               {stats.map((stat: { value: string; label: string }) => (
                 <OverviewStat key={stat.label}>
-                  <OverviewStatValue>{stat.value}</OverviewStatValue>
-                  <OverviewStatLabel>{stat.label}</OverviewStatLabel>
+                  <OverviewStatValue className="font-semibold tabular-nums tracking-tight">
+                    {stat.value}
+                  </OverviewStatValue>
+                  <OverviewStatLabel className="font-mono text-[11px] uppercase tracking-[0.16em]">
+                    {stat.label}
+                  </OverviewStatLabel>
                 </OverviewStat>
               ))}
             </OverviewStats>

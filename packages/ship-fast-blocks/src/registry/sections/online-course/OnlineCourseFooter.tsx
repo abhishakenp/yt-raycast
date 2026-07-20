@@ -1,6 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { cn } from '#/lib/utils.ts'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   SiteFooter,
   FooterContent,
@@ -19,14 +21,17 @@ import {
 } from '#/section-kit/SiteFooter.tsx'
 
 /**
- * OnlineCourseFooter — a rich, multi-column closing footer for an online-course
- * / e-learning site. Thin configuration over the shared SiteFooter composite: a
- * semibold wordmark beside a book/open-pages brand mark, a tagline, a social
- * row (Twitter / LinkedIn / YouTube), and a responsive grid of link columns
- * (Learn, Platform, Company, Support). A bordered-top bottom bar carries an
- * auto-updating copyright line and legal links. Use as the site-wide footer for
- * course platforms, e-learning marketplaces, MOOCs, bootcamps, or academies.
- * Renders fully with no props.
+ * OnlineCourseFooter — "Curriculum LMS" closing footer for an online-course /
+ * e-learning site. Thin configuration over the shared SiteFooter composite: a
+ * hairline-topped band on the page background with an asymmetric 12-column grid
+ * — a brand block (semibold wordmark + open-book mark + tagline + square
+ * bracketed mono social chips) on the left, and link columns (Learn, Platform,
+ * Company, Support) whose headings render as bracketed mono labels on the
+ * right. A bordered-top bottom bar splits an auto-updating copyright line from
+ * mono legal links and closes with a decorative "[ EOF ]" marker; a giant ghost
+ * "01" watermark bleeds behind. Use as the site-wide footer for course
+ * platforms, e-learning marketplaces, MOOCs, bootcamps, or academies. Renders
+ * fully with no props.
  */
 function BookMark({ className }: { className?: string }) {
   return (
@@ -48,7 +53,7 @@ function BookMark({ className }: { className?: string }) {
 export const OnlineCourseFooter = defineCapsule({
   name: 'OnlineCourseFooter',
   description:
-    'Rich, multi-column closing footer for an online-course / e-learning site built on the shared SiteFooter composite: a brand block (semibold wordmark + book/open-pages mark + tagline + social row of Twitter/LinkedIn/YouTube) beside link columns (Learn, Platform, Company, Support), with a bordered-top bottom bar holding an auto-updating copyright line and legal links. Use as the site-wide footer for course platforms, e-learning marketplaces, MOOCs, bootcamps, or academies.',
+    'Curriculum-LMS closing footer for an online-course / e-learning site built on the shared SiteFooter composite: a hairline-topped band on the page background with an asymmetric 12-column grid — a brand block (semibold wordmark + open-book mark + tagline + square bracketed mono social chips of Twitter/LinkedIn/YouTube) beside link columns (Learn, Platform, Company, Support) with bracketed mono headings, a bordered-top bottom bar splitting an auto-updating copyright line from mono legal links and a decorative "[ EOF ]" marker, over a giant ghost "01" watermark. Use as the site-wide footer for course platforms, e-learning marketplaces, MOOCs, bootcamps, or academies.',
   props: z.object({
     /** Platform / brand name shown as the wordmark. */
     brand: z.string().optional(),
@@ -97,44 +102,82 @@ export const OnlineCourseFooter = defineCapsule({
       : ['Privacy', 'Terms', 'Refunds']
 
     return (
-      <SiteFooter className={props.className}>
-        <FooterContent>
-          <FooterGrid>
+      <SiteFooter
+        className={cn(
+          'relative overflow-hidden border-t border-border bg-background',
+          props.className,
+        )}
+      >
+        <Watermark className="-bottom-8 -right-2 font-mono text-[7rem] sm:text-[12rem]">
+          01
+        </Watermark>
+        <FooterContent className="relative">
+          <FooterGrid className="grid gap-10 md:grid-cols-12">
             <FooterBrand
               brand={props.brand ?? 'LearnSpace'}
               brandMark={<BookMark className="size-8 text-primary" />}
               brandClassName={'font-semibold tracking-tight'}
+              className="md:col-span-4"
             >
               <FooterTagline>
                 {props.tagline ??
                   'Practical, project-based courses that turn curiosity into a career.'}
               </FooterTagline>
-              <FooterSocial>
+              <FooterSocial className="mt-5">
                 {social.map((s) => (
-                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  <FooterSocialLink
+                    key={s.label}
+                    className="border border-border px-2.5 py-1 font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+                  >
+                    {s.label}
+                  </FooterSocialLink>
                 ))}
               </FooterSocial>
             </FooterBrand>
             {columns.map((col) => (
-              <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
-                <FooterColumnList>
+              <FooterColumn key={col.title} className="md:col-span-2">
+                <FooterColumnTitle className="font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground">
+                  <span aria-hidden="true" className="text-primary">
+                    [{' '}
+                  </span>
+                  {col.title}
+                  <span aria-hidden="true" className="text-primary">
+                    {' '}
+                    ]
+                  </span>
+                </FooterColumnTitle>
+                <FooterColumnList className="mt-4 space-y-2.5">
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink
+                      key={link}
+                      className="block w-fit text-sm text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
-          <FooterBottom>
-            <FooterCopyright>
+          <FooterBottom className="mt-12 flex flex-col justify-between gap-4 border-t border-border pt-6 sm:flex-row sm:items-center">
+            <FooterCopyright className="text-sm text-muted-foreground">
               {props.note ?? 'All rights reserved.'}
             </FooterCopyright>
-            <FooterLegal>
-              {legal.map((l) => (
-                <FooterLink key={l}>{l}</FooterLink>
-              ))}
-            </FooterLegal>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              <FooterLegal className="flex flex-wrap gap-x-5 gap-y-2">
+                {legal.map((l) => (
+                  <FooterLink
+                    key={l}
+                    className="block w-fit font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {l}
+                  </FooterLink>
+                ))}
+              </FooterLegal>
+              <MonoTag tone="faint" aria-hidden="true">
+                [ EOF ]
+              </MonoTag>
+            </div>
           </FooterBottom>
         </FooterContent>
       </SiteFooter>

@@ -12,24 +12,25 @@ import {
   FeatureListItemDescription,
   FeatureListItemBody,
 } from '#/section-kit/FeatureListItem.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * LinkInBioFeatures — the core link hub of a Linktree / Bento style link-in-bio
- * page: a centered narrow column holding a vertical stack of big, bold,
- * full-width tappable link buttons. An optional small uppercase eyebrow ("My
- * Links") sits above the stack. Each button is large and chunky — a leading
- * rounded icon tile tinted in the brand/primary color, a prominent title plus a
- * supporting subtitle, and a trailing open-link arrow chevron, or a small pill
- * badge (e.g. "New") when set. Every button routes through section-kit route links. This is
- * the centerpiece / main call-to-action area of a creator, influencer, or
- * personal "all my links in one place" landing page. Renders fully with no
- * props.
+ * page in the "chunky rounded stack" language: a centered narrow column holding
+ * a vertical stack of big, bold, full-width tappable link buttons. An optional
+ * uppercase eyebrow ("My Links") sits above the stack as a rounded-full mono
+ * sticker chip. Each button is large and chunky — a rounded-2xl 2px-ruled block
+ * with a hard offset token shadow and press feedback, a leading square icon tile
+ * tinted in the brand/primary color, a prominent title plus a supporting
+ * subtitle, and a trailing open-link arrow chevron, or a small rotated pill
+ * sticker badge (e.g. "New") when set. Every button routes through section-kit
+ * route links. This is the centerpiece / main call-to-action area of a creator,
+ * influencer, or personal "all my links in one place" landing page. Renders
+ * fully with no props.
  */
 export const LinkInBioFeatures = defineCapsule({
   name: 'LinkInBioFeatures',
   description:
-    "Core LINK HUB of a Linktree / Bento style LINK-IN-BIO page — a centered narrow column with a vertical stack of BIG, bold, full-width tappable link buttons (the whole point of the page). An optional small uppercase eyebrow ('My Links') sits on top. Each large link button has a leading rounded icon tile tinted in the primary/brand color (globe | shop | mail | calendar | music | video), a prominent title + supporting subtitle, and a trailing open-link arrow chevron, or a small pill badge (e.g. 'New') when set. Every button routes through section-kit route links. Use as the centerpiece / primary call-to-action area of a creator, influencer, musician, or personal 'all my links in one place' landing page, bio-link hub, or social-profile splash. Supply content only — the eyebrow and the links list; the section owns all layout and styling.",
+    "Core LINK HUB of a Linktree / Bento style LINK-IN-BIO page in a chunky-rounded language — a centered narrow column with a vertical stack of BIG, bold, full-width tappable link buttons (the whole point of the page). An optional uppercase eyebrow ('My Links') sits on top as a rounded-full mono sticker chip. Each large link button is a rounded-2xl 2px-ruled block with a hard offset token shadow and press feedback, a leading square icon tile tinted in the primary/brand color (globe | shop | mail | calendar | music | video), a prominent title + supporting subtitle, and a trailing open-link arrow chevron, or a small rotated pill sticker badge (e.g. 'New') when set. Every button routes through section-kit route links. Use as the centerpiece / primary call-to-action area of a creator, influencer, musician, or personal 'all my links in one place' landing page, bio-link hub, or social-profile splash. Supply content only — the eyebrow and the links list; the section owns all layout and styling.",
   props: z.object({
     /** Small uppercase label above the link stack (e.g. "My Links"). */
     eyebrow: z.string().optional(),
@@ -214,12 +215,14 @@ export const LinkInBioFeatures = defineCapsule({
       <section className={cn('pt-28 pb-10', props.className)}>
         <Container className="max-w-md">
           {eyebrow ? (
-            <Eyebrow
-              variant="text"
-              className="mb-6 block text-center text-sm font-medium uppercase tracking-widest text-muted-foreground"
-            >
-              {eyebrow}
-            </Eyebrow>
+            <div className="mb-7 flex justify-center">
+              <Eyebrow
+                variant="text"
+                className="inline-flex -rotate-1 items-center rounded-full border-2 border-foreground bg-background px-3.5 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-foreground shadow-[2px_2px_0_0] shadow-foreground/25"
+              >
+                {eyebrow}
+              </Eyebrow>
+            </div>
           ) : null}
 
           <nav aria-label="Links" className="space-y-4">
@@ -227,19 +230,19 @@ export const LinkInBioFeatures = defineCapsule({
               <FeatureListItem
                 key={link.title}
                 asChild
-                className="group flex w-full cursor-pointer items-center gap-4 rounded-2xl border bg-card px-5 py-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+                className="group flex w-full cursor-pointer items-center gap-4 rounded-2xl border-2 border-foreground bg-card px-5 py-4 text-left shadow-[4px_4px_0_0] shadow-foreground transition-all hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0] hover:shadow-foreground active:translate-y-px active:shadow-[2px_2px_0_0] active:shadow-foreground"
               >
                 <NavbarRouteLink href={linkTargets[i] ?? link.title}>
                   <FeatureListItemIcon
                     shape="square"
-                    className="size-11 bg-primary/10 text-primary"
+                    className="size-12 rounded-xl border-2 border-foreground bg-primary/10 text-primary"
                   >
                     {linkIcons[link.icon]}
                   </FeatureListItemIcon>
                   <FeatureListItemBody className="min-w-0 flex-1">
                     <FeatureListItemTitle
                       asChild
-                      className="block truncate font-semibold text-foreground"
+                      className="block truncate text-base font-bold text-foreground"
                     >
                       <span>{link.title}</span>
                     </FeatureListItemTitle>
@@ -251,11 +254,11 @@ export const LinkInBioFeatures = defineCapsule({
                     </FeatureListItemDescription>
                   </FeatureListItemBody>
                   {link.badge ? (
-                    <span className="shrink-0 rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold text-secondary-foreground">
+                    <span className="shrink-0 -rotate-3 rounded-full border-2 border-foreground bg-primary px-2.5 py-1 text-xs font-bold text-primary-foreground shadow-[2px_2px_0_0] shadow-foreground">
                       {link.badge}
                     </span>
                   ) : (
-                    <span className="shrink-0 text-muted-foreground transition-colors group-hover:text-foreground">
+                    <span className="shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground">
                       <ExternalArrow />
                     </span>
                   )}

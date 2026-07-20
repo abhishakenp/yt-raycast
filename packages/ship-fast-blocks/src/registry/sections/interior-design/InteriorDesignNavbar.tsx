@@ -11,8 +11,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
  * InteriorDesignNavbar — fixed, translucent editorial-spatial top navigation bar
  * for an upscale interior-design / architecture studio site. A backdrop-blurred,

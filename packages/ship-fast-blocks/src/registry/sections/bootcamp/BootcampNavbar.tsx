@@ -11,8 +11,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
  * BootcampNavbar — "Terminal Classroom" sticky top navigation for a coding
  * bootcamp / career-school landing page. A blurred, hairline-bordered header

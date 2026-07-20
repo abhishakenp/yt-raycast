@@ -12,8 +12,7 @@ import {
 } from '#/section-kit/PortfolioGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { MonoTag } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * InteriorDesignProjects — editorial-spatial project portfolio gallery for an
  * upscale interior-design / architecture studio. An asymmetric header pairs a

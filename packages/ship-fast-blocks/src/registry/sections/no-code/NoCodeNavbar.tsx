@@ -9,7 +9,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
+} from '#/section-kit/SiteNav.tsx'
 import {
   SaasAccountButton,
   SaasIntentBadge,
@@ -21,19 +21,22 @@ import {
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
- * NoCodeNavbar — sticky, translucent top navigation bar for a clean, bright
- * no-code / app-builder SaaS site. A backdrop-blurred, border-bottomed header
- * pinned to the top with an inverse cube-glyph logo tile beside the brand name
- * on the left, a centered set of nav links (desktop), and a "Sign in" text link
- * plus a filled primary CTA on the right. Every link and CTA route through
- * route hrefs so labels can drive page-switching. Use as the sticky site header
- * for no-code / website-builder / page-builder / SaaS platform landing pages.
- * Renders fully with no props via baked-in "Buildr" defaults.
+ * NoCodeNavbar — sticky, block-builder-kinetic top navigation bar for a no-code
+ * / drag-and-drop app-builder SaaS site. A backdrop-blurred, hairline-bottomed
+ * header pinned to the top: a sharp stacked-blocks brand glyph beside the
+ * product name on the left, mono uppercase nav links in the center (desktop),
+ * and command plan search, Shoo profile dropdown, selected-plan badge plus a
+ * square hard-offset-shadow "Start building free" CTA with press feedback on
+ * the right. Every link routes through route hrefs so labels can drive
+ * page-switching while conversion CTAs write to shared Lakebed state. Use as
+ * the sticky site header for no-code / website-builder / page-builder / SaaS
+ * platform landing pages. Renders fully with no props via baked-in "Buildr"
+ * defaults.
  */
 export const NoCodeNavbar = defineCapsule({
   name: 'NoCodeNavbar',
   description:
-    'Sticky translucent top navigation bar for a clean, bright no-code / app-builder SaaS site: backdrop-blurred, border-bottomed header pinned to the top with an inverse cube-glyph logo tile + brand name, centered nav links, command plan search, Shoo profile dropdown, selected-plan badge, scoped fullstack CTA, and a reusable Sheet mobile drawer. Nav links route through route hrefs while conversion CTAs write to shared Lakebed state.',
+    'Sticky block-builder-kinetic top navigation bar for a no-code / app-builder SaaS site: backdrop-blurred, hairline-bottomed header pinned to the top with a sharp stacked-blocks brand glyph + product name, mono uppercase nav links, command plan search, Shoo profile dropdown, selected-plan badge, a square hard-offset-shadow scoped fullstack CTA with press feedback, and a reusable Sheet mobile drawer. Nav links route through route hrefs while conversion CTAs write to shared Lakebed state.',
   props: z.object({
     /** Brand / product name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -58,55 +61,59 @@ export const NoCodeNavbar = defineCapsule({
     const homeTarget = props.homeTarget ?? nav[0]
 
     const LogoMark = ({ className }: { className?: string }) => (
-      <span
-        className={cn(
-          'grid place-items-center rounded-lg bg-foreground text-background',
-          className,
-        )}
+      <svg
+        className={className}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
         aria-hidden="true"
       >
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-        </svg>
-      </span>
+        <path d="M12 2 2 7l10 5 10-5-10-5z" />
+        <path d="M2 17l10 5 10-5" />
+        <path d="M2 12l10 5 10-5" />
+      </svg>
     )
 
     return (
       <SiteNav
         position="sticky"
         height="compact"
-        className={cn('bg-background/80 backdrop-blur-md', props.className)}
+        className={cn(
+          'border-b border-border bg-background/80 backdrop-blur-md',
+          props.className,
+        )}
         containerClassName="max-w-7xl px-4 sm:px-6 lg:px-8"
       >
-        <NavbarBrand href={homeTarget} className="flex items-center gap-2">
-          <BrandLogo brand={brand}>
-            <LogoImage fallback={<LogoMark className="size-8" />} />
-            <LogoLabel className="text-xl font-semibold tracking-tight" />
+        <NavbarBrand href={homeTarget} className="gap-2">
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage
+              className="size-7"
+              fallback={<LogoMark className="size-7 text-primary" />}
+            />
+            <LogoLabel className="text-lg font-bold tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="font-mono text-xs uppercase tracking-[0.14em]"
+            >
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
 
-        <NavbarActions className="gap-4">
+        <NavbarActions className="gap-3">
           <SaasIntentBadge lakebed={lakebed} />
           <SaasSearchButton
             lakebed={lakebed}
-            buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+            buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground lg:inline-flex"
           />
           <SaasAccountButton
             lakebed={lakebed}
@@ -124,7 +131,7 @@ export const NoCodeNavbar = defineCapsule({
                 Starting
               </>
             }
-            className="hidden items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
+            className="hidden items-center gap-2 whitespace-nowrap rounded-none bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-[3px_3px_0_0] shadow-foreground transition-[transform,box-shadow,background-color] duration-150 hover:bg-primary/90 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none motion-reduce:transform-none disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
           >
             {cta}
           </SaasPlanActionButton>

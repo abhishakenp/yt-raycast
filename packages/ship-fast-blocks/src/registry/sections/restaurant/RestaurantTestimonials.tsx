@@ -11,6 +11,9 @@ import {
   TestimonialName,
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
+import { StarRating } from '#/section-kit/StarRating.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 
 /**
  * Coerce a generated review rating (which may arrive as a string, number, or
@@ -28,20 +31,21 @@ function coerceRating(rating: unknown): number | null {
 }
 
 /**
- * RestaurantTestimonials — 3-up guest-review wall for a restaurant page. Thin
- * configuration over the shared `TestimonialGrid` composite: a centered serif
- * heading above a responsive card grid where each card renders a star row from
- * the rating, the quoted testimonial, and a guest name paired with the review
- * source (Google, Yelp, OpenTable). The public `reviews` prop ({quote, name,
- * rating, source}) maps to the composite's items, with `source` shown as the
- * card's meta line via `company`. Use for social-proof on restaurants, bistros,
- * fine dining, or any dining venue. Renders fully with no props via baked
- * defaults.
+ * RestaurantTestimonials — editorial guest-review wall for a restaurant page.
+ * A left-aligned mono eyebrow and warm serif heading sit over a giant faint
+ * serif quotation-mark watermark, above a staggered grid of square-edged
+ * hairline-framed cards (alternating vertical offsets). Each card renders a
+ * filled star row from the rating, the quoted testimonial, and a guest name
+ * paired with a mono review-source label (Google, Yelp, OpenTable). The public
+ * `reviews` prop ({quote, name, rating, source}) maps to the composite's items,
+ * with `source` shown as the card's meta line via `company`. Use for
+ * social-proof on restaurants, bistros, fine dining, or any dining venue.
+ * Renders fully with no props via baked defaults.
  */
 export const RestaurantTestimonials = defineCapsule({
   name: 'RestaurantTestimonials',
   description:
-    '3-up guest-review wall for a restaurant page: a centered serif heading above a responsive card grid. Each card renders a filled star row matching the rating, a quoted testimonial, and an attribution row pairing the guest name with the review source (Google, Yelp, OpenTable). Use for social-proof on restaurants, bistros, fine dining, or any dining venue.',
+    'Editorial guest-review wall for a restaurant page: a left-aligned mono eyebrow and warm serif heading over a giant faint serif quotation-mark watermark, above a staggered grid of square-edged hairline-framed cards with alternating vertical offsets. Each card renders a filled star row matching the rating, a quoted testimonial, and an attribution row pairing the guest name with a mono review-source label (Google, Yelp, OpenTable). Use for social-proof on restaurants, bistros, fine dining, or any dining venue.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -96,10 +100,29 @@ export const RestaurantTestimonials = defineCapsule({
     }))
 
     return (
-      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
-        <Container>
-          <TestimonialGrid heading={heading}>
-            {items.map((t) => {
+      <section
+        className={cn(
+          'relative overflow-hidden bg-background py-16 lg:py-24',
+          props.className,
+        )}
+      >
+        <Watermark
+          aria-hidden="true"
+          className="-top-10 right-2 font-serif text-[12rem] leading-none text-foreground/[0.05] sm:text-[18rem] lg:text-[22rem]"
+        >
+          &rdquo;
+        </Watermark>
+        <Container className="relative">
+          <TestimonialGrid columns={3} className="gap-10">
+            <SectionHeading
+              align="left"
+              eyebrow="Guest book"
+              title={heading}
+              eyebrowClassName="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground"
+              titleClassName="font-serif text-4xl font-medium tracking-tight sm:text-5xl"
+              className="max-w-2xl gap-4"
+            />
+            {items.map((t, i) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -110,12 +133,27 @@ export const RestaurantTestimonials = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
+                <TestimonialCard
+                  key={__iv__.name}
+                  className={cn(
+                    'rounded-none border-foreground/15 bg-card',
+                    i % 3 === 1 && 'lg:translate-y-8',
+                  )}
+                >
+                  {__iv__.rating !== undefined && (
+                    <StarRating
+                      rating={__iv__.rating}
+                      size="sm"
+                      color="primary"
+                    />
+                  )}
+                  <TestimonialQuote className="font-serif text-lg leading-relaxed">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="mt-auto flex-col items-start gap-1 border-t border-foreground/12 pt-4">
                     <TestimonialName>{__iv__.name}</TestimonialName>
                     {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
+                      <TestimonialMeta className="font-mono text-[11px] uppercase tracking-[0.14em]">
                         {__iv__.role || __iv__.company || __iv__.meta}
                       </TestimonialMeta>
                     )}

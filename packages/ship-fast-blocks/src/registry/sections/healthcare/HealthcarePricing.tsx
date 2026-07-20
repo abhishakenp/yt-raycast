@@ -38,7 +38,7 @@ import {
 } from '#/section-kit/PricingGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { MonoTag } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const HealthcarePricing = defineCapsule({
   name: 'HealthcarePricing',
   description:

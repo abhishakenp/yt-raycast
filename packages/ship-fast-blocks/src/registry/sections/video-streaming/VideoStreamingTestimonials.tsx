@@ -4,28 +4,32 @@ import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
 import {
-  TestimonialGrid,
   TestimonialCard,
   TestimonialQuote,
   TestimonialAuthor,
   TestimonialName,
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 
 /**
- * VideoStreamingTestimonials — a 3-up subscriber-review wall for a
- * video-streaming page. Thin configuration over the shared `TestimonialGrid`
- * composite: a centered heading above a responsive card grid where each card
- * renders a star row from the rating, the quoted review, and a subscriber name
- * paired with the review source (App Store, Trustpilot, Google Play). The
+ * VideoStreamingTestimonials — an inverted, cinematic subscriber-review wall for
+ * a video-streaming page. On a bg-foreground/text-background band (token-driven,
+ * theme-adaptive) over a giant faint quotation-mark watermark: a mono slate meta
+ * rule with a review count, an asymmetric left-aligned header, and a staggered
+ * 3-up grid of sharp-cornered review cards — each with a filled star row matching
+ * the rating, a quoted review, and an attribution row pairing the subscriber name
+ * with a mono review-source slate (App Store, Trustpilot, Google Play). The
  * public `reviews` prop ({quote, name, rating, source}) maps to the composite's
- * items, with `source` shown as the card's meta line via `company`. Use for
- * social proof on streaming services or OTT apps. Renders fully with no props.
+ * cards, with `source` shown as the mono meta line via `company`. Use for social
+ * proof on streaming services, OTT apps, or on-demand video platforms. Renders
+ * fully with no props.
  */
 export const VideoStreamingTestimonials = defineCapsule({
   name: 'VideoStreamingTestimonials',
   description:
-    'A 3-up subscriber-review wall for a video-streaming page built on the shared TestimonialGrid composite: a centered heading above a responsive card grid. Each card renders a filled star row matching the rating, a quoted review, and an attribution row pairing the subscriber name with the review source (App Store, Trustpilot, Google Play). Use for social proof on streaming services, OTT apps, or on-demand video platforms.',
+    'An inverted, cinematic subscriber-review wall for a video-streaming page: on a bg-foreground/text-background band over a giant faint quotation-mark watermark, a mono slate meta rule with a review count, an asymmetric left-aligned header, and a staggered 3-up grid of sharp-cornered review cards — each with a filled star row matching the rating, a quoted review, and an attribution row pairing the subscriber name with a mono review-source slate (App Store, Trustpilot, Google Play). Tokens-only and theme-adaptive. Use for social proof on streaming services, OTT apps, or on-demand video platforms.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -77,16 +81,58 @@ export const VideoStreamingTestimonials = defineCapsule({
       company: r.source,
     }))
 
+    const StarRow = ({ rating }: { rating: number }) => {
+      const filled = Math.max(0, Math.min(5, Math.round(rating)))
+      return (
+        <div
+          className="flex items-center gap-1 text-background"
+          aria-label={`Rated ${filled} out of 5`}
+        >
+          {Array.from({ length: 5 }).map((_, i) => (
+            <svg
+              key={i}
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
+              className={cn('size-4', i >= filled && 'text-background/25')}
+            >
+              <path d="M10 1.5l2.47 5.26 5.78.62-4.32 3.9 1.2 5.72L10 14.9l-5.13 2.6 1.2-5.72L1.75 7.38l5.78-.62L10 1.5Z" />
+            </svg>
+          ))}
+        </div>
+      )
+    }
+
     return (
       <section
         className={cn(
-          'bg-background pt-28 pb-20 lg:pt-32 lg:pb-28',
+          'relative overflow-hidden bg-foreground pb-20 pt-24 text-background lg:pb-28 lg:pt-32',
           props.className,
         )}
       >
-        <Container>
-          <TestimonialGrid heading={heading}>
-            {items.map((t) => {
+        <Watermark className="-right-4 -top-16 font-serif text-[24rem] leading-none text-background/[0.06] lg:text-[32rem]">
+          &rdquo;
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-8 flex items-center justify-between gap-4 border-b border-background/20 pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-background/50">
+            <span className="flex items-center gap-3">
+              <span aria-hidden="true" className="size-2 bg-primary" />
+              Reviews
+            </span>
+            <span className="tabular-nums">
+              {String(items.length).padStart(2, '0')} verified
+            </span>
+          </div>
+
+          <SectionHeading
+            align="left"
+            title={heading}
+            className="mb-12 gap-0"
+            titleClassName="text-4xl font-extrabold tracking-tight text-background md:text-5xl"
+          />
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            {items.map((t, i) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -97,12 +143,23 @@ export const VideoStreamingTestimonials = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
+                <TestimonialCard
+                  key={__iv__.name}
+                  className={cn(
+                    'rounded-none border-background/15 bg-background/[0.04] p-7 transition-colors duration-150 hover:border-background/40',
+                    i % 2 === 1 && 'md:translate-y-8',
+                  )}
+                >
+                  <StarRow rating={__iv__.rating ?? 5} />
+                  <TestimonialQuote className="text-base leading-relaxed text-background/90">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="flex-col items-start gap-1 border-t border-background/15 pt-4">
+                    <TestimonialName className="text-background">
+                      {__iv__.name}
+                    </TestimonialName>
                     {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
+                      <TestimonialMeta className="font-mono text-[11px] uppercase tracking-[0.2em] text-background/50">
                         {__iv__.role || __iv__.company || __iv__.meta}
                       </TestimonialMeta>
                     )}
@@ -110,7 +167,7 @@ export const VideoStreamingTestimonials = defineCapsule({
                 </TestimonialCard>
               )
             })}
-          </TestimonialGrid>
+          </div>
         </Container>
       </section>
     )

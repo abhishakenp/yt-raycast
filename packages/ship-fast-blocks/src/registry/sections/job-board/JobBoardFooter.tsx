@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 /**
  * JobBoardFooter — newsprint colophon footer for a job-board / careers site. A

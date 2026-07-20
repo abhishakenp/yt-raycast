@@ -1,6 +1,9 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { cn } from '#/lib/utils.ts'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   ServicesGrid,
   ServiceCard,
@@ -12,14 +15,17 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 
 /**
- * NonprofitServices — programs / causes grid for a nonprofit / charity / NGO
- * page. Thin configuration over the shared `ServicesGrid` composite: a centered
- * heading and supporting subheading above a responsive grid of cause cards,
- * each pairing a small inline line-icon with a program title (Clean Water,
- * Education, Food Security, Healthcare, …) and a short, warm mission blurb. Use
- * to show the core programs, causes, or focus areas a nonprofit, foundation, or
- * humanitarian organization runs. Renders fully with no props via baked-in
- * "Roots of Hope" program defaults.
+ * NonprofitServices — warm mission-editorial programs ledger for a nonprofit /
+ * charity / NGO page. An asymmetric header (left-aligned mono eyebrow + serif
+ * heading + lede, mono program-count meta on the right) sits above a
+ * collapsed-border ledger grid built on the shared `ServicesGrid` composite:
+ * each hairline cell shares rules with its neighbours and carries a zero-padded
+ * mono index numeral, a quiet line-icon in a square hairline tile, a serif
+ * program title (Clean Water, Education, Food Security, Healthcare, …), and a
+ * short, warm mission blurb. Restrained, human, trustworthy. Use to show the
+ * core programs, causes, or focus areas a nonprofit, foundation, or humanitarian
+ * organization runs. Renders fully with no props via baked-in "Roots of Hope"
+ * program defaults.
  */
 function Icon({ d, className }: { d: string; className?: string }) {
   return (
@@ -41,7 +47,7 @@ function Icon({ d, className }: { d: string; className?: string }) {
 export const NonprofitServices = defineCapsule({
   name: 'NonprofitServices',
   description:
-    'Programs / causes grid for a nonprofit / charity / NGO page built on the shared ServicesGrid composite: a centered heading and supporting subheading above a responsive grid of cause cards, each pairing a small inline line-icon with a program title (Clean Water, Education, Food Security, Healthcare, …) and a short, warm mission blurb. Use to show the core programs, causes, or focus areas a nonprofit, foundation, or humanitarian organization runs.',
+    'Warm mission-editorial programs ledger for a nonprofit / charity / NGO page built on the shared ServicesGrid composite: an asymmetric header (left-aligned mono eyebrow + serif heading + lede, mono program-count meta right) above a collapsed-border ledger grid whose hairline cells each carry a zero-padded mono index numeral, a quiet line-icon in a square hairline tile, a serif program title (Clean Water, Education, Food Security, Healthcare, …), and a short warm mission blurb. Restrained, human, trustworthy. Use to show the core programs, causes, or focus areas a nonprofit, foundation, or humanitarian organization runs.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -98,15 +104,37 @@ export const NonprofitServices = defineCapsule({
     }))
 
     return (
-      <section className="pt-28 pb-20 lg:pt-32 lg:pb-28">
+      <section
+        className={cn(
+          'bg-background pt-24 pb-20 lg:pt-28 lg:pb-28',
+          props.className,
+        )}
+      >
         <Container>
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <SectionHeading
+              align="left"
+              eyebrow="Our programs"
+              title={heading}
+              subtitle={subheading}
+              className="max-w-2xl gap-0"
+              eyebrowClassName="mb-4 inline-block font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground"
+              titleClassName="mb-4 font-serif text-3xl font-medium tracking-tight text-foreground sm:text-4xl lg:text-[2.75rem] lg:leading-[1.08]"
+              subtitleClassName="text-base leading-relaxed text-muted-foreground sm:text-lg"
+            />
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="shrink-0 md:pb-1"
+            >
+              {String(features.length).padStart(2, '0')} / programs
+            </MonoTag>
+          </div>
           <ServicesGrid
-            heading={heading}
-            subheading={subheading}
             columns={4}
-            className={props.className}
+            className="gap-0 [&>div]:grid [&>div]:gap-0 [&>div]:border-l [&>div]:border-t [&>div]:border-border"
           >
-            {features.map((f) => {
+            {features.map((f, i) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -117,10 +145,26 @@ export const NonprofitServices = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <ServiceCard key={__iv__.title}>
-                  {__iv__.icon && <ServiceIcon>{__iv__.icon}</ServiceIcon>}
-                  <ServiceTitle>{__iv__.title}</ServiceTitle>
-                  <ServiceDescription>{__iv__.description}</ServiceDescription>
+                <ServiceCard
+                  key={__iv__.title}
+                  className="gap-4 rounded-none border-b border-r border-border bg-transparent p-6 transition-colors hover:bg-muted/40 sm:p-8"
+                >
+                  <div className="flex items-center justify-between">
+                    <MonoTag aria-hidden="true" tone="faint">
+                      {String(i + 1).padStart(2, '0')}
+                    </MonoTag>
+                    {__iv__.icon && (
+                      <ServiceIcon className="size-10 rounded-none border border-border bg-transparent text-foreground/70">
+                        {__iv__.icon}
+                      </ServiceIcon>
+                    )}
+                  </div>
+                  <ServiceTitle className="font-serif text-xl font-medium tracking-tight">
+                    {__iv__.title}
+                  </ServiceTitle>
+                  <ServiceDescription className="leading-relaxed">
+                    {__iv__.description}
+                  </ServiceDescription>
                 </ServiceCard>
               )
             })}

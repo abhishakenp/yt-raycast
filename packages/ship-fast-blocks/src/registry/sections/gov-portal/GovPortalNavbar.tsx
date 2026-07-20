@@ -4,15 +4,13 @@ import { z } from 'zod/v4'
 import { MenuIcon, PhoneIcon } from 'lucide-react'
 
 import { cn } from '#/lib/utils.ts'
+import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
-  Logo,
-  LogoImage,
-  LogoLabel,
   NavbarActions,
   NavbarRouteLink,
   NavbarBrand,
   SiteNav,
-} from '#/section-kit/index.ts'
+} from '#/section-kit/SiteNav.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import {
   NavigationMenu,

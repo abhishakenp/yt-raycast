@@ -9,8 +9,7 @@ import {
 } from '#/section-kit/CtaBand.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * FitnessCta — bold primary-filled email-capture call-to-action for a gym or fitness
  * studio. A centered heading + supporting paragraph over an inline email input +

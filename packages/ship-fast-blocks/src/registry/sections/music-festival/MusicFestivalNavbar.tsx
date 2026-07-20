@@ -10,23 +10,25 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
+} from '#/section-kit/SiteNav.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 
 /**
- * MusicFestivalNavbar — fixed, translucent top navigation bar for a music /
- * arts festival landing page. A blurred, border-bottomed header pinned to the
- * top with the festival wordmark on the left, a horizontal row of nav links in
- * the center, a primary pill "Get Tickets" CTA on the right, and a hamburger
- * menu button on mobile. Every nav link and the CTA route through route hrefs,
- * and the nav labels match site routes so page switching works. Use as the
- * sticky site header for music festivals, arts festivals, concert series,
- * camping/desert events, raves, or any multi-day ticketed live event.
+ * MusicFestivalNavbar — fixed, blurred top navigation bar for a kinetic-poster
+ * music / arts festival landing page. A backdrop-blurred, hairline-bottomed
+ * header pinned to the top: on the left the festival wordmark set in bold
+ * condensed uppercase, in the center a mono-tracked row of nav links, and on
+ * the right a sharp, square "Get Tickets" ticket-stub CTA with mechanical press
+ * feedback plus a hamburger menu button on mobile. Every nav link and the CTA
+ * route through route hrefs, and the nav labels match site routes so page
+ * switching works. Use as the sticky site header for music festivals, arts
+ * festivals, concert series, camping/desert events, raves, or any multi-day
+ * ticketed live event.
  */
 export const MusicFestivalNavbar = defineCapsule({
   name: 'MusicFestivalNavbar',
   description:
-    "Fixed, translucent top navigation bar for a music / arts festival landing page: a blurred, border-bottomed header pinned to the top with the bold festival wordmark on the left, a horizontal row of nav links in the center, a primary pill 'Get Tickets' CTA on the right, and a hamburger menu button on mobile. Every nav link and the CTA route through route hrefs, and the nav labels match site routes so PageSwitch can swap pages. Use as the sticky site header for music festivals, arts festivals, concert series, camping/desert events, raves, or any multi-day ticketed live event.",
+    "Fixed, blurred top navigation bar for a kinetic-poster music / arts festival landing page: a backdrop-blurred, hairline-bottomed header pinned to the top with the festival wordmark in bold condensed uppercase on the left, a mono-tracked horizontal row of nav links in the center, a sharp square 'Get Tickets' ticket-stub CTA with press feedback on the right, and a hamburger menu button on mobile. Every nav link and the CTA route through route hrefs, and the nav labels match site routes so PageSwitch can swap pages. Use as the sticky site header for music festivals, arts festivals, concert series, camping/desert events, raves, or any multi-day ticketed live event.",
   props: z.object({
     /** Festival / brand name shown in the navbar. */
     brand: z.string().optional(),
@@ -58,17 +60,21 @@ export const MusicFestivalNavbar = defineCapsule({
       >
         <NavbarBrand
           href={homeTarget}
-          className="text-xl font-bold tracking-tight lg:text-2xl"
+          className="text-xl font-extrabold uppercase tracking-tight lg:text-2xl"
         >
-          <BrandLogo brand={brand} className="mr-2 size-7 align-middle">
-            <LogoImage className="mr-2 size-7 align-middle" />
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage className="size-7" />
             <LogoLabel />
           </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="text-xs font-semibold uppercase tracking-[0.12em]"
+            >
               {label}
             </NavbarNavLink>
           ))}
@@ -76,9 +82,9 @@ export const MusicFestivalNavbar = defineCapsule({
 
         <NavbarActions className="gap-4">
           <NavbarCta
-            variant="primary-pill"
+            variant="primary"
             href={ctaTarget}
-            className="hidden px-5 py-2.5 sm:inline-flex"
+            className="hidden rounded-none px-5 py-2.5 text-xs font-bold uppercase tracking-[0.12em] shadow-[3px_3px_0_0] shadow-foreground transition-[transform,box-shadow] duration-150 hover:shadow-[4px_4px_0_0] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none motion-reduce:transform-none sm:inline-flex"
           >
             {ctaLabel}
           </NavbarCta>

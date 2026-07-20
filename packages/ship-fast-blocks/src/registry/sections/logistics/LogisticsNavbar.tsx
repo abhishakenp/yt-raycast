@@ -10,24 +10,24 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
- * LogisticsNavbar — sticky, backdrop-blurred top navigation bar for a global-
- * logistics / freight-forwarding company. A border-bottomed header pinned to the
- * top: a bolt-mark brand tile + wordmark on the left, a horizontal set of nav
- * links in the center (desktop), and a rounded primary CTA on the right, with a
- * hamburger menu button on mobile. Clean, corporate and trust-forward on a light
- * surface with a deep slate primary. Every link and the CTA route through
- * route hrefs so labels can drive page-switching. Use as the sticky site header
- * for logistics providers, freight forwarders, shipping carriers, courier,
+ * LogisticsNavbar — industrial-manifest sticky, backdrop-blurred top navigation
+ * bar for a global-logistics / freight-forwarding company. A hairline
+ * border-bottomed header pinned to the top: a square bolt-mark brand tile +
+ * wordmark on the left, mono uppercase nav links in the center (desktop), and a
+ * square inverted `bg-foreground text-background` CTA with press feedback on the
+ * right, plus a hamburger menu on mobile. Precise, operational and freight-
+ * flavored, tokens-only so it adapts to light/dark. Every link and the CTA route
+ * through route hrefs so labels can drive page-switching. Use as the sticky site
+ * header for logistics providers, freight forwarders, shipping carriers, courier,
  * warehousing, customs-brokerage or cargo/transport companies. Renders fully with
  * no props via baked-in "SwiftFreight" defaults.
  */
 export const LogisticsNavbar = defineCapsule({
   name: 'LogisticsNavbar',
   description:
-    'Sticky, backdrop-blurred top navigation bar for a global-logistics / freight-forwarding company: a border-bottomed header pinned to the top with a bolt-mark brand tile + wordmark on the left, horizontal nav links in the center (desktop), and a rounded primary CTA on the right, plus a hamburger menu on mobile. Clean, corporate and trust-forward on a light surface with a deep slate primary. Links and CTA route through route hrefs for page-switching. Use as the sticky site header for logistics providers, freight forwarders, shipping carriers, courier, warehousing, customs-brokerage, supply-chain, fulfillment or cargo/transport companies.',
+    'Industrial-manifest sticky, backdrop-blurred top navigation bar for a global-logistics / freight-forwarding company: a hairline border-bottomed header pinned to the top with a square bolt-mark brand tile + mono wordmark on the left, mono uppercase nav links in the center (desktop), and a square inverted CTA with press feedback on the right, plus a hamburger menu on mobile. Precise, operational and freight-flavored, tokens-only. Links and CTA route through route hrefs for page-switching. Use as the sticky site header for logistics providers, freight forwarders, shipping carriers, courier, warehousing, customs-brokerage, supply-chain, fulfillment or cargo/transport companies.',
   props: z.object({
     /** Brand / company name shown beside the mark. */
     brand: z.string().optional(),
@@ -52,7 +52,7 @@ export const LogisticsNavbar = defineCapsule({
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          'grid shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground',
+          'grid shrink-0 place-items-center rounded-none bg-foreground text-background',
           className,
         )}
         aria-hidden="true"
@@ -77,15 +77,22 @@ export const LogisticsNavbar = defineCapsule({
         className={cn('bg-background/95', props.className)}
       >
         <NavbarBrand href={homeTarget} className="gap-2">
-          <BrandLogo brand={brand}>
-            <LogoImage fallback={<LogoMark className="size-8" />} />
-            <LogoLabel className="text-xl font-semibold tracking-tight" />
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage
+              className="size-7"
+              fallback={<LogoMark className="size-7" />}
+            />
+            <LogoLabel className="font-mono text-base font-bold tracking-tight" />
           </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav breakpoint="lg">
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="font-mono text-[12px] uppercase tracking-[0.14em]"
+            >
               {label}
             </NavbarNavLink>
           ))}
@@ -95,7 +102,7 @@ export const LogisticsNavbar = defineCapsule({
           <NavbarCta
             variant="primary"
             href={ctaTarget}
-            className="hidden sm:inline-flex"
+            className="hidden rounded-none bg-foreground px-4 py-2 font-mono text-xs font-semibold uppercase tracking-[0.12em] text-background transition-colors hover:bg-foreground/90 active:translate-y-px sm:inline-flex"
           >
             {cta}
           </NavbarCta>

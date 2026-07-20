@@ -11,12 +11,11 @@ import {
   HeroCta,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const WeddingHero = defineCapsule({
   name: 'WeddingHero',
   description:
-    'Romantic full-bleed wedding hero: an alt-driven golden-hour ceremony photograph behind a soft dark overlay, with an uppercase save-the-date eyebrow pill, a large serif couple-names headline, the wedding date and venue, and dual call-to-action buttons (RSVP plus Our Story). Use as the opening viewport of a wedding invitation or celebration site to set an elegant, heartfelt tone.',
+    'Romantic-editorial full-bleed wedding hero: an alt-driven golden-hour ceremony photograph behind a soft foreground overlay, with a sharp-cornered mono save-the-date eyebrow chip, a large serif-italic couple-names headline framed by a delicate hairline flourish with a small primary diamond, the wedding date in mono uppercase tracking plus the venue, a heartfelt lede, and dual sharp-cornered call-to-action buttons (RSVP plus Our Story) with press feedback. Use as the opening viewport of a wedding invitation or celebration site to set an elegant, tender, heartfelt tone.',
   props: z.object({
     eyebrow: z.string().optional(),
     coupleNames: z.string().optional(),
@@ -56,20 +55,35 @@ export const WeddingHero = defineCapsule({
 
         <Container asChild size="4xl">
           <HeroContent className="flex min-h-[88vh] flex-col items-center justify-center py-28 text-center">
-            <HeroBadge variant="pill" className="mb-6 py-2">
+            <HeroBadge
+              variant="pill"
+              className="mb-8 rounded-none border-background/30 bg-background/10 px-4 py-2 font-mono text-[11px] tracking-[0.25em]"
+            >
               {eyebrow}
             </HeroBadge>
 
-            <HeroHeading className="font-serif font-medium text-5xl tracking-normal text-background sm:text-6xl lg:text-7xl">
+            <HeroHeading className="font-serif text-5xl font-normal italic leading-[1.02] tracking-tight text-balance text-background sm:text-6xl lg:text-7xl">
               {coupleNames}
             </HeroHeading>
 
-            <p className="mt-6 text-lg font-medium uppercase tracking-[0.18em] text-background/80">
+            <div
+              aria-hidden="true"
+              className="mt-8 flex items-center justify-center gap-4"
+            >
+              <span className="h-px w-14 bg-background/40" />
+              <span className="size-1.5 rotate-45 bg-primary" />
+              <span className="h-px w-14 bg-background/40" />
+            </div>
+
+            <p className="mt-8 font-mono text-sm uppercase tracking-[0.28em] text-background/85">
               {date}
             </p>
-            <p className="mt-2 text-base text-background/80">{venue}</p>
+            <p className="mt-3 text-base text-background/75">{venue}</p>
 
-            <HeroSubheading variant="light" className="text-lg leading-8">
+            <HeroSubheading
+              variant="light"
+              className="text-lg leading-8 text-background/80"
+            >
               {subheading}
             </HeroSubheading>
 
@@ -77,7 +91,7 @@ export const WeddingHero = defineCapsule({
               <HeroCta
                 asChild
                 variant="primary"
-                className="rounded-full px-8 py-3 text-sm font-semibold"
+                className="rounded-none px-8 py-3.5 text-sm font-medium active:translate-y-px"
               >
                 <NavbarRouteLink href={primaryTarget}>
                   {primaryCta}
@@ -86,7 +100,7 @@ export const WeddingHero = defineCapsule({
               <HeroCta
                 asChild
                 variant="outline"
-                className="rounded-full border-border bg-card/10 px-8 py-3 text-sm font-semibold text-background backdrop-blur-sm hover:bg-card/20"
+                className="rounded-none border-background/40 bg-background/10 px-8 py-3.5 text-sm font-medium text-background backdrop-blur-sm hover:bg-background/20 active:translate-y-px"
               >
                 <NavbarRouteLink href={secondaryTarget}>
                   {secondaryCta}

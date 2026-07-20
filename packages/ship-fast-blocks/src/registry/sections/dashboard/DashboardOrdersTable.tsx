@@ -16,8 +16,7 @@ import {
   dashboardLakebed,
   type DashboardOrderRecord,
 } from './dashboard-lakebed.ts'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 type DashboardDisplayRow = {
   amount?: string
   customer?: string

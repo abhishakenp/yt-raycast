@@ -10,8 +10,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
  * LandscapingNavbar — sticky, backdrop-blurred site header for a landscaping /
  * outdoor-design company in the "Organic editorial" language. A hairline-

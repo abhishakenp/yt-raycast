@@ -7,8 +7,7 @@ import {
   TopbarDivider,
   TopbarIconButton,
 } from '#/section-kit/Topbar.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * DashboardTopbar — Swiss-data top app-bar for a SaaS admin dashboard. A
  * hairline-bordered bar holding a square-edged search field with a leading

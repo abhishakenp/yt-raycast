@@ -1,5 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
+
+import { cn } from '#/lib/utils.ts'
 import {
   OverviewSection,
   OverviewGrid,
@@ -17,12 +19,12 @@ import {
   OverviewStatLabel,
   OverviewMediaPanel,
 } from '#/section-kit/OverviewSection.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { Watermark } from '#/section-kit/Decor.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const WebinarOverview = defineCapsule({
   name: 'WebinarOverview',
   description:
-    'Reusable overview / hero section for the Webinar page family. Derived from the section template catalog to provide section-level coverage without new HTML generation: eyebrow, large heading, supporting copy, dual CTAs, feature pills, KPI strip, and an image panel rendered through the alt-driven Image component. Use when composing a webinar page or adding a focused webinar band to a larger generated site.',
+    'Reusable kinetic-event overview / hero section for the Webinar page family. Derived from the section template catalog to provide section-level coverage without new HTML generation: a mono square eyebrow, a countdown-scale extrabold heading, supporting copy, square-edged mono feature chips, square dual CTAs with a hard offset token shadow and press feedback, a hairline KPI strip with tabular numerals, and an image panel rendered through the alt-driven Image component, with a giant ghost watermark behind. Use when composing a webinar page or adding a focused webinar band to a larger generated site.',
   props: z.object({
     brand: z.string().optional(),
     eyebrow: z.string().optional(),
@@ -72,27 +74,39 @@ export const WebinarOverview = defineCapsule({
         ]
 
     return (
-      <OverviewSection className={props.className}>
-        <OverviewGrid>
+      <OverviewSection className={cn('relative', props.className)}>
+        <Watermark className="-right-6 top-6 text-[7rem] leading-none sm:text-[13rem] lg:text-[18rem]">
+          {brand}
+        </Watermark>
+        <OverviewGrid className="relative">
           <OverviewContent>
-            <OverviewEyebrow>{eyebrow}</OverviewEyebrow>
-            <OverviewBrand>{brand}</OverviewBrand>
-            <OverviewHeading>{heading}</OverviewHeading>
+            <OverviewEyebrow className="rounded-none border-foreground/60 bg-transparent px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+              {eyebrow}
+            </OverviewEyebrow>
+            <OverviewBrand className="font-mono">{brand}</OverviewBrand>
+            <OverviewHeading className="font-extrabold tracking-tight">
+              {heading}
+            </OverviewHeading>
             <OverviewSubheading>{subheading}</OverviewSubheading>
             <OverviewFeatures>
               {features.map((feature: string) => (
-                <OverviewFeature key={feature}>{feature}</OverviewFeature>
+                <OverviewFeature
+                  key={feature}
+                  className="rounded-none border-border bg-transparent font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground"
+                >
+                  {feature}
+                </OverviewFeature>
               ))}
             </OverviewFeatures>
             <OverviewCta>
               <NavbarRouteLink
-                className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+                className="inline-flex items-center justify-center rounded-none border border-foreground bg-primary px-6 py-3 font-mono text-xs font-bold uppercase tracking-[0.14em] text-primary-foreground shadow-[4px_4px_0_0] shadow-foreground transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0] hover:shadow-foreground active:translate-x-[4px] active:translate-y-[4px] active:shadow-none"
                 href={primaryCta}
               >
                 {primaryCta}
               </NavbarRouteLink>
               <NavbarRouteLink
-                className="rounded-full border border-border bg-background px-6 py-3 text-sm font-semibold text-foreground transition hover:bg-muted"
+                className="inline-flex items-center justify-center rounded-none border border-foreground bg-background px-6 py-3 font-mono text-xs font-bold uppercase tracking-[0.14em] text-foreground transition-[transform,background-color] duration-150 hover:bg-muted active:translate-y-px"
                 href={secondaryCta}
               >
                 {secondaryCta}
@@ -101,8 +115,12 @@ export const WebinarOverview = defineCapsule({
             <OverviewStats>
               {stats.map((stat: { value: string; label: string }) => (
                 <OverviewStat key={stat.label}>
-                  <OverviewStatValue>{stat.value}</OverviewStatValue>
-                  <OverviewStatLabel>{stat.label}</OverviewStatLabel>
+                  <OverviewStatValue className="text-3xl font-extrabold tabular-nums tracking-tight">
+                    {stat.value}
+                  </OverviewStatValue>
+                  <OverviewStatLabel className="font-mono text-[11px] uppercase tracking-[0.14em]">
+                    {stat.label}
+                  </OverviewStatLabel>
                 </OverviewStat>
               ))}
             </OverviewStats>

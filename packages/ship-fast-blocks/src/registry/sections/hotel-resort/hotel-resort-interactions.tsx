@@ -25,6 +25,8 @@ import {
   AccountDropdownSeparator,
   AccountDropdownSignOut,
   AccountDropdownUnauthenticated,
+} from '#/section-kit/AccountDropdown.tsx'
+import {
   CommandSearch,
   CommandSearchTrigger,
   CommandSearchContent,
@@ -32,9 +34,8 @@ import {
   CommandSearchList,
   CommandSearchEmpty,
   CommandSearchGroup,
-  NavbarRouteLink,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/CommandSearch.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export type HotelResortLakebed = LakebedClientRuntime<typeof hotelResortLakebed>
 
 type HotelBookingSummary = ReturnType<
@@ -262,15 +263,19 @@ export function HotelSearchButton({
       <CommandSearchContent
         title="Search rooms"
         description="Search room categories and start an availability request."
+        className="gap-0 rounded-none border-border shadow-none"
       >
         <CommandSearchInput placeholder="Search rooms..." />
         <CommandSearchList>
           <CommandSearchEmpty>No rooms found.</CommandSearchEmpty>
-          <CommandSearchGroup heading="Rooms">
+          <CommandSearchGroup
+            heading="Rooms"
+            className="p-0 [&_[cmdk-group-heading]]:px-4 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:font-mono [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.14em] [&_[data-slot=command-item]]:rounded-none [&_[data-slot=command-item]]:border-b [&_[data-slot=command-item]]:border-b-border [&_[data-slot=command-item]]:border-l-2 [&_[data-slot=command-item]]:border-l-transparent [&_[data-slot=command-item]]:px-4 [&_[data-slot=command-item][data-selected=true]]:border-l-primary [&_[data-slot=command-item][data-selected=true]]:bg-muted"
+          >
             {(room) => (
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium">{room.name}</p>
-                <p className="truncate text-xs text-muted-foreground">
+                <p className="truncate font-mono text-[11px] tracking-wide text-muted-foreground">
                   {[room.price, room.meta, room.description]
                     .filter(Boolean)
                     .join(' · ')}
@@ -300,10 +305,10 @@ export function HotelAccountButton({
       <AccountDropdownTrigger aria-label={label} className={buttonClassName}>
         {children}
       </AccountDropdownTrigger>
-      <AccountDropdownContent>
+      <AccountDropdownContent className="rounded-none border-border shadow-none">
         <AccountDropdownLabel />
         <AccountDropdownSeparator />
-        <AccountDropdownSignOut />
+        <AccountDropdownSignOut className="rounded-none" />
       </AccountDropdownContent>
       <AccountDropdownUnauthenticated />
     </AccountDropdown>
@@ -341,7 +346,7 @@ export function HotelMobileMenu({
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="w-[min(100%,22rem)] border-l border-border bg-background p-0 text-foreground sm:max-w-[22rem]"
+        className="w-[min(100%,22rem)] rounded-none border-l border-border bg-background p-0 text-foreground shadow-none sm:max-w-[22rem]"
       >
         <SheetHeader className="border-b border-border px-5 py-5 text-left">
           <SheetTitle className="font-serif text-xl font-normal tracking-tight">
@@ -351,9 +356,9 @@ export function HotelMobileMenu({
             Navigate to a resort section.
           </SheetDescription>
         </SheetHeader>
-        <div className="flex flex-col px-3 py-4">
+        <div className="flex flex-col divide-y divide-border">
           <NavbarRouteLink
-            className="border-b border-border px-3 py-3.5 text-left text-sm text-foreground transition-colors hover:text-muted-foreground"
+            className="rounded-none border-l-2 border-l-primary bg-muted px-5 py-3.5 text-left text-sm text-foreground transition-colors duration-150 hover:bg-muted active:translate-y-px"
             href={homeTarget ?? nav[0]}
             onClick={() => setOpen(false)}
           >
@@ -362,7 +367,7 @@ export function HotelMobileMenu({
           {nav.map((item) => (
             <NavbarRouteLink
               key={item}
-              className="border-b border-border px-3 py-3.5 text-left text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="rounded-none border-l-2 border-l-transparent px-5 py-3.5 text-left text-sm text-muted-foreground transition-colors duration-150 hover:border-l-border hover:bg-muted hover:text-foreground active:translate-y-px"
               href={item}
               onClick={() => setOpen(false)}
             >

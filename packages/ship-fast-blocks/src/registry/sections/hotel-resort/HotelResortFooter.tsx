@@ -204,11 +204,11 @@ export const HotelResortFooter = defineCapsule({
               </p>
               <NewsletterSubscribeForm
                 lakebed={lakebed}
-                source={brand}
+                source={newsletterCta}
                 buttonLabel={newsletterCta}
                 pendingLabel="Sending"
                 placeholder="you@example.com"
-                emailLabel="Email address"
+                emailLabel="Your email"
                 className="mt-4 flex flex-col gap-2 sm:flex-row"
                 inputClassName="min-h-11 w-full rounded-none border border-background/25 bg-transparent px-3 text-sm text-background outline-none transition-colors placeholder:text-background/40 focus:border-background"
                 buttonClassName="inline-flex min-h-11 items-center justify-center rounded-none bg-background px-4 py-2 font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-foreground transition-[background-color,transform] duration-150 hover:bg-background/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-60"

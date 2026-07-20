@@ -6,8 +6,7 @@ import { Image } from '#/lib/img.tsx'
 import { DotGrid, MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * FintechHero — Swiss-fintech asymmetric 7/5 split hero for a neobank /
  * digital-banking landing page. The left column carries a mono micro-label

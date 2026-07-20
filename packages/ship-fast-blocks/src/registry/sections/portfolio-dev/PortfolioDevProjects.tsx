@@ -3,7 +3,6 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   PortfolioGrid,
   PortfolioItem,
@@ -12,12 +11,11 @@ import {
   PortfolioTag,
 } from '#/section-kit/PortfolioGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const PortfolioDevProjects = defineCapsule({
   name: 'PortfolioDevProjects',
   description:
-    'A selected-work project grid for a modern developer portfolio. Renders a SectionHeading (Work / Selected projects) above a responsive grid of project cards, each with an alt-driven thumbnail Image, a title, a short description, a mono tech-tag pill row, and Live / Code links that route via section-kit route links. Token-only styling with mono accents, no hardcoded colors. Ideal for developer, engineer, and freelancer portfolios showcasing shipped projects.',
+    'Editorial selected-work grid for a developer portfolio built as staggered work plates. A mono meta rule (Work / tabular project count) sits above a left-aligned oversized heading and lede, then a responsive grid of sharp-cornered project cards on an alternating ±translate stagger — each plate carries a mono index numeral, an alt-driven thumbnail Image, a title, a short description, a monospace tech-tag chip row, and mono `>` prompt Live / Code links that route via section-kit route links, with a hard offset shadow and mechanical press feedback on hover/press. Token-only styling with mono accents, no hardcoded colors. Ideal for developer, engineer, and freelancer portfolios showcasing shipped projects.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -79,34 +77,61 @@ export const PortfolioDevProjects = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-background pt-28 pb-20 sm:pt-32 sm:pb-24',
+          'relative overflow-hidden bg-background pt-28 pb-20 sm:pt-32 sm:pb-24',
           props.className,
         )}
       >
         <Container size="xl" className="px-6">
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={subheading}
-          />
-          <PortfolioGrid cols="1-2-3" className="mt-12">
-            {projects.map((project) => (
+          <div className="mb-8 flex items-center justify-between gap-4 border-b border-border pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            <span className="flex items-center gap-3">
+              <span aria-hidden="true" className="size-2 bg-primary" />
+              {eyebrow}
+            </span>
+            <span className="tabular-nums">
+              {String(projects.length).padStart(2, '0')} shipped
+            </span>
+          </div>
+          <div className="max-w-3xl">
+            <h2 className="text-4xl font-extrabold leading-[0.95] tracking-tighter text-foreground sm:text-5xl">
+              {heading}
+            </h2>
+            <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
+              {subheading}
+            </p>
+          </div>
+          <PortfolioGrid
+            cols="1-2-3"
+            className="mt-12 items-start gap-6 sm:gap-7"
+          >
+            {projects.map((project, i) => (
               <PortfolioItem
                 asChild
                 key={project.title}
-                className="overflow-hidden rounded-xl border border-border bg-card text-card-foreground"
+                className={cn(
+                  'overflow-hidden rounded-none border border-border bg-card text-card-foreground transition-[transform,box-shadow,border-color] duration-150 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-[6px_6px_0_0] hover:shadow-foreground active:translate-y-0 active:shadow-none motion-reduce:transform-none',
+                  i % 2 === 1 && 'md:translate-y-10',
+                )}
               >
                 <article>
-                  <PortfolioMedia aspect="16-10" className="w-full">
+                  <PortfolioMedia
+                    aspect="16-10"
+                    className="w-full border-b border-border"
+                  >
                     <Image
                       alt={project.imageAlt ?? project.title}
                       w={640}
                       h={400}
                       className="h-full w-full object-cover"
                     />
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-3 top-3 bg-background/90 px-2 py-0.5 font-mono text-[11px] font-semibold tabular-nums tracking-[0.1em] text-foreground"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
                   </PortfolioMedia>
                   <PortfolioCaption className="flex-1 gap-3 p-6">
-                    <h3 className="text-lg font-semibold text-card-foreground">
+                    <h3 className="text-lg font-bold tracking-tight text-card-foreground">
                       {project.title}
                     </h3>
                     <p className="text-sm leading-6 text-muted-foreground">
@@ -117,24 +142,33 @@ export const PortfolioDevProjects = defineCapsule({
                         {project.tags.map((tag) => (
                           <PortfolioTag
                             key={tag}
-                            className="rounded-md border border-border bg-muted px-2.5 py-1 font-mono text-xs text-muted-foreground"
+                            className="rounded-none border border-border bg-muted px-2.5 py-1 font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground"
                           >
                             {tag}
                           </PortfolioTag>
                         ))}
                       </div>
                     ) : null}
-                    <div className="mt-auto flex gap-4 pt-2">
+                    <div className="mt-auto flex gap-5 border-t border-border pt-4 font-mono text-xs uppercase tracking-[0.12em]">
                       <NavbarRouteLink
-                        className="text-sm font-semibold text-primary hover:underline"
+                        className="font-semibold text-primary hover:underline"
                         href={project.liveTarget ?? 'Work'}
                       >
+                        <span aria-hidden="true" className="text-primary/60">
+                          {'> '}
+                        </span>
                         Live
                       </NavbarRouteLink>
                       <NavbarRouteLink
-                        className="text-sm font-semibold text-muted-foreground hover:text-foreground"
+                        className="font-semibold text-muted-foreground hover:text-foreground"
                         href={project.codeTarget ?? 'Work'}
                       >
+                        <span
+                          aria-hidden="true"
+                          className="text-muted-foreground/60"
+                        >
+                          {'> '}
+                        </span>
                         Code
                       </NavbarRouteLink>
                     </div>

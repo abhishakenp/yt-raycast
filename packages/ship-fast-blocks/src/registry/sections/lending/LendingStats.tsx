@@ -11,14 +11,17 @@ import {
 } from '#/section-kit/StatGrid.tsx'
 
 /**
- * LendingStats — a stats / about split with a glowing photo and a floating review
- * card, for a lending or fintech marketing page. On the left: a heading,
- * supporting paragraph, and a 2x2 grid of muted stat tiles (big value + label).
- * On the right: a large rounded photo with an overlapping bottom-left review card
- * — five star icons, a quoted testimonial, an avatar, and a name/location. Use to
- * build trust with track-record numbers and a real-borrower quote on loan, about,
- * or fintech landing pages. All imagery uses the alt-driven Image component.
- * Renders fully with no props via baked-in defaults.
+ * LendingStats — Swiss-fintech track-record split for a lending or fintech
+ * marketing page. An asymmetric 5/7 split: the left column carries a mono index
+ * eyebrow, a heading + supporting paragraph, and a 2x2 collapsed-border stat
+ * ledger whose cells share hairline rules and each carry a giant tabular-nums
+ * figure over a mono uppercase label. The wider right column frames a sharp
+ * bordered photo with a hard offset shadow, overlaid by a floating hairline
+ * review card — a primary star row, a quoted testimonial, an avatar, and a
+ * mono name/location byline. Use to build trust with track-record numbers and a
+ * real-borrower quote on loan, about, or fintech landing pages. All imagery uses
+ * the alt-driven Image component. Renders fully with no props via baked-in
+ * defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -26,7 +29,7 @@ import { StarRating } from '#/section-kit/StarRating.tsx'
 export const LendingStats = defineCapsule({
   name: 'LendingStats',
   description:
-    'Stats / about split with a photo and a floating review card for a lending or fintech marketing page: left column has a heading, supporting paragraph and a 2x2 grid of muted stat tiles (big value + label); right column is a large rounded photo with an overlapping bottom-left review card — five star icons, a quoted testimonial, an avatar and a name/location. Use to build trust with track-record numbers and a real-borrower quote on loan, about, or fintech landing pages. Imagery uses the alt-driven Image component.',
+    'Swiss-fintech track-record split for a lending or fintech marketing page: an asymmetric 5/7 split — the left column has a mono index eyebrow, a heading + supporting paragraph and a 2x2 collapsed-border stat ledger whose cells each carry a giant tabular-nums figure over a mono uppercase label; the wider right column frames a sharp bordered photo with a hard offset shadow, overlaid by a floating hairline review card (primary star row, quoted testimonial, avatar, mono name/location byline). Use to build trust with track-record numbers and a real-borrower quote on loan, about, or fintech landing pages. Imagery uses the alt-driven Image component.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -84,38 +87,51 @@ export const LendingStats = defineCapsule({
     return (
       <section className={cn('py-24 lg:py-28', props.className)}>
         <Container>
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-            <div>
+          <div className="grid items-center gap-14 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-5">
               <SectionHeading
                 align="left"
+                eyebrow="01 / Track record"
                 title={statsHeading}
                 subtitle={statsDesc}
-                className="gap-0"
-                titleClassName="mb-6 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
-                subtitleClassName="mb-8 text-lg leading-relaxed text-muted-foreground"
+                className="gap-3"
+                eyebrowClassName="font-mono text-[11px] uppercase tracking-[0.2em] text-primary"
+                titleClassName="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl"
+                subtitleClassName="text-lg leading-relaxed text-muted-foreground"
               />
-              <StatGrid columns={2} className="gap-6">
+              <StatGrid
+                columns={2}
+                className="mt-8 gap-0 border-l border-t border-border"
+              >
                 {statsItems.map((s) => (
-                  <StatItem asChild key={s.label} align="left">
-                    <Card variant="muted">
-                      <StatValue>{s.value}</StatValue>
-                      <StatLabel>{s.label}</StatLabel>
-                    </Card>
+                  <StatItem
+                    key={s.label}
+                    align="left"
+                    className="gap-2 border-b border-r border-border p-6"
+                  >
+                    <StatValue className="mb-0 text-3xl font-extrabold leading-none tracking-tight text-foreground tabular-nums sm:text-4xl">
+                      {s.value}
+                    </StatValue>
+                    <StatLabel className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                      {s.label}
+                    </StatLabel>
                   </StatItem>
                 ))}
               </StatGrid>
             </div>
-            <div className="relative">
-              <Image
-                alt={statsImageAlt}
-                w={800}
-                h={600}
-                loading="lazy"
-                className="w-full rounded-2xl object-cover shadow-lg"
-              />
-              <Card className="absolute -bottom-6 -left-6 max-w-xs shadow-lg">
+            <div className="relative lg:col-span-7">
+              <div className="relative overflow-hidden border border-foreground shadow-[10px_10px_0_0] shadow-foreground">
+                <Image
+                  alt={statsImageAlt}
+                  w={800}
+                  h={600}
+                  loading="lazy"
+                  className="aspect-[4/3] w-full object-cover"
+                />
+              </div>
+              <Card className="absolute -bottom-6 -left-4 max-w-xs rounded-none border border-border bg-background shadow-[6px_6px_0_0] shadow-foreground/15">
                 <div className="mb-2 flex items-center gap-1">
-                  <StarRating rating={5} size="md" color="chart-4" />
+                  <StarRating rating={5} size="md" color="primary" />
                 </div>
                 <p className="mb-3 text-sm text-card-foreground">
                   &ldquo;{statsReviewQuote}&rdquo;
@@ -125,13 +141,13 @@ export const LendingStats = defineCapsule({
                     alt={statsReviewAvatarAlt}
                     w={100}
                     h={100}
-                    className="size-10 rounded-full object-cover"
+                    className="size-10 rounded-none object-cover"
                   />
                   <div>
                     <div className="text-sm font-medium text-card-foreground">
                       {statsReviewName}
                     </div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                       {statsReviewMeta}
                     </div>
                   </div>

@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { cn } from '#/lib/utils.ts'
 import {
   SiteFooter,
   FooterContent,
@@ -40,10 +41,49 @@ function MicWaveMark({ className }: { className?: string }) {
   )
 }
 
+/** Div-built token waveform accent under the brand block. */
+const WAVEFORM_BARS = [
+  'h-2',
+  'h-4',
+  'h-3',
+  'h-6',
+  'h-3',
+  'h-5',
+  'h-4',
+  'h-7',
+  'h-3',
+  'h-5',
+  'h-2',
+  'h-6',
+  'h-4',
+  'h-3',
+  'h-5',
+]
+
+function Waveform({ className }: { className?: string }) {
+  return (
+    <div
+      aria-hidden="true"
+      className={cn('flex items-center gap-[3px]', className)}
+    >
+      {WAVEFORM_BARS.map((h, i) => (
+        <span
+          key={i}
+          className={cn(
+            'w-[3px] shrink-0 rounded-none',
+            h,
+            i % 5 === 3 ? 'bg-primary' : 'bg-foreground/20',
+          )}
+        />
+      ))}
+    </div>
+  )
+}
+
 export const PodcastFooter = defineCapsule({
   name: 'PodcastFooter',
   description:
-    "Multi-column podcast footer built on SiteFooter: a 'Signal & Static' brand block with a mic/soundwave mark and tagline, a social row (Instagram / Twitter / YouTube), and link columns grouped into Listen, Show, and Company, finished with a bottom copyright note. Designed for podcast and audio-show sites that want a warm, structured close to every page. Renders fully with no props via baked defaults and passes className through for layout control.",
+    "Multi-column audio-editorial podcast footer built on SiteFooter: a 'Signal & Static' brand block with a mic/soundwave mark, a div-built token waveform accent, and a tagline, a mono social row (Instagram / Twitter / YouTube), and link columns grouped under mono uppercase Listen, Show, and Company headings, finished with a hairline bottom copyright note. Designed for podcast and audio-show sites that want a warm, structured broadsheet close to every page. Renders fully with no props via baked defaults and passes className through for layout control.",
   props: z.object({
     brand: z.string().optional(),
     tagline: z.string().optional(),
@@ -80,31 +120,41 @@ export const PodcastFooter = defineCapsule({
             <FooterBrand
               brand={props.brand ?? 'Signal & Static'}
               brandMark={<MicWaveMark className="size-8 text-primary" />}
-              brandClassName={'font-semibold tracking-tight text-xl'}
+              brandClassName={'text-xl font-extrabold tracking-tight'}
             >
               <FooterTagline>
                 {props.tagline ??
                   'Conversations on sound, story, and the static in between — a new episode every Thursday.'}
               </FooterTagline>
+              <Waveform className="mt-5 h-7" />
               <FooterSocial>
                 {social.map((s) => (
-                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  <FooterSocialLink
+                    key={s.label}
+                    className="block w-fit font-mono text-[11px] uppercase tracking-[0.14em]"
+                  >
+                    {s.label}
+                  </FooterSocialLink>
                 ))}
               </FooterSocial>
             </FooterBrand>
             {columns.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnTitle className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  {col.title}
+                </FooterColumnTitle>
                 <FooterColumnList>
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink key={link} className="block w-fit">
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
           <FooterBottom>
-            <FooterCopyright>
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.14em]">
               {props.note ?? 'All rights reserved.'}
             </FooterCopyright>
           </FooterBottom>

@@ -9,7 +9,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
+} from '#/section-kit/SiteNav.tsx'
 import {
   SaasAccountButton,
   SaasIntentBadge,
@@ -21,24 +21,27 @@ import {
 import { saasLakebed } from './saas-lakebed.ts'
 
 /**
- * SaasNavbar — glassy sticky top navigation bar for an AI-product / SaaS landing
- * page. Thin configuration over the shared `SiteNav` composite: a gradient-tile
- * clock-glyph logo mark beside the product wordmark, horizontal desktop nav
- * links, a pill "Get Started" CTA, and a real mobile drawer (Sheet) on small
- * screens. Every nav item and the CTA route through route hrefs so labels can
- * drive page-switching. Use as the sticky site header for AI tools, SaaS apps,
- * productivity/scheduling products, developer tools, or modern B2B startups.
- * Renders fully with no props via baked-in "Chronos AI" defaults.
+ * SaasNavbar — sticky kinetic-SaaS top navigation bar for an AI-product / SaaS
+ * landing page. Thin configuration over the shared `SiteNav` composite: a
+ * backdrop-blurred, hairline-bottomed header with a sharp square clock-glyph
+ * brand tile beside the product wordmark, mono uppercase desktop nav links,
+ * command plan search, a Shoo profile dropdown, a selected-plan badge, a square
+ * hard-offset-shadow "Get Started" CTA with press feedback, and a real mobile
+ * drawer (Sheet). Every nav item and the CTA route through route hrefs so labels
+ * can drive page-switching while conversion CTAs write to shared Lakebed state.
+ * Use as the sticky site header for AI tools, SaaS apps, productivity/scheduling
+ * products, developer tools, or modern B2B startups. Renders fully with no props
+ * via baked-in "Chronos AI" defaults.
  */
 function ClockMark({ className }: { className?: string }) {
   return (
     <span
-      className="grid size-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm"
+      className="grid size-7 place-items-center rounded-none bg-primary text-primary-foreground"
       aria-hidden="true"
     >
       <svg
-        width="18"
-        height="18"
+        width="16"
+        height="16"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -57,7 +60,7 @@ function ClockMark({ className }: { className?: string }) {
 export const SaasNavbar = defineCapsule({
   name: 'SaasNavbar',
   description:
-    'Glassy sticky top navigation bar for an AI-product / SaaS landing page: a gradient-tile clock-glyph logo and product wordmark, horizontal desktop nav links, command plan search, Shoo profile dropdown, selected-plan badge, a scoped fullstack trial CTA, and a real mobile drawer. Nav items route through route hrefs while conversion CTAs write to shared Lakebed state. Use as the sticky site header for AI tools, SaaS apps, productivity/scheduling products, developer tools, or modern B2B startups.',
+    'Sticky kinetic-SaaS top navigation bar for an AI-product / SaaS landing page: a backdrop-blurred, hairline-bottomed header with a sharp square clock-glyph brand tile + product wordmark, mono uppercase nav links, command plan search, Shoo profile dropdown, selected-plan badge, a square hard-offset-shadow scoped fullstack trial CTA with press feedback, and a real mobile drawer. Nav items route through route hrefs while conversion CTAs write to shared Lakebed state. Use as the sticky site header for AI tools, SaaS apps, productivity/scheduling products, developer tools, or modern B2B startups.',
   props: z.object({
     /** Brand / product name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -85,18 +88,28 @@ export const SaasNavbar = defineCapsule({
       <SiteNav
         position="sticky"
         height="default"
-        className={cn('bg-background/95', props.className)}
+        className={cn(
+          'border-b border-border bg-background/80 backdrop-blur-md',
+          props.className,
+        )}
       >
-        <NavbarBrand href={homeTarget} className="min-w-0 gap-3">
-          <BrandLogo brand={brand}>
-            <LogoImage fallback={<ClockMark className="size-[18px]" />} />
-            <LogoLabel className="truncate text-xl font-extrabold tracking-tight text-foreground" />
+        <NavbarBrand href={homeTarget} className="min-w-0 gap-2">
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage
+              className="size-7"
+              fallback={<ClockMark className="size-4" />}
+            />
+            <LogoLabel className="truncate text-lg font-extrabold tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="font-mono text-xs uppercase tracking-[0.14em]"
+            >
               {label}
             </NavbarNavLink>
           ))}
@@ -106,7 +119,7 @@ export const SaasNavbar = defineCapsule({
           <SaasIntentBadge lakebed={lakebed} />
           <SaasSearchButton
             lakebed={lakebed}
-            buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+            buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground lg:inline-flex"
           />
           <SaasAccountButton
             lakebed={lakebed}
@@ -123,7 +136,7 @@ export const SaasNavbar = defineCapsule({
                 Starting
               </>
             }
-            className="hidden items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
+            className="hidden items-center gap-2 whitespace-nowrap rounded-none bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-[3px_3px_0_0] shadow-foreground transition-[transform,box-shadow,background-color] duration-150 hover:bg-primary/90 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none motion-reduce:transform-none disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
           >
             {ctaLabel}
           </SaasPlanActionButton>

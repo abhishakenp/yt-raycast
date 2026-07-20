@@ -2,31 +2,32 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import {
-  HeroSection,
-  HeroContent,
-  HeroSubheading,
-} from '#/section-kit/HeroSection.tsx'
+import { HeroSection, HeroSubheading } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { newsletterLakebed } from './newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from './newsletter-interactions.tsx'
 
 /**
- * NewsletterHero — centered editorial hero for a newsletter / subscription
- * landing page. On a generous paper-toned canvas: an uppercase eyebrow kicker, a
- * large two-line serif display headline, a relaxed lede paragraph, an inline
- * email subscribe form (rounded email input + solid foreground submit button
- * that stacks on mobile), a live subscriber status line, and a small
- * social-proof line with emphasized brand names. Warm, calm, literary mood. The
- * form submit writes to the shared Lakebed subscriber list. Use as the
- * top-of-page hero for newsletters, Substack-style publications, blogs,
- * essayists, or content creators. Renders fully with no props via baked-in
- * defaults.
+ * NewsletterHero — newsprint-lite masthead hero for a newsletter / subscription
+ * landing page. On a clean paper-toned canvas behind a giant faint serif "№156"
+ * ghost watermark: a hairline-ruled masthead rail carries a mono dateline eyebrow
+ * on the left and a mono "Weekly · By email" edition tag on the right, then an
+ * asymmetric 7/5 grid drops a large two-line serif display headline, a relaxed
+ * lede, a square (rounded-none) inline email subscribe form with a mono
+ * uppercase submit button (press feedback), a live subscriber status line, and a
+ * small social-proof line with emphasized brand names on the left — with a
+ * hairline-framed issue nameplate (Vol. 3 · Sunday Edition, a giant serif ordinal
+ * numeral, and a mono delivery footer) on the right at desktop. Restrained,
+ * literary newspaper structure. The form submit writes to the shared Lakebed
+ * subscriber list. Use as the top-of-page hero for newsletters, Substack-style
+ * publications, blogs, essayists, or content creators. Renders fully with no
+ * props via baked-in defaults.
  */
 export const NewsletterHero = defineCapsule({
   name: 'NewsletterHero',
   description:
-    'Centered editorial hero for a newsletter / subscription landing page on a generous paper-toned canvas: an uppercase eyebrow kicker, a large two-line serif display headline, a relaxed lede paragraph, an inline email subscribe form (rounded email input + solid foreground submit button that stacks on mobile), a live subscriber status line, and a small social-proof line with emphasized brand names. Warm, calm, literary mood. Submitting writes to the shared Lakebed subscriber list so another subscribe block or admin view can react immediately. Use as the top-of-page hero for newsletters, Substack-style publications, blogs, essayists, or content creators.',
+    'Newsprint-lite masthead hero for a newsletter / subscription landing page on a clean paper-toned canvas behind a giant faint serif ghost watermark ordinal: a hairline-ruled masthead rail with a mono dateline eyebrow and a mono edition tag, then an asymmetric 7/5 grid with a large two-line serif display headline, a relaxed lede, a square inline email subscribe form with a mono uppercase submit button (press feedback), a live subscriber status line, and a small social-proof line with emphasized brand names on the left, plus a hairline-framed issue nameplate (edition numerals, a giant serif ordinal, mono delivery footer) on the right at desktop. Restrained, literary newspaper structure. Submitting writes to the shared Lakebed subscriber list so another subscribe block or admin view can react immediately. Use as the top-of-page hero for newsletters, Substack-style publications, blogs, essayists, or content creators.',
   props: z.object({
     /** Uppercase eyebrow kicker above the headline. */
     eyebrow: z.string().optional(),
@@ -64,41 +65,77 @@ export const NewsletterHero = defineCapsule({
       <HeroSection
         variant="default"
         className={cn(
-          'pb-12 pt-16 md:pb-16 md:pt-24 lg:pb-24 lg:pt-28',
+          'relative overflow-hidden pb-14 pt-14 md:pb-20 md:pt-20 lg:pb-28 lg:pt-24',
           props.className,
         )}
       >
-        <Container size="lg">
-          <HeroContent className="mx-auto max-w-3xl text-center">
-            <p className="mb-4 text-sm font-medium uppercase tracking-wide text-muted-foreground">
-              {eyebrow}
-            </p>
-            <h1 className="mb-6 font-serif text-4xl font-medium leading-tight text-foreground sm:text-5xl lg:text-6xl">
-              {headingTop}
-              <br className="hidden sm:block" /> {headingBottom}
-            </h1>
-            <HeroSubheading variant="large" className="mb-8">
-              {subheading}
-            </HeroSubheading>
+        <Watermark className="-right-6 top-1/2 -translate-y-1/2 font-serif text-[9rem] font-medium not-italic sm:text-[13rem] lg:right-4 lg:text-[17rem]">
+          №156
+        </Watermark>
 
-            <NewsletterSubscribeForm
-              lakebed={lakebed}
-              source="Newsletter hero"
-              placeholder={emailPlaceholder}
-              buttonLabel={submit}
-              successMessage="You're subscribed. Your next issue will arrive by email."
-              className="mx-auto mb-6 flex max-w-md flex-col gap-3 sm:flex-row"
-              inputClassName="flex-1 rounded-lg border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
-              buttonClassName="rounded-lg bg-foreground px-6 py-3 font-medium text-background transition-colors hover:bg-foreground/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-70"
-              emailLabel="Email address for newsletter subscription"
-            />
+        <Container size="lg" className="relative">
+          <div className="flex items-center justify-between gap-4 border-y border-border py-3">
+            <MonoTag className="tracking-[0.25em]">{eyebrow}</MonoTag>
+            <MonoTag className="hidden tracking-[0.25em] sm:inline">
+              Weekly · By email
+            </MonoTag>
+          </div>
 
-            <p className="text-sm text-muted-foreground">
-              {proofPrefix}
-              <span className="font-medium text-foreground">{proofBrands}</span>
-              .
-            </p>
-          </HeroContent>
+          <div className="grid gap-10 pt-10 md:pt-12 lg:grid-cols-12 lg:gap-12">
+            <div className="lg:col-span-7">
+              <h1 className="font-serif text-4xl font-medium leading-[1.03] tracking-tight text-foreground text-balance sm:text-5xl lg:text-6xl">
+                {headingTop}
+                <br className="hidden sm:block" /> {headingBottom}
+              </h1>
+              <HeroSubheading
+                variant="large"
+                className="mx-0 mb-8 max-w-xl text-pretty"
+              >
+                {subheading}
+              </HeroSubheading>
+
+              <NewsletterSubscribeForm
+                lakebed={lakebed}
+                source="Newsletter hero"
+                placeholder={emailPlaceholder}
+                buttonLabel={submit}
+                successMessage="You're subscribed. Your next issue will arrive by email."
+                className="mb-5 flex max-w-md flex-col gap-2.5 sm:flex-row"
+                inputClassName="min-w-0 flex-1 rounded-none border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground transition-colors focus:border-foreground focus:outline-none"
+                buttonClassName="rounded-none bg-foreground px-6 py-3 font-mono text-xs font-medium uppercase tracking-[0.15em] text-background transition-[transform,background-color] duration-150 hover:bg-foreground/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
+                statusClassName="mt-0"
+                emailLabel="Email address for newsletter subscription"
+              />
+
+              <p className="text-sm text-muted-foreground text-pretty">
+                {proofPrefix}
+                <span className="font-medium text-foreground">
+                  {proofBrands}
+                </span>
+                .
+              </p>
+            </div>
+
+            <div className="hidden self-start border border-foreground/15 lg:col-span-5 lg:block">
+              <div className="flex items-center justify-between border-b border-foreground/15 px-6 py-4">
+                <MonoTag className="tracking-[0.25em]">Vol. 3</MonoTag>
+                <MonoTag className="tracking-[0.25em]">Sunday Edition</MonoTag>
+              </div>
+              <div className="px-6 py-12 text-center">
+                <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
+                  Issue
+                </p>
+                <p className="mt-3 font-serif text-8xl font-medium leading-none tracking-tight text-foreground tabular-nums">
+                  №156
+                </p>
+              </div>
+              <div className="border-t border-foreground/15 px-6 py-4">
+                <MonoTag className="block text-center tracking-[0.2em]">
+                  Every Sunday · No spam
+                </MonoTag>
+              </div>
+            </div>
+          </div>
         </Container>
       </HeroSection>
     )

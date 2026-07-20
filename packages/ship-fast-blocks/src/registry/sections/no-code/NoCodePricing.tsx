@@ -11,14 +11,19 @@ import {
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
- * NoCodePricing — 3-tier pricing table on a subtle muted band. A centered header
- * (eyebrow, heading, paragraph) sits above a monthly/yearly toggle switch with a
- * "save" badge, then a 1-to-3 column grid of plan cards: the featured plan is
- * rendered on the inverse foreground surface with a floating "Most Popular"
- * badge, each card has a name, tagline, big price + period, a full-width CTA,
- * and a checkmarked feature list. Every CTA and the toggle route through
- * section-kit route links. Use as the pricing section for a no-code builder, SaaS, or any
- * subscription product. Renders fully with no props.
+ * NoCodePricing — block-builder-kinetic collapsed-border pricing ledger for a
+ * no-code / app-builder SaaS landing page, backed by shared Lakebed conversion
+ * state. An asymmetric header (mono eyebrow, a left-aligned heading with a
+ * tilted primary marker block behind the key word, mono meta right) sits above
+ * an interactive monthly/yearly rounded-full toggle with a mono "save" chip,
+ * then a sharp-cornered, collapsed-border 3-tier ledger: each cell carries a
+ * mono plan index, name, blurb, a giant tabular-nums price + period, a
+ * hairline-divided feature checklist, and a full-width square CTA with a hard
+ * offset shadow and press feedback. The featured tier inverts to
+ * bg-foreground/text-background with a rotated "Most Popular" marker chip. Plans
+ * seed command search and every CTA records selected plan or sales intent. Use
+ * as the pricing section for a no-code / app-builder SaaS or any subscription
+ * product. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import {
@@ -33,11 +38,11 @@ import {
   PricingTierFeatures,
   PricingTierFeature,
 } from '#/section-kit/PricingGrid.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 export const NoCodePricing = defineCapsule({
   name: 'NoCodePricing',
   description:
-    '3-tier pricing table backed by shared Lakebed conversion state: a centered header above an interactive monthly/yearly toggle, then plan cards where CTAs have scoped mutation loading. Plans seed command search and every CTA records selected plan or sales intent. Use as the pricing section for a no-code / app-builder SaaS or any subscription product.',
+    'Block-builder-kinetic collapsed-border pricing ledger for a no-code / app-builder SaaS landing page backed by shared Lakebed conversion state: an asymmetric header (mono eyebrow, marker-highlighted heading left, mono meta right) above an interactive monthly/yearly toggle, then a sharp 3-tier collapsed-border ledger with mono plan indexes, giant tabular-nums prices, hairline feature checklists and square hard-shadow mutation CTAs; the featured tier inverts to a dark surface with a rotated Most Popular chip. Plans seed command search and every CTA records selected plan or sales intent. Use as the pricing section for a no-code / app-builder SaaS or any subscription product.',
   props: z.object({
     /** Muted uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -138,60 +143,83 @@ export const NoCodePricing = defineCapsule({
         }),
       ),
     )
+    const headingWords = heading.split(' ')
+    const headingLead = headingWords.slice(0, -1).join(' ')
+    const headingMark = headingWords.at(-1) ?? ''
     return (
       <section
-        className={cn('bg-muted/40 py-24', props.className)}
+        className={cn(
+          'relative overflow-hidden bg-muted/40 py-16 lg:py-24',
+          props.className,
+        )}
         aria-labelledby="nc-pricing"
       >
-        <Container>
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            className="mx-auto mb-12 max-w-3xl gap-0"
-            titleId="nc-pricing"
-            eyebrowClassName="mb-3 inline-block text-sm font-medium uppercase tracking-wider text-muted-foreground"
-            titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
-            subtitleClassName="mb-8 text-lg text-muted-foreground"
-          />
-          <div className="flex items-center justify-center gap-4">
-            <span className="text-sm font-medium text-foreground">
-              {monthlyLabel}
-            </span>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={isYearly}
-              aria-label="Toggle yearly billing"
-              onClick={() =>
-                setBilling((current) =>
-                  current === 'monthly' ? 'yearly' : 'monthly',
-                )
-              }
-              className="relative h-8 w-14 rounded-full bg-foreground p-1"
-            >
-              <span
-                className={cn(
-                  'block size-6 rounded-full bg-background shadow transition-transform',
-                  isYearly ? 'translate-x-6' : 'translate-x-0',
-                )}
-              />
-            </button>
-            <span className="text-sm font-medium text-muted-foreground">
-              {yearlyLabel}
-            </span>
-            <span className="rounded-full bg-chart-2/15 px-2 py-1 text-xs font-medium text-chart-2">
-              {saveBadge}
-            </span>
+        <Container className="relative">
+          {/* Asymmetric header: mono eyebrow, marker heading left, mono meta right. */}
+          <div className="mb-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-12">
+            <div className="max-w-2xl">
+              <MonoTag className="mb-4 block">
+                {eyebrow}
+                <span aria-hidden="true" className="text-primary">
+                  {' '}
+                  · per plan
+                </span>
+              </MonoTag>
+              <h2
+                id="nc-pricing"
+                className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl"
+              >
+                {headingLead}{' '}
+                <span className="relative ml-[0.12em] inline-block whitespace-nowrap">
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-[-0.15em] inset-y-[0.05em] -rotate-1 bg-primary"
+                  />
+                  <span className="relative text-primary-foreground">
+                    {headingMark}
+                  </span>
+                </span>
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">
+                {description}
+              </p>
+            </div>
+            {/* Billing toggle — mono labels + rounded-full sticker switch. */}
+            <div className="flex shrink-0 items-center gap-3">
+              <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-foreground">
+                {monthlyLabel}
+              </span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={isYearly}
+                aria-label="Toggle yearly billing"
+                onClick={() =>
+                  setBilling((current) =>
+                    current === 'monthly' ? 'yearly' : 'monthly',
+                  )
+                }
+                className="relative h-7 w-12 rounded-full border border-foreground bg-background p-0.5 transition-colors"
+              >
+                <span
+                  className={cn(
+                    'block size-5 rounded-full bg-primary transition-transform',
+                    isYearly ? 'translate-x-5' : 'translate-x-0',
+                  )}
+                />
+              </button>
+              <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                {yearlyLabel}
+              </span>
+              <span className="rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-primary">
+                {saveBadge}
+              </span>
+            </div>
           </div>
-          <PricingGrid>
-            <SectionHeading
-              title={'Simple, transparent pricing'}
-              subtitle={
-                'Start free, scale as you grow. No hidden fees, no surprises.'
-              }
-            />
-            {plans.map((tier) => {
+
+          {/* Collapsed-border tier ledger — sharp corners, shared hairlines. */}
+          <PricingGrid className="gap-0 border-l border-t border-border sm:gap-0 md:grid-cols-3 xl:grid-cols-3">
+            {plans.map((tier, index) => {
               const t = tier as {
                 name: string
                 price: string
@@ -216,62 +244,111 @@ export const NoCodePricing = defineCapsule({
                 priceSuffix?: string
                 note?: string
               }
+              const isFeatured = Boolean(
+                t.highlighted || t.featured || t.popular,
+              )
+              const blurb = t.tagline || t.blurb || t.description || t.audience
+              const unit = t.period || t.unit || t.cadence || t.suffix
               return (
                 <PricingTier
                   key={t.name}
-                  variant={
-                    t.highlighted || t.featured || t.popular
-                      ? 'highlighted'
-                      : undefined
-                  }
+                  variant={isFeatured ? 'highlighted' : undefined}
+                  className={cn(
+                    'gap-0 rounded-none border-0 border-b border-r border-border p-6 shadow-none sm:p-8 lg:p-8',
+                    isFeatured
+                      ? 'bg-foreground text-background md:-my-3 md:border md:border-foreground md:py-11'
+                      : 'bg-card',
+                  )}
                 >
-                  {t.highlighted || t.featured || t.popular ? (
-                    <PricingTierBadge>{t.badge ?? 'Popular'}</PricingTierBadge>
+                  {isFeatured ? (
+                    <PricingTierBadge className="absolute -top-3 right-6 rotate-2 rounded-none bg-background px-3 py-1 font-mono text-[11px] uppercase tracking-[0.2em] text-foreground">
+                      {t.badge ?? 'Popular'}
+                    </PricingTierBadge>
                   ) : null}
-                  <PricingTierHeader>
-                    <PricingTierName>{t.name}</PricingTierName>
-                    {t.tagline && (
-                      <PricingTierTagline>{t.tagline}</PricingTierTagline>
-                    )}
-                    {t.blurb && (
-                      <PricingTierTagline>{t.blurb}</PricingTierTagline>
-                    )}
-                    {t.description && (
-                      <PricingTierTagline>{t.description}</PricingTierTagline>
-                    )}
-                    {t.audience && (
-                      <PricingTierTagline>{t.audience}</PricingTierTagline>
-                    )}
-                    <PricingTierPrice>{t.price}</PricingTierPrice>
-                    {t.period && (
-                      <PricingTierPeriod>{t.period}</PricingTierPeriod>
-                    )}
-                    {t.unit && <PricingTierPeriod>{t.unit}</PricingTierPeriod>}
-                    {t.cadence && (
-                      <PricingTierPeriod>{t.cadence}</PricingTierPeriod>
-                    )}
-                    {t.suffix && (
-                      <PricingTierPeriod>{t.suffix}</PricingTierPeriod>
-                    )}
+                  <PricingTierHeader className="gap-0">
+                    <MonoTag
+                      aria-hidden="true"
+                      tone={isFeatured ? 'inverted' : 'muted'}
+                    >
+                      {String(index + 1).padStart(2, '0')} / plan
+                    </MonoTag>
+                    <PricingTierName
+                      className={cn(
+                        'mt-3 text-xl font-bold tracking-tight',
+                        isFeatured ? 'text-background' : 'text-foreground',
+                      )}
+                    >
+                      {t.name}
+                    </PricingTierName>
+                    {blurb ? (
+                      <PricingTierTagline
+                        className={cn(
+                          'mt-2',
+                          isFeatured ? 'text-background/70' : undefined,
+                        )}
+                      >
+                        {blurb}
+                      </PricingTierTagline>
+                    ) : null}
+                    <span className="mt-6 flex items-baseline gap-2">
+                      <PricingTierPrice
+                        className={cn(
+                          'text-5xl font-extrabold leading-none tracking-tight tabular-nums sm:text-5xl',
+                          isFeatured ? 'text-background' : 'text-foreground',
+                        )}
+                      >
+                        {t.price}
+                      </PricingTierPrice>
+                      {unit ? (
+                        <PricingTierPeriod
+                          className={cn(
+                            'font-mono text-[11px] uppercase tracking-[0.12em]',
+                            isFeatured ? 'text-background/60' : undefined,
+                          )}
+                        >
+                          {unit}
+                        </PricingTierPeriod>
+                      ) : null}
+                    </span>
                   </PricingTierHeader>
-                  {t.features && (
-                    <PricingTierFeatures>
+                  {t.features ? (
+                    <PricingTierFeatures
+                      className={cn(
+                        'mt-6 gap-0 divide-y border-t',
+                        isFeatured
+                          ? 'divide-background/15 border-background/15'
+                          : 'divide-border border-border',
+                      )}
+                    >
                       {t.features.map((feature) => (
                         <PricingTierFeature
-                          key={
-                            typeof feature === 'string'
-                              ? feature
-                              : (feature as { label: string }).label
-                          }
+                          key={feature}
+                          className={cn(
+                            'gap-3 py-2.5',
+                            isFeatured
+                              ? 'text-background/85 [&>svg]:text-background'
+                              : 'text-foreground/85',
+                          )}
                         >
-                          {typeof feature === 'string'
-                            ? feature
-                            : (feature as { label: string }).label}
+                          {feature}
+                        </PricingTierFeature>
+                      ))}
+                      {(t.excluded ?? []).map((feature) => (
+                        <PricingTierFeature
+                          key={feature}
+                          className={cn(
+                            'gap-3 py-2.5 line-through [&>svg]:invisible',
+                            isFeatured
+                              ? 'text-background/40'
+                              : 'text-muted-foreground/60',
+                          )}
+                        >
+                          {feature}
                         </PricingTierFeature>
                       ))}
                     </PricingTierFeatures>
-                  )}
-                  {t.cta && (
+                  ) : null}
+                  {t.cta ? (
                     <SaasPlanActionButton
                       lakebed={lakebed}
                       intentLabel={t.cta}
@@ -285,15 +362,15 @@ export const NoCodePricing = defineCapsule({
                         </>
                       }
                       className={cn(
-                        'mt-auto inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-70',
-                        t.highlighted || t.featured || t.popular
-                          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                          : 'bg-foreground text-background hover:bg-foreground/90',
+                        'mt-8 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-none px-5 py-2.5 text-sm font-semibold transition-[transform,box-shadow,background-color] duration-150 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-70',
+                        isFeatured
+                          ? 'bg-background text-foreground shadow-[4px_4px_0_0] shadow-background/30 hover:bg-background/90'
+                          : 'border border-foreground bg-background text-foreground shadow-[4px_4px_0_0] shadow-foreground hover:bg-muted',
                       )}
                     >
                       {t.cta}
                     </SaasPlanActionButton>
-                  )}
+                  ) : null}
                 </PricingTier>
               )
             })}

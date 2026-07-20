@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
   NavbarActions,
@@ -10,18 +10,19 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
- * VacationRentalNavbar — airy sticky top navigation for a vacation-rental /
- * getaway listing site. Thin configuration over the shared `SiteNav` composite:
- * a hand-drawn palm-and-sun logo mark beside the property wordmark, horizontal
- * desktop nav links (Stays, Amenities, Gallery, Reviews, Book Now), a phone
- * number, a pill "Book Now" CTA, and a real mobile drawer (Sheet) on small
- * screens. Every nav item and the CTA route through route hrefs so labels can
- * drive page-switching. Use as the inviting site header for vacation rentals,
- * beach houses, cabins, villas, or boutique short-stay properties. Renders fully
- * with no props via baked-in "Azure Cove Retreats" defaults.
+ * VacationRentalNavbar — fixed, backdrop-blurred editorial-wanderlust header for
+ * a vacation-rental / stay listing site. Thin configuration over the shared
+ * `SiteNav` composite: a hand-drawn palm-and-sun logo mark (as the brand-image
+ * fallback) beside the property wordmark on the left, horizontal desktop nav
+ * links (Stays, Amenities, Gallery, Reviews, Book Now), a mono-lettered phone
+ * number, a sharp-cornered mono "Book Now" CTA with press feedback, and a real
+ * mobile drawer (Sheet) on small screens. Every nav item and the CTA route
+ * through route hrefs so labels can drive page-switching. Use as the inviting
+ * site header for vacation rentals, beach houses, cabins, villas, or boutique
+ * short-stay properties. Renders fully with no props via baked-in
+ * "Azure Cove Retreats" defaults.
  */
 function PalmMark({ className }: { className?: string }) {
   return (
@@ -49,7 +50,7 @@ function PalmMark({ className }: { className?: string }) {
 export const VacationRentalNavbar = defineCapsule({
   name: 'VacationRentalNavbar',
   description:
-    'Airy sticky top navigation for a vacation-rental / getaway listing site built on the shared SiteNav composite: a palm-and-sun logo mark and property wordmark, horizontal desktop nav links, a phone number, a pill Book Now CTA, and a real mobile drawer. Nav items and CTA route through route hrefs for page-switching. Use as the inviting site header for vacation rentals, beach houses, cabins, villas, or boutique short-stay properties.',
+    'Fixed backdrop-blurred editorial-wanderlust header for a vacation-rental / stay listing site built on the shared SiteNav composite: a palm-and-sun logo mark and property wordmark on the left, horizontal desktop nav links, a mono phone number, a sharp-cornered mono Book Now CTA with press feedback, and a real mobile drawer. Nav items and CTA route through route hrefs for page-switching. Use as the inviting site header for vacation rentals, beach houses, cabins, villas, or boutique short-stay properties.',
   props: z.object({
     /** Property / brand name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -70,24 +71,29 @@ export const VacationRentalNavbar = defineCapsule({
       ? props.nav
       : ['Stays', 'Amenities', 'Gallery', 'Reviews', 'Book Now']
     const brand = props.brand ?? 'Azure Cove Retreats'
-    const brandMark = <PalmMark className="size-8 text-primary" />
-    const brandClassName = 'text-xl font-semibold tracking-tight'
     const phone = props.phone ?? '+1 (800) 555-0199'
     const ctaLabel = props.ctaLabel ?? 'Book Now'
     const ctaTarget = props.ctaTarget ?? 'Book Now'
     const homeTarget = props.homeTarget ?? nav[0]
     return (
-      <SiteNav position="fixed" height="default" className={props.className}>
-        <NavbarBrand href={homeTarget} className="gap-3">
-          {brandMark}
-          <Logo brand={brand}>
-            <LogoImage />
-            <LogoLabel className={brandClassName} />
-          </Logo>
+      <SiteNav
+        position="fixed"
+        height="default"
+        className={props.className}
+        containerClassName="px-6 lg:px-8"
+      >
+        <NavbarBrand href={homeTarget}>
+          <BrandLogo brand={brand} className="flex items-center gap-2.5">
+            <LogoImage
+              className="size-7"
+              fallback={<PalmMark className="size-7 text-primary" />}
+            />
+            <LogoLabel className="text-lg font-semibold tracking-tight" />
+          </BrandLogo>
         </NavbarBrand>
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink key={label} href={label} className="text-sm">
               {label}
             </NavbarNavLink>
           ))}
@@ -96,14 +102,14 @@ export const VacationRentalNavbar = defineCapsule({
           {phone ? (
             <a
               href={`tel:${phone.replace(/[^\d+]/g, '')}`}
-              className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline"
+              className="hidden font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground lg:inline"
             >
               {phone}
             </a>
           ) : null}
           <NavbarCta
             variant="primary-pill"
-            className="hidden px-5 py-2.5 sm:inline-flex"
+            className="hidden rounded-none px-6 py-3 font-mono text-[11px] font-medium uppercase tracking-[0.18em] transition-[background-color,transform] duration-150 active:translate-y-px sm:inline-flex"
             href={ctaTarget}
           >
             {ctaLabel}

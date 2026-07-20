@@ -5,12 +5,11 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ProgramGrid, ProgramCard } from '#/section-kit/ProgramGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { cn } from '#/lib/utils.ts'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const UniversityPrograms = defineCapsule({
   name: 'UniversityPrograms',
   description:
-    "Bespoke degree-program showcase for the University page family with a prestigious, collegiate aesthetic. Opens with a SectionHeading, then lays out a responsive grid of program cards — each naming a school, a degree, and a short blurb, with a per-card 'Explore program' link routed via section-kit route links. Card and border tokens give each program a refined, catalog-style frame. Use to summarize flagship academic offerings across colleges on a university homepage.",
+    "Editorial-academic degree-program index for the University page family, laid out as a university-catalog ledger. An asymmetric header pairs a left-aligned mono eyebrow + serif heading + lede with a mono program count on the right, over a collapsed-border grid whose cells share hairline rules. Each cell is numbered like a course index (mono 'PROG 01') with a giant ghost numeral watermark, a mono uppercase school label, a serif degree title, a short blurb, and a per-card 'Explore program' link (with press/gap feedback) routed via section-kit route links. Binary sharp corners throughout. Use to summarize flagship academic offerings across colleges on a university homepage.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -85,29 +84,53 @@ export const UniversityPrograms = defineCapsule({
         )}
       >
         <Container size="xl" className="px-6">
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={subheading}
-          />
-          <ProgramGrid cols="1-md-2-3" className="mt-14">
+          <div className="flex flex-col gap-6 border-b border-border pb-8 md:flex-row md:items-end md:justify-between">
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={subheading}
+              className="max-w-2xl gap-3"
+              titleClassName="font-serif text-4xl font-semibold tracking-tight text-foreground sm:text-5xl"
+              subtitleClassName="max-w-xl text-muted-foreground md:text-base"
+            />
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] tabular-nums text-muted-foreground"
+            >
+              {String(programs.length).padStart(2, '0')} programs · index
+            </p>
+          </div>
+          <ProgramGrid
+            cols="1-md-2-3"
+            className="mt-0 gap-0 border-l border-t border-border"
+          >
             {programs.map((program, i) => (
               <ProgramCard
                 key={`${program.degree ?? 'program'}-${i}`}
-                variant="default"
-                className="flex flex-col rounded-2xl p-7 text-card-foreground transition hover:border-primary/40 hover:shadow-lg"
+                variant="none"
+                className="relative flex flex-col rounded-none border-b border-r border-border bg-card p-7 text-card-foreground transition-colors duration-150 hover:bg-muted/40"
               >
-                <p className="font-serif text-sm font-semibold uppercase tracking-wide text-primary">
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute right-4 top-3 select-none font-serif text-6xl font-semibold leading-none tabular-nums text-foreground/[0.06]"
+                >
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+                  Prog {String(i + 1).padStart(2, '0')}
+                </p>
+                <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                   {program.school}
                 </p>
-                <h3 className="mt-2 text-xl font-semibold text-card-foreground">
+                <h3 className="mt-1 font-serif text-xl font-semibold tracking-tight text-card-foreground">
                   {program.degree}
                 </h3>
                 <p className="mt-3 flex-1 text-sm leading-6 text-muted-foreground">
                   {program.blurb}
                 </p>
                 <NavbarRouteLink
-                  className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-primary transition hover:gap-2"
+                  className="mt-6 inline-flex items-center gap-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-primary transition-[gap] duration-150 hover:gap-3"
                   href={linkTarget}
                 >
                   {linkLabel}

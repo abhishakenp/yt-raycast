@@ -22,8 +22,7 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * BeautyStoreHero — editorial vogue hero for a beauty / skincare / cosmetics
  * e-commerce storefront. A magazine-cover composition: a giant ghost serif

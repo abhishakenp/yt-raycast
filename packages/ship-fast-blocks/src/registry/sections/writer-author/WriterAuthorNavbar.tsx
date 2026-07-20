@@ -10,18 +10,17 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
  * WriterAuthorNavbar — sticky site header for a literary author or novelist
  * site with a serif, letterpress sensibility. Thin configuration over the
- * shared `SiteNav` composite: a serif wordmark beside an inline open-book /
- * feather mark, centered nav links on desktop, an optional press/agent phone
- * number, a "Get the Book" CTA that routes to the Books page, and a real
- * mobile drawer on small screens. Use as the header for author landing pages,
- * book-launch microsites, poets, essayists, or any writer's personal brand
- * where the new release matters. Renders fully with no props via baked-in
- * "Eleanor Vance" defaults.
+ * shared `SiteNav` composite (backdrop blur intact): a serif wordmark beside an
+ * inline open-book feather mark, centered nav links on desktop, an optional
+ * mono press/agent phone number, a rounded-none "Get the Book" CTA that routes
+ * to the Books page and presses in on click, and a real mobile drawer on small
+ * screens. Use as the header for author landing pages, book-launch microsites,
+ * poets, essayists, or any writer's personal brand where the new release
+ * matters. Renders fully with no props via baked-in "Eleanor Vance" defaults.
  */
 function FeatherMark({ className }: { className?: string }) {
   return (
@@ -46,7 +45,7 @@ function FeatherMark({ className }: { className?: string }) {
 export const WriterAuthorNavbar = defineCapsule({
   name: 'WriterAuthorNavbar',
   description:
-    "Sticky author / novelist site header with a serif, letterpress feel, built on the shared SiteNav composite: serif wordmark + an open-book feather mark, centered desktop nav links, an optional press phone number, a 'Get the Book' CTA routing to the Books page, and a real mobile drawer. Use as the header for author landing pages, book-launch microsites, poets, essayists, or any writer's personal brand.",
+    "Sticky author / novelist site header with a serif, letterpress feel, built on the shared SiteNav composite (backdrop blur intact): serif wordmark + an open-book feather mark, centered desktop nav links, an optional mono press phone number, a rounded-none 'Get the Book' CTA routing to the Books page, and a real mobile drawer. Use as the header for author landing pages, book-launch microsites, poets, essayists, or any writer's personal brand.",
   props: z.object({
     /** Author / brand name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -67,18 +66,17 @@ export const WriterAuthorNavbar = defineCapsule({
       ? props.nav
       : ['Books', 'About', 'Reviews', 'Newsletter']
     const brand = props.brand ?? 'Eleanor Vance'
-    const brandMark = <FeatherMark className="size-8 text-primary" />
-    const brandClassName = 'font-serif text-xl font-medium'
+    const brandMark = <FeatherMark className="size-7 text-primary" />
+    const brandClassName = 'font-serif text-xl font-medium tracking-tight'
     const phone = props.phone ?? '(212) 555-0148'
     const ctaLabel = props.ctaLabel ?? 'Get the Book'
     const ctaTarget = props.ctaTarget ?? 'Books'
     const homeTarget = props.homeTarget ?? nav[0]
     return (
       <SiteNav position="fixed" height="default" className={props.className}>
-        <NavbarBrand href={homeTarget} className="gap-3">
-          {brandMark}
+        <NavbarBrand href={homeTarget} className="flex items-center gap-2">
           <Logo brand={brand}>
-            <LogoImage />
+            <LogoImage className="size-7" fallback={brandMark} />
             <LogoLabel className={brandClassName} />
           </Logo>
         </NavbarBrand>
@@ -93,14 +91,14 @@ export const WriterAuthorNavbar = defineCapsule({
           {phone ? (
             <a
               href={`tel:${phone.replace(/[^\d+]/g, '')}`}
-              className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline"
+              className="hidden font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground sm:inline"
             >
               {phone}
             </a>
           ) : null}
           <NavbarCta
             variant="primary-pill"
-            className="hidden px-5 py-2.5 sm:inline-flex"
+            className="hidden rounded-none px-5 py-2.5 transition-transform duration-100 active:translate-y-px sm:inline-flex"
             href={ctaTarget}
           >
             {ctaLabel}

@@ -12,11 +12,12 @@ import {
 } from '#/section-kit/PersonCard.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 
 export const WebinarAuthors = defineCapsule({
   name: 'WebinarAuthors',
   description:
-    'Speaker lineup band for a webinar or virtual event: a SectionHeading over a responsive grid of speaker cards, each with a rounded avatar photograph, name, role, company, and a short credibility-building bio. Use to introduce the presenters and establish authority on a webinar registration page.',
+    'Kinetic-event speaker lineup for a webinar or virtual summit: an asymmetric left-aligned header (mono index eyebrow + oversized heading + lede) with a giant ghost watermark, above a responsive grid of staggered, hairline-framed speaker cards. Each square-edged outlined card carries a mono lineup numeral, a square-framed avatar photograph, the name, a mono uppercase role, company, and a short credibility-building bio, and steps down the page for a kinetic stagger. Use to introduce the presenters and establish authority on a webinar registration page.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -69,41 +70,67 @@ export const WebinarAuthors = defineCapsule({
           },
         ]
 
+    const stagger = [
+      'lg:translate-y-0',
+      'lg:translate-y-8',
+      'lg:translate-y-16',
+    ]
+
     return (
       <section
         className={cn(
-          'bg-background py-20 text-foreground lg:py-28',
+          'relative overflow-hidden bg-background py-20 text-foreground lg:py-28',
           props.className,
         )}
       >
-        <Container size="lg" className="px-6 lg:px-6">
+        <Watermark className="-left-6 top-8 text-[7rem] leading-none sm:text-[12rem] lg:text-[16rem]">
+          LINEUP
+        </Watermark>
+        <Container size="lg" className="relative">
           <SectionHeading
-            eyebrow={eyebrow}
+            align="left"
+            eyebrow={`01 / ${eyebrow}`}
             title={heading}
             subtitle={subheading}
+            className="max-w-2xl gap-4"
+            eyebrowClassName="text-muted-foreground"
+            titleClassName="text-4xl font-extrabold tracking-tight sm:text-5xl"
+            subtitleClassName="text-lg text-muted-foreground"
           />
 
-          <ResponsiveGrid cols="1-2-3" className="mt-14 gap-6">
+          <ResponsiveGrid cols="1-2-3" className="mt-14 items-start gap-6">
             {speakers.map((speaker, i) => (
               <PersonCard
                 key={`${speaker.name}-${i}`}
                 variant="outlined"
-                className="items-center p-8 text-center rounded-2xl"
+                className={cn(
+                  'items-center rounded-none border-foreground/80 p-8 text-center shadow-[6px_6px_0_0] shadow-foreground/10',
+                  stagger[i % stagger.length],
+                )}
               >
+                <div className="flex w-full items-center justify-between">
+                  <span
+                    aria-hidden="true"
+                    className="font-mono text-sm tabular-nums text-muted-foreground/50"
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span aria-hidden="true" className="size-1.5 bg-primary" />
+                </div>
                 <Image
                   alt={speaker.avatarAlt}
                   w={160}
                   h={160}
                   loading="lazy"
-                  className="size-20 rounded-full object-cover"
+                  className="mt-4 size-20 rounded-none border border-border object-cover"
                 />
-                <PersonCardName className="mt-5 text-lg">
+                <PersonCardName className="mt-5 text-lg font-bold tracking-tight">
                   {speaker.name}
                 </PersonCardName>
-                <PersonCardRole className="mt-1 font-medium text-primary">
+                <PersonCardRole className="mt-1 font-mono text-[11px] uppercase tracking-[0.14em] text-primary">
                   {speaker.role}
                 </PersonCardRole>
-                <p className="text-sm text-muted-foreground">
+                <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                   {speaker.company}
                 </p>
                 <PersonCardBio className="mt-4 leading-6">

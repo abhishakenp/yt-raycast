@@ -12,8 +12,7 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Watermark } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * IllustratorWork — a selected-work gallery for an illustrator / visual-artist
  * portfolio on a raised card band. A header row pairs a mono index micro-label +

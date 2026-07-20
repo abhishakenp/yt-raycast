@@ -21,8 +21,7 @@ import {
   InquiryActionButton,
   InquiryMutationSpinner,
 } from '../contact/inquiry-interactions.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * EventPlannerHero — kinetic-poster split hero for an elegant event-planning
  * studio. A 7:5 asymmetric layout pairing a left text column (a ticket-stub

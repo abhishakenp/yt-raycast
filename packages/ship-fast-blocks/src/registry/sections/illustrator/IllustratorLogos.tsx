@@ -10,8 +10,7 @@ import {
 } from '#/section-kit/LogoStrip.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { MonoTag } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * IllustratorLogos — a hand-made "featured in" credits strip for an illustrator
  * / visual-artist portfolio on a paper-wash muted band framed by dashed top and

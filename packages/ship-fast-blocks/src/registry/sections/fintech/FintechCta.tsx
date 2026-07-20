@@ -11,8 +11,7 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * FintechCta — Swiss-fintech closing call-to-action band for a neobank landing
  * page. A full-width muted band framed by hairline top/bottom rules with a

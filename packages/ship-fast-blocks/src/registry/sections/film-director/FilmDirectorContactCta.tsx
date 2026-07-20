@@ -10,8 +10,7 @@ import {
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * FilmDirectorContactCta — an inverted, cinematic "final cut" contact CTA band
  * for a film director or cinematographer. On a bg-foreground/text-background band

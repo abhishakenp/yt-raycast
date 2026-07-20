@@ -1,12 +1,14 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { cn } from '#/lib/utils.ts'
 import {
   CtaBand,
   CtaBandInner,
   CtaBandTitle,
   CtaBandSubtitle,
 } from '#/section-kit/CtaBand.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import {
   LocalServiceBookingButton,
   LocalServiceMutationSpinner,
@@ -14,18 +16,22 @@ import {
 import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
- * MentalHealthContactCta — a final full-bleed booking CTA band for a therapy
- * practice. A solid primary-colored section with a centered heading + reassuring
- * paragraph, dual rounded CTAs (a light booking button with a calendar icon + an
- * outline phone button), and a row of trust badges (HIPAA, secure, next-day) with
- * checkmarks. Calm yet confident wellness aesthetic. CTAs route through
- * section-kit route links. Use as the closing conversion section for therapists, counselors,
- * psychologists or wellness centers.
+ * MentalHealthContactCta — the single inverted closing band for a therapy
+ * practice, cut in on a gentle slanted clip-path seam. On a calm
+ * bg-foreground / text-background surface with a giant faint ghost quotation
+ * watermark: a centered serif heading + reassuring paragraph, a pair of square
+ * buttons (a filled background-on-ink online-booking button with a calendar
+ * icon and a hairline outline click-to-call button with a phone icon, both with
+ * press feedback), and a hairline-topped mono row of reassurance badges (HIPAA,
+ * secure, next-day) with tick glyphs. Warm yet confident wellness aesthetic.
+ * Buttons request a booking through the shared lakebed. Use as the closing
+ * conversion section for therapists, counselors, psychologists or wellness
+ * centers.
  */
 export const MentalHealthContactCta = defineCapsule({
   name: 'MentalHealthContactCta',
   description:
-    'Final full-bleed booking CTA band for a therapy practice: a solid primary-colored section with a centered heading + reassuring paragraph, dual rounded CTAs (a light booking button with a calendar icon + an outline phone button), and a row of trust badges (HIPAA, secure, next-day) with checkmarks. Calm yet confident wellness aesthetic. CTAs route through section-kit route links. Use as the closing conversion section for therapists, counselors, psychologists or wellness centers.',
+    'Single inverted closing band for a therapy practice, cut in on a gentle slanted clip-path seam: a calm bg-foreground / text-background surface with a giant faint ghost quotation watermark, a centered serif heading + reassuring paragraph, a pair of square buttons (a filled background-on-ink online-booking button with a calendar icon and a hairline outline click-to-call button with a phone icon), and a hairline-topped mono row of reassurance badges (HIPAA, secure, next-day) with tick glyphs. Warm yet confident wellness aesthetic. Buttons request a booking through the shared lakebed. Use as the closing conversion section for therapists, counselors, psychologists or wellness centers.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -86,19 +92,31 @@ export const MentalHealthContactCta = defineCapsule({
     return (
       <CtaBand
         tone="primary"
-        className={`relative overflow-hidden ${props.className ?? ''}`}
+        className={cn(
+          'relative overflow-hidden bg-foreground text-background [clip-path:polygon(0_2.5rem,100%_0,100%_100%,0_100%)]',
+          props.className,
+        )}
       >
-        <CtaBandInner>
-          <CtaBandTitle>{heading}</CtaBandTitle>
-          <CtaBandSubtitle>{description}</CtaBandSubtitle>
-          <div className="flex flex-col justify-center gap-4 sm:flex-row">
+        <Watermark className="-right-8 -top-16 select-none font-serif text-[16rem] text-background/[0.05] sm:text-[22rem]">
+          &rdquo;
+        </Watermark>
+        <CtaBandInner className="items-center gap-7 pb-20 pt-24 text-center sm:pb-24 sm:pt-32 lg:pb-28 lg:pt-40">
+          <CtaBandTitle className="max-w-3xl font-serif text-[clamp(2.25rem,5vw,3.75rem)] font-medium leading-[1.05] tracking-tight">
+            {heading}
+          </CtaBandTitle>
+          <CtaBandSubtitle className="max-w-2xl text-background/70 opacity-100">
+            {description}
+          </CtaBandSubtitle>
+          <div className="relative flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row sm:gap-4">
             <LocalServiceBookingButton
               lakebed={lakebed}
               intentLabel={bookLabel}
               service={primaryCta}
               source="final-cta"
-              pendingChildren={<LocalServiceMutationSpinner />}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-background px-8 py-4 font-medium text-primary shadow-lg transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-70"
+              pendingChildren={
+                <LocalServiceMutationSpinner className="text-foreground" />
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-none bg-background px-8 py-4 text-base font-semibold text-foreground transition-colors hover:bg-background/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
             >
               <svg
                 className="size-5"
@@ -122,18 +140,18 @@ export const MentalHealthContactCta = defineCapsule({
               service="Phone consultation"
               source="final-cta-phone"
               pendingChildren={
-                <LocalServiceMutationSpinner className="text-primary-foreground" />
+                <LocalServiceMutationSpinner className="text-background" />
               }
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-primary-foreground/30 bg-primary/80 px-8 py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/70 disabled:pointer-events-none disabled:opacity-70"
+              className="inline-flex items-center justify-center gap-2 rounded-none border border-background/30 px-8 py-4 text-base font-semibold text-background transition-colors hover:bg-background/10 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
             >
               <Phone className="size-5" />
               {secondaryCta}
             </LocalServiceBookingButton>
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-primary-foreground/80">
+          <div className="relative mt-2 flex w-full flex-wrap items-center justify-center gap-x-8 gap-y-3 border-t border-background/20 pt-6 font-mono text-[11px] uppercase tracking-[0.15em] text-background/60">
             {badges.map((b) => (
-              <div key={b} className="flex items-center gap-2">
-                <Check className="size-5" />
+              <div key={b} className="flex items-center gap-2.5">
+                <Check className="size-4 text-background/50" />
                 <span>{b}</span>
               </div>
             ))}

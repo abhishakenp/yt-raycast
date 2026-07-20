@@ -25,7 +25,7 @@ import {
   PracticeAreaCard,
   PracticeAreaIcon,
 } from '#/section-kit/PracticeAreaGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const LawFirmPracticeAreas = defineCapsule({
   name: 'LawFirmPracticeAreas',
   description:

@@ -3,14 +3,15 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * LendingSteps — a 3-step "how it works" flow on a muted section band for a
- * lending or fintech marketing page. A centered heading + description above a
- * responsive 3-up grid of white step cards, each with a numbered primary circle
- * badge, a title, a descriptive paragraph, and a small clock-noted time estimate;
- * connecting arrow glyphs sit between cards on desktop. Use to explain a simple
- * apply-and-fund process — check rate, choose terms, get funded — on loan,
- * onboarding, or fintech landing pages. Renders fully with no props via baked-in
- * defaults.
+ * LendingSteps — Swiss-fintech "how it works" step ledger on a muted band for a
+ * lending or fintech marketing page. An asymmetric header (left-aligned heading +
+ * lede, mono step count right) sits above a sharp-cornered, collapsed-border
+ * 3-column grid whose cells share hairline rules (binary radius, no gaps); each
+ * cell carries a giant ghost tabular numeral watermark, a mono primary "Step 01"
+ * label, a title, a description, and a small mono clock-noted time estimate. Use
+ * to explain a simple apply-and-fund process — check rate, choose terms, get
+ * funded — on loan, onboarding, or fintech landing pages. Renders fully with no
+ * props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -23,7 +24,7 @@ import {
 export const LendingSteps = defineCapsule({
   name: 'LendingSteps',
   description:
-    "3-step 'how it works' flow on a muted band for a lending or fintech marketing page: centered heading + description above a responsive 3-up grid of white step cards, each with a numbered primary circle badge, a title, a descriptive paragraph and a small clock-noted time estimate; connecting arrow glyphs between cards on desktop. Use to explain a simple apply-and-fund process — check rate, choose terms, get funded — on loan, onboarding, or fintech landing pages.",
+    "Swiss-fintech 'how it works' step ledger on a muted band for a lending or fintech marketing page: an asymmetric header (left-aligned heading + lede, mono step count right) above a sharp-cornered, collapsed-border 3-column grid whose cells share hairline rules and carry a giant ghost tabular numeral watermark, a mono primary 'Step 01' label, a title, a description and a small mono clock-noted time estimate. Use to explain a simple apply-and-fund process — check rate, choose terms, get funded — on loan, onboarding, or fintech landing pages.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -67,27 +68,48 @@ export const LendingSteps = defineCapsule({
     return (
       <StepTimeline className={cn('bg-muted py-24 lg:py-28', props.className)}>
         <Container>
-          <SectionHeading
-            title={stepsHeading}
-            subtitle={stepsDesc}
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="tracking-tight sm:text-4xl"
-            subtitleClassName="mt-4 text-lg"
-          />
-          <StepTimelineGrid columns={3} className="gap-8 lg:gap-12">
+          <div className="mb-10 flex flex-col gap-6 border-b border-border pb-6 md:flex-row md:items-end md:justify-between lg:mb-14">
+            <SectionHeading
+              align="left"
+              title={stepsHeading}
+              subtitle={stepsDesc}
+              className="max-w-2xl gap-3"
+              titleClassName="text-3xl font-extrabold tracking-tight sm:text-4xl"
+              subtitleClassName="text-lg text-muted-foreground"
+            />
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60 tabular-nums"
+            >
+              [ {String(stepItems.length).padStart(2, '0')} steps ]
+            </p>
+          </div>
+          <StepTimelineGrid
+            columns={3}
+            className="gap-0 border-l border-t border-border"
+          >
             {stepItems.map((step, i) => (
-              <StepItem key={step.title} className="relative">
-                <StepContent className="mt-0 h-full gap-0 rounded-2xl border bg-card p-6">
-                  <div className="mb-6 grid size-12 place-items-center rounded-full bg-primary text-xl font-bold text-primary-foreground">
-                    {i + 1}
-                  </div>
-                  <h3 className="mb-3 text-xl font-semibold text-card-foreground">
+              <StepItem
+                key={step.title}
+                className="relative overflow-hidden border-b border-r border-border bg-card"
+              >
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -right-2 top-2 select-none font-mono text-8xl font-bold tabular-nums leading-none text-foreground/[0.06]"
+                >
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <StepContent className="relative mt-0 h-full gap-0 rounded-none border-0 bg-transparent p-7 sm:p-8">
+                  <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+                    Step {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <h3 className="mb-3 mt-4 text-xl font-semibold tracking-tight text-card-foreground">
                     {step.title}
                   </h3>
-                  <p className="mb-4 leading-relaxed text-muted-foreground">
+                  <p className="mb-5 leading-relaxed text-muted-foreground">
                     {step.description}
                   </p>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="mt-auto flex items-center gap-2 border-t border-border pt-4 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                     <svg
                       viewBox="0 0 24 24"
                       fill="none"
@@ -95,7 +117,7 @@ export const LendingSteps = defineCapsule({
                       strokeWidth={2}
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="size-4"
+                      className="size-3.5 text-primary"
                       aria-hidden="true"
                     >
                       <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -103,22 +125,6 @@ export const LendingSteps = defineCapsule({
                     <span>{step.note}</span>
                   </div>
                 </StepContent>
-                {i < stepItems.length - 1 && (
-                  <div className="absolute -right-6 top-1/2 z-10 hidden -translate-y-1/2 md:block">
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="size-8 text-muted-foreground"
-                      aria-hidden="true"
-                    >
-                      <path d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </div>
-                )}
               </StepItem>
             ))}
           </StepTimelineGrid>

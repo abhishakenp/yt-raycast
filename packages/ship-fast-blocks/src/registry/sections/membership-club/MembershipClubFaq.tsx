@@ -15,18 +15,19 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * MembershipClubFaq — accordion FAQ for a private membership club / exclusive
- * community page. A narrow centered column with an eyebrow + thin heading above a
- * stack of native <details> accordions: each rounded bordered card shows a medium
- * question and a chevron that rotates when open, revealing a relaxed answer. Use to
+ * MembershipClubFaq — editorial FAQ for a private membership club / exclusive
+ * community page. An asymmetric 4:8 split pairs a left rail (mono micro-label
+ * kicker + serif heading, sticky on desktop) with a right column of
+ * hairline-divided native <details>/<summary> ledger rows, each with a serif
+ * question, a chevron that rotates open, and a relaxed muted answer. Use to
  * address eligibility, acceptance rate, tier switching and policy questions for
- * members clubs, professional networks, mastermind groups or curated communities.
- * Renders fully with no props.
+ * members clubs, professional networks, mastermind groups or curated
+ * communities. Renders fully with no props.
  */
 export const MembershipClubFaq = defineCapsule({
   name: 'MembershipClubFaq',
   description:
-    'Accordion FAQ for a private membership club / exclusive community page: a narrow centered column with an eyebrow + thin heading above a stack of native <details> accordions, each a rounded bordered card showing a medium question and a chevron that rotates when open, revealing a relaxed answer. Use to address eligibility, acceptance rate, tier switching and policy questions for members clubs, professional networks, mastermind groups or curated communities.',
+    'Editorial FAQ for a private membership club / exclusive community page: an asymmetric 4:8 split pairing a left rail (mono micro-label kicker + serif heading, sticky on desktop) with a right column of hairline-divided native details/summary ledger rows, each with a serif question, a chevron that rotates open, and a relaxed muted answer. Use to address eligibility, acceptance rate, tier switching and policy questions for members clubs, professional networks, mastermind groups or curated communities.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -66,30 +67,39 @@ export const MembershipClubFaq = defineCapsule({
         ]
     return (
       <section
-        className={cn('w-full bg-background py-20 lg:py-28', props.className)}
+        className={cn(
+          'w-full bg-background pt-20 pb-20 lg:pt-28 lg:pb-28',
+          props.className,
+        )}
         aria-labelledby="faq-heading"
       >
-        <Container size="sm">
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            titleId="faq-heading"
-            className="mb-16 gap-0"
-            eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground"
-            titleClassName="mb-6 text-3xl font-light text-foreground sm:text-4xl"
-          />
-          <FaqAccordion>
-            {items.map((item) => (
-              <FaqItem key={item.q} variant="bordered-lg">
-                <FaqQuestion className="p-6">
-                  <FaqQuestionIcon />
-                </FaqQuestion>
-                <FaqAnswer asChild className="px-6 pb-6">
-                  <div>{item.a}</div>
-                </FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+        <Container>
+          <div className="grid gap-12 lg:grid-cols-[4fr_8fr] lg:gap-20">
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              titleId="faq-heading"
+              className="gap-3 lg:sticky lg:top-28 lg:self-start"
+              eyebrowClassName="mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.24em] text-muted-foreground"
+              titleClassName="font-serif text-4xl font-normal tracking-tight text-foreground lg:text-5xl"
+            />
+            <FaqAccordion className="space-y-0 divide-y divide-border border-y border-border">
+              {items.map((item) => (
+                <FaqItem key={item.q} variant="divided" className="py-2">
+                  <FaqQuestion className="py-5">
+                    <span className="font-serif text-lg font-normal text-foreground">
+                      {item.q}
+                    </span>
+                    <FaqQuestionIcon className="text-muted-foreground" />
+                  </FaqQuestion>
+                  <FaqAnswer asChild className="pb-6 leading-relaxed">
+                    <div>{item.a}</div>
+                  </FaqAnswer>
+                </FaqItem>
+              ))}
+            </FaqAccordion>
+          </div>
         </Container>
       </section>
     )

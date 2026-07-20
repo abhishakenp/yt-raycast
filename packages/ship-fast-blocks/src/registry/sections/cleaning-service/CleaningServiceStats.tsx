@@ -1,8 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import {} from '#/section-kit/index.ts'
-
 /**
  * CleaningServiceStats — playful-Swiss inverted proof band for a home-cleaning
  * / maid-service landing page. A full ink inversion (foreground background,

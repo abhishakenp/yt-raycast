@@ -3,26 +3,29 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * NoCodeFeatures — centered-header 6-up feature grid on a bright canvas. A
- * muted eyebrow, bold heading, and supporting paragraph sit above a 1-to-3
- * column grid of soft-bordered cards, each with a rounded tinted icon tile
- * (rotating token tints) that scales up on hover, a title, and a description.
- * Use as the core "everything you need" features section for a no-code builder,
- * SaaS, or product landing page. Renders fully with no props.
+ * NoCodeFeatures — block-builder-kinetic collapsed-border bento for a no-code /
+ * app-builder SaaS landing page. An asymmetric header (mono eyebrow tag, a
+ * left-aligned heading with a tilted primary marker block behind the key word,
+ * and mono meta right) sits above a sharp 12-column bento of hairline-collapsed
+ * cells with varying spans (7/5, 4/8 rhythm): every cell carries a mono index
+ * numeral, a bold title and description, and the two widest cells add div-built
+ * builder motifs — a chunky stacked-blocks tower and a mono "[ drag → drop →
+ * publish ]" pipeline strip. Cells wash to muted on hover. Use as the core
+ * "everything you need" features section for a no-code / app-builder SaaS or
+ * product landing page. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   FeatureGrid,
   FeatureCard,
-  FeatureIcon,
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
 export const NoCodeFeatures = defineCapsule({
   name: 'NoCodeFeatures',
   description:
-    "Centered-header 6-up feature grid on a bright canvas: a muted eyebrow, bold heading, and supporting paragraph above a 1-to-3 column grid of soft-bordered cards, each with a rounded tinted icon tile (rotating token tints) that scales up on hover, a title, and a description. Use as the core 'everything you need' features section for a no-code / app-builder SaaS or product landing page.",
+    "Block-builder-kinetic collapsed-border bento for a no-code / app-builder SaaS landing page: an asymmetric header (mono eyebrow, marker-highlighted heading left, mono meta right) above a sharp 12-column bento of hairline-collapsed cells with varying spans, each with a mono index numeral, bold title and description; the widest cells add div-built builder motifs (a chunky stacked-blocks tower, a mono drag → drop → publish strip) and cells wash to muted on hover. Use as the core 'everything you need' features section for a no-code / app-builder SaaS or product landing page.",
   props: z.object({
     /** Muted uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -81,24 +84,68 @@ export const NoCodeFeatures = defineCapsule({
               'Connect with Stripe, Airtable, Zapier, Make, and more. Automate workflows and add powerful functionality without code.',
           },
         ]
+    // Bento span rhythm: 7/5, 4/8, 5/7 — never 50/50.
+    const spans = [
+      'md:col-span-7',
+      'md:col-span-5',
+      'md:col-span-4',
+      'md:col-span-8',
+      'md:col-span-5',
+      'md:col-span-7',
+    ]
+    const blockHeights = ['h-4', 'h-6', 'h-8', 'h-10']
+    const headingWords = heading.split(' ')
+    const headingLead = headingWords.slice(0, -1).join(' ')
+    const headingMark = headingWords.at(-1) ?? ''
     return (
       <section
-        className={cn('bg-background py-24', props.className)}
+        className={cn(
+          'relative overflow-hidden bg-background py-16 lg:py-24',
+          props.className,
+        )}
         aria-labelledby="nc-features"
       >
         <Container>
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            titleId="nc-features"
-            className="mb-16 max-w-3xl gap-0"
-            eyebrowClassName="mb-3 inline-block text-sm font-medium uppercase tracking-wider text-muted-foreground"
-            titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <FeatureGrid columns={3}>
-            {items.map((f) => {
+          {/* Asymmetric header: mono eyebrow, marker heading left, mono meta right. */}
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <div className="max-w-2xl">
+              <MonoTag className="mb-4 block">
+                {eyebrow}
+                <span aria-hidden="true" className="text-primary">
+                  {' '}
+                  · 01—06
+                </span>
+              </MonoTag>
+              <h2
+                id="nc-features"
+                className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl"
+              >
+                {headingLead}{' '}
+                <span className="relative ml-[0.12em] inline-block whitespace-nowrap">
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-[-0.15em] inset-y-[0.05em] rotate-1 bg-primary"
+                  />
+                  <span className="relative text-primary-foreground">
+                    {headingMark}
+                  </span>
+                </span>
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">
+                {description}
+              </p>
+            </div>
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+            >
+              [ toolkit ] ship without code
+            </p>
+          </div>
+
+          {/* Collapsed-border bento: hairline cells, asymmetric spans. */}
+          <FeatureGrid className="gap-0 border-l border-t border-border [&>div]:grid [&>div]:grid-cols-1 [&>div]:gap-0 md:[&>div]:grid-cols-12">
+            {items.map((f, index) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -109,10 +156,54 @@ export const NoCodeFeatures = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
-                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                <FeatureCard
+                  key={__iv__.title}
+                  className={cn(
+                    'gap-0 rounded-none border-0 border-b border-r border-border bg-card p-6 shadow-none transition-colors duration-150 hover:translate-y-0 hover:border-border hover:bg-muted/60 sm:p-8',
+                    spans[index % spans.length],
+                  )}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+                  >
+                    {String(index + 1).padStart(2, '0')}
+                    <span className="text-primary"> /</span>
+                  </span>
+                  <FeatureTitle className="mt-3 text-xl font-bold tracking-tight">
+                    {__iv__.title}
+                  </FeatureTitle>
+                  <FeatureDescription className="mt-2 max-w-md text-sm leading-6">
+                    {__iv__.description}
+                  </FeatureDescription>
+                  {index === 0 ? (
+                    <span
+                      aria-hidden="true"
+                      className="mt-6 flex flex-col-reverse gap-1.5"
+                    >
+                      {blockHeights.map((h, i) => (
+                        <span
+                          key={i}
+                          className={cn(
+                            'w-full max-w-[10rem] border',
+                            h,
+                            i === blockHeights.length - 1
+                              ? 'border-primary bg-primary/15'
+                              : 'border-border bg-foreground/[0.04]',
+                          )}
+                        />
+                      ))}
+                    </span>
+                  ) : null}
+                  {index === 3 ? (
+                    <span
+                      aria-hidden="true"
+                      className="mt-6 block font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground/70"
+                    >
+                      [ drag → drop →{' '}
+                      <span className="text-primary">publish</span> ]
+                    </span>
+                  ) : null}
                 </FeatureCard>
               )
             })}

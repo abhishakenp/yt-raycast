@@ -10,11 +10,24 @@ import {
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 
+/**
+ * TelehealthStats — the prominent inverted care-stat band for a telehealth site,
+ * cut in on a gentle slanted clip-path seam. On a calm bg-foreground /
+ * text-background surface carrying a giant faint ghost "+" cross watermark: an
+ * asymmetric inverted header (mono "[ care outcomes ]" meta + heading + lede)
+ * above a collapsed-border 2-to-4 column ledger of stat cells, each pairing a
+ * giant fluid-clamp extrabold tabular numeral (patients seen, average wait,
+ * satisfaction, providers) with a short background tick dash and a mono
+ * uppercase micro-label. Tokens-only, no links. Precise yet warm, telemedicine
+ * outcomes aesthetic. Use to back up marketing claims with concrete numbers and
+ * reinforce confidence before a visitor books.
+ */
 export const TelehealthStats = defineCapsule({
   name: 'TelehealthStats',
   description:
-    'Trust-building statistics band for a telehealth site. Wraps the shared StatGrid composite in a section with an optional centered SectionHeading and surfaces four key proof points — patients treated, average wait time, satisfaction rating, and number of providers — as bold value-over-label cells in a four-column grid that collapses gracefully on small screens. Use to back up marketing claims with concrete numbers and reinforce confidence before a visitor books.',
+    "Prominent inverted care-stat band for a telehealth site, cut in on a gentle slanted clip-path seam: a calm bg-foreground / text-background surface with a giant faint ghost '+' cross watermark, an asymmetric inverted header (mono care-outcomes meta + heading + lede) above a collapsed-border 2-to-4 column ledger of stat cells, each pairing a giant fluid extrabold tabular numeral (patients seen, average wait, satisfaction, providers) with a short background tick dash and a mono uppercase micro-label. Tokens-only, no links. Precise yet warm, telemedicine outcomes aesthetic. Use to back up marketing claims with concrete numbers and reinforce confidence before a visitor books.",
   props: z.object({
     heading: z.string().optional(),
     subheading: z.string().optional(),
@@ -40,25 +53,64 @@ export const TelehealthStats = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-background pt-28 pb-20 sm:pt-32 sm:pb-24',
+          'relative overflow-hidden bg-foreground pt-24 pb-20 text-background [clip-path:polygon(0_2.5rem,100%_0,100%_100%,0_100%)] sm:pt-28 sm:pb-24',
           props.className,
         )}
+        aria-label="Telehealth statistics"
       >
-        <Container size="xl" className="px-6">
+        <Watermark className="-right-8 -top-16 text-[13rem] text-background/[0.05] sm:text-[20rem]">
+          +
+        </Watermark>
+        <Container size="xl" className="relative px-6">
           {heading ? (
-            <SectionHeading
-              title={heading}
-              subtitle={subheading}
-              className="mb-14"
-            />
+            <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-14">
+              <SectionHeading
+                align="left"
+                title={heading}
+                subtitle={subheading}
+                className="max-w-2xl gap-0"
+                titleClassName="mb-4 text-3xl font-extrabold tracking-tight text-background sm:text-4xl lg:text-[2.75rem] lg:leading-[1.05]"
+                subtitleClassName="text-base text-background/70 sm:text-lg"
+              />
+              <MonoTag
+                aria-hidden="true"
+                tone="inverted"
+                className="shrink-0 text-background/50 md:pb-1"
+              >
+                [ care outcomes ]
+              </MonoTag>
+            </div>
           ) : null}
-          <StatGrid columns={4}>
+          <StatGrid
+            columns={4}
+            className="gap-0 border-l border-t border-background/20"
+          >
             {stats.map((s) => {
               const __iv__ = s as { value: string; label: string }
               return (
-                <StatItem key={__iv__.label}>
-                  <StatValue>{__iv__.value}</StatValue>
-                  <StatLabel>{__iv__.label}</StatLabel>
+                <StatItem
+                  key={__iv__.label}
+                  align={'left'}
+                  className="gap-3 border-b border-r border-background/20 p-6 sm:p-8"
+                >
+                  <StatValue
+                    weight={'bold'}
+                    size={'large'}
+                    color={'inverted'}
+                    className="text-[clamp(2.5rem,5.5vw,4.5rem)] font-extrabold leading-none tracking-tight tabular-nums text-background"
+                  >
+                    {__iv__.value}
+                  </StatValue>
+                  <span
+                    aria-hidden="true"
+                    className="h-px w-8 bg-background/40"
+                  />
+                  <StatLabel
+                    color={'inverted'}
+                    className="font-mono text-[11px] uppercase tracking-[0.2em] text-background/50"
+                  >
+                    {__iv__.label}
+                  </StatLabel>
                 </StatItem>
               )
             })}

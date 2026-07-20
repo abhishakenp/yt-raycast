@@ -13,8 +13,7 @@ import {
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
 import { SupportBand } from '#/section-kit/SupportBand.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * KnowledgeBaseSupportCta — "Terminal-docs" inverted "still need help?" closing
  * band for a help center. The page's full ink inversion (bg-foreground /

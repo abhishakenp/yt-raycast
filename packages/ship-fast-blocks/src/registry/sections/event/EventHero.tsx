@@ -14,8 +14,7 @@ import {
   EventMutationSpinner,
 } from './event-interactions.tsx'
 import { eventLakebed } from './event-lakebed.ts'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * EventHero — kinetic-poster hero for a conference / event landing page. A slanted
  * mono date + city band sits above a poster-scale, fluid extrabold two-line

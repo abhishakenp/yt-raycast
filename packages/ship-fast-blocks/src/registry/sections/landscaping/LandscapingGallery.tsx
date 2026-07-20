@@ -10,8 +10,7 @@ import {
   GalleryTileImage,
   GalleryTileCaption,
 } from '#/section-kit/GalleryGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * LandscapingGallery — organic-editorial selected-projects portfolio for a
  * landscaping / outdoor-design company. An asymmetric header (mono "Portfolio"

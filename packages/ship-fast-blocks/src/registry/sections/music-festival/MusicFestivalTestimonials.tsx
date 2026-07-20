@@ -3,11 +3,11 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * MusicFestivalTestimonials — a three-up starred testimonial grid for a music /
- * arts festival landing page. A centered eyebrow + heading above a row of three
- * bordered cards, each with a circular headshot avatar + name + role, a five-
- * star rating row, and a quote. Avatars use the alt-driven Image component. Use
- * for social proof on music festivals, arts festivals, concert series, or any
+ * MusicFestivalTestimonials — a kinetic-poster testimonial row for a music /
+ * arts festival landing page. An asymmetric mono-index header above a
+ * staggered row of three square-cornered quote cards, each opening with a giant
+ * ghost quotation mark, then a quote, and a mono name + role footer. Use for
+ * social proof on music festivals, arts festivals, concert series, or any
  * multi-day live event with returning attendees.
  */
 import { Container } from '#/section-kit/Container.tsx'
@@ -23,7 +23,7 @@ import {
 export const MusicFestivalTestimonials = defineCapsule({
   name: 'MusicFestivalTestimonials',
   description:
-    'Three-up starred testimonial grid for a music / arts festival landing page: a centered eyebrow + heading above a row of three bordered cards, each with a circular headshot avatar plus name and role, a five-star rating row, and a quote in smart quotes. Avatars use the alt-driven Image component. Use for community social proof on music festivals, arts festivals, concert series, raves, or any multi-day live event with returning attendees.',
+    'Kinetic-poster testimonial row for a music / arts festival landing page: an asymmetric mono-index header above a staggered row of three square-cornered quote cards, each opening with a giant ghost quotation mark, then a quote, and a mono name + role footer. Use for community social proof on music festivals, arts festivals, concert series, raves, or any multi-day live event with returning attendees.',
   props: z.object({
     /** Eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -74,17 +74,31 @@ export const MusicFestivalTestimonials = defineCapsule({
           },
         ]
     return (
-      <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
+      <section
+        className={cn(
+          'pb-24 pt-24 sm:pt-28 lg:pb-28 lg:pt-32',
+          props.className,
+        )}
+      >
         <Container>
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            className="mb-16 gap-0"
-            eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-primary"
-            titleClassName="mb-4 text-4xl font-bold tracking-tight lg:text-5xl"
-          />
+          <div className="mb-14 flex flex-col gap-4 border-b border-border pb-8 md:flex-row md:items-end md:justify-between">
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              className="max-w-2xl gap-3"
+              eyebrowClassName="font-mono text-[11px] uppercase tracking-[0.2em] text-primary"
+              titleClassName="text-4xl font-extrabold uppercase tracking-tight lg:text-6xl"
+            />
+            <span
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-foreground/40"
+            >
+              [ voices ]
+            </span>
+          </div>
           <TestimonialGrid columns={3}>
-            {items.map((t) => {
+            {items.map((t, i) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -95,12 +109,28 @@ export const MusicFestivalTestimonials = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
+                <TestimonialCard
+                  key={__iv__.name}
+                  className={cn(
+                    'relative gap-5 rounded-none border-2 border-border p-7 transition-[transform,box-shadow] duration-150 hover:-translate-y-1 hover:border-foreground hover:shadow-[6px_6px_0_0] hover:shadow-foreground motion-reduce:transform-none',
+                    i % 2 === 1 ? 'md:translate-y-6' : undefined,
+                  )}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="font-serif text-6xl font-bold leading-[0.6] text-foreground/15"
+                  >
+                    &ldquo;
+                  </span>
+                  <TestimonialQuote className="leading-relaxed">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="mt-auto flex-col items-start gap-0.5 border-t border-border pt-4">
+                    <TestimonialName className="text-sm font-extrabold uppercase tracking-tight">
+                      {__iv__.name}
+                    </TestimonialName>
                     {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
+                      <TestimonialMeta className="font-mono text-[10px] uppercase tracking-[0.16em]">
                         {__iv__.role || __iv__.company || __iv__.meta}
                       </TestimonialMeta>
                     )}

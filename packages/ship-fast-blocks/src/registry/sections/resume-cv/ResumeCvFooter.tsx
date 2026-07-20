@@ -19,20 +19,22 @@ import {
 } from '#/section-kit/SiteFooter.tsx'
 
 /**
- * ResumeCvFooter — a clean, multi-column closing footer for a personal resume /
- * CV / portfolio site. Thin configuration over the shared `SiteFooter`
- * composite: an initials monogram in a token circle beside the person's name, a
- * short tagline, a social row (LinkedIn, GitHub, Email), and a responsive grid
- * of link columns (Navigate, Connect). The bottom bar carries an auto-updating
- * copyright line and a short note. Use as the site-wide footer for personal
- * portfolios, online résumés, designer/developer profiles, or any individual's
- * professional landing page. Renders fully with no props via baked-in
- * "Jordan Avery" defaults.
+ * ResumeCvFooter — document-colophon footer for a personal resume / CV /
+ * portfolio site. A hard top rule over a giant faint ghost-initials watermark:
+ * a brand block (square hard-edged monogram stamp + extrabold name + tagline +
+ * social row of LinkedIn / GitHub / Email) beside a responsive grid of link
+ * columns (Navigate, Connect) with mono uppercase column titles and left-aligned
+ * `block w-fit` links, then a hairline-bordered bottom bar with a mono
+ * auto-updating copyright line and short note. Binary radius, tokens only. Every
+ * brand, social, and column link routes through section-kit route links. Use as
+ * the site-wide footer for personal portfolios, online résumés, designer/
+ * developer profiles, or any individual's professional landing page. Renders
+ * fully with no props via baked-in "Jordan Avery" defaults.
  */
 export const ResumeCvFooter = defineCapsule({
   name: 'ResumeCvFooter',
   description:
-    "Clean, multi-column closing footer for a personal resume / CV / portfolio site: a brand block (initials monogram + person's name + tagline + social row of LinkedIn / GitHub / Email) and a responsive grid of link columns (Navigate, Connect), with a bordered-top bottom bar holding an auto-updating copyright line and a short note. Every brand, social, and column link routes through section-kit route links. Use as the site-wide footer for personal portfolios, online résumés, designer or developer profiles, or any individual's professional landing page.",
+    "Document-colophon footer for a personal resume / CV / portfolio site: a hard top rule over a giant faint ghost-initials watermark, with a brand block (square hard-edged monogram stamp + extrabold name + tagline + social row of LinkedIn / GitHub / Email) beside a responsive grid of link columns (Navigate, Connect) with mono uppercase column titles and left-aligned block w-fit links, then a hairline-bordered bottom bar holding a mono auto-updating copyright line and short note. Binary radius, tokens only. Every brand, social, and column link routes through section-kit route links. Use as the site-wide footer for personal portfolios, online résumés, designer or developer profiles, or any individual's professional landing page.",
   props: z.object({
     /** Person / brand name shown as the wordmark. */
     brand: z.string().optional(),
@@ -74,20 +76,35 @@ export const ResumeCvFooter = defineCapsule({
     const legal = props.legal?.length ? props.legal : ['Privacy', 'Imprint']
 
     return (
-      <SiteFooter className={props.className}>
-        <FooterContent>
+      <SiteFooter
+        className={[
+          'relative overflow-hidden border-t-2 border-foreground bg-background',
+          props.className ?? '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
+        {/* Giant faint ghost-initials watermark. */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-12 right-2 select-none font-extrabold leading-none tracking-tighter text-foreground/[0.04] text-[9rem] sm:text-[13rem]"
+        >
+          {initials}
+        </span>
+
+        <FooterContent className="relative">
           <FooterGrid>
             <FooterBrand
               brand={props.brand ?? 'Jordan Avery'}
               brandMark={
                 <span
                   aria-hidden="true"
-                  className="inline-flex size-9 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground"
+                  className="inline-flex size-9 items-center justify-center rounded-none border border-foreground bg-foreground font-mono text-xs font-bold tracking-tight text-background"
                 >
                   {initials}
                 </span>
               }
-              brandClassName={'text-lg font-semibold tracking-tight'}
+              brandClassName={'text-lg font-extrabold tracking-tight'}
             >
               <FooterTagline>
                 {props.tagline ??
@@ -95,28 +112,39 @@ export const ResumeCvFooter = defineCapsule({
               </FooterTagline>
               <FooterSocial>
                 {social.map((s) => (
-                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  <FooterSocialLink
+                    key={s.label}
+                    className="block w-fit font-mono text-[11px] uppercase tracking-[0.14em]"
+                  >
+                    {s.label}
+                  </FooterSocialLink>
                 ))}
               </FooterSocial>
             </FooterBrand>
             {columns.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnTitle className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  {col.title}
+                </FooterColumnTitle>
                 <FooterColumnList>
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink key={link} className="block w-fit">
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
           <FooterBottom>
-            <FooterCopyright>
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.12em]">
               {props.note ?? 'All rights reserved.'}
             </FooterCopyright>
             <FooterLegal>
               {legal.map((l) => (
-                <FooterLink key={l}>{l}</FooterLink>
+                <FooterLink key={l} className="block w-fit">
+                  {l}
+                </FooterLink>
               ))}
             </FooterLegal>
           </FooterBottom>

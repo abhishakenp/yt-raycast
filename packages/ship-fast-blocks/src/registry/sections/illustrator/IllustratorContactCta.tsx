@@ -9,8 +9,7 @@ import {
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
 import { MonoTag } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * IllustratorContactCta — the closing contact call-to-action for an illustrator
  * / visual-artist portfolio, framed like a torn-out sketchbook page (dashed top

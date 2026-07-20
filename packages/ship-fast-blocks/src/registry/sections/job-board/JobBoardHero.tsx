@@ -2,7 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { FilterChip } from '#/section-kit/index.ts'
+import { FilterChip } from '#/section-kit/FilterChip.tsx'
 import { jobBoardLakebed } from './job-board-lakebed.ts'
 import { useJobBoardSearch } from './job-board-interactions.tsx'
 import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'

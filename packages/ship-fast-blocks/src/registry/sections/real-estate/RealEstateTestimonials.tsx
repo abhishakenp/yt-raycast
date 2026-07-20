@@ -9,21 +9,21 @@ import {
   TestimonialQuote,
   TestimonialAuthor,
   TestimonialName,
-  TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
- * RealEstateTestimonials — client-review wall for a brokerage. A centered serif
- * header sits above a responsive 1/2/3-column grid of review cards; each card
- * shows a token-toned star rating row, the quote, and an attribution with an
- * initial avatar chip. Defaults cover three buyer/seller stories. Use to build
- * social proof on a real-estate brokerage or agent site. Renders fully with no
- * props via baked-in defaults.
+ * RealEstateTestimonials — editorial client-review wall for a luxury brokerage.
+ * An asymmetric header (mono index rail + serif heading left, supporting line
+ * right) sits above a staggered 1/2/3-column grid of sharp-cornered review
+ * plates. Each plate carries a giant ghost serif quotation mark, a tabular star
+ * rating, the quote, and a mono-labelled attribution. Defaults cover three
+ * buyer/seller stories. Use to build social proof on a real-estate brokerage or
+ * agent site. Renders fully with no props via baked-in defaults.
  */
 export const RealEstateTestimonials = defineCapsule({
   name: 'RealEstateTestimonials',
   description:
-    'Client-review wall for a brokerage: a centered serif header above a responsive 1/2/3-column grid of review cards, each with a token-toned star rating row, a quote, and an attribution with an initial avatar chip. Defaults cover three buyer/seller stories. Use to build social proof on a real-estate brokerage or agent site.',
+    'Editorial client-review wall for a luxury brokerage: an asymmetric header (mono index rail + serif heading left, supporting line right) above a staggered 1/2/3-column grid of sharp-cornered review plates, each with a giant ghost serif quotation mark, a tabular star rating, the quote, and a mono-labelled attribution. Defaults cover three buyer/seller stories. Use to build social proof on a real-estate brokerage or agent site.',
   props: z.object({
     /** Section heading (serif, large). */
     heading: z.string().optional(),
@@ -72,46 +72,75 @@ export const RealEstateTestimonials = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-background pt-28 pb-20 lg:pt-32 lg:pb-28',
+          'bg-background pt-24 pb-20 lg:pt-32 lg:pb-28',
           props.className,
         )}
       >
         <Container>
-          <TestimonialGrid
-            heading={heading}
-            subheading={description}
-            columns={3}
-          >
-            {reviews
-              .map((review) => ({
-                quote: review.quote,
-                name: review.name,
-                rating: review.rating,
-              }))
-              .map((t) => {
-                const __iv__ = t as {
-                  quote: string
-                  name: string
-                  role?: string
-                  company?: string
-                  meta?: string
-                  rating?: number
-                  avatarAlt?: string
-                }
-                return (
-                  <TestimonialCard key={__iv__.name}>
-                    <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                    <TestimonialAuthor>
-                      <TestimonialName>{__iv__.name}</TestimonialName>
-                      {(__iv__.role || __iv__.company || __iv__.meta) && (
-                        <TestimonialMeta>
-                          {__iv__.role || __iv__.company || __iv__.meta}
-                        </TestimonialMeta>
-                      )}
-                    </TestimonialAuthor>
-                  </TestimonialCard>
-                )
-              })}
+          {/* Asymmetric editorial header. */}
+          <div className="mb-12 grid items-end gap-6 border-b border-border pb-8 lg:grid-cols-12 lg:gap-12 lg:mb-16">
+            <div className="lg:col-span-7">
+              <div className="flex items-center gap-3">
+                <span
+                  aria-hidden="true"
+                  className="size-1.5 shrink-0 bg-primary"
+                />
+                <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                  Reviews
+                </span>
+              </div>
+              <h2 className="mt-5 max-w-xl font-serif text-3xl font-medium tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+                {heading}
+              </h2>
+            </div>
+            <p className="text-base leading-relaxed text-muted-foreground lg:col-span-5 lg:pb-1">
+              {description}
+            </p>
+          </div>
+
+          <TestimonialGrid columns={3}>
+            {reviews.map((review, i) => {
+              const rating = Math.max(
+                0,
+                Math.min(5, Math.round(review.rating ?? 5)),
+              )
+              return (
+                <TestimonialCard
+                  key={`${review.name}-${i}`}
+                  className={cn(
+                    'relative gap-4 overflow-hidden rounded-none border-border bg-transparent p-6 transition-[border-color,transform] duration-150 hover:-translate-y-0.5 hover:border-foreground/40 sm:p-8',
+                    i % 3 === 1 &&
+                      'lg:translate-y-10 lg:hover:translate-y-[calc(2.5rem-0.125rem)]',
+                  )}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -top-6 right-3 select-none font-serif leading-none text-foreground/[0.06] text-[8rem]"
+                  >
+                    &rdquo;
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="relative font-mono text-xs tracking-[0.2em] tabular-nums"
+                  >
+                    <span className="text-foreground">
+                      {'★'.repeat(rating)}
+                    </span>
+                    <span className="text-border">
+                      {'★'.repeat(5 - rating)}
+                    </span>
+                  </span>
+                  <TestimonialQuote className="relative text-base leading-relaxed text-foreground">
+                    {review.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="relative mt-auto border-t border-border pt-4">
+                    <TestimonialName className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                      {review.name}
+                    </TestimonialName>
+                  </TestimonialAuthor>
+                </TestimonialCard>
+              )
+            })}
           </TestimonialGrid>
         </Container>
       </section>

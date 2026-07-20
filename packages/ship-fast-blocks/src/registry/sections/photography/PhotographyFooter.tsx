@@ -18,19 +18,22 @@ import {
 } from '#/section-kit/SiteFooter.tsx'
 
 /**
- * PhotographyFooter — a rich, multi-column closing footer for a fine-art /
+ * PhotographyFooter — a quiet, hairline closing footer for a fine-art /
  * wedding photographer portfolio. Thin configuration over the shared
- * `SiteFooter` composite: a serif wordmark, a tagline, a social row
- * (Instagram, Pinterest, Behance), and a responsive grid of link columns
- * (Explore, Services, Contact) where contact details fold in as links. The
- * bottom bar carries an auto-updating copyright line. Use as the site-wide
- * footer for wedding photographers, portrait studios, or elopement shooters.
- * Renders fully with no props via baked-in "Elena Vossen" defaults.
+ * `SiteFooter` composite: a serif wordmark + tagline beside a mono social row
+ * (Instagram, Pinterest, Behance), and a responsive grid of link columns with
+ * mono, wide-tracked column heads (Explore, Services, Contact) whose links each
+ * sit on their own `block w-fit` hit line so contact details fold in cleanly.
+ * The hairline-topped bottom bar carries a mono edition slate and an
+ * auto-updating copyright line. Every brand, social, and column link routes
+ * through section-kit route links. Use as the site-wide footer for wedding
+ * photographers, portrait studios, or elopement shooters. Renders fully with no
+ * props via baked-in "Elena Vossen" defaults.
  */
 export const PhotographyFooter = defineCapsule({
   name: 'PhotographyFooter',
   description:
-    'Rich, multi-column closing footer for a fine-art / wedding photographer portfolio built on the shared SiteFooter composite: a serif wordmark + tagline + social row (Instagram, Pinterest, Behance), a responsive grid of link columns (Explore, Services, Contact) with contact details folded in as links, and a bordered-top bottom bar with an auto-updating copyright line. Every brand, social, and column link routes through section-kit route links. Use as the site-wide footer for wedding photographers, portrait studios, or elopement shooters.',
+    'Quiet, hairline closing footer for a fine-art / wedding photographer portfolio built on the shared SiteFooter composite: a serif wordmark + tagline beside a mono social row (Instagram, Pinterest, Behance), a responsive grid of link columns with mono wide-tracked column heads (Explore, Services, Contact) whose links each sit on their own block w-fit hit line, and a hairline-topped bottom bar with a mono edition slate and an auto-updating copyright line. Every brand, social, and column link routes through section-kit route links. Use as the site-wide footer for wedding photographers, portrait studios, or elopement shooters.',
   props: z.object({
     /** Photographer / studio name shown as the serif wordmark. */
     brand: z.string().optional(),
@@ -79,31 +82,46 @@ export const PhotographyFooter = defineCapsule({
           <FooterGrid>
             <FooterBrand
               brand={props.brand ?? 'Elena Vossen'}
-              brandClassName={'font-serif text-xl font-medium'}
+              brandClassName={'font-serif text-2xl font-medium'}
             >
-              <FooterTagline>
+              <FooterTagline className="max-w-xs">
                 {props.tagline ??
                   'Documentary wedding and portrait photography for couples who value emotion over perfection.'}
               </FooterTagline>
               <FooterSocial>
                 {social.map((s) => (
-                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  <FooterSocialLink
+                    key={s.label}
+                    className="font-mono text-[11px] uppercase tracking-[0.18em]"
+                  >
+                    {s.label}
+                  </FooterSocialLink>
                 ))}
               </FooterSocial>
             </FooterBrand>
             {columns.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnTitle className="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                  {col.title}
+                </FooterColumnTitle>
                 <FooterColumnList>
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink key={link} className="block w-fit">
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
           <FooterBottom>
-            <FooterCopyright>
+            <span
+              aria-hidden="true"
+              className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+            >
+              Vol. I · Portland
+            </span>
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.16em]">
               {props.note ?? 'All rights reserved.'}
             </FooterCopyright>
           </FooterBottom>

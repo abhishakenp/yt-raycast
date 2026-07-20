@@ -9,9 +9,8 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-  SignInButton,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * InvestingNavbar — Swiss-fintech sticky, backdrop-blurred top navigation bar
  * for a modern investing / brokerage site. A hairline-ruled institutional trust

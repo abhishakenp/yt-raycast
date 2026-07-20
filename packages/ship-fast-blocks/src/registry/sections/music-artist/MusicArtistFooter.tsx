@@ -15,19 +15,21 @@ import {
   FooterLegal,
 } from '#/section-kit/SiteFooter.tsx'
 /**
- * MusicArtistFooter — multi-column closing footer for a music artist / band
- * page. A wide brand block (thin wordmark, blurb, and a booking/press contact
- * line with a routable email) spanning two columns, alongside several link
- * columns, with a bottom bar showing a copyright line and legal links. Warm,
- * airy, editorial indie-folk aesthetic on a soft neutral canvas with a top
- * border. The brand, email, every column link and legal link route through
- * section-kit route links. Use as the closing site footer for musicians, bands, or artist
- * EPK pages. Renders fully with no props via baked-in defaults.
+ * MusicArtistFooter — multi-column poster closing footer for a music artist /
+ * band page. A wide brand block (wordmark, blurb, and a mono booking/press
+ * contact line with a routable email) spanning two columns, alongside link
+ * columns whose mono uppercase titles head stacked block-width links, with a
+ * bottom bar showing a "© year + routable brand + note" copyright line and mono
+ * legal links. Bold poster aesthetic driven entirely by theme tokens (flips
+ * light/dark) with a top border. The brand, email, every column link and legal
+ * link route through section-kit route links. Use as the closing site footer for
+ * musicians, bands, or artist EPK pages. Renders fully with no props via
+ * baked-in defaults.
  */
 export const MusicArtistFooter = defineCapsule({
   name: 'MusicArtistFooter',
   description:
-    'Multi-column closing footer for a music artist / band page: a wide brand block (thin wordmark, blurb, and a booking/press contact line with a routable email) spanning two columns, alongside several link columns, with a bottom bar showing a copyright line and legal links. Warm, airy editorial indie-folk aesthetic on a soft neutral canvas with a top border. The brand, email, every column link and legal link route through section-kit route links. Use as the closing site footer for musicians, singers, bands, or artist EPK pages.',
+    'Multi-column poster closing footer for a music artist / band page: a wide brand block (wordmark, blurb, and a mono booking/press contact line with a routable email) spanning two columns, alongside link columns whose mono uppercase titles head stacked block-width links, with a bottom bar showing a "© year + routable brand + note" copyright line and mono legal links. Bold poster aesthetic driven entirely by theme tokens (flips light/dark) with a top border. The brand, email, every column link and legal link route through section-kit route links. Use as the closing site footer for musicians, singers, bands, or artist EPK pages.',
   props: z.object({
     /** Artist / band name shown as the brand wordmark. */
     brand: z.string().optional(),
@@ -54,6 +56,8 @@ export const MusicArtistFooter = defineCapsule({
     const description =
       props.description ??
       'Independent folk music from Portland, Oregon. New album "Northbound" available everywhere.'
+    const contactLabel = props.contactLabel ?? 'Booking & Press'
+    const email = props.email ?? 'booking@velvetecho.com'
     const columns = props.columns?.length
       ? props.columns
       : [
@@ -75,29 +79,64 @@ export const MusicArtistFooter = defineCapsule({
     const legal = props.legal?.length
       ? props.legal
       : ['Privacy Policy', 'Terms of Use']
+    const homeTarget = props.homeTarget ?? brand
+    const year = new Date().getFullYear()
     return (
       <SiteFooter className={props.className}>
         <FooterContent>
           <FooterGrid>
-            <FooterBrand brand={brand}>
+            <FooterBrand
+              brand={brand}
+              className="md:col-span-2"
+              brandClassName="font-extrabold uppercase tracking-tight"
+            >
               <FooterTagline>{description}</FooterTagline>
+              <div className="mt-6">
+                <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  {contactLabel}
+                </p>
+                <FooterLink
+                  href={email}
+                  className="mt-1 block w-fit font-mono text-sm text-foreground hover:text-foreground"
+                >
+                  {email}
+                </FooterLink>
+              </div>
             </FooterBrand>
             {columns.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnTitle className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  {col.title}
+                </FooterColumnTitle>
                 <FooterColumnList>
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink key={link} className="block w-fit">
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
           <FooterBottom>
-            <FooterCopyright>{note}</FooterCopyright>
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.15em]">
+              © {year}{' '}
+              <FooterLink
+                href={homeTarget}
+                className="inline font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground"
+              >
+                {brand}
+              </FooterLink>
+              . {note}
+            </FooterCopyright>
             <FooterLegal>
               {legal.map((l) => (
-                <FooterLink key={l}>{l}</FooterLink>
+                <FooterLink
+                  key={l}
+                  className="block w-fit font-mono text-[11px] uppercase tracking-[0.15em]"
+                >
+                  {l}
+                </FooterLink>
               ))}
             </FooterLegal>
           </FooterBottom>

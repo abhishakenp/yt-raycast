@@ -3,26 +3,30 @@ import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   GalleryGrid,
+  GalleryGridItems,
   GalleryTile,
   GalleryTileImage,
   GalleryTileCaption,
 } from '#/section-kit/GalleryGrid.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
- * SpaWellnessGallery — serene image grid showcasing a spa's spaces and rituals.
- * Thin configuration over the shared `GalleryGrid` composite: a centered heading
- * above a responsive grid of rounded image tiles, each rendered through the
- * alt-driven Image component with a soft caption strip. Use to give visitors a
- * calming visual tour of treatment rooms, relaxation lounges, pools, and natural
- * details. Renders fully with no props via baked-in defaults.
+ * SpaWellnessGallery — hairline mosaic tour of a spa's spaces and rituals. An
+ * asymmetric header (mono index eyebrow + delicate serif heading + calming
+ * intro, mono count meta on the right) sits above a hairline-connected mosaic
+ * grid (gap-px over the border color) of photo tiles where the first image
+ * spans two columns and two rows as a large feature plate; each tile carries a
+ * small square mono index chip and a soft mono caption strip and zooms subtly
+ * on hover. Imagery uses the alt-driven Image component. Use to give visitors a
+ * calming visual tour of treatment rooms, relaxation lounges, pools, and
+ * natural details. Renders fully with no props via baked-in defaults.
  */
 export const SpaWellnessGallery = defineCapsule({
   name: 'SpaWellnessGallery',
   description:
-    "Serene image grid showcasing a spa's spaces and rituals built on the shared GalleryGrid composite: a centered heading above a responsive grid of rounded image tiles rendered through the alt-driven Image component, each with a soft caption. Use to give visitors a calming visual tour of treatment rooms, relaxation lounges, pools, and natural details.",
+    "Hairline mosaic tour of a spa's spaces and rituals: an asymmetric header (mono index eyebrow + delicate serif heading + calming intro, mono count meta right) above a hairline-connected mosaic grid of photo tiles where the first image spans two columns and rows as a large feature plate; each tile carries a small square mono index chip and a soft mono caption strip and zooms subtly on hover. Imagery uses the alt-driven Image component. Use to give visitors a calming visual tour of treatment rooms, relaxation lounges, pools, and natural details.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -81,24 +85,52 @@ export const SpaWellnessGallery = defineCapsule({
         )}
       >
         <Container>
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <div className="max-w-2xl">
+              <MonoTag className="mb-4 block">03 / The Spaces</MonoTag>
+              <h2 className="font-serif text-3xl font-normal tracking-tight text-foreground sm:text-4xl lg:text-[2.75rem] lg:leading-[1.08]">
+                {heading}
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">{subheading}</p>
+            </div>
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="shrink-0 md:pb-2"
+            >
+              {String(images.length).padStart(2, '0')} / spaces
+            </MonoTag>
+          </div>
           <GalleryGrid>
-            <SectionHeading title={heading} subtitle={subheading} />
-            {images.map((img) => {
-              const __iv__ = img as {
-                alt: string
-                caption?: string
-                title?: string
-                location?: string
-              }
-              return (
-                <GalleryTile key={__iv__.alt}>
-                  <GalleryTileImage alt={__iv__.alt} />
-                  {__iv__.caption && (
-                    <GalleryTileCaption>{__iv__.caption}</GalleryTileCaption>
+            <GalleryGridItems
+              columns={3}
+              className="grid-cols-2 gap-px border border-border bg-border sm:grid-cols-2 lg:grid-cols-4"
+            >
+              {images.map((img, i) => (
+                <GalleryTile
+                  key={img.alt}
+                  className={cn(
+                    'rounded-none border-0 bg-background',
+                    i === 0
+                      ? 'col-span-2 row-span-2 aspect-auto'
+                      : 'aspect-[4/3]',
+                  )}
+                >
+                  <GalleryTileImage alt={img.alt} />
+                  <MonoTag
+                    aria-hidden="true"
+                    className="absolute left-3 top-3 bg-background/90 px-2 py-1 text-foreground"
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </MonoTag>
+                  {img.caption && (
+                    <GalleryTileCaption className="rounded-none font-mono text-[11px] uppercase tracking-[0.15em]">
+                      {img.caption}
+                    </GalleryTileCaption>
                   )}
                 </GalleryTile>
-              )
-            })}
+              ))}
+            </GalleryGridItems>
           </GalleryGrid>
         </Container>
       </section>

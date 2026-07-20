@@ -11,8 +11,7 @@ import {
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
 import { Watermark } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * CorporateContactCta — Swiss-corporate ink-inverted conversion band for an
  * enterprise / corporate B2B site. A full inversion band (foreground

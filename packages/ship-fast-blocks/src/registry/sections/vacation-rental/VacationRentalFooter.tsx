@@ -17,14 +17,17 @@ import {
   FooterCopyright,
   FooterLegal,
 } from '#/section-kit/SiteFooter.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 
 /**
- * VacationRentalFooter — a multi-column site footer for a vacation-rental listing
- * page. Thin configuration over the shared `SiteFooter` composite: a palm-and-sun
- * brand mark + wordmark, a warm tagline, a social row, and a responsive grid of
- * link columns (Explore / Amenities / Support / Legal); below, a bordered-top
- * bottom bar with an auto-updating copyright line and legal links. The brand,
- * every column link, and each social link route through section-kit route links. Theme-token
+ * VacationRentalFooter — an editorial-wanderlust multi-column site footer for a
+ * vacation-rental listing page. Thin configuration over the shared `SiteFooter`
+ * composite: a palm-and-sun brand mark + wordmark, a warm tagline, and a mono
+ * social row, beside a responsive grid of link columns (Explore / Amenities /
+ * Support / Legal) titled with mono labels and rendered as w-fit block links,
+ * over a giant ghost watermark; below, a hairline-topped bottom bar with a mono
+ * auto-updating copyright line and mono legal links. The brand, every column
+ * link, and each social link route through section-kit route links. Theme-token
  * only. Use as the closing footer for a vacation rental, beach house, cabin,
  * villa, or boutique short-stay site. Renders fully with no props via baked-in
  * "Azure Cove Retreats" defaults.
@@ -55,7 +58,7 @@ function PalmMark({ className }: { className?: string }) {
 export const VacationRentalFooter = defineCapsule({
   name: 'VacationRentalFooter',
   description:
-    'Multi-column site footer for a vacation-rental listing page built on the shared SiteFooter composite: a palm-and-sun brand mark + wordmark, a warm tagline, a social row, and a responsive grid of link columns (Explore / Amenities / Support / Legal); below, a bordered-top bottom bar with an auto-updating copyright line and legal links. The brand, every column link, and each social link route through section-kit route links. Theme-token only. Use as the closing footer for a vacation rental, beach house, cabin, villa, or boutique short-stay site.',
+    'Editorial-wanderlust multi-column site footer for a vacation-rental listing page built on the shared SiteFooter composite: a palm-and-sun brand mark + wordmark, a warm tagline, and a mono social row, beside a responsive grid of link columns (Explore / Amenities / Support / Legal) titled with mono labels and rendered as w-fit block links, over a giant ghost watermark; below, a hairline-topped bottom bar with a mono auto-updating copyright line and mono legal links. The brand, every column link, and each social link route through section-kit route links. Theme-token only. Use as the closing footer for a vacation rental, beach house, cabin, villa, or boutique short-stay site.',
   props: z.object({
     /** Property / brand name shown beside the brand mark. */
     brand: z.string().optional(),
@@ -111,12 +114,15 @@ export const VacationRentalFooter = defineCapsule({
 
     return (
       <SiteFooter className={props.className}>
-        <FooterContent>
-          <FooterGrid>
+        <FooterContent className="relative overflow-hidden">
+          <Watermark className="-bottom-8 right-0 text-[9rem] leading-none">
+            {brand.split(' ')[0]}
+          </Watermark>
+          <FooterGrid className="relative">
             <FooterBrand
               brand={brand}
               brandMark={<PalmMark className="size-7 text-primary" />}
-              brandClassName={'text-lg font-semibold'}
+              brandClassName={'text-lg font-semibold tracking-tight'}
             >
               <FooterTagline>
                 {props.tagline ??
@@ -124,28 +130,42 @@ export const VacationRentalFooter = defineCapsule({
               </FooterTagline>
               <FooterSocial>
                 {social.map((s) => (
-                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  <FooterSocialLink
+                    key={s.label}
+                    className="font-mono text-[11px] uppercase tracking-[0.14em]"
+                  >
+                    {s.label}
+                  </FooterSocialLink>
                 ))}
               </FooterSocial>
             </FooterBrand>
             {columns.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
-                <FooterColumnList>
+                <FooterColumnTitle className="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-foreground">
+                  {col.title}
+                </FooterColumnTitle>
+                <FooterColumnList className="mt-4">
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink key={link} className="block w-fit">
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
-          <FooterBottom>
-            <FooterCopyright>
+          <FooterBottom className="relative">
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.12em]">
               {props.note ?? 'Made for slow mornings and golden evenings.'}
             </FooterCopyright>
             <FooterLegal>
               {legal.map((l) => (
-                <FooterLink key={l}>{l}</FooterLink>
+                <FooterLink
+                  key={l}
+                  className="block w-fit font-mono text-[11px] uppercase tracking-[0.12em]"
+                >
+                  {l}
+                </FooterLink>
               ))}
             </FooterLegal>
           </FooterBottom>

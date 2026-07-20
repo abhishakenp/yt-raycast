@@ -125,7 +125,7 @@ export const KidsEducationGallery = defineCapsule({
           </div>
 
           <GalleryGrid>
-            <GalleryGridItems columns={3} className="auto-rows-fr gap-4">
+            <GalleryGridItems columns={3} className="gap-4">
               {items
                 .map((item) => ({
                   alt: item.imageAlt,
@@ -143,7 +143,7 @@ export const KidsEducationGallery = defineCapsule({
                       key={__iv__.alt}
                       className={cn(
                         'rounded-none border-2 border-foreground transition-[transform,box-shadow] duration-150 hover:-translate-y-1 hover:shadow-[6px_6px_0_0] hover:shadow-foreground motion-reduce:transform-none',
-                        (i === 1 || i === 6) && 'sm:col-span-2',
+                        (i === 1 || i === 6) && 'sm:col-span-2 sm:aspect-[8/3]',
                       )}
                     >
                       <GalleryTileImage alt={__iv__.alt} />

@@ -13,7 +13,9 @@ import {
   AccountDropdownItem,
   AccountDropdownSignOut,
   AccountDropdownUnauthenticated,
-  Card,
+} from '#/section-kit/AccountDropdown.tsx'
+import { Card } from '#/section-kit/Card.tsx'
+import {
   CommandSearch,
   CommandSearchTrigger,
   CommandSearchContent,
@@ -21,8 +23,8 @@ import {
   CommandSearchList,
   CommandSearchEmpty,
   CommandSearchGroup,
-  NavbarRouteLink,
-} from '#/section-kit/index.ts'
+} from '#/section-kit/CommandSearch.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 import {
   Sheet,
   SheetContent,
@@ -120,7 +122,7 @@ export function SaasIntentBadge({
   return (
     <span
       className={cn(
-        'hidden items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary lg:inline-flex',
+        'hidden items-center gap-1.5 rounded-full border border-border bg-muted px-2.5 py-1 font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground lg:inline-flex',
         className,
       )}
     >
@@ -224,7 +226,7 @@ export function SaasSearchButton({
             {(plan) => (
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium">{plan.name}</p>
-                <p className="truncate text-xs text-muted-foreground">
+                <p className="truncate font-mono text-[11px] tracking-wide text-muted-foreground">
                   {[plan.price, plan.period, plan.summary]
                     .filter(Boolean)
                     .join(' · ')}
@@ -380,7 +382,7 @@ export function SaasAccountButton({
       <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
         <SheetContent
           side="right"
-          className="w-[min(100%,24rem)] gap-0 border-l border-border bg-background p-0 text-foreground sm:max-w-[24rem]"
+          className="w-[min(100%,24rem)] gap-0 rounded-none border-l border-border bg-background p-0 text-foreground shadow-none sm:max-w-[24rem]"
         >
           <SheetHeader className="border-b border-border px-5 py-4 text-left">
             <SheetTitle className="text-base font-semibold">
@@ -397,14 +399,17 @@ export function SaasAccountButton({
           <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-5 py-4">
             {sessions.length ? (
               sessions.map((session) => (
-                <Card key={session.id} className="p-3 rounded-lg p-4">
+                <Card
+                  key={session.id}
+                  className="rounded-none border-border p-4"
+                >
                   <p className="truncate text-sm font-semibold text-card-foreground">
                     {session.displayName || session.email}
                   </p>
-                  <p className="mt-1 truncate text-xs text-muted-foreground">
+                  <p className="mt-1 truncate font-mono text-[11px] tracking-wide text-muted-foreground">
                     {session.email}
                   </p>
-                  <div className="mt-3 flex items-center justify-end gap-3 text-xs text-muted-foreground">
+                  <div className="mt-3 flex items-center justify-end gap-3 font-mono text-[11px] tabular-nums tracking-wide text-muted-foreground">
                     <span>
                       {session.signedInAt
                         ? new Date(session.signedInAt).toLocaleString()
@@ -414,8 +419,8 @@ export function SaasAccountButton({
                 </Card>
               ))
             ) : (
-              <div className="flex min-h-48 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-5 text-center">
-                <p className="text-sm font-semibold text-foreground">
+              <div className="flex min-h-48 flex-col items-center justify-center rounded-none border border-dashed border-border bg-muted/40 px-5 text-center">
+                <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                   No sessions recorded
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">
@@ -432,7 +437,7 @@ export function SaasAccountButton({
               onClick={() => {
                 void clearAuthSessions()
               }}
-              className="inline-flex min-h-10 flex-1 items-center justify-center rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+              className="inline-flex min-h-10 flex-1 items-center justify-center rounded-none border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors duration-150 hover:bg-muted active:translate-y-px disabled:pointer-events-none disabled:opacity-50"
             >
               {clearAuthSessions.isPending ? (
                 <SaasMutationSpinner />
@@ -443,7 +448,7 @@ export function SaasAccountButton({
             <button
               type="button"
               onClick={() => setHistoryOpen(false)}
-              className="inline-flex min-h-10 flex-1 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              className="inline-flex min-h-10 flex-1 items-center justify-center rounded-none bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors duration-150 hover:bg-primary/90 active:translate-y-px"
             >
               Close
             </button>
@@ -489,7 +494,7 @@ export function SaasMobileMenu({
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="w-[min(100%,22rem)] border-l border-border bg-background p-0 text-foreground sm:max-w-[22rem]"
+        className="w-[min(100%,22rem)] rounded-none border-l border-border bg-background p-0 text-foreground shadow-none sm:max-w-[22rem]"
       >
         <SheetHeader className="border-b border-border px-5 py-4 text-left">
           <SheetTitle className="text-base font-semibold">{brand}</SheetTitle>
@@ -497,14 +502,14 @@ export function SaasMobileMenu({
             Navigate to a software section.
           </SheetDescription>
         </SheetHeader>
-        <div className="flex flex-col gap-1 px-3 py-4">
+        <div className="flex flex-col divide-y divide-border">
           <NavbarRouteLink
             href={targetHome}
             onClick={closeMenu}
             aria-current={isActiveRoute(targetHome) ? 'page' : undefined}
             className={cn(
-              'rounded-lg px-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted',
-              isActiveRoute(targetHome) && 'border-l-2 border-primary bg-muted',
+              'rounded-none border-l-2 border-l-transparent px-5 py-3.5 text-left text-sm font-medium text-foreground transition-colors duration-150 hover:border-l-border hover:bg-muted active:translate-y-px',
+              isActiveRoute(targetHome) && 'border-l-primary bg-muted',
             )}
           >
             Home
@@ -532,8 +537,8 @@ function SaasMobileMenuLink({
       onClick={onNavigate}
       aria-current={isActive ? 'page' : undefined}
       className={cn(
-        'rounded-lg px-3 py-3 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
-        isActive && 'border-l-2 border-primary bg-muted text-foreground',
+        'rounded-none border-l-2 border-l-transparent px-5 py-3.5 text-left text-sm font-medium text-muted-foreground transition-colors duration-150 hover:border-l-border hover:bg-muted hover:text-foreground active:translate-y-px',
+        isActive && 'border-l-primary bg-muted text-foreground',
       )}
     >
       {item}

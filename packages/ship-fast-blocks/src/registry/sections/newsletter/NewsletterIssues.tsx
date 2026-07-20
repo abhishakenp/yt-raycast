@@ -15,23 +15,27 @@ import {
   StoryCardFooter,
   StoryCardBody,
 } from '#/section-kit/StoryCard.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { MonoTag } from '#/section-kit/Decor.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * NewsletterIssues — recent-issues archive grid for an editorial newsletter.
- * A centered serif heading + lede over a 1/2/3-column grid of bordered article
- * cards: each card has a 16:10 cover photo that zooms on hover, an issue-number ·
- * date meta line, a serif title, a short blurb, and a "Read issue" link with a
- * trailing arrow; a centered outlined "View all" button closes the section.
- * Warm, calm, literary mood on a paper-toned surface. Covers use the alt-driven
- * Image component; titles, read links, and the view-all button route through
- * section-kit route links. Use to showcase a back-catalog for newsletters, publications,
- * blogs, or content creators. Renders fully with no props via baked-in defaults.
+ * NewsletterIssues — newsprint-lite archive grid for an editorial newsletter. A
+ * hairline meta rail (a primary square + mono "The Archive" label, a mono issue
+ * count) tops a left-aligned serif heading + lede; then a staggered 1/2/3-column
+ * grid of square (rounded-none) hairline story cards — each with a 16:10 grayscale
+ * cover photo that colors and zooms on hover, a mono tabular issue-number ·
+ * dateline row, a serif title, a short blurb, and a "Read issue" link with a
+ * trailing arrow, lifting onto a hard offset shadow on hover; a square outlined
+ * "View all" button with press feedback closes the section. Clean paper-toned
+ * surface with restrained newspaper structure. Covers use the alt-driven Image
+ * component; titles, read links, and the view-all button route through
+ * section-kit route links. Use to showcase a back-catalog for newsletters,
+ * publications, blogs, or content creators. Renders fully with no props via
+ * baked-in defaults.
  */
 export const NewsletterIssues = defineCapsule({
   name: 'NewsletterIssues',
   description:
-    "Recent-issues archive grid for an editorial newsletter: a centered serif heading + lede over a 1/2/3-column grid of bordered article cards, each with a 16:10 cover photo that zooms on hover, an issue-number-and-date meta line, a serif title, a short blurb, and a 'Read issue' link with a trailing arrow; a centered outlined 'View all' button closes the section. Warm, calm, literary mood on a paper-toned surface. Covers use the alt-driven Image component; titles, read links, and the view-all button route through section-kit route links. Use to showcase a back-catalog for newsletters, publications, blogs, or content creators.",
+    "Newsprint-lite archive grid for an editorial newsletter: a hairline meta rail (a primary square + mono 'The Archive' label, a mono issue count) above a left-aligned serif heading + lede, then a staggered 1/2/3-column grid of square hairline story cards, each with a 16:10 grayscale cover photo that colors and zooms on hover, a mono tabular issue-number-and-dateline row, a serif title, a short blurb, and a 'Read issue' link with a trailing arrow, lifting onto a hard offset shadow on hover; a square outlined 'View all' button with press feedback closes the section. Clean paper-toned surface with restrained newspaper structure. Covers use the alt-driven Image component; titles, read links, and the view-all button route through section-kit route links. Use to showcase a back-catalog for newsletters, publications, blogs, or content creators.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -141,21 +145,32 @@ export const NewsletterIssues = defineCapsule({
     return (
       <section className={cn('py-16 md:py-24 lg:py-28', props.className)}>
         <Container size="lg">
+          <div className="mb-8 flex items-center justify-between gap-4 border-b border-border pb-4">
+            <MonoTag className="flex items-center gap-3 tracking-[0.25em]">
+              <span aria-hidden="true" className="size-1.5 bg-primary" />
+              The Archive
+            </MonoTag>
+            <MonoTag className="tracking-[0.25em]">156 Issues</MonoTag>
+          </div>
+
           <SectionHeading
             title={heading}
             subtitle={description}
-            align="center"
+            align="left"
             titleClassName="font-serif text-3xl font-medium sm:text-4xl"
-            subtitleClassName="text-lg"
-            className="mx-auto mb-12 max-w-2xl gap-6 md:mb-16"
+            subtitleClassName="max-w-2xl text-lg"
+            className="mb-12 max-w-3xl gap-4 md:mb-16"
           />
 
-          <ArticleGrid cols="1-md-2-3" className="lg:gap-8">
+          <ArticleGrid
+            cols="1-md-2-3"
+            className="lg:gap-8 lg:[&>*:nth-child(3n-1)]:mt-10"
+          >
             {items.map((issue) => (
               <StoryCard
                 key={`${issue.number}:${issue.title}`}
                 variant="bordered"
-                className="rounded-2xl text-card-foreground transition-colors hover:border-muted-foreground/40 hover:shadow-none hover:translate-y-0"
+                className="rounded-none border-border bg-card text-card-foreground shadow-none transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:border-foreground/40 hover:shadow-[8px_8px_0_0] hover:shadow-foreground/10"
                 asChild
               >
                 <NavbarRouteLink href={issue.title}>
@@ -164,27 +179,32 @@ export const NewsletterIssues = defineCapsule({
                       alt={issue.imageAlt}
                       w={600}
                       h={375}
-                      className="aspect-[16/10]"
+                      className="aspect-[16/10] grayscale transition-[filter,transform] duration-500 group-hover:grayscale-0"
                       variant="bordered"
                     />
                     <StoryCardMeta>
                       {
-                        <div className="mb-3 flex items-center gap-3 text-sm text-muted-foreground">
+                        <div className="mb-3 flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground tabular-nums">
                           <span>{issue.number}</span>
-                          <span className="size-1 rounded-full bg-muted-foreground/50" />
+                          <span
+                            aria-hidden="true"
+                            className="h-3 w-px bg-border"
+                          />
                           <span>{issue.date}</span>
                         </div>
                       }
                     </StoryCardMeta>
                   </StoryCardImageContainer>
-                  <StoryCardBody className="p-6">
-                    <StoryCardTitle>{issue.title}</StoryCardTitle>
+                  <StoryCardBody className="border-t border-border p-6">
+                    <StoryCardTitle className="font-serif text-xl font-medium">
+                      {issue.title}
+                    </StoryCardTitle>
                     <StoryCardExcerpt>{issue.blurb}</StoryCardExcerpt>
                     <StoryCardFooter>
                       {
-                        <span className="mt-4 inline-flex items-center text-sm font-medium text-foreground transition-colors group-hover:text-muted-foreground">
+                        <span className="mt-4 inline-flex items-center font-mono text-[11px] font-medium uppercase tracking-[0.15em] text-foreground transition-colors group-hover:text-muted-foreground">
                           {readLabel}
-                          <ArrowRight className="ml-1 size-4" />
+                          <ArrowRight className="ml-1.5 size-4" />
                         </span>
                       }
                     </StoryCardFooter>
@@ -194,9 +214,9 @@ export const NewsletterIssues = defineCapsule({
             ))}
           </ArticleGrid>
 
-          <div className="mt-12 text-center">
+          <div className="mt-14 text-center">
             <NavbarRouteLink
-              className="inline-flex items-center justify-center rounded-lg border border-border px-6 py-3 font-medium text-foreground transition-colors hover:border-foreground hover:text-foreground"
+              className="inline-flex items-center justify-center rounded-none border border-foreground/70 px-7 py-3.5 font-mono text-xs font-medium uppercase tracking-[0.15em] text-foreground transition-[transform,background-color,color] duration-150 hover:bg-foreground hover:text-background active:translate-y-px"
               href={viewAll}
             >
               {viewAll}

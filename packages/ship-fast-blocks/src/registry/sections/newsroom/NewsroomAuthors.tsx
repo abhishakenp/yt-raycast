@@ -13,22 +13,23 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * NewsroomAuthors — editorial "meet our columnists" block for a digital
- * newsroom or magazine. A serif heading + supporting lede above a responsive
- * 1/2/3/4-up grid of contributor cards, each with a round alt-driven avatar, a
- * serif name, a primary-colored beat/role, a one-to-two-line bio, the linked
- * title of their latest column, and small social handles. Links route through
- * section-kit route links; avatars use the Image component. Renders fully with no props.
- * Use to introduce columnists, correspondents, and contributors for a news,
- * magazine, or publication site.
+ * NewsroomAuthors — full newsprint "masthead of contributors" block for a
+ * digital newsroom or magazine. A serif heading + supporting lede sit over a
+ * heavy edition rule, above a responsive 1/2/3/4-up run of square (rounded-none)
+ * hairline contributor cards that gain a hard offset shadow on hover. Each card
+ * pairs a ghost index numeral with a grayscale square avatar, a serif name, a
+ * mono uppercase beat/role in the accent, a short bio, the linked title of the
+ * columnist's latest piece, and small mono social handles. Links route through
+ * section-kit route links; avatars use the Image component. Renders fully with
+ * no props. Use to introduce columnists, correspondents, and contributors for a
+ * news, magazine, or publication site.
  */
 export const NewsroomAuthors = defineCapsule({
   name: 'NewsroomAuthors',
   description:
-    "Editorial 'meet our columnists' block for a digital newsroom or magazine: a serif heading + supporting lede above a responsive 1/2/3/4-up grid of contributor cards, each with a round alt-driven avatar, a serif name, a primary-colored beat/role, a one-to-two-line bio, the linked title of their latest column, and small social handles. Links route through section-kit route links; avatars use the Image component. Use to introduce columnists, correspondents, and contributors for a news, magazine, or publication site.",
+    "Full newsprint 'masthead of contributors' block for a digital newsroom or magazine: a serif heading + supporting lede over a heavy edition rule, above a responsive 1/2/3/4-up run of square (rounded-none) hairline contributor cards that gain a hard offset shadow on hover. Each card pairs a ghost index numeral with a grayscale square avatar, a serif name, a mono uppercase beat/role in the accent, a short bio, the linked title of the columnist's latest piece, and small mono social handles. Links route through section-kit route links; avatars use the Image component. Use to introduce columnists, correspondents, and contributors for a news, magazine, or publication site.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -125,47 +126,56 @@ export const NewsroomAuthors = defineCapsule({
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={subheading}
-            className="mx-auto mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 font-serif text-3xl font-bold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <ResponsiveGrid cols="1-2-3" className="xl:grid-cols-4">
-            {authors.map((a) => (
+          <div className="mb-14 border-b-2 border-foreground pb-6">
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={subheading}
+              className="max-w-3xl gap-0"
+              titleClassName="mb-4 font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
+              subtitleClassName="text-lg text-muted-foreground"
+            />
+          </div>
+          <ResponsiveGrid cols="1-2-3" className="gap-6 xl:grid-cols-4">
+            {authors.map((a, i) => (
               <PersonCard
                 key={a.name}
                 variant="outlined"
-                className="p-6 rounded-2xl"
+                className="group relative rounded-none p-6 transition-all hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0] hover:shadow-foreground/15"
               >
+                <span
+                  aria-hidden="true"
+                  className="absolute right-4 top-4 font-mono text-[11px] tabular-nums text-muted-foreground/60"
+                >
+                  {String(i + 1).padStart(2, '0')}
+                </span>
                 <Image
                   alt={a.avatarAlt}
                   w={160}
                   h={160}
                   loading="lazy"
-                  className="mb-5 size-20 rounded-full object-cover"
+                  className="mb-5 size-20 rounded-none border border-border object-cover grayscale"
                 />
                 <PersonCardName className="font-serif text-xl font-bold text-card-foreground">
                   {a.name}
                 </PersonCardName>
-                <PersonCardRole className="mb-3 font-semibold uppercase tracking-wider text-primary">
+                <PersonCardRole className="mb-3 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
                   {a.role}
                 </PersonCardRole>
                 <PersonCardBio className="mb-5 leading-relaxed">
                   {a.bio}
                 </PersonCardBio>
                 <div className="mt-auto">
-                  <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
                     Latest column
                   </p>
                   <NavbarRouteLink
-                    className="text-left text-sm font-semibold text-accent underline-offset-4 hover:underline"
+                    className="text-left font-serif text-sm font-semibold text-foreground underline-offset-4 transition-colors hover:text-primary hover:underline"
                     href={a.latest}
                   >
                     {a.latest}
                   </NavbarRouteLink>
-                  <div className="mt-4 flex items-center gap-3 border-t border-border pt-4 text-xs text-muted-foreground">
+                  <div className="mt-4 flex items-center gap-3 border-t border-border pt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
                     <NavbarRouteLink
                       aria-label={`Follow ${a.name} on X`}
                       className="transition-colors hover:text-foreground"

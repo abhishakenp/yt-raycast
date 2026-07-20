@@ -4,29 +4,31 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
 /**
- * MusicFestivalLineup — a lineup section for a music / arts festival landing
- * page. A centered eyebrow + heading + intro, then a row of three headliner
- * photo cards (each with a gradient-overlaid day label, name and genre), a
- * featured-artist grid of bordered name/genre cards, and a centered "more
- * artists" pill button. Headliner cards, featured cards and the more button all
- * route through section-kit route links; photos use the alt-driven Image component. Use to
+ * MusicFestivalLineup — a kinetic-poster lineup section for a music / arts
+ * festival landing page. An asymmetric mono-index header, then a row of three
+ * headliner photo cards (square-cornered, each with a hairline day ticket-stub
+ * chip, a giant uppercase artist name and a mono genre over a foreground
+ * gradient), a marquee-style featured-artist ledger of collapsed-border rows
+ * (big uppercase names + mono genres), and a rounded ticket-stub "more artists"
+ * button. Headliner cards, featured rows and the more button all route through
+ * section-kit route links; photos use the alt-driven Image component. Use to
  * showcase performers on music festivals, arts festivals, concert series, or
  * any multi-day live-music event.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import {
   LineupGrid,
   ArtistCard,
   ArtistTier,
 } from '#/section-kit/LineupGrid.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const MusicFestivalLineup = defineCapsule({
   name: 'MusicFestivalLineup',
   description:
-    "Lineup section for a music / arts festival landing page: a centered eyebrow + heading + intro paragraph, then a row of three headliner photo cards (each with a dark gradient overlay carrying a day label, artist name and genre), a featured-artist grid of bordered name/genre cards (2/4/6-up responsive), and a centered 'more artists' pill button. Headliner cards, featured cards and the more button all route through section-kit route links; photos use the alt-driven Image component. Use to showcase performers on music festivals, arts festivals, concert series, raves, or any multi-day live-music event.",
+    "Kinetic-poster lineup section for a music / arts festival landing page: an asymmetric mono-index header, then a row of three square-cornered headliner photo cards (each with a hairline day ticket-stub chip, a giant uppercase artist name and a mono genre over a foreground gradient), a marquee-style featured-artist ledger of collapsed-border rows (big uppercase names plus mono genres, 2/3/6-up responsive), and a rounded ticket-stub 'more artists' button. Headliner cards, featured rows and the more button all route through section-kit route links; photos use the alt-driven Image component. Use to showcase performers on music festivals, arts festivals, concert series, raves, or any multi-day live-music event.",
   props: z.object({
     /** Eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -149,40 +151,71 @@ export const MusicFestivalLineup = defineCapsule({
         ]
     const more = props.more ?? '+ 64 More Artists'
     return (
-      <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
-        <Container>
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            className="mb-16 gap-0"
-            eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-primary"
-            titleClassName="mb-4 text-4xl font-bold tracking-tight lg:text-5xl"
-            subtitleClassName="mx-auto max-w-2xl text-lg text-foreground/70"
-          />
+      <section
+        className={cn(
+          'relative overflow-hidden pb-24 pt-24 sm:pt-28 lg:pb-28 lg:pt-32',
+          props.className,
+        )}
+      >
+        <Watermark className="-right-6 top-16 hidden text-[12rem] leading-[0.8] lg:block">
+          {heading.split(' ').at(-1)}
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-14 flex flex-col gap-4 border-b border-border pb-8 md:flex-row md:items-end md:justify-between">
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-3"
+              eyebrowClassName="font-mono text-[11px] uppercase tracking-[0.2em] text-primary"
+              titleClassName="text-4xl font-extrabold uppercase tracking-tight lg:text-6xl"
+              subtitleClassName="max-w-xl text-lg text-foreground/70"
+            />
+            <span
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-foreground/40"
+            >
+              [ 80+ artists ]
+            </span>
+          </div>
 
           <div className="mb-16">
-            <h3 className="mb-8 text-center text-sm font-medium uppercase tracking-widest text-foreground/50">
+            <h3 className="mb-6 font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/50">
               {headlinersLabel}
             </h3>
-            <LineupGrid className="grid gap-6 md:grid-cols-3">
-              {headliners.map((h) => (
-                <ArtistCard asChild key={h.name}>
+            <LineupGrid className="grid gap-4 md:grid-cols-3">
+              {headliners.map((h, i) => (
+                <ArtistCard
+                  asChild
+                  key={h.name}
+                  className="rounded-none border border-border transition-[transform,box-shadow] duration-150 hover:-translate-y-1 hover:shadow-[8px_8px_0_0] hover:shadow-foreground active:translate-y-0 active:shadow-none motion-reduce:transform-none"
+                >
                   <NavbarRouteLink href={h.name}>
                     <Image
                       alt={h.imageAlt}
                       w={800}
                       h={600}
                       loading="lazy"
-                      className="h-80 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="h-80 w-full object-cover grayscale-[0.1] transition-transform duration-500 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/20 to-transparent" />
-                    <div className="absolute inset-x-0 bottom-0 p-6">
-                      <p className="mb-1 text-sm text-background/70">{h.day}</p>
-                      <h4 className="mb-1 text-2xl font-bold text-background">
+                    <div className="absolute inset-0 bg-gradient-to-t from-foreground/90 via-foreground/25 to-transparent" />
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-4 top-4 font-mono text-5xl font-extrabold tabular-nums leading-none text-background/25"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <div className="absolute inset-x-0 bottom-0 p-5">
+                      <span className="mb-3 inline-block border border-dashed border-background/50 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.18em] text-background/80">
+                        {h.day}
+                      </span>
+                      <h4 className="text-3xl font-extrabold uppercase leading-[0.9] tracking-tight text-background">
                         {h.name}
                       </h4>
-                      <p className="text-sm text-background/70">{h.genre}</p>
+                      <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.14em] text-background/70">
+                        {h.genre}
+                      </p>
                     </div>
                   </NavbarRouteLink>
                 </ArtistCard>
@@ -191,15 +224,24 @@ export const MusicFestivalLineup = defineCapsule({
           </div>
 
           <div className="mb-16">
-            <h3 className="mb-8 text-center text-sm font-medium uppercase tracking-widest text-foreground/50">
+            <h3 className="mb-6 font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/50">
               {featuredLabel}
             </h3>
-            <ResponsiveGrid cols="2-3-6" className="gap-4">
+            <ResponsiveGrid
+              cols="2-3-6"
+              className="gap-0 border-l border-t border-border"
+            >
               {featured.map((a) => (
-                <ArtistTier asChild key={a.name}>
+                <ArtistTier
+                  asChild
+                  key={a.name}
+                  className="items-start rounded-none border-0 border-b border-r border-border p-4 text-left transition-colors hover:bg-muted/50"
+                >
                   <NavbarRouteLink href={a.name}>
-                    <p className="font-semibold">{a.name}</p>
-                    <p className="mt-1 text-sm text-card-foreground/60">
+                    <p className="text-base font-extrabold uppercase leading-tight tracking-tight text-foreground">
+                      {a.name}
+                    </p>
+                    <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.14em] text-card-foreground/60">
                       {a.genre}
                     </p>
                   </NavbarRouteLink>
@@ -210,7 +252,7 @@ export const MusicFestivalLineup = defineCapsule({
 
           <div className="text-center">
             <NavbarRouteLink
-              className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3 font-medium transition-colors hover:bg-accent"
+              className="inline-flex items-center gap-2 rounded-full border border-dashed border-foreground/50 px-6 py-3 font-mono text-xs font-semibold uppercase tracking-[0.16em] transition-[transform,background-color] duration-150 hover:bg-foreground hover:text-background active:translate-y-px motion-reduce:transform-none"
               href={more}
             >
               {more}

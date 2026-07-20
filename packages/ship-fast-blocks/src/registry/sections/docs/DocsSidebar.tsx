@@ -18,8 +18,7 @@ import {
 import { cn } from '#/lib/utils.ts'
 import { docsLakebed, type DocsArticleRecord } from './docs-lakebed.ts'
 import { useDocsSearch, useSyncDocsCatalog } from './docs-interactions.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * DocsSidebar — "Terminal-docs" persistent left navigation rail for a
  * developer DOCUMENTATION / API-reference site. A sticky, scrollable,

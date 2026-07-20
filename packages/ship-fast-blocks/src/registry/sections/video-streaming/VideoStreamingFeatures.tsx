@@ -4,22 +4,21 @@ import { Container } from '#/section-kit/Container.tsx'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
-import {
-  FeatureGrid,
-  FeatureCard,
-  FeatureIcon as KitFeatureIcon,
-  FeatureTitle,
-  FeatureDescription,
-} from '#/section-kit/FeatureGrid.tsx'
+import { FeatureTitle, FeatureDescription } from '#/section-kit/FeatureGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 
 /**
- * VideoStreamingFeatures — a 4-column feature grid for a video-streaming
- * landing page. Thin configuration over the shared `FeatureGrid` composite: a
- * centered heading + subheading above a responsive grid of feature cards, each
- * pairing an inline stroke-SVG glyph (cycled per index) with a bold title and a
- * muted blurb. Use to spell out the streaming value props — 4K Ultra HD,
- * offline downloads, watch on any device, zero ads, Dolby Atmos, profiles —
- * beneath a streaming hero. Renders fully with no props via baked-in defaults.
+ * VideoStreamingFeatures — a collapsed-border value-prop ledger for a
+ * video-streaming landing page. Over a giant faint "4K" ghost watermark: a mono
+ * slate meta rule with a feature count, an asymmetric left-aligned header, and a
+ * sharp-cornered collapsed-border grid (shared hairlines, binary rounded-none)
+ * of feature cells — each pairing a mono tabular index and an inline stroke-SVG
+ * glyph on one row with an extrabold title and a muted blurb below. Use to spell
+ * out the streaming value props — 4K Ultra HD, offline downloads, watch on any
+ * device, zero ads, Dolby Atmos, profiles — beneath a streaming hero. Tokens-only
+ * so it flips cleanly between light and dark themes. Renders fully with no props
+ * via baked-in defaults.
  */
 const ICONS: ReactNode[] = [
   // 4K / monitor
@@ -75,7 +74,7 @@ function FeatureIcon({ glyph }: { glyph: ReactNode }) {
 export const VideoStreamingFeatures = defineCapsule({
   name: 'VideoStreamingFeatures',
   description:
-    'A 4-column feature grid for a video-streaming landing page built on the shared FeatureGrid composite: a centered heading + subheading above a responsive grid of feature cards, each pairing an inline stroke-SVG glyph (cycled per index) with a bold title and a muted blurb. Use to spell out streaming value props — 4K Ultra HD, offline downloads, watch on any device, zero ads, Dolby Atmos, profiles — beneath a streaming hero.',
+    "A collapsed-border value-prop ledger for a video-streaming landing page: over a giant faint '4K' ghost watermark, a mono slate meta rule with a feature count, an asymmetric left-aligned header, and a sharp-cornered collapsed-border grid (shared hairlines, rounded-none) of feature cells — each pairing a mono tabular index and an inline stroke-SVG glyph with an extrabold title and a muted blurb. Use to spell out streaming value props — 4K Ultra HD, offline downloads, watch on any device, zero ads, Dolby Atmos, profiles — beneath a streaming hero. Tokens-only and theme-adaptive.",
   props: z.object({
     /** Centered section heading above the grid. */
     heading: z.string().optional(),
@@ -135,41 +134,56 @@ export const VideoStreamingFeatures = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-background pt-28 pb-20 lg:pt-32 lg:pb-28',
+          'relative overflow-hidden bg-background pb-20 pt-24 lg:pb-28 lg:pt-32',
           props.className,
         )}
       >
-        <Container>
-          <FeatureGrid heading={heading} subheading={subheading} columns={4}>
-            {features
-              .map((f, i) => ({
-                title: f.title,
-                description: f.description,
-                icon: <FeatureIcon glyph={ICONS[i % ICONS.length]} />,
-              }))
-              .map((f) => {
-                const __iv__ = f as {
-                  title: string
-                  description: string
-                  icon?: React.ReactNode
-                  points?: string[]
-                  cta?: string
-                  price?: string
-                  imageAlt?: string
-                }
-                return (
-                  <FeatureCard key={__iv__.title}>
-                    {__iv__.icon && (
-                      <KitFeatureIcon>{__iv__.icon}</KitFeatureIcon>
-                    )}
-                    <FeatureTitle>{__iv__.title}</FeatureTitle>
-                    <FeatureDescription>
-                      {__iv__.description}
-                    </FeatureDescription>
-                  </FeatureCard>
-                )
-              })}
-          </FeatureGrid>
+        <Watermark className="-left-4 top-10 text-[26vw] leading-none lg:text-[18rem]">
+          4K
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-8 flex items-center justify-between gap-4 border-b border-border pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            <span className="flex items-center gap-3">
+              <span aria-hidden="true" className="size-2 bg-primary" />
+              What you get
+            </span>
+            <span className="tabular-nums">
+              {String(features.length).padStart(2, '0')} reasons
+            </span>
+          </div>
+
+          <SectionHeading
+            align="left"
+            title={heading}
+            subtitle={subheading}
+            className="mb-12 gap-0"
+            titleClassName="mb-4 text-4xl font-extrabold tracking-tight md:text-5xl"
+            subtitleClassName="max-w-2xl"
+          />
+
+          <div className="grid grid-cols-1 border-l border-t border-border sm:grid-cols-2 lg:grid-cols-3">
+            {features.map((f, i) => (
+              <div
+                key={f.title}
+                className="group relative flex flex-col gap-3 border-b border-r border-border p-6 transition-colors duration-150 hover:bg-muted/50 lg:p-8"
+              >
+                <div className="flex items-center justify-between text-muted-foreground">
+                  <MonoTag className="tabular-nums" aria-hidden="true">
+                    {String(i + 1).padStart(2, '0')}
+                  </MonoTag>
+                  <span className="text-foreground/70 transition-colors group-hover:text-primary">
+                    <FeatureIcon glyph={ICONS[i % ICONS.length]} />
+                  </span>
+                </div>
+                <FeatureTitle className="text-xl font-extrabold tracking-tight">
+                  {f.title}
+                </FeatureTitle>
+                <FeatureDescription className="leading-relaxed">
+                  {f.description}
+                </FeatureDescription>
+              </div>
+            ))}
+          </div>
         </Container>
       </section>
     )

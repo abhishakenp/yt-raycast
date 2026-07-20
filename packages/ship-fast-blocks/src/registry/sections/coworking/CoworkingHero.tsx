@@ -8,8 +8,7 @@ import { Watermark } from '#/section-kit/Decor.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * CoworkingHero — luminous editorial opening scene for a coworking /
  * workspace landing page. The backdrop is a blueprint light-field: an

@@ -1819,11 +1819,10 @@ export function Dashboard({
   return (
     <>
       <div
-        className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[radial-gradient(circle_at_50%_-10%,rgba(35,229,255,0.18),transparent_34%),linear-gradient(180deg,#070913_0%,#0a0d16_100%)] [mask-image:linear-gradient(to_bottom,black,transparent_92%)]"
+        className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[#070913]"
         aria-hidden="true"
       >
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:64px_64px]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_28%,rgba(103,232,249,0.14),transparent_36%)]"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.026)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.026)_1px,transparent_1px)] bg-[size:64px_64px] opacity-70"></div>
       </div>
 
       <audio id="launch-sfx" preload="auto" src="/assets/launch.mp3"></audio>
@@ -1859,7 +1858,7 @@ export function Dashboard({
           <div
             id="dashboard-cockpit"
             className={cn(
-              'flex h-[calc(100vh-32px)] w-full flex-col overflow-hidden rounded-3xl rounded-bl-none border border-white/10 bg-[#0b0d14]/88 shadow-[0_24px_90px_rgba(0,0,0,0.48)] backdrop-blur-[22px]',
+              'flex h-[calc(100vh-32px)] w-full flex-col overflow-hidden rounded-3xl rounded-bl-none border border-white/10 bg-[#0b0d14] shadow-[0_18px_54px_rgba(0,0,0,0.36)]',
               (isPreviewRenderable ||
                 isAdminActive ||
                 isMissingSession ||
@@ -2385,7 +2384,7 @@ export function Dashboard({
                               <span
                                 className={cn(
                                   railIconClass,
-                                  'bg-black/22 text-white/88 backdrop-blur-md group-hover:bg-black/28',
+                                  'bg-black/24 text-white/88 group-hover:bg-black/32',
                                 )}
                                 aria-hidden="true"
                               >
@@ -2401,7 +2400,7 @@ export function Dashboard({
                                 </span>
                               </span>
                               <span
-                                className="grid size-8 shrink-0 place-items-center rounded-xl border border-white/12 bg-black/18 text-white/72 backdrop-blur-md"
+                                className="grid size-8 shrink-0 place-items-center rounded-xl border border-white/12 bg-black/22 text-white/72"
                                 aria-hidden="true"
                               >
                                 <Palette className="size-4" strokeWidth={1.8} />
@@ -2516,7 +2515,7 @@ export function Dashboard({
                               <span
                                 className={cn(
                                   railIconClass,
-                                  'bg-black/22 text-white/88 backdrop-blur-md group-hover:bg-black/28',
+                                  'bg-black/24 text-white/88 group-hover:bg-black/32',
                                 )}
                                 aria-hidden="true"
                               >
@@ -2533,7 +2532,7 @@ export function Dashboard({
                                 </span>
                               </span>
                               <span
-                                className="grid size-8 shrink-0 place-items-center rounded-xl border border-white/12 bg-black/18 text-white/72 backdrop-blur-md"
+                                className="grid size-8 shrink-0 place-items-center rounded-xl border border-white/12 bg-black/22 text-white/72"
                                 aria-hidden="true"
                               >
                                 <Languages
@@ -2839,9 +2838,7 @@ export function Dashboard({
                       <span
                         className={cn(
                           'size-2 rounded-full',
-                          isPreviewReady
-                            ? 'bg-emerald-300'
-                            : 'bg-cyan-300 animate-pulse',
+                          isPreviewReady ? 'bg-emerald-300' : 'bg-cyan-300',
                         )}
                         id="status-dot"
                       ></span>
@@ -2862,37 +2859,39 @@ export function Dashboard({
           </div>
         </div>
       </div>
-      <Suspense fallback={null}>
-        <InlineEditToolbar
-          isOpen={toolbarState.isOpen}
-          onClose={() => closeInlineEditingSurface('cancel')}
-          anchorRect={toolbarState.anchorRect}
-          activeElement={toolbarState.activeElement}
-          onStyleApply={handleStyleApply}
-          onCommitText={() => finishPendingTextEdit('commit')}
-          onPendingSave={trackDashboardSave}
-          isApplying={isApplyingStyle}
-          isForking={isForkingSession}
-          canUndo={undoRedo.canUndo}
-          canRedo={undoRedo.canRedo}
-          onUndo={handleUndo}
-          onRedo={handleRedo}
-          onLinkEdit={handleLinkEdit}
-          onMoveUp={inspectorSelection ? handleSectionMoveUp : handleMoveUp}
-          onMoveDown={
-            inspectorSelection ? handleSectionMoveDown : handleMoveDown
-          }
-          canMoveUp={true}
-          canMoveDown={true}
-          onImageSelect={handleImageSelect}
-          onSelectParent={handleSelectParent}
-          sessionId={sessionId}
-          anonymousOwnerSecret={activeAnonymousOwnerSecret}
-          onSectionEdit={handleSectionEditSubmit}
-          isSectionSubmitting={isSectionEditing}
-          sectionError={sectionEditError}
-        />
-      </Suspense>
+      {toolbarState.isOpen ? (
+        <Suspense fallback={null}>
+          <InlineEditToolbar
+            isOpen={toolbarState.isOpen}
+            onClose={() => closeInlineEditingSurface('cancel')}
+            anchorRect={toolbarState.anchorRect}
+            activeElement={toolbarState.activeElement}
+            onStyleApply={handleStyleApply}
+            onCommitText={() => finishPendingTextEdit('commit')}
+            onPendingSave={trackDashboardSave}
+            isApplying={isApplyingStyle}
+            isForking={isForkingSession}
+            canUndo={undoRedo.canUndo}
+            canRedo={undoRedo.canRedo}
+            onUndo={handleUndo}
+            onRedo={handleRedo}
+            onLinkEdit={handleLinkEdit}
+            onMoveUp={inspectorSelection ? handleSectionMoveUp : handleMoveUp}
+            onMoveDown={
+              inspectorSelection ? handleSectionMoveDown : handleMoveDown
+            }
+            canMoveUp={true}
+            canMoveDown={true}
+            onImageSelect={handleImageSelect}
+            onSelectParent={handleSelectParent}
+            sessionId={sessionId}
+            anonymousOwnerSecret={activeAnonymousOwnerSecret}
+            onSectionEdit={handleSectionEditSubmit}
+            isSectionSubmitting={isSectionEditing}
+            sectionError={sectionEditError}
+          />
+        </Suspense>
+      ) : null}
     </>
   )
 }

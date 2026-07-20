@@ -21,7 +21,9 @@ const capsuleCache = new Map<RuntimeComponentName, Promise<ShipFastCapsule>>()
 const libraryCache = new Map<string, Promise<Library>>()
 const runtimeComponentNameSet = new Set<string>(runtimeComponentNames)
 
-function isRuntimeComponentName(name: string): name is RuntimeComponentName {
+export function isRuntimeComponentName(
+  name: string,
+): name is RuntimeComponentName {
   return runtimeComponentNameSet.has(name)
 }
 

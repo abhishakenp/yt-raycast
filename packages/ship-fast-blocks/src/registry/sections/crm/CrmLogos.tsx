@@ -8,8 +8,7 @@ import {
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * CrmLogos — collapsed-border trusted-by ledger strip for a CRM / SaaS landing
  * page. A hairline-bottomed band where a left-aligned mono micro-label caption

@@ -11,8 +11,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
  * CorporateNavbar — Swiss-corporate sticky top navigation bar for an
  * enterprise / corporate B2B marketing site. A backdrop-blurred, hairline

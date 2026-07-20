@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
@@ -14,18 +13,19 @@ import {
 } from '#/section-kit/GalleryGrid.tsx'
 
 /**
- * MembershipClubGallery — masonry-style photo gallery of gatherings for a private
- * membership club / exclusive community page. A left-aligned eyebrow + thin heading
- * sit above a responsive 4-column grid of alt-driven photos with alternating
- * heights (taller on even indices, shorter on odd) for a relaxed editorial rhythm,
- * all on a muted surface band. Use to show the lived experience — dinners, retreats,
- * clubhouses, panels — for members clubs, founders communities, professional
- * networks or curated collectives. Renders fully with no props.
+ * MembershipClubGallery — staggered vitrine gallery of gatherings for a private
+ * membership club / exclusive community page on a subtle muted band. A
+ * left-aligned mono micro-label kicker + serif heading sit above a responsive
+ * 4-column grid of alt-driven photographs, each set in a sharp-cornered hairline
+ * vitrine mat that zooms gently on hover, with alternating columns nudged down
+ * for a relaxed editorial rhythm. Use to show the lived experience — dinners,
+ * retreats, clubhouses, panels — for members clubs, founders communities,
+ * professional networks or curated collectives. Renders fully with no props.
  */
 export const MembershipClubGallery = defineCapsule({
   name: 'MembershipClubGallery',
   description:
-    'Masonry-style photo gallery of gatherings for a private membership club / exclusive community page: a left-aligned eyebrow + thin heading above a responsive 4-column grid of alt-driven photos with alternating heights (taller on even indices, shorter on odd) for a relaxed editorial rhythm, on a muted surface band. Use to show the lived experience — dinners, retreats, clubhouses, panels — for members clubs, founders communities, professional networks or curated collectives.',
+    'Staggered vitrine gallery of gatherings for a private membership club / exclusive community page on a subtle muted band: a left-aligned mono micro-label kicker + serif heading above a responsive 4-column grid of alt-driven photographs, each set in a sharp-cornered hairline vitrine mat that zooms gently on hover, with alternating columns nudged down for a relaxed editorial rhythm. Use to show the lived experience — dinners, retreats, clubhouses, panels — for members clubs, founders communities, professional networks or curated collectives.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -58,12 +58,15 @@ export const MembershipClubGallery = defineCapsule({
             align="left"
             eyebrow={eyebrow}
             title={heading}
-            className="mb-12 max-w-3xl lg:mb-16 gap-0"
-            eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground"
-            titleClassName="text-3xl font-light text-foreground sm:text-4xl"
+            className="mb-12 max-w-3xl gap-4 lg:mb-16"
+            eyebrowClassName="font-mono text-[11px] font-medium uppercase tracking-[0.24em] text-muted-foreground"
+            titleClassName="font-serif text-4xl font-normal tracking-tight text-foreground lg:text-5xl"
           />
           <GalleryGrid>
-            <GalleryGridItems columns={4}>
+            <GalleryGridItems
+              columns={4}
+              className="items-start gap-6 lg:[&>*:nth-child(even)]:translate-y-10"
+            >
               {images
                 .map((alt) => ({ alt }))
                 .map((img) => {
@@ -74,10 +77,13 @@ export const MembershipClubGallery = defineCapsule({
                     location?: string
                   }
                   return (
-                    <GalleryTile key={__iv__.alt}>
+                    <GalleryTile
+                      key={__iv__.alt}
+                      className="rounded-none border-border bg-background p-2"
+                    >
                       <GalleryTileImage alt={__iv__.alt} />
                       {__iv__.caption && (
-                        <GalleryTileCaption>
+                        <GalleryTileCaption className="font-mono text-[11px] uppercase tracking-[0.18em]">
                           {__iv__.caption}
                         </GalleryTileCaption>
                       )}

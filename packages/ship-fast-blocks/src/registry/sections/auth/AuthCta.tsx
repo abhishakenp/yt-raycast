@@ -16,7 +16,7 @@ import {
   SaasPlanActionButton,
 } from '../saas/saas-interactions.tsx'
 import { saasLakebed } from '../saas/saas-lakebed.ts'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 
 /**
  * AuthCta — inverted closing conversion band for Authly, a developer

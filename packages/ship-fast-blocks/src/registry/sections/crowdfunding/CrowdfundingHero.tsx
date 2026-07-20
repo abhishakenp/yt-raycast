@@ -19,8 +19,7 @@ import {
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
 import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * CrowdfundingHero — playful-bold campaign hero for a crowdfunding / pre-order
  * landing page built around the campaign's central metaphor: a chunky

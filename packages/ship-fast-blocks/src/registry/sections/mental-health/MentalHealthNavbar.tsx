@@ -9,7 +9,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
+} from '#/section-kit/SiteNav.tsx'
 import {
   LocalServiceAccountButton,
   LocalServiceBookingButton,
@@ -21,19 +21,21 @@ import {
 import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
 
 /**
- * MentalHealthNavbar — a sticky, backdrop-blurred top navigation bar for a
- * therapy / counseling / mental-health practice site. A border-bottomed header
- * pinned to the top with a calming "sun/wellness" brand mark + practice name on
- * the left, horizontal nav links on the right (desktop), a filled primary
- * "Book Session" CTA, and a hamburger toggle on mobile. Calm, warm, sage-and-sand
- * wellness aesthetic. Every link and CTA routes through route hrefs. Use as the
- * sticky site header for therapists, counselors, psychologists, psychiatrists,
- * wellness centers, telehealth or behavioral-health practices.
+ * MentalHealthNavbar — a calm, warm-editorial sticky header for a therapy /
+ * counseling / mental-health practice site. A backdrop-blurred, hairline-bordered
+ * bar pins to the top with a soft "sun/wellness" glyph beside a serif practice
+ * wordmark on the left, quiet nav links on the right (desktop), a square
+ * filled-primary "Book Session" CTA with press feedback, square hairline
+ * search / account chips, and a hamburger toggle on mobile. Restrained, airy,
+ * sage-and-sand wellness aesthetic — a warmer sibling of the clinical
+ * dental / healthcare headers. Every link and CTA routes through route hrefs.
+ * Use as the sticky site header for therapists, counselors, psychologists,
+ * psychiatrists, wellness centers, telehealth or behavioral-health practices.
  */
 export const MentalHealthNavbar = defineCapsule({
   name: 'MentalHealthNavbar',
   description:
-    "Sticky, backdrop-blurred top navigation bar for a therapy / counseling / mental-health practice site: a border-bottomed header with a calming 'sun/wellness' brand mark + practice name on the left, horizontal nav links on the right (desktop), a filled primary 'Book Session' CTA, and a mobile hamburger toggle. Calm, warm, sage-and-sand wellness aesthetic. All links and CTAs route through route hrefs. Use as the sticky site header for therapists, counselors, psychologists, psychiatrists, wellness centers, telehealth or behavioral-health practices.",
+    "Calm, warm-editorial sticky header for a therapy / counseling / mental-health practice site: a backdrop-blurred, hairline-bordered bar with a soft 'sun/wellness' glyph beside a serif practice wordmark on the left, quiet nav links on the right (desktop), a square filled-primary 'Book Session' CTA with press feedback, square hairline search / account chips, and a mobile hamburger toggle. Restrained, airy, sage-and-sand wellness aesthetic — a warmer sibling of the clinical dental / healthcare headers. All links and CTAs route through route hrefs. Use as the sticky site header for therapists, counselors, psychologists, psychiatrists, wellness centers, telehealth or behavioral-health practices.",
   props: z.object({
     /** Practice / brand name shown beside the logo. */
     brand: z.string().optional(),
@@ -78,21 +80,22 @@ export const MentalHealthNavbar = defineCapsule({
         className={cn('bg-background/80 backdrop-blur-md', props.className)}
         containerClassName="max-w-6xl px-4 sm:px-6 lg:px-8"
       >
-        <NavbarBrand href={homeTarget} className="flex items-center gap-2">
-          <BrandLogo brand={brand}>
+        <NavbarBrand href={homeTarget} className="text-left">
+          <BrandLogo brand={brand} className="flex items-center gap-2">
             <LogoImage
-              fallback={<LogoMark className="size-8 text-primary" />}
+              className="size-7"
+              fallback={<LogoMark className="size-7 text-primary" />}
             />
-            <LogoLabel className="text-xl font-semibold text-foreground" />
+            <LogoLabel className="font-serif text-xl font-medium tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
-        <NavbarNav className="gap-8">
+        <NavbarNav className="gap-8 [&>button]:font-medium">
           {nav.slice(0, -1).map((label) => (
             <NavbarNavLink
               key={label}
               href={label}
-              className="hover:text-primary"
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
               {label}
             </NavbarNavLink>
@@ -105,7 +108,7 @@ export const MentalHealthNavbar = defineCapsule({
             pendingChildren={
               <LocalServiceMutationSpinner className="text-primary-foreground" />
             }
-            className="rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+            className="rounded-none bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
           >
             {bookLabel}
           </LocalServiceBookingButton>
@@ -115,17 +118,17 @@ export const MentalHealthNavbar = defineCapsule({
           <LocalServiceIntentBadge lakebed={lakebed} />
           <LocalServiceSearchButton
             lakebed={lakebed}
-            buttonClassName="hidden size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:inline-flex"
+            buttonClassName="hidden size-9 items-center justify-center rounded-none border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:translate-y-px md:inline-flex"
           />
           <LocalServiceAccountButton
             lakebed={lakebed}
-            buttonClassName="hidden size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:inline-flex"
+            buttonClassName="hidden size-9 items-center justify-center rounded-none border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:translate-y-px md:inline-flex"
           />
           <LocalServiceMobileMenu
             brand={brand}
             homeTarget={homeTarget}
             nav={nav}
-            buttonClassName="inline-flex size-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:hidden"
+            buttonClassName="inline-flex size-9 items-center justify-center rounded-none border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:translate-y-px md:hidden"
           />
         </NavbarActions>
       </SiteNav>

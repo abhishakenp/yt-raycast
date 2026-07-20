@@ -4,16 +4,18 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
 /**
- * MarketingAgencyCases — a 6-up case-study gallery. A centered eyebrow + heading +
- * description above a responsive grid (1/2/3 columns) of clickable card buttons,
- * each with a cover image (zooming on hover) carrying a rotating colored category
- * tag, a client name, a short summary, and a dual result-metric row split by a
- * divider. Category tags rotate through the chart token palette. Links route
- * through section-kit route links. Use to showcase client outcomes for a marketing / growth
- * agency. Renders fully with no props.
+ * MarketingAgencyCases — kinetic case-study gallery on a diagonal-seam muted band.
+ * An asymmetric header (mono "[ CASE STUDIES ]" meta, marker-highlighted heading
+ * and description) sits above a staggered 3-up grid of sharp hard-offset-shadow
+ * card buttons (the middle column pushed down), each carrying a cover image that
+ * zooms on hover, a rotated rounded-full category sticker chip, a mono case index,
+ * a client name, a short summary, and a dual result-metric row split by a hairline
+ * with tabular-nums figures. Category chips rotate through the chart token palette.
+ * Links route through section-kit route links. Use to showcase client outcomes for
+ * a marketing / growth agency. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   PortfolioGrid,
   PortfolioItem,
@@ -21,12 +23,11 @@ import {
   PortfolioCaption,
   PortfolioTag,
 } from '#/section-kit/PortfolioGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const MarketingAgencyCases = defineCapsule({
   name: 'MarketingAgencyCases',
   description:
-    '6-up case-study gallery: a centered eyebrow + heading + description above a responsive grid (1/2/3 columns) of clickable card buttons, each with a cover image (zooming on hover) carrying a rotating colored category tag, a client name, a short summary, and a dual result-metric row split by a divider. Category tags rotate through the chart token palette. Links route through section-kit route links. Use to showcase client outcomes and results for a marketing / growth / performance agency across SaaS, e-commerce, fintech, and B2B services.',
+    'Kinetic case-study gallery on a diagonal-seam muted band: an asymmetric header (mono case-studies meta, marker-highlighted heading and description) above a staggered 3-up grid of sharp hard-offset-shadow card buttons, each with a hover-zoom cover image, a rotated rounded-full category sticker chip, a mono case index, a client name, a short summary, and a dual result-metric row split by a hairline with tabular-nums figures. Category chips rotate through the chart token palette. Links route through section-kit route links. Use to showcase client outcomes and results for a marketing / growth / performance agency across SaaS, e-commerce, fintech, and B2B services.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -124,27 +125,65 @@ export const MarketingAgencyCases = defineCapsule({
       'bg-chart-5 text-primary-foreground',
       'bg-primary text-primary-foreground',
     ]
+    const headingWords = heading.split(' ')
+    const headingLead = headingWords.slice(0, -1).join(' ')
+    const headingMark = headingWords.at(-1) ?? ''
     return (
-      <section className={cn('bg-muted py-24', props.className)}>
-        <Container>
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            eyebrowClassName="mb-3 normal-case tracking-normal text-muted-foreground"
-            titleClassName="mb-4 tracking-tight sm:text-4xl"
-            subtitleClassName="md:text-base"
-          />
-          <PortfolioGrid cols="1-2-3">
+      <section
+        className={cn(
+          // Diagonal top seam on a contrasting muted band — neighbor-independent.
+          'relative overflow-hidden bg-muted/40 pt-20 pb-20 lg:pt-28 lg:pb-28 [clip-path:polygon(0_2.5rem,100%_0,100%_100%,0_100%)]',
+          props.className,
+        )}
+      >
+        <Container className="relative">
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <div className="max-w-2xl">
+              <MonoTag className="mb-4 block">
+                Case Studies
+                <span aria-hidden="true" className="text-primary">
+                  {' '}
+                  · proof
+                </span>
+              </MonoTag>
+              <h2 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+                {headingLead}{' '}
+                <span className="relative ml-[0.12em] inline-block whitespace-nowrap">
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-[-0.15em] inset-y-[0.05em] -rotate-1 bg-primary"
+                  />
+                  <span className="relative text-primary-foreground">
+                    {headingMark}
+                  </span>
+                </span>
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">
+                {description}
+              </p>
+            </div>
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+            >
+              [ {eyebrow} ]
+            </p>
+          </div>
+          <PortfolioGrid cols="1-2-3" className="gap-6 lg:gap-8">
             {items.map((c, i) => (
               <PortfolioItem
                 key={c.name}
-                className="group block w-full overflow-hidden rounded-xl bg-card text-left shadow-sm transition-shadow hover:shadow-lg"
+                className={cn(
+                  'group block w-full overflow-hidden rounded-none border border-foreground/80 bg-card text-left shadow-[6px_6px_0_0] shadow-foreground/12 transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-[9px_9px_0_0] hover:shadow-foreground/20 motion-reduce:transform-none',
+                  i % 3 === 1 && 'lg:translate-y-8',
+                )}
                 asChild
               >
                 <NavbarRouteLink href={c.name}>
-                  <PortfolioMedia aspect="3-2" className="h-48">
+                  <PortfolioMedia
+                    aspect="3-2"
+                    className="h-48 border-b border-foreground/80"
+                  >
                     <Image
                       alt={`${c.name} ${c.tag} marketing case study`}
                       w={600}
@@ -154,7 +193,7 @@ export const MarketingAgencyCases = defineCapsule({
                     />
                     <PortfolioTag
                       className={cn(
-                        'absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-medium',
+                        'absolute left-4 top-4 -rotate-2 rounded-full border border-foreground/30 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] shadow-[2px_2px_0_0] shadow-foreground/25',
                         tagTones[i % tagTones.length],
                       )}
                     >
@@ -162,27 +201,33 @@ export const MarketingAgencyCases = defineCapsule({
                     </PortfolioTag>
                   </PortfolioMedia>
                   <PortfolioCaption className="p-6">
-                    <h3 className="mb-2 text-lg font-semibold text-card-foreground">
+                    <MonoTag
+                      aria-hidden="true"
+                      tone="faint"
+                      className="mb-3 block"
+                    >
+                      Case {String(i + 1).padStart(2, '0')}
+                    </MonoTag>
+                    <h3 className="mb-2 text-lg font-bold tracking-tight text-card-foreground">
                       {c.name}
                     </h3>
-                    <p className="mb-4 text-sm text-muted-foreground">
+                    <p className="mb-5 text-sm leading-relaxed text-muted-foreground">
                       {c.summary}
                     </p>
-                    <div className="flex items-center gap-4 border-t border-border pt-4">
-                      <div>
-                        <p className="text-2xl font-bold text-card-foreground">
+                    <div className="grid grid-cols-2 gap-0 border-t border-border">
+                      <div className="border-r border-border pr-4 pt-4">
+                        <p className="text-2xl font-extrabold tracking-tight text-card-foreground tabular-nums">
                           {c.metricA}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
                           {c.labelA}
                         </p>
                       </div>
-                      <div className="h-8 w-px bg-border" />
-                      <div>
-                        <p className="text-2xl font-bold text-card-foreground">
+                      <div className="pl-4 pt-4">
+                        <p className="text-2xl font-extrabold tracking-tight text-card-foreground tabular-nums">
                           {c.metricB}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
                           {c.labelB}
                         </p>
                       </div>

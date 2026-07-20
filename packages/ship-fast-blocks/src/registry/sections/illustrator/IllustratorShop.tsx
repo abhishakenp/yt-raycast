@@ -21,8 +21,7 @@ import {
   useCommerceFilteredProducts,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * IllustratorShop — a hand-made art-print shop for an illustrator / visual-artist
  * portfolio. An asymmetric header pairs a mono index micro-label + serif heading

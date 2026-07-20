@@ -7,19 +7,21 @@ import { AboutSection } from '#/section-kit/AboutSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 
 /**
- * ResumeCvAbout — professional-summary section for a personal resume / CV /
- * portfolio site. A left-aligned `SectionHeading` ("About" / "Professional
- * summary") leads into two or three prose paragraphs describing the person's
- * background and approach, followed by a row of quick-fact chips (location,
- * focus, availability) rendered as token labels. Clean, minimal, and
- * text-forward with no required imagery. Use on a personal portfolio, online
- * résumé, or professional profile page to introduce who the person is. Renders
- * fully with no props via baked-in defaults.
+ * ResumeCvAbout — professional-summary band for a personal resume / CV /
+ * portfolio site, styled as a crisp résumé section. A mono metadata rail
+ * ("01 / ABOUT" — hairline rule) sits above a left-aligned extrabold
+ * tight-tracked heading, followed by prose paragraphs whose opening line carries
+ * an oversized drop cap, over a giant faint "01" ghost watermark. The quick
+ * facts (location, focus, availability) render as a collapsed-border definition
+ * ledger with mono uppercase labels rather than pills. Hairline-precise,
+ * text-forward, tokens only. Use on a personal portfolio, online résumé, or
+ * professional profile page to introduce who the person is. Renders fully with
+ * no props via baked-in defaults.
  */
 export const ResumeCvAbout = defineCapsule({
   name: 'ResumeCvAbout',
   description:
-    "Professional-summary section for a personal resume / CV / portfolio site: a left-aligned SectionHeading ('About' / 'Professional summary') leads into two or three prose paragraphs describing the person's background and approach, followed by a row of quick-fact chips (location, focus, availability) rendered as token labels. Clean, minimal, text-forward, no required imagery. Use on a personal portfolio, online résumé, or professional profile page to introduce who the person is.",
+    "Professional-summary band for a personal resume / CV / portfolio site styled as a crisp résumé section: a mono '01 / ABOUT' metadata rail with a hairline rule above a left-aligned extrabold tight-tracked heading, prose paragraphs whose opening line carries an oversized drop cap over a giant faint '01' ghost watermark, and quick facts (location, focus, availability) rendered as a collapsed-border definition ledger with mono uppercase labels rather than pills. Hairline-precise, text-forward, tokens only. Use on a personal portfolio, online résumé, or professional profile page to introduce who the person is.",
   props: z.object({
     /** Small eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -52,36 +54,67 @@ export const ResumeCvAbout = defineCapsule({
         ]
 
     return (
-      <AboutSection className={cn('bg-background', props.className)}>
-        <Container size="sm" className="px-6 py-24 lg:px-6 lg:py-28">
+      <AboutSection
+        className={cn(
+          'relative overflow-hidden bg-background',
+          props.className,
+        )}
+      >
+        <Container size="sm" className="relative px-6 py-24 lg:px-6 lg:py-28">
+          {/* Giant faint section-index watermark. */}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute -top-6 right-0 select-none font-extrabold leading-none tracking-tighter text-foreground/[0.04] text-[9rem] sm:text-[12rem]"
+          >
+            01
+          </span>
+
+          {/* Mono metadata rail. */}
+          <div className="relative flex items-center gap-4">
+            <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+              01 / About
+            </span>
+            <span aria-hidden="true" className="h-px flex-1 bg-border" />
+          </div>
+
           <SectionHeading
             align="left"
             eyebrow={props.eyebrow}
             title={props.heading ?? 'About'}
             subtitle={props.subheading ?? 'Professional summary'}
+            className="relative mt-6 gap-2"
+            titleClassName="text-3xl font-extrabold tracking-tighter text-foreground md:text-4xl"
+            subtitleClassName="font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground"
           />
 
-          <div className="mt-8 space-y-5">
+          <div className="relative mt-8 space-y-5">
             {paragraphs.map((paragraph, i) => (
               <p
                 key={i}
-                className="text-base leading-relaxed text-muted-foreground md:text-lg"
+                className={cn(
+                  'text-base leading-relaxed text-muted-foreground md:text-lg',
+                  i === 0 &&
+                    'first-letter:float-left first-letter:mr-3 first-letter:text-6xl first-letter:font-extrabold first-letter:leading-[0.75] first-letter:tracking-tight first-letter:text-foreground',
+                )}
               >
                 {paragraph}
               </p>
             ))}
           </div>
 
-          <dl className="mt-10 flex flex-wrap gap-3">
+          {/* Collapsed-border definition ledger. */}
+          <dl className="relative mt-12 grid grid-cols-2 gap-0 border-l border-t border-border sm:grid-cols-3">
             {facts.map((fact, i) => (
               <div
                 key={i}
-                className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-4 py-2 text-sm"
+                className="flex flex-col gap-1.5 border-b border-r border-border p-4 sm:p-5"
               >
-                <dt className="font-medium text-muted-foreground">
+                <dt className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
                   {fact.label}
                 </dt>
-                <dd className="font-medium text-foreground">{fact.value}</dd>
+                <dd className="text-sm font-semibold text-foreground">
+                  {fact.value}
+                </dd>
               </div>
             ))}
           </dl>

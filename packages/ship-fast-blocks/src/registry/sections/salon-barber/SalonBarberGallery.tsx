@@ -1,20 +1,14 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { z } from 'zod/v4'
-
-import {
-  GalleryGrid,
-  GalleryTile,
-  GalleryTileImage,
-  GalleryTileCaption,
-} from '#/section-kit/GalleryGrid.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 export const SalonBarberGallery = defineCapsule({
   name: 'SalonBarberGallery',
   description:
-    "Portfolio gallery for a barbershop or salon, rendered through the shared GalleryGrid. Shows a responsive grid of recent cuts, styles, and interior shots with short captions so prospective clients can judge the work at a glance. Use it lower on a barbershop, salon, or men's grooming page to build trust with real-looking before/after style proof.",
+    "Portfolio gallery for a barbershop or salon rendered as a vintage-lite editorial plate wall. An asymmetric header (mono index eyebrow + serif heading left, mono count right) sits over a faint serif ghost watermark, above a staggered grid of hairline-framed photo plates — each alt-driven image carries a mono 'Fig. 0N' caption row with a hairline rule and its serif caption — that offset vertically for an editorial rhythm. Use it lower on a barbershop, salon, or men's grooming page to build trust with real-looking cut, style, and interior proof.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -24,6 +18,8 @@ export const SalonBarberGallery = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
+    const heading = props.heading ?? 'The Work'
+    const description = props.description ?? 'Recent cuts & styles'
     const images = props.images?.length
       ? props.images
       : [
@@ -56,17 +52,30 @@ export const SalonBarberGallery = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-background pt-28 pb-20 lg:pt-32 lg:pb-28',
+          'relative overflow-hidden bg-muted/30 pt-24 pb-24 lg:pt-28 lg:pb-32',
           props.className,
         )}
       >
-        <Container>
-          <GalleryGrid>
-            <SectionHeading
-              title={props.heading ?? 'The Work'}
-              subtitle={props.description ?? 'Recent cuts & styles'}
-            />
-            {images.map((img) => {
+        <Watermark className="top-10 right-[-3%] font-serif text-[7rem] italic tracking-tight text-foreground/[0.04] sm:text-[11rem] lg:text-[15rem]">
+          Portfolio
+        </Watermark>
+
+        <Container className="relative">
+          <div className="flex flex-col gap-5 border-b border-foreground/15 pb-8 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-xl">
+              <MonoTag tone="primary">{description}</MonoTag>
+              <h2 className="mt-3 font-serif text-4xl font-medium tracking-tight text-foreground sm:text-5xl">
+                {heading}
+              </h2>
+            </div>
+            <MonoTag aria-hidden="true" tone="faint" className="shrink-0">
+              {String(images.length).padStart(2, '0')} / plates
+            </MonoTag>
+          </div>
+
+          {/* Staggered hairline-framed plate wall. */}
+          <div className="mt-12 grid grid-cols-2 gap-x-5 gap-y-8 lg:grid-cols-3 lg:gap-x-6">
+            {images.map((img, i) => {
               const __iv__ = img as {
                 alt: string
                 caption?: string
@@ -74,15 +83,41 @@ export const SalonBarberGallery = defineCapsule({
                 location?: string
               }
               return (
-                <GalleryTile key={__iv__.alt}>
-                  <GalleryTileImage alt={__iv__.alt} />
-                  {__iv__.caption && (
-                    <GalleryTileCaption>{__iv__.caption}</GalleryTileCaption>
+                <figure
+                  key={__iv__.alt}
+                  className={cn(
+                    'group border border-foreground/20 bg-card p-2 transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-[6px_6px_0_0] hover:shadow-foreground/10',
+                    i % 3 === 1 && 'lg:translate-y-10',
+                    i % 3 === 2 && 'lg:translate-y-4',
                   )}
-                </GalleryTile>
+                >
+                  <div className="aspect-[4/5] overflow-hidden">
+                    <Image
+                      alt={__iv__.alt}
+                      w={800}
+                      h={1000}
+                      loading="lazy"
+                      className="size-full object-cover grayscale transition-[filter] duration-300 group-hover:grayscale-0"
+                    />
+                  </div>
+                  <figcaption className="flex items-center gap-2.5 px-1 pt-2.5 pb-0.5">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                      Fig. {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="h-px flex-1 bg-foreground/15"
+                    />
+                    {__iv__.caption ? (
+                      <span className="shrink-0 font-serif text-sm italic text-foreground">
+                        {__iv__.caption}
+                      </span>
+                    ) : null}
+                  </figcaption>
+                </figure>
               )
             })}
-          </GalleryGrid>
+          </div>
         </Container>
       </section>
     )

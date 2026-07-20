@@ -1,14 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import {
-  FeatureGrid,
-  FeatureCard,
-  FeatureIcon,
-  FeatureTitle,
-  FeatureDescription,
-} from '#/section-kit/FeatureGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 
 /** Inline icon set — currentColor → theme token, adventurous line art. */
 function CityIcon({ className }: { className?: string }) {
@@ -77,18 +71,19 @@ function CultureIcon({ className }: { className?: string }) {
 }
 
 /**
- * TourExperiencesServices — tour-category showcase for an adventure / guided-tour
- * brand. Composes the shared FeatureGrid composite as a 4-up grid of tour types
- * (City Tours, Food Tours, Adventure Tours, Cultural Tours), each with an inline
- * line icon, a title, and a vivid one-line description. Use to help visitors
- * self-select the kind of experience they want on tour-operator, expedition, and
- * travel-experience landing pages. Renders fully with no props via baked-in
- * defaults.
+ * TourExperiencesServices — tour-category itinerary ledger for an adventure /
+ * guided-tour brand. A mono metadata header above a collapsed-border,
+ * sharp-cornered ledger of tour types (City Tours, Food Tours, Adventure Tours,
+ * Cultural Tours) — each row carries a mono index label, an inline line icon, a
+ * title, and a vivid one-line description, sharing hairline rules like an
+ * itinerary. Use to help visitors self-select the kind of experience they want
+ * on tour-operator, expedition, and travel-experience landing pages. Renders
+ * fully with no props via baked-in defaults.
  */
 export const TourExperiencesServices = defineCapsule({
   name: 'TourExperiencesServices',
   description:
-    'Tour-category showcase for an adventure / guided-tour brand. Composes the shared FeatureGrid composite as a 4-up grid of tour types (City Tours, Food Tours, Adventure Tours, Cultural Tours), each with an inline line icon, a title, and a vivid one-line description. Use to help visitors self-select the kind of experience they want on tour-operator, expedition, and travel-experience landing pages.',
+    'Tour-category itinerary ledger for an adventure / guided-tour brand: a mono metadata header above a collapsed-border sharp-cornered ledger of tour types (City Tours, Food Tours, Adventure Tours, Cultural Tours), each row carrying a mono index label, an inline line icon, a title, and a vivid one-line description while sharing hairline rules like an itinerary. Use to help visitors self-select the kind of experience they want on tour-operator, expedition, and travel-experience landing pages.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -139,17 +134,34 @@ export const TourExperiencesServices = defineCapsule({
 
     return (
       <section className="bg-background px-6 pt-28 pb-20 lg:px-8 lg:pt-32 lg:pb-24">
-        <Container size="xl">
-          <FeatureGrid
-            heading={props.heading ?? 'Find your kind of adventure'}
-            subheading={
-              props.subheading ??
-              'Every traveler chases something different. Pick the experience that matches your pace, your appetite, and your sense of wonder.'
-            }
-            columns={4}
-            className={props.className}
-          >
-            {features.map((f) => {
+        <Container size="xl" className={props.className}>
+          {/* Mono metadata header. */}
+          <div className="flex flex-col gap-6 border-b border-border pb-8 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-2xl">
+              <MonoTag className="mb-4 flex items-center gap-2 tracking-[0.18em]">
+                <span aria-hidden="true" className="size-1.5 bg-primary" />
+                Itinerary
+              </MonoTag>
+              <h2 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+                {props.heading ?? 'Find your kind of adventure'}
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">
+                {props.subheading ??
+                  'Every traveler chases something different. Pick the experience that matches your pace, your appetite, and your sense of wonder.'}
+              </p>
+            </div>
+            <MonoTag
+              tone="faint"
+              aria-hidden="true"
+              className="shrink-0 tracking-[0.18em]"
+            >
+              {String(features.length).padStart(2, '0')} experiences
+            </MonoTag>
+          </div>
+
+          {/* Collapsed-border experience ledger. */}
+          <div className="border-t border-border">
+            {features.map((f, i) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -160,14 +172,31 @@ export const TourExperiencesServices = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
-                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
-                </FeatureCard>
+                <div
+                  key={__iv__.title}
+                  className="group grid grid-cols-[auto_1fr] items-start gap-x-5 gap-y-2 border-b border-border py-7 sm:grid-cols-[4rem_auto_1fr] sm:items-center sm:gap-x-7"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="font-mono text-sm font-semibold tabular-nums text-muted-foreground/70 sm:text-base"
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span className="row-span-2 grid size-11 place-items-center border border-border text-foreground transition-colors duration-150 group-hover:border-primary group-hover:text-primary sm:row-span-1">
+                    {__iv__.icon}
+                  </span>
+                  <div className="col-start-2 sm:col-start-3">
+                    <h3 className="text-lg font-bold tracking-tight text-foreground sm:text-xl">
+                      {__iv__.title}
+                    </h3>
+                    <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                      {__iv__.description}
+                    </p>
+                  </div>
+                </div>
               )
             })}
-          </FeatureGrid>
+          </div>
         </Container>
       </section>
     )

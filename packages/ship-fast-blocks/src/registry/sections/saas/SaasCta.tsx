@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { cn } from '#/lib/utils.ts'
 import {
   CtaBand,
   CtaBandInner,
@@ -8,6 +9,7 @@ import {
   CtaBandTitle,
   CtaBandSubtitle,
 } from '#/section-kit/CtaBand.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -15,19 +17,20 @@ import {
 import { saasLakebed } from './saas-lakebed.ts'
 
 /**
- * SaasCta — a full-width conversion band for the bottom of a SaaS / AI-product
- * landing page. Thin configuration over the shared `CtaBand` composite at
- * tone="primary": a centered headline + supporting line over a primary surface,
- * a high-contrast "Start free trial" pill (auto-inverted on the primary band),
- * an outlined "Book demo" pill, and a small reassurance note carried in the
- * eyebrow. Both CTAs route through section-kit route links. Use as the closing
- * call-to-action for SaaS, API, or B2B product pages. Renders fully with no
- * props via baked-in defaults.
+ * SaasCta — inverted diagonal-seam conversion band for the bottom of a SaaS /
+ * AI-product landing page. A full-width bg-foreground/text-background band whose
+ * top edge cuts in on a clip-path diagonal, with a giant ghost "START"
+ * watermark and a mono reassurance eyebrow: an asymmetric left-aligned block
+ * carries the large tight-tracked headline and supporting paragraph, and dual
+ * square CTAs (solid background-on-dark primary + hairline ghost secondary, both
+ * with hard press feedback) record trial / demo intent through shared Lakebed
+ * conversion state. Use as the closing call-to-action for SaaS, API, or B2B
+ * product pages. Renders fully with no props via baked-in defaults.
  */
 export const SaasCta = defineCapsule({
   name: 'SaasCta',
   description:
-    "Full-width conversion band for the bottom of a SaaS / AI-product landing page backed by shared Lakebed conversion state: a centered headline + supporting line over a primary surface, a high-contrast 'Start free trial' pill, an outlined 'Book demo' pill, and a small reassurance note in the eyebrow. CTA buttons record trial/demo intent instead of dead route-only navigation. Use as the closing call-to-action for SaaS, API, or B2B product pages.",
+    'Inverted diagonal-seam conversion band for the bottom of a SaaS / AI-product landing page backed by shared Lakebed conversion state: a bg-foreground/text-background band cut on a clip-path diagonal with a giant ghost START watermark and a mono reassurance eyebrow, an asymmetric left-aligned headline block, and scoped trial/demo mutation buttons with hard press feedback. CTA buttons record trial/demo intent instead of dead route-only navigation. Use as the closing call-to-action for SaaS, API, or B2B product pages.',
   props: z.object({
     /** Centered headline on the band. */
     heading: z.string().optional(),
@@ -52,43 +55,70 @@ export const SaasCta = defineCapsule({
     const note = props.note ?? 'No credit card required • 14-day free trial'
 
     return (
-      <CtaBand tone="primary" className={props.className}>
-        <CtaBandInner>
-          <CtaBandEyebrow>{note}</CtaBandEyebrow>
-          <CtaBandTitle>{heading}</CtaBandTitle>
-          <CtaBandSubtitle>{subheading}</CtaBandSubtitle>
-          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <SaasPlanActionButton
-              lakebed={lakebed}
-              intentLabel={primaryCta}
-              plan={primaryCta}
-              source="cta"
-              pendingChildren={
-                <>
-                  <SaasMutationSpinner className="size-4" />
-                  Starting
-                </>
-              }
-              className="inline-flex min-w-40 items-center justify-center gap-2 rounded-full bg-primary-foreground px-6 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary-foreground/90 disabled:pointer-events-none disabled:opacity-70"
-            >
-              {primaryCta}
-            </SaasPlanActionButton>
-            {secondaryCta ? (
+      <CtaBand
+        tone="primary"
+        className={cn(
+          // Inversion band with a diagonal top seam — neighbor-independent.
+          'relative overflow-hidden bg-foreground pt-8 text-background [clip-path:polygon(0_3rem,100%_0,100%_100%,0_100%)] sm:pt-12',
+          props.className,
+        )}
+      >
+        <Watermark className="-bottom-8 right-0 text-[7rem] text-background/[0.05] sm:text-[11rem] lg:text-[15rem]">
+          START
+        </Watermark>
+        <CtaBandInner
+          align="left"
+          className="relative max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24"
+        >
+          <CtaBandEyebrow className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-background/70">
+            <span
+              aria-hidden="true"
+              className="size-1.5 shrink-0 bg-background"
+            />
+            {note}
+          </CtaBandEyebrow>
+          <div className="grid w-full gap-10 lg:grid-cols-12 lg:items-end">
+            <div className="lg:col-span-8">
+              <CtaBandTitle className="max-w-3xl text-4xl font-extrabold tracking-tight text-background sm:text-5xl">
+                {heading}
+              </CtaBandTitle>
+              <CtaBandSubtitle className="mt-5 text-background/70 opacity-100">
+                {subheading}
+              </CtaBandSubtitle>
+            </div>
+            <div className="flex flex-col gap-4 lg:col-span-4">
               <SaasPlanActionButton
                 lakebed={lakebed}
-                intentLabel={secondaryCta}
+                intentLabel={primaryCta}
+                plan={primaryCta}
                 source="cta"
                 pendingChildren={
                   <>
                     <SaasMutationSpinner className="size-4" />
-                    Sending
+                    Starting
                   </>
                 }
-                className="inline-flex min-w-40 items-center justify-center gap-2 rounded-full border border-primary-foreground/35 px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10 disabled:pointer-events-none disabled:opacity-70"
+                className="inline-flex items-center justify-center gap-2 rounded-none bg-background px-8 py-4 text-center font-semibold text-foreground shadow-[5px_5px_0_0] shadow-background/25 transition-[transform,box-shadow,background-color] duration-150 hover:bg-background/90 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none motion-reduce:transform-none disabled:pointer-events-none disabled:opacity-70"
               >
-                {secondaryCta}
+                {primaryCta}
               </SaasPlanActionButton>
-            ) : null}
+              {secondaryCta ? (
+                <SaasPlanActionButton
+                  lakebed={lakebed}
+                  intentLabel={secondaryCta}
+                  source="cta"
+                  pendingChildren={
+                    <>
+                      <SaasMutationSpinner className="size-4" />
+                      Sending
+                    </>
+                  }
+                  className="inline-flex items-center justify-center gap-2 rounded-none border border-background/40 px-8 py-4 text-center font-semibold text-background transition-[transform,background-color] duration-150 hover:bg-background/10 active:translate-y-px motion-reduce:transform-none disabled:pointer-events-none disabled:opacity-70"
+                >
+                  {secondaryCta}
+                </SaasPlanActionButton>
+              ) : null}
+            </div>
           </div>
         </CtaBandInner>
       </CtaBand>

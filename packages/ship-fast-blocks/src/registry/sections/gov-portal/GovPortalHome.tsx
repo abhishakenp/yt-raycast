@@ -22,8 +22,8 @@ import {
   StatItem,
   StatValue,
   StatLabel,
-  NavbarRouteLink,
-} from '#/section-kit/index.ts'
+} from '#/section-kit/StatGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import { govPortalLakebed } from './gov-portal-lakebed.ts'

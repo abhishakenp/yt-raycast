@@ -2,25 +2,27 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 /**
- * MusicFestivalLogos — a partner / sponsor logo strip for a festival landing
- * page. A bordered band with a small centered "presented in partnership with"
- * label above a wrapping, centered row of muted text wordmarks that brighten on
- * hover. Each wordmark routes through section-kit route links. Use beneath the hero on
- * music festivals, arts festivals, concert series, or any sponsored multi-day
- * event to lend credibility.
+ * MusicFestivalLogos — a partner / sponsor logo strip for a kinetic-poster
+ * festival landing page. A top-and-bottom hairline-bordered band, wrapped in
+ * the shared Container, with a small mono uppercase "presented in partnership
+ * with" label above a wrapping, centered row of bold uppercase text wordmarks
+ * that brighten from muted to full ink on hover. Each wordmark routes through
+ * section-kit route links. Use beneath the hero on music festivals, arts
+ * festivals, concert series, or any sponsored multi-day event to lend
+ * credibility.
  */
+import { Container } from '#/section-kit/Container.tsx'
 import {
   LogoStrip,
   LogoStripLabel,
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const MusicFestivalLogos = defineCapsule({
   name: 'MusicFestivalLogos',
   description:
-    "Partner / sponsor logo strip for a festival landing page: a top-and-bottom bordered band with a small centered 'presented in partnership with' label above a wrapping, centered row of muted text wordmarks that brighten on hover. Each wordmark routes through section-kit route links. Use beneath the hero on music festivals, arts festivals, concert series, sponsored events, or any multi-day ticketed event to lend credibility and showcase partners.",
+    "Partner / sponsor logo strip for a kinetic-poster festival landing page: a top-and-bottom hairline-bordered band wrapped in the shared Container, with a small mono uppercase 'presented in partnership with' label above a wrapping, centered row of bold uppercase text wordmarks that brighten from muted to full ink on hover. Each wordmark routes through section-kit route links. Use beneath the hero on music festivals, arts festivals, concert series, sponsored events, or any multi-day ticketed event to lend credibility and showcase partners.",
   props: z.object({
     /** Label above the logo row. */
     label: z.string().optional(),
@@ -35,16 +37,25 @@ export const MusicFestivalLogos = defineCapsule({
       : ['PITCHFORK', 'SPOTIFY', 'SONOS', 'RED BULL', 'BEATS', 'VANS']
     return (
       <LogoStrip
-        className={cn('border-y border-border pt-28 pb-16', props.className)}
+        className={cn('border-y border-border py-14 lg:py-16', props.className)}
       >
-        <LogoStripLabel>{label}</LogoStripLabel>
-        <LogoStripItems layout="flex" className="mt-8">
-          {items.filter(Boolean).map((logo) => (
-            <LogoStripItem key={logo} variant="text-bold" asChild>
-              <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
-            </LogoStripItem>
-          ))}
-        </LogoStripItems>
+        <Container>
+          <LogoStripLabel className="font-mono text-[11px] tracking-[0.2em]">
+            {label}
+          </LogoStripLabel>
+          <LogoStripItems layout="flex" className="mt-8 gap-x-10 gap-y-5">
+            {items.filter(Boolean).map((logo) => (
+              <LogoStripItem
+                key={logo}
+                variant="text-bold"
+                asChild
+                className="text-lg font-extrabold uppercase tracking-tight"
+              >
+                <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
+              </LogoStripItem>
+            ))}
+          </LogoStripItems>
+        </Container>
       </LogoStrip>
     )
   },

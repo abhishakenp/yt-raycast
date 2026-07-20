@@ -19,11 +19,13 @@ import {
 } from '#/section-kit/SiteFooter.tsx'
 
 /**
- * SubscriptionBoxFooter — site footer for a subscription-box brand built on the
- * shared SiteFooter composite. A gift-box wordmark + ribboned mark, a playful
- * tagline, link columns (Shop, Company, Support, Legal), a social row, and a
- * bottom note. Theme-token only and renders complete with no props. Use as the
- * footer for any curated-box, recurring-delivery, or membership-kit page.
+ * SubscriptionBoxFooter — playful-commerce site footer for a subscription-box
+ * brand built on the shared SiteFooter composite. A chunky top-border band holds
+ * a ribboned gift-box wordmark, a playful tagline, rotated rounded-full sticker
+ * social chips, and link columns (Shop, Company, Support, Legal) under mono
+ * uppercase headers with block, left-aligned foreground links, plus a bottom
+ * note and legal row. Theme-token only and renders complete with no props. Use
+ * as the footer for any curated-box, recurring-delivery, or membership-kit page.
  */
 function GiftBoxMark({ className }: { className?: string }) {
   return (
@@ -49,7 +51,7 @@ function GiftBoxMark({ className }: { className?: string }) {
 export const SubscriptionBoxFooter = defineCapsule({
   name: 'SubscriptionBoxFooter',
   description:
-    'Site footer for a subscription-box brand built on the shared SiteFooter composite: gift-box wordmark + ribboned mark, a playful tagline, link columns (Shop, Company, Support, Legal), a social row, and a bottom note. Use as the footer for any curated-box, recurring-delivery, or membership-kit page.',
+    'Playful-commerce site footer for a subscription-box brand built on the shared SiteFooter composite: a chunky top-border band with a ribboned gift-box wordmark, a playful tagline, rotated rounded-full sticker social chips, and link columns (Shop, Company, Support, Legal) under mono uppercase headers with block left-aligned foreground links, plus a bottom note and legal row. Use as the footer for any curated-box, recurring-delivery, or membership-kit page.',
   props: z.object({
     brand: z.string().optional(),
     tagline: z.string().optional(),
@@ -103,30 +105,53 @@ export const SubscriptionBoxFooter = defineCapsule({
             <FooterBrand
               brand={brand}
               brandMark={<GiftBoxMark className="size-7 text-primary" />}
+              brandClassName="text-lg font-extrabold tracking-tight text-foreground"
             >
               <FooterTagline>{tagline}</FooterTagline>
               <FooterSocial>
-                {social.map((s) => (
-                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                {social.map((s, i) => (
+                  <FooterSocialLink
+                    key={s.label}
+                    className={
+                      (i % 2 === 0 ? '-rotate-1 ' : 'rotate-1 ') +
+                      'rounded-full border-2 border-foreground bg-background px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-foreground shadow-[2px_2px_0_0] shadow-foreground/20 transition-transform duration-150 hover:-translate-y-0.5'
+                    }
+                  >
+                    {s.label}
+                  </FooterSocialLink>
                 ))}
               </FooterSocial>
             </FooterBrand>
             {columns.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnTitle className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  {col.title}
+                </FooterColumnTitle>
                 <FooterColumnList>
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink
+                      key={link}
+                      className="block w-fit font-medium text-foreground/80 hover:text-foreground"
+                    >
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
-          <FooterBottom>
-            <FooterCopyright>{note}</FooterCopyright>
+          <FooterBottom className="border-t-2 border-foreground">
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.14em]">
+              {note}
+            </FooterCopyright>
             <FooterLegal>
               {legal.map((l) => (
-                <FooterLink key={l}>{l}</FooterLink>
+                <FooterLink
+                  key={l}
+                  className="block w-fit text-muted-foreground hover:text-foreground"
+                >
+                  {l}
+                </FooterLink>
               ))}
             </FooterLegal>
           </FooterBottom>

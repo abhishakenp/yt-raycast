@@ -6,8 +6,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { CtaAction } from '#/section-kit/CtaBand.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { Image } from '#/lib/img.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * JewelryStoreAppointmentCta — private-appointment closing CTA for a luxury
  * jewelry maison. A muted band with a dimmed full-cover background image and a

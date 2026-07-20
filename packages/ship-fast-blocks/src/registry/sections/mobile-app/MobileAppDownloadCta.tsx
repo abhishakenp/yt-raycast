@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { cn } from '#/lib/utils.ts'
 import {
   CtaBand,
   CtaBandInner,
@@ -8,6 +9,7 @@ import {
   CtaBandSubtitle,
 } from '#/section-kit/CtaBand.tsx'
 import { DownloadBand, DownloadButton } from '#/section-kit/DownloadBand.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -15,18 +17,22 @@ import {
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
- * MobileAppDownloadCta — a centered, full-width final download call-to-action. A
- * large headline over a relaxed supporting paragraph, a centered pair of
- * iOS / Android download buttons (with Apple / Play glyphs), and a wrapping row
- * of small check-marked trust badges beneath. Download buttons route through
- * section-kit route links; no imagery. Use as the closing conversion band before the footer
- * on a habit tracker, fitness / wellness app, productivity or to-do app, or any
- * consumer app landing page. Renders fully with no props via baked-in defaults.
+ * MobileAppDownloadCta — a kinetic final download call-to-action on a muted band
+ * whose top edge cuts in on a clip-path diagonal seam, carrying a giant ghost
+ * "GET" watermark and a mono "[ GET THE APP ]" micro-label. An asymmetric,
+ * left-aligned block holds the large tight-tracked headline whose final word
+ * sits on a tilted primary marker block, a supporting paragraph, sharp iOS /
+ * Android download buttons (Apple / Play glyphs, hard offset shadows, mechanical
+ * press feedback) and a wrapping row of mono check-marked trust badges. Download
+ * buttons record shared Lakebed download intent with scoped loading; no imagery.
+ * Use as the closing conversion band before the footer on a habit tracker,
+ * fitness / wellness app, productivity or to-do app, or any consumer app landing
+ * page. Renders fully with no props via baked-in defaults.
  */
 export const MobileAppDownloadCta = defineCapsule({
   name: 'MobileAppDownloadCta',
   description:
-    'Centered full-width final download call-to-action backed by shared Lakebed conversion state: iOS and Android download buttons record intent with scoped loading, followed by check-marked trust badges. Use as the closing conversion band before the footer on a habit tracker, fitness / wellness app, productivity or to-do app, or any consumer app landing page.',
+    'Kinetic final download call-to-action on a muted band with a clip-path diagonal top seam, a giant ghost GET watermark and a mono get-the-app micro-label, backed by shared Lakebed conversion state: an asymmetric left-aligned block with a marker-highlighted headline, sharp iOS and Android download buttons (hard offset shadows, press feedback) that record intent with scoped loading, and a wrapping row of mono check-marked trust badges. Use as the closing conversion band before the footer on a habit tracker, fitness / wellness app, productivity or to-do app, or any consumer app landing page.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -84,13 +90,49 @@ export const MobileAppDownloadCta = defineCapsule({
       </svg>
     )
 
+    const headingWords = heading.split(' ')
+    const headingLead = headingWords.slice(0, -1).join(' ')
+    const headingMark = headingWords.at(-1) ?? ''
     return (
-      <DownloadBand asChild>
-        <CtaBand tone="muted" className={props.className}>
-          <CtaBandInner>
-            <CtaBandTitle>{heading}</CtaBandTitle>
-            <CtaBandSubtitle>{description}</CtaBandSubtitle>
-            <div className="flex flex-col justify-center gap-4 sm:flex-row">
+      <DownloadBand asChild variant="muted">
+        <CtaBand
+          tone="muted"
+          className={cn(
+            // Muted band with a diagonal top seam — neighbor-independent.
+            'relative items-stretch gap-0 overflow-hidden bg-muted/50 pt-8 text-foreground [clip-path:polygon(0_3rem,100%_0,100%_100%,0_100%)] sm:pt-12',
+            props.className,
+          )}
+        >
+          <Watermark className="-bottom-8 right-0 text-[7rem] sm:text-[11rem] lg:text-[15rem]">
+            GET
+          </Watermark>
+          <CtaBandInner
+            align="left"
+            className="relative max-w-7xl gap-6 px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24"
+          >
+            <MonoTag className="flex items-center gap-2">
+              <span
+                aria-hidden="true"
+                className="size-1.5 shrink-0 bg-primary"
+              />
+              Get the app
+            </MonoTag>
+            <CtaBandTitle className="max-w-3xl text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
+              {headingLead}{' '}
+              <span className="relative ml-[0.12em] inline-block whitespace-nowrap">
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-x-[-0.12em] inset-y-[0.05em] -rotate-1 bg-primary"
+                />
+                <span className="relative text-primary-foreground">
+                  {headingMark}
+                </span>
+              </span>
+            </CtaBandTitle>
+            <CtaBandSubtitle className="max-w-2xl text-muted-foreground opacity-100">
+              {description}
+            </CtaBandSubtitle>
+            <div className="flex flex-col gap-4 sm:flex-row">
               <SaasPlanActionButton
                 lakebed={lakebed}
                 intentLabel={primaryCta}
@@ -102,7 +144,7 @@ export const MobileAppDownloadCta = defineCapsule({
                     Opening
                   </>
                 }
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+                className="inline-flex items-center justify-center gap-2 rounded-none bg-primary px-6 py-3.5 text-base font-semibold text-primary-foreground shadow-[5px_5px_0_0] shadow-foreground transition-[transform,box-shadow,background-color] duration-150 hover:bg-primary/90 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none motion-reduce:transform-none disabled:pointer-events-none disabled:opacity-70"
               >
                 <AppleIcon />
                 {primaryCta}
@@ -119,16 +161,19 @@ export const MobileAppDownloadCta = defineCapsule({
                       Opening
                     </>
                   }
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-input bg-background px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
+                  className="inline-flex items-center justify-center gap-2 rounded-none border border-foreground bg-background px-6 py-3.5 text-base font-semibold text-foreground transition-[transform,background-color] duration-150 hover:bg-muted active:translate-y-px motion-reduce:transform-none disabled:pointer-events-none disabled:opacity-70"
                 >
                   <PlayIcon />
                   {secondaryCta}
                 </SaasPlanActionButton>
               </DownloadButton>
             </div>
-            <div className="flex flex-col items-center justify-center gap-4 text-sm text-muted-foreground sm:flex-row sm:gap-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-x-6">
               {badges.map((badge) => (
-                <span key={badge} className="flex items-center gap-2">
+                <span
+                  key={badge}
+                  className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground"
+                >
                   <CheckIcon className="size-4 text-primary" />
                   {badge}
                 </span>

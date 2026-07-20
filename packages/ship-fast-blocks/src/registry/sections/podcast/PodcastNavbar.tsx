@@ -1,7 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
+import { cn } from '#/lib/utils.ts'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
   NavbarActions,
@@ -10,8 +11,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 function MicWaveMark({ className }: { className?: string }) {
   return (
     <svg
@@ -35,10 +35,21 @@ function MicWaveMark({ className }: { className?: string }) {
   )
 }
 
+/**
+ * PodcastNavbar — sticky audio-editorial masthead for a podcast / audio-show
+ * site, built on SiteNav. A soundwave mic mark sits beside the 'Signal & Static'
+ * wordmark on the left; the desktop nav renders as mono small-caps labels
+ * separated by hairline column rules; a square (rounded-none) invert-on-hover
+ * mono "Subscribe" button anchors the right with press feedback; a real mobile
+ * drawer opens on small screens. Keeps the bar's backdrop blur. Every item
+ * routes through route hrefs for page-switching. Use as the header for
+ * podcasts, audio shows, or any show that wants an on-air, broadsheet feel.
+ * Renders fully with no props via baked defaults and passes className through.
+ */
 export const PodcastNavbar = defineCapsule({
   name: 'PodcastNavbar',
   description:
-    "Sticky podcast site header built on SiteNav: a 'Signal & Static' wordmark paired with a mic/soundwave mark, a centered desktop nav, a Subscribe CTA, and a mobile drawer. Designed for podcasts and audio shows that want a warm, on-air feel at the top of every page. Renders fully with no props via baked defaults and passes className through for layout control.",
+    "Sticky audio-editorial podcast site header built on SiteNav: a 'Signal & Static' wordmark beside a mic/soundwave mark on the left, mono small-caps desktop nav labels separated by hairline column rules in the center, and a square invert-on-hover mono 'Subscribe' button with press feedback on the right; a real mobile drawer on small screens. Keeps backdrop blur. Every item routes through route hrefs for page-switching. Designed for podcasts and audio shows that want a warm, on-air broadsheet feel. Renders fully with no props via baked defaults and passes className through for layout control.",
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -58,25 +69,43 @@ export const PodcastNavbar = defineCapsule({
     const homeTarget = props.homeTarget ?? nav[0]
 
     return (
-      <SiteNav position="fixed" height="default" className={props.className}>
-        <NavbarBrand href={homeTarget} className="gap-3">
-          <MicWaveMark className="size-8 text-primary" />
-          <Logo brand={brand}>
-            <LogoImage />
-            <LogoLabel className="font-semibold tracking-tight text-xl" />
-          </Logo>
+      <SiteNav
+        position="fixed"
+        height="default"
+        className={cn('bg-background/80', props.className)}
+      >
+        <NavbarBrand href={homeTarget} className="min-w-0">
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage
+              className="size-7"
+              fallback={<MicWaveMark className="size-7 text-primary" />}
+            />
+            <LogoLabel className="text-lg font-semibold tracking-tight text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
-        <NavbarNav>
-          {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+
+        <NavbarNav className="gap-0">
+          {nav.map((label, i) => (
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className={cn(
+                'rounded-none px-3 font-mono text-[11px] font-normal uppercase tracking-[0.18em] transition-colors hover:bg-transparent hover:text-foreground',
+                i > 0 && 'border-l border-border',
+                label === homeTarget
+                  ? 'text-foreground underline decoration-2 underline-offset-4'
+                  : 'text-muted-foreground',
+              )}
+            >
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
-        <NavbarActions>
+
+        <NavbarActions className="gap-2.5">
           <NavbarCta
             variant="primary-pill"
-            className="hidden px-5 py-2.5 sm:inline-flex"
+            className="hidden rounded-none border border-foreground bg-foreground px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-background transition-colors duration-150 hover:bg-background hover:text-foreground active:translate-y-px sm:inline-flex"
             href={ctaTarget}
           >
             {ctaLabel}

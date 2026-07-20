@@ -16,7 +16,7 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 import { DotGrid, MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 
 /**

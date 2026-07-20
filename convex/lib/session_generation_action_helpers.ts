@@ -124,7 +124,11 @@ function buildSsrImageContext(
 ): Record<string, string> | undefined {
   const prompt = session.prompt?.trim() || undefined
   const brandContext = safeParseSiteSpecBrandContext(siteSpecJson)
-  return prompt || brandContext ? { prompt, brandContext } : undefined
+  if (!prompt && !brandContext) return undefined
+  return {
+    ...(prompt ? { prompt } : {}),
+    ...(brandContext ? { brandContext } : {}),
+  }
 }
 
 export async function completeGenerationAction(

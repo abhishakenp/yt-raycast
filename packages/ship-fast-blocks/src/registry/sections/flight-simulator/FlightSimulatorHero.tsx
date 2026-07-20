@@ -11,8 +11,7 @@ import {
   HeroCta,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * FlightSimulatorHero — full-bleed, cinematic HUD hero for a flight simulator
  * landing page. A single immersive cockpit-above-the-clouds photograph fills the

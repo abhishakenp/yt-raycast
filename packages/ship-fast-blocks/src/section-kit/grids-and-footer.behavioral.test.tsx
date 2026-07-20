@@ -4,17 +4,21 @@ import * as React from 'react'
 import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
+import { CtaBand } from './CtaBand.tsx'
 import {
-  CtaBand,
   FeatureGrid,
   FeatureCard,
   FeatureTitle,
   FeatureDescription,
+} from './FeatureGrid.tsx'
+import {
   GalleryGrid,
   GalleryGridItems,
   GalleryTile,
   GalleryTileImage,
   GalleryTileCaption,
+} from './GalleryGrid.tsx'
+import {
   PricingGrid,
   PricingTier,
   PricingTierBadge,
@@ -26,6 +30,8 @@ import {
   PricingTierFeatures,
   PricingTierFeature,
   PricingTierCta,
+} from './PricingGrid.tsx'
+import {
   SiteFooter,
   FooterContent,
   FooterGrid,
@@ -39,17 +45,16 @@ import {
   FooterBottom,
   FooterCopyright,
   FooterLegal,
-  StatGrid,
-  StatItem,
-  StatValue,
-  StatLabel,
+} from './SiteFooter.tsx'
+import { StatGrid, StatItem, StatValue, StatLabel } from './StatGrid.tsx'
+import {
   TestimonialGrid,
   TestimonialCard,
   TestimonialQuote,
   TestimonialAuthor,
   TestimonialName,
   TestimonialMeta,
-} from './index.ts'
+} from './TestimonialGrid.tsx'
 import { RoutesContext } from '#/lib/route-context.tsx'
 
 vi.mock('@tanstack/react-router', () => ({

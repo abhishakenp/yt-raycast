@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
+import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import {
   NavbarActions,
   NavbarBrand,
@@ -8,24 +9,25 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-  SignInButton,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
- * LendingNavbar — sticky, translucent top navigation bar for a personal-lending
- * / loan marketing site. A backdrop-blurred, border-bottomed header pinned to the
- * top of the viewport: a near-ink rounded logo tile beside the lender name on the
- * left, a horizontal set of nav links in the center (desktop), and a "Sign In"
- * text link plus a solid primary "Apply Now" CTA on the right. Every nav item and
- * CTA routes through route hrefs so labels can drive page-switching. Use as the
- * clean, trustworthy site header for personal-loan lenders, lending marketplaces,
- * debt-consolidation services, fintech credit products, or financing brands.
- * Renders fully with no props via baked-in "ClearLoan" defaults.
+ * LendingNavbar — Swiss-fintech sticky site header for a personal-lending / loan
+ * marketing site. A backdrop-blurred, hairline-bottomed header pinned to the top
+ * that reads as an institutional trust bar: a runtime-swappable coin brand mark
+ * beside the lender wordmark on the left, a horizontal row of desktop nav links
+ * each prefixed with a mono tabular index numeral, and — on the right — a mono
+ * "Sign In" text link plus a single square (binary-radius) primary "Apply Now"
+ * CTA with mechanical press feedback. Every nav item and CTA routes through route
+ * hrefs so labels can drive page-switching; the sign-in link keeps its auth
+ * wiring. Use as the clean, trustworthy header for personal-loan lenders, lending
+ * marketplaces, debt-consolidation services, fintech credit products, or
+ * financing brands. Renders fully with no props via baked-in "ClearLoan" defaults.
  */
 export const LendingNavbar = defineCapsule({
   name: 'LendingNavbar',
   description:
-    "Sticky translucent top navigation bar for a personal-lending / loan marketing site: backdrop-blurred, border-bottomed header pinned to the top with a near-ink rounded logo tile + lender name on the left, horizontal nav links in the center (desktop), and a 'Sign In' text link plus a solid primary 'Apply Now' CTA on the right. Nav items and CTA route through route hrefs for page-switching. Use as the clean, trustworthy site header for personal-loan lenders, lending marketplaces, debt-consolidation services, fintech credit products, or financing brands.",
+    "Swiss-fintech sticky top navigation bar for a personal-lending / loan marketing site: a backdrop-blurred, hairline-bottomed header pinned to the top that reads as an institutional trust bar, with a runtime-swappable coin brand mark + lender wordmark on the left, horizontal desktop nav links each prefixed with a mono tabular index numeral, and a mono 'Sign In' text link plus a single square (binary-radius) primary 'Apply Now' CTA with mechanical press feedback on the right. Nav items and CTA route through route hrefs for page-switching; the sign-in link keeps its auth wiring. Use as the clean, trustworthy header for personal-loan lenders, lending marketplaces, debt-consolidation services, fintech credit products, or financing brands.",
   props: z.object({
     /** Brand / lender name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -47,12 +49,12 @@ export const LendingNavbar = defineCapsule({
     const signIn = props.signIn ?? 'Sign In'
     const cta = props.cta ?? 'Apply Now'
     const ctaTarget = props.ctaTarget ?? 'Check Your Rate'
-    const LogoIcon = ({ className }: { className?: string }) => (
+    const CoinMark = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        strokeWidth={2}
+        strokeWidth={1.7}
         strokeLinecap="round"
         strokeLinejoin="round"
         className={className}
@@ -67,16 +69,29 @@ export const LendingNavbar = defineCapsule({
         height="compact"
         className={cn('bg-background/80', props.className)}
       >
-        <NavbarBrand href={nav[0]} className="gap-2">
-          <span className="grid size-8 place-items-center rounded-lg bg-foreground text-background">
-            <LogoIcon className="size-5" />
-          </span>
-          <span className="text-xl font-semibold text-foreground">{brand}</span>
+        <NavbarBrand href={nav[0]} className="flex items-center gap-2">
+          <Logo brand={brand}>
+            <LogoImage
+              className="size-7"
+              fallback={<CoinMark className="size-7 text-primary" />}
+            />
+            <LogoLabel className="text-xl font-semibold tracking-tight" />
+          </Logo>
         </NavbarBrand>
 
-        <NavbarNav>
-          {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+        <NavbarNav className="gap-7">
+          {nav.map((label, i) => (
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="rounded-none text-[13px] tracking-tight"
+            >
+              <span
+                aria-hidden="true"
+                className="mr-1.5 font-mono text-[10px] tabular-nums text-muted-foreground/50"
+              >
+                {String(i + 1).padStart(2, '0')}
+              </span>
               {label}
             </NavbarNavLink>
           ))}
@@ -86,9 +101,13 @@ export const LendingNavbar = defineCapsule({
           <SignInButton
             variant="ghost"
             label={signIn}
-            className="hidden text-sm font-medium sm:block"
+            className="hidden rounded-none font-mono text-[11px] uppercase tracking-[0.16em] sm:inline-flex"
           />
-          <NavbarCta variant="primary" href={ctaTarget} className="px-5 py-2.5">
+          <NavbarCta
+            variant="primary"
+            href={ctaTarget}
+            className="rounded-none px-5 py-2.5 text-[13px] tracking-tight transition-[transform,background-color] duration-150 active:translate-y-px motion-reduce:transform-none"
+          >
             {cta}
           </NavbarCta>
         </NavbarActions>

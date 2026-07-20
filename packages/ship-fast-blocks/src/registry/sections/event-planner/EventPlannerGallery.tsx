@@ -3,7 +3,8 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { ResponsiveGrid, NavbarRouteLink } from '#/section-kit/index.ts'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 import {
   GalleryGrid,
   GalleryGridItems,

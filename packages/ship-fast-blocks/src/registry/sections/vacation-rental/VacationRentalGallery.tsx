@@ -3,28 +3,33 @@ import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
-  GalleryGrid,
-  GalleryGridItems,
   GalleryTile,
   GalleryTileImage,
   GalleryTileCaption,
 } from '#/section-kit/GalleryGrid.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
- * VacationRentalGallery — an airy property photo gallery for a vacation-rental
- * listing page. Thin configuration over the shared `GalleryGrid` composite: an
- * optional heading/subheading above a responsive grid of alt-driven property
- * tiles (living room, bedroom, pool, kitchen, deck view, bathroom), each with a
- * hover zoom and a caption strip. Theme-token only. Use to showcase the spaces
+ * VacationRentalGallery — an editorial-wanderlust property gallery for a
+ * vacation-rental listing page. An asymmetric mono-eyebrow intro row sits above a
+ * staggered bento of full-bleed alt-driven property plates (living room,
+ * bedroom, pool, kitchen, deck view, bathroom): the first plate runs wide, the
+ * rest alternate with a vertical offset, each sharp-cornered with a hover zoom
+ * and a rotated mono caption stamp. Theme-token only. Use to showcase the spaces
  * of a vacation rental, beach house, cabin, villa, or boutique short-stay.
  * Renders fully with no props via baked-in defaults.
  */
+const LG_COLS = {
+  2: 'lg:grid-cols-2',
+  3: 'lg:grid-cols-3',
+  4: 'lg:grid-cols-4',
+} as const
+
 export const VacationRentalGallery = defineCapsule({
   name: 'VacationRentalGallery',
   description:
-    'Airy property photo gallery for a vacation-rental listing page built on the shared GalleryGrid composite: an optional heading/subheading above a responsive grid of alt-driven property tiles (living room, bedroom, pool, kitchen, deck view, bathroom), each with a hover zoom and a caption strip. Theme-token only. Use to showcase the spaces of a vacation rental, beach house, cabin, villa, or boutique short-stay.',
+    'Editorial-wanderlust property gallery for a vacation-rental listing page: an asymmetric mono-eyebrow intro row above a staggered bento of full-bleed alt-driven property plates (living room, bedroom, pool, kitchen, deck view, bathroom) — the first plate runs wide, the rest alternate with a vertical offset, each sharp-cornered with a hover zoom and a rotated mono caption stamp. Theme-token only. Use to showcase the spaces of a vacation rental, beach house, cabin, villa, or boutique short-stay.',
   props: z.object({
     /** Section heading above the gallery. */
     heading: z.string().optional(),
@@ -68,6 +73,12 @@ export const VacationRentalGallery = defineCapsule({
           },
         ]
 
+    const columns = props.columns ?? 3
+    const heading = props.heading ?? 'Take the tour'
+    const subheading =
+      props.subheading ??
+      'Every corner designed for comfort, from sun-drenched living spaces to a pool that opens to the horizon.'
+
     return (
       <section
         className={cn(
@@ -76,33 +87,47 @@ export const VacationRentalGallery = defineCapsule({
         )}
       >
         <Container>
-          <GalleryGrid>
-            <SectionHeading
-              title={props.heading ?? 'Take the tour'}
-              subtitle={
-                props.subheading ??
-                'Every corner designed for comfort, from sun-drenched living spaces to a pool that opens to the horizon.'
+          <div className="mb-12 grid items-end gap-6 lg:mb-16 lg:grid-cols-12 lg:gap-10">
+            <div className="lg:col-span-7">
+              <MonoTag className="mb-4 block">Gallery / Spaces</MonoTag>
+              <h2 className="text-balance text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+                {heading}
+              </h2>
+            </div>
+            <p className="text-pretty text-base leading-relaxed text-muted-foreground lg:col-span-5 lg:pb-1">
+              {subheading}
+            </p>
+          </div>
+
+          <div
+            className={cn('grid grid-cols-2 gap-3 sm:gap-4', LG_COLS[columns])}
+          >
+            {images.map((img, i) => {
+              const __iv__ = img as {
+                alt: string
+                caption?: string
+                title?: string
+                location?: string
               }
-            />
-            <GalleryGridItems columns={props.columns ?? 3}>
-              {images.map((img) => {
-                const __iv__ = img as {
-                  alt: string
-                  caption?: string
-                  title?: string
-                  location?: string
-                }
-                return (
-                  <GalleryTile key={__iv__.alt}>
-                    <GalleryTileImage alt={__iv__.alt} />
-                    {__iv__.caption && (
-                      <GalleryTileCaption>{__iv__.caption}</GalleryTileCaption>
-                    )}
-                  </GalleryTile>
-                )
-              })}
-            </GalleryGridItems>
-          </GalleryGrid>
+              return (
+                <GalleryTile
+                  key={__iv__.alt}
+                  className={cn(
+                    'rounded-none border-border',
+                    i === 0 ? 'col-span-2 aspect-[16/10]' : 'aspect-[4/3]',
+                    i % 2 === 1 && 'lg:translate-y-8',
+                  )}
+                >
+                  <GalleryTileImage alt={__iv__.alt} />
+                  {__iv__.caption && (
+                    <GalleryTileCaption className="inset-x-auto bottom-3 left-3 w-fit -rotate-1 rounded-none border border-background/40 bg-foreground/70 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-background backdrop-blur-sm">
+                      {__iv__.caption}
+                    </GalleryTileCaption>
+                  )}
+                </GalleryTile>
+              )
+            })}
+          </div>
         </Container>
       </section>
     )

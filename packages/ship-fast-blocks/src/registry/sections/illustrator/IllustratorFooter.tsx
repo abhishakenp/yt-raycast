@@ -14,7 +14,7 @@ import {
   FooterBottom,
   FooterCopyright,
 } from '#/section-kit/SiteFooter.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * IllustratorFooter — a paper-wash site footer for an illustrator /
  * visual-artist portfolio, sealed with a dashed hand-drawn top rule. A wide

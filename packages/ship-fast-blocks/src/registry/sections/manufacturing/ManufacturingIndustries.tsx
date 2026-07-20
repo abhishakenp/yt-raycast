@@ -4,23 +4,25 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * ManufacturingIndustries — an 8-up industries-served grid for a precision-
- * manufacturing site. A left-aligned eyebrow + heading + description intro sits
- * above a responsive four-column grid of bordered cards, each with a tinted
- * rounded icon tile (rotating through chart/primary tokens for a multi-color
- * decorative set), a sector title, a short description and a certification tag.
- * Clean, neutral, industrial. Use to show specialized expertise across critical
- * sectors (aerospace, automotive, energy, medical, defense, robotics,
- * semiconductor, industrial) on machine-shop or fabricator pages. Renders fully
- * with no props via baked-in defaults.
+ * ManufacturingIndustries — a heavy-industrial industries-served spec grid for a
+ * precision-manufacturing site. An asymmetric header (mono index eyebrow + giant
+ * heading left, mono sector count right) sits above a collapsed-border (shared
+ * thick-hairline) grid of slab cells, each carrying a mono index, a small
+ * accent-tinted square icon slab, a sector title, a short description and a
+ * hairline-topped mono certification ledger tag. A giant ghost watermark bleeds
+ * behind. Tech-brutalist, binary-radius, industrial. Use to show specialized
+ * expertise across critical sectors (aerospace, automotive, energy, medical,
+ * defense, robotics, semiconductor, industrial) on machine-shop or fabricator
+ * pages. Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { IndustryGrid, IndustryCard } from '#/section-kit/IndustryGrid.tsx'
 export const ManufacturingIndustries = defineCapsule({
   name: 'ManufacturingIndustries',
   description:
-    'An 8-up industries-served grid for a precision-manufacturing site: a left-aligned eyebrow + heading + description intro above a responsive four-column grid of bordered cards, each with a tinted rounded icon tile (rotating through chart/primary tokens for a multi-color decorative set), a sector title, a short description and a certification tag. Clean, neutral, industrial. Use to show specialized expertise across critical sectors (aerospace, automotive, energy, medical, defense, robotics, semiconductor, industrial) on machine-shop or fabricator pages.',
+    'A heavy-industrial industries-served spec grid for a precision-manufacturing site: an asymmetric header (mono index eyebrow + giant heading left, mono sector count right) above a collapsed-border grid of slab cells, each with a mono index, a small accent-tinted square icon slab, a sector title, a short description and a hairline-topped mono certification ledger tag, with a giant ghost watermark behind. Tech-brutalist, binary-radius, industrial. Use to show specialized expertise across critical sectors (aerospace, automotive, energy, medical, defense, robotics, semiconductor, industrial) on machine-shop or fabricator pages.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -210,31 +212,64 @@ export const ManufacturingIndustries = defineCapsule({
       </svg>,
     ]
     return (
-      <section className={cn('bg-muted py-20 lg:py-28', props.className)}>
-        <Container>
-          <SectionHeading
-            align="left"
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            className="mb-12 max-w-3xl gap-0"
-            eyebrowClassName="text-sm font-medium uppercase tracking-wider text-muted-foreground"
-            titleClassName="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
-            subtitleClassName="mt-4 text-lg text-muted-foreground"
-          />
-          <IndustryGrid cols="1-2-4">
+      <section
+        className={cn(
+          'relative overflow-hidden bg-muted py-20 lg:py-28',
+          props.className,
+        )}
+      >
+        <Watermark className="-right-4 top-10 text-[8rem] leading-none sm:text-[12rem]">
+          08
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={description}
+              className="max-w-3xl gap-0"
+              eyebrowClassName="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground"
+              titleClassName="mt-3 text-3xl font-extrabold uppercase tracking-tight text-foreground sm:text-4xl"
+              subtitleClassName="mt-4 text-lg text-muted-foreground"
+            />
+            <MonoTag
+              aria-hidden="true"
+              className="shrink-0 md:mb-2 md:text-right"
+            >
+              {String(items.length).padStart(2, '0')} / Sectors
+            </MonoTag>
+          </div>
+          <IndustryGrid
+            cols="1-2-4"
+            className="gap-0 border-l-2 border-t-2 border-foreground"
+          >
             {items.map((item, i) => (
-              <IndustryCard key={item.title}>
-                <div className="flex flex-col gap-3 p-6">
-                  <div className="inline-flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    {indIcons[i % indIcons.length]}
+              <IndustryCard
+                key={item.title}
+                className="rounded-none border-0 border-b-2 border-r-2 border-foreground bg-card transition-colors hover:bg-muted"
+              >
+                <div className="flex h-full flex-col gap-3 p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="inline-flex size-11 items-center justify-center rounded-none border-2 border-foreground bg-primary/10 text-primary">
+                      {indIcons[i % indIcons.length]}
+                    </div>
+                    <span className="font-mono text-lg font-extrabold tabular-nums text-foreground/15">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
                   </div>
-                  <h3 className="text-lg font-semibold text-foreground">
+                  <h3 className="text-lg font-bold uppercase tracking-tight text-foreground">
                     {item.title}
                   </h3>
                   <p className="text-sm text-muted-foreground">
                     {item.description}
                   </p>
+                  <MonoTag
+                    tone="faint"
+                    className="mt-auto block border-t-2 border-foreground pt-3 text-[10px] tracking-[0.14em]"
+                  >
+                    {item.tag}
+                  </MonoTag>
                 </div>
               </IndustryCard>
             ))}

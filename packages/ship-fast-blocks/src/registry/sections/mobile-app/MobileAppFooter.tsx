@@ -3,20 +3,22 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * MobileAppFooter — a bordered-top, multi-column site footer for a clean,
- * minimalist mobile-app marketing page. A wide brand column (check-in-circle
- * logo mark + app name, a tagline, and a row of round social icon buttons —
- * Twitter / Instagram / LinkedIn) sits beside several link columns (each a
- * heading over a list of nav buttons). A bordered-top bottom bar holds an
- * auto-updating copyright note and a "made in" line. The brand button, social
- * icons and every link route through section-kit route links. Use as the closing footer for
- * a habit tracker, fitness / wellness app, productivity or to-do app, or any
- * consumer app landing page. Renders fully with no props via baked-in
- * "DailyFlow" defaults.
+ * MobileAppFooter — a kinetic ledger footer for a consumer mobile-app marketing
+ * page. A hairline-topped band with a giant ghost brand watermark bleeding off
+ * the bottom edge: an asymmetric 12-column grid pairs a wide brand block
+ * (check-in-circle logo mark + app name, a tagline, and square mono social chips
+ * with hard hover borders — Twitter / Instagram / LinkedIn) with mono-labeled
+ * link columns; below, a hairline-divided bottom bar carries the auto-updating
+ * copyright note, an optional mono "made in" line and a decorative "[ EOF ]"
+ * tag. The brand mark, social chips and every link route through section-kit
+ * route links. Use as the closing footer for a habit tracker, fitness / wellness
+ * app, productivity or to-do app, or any consumer app landing page. Renders
+ * fully with no props via baked-in "DailyFlow" defaults.
  */
+import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   SiteFooter,
-  FooterContent,
   FooterGrid,
   FooterBrand,
   FooterTagline,
@@ -32,7 +34,7 @@ import {
 export const MobileAppFooter = defineCapsule({
   name: 'MobileAppFooter',
   description:
-    "Bordered-top multi-column site footer for a clean, minimalist mobile-app marketing page: a wide brand column (check-in-circle logo mark + app name, a tagline, and a row of round social icon buttons — Twitter / Instagram / LinkedIn) beside several link columns (heading over a list of nav buttons), plus a bordered-top bottom bar with an auto-updating copyright note and a 'made in' line; the brand button, social icons and every link route through section-kit route links. Use as the closing footer for a habit tracker, fitness / wellness app, productivity or to-do app, or any consumer app landing page.",
+    'Kinetic ledger footer for a consumer mobile-app marketing page: a hairline-topped band with a giant ghost brand watermark, an asymmetric 12-column grid pairing a wide brand block (check-in-circle logo mark + app name, tagline, square mono social chips) with mono-labeled link columns, and a hairline-divided bottom bar with auto-updating copyright, an optional mono made-in line and an [ EOF ] tag; the brand mark, social chips and every link route through section-kit route links. Use as the closing footer for a habit tracker, fitness / wellness app, productivity or to-do app, or any consumer app landing page.',
   props: z.object({
     /** Brand / app name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -98,34 +100,72 @@ export const MobileAppFooter = defineCapsule({
       </svg>
     )
     return (
-      <SiteFooter className={props.className}>
-        <FooterContent>
-          <FooterGrid>
-            <FooterBrand brand={brand} brandMark={<LogoMark />}>
-              <FooterTagline>{tagline}</FooterTagline>
-              <FooterSocial>
+      <SiteFooter
+        className={cn(
+          'relative overflow-hidden border-t border-border bg-background',
+          props.className,
+        )}
+      >
+        {/* Giant ghost brand watermark bleeding off the bottom edge. */}
+        <Watermark className="-bottom-6 -right-2 text-[5rem] sm:text-[9rem] lg:text-[12rem]">
+          {brand}
+        </Watermark>
+        <Container className="relative py-14 lg:py-16">
+          <FooterGrid className="grid gap-10 md:grid-cols-12 lg:gap-8">
+            <FooterBrand
+              brand={brand}
+              brandMark={<LogoMark />}
+              className="md:col-span-5 lg:col-span-6"
+            >
+              <FooterTagline className="max-w-sm">{tagline}</FooterTagline>
+              <FooterSocial className="mt-5 gap-2">
                 {socials
                   .map((s) => ({ label: s }))
                   .map((s) => (
-                    <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                    <FooterSocialLink
+                      key={s.label}
+                      className="rounded-none border border-border px-2.5 py-1 font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+                    >
+                      {s.label}
+                    </FooterSocialLink>
                   ))}
               </FooterSocial>
             </FooterBrand>
             {columns.map((col) => (
-              <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
-                <FooterColumnList>
+              <FooterColumn key={col.title} className="md:col-span-2">
+                <FooterColumnTitle className="font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground">
+                  <span aria-hidden="true" className="text-primary">
+                    /{' '}
+                  </span>
+                  {col.title}
+                </FooterColumnTitle>
+                <FooterColumnList className="mt-4 space-y-2.5">
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink
+                      key={link}
+                      className="block w-fit text-sm text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
-          <FooterBottom>
-            <FooterCopyright>{note}</FooterCopyright>
+          <FooterBottom className="mt-12 flex flex-col justify-between gap-4 border-t border-border pt-6 sm:flex-row sm:items-center">
+            <FooterCopyright className="text-sm text-muted-foreground">
+              {note}
+            </FooterCopyright>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              {props.madeIn ? (
+                <MonoTag tone="faint">{props.madeIn}</MonoTag>
+              ) : null}
+              <MonoTag tone="faint" aria-hidden="true">
+                [ EOF ]
+              </MonoTag>
+            </div>
           </FooterBottom>
-        </FooterContent>
+        </Container>
       </SiteFooter>
     )
   },

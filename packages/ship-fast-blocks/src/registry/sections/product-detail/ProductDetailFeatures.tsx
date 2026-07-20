@@ -2,6 +2,10 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import type { ReactNode } from 'react'
+import { cn } from '#/lib/utils.ts'
+import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { DotGrid } from '#/section-kit/Decor.tsx'
 import {
   FeatureGrid,
   FeatureCard,
@@ -9,7 +13,6 @@ import {
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
-import { Container } from '#/section-kit/Container.tsx'
 
 const ICONS: ReactNode[] = [
   // battery (40-hour)
@@ -66,7 +69,7 @@ function FeatureIcon({ glyph }: { glyph: ReactNode }) {
 export const ProductDetailFeatures = defineCapsule({
   name: 'ProductDetailFeatures',
   description:
-    'Premium feature highlight band for the Aurora Pro Headphones product detail page. Wraps the shared FeatureGrid composite to present six headline specs as icon-led cards — battery life, adaptive ANC, studio-grade sound, memory-foam comfort, multipoint Bluetooth, and USB-C fast charge. Fully prop-driven: heading, subheading, columns, and the features array can each be overridden, with rich Aurora defaults baked in. Use directly beneath the product overview to sell the engineering story before reviews. Theme tokens only.',
+    'Editorial-product spec highlight band for the Aurora Pro Headphones detail page, built on the shared FeatureGrid composite. An asymmetric header (mono meta rule with a primary tick + tabular spec count, and a left-aligned extrabold tight-tracked heading over supporting copy) sits above a staggered grid of sharp square spec cards laid over a faint dot-grid texture — each card pairs a muted tabular index numeral and a small inline icon with a bold spec title and a short engineering blurb, and alternating cards step down on desktop for a broken-grid rhythm. Six headline specs ship by default — battery life, adaptive ANC, studio-grade sound, memory-foam comfort, multipoint Bluetooth, and USB-C fast charge. Fully prop-driven: heading, subheading, columns, and the features array can each be overridden. Use directly beneath the product overview to sell the engineering story before reviews. Theme tokens only.',
   props: z.object({
     heading: z.string().optional(),
     subheading: z.string().optional(),
@@ -128,35 +131,78 @@ export const ProductDetailFeatures = defineCapsule({
     }))
 
     return (
-      <section className="bg-background py-20 sm:py-24">
-        <Container size="xl" className="px-6">
-          <FeatureGrid
-            heading={heading}
-            subheading={subheading}
-            columns={columns}
-            className={props.className}
-          >
-            {withIcons.map((f) => {
-              const __iv__ = f as {
-                title: string
-                description: string
-                icon?: React.ReactNode
-                points?: string[]
-                cta?: string
-                price?: string
-                imageAlt?: string
-              }
-              return (
-                <FeatureCard key={__iv__.title}>
-                  {__iv__.icon && (
-                    <KitFeatureIcon>{__iv__.icon}</KitFeatureIcon>
-                  )}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
-                </FeatureCard>
-              )
-            })}
-          </FeatureGrid>
+      <section className="relative overflow-hidden bg-background py-20 sm:py-24">
+        <Container size="xl">
+          <div className="flex items-center gap-4 border-b border-border pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            <span className="flex items-center gap-3">
+              <span aria-hidden="true" className="size-1.5 bg-primary" />
+              Specs
+            </span>
+            <span aria-hidden="true" className="h-px flex-1 bg-border" />
+            <span aria-hidden="true" className="tabular-nums">
+              {String(features.length).padStart(2, '0')}
+            </span>
+          </div>
+          <SectionHeading
+            align="left"
+            title={heading}
+            subtitle={subheading}
+            className="mt-8 max-w-2xl gap-4"
+            titleClassName="text-3xl font-extrabold tracking-tighter text-foreground sm:text-4xl lg:text-5xl"
+            subtitleClassName="max-w-xl text-base leading-relaxed text-muted-foreground"
+          />
+
+          <div className="relative mt-14">
+            <DotGrid
+              tone="border"
+              fade="bottom"
+              className="-inset-6 hidden lg:block"
+            />
+            <FeatureGrid columns={columns} className="relative gap-0 sm:gap-6">
+              {withIcons.map((f, i) => {
+                const __iv__ = f as {
+                  title: string
+                  description: string
+                  icon?: React.ReactNode
+                  points?: string[]
+                  cta?: string
+                  price?: string
+                  imageAlt?: string
+                }
+                return (
+                  <div
+                    key={__iv__.title}
+                    className={cn(
+                      'mb-6 sm:mb-0',
+                      i % 2 === 1 && 'lg:translate-y-8',
+                    )}
+                  >
+                    <FeatureCard className="h-full gap-4 rounded-none border-border bg-card p-6 hover:-translate-y-0 hover:border-foreground/40 sm:p-7">
+                      <div className="flex items-start justify-between gap-3">
+                        <span
+                          aria-hidden="true"
+                          className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60 tabular-nums"
+                        >
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                        {__iv__.icon && (
+                          <KitFeatureIcon className="size-auto rounded-none bg-transparent p-0 text-muted-foreground">
+                            {__iv__.icon}
+                          </KitFeatureIcon>
+                        )}
+                      </div>
+                      <FeatureTitle className="tracking-tight">
+                        {__iv__.title}
+                      </FeatureTitle>
+                      <FeatureDescription className="leading-relaxed">
+                        {__iv__.description}
+                      </FeatureDescription>
+                    </FeatureCard>
+                  </div>
+                )
+              })}
+            </FeatureGrid>
+          </div>
         </Container>
       </section>
     )

@@ -13,8 +13,7 @@ import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { Watermark } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * EventSpeakers — kinetic-poster speaker roster for a conference or event page. A
  * muted band cut by a giant ghost "LIVE" watermark, opened by an asymmetric

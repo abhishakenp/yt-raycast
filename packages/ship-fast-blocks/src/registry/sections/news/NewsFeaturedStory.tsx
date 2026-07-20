@@ -5,32 +5,34 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
-import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   FeaturedArticleMedia,
   FeaturedArticleContent,
   FeaturedArticleMeta,
 } from '#/section-kit/FeaturedArticle.tsx'
 import { StorySection } from '#/section-kit/StorySection.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * NewsFeaturedStory — featured big lead story band for a news / editorial
- * outlet. A single bespoke lead/featured band on a card surface: a top
- * breaking-news banner (uppercase badge + clickable headline + timestamp), then
- * a 12-column grid anchored by one large lead article on the left (wide photo
- * with an overlaid tag, big headline, excerpt and author/date/read-time byline)
- * and a stacked rail of secondary headlines on the right (each with a category
- * label in a rotating accent tone, headline, excerpt, timestamp and a small
- * square thumbnail, divided by rules). Every story and the breaking headline
- * route through section-kit route links. Use directly below the masthead as the lead/
- * featured big-story band of a newspaper, magazine or publication homepage.
- * Renders fully with no props via baked-in defaults.
+ * NewsFeaturedStory — front-page lead-story band for a news / editorial
+ * outlet, in a full newsprint idiom. A full-bleed inverted
+ * (bg-foreground/text-background) breaking-news chyron opens the band with a
+ * square stamp, a clickable headline and a timestamp; below it a "Front Page"
+ * mono kicker on a heavy masthead rule, then a broadsheet 8:4 split. The lead
+ * article fills the left column — a grayscale hairline-framed cover with an
+ * inverted overlay tag, a huge serif black headline, a drop-capped excerpt,
+ * and a mono "By" byline / dateline meta row. A hairline column rule divides
+ * off the right rail of secondary headlines, each a mono index + category
+ * dateline, serif headline, one-line excerpt and small square grayscale
+ * thumbnail separated by hairline rules. Every story and the breaking headline
+ * route through section-kit route links. Use directly below the masthead as
+ * the lead / featured big-story band of a newspaper, magazine or publication
+ * homepage. Renders fully with no props via baked-in defaults.
  */
 export const NewsFeaturedStory = defineCapsule({
   name: 'NewsFeaturedStory',
   description:
-    'Featured big lead story band for a news / editorial outlet on a card surface: a top breaking-news banner (uppercase badge + clickable headline + timestamp), then a 12-column grid anchored by one large lead article on the left (wide photo with overlaid tag, big headline, excerpt and author/date/read-time byline) and a stacked rail of secondary headlines on the right (each with a rotating-accent category label, headline, excerpt, timestamp and small square thumbnail, divided by rules). Stories and the breaking headline route through section-kit route links. Use directly below the masthead as the lead/featured big-story band of a newspaper, magazine or publication homepage.',
+    'Front-page lead-story band for a news / editorial outlet in a full newsprint idiom: a full-bleed inverted (bg-foreground/text-background) breaking-news chyron with a square stamp, clickable headline and timestamp opens the band; below it a "Front Page" mono kicker on a heavy masthead rule, then a broadsheet 8:4 split — the lead article on the left (grayscale hairline-framed cover with inverted overlay tag, huge serif black headline, drop-capped excerpt and a mono "By" byline / dateline meta row) divided by a hairline column rule from a right rail of secondary headlines (each a mono index + category dateline, serif headline, excerpt and small square grayscale thumbnail separated by hairline rules). Stories and the breaking headline route through section-kit route links. Use directly below the masthead as the lead / featured big-story band of a newspaper, magazine or publication homepage.',
   props: z.object({
     /** Breaking-news badge label. */
     breakingBadge: z.string().optional(),
@@ -118,124 +120,137 @@ export const NewsFeaturedStory = defineCapsule({
           },
         ]
 
-    // Rotate category labels through theme accent tokens (no raw palette colors).
-    const catTones = [
-      'text-primary',
-      'text-secondary-foreground',
-      'text-accent-foreground',
-      'text-chart-1',
-      'text-chart-2',
-      'text-chart-3',
-      'text-chart-4',
-      'text-chart-5',
-    ]
-    const toneFor = (key: string) => {
-      let h = 0
-      for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) | 0
-      return catTones[Math.abs(h) % catTones.length]
-    }
-
     return (
       <StorySection
-        className={cn('bg-card pt-28 pb-8 lg:pt-32 lg:pb-12', props.className)}
+        className={cn('relative bg-background pt-20 lg:pt-24', props.className)}
       >
-        <Container>
-          {/* Breaking banner */}
-          <div className="mb-8 flex items-center gap-3">
-            <span className="rounded bg-destructive px-3 py-1 text-xs font-semibold uppercase tracking-wider text-destructive-foreground">
+        {/* Full-bleed inverted breaking-news chyron. */}
+        <div className="bg-foreground text-background">
+          <Container className="flex items-center gap-3 py-2.5">
+            <span className="shrink-0 rounded-none bg-background px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-foreground">
               {breakingBadge}
             </span>
             <NavbarRouteLink
-              className="text-left text-sm font-medium text-foreground hover:underline lg:text-base"
+              className="min-w-0 truncate text-left font-serif text-sm font-medium text-background underline-offset-2 hover:underline lg:text-base"
               href={breakingHeadline}
             >
               {breakingHeadline}
             </NavbarRouteLink>
-            <span className="ml-auto whitespace-nowrap text-xs text-muted-foreground">
+            <span className="ml-auto shrink-0 whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.16em] text-background/60">
               {breakingTime}
             </span>
+          </Container>
+        </div>
+
+        <Container className="pt-10 pb-10 lg:pt-14 lg:pb-14">
+          {/* Front-page kicker on a heavy masthead rule. */}
+          <div className="mb-8 flex items-center gap-4 border-b-2 border-foreground pb-3 shadow-[0_3px_0_-2px] shadow-border">
+            <MonoTag tone="primary" className="shrink-0">
+              Front Page
+            </MonoTag>
+            <span aria-hidden="true" className="h-px flex-1 bg-border" />
+            <MonoTag tone="faint" className="text-[10px]">
+              {date}
+            </MonoTag>
           </div>
 
-          {/* Featured grid */}
-          <div className="grid gap-6 lg:grid-cols-12 lg:gap-8">
-            {/* Lead story */}
-            <article className="group lg:col-span-8">
+          {/* Broadsheet 8:4 split with a hairline column rule. */}
+          <div className="grid gap-10 lg:grid-cols-12 lg:gap-0">
+            {/* Lead story. */}
+            <article className="group lg:col-span-8 lg:pr-10">
               <NavbarRouteLink className="block w-full text-left" href={title}>
-                <FeaturedArticleMedia className="relative aspect-[16/9] overflow-hidden rounded-lg bg-muted lg:aspect-[21/9]">
+                <FeaturedArticleMedia className="relative aspect-[16/9] overflow-hidden rounded-none border border-foreground/25 bg-muted lg:aspect-[21/9]">
                   <Image
                     alt={imageAlt}
                     w={1200}
                     h={500}
-                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="size-full object-cover grayscale transition-[filter,transform] duration-500 group-hover:scale-[1.02] group-hover:grayscale-0"
                   />
-                  <span className="absolute left-4 top-4 rounded bg-foreground px-3 py-1 text-xs font-semibold uppercase tracking-wider text-background">
+                  <span className="absolute left-0 top-0 rounded-none bg-foreground px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-background">
                     {tag}
                   </span>
                 </FeaturedArticleMedia>
-                <FeaturedArticleContent className="mt-5">
-                  <h1 className="text-2xl font-bold leading-tight text-foreground transition-colors group-hover:text-muted-foreground lg:text-4xl">
+                <FeaturedArticleContent className="mt-6">
+                  <h1 className="font-serif text-3xl font-black leading-[1.05] tracking-tight text-foreground transition-colors group-hover:text-foreground/80 lg:text-[2.75rem]">
                     {title}
                   </h1>
-                  <p className="mt-3 text-base leading-relaxed text-muted-foreground lg:text-lg">
+                  <p className="mt-4 border-l-2 border-foreground/25 pl-5 text-base leading-relaxed text-muted-foreground first-letter:float-left first-letter:mr-2.5 first-letter:font-serif first-letter:text-5xl first-letter:font-black first-letter:leading-[0.8] first-letter:text-foreground lg:text-lg">
                     {excerpt}
                   </p>
-                  <FeaturedArticleMeta className="mt-4 gap-4">
-                    <span className="font-medium text-foreground">
-                      {author}
+                  <FeaturedArticleMeta className="mt-5 gap-x-3 gap-y-1 border-t border-border pt-4">
+                    <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-foreground">
+                      By {author}
                     </span>
-                    <span aria-hidden="true">•</span>
-                    <span>{date}</span>
-                    <span aria-hidden="true">•</span>
-                    <span>{readTime}</span>
+                    <span
+                      aria-hidden="true"
+                      className="text-muted-foreground/40"
+                    >
+                      ·
+                    </span>
+                    <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                      {date}
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="text-muted-foreground/40"
+                    >
+                      ·
+                    </span>
+                    <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                      {readTime}
+                    </span>
                   </FeaturedArticleMeta>
                 </FeaturedArticleContent>
               </NavbarRouteLink>
             </article>
 
-            {/* Secondary rail */}
-            <div className="flex flex-col gap-6 lg:col-span-4">
+            {/* Secondary rail behind a hairline column rule. */}
+            <div className="flex flex-col lg:col-span-4 lg:border-l lg:border-border lg:pl-10">
+              <MonoTag
+                tone="faint"
+                className="mb-4 hidden text-[10px] lg:block"
+              >
+                Also in the news
+              </MonoTag>
               {secondary.map((story, i) => (
-                <div key={story.title}>
-                  <article className="group">
-                    <NavbarRouteLink
-                      className="flex w-full gap-4 text-left"
-                      href={story.title}
-                    >
-                      <div className="flex-1">
-                        <Eyebrow
-                          variant="text"
-                          className={cn(
-                            'tracking-wider',
-                            toneFor(story.category),
-                          )}
-                        >
+                <article key={story.title} className="group">
+                  <NavbarRouteLink
+                    className={cn(
+                      'flex w-full gap-4 py-5 text-left',
+                      i > 0 && 'border-t border-border',
+                    )}
+                    href={story.title}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60">
+                          № {String(i + 1).padStart(2, '0')}
+                        </span>
+                        <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
                           {story.category}
-                        </Eyebrow>
-                        <h2 className="mt-1 text-base font-semibold leading-snug text-foreground transition-colors group-hover:text-muted-foreground lg:text-lg">
-                          {story.title}
-                        </h2>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {story.excerpt}
-                        </p>
-                        <span className="mt-2 block text-xs text-muted-foreground">
-                          {story.time}
                         </span>
                       </div>
-                      <div className="size-24 flex-shrink-0 overflow-hidden rounded-lg bg-muted lg:size-28">
-                        <Image
-                          alt={story.imageAlt}
-                          w={200}
-                          h={200}
-                          loading="lazy"
-                          className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                      </div>
-                    </NavbarRouteLink>
-                  </article>
-                  {i < secondary.length - 1 && (
-                    <hr className="mt-6 border-border" />
-                  )}
-                </div>
+                      <h2 className="mt-1.5 font-serif text-base font-black leading-snug tracking-tight text-foreground underline-offset-4 transition-colors group-hover:underline lg:text-lg">
+                        {story.title}
+                      </h2>
+                      <p className="mt-1 line-clamp-2 text-sm leading-snug text-muted-foreground">
+                        {story.excerpt}
+                      </p>
+                      <span className="mt-2 block font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                        {story.time}
+                      </span>
+                    </div>
+                    <div className="size-20 shrink-0 overflow-hidden rounded-none border border-foreground/25 bg-muted lg:size-24">
+                      <Image
+                        alt={story.imageAlt}
+                        w={200}
+                        h={200}
+                        loading="lazy"
+                        className="size-full object-cover grayscale transition-[filter] duration-500 group-hover:grayscale-0"
+                      />
+                    </div>
+                  </NavbarRouteLink>
+                </article>
               ))}
             </div>
           </div>

@@ -14,8 +14,7 @@ import {
   DirectoryLeadButton,
   DirectoryMutationSpinner,
 } from './directory-interactions.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * DirectoryCta — newsprint "full-page ad" conversion band for a local-business
  * directory. A paper band holding a heavy-bordered ad box with a hard offset

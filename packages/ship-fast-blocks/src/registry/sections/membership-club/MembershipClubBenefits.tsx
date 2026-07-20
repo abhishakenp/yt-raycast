@@ -1,33 +1,25 @@
 import { defineCapsule } from '#/capsules/openui.ts'
-import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import {
-  FeatureGrid,
-  FeatureCard,
-  FeatureIcon,
-  FeatureTitle,
-  FeatureDescription,
-} from '#/section-kit/FeatureGrid.tsx'
-
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
- * MembershipClubBenefits — 6-up member-benefits grid for a private membership club
- * / exclusive community page. A centered eyebrow + thin heading + supporting line
- * sit above a 3-column (responsive) grid of rounded bordered cards, each with a
- * muted rounded icon tile (introductions, clubhouses, events, retreats, library,
- * community), a medium title and a relaxed description. Use to explain what a
- * membership includes for members clubs, founders/social clubs, professional
- * networks, curated communities or coworking/clubhouse memberships. Renders fully
- * with no props.
+ * MembershipClubBenefits — collapsed-border member-benefits ledger for a private
+ * membership club / exclusive community page. A left-aligned mono micro-label
+ * kicker + serif heading + supporting line sit above a sharp-cornered,
+ * collapsed-border 2-column ledger of benefit cells divided by shared hairlines,
+ * each opening with a mono index numeral, a serif title, and a relaxed muted
+ * description. Use to spell out what a membership includes — introductions,
+ * clubhouses, events, retreats, resources, community — for members clubs,
+ * founders/social clubs, professional networks, curated communities or
+ * coworking/clubhouse memberships. Renders fully with no props.
  */
 export const MembershipClubBenefits = defineCapsule({
   name: 'MembershipClubBenefits',
   description:
-    '6-up member-benefits grid for a private membership club / exclusive community page: a centered eyebrow + thin heading + supporting line above a responsive 3-column grid of rounded bordered cards, each with a muted rounded icon tile (introductions, clubhouses, events, retreats, library, community), a medium title and a relaxed description. Use to explain what a membership includes for members clubs, founders/social clubs, professional networks, curated communities or coworking/clubhouse memberships.',
+    'Collapsed-border member-benefits ledger for a private membership club / exclusive community page: a left-aligned mono micro-label kicker + serif heading + supporting line above a sharp-cornered, collapsed-border 2-column ledger of benefit cells divided by shared hairlines, each opening with a mono index numeral, a serif title, and a relaxed muted description. Use to spell out what a membership includes — introductions, clubhouses, events, retreats, resources, community — for members clubs, founders/social clubs, professional networks, curated communities or coworking/clubhouse memberships.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -79,93 +71,6 @@ export const MembershipClubBenefits = defineCapsule({
           },
         ]
 
-    const benefitIcons: ReactNode[] = [
-      <svg
-        key="users"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-      </svg>,
-      <svg
-        key="building"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-      </svg>,
-      <svg
-        key="calendar"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg>,
-      <svg
-        key="globe"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>,
-      <svg
-        key="book"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-      </svg>,
-      <svg
-        key="chat"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-      </svg>,
-    ]
-
     return (
       <section
         className={cn('w-full bg-background py-20 lg:py-28', props.className)}
@@ -173,33 +78,34 @@ export const MembershipClubBenefits = defineCapsule({
       >
         <Container>
           <SectionHeading
+            align="left"
             eyebrow={eyebrow}
             title={heading}
             subtitle={description}
             titleId="benefits-heading"
-            className="mb-16 max-w-3xl lg:mb-24 gap-0"
-            eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground"
-            titleClassName="mb-6 text-3xl font-light text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
+            className="mb-14 max-w-3xl gap-4 lg:mb-20"
+            eyebrowClassName="font-mono text-[11px] font-medium uppercase tracking-[0.24em] text-muted-foreground"
+            titleClassName="font-serif text-4xl font-normal tracking-tight text-foreground lg:text-5xl"
+            subtitleClassName="text-lg leading-relaxed text-muted-foreground"
           />
-          <FeatureGrid className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 lg:gap-12">
+          <div className="grid border-l border-t border-border sm:grid-cols-2">
             {items.map((item, i) => (
-              <FeatureCard
+              <div
                 key={item.title}
-                className="p-8 transition-colors hover:border-border/60"
+                className="border-b border-r border-border p-8 lg:p-10"
               >
-                <FeatureIcon className="mb-6 grid size-12 place-items-center rounded-lg bg-muted text-foreground">
-                  {benefitIcons[i % benefitIcons.length]}
-                </FeatureIcon>
-                <FeatureTitle className="mb-3 text-xl font-medium text-card-foreground">
+                <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground tabular-nums">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <h3 className="mt-4 font-serif text-2xl font-normal text-foreground">
                   {item.title}
-                </FeatureTitle>
-                <FeatureDescription className="leading-relaxed">
+                </h3>
+                <p className="mt-3 leading-relaxed text-muted-foreground">
                   {item.description}
-                </FeatureDescription>
-              </FeatureCard>
+                </p>
+              </div>
             ))}
-          </FeatureGrid>
+          </div>
         </Container>
       </section>
     )

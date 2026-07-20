@@ -13,8 +13,7 @@ import {
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * FoodTruckTestimonials — a sticker-poster customer-reviews section with a press-logo
  * stamp strip. Under a giant ghost quotation watermark, a rotated rubber-stamp caption +
@@ -109,7 +108,7 @@ export const FoodTruckTestimonials = defineCapsule({
     return (
       <section
         className={cn(
-          'relative overflow-hidden px-6 pt-24 pb-20',
+          'relative overflow-hidden px-6 pt-24 pb-20 text-foreground',
           props.className,
         )}
       >
@@ -123,7 +122,7 @@ export const FoodTruckTestimonials = defineCapsule({
             </span>
             <MonoTag>Word on the street</MonoTag>
           </div>
-          <h2 className="mb-12 text-4xl font-extrabold tracking-tighter md:text-5xl">
+          <h2 className="mb-12 text-4xl font-extrabold tracking-tighter text-foreground md:text-5xl">
             {testHeading}
           </h2>
 
@@ -142,12 +141,12 @@ export const FoodTruckTestimonials = defineCapsule({
                 <TestimonialCard
                   key={__iv__.name}
                   className={cn(
-                    'gap-4 rounded-none border-2 border-foreground bg-card p-6 shadow-[5px_5px_0_0] shadow-foreground transition-transform duration-150 hover:-translate-y-1 motion-reduce:transform-none',
+                    'gap-4 rounded-none border-2 border-foreground bg-card p-6 text-card-foreground shadow-[5px_5px_0_0] shadow-foreground transition-transform duration-150 hover:-translate-y-1 motion-reduce:transform-none',
                     tilts[i % tilts.length],
                   )}
                 >
                   <Stars count={__iv__.rating ?? 5} />
-                  <TestimonialQuote className="font-medium">
+                  <TestimonialQuote className="font-medium text-card-foreground">
                     {__iv__.quote}
                   </TestimonialQuote>
                   <TestimonialAuthor className="border-t-2 border-dashed border-foreground/20 pt-4">
@@ -161,7 +160,7 @@ export const FoodTruckTestimonials = defineCapsule({
                       />
                     )}
                     <div className="flex flex-col">
-                      <TestimonialName className="font-extrabold">
+                      <TestimonialName className="font-extrabold text-card-foreground">
                         {__iv__.name}
                       </TestimonialName>
                       {(__iv__.role || __iv__.company || __iv__.meta) && (

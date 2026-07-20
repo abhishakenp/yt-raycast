@@ -10,8 +10,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
  * AgencyNavbar — fixed neo-brutalist top navigation bar for a creative
  * digital-agency / studio site. A backdrop-blurred header with a thick 2px

@@ -31,7 +31,7 @@ import {
 } from '#/section-kit/SiteFooter.tsx'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { Watermark } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const CorporateFooter = defineCapsule({
   name: 'CorporateFooter',
   description:

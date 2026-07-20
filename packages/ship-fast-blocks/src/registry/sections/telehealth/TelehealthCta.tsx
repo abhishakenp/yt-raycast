@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { cn } from '#/lib/utils.ts'
 import {
   CtaBand,
   CtaBandInner,
@@ -10,12 +11,23 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { Watermark } from '#/section-kit/Decor.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
+/**
+ * TelehealthCta — calm clinical + warmth closing call-to-action band for a
+ * telehealth site, built on the shared CtaBand composite with a primary tone and
+ * cut in on a gentle slanted clip-path seam. On the primary band, behind a giant
+ * faint ghost "+" watermark: a mono eyebrow, a reassuring extrabold title
+ * ('Talk to a doctor now'), a supporting subtitle, and a row of square routable
+ * pill actions — a filled background-on-primary "Get Started" button (with press
+ * feedback) that routes to booking, plus a hairline outline "Learn more" button.
+ * Precise yet warm, telemedicine aesthetic. Use as the final conversion band
+ * near the footer of a telehealth page.
+ */
 export const TelehealthCta = defineCapsule({
   name: 'TelehealthCta',
   description:
-    "Full-width closing call-to-action band for a telehealth site, built on the shared CtaBand composite with a primary tone. Centers an optional eyebrow, a reassuring title ('Talk to a doctor now'), a supporting subtitle, and a row of routable pill actions — a primary 'Get Started' button (auto-inverted to read against the primary background) that routes to booking, plus an outlined 'Learn more' button. Use as the final conversion band near the footer of a telehealth page.",
+    "Calm clinical + warmth closing call-to-action band for a telehealth site, built on the shared CtaBand composite with a primary tone and cut in on a gentle slanted clip-path seam: on the primary band, behind a giant faint ghost '+' watermark, a mono eyebrow, a reassuring extrabold title ('Talk to a doctor now'), a supporting subtitle, and a row of square routable pill actions — a filled background-on-primary 'Get Started' button (with press feedback) that routes to booking, plus a hairline outline 'Learn more' button. Precise yet warm, telemedicine aesthetic. Use as the final conversion band near the footer of a telehealth page.",
   props: z.object({
     eyebrow: z.string().optional(),
     headline: z.string().optional(),
@@ -38,18 +50,41 @@ export const TelehealthCta = defineCapsule({
     const secondaryTarget = props.secondaryTarget ?? 'How it works'
 
     return (
-      <CtaBand tone="primary" className={props.className}>
-        <CtaBandInner>
-          <CtaBandEyebrow>{eyebrow}</CtaBandEyebrow>
-          <CtaBandTitle>{headline}</CtaBandTitle>
-          <CtaBandSubtitle>{subheading}</CtaBandSubtitle>
-          <CtaBandActions>
-            <CtaAction variant="primary" asChild>
+      <CtaBand
+        tone="primary"
+        className={cn(
+          'relative overflow-hidden [clip-path:polygon(0_2.5rem,100%_0,100%_100%,0_100%)]',
+          props.className,
+        )}
+      >
+        <Watermark className="-right-8 -top-16 text-[16rem] text-primary-foreground/[0.06] sm:text-[22rem]">
+          +
+        </Watermark>
+        <CtaBandInner className="relative gap-6 pb-16 pt-20 sm:pb-20 sm:pt-24">
+          <CtaBandEyebrow className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary-foreground/70 opacity-100">
+            {eyebrow}
+          </CtaBandEyebrow>
+          <CtaBandTitle className="max-w-3xl text-[clamp(2.25rem,5vw,3.75rem)] font-extrabold leading-[1.02] tracking-tight">
+            {headline}
+          </CtaBandTitle>
+          <CtaBandSubtitle className="max-w-2xl text-primary-foreground/80 opacity-100">
+            {subheading}
+          </CtaBandSubtitle>
+          <CtaBandActions className="mt-2">
+            <CtaAction
+              variant="primary"
+              asChild
+              className="rounded-none bg-background px-7 py-3.5 text-base font-semibold text-foreground transition-colors hover:bg-background/90 active:translate-y-px"
+            >
               <NavbarRouteLink href={primaryTarget}>
                 {primaryCta}
               </NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" asChild>
+            <CtaAction
+              variant="outline"
+              asChild
+              className="rounded-none border-primary-foreground/40 bg-transparent px-7 py-3.5 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10 active:translate-y-px"
+            >
               <NavbarRouteLink href={secondaryTarget}>
                 {secondaryCta}
               </NavbarRouteLink>

@@ -11,9 +11,8 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-  SignInButton,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * CommunityForumNavbar — sticky translucent playful-geometric top navigation
  * bar for a community-platform / discussion-forum marketing site. Blurred,

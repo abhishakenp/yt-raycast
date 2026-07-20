@@ -41,18 +41,19 @@ function CompassMark({ className }: { className?: string }) {
 }
 
 /**
- * TourExperiencesFooter — closing multi-column footer for an adventure /
- * guided-tour brand. Composes the shared SiteFooter composite with an inline
- * compass brand mark, a tagline, a social row, and four link columns (Tours,
- * Company, Support, Legal), plus an auto-updating copyright note. Every link
- * routes through the shared navigation. Use as the site footer for tour
- * operators, expedition companies, and travel-experience landing pages. Renders
- * fully with no props via baked-in "Wanderwild Tours" defaults.
+ * TourExperiencesFooter — editorial-wanderlust closing footer for an adventure /
+ * guided-tour brand. Composes the shared SiteFooter composite with a compass
+ * brand mark and wordmark, a tagline, a social row, and four mono-titled link
+ * columns (Tours, Company, Support, Legal) of hairline-tracked routable links,
+ * plus a mono copyright rule. Every link routes through the shared navigation.
+ * Use as the site footer for tour operators, expedition companies, and
+ * travel-experience landing pages. Renders fully with no props via baked-in
+ * "Wanderwild Tours" defaults.
  */
 export const TourExperiencesFooter = defineCapsule({
   name: 'TourExperiencesFooter',
   description:
-    'Closing multi-column footer for an adventure / guided-tour brand. Composes the shared SiteFooter composite with an inline compass brand mark, a tagline, a social row, and four link columns (Tours, Company, Support, Legal), plus an auto-updating copyright note. Every link routes through the shared navigation. Use as the site footer for tour operators, expedition companies, and travel-experience landing pages.',
+    'Editorial-wanderlust closing footer for an adventure / guided-tour brand. Composes the shared SiteFooter composite with a compass brand mark and wordmark, a tagline, a social row, and four mono-titled link columns (Tours, Company, Support, Legal) of hairline-tracked routable links, plus a mono copyright rule. Every link routes through the shared navigation. Use as the site footer for tour operators, expedition companies, and travel-experience landing pages.',
   props: z.object({
     /** Brand / company name shown with the compass mark. */
     brand: z.string().optional(),
@@ -122,6 +123,7 @@ export const TourExperiencesFooter = defineCapsule({
             <FooterBrand
               brand={props.brand ?? 'Wanderwild Tours'}
               brandMark={<CompassMark className="size-7 text-primary" />}
+              brandClassName="text-xl font-semibold tracking-tight"
             >
               <FooterTagline>
                 {props.tagline ??
@@ -129,28 +131,42 @@ export const TourExperiencesFooter = defineCapsule({
               </FooterTagline>
               <FooterSocial>
                 {social.map((s) => (
-                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  <FooterSocialLink
+                    key={s.label}
+                    className="block w-fit font-mono text-[11px] uppercase tracking-[0.14em]"
+                  >
+                    {s.label}
+                  </FooterSocialLink>
                 ))}
               </FooterSocial>
             </FooterBrand>
             {columns.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnTitle className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  {col.title}
+                </FooterColumnTitle>
                 <FooterColumnList>
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink key={link} className="block w-fit">
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
           <FooterBottom>
-            <FooterCopyright>
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.14em]">
               {props.note ?? 'Adventure responsibly.'}
             </FooterCopyright>
             <FooterLegal>
               {legal.map((l) => (
-                <FooterLink key={l}>{l}</FooterLink>
+                <FooterLink
+                  key={l}
+                  className="block w-fit font-mono text-[11px] uppercase tracking-[0.14em]"
+                >
+                  {l}
+                </FooterLink>
               ))}
             </FooterLegal>
           </FooterBottom>

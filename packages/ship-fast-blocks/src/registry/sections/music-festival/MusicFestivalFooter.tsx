@@ -1,17 +1,18 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 /**
- * MusicFestivalFooter — a four-column footer for a music / arts festival landing
- * page. A bordered band with a brand block (wordmark + about paragraph), one or
- * more link columns, and a social column of round initial-badge buttons, above a
- * bottom bar with a copyright note and legal links. Every link and social badge
- * routes through section-kit route links. Use as the closing site footer for music
- * festivals, arts festivals, concert series, camping/desert events, or any
- * multi-day ticketed event.
+ * MusicFestivalFooter — a kinetic-poster four-column footer for a music / arts
+ * festival landing page. A top-bordered band wrapped in the shared Container,
+ * with a brand block (bold uppercase wordmark + about paragraph), one or more
+ * mono-titled link columns of block-level links, and a social column of mono
+ * uppercase link chips, above a bottom bar with a copyright note and legal
+ * links. Every link and social chip routes through section-kit route links.
+ * Use as the closing site footer for music festivals, arts festivals, concert
+ * series, camping/desert events, or any multi-day ticketed event.
  */
+import { Container } from '#/section-kit/Container.tsx'
 import {
   SiteFooter,
-  FooterContent,
   FooterGrid,
   FooterBrand,
   FooterTagline,
@@ -28,7 +29,7 @@ import {
 export const MusicFestivalFooter = defineCapsule({
   name: 'MusicFestivalFooter',
   description:
-    'Four-column footer for a music / arts festival landing page: a top-bordered band with a brand block (bold wordmark + about paragraph), one or more link columns, and a social column of round initial-badge buttons that flip to primary on hover, above a bottom bar with a copyright note and legal links. Every link and social badge routes through section-kit route links. Use as the closing site footer for music festivals, arts festivals, concert series, camping/desert events, raves, or any multi-day ticketed event.',
+    'Kinetic-poster four-column footer for a music / arts festival landing page: a top-bordered band wrapped in the shared Container, with a brand block (bold uppercase wordmark + about paragraph), one or more mono-titled link columns of block-level links, and a social column of mono uppercase link chips, above a bottom bar with a copyright note and legal links. Every link and social chip routes through section-kit route links. Use as the closing site footer for music festivals, arts festivals, concert series, camping/desert events, raves, or any multi-day ticketed event.',
   props: z.object({
     /** Festival / brand name shown in the footer. */
     brand: z.string().optional(),
@@ -81,15 +82,23 @@ export const MusicFestivalFooter = defineCapsule({
       : ['Privacy Policy', 'Terms of Service']
     return (
       <SiteFooter className={props.className}>
-        <FooterContent>
+        <Container className="py-14 lg:py-16">
           <FooterGrid>
-            <FooterBrand brand={brand}>
+            <FooterBrand
+              brand={brand}
+              brandClassName="text-lg font-extrabold uppercase tracking-tight"
+            >
               <FooterTagline>{about}</FooterTagline>
               <FooterSocial>
                 {socials
                   .map((s) => ({ label: s }))
                   .map((s) => (
-                    <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                    <FooterSocialLink
+                      key={s.label}
+                      className="block w-fit border border-dashed border-border px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em]"
+                    >
+                      {s.label}
+                    </FooterSocialLink>
                   ))}
               </FooterSocial>
             </FooterBrand>
@@ -97,24 +106,32 @@ export const MusicFestivalFooter = defineCapsule({
               .map((c) => ({ title: c.heading, links: c.links }))
               .map((col) => (
                 <FooterColumn key={col.title}>
-                  <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                  <FooterColumnTitle className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                    {col.title}
+                  </FooterColumnTitle>
                   <FooterColumnList>
                     {col.links.map((link) => (
-                      <FooterLink key={link}>{link}</FooterLink>
+                      <FooterLink key={link} className="block w-fit">
+                        {link}
+                      </FooterLink>
                     ))}
                   </FooterColumnList>
                 </FooterColumn>
               ))}
           </FooterGrid>
           <FooterBottom>
-            <FooterCopyright>{copyright}</FooterCopyright>
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.14em]">
+              {copyright}
+            </FooterCopyright>
             <FooterLegal>
               {legal.map((l) => (
-                <FooterLink key={l}>{l}</FooterLink>
+                <FooterLink key={l} className="block w-fit">
+                  {l}
+                </FooterLink>
               ))}
             </FooterLegal>
           </FooterBottom>
-        </FooterContent>
+        </Container>
       </SiteFooter>
     )
   },

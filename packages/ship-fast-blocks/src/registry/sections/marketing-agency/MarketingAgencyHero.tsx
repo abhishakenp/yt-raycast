@@ -14,22 +14,24 @@ import {
   HeroSocialProofItem,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { DotGrid, MonoTag, Watermark } from '#/section-kit/Decor.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * MarketingAgencyHero — split, conversion-focused hero for a growth / marketing
- * agency. A two-column layout on a light neutral canvas: left column holds a
- * small eyebrow, a large semibold headline with a muted-highlight phrase, a
- * supporting paragraph, dual rounded-pill CTAs (filled primary with arrow +
- * outlined secondary), and inline trust checkmarks; right column shows a rounded
- * team photo with a floating ROI stat card overlapping its lower-left corner.
- * Links route through section-kit route links. Use as the top hero for marketing / growth
+ * MarketingAgencyHero — kinetic split hero for a growth / marketing agency. An
+ * asymmetric 7:5 grid over a dot-grid wash and giant ghost "GROWTH" watermark:
+ * the left column stacks a mono index eyebrow, a giant clamp-scaled extrabold
+ * headline whose highlight phrase sits on a tilted primary marker block, a
+ * supporting paragraph, dual square CTAs with hard offset shadows and mechanical
+ * press feedback (filled primary with arrow + hairline secondary), and a mono
+ * trust strip of checkmarks. The right column shows a sharp-cornered team photo
+ * with a rotated hard-shadow ROI stat sticker overlapping its corner. Links route
+ * through section-kit route links. Use as the top hero for marketing / growth
  * agencies, SEO / paid-ads shops, or B2B SaaS growth firms. Renders with no props.
  */
 export const MarketingAgencyHero = defineCapsule({
   name: 'MarketingAgencyHero',
   description:
-    'Split, conversion-focused hero for a growth / marketing agency: a two-column layout on a light neutral canvas with a small eyebrow, a large semibold headline featuring a muted-highlight phrase, a supporting paragraph, dual rounded-pill CTAs (filled primary with arrow + outlined secondary), and inline trust checkmarks on the left; a rounded team photo with a floating ROI stat card overlapping its lower-left corner on the right. Links route through section-kit route links. Use as the top hero for marketing / growth agencies, SEO / paid-ads shops, lead-gen consultancies, or B2B SaaS growth firms.',
+    'Kinetic split hero for a growth / marketing agency: an asymmetric 7:5 grid over a dot-grid wash and giant ghost GROWTH watermark, with a mono index eyebrow, a giant clamp-scaled extrabold headline whose highlight phrase sits on a tilted primary marker block, a supporting paragraph, dual square CTAs with hard offset shadows and press feedback, and a mono checkmark trust strip on the left; a sharp-cornered team photo with a rotated hard-shadow ROI stat sticker overlapping its corner on the right. Links route through section-kit route links. Use as the top hero for marketing / growth agencies, SEO / paid-ads shops, lead-gen consultancies, or B2B SaaS growth firms.',
   props: z.object({
     eyebrow: z.string().optional(),
     headingBefore: z.string().optional(),
@@ -96,31 +98,48 @@ export const MarketingAgencyHero = defineCapsule({
 
     return (
       <HeroSection
+        variant="split"
         className={cn(
           'relative overflow-hidden bg-background text-foreground',
           props.className,
         )}
       >
-        <Container size="xl" className="py-24 lg:py-32">
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-            <div className="max-w-2xl">
-              <p className="mb-4 text-sm font-medium text-muted-foreground">
-                {eyebrow}
-              </p>
-              <HeroHeading className="mb-6 font-semibold">
+        {/* Layered wash: dot grid fading right + giant ghost watermark. */}
+        <DotGrid
+          className="inset-y-0 left-0 w-2/3"
+          fade="right"
+          tone="border"
+        />
+        <Watermark className="-top-8 right-0 text-[7rem] sm:text-[12rem] lg:-top-12 lg:text-[18rem]">
+          GROWTH
+        </Watermark>
+        <Container size="xl" className="relative py-20 lg:py-28">
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-12">
+            <div className="lg:col-span-7">
+              <MonoTag className="mb-5 block">01 / {eyebrow}</MonoTag>
+              <HeroHeading className="mb-6 text-[clamp(2.5rem,6.5vw,4.75rem)] font-extrabold leading-[0.98] tracking-tight text-foreground">
                 {headingBefore}{' '}
-                <HeroHighlight className="text-muted-foreground">
-                  {highlight}
+                <HeroHighlight
+                  variant={undefined}
+                  className="relative ml-[0.12em] inline-block whitespace-nowrap text-foreground"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-[-0.12em] inset-y-[0.04em] -rotate-1 bg-primary"
+                  />
+                  <span className="relative text-primary-foreground">
+                    {highlight}
+                  </span>
                 </HeroHighlight>
               </HeroHeading>
-              <HeroSubheading className="mb-8 mt-0">
+              <HeroSubheading className="mb-8 mt-0 max-w-xl text-lg leading-relaxed">
                 {subheading}
               </HeroSubheading>
               <HeroActions className="gap-4">
                 <HeroCta
                   asChild
                   variant="primary"
-                  className="rounded-full px-6 py-3 font-medium transition-all"
+                  className="rounded-none px-6 py-3.5 font-semibold shadow-[5px_5px_0_0] shadow-foreground transition-[transform,box-shadow,background-color] duration-150 hover:bg-primary/90 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none motion-reduce:transform-none"
                 >
                   <NavbarRouteLink href={primaryCta}>
                     {primaryCta}
@@ -130,52 +149,37 @@ export const MarketingAgencyHero = defineCapsule({
                 <HeroCta
                   asChild
                   variant="outline"
-                  className="rounded-full px-6 py-3 font-medium transition-all hover:border-foreground/40"
+                  className="rounded-none border-foreground px-6 py-3.5 font-semibold transition-[transform,background-color] duration-150 hover:bg-muted active:translate-y-px motion-reduce:transform-none"
                 >
                   <NavbarRouteLink href={secondaryCta}>
                     {secondaryCta}
                   </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
-              <HeroSocialProof className="mt-10 gap-6">
+              <HeroSocialProof className="mt-10 gap-x-6 gap-y-2 font-mono text-[11px] uppercase tracking-[0.14em]">
                 {trust.map((t) => (
                   <HeroSocialProofItem key={t}>
-                    <Check className="size-5 text-primary" />
+                    <Check className="size-4 text-primary" />
                     <span>{t}</span>
                   </HeroSocialProofItem>
                 ))}
               </HeroSocialProof>
             </div>
-            <div className="relative">
+            <div className="relative -mx-2 sm:mx-0 lg:col-span-5">
               <HeroMediaPanel
                 alt={imageAlt}
                 w={800}
                 h={600}
-                className="w-full shadow-lg rounded-xl"
+                className="w-full rounded-none border border-foreground/80 shadow-[8px_8px_0_0] shadow-foreground/15"
               />
-              <div className="absolute -bottom-6 -left-6 rounded-xl bg-card p-4 shadow-lg">
-                <div className="flex items-center gap-3">
-                  <div className="grid size-12 place-items-center rounded-full bg-primary/10 text-primary">
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="size-6"
-                      aria-hidden="true"
-                    >
-                      <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-card-foreground">
-                      {statValue}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{statLabel}</p>
-                  </div>
-                </div>
+              {/* Rotated hard-shadow ROI stat sticker overlapping the corner. */}
+              <div className="absolute -bottom-6 -left-4 rotate-2 border border-foreground bg-background p-4 shadow-[5px_5px_0_0] shadow-foreground sm:-left-6">
+                <p className="text-3xl font-extrabold leading-none tracking-tight text-foreground tabular-nums">
+                  {statValue}
+                </p>
+                <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                  {statLabel}
+                </p>
               </div>
             </div>
           </div>

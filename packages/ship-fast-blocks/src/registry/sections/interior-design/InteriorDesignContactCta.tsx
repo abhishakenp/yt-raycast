@@ -29,8 +29,7 @@ import {
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * InteriorDesignContactCta — editorial-spatial split contact block pairing studio
  * details with a real Lakebed inquiry form for an upscale interior-design /

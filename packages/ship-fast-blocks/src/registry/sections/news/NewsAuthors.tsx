@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   PersonCard,
   PersonCardName,
@@ -13,23 +14,25 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * NewsAuthors — meet our columnists / contributors grid for a news outlet. On a
- * card surface: a heading with an optional intro, then a responsive grid of
- * journalist cards. Each card carries an avatar (via Image), the writer's name,
- * their beat / role, a short bio, an optional social handle and a "latest column"
- * link. The whole card, the latest-column link and the social handle route
- * through section-kit route links. Use as a masthead / contributors band on a newspaper,
- * magazine or publication homepage or about page so readers can get to know the
- * bylines behind the reporting. Renders fully with no props via baked-in
- * defaults.
+ * NewsAuthors — newsprint "byline desk" columnist grid for a news outlet. On a
+ * card surface: an asymmetric masthead header (mono "Masthead" tag + serif
+ * heading, supporting intro against a hairline column rule) sits on a heavy
+ * double rule above a responsive grid of hairline byline cards. Each card
+ * opens on a mono "№ 01" index rule, then a grayscale round portrait that
+ * regains color on hover, the writer's serif name and mono small-caps beat,
+ * a short bio, and a footer rule carrying an underlined mono "latest column"
+ * arrow-link plus the social handle. The whole card, the latest-column link
+ * and the social handle route through section-kit route links. Use as a
+ * masthead / contributors band on a newspaper, magazine or publication
+ * homepage or about page so readers can get to know the bylines behind the
+ * reporting. Renders fully with no props via baked-in defaults.
  */
 export const NewsAuthors = defineCapsule({
   name: 'NewsAuthors',
   description:
-    "Meet our columnists / contributors grid for a news outlet on a card surface: a heading with an optional intro, then a responsive grid of journalist cards. Each card has an avatar (via Image), the writer's name, their beat / role, a short bio, an optional social handle and a 'latest column' link. The card, the latest-column link and the social handle route through section-kit route links. Use as a masthead / contributors band on a newspaper, magazine or publication homepage or about page so readers can get to know the bylines behind the reporting.",
+    "Newsprint 'byline desk' columnist grid for a news outlet on a card surface: an asymmetric masthead header (mono Masthead tag + serif heading, supporting intro on a hairline column rule) on a heavy double rule above a responsive grid of hairline byline cards. Each card opens on a mono '№ 01' index rule, then a grayscale round portrait that regains color on hover, the writer's serif name and mono small-caps beat, a short bio, and a footer rule carrying an underlined mono 'latest column' arrow-link plus the social handle. The card, the latest-column link and the social handle route through section-kit route links. Use as a masthead / contributors band on a newspaper, magazine or publication homepage or about page so readers can get to know the bylines behind the reporting.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -152,27 +155,51 @@ export const NewsAuthors = defineCapsule({
 
     return (
       <section
-        className={cn('bg-card pt-28 pb-12 lg:pt-32 lg:pb-16', props.className)}
+        className={cn('bg-card pt-20 pb-16 lg:pt-24 lg:pb-20', props.className)}
       >
         <Container>
-          <SectionHeading
-            align="left"
-            title={heading}
-            subtitle={intro}
-            className="mb-10 max-w-2xl gap-0"
-            titleClassName="text-xl font-bold text-foreground lg:text-2xl"
-            subtitleClassName="mt-2 text-sm text-muted-foreground lg:text-base"
-          />
+          {/* Asymmetric masthead header on a heavy double rule. */}
+          <div className="mb-10 flex flex-col gap-3 border-b-2 border-foreground pb-4 shadow-[0_3px_0_-2px] shadow-border sm:flex-row sm:items-end sm:justify-between sm:gap-8">
+            <div className="flex items-baseline gap-4">
+              <MonoTag tone="faint" className="shrink-0">
+                Masthead
+              </MonoTag>
+              <SectionHeading
+                align="left"
+                title={heading}
+                className="gap-0"
+                titleClassName="font-serif text-3xl font-black tracking-tight text-foreground sm:text-4xl"
+              />
+            </div>
+            <p className="max-w-sm border-l border-border pl-4 text-sm leading-snug text-muted-foreground sm:border-l-0 sm:border-r sm:pb-1 sm:pl-0 sm:pr-4 sm:text-right">
+              {intro}
+            </p>
+          </div>
 
-          <ResponsiveGrid cols="1-2-4" className="gap-6">
-            {authors.map((author) => (
+          <ResponsiveGrid cols="1-2-4" className="gap-x-6 gap-y-6">
+            {authors.map((author, i) => (
               <PersonCard
                 key={author.name}
                 variant="outlined"
-                className="p-6 shadow-sm"
+                className={cn(
+                  'group rounded-none border-border p-6 shadow-sm transition-colors duration-200 hover:border-foreground',
+                  // Broken-grid stagger: every other card drops a step on desktop.
+                  i % 2 === 1 && 'lg:translate-y-6',
+                )}
               >
+                {/* Mono index rule. */}
+                <div className="flex items-baseline gap-3 border-b border-border pb-3">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60">
+                    № {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span aria-hidden="true" className="h-px flex-1 bg-border" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
+                    {author.role.split(' ')[0]}
+                  </span>
+                </div>
+
                 <NavbarRouteLink
-                  className="group flex items-start gap-4 text-left"
+                  className="mt-5 flex items-center gap-4 text-left"
                   href={author.name}
                 >
                   <Image
@@ -180,13 +207,15 @@ export const NewsAuthors = defineCapsule({
                     w={120}
                     h={120}
                     loading="lazy"
-                    className="size-14 shrink-0 rounded-full object-cover"
+                    className="size-14 shrink-0 rounded-full border border-foreground/25 object-cover grayscale transition-[filter] duration-500 group-hover:grayscale-0"
                   />
-                  <div>
-                    <PersonCardName className="transition-colors group-hover:text-muted-foreground">
+                  <div className="min-w-0">
+                    <PersonCardName className="truncate font-serif text-lg font-black tracking-tight transition-colors group-hover:text-foreground/80">
                       {author.name}
                     </PersonCardName>
-                    <PersonCardRole>{author.role}</PersonCardRole>
+                    <PersonCardRole className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.16em]">
+                      {author.role}
+                    </PersonCardRole>
                   </div>
                 </NavbarRouteLink>
 
@@ -197,18 +226,18 @@ export const NewsAuthors = defineCapsule({
                 <div className="mt-4 flex items-center justify-between gap-2 border-t border-border pt-4">
                   {author.column ? (
                     <NavbarRouteLink
-                      className="inline-flex items-center gap-1 text-sm font-medium text-foreground transition-colors hover:text-muted-foreground"
+                      className="inline-flex items-center gap-1 border-b border-foreground pb-0.5 font-mono text-[11px] uppercase tracking-[0.16em] text-foreground transition-colors hover:border-primary hover:text-primary active:translate-y-px"
                       href={author.column ?? author.name}
                     >
                       {columnLabel}
-                      <ArrowRight className="size-4" />
+                      <ArrowRight className="size-3.5" />
                     </NavbarRouteLink>
                   ) : (
                     <span />
                   )}
                   {author.handle ? (
                     <NavbarRouteLink
-                      className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                      className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground"
                       href={author.handle ?? author.name}
                     >
                       {author.handle}

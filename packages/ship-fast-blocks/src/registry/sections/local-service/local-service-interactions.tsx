@@ -20,6 +20,8 @@ import {
   AccountDropdownSeparator,
   AccountDropdownSignOut,
   AccountDropdownUnauthenticated,
+} from '#/section-kit/AccountDropdown.tsx'
+import {
   CommandSearch,
   CommandSearchTrigger,
   CommandSearchContent,
@@ -27,8 +29,8 @@ import {
   CommandSearchList,
   CommandSearchEmpty,
   CommandSearchGroup,
-  NavbarRouteLink,
-} from '#/section-kit/index.ts'
+} from '#/section-kit/CommandSearch.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 import type {
   LocalServiceItemInput,
   localServiceLakebed,
@@ -104,7 +106,7 @@ export function LocalServiceIntentBadge({
   return (
     <span
       className={cn(
-        'hidden items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary lg:inline-flex',
+        'hidden items-center gap-1.5 rounded-full border border-border bg-muted px-2.5 py-1 font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground lg:inline-flex',
         className,
       )}
     >
@@ -199,15 +201,19 @@ export function LocalServiceSearchButton({
       <CommandSearchContent
         title="Search services"
         description="Search generated services and select one for booking."
+        className="gap-0 rounded-none border-border shadow-none"
       >
         <CommandSearchInput placeholder="Search services..." />
         <CommandSearchList>
           <CommandSearchEmpty>No services found.</CommandSearchEmpty>
-          <CommandSearchGroup heading="Services">
+          <CommandSearchGroup
+            heading="Services"
+            className="p-0 [&_[cmdk-group-heading]]:px-4 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:font-mono [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.14em] [&_[data-slot=command-item]]:rounded-none [&_[data-slot=command-item]]:border-b [&_[data-slot=command-item]]:border-b-border [&_[data-slot=command-item]]:border-l-2 [&_[data-slot=command-item]]:border-l-transparent [&_[data-slot=command-item]]:px-4 [&_[data-slot=command-item][data-selected=true]]:border-l-primary [&_[data-slot=command-item][data-selected=true]]:bg-muted"
+          >
             {(service) => (
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium">{service.name}</p>
-                <p className="truncate text-xs text-muted-foreground">
+                <p className="truncate font-mono text-[11px] tracking-wide text-muted-foreground">
                   {[service.price, service.summary].filter(Boolean).join(' · ')}
                 </p>
               </div>
@@ -270,7 +276,7 @@ export function LocalServiceMobileMenu({
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="w-[min(100%,22rem)] border-l border-border bg-background p-0 text-foreground sm:max-w-[22rem]"
+        className="w-[min(100%,22rem)] rounded-none border-l border-border bg-background p-0 text-foreground shadow-none sm:max-w-[22rem]"
       >
         <SheetHeader className="border-b border-border px-5 py-4 text-left">
           <SheetTitle className="text-base font-semibold">{brand}</SheetTitle>
@@ -278,9 +284,9 @@ export function LocalServiceMobileMenu({
             Navigate to local service sections.
           </SheetDescription>
         </SheetHeader>
-        <div className="flex flex-col gap-1 px-3 py-4">
+        <div className="flex flex-col divide-y divide-border">
           <NavbarRouteLink
-            className="rounded-lg px-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            className="rounded-none border-l-2 border-l-primary bg-muted px-5 py-3.5 text-left text-sm font-medium text-foreground transition-colors duration-150 hover:bg-muted active:translate-y-px"
             href={homeTarget ?? nav[0]}
             onClick={() => setOpen(false)}
           >
@@ -289,7 +295,7 @@ export function LocalServiceMobileMenu({
           {nav.map((item) => (
             <NavbarRouteLink
               key={item}
-              className="rounded-lg px-3 py-3 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="rounded-none border-l-2 border-l-transparent px-5 py-3.5 text-left text-sm font-medium text-muted-foreground transition-colors duration-150 hover:border-l-border hover:bg-muted hover:text-foreground active:translate-y-px"
               href={item}
               onClick={() => setOpen(false)}
             >

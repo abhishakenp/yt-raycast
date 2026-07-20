@@ -10,8 +10,7 @@ import {
   AutoMutationSpinner,
 } from './auto-dealership-interactions.tsx'
 import { autoDealershipLakebed } from './auto-dealership-lakebed.ts'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * AutoDealershipHero — bold showroom-kinetic hero for an auto dealership /
  * used-car landing page. A full-bleed dark inversion band (bg-foreground) with

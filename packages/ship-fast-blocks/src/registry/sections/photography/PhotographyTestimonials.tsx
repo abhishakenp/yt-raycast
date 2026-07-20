@@ -11,22 +11,27 @@ import {
   TestimonialName,
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
+import { Watermark, MonoTag } from '#/section-kit/Decor.tsx'
 
 /**
- * PhotographyTestimonials — client-review wall for a fine-art / wedding
- * photographer site. Thin configuration over the shared `TestimonialGrid`
- * composite: a centered serif heading above a responsive card grid where each
- * card renders a star row from the rating, the quoted testimonial, and a couple
- * / client name paired with their event (wedding, elopement, portrait). The
- * public `reviews` prop ({quote, name, rating, event}) maps to the composite's
- * items, with `event` shown as the card meta line via `company`. Use for social
- * proof on photographers, studios, and elopement shooters. Renders fully with
- * no props via baked-in defaults.
+ * PhotographyTestimonials — inverted, dark-editorial client-quote band for a
+ * fine-art / wedding photographer site. A single `bg-foreground text-background`
+ * inversion sliced by a slanted clip-path seam, over a giant faint quotation
+ * watermark: an asymmetric header (mono eyebrow + serif heading) sits above a
+ * staggered 3-up grid built on the shared `TestimonialGrid` composite. Each
+ * square-cornered hairline card opens with an oversized serif quotation mark,
+ * carries the quoted testimonial, and closes with the couple / client name
+ * paired with their event as a mono source label (wedding, elopement,
+ * portrait). The public `reviews` prop ({quote, name, rating, event}) maps to
+ * the composite's items, with `event` shown as the mono meta line via
+ * `company`. Tokens-only, so the dark band flips cleanly between themes. Use for
+ * social proof on photographers, studios, and elopement shooters. Renders fully
+ * with no props via baked-in defaults.
  */
 export const PhotographyTestimonials = defineCapsule({
   name: 'PhotographyTestimonials',
   description:
-    'Client-review wall for a fine-art / wedding photographer site built on the shared TestimonialGrid composite: a centered serif heading above a responsive card grid. Each card renders a filled star row matching the rating, a quoted testimonial, and an attribution row pairing the couple / client name with their event (wedding, elopement, portrait). Use for social proof on photographers, studios, and elopement shooters.',
+    'Inverted, dark-editorial client-quote band for a fine-art / wedding photographer site built on the shared TestimonialGrid composite: a bg-foreground/text-background inversion sliced by a slanted clip-path seam over a giant faint quotation watermark, with an asymmetric mono-eyebrow + serif header above a staggered 3-up grid of square-cornered hairline cards. Each card opens with an oversized serif quotation mark, carries the quoted testimonial, and closes with the couple / client name paired with their event as a mono source label. Tokens-only and theme-adaptive. Use for social proof on photographers, studios, and elopement shooters.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -81,13 +86,23 @@ export const PhotographyTestimonials = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-background pt-28 pb-20 lg:pt-32 lg:pb-28',
+          'relative overflow-hidden bg-foreground pt-24 pb-20 text-background [clip-path:polygon(0_2.5rem,100%_0,100%_100%,0_100%)] lg:pt-32 lg:pb-28',
           props.className,
         )}
       >
-        <Container>
-          <TestimonialGrid heading={heading}>
-            {items.map((t) => {
+        <Watermark className="-right-6 -top-4 text-[18rem] leading-none text-background/[0.05] lg:text-[24rem]">
+          &rdquo;
+        </Watermark>
+        <Container className="relative">
+          {/* Asymmetric header on the inverted band. */}
+          <div className="mb-12 flex flex-col gap-4 lg:mb-16">
+            <MonoTag tone="inverted">Testimonials · Field Notes</MonoTag>
+            <h2 className="max-w-2xl text-balance font-serif text-3xl font-medium leading-[1.08] tracking-tight text-background md:text-4xl lg:text-5xl">
+              {heading}
+            </h2>
+          </div>
+          <TestimonialGrid>
+            {items.map((t, i) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -98,12 +113,28 @@ export const PhotographyTestimonials = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
+                <TestimonialCard
+                  key={__iv__.name}
+                  className={cn(
+                    'gap-5 rounded-none border-background/15 bg-transparent transition-[border-color] duration-150 hover:border-background/40',
+                    i % 2 === 1 ? 'md:mt-10' : undefined,
+                  )}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="font-serif text-5xl leading-none text-background/30"
+                  >
+                    &ldquo;
+                  </span>
+                  <TestimonialQuote className="text-background/90">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="mt-auto flex-col items-start gap-1 border-t border-background/15 pt-4">
+                    <TestimonialName className="text-background">
+                      {__iv__.name}
+                    </TestimonialName>
                     {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
+                      <TestimonialMeta className="font-mono text-[11px] uppercase tracking-[0.18em] text-background/60">
                         {__iv__.role || __iv__.company || __iv__.meta}
                       </TestimonialMeta>
                     )}

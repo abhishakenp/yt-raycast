@@ -12,8 +12,7 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * DocsCta — "Terminal-docs" inverted closing band for a developer
  * documentation home page. The page's full ink inversion (bg-foreground /

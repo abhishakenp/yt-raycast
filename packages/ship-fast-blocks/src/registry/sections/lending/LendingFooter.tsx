@@ -1,14 +1,18 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 /**
- * LendingFooter — a dark, rich multi-column site footer for a lending or fintech
- * marketing page. A near-ink (foreground-toned) band: a brand column on the left
- * with a logo tile, name, tagline, and social text-links, followed by three link
- * columns; a divided bottom row carries the copyright, a set of legal links, and
- * a long fine-print regulatory disclosure. Every link routes through section-kit route links.
- * Use as the closing footer with legal disclosures on personal-loan, debt-
- * consolidation, or financing pages. Renders fully with no props via defaults.
+ * LendingFooter — Swiss-fintech multi-column site footer for a lending or fintech
+ * marketing page. A thin configuration over the shared SiteFooter composite with
+ * hairline discipline: a runtime-swappable coin brand mark + wordmark, a tagline,
+ * a giant ghost brand watermark bleeding behind the columns, mono index-numbered
+ * Products / Company / Resources columns whose links sit as block w-fit rows, a
+ * social row, and a divided bottom bar carrying the copyright, mono legal links,
+ * and a long fine-print regulatory disclosure. Every link routes through
+ * section-kit route links. Use as the closing footer with legal disclosures on
+ * personal-loan, debt-consolidation, or financing pages. Renders fully with no
+ * props via baked-in "ClearLoan" defaults.
  */
+import { Watermark } from '#/section-kit/Decor.tsx'
 import {
   SiteFooter,
   FooterContent,
@@ -25,10 +29,28 @@ import {
   FooterCopyright,
   FooterLegal,
 } from '#/section-kit/SiteFooter.tsx'
+
+function CoinMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.7}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  )
+}
+
 export const LendingFooter = defineCapsule({
   name: 'LendingFooter',
   description:
-    'Dark rich multi-column site footer for a lending or fintech marketing page: near-ink (foreground-toned) band with a brand column (logo tile, name, tagline, social text-links) plus three link columns; a divided bottom row carries the copyright, a set of legal links and a long fine-print regulatory disclosure. Links route through section-kit route links. Use as the closing footer with legal disclosures on personal-loan, debt-consolidation, or financing pages.',
+    'Swiss-fintech multi-column site footer for a lending or fintech marketing page built on the shared SiteFooter composite with hairline discipline: a runtime-swappable coin brand mark + wordmark, a tagline, a giant ghost brand watermark behind mono index-numbered link columns with block w-fit rows, a social row, and a divided bottom bar carrying the copyright, mono legal links and a long fine-print regulatory disclosure. Links route through section-kit route links. Use as the closing footer with legal disclosures on personal-loan, debt-consolidation, or financing pages.',
   props: z.object({
     /** Brand / lender name shown beside the footer logo tile. */
     brand: z.string().optional(),
@@ -94,37 +116,75 @@ export const LendingFooter = defineCapsule({
       `© ${new Date().getFullYear()} ${brand} Inc. All rights reserved.`
     return (
       <SiteFooter className={props.className}>
-        <FooterContent>
-          <FooterGrid>
-            <FooterBrand brand={brand}>
-              <FooterTagline>{footerTagline}</FooterTagline>
-              <FooterSocial>
+        <FooterContent className="relative overflow-hidden">
+          <Watermark className="-bottom-10 -left-2 text-[9rem] leading-none sm:text-[13rem]">
+            {brand}
+          </Watermark>
+          <FooterGrid className="relative gap-10 md:grid-cols-[1.4fr_repeat(3,1fr)]">
+            <FooterBrand
+              brand={brand}
+              brandMark={<CoinMark className="size-7 text-primary" />}
+            >
+              <FooterTagline className="max-w-xs">
+                {footerTagline}
+              </FooterTagline>
+              <FooterSocial className="mt-5 gap-4">
                 {socials
                   .map((s) => ({ label: s }))
                   .map((s) => (
-                    <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                    <FooterSocialLink
+                      key={s.label}
+                      className="font-mono text-[11px] uppercase tracking-[0.2em]"
+                    >
+                      {s.label}
+                    </FooterSocialLink>
                   ))}
               </FooterSocial>
             </FooterBrand>
-            {footerColumns.map((col) => (
+            {footerColumns.map((col, ci) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
-                <FooterColumnList>
+                <FooterColumnTitle className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  <span
+                    aria-hidden="true"
+                    className="tabular-nums text-primary"
+                  >
+                    {String(ci + 1).padStart(2, '0')}
+                  </span>
+                  {col.title}
+                </FooterColumnTitle>
+                <FooterColumnList className="mt-4 space-y-2.5">
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink
+                      key={link}
+                      className="block w-fit text-[13px] tracking-tight"
+                    >
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
-          <FooterBottom>
-            <FooterCopyright>{footerCopyright}</FooterCopyright>
-            <FooterLegal>
+          <FooterBottom className="relative mt-14 border-border">
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.16em]">
+              {footerCopyright}
+            </FooterCopyright>
+            <FooterLegal className="gap-5">
               {footerLegalLinks.map((l) => (
-                <FooterLink key={l}>{l}</FooterLink>
+                <FooterLink
+                  key={l}
+                  className="block w-fit font-mono text-[11px] uppercase tracking-[0.16em]"
+                >
+                  {l}
+                </FooterLink>
               ))}
             </FooterLegal>
           </FooterBottom>
+          {props.disclosure && (
+            <p className="relative mt-8 max-w-4xl text-xs leading-relaxed text-muted-foreground/80">
+              {props.disclosure}
+            </p>
+          )}
         </FooterContent>
       </SiteFooter>
     )

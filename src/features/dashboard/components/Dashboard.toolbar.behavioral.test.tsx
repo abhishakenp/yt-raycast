@@ -476,7 +476,14 @@ describe('Dashboard toolbar + device switcher + status indicators', () => {
     ).toBeTruthy()
   })
 
-  it('closes the inline toolbar when edit mode is turned off', () => {
+  it('does not mount the inline toolbar before an editable element is selected', () => {
+    setupReady()
+    render(<Dashboard sessionId="ready-session" />)
+
+    expect(screen.queryByTestId('inline-edit-toolbar')).toBeNull()
+  })
+
+  it('closes the inline toolbar when edit mode is turned off', async () => {
     setupReady()
     render(<Dashboard sessionId="ready-session" />)
 
@@ -488,7 +495,7 @@ describe('Dashboard toolbar + device switcher + status indicators', () => {
       screen.getByRole('button', { name: 'Activate inline element' }),
     )
 
-    expect(screen.getByTestId('inline-edit-toolbar')).toBeTruthy()
+    expect(await screen.findByTestId('inline-edit-toolbar')).toBeTruthy()
 
     fireEvent.click(pencil)
 
@@ -595,7 +602,7 @@ describe('Dashboard toolbar + device switcher + status indicators', () => {
   })
 
   // 7. Status indicator
-  it('shows Generating with a cyan pulse when the session is generating', () => {
+  it('shows Generating with a static cyan indicator when the session is generating', () => {
     getConvexState().generationView = generatingGenerationView()
     render(<Dashboard sessionId="generating-session" />)
 
@@ -603,7 +610,7 @@ describe('Dashboard toolbar + device switcher + status indicators', () => {
     const statusDot = document.querySelector('#status-dot')
     expect(statusText?.textContent).toBe('Generating')
     expect(statusDot?.className).toContain('bg-cyan-300')
-    expect(statusDot?.className).toContain('animate-pulse')
+    expect(statusDot?.className).not.toContain('animate-pulse')
   })
 
   it('shows Preview ready with emerald when the session is ready', () => {

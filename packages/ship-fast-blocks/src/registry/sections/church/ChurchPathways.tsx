@@ -15,8 +15,7 @@ import {
   PathwayCardCta,
 } from '#/section-kit/PathwayGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * ChurchPathways — serene editorial "next step" pathways section for a church
  * or faith-community site. An asymmetric header row: a mono metadata rail

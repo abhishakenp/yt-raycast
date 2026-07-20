@@ -9,7 +9,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
+} from '#/section-kit/SiteNav.tsx'
 import { propertyListingLakebed } from './property-listing-lakebed.ts'
 import {
   PropertyListingAccountButton,
@@ -21,34 +21,39 @@ import {
 } from './property-listing-interactions.tsx'
 
 const brandMark = (
-  <svg
-    className="size-8 text-primary"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
+  <span
+    className="grid size-7 shrink-0 place-items-center rounded-none bg-foreground text-background"
     aria-hidden="true"
   >
-    <path d="M3 21h18" />
-    <path d="M5 21V9l7-5 7 5v12" />
-    <path d="M9 21v-6h6v6" />
-  </svg>
+    <svg
+      className="size-4"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3 21h18" />
+      <path d="M5 21V9l7-5 7 5v12" />
+      <path d="M9 21v-6h6v6" />
+    </svg>
+  </span>
 )
 
 /**
- * PropertyListingNavbar — clean top navigation for a property marketplace /
- * search portal. A sticky bordered-bottom bar holds a logo-tile + wordmark on
- * the left, inline page nav on desktop, command listing search, Shoo account
- * dropdown, saved/request badge, seller inquiry CTA, and a real Sheet mobile
+ * PropertyListingNavbar — editorial-listings header for a property marketplace
+ * or search portal. A sticky, hairline-ruled bar with a square ink house tile +
+ * extrabold uppercase wordmark, mono uppercase micro-label page nav, command
+ * listing search, Shoo account dropdown, a saved/request badge, a square ink
+ * "Post Listing" inquiry CTA with press feedback, and a real Sheet mobile
  * drawer. Nav links route through route hrefs; search/auth/inquiry controls use
  * shared Lakebed state.
  */
 export const PropertyListingNavbar = defineCapsule({
   name: 'PropertyListingNavbar',
   description:
-    "Clean sticky top navigation for a property marketplace / search portal: house wordmark, desktop For Sale / For Rent / New / Agents nav, command listing search, Shoo account dropdown, saved/request badge, a fullstack 'Post Listing' inquiry CTA, and a real Sheet mobile drawer. Nav links route through route hrefs; search/auth/inquiry controls use shared Lakebed state.",
+    "Editorial-listings sticky header for a property marketplace / search portal: a square ink house tile + extrabold uppercase wordmark, mono uppercase For Sale / For Rent / New / Agents micro-label nav, command listing search, Shoo account dropdown, a saved/request badge, a square ink 'Post Listing' inquiry CTA with press feedback, and a real Sheet mobile drawer. Nav links route through route hrefs; search/auth/inquiry controls use shared Lakebed state.",
   props: z.object({
     /** Brand wordmark beside the logo tile. */
     brand: z.string().optional(),
@@ -75,22 +80,26 @@ export const PropertyListingNavbar = defineCapsule({
         height="default"
         className={cn('bg-background/95', props.className)}
       >
-        <NavbarBrand href={'Home'} className="min-w-0 gap-3">
-          <BrandLogo brand={brand}>
-            <LogoImage fallback={brandMark} />
-            <LogoLabel className="truncate text-xl font-semibold tracking-tight text-foreground" />
+        <NavbarBrand href={'Home'} className="min-w-0">
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage className="size-7" fallback={brandMark} />
+            <LogoLabel className="truncate text-lg font-extrabold uppercase tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
-        <NavbarNav>
+        <NavbarNav className="gap-1">
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="rounded-none px-2.5 py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:bg-transparent hover:text-foreground"
+            >
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
 
-        <NavbarActions className="gap-3">
+        <NavbarActions className="gap-1 sm:gap-1.5">
           <PropertyListingStatusBadge lakebed={lakebed} />
           <PropertyListingSearchButton
             lakebed={lakebed}
@@ -110,7 +119,7 @@ export const PropertyListingNavbar = defineCapsule({
                 Sending
               </>
             }
-            className="hidden items-center justify-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
+            className="ml-1 hidden h-9 items-center justify-center gap-2 rounded-none bg-foreground px-5 font-mono text-[11px] font-semibold uppercase tracking-[0.15em] text-background transition-all duration-150 hover:bg-foreground/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
           >
             {cta}
           </PropertyListingInquiryButton>

@@ -8,24 +8,26 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
 /**
- * MarketingAgencyFaq — a native expandable FAQ accordion. A centered eyebrow +
- * heading + description above a narrow stack of bordered, muted `<details>` rows;
- * each summary shows a question with a chevron that rotates when open, revealing
- * the answer below and raising the row to a card surface. Uses no JS state. Use
- * to answer common questions for a marketing / growth agency, SaaS, or service
- * business. Renders fully with no props.
+ * MarketingAgencyFaq — asymmetric 4/8 FAQ ledger on a muted wash band. The left
+ * rail holds a mono "[ FAQ ]" micro-label, the heading with a tilted primary
+ * marker block behind the key word, the supporting paragraph and a giant ghost
+ * "?" watermark; the right column stacks native <details> rows in a
+ * hairline-divided ledger — each row pairs a mono question-index numeral with the
+ * question, a plus icon that rotates open, and a revealed answer paragraph. Uses
+ * no JS state. Use to answer common questions for a marketing / growth agency,
+ * SaaS, or service business. Renders fully with no props.
  */
 export const MarketingAgencyFaq = defineCapsule({
   name: 'MarketingAgencyFaq',
   description:
-    'Native expandable FAQ accordion: a centered eyebrow + heading + description above a narrow stack of bordered, muted <details> rows; each summary shows a question with a chevron that rotates when open, revealing the answer and raising the row to a card surface. Uses no JS state. Use to answer common questions about timelines, contracts, ad spend, reporting, and industries for a marketing / growth agency, SaaS, or service business.',
+    'Asymmetric 4/8 FAQ ledger on a muted wash band: a left rail with mono FAQ micro-label, marker-highlighted heading, supporting paragraph and giant ghost ? watermark beside a hairline-divided ledger of native <details> rows, each pairing a mono question-index numeral with the question, a plus icon that rotates open, and a revealed answer paragraph. Uses no JS state. Use to answer common questions about timelines, contracts, ad spend, reporting, and industries for a marketing / growth agency, SaaS, or service business.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -67,34 +69,81 @@ export const MarketingAgencyFaq = defineCapsule({
             a: "We have deep expertise in B2B SaaS, e-commerce, fintech, healthcare, and professional services. While we can work with any industry, these are where we've generated the most consistent, outsized results for our clients.",
           },
         ]
+    const headingWords = heading.split(' ')
+    const headingLead = headingWords.slice(0, -1).join(' ')
+    const headingMark = headingWords.at(-1) ?? ''
 
     return (
-      <section className={cn('bg-background py-24', props.className)}>
-        <Container className="max-w-4xl">
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            eyebrowClassName="mb-3 normal-case tracking-normal text-muted-foreground"
-            titleClassName="mb-4 tracking-tight sm:text-4xl"
-            subtitleClassName="md:text-base"
-          />
-          <FaqAccordion>
-            {items.map((item) => (
-              <FaqItem key={item.q} variant="open-raised" className="bg-muted">
-                <FaqQuestion className="p-6">
-                  <span className="font-medium text-foreground">{item.q}</span>
-                  <FaqQuestionIcon />
-                </FaqQuestion>
-                <FaqAnswer asChild className="px-6 pb-6">
-                  <div>
-                    <p>{item.a}</p>
-                  </div>
-                </FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+      <section
+        className={cn(
+          'relative overflow-hidden bg-muted/40 py-20 lg:py-28',
+          props.className,
+        )}
+      >
+        <Container>
+          <div className="grid gap-12 lg:grid-cols-12 lg:gap-10">
+            {/* Left rail: label, marker heading, ghost ? watermark. */}
+            <div className="relative lg:col-span-4">
+              <MonoTag className="mb-4 block">
+                {eyebrow}
+                <span aria-hidden="true" className="text-primary">
+                  {' '}
+                  · {String(items.length).padStart(2, '0')} entries
+                </span>
+              </MonoTag>
+              <h2 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
+                {headingLead}{' '}
+                <span className="relative ml-[0.12em] inline-block whitespace-nowrap">
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-[-0.15em] inset-y-[0.05em] -rotate-1 bg-primary"
+                  />
+                  <span className="relative text-primary-foreground">
+                    {headingMark}
+                  </span>
+                </span>
+              </h2>
+              <p className="mt-4 text-base text-muted-foreground">
+                {description}
+              </p>
+              <Watermark className="left-0 top-full hidden -translate-y-8 text-[11rem] lg:block">
+                ?
+              </Watermark>
+            </div>
+
+            {/* Right column: hairline-divided question ledger. */}
+            <FaqAccordion
+              variant="divided"
+              className="border-border lg:col-span-8"
+            >
+              {items.map((item, index) => (
+                <FaqItem key={item.q} variant="divided" className="py-0">
+                  <FaqQuestion className="select-none gap-4 py-5">
+                    <span className="flex min-w-0 items-baseline gap-4">
+                      <span
+                        aria-hidden="true"
+                        className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+                      >
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <span className="font-semibold tracking-tight text-foreground">
+                        {item.q}
+                      </span>
+                    </span>
+                    <FaqQuestionIcon variant="plus" />
+                  </FaqQuestion>
+                  <FaqAnswer
+                    asChild
+                    className="pb-6 pl-0 leading-relaxed sm:pl-10"
+                  >
+                    <div>
+                      <p>{item.a}</p>
+                    </div>
+                  </FaqAnswer>
+                </FaqItem>
+              ))}
+            </FaqAccordion>
+          </div>
         </Container>
       </section>
     )

@@ -16,8 +16,7 @@ import {
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { Watermark, MonoTag } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * FilmDirectorHero — a full-height, dark-cinematic split hero for a film director
  * / cinematographer portfolio. An asymmetric 7:5 grid with, on the left, a mono

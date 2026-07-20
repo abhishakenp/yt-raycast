@@ -6,27 +6,27 @@ import {
   PullQuote,
   PullQuoteAttribution,
   PullQuoteAvatar,
-  PullQuoteIcon,
   PullQuoteName,
   PullQuoteRole,
   PullQuoteText,
 } from '#/section-kit/PullQuote.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 
 /**
- * MarketingTestimonial — a single large, centered testimonial card for a SaaS /
- * product-marketing landing page. Sits on a soft muted-to-background gradient
- * band; a rounded bordered card centers a circular indigo quote glyph above a
- * big balanced blockquote, with an initials avatar (gradient tile) + name +
- * role beneath. Clean premium indigo-on-light aesthetic. Use as a focused
- * social-proof / customer-quote section between features and pricing on B2B
- * SaaS, productivity, or developer-platform pages.
+ * MarketingTestimonial — bold-kinetic single-quote social-proof band for a SaaS
+ * / product-marketing landing page. A muted-washed section with a giant ghost
+ * quotation-mark watermark: an asymmetric 4:8 grid pairs a left rail (a mono
+ * "[ CUSTOMER STORY ]" micro-label with a primary tick and a sharp initials
+ * avatar plate) with a big balanced blockquote on the right, closed by a
+ * hairline-topped mono name / role footer. Sharp corners, confident kinetic-SaaS
+ * aesthetic. Use as a focused customer-quote section between features and pricing
+ * on B2B SaaS, productivity, or developer-platform pages.
  */
 export const MarketingTestimonial = defineCapsule({
   name: 'MarketingTestimonial',
   description:
-    'Single large, centered testimonial card for a SaaS / product-marketing landing page: on a soft muted-to-background gradient band, a rounded bordered card centers a circular indigo quote glyph above a big balanced blockquote, with an initials avatar (gradient tile) + name + role beneath. Clean premium indigo-on-light aesthetic. Use as a focused social-proof / customer-quote section between features and pricing on B2B SaaS, productivity, or developer-platform pages.',
+    'Bold-kinetic single-quote social-proof band for a SaaS / product-marketing landing page: a muted-washed section with a giant ghost quotation-mark watermark and an asymmetric 4:8 grid pairing a left rail (mono customer-story micro-label with a primary tick and a sharp initials avatar plate) with a big balanced blockquote, closed by a hairline-topped mono name / role footer. Sharp corners, confident kinetic-SaaS aesthetic. Use as a focused social-proof / customer-quote section between features and pricing on B2B SaaS, productivity, or developer-platform pages.',
   props: z.object({
     quote: z.string().optional(),
     name: z.string().optional(),
@@ -39,46 +39,52 @@ export const MarketingTestimonial = defineCapsule({
       "Flowstate transformed how our product team operates. We've cut meeting time by 40% and shipped three major releases ahead of schedule. It's the operating system for our company."
     const name = props.name ?? 'Sarah Chen'
     const role = props.role ?? 'VP of Engineering, Acme Corp'
+    const initials = name
+      .split(' ')
+      .map((w) => w.charAt(0))
+      .join('')
+      .slice(0, 2)
 
     return (
-      <PullQuote variant="gradient" className={cn('py-20', props.className)}>
-        <Container size="lg" className="px-6 lg:px-6">
-          <Card
-            asChild
-            variant="default"
-            className="relative mx-auto max-w-3xl px-8 py-12 text-center shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)] sm:px-10 rounded-2xl p-0"
-          >
-            <figure>
-              <PullQuoteIcon>
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  stroke="none"
+      <PullQuote
+        className={cn(
+          'relative overflow-hidden bg-muted/40 py-16 lg:py-24',
+          props.className,
+        )}
+      >
+        <Watermark className="-top-16 left-0 font-serif text-[16rem] leading-none sm:text-[22rem]">
+          &ldquo;
+        </Watermark>
+        <Container className="relative">
+          <div className="grid gap-8 md:grid-cols-12 md:gap-10">
+            <div className="md:col-span-4">
+              <MonoTag className="flex items-center gap-2">
+                <span
                   aria-hidden="true"
-                >
-                  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-                </svg>
-              </PullQuoteIcon>
-              <PullQuoteText>&ldquo;{quote}&rdquo;</PullQuoteText>
-              <figcaption>
-                <PullQuoteAttribution>
-                  <PullQuoteAvatar>
-                    {name
-                      .split(' ')
-                      .map((w) => w.charAt(0))
-                      .join('')
-                      .slice(0, 2)}
-                  </PullQuoteAvatar>
-                  <div className="text-left">
-                    <PullQuoteName>{name}</PullQuoteName>
-                    <PullQuoteRole>{role}</PullQuoteRole>
-                  </div>
-                </PullQuoteAttribution>
-              </figcaption>
+                  className="size-1.5 shrink-0 bg-primary"
+                />
+                Customer story
+              </MonoTag>
+              <PullQuoteAttribution className="mt-6 flex items-center gap-3">
+                <PullQuoteAvatar className="grid size-12 shrink-0 place-items-center rounded-none border border-foreground bg-background font-mono text-sm font-bold text-foreground shadow-[4px_4px_0_0] shadow-foreground">
+                  {initials}
+                </PullQuoteAvatar>
+                <div className="min-w-0 text-left">
+                  <PullQuoteName className="text-sm font-bold tracking-tight text-foreground">
+                    {name}
+                  </PullQuoteName>
+                  <PullQuoteRole className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                    {role}
+                  </PullQuoteRole>
+                </div>
+              </PullQuoteAttribution>
+            </div>
+            <figure className="md:col-span-8">
+              <PullQuoteText className="border-l-2 border-primary pl-6 text-2xl font-bold leading-snug tracking-tight text-balance text-foreground sm:text-3xl lg:text-[2.25rem]">
+                &ldquo;{quote}&rdquo;
+              </PullQuoteText>
             </figure>
-          </Card>
+          </div>
         </Container>
       </PullQuote>
     )

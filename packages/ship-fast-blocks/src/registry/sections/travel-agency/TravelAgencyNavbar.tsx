@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
+import { cn } from '#/lib/utils.ts'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
   NavbarActions,
@@ -9,8 +10,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 function CompassMark({ className }: { className?: string }) {
   return (
     <svg
@@ -32,7 +32,7 @@ function CompassMark({ className }: { className?: string }) {
 export const TravelAgencyNavbar = defineCapsule({
   name: 'TravelAgencyNavbar',
   description:
-    "Premium, wanderlust-themed navigation header for the Travel Agency page family. Composes the shared SiteNav kit composite with a travel-forward brand, compass brandmark, destination-led links, a contact phone, and a prominent 'Plan a Trip' call to action. Use as the first band of a travel agency page or whenever a generated travel site needs a polished, token-styled top navigation without hand-rolled markup.",
+    "Fixed, backdrop-blurred editorial-wanderlust navigation header for the Travel Agency page family. Composes the shared SiteNav kit composite: a compass brandmark beside the wordmark on the left, a set of mono-lettered uppercase destination links revealed at large widths, and a right cluster carrying an advisor phone number (widescreen only) plus a sharp-cornered mono 'Plan a Trip' CTA with press feedback, collapsing to a real Sheet drawer on smaller screens. Nav links preserve route-based page switching. Use as the first band of a curated travel-agency / destination-catalog site or whenever a generated travel site needs a polished, token-styled top navigation without hand-rolled markup.",
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -47,41 +47,54 @@ export const TravelAgencyNavbar = defineCapsule({
       ? props.nav
       : ['Destinations', 'Flights', 'Hotels', 'Packages', 'Plan a Trip']
     const brand = props.brand ?? 'Voyage & Co'
-    const brandMark = <CompassMark className="size-8 text-primary" />
-    const brandClassName = 'text-xl font-medium text-foreground'
     const phone = props.phone ?? '+1 (800) 555-0182'
     const ctaLabel = props.ctaLabel ?? 'Plan a Trip'
     const ctaTarget = props.ctaTarget ?? 'Plan a Trip'
     const homeTarget = props.homeTarget ?? nav[0]
 
     return (
-      <SiteNav position="fixed" height="default" className={props.className}>
-        <NavbarBrand href={homeTarget} className="gap-3">
-          {brandMark}
-          <Logo brand={brand}>
-            <LogoImage />
-            <LogoLabel className={brandClassName} />
-          </Logo>
+      <SiteNav
+        position="fixed"
+        height="default"
+        className={cn(
+          'border-border bg-background/90 backdrop-blur-xl',
+          props.className,
+        )}
+      >
+        <NavbarBrand href={homeTarget}>
+          <BrandLogo brand={brand} className="flex items-center gap-2.5">
+            <LogoImage
+              className="size-7"
+              fallback={<CompassMark className="size-7 text-primary" />}
+            />
+            <LogoLabel className="text-lg font-semibold tracking-tight text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
-        <NavbarNav>
+
+        <NavbarNav breakpoint="lg">
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="rounded-none px-1.5 font-mono text-[11px] uppercase tracking-[0.16em]"
+            >
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
+
         <NavbarActions>
           {phone ? (
             <a
               href={`tel:${phone.replace(/[^\d+]/g, '')}`}
-              className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline"
+              className="hidden font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground xl:inline"
             >
               {phone}
             </a>
           ) : null}
           <NavbarCta
-            variant="primary-pill"
-            className="hidden px-5 py-2.5 sm:inline-flex"
+            variant="primary"
+            className="hidden rounded-none px-5 py-2.5 font-mono text-[11px] font-medium uppercase tracking-[0.18em] transition-[background-color,transform] duration-150 active:translate-y-px sm:inline-flex"
             href={ctaTarget}
           >
             {ctaLabel}
@@ -91,7 +104,7 @@ export const TravelAgencyNavbar = defineCapsule({
             nav={nav}
             homeTarget={homeTarget}
             cta={{ label: ctaLabel, target: ctaTarget }}
-            buttonClassName="p-2 text-muted-foreground hover:text-foreground md:hidden"
+            buttonClassName="p-2 text-muted-foreground hover:text-foreground lg:hidden"
           />
         </NavbarActions>
       </SiteNav>

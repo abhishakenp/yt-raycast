@@ -12,8 +12,7 @@ import {
   HeroStatBadgeSubtitle,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * CorporateHero — Swiss-corporate asymmetric 7/5 hero for a corporate B2B
  * marketing page. Opens with a hairline mono meta rule (primary index square +

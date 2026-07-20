@@ -11,8 +11,7 @@ import {
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * FashionStoreFaq — native disclosure FAQ accordion for a luxury fashion store.
  * A subtle muted-band, narrow centered section with a mono kicker + serif

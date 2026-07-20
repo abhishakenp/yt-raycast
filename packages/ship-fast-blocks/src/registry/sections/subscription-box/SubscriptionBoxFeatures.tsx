@@ -13,12 +13,16 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 
 /**
- * SubscriptionBoxFeatures — feature band for a subscription-box brand built on
- * the shared FeatureGrid composite. A padded section wraps a 4-up grid of
- * value-prop cards (what's inside, flexible plans, free shipping, cancel
- * anytime), each with an inline outline icon, a title, and a description. Theme
- * token only and renders complete with no props. Use to sell the membership
- * perks on any curated-box or recurring-delivery page.
+ * SubscriptionBoxFeatures — playful-commerce "what's inside" band for a
+ * subscription-box brand built on the shared FeatureGrid composite. A muted
+ * wash section opens with an asymmetric mono-eyebrow header, then a 4-up grid of
+ * chunky box-motif value-prop cards (curated surprises, flexible plans, free
+ * shipping, cancel anytime): each card is a sharp-cornered token-bordered box
+ * with a hard offset token shadow, a mono index label, an inline outline icon
+ * in a squared tile, a title, and a description, with alternating cards
+ * translated down for a staggered rhythm. Theme-token only and renders complete
+ * with no props. Use to sell the membership perks on any curated-box or
+ * recurring-delivery page.
  */
 const SparkleIcon = (
   <svg
@@ -93,7 +97,7 @@ const CancelIcon = (
 export const SubscriptionBoxFeatures = defineCapsule({
   name: 'SubscriptionBoxFeatures',
   description:
-    "Feature band for a subscription-box brand built on the shared FeatureGrid composite: a padded section wrapping a 4-up grid of value-prop cards (what's inside, flexible plans, free shipping, cancel anytime), each with an inline outline icon, title, and description. Use to sell the membership perks on any curated-box or recurring-delivery page.",
+    'Playful-commerce "what\'s inside" band for a subscription-box brand built on the shared FeatureGrid composite: a muted-wash section with an asymmetric mono-eyebrow header over a 4-up grid of chunky box-motif value-prop cards (curated surprises, flexible plans, free shipping, cancel anytime), each a sharp-cornered token-bordered box with a hard offset token shadow, a mono index label, an inline outline icon in a squared tile, a title, and a description. Use to sell the membership perks on any curated-box or recurring-delivery page.',
   props: z.object({
     heading: z.string().optional(),
     subheading: z.string().optional(),
@@ -141,17 +145,30 @@ export const SubscriptionBoxFeatures = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-background py-20 text-foreground sm:py-24',
+          'bg-muted/30 py-20 text-foreground sm:py-24',
           props.className,
         )}
       >
-        <Container size="xl" className="px-6 lg:px-6">
-          <FeatureGrid
-            heading={heading}
-            subheading={subheading}
-            columns={props.columns ?? 4}
-          >
-            {features.map((f) => {
+        <Container>
+          <div className="mb-12 flex max-w-2xl flex-col gap-4 sm:mb-14">
+            <div className="flex items-center gap-3">
+              <span
+                className="size-1.5 shrink-0 bg-primary"
+                aria-hidden="true"
+              />
+              <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                What&apos;s inside
+              </span>
+            </div>
+            <h2 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+              {heading}
+            </h2>
+            <p className="text-base text-muted-foreground md:text-lg">
+              {subheading}
+            </p>
+          </div>
+          <FeatureGrid columns={props.columns ?? 4}>
+            {features.map((f, i) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -162,10 +179,32 @@ export const SubscriptionBoxFeatures = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
-                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                <FeatureCard
+                  key={__iv__.title}
+                  className={cn(
+                    'gap-4 rounded-none border-2 border-foreground bg-card p-6 shadow-[6px_6px_0_0] shadow-foreground hover:-translate-y-1 hover:border-foreground hover:shadow-[8px_8px_0_0]',
+                    i % 2 === 1 && 'lg:translate-y-6',
+                  )}
+                >
+                  <div className="flex items-center justify-between">
+                    {__iv__.icon && (
+                      <FeatureIcon className="size-11 rounded-none border-2 border-foreground bg-background text-foreground">
+                        {__iv__.icon}
+                      </FeatureIcon>
+                    )}
+                    <span
+                      className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] tabular-nums text-muted-foreground/60"
+                      aria-hidden="true"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                  </div>
+                  <FeatureTitle className="text-lg font-bold tracking-tight">
+                    {__iv__.title}
+                  </FeatureTitle>
+                  <FeatureDescription className="leading-6">
+                    {__iv__.description}
+                  </FeatureDescription>
                 </FeatureCard>
               )
             })}

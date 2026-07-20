@@ -2,7 +2,8 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { FilterChip, NavbarRouteLink } from '#/section-kit/index.ts'
+import { FilterChip } from '#/section-kit/FilterChip.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 import {
   ProductCard,
   ProductCardImage,

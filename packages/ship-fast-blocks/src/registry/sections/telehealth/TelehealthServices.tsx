@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { cn } from '#/lib/utils.ts'
 import {
   ServicesGrid,
   ServiceCard,
@@ -9,6 +10,8 @@ import {
   ServiceDescription,
 } from '#/section-kit/ServicesGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 
 const ICONS = [
   // Primary Care — stethoscope
@@ -81,10 +84,22 @@ const ICONS = [
   </svg>,
 ]
 
+/**
+ * TelehealthServices — calm clinical + warmth collapsed-border services ledger
+ * for a telehealth site, built on the shared ServicesGrid composite. An
+ * asymmetric header (left-aligned heading + lede, mono index meta on the right)
+ * above a hairline collapsed-border 1-to-2-to-4 column grid of square cells;
+ * each cell pairs a zero-padded mono index numeral with a quiet primary-toned
+ * inline icon, a service title, and a short description of a core virtual-care
+ * offering (Primary Care, Mental Health, Prescriptions, Urgent Care).
+ * Tokens-only, no links. Precise yet warm, telemedicine aesthetic. Use to
+ * summarize what a telehealth provider treats and help visitors self-route to
+ * the right service.
+ */
 export const TelehealthServices = defineCapsule({
   name: 'TelehealthServices',
   description:
-    'Services overview band for a telehealth site, built on the shared ServicesGrid composite. Renders a centered heading and a four-up card grid covering the core virtual-care offerings — Primary Care, Mental Health, Prescriptions, and Urgent Care — each with a calm primary-toned inline icon, a title, and a short description. Cards collapse to two columns and then a single column on smaller screens. Use to summarize what a telehealth provider treats and help visitors self-route to the right service.',
+    'Calm clinical + warmth collapsed-border services ledger for a telehealth site, built on the shared ServicesGrid composite: an asymmetric header (left-aligned heading + lede, mono index meta right) above a hairline collapsed-border 1-to-2-to-4 column grid of square cells, each pairing a zero-padded mono index numeral with a quiet primary-toned inline icon, a service title, and a short description of a core virtual-care offering (Primary Care, Mental Health, Prescriptions, Urgent Care). Tokens-only, no links. Precise yet warm, telemedicine aesthetic. Use to summarize what a telehealth provider treats and help visitors self-route to the right service.',
   props: z.object({
     heading: z.string().optional(),
     subheading: z.string().optional(),
@@ -130,32 +145,67 @@ export const TelehealthServices = defineCapsule({
     }))
 
     return (
-      <section className="bg-background pt-28 pb-20 sm:pt-32 sm:pb-24">
+      <section
+        className={cn('bg-muted/40 py-20 sm:py-24 lg:py-28', props.className)}
+        aria-labelledby="telehealth-services-heading"
+      >
         <Container size="xl" className="px-6">
-          <ServicesGrid
-            heading={heading}
-            subheading={subheading}
-            columns={4}
-            className={props.className}
-          >
-            {features.map((f) => {
-              const __iv__ = f as {
-                title: string
-                description: string
-                icon?: React.ReactNode
-                points?: string[]
-                cta?: string
-                price?: string
-                imageAlt?: string
-              }
-              return (
-                <ServiceCard key={__iv__.title}>
-                  {__iv__.icon && <ServiceIcon>{__iv__.icon}</ServiceIcon>}
-                  <ServiceTitle>{__iv__.title}</ServiceTitle>
-                  <ServiceDescription>{__iv__.description}</ServiceDescription>
-                </ServiceCard>
-              )
-            })}
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={subheading}
+              titleId="telehealth-services-heading"
+              className="max-w-2xl gap-0"
+              titleClassName="mb-4 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-[2.75rem] lg:leading-[1.05]"
+              subtitleClassName="text-base text-muted-foreground sm:text-lg"
+            />
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="shrink-0 md:pb-1"
+            >
+              {String(features.length).padStart(2, '0')} / index
+            </MonoTag>
+          </div>
+
+          <ServicesGrid columns={4} className="gap-0">
+            <div className="col-span-full grid grid-cols-1 border-l border-t border-border sm:grid-cols-2 lg:grid-cols-4">
+              {features.map((f, i) => {
+                const __iv__ = f as {
+                  title: string
+                  description: string
+                  icon?: React.ReactNode
+                  points?: string[]
+                  cta?: string
+                  price?: string
+                  imageAlt?: string
+                }
+                return (
+                  <ServiceCard
+                    key={__iv__.title}
+                    className="gap-4 rounded-none border-0 border-b border-r border-border bg-background p-6 sm:p-8"
+                  >
+                    <div className="flex items-center justify-between">
+                      <MonoTag aria-hidden="true" tone="faint">
+                        {String(i + 1).padStart(2, '0')}
+                      </MonoTag>
+                      {__iv__.icon && (
+                        <ServiceIcon className="rounded-none bg-primary/10">
+                          {__iv__.icon}
+                        </ServiceIcon>
+                      )}
+                    </div>
+                    <ServiceTitle className="text-xl font-bold tracking-tight">
+                      {__iv__.title}
+                    </ServiceTitle>
+                    <ServiceDescription className="leading-relaxed">
+                      {__iv__.description}
+                    </ServiceDescription>
+                  </ServiceCard>
+                )
+              })}
+            </div>
           </ServicesGrid>
         </Container>
       </section>

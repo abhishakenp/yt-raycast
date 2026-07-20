@@ -11,21 +11,22 @@ import {
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * MentalHealthFaq — a centered FAQ accordion for a therapy practice. A narrow
- * eyebrow + heading + intro above a stack of native <details> rows on a muted
- * surface, each with a rotating chevron toggle, followed by a centered "still
- * have questions?" prompt and a rounded phone CTA. Calm, reassuring wellness
- * aesthetic. The CTA routes through section-kit route links. Use to answer common questions
- * (insurance, session length, virtual vs in-person, cancellation) for therapists,
- * counselors, psychologists or wellness centers.
+ * MentalHealthFaq — a warm-editorial asymmetric 5/7 FAQ ledger for a therapy
+ * practice. A left-aligned rail (mono eyebrow + serif heading + lede, sticky on
+ * desktop, with a "still have questions?" prompt and a square phone CTA) beside
+ * a hairline-divided stack of native details/summary rows; each row pairs a
+ * zero-padded mono index numeral with the question and a chevron that rotates
+ * open to reveal the indented answer. No JavaScript required. Calm, reassuring
+ * wellness aesthetic. The CTA routes through section-kit route links. Use to
+ * answer common questions (insurance, session length, virtual vs in-person,
+ * cancellation) for therapists, counselors, psychologists or wellness centers.
  */
 export const MentalHealthFaq = defineCapsule({
   name: 'MentalHealthFaq',
   description:
-    "Centered FAQ accordion for a therapy practice: a narrow eyebrow + heading + intro above a stack of native details rows on a muted surface, each with a rotating chevron toggle, then a centered 'still have questions?' prompt and a rounded phone CTA. Calm, reassuring wellness aesthetic. The CTA routes through section-kit route links. Use to answer common questions (insurance, session length, virtual vs in-person, cancellation) for therapists, counselors, psychologists or wellness centers.",
+    "Warm-editorial asymmetric 5/7 FAQ ledger for a therapy practice: a left-aligned rail (mono eyebrow + serif heading + lede, sticky on desktop, with a 'still have questions?' prompt and a square phone CTA) beside a hairline-divided stack of native details/summary rows, each pairing a zero-padded mono index numeral with the question and a chevron that rotates open to reveal the indented answer. No JavaScript required. Calm, reassuring wellness aesthetic. The CTA routes through section-kit route links. Use to answer common questions (insurance, session length, virtual vs in-person, cancellation) for therapists, counselors, psychologists or wellness centers.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -104,46 +105,70 @@ export const MentalHealthFaq = defineCapsule({
     )
 
     return (
-      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
-        <Container className="max-w-4xl">
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            className="mx-auto mb-16 max-w-2xl gap-0"
-            eyebrowClassName="text-sm font-medium uppercase tracking-wider text-primary"
-            titleClassName="mt-3 text-3xl font-semibold text-foreground sm:text-4xl"
-            subtitleClassName="mt-4 leading-relaxed text-muted-foreground"
-          />
-
-          <FaqAccordion>
-            {items.map((item) => (
-              <FaqItem key={item.question} className="bg-muted/60">
-                <FaqQuestion className="p-6">
-                  <h3 className="pr-4 text-lg font-medium text-foreground">
-                    {item.question}
-                  </h3>
-                  <FaqQuestionIcon
-                    variant="chevron-badge"
-                    className="text-primary"
-                  />
-                </FaqQuestion>
-                <FaqAnswer asChild className="px-6 pb-6 leading-relaxed">
-                  <div>{item.answer}</div>
-                </FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
-
-          <div className="mt-12 text-center">
-            <p className="mb-4 text-muted-foreground">{footerNote}</p>
-            <NavbarRouteLink
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-              href={bookLabel}
-            >
-              <Phone className="size-5" />
-              {footerCta}
-            </NavbarRouteLink>
+      <section
+        className={cn('bg-background py-20 sm:py-24 lg:py-28', props.className)}
+      >
+        <Container>
+          <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-5">
+              <div className="lg:sticky lg:top-28">
+                <SectionHeading
+                  align="left"
+                  eyebrow={eyebrow}
+                  title={heading}
+                  subtitle={description}
+                  className="gap-0"
+                  eyebrowClassName="mb-4 inline-block font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground"
+                  titleClassName="mb-4 font-serif text-3xl font-medium tracking-tight text-foreground sm:text-4xl"
+                  subtitleClassName="text-base leading-relaxed text-muted-foreground sm:text-lg"
+                />
+                <div className="mt-8 border-t border-border pt-6">
+                  <p className="mb-4 text-muted-foreground">{footerNote}</p>
+                  <NavbarRouteLink
+                    className="inline-flex w-fit items-center gap-2 rounded-none bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 active:translate-y-px"
+                    href={bookLabel}
+                  >
+                    <Phone className="size-5" />
+                    {footerCta}
+                  </NavbarRouteLink>
+                </div>
+              </div>
+            </div>
+            <div className="lg:col-span-7">
+              <FaqAccordion className="space-y-0 divide-y divide-border border-y border-border">
+                {items.map((item, i) => (
+                  <FaqItem
+                    key={item.question}
+                    variant="muted"
+                    className="rounded-none bg-transparent"
+                  >
+                    <FaqQuestion className="gap-6 py-5 sm:py-6">
+                      <span className="flex min-w-0 items-baseline gap-4 pr-4 sm:gap-6">
+                        <span
+                          aria-hidden="true"
+                          className="shrink-0 font-mono text-sm text-muted-foreground/60 tabular-nums"
+                        >
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                        <span className="text-lg font-medium text-foreground">
+                          {item.question}
+                        </span>
+                      </span>
+                      <FaqQuestionIcon
+                        variant="chevron-badge"
+                        className="text-primary transition"
+                      />
+                    </FaqQuestion>
+                    <FaqAnswer
+                      asChild
+                      className="pb-6 pl-9 pr-4 leading-relaxed text-muted-foreground sm:pl-12"
+                    >
+                      <div>{item.answer}</div>
+                    </FaqAnswer>
+                  </FaqItem>
+                ))}
+              </FaqAccordion>
+            </div>
           </div>
         </Container>
       </section>

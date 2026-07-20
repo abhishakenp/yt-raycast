@@ -14,8 +14,7 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 import { StarRating } from '#/section-kit/StarRating.tsx'
 import { Watermark } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * LandscapingHero — organic-editorial opening hero for a landscaping / outdoor-
  * design company on a layered muted wash. An asymmetric 5:7 split: on the left a

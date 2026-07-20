@@ -15,19 +15,20 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * LogisticsFaq — a narrow, native-accordion FAQ for a global-logistics / freight-
- * forwarding company. A centered heading + lede over a single column of muted,
- * rounded <details> rows; each summary shows the question with a chevron that
- * rotates open, revealing the answer paragraph below. Clean and corporate on a
- * light surface, constrained to a readable measure. Use to answer common shipping
- * questions (tracking, transit times, customs, cargo types, insurance, quotes) for
- * logistics, freight-forwarding, shipping, courier or cargo/transport companies.
- * Renders fully with no props.
+ * LogisticsFaq — an industrial-manifest manual-page FAQ for a global-logistics /
+ * freight-forwarding company. Asymmetric 4/8 split: the left rail carries a mono
+ * `$ man swiftfreight` meta line, a left-aligned heading and lede (sticky on
+ * desktop); the right column is a collapsed-border accordion ledger of
+ * detail/summary rows, each with a mono `Q.NN` index tag and a chevron that
+ * rotates on open to reveal the answer. Precise and operational, tokens-only. Use
+ * to answer common shipping questions (tracking, transit times, customs, cargo
+ * types, insurance, quotes) for logistics, freight-forwarding, shipping, courier
+ * or cargo/transport companies. Renders fully with no props.
  */
 export const LogisticsFaq = defineCapsule({
   name: 'LogisticsFaq',
   description:
-    'Narrow, native-accordion FAQ for a global-logistics / freight-forwarding company: a centered heading + lede over a single column of muted, rounded <details> rows, each summary showing the question with a chevron that rotates open to reveal the answer paragraph. Clean and corporate on a light surface, constrained to a readable measure. Use to answer common shipping questions (tracking, transit times, customs clearance, cargo types, insurance, quotes) for logistics, freight-forwarding, shipping, courier, supply-chain or cargo/transport companies.',
+    'Industrial-manifest manual-page FAQ for a global-logistics / freight-forwarding company: an asymmetric 4/8 split with a sticky left rail (mono meta line, heading, lede) and a collapsed-border accordion ledger on the right — detail/summary rows with mono Q-index tags and a chevron that rotates on open. Precise and operational, tokens-only. Use to answer common shipping questions (tracking, transit times, customs clearance, cargo types, insurance, quotes) for logistics, freight-forwarding, shipping, courier, supply-chain or cargo/transport companies.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -69,29 +70,61 @@ export const LogisticsFaq = defineCapsule({
         ]
 
     return (
-      <section className={cn('py-16 lg:py-24', props.className)}>
-        <Container size="sm">
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-12 gap-0"
-            titleClassName="mb-4 text-3xl font-semibold tracking-tight lg:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-
-          <FaqAccordion>
-            {items.map((item) => (
-              <FaqItem key={item.q} variant="muted">
-                <FaqQuestion className="p-6">
-                  <span className="font-semibold">{item.q}</span>
-                  <FaqQuestionIcon />
-                </FaqQuestion>
-                <FaqAnswer asChild className="px-6 pb-6">
-                  <div>{item.a}</div>
-                </FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+      <section className={cn('py-14 sm:py-20 lg:py-24', props.className)}>
+        <Container>
+          <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
+            <div className="lg:col-span-4">
+              <div className="lg:sticky lg:top-24">
+                <p
+                  aria-hidden="true"
+                  className="mb-5 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+                >
+                  <span className="text-primary">$</span> man swiftfreight
+                </p>
+                <SectionHeading
+                  align="left"
+                  title={heading}
+                  subtitle={description}
+                  className="gap-3"
+                  titleClassName="text-3xl font-extrabold tracking-tight lg:text-4xl"
+                  subtitleClassName="text-lg text-muted-foreground"
+                />
+                <span
+                  aria-hidden="true"
+                  className="mt-6 hidden h-1 w-12 bg-primary lg:block"
+                />
+              </div>
+            </div>
+            <div className="lg:col-span-8">
+              <FaqAccordion className="space-y-0 divide-y divide-border border border-border bg-background">
+                {items.map((item, i) => (
+                  <FaqItem
+                    key={item.q}
+                    className="rounded-none border-0 bg-transparent"
+                  >
+                    <FaqQuestion className="items-baseline gap-4 p-5 sm:p-6">
+                      <span
+                        aria-hidden="true"
+                        className="shrink-0 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground/70"
+                      >
+                        Q.{`0${i + 1}`.slice(-2)}
+                      </span>
+                      <span className="flex-1 pr-4 font-semibold tracking-tight text-foreground">
+                        {item.q}
+                      </span>
+                      <FaqQuestionIcon className="self-center" />
+                    </FaqQuestion>
+                    <FaqAnswer
+                      asChild
+                      className="px-5 pb-5 text-sm leading-relaxed sm:px-6 sm:pb-6 sm:pl-[4.25rem]"
+                    >
+                      <div>{item.a}</div>
+                    </FaqAnswer>
+                  </FaqItem>
+                ))}
+              </FaqAccordion>
+            </div>
+          </div>
         </Container>
       </section>
     )

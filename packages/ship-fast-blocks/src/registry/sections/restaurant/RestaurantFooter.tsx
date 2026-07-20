@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { cn } from '#/lib/utils.ts'
 import {
   SiteFooter,
   FooterContent,
@@ -16,17 +17,19 @@ import {
   FooterBottom,
   FooterCopyright,
 } from '#/section-kit/SiteFooter.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 
 /**
- * RestaurantFooter — a rich, multi-column closing footer for a restaurant or
- * dining site. Thin configuration over the shared `SiteFooter` composite: a
- * serif wordmark beside an inline fork-and-knife mark, a tagline, a social row,
- * and a responsive grid of link columns. Hours (day/time rows) and Visit
- * (address, phone, email) are folded into columns alongside Explore and About,
- * and the bottom bar carries an auto-updating copyright line. Use as the
- * site-wide footer for restaurants, cafés, bistros, bars, or any hospitality
- * landing page. Renders fully with no props via baked-in "Saffron & Sage"
- * defaults.
+ * RestaurantFooter — a rich, menu-editorial multi-column closing footer for a
+ * restaurant or dining site. Thin configuration over the shared `SiteFooter`
+ * composite, set over a giant faint brand ghost watermark: a warm serif
+ * wordmark beside an inline fork-and-knife mark, a tagline, a social row, and a
+ * responsive grid of link columns under mono uppercase column labels, each link
+ * a `block w-fit` row. Hours (day/time rows) and Visit (address, phone, email)
+ * are folded into columns alongside Explore and About, and the hairline bottom
+ * bar carries an auto-updating copyright line. Use as the site-wide footer for
+ * restaurants, cafés, bistros, bars, or any hospitality landing page. Renders
+ * fully with no props via baked-in "Saffron & Sage" defaults.
  */
 function ForkKnifeMark({ className }: { className?: string }) {
   return (
@@ -51,7 +54,7 @@ function ForkKnifeMark({ className }: { className?: string }) {
 export const RestaurantFooter = defineCapsule({
   name: 'RestaurantFooter',
   description:
-    'Rich, multi-column closing footer for a restaurant or dining site: a responsive grid with a brand block (serif wordmark + tagline + social row), an Hours column of day/time rows, a Visit column with address plus tappable phone and email, and extra link columns (Explore, About, …); a bordered-top bottom bar holds an auto-updating copyright line. Every brand, social, contact, and column link routes through section-kit route links. Use as the site-wide footer for restaurants, cafés, bistros, bars, or any hospitality landing page.',
+    'Rich, menu-editorial multi-column closing footer for a restaurant or dining site over a giant faint brand ghost watermark: a responsive grid with a brand block (warm serif wordmark + tagline + social row), an Hours column of day/time rows, a Visit column with address plus tappable phone and email, and extra link columns (Explore, About, …) under mono uppercase labels with block w-fit links; a hairline-top bottom bar holds an auto-updating copyright line. Every brand, social, contact, and column link routes through section-kit route links. Use as the site-wide footer for restaurants, cafés, bistros, bars, or any hospitality landing page.',
   props: z.object({
     /** Restaurant / brand name shown as the serif wordmark. */
     brand: z.string().optional(),
@@ -104,12 +107,15 @@ export const RestaurantFooter = defineCapsule({
         ]
 
     return (
-      <SiteFooter className={props.className}>
-        <FooterContent>
+      <SiteFooter className={cn('relative overflow-hidden', props.className)}>
+        <Watermark className="-bottom-8 -left-3 text-[7rem] leading-none sm:text-[11rem] lg:text-[14rem]">
+          {props.brand ?? 'Saffron & Sage'}
+        </Watermark>
+        <FooterContent className="relative">
           <FooterGrid>
             <FooterBrand
               brand={props.brand ?? 'Saffron & Sage'}
-              brandMark={<ForkKnifeMark className="size-8 text-primary" />}
+              brandMark={<ForkKnifeMark className="size-7 text-primary" />}
               brandClassName={'font-serif text-xl font-medium'}
             >
               <FooterTagline>
@@ -118,16 +124,25 @@ export const RestaurantFooter = defineCapsule({
               </FooterTagline>
               <FooterSocial>
                 {social.map((s) => (
-                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  <FooterSocialLink
+                    key={s.label}
+                    className="font-mono text-[11px] uppercase tracking-[0.14em]"
+                  >
+                    {s.label}
+                  </FooterSocialLink>
                 ))}
               </FooterSocial>
             </FooterBrand>
             {columns.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnTitle className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  {col.title}
+                </FooterColumnTitle>
                 <FooterColumnList>
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink key={link} className="block w-fit">
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>

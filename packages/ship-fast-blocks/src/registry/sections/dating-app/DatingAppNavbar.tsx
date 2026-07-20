@@ -11,8 +11,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
  * DatingAppNavbar — playful-geometric sticky navigation for a dating /
  * matchmaking app landing page. A backdrop-blurred bg-background/80 header with

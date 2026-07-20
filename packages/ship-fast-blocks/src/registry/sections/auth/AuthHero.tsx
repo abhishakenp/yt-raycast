@@ -20,7 +20,7 @@ import {
   SaasPlanActionButton,
 } from '../saas/saas-interactions.tsx'
 import { saasLakebed } from '../saas/saas-lakebed.ts'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 
 /**
  * AuthHero — the opening spread of the "clearance dossier" hero for Authly, an

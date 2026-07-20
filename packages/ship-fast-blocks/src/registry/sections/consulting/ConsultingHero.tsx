@@ -14,8 +14,7 @@ import {
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * ConsultingHero — Swiss-authority asymmetric 7:5 hero for a
  * management-consulting firm landing page. A mono "01 / eyebrow" metadata rail

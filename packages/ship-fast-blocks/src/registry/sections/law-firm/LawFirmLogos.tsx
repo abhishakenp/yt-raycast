@@ -13,8 +13,7 @@ import { cn } from '#/lib/utils.ts'
  * recognizable client names. Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const LawFirmLogos = defineCapsule({
   name: 'LawFirmLogos',
   description:

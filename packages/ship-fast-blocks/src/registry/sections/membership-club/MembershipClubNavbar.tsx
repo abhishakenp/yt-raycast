@@ -10,24 +10,24 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
- * MembershipClubNavbar — sticky, translucent top navigation bar for a private
- * membership club / exclusive community site. A backdrop-blurred, border-bottomed
- * header pinned to the top: a thin concentric "compass" club mark beside the
- * light-weight club name on the left, a horizontal set of nav links centered on
- * desktop, and a solid rounded-pill primary "Apply Now" CTA on the right. Every
- * nav item and the CTA route through route hrefs so labels can drive page
- * switching. Use as the calm, refined, premium site header for members clubs,
- * founders/social clubs, professional networks, curated communities, alumni
- * collectives or paid community subscriptions. Renders fully with no props via
- * baked-in "The Guild" defaults.
+ * MembershipClubNavbar — sticky, backdrop-blurred vitrine top navigation bar for
+ * a private membership club / exclusive community site. A hairline-bottomed
+ * translucent header pinned to the top on the airiest chrome in the family: a
+ * thin concentric club mark beside a serif club wordmark on the left as the
+ * members-only signature, quietly spaced mono micro-label uppercase nav links on
+ * the center-right (desktop), and a solid square bg-foreground "Apply Now" CTA
+ * with press feedback on the right. Every nav item and the CTA route through
+ * route hrefs so labels drive page switching. Use as the refined, quietly
+ * exclusive site header for members clubs, founders/social clubs, professional
+ * networks, curated communities, alumni collectives or paid community
+ * subscriptions. Renders fully with no props via baked-in "The Guild" defaults.
  */
 export const MembershipClubNavbar = defineCapsule({
   name: 'MembershipClubNavbar',
   description:
-    "Sticky translucent top navigation bar for a private membership club / exclusive community site: backdrop-blurred, border-bottomed header pinned to the top with a thin concentric 'compass' club mark + light-weight club name on the left, horizontal nav links centered on desktop, and a solid rounded-pill primary 'Apply Now' CTA on the right. Nav items and CTA route through route hrefs for page switching. Use as the calm, refined, quietly premium site header for members clubs, founders/social clubs, professional networks, curated communities, alumni collectives, coworking/clubhouse memberships or paid community subscriptions.",
+    "Sticky, backdrop-blurred vitrine top navigation bar for a private membership club / exclusive community site: a hairline-bottomed translucent header pinned to the top with a thin concentric club mark + serif club wordmark on the left, quietly spaced mono micro-label uppercase nav links on the center-right (desktop), and a solid square bg-foreground 'Apply Now' CTA with press feedback on the right. Nav items and CTA route through route hrefs for page switching. Use as the refined, quietly exclusive site header for members clubs, founders/social clubs, professional networks, curated communities, alumni collectives, coworking/clubhouse memberships or paid community subscriptions.",
   props: z.object({
     /** Brand / club name shown in the navbar. */
     brand: z.string().optional(),
@@ -72,17 +72,22 @@ export const MembershipClubNavbar = defineCapsule({
           className="flex items-center gap-2"
           aria-label={`${brand} Home`}
         >
-          <BrandLogo brand={brand}>
+          <BrandLogo brand={brand} className="flex items-center gap-2">
             <LogoImage
-              fallback={<LogoMark className="size-8 text-foreground" />}
+              className="size-7"
+              fallback={<LogoMark className="size-7 text-foreground" />}
             />
-            <LogoLabel className="text-xl font-light tracking-tight text-foreground" />
+            <LogoLabel className="font-serif text-xl font-normal tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
-        <NavbarNav>
+        <NavbarNav className="gap-8">
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="rounded-none px-0 py-1 font-mono text-[11px] font-medium uppercase tracking-[0.24em] hover:bg-transparent hover:text-foreground"
+            >
               {label}
             </NavbarNavLink>
           ))}
@@ -92,7 +97,7 @@ export const MembershipClubNavbar = defineCapsule({
           <NavbarCta
             variant="primary-pill"
             href={ctaTarget}
-            className="px-5 py-2.5"
+            className="rounded-none bg-foreground px-6 py-2.5 font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-background transition-[background-color,transform] duration-150 hover:bg-foreground/90 active:translate-y-px"
           >
             {cta}
           </NavbarCta>

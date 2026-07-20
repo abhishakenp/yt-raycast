@@ -10,21 +10,21 @@ import {
 } from '#/section-kit/LogoStrip.tsx'
 import { StreamingLinks } from '#/section-kit/StreamingLinks.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * MusicArtistStreaming — slim "stream on" platform strip for a music artist /
- * band page. A small centered uppercase label above a horizontally-wrapping row
- * of streaming-platform name buttons (Spotify, Apple Music, Bandcamp, etc.) on a
- * border-banded band. Warm, airy, editorial indie-folk aesthetic. Each platform
- * routes through section-kit route links. Use as a thin trust / availability strip directly
- * under the hero on musician, band, or album-release pages. Renders fully with
- * no props via baked-in defaults.
+ * MusicArtistStreaming — hairline-bounded mono "stream on" ticker strip for a
+ * music artist / band page. A rotated mono ticket label leads a left-aligned,
+ * hairline-divided marquee-style row of uppercase streaming-platform name links
+ * (Spotify, Apple Music, Bandcamp, etc.). Bold poster aesthetic driven entirely
+ * by theme tokens (flips light/dark). Each platform routes through section-kit
+ * route links. Use as a thin availability strip directly under the hero on
+ * musician, band, or album-release pages. Renders fully with no props via
+ * baked-in defaults.
  */
 export const MusicArtistStreaming = defineCapsule({
   name: 'MusicArtistStreaming',
   description:
-    "Slim 'stream on' streaming-platform strip for a music artist / band page: a small centered uppercase label above a horizontally-wrapping row of streaming-platform name buttons (Spotify, Apple Music, Bandcamp, YouTube Music, SoundCloud, Tidal) on a border-banded band. Warm, airy editorial indie-folk aesthetic. Each platform routes through section-kit route links. Use as a thin trust / availability strip directly under the hero on musician, band, or album-release pages.",
+    "Hairline-bounded mono 'stream on' ticker strip for a music artist / band page: a rotated mono ticket label leading a left-aligned, hairline-divided marquee-style row of uppercase streaming-platform name links (Spotify, Apple Music, Bandcamp, YouTube Music, SoundCloud, Tidal). Bold poster aesthetic driven entirely by theme tokens (flips light/dark). Each platform routes through section-kit route links. Use as a thin availability strip directly under the hero on musician, band, or album-release pages.",
   props: z.object({
     /** Small uppercase label above the platform row. */
     label: z.string().optional(),
@@ -49,16 +49,19 @@ export const MusicArtistStreaming = defineCapsule({
       <div className={cn('border-y border-border', props.className)}>
         <Container asChild size="lg" className="px-6 lg:px-6">
           <StreamingLinks>
-            <LogoStrip className="pt-28 pb-12">
-              <LogoStripLabel className="text-xs uppercase tracking-widest">
+            <LogoStrip className="flex flex-col gap-6 py-10 md:flex-row md:items-center md:gap-10">
+              <LogoStripLabel className="inline-flex w-fit -rotate-2 items-center gap-2 rounded-full border border-foreground bg-background px-4 py-1.5 text-left font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground md:shrink-0">
                 {label}
               </LogoStripLabel>
-              <LogoStripItems layout="flex" className="mt-8">
+              <LogoStripItems
+                layout="flex"
+                className="mt-0 flex-1 justify-start gap-x-8 gap-y-4"
+              >
                 {platforms.filter(Boolean).map((logo) => (
                   <LogoStripItem
                     key={logo}
                     variant="text-bold"
-                    className="text-sm font-medium"
+                    className="font-mono text-xs font-medium uppercase tracking-[0.2em] transition-colors"
                     asChild
                   >
                     <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>

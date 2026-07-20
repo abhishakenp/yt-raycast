@@ -12,22 +12,23 @@ import {
   PortfolioTag,
 } from '#/section-kit/PortfolioGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * ResumeCvProjects — selected-work grid for a personal resume / CV / portfolio
- * site. A left-aligned `SectionHeading` ("Projects" / "Selected work") leads
- * into a responsive grid of project cards, each with a rounded thumbnail photo,
- * a title, a short description, a row of token tag chips, and a routable "Case
- * study" link. Every card link navigates through section-kit route links so none is a dead
- * link. Clean, minimal, and portfolio-style. Use on a personal portfolio,
- * online résumé, or professional profile page to showcase recent work. Renders
- * fully with no props via baked-in defaults.
+ * ResumeCvProjects — selected-work plates for a personal resume / CV / portfolio
+ * site. A mono metadata rail ("03 / SELECTED WORK") and hairline rule lead into
+ * an asymmetric, staggered two-column grid of square-edged project plates — each
+ * with a giant mono index numeral, an alt-driven thumbnail, a title, a short
+ * description, a row of square mono tag chips, and a routable "Case study" link
+ * whose arrow slides on hover with press feedback. Alternating plates drop on a
+ * staggered rhythm; binary radius, hairline borders, tokens only. Every card link
+ * navigates through section-kit route links so none is a dead link. Use on a
+ * personal portfolio, online résumé, or professional profile page to showcase
+ * recent work. Renders fully with no props via baked-in defaults.
  */
 export const ResumeCvProjects = defineCapsule({
   name: 'ResumeCvProjects',
   description:
-    "Selected-work grid for a personal resume / CV / portfolio site: a left-aligned SectionHeading ('Projects' / 'Selected work') leads into a responsive grid of project cards, each with a rounded thumbnail photo, a title, a short description, a row of token tag chips, and a routable 'Case study' link. Every card link navigates through section-kit route links. Clean, minimal, portfolio-style. Use on a personal portfolio, online résumé, or professional profile page to showcase recent work.",
+    "Selected-work plates for a personal resume / CV / portfolio site: a mono '03 / SELECTED WORK' metadata rail and hairline rule above an asymmetric, staggered two-column grid of square-edged project plates, each with a giant mono index numeral, an alt-driven thumbnail, a title, a short description, a row of square mono tag chips, and a routable 'Case study' link whose arrow slides on hover with press feedback. Binary radius, hairline borders, tokens only. Every card link navigates through section-kit route links. Use on a personal portfolio, online résumé, or professional profile page to showcase recent work.",
   props: z.object({
     /** Small eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -96,24 +97,52 @@ export const ResumeCvProjects = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-background', props.className)}>
-        <Container size="xl" className="px-6 py-24 lg:px-6 lg:py-28">
+      <section
+        className={cn(
+          'relative overflow-hidden bg-background',
+          props.className,
+        )}
+      >
+        <Container size="xl" className="relative px-6 py-24 lg:px-6 lg:py-28">
+          {/* Mono metadata rail. */}
+          <div className="flex items-center gap-4">
+            <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+              03 / Selected Work
+            </span>
+            <span aria-hidden="true" className="h-px flex-1 bg-border" />
+          </div>
+
           <SectionHeading
             align="left"
             eyebrow={props.eyebrow}
             title={props.heading ?? 'Projects'}
             subtitle={props.subheading ?? 'Selected work'}
+            className="mt-6 gap-2"
+            titleClassName="text-3xl font-extrabold tracking-tighter text-foreground md:text-5xl"
+            subtitleClassName="font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground"
           />
 
-          <PortfolioGrid cols="1-md-2" className="mt-12">
+          <PortfolioGrid cols="1-md-2" className="mt-12 gap-8">
             {projects.map((project, i) => (
               <PortfolioItem
                 asChild
                 key={i}
-                className="flex flex-col overflow-hidden rounded-2xl border bg-card text-card-foreground"
+                className={cn(
+                  'flex flex-col overflow-hidden rounded-none border-2 border-foreground/15 bg-card text-card-foreground',
+                  i % 2 === 1 && 'md:mt-14',
+                )}
               >
                 <article>
-                  <PortfolioMedia aspect="16-10" className="bg-muted">
+                  <PortfolioMedia
+                    aspect="16-10"
+                    className="border-b-2 border-foreground/15 bg-muted"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute left-0 top-0 z-10 select-none bg-foreground px-2.5 py-1 font-mono text-xs font-bold tabular-nums leading-none text-background"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
                     <Image
                       alt={project.imageAlt}
                       w={800}
@@ -123,7 +152,7 @@ export const ResumeCvProjects = defineCapsule({
                     />
                   </PortfolioMedia>
                   <PortfolioCaption className="flex flex-1 flex-col p-6">
-                    <h3 className="text-lg font-semibold text-card-foreground">
+                    <h3 className="text-lg font-extrabold tracking-tight text-card-foreground">
                       {project.title}
                     </h3>
                     <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
@@ -134,20 +163,25 @@ export const ResumeCvProjects = defineCapsule({
                         {project.tags.map((tag, j) => (
                           <PortfolioTag
                             key={j}
-                            className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground"
+                            className="rounded-none border border-border bg-transparent px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground"
                           >
                             {tag}
                           </PortfolioTag>
                         ))}
                       </div>
                     ) : null}
-                    <div className="mt-6 pt-2">
+                    <div className="mt-6 border-t border-border pt-4">
                       <NavbarRouteLink
-                        className="inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-colors hover:text-primary/80"
+                        className="group/link inline-flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-[0.14em] text-foreground transition-transform duration-150 active:translate-y-px"
                         href={project.target ?? 'Projects'}
                       >
                         {project.linkLabel ?? 'Case study'}
-                        <span aria-hidden="true">&rarr;</span>
+                        <span
+                          aria-hidden="true"
+                          className="transition-transform duration-150 group-hover/link:translate-x-1"
+                        >
+                          &rarr;
+                        </span>
                       </NavbarRouteLink>
                     </div>
                   </PortfolioCaption>

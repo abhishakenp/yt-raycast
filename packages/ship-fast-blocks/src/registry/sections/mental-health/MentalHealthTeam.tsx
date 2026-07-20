@@ -11,22 +11,26 @@ import {
 } from '#/section-kit/PersonCard.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * MentalHealthTeam — a clinician team gallery for a therapy practice. A centered
- * eyebrow + heading + intro above a responsive 1/2/4-column grid of clinician
- * cards (rounded headshot photo that zooms on hover, name, primary-colored role,
- * short bio), followed by a muted "looking for a specific specialty?" band with
- * a therapist-matching link. Calm, warm, sage-and-sand wellness aesthetic. The
- * specialty link routes through section-kit route links. Use to introduce therapists,
- * counselors, psychologists or psychiatrists at a mental-health practice.
+ * MentalHealthTeam — a warm-editorial clinician gallery for a therapy practice.
+ * An asymmetric header (left-aligned mono eyebrow + serif heading + lede, mono
+ * clinician-count meta right) above a responsive 1/2/4-column grid of bare
+ * cards where alternate cards drop a step on desktop for a calm stagger; each
+ * card pairs a tall square headshot that zooms gently on hover with a serif
+ * name, a mono uppercase primary role label, and a short bio, followed by a
+ * soft muted "looking for a specific specialty?" band with a square
+ * therapist-matching link. Calm, warm, sage-and-sand wellness aesthetic. The
+ * specialty link routes through section-kit route links; headshots use the
+ * alt-driven Image component. Use to introduce therapists, counselors,
+ * psychologists or psychiatrists at a mental-health practice.
  */
 export const MentalHealthTeam = defineCapsule({
   name: 'MentalHealthTeam',
   description:
-    "Clinician team gallery for a therapy practice: a centered eyebrow + heading + intro above a responsive 1/2/4-column grid of clinician cards (rounded headshot photo that zooms on hover, name, primary-colored role, short bio), then a muted 'looking for a specific specialty?' band with a therapist-matching link. Calm, warm, sage-and-sand wellness aesthetic. The specialty link routes through section-kit route links. Use to introduce therapists, counselors, psychologists or psychiatrists at a mental-health practice.",
+    "Warm-editorial clinician gallery for a therapy practice: an asymmetric header (left-aligned mono eyebrow + serif heading + lede, mono clinician-count meta right) above a responsive 1/2/4-column grid of bare cards where alternate cards drop a step on desktop, each pairing a tall square headshot that zooms gently on hover with a serif name, a mono uppercase primary role label, and a short bio, then a soft muted 'looking for a specific specialty?' band with a square therapist-matching link. Calm, warm, sage-and-sand wellness aesthetic. The specialty link routes through section-kit route links; headshots use the Image component. Use to introduce therapists, counselors, psychologists or psychiatrists at a mental-health practice.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -96,26 +100,41 @@ export const MentalHealthTeam = defineCapsule({
     const bookLabel = props.bookLabel ?? 'Book Session'
 
     return (
-      <section className={cn('py-20 lg:py-28', props.className)}>
+      <section
+        className={cn('bg-muted/30 py-20 sm:py-24 lg:py-28', props.className)}
+      >
         <Container size="lg">
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            className="mx-auto mb-16 max-w-2xl gap-0"
-            eyebrowClassName="text-sm font-medium uppercase tracking-wider text-primary"
-            titleClassName="mt-3 text-3xl font-semibold text-foreground sm:text-4xl"
-            subtitleClassName="mt-4 leading-relaxed text-muted-foreground"
-          />
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-0"
+              eyebrowClassName="mb-4 inline-block font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground"
+              titleClassName="mb-4 font-serif text-3xl font-medium tracking-tight text-foreground sm:text-4xl lg:text-[2.75rem] lg:leading-[1.08]"
+              subtitleClassName="text-base leading-relaxed text-muted-foreground sm:text-lg"
+            />
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="shrink-0 md:pb-1"
+            >
+              {String(members.length).padStart(2, '0')} / clinicians
+            </MonoTag>
+          </div>
 
-          <ResponsiveGrid cols="1-2-4">
-            {members.map((m) => (
+          <ResponsiveGrid cols="1-2-4" className="gap-6 lg:gap-8">
+            {members.map((m, i) => (
               <PersonCard
                 key={m.name}
                 variant="bare"
-                className="group rounded-none"
+                className={cn(
+                  'group rounded-none',
+                  i % 2 === 1 && 'lg:translate-y-8',
+                )}
               >
-                <div className="relative mb-4 overflow-hidden rounded-2xl">
+                <div className="relative mb-4 overflow-hidden rounded-none border border-border">
                   <Image
                     alt={m.imageAlt}
                     w={400}
@@ -124,8 +143,10 @@ export const MentalHealthTeam = defineCapsule({
                     className="h-80 w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
-                <PersonCardName className="text-lg">{m.name}</PersonCardName>
-                <PersonCardRole className="mb-2 font-medium text-primary">
+                <PersonCardName className="font-serif text-lg font-medium tracking-tight">
+                  {m.name}
+                </PersonCardName>
+                <PersonCardRole className="mb-2 font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
                   {m.role}
                 </PersonCardRole>
                 <PersonCardBio className="leading-relaxed">
@@ -135,18 +156,22 @@ export const MentalHealthTeam = defineCapsule({
             ))}
           </ResponsiveGrid>
 
-          <div className="mt-12 rounded-2xl bg-muted p-8 text-center">
-            <h3 className="mb-2 text-xl font-semibold text-foreground">
-              {specialtyHeading}
-            </h3>
-            <p className="mb-6 text-muted-foreground">{specialtyDescription}</p>
+          <div className="mt-14 flex flex-col gap-6 border border-border bg-background p-8 md:flex-row md:items-center md:justify-between lg:mt-16">
+            <div className="max-w-2xl">
+              <h3 className="mb-2 font-serif text-xl font-medium tracking-tight text-foreground">
+                {specialtyHeading}
+              </h3>
+              <p className="leading-relaxed text-muted-foreground">
+                {specialtyDescription}
+              </p>
+            </div>
             <NavbarRouteLink
-              className="inline-flex items-center gap-2 font-medium text-primary transition-colors hover:text-primary/80"
+              className="inline-flex w-fit shrink-0 items-center gap-2 rounded-none border border-foreground/25 bg-background px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted active:translate-y-px"
               href={bookLabel}
             >
               {specialtyCta}
               <svg
-                className="size-5"
+                className="size-4"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"

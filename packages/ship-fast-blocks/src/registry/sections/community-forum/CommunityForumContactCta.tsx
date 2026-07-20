@@ -10,8 +10,7 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * CommunityForumContactCta — inverted playful-geometric closing band for a
  * community-platform / discussion-forum landing page. A bg-foreground /

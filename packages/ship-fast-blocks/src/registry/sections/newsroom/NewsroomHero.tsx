@@ -5,27 +5,28 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { useSyncPublicationArticles } from '../blog/publication-interactions.tsx'
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * NewsroomHero — front-page lead-story hero for a digital newsroom / magazine.
- * An editorial, print-inspired layout: a small uppercase category kicker, a
- * huge serif display headline, a standfirst/dek paragraph, a byline (author
- * avatar + name + role) carrying date and read-time, a wide lead photograph
- * with a small italic caption and a "Read the full story" call to action,
- * beside a slim right-hand rail of secondary "also in the news" headlines
- * (small tag + title) separated by hairline rules. Magazine feel with serif
- * display type, muted contrast and generous whitespace. The CTA routes through
- * section-kit route links. Use as the masthead / front-page hero for online newspapers,
- * digital magazines, longform publications, investigative outlets or editorial
- * content sites. Renders fully with no props.
+ * NewsroomHero — full newsprint front-page hero for a digital newsroom /
+ * magazine. A print-set front page: a hairline edition rule with mono "front
+ * page" metadata, then an asymmetric 8/4 grid. The lead well carries a mono
+ * category kicker, a huge serif display headline, a drop-capped standfirst, a
+ * hairline-ruled byline ("By NAME" + role) with a mono dateline and read-time,
+ * a wide grayscale lead photograph with an italic "Fig." caption, and a
+ * hard-offset "Read the full story" CTA. A column-ruled right rail runs the
+ * "Also in the news" secondary headlines as index-numbered ledger rows (mono
+ * tag + serif title) split by hairlines, over a giant ghost watermark. The CTA
+ * routes through section-kit route links. Use as the masthead / front-page hero
+ * for online newspapers, digital magazines, longform publications,
+ * investigative outlets or editorial content sites. Renders fully with no props.
  */
 export const NewsroomHero = defineCapsule({
   name: 'NewsroomHero',
   description:
-    "Front-page lead-story hero for a digital newsroom / magazine: a small uppercase category kicker, a huge serif display headline, a standfirst/dek paragraph, a byline (author avatar + name + role) carrying date and read time, a wide lead photograph with a small italic caption and a 'Read the full story' CTA, beside a slim right-hand rail of secondary 'also in the news' headlines (small tag + title) separated by hairline rules. Editorial, print-inspired magazine aesthetic with serif display type, muted contrast and generous whitespace. The CTA routes through section-kit route links. Use as the masthead / front-page hero for online newspapers, digital magazines, longform publications, investigative outlets or editorial content sites.",
+    "Full newsprint front-page hero for a digital newsroom / magazine: a hairline edition rule with mono front-page metadata over an asymmetric 8/4 grid. The lead well carries a mono category kicker, a huge serif display headline, a drop-capped standfirst, a hairline-ruled byline ('By NAME' + role) with a mono dateline and read time, a wide grayscale lead photograph with an italic 'Fig.' caption and a hard-offset 'Read the full story' CTA; a column-ruled right rail runs the 'Also in the news' secondary headlines as index-numbered ledger rows (mono tag + serif title) split by hairlines over a giant ghost watermark. The CTA routes through section-kit route links. Use as the masthead / front-page hero for online newspapers, digital magazines, longform publications, investigative outlets or editorial content sites.",
   props: z.object({
     /** Small uppercase category label above the headline (e.g. "INVESTIGATION"). */
     kicker: z.string().optional(),
@@ -127,21 +128,30 @@ export const NewsroomHero = defineCapsule({
         variant="default"
         className={cn('bg-background', props.className)}
       >
-        <Container asChild size="xl" className="py-16 lg:py-24">
+        <Container asChild size="xl" className="py-12 lg:py-16">
           <HeroContent>
-            <div className="grid gap-12 lg:grid-cols-3 lg:gap-16">
-              {/* Lead story */}
-              <article className="lg:col-span-2">
-                <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-accent">
-                  {kicker}
-                </p>
+            {/* Edition rule */}
+            <div className="flex items-center justify-between border-y-2 border-foreground py-2">
+              <MonoTag tone="muted">The Front Page</MonoTag>
+              <MonoTag tone="faint" className="hidden sm:inline">
+                Vol. CLXXIV · No. 21,904
+              </MonoTag>
+            </div>
+
+            <div className="grid gap-10 pt-10 lg:grid-cols-12 lg:gap-0">
+              {/* Lead story well */}
+              <article className="lg:col-span-8 lg:pr-12">
+                <div className="mb-5 flex items-center gap-3">
+                  <span className="h-px w-8 bg-primary" aria-hidden="true" />
+                  <MonoTag tone="primary">{kicker}</MonoTag>
+                </div>
                 <h1
                   id="newsroom-hero-heading"
-                  className="mb-6 font-serif text-4xl font-bold leading-[1.05] tracking-tight text-foreground sm:text-5xl lg:text-6xl"
+                  className="mb-6 font-serif text-4xl font-bold leading-[1.02] tracking-tight text-balance text-foreground sm:text-5xl lg:text-6xl"
                 >
                   {headline}
                 </h1>
-                <p className="mb-8 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
+                <p className="mb-8 max-w-2xl text-lg leading-relaxed text-pretty text-muted-foreground first-letter:float-left first-letter:mr-3 first-letter:mt-1 first-letter:font-serif first-letter:text-6xl first-letter:font-bold first-letter:leading-[0.7] first-letter:text-foreground sm:text-xl">
                   {dek}
                 </p>
 
@@ -151,15 +161,15 @@ export const NewsroomHero = defineCapsule({
                     alt={author.avatarAlt}
                     w={80}
                     h={80}
-                    className="size-10 rounded-full object-cover"
+                    className="size-10 rounded-full object-cover grayscale"
                   />
                   <div className="text-sm">
-                    <p className="font-semibold text-foreground">
-                      {author.name}
+                    <p className="font-medium text-foreground">
+                      By {author.name}
                     </p>
                     <p className="text-muted-foreground">{author.role}</p>
                   </div>
-                  <div className="ml-auto text-right text-xs text-muted-foreground">
+                  <div className="ml-auto text-right font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
                     <p>{date}</p>
                     <p>{readTime}</p>
                   </div>
@@ -172,15 +182,18 @@ export const NewsroomHero = defineCapsule({
                     w={1600}
                     h={900}
                     loading="eager"
-                    className="aspect-[16/9] w-full object-cover"
+                    className="aspect-[16/9] w-full border border-border object-cover grayscale"
                   />
-                  <figcaption className="mt-3 font-serif text-sm italic text-muted-foreground">
+                  <figcaption className="mt-3 border-l-2 border-border pl-3 font-serif text-sm italic text-muted-foreground">
+                    <span className="font-mono text-[11px] not-italic uppercase tracking-[0.14em] text-foreground">
+                      Fig.&nbsp;1&nbsp;—&nbsp;
+                    </span>
                     {caption}
                   </figcaption>
                 </figure>
 
                 <NavbarRouteLink
-                  className="inline-flex items-center bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                  className="inline-flex items-center rounded-none bg-foreground px-6 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-background shadow-[5px_5px_0_0] shadow-foreground/20 transition-transform hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                   href={cta}
                 >
                   {cta}
@@ -188,22 +201,33 @@ export const NewsroomHero = defineCapsule({
               </article>
 
               {/* Also in the news rail */}
-              <aside className="lg:border-l lg:border-border lg:pl-12">
-                <h2 className="mb-6 border-b border-border pb-3 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+              <aside className="relative overflow-hidden lg:col-span-4 lg:border-l lg:border-border lg:pl-10">
+                <Watermark className="-top-6 right-0 hidden text-[9rem] lg:block">
+                  §
+                </Watermark>
+                <h2 className="relative mb-2 border-b-2 border-foreground pb-2 font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground">
                   Also in the news
                 </h2>
-                <ul className="divide-y divide-border">
+                <ul className="relative divide-y divide-border">
                   {sideStories.map((story, i) => (
-                    <li key={i} className="py-4 first:pt-0">
+                    <li key={i} className="py-4">
                       <NavbarRouteLink
-                        className="group block w-full text-left"
+                        className="group flex w-full gap-3 text-left"
                         href={story.title ?? ''}
                       >
-                        <span className="mb-1 block text-xs font-semibold uppercase tracking-widest text-accent">
-                          {story.tag}
+                        <span
+                          aria-hidden="true"
+                          className="mt-0.5 shrink-0 font-mono text-[11px] tabular-nums text-muted-foreground"
+                        >
+                          {String(i + 1).padStart(2, '0')}
                         </span>
-                        <span className="block font-serif text-lg font-medium leading-snug text-foreground transition-colors group-hover:text-muted-foreground">
-                          {story.title}
+                        <span className="min-w-0">
+                          <span className="mb-1 block font-mono text-[10px] uppercase tracking-[0.16em] text-primary">
+                            {story.tag}
+                          </span>
+                          <span className="block font-serif text-lg font-medium leading-snug text-foreground transition-colors group-hover:text-muted-foreground">
+                            {story.title}
+                          </span>
                         </span>
                       </NavbarRouteLink>
                     </li>

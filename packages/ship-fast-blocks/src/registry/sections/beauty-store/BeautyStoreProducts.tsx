@@ -23,8 +23,7 @@ import { MonoTag } from '#/section-kit/Decor.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { StarRating } from '#/section-kit/StarRating.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * BeautyStoreProducts — editorial-vogue shoppable bestsellers grid for a beauty /
  * skincare / cosmetics e-commerce landing page. A hairline-underlined masthead row:

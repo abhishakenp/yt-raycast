@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
@@ -15,18 +14,19 @@ import {
 } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
- * MembershipClubTestimonials — 6-up member-testimonials grid for a private
- * membership club / exclusive community page. A centered eyebrow + thin heading
- * sit above a responsive 3-column grid of muted rounded quote cards, each leading
- * with a round headshot beside the member's name and role, followed by an italic
- * pull quote. Headshots use the alt-driven Image component. Use as warm social
- * proof for members clubs, founders/social clubs, professional networks, curated
- * communities or alumni collectives. Renders fully with no props.
+ * MembershipClubTestimonials — member-stories wall for a private membership club
+ * / exclusive community page on a subtle muted band. A left-aligned mono
+ * micro-label kicker + serif heading introduce a responsive 1/3-column grid of
+ * sharp-cornered hairline-framed vitrine quote cards, each opening with an
+ * oversized serif quotation mark, a relaxed serif quote, and a member name over a
+ * mono role caption. Use as warm social proof for members clubs, founders/social
+ * clubs, professional networks, curated communities or alumni collectives.
+ * Renders fully with no props.
  */
 export const MembershipClubTestimonials = defineCapsule({
   name: 'MembershipClubTestimonials',
   description:
-    "6-up member-testimonials grid for a private membership club / exclusive community page: a centered eyebrow + thin heading above a responsive 3-column grid of muted rounded quote cards, each leading with a round headshot beside the member's name and role, followed by an italic pull quote. Headshots use the alt-driven Image component. Use as warm social proof for members clubs, founders/social clubs, professional networks, curated communities or alumni collectives.",
+    'Member-stories wall for a private membership club / exclusive community page on a subtle muted band: a left-aligned mono micro-label kicker + serif heading introduce a responsive 1/3-column grid of sharp-cornered hairline-framed vitrine quote cards, each opening with an oversized serif quotation mark, a relaxed serif quote, and a member name over a mono role caption. Use as warm social proof for members clubs, founders/social clubs, professional networks, curated communities or alumni collectives.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -105,14 +105,15 @@ export const MembershipClubTestimonials = defineCapsule({
       >
         <Container>
           <SectionHeading
+            align="left"
             eyebrow={eyebrow}
             title={heading}
             titleId="testimonials-heading"
-            className="mb-16 max-w-3xl lg:mb-24 gap-0"
-            eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground"
-            titleClassName="mb-6 text-3xl font-light text-foreground sm:text-4xl"
+            className="mb-16 max-w-2xl gap-4"
+            eyebrowClassName="font-mono text-[11px] font-medium uppercase tracking-[0.24em] text-muted-foreground"
+            titleClassName="font-serif text-4xl font-normal tracking-tight text-foreground lg:text-5xl"
           />
-          <TestimonialGrid columns={3}>
+          <TestimonialGrid columns={3} className="gap-0">
             {items.map((t) => {
               const __iv__ = t as {
                 quote: string
@@ -124,12 +125,25 @@ export const MembershipClubTestimonials = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
+                <TestimonialCard
+                  key={__iv__.name}
+                  className="gap-5 rounded-none border-border bg-background p-8 transition-[border-color] duration-150 hover:border-foreground/30 lg:p-10"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="font-serif text-6xl leading-[0.6] text-border"
+                  >
+                    &ldquo;
+                  </span>
+                  <TestimonialQuote className="font-serif text-lg font-normal leading-relaxed text-foreground">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="mt-auto block">
+                    <TestimonialName className="font-medium text-foreground">
+                      {__iv__.name}
+                    </TestimonialName>
                     {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
+                      <TestimonialMeta className="mt-1 block font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
                         {__iv__.role || __iv__.company || __iv__.meta}
                       </TestimonialMeta>
                     )}

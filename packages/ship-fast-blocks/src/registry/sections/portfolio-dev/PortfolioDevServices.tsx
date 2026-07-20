@@ -12,20 +12,22 @@ import {
 } from '#/section-kit/FeatureGrid.tsx'
 
 /**
- * PortfolioDevServices — a 4-up services band for a modern developer portfolio.
- * Thin configuration over the shared `FeatureGrid` composite: a centered
- * heading and subheading above a responsive grid of plain feature cards (no
- * icons) describing the kinds of work the developer takes on — web apps,
- * mobile, APIs, and cloud/DevOps. Each card shows a title and a short,
- * concrete description so a prospective client can scan capabilities fast.
- * Uses theme tokens only and inherits the kit's card styling. Use mid-page on a
- * freelance engineer, full-stack developer, or studio portfolio to summarize
- * offerings. Renders fully with no props via baked-in defaults.
+ * PortfolioDevServices — a 4-up services band for a modern developer portfolio
+ * in an editorial-terminal language. Thin configuration over the shared
+ * `FeatureGrid` composite (grid only — the header is rendered locally so it can
+ * sit left-aligned under a mono meta rule): a monospace `--flag` kicker and a
+ * ghost index numeral sit on each sharp-cornered card describing the kinds of
+ * work the developer takes on — web apps, mobile, APIs, and cloud/DevOps. Each
+ * card pairs a title with a short, concrete description and lifts onto a hard
+ * offset shadow on hover with motion-reduce respected. Uses theme tokens only.
+ * Use mid-page on a freelance engineer, full-stack developer, or studio
+ * portfolio to summarize offerings. Renders fully with no props via baked-in
+ * defaults.
  */
 export const PortfolioDevServices = defineCapsule({
   name: 'PortfolioDevServices',
   description:
-    '4-up services band for a modern developer portfolio: a centered heading and subheading above a responsive grid of plain feature cards (no icons) describing the work the developer takes on — production web apps, cross-platform mobile, REST/GraphQL APIs, and cloud/DevOps. Each card pairs a short title with a concrete one-line description. Theme-token only. Use mid-page on a freelance engineer, full-stack developer, or studio portfolio to summarize offerings.',
+    '4-up editorial-terminal services band for a modern developer portfolio: a left-aligned mono meta rule and heading above a responsive grid of sharp-cornered cards, each carrying a monospace `--flag` kicker and a ghost index numeral, describing the work the developer takes on — production web apps, cross-platform mobile, REST/GraphQL APIs, and cloud/DevOps. Each card pairs a short title with a concrete one-line description and lifts onto a hard offset shadow on hover. Theme-token only. Use mid-page on a freelance engineer, full-stack developer, or studio portfolio to summarize offerings.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -78,8 +80,20 @@ export const PortfolioDevServices = defineCapsule({
         )}
       >
         <Container>
-          <FeatureGrid heading={heading} subheading={subheading} columns={4}>
-            {features.map((f) => {
+          <div className="mb-10 flex items-center justify-between gap-4 border-b border-border pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            <span className="flex items-center gap-3">
+              <span aria-hidden="true" className="size-2 bg-primary" />
+              {subheading}
+            </span>
+            <span className="tabular-nums">
+              {String(features.length).padStart(2, '0')} / services
+            </span>
+          </div>
+          <h2 className="mb-10 max-w-2xl text-4xl font-extrabold leading-[0.95] tracking-tighter text-foreground sm:text-5xl">
+            {heading}
+          </h2>
+          <FeatureGrid columns={4}>
+            {features.map((f, i) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -89,10 +103,30 @@ export const PortfolioDevServices = defineCapsule({
                 price?: string
                 imageAlt?: string
               }
+              const flag =
+                '--' +
+                __iv__.title
+                  .toLowerCase()
+                  .replace(/[^a-z0-9]+/g, '-')
+                  .replace(/(^-|-$)/g, '')
               return (
-                <FeatureCard key={__iv__.title}>
+                <FeatureCard
+                  key={__iv__.title}
+                  className="relative gap-3 overflow-hidden rounded-none border-border bg-card transition-[transform,box-shadow,border-color] duration-150 hover:-translate-y-1 hover:border-foreground/30 hover:shadow-[5px_5px_0_0] hover:shadow-foreground motion-reduce:transform-none"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute right-3 top-2 select-none font-mono text-5xl font-extrabold tabular-nums leading-none tracking-tighter text-foreground/[0.05]"
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
                   {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
+                  <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-primary">
+                    {flag}
+                  </span>
+                  <FeatureTitle className="text-lg font-bold tracking-tight">
+                    {__iv__.title}
+                  </FeatureTitle>
                   <FeatureDescription>{__iv__.description}</FeatureDescription>
                 </FeatureCard>
               )

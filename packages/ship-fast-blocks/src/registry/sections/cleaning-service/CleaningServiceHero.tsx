@@ -22,8 +22,7 @@ import {
   LocalServiceMutationSpinner,
 } from '../local-service/local-service-interactions.tsx'
 import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * CleaningServiceHero — playful-Swiss asymmetric hero for a home-cleaning /
  * maid-service landing page. A 7/5 split on a crisp background with a faint

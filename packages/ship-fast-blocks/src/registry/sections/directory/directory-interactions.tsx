@@ -20,6 +20,8 @@ import {
   AccountDropdownSeparator,
   AccountDropdownSignOut,
   AccountDropdownUnauthenticated,
+} from '#/section-kit/AccountDropdown.tsx'
+import {
   CommandSearch,
   CommandSearchTrigger,
   CommandSearchContent,
@@ -27,9 +29,8 @@ import {
   CommandSearchList,
   CommandSearchEmpty,
   CommandSearchGroup,
-  NavbarRouteLink,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/CommandSearch.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 import type {
   directoryLakebed,
   DirectoryLeadInput,
@@ -220,15 +221,19 @@ export function DirectorySearchButton({
       <CommandSearchContent
         title="Search directory"
         description="Search the generated business directory."
+        className="rounded-none border-border"
       >
         <CommandSearchInput placeholder="Search businesses..." />
         <CommandSearchList>
           <CommandSearchEmpty>No businesses found.</CommandSearchEmpty>
-          <CommandSearchGroup heading="Businesses">
+          <CommandSearchGroup
+            heading="Businesses"
+            className="[&_[cmdk-group-heading]]:font-mono [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.14em] [&_[cmdk-item]]:rounded-none"
+          >
             {(item) => (
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium">{item.name}</p>
-                <p className="truncate text-xs text-muted-foreground">
+                <p className="truncate font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
                   {[item.category, item.address].filter(Boolean).join(' · ')}
                 </p>
               </div>
@@ -256,10 +261,10 @@ export function DirectoryAccountButton({
       <AccountDropdownTrigger aria-label={label} className={buttonClassName}>
         {children}
       </AccountDropdownTrigger>
-      <AccountDropdownContent>
+      <AccountDropdownContent className="rounded-none border-border">
         <AccountDropdownLabel />
         <AccountDropdownSeparator />
-        <AccountDropdownSignOut />
+        <AccountDropdownSignOut className="rounded-none" />
       </AccountDropdownContent>
       <AccountDropdownUnauthenticated />
     </AccountDropdown>
@@ -291,7 +296,7 @@ export function DirectoryMobileMenu({
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="w-[min(100%,22rem)] border-l border-border bg-background p-0 text-foreground sm:max-w-[22rem]"
+        className="w-[min(100%,22rem)] rounded-none border-l border-border bg-background p-0 text-foreground shadow-none sm:max-w-[22rem]"
       >
         <SheetHeader className="border-b border-border px-5 py-4 text-left">
           <SheetTitle className="font-serif text-base font-bold tracking-tight">
@@ -303,7 +308,7 @@ export function DirectoryMobileMenu({
         </SheetHeader>
         <div className="flex flex-col divide-y divide-border px-3 py-2">
           <NavbarRouteLink
-            className="rounded-none px-3 py-3.5 text-left font-mono text-xs uppercase tracking-[0.14em] text-foreground transition-colors hover:bg-muted"
+            className="rounded-none px-3 py-3.5 text-left font-mono text-xs uppercase tracking-[0.14em] text-foreground transition-colors hover:bg-muted active:translate-y-px"
             href={homeTarget ?? nav[0]}
             onClick={() => setOpen(false)}
           >
@@ -312,7 +317,7 @@ export function DirectoryMobileMenu({
           {nav.map((item) => (
             <NavbarRouteLink
               key={item}
-              className="rounded-none px-3 py-3.5 text-left font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="rounded-none px-3 py-3.5 text-left font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:translate-y-px"
               href={item}
               onClick={() => setOpen(false)}
             >

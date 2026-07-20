@@ -13,8 +13,7 @@ import {
   SearchFieldHint,
   SearchSubmit,
 } from '#/section-kit/SearchForm.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * FaqHero — editorial "Editorial Q&A" search hero for a help-center / FAQ /
  * knowledge-base page. A giant faint ghost "?" watermark bleeds off the right edge

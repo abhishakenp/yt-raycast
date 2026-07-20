@@ -18,15 +18,17 @@ import {
 } from '#/section-kit/SiteFooter.tsx'
 
 /**
- * NonprofitFooter — a warm, mission-driven closing footer for a nonprofit /
- * charity / NGO site. Thin configuration over the shared `SiteFooter`
- * composite: a layered sprout-glyph logo mark beside the organization name, a
- * tagline, a social row, and a responsive grid of link columns (Get Involved,
- * About, Resources, Contact). The bottom bar carries an auto-updating copyright
- * line plus a note. Every link routes through section-kit route links. Use as the site-wide
- * footer for nonprofits, charities, NGOs, foundations, or humanitarian
- * organizations. Renders fully with no props via baked-in "Roots of Hope"
- * defaults.
+ * NonprofitFooter — warm mission-editorial closing footer for a nonprofit /
+ * charity / NGO site. Built on the shared `SiteFooter` composite as a calm
+ * border-topped hairline ledger on a soft muted wash: a wide brand block (a
+ * hand-drawn sprout glyph beside a serif organization wordmark, a tagline, and a
+ * row of square mono social chips) leads an asymmetric grid of link columns
+ * (Get Involved, About, Resources, Contact) whose titles are mono uppercase
+ * micro-labels and whose links sit as tidy block rows. A hairline bottom bar
+ * carries the registration note. Every link routes through section-kit route
+ * links. Warm, human, trustworthy. Use as the site-wide footer for nonprofits,
+ * charities, NGOs, foundations, or humanitarian organizations. Renders fully
+ * with no props via baked-in "Roots of Hope" defaults.
  */
 function SproutMark({ className }: { className?: string }) {
   return (
@@ -50,7 +52,7 @@ function SproutMark({ className }: { className?: string }) {
 export const NonprofitFooter = defineCapsule({
   name: 'NonprofitFooter',
   description:
-    'Warm, mission-driven closing footer for a nonprofit / charity / NGO site built on the shared SiteFooter composite: a layered sprout-glyph logo mark + organization name, a tagline, a social row, and a responsive grid of link columns (Get Involved, About, Resources, Contact), with an auto-updating copyright line and note in the bottom bar. Every link routes through section-kit route links. Use as the site-wide footer for nonprofits, charities, NGOs, foundations, or humanitarian organizations.',
+    'Warm mission-editorial closing footer for a nonprofit / charity / NGO site built on the shared SiteFooter composite: a calm border-topped hairline ledger on a soft muted wash with a wide brand block (a hand-drawn sprout glyph + serif organization wordmark, a tagline, and a row of square mono social chips) leading an asymmetric grid of link columns (Get Involved, About, Resources, Contact) whose titles are mono uppercase micro-labels and whose links sit as tidy block rows, closed by a hairline bottom bar with the registration note. Every link routes through section-kit route links. Warm, human, trustworthy. Use as the site-wide footer for nonprofits, charities, NGOs, foundations, or humanitarian organizations.',
   props: z.object({
     /** Organization / brand name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -95,36 +97,48 @@ export const NonprofitFooter = defineCapsule({
 
     return (
       <SiteFooter className={props.className}>
-        <FooterContent>
-          <FooterGrid>
+        <FooterContent className="py-14 sm:py-16">
+          <FooterGrid className="gap-x-8 gap-y-12 md:grid-cols-2 lg:grid-cols-6">
             <FooterBrand
               brand={props.brand ?? 'Roots of Hope'}
-              brandMark={<SproutMark className="size-8 text-primary" />}
-              brandClassName={'text-lg font-semibold'}
+              brandMark={<SproutMark className="size-7 text-primary" />}
+              brandClassName="font-serif text-xl font-medium tracking-tight"
+              className="md:col-span-2 lg:col-span-2"
             >
-              <FooterTagline>
+              <FooterTagline className="mt-3 max-w-xs leading-relaxed">
                 {props.tagline ??
                   'Planting hope and growing brighter futures with communities around the world.'}
               </FooterTagline>
-              <FooterSocial>
+              <FooterSocial className="mt-5 gap-2">
                 {social.map((s) => (
-                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  <FooterSocialLink
+                    key={s.label}
+                    className="border border-border px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground active:translate-y-px"
+                  >
+                    {s.label}
+                  </FooterSocialLink>
                 ))}
               </FooterSocial>
             </FooterBrand>
             {columns.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
-                <FooterColumnList>
+                <FooterColumnTitle className="font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground">
+                  {col.title}
+                </FooterColumnTitle>
+                <FooterColumnList className="mt-4 space-y-2.5">
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <li key={link}>
+                      <FooterLink className="block w-fit text-foreground/80 hover:text-foreground">
+                        {link}
+                      </FooterLink>
+                    </li>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
-          <FooterBottom>
-            <FooterCopyright>
+          <FooterBottom className="mt-14">
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.15em]">
               {props.note ??
                 'A registered 501(c)(3) nonprofit. All rights reserved.'}
             </FooterCopyright>

@@ -2,30 +2,32 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   ScheduleList,
   ScheduleItem,
-  ScheduleContent,
   ScheduleTitle,
   ScheduleDetail,
   ScheduleTime,
 } from '#/section-kit/ScheduleList.tsx'
 
 /**
- * YogaStudioSchedule — weekly class-schedule grid for a yoga-studio page. A
- * clean background band with a centered heading + intro above a responsive set
- * of day columns, each listing its classes with name, time, and teacher. Use to
+ * YogaStudioSchedule — hairline weekly-timetable ledger for a yoga-studio page.
+ * The page's signature move: on a clean background under a giant lowercase ghost
+ * watermark word, an asymmetric left-aligned header (mono index eyebrow + calm
+ * clean-sans heading + grounding intro, mono day-count meta on the right) sits
+ * above a collapsed-border schedule ledger. Each day is a hairline-divided
+ * row-group pairing a mono uppercase day label and a tabular class count with a
+ * stack of ledger lines — a mono tabular time, a clean-sans class name, and a
+ * mono "with teacher" tag, `MON · 7:00 AM · VINYASA · WITH AVA` grammar. Use to
  * show a studio's weekly timetable so visitors can find a class that fits their
  * routine. Renders fully with no props via baked-in defaults.
  */
 export const YogaStudioSchedule = defineCapsule({
   name: 'YogaStudioSchedule',
   description:
-    "Weekly class-schedule grid for a yoga-studio page: a clean band with a centered heading + intro above a responsive set of day columns, each listing its classes with name, time, and teacher. Use to show a studio's weekly timetable so visitors can find a class that fits their routine.",
+    "Hairline weekly-timetable ledger for a yoga-studio page — the page's signature move: a clean background with a giant lowercase ghost watermark word, an asymmetric left-aligned header (mono index eyebrow + calm clean-sans heading + grounding intro, mono day-count meta right) above a collapsed-border schedule ledger. Each day is a hairline-divided row-group pairing a mono uppercase day label and a tabular class count with ledger lines — a mono tabular time, a clean-sans class name, and a mono with-teacher tag. Use to show a studio's weekly timetable so visitors can find a class that fits their routine.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -105,53 +107,70 @@ export const YogaStudioSchedule = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-background pt-28 pb-20 lg:pt-32 lg:pb-28',
+          'relative overflow-hidden bg-background pt-28 pb-20 lg:pt-32 lg:pb-28',
           props.className,
         )}
         aria-labelledby="yoga-schedule-heading"
       >
-        <Container size="xl" className="px-6">
-          <SectionHeading
-            title={heading}
-            subtitle={subheading}
-            titleId="yoga-schedule-heading"
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-
-          <ResponsiveGrid cols="1-2-3" className="gap-4">
-            {days.map((day) => (
-              <Card
-                key={day.day}
-                className="p-5 text-card-foreground rounded-2xl p-4"
+        <Watermark className="-bottom-6 -right-4 text-[6rem] font-semibold tracking-tight sm:text-[9rem] lg:text-[13rem]">
+          practice
+        </Watermark>
+        <Container size="xl" className="relative px-6">
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <div className="max-w-2xl">
+              <MonoTag className="mb-4 block">03 / Timetable</MonoTag>
+              <h2
+                id="yoga-schedule-heading"
+                className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl lg:text-[2.75rem] lg:leading-[1.08]"
               >
-                <h3 className="border-b border-border pb-3 text-sm font-semibold uppercase tracking-wide text-foreground">
-                  {day.day}
-                </h3>
-                <ScheduleList layout="timeline" className="mt-4 space-y-4">
+                {heading}
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">{subheading}</p>
+            </div>
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="shrink-0 md:pb-2"
+            >
+              {String(days.length).padStart(2, '0')} / days
+            </MonoTag>
+          </div>
+
+          <div className="border-t border-border">
+            {days.map((day) => (
+              <div
+                key={day.day}
+                className="grid gap-y-4 border-b border-border py-6 md:grid-cols-[12rem_1fr] md:gap-x-10 md:py-8"
+              >
+                <div className="flex items-baseline justify-between gap-3 md:flex-col md:items-start md:justify-start md:gap-2">
+                  <span className="font-mono text-sm uppercase tracking-[0.2em] text-foreground">
+                    {day.day}
+                  </span>
+                  <span className="font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground/70 tabular-nums">
+                    {String(day.classes.length).padStart(2, '0')} classes
+                  </span>
+                </div>
+                <ScheduleList layout="list" className="divide-y-0">
                   {day.classes.map((cls) => (
                     <ScheduleItem
                       key={`${cls.name}-${cls.time}`}
-                      className="flex-row items-start justify-between gap-3 sm:flex-row sm:gap-3"
+                      className="flex flex-col gap-0.5 border-t border-border py-3 first:border-t-0 sm:grid sm:grid-cols-[6.5rem_1fr_9rem] sm:items-baseline sm:gap-x-6 sm:gap-y-0"
                     >
-                      <ScheduleContent>
-                        <ScheduleTitle className="text-sm font-medium text-foreground">
-                          {cls.name}
-                        </ScheduleTitle>
-                        <ScheduleDetail className="mt-0 text-xs text-muted-foreground">
-                          with {cls.teacher}
-                        </ScheduleDetail>
-                      </ScheduleContent>
-                      <ScheduleTime className="whitespace-nowrap text-xs font-medium text-accent sm:w-auto">
+                      <ScheduleTime className="w-auto shrink-0 font-mono text-sm font-medium tabular-nums text-foreground sm:w-auto">
                         {cls.time}
                       </ScheduleTime>
+                      <ScheduleTitle className="text-base font-medium text-foreground">
+                        {cls.name}
+                      </ScheduleTitle>
+                      <ScheduleDetail className="mt-0 font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground sm:text-right">
+                        with {cls.teacher}
+                      </ScheduleDetail>
                     </ScheduleItem>
                   ))}
                 </ScheduleList>
-              </Card>
+              </div>
             ))}
-          </ResponsiveGrid>
+          </div>
         </Container>
       </section>
     )

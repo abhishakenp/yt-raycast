@@ -1,15 +1,12 @@
-import { useMemo, useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-react'
 import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
-import { allCapsules } from '@ship-fast/blocks'
 import {
-  introspectCapsuleSchema,
   createDefaultItem,
-  hasContextInfo,
-  type CapsuleSchemaInfo,
   type CollectionField,
 } from '@ship-fast/blocks/capsules'
 import { useSectionCapsuleActions } from '../hooks/useSectionCapsuleActions'
+import { useRuntimeCapsuleSchemaInfo } from '../hooks/useRuntimeCapsuleSchemaInfo'
 import { cn } from '#/lib/utils'
 import { Button } from '#/components/ui/button'
 import {
@@ -71,15 +68,6 @@ export function CapsuleInlineControls({
   )
 }
 
-function lookupCapsuleSchema(capsuleName: string): CapsuleSchemaInfo | null {
-  const capsule = allCapsules.find((c) => c.client.name === capsuleName)
-  if (!capsule) return null
-  const propsSchema = capsule.client.props
-  if (!propsSchema) return null
-  const info = introspectCapsuleSchema(propsSchema)
-  return hasContextInfo(info) ? info : null
-}
-
 function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v)
 }
@@ -124,10 +112,7 @@ function CapsuleInlineControlsInner({
   capsuleElement?: HTMLElement | null
 }) {
   const actions = useSectionCapsuleActions(capsuleName, statementId)
-  const schemaInfo = useMemo(
-    () => lookupCapsuleSchema(capsuleName),
-    [capsuleName],
-  )
+  const schemaInfo = useRuntimeCapsuleSchemaInfo(capsuleName)
 
   // ── Buffered reorders: keyed by collectionKey → ordered array of raw indices
   const [pendingOrders, setPendingOrders] = useState<Record<string, number[]>>(

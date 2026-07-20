@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import { ResponsiveGrid } from '#/section-kit/index.ts'
 import {
   FeatureCard,
   FeatureIcon,
@@ -11,21 +10,24 @@ import {
 } from '#/section-kit/FeatureGrid.tsx'
 
 /**
- * ManufacturingCapabilities — a 6-up capabilities / services grid for a
- * precision-manufacturing site. A centered eyebrow + heading + description intro
- * sits above a responsive three-column grid of muted cards, each with a rounded
- * icon tile (rotating through a built-in industrial icon set), a title and a
- * spec-rich description, lifting to an accent surface on hover. Clean, neutral,
- * industrial. Use to present full-service manufacturing capabilities (CNC
- * machining, sheet metal, grinding, wire EDM, finishing, inspection) on machine-
- * shop or fabricator pages. Renders fully with no props via baked-in defaults.
+ * ManufacturingCapabilities — a heavy-industrial capabilities / services spec
+ * grid for a precision-manufacturing site. An asymmetric header pairs a mono
+ * index eyebrow + giant heading block on the left with a mono capability count on
+ * the right, above a collapsed-border (shared thick-hairline) grid of slab cells,
+ * each carrying a mono index, a hard-bordered square icon slab, a title and a
+ * spec-rich description, flooding to a muted surface on hover. Tech-brutalist,
+ * binary-radius, industrial. Use to present full-service manufacturing
+ * capabilities (CNC machining, sheet metal, grinding, wire EDM, finishing,
+ * inspection) on machine-shop or fabricator pages. Renders fully with no props
+ * via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 export const ManufacturingCapabilities = defineCapsule({
   name: 'ManufacturingCapabilities',
   description:
-    'A 6-up capabilities / services grid for a precision-manufacturing site: a centered eyebrow + heading + description intro above a responsive three-column grid of muted cards, each with a rounded icon tile (rotating through a built-in industrial icon set), a title and a spec-rich description, lifting to an accent surface on hover. Clean, neutral, industrial. Use to present full-service manufacturing capabilities (CNC machining, sheet metal, grinding, wire EDM, finishing, inspection) on machine-shop or fabricator pages.',
+    'A heavy-industrial capabilities / services spec grid for a precision-manufacturing site: an asymmetric header (mono index eyebrow + giant heading block left, mono capability count right) above a collapsed-border grid of slab cells, each with a mono index, a hard-bordered square icon slab, a title and a spec-rich description that floods to a muted surface on hover. Tech-brutalist, binary-radius, industrial. Use to present full-service manufacturing capabilities (CNC machining, sheet metal, grinding, wire EDM, finishing, inspection) on machine-shop or fabricator pages.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -170,31 +172,47 @@ export const ManufacturingCapabilities = defineCapsule({
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <Container>
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            eyebrowClassName="tracking-wider text-muted-foreground"
-            titleClassName="mt-3 tracking-tight sm:text-4xl"
-            subtitleClassName="mt-4 text-lg"
-          />
-          <ResponsiveGrid cols="1-md-2-3">
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={description}
+              className="max-w-3xl gap-0"
+              eyebrowClassName="font-mono uppercase tracking-[0.2em] text-muted-foreground"
+              titleClassName="mt-3 font-extrabold uppercase tracking-tight sm:text-4xl"
+              subtitleClassName="mt-4 text-lg"
+            />
+            <MonoTag
+              aria-hidden="true"
+              className="shrink-0 md:mb-2 md:text-right"
+            >
+              {String(items.length).padStart(2, '0')} / Processes
+            </MonoTag>
+          </div>
+          <div className="grid grid-cols-1 border-l-2 border-t-2 border-foreground sm:grid-cols-2 lg:grid-cols-3">
             {items.map((item, i) => (
               <FeatureCard
                 key={item.title}
-                className="group rounded-lg border-0 bg-muted p-6 transition-colors hover:bg-accent"
+                className="group rounded-none border-0 border-b-2 border-r-2 border-foreground bg-card p-6 transition-colors hover:bg-muted sm:p-7"
               >
-                <FeatureIcon className="mb-4 grid size-12 place-items-center rounded-lg bg-secondary text-foreground">
-                  {capIcons[i % capIcons.length]}
-                </FeatureIcon>
-                <FeatureTitle className="mb-2">{item.title}</FeatureTitle>
+                <div className="mb-5 flex items-center justify-between">
+                  <FeatureIcon className="grid size-12 place-items-center rounded-none border-2 border-foreground bg-background text-foreground">
+                    {capIcons[i % capIcons.length]}
+                  </FeatureIcon>
+                  <span className="font-mono text-2xl font-extrabold tabular-nums text-foreground/15">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                </div>
+                <FeatureTitle className="mb-2 font-bold uppercase tracking-tight">
+                  {item.title}
+                </FeatureTitle>
                 <FeatureDescription className="leading-relaxed">
                   {item.description}
                 </FeatureDescription>
               </FeatureCard>
             ))}
-          </ResponsiveGrid>
+          </div>
         </Container>
       </section>
     )

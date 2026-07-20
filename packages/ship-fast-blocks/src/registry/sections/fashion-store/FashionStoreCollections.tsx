@@ -18,8 +18,7 @@ import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { CollectionGrid } from '#/section-kit/CollectionGrid.tsx'
 import { Watermark } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const FashionStoreCollections = defineCapsule({
   name: 'FashionStoreCollections',
   description:

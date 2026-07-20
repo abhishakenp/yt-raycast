@@ -13,8 +13,7 @@ import {
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { DotGrid, Watermark } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * BootcampHero — "Terminal Classroom" landing hero for a coding bootcamp /
  * career-school. An asymmetric 7:5 split over a dot-grid background with a

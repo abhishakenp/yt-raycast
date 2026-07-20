@@ -11,8 +11,7 @@ import {
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
 import { Watermark } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * KidsEducationCta — inverted playful-primary closing call-to-action band for a
  * kids / family learning platform. A full-width bg-foreground / text-background

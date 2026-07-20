@@ -1,5 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
+import { cn } from '#/lib/utils.ts'
 import {
   OverviewSection,
   OverviewGrid,
@@ -17,12 +18,22 @@ import {
   OverviewStatLabel,
   OverviewMediaPanel,
 } from '#/section-kit/OverviewSection.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { Watermark } from '#/section-kit/Decor.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
+/**
+ * WineryBreweryOverview — artisan-editorial overview band for the Winery
+ * Brewery page family. Over a giant faint ghost watermark, an asymmetric split
+ * pairs a left content column (mono brand rail, square hairline label-stamp
+ * eyebrow, large serif heading, supporting copy, square-edged dual CTAs with
+ * press feedback, mono feature label-stamps, and a collapsed-border tabular
+ * stat ledger) with a right alt-driven image panel. CTAs route through
+ * section-kit route links. Use when composing a winery brewery page or adding a
+ * focused winery brewery band to a larger generated site.
+ */
 export const WineryBreweryOverview = defineCapsule({
   name: 'WineryBreweryOverview',
   description:
-    'Reusable overview / hero section for the Winery Brewery page family. Derived from the section template catalog to provide section-level coverage without new HTML generation: eyebrow, large heading, supporting copy, dual CTAs, feature pills, KPI strip, and an image panel rendered through the alt-driven Image component. Use when composing a winery brewery page or adding a focused winery brewery band to a larger generated site.',
+    'Artisan-editorial overview band for the Winery Brewery page family: over a giant faint ghost watermark, an asymmetric split pairs a left content column (mono brand rail, square hairline label-stamp eyebrow, large serif heading, supporting copy, square-edged dual CTAs with press feedback, mono feature label-stamps, and a collapsed-border tabular stat ledger) with a right alt-driven image panel. CTAs route through section-kit route links. Use when composing a winery brewery page or adding a focused winery brewery band to a larger generated site.',
   props: z.object({
     brand: z.string().optional(),
     eyebrow: z.string().optional(),
@@ -73,37 +84,67 @@ export const WineryBreweryOverview = defineCapsule({
         ]
 
     return (
-      <OverviewSection className={props.className}>
-        <OverviewGrid>
+      <OverviewSection
+        className={cn('relative overflow-hidden', props.className)}
+      >
+        <Watermark className="-bottom-10 -right-4 font-serif text-[8rem] font-medium italic sm:text-[12rem] lg:text-[17rem]">
+          Vintage
+        </Watermark>
+        <OverviewGrid className="relative lg:grid-cols-[1.2fr_0.8fr]">
           <OverviewContent>
-            <OverviewEyebrow>{eyebrow}</OverviewEyebrow>
-            <OverviewBrand>{brand}</OverviewBrand>
-            <OverviewHeading>{heading}</OverviewHeading>
+            <div className="mb-6 flex items-center gap-3">
+              <span
+                aria-hidden="true"
+                className="size-1.5 shrink-0 bg-primary"
+              />
+              <span className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+                {brand}
+              </span>
+            </div>
+            <OverviewEyebrow className="-rotate-1 rounded-none border-border bg-transparent font-mono text-[11px] uppercase tracking-[0.16em]">
+              {eyebrow}
+            </OverviewEyebrow>
+            <OverviewBrand className="sr-only">{brand}</OverviewBrand>
+            <OverviewHeading className="font-serif text-4xl font-medium tracking-tight sm:text-5xl">
+              {heading}
+            </OverviewHeading>
             <OverviewSubheading>{subheading}</OverviewSubheading>
             <OverviewFeatures>
               {features.map((feature: string) => (
-                <OverviewFeature key={feature}>{feature}</OverviewFeature>
+                <OverviewFeature
+                  key={feature}
+                  className="rounded-none border-border bg-transparent font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground"
+                >
+                  {feature}
+                </OverviewFeature>
               ))}
             </OverviewFeatures>
             <OverviewCta>
               <NavbarRouteLink
-                className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+                className="inline-flex items-center justify-center rounded-none bg-primary px-6 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-primary-foreground transition-[transform,background-color] duration-150 hover:bg-primary/90 active:translate-y-px"
                 href={primaryCta}
               >
                 {primaryCta}
               </NavbarRouteLink>
               <NavbarRouteLink
-                className="rounded-full border border-border bg-background px-6 py-3 text-sm font-semibold text-foreground transition hover:bg-muted"
+                className="inline-flex items-center justify-center rounded-none border border-border bg-background px-6 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-foreground transition-[transform,background-color] duration-150 hover:bg-muted active:translate-y-px"
                 href={secondaryCta}
               >
                 {secondaryCta}
               </NavbarRouteLink>
             </OverviewCta>
-            <OverviewStats>
+            <OverviewStats className="mt-12 grid-cols-3 gap-0 border-l border-t border-border pt-0">
               {stats.map((stat: { value: string; label: string }) => (
-                <OverviewStat key={stat.label}>
-                  <OverviewStatValue>{stat.value}</OverviewStatValue>
-                  <OverviewStatLabel>{stat.label}</OverviewStatLabel>
+                <OverviewStat
+                  key={stat.label}
+                  className="border-b border-r border-border p-4 sm:p-5"
+                >
+                  <OverviewStatValue className="font-mono text-3xl font-medium tabular-nums tracking-tight">
+                    {stat.value}
+                  </OverviewStatValue>
+                  <OverviewStatLabel className="mt-2 font-mono text-[11px] uppercase tracking-[0.14em]">
+                    {stat.label}
+                  </OverviewStatLabel>
                 </OverviewStat>
               ))}
             </OverviewStats>

@@ -6,35 +6,29 @@ import {
   HeroSection,
   HeroBackgroundImage,
   HeroContent,
-  HeroBadge,
   HeroHeading,
   HeroSubheading,
   HeroActions,
   HeroCta,
 } from '#/section-kit/HeroSection.tsx'
-import {
-  StatGrid,
-  StatItem,
-  StatValue,
-  StatLabel,
-} from '#/section-kit/StatGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * TourExperiencesHero — vivid, full-bleed adventure hero for a guided-tour /
- * expedition brand. A cinematic landscape photo fills the band behind a
- * token-driven dark gradient overlay, with an eyebrow pill, a large headline,
- * supporting copy, and dual CTAs ("Explore Tours" primary + "How it works"
- * outline) that route through section-kit route links. A trust strip of rating and tour
- * stats anchors the bottom. Use as the opening hero for tour operators,
+ * TourExperiencesHero — editorial-wanderlust full-bleed plate hero for a
+ * guided-tour / expedition brand. A cinematic alt-driven landscape photo fills
+ * the band edge-to-edge behind a token-driven foreground gradient, with a giant
+ * ghost "WANDERLUST" watermark, a rotated mono passport-stamp eyebrow chip, a
+ * huge tight-tracked headline, supporting copy, and dual CTAs ("Explore Tours"
+ * inverted + "How it works" outline) that route through section-kit route links.
+ * A collapsed-border ledger of rating and tour stats — mono labels, tabular
+ * values — anchors the bottom. Use as the opening hero for tour operators,
  * adventure outfitters, travel-experience marketplaces, and destination guides.
  * Renders fully with no props via baked-in "Wanderwild Tours" defaults.
  */
 export const TourExperiencesHero = defineCapsule({
   name: 'TourExperiencesHero',
   description:
-    "Vivid full-bleed adventure hero for a guided-tour / expedition brand: a cinematic landscape photo behind a token-driven dark gradient overlay, with an eyebrow pill, a large headline, supporting copy, and dual CTAs ('Explore Tours' primary + 'How it works' outline) that route through section-kit route links, plus a bottom trust strip of rating and tour stats. Use as the opening hero for tour operators, adventure outfitters, travel-experience marketplaces, and destination guides.",
+    "Editorial-wanderlust full-bleed plate hero for a guided-tour / expedition brand: a cinematic alt-driven landscape photo fills the band edge-to-edge behind a token-driven foreground gradient, with a giant ghost 'WANDERLUST' watermark, a rotated mono passport-stamp eyebrow chip, a huge tight-tracked headline, supporting copy, and dual CTAs ('Explore Tours' inverted + 'How it works' outline) that route through section-kit route links, plus a bottom collapsed-border ledger of rating and tour stats with mono labels and tabular values. Use as the opening hero for tour operators, adventure outfitters, travel-experience marketplaces, and destination guides.",
   props: z.object({
     /** Eyebrow / kicker pill text above the headline. */
     eyebrow: z.string().optional(),
@@ -86,21 +80,27 @@ export const TourExperiencesHero = defineCapsule({
       >
         <HeroBackgroundImage
           alt={imageAlt}
-          overlayClassName="bg-transparent"
-          gradientClassName="bg-gradient-to-t from-foreground via-foreground/70 to-foreground/30"
+          overlayClassName="bg-foreground/20"
+          gradientClassName="bg-gradient-to-t from-foreground via-foreground/75 to-foreground/25"
         />
+
+        {/* Giant ghost destination watermark. */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-6 -left-2 z-0 select-none whitespace-nowrap font-extrabold leading-none tracking-tighter text-background/[0.06] text-[7rem] sm:text-[11rem] lg:text-[15rem]"
+        >
+          WANDERLUST
+        </span>
 
         <Container asChild>
           <HeroContent className="flex min-h-[36rem] flex-col justify-center py-32 lg:py-40">
             <div className="max-w-2xl">
-              <HeroBadge
-                variant="pill"
-                className="gap-2 py-2 text-sm tracking-normal normal-case"
-              >
-                <span className="size-2 rounded-full bg-primary" />
+              {/* Rotated mono passport-stamp eyebrow. */}
+              <span className="inline-flex -rotate-1 items-center gap-2 rounded-none border border-background/40 px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-background/80 backdrop-blur-sm">
+                <span aria-hidden="true" className="size-1.5 bg-primary" />
                 {eyebrow}
-              </HeroBadge>
-              <HeroHeading className="mt-6 text-background">
+              </span>
+              <HeroHeading className="mt-6 text-5xl font-extrabold leading-[0.95] tracking-tighter text-background sm:text-6xl lg:text-7xl">
                 {heading}
               </HeroHeading>
               <HeroSubheading
@@ -112,8 +112,8 @@ export const TourExperiencesHero = defineCapsule({
               <HeroActions className="mt-10 flex-col gap-3 sm:flex-row">
                 <HeroCta
                   asChild
-                  variant="primary"
-                  className="rounded-full px-7 py-3.5 text-sm font-semibold"
+                  variant="none"
+                  className="rounded-none bg-background px-7 py-3.5 text-sm font-semibold text-foreground shadow-[5px_5px_0_0] shadow-primary transition-[transform,box-shadow] duration-150 hover:bg-background/90 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none motion-reduce:transform-none"
                 >
                   <NavbarRouteLink href={primaryTarget}>
                     {primaryCta}
@@ -121,8 +121,8 @@ export const TourExperiencesHero = defineCapsule({
                 </HeroCta>
                 <HeroCta
                   asChild
-                  variant="outline"
-                  className="rounded-full border-background/40 bg-background/10 px-7 py-3.5 text-sm font-semibold text-background backdrop-blur-sm hover:bg-background/20"
+                  variant="none"
+                  className="rounded-none border border-background/50 px-7 py-3.5 text-sm font-semibold text-background backdrop-blur-sm transition-[background-color,transform] duration-150 hover:bg-background/10 active:translate-y-px"
                 >
                   <NavbarRouteLink href={secondaryTarget}>
                     {secondaryCta}
@@ -131,25 +131,22 @@ export const TourExperiencesHero = defineCapsule({
               </HeroActions>
             </div>
 
-            <StatGrid
-              columns={3}
-              className="mt-14 max-w-2xl border-t border-background/20 pt-8 gap-6"
-            >
+            {/* Collapsed-border stat ledger — mono labels, tabular values. */}
+            <dl className="mt-14 grid max-w-2xl grid-cols-1 border-l border-t border-background/25 sm:grid-cols-3">
               {stats.map((s) => (
-                <StatItem key={s.label} align="center">
-                  <StatValue
-                    size="default"
-                    color="inverted"
-                    className="text-2xl sm:text-3xl"
-                  >
+                <div
+                  key={s.label}
+                  className="border-b border-r border-background/25 px-5 py-4"
+                >
+                  <dt className="text-3xl font-extrabold leading-none tracking-tight tabular-nums text-background">
                     {s.value}
-                  </StatValue>
-                  <StatLabel color="inverted" className="mt-1">
+                  </dt>
+                  <dd className="mt-2 font-mono text-[11px] uppercase tracking-[0.16em] text-background/60">
                     {s.label}
-                  </StatLabel>
-                </StatItem>
+                  </dd>
+                </div>
               ))}
-            </StatGrid>
+            </dl>
           </HeroContent>
         </Container>
       </HeroSection>

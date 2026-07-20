@@ -9,24 +9,30 @@ import {
   TestimonialName,
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
+import { cn } from '#/lib/utils.ts'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 
 /**
- * NonprofitTestimonials — impact-stories wall for a nonprofit / charity / NGO
- * page. Thin configuration over the shared `TestimonialGrid` composite: a
- * centered heading above a responsive card grid where each card renders a
- * heartfelt quote, an avatar, and an attribution line pairing a name with the
- * person's relationship to the cause (beneficiary, donor, volunteer). The
- * public `stories` prop ({quote, name, role}) maps to the composite's items.
- * Use for social proof and emotional resonance on nonprofit, foundation, or
+ * NonprofitTestimonials — warm mission-editorial impact-stories wall for a
+ * nonprofit / charity / NGO page. An asymmetric header (serif heading left, mono
+ * story-count meta right) sits above a responsive 1/2/3-column grid of square
+ * hairline cards whose middle column steps down on desktop for a calm stagger,
+ * built on the shared `TestimonialGrid` composite. Each card opens with a
+ * zero-padded mono index numeral, then an oversized serif-italic quote, and a
+ * hairline-topped footer pairing the person's name with a mono relationship
+ * meta line (beneficiary, donor, volunteer). The public `stories` prop
+ * ({quote, name, role}) maps to the composite items. Warm, human, resonant. Use
+ * for social proof and emotional resonance on nonprofit, foundation, or
  * humanitarian pages. Renders fully with no props via baked-in "Roots of Hope"
  * defaults.
  */
 export const NonprofitTestimonials = defineCapsule({
   name: 'NonprofitTestimonials',
   description:
-    "Impact-stories wall for a nonprofit / charity / NGO page built on the shared TestimonialGrid composite: a centered heading above a responsive card grid where each card renders a heartfelt quote, an avatar, and an attribution line pairing a name with the person's relationship to the cause (beneficiary, donor, volunteer). The public `stories` prop maps to the composite items. Use for social proof and emotional resonance on nonprofit, foundation, or humanitarian pages.",
+    "Warm mission-editorial impact-stories wall for a nonprofit / charity / NGO page built on the shared TestimonialGrid composite: an asymmetric header (serif heading left, mono story-count meta right) above a responsive 1/2/3-column grid of square hairline cards whose middle column steps down on desktop for a calm stagger. Each card opens with a zero-padded mono index numeral, then an oversized serif-italic quote, and a hairline-topped footer pairing the person's name with a mono relationship meta line (beneficiary, donor, volunteer). The public `stories` prop maps to the composite items. Warm, human, resonant. Use for social proof and emotional resonance on nonprofit, foundation, or humanitarian pages.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -74,10 +80,28 @@ export const NonprofitTestimonials = defineCapsule({
     }))
 
     return (
-      <section className="pt-28 pb-20 lg:pt-32 lg:pb-28">
+      <section className="bg-background pt-24 pb-20 lg:pt-28 lg:pb-28">
         <Container>
-          <TestimonialGrid heading={heading} className={props.className}>
-            {items.map((t) => {
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <SectionHeading
+              align="left"
+              eyebrow="Voices"
+              title={heading}
+              className="max-w-2xl gap-0"
+              eyebrowClassName="mb-4 inline-block font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground"
+              titleClassName="font-serif text-3xl font-medium tracking-tight text-foreground sm:text-4xl lg:text-[2.75rem] lg:leading-[1.08]"
+            />
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="shrink-0 md:pb-1"
+            >
+              {String(items.length).padStart(2, '0')} / stories
+            </MonoTag>
+          </div>
+
+          <TestimonialGrid columns={3} className={props.className}>
+            {items.map((t, i) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -88,15 +112,28 @@ export const NonprofitTestimonials = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
-                    {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
-                        {__iv__.role || __iv__.company || __iv__.meta}
-                      </TestimonialMeta>
-                    )}
+                <TestimonialCard
+                  key={__iv__.name}
+                  className={cn(
+                    'gap-5 rounded-none border-border bg-muted/30 p-6 shadow-none sm:p-7',
+                    i % 3 === 1 && 'lg:translate-y-8',
+                  )}
+                >
+                  <MonoTag aria-hidden="true" tone="faint">
+                    {String(i + 1).padStart(2, '0')}
+                  </MonoTag>
+                  <TestimonialQuote className="font-serif text-lg font-normal italic leading-relaxed text-foreground">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="border-t border-border pt-4">
+                    <span className="flex min-w-0 flex-col">
+                      <TestimonialName>{__iv__.name}</TestimonialName>
+                      {(__iv__.role || __iv__.company || __iv__.meta) && (
+                        <TestimonialMeta className="font-mono text-[10px] uppercase tracking-[0.12em]">
+                          {__iv__.role || __iv__.company || __iv__.meta}
+                        </TestimonialMeta>
+                      )}
+                    </span>
                   </TestimonialAuthor>
                 </TestimonialCard>
               )

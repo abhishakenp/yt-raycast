@@ -12,7 +12,46 @@ import {
 import { StorySection } from '#/section-kit/StorySection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
+/** Div-built token waveform accent — an audio motif built from bars. */
+const WAVEFORM_BARS = [
+  'h-2',
+  'h-5',
+  'h-3',
+  'h-7',
+  'h-4',
+  'h-8',
+  'h-5',
+  'h-3',
+  'h-6',
+  'h-2',
+  'h-8',
+  'h-4',
+  'h-6',
+  'h-3',
+  'h-7',
+  'h-5',
+]
+
+function Waveform({ className }: { className?: string }) {
+  return (
+    <div
+      aria-hidden="true"
+      className={cn('flex items-center gap-[3px]', className)}
+    >
+      {WAVEFORM_BARS.map((h, i) => (
+        <span
+          key={i}
+          className={cn(
+            'w-[3px] shrink-0 rounded-none',
+            h,
+            i % 6 === 2 ? 'bg-primary' : 'bg-foreground/20',
+          )}
+        />
+      ))}
+    </div>
+  )
+}
 
 const PodcastFeaturedStoryProps = z.object({
   eyebrow: z.string().optional().describe('Section eyebrow above the heading'),
@@ -34,7 +73,7 @@ const PodcastFeaturedStoryProps = z.object({
 export const PodcastFeaturedStory = defineCapsule({
   name: 'PodcastFeaturedStory',
   description:
-    'A latest-episode feature section that spotlights one podcast episode inside a prominent two-column card. The left side shows a warm studio cover image while the right side stacks an episode-number eyebrow, a bold title, a duration and publish-date meta row, short show notes, and a rounded Play episode button. Best used directly below a podcast hero to surface the freshest release.',
+    'A latest-episode feature that spotlights one podcast episode inside a square hard-shadowed ledger card with an asymmetric 5/7 split. A mono episode-index meta rule and a left-aligned section heading sit above the card; inside, a warm studio cover image fills the left while the right stacks a mono episode label, a bold title, a duration and publish-date meta row in tabular-nums, short show notes, a div-built token waveform, and a square Play episode button with play-button press feedback. Best used directly below a podcast hero to surface the freshest release.',
   props: PodcastFeaturedStoryProps,
   component: ({ props }) => {
     const eyebrow = props.eyebrow ?? 'Latest episode'
@@ -55,15 +94,31 @@ export const PodcastFeaturedStory = defineCapsule({
     return (
       <StorySection
         className={cn(
-          'bg-background py-20 text-foreground lg:py-28',
+          'bg-background py-16 text-foreground sm:py-20 lg:py-28',
           props.className,
         )}
       >
         <Container size="lg" className="px-6 lg:px-6">
-          <SectionHeading eyebrow={eyebrow} title={heading} align="center" />
+          <div className="mb-8 flex items-center justify-between gap-4 border-b border-border pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            <span className="flex items-center gap-3">
+              <span aria-hidden="true" className="size-2 bg-primary" />
+              {eyebrow}
+            </span>
+            <span className="tabular-nums text-foreground/60">EP 042</span>
+          </div>
 
-          <Card className="mt-12 grid overflow-hidden md:grid-cols-2 rounded-2xl p-0">
-            <FeaturedArticleMedia className="relative min-h-64 md:min-h-full">
+          <SectionHeading
+            align="left"
+            title={heading}
+            className="max-w-3xl"
+            titleClassName="text-3xl font-extrabold tracking-tight text-foreground md:text-4xl"
+          />
+
+          <Card
+            variant="outline"
+            className="mt-10 grid overflow-hidden rounded-none border-foreground p-0 shadow-[10px_10px_0_0] shadow-foreground/10 md:grid-cols-12"
+          >
+            <FeaturedArticleMedia className="relative min-h-64 border-b border-foreground md:col-span-5 md:min-h-full md:border-b-0 md:border-r">
               <Image
                 alt={imageAlt}
                 w={960}
@@ -71,31 +126,40 @@ export const PodcastFeaturedStory = defineCapsule({
                 loading="lazy"
                 className="h-full w-full object-cover"
               />
+              <span
+                aria-hidden="true"
+                className="absolute left-4 top-4 bg-foreground px-2 py-1 font-mono text-[10px] uppercase tracking-[0.2em] text-background"
+              >
+                Now Playing
+              </span>
             </FeaturedArticleMedia>
 
-            <FeaturedArticleContent className="gap-5 p-8 lg:p-12">
-              <span className="text-sm font-semibold uppercase tracking-wide text-accent">
+            <FeaturedArticleContent className="gap-5 p-8 md:col-span-7 lg:p-12">
+              <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
                 {episodeLabel}
               </span>
 
-              <h3 className="font-serif text-3xl font-bold tracking-tight text-card-foreground lg:text-4xl">
+              <h3 className="text-3xl font-extrabold tracking-tight text-card-foreground lg:text-4xl">
                 {title}
               </h3>
 
-              <FeaturedArticleMeta className="gap-3">
+              <FeaturedArticleMeta className="gap-3 font-mono text-[11px] uppercase tracking-[0.16em] tabular-nums">
                 <span>{duration}</span>
-                <span
-                  aria-hidden="true"
-                  className="inline-block h-1 w-1 rounded-full bg-muted-foreground/60"
-                />
+                <span aria-hidden="true" className="text-muted-foreground/50">
+                  /
+                </span>
                 <span>{date}</span>
               </FeaturedArticleMeta>
 
-              <p className="text-base text-muted-foreground">{showNotes}</p>
+              <p className="text-base leading-relaxed text-muted-foreground">
+                {showNotes}
+              </p>
+
+              <Waveform className="h-8" />
 
               <div className="pt-2">
                 <NavbarRouteLink
-                  className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  className="inline-flex items-center gap-2 rounded-none bg-foreground px-7 py-3 font-medium text-background transition-transform duration-150 hover:bg-foreground/90 active:translate-y-px"
                   href={ctaTarget}
                 >
                   <svg

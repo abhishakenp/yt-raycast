@@ -4,24 +4,26 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 
 /**
- * NoCodeTemplates — filterable templates GALLERY on a bright canvas. A centered
- * header (eyebrow, heading, paragraph) sits above a row of pill filter chips
- * (first active), then a 1-to-3 column grid of 4:3 thumbnail cards with
- * hover-zoom images and a gradient overlay that reveals a tinted category tag,
- * title, and description on hover, finished by a "view all" text link with
- * arrow. Every chip, card, and link route through section-kit route links. Use as the
- * template marketplace / gallery section for a no-code builder or theme
- * marketplace. Renders fully with no props.
+ * NoCodeTemplates — block-builder-kinetic templates GALLERY for a no-code /
+ * app-builder SaaS landing page. An asymmetric header (mono eyebrow, a
+ * left-aligned heading with a tilted primary marker block behind the key word,
+ * mono meta right) sits above a row of rounded-full mono sticker filter chips
+ * (first active on primary, gently rotated), then a 2/3-column grid of sharp,
+ * chunky border-2 thumbnail cards with hover-zoom images and a gradient overlay
+ * that reveals a tinted category sticker, title and description on hover; cards
+ * lift on a hard offset shadow. A mono "view all" link with arrow closes the
+ * section. Every chip, card, and link route through section-kit route links.
+ * Use as the template marketplace / gallery section for a no-code /
+ * website-builder product or theme marketplace. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { TemplateGrid, TemplateCard } from '#/section-kit/TemplateGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const NoCodeTemplates = defineCapsule({
   name: 'NoCodeTemplates',
   description:
-    "Filterable templates GALLERY on a bright canvas: a centered header (eyebrow, heading, paragraph) above a row of pill filter chips (first active), then a 1-to-3 column grid of 4:3 thumbnail cards with hover-zoom images and a gradient overlay revealing a tinted category tag, title, and description on hover, finished by a 'view all' text link with arrow. Chips, cards, and link route through section-kit route links. Use as the template marketplace / gallery section for a no-code / website-builder product or theme marketplace.",
+    'Block-builder-kinetic templates GALLERY for a no-code / app-builder SaaS landing page: an asymmetric header (mono eyebrow, marker-highlighted heading left, mono meta right) above a row of rounded-full mono sticker filter chips (first active on primary), then a 2/3-column grid of sharp chunky border-2 thumbnail cards with hover-zoom images and a gradient overlay revealing a tinted category sticker, title and description on hover, closed by a mono view-all link with arrow. Chips, cards, and link route through section-kit route links. Use as the template marketplace / gallery section for a no-code / website-builder product or theme marketplace.',
   props: z.object({
     /** Muted uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -111,6 +113,14 @@ export const NoCodeTemplates = defineCapsule({
       'bg-primary text-primary-foreground',
       'bg-chart-5 text-background',
     ]
+    const chipRotations = [
+      '-rotate-1',
+      'rotate-1',
+      '-rotate-2',
+      'rotate-2',
+      '-rotate-1',
+      'rotate-1',
+    ]
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         width="16"
@@ -130,43 +140,82 @@ export const NoCodeTemplates = defineCapsule({
     )
     return (
       <section
-        className={cn('bg-background py-24', props.className)}
+        className={cn(
+          'relative overflow-hidden bg-background py-16 lg:py-24',
+          props.className,
+        )}
         aria-labelledby="nc-templates"
       >
         <Container>
-          <div className="mx-auto mb-12 max-w-3xl text-center">
-            <SectionHeading
-              eyebrow={eyebrow}
-              title={heading}
-              subtitle={description}
-              titleId="nc-templates"
-              className="mb-8 max-w-3xl gap-0"
-              eyebrowClassName="mb-3 inline-block text-sm font-medium uppercase tracking-wider text-muted-foreground"
-              titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
-              subtitleClassName="text-lg text-muted-foreground"
-            />
-            <div className="flex flex-wrap justify-center gap-3">
-              {filters.map((f, i) => (
-                <NavbarRouteLink
-                  key={f}
-                  className={cn(
-                    'rounded-full px-4 py-2 text-sm font-medium transition-colors',
-                    i === 0
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground',
-                  )}
-                  href={f}
-                >
-                  {f}
-                </NavbarRouteLink>
-              ))}
+          {/* Asymmetric header: mono eyebrow, marker heading left, mono meta right. */}
+          <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-10">
+            <div className="max-w-2xl">
+              <MonoTag className="mb-4 block">
+                {eyebrow}
+                <span aria-hidden="true" className="text-primary">
+                  {' '}
+                  · 200+
+                </span>
+              </MonoTag>
+              <h2
+                id="nc-templates"
+                className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl"
+              >
+                {(() => {
+                  const words = heading.split(' ')
+                  return (
+                    <>
+                      {words.slice(0, -1).join(' ')}{' '}
+                      <span className="relative ml-[0.12em] inline-block whitespace-nowrap">
+                        <span
+                          aria-hidden="true"
+                          className="absolute inset-x-[-0.15em] inset-y-[0.05em] rotate-1 bg-primary"
+                        />
+                        <span className="relative text-primary-foreground">
+                          {words.at(-1) ?? ''}
+                        </span>
+                      </span>
+                    </>
+                  )
+                })()}
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">
+                {description}
+              </p>
             </div>
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+            >
+              [ gallery ] fully editable
+            </p>
           </div>
+
+          {/* Sticker filter chips — rounded-full mono, first active, gently rotated. */}
+          <div className="mb-10 flex flex-wrap gap-2.5">
+            {filters.map((f, i) => (
+              <NavbarRouteLink
+                key={f}
+                className={cn(
+                  'rounded-full border font-mono text-[11px] uppercase tracking-[0.14em] transition-colors',
+                  chipRotations[i % chipRotations.length],
+                  'px-4 py-2',
+                  i === 0
+                    ? 'border-foreground bg-primary text-primary-foreground shadow-[3px_3px_0_0] shadow-foreground'
+                    : 'border-border bg-card text-muted-foreground hover:border-foreground hover:text-foreground',
+                )}
+                href={f}
+              >
+                {f}
+              </NavbarRouteLink>
+            ))}
+          </div>
+
           <TemplateGrid className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((tpl, i) => (
               <TemplateCard asChild key={tpl.title}>
                 <NavbarRouteLink
-                  className="group relative block w-full overflow-hidden rounded-2xl border border-border text-left transition-all hover:shadow-xl"
+                  className="group relative block w-full overflow-hidden rounded-none border-2 border-border text-left transition-[transform,box-shadow,border-color] duration-150 hover:-translate-y-1 hover:border-foreground hover:shadow-[8px_8px_0_0] hover:shadow-foreground"
                   href={tpl.title}
                 >
                   <div className="aspect-[4/3] bg-muted">
@@ -178,17 +227,19 @@ export const NoCodeTemplates = defineCapsule({
                       className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                  <div className="absolute inset-x-0 bottom-0 translate-y-4 p-6 text-background transition-transform group-hover:translate-y-0">
+                  <div className="absolute inset-0 bg-gradient-to-t from-foreground/85 via-foreground/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                  <div className="absolute inset-x-0 bottom-0 translate-y-3 p-5 text-background transition-transform group-hover:translate-y-0">
                     <span
                       className={cn(
-                        'mb-2 inline-block rounded px-2 py-1 text-xs font-medium',
+                        'mb-2 inline-block rounded-full px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em]',
                         tagTints[i % tagTints.length],
                       )}
                     >
                       {tpl.tag}
                     </span>
-                    <h3 className="text-lg font-semibold">{tpl.title}</h3>
+                    <h3 className="text-lg font-bold tracking-tight">
+                      {tpl.title}
+                    </h3>
                     <p className="text-sm text-background/80">
                       {tpl.description}
                     </p>
@@ -197,9 +248,9 @@ export const NoCodeTemplates = defineCapsule({
               </TemplateCard>
             ))}
           </TemplateGrid>
-          <div className="mt-12 text-center">
+          <div className="mt-12">
             <NavbarRouteLink
-              className="inline-flex items-center gap-2 font-medium text-foreground transition-colors hover:text-muted-foreground"
+              className="inline-flex items-center gap-2 border-b-2 border-foreground pb-0.5 font-mono text-xs font-semibold uppercase tracking-[0.14em] text-foreground transition-colors hover:text-muted-foreground"
               href={viewAll}
             >
               {viewAll}

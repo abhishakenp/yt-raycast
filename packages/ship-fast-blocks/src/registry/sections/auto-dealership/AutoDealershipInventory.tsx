@@ -15,8 +15,7 @@ import { autoDealershipLakebed } from './auto-dealership-lakebed.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { InventoryGrid, InventoryCard } from '#/section-kit/InventoryGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * AutoDealershipInventory — showroom-kinetic featured-inventory grid for an
  * auto dealership / used-car page. An asymmetric header (left-aligned

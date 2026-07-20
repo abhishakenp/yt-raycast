@@ -2,15 +2,9 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import {
-  HeroSection,
-  HeroHeading,
-  HeroHighlight,
-  HeroSubheading,
-  HeroActions,
-} from '#/section-kit/HeroSection.tsx'
-import { Card } from '#/section-kit/Card.tsx'
+import { HeroSection } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { DotGrid, MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -18,22 +12,23 @@ import {
 import { saasLakebed } from './saas-lakebed.ts'
 
 /**
- * SaasHero — split product hero for an AI-product / SaaS landing page. A
- * two-column band over a soft muted surface with a radial primary glow orb: on
- * the left a pulsing-dot status pill, a huge headline with one phrase in the
- * indigo primary highlight, a supporting paragraph, dual CTAs (gradient primary
- * + outlined "play" secondary) and an avatar-stack social-proof row; on the
- * right a floating product-demo mockup card showing an AI-assistant chat thread
- * (AI/user bubbles with action chips) above a live calendar preview with
- * free/busy/success rows. Premium, conversion-focused; CTAs and demo chips
- * write to Lakebed. Use as the opening hero for AI tools, scheduling/productivity
- * apps, automation products, or B2B SaaS. Renders fully with no props via
- * baked-in "Chronos AI" defaults.
+ * SaasHero — kinetic-SaaS split product hero for an AI-product / SaaS landing
+ * page. An asymmetric 7:5 grid over a dot-grid wash and a giant ghost "AI"
+ * watermark: on the left a square mono status chip with a pulsing dot, a huge
+ * clamp-scaled extrabold headline whose highlighted phrase sits on a tilted
+ * primary marker block, a supporting paragraph, dual square CTAs with hard
+ * offset shadows and press feedback, and an avatar-stack social-proof row; on
+ * the right a sharp-cornered product-demo mockup panel with mono window chrome
+ * showing an AI-assistant chat thread (AI/user bubbles with Lakebed action
+ * chips) above a hairline calendar preview with free/busy/success rows. CTAs and
+ * demo chips write to shared Lakebed conversion state. Use as the opening hero
+ * for AI tools, scheduling/productivity apps, automation products, or B2B SaaS.
+ * Renders fully with no props via baked-in "Chronos AI" defaults.
  */
 export const SaasHero = defineCapsule({
   name: 'SaasHero',
   description:
-    'Split product hero for an AI-product / SaaS landing page: a two-column band over a soft muted surface with a radial primary glow orb. Left column has a pulsing-dot status pill, a huge headline with one phrase in the indigo primary highlight, a supporting paragraph, dual fullstack CTAs (gradient primary + outlined play-icon secondary) and an avatar-stack social-proof row; right column is a floating product-demo mockup card showing an AI-assistant chat thread (AI/user bubbles with Lakebed action chips) above a live calendar preview with free/busy/success rows. Premium and conversion-focused; CTAs and demo chips write to shared Lakebed conversion state. Use as the opening hero for AI tools, scheduling/productivity apps, automation products, or B2B SaaS.',
+    'Kinetic-SaaS split product hero for an AI-product / SaaS landing page: an asymmetric 7:5 grid over a dot-grid wash and giant ghost AI watermark. Left column has a square mono status chip with pulsing dot, a huge clamp-scaled headline whose highlighted phrase sits on a tilted primary marker block, a supporting paragraph, dual square fullstack CTAs with hard offset shadows and press feedback, and an avatar-stack social-proof row; right column is a sharp-cornered product-demo mockup panel with mono window chrome showing an AI-assistant chat thread (AI/user bubbles with Lakebed action chips) above a hairline calendar preview with free/busy/success rows. CTAs and demo chips write to shared Lakebed conversion state. Use as the opening hero for AI tools, scheduling/productivity apps, automation products, or B2B SaaS.',
   props: z.object({
     /** Status / announcement pill text with a pulsing dot. */
     badge: z.string().optional(),
@@ -122,178 +117,206 @@ export const SaasHero = defineCapsule({
 
     return (
       <HeroSection
-        className={cn('relative overflow-hidden bg-muted/40', props.className)}
+        variant="split"
+        className={cn(
+          'relative overflow-hidden bg-background',
+          props.className,
+        )}
       >
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -top-1/2 -right-[20%] size-[800px] rounded-full bg-primary/[0.08] blur-3xl"
+        {/* Layered wash: dot grid fading right + giant ghost watermark. */}
+        <DotGrid
+          className="inset-y-0 left-0 w-2/3"
+          fade="right"
+          tone="border"
         />
-        <Container
-          size="lg"
-          className="relative grid items-center gap-12 py-16 sm:px-8 lg:grid-cols-[1fr_1.1fr] lg:gap-16 lg:px-12 lg:py-28"
-        >
-          <div>
-            <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-1.5 text-sm font-medium text-muted-foreground shadow-sm">
-              <span className="inline-block size-1.5 animate-pulse rounded-full bg-primary" />
-              {badge}
-            </span>
-            <HeroHeading variant="extra-bold">
-              {heading} <HeroHighlight>{highlight}</HeroHighlight>
-            </HeroHeading>
-            <HeroSubheading>{subheading}</HeroSubheading>
-            <HeroActions>
-              <SaasPlanActionButton
-                lakebed={lakebed}
-                intentLabel={primaryCta}
-                plan={primaryCta}
-                source="hero"
-                pendingChildren={
-                  <>
-                    <SaasMutationSpinner className="size-4" />
-                    Starting
-                  </>
-                }
-                className="inline-flex items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-[0_1px_3px_rgba(79,70,229,0.3)] transition-all hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(79,70,229,0.35)]"
-              >
-                {primaryCta}
-              </SaasPlanActionButton>
-              <SaasPlanActionButton
-                lakebed={lakebed}
-                intentLabel={secondaryCta}
-                plan={secondaryCta}
-                source="hero"
-                pendingChildren={
-                  <>
-                    <SaasMutationSpinner className="size-4" />
-                    Opening
-                  </>
-                }
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-8 py-3.5 text-base font-semibold text-foreground shadow-sm transition-colors hover:bg-muted"
-              >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <polygon points="10 8 16 12 10 16 10 8" />
-                </svg>
-                {secondaryCta}
-              </SaasPlanActionButton>
-            </HeroActions>
-            <div className="mt-10 flex flex-wrap items-center gap-4">
-              <div className="flex" aria-hidden="true">
-                {['a', 'b', 'c', 'd'].map((id, i) => (
+        <Watermark className="-top-8 right-0 text-[8rem] sm:text-[12rem] lg:-top-16 lg:text-[18rem]">
+          AI
+        </Watermark>
+        <Container className="relative py-16 sm:py-20 lg:py-28">
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
+            <div className="lg:col-span-7">
+              <span className="mb-6 inline-flex items-center gap-2 border border-border bg-background px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.15em] text-foreground/80">
+                <span className="size-2 animate-pulse bg-primary" />
+                {badge}
+              </span>
+              <h1 className="mb-6 text-[clamp(2.5rem,6.5vw,4.75rem)] font-extrabold leading-[0.98] tracking-tight text-foreground">
+                {heading}{' '}
+                <span className="relative ml-[0.12em] inline-block">
                   <span
-                    key={id}
-                    className={cn(
-                      'grid size-9 place-items-center rounded-full border-2 border-background bg-gradient-to-br from-primary/70 to-primary text-[0.625rem] font-bold text-primary-foreground',
-                      i > 0 && '-ml-2',
-                    )}
-                  >
-                    {String.fromCharCode(65 + i)}
+                    aria-hidden="true"
+                    className="absolute inset-x-[-0.12em] inset-y-[0.04em] -rotate-1 bg-primary"
+                  />
+                  <span className="relative text-primary-foreground">
+                    {highlight}
                   </span>
-                ))}
-              </div>
-              <p className="text-sm font-medium text-muted-foreground">
-                {socialProof}
-              </p>
-            </div>
-          </div>
-
-          {/* Product demo mockup card */}
-          <div className="flex justify-center">
-            <Card
-              variant="default"
-              className="w-full max-w-[520px] overflow-hidden shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)] rounded-3xl p-0"
-            >
-              <div className="flex items-center gap-2 border-b border-border/60 px-5 py-4">
-                <span className="size-2.5 rounded-full bg-chart-5" />
-                <span className="size-2.5 rounded-full bg-chart-4" />
-                <span className="size-2.5 rounded-full bg-chart-2" />
-                <span className="ml-auto text-xs font-medium text-muted-foreground">
-                  {demoTitle}
                 </span>
-              </div>
-              <div className="p-5">
-                {chat.map((msg, i) => (
-                  <div
-                    key={i}
-                    className={cn(
-                      'mb-4 flex items-start gap-3',
-                      msg.from === 'user' && 'flex-row-reverse',
-                    )}
+              </h1>
+              <p className="mb-8 max-w-xl text-lg leading-relaxed text-muted-foreground">
+                {subheading}
+              </p>
+              <div className="flex flex-col gap-4 sm:flex-row">
+                <SaasPlanActionButton
+                  lakebed={lakebed}
+                  intentLabel={primaryCta}
+                  plan={primaryCta}
+                  source="hero"
+                  pendingChildren={
+                    <>
+                      <SaasMutationSpinner className="size-4" />
+                      Starting
+                    </>
+                  }
+                  className="inline-flex items-center justify-center gap-2 rounded-none bg-primary px-8 py-4 text-center font-semibold text-primary-foreground shadow-[5px_5px_0_0] shadow-foreground transition-[transform,box-shadow,background-color] duration-150 hover:bg-primary/90 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none motion-reduce:transform-none disabled:pointer-events-none disabled:opacity-70"
+                >
+                  {primaryCta}
+                </SaasPlanActionButton>
+                <SaasPlanActionButton
+                  lakebed={lakebed}
+                  intentLabel={secondaryCta}
+                  plan={secondaryCta}
+                  source="hero"
+                  pendingChildren={
+                    <>
+                      <SaasMutationSpinner className="size-4" />
+                      Opening
+                    </>
+                  }
+                  className="inline-flex items-center justify-center gap-2 rounded-none border border-foreground bg-background px-8 py-4 text-center font-semibold text-foreground transition-[transform,background-color] duration-150 hover:bg-muted active:translate-y-px motion-reduce:transform-none disabled:pointer-events-none disabled:opacity-70"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
                   >
+                    <circle cx="12" cy="12" r="10" />
+                    <polygon points="10 8 16 12 10 16 10 8" />
+                  </svg>
+                  {secondaryCta}
+                </SaasPlanActionButton>
+              </div>
+              <div className="mt-8 flex flex-wrap items-center gap-4">
+                <div className="flex" aria-hidden="true">
+                  {['a', 'b', 'c', 'd'].map((id, i) => (
                     <span
+                      key={id}
                       className={cn(
-                        'grid size-8 shrink-0 place-items-center rounded-full text-xs font-bold',
-                        msg.from === 'ai'
-                          ? 'bg-primary/10 text-primary'
-                          : 'bg-accent text-accent-foreground',
+                        'grid size-9 place-items-center rounded-none border border-background bg-foreground text-[0.625rem] font-bold text-background',
+                        i > 0 && '-ml-2',
                       )}
                     >
-                      {msg.avatar ?? (msg.from === 'ai' ? 'AI' : 'JD')}
+                      {String.fromCharCode(65 + i)}
                     </span>
+                  ))}
+                </div>
+                <p className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                  {socialProof}
+                </p>
+              </div>
+            </div>
+
+            {/* Product demo mockup panel — sharp, mono chrome. */}
+            <div className="relative -mx-2 sm:mx-0 lg:col-span-5">
+              <div className="border border-foreground/80 bg-card shadow-[8px_8px_0_0] shadow-foreground/15">
+                <div className="flex items-center gap-2 border-b border-foreground/80 bg-muted px-4 py-2.5">
+                  <div className="flex gap-1.5" aria-hidden="true">
+                    <span className="size-2.5 border border-foreground/40" />
+                    <span className="size-2.5 border border-foreground/40" />
+                    <span className="size-2.5 bg-primary" />
+                  </div>
+                  <span className="ml-2 truncate font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                    {demoTitle}
+                  </span>
+                </div>
+                <div className="p-5">
+                  {chat.map((msg, i) => (
                     <div
+                      key={i}
                       className={cn(
-                        'max-w-[80%] rounded-xl px-4 py-2.5 text-sm leading-relaxed',
-                        msg.from === 'ai'
-                          ? 'rounded-bl-sm bg-muted text-foreground'
-                          : 'rounded-br-sm bg-primary text-primary-foreground',
+                        'mb-4 flex items-start gap-3',
+                        msg.from === 'user' && 'flex-row-reverse',
                       )}
                     >
-                      {msg.text}
-                      {msg.from === 'ai' && i === chat.length - 1 ? (
-                        <div className="mt-2 flex flex-wrap gap-1">
-                          {chips.map((chip) => (
-                            <SaasPlanActionButton
-                              key={chip}
-                              lakebed={lakebed}
-                              intentLabel={chip}
-                              plan={chip}
-                              source="demo"
-                              pendingChildren={<SaasMutationSpinner />}
-                              className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-[0.8125rem] font-medium text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-70"
-                            >
-                              {chip}
-                            </SaasPlanActionButton>
-                          ))}
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
-                ))}
-
-                {/* Calendar preview */}
-                <div className="mt-4 rounded-xl bg-muted p-4">
-                  {calendar.map((row) => (
-                    <div key={row.time} className="mb-2 flex gap-2 last:mb-0">
-                      <span className="w-12 shrink-0 pr-2 text-right text-xs leading-7 text-muted-foreground">
-                        {row.time}
+                      <span
+                        className={cn(
+                          'grid size-8 shrink-0 place-items-center rounded-none text-[10px] font-bold',
+                          msg.from === 'ai'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'border border-border bg-background text-foreground',
+                        )}
+                      >
+                        {msg.avatar ?? (msg.from === 'ai' ? 'AI' : 'JD')}
                       </span>
                       <div
                         className={cn(
-                          'flex h-7 flex-1 items-center rounded-sm border px-2 text-[0.6875rem] font-semibold',
-                          row.tone === 'success'
-                            ? 'border-chart-2/30 bg-chart-2/10 text-chart-2'
-                            : row.tone === 'busy'
-                              ? 'border-primary/30 bg-primary/10 text-primary'
-                              : 'border-border/60 bg-background',
+                          'max-w-[80%] border px-4 py-2.5 text-sm leading-relaxed',
+                          msg.from === 'ai'
+                            ? 'border-border bg-muted text-foreground'
+                            : 'border-foreground bg-foreground text-background',
                         )}
                       >
-                        {row.label}
+                        {msg.text}
+                        {msg.from === 'ai' && i === chat.length - 1 ? (
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {chips.map((chip) => (
+                              <SaasPlanActionButton
+                                key={chip}
+                                lakebed={lakebed}
+                                intentLabel={chip}
+                                plan={chip}
+                                source="demo"
+                                pendingChildren={<SaasMutationSpinner />}
+                                className="inline-flex items-center rounded-none border border-border bg-background px-3 py-1 font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-70"
+                              >
+                                {chip}
+                              </SaasPlanActionButton>
+                            ))}
+                          </div>
+                        ) : null}
                       </div>
                     </div>
                   ))}
+
+                  {/* Calendar preview */}
+                  <div className="mt-4 border border-border bg-muted p-4">
+                    {calendar.map((row) => (
+                      <div key={row.time} className="mb-2 flex gap-2 last:mb-0">
+                        <span className="w-12 shrink-0 pr-2 text-right font-mono text-[11px] leading-7 tabular-nums text-muted-foreground">
+                          {row.time}
+                        </span>
+                        <div
+                          className={cn(
+                            'flex h-7 flex-1 items-center border px-2 text-[11px] font-semibold',
+                            row.tone === 'success'
+                              ? 'border-primary/50 bg-primary/10 text-foreground'
+                              : row.tone === 'busy'
+                                ? 'border-foreground/30 bg-foreground/5 text-foreground'
+                                : 'border-border bg-background',
+                          )}
+                        >
+                          {row.label}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </Card>
+              {/* Rotated hard-shadow status badge overlapping the corner. */}
+              <div className="absolute -top-5 right-2 rotate-2 border border-foreground bg-background px-3 py-2 shadow-[5px_5px_0_0] shadow-foreground sm:-right-4">
+                <MonoTag
+                  aria-hidden="true"
+                  className="flex items-center gap-1.5"
+                >
+                  <span className="size-1.5 shrink-0 animate-pulse bg-primary" />
+                  Live
+                </MonoTag>
+              </div>
+            </div>
           </div>
         </Container>
       </HeroSection>

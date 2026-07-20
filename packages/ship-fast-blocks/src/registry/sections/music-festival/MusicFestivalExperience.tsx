@@ -13,21 +13,23 @@ import {
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
- * MusicFestivalExperience — an experience / features split for a music / arts
- * festival landing page. A two-column card-surface band: on the left an eyebrow,
- * heading, intro paragraph, and a vertical list of icon features (immersive art,
- * curated dining, camping, wellness — each with a rounded accent icon tile,
- * title and description); on the right a four-up staggered photo collage. Photos
- * use the alt-driven Image component. Use to communicate everything-beyond-the-
- * music value on music festivals, arts festivals, camping/desert events, or any
- * multi-day immersive event.
+ * MusicFestivalExperience — a kinetic-poster experience split for a music /
+ * arts festival landing page. A two-column card-surface band with a giant ghost
+ * watermark word: on the left a mono eyebrow, a big uppercase heading, an intro
+ * paragraph, and a hairline-divided list of numbered features (immersive art,
+ * curated dining, camping, wellness — each with a square outlined icon, a
+ * mono index, a title and a description); on the right a four-up staggered
+ * square-cornered photo collage. Photos use the alt-driven Image component.
+ * Use to communicate everything-beyond-the-music value on music festivals, arts
+ * festivals, camping/desert events, or any multi-day immersive event.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 export const MusicFestivalExperience = defineCapsule({
   name: 'MusicFestivalExperience',
   description:
-    'Experience / features split for a music / arts festival landing page: a two-column card-surface band with an eyebrow, heading, intro paragraph, and a vertical list of icon features (immersive art, curated dining, camping community, wellness — each with a rounded accent icon tile, title and description) on the left, and a four-up staggered photo collage on the right. Photos use the alt-driven Image component. Use to communicate everything-beyond-the-music value on music festivals, arts festivals, camping/desert events, raves, or any multi-day immersive event.',
+    'Kinetic-poster experience split for a music / arts festival landing page: a two-column card-surface band under a giant ghost watermark word, with a mono eyebrow, a big uppercase heading, an intro paragraph, and a hairline-divided list of numbered features (immersive art, curated dining, camping community, wellness — each with a square outlined icon, a mono index, a title and a description) on the left, and a four-up staggered square-cornered photo collage on the right. Photos use the alt-driven Image component. Use to communicate everything-beyond-the-music value on music festivals, arts festivals, camping/desert events, raves, or any multi-day immersive event.',
   props: z.object({
     /** Eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -89,8 +91,8 @@ export const MusicFestivalExperience = defineCapsule({
     const featureIcons: ReactNode[] = [
       <svg
         key="bulb"
-        width="24"
-        height="24"
+        width="22"
+        height="22"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -103,8 +105,8 @@ export const MusicFestivalExperience = defineCapsule({
       </svg>,
       <svg
         key="flame"
-        width="24"
-        height="24"
+        width="22"
+        height="22"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -117,8 +119,8 @@ export const MusicFestivalExperience = defineCapsule({
       </svg>,
       <svg
         key="clock"
-        width="24"
-        height="24"
+        width="22"
+        height="22"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -131,8 +133,8 @@ export const MusicFestivalExperience = defineCapsule({
       </svg>,
       <svg
         key="heart"
-        width="24"
-        height="24"
+        width="22"
+        height="22"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -145,45 +147,54 @@ export const MusicFestivalExperience = defineCapsule({
       </svg>,
     ]
     const collageCls = [
-      'h-64 object-cover rounded-xl',
-      'h-64 object-cover rounded-xl mt-8',
-      'h-64 object-cover rounded-xl',
-      'h-64 object-cover rounded-xl -mt-8',
+      'h-64 object-cover rounded-none',
+      'h-64 object-cover rounded-none mt-8',
+      'h-64 object-cover rounded-none',
+      'h-64 object-cover rounded-none -mt-8',
     ]
     return (
       <section
         className={cn(
-          'bg-card py-24 text-card-foreground lg:py-28',
+          'relative overflow-hidden bg-card py-24 text-card-foreground lg:py-28',
           props.className,
         )}
       >
-        <Container>
-          <div className="grid items-center gap-16 lg:grid-cols-2">
+        <Watermark className="-left-4 top-8 hidden text-[12rem] leading-[0.8] lg:block">
+          MORE
+        </Watermark>
+        <Container className="relative">
+          <div className="grid items-center gap-16 lg:grid-cols-[5fr_7fr]">
             <div>
               <SectionHeading
                 align="left"
                 eyebrow={eyebrow}
                 title={heading}
                 subtitle={description}
-                className="mb-8 gap-0"
-                eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-primary"
-                titleClassName="mb-6 text-4xl font-bold tracking-tight lg:text-5xl"
+                className="mb-10 gap-3"
+                eyebrowClassName="font-mono text-[11px] uppercase tracking-[0.2em] text-primary"
+                titleClassName="text-4xl font-extrabold uppercase tracking-tight lg:text-5xl"
                 subtitleClassName="text-lg leading-relaxed text-card-foreground/70"
               />
-              <div className="space-y-6">
+              <div className="border-t border-border">
                 {features.map((f, i) => (
-                  <FeatureListItem key={f.title} className="gap-4">
+                  <FeatureListItem
+                    key={f.title}
+                    className="items-start gap-4 border-b border-border py-5"
+                  >
                     <FeatureListItemIcon
                       shape="square"
-                      className="grid size-12 shrink-0 place-items-center rounded-xl bg-accent text-accent-foreground"
+                      className="grid size-11 shrink-0 place-items-center rounded-none border border-foreground bg-transparent text-foreground"
                     >
                       {featureIcons[i % featureIcons.length]}
                     </FeatureListItemIcon>
                     <FeatureListItemBody>
-                      <FeatureListItemTitle className="mb-1 font-semibold">
+                      <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-card-foreground/50">
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <FeatureListItemTitle className="mt-0.5 text-lg font-bold uppercase tracking-tight">
                         {f.title}
                       </FeatureListItemTitle>
-                      <FeatureListItemDescription className="text-card-foreground/60">
+                      <FeatureListItemDescription className="mt-1 text-card-foreground/60">
                         {f.description}
                       </FeatureListItemDescription>
                     </FeatureListItemBody>
@@ -199,7 +210,10 @@ export const MusicFestivalExperience = defineCapsule({
                   w={600}
                   h={800}
                   loading="lazy"
-                  className={cn('w-full', collageCls[i % collageCls.length])}
+                  className={cn(
+                    'w-full grayscale-[0.1]',
+                    collageCls[i % collageCls.length],
+                  )}
                 />
               ))}
             </ResponsiveGrid>

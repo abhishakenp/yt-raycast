@@ -12,12 +12,12 @@ import {
   HeroCta,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { Watermark } from '#/section-kit/Decor.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const UniversityHero = defineCapsule({
   name: 'UniversityHero',
   description:
-    'Bespoke full-bleed hero band for the University page family with a prestigious, collegiate aesthetic. Renders a campus photograph through the alt-driven Image component, a dark token overlay, an established-since eyebrow pill, a stately serif headline, supporting copy, dual call-to-action buttons (Apply Now + Visit Campus) routed via section-kit route links, and a quick-stats strip summarizing enrollment, graduation rate, and student-faculty ratio. Use as the opening viewport of a university homepage.',
+    'Editorial-academic full-bleed hero band for the University page family. Renders a campus photograph through the alt-driven Image component under a dark token overlay, with a giant ghost founding-year watermark bleeding off the edge. A left-aligned lockup carries a mono tracked-uppercase established/ranking eyebrow rule, an authoritative serif headline, supporting copy, and dual square call-to-action buttons (Apply Now + Visit Campus) with press feedback routed via section-kit route links. A hairline mono ledger strip beneath summarizes enrollment, graduation rate, and student-faculty ratio in tabular figures. Prestigious, structured, catalog-grade. Use as the opening viewport of a university homepage.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -51,37 +51,43 @@ export const UniversityHero = defineCapsule({
       <HeroSection
         variant="full-bleed"
         className={cn(
-          'flex min-h-[640px] items-center bg-foreground py-20 text-background lg:py-28',
+          'flex min-h-[640px] items-center bg-foreground py-24 text-background lg:py-32',
           props.className,
         )}
       >
         <HeroBackgroundImage
           alt={imageAlt}
-          overlayClassName="bg-foreground/60"
-          gradientClassName="bg-transparent"
+          overlayClassName="bg-foreground/70"
+          gradientClassName="bg-gradient-to-r from-foreground/80 via-foreground/40 to-transparent"
         />
-        <Container asChild size="4xl" className="px-6 text-center lg:px-6">
-          <HeroContent>
-            <HeroBadge variant="pill" className="py-2 text-sm tracking-wide">
+        <Watermark className="-right-6 bottom-[-2rem] text-[13rem] leading-none text-background/[0.07] sm:text-[20rem]">
+          1887
+        </Watermark>
+        <Container size="xl" className="relative px-6">
+          <HeroContent className="max-w-3xl">
+            <HeroBadge
+              variant="pill"
+              className="rounded-none border-background/30 bg-background/5 px-3 py-1.5 font-mono text-[11px] tracking-[0.2em] text-background/80"
+            >
               {eyebrow}
             </HeroBadge>
             <HeroHeading
               variant="serif"
-              className="font-bold max-w-none tracking-normal sm:text-6xl"
+              className="mt-6 max-w-none text-balance text-5xl font-semibold leading-[1.02] tracking-tight text-background sm:text-6xl lg:text-7xl"
             >
               {heading}
             </HeroHeading>
             <HeroSubheading
               variant="large"
-              className="mt-6 mb-0 leading-8 text-background/85 sm:text-lg"
+              className="mx-0 mt-6 mb-0 max-w-xl text-pretty leading-8 text-background/80 sm:text-lg"
             >
               {subheading}
             </HeroSubheading>
-            <HeroActions className="mt-10 flex-col justify-center gap-3 sm:flex-row">
+            <HeroActions className="mt-10 flex-col gap-3 sm:flex-row">
               <HeroCta
                 asChild
-                variant="primary"
-                className="rounded-full px-7 py-3 text-sm font-semibold"
+                variant="none"
+                className="rounded-none bg-background px-7 py-3.5 text-sm font-semibold text-foreground transition-transform duration-150 hover:bg-background/90 active:translate-y-px"
               >
                 <NavbarRouteLink href={primaryTarget}>
                   {primaryCta}
@@ -89,22 +95,20 @@ export const UniversityHero = defineCapsule({
               </HeroCta>
               <HeroCta
                 asChild
-                variant="outline"
-                className="rounded-full border-background/40 bg-background/10 px-7 py-3 text-sm font-semibold text-background backdrop-blur-sm hover:bg-background/20"
+                variant="none"
+                className="rounded-none border border-background/40 bg-transparent px-7 py-3.5 text-sm font-semibold text-background backdrop-blur-sm transition-transform duration-150 hover:bg-background/10 active:translate-y-px"
               >
                 <NavbarRouteLink href={secondaryTarget}>
                   {secondaryCta}
                 </NavbarRouteLink>
               </HeroCta>
             </HeroActions>
-            <div className="mx-auto mt-12 flex max-w-2xl flex-wrap items-center justify-center gap-x-3 gap-y-2 border-t border-background/20 pt-8 text-sm font-medium text-background/80">
-              {quickStats.map((stat, i) => (
-                <span key={stat} className="flex items-center gap-3">
-                  {i > 0 ? (
-                    <span aria-hidden="true" className="text-background/40">
-                      ·
-                    </span>
-                  ) : null}
+            <div className="mt-12 flex max-w-xl flex-wrap gap-x-8 gap-y-3 border-t border-background/20 pt-6 font-mono text-[11px] uppercase tracking-[0.14em] text-background/70">
+              {quickStats.map((stat) => (
+                <span
+                  key={stat}
+                  className="tabular-nums first:text-background/90"
+                >
                   {stat}
                 </span>
               ))}

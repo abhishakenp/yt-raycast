@@ -10,8 +10,7 @@ import {
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { GraphPaper } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * ConstructionHero — industrial-brutalist full-bleed dark hero for a
  * construction / general contractor landing page. An inverted foreground band

@@ -16,8 +16,7 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { StarRating } from '#/section-kit/StarRating.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * InsuranceHero — Swiss-trust asymmetric 7/5 split hero for an insurance /
  * fintech landing page. The left column carries a mono index eyebrow + hairline

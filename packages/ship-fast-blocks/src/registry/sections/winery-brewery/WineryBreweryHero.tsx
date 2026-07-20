@@ -18,23 +18,25 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * WineryBreweryHero — full-bleed, image-forward hero for a winery, vineyard, or
- * craft brewery landing page. A single golden-hour vineyard / taproom
- * photograph fills the band edge to edge with a token-based dark overlay so
- * light, serif text reads cleanly on top. Centered content stacks an uppercase
- * eyebrow pill, a large serif headline, a supporting paragraph, dual CTAs
- * (filled "Visit Us" + outlined "Our Wines"), and a divider-separated hours /
- * location / phone strip beneath. CTAs route through section-kit route links. Use as the
- * opening hero for wineries, cellar doors, vineyards, breweries, taprooms, or
- * cideries. Renders fully with no props via rustic-premium baked-in defaults.
+ * WineryBreweryHero — full-bleed, image-forward, artisan-editorial hero for a
+ * winery, vineyard, or craft brewery landing page. A single golden-hour
+ * vineyard / taproom photograph fills the band edge to edge under a token-based
+ * dark overlay so warm serif text reads cleanly on top, with a giant faint
+ * ghost watermark word bleeding off one corner. Left-aligned content leads with
+ * a mono index rail + a square hairline label-stamp eyebrow, then a large serif
+ * headline, a supporting paragraph, three square-edged CTAs (filled "Visit Us"
+ * + outlined translucent "Our Wines" + a Lakebed add-to-cart), and a
+ * divider-separated hours / location / phone meta strip. CTAs route through
+ * section-kit route links; the add button seeds the shared tasting catalog and
+ * cart. Use as the opening hero for wineries, cellar doors, vineyards,
+ * breweries, taprooms, or cideries. Renders fully with no props.
  */
 export const WineryBreweryHero = defineCapsule({
   name: 'WineryBreweryHero',
   description:
-    "Full-bleed image-forward hero for a winery / vineyard / craft brewery landing page: one golden-hour vineyard or taproom photo fills the band edge to edge under a token-based dark overlay so light serif text stays readable. Centered content has an uppercase eyebrow pill, a large serif headline, a supporting paragraph, dual CTAs (filled 'Visit Us' + outlined translucent 'Our Wines'), and a divider-separated hours / location / phone strip. CTAs route through section-kit route links. Use as the opening hero for wineries, cellar doors, vineyards, breweries, taprooms, or cideries.",
+    "Full-bleed image-forward, artisan-editorial hero for a winery / vineyard / craft brewery landing page: one golden-hour vineyard or taproom photo fills the band edge to edge under a token-based dark overlay with a giant faint ghost watermark word, so warm serif text stays readable. Left-aligned content leads with a mono index rail and a square hairline label-stamp eyebrow, then a large serif headline, a supporting paragraph, three square-edged CTAs (filled 'Visit Us' + outlined translucent 'Our Wines' + a Lakebed add-to-cart), and a divider-separated hours / location / phone meta strip. CTAs route through section-kit route links. Use as the opening hero for wineries, cellar doors, vineyards, breweries, taprooms, or cideries.",
   props: z.object({
     /** Small uppercase eyebrow pill above the headline. */
     eyebrow: z.string().optional(),
@@ -103,22 +105,51 @@ export const WineryBreweryHero = defineCapsule({
         <HeroBackgroundImage
           alt={heroImageAlt}
           overlayClassName="bg-foreground/60"
-          gradientClassName="bg-gradient-to-t from-foreground/70 via-foreground/30 to-foreground/50"
+          gradientClassName="bg-gradient-to-tr from-foreground/80 via-foreground/35 to-foreground/25"
         />
 
-        <Container asChild>
-          <HeroContent className="flex flex-col items-center pb-28 pt-36 text-center sm:pt-40 lg:pb-32 lg:pt-48">
-            <HeroBadge variant="pill">{heroEyebrow}</HeroBadge>
+        {/* Giant faint ghost watermark word, bleeding off the corner. */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-10 -right-6 select-none font-serif text-[7rem] font-medium italic leading-none tracking-tight text-background/[0.06] sm:text-[11rem] lg:-bottom-16 lg:text-[16rem]"
+        >
+          Cellar
+        </span>
 
-            <HeroHeading variant="serif">{heroHeading}</HeroHeading>
+        <Container asChild>
+          <HeroContent className="flex flex-col items-start pb-24 pt-36 text-left sm:pt-40 lg:pb-32 lg:pt-48">
+            {/* Mono index rail. */}
+            <div className="flex w-full max-w-md items-center gap-4 text-background/70">
+              <span className="font-mono text-[11px] uppercase tracking-[0.22em]">
+                Vol. 01
+              </span>
+              <span
+                aria-hidden="true"
+                className="h-px flex-1 bg-background/25"
+              />
+              <span className="font-mono text-[11px] uppercase tracking-[0.22em]">
+                Estate
+              </span>
+            </div>
+
+            <HeroBadge
+              variant="pill"
+              className="mt-6 -rotate-1 rounded-none border-background/40"
+            >
+              {heroEyebrow}
+            </HeroBadge>
+
+            <HeroHeading variant="serif" className="max-w-4xl">
+              {heroHeading}
+            </HeroHeading>
 
             <HeroSubheading variant="light">{heroSub}</HeroSubheading>
 
-            <HeroActions className="mt-10 flex-col gap-4 sm:flex-row">
+            <HeroActions className="mt-10 w-full flex-col gap-3 sm:w-auto sm:flex-row sm:gap-4">
               <HeroCta
                 asChild
                 variant="primary"
-                className="rounded-full px-8 py-4 font-medium"
+                className="rounded-none px-8 py-4 font-medium transition-transform duration-150 active:translate-y-px"
               >
                 <NavbarRouteLink href={heroPrimaryTarget}>
                   {heroPrimary}
@@ -127,7 +158,7 @@ export const WineryBreweryHero = defineCapsule({
               <HeroCta
                 asChild
                 variant="outline"
-                className="rounded-full border-border bg-card/10 px-8 py-4 font-medium text-background backdrop-blur-sm hover:bg-card/20"
+                className="rounded-none border-background/50 bg-card/10 px-8 py-4 font-medium text-background backdrop-blur-sm transition-transform duration-150 hover:bg-card/20 active:translate-y-px"
               >
                 <NavbarRouteLink href={heroSecondaryTarget}>
                   {heroSecondary}
@@ -141,19 +172,19 @@ export const WineryBreweryHero = defineCapsule({
                 }}
                 aria-label={`${addLabel} ${featuredItemName}`}
                 pendingChildren={<CommerceMutationSpinner />}
-                className="inline-flex items-center justify-center rounded-full bg-background px-8 py-4 font-medium text-foreground transition-colors hover:bg-background/90 disabled:pointer-events-none disabled:opacity-70"
+                className="inline-flex items-center justify-center rounded-none bg-background px-8 py-4 font-medium text-foreground transition-[transform,background-color] duration-150 hover:bg-background/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
               >
                 {addLabel}
               </CommerceAddItemButton>
             </HeroActions>
 
-            <div className="mt-14 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-background/80">
+            <div className="mt-14 flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-[11px] uppercase tracking-[0.14em] text-background/75">
               {infoItems.map((item, i) => (
                 <div key={item} className="flex items-center gap-x-4">
                   {i > 0 && (
                     <span
                       aria-hidden="true"
-                      className="hidden h-4 w-px bg-background/30 sm:block"
+                      className="hidden h-3 w-px bg-background/30 sm:block"
                     />
                   )}
                   <span>{item}</span>

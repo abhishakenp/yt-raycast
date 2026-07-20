@@ -8,26 +8,28 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
 /**
- * NewsletterFaq — native accordion FAQ for an editorial newsletter. A centered
- * serif heading over a narrow column of bordered card <details> rows: each
- * summary shows the question in medium weight with a chevron that rotates open,
- * revealing a relaxed muted answer. Warm, calm, literary mood on a paper-toned
- * surface, no JavaScript required. Use to answer common subscription questions
- * (cadence, archives, refunds, authorship, team plans) for newsletters,
- * publications, blogs, or content creators. Renders fully with no props via
- * baked-in defaults.
+ * NewsletterFaq — newsprint-lite Q&A ledger for an editorial newsletter. An
+ * asymmetric 4/8 split: a sticky left rail holds a hairline meta rule (a primary
+ * square + mono "F.A.Q." label) above a serif heading; the right column is a
+ * collapsed-border divided accordion of native <details> rows, each summary
+ * pairing a mono "Q.0X" index numeral with the serif question and a chevron that
+ * rotates open to reveal a relaxed muted answer. Clean paper-toned surface with
+ * restrained newspaper structure, no JavaScript required. Use to answer common
+ * subscription questions (cadence, archives, refunds, authorship, team plans) for
+ * newsletters, publications, blogs, or content creators. Renders fully with no
+ * props via baked-in defaults.
  */
 export const NewsletterFaq = defineCapsule({
   name: 'NewsletterFaq',
   description:
-    'Native accordion FAQ for an editorial newsletter: a centered serif heading over a narrow column of bordered card details rows where each summary shows the question in medium weight with a chevron that rotates open, revealing a relaxed muted answer. Warm, calm, literary mood on a paper-toned surface, no JavaScript required. Use to answer common subscription questions (cadence, archives, refunds, authorship, team plans) for newsletters, publications, blogs, or content creators.',
+    'Newsprint-lite Q&A ledger for an editorial newsletter: an asymmetric 4/8 split with a sticky left rail holding a hairline meta rule (a primary square + mono "F.A.Q." label) above a serif heading, and a right column of collapsed-border divided native details rows where each summary pairs a mono "Q.0X" index numeral with the serif question and a chevron that rotates open to reveal a relaxed muted answer. Clean paper-toned surface with restrained newspaper structure, no JavaScript required. Use to answer common subscription questions (cadence, archives, refunds, authorship, team plans) for newsletters, publications, blogs, or content creators.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -64,30 +66,52 @@ export const NewsletterFaq = defineCapsule({
 
     return (
       <section className={cn('py-16 md:py-24 lg:py-28', props.className)}>
-        <Container size="sm">
-          <SectionHeading
-            title={heading}
-            className="mb-12 gap-0 md:mb-16"
-            titleClassName="mb-4 font-serif text-3xl font-medium text-foreground sm:text-4xl"
-          />
+        <Container size="lg">
+          <div className="grid gap-10 lg:grid-cols-12 lg:gap-12">
+            <div className="lg:col-span-4">
+              <div className="lg:sticky lg:top-28">
+                <div className="mb-5 flex items-center gap-3 border-b border-border pb-4">
+                  <MonoTag className="flex items-center gap-3 tracking-[0.25em]">
+                    <span aria-hidden="true" className="size-1.5 bg-primary" />
+                    F.A.Q.
+                  </MonoTag>
+                </div>
+                <h2 className="font-serif text-3xl font-medium tracking-tight text-foreground text-balance sm:text-4xl">
+                  {heading}
+                </h2>
+              </div>
+            </div>
 
-          <FaqAccordion variant="wide">
-            {items.map((item) => (
-              <FaqItem
-                key={item.q}
-                variant="overflow-bordered"
-                className="text-card-foreground"
-              >
-                <FaqQuestion className="p-6">
-                  <span className="font-medium text-foreground">{item.q}</span>
-                  <FaqQuestionIcon />
-                </FaqQuestion>
-                <FaqAnswer asChild className="px-6 pb-6">
-                  <div>{item.a}</div>
-                </FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+            <div className="lg:col-span-8">
+              <FaqAccordion variant="divided" className="border-t-0">
+                {items.map((item, i) => (
+                  <FaqItem
+                    key={item.q}
+                    variant="divided"
+                    className="text-card-foreground"
+                  >
+                    <FaqQuestion className="items-start py-1">
+                      <span className="flex items-start gap-4">
+                        <span
+                          aria-hidden="true"
+                          className="mt-0.5 shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-primary tabular-nums"
+                        >
+                          Q.{String(i + 1).padStart(2, '0')}
+                        </span>
+                        <span className="font-serif text-lg font-medium text-foreground">
+                          {item.q}
+                        </span>
+                      </span>
+                      <FaqQuestionIcon />
+                    </FaqQuestion>
+                    <FaqAnswer asChild className="pl-11 pt-3">
+                      <div>{item.a}</div>
+                    </FaqAnswer>
+                  </FaqItem>
+                ))}
+              </FaqAccordion>
+            </div>
+          </div>
         </Container>
       </section>
     )

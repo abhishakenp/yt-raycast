@@ -5,27 +5,28 @@ import { cn } from '#/lib/utils.ts'
 import {
   FeatureGrid,
   FeatureCard,
-  FeatureIcon,
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 
 /**
- * MarketingFeatures — a centered-header 6-up feature grid for a SaaS /
- * product-marketing landing page. A bold centered heading + supporting line
- * over a responsive 1/2/3-column grid of bordered cards, each with a soft
- * indigo rounded icon tile, a bold title, and a description; cards lift and
- * raise a shadow on hover. Rotates a built-in set of line icons (boards,
- * collaboration, analytics, workflows, security, integrations). Clean premium
- * indigo-on-light aesthetic. Use to showcase product capabilities on B2B SaaS,
- * team/project-management, productivity, or developer-platform pages.
+ * MarketingFeatures — bold-kinetic collapsed-border bento grid for a SaaS /
+ * product-marketing landing page. An asymmetric header (left-aligned heading
+ * with a tilted primary marker block behind the key word, mono "[ CAPABILITIES ]"
+ * meta right) above a sharp 12-column bento of hairline-collapsed cells with
+ * varying spans (7/5, 4/8 rhythm): every cell carries a mono index numeral, a
+ * bold title and a description, and the two widest cells add div-built data
+ * motifs — a token bar-chart row and a mono workflow-stage strip. Cells wash to
+ * muted on hover. Confident kinetic-SaaS aesthetic with binary radius. Use to
+ * showcase product capabilities on B2B SaaS, team/project-management,
+ * productivity, or developer-platform pages.
  */
 export const MarketingFeatures = defineCapsule({
   name: 'MarketingFeatures',
   description:
-    'Centered-header 6-up feature grid for a SaaS / product-marketing landing page: a bold centered heading + supporting line over a responsive 1/2/3-column grid of bordered cards, each with a soft indigo rounded icon tile, a bold title and a description, lifting with a raised shadow on hover. Rotates a built-in set of line icons (boards, collaboration, analytics, workflows, security, integrations). Clean premium indigo-on-light aesthetic. Use to showcase product capabilities on B2B SaaS, team/project-management, productivity, or developer-platform pages.',
+    'Bold-kinetic collapsed-border bento grid for a SaaS / product-marketing landing page: an asymmetric header (marker-highlighted heading left, mono capabilities meta right) above a sharp 12-column bento of hairline-collapsed cells with varying spans, each with a mono index numeral, bold title and description; the widest cells add div-built data motifs (token bar-chart row, mono workflow-stage strip) and cells wash to muted on hover. Confident kinetic-SaaS aesthetic with binary radius. Use to showcase product capabilities on B2B SaaS, team/project-management, productivity, or developer-platform pages.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -74,18 +75,65 @@ export const MarketingFeatures = defineCapsule({
           },
         ]
 
+    // Bento span rhythm: 7/5, 4/8, 5/7 — never 50/50.
+    const spans = [
+      'md:col-span-7',
+      'md:col-span-5',
+      'md:col-span-4',
+      'md:col-span-8',
+      'md:col-span-5',
+      'md:col-span-7',
+    ]
+    const barHeights = ['h-3', 'h-6', 'h-4', 'h-9', 'h-7', 'h-12', 'h-10']
+    const headingWords = heading.split(' ')
+    const headingLead = headingWords.slice(0, -1).join(' ')
+    const headingMark = headingWords.at(-1) ?? ''
+
     return (
-      <section className={cn('py-20', props.className)}>
-        <Container size="lg" className="px-6 lg:px-6">
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mx-auto mb-14 max-w-2xl gap-0"
-            titleClassName="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl"
-            subtitleClassName="mt-3 text-lg text-muted-foreground"
-          />
-          <FeatureGrid columns={3}>
-            {items.map((f) => {
+      <section
+        className={cn(
+          'relative overflow-hidden bg-background py-16 lg:py-24',
+          props.className,
+        )}
+      >
+        <Container>
+          {/* Asymmetric header: marker-highlighted heading left, mono meta right. */}
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <div className="max-w-2xl">
+              <MonoTag className="mb-4 block">
+                Capabilities
+                <span aria-hidden="true" className="text-primary">
+                  {' '}
+                  · 01—06
+                </span>
+              </MonoTag>
+              <h2 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+                {headingLead}{' '}
+                <span className="relative ml-[0.12em] inline-block whitespace-nowrap">
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-[-0.15em] inset-y-[0.05em] rotate-1 bg-primary"
+                  />
+                  <span className="relative text-primary-foreground">
+                    {headingMark}
+                  </span>
+                </span>
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">
+                {description}
+              </p>
+            </div>
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+            >
+              [ toolkit ] built to ship
+            </p>
+          </div>
+
+          {/* Collapsed-border bento: hairline cells, asymmetric spans. */}
+          <FeatureGrid className="gap-0 border-l border-t border-border [&>div]:grid [&>div]:grid-cols-1 [&>div]:gap-0 md:[&>div]:grid-cols-12">
+            {items.map((f, index) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -96,10 +144,54 @@ export const MarketingFeatures = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
-                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                <FeatureCard
+                  key={__iv__.title}
+                  className={cn(
+                    'gap-0 rounded-none border-0 border-b border-r border-border bg-card p-6 shadow-none transition-colors duration-150 hover:translate-y-0 hover:border-border hover:bg-muted/60 sm:p-8',
+                    spans[index % spans.length],
+                  )}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+                  >
+                    {String(index + 1).padStart(2, '0')}
+                    <span className="text-primary"> /</span>
+                  </span>
+                  <FeatureTitle className="mt-3 text-xl font-bold tracking-tight">
+                    {__iv__.title}
+                  </FeatureTitle>
+                  <FeatureDescription className="mt-2 max-w-md text-sm leading-6">
+                    {__iv__.description}
+                  </FeatureDescription>
+                  {index === 0 ? (
+                    <span
+                      aria-hidden="true"
+                      className="mt-6 flex items-end gap-1.5"
+                    >
+                      {barHeights.map((h, i) => (
+                        <span
+                          key={i}
+                          className={cn(
+                            'w-4 sm:w-6',
+                            h,
+                            i === barHeights.length - 1
+                              ? 'bg-primary'
+                              : 'bg-foreground/15',
+                          )}
+                        />
+                      ))}
+                    </span>
+                  ) : null}
+                  {index === 3 ? (
+                    <span
+                      aria-hidden="true"
+                      className="mt-6 block font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground/70"
+                    >
+                      [ plan → track →{' '}
+                      <span className="text-primary">ship</span> ]
+                    </span>
+                  ) : null}
                 </FeatureCard>
               )
             })}

@@ -17,8 +17,7 @@ import {
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const CorporateLogos = defineCapsule({
   name: 'CorporateLogos',
   description:

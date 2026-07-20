@@ -8,8 +8,7 @@ import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import { NavSidebar } from '#/section-kit/NavSidebar.tsx'
 import { Image } from '#/lib/img.tsx'
 import { dashboardLakebed } from './dashboard-lakebed.ts'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * DashboardSidebar — Swiss-data left navigation rail for a SaaS admin
  * dashboard. A full-height hairline-bordered rounded-none column (hidden below

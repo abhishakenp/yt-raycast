@@ -2,7 +2,6 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import {} from '#/section-kit/index.ts'
 import {
   StatGrid,
   StatItem,

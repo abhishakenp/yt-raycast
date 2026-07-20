@@ -7,15 +7,25 @@ import {
   StepTimeline,
   StepTimelineGrid,
   StepItem,
-  StepBadge,
-  StepContent,
 } from '#/section-kit/StepTimeline.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 
+/**
+ * TelehealthSteps — calm clinical + warmth collapsed-border "how it works"
+ * ledger for a telehealth site. An asymmetric header (left-aligned heading +
+ * lede, mono "[ how it works ]" meta on the right) above a hairline
+ * collapsed-border 1-to-3 column ledger of numbered steps; each square cell
+ * pairs a giant ghost zero-padded index numeral with a short primary tick dash,
+ * a step title, and a description walking a new patient from sign-up to
+ * treatment (create your account, connect with a doctor, get your treatment
+ * plan). Tokens-only, no links. Precise yet warm, telemedicine aesthetic. Use to
+ * reduce friction and reassure first-time visitors that getting care is simple.
+ */
 export const TelehealthSteps = defineCapsule({
   name: 'TelehealthSteps',
   description:
-    "Bespoke, token-styled 'how it works' band for a telehealth site. Opens with a centered SectionHeading, then lays out a three-column numbered step grid (a primary number badge, a title, and a short description) walking a new patient from sign-up to treatment: create your account, connect with a doctor, and get your treatment plan. Steps stack vertically on small screens. Use to reduce friction and reassure first-time visitors that getting care is simple.",
+    "Calm clinical + warmth collapsed-border 'how it works' ledger for a telehealth site: an asymmetric header (left-aligned heading + lede, mono how-it-works meta right) above a hairline collapsed-border 1-to-3 column ledger of numbered steps, each square cell pairing a giant ghost zero-padded index numeral with a short primary tick dash, a step title, and a description walking a new patient from sign-up to treatment (create your account, connect with a doctor, get your treatment plan). Tokens-only, no links. Precise yet warm, telemedicine aesthetic. Use to reduce friction and reassure first-time visitors that getting care is simple.",
   props: z.object({
     heading: z.string().optional(),
     subheading: z.string().optional(),
@@ -51,32 +61,51 @@ export const TelehealthSteps = defineCapsule({
 
     return (
       <StepTimeline
-        className={cn(
-          'bg-muted/30 pt-28 pb-20 sm:pt-32 sm:pb-24',
-          props.className,
-        )}
+        className={cn('bg-background py-20 sm:py-24 lg:py-28', props.className)}
+        aria-labelledby="telehealth-steps-heading"
       >
         <Container size="xl" className="px-6">
-          <SectionHeading title={heading} subtitle={subheading} />
-          <StepTimelineGrid columns={3} className="mt-14 gap-10">
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={subheading}
+              titleId="telehealth-steps-heading"
+              className="max-w-2xl gap-0"
+              titleClassName="mb-4 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-[2.75rem] lg:leading-[1.05]"
+              subtitleClassName="text-base text-muted-foreground sm:text-lg"
+            />
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="shrink-0 md:pb-1"
+            >
+              [ how it works ]
+            </MonoTag>
+          </div>
+
+          <StepTimelineGrid
+            columns={3}
+            className="gap-0 border-l border-t border-border"
+          >
             {steps.map((step, i) => (
               <StepItem
                 key={`${step.title}-${i}`}
-                className="flex flex-col items-start gap-4"
+                className="relative flex flex-col gap-4 border-b border-r border-border p-6 sm:p-8"
               >
-                <StepBadge
-                  index={i}
-                  variant="filled-circle-bold"
-                  className="text-lg"
-                />
-                <StepContent>
-                  <h3 className="text-lg font-semibold text-foreground">
-                    {step.title}
-                  </h3>
-                  <p className="text-sm leading-6 text-muted-foreground">
-                    {step.description}
-                  </p>
-                </StepContent>
+                <span
+                  aria-hidden="true"
+                  className="text-[clamp(3rem,5vw,4.5rem)] font-extrabold leading-none tracking-tight text-foreground/[0.08] tabular-nums"
+                >
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <span aria-hidden="true" className="h-px w-8 bg-primary" />
+                <h3 className="text-xl font-bold tracking-tight text-foreground">
+                  {step.title}
+                </h3>
+                <p className="leading-relaxed text-muted-foreground">
+                  {step.description}
+                </p>
               </StepItem>
             ))}
           </StepTimelineGrid>

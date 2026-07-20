@@ -10,7 +10,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
+} from '#/section-kit/SiteNav.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAccountButton,
@@ -20,20 +20,22 @@ import {
 } from '../commerce/commerce-interactions.tsx'
 
 /**
- * MarketplaceNavbar — sticky site header for a multi-vendor marketplace /
- * e-commerce destination. Renders a solid brand-square logo tile beside the
- * marketplace name, centered category nav links on desktop, product command
- * search, Shoo account dropdown, shared cart drawer with reactive badge, a
- * vibrant "Sell on …" seller CTA, and a real mobile drawer on small screens.
- * Every nav item and the CTA route through route hrefs. Use as the sticky site
- * header for online marketplaces, multi-vendor or maker/artisan platforms,
+ * MarketplaceNavbar — editorial commerce-index site header for a multi-vendor
+ * marketplace. A sticky, hairline-ruled bar with an extrabold uppercase
+ * wordmark logo lockup, a row of mono uppercase micro-label category nav links
+ * (secondary items demote below lg), product command search, Shoo account
+ * dropdown, a shared Lakebed cart drawer with a square tabular quantity badge,
+ * a square ink "Sell on …" seller-onboarding CTA with press feedback, and a
+ * real mobile drawer on small screens. Every nav item and the CTA route through
+ * route hrefs so labels can drive page-switching. Use as the sticky site header
+ * for online marketplaces, multi-vendor or maker/artisan platforms,
  * handmade/craft stores, and retail aggregators. Renders fully with no props
  * via baked-in "MarketHub" defaults.
  */
 export const MarketplaceNavbar = defineCapsule({
   name: 'MarketplaceNavbar',
   description:
-    "Sticky site header for a multi-vendor marketplace / e-commerce destination: a solid brand-square logo tile beside the marketplace name, centered category nav links on desktop, product command search, Shoo account dropdown, shared Lakebed cart drawer with a reactive quantity badge, a vibrant 'Sell on …' seller-onboarding CTA, and a real mobile drawer on small screens. Every nav item and the CTA route through route hrefs. Use as the sticky site header for online marketplaces, multi-vendor or maker/artisan platforms, handmade/craft stores, and retail aggregators.",
+    "Editorial commerce-index site header for a multi-vendor marketplace: a sticky, hairline-ruled bar with an extrabold uppercase wordmark logo lockup, a row of mono uppercase micro-label category nav links (secondary items demote below lg), product command search, Shoo account dropdown, a shared Lakebed cart drawer with a square tabular quantity badge, a square ink 'Sell on …' seller-onboarding CTA with press feedback, and a real mobile drawer on small screens. Every nav item and the CTA route through route hrefs so labels can drive page-switching. Use as the sticky site header for online marketplaces, multi-vendor or maker/artisan platforms, handmade/craft stores, and retail aggregators.",
   props: z.object({
     /** Brand / marketplace name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -59,18 +61,6 @@ export const MarketplaceNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? `Sell on ${brand}`
     const initialCartCount = Number.parseInt(props.cartCount ?? '0', 10) || 0
 
-    const LogoMark = ({ className }: { className?: string }) => (
-      <span
-        className={cn(
-          'grid place-items-center rounded-lg bg-primary font-bold text-primary-foreground',
-          className,
-        )}
-        aria-hidden="true"
-      >
-        {brand.charAt(0).toUpperCase()}
-      </span>
-    )
-
     const IconButtonClass =
       'p-2 text-muted-foreground transition-colors hover:text-foreground'
 
@@ -83,23 +73,30 @@ export const MarketplaceNavbar = defineCapsule({
       >
         <NavbarBrand
           href={homeTarget}
-          className="flex items-center gap-3 text-left"
+          className="text-lg font-extrabold uppercase tracking-tight text-foreground"
         >
-          <BrandLogo brand={brand}>
-            <LogoImage fallback={<LogoMark className="size-8 text-sm" />} />
-            <LogoLabel className="text-lg font-bold tracking-tight text-foreground sm:text-xl" />
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage className="size-7" />
+            <LogoLabel />
           </BrandLogo>
         </NavbarBrand>
 
-        <NavbarNav className="gap-6">
-          {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+        <NavbarNav className="gap-1">
+          {nav.map((label, i) => (
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className={cn(
+                'rounded-none px-2.5 py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:bg-transparent hover:text-foreground',
+                i > 3 && 'hidden lg:inline-flex',
+              )}
+            >
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
 
-        <NavbarActions className="gap-2 sm:gap-3">
+        <NavbarActions className="gap-1 sm:gap-1.5">
           <CommerceMobileMenu
             brand={brand}
             nav={nav}
@@ -118,11 +115,12 @@ export const MarketplaceNavbar = defineCapsule({
             lakebed={lakebed}
             fallbackCount={initialCartCount}
             buttonClassName={cn('relative', IconButtonClass)}
+            badgeClassName="rounded-none bg-primary font-mono text-[10px] font-semibold tabular-nums text-primary-foreground"
           />
           <NavbarCta
-            variant="primary-pill"
+            variant="dark"
             href={props.ctaTarget ?? 'Sell'}
-            className="hidden px-5 py-2.5 font-semibold sm:inline-flex"
+            className="ml-2 hidden h-9 rounded-none px-5 font-mono text-[11px] font-semibold uppercase tracking-[0.15em] transition-all duration-150 active:translate-y-px lg:inline-flex"
           >
             {ctaLabel}
           </NavbarCta>

@@ -10,8 +10,7 @@ import {
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * AiProductLogos — kinetic tech-editorial "trusted by" ticker strip for an AI
  * SaaS / product page. A slim hairline-bordered band styled like a data

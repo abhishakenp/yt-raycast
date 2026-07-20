@@ -9,6 +9,7 @@ import {
   ServiceDescription,
 } from '#/section-kit/ServicesGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 
 const ICONS = {
   math: (
@@ -157,7 +158,7 @@ const DEFAULT_SUBJECTS: {
 export const TutoringServices = defineCapsule({
   name: 'TutoringServices',
   description:
-    'Subjects / services band for tutoring sites, composing the ServicesGrid kit composite into a four-column grid of subject cards. Each card pairs a friendly outline icon tile with a subject name and an encouraging description (Math, Science, Languages, Test Prep, Writing, Reading by default). Accepts a public `subjects` prop to override the offering list. Use it to show parents and students the breadth of tutoring help available in a warm, scannable layout.',
+    'Subjects / services band for tutoring sites styled as an editorial course catalog: an asymmetric header (mono subject-index eyebrow + left-aligned serif heading and lede, with a mono subject count on the right) above the ServicesGrid kit composite rendered as hairline catalog entries. Each entry is a sharp-cornered open ledger cell with a mono course-index label ("SUBJ 01"), a hairline-framed outline subject icon, a serif subject name, and an encouraging description (Math, Science, Languages, Test Prep, Writing, Reading by default). Accepts a public `subjects` prop to override the offering list. Use it to show parents and students the breadth of tutoring help available in a scholarly, scannable index.',
   props: z.object({
     heading: z.string().optional(),
     subheading: z.string().optional(),
@@ -203,12 +204,27 @@ export const TutoringServices = defineCapsule({
         }
       >
         <Container size="xl" className="px-6">
-          <ServicesGrid
-            heading={heading}
-            subheading={subheading}
-            columns={props.columns ?? 4}
-          >
-            {features.map((f) => {
+          <div className="mb-12 flex flex-col gap-6 border-b border-border pb-8 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-2xl">
+              <MonoTag className="mb-4 block" tone="primary">
+                Course catalog
+              </MonoTag>
+              <h2 className="font-serif text-3xl font-semibold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+                {heading}
+              </h2>
+              <p className="mt-4 text-lg leading-8 text-muted-foreground">
+                {subheading}
+              </p>
+            </div>
+            <span
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+            >
+              {String(features.length).padStart(2, '0')} subjects
+            </span>
+          </div>
+          <ServicesGrid columns={props.columns ?? 4}>
+            {features.map((f, i) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -219,10 +235,29 @@ export const TutoringServices = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <ServiceCard key={__iv__.title}>
-                  {__iv__.icon && <ServiceIcon>{__iv__.icon}</ServiceIcon>}
-                  <ServiceTitle>{__iv__.title}</ServiceTitle>
-                  <ServiceDescription>{__iv__.description}</ServiceDescription>
+                <ServiceCard
+                  key={__iv__.title}
+                  className="gap-4 rounded-none border-0 border-t border-border bg-transparent px-0 pb-2 pt-6"
+                >
+                  <div className="flex items-center justify-between">
+                    <span
+                      aria-hidden="true"
+                      className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+                    >
+                      SUBJ {String(i + 1).padStart(2, '0')}
+                    </span>
+                    {__iv__.icon && (
+                      <ServiceIcon className="size-11 rounded-none border border-border bg-transparent text-primary">
+                        {__iv__.icon}
+                      </ServiceIcon>
+                    )}
+                  </div>
+                  <ServiceTitle className="font-serif text-xl font-semibold tracking-tight">
+                    {__iv__.title}
+                  </ServiceTitle>
+                  <ServiceDescription className="leading-6">
+                    {__iv__.description}
+                  </ServiceDescription>
                 </ServiceCard>
               )
             })}

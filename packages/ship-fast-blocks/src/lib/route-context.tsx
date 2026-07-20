@@ -99,7 +99,7 @@ export function resolveRouteTarget(
     return null
   }
 
-  return (
+  const semanticTarget =
     (/program|course|curriculum/.test(normalized) &&
       find(/program|course|curriculum/, /program|curriculum/)) ||
     (/lookbook|collection/.test(normalized) &&
@@ -142,7 +142,11 @@ export function resolveRouteTarget(
         /feature|service|steps|process|schedule|program|curriculum|speaker|agenda|venue|amenit|room|lookbook/,
       )) ||
     null
-  )
+
+  if (semanticTarget) return semanticTarget
+
+  const singleRoute = routes.length === 1 ? routes[0] : undefined
+  return singleRoute ? { type: 'page', page: singleRoute } : null
 }
 
 export function slugifyRoute(value: string): string {

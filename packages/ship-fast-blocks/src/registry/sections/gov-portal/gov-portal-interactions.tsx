@@ -12,8 +12,7 @@ import {
   AccountDropdownSeparator,
   AccountDropdownSignOut,
   AccountDropdownUnauthenticated,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/AccountDropdown.tsx'
 import type {
   govPortalLakebed,
   GrievanceInput,

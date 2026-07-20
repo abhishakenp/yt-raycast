@@ -10,8 +10,7 @@ import {
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
 import { PressList } from '#/section-kit/PressList.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * CrowdfundingPress — a playful-bold "Featured in" press strip for a
  * crowdfunding / campaign landing page. A hard 2px border-y band where a

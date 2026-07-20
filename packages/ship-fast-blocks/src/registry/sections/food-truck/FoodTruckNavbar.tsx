@@ -10,7 +10,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
+} from '#/section-kit/SiteNav.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAccountButton,
@@ -72,7 +72,7 @@ export const FoodTruckNavbar = defineCapsule({
         height="outlier"
         rowClassName="py-4"
         className={cn(
-          'border-b-2 border-foreground bg-background/90 supports-[backdrop-filter]:bg-background/70',
+          'border-b-2 border-foreground bg-background/90 text-foreground supports-[backdrop-filter]:bg-background/70',
           props.className,
         )}
         containerClassName="max-w-6xl px-6"
@@ -90,7 +90,7 @@ export const FoodTruckNavbar = defineCapsule({
                 </span>
               }
             />
-            <LogoLabel className="text-lg font-extrabold tracking-tight" />
+            <LogoLabel className="text-lg font-extrabold tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 

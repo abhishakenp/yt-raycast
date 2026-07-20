@@ -15,7 +15,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 export const TravelAgencyGallery = defineCapsule({
   name: 'TravelAgencyGallery',
   description:
-    'Featured-destinations gallery for the Travel Agency page family. Composes the shared GalleryGrid kit composite into a three-column grid of six aspirational, alt-driven destination tiles (Santorini, Kyoto, Maldives, Swiss Alps, Marrakech, Patagonia), each with a captioned location. Use to showcase signature trips and inspire wanderlust mid-page. All images are alt-only and prop-driven with curated defaults so it renders with no props.',
+    'Featured-destinations mosaic for the Travel Agency page family. An asymmetric intro (mono eyebrow + heading left, supporting copy right) above a sharp-cornered responsive grid where the lead plate widens to a cinematic double-column feature and the rest sit in a 4:3 rhythm, each an alt-driven destination photo tagged with a mono index numeral and a mono ledger caption of its location (Santorini, Kyoto, Maldives, Swiss Alps, Marrakech, Patagonia). Use to showcase signature destinations and inspire wanderlust mid-page. All images are alt-only and prop-driven with curated defaults so it renders with no props.',
   props: z.object({
     heading: z.string().optional(),
     subheading: z.string().optional(),
@@ -56,32 +56,54 @@ export const TravelAgencyGallery = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-background pt-28 pb-20 lg:pt-32 lg:pb-28',
+          'bg-muted/30 pt-28 pb-20 lg:pt-32 lg:pb-28',
           props.className,
         )}
       >
-        <Container>
-          <GalleryGrid>
+        <Container size="xl">
+          <div className="mb-14 grid items-end gap-8 lg:grid-cols-12 lg:gap-12">
             <SectionHeading
+              align="left"
+              eyebrow="Destinations"
               title={props.heading ?? 'Featured destinations'}
-              subtitle={
-                props.subheading ??
-                'A taste of the journeys our travelers love most, each one ready to tailor to you.'
-              }
+              className="gap-3 lg:col-span-7"
+              eyebrowClassName="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground"
+              titleClassName="text-4xl font-semibold tracking-tight lg:text-5xl"
             />
-            <GalleryGridItems columns={3}>
-              {images.map((img) => {
+            <p className="text-base leading-relaxed text-muted-foreground lg:col-span-5 lg:pb-1">
+              {props.subheading ??
+                'A taste of the journeys our travelers love most, each one ready to tailor to you.'}
+            </p>
+          </div>
+          <GalleryGrid>
+            <GalleryGridItems columns={3} className="gap-3">
+              {images.map((img, i) => {
                 const __iv__ = img as {
                   alt: string
                   caption?: string
                   title?: string
                   location?: string
                 }
+                const feature = i === 0
                 return (
-                  <GalleryTile key={__iv__.alt}>
+                  <GalleryTile
+                    key={__iv__.alt}
+                    className={cn(
+                      'rounded-none border-0 bg-muted',
+                      feature ? 'aspect-[16/10] sm:col-span-2' : 'aspect-[4/3]',
+                    )}
+                  >
                     <GalleryTileImage alt={__iv__.alt} />
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-3 top-3 font-mono text-[11px] uppercase tracking-[0.14em] text-background/90"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
                     {__iv__.caption && (
-                      <GalleryTileCaption>{__iv__.caption}</GalleryTileCaption>
+                      <GalleryTileCaption className="rounded-none font-mono text-[11px] uppercase tracking-[0.14em]">
+                        {__iv__.caption}
+                      </GalleryTileCaption>
                     )}
                   </GalleryTile>
                 )

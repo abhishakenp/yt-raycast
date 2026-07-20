@@ -10,7 +10,7 @@ import {
   GalleryTile,
   GalleryTileImage,
   GalleryTileCaption,
-} from '#/section-kit/index.ts'
+} from '#/section-kit/GalleryGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ContentCard } from '#/section-kit/ContentCard.tsx'
 import { govPortalLakebed } from './gov-portal-lakebed.ts'

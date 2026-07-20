@@ -23,8 +23,7 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * FurnitureStoreHero — editorial-catalog asymmetric hero for a warm minimal
  * furniture / home-decor store. On the adaptive background, an asymmetric 5:7

@@ -7,8 +7,7 @@ import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { TopicGrid, TopicCard } from '#/section-kit/TopicGrid.tsx'
 import { MonoTag } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * FaqTopics — an "Editorial Q&A" browse-by-topic ledger for a help-center /
  * knowledge-base page. A mono-eyebrow section heading with a hairline meta rail

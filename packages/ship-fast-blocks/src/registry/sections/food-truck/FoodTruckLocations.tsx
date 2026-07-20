@@ -12,8 +12,7 @@ import {
   LocationItem,
   LocationCard,
 } from '#/section-kit/LocationList.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * FoodTruckLocations — a sticker-poster weekly LOCATIONS schedule for a food-truck site.
  * On a muted band under a giant ghost "OPEN" watermark, a mono index eyebrow + extrabold

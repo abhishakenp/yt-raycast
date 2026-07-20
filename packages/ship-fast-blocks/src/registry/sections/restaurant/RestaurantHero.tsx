@@ -18,23 +18,24 @@ import {
   RestaurantReservationButton,
 } from './restaurant-interactions.tsx'
 import { restaurantLakebed } from './restaurant-lakebed.ts'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * RestaurantHero — full-bleed, image-forward hero for a restaurant landing page.
- * A single appetizing food / dining-room photograph fills the band edge to edge
- * with a token-based dark overlay so light, serif text reads cleanly on top.
- * Centered content stacks an uppercase eyebrow pill, a large serif headline, a
- * supporting paragraph, dual CTAs (filled "Reserve a Table" + outlined "View
- * Menu"), and a divider-separated hours / location / phone strip beneath. CTAs
- * route through section-kit route links. Use as the opening hero for casual or upscale
- * restaurants, bistros, eateries, fine-dining rooms, and chef-driven venues.
- * Renders fully with no props via baked-in defaults.
+ * RestaurantHero — full-bleed, image-forward menu-editorial hero for a
+ * restaurant landing page. A single appetizing food / dining-room photograph
+ * fills the band edge to edge under a token-based dark overlay so light serif
+ * text reads cleanly on top. Left-aligned content stacks a rotated hairline
+ * mono "stamp" eyebrow, a large warm serif headline, a supporting paragraph,
+ * dual square-edged CTAs with press feedback (filled "Reserve a Table" +
+ * hairline-outlined translucent "View Menu"), and a hairline-ruled mono
+ * hours / location / phone ledger strip beneath. CTAs route through section-kit
+ * route links. Use as the opening hero for casual or upscale restaurants,
+ * bistros, eateries, fine-dining rooms, and chef-driven venues. Renders fully
+ * with no props via baked-in defaults.
  */
 export const RestaurantHero = defineCapsule({
   name: 'RestaurantHero',
   description:
-    "Full-bleed image-forward hero for a restaurant landing page: one appetizing food / dining-room photo fills the band edge to edge under a token-based dark overlay so light serif text stays readable. Centered content has an uppercase eyebrow pill, a large serif headline, a supporting paragraph, dual CTAs (filled 'Reserve a Table' + outlined translucent 'View Menu'), and a divider-separated hours / location / phone strip. CTAs route through section-kit route links. Use as the opening hero for casual or upscale restaurants, bistros, eateries, fine-dining rooms, and chef-driven venues.",
+    "Full-bleed image-forward menu-editorial hero for a restaurant landing page: one appetizing food / dining-room photo fills the band edge to edge under a token-based dark overlay so light serif text stays readable. Left-aligned content has a rotated hairline mono 'stamp' eyebrow, a large warm serif headline, a supporting paragraph, dual square-edged CTAs with press feedback (filled 'Reserve a Table' + hairline-outlined translucent 'View Menu'), and a hairline-ruled mono hours / location / phone ledger strip. CTAs route through section-kit route links. Use as the opening hero for casual or upscale restaurants, bistros, eateries, fine-dining rooms, and chef-driven venues.",
   props: z.object({
     /** Small uppercase eyebrow pill above the headline. */
     eyebrow: z.string().optional(),
@@ -90,25 +91,35 @@ export const RestaurantHero = defineCapsule({
         />
 
         <Container asChild>
-          <HeroContent className="flex flex-col items-center pb-28 pt-36 text-center sm:pt-40 lg:pb-32 lg:pt-48">
-            <HeroBadge variant="pill">{heroEyebrow}</HeroBadge>
+          <HeroContent className="flex max-w-3xl flex-col items-start pb-24 pt-36 text-left sm:pt-40 lg:pb-32 lg:pt-48">
+            <HeroBadge
+              variant="pill"
+              className="rotate-[-1.5deg] rounded-none border-background/50 bg-transparent px-3 py-1 font-mono tracking-[0.28em] backdrop-blur-none"
+            >
+              {heroEyebrow}
+            </HeroBadge>
 
-            <HeroHeading variant="serif">{heroHeading}</HeroHeading>
+            <HeroHeading
+              variant="serif"
+              className="mt-6 text-balance sm:text-6xl lg:text-7xl"
+            >
+              {heroHeading}
+            </HeroHeading>
 
             <HeroSubheading variant="light">{heroSub}</HeroSubheading>
 
-            <HeroActions className="mt-10 flex-col gap-4 sm:flex-row">
+            <HeroActions className="mt-10 w-full flex-col gap-3 sm:w-auto sm:flex-row sm:gap-4">
               <RestaurantReservationButton
                 lakebed={lakebed}
                 input={{ label: heroPrimary, source: heroPrimaryTarget }}
-                className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                className="inline-flex items-center justify-center rounded-none bg-primary px-8 py-4 font-medium text-primary-foreground transition-[background-color,transform] duration-150 hover:bg-primary/90 active:translate-y-px"
                 pendingChildren={<RestaurantMutationSpinner />}
               >
                 {heroPrimary}
               </RestaurantReservationButton>
               <HeroCta
                 asChild
-                className="inline-flex items-center justify-center rounded-full border border-border bg-card/10 px-8 py-4 font-medium text-background backdrop-blur-sm transition-colors hover:bg-card/20"
+                className="inline-flex items-center justify-center rounded-none border border-background/40 bg-background/5 px-8 py-4 font-medium text-background backdrop-blur-sm transition-[background-color,transform] duration-150 hover:bg-background/15 active:translate-y-px"
               >
                 <NavbarRouteLink href={heroSecondaryTarget}>
                   {heroSecondary}
@@ -116,15 +127,12 @@ export const RestaurantHero = defineCapsule({
               </HeroCta>
             </HeroActions>
 
-            <HeroInfoStrip>
-              {infoItems.map((item, i) => (
-                <HeroInfoStripItem key={item}>
-                  {i > 0 && (
-                    <span
-                      aria-hidden="true"
-                      className="hidden h-4 w-px bg-background/30 sm:block"
-                    />
-                  )}
+            <HeroInfoStrip className="mt-12 justify-start gap-0 border-t border-background/25 pt-5 font-mono text-[11px] uppercase tracking-[0.18em] text-background/70">
+              {infoItems.map((item) => (
+                <HeroInfoStripItem
+                  key={item}
+                  className="gap-0 py-1 pr-5 sm:border-r sm:border-background/20 sm:pl-5 sm:first:pl-0"
+                >
                   <span>{item}</span>
                 </HeroInfoStripItem>
               ))}

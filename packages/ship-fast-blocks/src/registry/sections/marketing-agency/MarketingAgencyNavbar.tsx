@@ -10,22 +10,22 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
- * MarketingAgencyNavbar — sticky, translucent top navigation bar for a growth /
- * digital marketing-agency site. A backdrop-blurred, border-bottomed header
+ * MarketingAgencyNavbar — sticky kinetic top navigation bar for a growth /
+ * digital marketing-agency site. A backdrop-blurred, hairline-bottomed header
  * pinned to the top with a layered-diamond brand glyph beside the agency name on
- * the left, horizontal nav links plus a rounded pill primary CTA on the right
- * (desktop), and a hamburger menu button on mobile. The last nav item drives the
- * CTA target; every link routes through route hrefs for page-switching. Use as
- * the sticky site header for marketing / growth agencies, SEO / paid-ads shops,
- * lead-gen consultancies, or B2B SaaS growth firms. Renders fully with no props.
+ * the left, mono uppercase nav links on the right, and a square hard-offset-shadow
+ * primary CTA with mechanical press feedback (desktop); a hamburger menu button
+ * on mobile. The last nav item drives the CTA target; every link routes through
+ * route hrefs for page-switching. Use as the sticky site header for marketing /
+ * growth agencies, SEO / paid-ads shops, lead-gen consultancies, or B2B SaaS
+ * growth firms. Renders fully with no props.
  */
 export const MarketingAgencyNavbar = defineCapsule({
   name: 'MarketingAgencyNavbar',
   description:
-    'Sticky translucent top navigation bar for a growth / digital marketing-agency site: backdrop-blurred, border-bottomed header pinned to the top with a layered-diamond brand glyph + agency name on the left, horizontal nav links and a rounded pill primary CTA on the right (desktop), and a hamburger menu button on mobile. The last nav item drives the CTA target; links route through route hrefs for page-switching. Use as the sticky site header for marketing / growth agencies, SEO / paid-ads shops, lead-gen consultancies, or B2B SaaS growth firms.',
+    'Sticky kinetic top navigation bar for a growth / digital marketing-agency site: a backdrop-blurred, hairline-bottomed header pinned to the top with a layered-diamond brand glyph + agency name on the left, mono uppercase nav links and a square hard-offset-shadow primary CTA with mechanical press feedback on the right (desktop), and a hamburger menu button on mobile. The last nav item drives the CTA target; links route through route hrefs for page-switching. Use as the sticky site header for marketing / growth agencies, SEO / paid-ads shops, lead-gen consultancies, or B2B SaaS growth firms.',
   props: z.object({
     /** Agency / brand name shown beside the logo glyph. */
     brand: z.string().optional(),
@@ -57,24 +57,36 @@ export const MarketingAgencyNavbar = defineCapsule({
       <SiteNav
         position="sticky"
         height="compact"
-        className={cn('bg-background/80 backdrop-blur-md', props.className)}
+        className={cn(
+          'border-b border-border bg-background/80 backdrop-blur-md',
+          props.className,
+        )}
       >
         <NavbarBrand href={nav[0]} className="gap-2">
-          <BrandLogo brand={brand}>
+          <BrandLogo brand={brand} className="flex items-center gap-2">
             <LogoImage
-              fallback={<LogoMark className="size-8 text-foreground" />}
+              className="size-7"
+              fallback={<LogoMark className="size-7 text-primary" />}
             />
-            <LogoLabel className="text-lg font-semibold tracking-tight" />
+            <LogoLabel className="text-lg font-bold tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.slice(0, -1).map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="font-mono text-xs uppercase tracking-[0.14em]"
+            >
               {label}
             </NavbarNavLink>
           ))}
-          <NavbarCta variant="primary-pill" href={navCta} className="px-4 py-2">
+          <NavbarCta
+            variant="primary-pill"
+            href={navCta}
+            className="rounded-none px-4 py-2 text-sm font-semibold shadow-[3px_3px_0_0] shadow-foreground transition-[transform,box-shadow,background-color] duration-150 hover:bg-primary/90 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none motion-reduce:transform-none"
+          >
             {navCta}
           </NavbarCta>
         </NavbarNav>

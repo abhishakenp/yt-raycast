@@ -13,21 +13,24 @@ import {
 } from '#/section-kit/TestimonialGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 
 /**
- * NewsletterTestimonials — reader testimonials band for an editorial newsletter.
- * On a subtle muted band bordered top and bottom: a centered serif heading + lede,
- * a 3-up grid of rounded card quotes (round avatar + name + role, then an italic
- * pull-quote), and below it a 2-up / 4-up row of short serif mini-quotes with an
- * em-dash author line. Warm, calm, literary mood. Avatars use the alt-driven
- * Image component. Use to surface social proof for newsletters, publications,
- * blogs, essayists, or content creators. Renders fully with no props via
- * baked-in defaults.
+ * NewsletterTestimonials — newsprint-lite reader letters band for an editorial
+ * newsletter. On a subtle muted band ruled top and bottom, behind a giant faint
+ * serif quotation-mark watermark: a hairline meta rail (a primary square + mono
+ * "Letters" label, a mono "From readers" tag) tops a left-aligned serif heading +
+ * lede; then a staggered 3-up grid of square (rounded-none) hairline card quotes
+ * (a serif pull-quote over a name + mono role source line), and below it a
+ * collapsed-border 2-up / 4-up ledger of short serif mini-quotes with an em-dash
+ * author line. Clean, literary newspaper structure. Use to surface social proof
+ * for newsletters, publications, blogs, essayists, or content creators. Renders
+ * fully with no props via baked-in defaults.
  */
 export const NewsletterTestimonials = defineCapsule({
   name: 'NewsletterTestimonials',
   description:
-    'Reader testimonials band for an editorial newsletter on a subtle muted band bordered top and bottom: a centered serif heading + lede, a 3-up grid of rounded card quotes (round avatar + name + role, then an italic pull-quote), and below it a 2-up / 4-up row of short serif mini-quotes with an em-dash author line. Warm, calm, literary mood. Avatars use the alt-driven Image component. Use to surface social proof for newsletters, publications, blogs, essayists, or content creators.',
+    'Newsprint-lite reader letters band for an editorial newsletter on a subtle muted band ruled top and bottom behind a giant faint serif quotation-mark watermark: a hairline meta rail (a primary square + mono "Letters" label, a mono "From readers" tag) above a left-aligned serif heading + lede, then a staggered 3-up grid of square hairline card quotes (a serif pull-quote over a name + mono role source line), and below it a collapsed-border 2-up / 4-up ledger of short serif mini-quotes with an em-dash author line. Clean, literary newspaper structure. Use to surface social proof for newsletters, publications, blogs, essayists, or content creators.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -95,21 +98,36 @@ export const NewsletterTestimonials = defineCapsule({
     return (
       <section
         className={cn(
-          'border-y border-border bg-muted/40 py-16 md:py-24',
+          'relative overflow-hidden border-y border-border bg-muted/40 py-16 md:py-24',
           props.className,
         )}
       >
-        <Container size="lg">
+        <Watermark className="-top-16 right-2 select-none font-serif text-[16rem] leading-none not-italic sm:text-[22rem]">
+          &rdquo;
+        </Watermark>
+
+        <Container size="lg" className="relative">
+          <div className="mb-8 flex items-center justify-between gap-4 border-b border-border pb-4">
+            <MonoTag className="flex items-center gap-3 tracking-[0.25em]">
+              <span aria-hidden="true" className="size-1.5 bg-primary" />
+              Letters
+            </MonoTag>
+            <MonoTag className="tracking-[0.25em]">From readers</MonoTag>
+          </div>
+
           <SectionHeading
             title={heading}
             subtitle={description}
-            align="center"
+            align="left"
             titleClassName="font-serif text-3xl font-medium sm:text-4xl"
-            subtitleClassName="text-lg"
-            className="mx-auto mb-12 max-w-2xl gap-6 md:mb-16"
+            subtitleClassName="max-w-2xl text-lg"
+            className="mb-12 max-w-3xl gap-4 md:mb-16"
           />
 
-          <TestimonialGrid columns={3}>
+          <TestimonialGrid
+            columns={3}
+            className="lg:[&>*:nth-child(3n-1)]:mt-8"
+          >
             {items.map((t) => {
               const __iv__ = t as {
                 quote: string
@@ -121,12 +139,17 @@ export const NewsletterTestimonials = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
+                <TestimonialCard
+                  key={__iv__.name}
+                  className="rounded-none border-border bg-background p-7"
+                >
+                  <TestimonialQuote className="font-serif text-lg italic leading-relaxed text-foreground">
+                    &ldquo;{__iv__.quote}&rdquo;
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="mt-auto flex-col items-start gap-1 border-t border-border pt-4">
                     <TestimonialName>{__iv__.name}</TestimonialName>
                     {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
+                      <TestimonialMeta className="font-mono text-[11px] uppercase tracking-[0.15em]">
                         {__iv__.role || __iv__.company || __iv__.meta}
                       </TestimonialMeta>
                     )}
@@ -136,13 +159,21 @@ export const NewsletterTestimonials = defineCapsule({
             })}
           </TestimonialGrid>
 
-          <ResponsiveGrid cols="1-2-4" className="mt-8 text-center gap-4">
+          <ResponsiveGrid
+            cols="1-2-4"
+            className="mt-12 gap-0 border-l border-t border-border"
+          >
             {mini.map((m) => (
-              <div key={m.author} className="p-4">
-                <p className="mb-1 font-serif text-xl font-medium text-foreground">
+              <div
+                key={m.author}
+                className="border-b border-r border-border p-6"
+              >
+                <p className="font-serif text-xl font-medium italic text-foreground">
                   &ldquo;{m.quote}&rdquo;
                 </p>
-                <p className="text-sm text-muted-foreground">— {m.author}</p>
+                <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
+                  — {m.author}
+                </p>
               </div>
             ))}
           </ResponsiveGrid>

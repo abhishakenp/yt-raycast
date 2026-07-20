@@ -11,8 +11,7 @@ import {
 } from '#/section-kit/LocationBlock.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { MonoTag } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * CafeLocation — newsprint visitor's-ledger location block for a cozy cafe /
  * coffee shop page on a kraft-toned muted wash. A mono dateline rail (cap

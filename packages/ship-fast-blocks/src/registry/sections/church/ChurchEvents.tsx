@@ -8,8 +8,7 @@ import { EventList } from '#/section-kit/EventList.tsx'
 import { ImageTile } from '#/section-kit/ImageTile.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * ChurchEvents — serene editorial featured-events grid for a church or
  * faith-community site. A generous, airy section with a giant ghost serif

@@ -34,8 +34,7 @@ import {
   ProductCardPrice,
 } from '#/section-kit/ProductCard.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const FashionStoreProducts = defineCapsule({
   name: 'FashionStoreProducts',
   description:

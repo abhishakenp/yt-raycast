@@ -14,8 +14,7 @@ import {
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * InteriorDesignHero — editorial-spatial split hero band for an upscale
  * interior-design / architecture studio landing page. An asymmetric 7:5 grid: on

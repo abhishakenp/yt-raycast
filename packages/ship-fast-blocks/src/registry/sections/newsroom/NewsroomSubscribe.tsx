@@ -10,6 +10,7 @@ import {
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
 
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   PricingCard,
   PricingCardBadge,
@@ -31,21 +32,23 @@ import { SubscribeBand } from '#/section-kit/SubscribeBand.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
- * NewsroomSubscribe — editorial subscription / membership band for a digital
- * newsroom or magazine. A bold centered intro with a serif heading and a
- * muted supporting paragraph, a short benefits checklist, a styled
- * email-capture row with a Subscribe button, and a responsive 3-up grid of tiered
- * membership plan cards (the featured middle plan inverts to a filled primary
- * surface with a "Most Popular" badge), closing with a fine-print trust footnote.
- * email submit writes to the shared Lakebed subscriber list and plan CTAs route
- * through section-kit route links. Use to convert readers into paying subscribers /
- * newsletter members for a news, magazine or publication site. Renders fully
- * with no props.
+ * NewsroomSubscribe — full newsprint subscription / membership band for a
+ * digital newsroom or magazine. A centered masthead intro with a mono label, a
+ * serif heading and a muted standfirst, a mono benefits checklist, and a
+ * hairline-framed square (rounded-none) email-capture row with a hard-offset
+ * Subscribe button, above a responsive 3-up ledger of tiered membership plan
+ * cards. The featured middle plan inverts to a filled-primary surface with a
+ * mono "Most Popular" badge and a hard offset shadow; the others are square
+ * hairline cards with tabular serif prices. Closes on a mono fine-print trust
+ * footnote. Email submit writes to the shared Lakebed subscriber list and plan
+ * CTAs route through section-kit route links. Use to convert readers into paying
+ * subscribers / newsletter members for a news, magazine or publication site.
+ * Renders fully with no props.
  */
 export const NewsroomSubscribe = defineCapsule({
   name: 'NewsroomSubscribe',
   description:
-    'Editorial subscription / membership band for a digital newsroom or magazine: a bold centered intro with a serif heading and a muted supporting paragraph, a short benefits checklist, a styled email-capture row with a Subscribe button, and a responsive 3-up grid of tiered membership plan cards where the featured middle plan inverts to a filled primary surface with a Most-Popular badge, closing with a fine-print trust footnote. Combines newsletter sign-up and tiered paid subscription plans; email submit writes to the shared Lakebed subscriber list and plan CTAs route through section-kit route links. Use to convert readers into paying subscribers or newsletter members for a news, magazine or publication site. Renders fully with no props.',
+    'Full newsprint subscription / membership band for a digital newsroom or magazine: a centered masthead intro with a mono label, a serif heading and a muted standfirst, a mono benefits checklist, and a hairline-framed square email-capture row with a hard-offset Subscribe button, above a responsive 3-up ledger of tiered membership plan cards where the featured middle plan inverts to a filled-primary surface with a mono Most-Popular badge and a hard offset shadow while the others are square hairline cards with tabular serif prices, closing on a mono fine-print trust footnote. Combines newsletter sign-up and tiered paid subscription plans; email submit writes to the shared Lakebed subscriber list and plan CTAs route through section-kit route links. Use to convert readers into paying subscribers or newsletter members for a news, magazine or publication site. Renders fully with no props.',
   props: z.object({
     /** Serif section heading. */
     heading: z.string().optional(),
@@ -152,7 +155,10 @@ export const NewsroomSubscribe = defineCapsule({
       >
         <Container>
           <div className="mx-auto mb-12 max-w-3xl text-center">
-            <NewsletterCtaHeading className="mb-4 font-serif text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl">
+            <MonoTag tone="primary" className="mb-4 inline-block">
+              Membership
+            </MonoTag>
+            <NewsletterCtaHeading className="mb-4 font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
               {heading}
             </NewsletterCtaHeading>
             <NewsletterCtaDescription className="text-lg text-muted-foreground">
@@ -162,9 +168,9 @@ export const NewsroomSubscribe = defineCapsule({
               {benefits.map((benefit) => (
                 <li
                   key={benefit}
-                  className="flex items-center gap-2 text-sm font-medium text-foreground"
+                  className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.12em] text-foreground"
                 >
-                  <Check className="size-4 shrink-0 text-accent" />
+                  <Check className="size-4 shrink-0 text-primary" />
                   <span>{benefit}</span>
                 </li>
               ))}
@@ -177,27 +183,27 @@ export const NewsroomSubscribe = defineCapsule({
             placeholder={emailPlaceholder}
             buttonLabel={submitCta}
             successMessage="You're subscribed. The briefing will arrive by email."
-            className="mx-auto flex max-w-xl flex-col gap-3 sm:flex-row"
-            inputClassName="w-full rounded-lg border border-border bg-card px-4 py-3 text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            buttonClassName="shrink-0 rounded-lg bg-primary px-6 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
-            statusClassName="mb-16 text-center"
+            className="mx-auto flex max-w-xl flex-col border border-border sm:flex-row"
+            inputClassName="w-full rounded-none border-0 bg-card px-4 py-3 text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+            buttonClassName="shrink-0 rounded-none border-t border-border bg-foreground px-6 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-background transition-transform hover:bg-foreground/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70 sm:border-l sm:border-t-0"
+            statusClassName="mb-16 mt-4 text-center font-mono text-[11px] uppercase tracking-[0.12em]"
           />
 
-          <ResponsiveGrid cols="1-md-3" className="mx-auto max-w-6xl">
+          <ResponsiveGrid cols="1-md-3" className="mx-auto max-w-6xl gap-6">
             {plans.map((plan) => (
               <PricingCard
                 key={plan.name}
                 variant="outlined"
                 highlight={plan.featured ? 'filled-primary' : 'none'}
                 className={cn(
-                  'shadow-sm',
+                  'rounded-none',
                   plan.featured
-                    ? 'border-primary text-primary-foreground shadow-xl'
-                    : '',
+                    ? 'border-primary text-primary-foreground shadow-[8px_8px_0_0] shadow-foreground/20 lg:-translate-y-3'
+                    : 'border border-border',
                 )}
               >
                 {plan.featured ? (
-                  <PricingCardBadge className="bg-background font-bold uppercase tracking-wide text-foreground">
+                  <PricingCardBadge className="rounded-none bg-background font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-foreground">
                     Most Popular
                   </PricingCardBadge>
                 ) : null}
@@ -212,7 +218,7 @@ export const NewsroomSubscribe = defineCapsule({
                 <PricingCardPrice className="mb-6">
                   <PricingCardPriceValue
                     className={cn(
-                      'font-bold',
+                      'font-serif font-bold tabular-nums',
                       plan.featured ? 'text-primary-foreground' : '',
                     )}
                   >
@@ -220,6 +226,7 @@ export const NewsroomSubscribe = defineCapsule({
                   </PricingCardPriceValue>
                   <PricingCardPriceUnit
                     className={cn(
+                      'font-mono text-[11px] uppercase tracking-[0.12em]',
                       plan.featured ? 'text-primary-foreground/60' : '',
                     )}
                   >
@@ -234,7 +241,7 @@ export const NewsroomSubscribe = defineCapsule({
                           'size-5',
                           plan.featured
                             ? 'text-primary-foreground/80'
-                            : 'text-accent',
+                            : 'text-primary',
                         )}
                       />
                       <span
@@ -261,7 +268,7 @@ export const NewsroomSubscribe = defineCapsule({
                       </>
                     }
                     className={cn(
-                      'inline-flex w-full items-center justify-center gap-2 rounded-lg py-3 font-semibold transition-colors disabled:pointer-events-none disabled:opacity-70',
+                      'inline-flex w-full items-center justify-center gap-2 rounded-none py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] transition-transform active:translate-y-px disabled:pointer-events-none disabled:opacity-70',
                       plan.featured
                         ? 'bg-background text-foreground hover:bg-muted'
                         : 'border border-border text-foreground hover:bg-muted',
@@ -274,7 +281,7 @@ export const NewsroomSubscribe = defineCapsule({
             ))}
           </ResponsiveGrid>
 
-          <NewsletterCtaFineprint className="mt-10 text-center text-sm text-muted-foreground">
+          <NewsletterCtaFineprint className="mt-10 text-center font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
             {footnote}
           </NewsletterCtaFineprint>
         </Container>

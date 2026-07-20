@@ -14,24 +14,29 @@ import {
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * PetVeterinaryHero — split, two-column hero for a veterinary clinic / pet
- * healthcare landing page on a soft primary-tinted gradient band. A left text
- * column with a pulsing "now accepting new patients" pill, a big headline whose
- * trailing phrase is accented in the primary color, a lede paragraph, a filled
- * primary "Schedule a Visit" CTA plus an outlined "Explore Services" button, and
- * a social-proof row of overlapping staff avatars + a star-rating note; the right
- * column shows a rounded clinic photo with two floating info chips ("same-day
- * appointments" / "open 7 days"). CTAs route through section-kit route links; imagery uses
- * the alt-driven Image component. Use as the top hero for veterinary clinics,
- * animal hospitals, pet healthcare practices, or emergency animal care.
+ * PetVeterinaryHero — warm friendly-clinical asymmetric 7/5 hero for a
+ * veterinary clinic / pet-healthcare landing page. On an airy background with a
+ * soft warm wash and a giant ghost "care" watermark: a left column carries a
+ * rounded-full sticker chip (pulsing primary dot + "now accepting new patients"
+ * micro-label), a big fluid extrabold headline whose trailing phrase is accented
+ * in the primary color, a lede paragraph, a pair of rounded-full pill CTAs with
+ * hard offset shadows and press feedback (filled-primary "Schedule a Visit" +
+ * outlined "Explore Services"), and a hairline-topped social-proof row of
+ * hairline-framed staff avatars and a star-rating note; the right column shows a
+ * chunky rounded-none clinic photo double-framed with a hard offset shadow, a
+ * rotated rounded-full "24/7 care" sticker, and two chunky info cards overlapping
+ * its corners (same-day appointments / open 7 days). CTAs route through
+ * section-kit route links; imagery uses the alt-driven Image component. Use as
+ * the top hero for veterinary clinics, animal hospitals, pet healthcare
+ * practices, or emergency animal care.
  */
 export const PetVeterinaryHero = defineCapsule({
   name: 'PetVeterinaryHero',
   description:
-    'Split two-column hero for a veterinary clinic / pet healthcare landing page on a soft primary-tinted gradient band: a left text column with a pulsing now-accepting-new-patients pill, a big headline with an accented trailing phrase, a lede paragraph, a filled primary Schedule-a-Visit CTA plus an outlined Explore-Services button, and a social-proof row of overlapping staff avatars and a star-rating note; a right column with a rounded clinic photo and two floating info chips (same-day appointments / open 7 days). CTAs route through section-kit route links; imagery uses the Image component. Use as the top hero for veterinary clinics, animal hospitals, pet healthcare practices, or emergency animal care.',
+    'Warm friendly-clinical asymmetric 7/5 hero for a veterinary clinic / pet-healthcare landing page on an airy band with a soft warm wash and a giant ghost "care" watermark: a left column with a rounded-full sticker chip (pulsing primary dot + now-accepting-new-patients micro-label), a big fluid extrabold headline with an accented trailing phrase, a lede paragraph, a pair of rounded-full pill CTAs with hard offset shadows and press feedback (filled primary Schedule-a-Visit + outlined Explore-Services), and a hairline-topped social-proof row of hairline-framed staff avatars and a star-rating note; a right column with a chunky rounded-none clinic photo double-framed with a hard offset shadow, a rotated rounded-full 24/7-care sticker, and two chunky info cards overlapping its corners (same-day appointments / open 7 days). CTAs route through section-kit route links; imagery uses the Image component. Use as the top hero for veterinary clinics, animal hospitals, pet healthcare practices, or emergency animal care.',
   props: z.object({
     badge: z.string().optional(),
     headingTop: z.string().optional(),
@@ -140,34 +145,45 @@ export const PetVeterinaryHero = defineCapsule({
 
     return (
       <HeroSection
+        variant="split"
         className={cn(
-          'relative overflow-hidden bg-gradient-to-b from-primary/10 to-background',
+          'relative overflow-hidden border-b border-border bg-background',
           props.className,
         )}
       >
-        <Container size="xl" className="py-20 lg:py-32">
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
-            <div className="max-w-2xl">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-2/3 bg-gradient-to-b from-primary/[0.07] to-transparent"
+        />
+        <Watermark className="-top-10 right-[-3rem] text-[9rem] lowercase sm:right-[-4rem] sm:text-[14rem] lg:-top-16 lg:text-[19rem]">
+          care
+        </Watermark>
+        <Container size="xl" className="relative py-16 sm:py-20 lg:py-28">
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="max-w-2xl lg:col-span-7">
               <HeroBadge
                 variant="pulsing-dot"
-                className="mb-8 bg-background shadow-sm"
+                className="mb-7 rounded-full border-2 border-foreground/15 bg-card px-4 py-2 shadow-[3px_3px_0_0] shadow-foreground/10"
               >
-                <span className="size-2 animate-pulse rounded-full bg-primary" />
-                <span className="text-sm font-medium text-muted-foreground">
+                <span
+                  aria-hidden="true"
+                  className="size-2 animate-pulse rounded-full bg-primary"
+                />
+                <MonoTag className="text-[11px] tracking-[0.14em]">
                   {heroBadge}
-                </span>
+                </MonoTag>
               </HeroBadge>
-              <HeroHeading className="mb-6">
+              <HeroHeading className="mb-6 text-[clamp(2.5rem,6vw,4.75rem)] font-extrabold leading-[0.98] tracking-tight text-balance">
                 {heroHeadingTop} <HeroHighlight>{heroHighlight}</HeroHighlight>
               </HeroHeading>
-              <HeroSubheading className="mb-8 mt-0 lg:text-xl">
+              <HeroSubheading className="mb-8 mt-0 max-w-xl text-base leading-relaxed sm:text-lg">
                 {heroSub}
               </HeroSubheading>
-              <HeroActions className="mb-12 flex-col gap-4 sm:flex-row">
+              <HeroActions className="mb-10 flex-col gap-3 sm:flex-row sm:gap-4">
                 <HeroCta
                   asChild
                   variant="primary"
-                  className="gap-2 rounded-xl px-8 py-4 text-base font-semibold transition-all hover:-translate-y-0.5 hover:shadow-xl"
+                  className="gap-2 rounded-full px-7 py-3.5 text-base font-semibold shadow-[4px_4px_0_0] shadow-foreground/20 transition-colors hover:bg-primary active:translate-y-px active:shadow-none"
                 >
                   <NavbarRouteLink href={heroPrimary}>
                     {heroPrimary}
@@ -177,15 +193,15 @@ export const PetVeterinaryHero = defineCapsule({
                 <HeroCta
                   asChild
                   variant="outline"
-                  className="rounded-xl border-2 border-border bg-card px-8 py-4 text-base font-semibold transition-all hover:border-primary/40 hover:bg-primary/5"
+                  className="rounded-full border-2 border-foreground/20 bg-background px-7 py-3.5 text-base font-semibold transition-colors hover:bg-muted active:translate-y-px"
                 >
                   <NavbarRouteLink href={heroSecondary}>
                     {heroSecondary}
                   </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
-              <div className="flex flex-wrap items-center gap-8 text-sm">
-                <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-x-8 gap-y-4 border-t-2 border-foreground/10 pt-6 text-sm">
+                <div className="flex items-center gap-3">
                   <div className="flex -space-x-2">
                     {avatars.slice(0, 3).map((alt) => (
                       <Image
@@ -193,44 +209,63 @@ export const PetVeterinaryHero = defineCapsule({
                         alt={alt}
                         w={100}
                         h={100}
-                        className="size-8 rounded-full border-2 border-background object-cover"
+                        className="size-9 rounded-full border-2 border-background object-cover"
                       />
                     ))}
                   </div>
                   <span className="text-muted-foreground">
-                    <strong className="text-foreground">{staffCount}</strong>{' '}
+                    <strong className="font-bold text-foreground tabular-nums">
+                      {staffCount}
+                    </strong>{' '}
                     {staffNote}
                   </span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Star className="size-5 text-chart-4" />
+                <div className="flex items-center gap-1.5">
+                  <Star className="size-5 text-primary" />
                   <span className="text-muted-foreground">
-                    <strong className="text-foreground">{rating}</strong>{' '}
+                    <strong className="font-bold text-foreground tabular-nums">
+                      {rating}
+                    </strong>{' '}
                     {ratingNote}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="relative">
-              <div className="relative overflow-hidden rounded-2xl shadow-2xl">
-                <HeroMediaPanel alt={heroImageAlt} w={800} h={600} />
+            <div className="relative lg:col-span-5">
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -inset-3 border-2 border-foreground/10 sm:-inset-4"
+              />
+              <div className="relative overflow-hidden rounded-none border-2 border-foreground/15 shadow-[10px_10px_0_0] shadow-foreground/15">
+                <HeroMediaPanel
+                  alt={heroImageAlt}
+                  w={800}
+                  h={600}
+                  className="rounded-none"
+                />
                 <div
                   aria-hidden="true"
                   className="absolute inset-0 bg-gradient-to-t from-foreground/20 to-transparent"
                 />
               </div>
+              <span
+                aria-hidden="true"
+                className="absolute -left-3 -top-4 -rotate-6 rounded-full border-2 border-foreground bg-background px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-foreground shadow-[3px_3px_0_0] shadow-primary/40"
+              >
+                24/7 care
+              </span>
               {heroChips[0] && (
-                <div className="absolute -bottom-6 -left-6 rounded-xl bg-card p-4 shadow-xl">
+                <div className="absolute -bottom-5 -left-4 rounded-none border-2 border-foreground/15 bg-card p-4 shadow-[5px_5px_0_0] shadow-foreground/15 sm:-left-6">
                   <div className="flex items-center gap-3">
-                    <span className="grid size-12 place-items-center rounded-full bg-primary/10 text-primary">
+                    <span className="grid size-11 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
                       <Check className="size-6" />
                     </span>
                     <div>
-                      <p className="text-sm font-semibold text-foreground">
+                      <p className="text-sm font-bold tracking-tight text-foreground">
                         {heroChips[0].title}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                         {heroChips[0].subtitle}
                       </p>
                     </div>
@@ -238,12 +273,12 @@ export const PetVeterinaryHero = defineCapsule({
                 </div>
               )}
               {heroChips[1] && (
-                <div className="absolute -right-4 -top-4 rounded-xl bg-card p-4 shadow-xl">
+                <div className="absolute -right-4 -top-3 rounded-none border-2 border-foreground/15 bg-card p-4 shadow-[5px_5px_0_0] shadow-foreground/15">
                   <div className="flex items-center gap-3">
-                    <span className="grid size-12 place-items-center rounded-full bg-accent text-accent-foreground">
+                    <span className="grid size-11 shrink-0 place-items-center rounded-full bg-accent text-accent-foreground">
                       <svg
-                        width="24"
-                        height="24"
+                        width="22"
+                        height="22"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
@@ -257,10 +292,10 @@ export const PetVeterinaryHero = defineCapsule({
                       </svg>
                     </span>
                     <div>
-                      <p className="text-sm font-semibold text-foreground">
+                      <p className="text-sm font-bold tracking-tight text-foreground">
                         {heroChips[1].title}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                         {heroChips[1].subtitle}
                       </p>
                     </div>

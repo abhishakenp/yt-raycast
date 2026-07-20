@@ -10,23 +10,23 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * PhotographyCta — a warm, centered booking band for a fine-art / wedding
+ * PhotographyCta — a quiet, editorial booking band for a fine-art / wedding
  * photographer site. Thin configuration over the shared `CtaBand` composite at
- * `tone="primary"`: an availability eyebrow, a serif headline, a short
- * supporting subheading, and a centered row of two routable pill CTAs — a
- * high-contrast "Book your session" button (variant "primary", auto-inverted to
- * a light pill on the primary band) plus an outlined "View Pricing" button. Both
- * actions route through section-kit route links so neither is a dead link. Use near the
- * bottom of a photographer, studio, or elopement page to drive bookings.
- * Renders fully with no props via baked-in defaults.
+ * `tone="primary"`: a mono, wide-tracked availability eyebrow, a serif headline,
+ * a short supporting subheading, and a centered row of two square-edged
+ * (rounded-none) pill CTAs with press feedback — a solid light "Book your
+ * session" button (inverted against the primary band) plus a transparent
+ * outlined "View Pricing" button. Both actions route through section-kit route
+ * links so neither is a dead link. Use near the bottom of a photographer,
+ * studio, or elopement page to drive bookings. Renders fully with no props via
+ * baked-in defaults.
  */
 export const PhotographyCta = defineCapsule({
   name: 'PhotographyCta',
   description:
-    "Warm, centered booking band for a fine-art / wedding photographer site built on the shared CtaBand composite at tone='primary': an availability eyebrow, a serif headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Book your session' button plus an outlined 'View Pricing' button). Both CTAs route through section-kit route links. Use near the bottom of a photographer, studio, or elopement page to drive session bookings.",
+    "Quiet, editorial booking band for a fine-art / wedding photographer site built on the shared CtaBand composite at tone='primary': a mono wide-tracked availability eyebrow, a serif headline, a short supporting subheading, and a centered row of two square-edged pill CTAs with press feedback (a solid light 'Book your session' button inverted against the primary band plus a transparent outlined 'View Pricing' button). Both CTAs route through section-kit route links. Use near the bottom of a photographer, studio, or elopement page to drive session bookings.",
   props: z.object({
     /** Booking headline (maps to CtaBand title). */
     headline: z.string().optional(),
@@ -57,17 +57,30 @@ export const PhotographyCta = defineCapsule({
 
     return (
       <CtaBand tone="primary" className={props.className}>
-        <CtaBandInner>
-          <CtaBandEyebrow>{availability}</CtaBandEyebrow>
-          <CtaBandTitle>{headline}</CtaBandTitle>
+        <CtaBandInner className="gap-6 py-20">
+          <CtaBandEyebrow className="font-mono text-[11px] tracking-[0.22em]">
+            {availability}
+          </CtaBandEyebrow>
+          <CtaBandTitle className="max-w-2xl text-balance font-serif text-3xl font-medium tracking-tight md:text-4xl lg:text-5xl">
+            {headline}
+          </CtaBandTitle>
           <CtaBandSubtitle>{subheading}</CtaBandSubtitle>
-          <CtaBandActions>
-            <CtaAction variant="primary" asChild>
+          <CtaBandActions className="mt-2">
+            <CtaAction
+              variant="primary"
+              invert
+              asChild
+              className="rounded-none transition-transform duration-150 active:translate-y-px motion-reduce:transform-none"
+            >
               <NavbarRouteLink href={primaryTarget}>
                 {primaryCta}
               </NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" asChild>
+            <CtaAction
+              variant="outline"
+              asChild
+              className="rounded-none border-primary-foreground/40 bg-transparent text-primary-foreground transition-[background-color,transform] duration-150 hover:bg-primary-foreground/10 active:translate-y-px motion-reduce:transform-none"
+            >
               <NavbarRouteLink href={secondaryTarget}>
                 {secondaryCta}
               </NavbarRouteLink>

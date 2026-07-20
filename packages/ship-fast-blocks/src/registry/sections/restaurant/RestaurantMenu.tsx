@@ -12,6 +12,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { MenuList } from '#/section-kit/MenuList.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import {
   RestaurantMutationSpinner,
   useRestaurantExperience,
@@ -21,20 +22,24 @@ import {
 import { restaurantLakebed } from './restaurant-lakebed.ts'
 
 /**
- * RestaurantMenu — printed-style multi-course menu for a full-service
- * restaurant page. A centered heading and supporting description sit above a
- * stack of menu categories (e.g. Starters, Mains, Desserts). Each category
- * shows its name with a divider, then lists dishes in a two-column grid. Every
- * dish is a clickable row with a name, optional tag pill (Chef's pick, Vegan,
- * Seasonal), a short description, and a price. Dish rows write shared Lakebed
- * order state so a generated restaurant page behaves like a real interactive
- * ordering surface. Use for restaurants, bistros, trattorias, steakhouses, fine
- * dining, or any sit-down eatery wanting a readable menu section.
+ * RestaurantMenu — ledger-typeset multi-course menu for a full-service
+ * restaurant page. A left-aligned mono eyebrow and warm serif heading sit
+ * over a giant faint "MENU" ghost watermark, with a hairline-bordered live
+ * order strip beneath. Menu categories (e.g. Starters, Mains, Desserts) each
+ * open with a mono index numeral, a serif category title, and a hairline rule,
+ * then list dishes as classic collapsed-border ledger rows — dish name, a
+ * dotted leader that stretches to a tabular-nums price — in a two-column grid.
+ * Every dish is a clickable row with an optional rotated hairline "stamp" tag
+ * (Chef's pick, Vegan, Seasonal), a short description, and a square Add badge.
+ * Dish rows write shared Lakebed order state so a generated restaurant page
+ * behaves like a real interactive ordering surface. Use for restaurants,
+ * bistros, trattorias, steakhouses, fine dining, or any sit-down eatery wanting
+ * a readable menu section.
  */
 export const RestaurantMenu = defineCapsule({
   name: 'RestaurantMenu',
   description:
-    "Printed-style multi-course menu for a full-service restaurant page: centered heading and description above a stack of categories (Starters, Mains, Desserts). Each category has a titled divider and a two-column grid of dishes. Every dish is a clickable row with name, optional tag pill (Chef's pick, Vegan, Seasonal), description, and price. Dish rows write shared Lakebed order state and the section shows a live order summary. Use for restaurants, bistros, trattorias, steakhouses, fine dining, or sit-down eateries wanting a readable menu section.",
+    "Ledger-typeset multi-course menu for a full-service restaurant page: a left-aligned mono eyebrow and warm serif heading over a giant faint 'MENU' ghost watermark, with a hairline-bordered live order strip beneath. Menu categories (Starters, Mains, Desserts) each open with a mono index numeral, serif title, and hairline rule, then list dishes as collapsed-border ledger rows — dish name, a dotted leader stretching to a tabular-nums price — in a two-column grid. Every dish is a clickable row with an optional rotated hairline 'stamp' tag (Chef's pick, Vegan, Seasonal), a description, and a square Add badge. Dish rows write shared Lakebed order state and the section shows a live order summary. Use for restaurants, bistros, trattorias, steakhouses, fine dining, or sit-down eateries wanting a readable menu section.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -169,20 +174,32 @@ export const RestaurantMenu = defineCapsule({
     useSyncRestaurantCatalog(lakebed, catalogItems)
 
     return (
-      <section className={cn('py-20 lg:py-28', props.className)}>
-        <Container size="xl" className="px-6">
+      <section
+        className={cn(
+          'relative overflow-hidden py-16 lg:py-24',
+          props.className,
+        )}
+      >
+        <Watermark className="-right-6 top-8 text-[7rem] leading-none sm:text-[12rem] lg:text-[16rem]">
+          MENU
+        </Watermark>
+        <Container size="xl" className="relative px-6">
           <MenuList>
-            <div className="mx-auto mb-16 max-w-2xl text-center">
+            <div className="mb-12 max-w-2xl">
+              <span className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+                La Carte
+              </span>
               <SectionHeading
                 title={heading}
                 subtitle={description}
-                align="center"
-                titleClassName="font-serif text-3xl font-medium sm:text-4xl lg:text-5xl"
-                className="gap-6"
+                align="left"
+                titleClassName="mt-3 font-serif text-4xl font-medium tracking-tight sm:text-5xl"
+                subtitleClassName="text-muted-foreground"
+                className="gap-4"
               />
               {experience?.selectedMenuItem ? (
                 <p
-                  className="mx-auto mt-4 max-w-xl rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary"
+                  className="mt-5 inline-flex rotate-[-1deg] items-center border border-primary/40 bg-primary/5 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.14em] text-primary"
                   aria-live="polite"
                 >
                   Selected {experience.selectedMenuItem}
@@ -192,10 +209,10 @@ export const RestaurantMenu = defineCapsule({
                 </p>
               ) : null}
               <div
-                className="mx-auto mt-6 flex max-w-xl flex-col items-center justify-between gap-3 rounded-full border border-border bg-muted/40 px-5 py-3 text-sm text-muted-foreground sm:flex-row"
+                className="mt-6 flex flex-col items-start justify-between gap-3 border-y border-foreground/15 bg-muted/30 px-5 py-3 text-sm text-muted-foreground sm:flex-row sm:items-center"
                 aria-live="polite"
               >
-                <span>
+                <span className="font-mono text-[11px] uppercase tracking-[0.14em]">
                   {restaurantOrder.count
                     ? `${restaurantOrder.count} item${restaurantOrder.count === 1 ? '' : 's'} in the table order`
                     : 'Tap dishes to build a live table order.'}
@@ -209,7 +226,7 @@ export const RestaurantMenu = defineCapsule({
                   onClick={() => {
                     void restaurantOrder.clear()
                   }}
-                  className="inline-flex h-8 items-center justify-center gap-2 rounded-full border border-border bg-background px-3 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+                  className="inline-flex h-8 items-center justify-center gap-2 rounded-none border border-foreground/25 bg-background px-3 text-xs font-medium text-foreground transition-[background-color,transform] duration-150 hover:bg-muted active:translate-y-px disabled:pointer-events-none disabled:opacity-50"
                 >
                   {restaurantOrder.clearPending ? (
                     <RestaurantMutationSpinner />
@@ -220,16 +237,30 @@ export const RestaurantMenu = defineCapsule({
               </div>
             </div>
 
-            <div className="space-y-16">
-              {categories.map((category) => (
+            <div className="space-y-14">
+              {categories.map((category, ci) => (
                 <div key={category.name}>
-                  <MenuCategoryHeader>
-                    <MenuCategoryTitle>{category.name}</MenuCategoryTitle>
-                    <MenuCategoryDivider />
+                  <MenuCategoryHeader className="mb-6 gap-4">
+                    <span
+                      aria-hidden="true"
+                      className="font-mono text-xs tabular-nums tracking-[0.2em] text-primary"
+                    >
+                      {String(ci + 1).padStart(2, '0')}
+                    </span>
+                    <MenuCategoryTitle className="tracking-tight">
+                      {category.name}
+                    </MenuCategoryTitle>
+                    <MenuCategoryDivider className="bg-foreground/15" />
+                    <span
+                      aria-hidden="true"
+                      className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground/70"
+                    >
+                      {String((category.items ?? []).length).padStart(2, '0')}
+                    </span>
                   </MenuCategoryHeader>
                   <ResponsiveGrid
                     cols="1-md-2"
-                    className="gap-x-12 gap-y-6 gap-0"
+                    className="gap-x-12 gap-y-0 gap-0"
                   >
                     {(category.items ?? []).map((item) => (
                       <button
@@ -246,28 +277,30 @@ export const RestaurantMenu = defineCapsule({
                             tag: item.tag,
                           })
                         }}
-                        className="group flex w-full items-start justify-between gap-4 text-left"
+                        className="group block w-full border-b border-foreground/12 py-4 text-left transition-colors hover:bg-muted/40"
                       >
-                        <div>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <h4 className="font-medium text-foreground transition-colors group-hover:text-primary">
-                              {item.name}
-                            </h4>
+                        <div className="flex items-baseline gap-3">
+                          <h4 className="font-serif text-lg text-foreground transition-colors group-hover:text-primary">
+                            {item.name}
+                          </h4>
+                          <span
+                            aria-hidden="true"
+                            className="mb-1 h-0 flex-1 border-b border-dotted border-foreground/25"
+                          />
+                          <span className="font-serif text-lg tabular-nums text-foreground">
+                            {item.price}
+                          </span>
+                        </div>
+                        <div className="mt-1.5 flex items-start justify-between gap-4">
+                          <p className="text-sm text-muted-foreground">
                             {item.tag ? (
-                              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs uppercase tracking-wide text-primary">
+                              <span className="mr-2 inline-flex rotate-[-2deg] items-center border border-foreground/30 px-1.5 py-0.5 align-middle font-mono text-[10px] uppercase tracking-[0.14em] text-foreground/70">
                                 {item.tag}
                               </span>
                             ) : null}
-                          </div>
-                          <p className="mt-1 text-sm text-muted-foreground">
                             {item.description}
                           </p>
-                        </div>
-                        <span className="flex shrink-0 flex-col items-end gap-1">
-                          <span className="font-serif text-lg text-foreground">
-                            {item.price}
-                          </span>
-                          <span className="inline-flex min-h-5 items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
+                          <span className="inline-flex min-h-5 shrink-0 items-center rounded-none border border-transparent bg-muted px-2 py-0.5 font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground transition-colors group-hover:border-primary/40 group-hover:bg-primary/10 group-hover:text-primary">
                             {restaurantOrder.isAdding(item.name) ? (
                               <RestaurantMutationSpinner className="size-3" />
                             ) : restaurantOrder.quantityFor(item.name) ? (
@@ -276,7 +309,7 @@ export const RestaurantMenu = defineCapsule({
                               'Add'
                             )}
                           </span>
-                        </span>
+                        </div>
                       </button>
                     ))}
                   </ResponsiveGrid>

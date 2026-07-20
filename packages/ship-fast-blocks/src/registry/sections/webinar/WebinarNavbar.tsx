@@ -1,7 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
   NavbarActions,
@@ -10,15 +10,17 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
- * WebinarNavbar — sticky site header for a live webinar or virtual event.
- * Thin configuration over the shared `SiteNav` composite: a semibold wordmark
- * beside an inline broadcast/calendar mark, centered nav links on desktop, a
- * high-contrast "Register" CTA, and a real mobile drawer on small screens. Use
- * as the header for webinars, summits, masterclasses, product launches, or any
- * registration-driven event landing page. Renders fully with no props.
+ * WebinarNavbar — sticky kinetic-event site header for a live webinar or virtual
+ * summit. A blurred, hairline-bottomed bar pinned to the top: a square broadcast
+ * mark beside an extrabold wordmark on the left, a mono-uppercase row of nav
+ * links, and a square-edged "Register" CTA on the right that carries a hard
+ * offset token shadow and presses down on click, plus a real mobile drawer on
+ * small screens. Register routes through the kit's section-kit route link so it
+ * is never a dead link. Use as the header for webinars, summits, masterclasses,
+ * product launches, or any registration-driven event landing page. Renders fully
+ * with no props.
  */
 function BroadcastMark({ className }: { className?: string }) {
   return (
@@ -44,7 +46,7 @@ function BroadcastMark({ className }: { className?: string }) {
 export const WebinarNavbar = defineCapsule({
   name: 'WebinarNavbar',
   description:
-    "Sticky webinar/virtual-event site header built on the shared SiteNav composite: a semibold wordmark + broadcast-calendar mark, centered desktop nav links (Overview, Agenda, Speakers, FAQ), a high-contrast 'Register' CTA, and a real mobile drawer. Use as the header for webinars, summits, masterclasses, product launches, or any registration-driven event landing page.",
+    "Sticky kinetic-event webinar/virtual-summit site header built on the shared SiteNav composite: a blurred, hairline-bottomed bar with a square broadcast mark + extrabold wordmark on the left, a mono-uppercase row of desktop nav links (Overview, Agenda, Speakers, FAQ), a square-edged 'Register' CTA with a hard offset token shadow and press feedback on the right, and a real mobile drawer. Register routes through a section-kit route link. Use as the header for webinars, summits, masterclasses, product launches, or any registration-driven event landing page.",
   props: z.object({
     /** Brand / event host name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -63,21 +65,26 @@ export const WebinarNavbar = defineCapsule({
       ? props.nav
       : ['Overview', 'Agenda', 'Speakers', 'FAQ']
     const brand = props.brand ?? 'Catalyst Labs'
-    const brandMark = <BroadcastMark className="size-8 text-primary" />
-    const brandClassName = 'font-semibold tracking-tight'
     const ctaLabel = props.ctaLabel ?? 'Register'
     const ctaTarget = props.ctaTarget ?? 'Register'
     const homeTarget = props.homeTarget ?? nav[0]
     return (
-      <SiteNav position="fixed" height="default" className={props.className}>
-        <NavbarBrand href={homeTarget} className="gap-3">
-          {brandMark}
-          <Logo brand={brand}>
-            <LogoImage />
-            <LogoLabel className={brandClassName} />
-          </Logo>
+      <SiteNav
+        position="fixed"
+        height="default"
+        className={props.className}
+        containerClassName="max-w-6xl px-4 sm:px-6 lg:px-8"
+      >
+        <NavbarBrand href={homeTarget} className="flex items-center gap-2">
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage
+              className="size-7"
+              fallback={<BroadcastMark className="size-7 text-primary" />}
+            />
+            <LogoLabel className="text-lg font-extrabold tracking-tight" />
+          </BrandLogo>
         </NavbarBrand>
-        <NavbarNav>
+        <NavbarNav className="[&>a]:font-mono [&>a]:text-[11px] [&>a]:uppercase [&>a]:tracking-[0.14em]">
           {nav.map((label) => (
             <NavbarNavLink key={label} href={label}>
               {label}
@@ -87,7 +94,7 @@ export const WebinarNavbar = defineCapsule({
         <NavbarActions>
           <NavbarCta
             variant="primary-pill"
-            className="hidden px-5 py-2.5 sm:inline-flex"
+            className="hidden rounded-none border border-foreground px-5 py-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.14em] shadow-[3px_3px_0_0] shadow-foreground transition-[transform,box-shadow] duration-150 hover:-translate-y-px hover:shadow-[4px_4px_0_0] hover:shadow-foreground active:translate-x-[3px] active:translate-y-[3px] active:shadow-none sm:inline-flex"
             href={ctaTarget}
           >
             {ctaLabel}
@@ -97,7 +104,7 @@ export const WebinarNavbar = defineCapsule({
             nav={nav}
             homeTarget={homeTarget}
             cta={{ label: ctaLabel, target: ctaTarget }}
-            buttonClassName="p-2 text-muted-foreground hover:text-foreground md:hidden"
+            buttonClassName="rounded-none p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
           />
         </NavbarActions>
       </SiteNav>

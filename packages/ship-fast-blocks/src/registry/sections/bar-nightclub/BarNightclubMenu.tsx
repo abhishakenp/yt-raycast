@@ -29,8 +29,7 @@ import {
 } from '#/section-kit/MenuItemRow.tsx'
 import { MenuList } from '#/section-kit/MenuList.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * BarNightclubMenu — inverted poster drinks ledger for a cocktail-bar /
  * nightclub page. A full foreground-on-background inversion band whose top

@@ -11,8 +11,7 @@ import {
   CollectionGrid,
   CollectionCard,
 } from '#/section-kit/CollectionGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * JewelryStoreCollections — curated collections catalog for a luxury jewelry
  * maison. An asymmetric header pairs a mono micro-label kicker + serif heading +

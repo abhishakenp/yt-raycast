@@ -19,8 +19,7 @@ import {
   FooterCopyright,
 } from '#/section-kit/SiteFooter.tsx'
 import { Watermark } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * FaqFooter — an "Editorial Q&A" five-column resource footer for a help-center /
  * SaaS product page. A giant faint brand watermark bleeds behind a spanning brand

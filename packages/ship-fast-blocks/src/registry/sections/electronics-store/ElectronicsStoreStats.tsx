@@ -1,8 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
-import {} from '#/section-kit/index.ts'
-
 /**
  * ElectronicsStoreStats — a tech-brutalist spec-sheet stats band for an
  * electronics storefront. A mono index eyebrow above a 2-to-4 column

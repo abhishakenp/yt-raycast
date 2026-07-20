@@ -3,15 +3,19 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * NoCodeTestimonials — centered-header 3-column star-rated testimonials grid on
- * a subtle muted band. A muted eyebrow, heading, and paragraph sit above a
- * 1-to-3 column grid of soft-bordered cards, each with a 5-star row, a quoted
- * testimonial, and an author block (rounded avatar image + name + role). Use as
- * the social-proof / customer-stories section on a no-code builder, SaaS, or
- * product landing page. Renders fully with no props.
+ * NoCodeTestimonials — block-builder-kinetic staggered field-notes testimonial
+ * wall for a no-code / app-builder SaaS landing page. An asymmetric header
+ * (mono eyebrow, a left-aligned heading with a tilted primary marker block
+ * behind the key word, mono meta right) sits over a giant ghost quotation mark,
+ * above a 3-column grid of sharp chunky border-2 quote cards whose middle
+ * column is pushed down for a staggered rhythm: each card opens with a mono
+ * log-style index tag with a primary tick, carries the quote, and closes with a
+ * hairline-topped mono name / role footer. Cards lift on a hard offset shadow
+ * on hover. Use as the social-proof / customer-stories section on a no-code /
+ * app-builder SaaS or product landing page. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -23,7 +27,7 @@ import {
 export const NoCodeTestimonials = defineCapsule({
   name: 'NoCodeTestimonials',
   description:
-    'Centered-header 3-column star-rated testimonials grid on a subtle muted band: a muted eyebrow, heading, and paragraph above a 1-to-3 column grid of soft-bordered cards, each with a 5-star row, a quoted testimonial, and an author block (rounded avatar image + name + role). Use as the social-proof / customer-stories section on a no-code / app-builder SaaS or product landing page.',
+    'Block-builder-kinetic staggered field-notes testimonial wall for a no-code / app-builder SaaS landing page: an asymmetric header (mono eyebrow, marker-highlighted heading left, mono meta right) over a giant ghost quotation mark, above a 3-column grid of sharp chunky border-2 quote cards with a pushed-down middle column, each opening with a mono log-style index tag and closing with a hairline-topped mono name / role footer; cards lift on a hard offset shadow on hover. Use as the social-proof / customer-stories section on a no-code / app-builder SaaS or product landing page.',
   props: z.object({
     /** Muted uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -77,24 +81,59 @@ export const NoCodeTestimonials = defineCapsule({
               'Professional headshot of Elena Rodriguez, CEO of Brightside Agency',
           },
         ]
+    const headingWords = heading.split(' ')
+    const headingLead = headingWords.slice(0, -1).join(' ')
+    const headingMark = headingWords.at(-1) ?? ''
     return (
       <section
-        className={cn('bg-muted/40 py-24', props.className)}
+        className={cn(
+          'relative overflow-hidden bg-muted/40 py-16 lg:py-24',
+          props.className,
+        )}
         aria-labelledby="nc-testimonials"
       >
-        <Container>
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            titleId="nc-testimonials"
-            className="mb-16 max-w-3xl gap-0"
-            eyebrowClassName="mb-3 inline-block text-sm font-medium uppercase tracking-wider text-muted-foreground"
-            titleClassName="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <TestimonialGrid columns={3}>
-            {items.map((t) => {
+        <Watermark className="-top-16 left-0 font-serif text-[16rem] sm:text-[22rem]">
+          &ldquo;
+        </Watermark>
+        <Container className="relative">
+          {/* Asymmetric header: mono eyebrow, marker heading left, mono meta right. */}
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <div className="max-w-2xl">
+              <MonoTag className="mb-4 block">
+                {eyebrow}
+                <span aria-hidden="true" className="text-primary">
+                  {' '}
+                  · field notes
+                </span>
+              </MonoTag>
+              <h2
+                id="nc-testimonials"
+                className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl"
+              >
+                {headingLead}{' '}
+                <span className="relative ml-[0.12em] inline-block whitespace-nowrap">
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-[-0.15em] inset-y-[0.05em] -rotate-1 bg-primary"
+                  />
+                  <span className="relative text-primary-foreground">
+                    {headingMark}
+                  </span>
+                </span>
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">
+                {description}
+              </p>
+            </div>
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+            >
+              [ logs ] verified builders
+            </p>
+          </div>
+          <TestimonialGrid columns={3} className="gap-5 lg:gap-6">
+            {items.map((t, index) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -105,12 +144,29 @@ export const NoCodeTestimonials = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
+                <TestimonialCard
+                  key={__iv__.name}
+                  className={cn(
+                    'rounded-none border-2 border-border bg-card p-6 shadow-none transition-[transform,box-shadow,border-color] duration-150 hover:-translate-y-1 hover:border-foreground hover:shadow-[6px_6px_0_0] hover:shadow-foreground/15',
+                    index % 3 === 1 && 'lg:translate-y-8',
+                  )}
+                >
+                  <MonoTag className="flex items-center gap-2" tone="faint">
+                    <span
+                      aria-hidden="true"
+                      className="size-1.5 shrink-0 bg-primary"
+                    />
+                    Log {String(index + 1).padStart(2, '0')}
+                  </MonoTag>
+                  <TestimonialQuote className="mt-4 text-[15px] leading-relaxed">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="mt-6 flex-col items-start gap-0.5 border-t border-border pt-4">
+                    <TestimonialName className="text-sm font-bold tracking-tight">
+                      {__iv__.name}
+                    </TestimonialName>
                     {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
+                      <TestimonialMeta className="font-mono text-[10px] uppercase tracking-[0.14em]">
                         {__iv__.role || __iv__.company || __iv__.meta}
                       </TestimonialMeta>
                     )}

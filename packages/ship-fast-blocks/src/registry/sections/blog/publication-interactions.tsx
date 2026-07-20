@@ -24,6 +24,8 @@ import {
   AccountDropdownSeparator,
   AccountDropdownSignOut,
   AccountDropdownUnauthenticated,
+} from '#/section-kit/AccountDropdown.tsx'
+import {
   CommandSearch,
   CommandSearchTrigger,
   CommandSearchContent,
@@ -31,9 +33,8 @@ import {
   CommandSearchList,
   CommandSearchEmpty,
   CommandSearchGroup,
-  NavbarRouteLink,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/CommandSearch.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export type PublicationLakebed = LakebedClientRuntime<typeof publicationLakebed>
 
 export function publicationArticle({
@@ -197,7 +198,7 @@ export function PublicationSubscribeDrawer({
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="w-[min(100%,24rem)] border-l border-border bg-background p-0 text-foreground sm:max-w-[24rem]"
+        className="w-[min(100%,24rem)] rounded-none border-l border-border bg-background p-0 text-foreground shadow-none sm:max-w-[24rem]"
       >
         <SheetHeader className="border-b border-border px-5 py-4 text-left">
           <SheetTitle className="font-serif text-xl">
@@ -215,8 +216,8 @@ export function PublicationSubscribeDrawer({
             pendingLabel="Subscribing..."
             placeholder={placeholder}
             className="flex flex-col gap-3"
-            inputClassName="min-h-11 rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground"
-            buttonClassName="inline-flex min-h-11 items-center justify-center rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-60"
+            inputClassName="min-h-11 rounded-none border border-border bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground"
+            buttonClassName="inline-flex min-h-11 items-center justify-center rounded-none bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors duration-150 hover:bg-foreground/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-60"
           />
         </div>
       </SheetContent>
@@ -287,15 +288,19 @@ export function PublicationSearchButton({
       <CommandSearchContent
         title="Search articles"
         description="Search the generated publication catalog."
+        className="gap-0 rounded-none border-border shadow-none"
       >
         <CommandSearchInput placeholder="Search articles..." />
         <CommandSearchList>
           <CommandSearchEmpty>No articles found.</CommandSearchEmpty>
-          <CommandSearchGroup heading="Articles">
+          <CommandSearchGroup
+            heading="Articles"
+            className="p-0 [&_[cmdk-group-heading]]:px-4 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:font-mono [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.14em] [&_[data-slot=command-item]]:rounded-none [&_[data-slot=command-item]]:border-b [&_[data-slot=command-item]]:border-b-border [&_[data-slot=command-item]]:border-l-2 [&_[data-slot=command-item]]:border-l-transparent [&_[data-slot=command-item]]:px-4 [&_[data-slot=command-item][data-selected=true]]:border-l-primary [&_[data-slot=command-item][data-selected=true]]:bg-muted"
+          >
             {(article) => (
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium">{article.title}</p>
-                <p className="truncate text-xs text-muted-foreground">
+                <p className="truncate font-mono text-[11px] tracking-wide text-muted-foreground">
                   {[article.category, article.author, article.date]
                     .filter(Boolean)
                     .join(' · ')}
@@ -374,7 +379,7 @@ export function PublicationMobileMenu({
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="w-[min(100%,22rem)] border-l border-border bg-background p-0 text-foreground sm:max-w-[22rem]"
+        className="w-[min(100%,22rem)] rounded-none border-l border-border bg-background p-0 text-foreground shadow-none sm:max-w-[22rem]"
       >
         <SheetHeader className="border-b border-border px-5 py-4 text-left">
           <SheetTitle className="font-serif text-lg">{brand}</SheetTitle>
@@ -382,9 +387,9 @@ export function PublicationMobileMenu({
             Navigate to a publication section.
           </SheetDescription>
         </SheetHeader>
-        <div className="flex flex-col gap-1 px-3 py-4">
+        <div className="flex flex-col divide-y divide-border">
           <NavbarRouteLink
-            className="rounded-lg px-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            className="rounded-none border-l-2 border-l-primary bg-muted px-5 py-3.5 text-left text-sm font-medium text-foreground transition-colors duration-150 hover:bg-muted active:translate-y-px"
             href={homeTarget ?? nav[0]}
             onClick={() => setOpen(false)}
           >
@@ -393,7 +398,7 @@ export function PublicationMobileMenu({
           {nav.map((item) => (
             <NavbarRouteLink
               key={item}
-              className="rounded-lg px-3 py-3 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="rounded-none border-l-2 border-l-transparent px-5 py-3.5 text-left text-sm font-medium text-muted-foreground transition-colors duration-150 hover:border-l-border hover:bg-muted hover:text-foreground active:translate-y-px"
               href={item}
               onClick={() => setOpen(false)}
             >

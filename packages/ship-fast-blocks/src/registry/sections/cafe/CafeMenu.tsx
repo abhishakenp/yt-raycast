@@ -13,8 +13,7 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * CafeMenu — warm newsprint-menu ledger for a neighborhood cafe / coffee shop
  * page. Opens with a full-bleed inverted foreground-on-background heading band

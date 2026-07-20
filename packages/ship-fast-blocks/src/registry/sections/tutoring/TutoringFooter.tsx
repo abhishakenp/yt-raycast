@@ -59,7 +59,7 @@ const DEFAULT_LEGAL = ['Privacy', 'Terms', 'Cookies']
 export const TutoringFooter = defineCapsule({
   name: 'TutoringFooter',
   description:
-    'Friendly, trustworthy site footer for the tutoring page family, composing the SiteFooter kit composite. Renders a graduation-cap brand mark, a warm tagline, social links, and four link columns (Subjects, Company, Support, Resources), plus a bottom bar with copyright, a reassuring note, and legal links. Accepts public props to override every block. Use it as the closing band of any tutoring or education site for consistent, route-aware navigation and a final note of trust.',
+    'Editorial-academic site footer for the tutoring page family, composing the SiteFooter kit composite. Renders a graduation-cap brand mark beside a serif wordmark, a warm tagline, mono social links, and four link columns (Subjects, Company, Support, Resources) with mono index labels and mono uppercase headings over block, left-anchored route links, plus a hairline bottom bar with a reassuring note and legal links. Accepts public props to override every block. Use it as the closing band of any tutoring or education site for consistent, route-aware navigation and a final note of trust.',
   props: z.object({
     brand: z.string().optional(),
     tagline: z.string().optional(),
@@ -90,31 +90,55 @@ export const TutoringFooter = defineCapsule({
             <FooterBrand
               brand={brand}
               brandMark={brandMark}
-              brandClassName={'font-semibold'}
+              brandClassName={'font-serif font-semibold tracking-tight'}
             >
               <FooterTagline>{tagline}</FooterTagline>
               <FooterSocial>
                 {social.map((s) => (
-                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  <FooterSocialLink
+                    key={s.label}
+                    className="font-mono text-[11px] uppercase tracking-[0.14em]"
+                  >
+                    {s.label}
+                  </FooterSocialLink>
                 ))}
               </FooterSocial>
             </FooterBrand>
-            {columns.map((col) => (
+            {columns.map((col, i) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
-                <FooterColumnList>
+                <div className="flex items-center gap-2 border-b border-border pb-3">
+                  <span
+                    aria-hidden="true"
+                    className="font-mono text-[11px] tabular-nums text-muted-foreground/50"
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <FooterColumnTitle className="font-mono text-[11px] uppercase tracking-[0.16em] text-foreground">
+                    {col.title}
+                  </FooterColumnTitle>
+                </div>
+                <FooterColumnList className="mt-4">
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink key={link} className="block w-fit">
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
           <FooterBottom>
-            <FooterCopyright>{note}</FooterCopyright>
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.12em]">
+              {note}
+            </FooterCopyright>
             <FooterLegal>
               {legal.map((l) => (
-                <FooterLink key={l}>{l}</FooterLink>
+                <FooterLink
+                  key={l}
+                  className="block w-fit font-mono text-[11px] uppercase tracking-[0.12em]"
+                >
+                  {l}
+                </FooterLink>
               ))}
             </FooterLegal>
           </FooterBottom>

@@ -18,8 +18,7 @@ import {
   IntegrationGrid,
   IntegrationCard,
 } from '#/section-kit/IntegrationGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const CrmIntegrations = defineCapsule({
   name: 'CrmIntegrations',
   description:

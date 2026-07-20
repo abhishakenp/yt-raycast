@@ -11,8 +11,7 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * FashionStoreHero — full-bleed Vogue-cover image hero for a luxury fashion
  * store. A tall (85vh) editorial photograph under layered foreground scrims and

@@ -12,8 +12,7 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * InvestingCta — Swiss-fintech closing call-to-action band for an investing /
  * brokerage page. A full-width muted band framed by hairline top/bottom rules

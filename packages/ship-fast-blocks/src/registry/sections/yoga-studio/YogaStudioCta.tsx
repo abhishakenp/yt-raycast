@@ -1,5 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
+import { cn } from '#/lib/utils.ts'
 
 import {
   CtaBand,
@@ -9,21 +10,23 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { Watermark } from '#/section-kit/Decor.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * YogaStudioCta — free-trial call-to-action band for a yoga-studio page. Thin
- * configuration over the shared `CtaBand` composite at `tone="primary"`: a
- * headline, a short supporting line, and dual routable pill CTAs — a filled
- * "Start Free Trial" button (variant "primary", auto-inverted to a light pill on
- * the primary band) plus an outlined "Contact" button. Both CTAs route through
- * section-kit route links. Use as a closing conversion band inviting visitors to begin a
- * trial or reach out. Renders fully with no props via baked-in defaults.
+ * YogaStudioCta — the calm inverted closing band for a yoga-studio page. The
+ * single full-inversion moment of the page: a bg-foreground / text-background
+ * band with a gentle slanted clip-path seam at the top edge and a giant lowercase
+ * ghost watermark word, a left-aligned clean-sans headline, a short supporting
+ * line, and dual sharp-cornered CTAs — a filled background-on-ink "Start Free
+ * Trial" button plus a hairline outline "Contact" button, both with press
+ * feedback. Both CTAs route through section-kit route links. Use as a closing
+ * conversion band inviting visitors to begin a trial or reach out. Renders fully
+ * with no props via baked-in defaults.
  */
 export const YogaStudioCta = defineCapsule({
   name: 'YogaStudioCta',
   description:
-    "Free-trial call-to-action band for a yoga-studio page built on the shared CtaBand composite at tone='primary': a headline, a short supporting line, and dual pill CTAs (filled 'Start Free Trial' + outlined 'Contact'). Both route through section-kit route links. Use as a closing conversion band inviting visitors to begin a trial or reach out.",
+    "Calm inverted closing band for a yoga-studio page — the single full-inversion moment of the page: a bg-foreground / text-background band with a gentle slanted clip-path seam at the top edge and a giant lowercase ghost watermark word, a left-aligned clean-sans headline, a short supporting line, and dual sharp-cornered CTAs (a filled background-on-ink 'Start Free Trial' button + a hairline outline 'Contact' button) with press feedback. Both route through section-kit route links. Use as a closing conversion band inviting visitors to begin a trial or reach out.",
   props: z.object({
     /** Headline. */
     heading: z.string().optional(),
@@ -50,17 +53,38 @@ export const YogaStudioCta = defineCapsule({
     const secondaryTarget = props.secondaryTarget ?? 'Contact'
 
     return (
-      <CtaBand tone="primary" className={props.className}>
-        <CtaBandInner>
-          <CtaBandTitle>{heading}</CtaBandTitle>
-          <CtaBandSubtitle>{subheading}</CtaBandSubtitle>
-          <CtaBandActions>
-            <CtaAction variant="primary" asChild>
+      <CtaBand
+        tone="primary"
+        className={cn(
+          'relative overflow-hidden bg-foreground text-background [clip-path:polygon(0_2.5rem,100%_0,100%_100%,0_100%)]',
+          props.className,
+        )}
+      >
+        <Watermark className="-right-8 -bottom-16 text-[10rem] font-semibold text-background/[0.05] sm:text-[16rem]">
+          belong
+        </Watermark>
+        <CtaBandInner className="max-w-5xl items-start gap-7 pt-28 pb-20 text-left lg:pt-32 lg:pb-28">
+          <CtaBandTitle className="max-w-3xl text-[clamp(2.25rem,5vw,4rem)] font-semibold leading-[1.04] tracking-tight">
+            {heading}
+          </CtaBandTitle>
+          <CtaBandSubtitle className="max-w-2xl text-background/70 opacity-100">
+            {subheading}
+          </CtaBandSubtitle>
+          <CtaBandActions className="relative w-full flex-col gap-3 sm:w-auto sm:flex-row sm:gap-4">
+            <CtaAction
+              variant="primary"
+              asChild
+              className="rounded-none bg-background px-8 py-4 text-base font-medium text-foreground hover:bg-background/90 active:translate-y-px"
+            >
               <NavbarRouteLink href={primaryTarget}>
                 {primaryCta}
               </NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" asChild>
+            <CtaAction
+              variant="outline"
+              asChild
+              className="rounded-none border-background/30 bg-transparent px-8 py-4 text-base font-medium text-background hover:bg-background/10 active:translate-y-px"
+            >
               <NavbarRouteLink href={secondaryTarget}>
                 {secondaryCta}
               </NavbarRouteLink>

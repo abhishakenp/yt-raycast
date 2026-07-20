@@ -12,28 +12,31 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { newsletterLakebed } from './newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from './newsletter-interactions.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * NewsletterPricing — two-tier Free vs Paid pricing comparison for a newsletter.
- * On a muted band bordered top and bottom: a centered serif heading + lede over a
- * 2-up grid. The Free card is a light bordered panel with a serif price, tagline,
- * a check-marked feature list, and its own inline email capture + solid submit;
- * the Paid card is an inverted foreground panel with a "Most Popular" badge, a
- * serif price + period, tagline, a check-marked feature list, an inverted email
- * capture + submit, and a small note. A centered footnote with an inline link
- * (e.g. team/enterprise contact) closes the section. Each form submit writes to
- * the shared Lakebed subscriber list and the footnote link routes through
- * section-kit route links. Use for free/paid subscription tiers on newsletters,
- * publications, blogs, or content creators. Renders fully with no props via
- * baked-in defaults.
+ * NewsletterPricing — newsprint-lite Free vs Paid comparison for a newsletter. On
+ * a muted band ruled top and bottom: a hairline meta rail (a primary square +
+ * mono "Membership" label, a mono plan count) tops a left-aligned serif heading +
+ * lede over a 2-up comparison. The Free card is a square (rounded-none) hairline
+ * panel with a mono "Plan 01 / Free" tier label, a serif price, tagline, a
+ * hairline-divided check-marked feature list, and its own square inline email
+ * capture + mono uppercase submit (press feedback); the Paid card is an inverted
+ * foreground panel with a square "Most Popular" badge, a mono "Plan 02" tier
+ * label, a giant ghost price watermark behind a serif price + period, tagline, a
+ * check-marked feature list, an inverted square email capture + submit, and a
+ * small note. A centered footnote with an inline link closes the section. Each
+ * form submit writes to the shared Lakebed subscriber list and the footnote link
+ * routes through section-kit route links. Use for free/paid subscription tiers on
+ * newsletters, publications, blogs, or content creators. Renders fully with no
+ * props via baked-in defaults.
  */
 export const NewsletterPricing = defineCapsule({
   name: 'NewsletterPricing',
   description:
-    "Two-tier Free vs Paid pricing comparison for a newsletter on a muted band bordered top and bottom: a centered serif heading + lede over a 2-up grid. The Free card is a light bordered panel with a serif price, tagline, a check-marked feature list, and its own inline email capture + solid submit; the Paid card is an inverted foreground panel with a 'Most Popular' badge, a serif price + period, tagline, a check-marked feature list, an inverted email capture + submit, and a small note. A centered footnote with an inline link (e.g. team/enterprise contact) closes the section. Each form submit writes to the shared Lakebed subscriber list and the footnote link routes through section-kit route links. Use for free/paid subscription tiers on newsletters, publications, blogs, or content creators.",
+    "Newsprint-lite Free vs Paid comparison for a newsletter on a muted band ruled top and bottom: a hairline meta rail (a primary square + mono 'Membership' label, a mono plan count) above a left-aligned serif heading + lede over a 2-up comparison. The Free card is a square (rounded-none) hairline panel with a mono 'Plan 01 / Free' tier label, a serif price, tagline, a hairline-divided check-marked feature list, and its own square inline email capture + mono uppercase submit (press feedback); the Paid card is an inverted foreground panel with a square 'Most Popular' badge, a mono 'Plan 02' tier label, a giant ghost price watermark behind a serif price + period, tagline, a check-marked feature list, an inverted square email capture + submit, and a small note. A centered footnote with an inline link closes the section. Each form submit writes to the shared Lakebed subscriber list and the footnote link routes through section-kit route links. Use for free/paid subscription tiers on newsletters, publications, blogs, or content creators.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -131,19 +134,31 @@ export const NewsletterPricing = defineCapsule({
         )}
       >
         <Container size="lg">
+          <div className="mb-8 flex items-center justify-between gap-4 border-b border-border pb-4">
+            <MonoTag className="flex items-center gap-3 tracking-[0.25em]">
+              <span aria-hidden="true" className="size-1.5 bg-primary" />
+              Membership
+            </MonoTag>
+            <MonoTag className="tracking-[0.25em]">02 Plans</MonoTag>
+          </div>
+
           <SectionHeading
             title={heading}
             subtitle={description}
-            className="mx-auto mb-12 max-w-2xl gap-0 md:mb-16"
-            titleClassName="mb-4 font-serif text-3xl font-medium text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
+            align="left"
+            className="mb-12 max-w-3xl gap-4 md:mb-16"
+            titleClassName="font-serif text-3xl font-medium text-foreground sm:text-4xl"
+            subtitleClassName="max-w-2xl text-lg text-muted-foreground"
           />
 
-          <ResponsiveGrid cols="1-md-2" className="mx-auto max-w-4xl">
+          <ResponsiveGrid cols="1-md-2" className="mx-auto max-w-4xl gap-0">
             {/* Free Plan */}
-            <PricingTier className="gap-0 p-8 lg:p-10">
+            <PricingTier className="gap-0 rounded-none border-border bg-background p-8 shadow-none lg:p-10">
+              <p className="mb-6 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                Plan 01 / Free
+              </p>
               <div className="mb-2 flex items-baseline gap-1">
-                <PricingTierPrice className="font-serif text-4xl font-medium">
+                <PricingTierPrice className="font-serif text-5xl font-medium tabular-nums">
                   {freePrice}
                 </PricingTierPrice>
               </div>
@@ -151,9 +166,9 @@ export const NewsletterPricing = defineCapsule({
                 {freeTagline}
               </PricingTierTagline>
 
-              <PricingTierFeatures className="mb-8 gap-0 space-y-4">
+              <PricingTierFeatures className="mb-8 gap-0 divide-y divide-border border-y border-border">
                 {freeFeatures.map((f) => (
-                  <li key={f} className="flex items-start gap-3">
+                  <li key={f} className="flex items-start gap-3 py-3">
                     <Check className="mt-0.5 size-5 flex-shrink-0 text-muted-foreground" />
                     <span className="text-foreground/80">{f}</span>
                   </li>
@@ -166,9 +181,9 @@ export const NewsletterPricing = defineCapsule({
                 placeholder={emailPlaceholder}
                 buttonLabel={freeSubmit}
                 successMessage="You're on the free list. The next issue will arrive by email."
-                className="space-y-3"
-                inputClassName="w-full rounded-lg border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
-                buttonClassName="w-full rounded-lg bg-foreground px-6 py-3 font-medium text-background transition-colors hover:bg-foreground/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-70"
+                className="space-y-2.5"
+                inputClassName="w-full rounded-none border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground transition-colors focus:border-foreground focus:outline-none"
+                buttonClassName="w-full rounded-none bg-foreground px-6 py-3 font-mono text-xs font-medium uppercase tracking-[0.15em] text-background transition-[transform,background-color] duration-150 hover:bg-foreground/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
                 emailLabel="Email address for free subscription"
               />
             </PricingTier>
@@ -176,27 +191,37 @@ export const NewsletterPricing = defineCapsule({
             {/* Paid Plan */}
             <PricingTier
               variant="highlighted"
-              className="relative gap-0 overflow-hidden rounded-2xl border-0 bg-foreground p-8 text-background shadow-none ring-0 lg:p-10"
+              className="relative gap-0 overflow-hidden rounded-none border-0 bg-foreground p-8 text-background shadow-none ring-0 lg:p-10"
             >
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute -right-3 top-16 select-none font-serif text-[9rem] font-medium leading-none tracking-tight text-background/[0.06] tabular-nums"
+              >
+                {paidPrice}
+              </span>
+
               <div className="absolute right-4 top-4">
-                <PricingTierBadge className="bg-background/20 text-background">
+                <PricingTierBadge className="rounded-none bg-background/15 font-mono text-[11px] uppercase tracking-[0.15em] text-background">
                   {paidBadge}
                 </PricingTierBadge>
               </div>
 
-              <div className="mb-2 flex items-baseline gap-1">
-                <PricingTierPrice className="font-serif text-4xl font-medium text-background">
+              <p className="relative mb-6 font-mono text-[11px] uppercase tracking-[0.2em] text-background/60">
+                Plan 02 / Paid
+              </p>
+              <div className="relative mb-2 flex items-baseline gap-1">
+                <PricingTierPrice className="font-serif text-5xl font-medium text-background tabular-nums">
                   {paidPrice}
                 </PricingTierPrice>
                 <span className="text-background/60">{paidPeriod}</span>
               </div>
-              <PricingTierTagline className="mb-6 text-background/70">
+              <PricingTierTagline className="relative mb-6 text-background/70">
                 {paidTagline}
               </PricingTierTagline>
 
-              <PricingTierFeatures className="mb-8 gap-0 space-y-4">
+              <PricingTierFeatures className="relative mb-8 gap-0 divide-y divide-background/15 border-y border-background/15">
                 {paidFeatures.map((f) => (
-                  <li key={f} className="flex items-start gap-3">
+                  <li key={f} className="flex items-start gap-3 py-3">
                     <Check className="mt-0.5 size-5 flex-shrink-0 text-background/60" />
                     <span className="text-background/80">{f}</span>
                   </li>
@@ -209,14 +234,14 @@ export const NewsletterPricing = defineCapsule({
                 placeholder={emailPlaceholder}
                 buttonLabel={paidSubmit}
                 successMessage="You're on the paid list. Watch your inbox for next steps."
-                className="space-y-3"
-                inputClassName="w-full rounded-lg border border-background/20 bg-background/10 px-4 py-3 text-background placeholder-background/50 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-background"
-                buttonClassName="w-full rounded-lg bg-background px-6 py-3 font-medium text-foreground transition-colors hover:bg-background/90 focus:outline-none focus:ring-2 focus:ring-background focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-70"
+                className="relative space-y-2.5"
+                inputClassName="w-full rounded-none border border-background/30 bg-background/10 px-4 py-3 text-background placeholder:text-background/50 transition-colors focus:border-background focus:outline-none"
+                buttonClassName="w-full rounded-none bg-background px-6 py-3 font-mono text-xs font-medium uppercase tracking-[0.15em] text-foreground transition-[transform,background-color] duration-150 hover:bg-background/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
                 emailLabel="Email address for paid subscription"
                 statusClassName="text-background/60"
               />
 
-              <p className="mt-4 text-center text-sm text-background/60">
+              <p className="relative mt-4 text-center text-sm text-background/60">
                 {paidNote}
               </p>
             </PricingTier>

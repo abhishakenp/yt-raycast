@@ -2,8 +2,8 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-
 import { Container } from '#/section-kit/Container.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import {
   StatGrid,
   StatItem,
@@ -12,17 +12,20 @@ import {
 } from '#/section-kit/StatGrid.tsx'
 
 /**
- * MembershipClubStats — community stats band for a private membership club /
- * exclusive community page. A bordered, muted-surface band holding a responsive
- * 2-up / 4-up grid of centered stat cells, each pairing a large thin numeric value
- * with an uppercase tracked caption. Use as a compact proof band between pricing
- * and how-it-works for members clubs, professional networks, founders communities
- * or curated collectives. Renders fully with no props.
+ * MembershipClubStats — inverted community-scale band for a private membership
+ * club / exclusive community page. The single dramatic dark moment on the page: a
+ * near-black bg-foreground / text-background band cut with a slanted top seam and
+ * carrying a giant ghost serif watermark, above a collapsed-border 2-to-4 column
+ * grid of metric cells divided by faint vertical hairlines, each pairing a large
+ * light serif tabular-nums value with a small mono uppercase label. Use as the
+ * proof band conveying members, clubhouses, events and retention for members
+ * clubs, professional networks, founders communities or curated collectives.
+ * Renders fully with no props.
  */
 export const MembershipClubStats = defineCapsule({
   name: 'MembershipClubStats',
   description:
-    'Community stats band for a private membership club / exclusive community page: a bordered, muted-surface band holding a responsive 2-up / 4-up grid of centered stat cells, each pairing a large thin numeric value with an uppercase tracked caption. Use as a compact proof band between pricing and how-it-works for members clubs, professional networks, founders communities or curated collectives.',
+    'Inverted community-scale band for a private membership club / exclusive community page: the single dramatic dark moment on the page — a near-black bg-foreground / text-background band cut with a slanted top seam and a giant ghost serif watermark, above a collapsed-border 2-to-4 column grid of metric cells divided by faint vertical hairlines, each pairing a large light serif tabular-nums value with a small mono uppercase label. Use as the proof band conveying members, clubhouses, events and retention for members clubs, professional networks, founders communities or curated collectives.',
   props: z.object({
     stats: z
       .array(z.object({ value: z.string(), label: z.string() }))
@@ -42,21 +45,41 @@ export const MembershipClubStats = defineCapsule({
     return (
       <section
         className={cn(
-          'w-full border-y border-border bg-card py-16 lg:py-24',
+          'relative overflow-hidden bg-foreground text-background [clip-path:polygon(0_2.5rem,100%_0,100%_100%,0_100%)] pt-36 pb-24 lg:pt-40 lg:pb-28',
           props.className,
         )}
         aria-label="Community statistics"
       >
-        <Container>
-          <StatGrid columns={4} className="gap-12">
+        <Watermark
+          aria-hidden="true"
+          className="left-1/2 top-24 -translate-x-1/2 font-serif text-[24vw] font-normal leading-none tracking-tighter text-background/[0.05]"
+        >
+          Circle
+        </Watermark>
+        <Container className="relative">
+          <StatGrid columns={4} className="gap-0 divide-x divide-background/20">
             {stats.map((s) => {
               const __iv__ = s as { value: string; label: string }
               return (
-                <StatItem key={__iv__.label} align={'center'}>
-                  <StatValue weight={'light'} size={'large'}>
+                <StatItem
+                  key={__iv__.label}
+                  align="center"
+                  className="px-4 py-2"
+                >
+                  <StatValue
+                    fontFamily="serif"
+                    size="xl"
+                    color="inverted"
+                    className="font-normal"
+                  >
                     {__iv__.value}
                   </StatValue>
-                  <StatLabel uppercase>{__iv__.label}</StatLabel>
+                  <StatLabel
+                    color="inverted"
+                    className="mt-3 font-mono text-[11px] uppercase tracking-[0.2em]"
+                  >
+                    {__iv__.label}
+                  </StatLabel>
                 </StatItem>
               )
             })}

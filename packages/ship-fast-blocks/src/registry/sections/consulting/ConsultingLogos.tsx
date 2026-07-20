@@ -10,8 +10,7 @@ import {
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * ConsultingLogos — Swiss-ledger trusted-by client strip for a
  * management-consulting firm landing page. An asymmetric mono metadata rail

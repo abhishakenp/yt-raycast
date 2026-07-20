@@ -9,8 +9,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
  * ArchitectureFirmNavbar — blueprint drafting-header navigation bar for an
  * architecture-studio / design-practice site. A sticky, backdrop-blurred,

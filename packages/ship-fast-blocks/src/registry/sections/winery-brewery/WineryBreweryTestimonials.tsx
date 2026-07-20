@@ -3,6 +3,7 @@ import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -13,20 +14,22 @@ import {
 } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
- * WineryBreweryTestimonials — 3-up visitor-review wall for a winery or brewery
- * page. Thin configuration over the shared `TestimonialGrid` composite: a
- * centered serif heading above a responsive card grid where each card renders a
- * star row from the rating, the quoted review, and a visitor name paired with
- * the review source (Google, Tripadvisor, Wine Club). The public `reviews` prop
- * ({quote, name, rating, source}) maps to the composite's items, with `source`
- * shown as the card's meta line via `company`. Use for social-proof on
- * wineries, vineyards, cellar doors, breweries, taprooms, or cideries. Renders
- * fully with no props via baked defaults.
+ * WineryBreweryTestimonials — dark, inverted visitor-review band for a winery
+ * or brewery page. The page's one full ink inversion (bg-foreground /
+ * text-background) cuts in on a slanted clip-path seam, over a giant faint
+ * serif quotation-mark watermark. A left-aligned mono meta rail + serif heading
+ * sit above a staggered grid of square-edged ghost cards, each holding a serif
+ * quoted review and an attribution row pairing the visitor name with the review
+ * source (Google, Tripadvisor, Wine Club). The public `reviews` prop ({quote,
+ * name, rating, source}) maps to the composite's items, with `source` shown as
+ * the card's meta line via `company`. Use for social-proof on wineries,
+ * vineyards, cellar doors, breweries, taprooms, or cideries. Renders fully with
+ * no props via baked defaults.
  */
 export const WineryBreweryTestimonials = defineCapsule({
   name: 'WineryBreweryTestimonials',
   description:
-    '3-up visitor-review wall for a winery or brewery page: a centered serif heading above a responsive card grid. Each card renders a filled star row matching the rating, a quoted review, and an attribution row pairing the visitor name with the review source (Google, Tripadvisor, Wine Club). Use for social-proof on wineries, vineyards, cellar doors, breweries, taprooms, or cideries.',
+    "Dark, inverted visitor-review band for a winery or brewery page: the page's one full ink inversion (bg-foreground / text-background) on a slanted clip-path seam, over a giant faint serif quotation-mark watermark. A left-aligned mono meta rail + serif heading above a staggered grid of square-edged ghost cards, each with a serif quoted review and an attribution row pairing the visitor name with the review source (Google, Tripadvisor, Wine Club). Use for social-proof on wineries, vineyards, cellar doors, breweries, taprooms, or cideries.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -81,13 +84,36 @@ export const WineryBreweryTestimonials = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-background pt-28 pb-20 lg:pt-32 lg:pb-28',
+          // Full ink inversion on a slanted clip-path seam (neighbor-independent).
+          'relative overflow-hidden bg-foreground py-16 pt-24 text-background [clip-path:polygon(0_3rem,100%_0,100%_100%,0_100%)] sm:py-20 sm:pt-28 lg:py-28 lg:pt-36',
           props.className,
         )}
       >
-        <Container>
-          <TestimonialGrid heading={heading}>
-            {items.map((t) => {
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-16 right-4 select-none font-serif text-[16rem] italic leading-none text-background/[0.06] sm:text-[22rem] lg:-top-24 lg:text-[30rem]"
+        >
+          &rdquo;
+        </span>
+
+        <Container className="relative">
+          <div className="mb-8 flex items-center gap-4">
+            <span aria-hidden="true" className="size-1.5 shrink-0 bg-primary" />
+            <span className="font-mono text-[11px] uppercase tracking-[0.24em] text-background/60">
+              In their words
+            </span>
+            <span aria-hidden="true" className="h-px flex-1 bg-background/20" />
+          </div>
+
+          <SectionHeading
+            align="left"
+            title={heading}
+            titleClassName="font-serif text-3xl font-medium tracking-tight text-background sm:text-4xl lg:text-5xl"
+            className="mb-14 max-w-2xl"
+          />
+
+          <TestimonialGrid>
+            {items.map((t, i) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -98,15 +124,27 @@ export const WineryBreweryTestimonials = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
-                    {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
-                        {__iv__.role || __iv__.company || __iv__.meta}
-                      </TestimonialMeta>
-                    )}
+                <TestimonialCard
+                  key={__iv__.name}
+                  className={cn(
+                    'rounded-none border-background/20 bg-background/[0.04] text-background transition-colors duration-150 hover:border-background/40',
+                    i === 1 && 'lg:translate-y-8',
+                  )}
+                >
+                  <TestimonialQuote className="font-serif text-lg italic leading-relaxed text-background/90">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="border-t border-background/15 pt-4">
+                    <div className="flex flex-col">
+                      <TestimonialName className="text-background">
+                        {__iv__.name}
+                      </TestimonialName>
+                      {(__iv__.role || __iv__.company || __iv__.meta) && (
+                        <TestimonialMeta className="mt-0.5 font-mono text-[11px] uppercase tracking-[0.14em] text-background/55">
+                          {__iv__.role || __iv__.company || __iv__.meta}
+                        </TestimonialMeta>
+                      )}
+                    </div>
                   </TestimonialAuthor>
                 </TestimonialCard>
               )

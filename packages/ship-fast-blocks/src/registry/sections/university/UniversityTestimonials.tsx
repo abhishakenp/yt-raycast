@@ -10,11 +10,12 @@ import {
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { cn } from '#/lib/utils.ts'
 
 export const UniversityTestimonials = defineCapsule({
   name: 'UniversityTestimonials',
   description:
-    'Student and alumni voices band for the University page family with a prestigious, collegiate aesthetic. Composes the shared TestimonialGrid kit composite, mapping a public reviews prop (quote, name, class-year role, rating) into testimonial cards with star ratings and avatars. Use to build trust through authentic graduate and current-student perspectives on a university homepage.',
+    'Editorial-academic student and alumni voices band for the University page family. A left-aligned mono eyebrow + serif heading + lede sits above the shared TestimonialGrid kit composite, mapping a public reviews prop (quote, name, class-year role, rating) into square hairline cards. Each card leads with a giant serif quotation mark, carries a serif pull-quote, and closes with a mono class-year source label; cards stagger vertically for an editorial rhythm. Use to build trust through authentic graduate and current-student perspectives on a university homepage.',
   props: z.object({
     heading: z.string().optional(),
     subheading: z.string().optional(),
@@ -71,13 +72,19 @@ export const UniversityTestimonials = defineCapsule({
     return (
       <section className="bg-muted/30 pt-28 pb-20 text-foreground sm:pt-32 sm:pb-24">
         <Container size="xl" className="px-6">
-          <TestimonialGrid
-            heading={heading}
-            subheading={subheading}
-            columns={3}
-            className={props.className}
-          >
-            {items.map((t) => {
+          <div className="mb-14 max-w-2xl">
+            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary">
+              Testimonials
+            </p>
+            <h2 className="mt-3 text-balance font-serif text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
+              {heading}
+            </h2>
+            <p className="mt-4 text-pretty leading-7 text-muted-foreground">
+              {subheading}
+            </p>
+          </div>
+          <TestimonialGrid columns={3} className={props.className}>
+            {items.map((t, i) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -88,12 +95,26 @@ export const UniversityTestimonials = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
+                <TestimonialCard
+                  key={__iv__.name}
+                  className={cn(
+                    'gap-5 rounded-none border-border bg-card p-7 transition-colors duration-150 hover:border-foreground/30',
+                    i % 2 === 1 ? 'lg:translate-y-8' : '',
+                  )}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="font-serif text-5xl leading-none text-primary/40"
+                  >
+                    &ldquo;
+                  </span>
+                  <TestimonialQuote className="font-serif text-lg leading-relaxed text-foreground">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="mt-auto flex-col items-start gap-1 border-t border-border pt-4">
                     <TestimonialName>{__iv__.name}</TestimonialName>
                     {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
+                      <TestimonialMeta className="font-mono text-[10px] uppercase tracking-[0.16em]">
                         {__iv__.role || __iv__.company || __iv__.meta}
                       </TestimonialMeta>
                     )}

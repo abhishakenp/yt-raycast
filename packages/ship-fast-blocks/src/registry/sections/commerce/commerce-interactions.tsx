@@ -40,6 +40,8 @@ import {
   AccountDropdownSeparator,
   AccountDropdownSignOut,
   AccountDropdownUnauthenticated,
+} from '#/section-kit/AccountDropdown.tsx'
+import {
   CommandSearch,
   CommandSearchTrigger,
   CommandSearchContent,
@@ -47,8 +49,8 @@ import {
   CommandSearchList,
   CommandSearchEmpty,
   CommandSearchGroup,
-  NavbarRouteLink,
-} from '#/section-kit/index.ts'
+} from '#/section-kit/CommandSearch.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 import type {
   commerceCartLakebed,
   CommerceCatalogProductInput,
@@ -249,16 +251,11 @@ function CommerceCartItemRow({
   const deletePending = deleteItem.isPending(deleteKey)
 
   return (
-    <div className="grid gap-3 border-b border-border pb-3">
+    <div className="grid gap-3 py-4">
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-foreground">
-            {item.label}
-          </p>
-          {item.price ? (
-            <p className="mt-1 text-xs text-muted-foreground">{item.price}</p>
-          ) : null}
-        </div>
+        <p className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+          {item.label}
+        </p>
         <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
           <AlertDialogTrigger asChild>
             <button
@@ -266,7 +263,7 @@ function CommerceCartItemRow({
               aria-label={`Delete ${item.label}`}
               aria-busy={deletePending}
               disabled={deletePending}
-              className="inline-flex size-8 shrink-0 items-center justify-center rounded-full border border-destructive/20 text-destructive transition-colors hover:bg-destructive hover:text-destructive-foreground disabled:pointer-events-none disabled:opacity-50"
+              className="inline-flex size-8 shrink-0 items-center justify-center rounded-none border border-destructive/40 text-destructive transition-colors hover:bg-destructive hover:text-destructive-foreground active:translate-y-px disabled:pointer-events-none disabled:opacity-50"
             >
               {deletePending ? (
                 <CommerceMutationSpinner />
@@ -275,7 +272,7 @@ function CommerceCartItemRow({
               )}
             </button>
           </AlertDialogTrigger>
-          <AlertDialogContent size="sm">
+          <AlertDialogContent size="sm" className="rounded-none border-border">
             <AlertDialogHeader>
               <AlertDialogTitle>Delete {item.label}?</AlertDialogTitle>
               <AlertDialogDescription>
@@ -283,7 +280,10 @@ function CommerceCartItemRow({
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel disabled={deletePending}>
+              <AlertDialogCancel
+                className="rounded-none"
+                disabled={deletePending}
+              >
                 Cancel
               </AlertDialogCancel>
               <button
@@ -297,7 +297,7 @@ function CommerceCartItemRow({
                     () => {},
                   )
                 }}
-                className="inline-flex h-10 min-w-24 items-center justify-center gap-2 rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:pointer-events-none disabled:opacity-50"
+                className="inline-flex h-10 min-w-24 items-center justify-center gap-2 rounded-none bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-50"
               >
                 {deletePending ? <CommerceMutationSpinner /> : 'Delete item'}
               </button>
@@ -305,62 +305,69 @@ function CommerceCartItemRow({
           </AlertDialogContent>
         </AlertDialog>
       </div>
-      <div
-        className="inline-grid w-fit grid-cols-[2rem_2.25rem_2rem] items-center rounded-full border border-border bg-muted/40 p-1"
-        aria-label={`${item.label} quantity`}
-      >
-        {quantity > 1 ? (
-          <button
-            type="button"
-            aria-label={`Decrease ${item.label} quantity`}
-            aria-busy={decrementPending}
-            disabled={decrementPending}
-            onClick={() => {
-              void decrementItem.run(decrementKey, { id: item.id })
-            }}
-            className="inline-flex size-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-background hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
-          >
-            {decrementPending ? (
-              <CommerceMutationSpinner />
-            ) : (
-              <MinusIcon className="size-4" aria-hidden="true" />
-            )}
-          </button>
-        ) : (
-          <button
-            type="button"
-            aria-label={`Decrease ${item.label} quantity`}
-            aria-busy={deletePending}
-            disabled={deletePending}
-            onClick={() => setDeleteDialogOpen(true)}
-            className="inline-flex size-8 items-center justify-center rounded-full text-destructive transition-colors hover:bg-destructive hover:text-destructive-foreground disabled:pointer-events-none disabled:opacity-50"
-          >
-            {deletePending ? (
-              <CommerceMutationSpinner />
-            ) : (
-              <MinusIcon className="size-4" aria-hidden="true" />
-            )}
-          </button>
-        )}
-        <span className="text-center text-sm font-semibold text-foreground">
-          {quantity}
-        </span>
-        <button
-          type="button"
-          aria-label={`Increase ${item.label} quantity`}
-          aria-busy={incrementPending}
-          disabled={incrementPending}
-          onClick={() => {
-            void incrementItem.run(incrementKey, { id: item.id })
-          }}
-          className="inline-flex size-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-background hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+      <div className="flex items-center justify-between gap-3">
+        <div
+          className="inline-grid w-fit grid-cols-[2rem_2.25rem_2rem] items-center divide-x divide-border rounded-none border border-border bg-muted/40"
+          aria-label={`${item.label} quantity`}
         >
-          {incrementPending ? (
-            <CommerceMutationSpinner />
+          {quantity > 1 ? (
+            <button
+              type="button"
+              aria-label={`Decrease ${item.label} quantity`}
+              aria-busy={decrementPending}
+              disabled={decrementPending}
+              onClick={() => {
+                void decrementItem.run(decrementKey, { id: item.id })
+              }}
+              className="inline-flex size-8 items-center justify-center rounded-none text-muted-foreground transition-colors hover:bg-background hover:text-foreground active:translate-y-px disabled:pointer-events-none disabled:opacity-50"
+            >
+              {decrementPending ? (
+                <CommerceMutationSpinner />
+              ) : (
+                <MinusIcon className="size-4" aria-hidden="true" />
+              )}
+            </button>
           ) : (
-            <PlusIcon className="size-4" aria-hidden="true" />
+            <button
+              type="button"
+              aria-label={`Decrease ${item.label} quantity`}
+              aria-busy={deletePending}
+              disabled={deletePending}
+              onClick={() => setDeleteDialogOpen(true)}
+              className="inline-flex size-8 items-center justify-center rounded-none text-destructive transition-colors hover:bg-destructive hover:text-destructive-foreground active:translate-y-px disabled:pointer-events-none disabled:opacity-50"
+            >
+              {deletePending ? (
+                <CommerceMutationSpinner />
+              ) : (
+                <MinusIcon className="size-4" aria-hidden="true" />
+              )}
+            </button>
           )}
-        </button>
+          <span className="text-center text-sm font-semibold tabular-nums text-foreground">
+            {quantity}
+          </span>
+          <button
+            type="button"
+            aria-label={`Increase ${item.label} quantity`}
+            aria-busy={incrementPending}
+            disabled={incrementPending}
+            onClick={() => {
+              void incrementItem.run(incrementKey, { id: item.id })
+            }}
+            className="inline-flex size-8 items-center justify-center rounded-none text-muted-foreground transition-colors hover:bg-background hover:text-foreground active:translate-y-px disabled:pointer-events-none disabled:opacity-50"
+          >
+            {incrementPending ? (
+              <CommerceMutationSpinner />
+            ) : (
+              <PlusIcon className="size-4" aria-hidden="true" />
+            )}
+          </button>
+        </div>
+        {item.price ? (
+          <p className="shrink-0 font-mono text-sm tabular-nums text-foreground">
+            {item.price}
+          </p>
+        ) : null}
       </div>
     </div>
   )
@@ -385,12 +392,12 @@ function CommerceClearCartButton({
           type="button"
           aria-busy={clearPending}
           disabled={disabled || clearCart.hasPending}
-          className="rounded-[0.65rem] border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+          className="rounded-none border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted active:translate-y-px disabled:pointer-events-none disabled:opacity-50"
         >
           Clear cart
         </button>
       </AlertDialogTrigger>
-      <AlertDialogContent size="sm">
+      <AlertDialogContent size="sm" className="rounded-none border-border">
         <AlertDialogHeader>
           <AlertDialogTitle>Clear cart?</AlertDialogTitle>
           <AlertDialogDescription>
@@ -398,7 +405,10 @@ function CommerceClearCartButton({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={clearCart.hasPending}>
+          <AlertDialogCancel
+            className="rounded-none"
+            disabled={clearCart.hasPending}
+          >
             Cancel
           </AlertDialogCancel>
           <button
@@ -412,7 +422,7 @@ function CommerceClearCartButton({
                 () => {},
               )
             }}
-            className="inline-flex h-10 min-w-24 items-center justify-center gap-2 rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:pointer-events-none disabled:opacity-50"
+            className="inline-flex h-10 min-w-24 items-center justify-center gap-2 rounded-none bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-50"
           >
             {clearPending ? <CommerceMutationSpinner /> : 'Clear cart'}
           </button>
@@ -467,30 +477,35 @@ export function CommerceCartButton({
         <SheetContent
           side="right"
           showCloseButton={false}
-          className="w-[min(100%,22rem)] gap-0 border-l border-border bg-background p-0 text-foreground shadow-[-8px_0_32px_rgba(0,0,0,0.12)] sm:max-w-[22rem]"
+          className="w-[min(100%,22rem)] gap-0 border-l border-border bg-background p-0 text-foreground sm:max-w-[22rem]"
         >
-          <SheetHeader className="flex-row items-center justify-between gap-3 border-b border-border px-[1.1rem] py-4">
-            <SheetTitle className="text-base font-semibold text-foreground">
-              Your cart
-            </SheetTitle>
+          <SheetHeader className="flex-row items-start justify-between gap-3 border-b border-border px-5 py-4">
+            <div className="grid gap-1">
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:text-[11px]">
+                Your cart
+              </span>
+              <SheetTitle className="text-base font-semibold tracking-tight text-foreground">
+                Your cart
+              </SheetTitle>
+            </div>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="px-2 py-0.5 text-2xl leading-none text-muted-foreground transition-colors hover:text-foreground"
+              className="inline-flex size-8 shrink-0 items-center justify-center rounded-none border border-border text-lg leading-none text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:translate-y-px"
               aria-label="Close cart"
             >
               ×
             </button>
           </SheetHeader>
 
-          <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-[1.1rem] py-4">
-            <SheetDescription className="m-0 text-sm leading-relaxed text-muted-foreground">
+          <div className="flex flex-1 flex-col overflow-y-auto px-5 py-4">
+            <SheetDescription className="m-0 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
               {count < 1
                 ? 'Your bag is empty.'
                 : `You have ${count} item${count === 1 ? '' : 's'} in your cart.`}
             </SheetDescription>
             {items.length ? (
-              <div className="space-y-3">
+              <div className="mt-3 divide-y divide-border border-y border-border">
                 {items.map((item) => (
                   <CommerceCartItemRow
                     key={item.id}
@@ -500,21 +515,22 @@ export function CommerceCartButton({
                 ))}
               </div>
             ) : (
-              <div className="rounded-lg border border-dashed border-border p-5 text-center text-sm text-muted-foreground">
-                Add a product to see it here instantly.
+              <div className="mt-4 grid gap-2 rounded-none border border-dashed border-border px-5 py-10 text-center">
+                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                  Empty
+                </span>
+                <p className="text-sm text-muted-foreground">
+                  Add a product to see it here instantly.
+                </p>
               </div>
             )}
           </div>
 
-          <SheetFooter className="gap-2 border-t border-border px-[1.1rem] py-4">
-            <CommerceClearCartButton
-              disabled={!items.length}
-              lakebed={lakebed}
-            />
+          <SheetFooter className="gap-3 border-t border-border px-5 py-4">
             {fullCartTarget ? (
               <NavbarRouteLink
                 disabled={!items.length}
-                className="inline-flex items-center justify-center rounded-[0.65rem] bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
+                className="inline-flex items-center justify-center rounded-none bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-50"
                 onClick={() => {
                   setOpen(false)
                 }}
@@ -523,6 +539,10 @@ export function CommerceCartButton({
                 View full cart
               </NavbarRouteLink>
             ) : null}
+            <CommerceClearCartButton
+              disabled={!items.length}
+              lakebed={lakebed}
+            />
           </SheetFooter>
         </SheetContent>
       </Sheet>
@@ -560,7 +580,7 @@ export function CommerceMobileMenu({
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="w-[min(100%,22rem)] border-l border-border bg-background p-0 text-foreground sm:max-w-[22rem]"
+        className="w-[min(100%,22rem)] rounded-none border-l border-border bg-background p-0 text-foreground shadow-none sm:max-w-[22rem]"
       >
         <SheetHeader className="border-b border-border px-5 py-4 text-left">
           <SheetTitle className="text-base font-semibold">{brand}</SheetTitle>
@@ -568,9 +588,9 @@ export function CommerceMobileMenu({
             Navigate to a store section.
           </SheetDescription>
         </SheetHeader>
-        <div className="flex flex-col gap-1 px-3 py-4">
+        <div className="flex flex-col divide-y divide-border">
           <NavbarRouteLink
-            className="rounded-lg px-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            className="rounded-none border-l-2 border-transparent px-5 py-3.5 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted active:translate-y-px"
             href={homeNavigationTarget}
             onClick={() => setOpen(false)}
           >
@@ -579,7 +599,7 @@ export function CommerceMobileMenu({
           {mobileNavItems.map((item) => (
             <NavbarRouteLink
               key={item}
-              className="rounded-lg px-3 py-3 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="rounded-none border-l-2 border-transparent px-5 py-3.5 text-left text-sm font-medium text-muted-foreground transition-colors hover:border-l-border hover:bg-muted hover:text-foreground active:translate-y-px"
               href={item}
               onClick={() => setOpen(false)}
             >

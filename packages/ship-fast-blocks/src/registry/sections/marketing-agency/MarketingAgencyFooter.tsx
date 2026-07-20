@@ -2,17 +2,17 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 /**
- * MarketingAgencyFooter — a 4-column site footer. A bordered footer on the page
- * surface: a brand column (layered-diamond glyph + name + short about blurb)
- * beside three link columns of titled lists, with a divider rule above a bottom
- * bar holding an auto-year copyright line and a row of legal links. Every link
- * routes through section-kit route links; the brand returns to the home target. Use as the
+ * MarketingAgencyFooter — kinetic ledger footer. A hairline-topped band with a
+ * giant ghost brand watermark bleeding off the bottom edge: an asymmetric
+ * 12-column grid pairs a wide brand block (layered-diamond glyph + name + short
+ * about blurb) with mono-labeled link columns; below, a hairline-divided bottom
+ * bar carries a copyright line, mono legal links, and a decorative
+ * "[ EOF ]" tag. Every link routes through section-kit route links. Use as the
  * closing footer for a marketing / growth agency, SaaS, or B2B services site.
  * Renders fully with no props.
  */
 import {
   SiteFooter,
-  FooterContent,
   FooterGrid,
   FooterBrand,
   FooterTagline,
@@ -24,10 +24,12 @@ import {
   FooterCopyright,
   FooterLegal,
 } from '#/section-kit/SiteFooter.tsx'
+import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 export const MarketingAgencyFooter = defineCapsule({
   name: 'MarketingAgencyFooter',
   description:
-    '4-column site footer: a bordered footer on the page surface with a brand column (layered-diamond glyph + name + short about blurb) beside three titled link-list columns, plus a divider rule above a bottom bar holding an auto-year copyright line and a row of legal links. Every link routes through section-kit route links; the brand returns to the home target. Use as the closing footer for a marketing / growth agency, SaaS, or B2B services site.',
+    'Kinetic ledger footer: a hairline-topped band with a giant ghost brand watermark, an asymmetric 12-column grid pairing a wide brand block (layered-diamond glyph + name + short about blurb) with mono-labeled link columns, and a hairline-divided bottom bar with a copyright line, mono legal links, and a decorative [ EOF ] tag. Every link routes through section-kit route links. Use as the closing footer for a marketing / growth agency, SaaS, or B2B services site.',
   props: z.object({
     /** Agency / brand name shown beside the logo glyph. */
     brand: z.string().optional(),
@@ -91,32 +93,67 @@ export const MarketingAgencyFooter = defineCapsule({
       </svg>
     )
     return (
-      <SiteFooter className={props.className}>
-        <FooterContent>
-          <FooterGrid>
-            <FooterBrand brand={brand} brandMark={<LogoMark />}>
-              <FooterTagline>{about}</FooterTagline>
+      <SiteFooter
+        className={
+          'relative overflow-hidden border-t border-border bg-background' +
+          (props.className ? ' ' + props.className : '')
+        }
+      >
+        {/* Giant ghost brand watermark bleeding off the bottom edge. */}
+        <Watermark className="-bottom-6 -right-2 text-[5rem] sm:text-[9rem] lg:text-[12rem]">
+          {brand}
+        </Watermark>
+        <Container className="relative py-14 lg:py-16">
+          <FooterGrid className="grid gap-10 md:grid-cols-12 lg:gap-8">
+            <FooterBrand
+              brand={brand}
+              brandMark={<LogoMark className="size-7 text-primary" />}
+              className="md:col-span-6"
+            >
+              <FooterTagline className="max-w-sm">{about}</FooterTagline>
             </FooterBrand>
             {columns.map((col) => (
-              <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
-                <FooterColumnList>
+              <FooterColumn key={col.title} className="md:col-span-2">
+                <FooterColumnTitle className="font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground">
+                  <span aria-hidden="true" className="text-primary">
+                    /{' '}
+                  </span>
+                  {col.title}
+                </FooterColumnTitle>
+                <FooterColumnList className="mt-4 space-y-2.5">
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink
+                      key={link}
+                      className="block w-fit text-sm text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
-          <FooterBottom>
-            <FooterCopyright>{copyright}</FooterCopyright>
-            <FooterLegal>
-              {legal.map((l) => (
-                <FooterLink key={l}>{l}</FooterLink>
-              ))}
-            </FooterLegal>
+          <FooterBottom className="mt-12 flex flex-col justify-between gap-4 border-t border-border pt-6 sm:flex-row sm:items-center">
+            <FooterCopyright className="text-sm text-muted-foreground">
+              {copyright}
+            </FooterCopyright>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              <FooterLegal className="flex flex-wrap gap-x-5 gap-y-2">
+                {legal.map((l) => (
+                  <FooterLink
+                    key={l}
+                    className="block w-fit font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {l}
+                  </FooterLink>
+                ))}
+              </FooterLegal>
+              <MonoTag tone="faint" aria-hidden="true">
+                [ EOF ]
+              </MonoTag>
+            </div>
           </FooterBottom>
-        </FooterContent>
+        </Container>
       </SiteFooter>
     )
   },

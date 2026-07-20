@@ -3,27 +3,28 @@ import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
-  FeatureGrid,
   FeatureCard,
-  FeatureIcon,
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
 
 /**
- * VacationRentalFeatures — an amenities grid for a vacation-rental listing page.
- * Thin configuration over the shared `FeatureGrid` composite: an "Everything you
- * need" heading above a responsive grid of amenity cards (fast wifi, private
- * pool, full kitchen, free parking, air conditioning, pet-friendly), each with a
- * line-icon tile, a title, and a short description. Theme-token only. Use to list
- * the amenities of a vacation rental, beach house, cabin, villa, or boutique
- * short-stay. Renders fully with no props via baked-in defaults.
+ * VacationRentalFeatures — an editorial-wanderlust amenity ledger for a
+ * vacation-rental listing page. An asymmetric mono-eyebrow intro row (extrabold
+ * heading left, supporting line right) sits above a sharp-cornered,
+ * collapsed-border amenity grid (fast wifi, private pool, full kitchen, free
+ * parking, air conditioning, pet-friendly): each cell carries a mono amenity
+ * index and inline line-icon, a bold title, and a short description — no icon
+ * tiles, hairlines instead of cards. Theme-token only. Use to list the amenities
+ * of a vacation rental, beach house, cabin, villa, or boutique short-stay.
+ * Renders fully with no props via baked-in defaults.
  */
 const WifiIcon = () => (
   <svg
-    width="22"
-    height="22"
+    width="20"
+    height="20"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
@@ -41,8 +42,8 @@ const WifiIcon = () => (
 
 const PoolIcon = () => (
   <svg
-    width="22"
-    height="22"
+    width="20"
+    height="20"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
@@ -60,8 +61,8 @@ const PoolIcon = () => (
 
 const KitchenIcon = () => (
   <svg
-    width="22"
-    height="22"
+    width="20"
+    height="20"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
@@ -79,8 +80,8 @@ const KitchenIcon = () => (
 
 const ParkingIcon = () => (
   <svg
-    width="22"
-    height="22"
+    width="20"
+    height="20"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
@@ -96,8 +97,8 @@ const ParkingIcon = () => (
 
 const AcIcon = () => (
   <svg
-    width="22"
-    height="22"
+    width="20"
+    height="20"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
@@ -115,8 +116,8 @@ const AcIcon = () => (
 
 const PetIcon = () => (
   <svg
-    width="22"
-    height="22"
+    width="20"
+    height="20"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
@@ -141,10 +142,16 @@ const ICONS = {
   pet: <PetIcon />,
 } as const
 
+const COLS = {
+  2: 'sm:grid-cols-2',
+  3: 'sm:grid-cols-2 lg:grid-cols-3',
+  4: 'sm:grid-cols-2 lg:grid-cols-4',
+} as const
+
 export const VacationRentalFeatures = defineCapsule({
   name: 'VacationRentalFeatures',
   description:
-    'Amenities grid for a vacation-rental listing page built on the shared FeatureGrid composite: an Everything you need heading above a responsive grid of amenity cards (fast wifi, private pool, full kitchen, free parking, air conditioning, pet-friendly), each with a line-icon tile, a title, and a short description. Theme-token only. Use to list the amenities of a vacation rental, beach house, cabin, villa, or boutique short-stay.',
+    'Editorial-wanderlust amenity ledger for a vacation-rental listing page: an asymmetric mono-eyebrow intro row (extrabold heading, supporting line) above a sharp-cornered collapsed-border amenity grid (fast wifi, private pool, full kitchen, free parking, air conditioning, pet-friendly), each cell carrying a mono amenity index and inline line-icon, a bold title and a short description — hairlines instead of icon tiles. Theme-token only. Use to list the amenities of a vacation rental, beach house, cabin, villa, or boutique short-stay.',
   props: z.object({
     /** Section heading above the amenities grid. */
     heading: z.string().optional(),
@@ -214,6 +221,12 @@ export const VacationRentalFeatures = defineCapsule({
       icon: f.icon ? ICONS[f.icon] : undefined,
     }))
 
+    const columns = props.columns ?? 3
+    const heading = props.heading ?? 'Everything you need'
+    const subheading =
+      props.subheading ??
+      'Thoughtful comforts and modern essentials so you can settle in and truly relax.'
+
     return (
       <section
         className={cn(
@@ -222,15 +235,25 @@ export const VacationRentalFeatures = defineCapsule({
         )}
       >
         <Container>
-          <FeatureGrid
-            heading={props.heading ?? 'Everything you need'}
-            subheading={
-              props.subheading ??
-              'Thoughtful comforts and modern essentials so you can settle in and truly relax.'
-            }
-            columns={props.columns ?? 3}
+          <div className="mb-12 grid items-end gap-6 lg:mb-16 lg:grid-cols-12 lg:gap-10">
+            <div className="lg:col-span-7">
+              <MonoTag className="mb-4 block">In the home / Amenities</MonoTag>
+              <h2 className="text-balance text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+                {heading}
+              </h2>
+            </div>
+            <p className="text-pretty text-base leading-relaxed text-muted-foreground lg:col-span-5 lg:pb-1">
+              {subheading}
+            </p>
+          </div>
+
+          <div
+            className={cn(
+              'grid grid-cols-1 border-l border-t border-border',
+              COLS[columns],
+            )}
           >
-            {features.map((f) => {
+            {features.map((f, index) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -241,14 +264,30 @@ export const VacationRentalFeatures = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
-                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                <FeatureCard
+                  key={__iv__.title}
+                  className="gap-0 rounded-none border-0 border-b border-r border-border bg-card p-6 transition-colors duration-150 hover:translate-y-0 hover:border-border hover:bg-muted/40 sm:p-7"
+                >
+                  <div className="mb-5 flex items-center justify-between gap-3">
+                    <MonoTag className="text-primary">
+                      {String(index + 1).padStart(2, '0')}
+                    </MonoTag>
+                    {__iv__.icon ? (
+                      <span aria-hidden="true" className="text-foreground/70">
+                        {__iv__.icon}
+                      </span>
+                    ) : null}
+                  </div>
+                  <FeatureTitle className="text-lg font-bold tracking-tight">
+                    {__iv__.title}
+                  </FeatureTitle>
+                  <FeatureDescription className="mt-2 leading-relaxed">
+                    {__iv__.description}
+                  </FeatureDescription>
                 </FeatureCard>
               )
             })}
-          </FeatureGrid>
+          </div>
         </Container>
       </section>
     )

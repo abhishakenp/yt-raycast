@@ -14,21 +14,23 @@ import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * LinkInBioGallery — a bold, mobile-first "Featured" content grid for a creator
- * link hub / Linktree-style page, built as a thin wrapper over the shared
- * GalleryGrid composite. Renders a compact heading + subheading over a tight
- * 2-column grid (2/3/4 supported) of recent posts, drops, videos, and projects.
- * Each tile pulls a relevant stock photo from its alt text and carries a short
- * caption strip, so the section doubles as a visual portfolio teaser beneath the
- * profile + links stack. The wrapper centers the grid in a narrow column with
- * mobile-first padding; theme tokens only, props.className merged last. Use it on
- * any creator / influencer / freelancer link-in-bio page to spotlight latest
- * work, product drops, or video content. Renders fully with no props via baked-in
- * defaults.
+ * link hub / Linktree-style page in the "chunky rounded stack" language, built
+ * as a thin wrapper over the shared GalleryGrid composite. Renders an extrabold
+ * heading + subheading over a tight 2-column grid (2/3/4 supported) of recent
+ * posts, drops, videos, and projects, each tile a chunky rounded-2xl 2px-ruled
+ * plate with a hard offset token shadow, alternating tiles nudged down for a
+ * staggered sticker-stack rhythm. Each tile pulls a relevant stock photo from
+ * its alt text and carries an inverted mono caption strip, so the section
+ * doubles as a visual portfolio teaser beneath the profile + links stack. The
+ * wrapper centers the grid in a narrow column with mobile-first padding; theme
+ * tokens only, props.className merged last. Use it on any creator / influencer /
+ * freelancer link-in-bio page to spotlight latest work, product drops, or video
+ * content. Renders fully with no props via baked-in defaults.
  */
 export const LinkInBioGallery = defineCapsule({
   name: 'LinkInBioGallery',
   description:
-    "Bold, mobile-first 'Featured' content grid for a creator LINK-IN-BIO / link-hub / Linktree-style page, built on the shared GalleryGrid composite. A compact heading + subheading sit over a tight 2-column grid (2/3/4 supported) of recent posts, product drops, videos, and projects; each tile pulls a relevant stock photo from its alt text and shows a short caption strip, turning the section into a visual portfolio teaser beneath the profile and links stack. The wrapper centers the grid in a narrow column with mobile-first padding. Use to spotlight latest work, drops, tutorials, or video content on any creator, influencer, or freelancer link-in-bio landing page. Renders fully with no props.",
+    "Bold, mobile-first 'Featured' content grid for a creator LINK-IN-BIO / link-hub / Linktree-style page in a chunky-rounded language, built on the shared GalleryGrid composite. An extrabold heading + subheading sit over a tight 2-column grid (2/3/4 supported) of recent posts, product drops, videos, and projects; each tile is a chunky rounded-2xl 2px-ruled plate with a hard offset token shadow, alternating tiles nudged down for a staggered sticker-stack rhythm, pulling a relevant stock photo from its alt text and showing an inverted mono caption strip, turning the section into a visual portfolio teaser beneath the profile and links stack. The wrapper centers the grid in a narrow column with mobile-first padding. Use to spotlight latest work, drops, tutorials, or video content on any creator, influencer, or freelancer link-in-bio landing page. Renders fully with no props.",
   props: z.object({
     /** Section heading (default "Featured"). */
     heading: z.string().optional(),
@@ -83,9 +85,10 @@ export const LinkInBioGallery = defineCapsule({
           <SectionHeading
             title={props.heading ?? 'Featured'}
             subtitle={props.subheading ?? 'Recent posts, drops, and projects.'}
+            titleClassName="text-3xl font-extrabold tracking-tight md:text-4xl"
           />
           <GalleryGridItems columns={props.columns ?? 2}>
-            {images.map((img) => {
+            {images.map((img, i) => {
               const __iv__ = img as {
                 alt: string
                 caption?: string
@@ -93,10 +96,18 @@ export const LinkInBioGallery = defineCapsule({
                 location?: string
               }
               return (
-                <GalleryTile key={__iv__.alt}>
+                <GalleryTile
+                  key={__iv__.alt}
+                  className={cn(
+                    'rounded-2xl border-2 border-foreground shadow-[4px_4px_0_0] shadow-foreground',
+                    i % 2 === 1 && 'sm:translate-y-5',
+                  )}
+                >
                   <GalleryTileImage alt={__iv__.alt} />
                   {__iv__.caption && (
-                    <GalleryTileCaption>{__iv__.caption}</GalleryTileCaption>
+                    <GalleryTileCaption className="border-t-2 border-foreground bg-foreground font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-background backdrop-blur-none">
+                      {__iv__.caption}
+                    </GalleryTileCaption>
                   )}
                 </GalleryTile>
               )

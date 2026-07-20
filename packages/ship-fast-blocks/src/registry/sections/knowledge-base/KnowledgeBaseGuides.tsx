@@ -13,8 +13,7 @@ import {
   ArticleMedia,
   ArticleContent,
 } from '#/section-kit/ArticleGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * KnowledgeBaseGuides — "Terminal-docs" featured step-by-step guides ledger for
  * a help center. An asymmetric header row (left-aligned heading + description

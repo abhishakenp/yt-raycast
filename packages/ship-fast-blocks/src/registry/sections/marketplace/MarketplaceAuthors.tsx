@@ -7,25 +7,26 @@ import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { PersonCard } from '#/section-kit/PersonCard.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * MarketplaceAuthors — a "Featured Sellers" section (the Authors role for a
- * marketplace: the creators / vendors behind the storefronts). A heading +
- * description on the left and a "View all sellers" link on the right cap a
- * responsive 2/4-column grid of vendor storefront cards; each card stacks a
- * rounded cover photo (with a star-rating chip and an optional eco-verified
- * badge overlaid), then a row pairing a circular seller avatar with the store
- * name, location, and a product-count + follower-count meta line. Clean,
- * neutral, light e-commerce aesthetic. Cards and the view-all link route
- * through section-kit route links; cover and avatar use the alt-driven Image component. Use
- * to spotlight top vendors / featured authors on online marketplaces,
- * multi-vendor or maker/artisan platforms, and seller communities.
+ * MarketplaceAuthors — editorial "Featured Sellers" index (the Authors role for
+ * a marketplace: the vendors behind the storefronts). An asymmetric header
+ * pairs a left extrabold heading + description with a mono "View all sellers"
+ * link on the right, above a staggered 1/2/4-column grid of sharp seller plates.
+ * Each plate is a hairline-framed cover photo on an offset frame — a square
+ * star-rating chip and an optional square eco-verified tag overlaid — followed
+ * by a hairline ledger row pairing an index numeral and circular seller avatar
+ * with the store name, location, and a mono product-count + follower-count meta
+ * line. Alternating plates step down on a vertical rhythm. Cards and the
+ * view-all link route through section-kit route links; cover and avatar use the
+ * alt-driven Image component. Use to spotlight top vendors / featured authors on
+ * online marketplaces, multi-vendor or maker/artisan platforms, and seller
+ * communities.
  */
 export const MarketplaceAuthors = defineCapsule({
   name: 'MarketplaceAuthors',
   description:
-    "'Featured Sellers' section serving the Authors role for a marketplace (the vendors / creators behind the storefronts): a heading + description on the left and a 'View all sellers' link on the right cap a responsive 2/4-column grid of vendor storefront cards, each stacking a rounded cover photo (with a star-rating chip and an optional eco-verified badge overlaid) above a row pairing a circular seller avatar with the store name, location, and a product-count + follower-count meta line. Clean, neutral, light e-commerce aesthetic. Cards and the view-all link route through section-kit route links; cover and avatar use the alt-driven Image component. Use to spotlight top vendors / featured authors on online marketplaces, multi-vendor or maker/artisan platforms, and seller communities.",
+    "Editorial commerce-index 'Featured Sellers' section serving the Authors role for a marketplace (the vendors behind the storefronts): an asymmetric header pairs a left extrabold heading + description with a mono 'View all sellers' link on the right, above a staggered 1/2/4-column grid of sharp seller plates — each a hairline-framed cover photo on an offset frame with a square star-rating chip and an optional square eco-verified tag overlaid, then a hairline ledger row pairing an index numeral and circular seller avatar with the store name, location, and a mono product-count + follower-count meta line. Alternating plates step down on a vertical rhythm. Cards and the view-all link route through section-kit route links; cover and avatar use the alt-driven Image component. Use to spotlight top vendors / featured authors on online marketplaces, multi-vendor or maker/artisan platforms, and seller communities.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -178,53 +179,79 @@ export const MarketplaceAuthors = defineCapsule({
         aria-labelledby="sellers-heading"
       >
         <Container>
-          <div className="mb-12 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <SectionHeading
-              align="left"
-              title={sellersHeading}
-              subtitle={sellersDesc}
-              className="max-w-2xl gap-0"
-              titleId="sellers-heading"
-              titleClassName="mb-4 text-3xl font-semibold text-foreground sm:text-4xl"
-              subtitleClassName="text-lg text-muted-foreground"
-            />
+          <div className="mb-14 flex flex-col gap-6 border-b border-border pb-8 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-2xl">
+              <div className="mb-5 flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                <span aria-hidden="true" className="size-1.5 bg-primary" />
+                Sellers
+                <span aria-hidden="true" className="tabular-nums">
+                  · {String(sellerItems.length).padStart(2, '0')}
+                </span>
+              </div>
+              <SectionHeading
+                align="left"
+                title={sellersHeading}
+                subtitle={sellersDesc}
+                className="gap-3"
+                titleId="sellers-heading"
+                titleClassName="text-3xl font-extrabold tracking-tighter text-foreground sm:text-4xl lg:text-5xl"
+                subtitleClassName="max-w-xl text-base leading-relaxed text-muted-foreground"
+              />
+            </div>
             <NavbarRouteLink
-              className="inline-flex items-center gap-2 font-medium text-foreground transition-colors hover:text-muted-foreground"
+              className="group inline-flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-[0.15em] text-foreground transition-colors hover:text-muted-foreground"
               href={sellersViewAll}
             >
               <span>{sellersViewAll}</span>
-              <ArrowRight className="size-5" />
+              <ArrowRight className="size-4 transition-transform duration-150 group-hover:translate-x-1" />
             </NavbarRouteLink>
           </div>
 
-          <ResponsiveGrid cols="1-2-4" className="gap-6">
-            {sellerItems.map((seller) => (
-              <PersonCard asChild variant="plain" key={seller.name}>
+          <ResponsiveGrid cols="1-2-4" className="items-start gap-x-6 gap-y-12">
+            {sellerItems.map((seller, i) => (
+              <PersonCard asChild variant="bare" key={seller.name}>
                 <NavbarRouteLink
-                  className="group block w-full text-left"
+                  className={cn(
+                    'group block w-full text-left',
+                    i % 2 === 1 && 'sm:translate-y-8 lg:translate-y-0',
+                    i % 4 === 1 && 'lg:translate-y-10',
+                    i % 4 === 3 && 'lg:translate-y-10',
+                  )}
                   href={seller.name}
                 >
-                  <div className="relative mb-4 aspect-[4/3] overflow-hidden rounded-xl bg-muted">
-                    <Image
-                      alt={seller.coverAlt}
-                      w={600}
-                      h={450}
-                      loading="lazy"
-                      className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  <div className="relative mr-2.5">
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 translate-x-2.5 translate-y-2.5 border border-border"
                     />
-                    <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-card/95 px-2.5 py-1 text-xs font-semibold text-card-foreground backdrop-blur-sm">
-                      <Star className="size-3 text-primary" />
-                      {seller.rating}
-                    </div>
-                    {seller.eco ? (
-                      <div className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-primary/15 px-2 py-1 text-xs font-semibold text-primary">
-                        <Check className="size-3" />
-                        Eco Verified
+                    <div className="relative aspect-[4/3] overflow-hidden rounded-none border border-foreground/15 bg-muted">
+                      <Image
+                        alt={seller.coverAlt}
+                        w={600}
+                        h={450}
+                        loading="lazy"
+                        className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute right-0 top-0 flex items-center gap-1 border-b border-l border-foreground bg-background px-2.5 py-1 font-mono text-[10px] font-semibold tabular-nums text-foreground">
+                        <Star className="size-3 text-primary" />
+                        {seller.rating}
                       </div>
-                    ) : null}
+                      {seller.eco ? (
+                        <div className="absolute left-0 top-0 flex items-center gap-1 border-b border-r border-foreground bg-primary/10 px-2 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-primary">
+                          <Check className="size-3" />
+                          Eco
+                        </div>
+                      ) : null}
+                    </div>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <span className="size-10 shrink-0 overflow-hidden rounded-full border-2 border-card bg-muted shadow-sm">
+                  <div className="mt-5 flex items-start gap-3 border-b border-border pb-4">
+                    <span
+                      aria-hidden="true"
+                      className="mt-0.5 shrink-0 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground/60 tabular-nums"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span className="size-9 shrink-0 overflow-hidden rounded-full border border-border bg-muted">
                       <Image
                         alt={seller.avatarAlt}
                         w={100}
@@ -233,23 +260,23 @@ export const MarketplaceAuthors = defineCapsule({
                       />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <h3 className="truncate font-semibold text-foreground">
+                      <h3 className="truncate text-sm font-semibold tracking-tight text-foreground">
                         {seller.name}
                       </h3>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="truncate text-xs text-muted-foreground">
                         {seller.location}
                       </p>
-                      <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <BoxIcon className="size-3" />
-                          {seller.products}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <UsersIcon className="size-3" />
-                          {seller.followers}
-                        </span>
-                      </div>
                     </div>
+                  </div>
+                  <div className="mt-3 flex items-center gap-4 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground tabular-nums">
+                    <span className="flex items-center gap-1.5">
+                      <BoxIcon className="size-3" />
+                      {seller.products}
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <UsersIcon className="size-3" />
+                      {seller.followers}
+                    </span>
                   </div>
                 </NavbarRouteLink>
               </PersonCard>

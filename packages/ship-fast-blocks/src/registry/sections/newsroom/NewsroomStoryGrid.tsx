@@ -16,22 +16,23 @@ import {
   ArticleContent,
   ArticleMeta,
 } from '#/section-kit/ArticleGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * NewsroomStoryGrid — a dense editorial "Latest Stories" grid for a digital
- * newsroom or online magazine. A section header row pairs a serif heading with a
- * "View all" link on the right, separated from the grid by a hairline rule.
- * Below it, a responsive 1/2/3-column grid of magazine story cards: each card has
- * a 16:9 cover image, a small colored category tag, a serif headline, a 1-2 line
- * excerpt, and a meta line (author • date • read time). Every card routes through
- * section-kit route links. Use for the main feed of a news site, publication, blog index, or
- * magazine homepage. Renders fully with no props.
+ * NewsroomStoryGrid — full newsprint "Latest Stories" ledger for a digital
+ * newsroom or online magazine. A masthead header row pairs a serif heading with
+ * a mono "View all" link over a heavy edition rule, then a collapsed-border
+ * newspaper grid: hairline dividers between every cell, the lead story
+ * spanning two columns as an oversized front-page well, and the rest set as a
+ * dense multi-column run. Each cell has a 16:9 grayscale cover image, a mono
+ * uppercase category rule, a serif headline and a mono meta line (author · date
+ * · read time); cards route through section-kit route links. Use for the main
+ * feed of a news site, publication, blog index, or magazine homepage. Renders
+ * fully with no props.
  */
 export const NewsroomStoryGrid = defineCapsule({
   name: 'NewsroomStoryGrid',
   description:
-    "Dense editorial 'Latest Stories' grid for a digital newsroom or online magazine: a section header row with a serif heading and a 'View all' link on the right above a hairline rule, then a responsive 1/2/3-up grid of magazine story cards. Each card has a 16:9 cover image, a small colored category tag, a serif headline, a 1-2 line excerpt and a meta line (author • date • read time); cards route through section-kit route links. Use for the main feed of a news site, publication, blog index, or magazine homepage.",
+    "Full newsprint 'Latest Stories' ledger for a digital newsroom or online magazine: a masthead header row with a serif heading and a mono 'View all' link over a heavy edition rule, then a collapsed-border newspaper grid — hairline dividers between every cell, the lead story spanning two columns as an oversized front-page well, and the rest set as a dense multi-column run. Each cell has a 16:9 grayscale cover image, a mono uppercase category rule, a serif headline and a mono meta line (author · date · read time); cards route through section-kit route links. Use for the main feed of a news site, publication, blog index, or magazine homepage.",
   props: z.object({
     /** Section heading shown on the left of the header row. */
     heading: z.string().optional(),
@@ -161,7 +162,7 @@ export const NewsroomStoryGrid = defineCapsule({
         aria-labelledby="newsroom-grid-heading"
       >
         <Container>
-          <div className="flex items-end justify-between gap-4">
+          <div className="flex items-end justify-between gap-4 border-b-2 border-foreground pb-4">
             <SectionHeading
               align="left"
               title={heading}
@@ -170,58 +171,79 @@ export const NewsroomStoryGrid = defineCapsule({
               titleClassName="font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
             />
             <NavbarRouteLink
-              className="shrink-0 text-sm font-semibold text-accent hover:underline"
+              className="shrink-0 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-primary transition-colors hover:text-foreground"
               href={viewAllCta}
             >
               {viewAllCta} &rarr;
             </NavbarRouteLink>
           </div>
-          <div className="mt-6 border-t border-border" />
-          <ArticleGrid cols="1-2-3" className="mt-10 gap-x-8 gap-y-12">
-            {stories.map((story) => (
-              <ArticleCard
-                key={story.title}
-                variant="none"
-                className="rounded-none"
-              >
-                <ArticleMedia aspect="16-9" className="block w-full rounded-lg">
-                  <NavbarRouteLink href={story.title}>
-                    <Image
-                      alt={story.imageAlt}
-                      w={800}
-                      h={450}
-                      loading="lazy"
-                      className="aspect-[16/9] h-auto w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                  </NavbarRouteLink>
-                </ArticleMedia>
-                <ArticleContent className="mt-4">
-                  <span className="inline-flex w-fit items-center rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-primary-foreground">
-                    {story.tag}
-                  </span>
-                  <h3 className="mt-3 font-serif text-xl font-bold leading-snug text-foreground">
-                    <NavbarRouteLink
-                      className="text-left transition-colors hover:text-accent"
-                      href={story.title}
-                    >
-                      {story.title}
+          <ArticleGrid
+            cols="1-2-3"
+            className="mt-0 gap-0 border-l border-t border-border"
+          >
+            {stories.map((story, i) => {
+              const lead = i === 0
+              return (
+                <ArticleCard
+                  key={story.title}
+                  variant="none"
+                  className={cn(
+                    'group rounded-none border-b border-r border-border p-5 transition-colors hover:bg-muted/40',
+                    lead ? 'sm:col-span-2 lg:col-span-2' : '',
+                  )}
+                >
+                  <ArticleMedia
+                    aspect="16-9"
+                    className="block w-full rounded-none border border-border"
+                  >
+                    <NavbarRouteLink href={story.title}>
+                      <Image
+                        alt={story.imageAlt}
+                        w={lead ? 1200 : 800}
+                        h={lead ? 675 : 450}
+                        loading="lazy"
+                        className="aspect-[16/9] h-auto w-full object-cover grayscale transition-all duration-300 group-hover:grayscale-0"
+                      />
                     </NavbarRouteLink>
-                  </h3>
-                  <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-                    {story.excerpt}
-                  </p>
-                  <ArticleMeta className="mt-4 text-xs">
-                    <span className="font-medium text-foreground">
-                      {story.author}
+                  </ArticleMedia>
+                  <ArticleContent className="mt-4">
+                    <span className="inline-flex w-fit items-center border-l-2 border-primary pl-2 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">
+                      {story.tag}
                     </span>
-                    {' · '}
-                    {story.date}
-                    {' · '}
-                    {story.readTime}
-                  </ArticleMeta>
-                </ArticleContent>
-              </ArticleCard>
-            ))}
+                    <h3
+                      className={cn(
+                        'mt-3 font-serif font-bold leading-snug text-foreground',
+                        lead ? 'text-2xl sm:text-3xl' : 'text-xl',
+                      )}
+                    >
+                      <NavbarRouteLink
+                        className="text-left transition-colors hover:text-primary"
+                        href={story.title}
+                      >
+                        {story.title}
+                      </NavbarRouteLink>
+                    </h3>
+                    <p
+                      className={cn(
+                        'mt-2 text-sm leading-relaxed text-muted-foreground',
+                        lead ? 'line-clamp-3' : 'line-clamp-2',
+                      )}
+                    >
+                      {story.excerpt}
+                    </p>
+                    <ArticleMeta className="mt-4 font-mono text-[11px] uppercase tracking-[0.12em]">
+                      <span className="font-medium text-foreground">
+                        {story.author}
+                      </span>
+                      {' · '}
+                      {story.date}
+                      {' · '}
+                      {story.readTime}
+                    </ArticleMeta>
+                  </ArticleContent>
+                </ArticleCard>
+              )
+            })}
           </ArticleGrid>
         </Container>
       </StoryGrid>

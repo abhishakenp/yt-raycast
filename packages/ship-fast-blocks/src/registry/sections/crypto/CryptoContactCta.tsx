@@ -9,8 +9,7 @@ import {
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
 import { Watermark } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * CryptoContactCta — Web3-terminal inverted closing band for a crypto /
  * DeFi landing page. A `bg-foreground` section that cuts away on a slanted

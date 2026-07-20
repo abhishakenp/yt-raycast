@@ -1,5 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
+import { cn } from '#/lib/utils.ts'
 import {
   HeroSection,
   HeroBackgroundImage,
@@ -11,24 +12,26 @@ import {
   HeroCta,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * PlumbingHvacHero — full-bleed, image-forward hero for a local plumbing & HVAC
- * trade site built around the 24/7 emergency angle. A single photo of a
- * uniformed technician at work fills the band edge to edge under a token-based
- * dark overlay so light text reads cleanly on top. Left-anchored content stacks
- * an uppercase "24/7 Emergency Service" eyebrow pill, a large headline, a
- * supporting paragraph, dual CTAs (filled "Call Now" + outlined translucent
- * "Book Online"), and a trust-badge row (Licensed, Insured, years in business,
- * star rating). CTAs route through section-kit route links. Use as the opening hero for
+ * PlumbingHvacHero — full-bleed, image-forward trade-industrial hero for a
+ * local plumbing & HVAC site built around the 24/7 emergency angle. A single
+ * photo of a uniformed technician at work fills the band edge to edge under a
+ * token-based dark overlay so light text reads cleanly on top, with a giant
+ * ghost "24/7" watermark bleeding off the right edge. Left-anchored content
+ * stacks a mono index eyebrow rule, a squared uppercase "24/7 Emergency
+ * Service" chip with a live status dot, a giant extrabold slab headline, a
+ * supporting paragraph, dual squared CTAs with press feedback (filled "Call
+ * Now" + outlined translucent "Book Online"), and a collapsed-border trust
+ * ledger of mono badges (Licensed, Insured, years in business, star rating).
+ * CTAs route through section-kit route links. Use as the opening hero for
  * plumbers, HVAC contractors, drain/sewer pros, and water-heater installers.
  * Renders fully with no props via baked-in defaults.
  */
 export const PlumbingHvacHero = defineCapsule({
   name: 'PlumbingHvacHero',
   description:
-    "Full-bleed image-forward hero for a local plumbing & HVAC trade site built around the 24/7 emergency angle: a photo of a uniformed technician at work fills the band edge to edge under a token-based dark overlay so light text stays readable. Content has an uppercase '24/7 Emergency Service' eyebrow pill, a large headline, a supporting paragraph, dual CTAs (filled 'Call Now' + outlined translucent 'Book Online'), and a trust-badge row (Licensed, Insured, years in business, star rating). CTAs route through section-kit route links. Use as the opening hero for plumbers, HVAC contractors, drain/sewer pros, and water-heater installers.",
+    "Full-bleed image-forward trade-industrial hero for a local plumbing & HVAC site built around the 24/7 emergency angle: a photo of a uniformed technician at work fills the band edge to edge under a token-based dark overlay with a giant ghost '24/7' watermark so light text stays readable. Content has a mono index eyebrow rule, a squared uppercase '24/7 Emergency Service' chip with a live status dot, a giant extrabold slab headline, a supporting paragraph, dual squared CTAs with press feedback (filled 'Call Now' + outlined translucent 'Book Online'), and a collapsed-border trust ledger of mono badges (Licensed, Insured, years in business, star rating). CTAs route through section-kit route links. Use as the opening hero for plumbers, HVAC contractors, drain/sewer pros, and water-heater installers.",
   props: z.object({
     /** Small uppercase eyebrow pill above the headline. */
     eyebrow: z.string().optional(),
@@ -74,16 +77,40 @@ export const PlumbingHvacHero = defineCapsule({
         ]
 
     return (
-      <HeroSection variant="full-bleed" className={props.className}>
+      <HeroSection
+        variant="full-bleed"
+        className={cn('overflow-hidden', props.className)}
+      >
         <HeroBackgroundImage
           alt={imageAlt}
           overlayClassName="bg-foreground/60"
-          gradientClassName="bg-gradient-to-r from-foreground/80 via-foreground/50 to-foreground/30"
+          gradientClassName="bg-gradient-to-r from-foreground/85 via-foreground/55 to-foreground/25"
         />
+
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-6 top-24 z-0 select-none font-mono text-[9rem] font-extrabold leading-none tracking-tighter text-background/[0.06] sm:text-[13rem] lg:-right-10 lg:text-[18rem]"
+        >
+          24/7
+        </span>
 
         <Container asChild>
           <HeroContent className="flex flex-col items-start pb-28 pt-36 text-left sm:pt-40 lg:pb-32 lg:pt-48">
-            <HeroBadge variant="pill" className="gap-2 font-semibold">
+            <div className="mb-6 flex w-full max-w-md items-center gap-3 border-b-2 border-background/40 pb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-background/70">
+              <span className="tabular-nums text-background">[ 01 ]</span>
+              <span>Emergency Line</span>
+              <span
+                aria-hidden="true"
+                className="ml-auto hidden tabular-nums text-background/60 sm:inline"
+              >
+                ON CALL
+              </span>
+            </div>
+
+            <HeroBadge
+              variant="pill"
+              className="gap-2 rounded-none border-background/40 bg-background/10 font-mono font-semibold"
+            >
               <span
                 aria-hidden="true"
                 className="size-2 animate-pulse rounded-full bg-primary"
@@ -91,17 +118,17 @@ export const PlumbingHvacHero = defineCapsule({
               {eyebrow}
             </HeroBadge>
 
-            <HeroHeading className="mt-8 max-w-3xl text-background">
+            <HeroHeading className="mt-8 max-w-3xl text-balance text-5xl font-extrabold leading-[0.95] tracking-tight text-background sm:text-6xl lg:text-7xl">
               {heading}
             </HeroHeading>
 
             <HeroSubheading variant="light">{subheading}</HeroSubheading>
 
-            <HeroActions className="mt-10 flex-col gap-4 sm:flex-row">
+            <HeroActions className="mt-10 w-full flex-col gap-4 sm:w-auto sm:flex-row">
               <HeroCta
                 asChild
-                variant="primary"
-                className="rounded-full px-8 py-4 font-semibold"
+                variant="none"
+                className="rounded-none bg-primary px-8 py-4 font-semibold text-primary-foreground transition-all duration-150 hover:bg-primary/90 active:translate-y-px motion-reduce:transform-none"
               >
                 <NavbarRouteLink href={primaryTarget}>
                   {primaryCta}
@@ -109,8 +136,8 @@ export const PlumbingHvacHero = defineCapsule({
               </HeroCta>
               <HeroCta
                 asChild
-                variant="outline"
-                className="rounded-full border-border bg-card/10 px-8 py-4 font-semibold text-background backdrop-blur-sm hover:bg-card/20"
+                variant="none"
+                className="rounded-none border-2 border-background bg-background/10 px-8 py-4 font-semibold text-background backdrop-blur-sm transition-all duration-150 hover:bg-background hover:text-foreground active:translate-y-px motion-reduce:transform-none"
               >
                 <NavbarRouteLink href={secondaryTarget}>
                   {secondaryCta}
@@ -118,15 +145,15 @@ export const PlumbingHvacHero = defineCapsule({
               </HeroCta>
             </HeroActions>
 
-            <div className="mt-12 flex flex-wrap items-center gap-3">
+            <div className="mt-12 flex flex-wrap gap-2">
               {badges.map((badge) => (
                 <span
                   key={badge}
-                  className="inline-flex items-center gap-2 rounded-full border border-background/20 bg-background/10 px-4 py-2 text-sm font-medium text-background backdrop-blur-sm"
+                  className="inline-flex items-center gap-2 rounded-none border-2 border-background/40 bg-background/10 px-3.5 py-2 font-mono text-xs uppercase tracking-[0.1em] text-background backdrop-blur-sm"
                 >
                   <svg
-                    width="16"
-                    height="16"
+                    width="14"
+                    height="14"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -134,7 +161,7 @@ export const PlumbingHvacHero = defineCapsule({
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     aria-hidden="true"
-                    className="text-primary"
+                    className="shrink-0 text-primary"
                   >
                     <path d="M20 6 9 17l-5-5" />
                   </svg>

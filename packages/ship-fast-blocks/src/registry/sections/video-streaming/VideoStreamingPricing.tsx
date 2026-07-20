@@ -4,34 +4,43 @@ import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
 import {
+  SaasMutationSpinner,
+  SaasPlanActionButton,
+  saasPlan,
+  useSyncSaasPlans,
+} from '../saas/saas-interactions.tsx'
+import { saasLakebed } from '../saas/saas-lakebed.ts'
+import {
   PricingGrid,
   PricingTier,
   PricingTierBadge,
   PricingTierHeader,
   PricingTierName,
-  PricingTierTagline,
   PricingTierPrice,
   PricingTierPeriod,
   PricingTierFeatures,
   PricingTierFeature,
-  PricingTierCta,
 } from '#/section-kit/PricingGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 
 /**
- * VideoStreamingPricing — a 3-tier plan band for a video-streaming landing
- * page. Thin configuration over the shared `PricingGrid` composite: a centered
- * heading + intro above a responsive 3-column grid of plan cards (name, big
- * monthly price, checkmark feature bullets, and a CTA). The highlighted middle
- * tier (Standard) gets a primary border, shadow, and a floating "Most popular"
- * pill, and every CTA routes through section-kit route links. Use to present subscription
- * tiers — Basic, Standard, Premium — for a streaming service. Renders fully
- * with no props via baked-in defaults.
+ * VideoStreamingPricing — a dark-cinematic collapsed-border plan ledger for a
+ * video-streaming landing page, backed by shared Lakebed conversion state. A
+ * mono slate meta rule + asymmetric left header sits above a sharp-cornered,
+ * collapsed-border 3-tier ledger: each cell carries a mono plan index, name, a
+ * giant tabular-nums monthly price, a hairline-divided checkmark feature list,
+ * and a full-width square CTA with a hard offset token shadow and press
+ * feedback. The featured tier (Standard) inverts to bg-foreground/text-background
+ * and lifts with a rotated mono "Popular" chip. Plans seed command search and
+ * every CTA records the selected plan to Lakebed state. Use to present
+ * subscription tiers — Basic, Standard, Premium — for a streaming service or OTT
+ * app. Renders fully with no props via baked-in defaults.
  */
 export const VideoStreamingPricing = defineCapsule({
   name: 'VideoStreamingPricing',
   description:
-    "A 3-tier plan band for a video-streaming landing page built on the shared PricingGrid composite: a centered heading + intro above a responsive 3-column grid of plan cards (name, big monthly price, checkmark feature bullets, and a CTA). The highlighted middle tier (Standard) gets a primary border, shadow, and a 'Most popular' pill, and every CTA routes through section-kit route links. Use to present subscription tiers — Basic, Standard, Premium — for a streaming service or OTT app.",
+    "A dark-cinematic collapsed-border plan ledger for a video-streaming landing page backed by shared Lakebed conversion state: a mono slate meta rule + asymmetric left header above a sharp 3-tier collapsed-border ledger with mono plan indexes, giant tabular-nums monthly prices, hairline-divided checkmark feature lists, and square hard-shadow mutation CTAs with press feedback; the featured tier (Standard) inverts to a dark surface and lifts with a rotated mono 'Popular' chip. Plans seed command search and every CTA records the selected plan. Use to present subscription tiers — Basic, Standard, Premium — for a streaming service or OTT app.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -52,7 +61,8 @@ export const VideoStreamingPricing = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: saasLakebed,
+  component: ({ props, lakebed }) => {
     const heading = props.heading ?? 'Pick your plan'
     const subheading =
       props.subheading ??
@@ -103,118 +113,145 @@ export const VideoStreamingPricing = defineCapsule({
           },
         ]
 
+    useSyncSaasPlans(
+      lakebed,
+      tiers.map((tier) =>
+        saasPlan({
+          name: tier.name,
+          period: tier.period,
+          price: tier.price,
+          summary: tier.features.at(0) ?? '',
+        }),
+      ),
+    )
+
     return (
       <section
         className={cn(
-          'bg-background pt-28 pb-20 lg:pt-32 lg:pb-28',
+          'relative overflow-hidden bg-background pb-20 pt-24 lg:pb-28 lg:pt-32',
           props.className,
         )}
       >
-        <Container>
-          <PricingGrid>
-            <SectionHeading title={heading} subtitle={subheading} />
-            {tiers
-              .map((t) => ({
-                name: t.name,
-                price: t.price,
-                period: t.period,
-                features: t.features,
-                cta: t.cta,
-                ctaTarget: t.cta,
-                highlighted: t.highlighted,
-              }))
-              .map((tier) => {
-                const t = tier as {
-                  name: string
-                  price: string
-                  features?: string[]
-                  cta?: string
-                  ctaTarget?: string
-                  tagline?: string
-                  blurb?: string
-                  description?: string
-                  audience?: string
-                  period?: string
-                  unit?: string
-                  cadence?: string
-                  suffix?: string
-                  highlighted?: boolean
-                  featured?: boolean
-                  popular?: boolean
-                  badge?: string
-                  popularLabel?: string
-                  excluded?: string[]
-                  annual?: string
-                  priceSuffix?: string
-                  note?: string
-                }
-                return (
-                  <PricingTier
-                    key={t.name}
-                    variant={
-                      t.highlighted || t.featured || t.popular
-                        ? 'highlighted'
-                        : undefined
-                    }
+        <Container className="relative">
+          <div className="mb-8 flex items-center justify-between gap-4 border-b border-border pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            <span className="flex items-center gap-3">
+              <span aria-hidden="true" className="size-2 bg-primary" />
+              Plans
+            </span>
+            <span className="tabular-nums">
+              billed monthly · cancel anytime
+            </span>
+          </div>
+
+          <SectionHeading
+            align="left"
+            title={heading}
+            subtitle={subheading}
+            className="mb-12 gap-0"
+            titleClassName="mb-4 text-4xl font-extrabold tracking-tight md:text-5xl"
+            subtitleClassName="max-w-2xl"
+          />
+
+          <PricingGrid className="gap-0 border-l border-t border-border sm:gap-0 md:grid-cols-3 xl:grid-cols-3">
+            {tiers.map((tier, index) => {
+              const isFeatured = Boolean(tier.highlighted)
+              return (
+                <PricingTier
+                  key={tier.name}
+                  className={cn(
+                    'gap-0 rounded-none border-0 border-b border-r border-border p-6 shadow-none sm:p-8 lg:p-8',
+                    isFeatured
+                      ? 'bg-foreground text-background md:-my-3 md:border md:border-foreground md:py-11'
+                      : 'bg-card',
+                  )}
+                >
+                  {isFeatured ? (
+                    <PricingTierBadge className="absolute -top-3 right-6 rotate-2 rounded-none bg-background px-3 py-1 font-mono text-[11px] uppercase tracking-[0.2em] text-foreground">
+                      Popular
+                    </PricingTierBadge>
+                  ) : null}
+                  <PricingTierHeader className="gap-0">
+                    <MonoTag
+                      aria-hidden="true"
+                      tone={isFeatured ? 'inverted' : 'muted'}
+                    >
+                      {String(index + 1).padStart(2, '0')} / plan
+                    </MonoTag>
+                    <PricingTierName
+                      className={cn(
+                        'mt-3 text-xl font-bold tracking-tight',
+                        isFeatured ? 'text-background' : 'text-foreground',
+                      )}
+                    >
+                      {tier.name}
+                    </PricingTierName>
+                    <span className="mt-6 flex items-baseline gap-1.5">
+                      <PricingTierPrice
+                        className={cn(
+                          'text-5xl font-extrabold leading-none tracking-tight tabular-nums sm:text-5xl',
+                          isFeatured ? 'text-background' : 'text-foreground',
+                        )}
+                      >
+                        {tier.price}
+                      </PricingTierPrice>
+                      {tier.period ? (
+                        <PricingTierPeriod
+                          className={cn(
+                            'font-mono text-[11px] uppercase tracking-[0.12em]',
+                            isFeatured ? 'text-background/60' : undefined,
+                          )}
+                        >
+                          {tier.period}
+                        </PricingTierPeriod>
+                      ) : null}
+                    </span>
+                  </PricingTierHeader>
+                  <PricingTierFeatures
+                    className={cn(
+                      'mt-6 gap-0 divide-y border-t',
+                      isFeatured
+                        ? 'divide-background/15 border-background/15'
+                        : 'divide-border border-border',
+                    )}
                   >
-                    {t.highlighted || t.featured || t.popular ? (
-                      <PricingTierBadge>
-                        {t.badge ?? 'Popular'}
-                      </PricingTierBadge>
-                    ) : null}
-                    <PricingTierHeader>
-                      <PricingTierName>{t.name}</PricingTierName>
-                      {t.tagline && (
-                        <PricingTierTagline>{t.tagline}</PricingTierTagline>
-                      )}
-                      {t.blurb && (
-                        <PricingTierTagline>{t.blurb}</PricingTierTagline>
-                      )}
-                      {t.description && (
-                        <PricingTierTagline>{t.description}</PricingTierTagline>
-                      )}
-                      {t.audience && (
-                        <PricingTierTagline>{t.audience}</PricingTierTagline>
-                      )}
-                      <PricingTierPrice>{t.price}</PricingTierPrice>
-                      {t.period && (
-                        <PricingTierPeriod>{t.period}</PricingTierPeriod>
-                      )}
-                      {t.unit && (
-                        <PricingTierPeriod>{t.unit}</PricingTierPeriod>
-                      )}
-                      {t.cadence && (
-                        <PricingTierPeriod>{t.cadence}</PricingTierPeriod>
-                      )}
-                      {t.suffix && (
-                        <PricingTierPeriod>{t.suffix}</PricingTierPeriod>
-                      )}
-                    </PricingTierHeader>
-                    {t.features && (
-                      <PricingTierFeatures>
-                        {t.features.map((feature) => (
-                          <PricingTierFeature
-                            key={
-                              typeof feature === 'string'
-                                ? feature
-                                : (feature as { label: string }).label
-                            }
-                          >
-                            {typeof feature === 'string'
-                              ? feature
-                              : (feature as { label: string }).label}
-                          </PricingTierFeature>
-                        ))}
-                      </PricingTierFeatures>
+                    {tier.features.map((feature) => (
+                      <PricingTierFeature
+                        key={feature}
+                        className={cn(
+                          'gap-3 py-2.5',
+                          isFeatured
+                            ? 'text-background/85 [&>svg]:text-background'
+                            : 'text-foreground/85',
+                        )}
+                      >
+                        {feature}
+                      </PricingTierFeature>
+                    ))}
+                  </PricingTierFeatures>
+                  <SaasPlanActionButton
+                    lakebed={lakebed}
+                    intentLabel={tier.cta}
+                    plan={tier.name}
+                    source="pricing"
+                    aria-label={`${tier.cta} for ${tier.name}`}
+                    pendingChildren={
+                      <>
+                        <SaasMutationSpinner className="size-4" />
+                        Selecting
+                      </>
+                    }
+                    className={cn(
+                      'mt-8 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-none px-5 py-2.5 text-sm font-semibold transition-[transform,box-shadow,background-color] duration-150 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-70',
+                      isFeatured
+                        ? 'bg-background text-foreground shadow-[4px_4px_0_0] shadow-background/30 hover:bg-background/90'
+                        : 'border border-foreground bg-background text-foreground shadow-[4px_4px_0_0] shadow-foreground hover:bg-muted',
                     )}
-                    {t.cta && (
-                      <PricingTierCta target={t.ctaTarget}>
-                        {t.cta}
-                      </PricingTierCta>
-                    )}
-                  </PricingTier>
-                )
-              })}
+                  >
+                    {tier.cta}
+                  </SaasPlanActionButton>
+                </PricingTier>
+              )
+            })}
           </PricingGrid>
         </Container>
       </section>

@@ -14,12 +14,12 @@ import {
 } from '#/section-kit/HeroSection.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { DotGrid, Watermark, MonoTag } from '#/section-kit/Decor.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const TutoringHero = defineCapsule({
   name: 'TutoringHero',
   description:
-    "Friendly, trustworthy split-layout hero for tutoring sites. Renders a warm eyebrow pill, a large reassuring headline, supporting copy, primary 'Find a Tutor' and outline 'How it works' CTAs (both routed through section-kit route links), and a trust strip with rating, session count, and a background-checked badge. The right column shows a rounded, bordered photo of a tutor working with a student via the alt-driven Image component. Use it as the opening viewport of a tutoring or education landing page when you want an inviting, conversion-focused first impression.",
+    "Editorial-academic split-layout hero for tutoring sites over a faint dot-grid with a giant serif ghost 'A+' watermark. An asymmetric 7:5 split: the left column opens with a mono uppercase eyebrow meta rule (primary square + course-index cue), a warm authoritative serif headline, supporting copy, primary 'Find a Tutor' and bracketed outline 'How it works' CTAs (both routed through section-kit route links, sharp-cornered with a hard offset shadow and press feedback), and a hairline mono trust ledger with rating, session count, and a background-checked note. The right column frames a tutor-with-student photo (alt-driven Image) as a sharp-cornered catalog plate with a hairline border, hard offset shadow, and a mono caption bar. Use it as the opening viewport of a tutoring or education landing page when you want a scholarly, trustworthy, conversion-focused first impression.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -56,20 +56,32 @@ export const TutoringHero = defineCapsule({
     return (
       <HeroSection
         className={cn(
-          'bg-background py-20 text-foreground sm:py-24',
+          'relative overflow-hidden bg-background py-20 text-foreground sm:py-24',
           props.className,
         )}
       >
-        <Container className="grid items-center gap-12 lg:grid-cols-2">
-          <div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-4 py-2 text-sm font-medium text-muted-foreground">
+        <DotGrid tone="border" className="inset-0 opacity-30" />
+        <Watermark
+          aria-hidden="true"
+          className="-right-2 bottom-0 font-serif text-[9rem] leading-none sm:-right-6 sm:text-[16rem]"
+        >
+          A+
+        </Watermark>
+        <Container className="relative grid items-center gap-12 lg:grid-cols-12">
+          <div className="lg:col-span-7">
+            <div className="flex items-center justify-between gap-4 border-b border-border pb-4">
+              <MonoTag className="flex items-center gap-3">
+                <span aria-hidden="true" className="size-2 bg-primary" />
+                {eyebrow}
+              </MonoTag>
               <span
-                className="size-2 rounded-full bg-primary"
                 aria-hidden="true"
-              />
-              {eyebrow}
-            </span>
-            <HeroHeading className="mt-6 max-w-xl lg:text-5xl">
+                className="hidden font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/50 sm:inline"
+              >
+                Est. curriculum
+              </span>
+            </div>
+            <HeroHeading className="mt-6 max-w-xl font-serif text-[clamp(2.25rem,5vw,3.5rem)] font-semibold leading-[1.05] tracking-tight">
               {heading}
             </HeroHeading>
             <HeroSubheading className="max-w-xl leading-8">
@@ -79,7 +91,7 @@ export const TutoringHero = defineCapsule({
               <HeroCta
                 asChild
                 variant="primary"
-                className="rounded-full px-6 py-3 font-semibold"
+                className="rounded-none px-6 py-3.5 font-mono text-sm font-semibold uppercase tracking-[0.12em] shadow-[6px_6px_0_0] shadow-primary/25 transition-[transform,box-shadow,background-color] duration-150 hover:bg-primary/90 active:translate-y-px active:shadow-none"
               >
                 <NavbarRouteLink href={primaryTarget}>
                   {primaryCta}
@@ -88,16 +100,24 @@ export const TutoringHero = defineCapsule({
               <HeroCta
                 asChild
                 variant="outline"
-                className="rounded-full px-6 py-3 font-semibold"
+                className="gap-2 rounded-none px-6 py-3.5 font-mono text-sm font-medium uppercase tracking-[0.12em] transition-colors duration-150 hover:bg-foreground hover:text-background active:translate-y-px"
               >
                 <NavbarRouteLink href={secondaryTarget}>
+                  <span aria-hidden="true">[</span>
                   {secondaryCta}
+                  <span aria-hidden="true">]</span>
                 </NavbarRouteLink>
               </HeroCta>
             </HeroActions>
-            <HeroSocialProof className="mt-10 gap-y-3 border-t border-border pt-8">
-              {trust.map((item) => (
-                <HeroSocialProofItem key={item}>
+            <HeroSocialProof className="mt-10 flex-col items-stretch gap-0 divide-y divide-border border-t border-border sm:mt-12">
+              {trust.map((item, i) => (
+                <HeroSocialProofItem key={item} className="gap-3 py-3">
+                  <span
+                    aria-hidden="true"
+                    className="font-mono text-[11px] tabular-nums text-primary"
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
                   <svg
                     className="size-4 shrink-0 text-primary"
                     viewBox="0 0 24 24"
@@ -112,28 +132,26 @@ export const TutoringHero = defineCapsule({
                       d="m5 13 4 4L19 7"
                     />
                   </svg>
-                  <span className="font-medium text-foreground">{item}</span>
+                  <span className="text-sm font-medium text-foreground">
+                    {item}
+                  </span>
                 </HeroSocialProofItem>
               ))}
             </HeroSocialProof>
           </div>
-          <div className="relative">
-            <div
-              className="absolute inset-6 rounded-3xl bg-primary/10 blur-3xl"
-              aria-hidden="true"
-            />
+          <div className="relative lg:col-span-5">
             <Card
               variant="default"
-              className="relative overflow-hidden shadow-[0_24px_80px_rgba(0,0,0,0.12)] rounded-3xl p-0"
+              className="relative overflow-hidden rounded-none border-border p-0 shadow-[10px_10px_0_0] shadow-foreground/10"
             >
               <HeroMediaPanel
                 alt={imageAlt}
                 w={900}
                 h={760}
-                className="aspect-[5/4] rounded-3xl"
+                className="aspect-[5/4] rounded-none"
               />
-              <div className="flex items-center gap-3 border-t border-border bg-card/95 p-5">
-                <span className="inline-flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <div className="flex items-center gap-3 border-t border-border bg-card p-5">
+                <span className="inline-flex size-10 shrink-0 items-center justify-center border border-border text-primary">
                   <svg
                     className="size-5"
                     viewBox="0 0 24 24"
@@ -150,10 +168,10 @@ export const TutoringHero = defineCapsule({
                   </svg>
                 </span>
                 <div>
-                  <p className="text-sm font-semibold text-card-foreground">
-                    Background-checked & vetted
+                  <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                    Vetted &amp; background-checked
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="mt-1 text-sm font-medium text-card-foreground">
                     Every tutor is interviewed before they meet your family.
                   </p>
                 </div>

@@ -10,8 +10,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
  * InsuranceNavbar — Swiss-trust sticky site header for an insurance / fintech
  * page. A backdrop-blurred, bottom-hairline header pinned to the top with an

@@ -1,7 +1,9 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
+import { cn } from '#/lib/utils.ts'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
   NavbarActions,
@@ -10,22 +12,24 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
- * NutritionNavbar — sticky top navigation header for a nutrition-coaching /
- * wellness site, built on the shared SiteNav kit composite. Renders a fresh
- * leaf brand mark + wordmark on the left, prop-driven desktop nav links, and a
- * filled primary pill CTA on the right, with a real mobile drawer (Sheet) on
- * small screens. All links and the CTA route through SiteNav's route hrefs so
- * PageSwitch can swap pages. Use as the site header for nutrition coaches,
- * registered dietitians, meal-plan subscriptions, diet / wellness programs,
- * weight-loss or healthy-eating services and fitness-nutrition apps.
+ * NutritionNavbar — fresh clean-editorial sticky navigation header for a
+ * nutrition-coaching / wellness site, built on the shared SiteNav kit
+ * composite. A backdrop-blurred, hairline-bordered bar: a square primary leaf
+ * logo tile + wordmark with a mono "wellness" micro-label behind a hairline
+ * divider on the left, quiet muted nav links, a sharp-cornered filled-primary
+ * pill CTA with press feedback on the right, and a real square hairline mobile
+ * drawer (Sheet) trigger on small screens. All links and the CTA route through
+ * SiteNav's route hrefs so PageSwitch can swap pages. Use as the sticky site
+ * header for nutrition coaches, registered dietitians, meal-plan subscriptions,
+ * diet / wellness programs, weight-loss or healthy-eating services and
+ * fitness-nutrition apps.
  */
 export const NutritionNavbar = defineCapsule({
   name: 'NutritionNavbar',
   description:
-    'Sticky top navigation header for a nutrition-coaching / wellness site, built on the shared SiteNav kit composite: a fresh leaf brand mark + wordmark on the left, prop-driven desktop nav links, and a filled primary pill CTA on the right, with a real mobile drawer on small screens. All links and the CTA route through route hrefs. Use as the sticky site header for nutrition coaches, registered dietitians, meal-plan subscriptions, diet / wellness programs, weight-loss or healthy-eating services and fitness-nutrition apps.',
+    'Fresh clean-editorial sticky navigation header for a nutrition-coaching / wellness site, built on the shared SiteNav kit composite: a backdrop-blurred, hairline-bordered bar with a square primary leaf logo tile + wordmark and a mono micro-label behind a hairline divider on the left, quiet muted desktop nav links, a sharp-cornered filled-primary pill CTA with press feedback on the right, and a real square hairline mobile drawer on small screens. All links and the CTA route through route hrefs. Use as the sticky site header for nutrition coaches, registered dietitians, meal-plan subscriptions, diet / wellness programs, weight-loss or healthy-eating services and fitness-nutrition apps.',
   props: z.object({
     /** Brand name shown beside the leaf mark. */
     brand: z.string().optional(),
@@ -50,43 +54,66 @@ export const NutritionNavbar = defineCapsule({
     const ctaTarget = props.ctaTarget ?? 'Pricing'
     const homeTarget = props.homeTarget ?? nav[0]
 
-    const LeafMark = (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        className="size-8 text-primary"
+    const LeafBadge = ({ className }: { className?: string }) => (
+      <span
         aria-hidden="true"
+        className={cn(
+          'grid place-items-center rounded-none bg-primary text-primary-foreground',
+          className,
+        )}
       >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
           strokeWidth="1.5"
-          d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-        />
-      </svg>
+          className="size-4"
+          aria-hidden="true"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+          />
+        </svg>
+      </span>
     )
 
     return (
-      <SiteNav position="fixed" height="default" className={props.className}>
-        <NavbarBrand href={homeTarget} className="gap-3">
-          {LeafMark}
-          <Logo brand={brand}>
-            <LogoImage />
-            <LogoLabel className="text-xl font-medium text-foreground" />
-          </Logo>
+      <SiteNav
+        position="fixed"
+        height="default"
+        className={cn('bg-background/90', props.className)}
+      >
+        <NavbarBrand href={homeTarget} className="gap-3 text-left">
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage
+              className="size-7"
+              fallback={<LeafBadge className="size-7" />}
+            />
+            <LogoLabel className="text-lg font-bold tracking-tight text-foreground" />
+          </BrandLogo>
+          <span
+            aria-hidden="true"
+            className="hidden h-4 w-px bg-border lg:block"
+          />
+          <MonoTag className="hidden lg:inline-block">Wellness</MonoTag>
         </NavbarBrand>
-        <NavbarNav>
+        <NavbarNav className="gap-7 [&>button]:font-medium">
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
-        <NavbarActions>
+        <NavbarActions className="gap-2">
           <NavbarCta
             variant="primary-pill"
-            className="hidden px-5 py-2.5 sm:inline-flex"
+            className="hidden rounded-none px-5 py-2.5 transition-colors active:translate-y-px sm:inline-flex"
             href={ctaTarget}
           >
             {ctaLabel}
@@ -96,7 +123,7 @@ export const NutritionNavbar = defineCapsule({
             nav={nav}
             homeTarget={homeTarget}
             cta={{ label: ctaLabel, target: ctaTarget }}
-            buttonClassName="p-2 text-muted-foreground hover:text-foreground md:hidden"
+            buttonClassName="inline-flex size-9 items-center justify-center rounded-none border border-border p-0 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:translate-y-px md:hidden"
           />
         </NavbarActions>
       </SiteNav>

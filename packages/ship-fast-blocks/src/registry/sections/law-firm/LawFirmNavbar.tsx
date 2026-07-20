@@ -9,8 +9,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
  * LawFirmNavbar — sticky editorial-gravitas top navigation for a corporate /
  * trial law-firm site. A backdrop-blurred bordered header pinned to the top on

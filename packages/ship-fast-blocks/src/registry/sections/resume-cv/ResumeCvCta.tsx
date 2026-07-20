@@ -10,24 +10,23 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * ResumeCvCta — a focused closing call-to-action band for a personal resume /
- * CV / portfolio site. Thin configuration over the shared `CtaBand` composite at
- * `tone="primary"`: an availability eyebrow, a warm "Let's work together"
- * headline, a short supporting subheading, and a centered row of two routable
- * pill CTAs — a high-contrast "Get in Touch" button (variant "primary",
- * auto-inverted to a light pill on the primary band) plus an outlined "Download
- * CV" button (variant "outline"). Both actions navigate through the kit's
- * section-kit route links so neither is a dead link. Use near the bottom of a personal
- * portfolio, online résumé, or professional profile page to drive contact and
- * CV downloads. Renders fully with no props via baked-in defaults.
+ * ResumeCvCta — closing call-to-action band for a personal resume / CV /
+ * portfolio site. A full-width primary-colored band cutting in on a slanted
+ * clip-path seam, over a giant faint ghost "CV" watermark: a mono availability
+ * eyebrow, a giant extrabold "Let's work together" headline, a short supporting
+ * line, and a centered row of two square CTAs — a solid light "Get in Touch"
+ * button with a hard offset shadow and a mechanical press, plus a ghost-outlined
+ * "Download CV" button, both mono-labelled. Both actions navigate through the
+ * kit's section-kit route links so neither is a dead link. Use near the bottom of
+ * a personal portfolio, online résumé, or professional profile page to drive
+ * contact and CV downloads. Renders fully with no props via baked-in defaults.
  */
 export const ResumeCvCta = defineCapsule({
   name: 'ResumeCvCta',
   description:
-    "Focused closing call-to-action band for a personal resume / CV / portfolio site: a full-width primary-colored band with an availability eyebrow, a warm 'Let's work together' headline, a short supporting subheading, and a centered row of two pill CTAs (a high-contrast 'Get in Touch' button plus an outlined 'Download CV' button). Both CTAs route through section-kit route links. Use near the bottom of a personal portfolio, online résumé, or professional profile page to drive contact and CV downloads.",
+    "Closing call-to-action band for a personal resume / CV / portfolio site: a full-width primary-colored band cutting in on a slanted clip-path seam over a giant faint ghost 'CV' watermark, with a mono availability eyebrow, a giant extrabold 'Let's work together' headline, a short supporting line, and a centered row of two square mono CTAs (a solid light 'Get in Touch' button with a hard offset shadow and press feedback plus a ghost-outlined 'Download CV' button). Both CTAs route through section-kit route links. Use near the bottom of a personal portfolio, online résumé, or professional profile page to drive contact and CV downloads.",
   props: z.object({
     /** Availability line shown as the band eyebrow. */
     eyebrow: z.string().optional(),
@@ -57,18 +56,46 @@ export const ResumeCvCta = defineCapsule({
     const secondaryTarget = props.secondaryTarget ?? 'CV'
 
     return (
-      <CtaBand tone="primary" className={props.className}>
-        <CtaBandInner>
-          <CtaBandEyebrow>{eyebrow}</CtaBandEyebrow>
-          <CtaBandTitle>{headline}</CtaBandTitle>
+      <CtaBand
+        tone="primary"
+        className={[
+          'relative overflow-hidden [clip-path:polygon(0_3rem,100%_0,100%_100%,0_100%)]',
+          props.className ?? '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
+        {/* Giant faint ghost watermark. */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-16 right-0 select-none font-extrabold leading-none tracking-tighter text-primary-foreground/10 text-[12rem] sm:text-[18rem]"
+        >
+          CV
+        </span>
+
+        <CtaBandInner className="relative pt-24">
+          <CtaBandEyebrow className="inline-flex items-center gap-2 font-mono text-[11px] font-semibold tracking-[0.2em] opacity-80">
+            {eyebrow}
+          </CtaBandEyebrow>
+          <CtaBandTitle className="font-extrabold leading-[0.95] tracking-tighter text-[clamp(2.25rem,6vw,4rem)]">
+            {headline}
+          </CtaBandTitle>
           <CtaBandSubtitle>{subheading}</CtaBandSubtitle>
-          <CtaBandActions>
-            <CtaAction variant="primary" asChild>
+          <CtaBandActions className="mt-2">
+            <CtaAction
+              variant="primary"
+              asChild
+              className="rounded-none bg-background px-7 py-3 font-mono text-xs font-semibold uppercase tracking-[0.12em] text-foreground shadow-[4px_4px_0_0] shadow-foreground/25 transition-transform duration-150 hover:bg-background/90 active:translate-y-0.5 active:shadow-none"
+            >
               <NavbarRouteLink href={primaryTarget}>
                 {primaryCta}
               </NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" asChild>
+            <CtaAction
+              variant="outline"
+              asChild
+              className="rounded-none border-2 border-primary-foreground/40 bg-transparent px-7 py-3 font-mono text-xs font-semibold uppercase tracking-[0.12em] text-primary-foreground transition-transform duration-150 hover:bg-primary-foreground/10 active:translate-y-0.5"
+            >
               <NavbarRouteLink href={secondaryTarget}>
                 {secondaryCta}
               </NavbarRouteLink>

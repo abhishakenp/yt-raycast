@@ -7,8 +7,7 @@ import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { EventList } from '#/section-kit/EventList.tsx'
 import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * BarNightclubEvents — collapsed-border poster lineup ledger for a
  * cocktail-bar / nightclub page. An asymmetric header (ticket-stub eyebrow

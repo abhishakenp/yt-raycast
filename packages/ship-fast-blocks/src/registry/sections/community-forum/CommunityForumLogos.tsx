@@ -9,8 +9,7 @@ import {
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * CommunityForumLogos — playful sticker-chip logo trust strip for a
  * community-platform / discussion-forum landing page. A hairline-bordered band

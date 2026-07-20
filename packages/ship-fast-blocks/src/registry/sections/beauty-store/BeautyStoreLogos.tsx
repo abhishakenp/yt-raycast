@@ -9,8 +9,7 @@ import {
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * BeautyStoreLogos — trusted-by beauty-brand logo strip for a cosmetics / skincare
  * storefront. A centered uppercase eyebrow above a responsive grid of clickable

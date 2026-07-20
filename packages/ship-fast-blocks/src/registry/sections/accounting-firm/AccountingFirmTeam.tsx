@@ -13,8 +13,7 @@ import {
   PersonCardRole,
   PersonCardBio,
 } from '#/section-kit/PersonCard.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * AccountingFirmTeam — Swiss-ledger staggered editorial team grid for a CPA /
  * accounting-firm site. An asymmetric header (left-aligned oversized title +

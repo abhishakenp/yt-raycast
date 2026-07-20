@@ -11,12 +11,15 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 
 /**
- * SubscriptionBoxSteps — bespoke "how it works" band for a subscription-box
- * brand. A padded section composes the shared SectionHeading over a 3-column
- * grid of numbered step cards (Choose, Customize, Delivered), each with a
- * playful number badge, an inline outline icon, a title, and a short
- * description. Theme-token only and renders complete with no props. Use to
- * explain the recurring-box flow on any subscription or membership-kit page.
+ * SubscriptionBoxSteps — playful-commerce "how it works" band for a
+ * subscription-box brand. An asymmetric left-aligned header (mono eyebrow +
+ * extrabold heading) sits over a staggered 3-column grid of chunky box-motif
+ * step cards (Choose, Customize, Delivered): each card is a sharp-cornered
+ * token-bordered box with a hard offset token shadow, a giant ghost index
+ * numeral, a rounded-full number sticker, an inline outline icon in a squared
+ * tile, a title, and a short description; alternating cards translate down for
+ * a staggered rhythm. Theme-token only and renders complete with no props. Use
+ * to explain the recurring-box flow on any subscription or membership-kit page.
  */
 function PickIcon({ className }: { className?: string }) {
   return (
@@ -85,7 +88,7 @@ const STEP_ICONS = [PickIcon, TuneIcon, TruckIcon]
 export const SubscriptionBoxSteps = defineCapsule({
   name: 'SubscriptionBoxSteps',
   description:
-    "Bespoke 'how it works' band for a subscription-box brand: a padded section with the shared SectionHeading over a 3-column grid of numbered step cards (Choose, Customize, Delivered), each with a playful number badge, an inline outline icon, a title, and a short description. Use to explain the recurring-box flow on any subscription or membership-kit page.",
+    "Playful-commerce 'how it works' band for a subscription-box brand: an asymmetric left-aligned mono-eyebrow header over a staggered 3-column grid of chunky box-motif step cards (Choose, Customize, Delivered), each a sharp-cornered token-bordered box with a hard offset token shadow, a giant ghost index numeral, a rounded-full number sticker, an inline outline icon in a squared tile, a title, and a short description. Use to explain the recurring-box flow on any subscription or membership-kit page.",
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -128,30 +131,47 @@ export const SubscriptionBoxSteps = defineCapsule({
           props.className,
         )}
       >
-        <Container size="xl" className="px-6 lg:px-6">
+        <Container>
           <SectionHeading
+            align="left"
             eyebrow={eyebrow}
             title={heading}
             subtitle={subheading}
+            className="max-w-2xl"
+            titleClassName="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl"
           />
-          <StepTimelineGrid columns={3} className="mt-14 grid-cols-1 gap-6">
+          <StepTimelineGrid
+            columns={3}
+            className="mt-14 grid-cols-1 items-start gap-6 sm:gap-7"
+          >
             {steps.map((step, i) => {
               const Icon = STEP_ICONS[i % STEP_ICONS.length]
               return (
                 <StepItem
                   key={i}
-                  className="relative flex flex-col gap-4 rounded-2xl border bg-card p-6"
+                  className={cn(
+                    'group relative flex flex-col gap-4 overflow-hidden rounded-none border-2 border-foreground bg-card p-6 shadow-[6px_6px_0_0] shadow-foreground transition-[transform,box-shadow] duration-150 hover:-translate-y-1 hover:shadow-[8px_8px_0_0] motion-reduce:transform-none sm:p-7',
+                    i % 2 === 1 && 'md:translate-y-8',
+                  )}
                 >
-                  <span className="inline-flex size-12 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground">
-                    {i + 1}
+                  <span
+                    className="pointer-events-none absolute -right-2 -top-4 select-none font-mono text-8xl font-extrabold leading-none tabular-nums text-foreground/[0.05]"
+                    aria-hidden="true"
+                  >
+                    {String(i + 1).padStart(2, '0')}
                   </span>
-                  <div className="inline-flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <Icon className="size-6" />
+                  <div className="relative flex items-center gap-3">
+                    <span className="inline-flex size-11 items-center justify-center rounded-full border-2 border-foreground bg-primary font-mono text-sm font-bold tabular-nums text-primary-foreground shadow-[3px_3px_0_0] shadow-foreground">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span className="inline-flex size-11 items-center justify-center rounded-none border-2 border-foreground bg-background text-foreground">
+                      <Icon className="size-6" />
+                    </span>
                   </div>
-                  <h3 className="text-lg font-semibold text-foreground">
+                  <h3 className="relative text-lg font-bold tracking-tight text-foreground">
                     {step.title}
                   </h3>
-                  <p className="text-sm leading-6 text-muted-foreground">
+                  <p className="relative text-sm leading-6 text-muted-foreground">
                     {step.description}
                   </p>
                 </StepItem>

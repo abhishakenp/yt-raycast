@@ -6,8 +6,7 @@ import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { PageHeader, PageHeaderActions } from '#/section-kit/PageHeader.tsx'
 import { dashboardLakebed } from './dashboard-lakebed.ts'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * DashboardHeader — Swiss-data page-title band for a SaaS admin dashboard. A
  * hairline-bordered header row with an extrabold tight-tracked title + muted

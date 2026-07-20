@@ -12,22 +12,27 @@ import {
 } from '#/section-kit/PortfolioGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { Watermark } from '#/section-kit/Decor.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * PortfolioWork — selected-work / project gallery for a dark creative portfolio.
- * A heading block (cyan uppercase label, big display title, lead paragraph) above
- * a responsive 3-up grid of clickable project cards: each card has a 16:10
- * alt-driven thumbnail that zooms on hover, a title, a short blurb, and a row of
- * tool/tag chips, all on a raised card surface that lifts and gains a cyan glow
- * on hover. Every card routes through section-kit route links. Use to showcase a 3D artist,
- * motion designer, or director's reel-style projects, case studies, or featured
- * work. Renders fully with no props via six baked-in default projects.
+ * PortfolioWork — editorial staggered-plate project gallery for a
+ * creative-individual portfolio. A left-aligned heading block (mono index +
+ * uppercase label, giant clamp extrabold title, lead paragraph) over a faint
+ * "WORK" ghost watermark, above a responsive grid of clickable project plates
+ * set on a staggered ±translate rhythm. Each plate is a sharp rounded-none
+ * card with a hairline offset frame peeking behind it, a 16:10 alt-driven
+ * thumbnail that desaturates by default and zooms + regains color on hover, a
+ * mono index numeral cropped into the top-left corner, a title, a short blurb,
+ * and a row of mono rounded-none tool/tag chips; the whole plate lifts on hover
+ * and presses down on click. Every plate routes through section-kit route
+ * links. Use to showcase a designer, motion or 3D artist, or director's
+ * reel-style projects, case studies, or featured work. Renders fully with no
+ * props via six baked-in default projects.
  */
 export const PortfolioWork = defineCapsule({
   name: 'PortfolioWork',
   description:
-    "Selected-work / project gallery for a dark creative portfolio: a heading block (cyan uppercase label, big display title, lead paragraph) above a responsive 3-up grid of clickable project cards. Each card has a 16:10 alt-driven thumbnail that zooms on hover, a title, a short blurb, and a row of tool/tag chips, on a raised card surface that lifts and gains a cyan glow on hover. Cards route through section-kit route links. Use to showcase a 3D artist, motion designer, or director's reel-style projects, case studies, or featured work.",
+    "Editorial staggered-plate project gallery for a creative-individual portfolio: a left-aligned heading block (mono index + uppercase label, giant clamp extrabold title, lead paragraph) over a faint 'WORK' ghost watermark, above a responsive grid of clickable project plates on a staggered ±translate rhythm. Each plate is a sharp rounded-none card with a hairline offset frame behind it, a 16:10 alt-driven thumbnail that desaturates by default and zooms + regains color on hover, a mono index numeral cropped into the corner, a title, a short blurb, and a row of mono rounded-none tool/tag chips; the plate lifts on hover and presses down on click. Plates route through section-kit route links. Use to showcase a designer, motion or 3D artist, or director's reel-style projects, case studies, or featured work.",
   props: z.object({
     /** Small uppercase section label. */
     label: z.string().optional(),
@@ -104,67 +109,87 @@ export const PortfolioWork = defineCapsule({
           },
         ]
 
+    // Column-phased vertical stagger keeps the grid editorial, not uniform.
+    const stagger = ['', 'md:translate-y-10', 'md:translate-y-5']
+
     return (
       <section
-        className={cn('pt-28 pb-24', props.className)}
+        className={cn('relative overflow-hidden pt-28 pb-24', props.className)}
         aria-labelledby="portfolio-work-heading"
       >
-        <Container size="xl" className="max-w-[1200px] px-6 lg:px-6">
+        <Watermark className="-top-6 right-0 text-[7rem] sm:text-[11rem] lg:text-[15rem]">
+          Work
+        </Watermark>
+        <Container size="xl" className="relative max-w-[1200px] px-6 lg:px-6">
           <SectionHeading
             align="left"
-            eyebrow={label}
+            eyebrow={`01 · ${label}`}
             title={title}
             subtitle={description}
-            className="mb-14 gap-0"
+            className="mb-16 max-w-2xl gap-0"
             titleId="portfolio-work-heading"
-            eyebrowClassName="text-xs font-semibold uppercase tracking-[0.12em] text-primary"
-            titleClassName="text-[clamp(1.8rem,4vw,2.8rem)] font-bold leading-[1.15] tracking-[-0.02em]"
-            subtitleClassName="max-w-[560px] text-[1.05rem] text-muted-foreground"
+            eyebrowClassName="mb-4 font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground"
+            titleClassName="text-[clamp(1.9rem,4.5vw,3rem)] font-extrabold leading-[1.02] tracking-tighter"
+            subtitleClassName="mt-4 max-w-[560px] text-[1.05rem] leading-relaxed text-muted-foreground"
           />
 
-          <PortfolioGrid cols="1-2-3" className="gap-6">
-            {items.map((item) => (
-              <Card
-                asChild
+          <PortfolioGrid cols="1-2-3" className="gap-x-6 gap-y-10">
+            {items.map((item, i) => (
+              <div
                 key={item.title}
-                variant="default"
-                className="group relative block overflow-hidden text-left transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_24px_64px_rgba(0,0,0,0.55)] rounded-2xl p-0"
+                className={cn('relative', stagger[i % stagger.length])}
               >
-                <PortfolioItem asChild>
-                  <NavbarRouteLink href={cardTarget}>
-                    <PortfolioMedia
-                      aspect="16-10"
-                      className="bg-gradient-to-br from-muted to-card"
-                    >
-                      <Image
-                        alt={item.alt}
-                        w={1200}
-                        h={750}
-                        loading="lazy"
-                        className="h-full w-full object-cover opacity-85 transition-all duration-700 group-hover:scale-105 group-hover:opacity-100"
-                      />
-                    </PortfolioMedia>
-                    <PortfolioCaption className="p-6">
-                      <h3 className="mb-1.5 text-xl font-semibold">
-                        {item.title}
-                      </h3>
-                      <p className="text-sm leading-[1.6] text-muted-foreground">
-                        {item.description}
-                      </p>
-                      <div className="mt-3.5 flex flex-wrap gap-2">
-                        {item.tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className="rounded-full border border-border bg-secondary px-3 py-1 text-xs font-semibold text-secondary-foreground"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    </PortfolioCaption>
-                  </NavbarRouteLink>
-                </PortfolioItem>
-              </Card>
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 translate-x-2 translate-y-2 border border-border"
+                />
+                <Card
+                  asChild
+                  variant="default"
+                  className="group relative block overflow-hidden rounded-none border-2 border-foreground bg-background p-0 text-left text-foreground transition-all duration-150 hover:-translate-y-1 active:translate-x-[2px] active:translate-y-[2px]"
+                >
+                  <PortfolioItem asChild>
+                    <NavbarRouteLink href={cardTarget}>
+                      <PortfolioMedia
+                        aspect="16-10"
+                        className="rounded-none border-b-2 border-foreground bg-gradient-to-br from-muted to-card"
+                      >
+                        <Image
+                          alt={item.alt}
+                          w={1200}
+                          h={750}
+                          loading="lazy"
+                          className="h-full w-full object-cover opacity-90 grayscale transition-all duration-700 group-hover:scale-105 group-hover:opacity-100 group-hover:grayscale-0"
+                        />
+                        <span
+                          aria-hidden="true"
+                          className="absolute left-0 top-0 bg-foreground px-2.5 py-1 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-background"
+                        >
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                      </PortfolioMedia>
+                      <PortfolioCaption className="p-6">
+                        <h3 className="mb-1.5 text-xl font-bold tracking-tight">
+                          {item.title}
+                        </h3>
+                        <p className="text-sm leading-[1.6] text-muted-foreground">
+                          {item.description}
+                        </p>
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          {item.tags.map((tag) => (
+                            <span
+                              key={tag}
+                              className="rounded-none border border-border bg-transparent px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </PortfolioCaption>
+                    </NavbarRouteLink>
+                  </PortfolioItem>
+                </Card>
+              </div>
             ))}
           </PortfolioGrid>
         </Container>

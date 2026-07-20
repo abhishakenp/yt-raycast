@@ -30,7 +30,7 @@ import {
   FooterCopyright,
   FooterLegal,
 } from '#/section-kit/SiteFooter.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const HealthcareFooter = defineCapsule({
   name: 'HealthcareFooter',
   description:

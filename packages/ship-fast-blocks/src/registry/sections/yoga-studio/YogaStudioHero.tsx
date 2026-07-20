@@ -1,31 +1,33 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
 import {
   HeroSection,
-  HeroBackgroundImage,
-  HeroContent,
-  HeroBadge,
   HeroHeading,
   HeroSubheading,
   HeroActions,
   HeroCta,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * YogaStudioHero — calm, full-bleed hero for a yoga-studio landing page. A warm
- * movement or studio-space photograph fills the band under a soft token-based
- * overlay so light text reads cleanly. Centered content stacks an uppercase
- * eyebrow, a large headline, a grounding supporting paragraph, and dual CTAs
- * (filled "Try a Class" + outlined "See Schedule"). CTAs route through
- * section-kit route links. Use as the opening hero for yoga studios, movement spaces,
- * pilates studios, and mindfulness centers. Renders fully with no props.
+ * YogaStudioHero — serene, airy asymmetric 7/5 hero for a yoga-studio landing
+ * page. On a soft muted wash under a giant lowercase ghost watermark word: a left
+ * column carries a hairline status chip (single primary dot + mono eyebrow), a
+ * calm fluid-clamp clean-sans headline, a grounding lede, and dual
+ * sharp-cornered CTAs (filled primary "Try a Class" + hairline outline "See
+ * Schedule", both with press feedback); a right column holds a tall
+ * hairline-double-framed movement photo with a vertical mono side label. CTAs
+ * route through section-kit route links; the photo uses the alt-driven Image
+ * component. Use as the opening hero for yoga studios, movement spaces, pilates
+ * studios, and mindfulness centers. Renders fully with no props.
  */
 export const YogaStudioHero = defineCapsule({
   name: 'YogaStudioHero',
   description:
-    "Calm full-bleed hero for a yoga-studio landing page: a warm movement or studio-space photo fills the band under a soft token-based overlay so light text stays readable. Centered content has an uppercase eyebrow, a large headline, a grounding supporting paragraph, and dual CTAs (filled 'Try a Class' + outlined 'See Schedule'). CTAs route through section-kit route links. Use as the opening hero for yoga studios, movement spaces, pilates studios, and mindfulness centers.",
+    "Serene airy asymmetric 7/5 hero for a yoga-studio landing page: a soft muted wash with a giant lowercase ghost watermark word, a left column with a hairline status chip (single primary dot + mono eyebrow), a calm fluid-clamp clean-sans headline, a grounding lede, and dual sharp-cornered CTAs (filled primary 'Try a Class' + hairline outline 'See Schedule' with press feedback); a right column with a tall hairline double-framed movement photo and a vertical mono side label. CTAs route through section-kit route links; the photo uses the alt-driven Image component. Use as the opening hero for yoga studios, movement spaces, pilates studios, and mindfulness centers.",
   props: z.object({
     /** Small uppercase eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -60,44 +62,77 @@ export const YogaStudioHero = defineCapsule({
       'warm sunlit yoga studio with wood floors and people moving through a flowing practice'
 
     return (
-      <HeroSection variant="full-bleed" className={props.className}>
-        <HeroBackgroundImage
-          alt={imageAlt}
-          overlayClassName="bg-foreground/50"
-          gradientClassName="bg-gradient-to-t from-foreground/60 via-foreground/20 to-foreground/40"
+      <HeroSection
+        className={cn(
+          'relative overflow-hidden border-b border-border bg-background',
+          props.className,
+        )}
+      >
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-b from-muted/40 to-transparent"
         />
-
-        <Container asChild>
-          <HeroContent className="flex flex-col items-center pb-28 pt-36 text-center sm:pt-40 lg:pb-32 lg:pt-48">
-            <HeroBadge variant="pill">{eyebrow}</HeroBadge>
-
-            <HeroHeading className="mt-8 max-w-3xl text-background">
-              {heading}
-            </HeroHeading>
-
-            <HeroSubheading variant="light">{subheading}</HeroSubheading>
-
-            <HeroActions className="mt-10 flex-col gap-4 sm:flex-row">
-              <HeroCta
-                asChild
-                variant="primary"
-                className="rounded-full px-8 py-4 font-medium"
+        <Watermark className="-left-4 bottom-0 text-[7rem] font-semibold tracking-tight sm:text-[11rem] lg:text-[16rem]">
+          breathe
+        </Watermark>
+        <Container size="xl" className="relative pb-20 pt-28 lg:pb-28 lg:pt-36">
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="max-w-2xl lg:col-span-7">
+              <div className="mb-7 inline-flex items-center gap-2.5 border border-border bg-background px-3.5 py-2">
+                <span
+                  aria-hidden="true"
+                  className="size-1.5 rounded-full bg-primary"
+                />
+                <MonoTag>{eyebrow}</MonoTag>
+              </div>
+              <HeroHeading className="mb-6 max-w-xl text-[clamp(2.5rem,6vw,4.5rem)] font-semibold leading-[1.03] tracking-tight text-foreground">
+                {heading}
+              </HeroHeading>
+              <HeroSubheading className="mb-9 mt-0 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+                {subheading}
+              </HeroSubheading>
+              <HeroActions className="mt-0 flex-col gap-3 sm:flex-row sm:gap-4">
+                <HeroCta
+                  asChild
+                  variant="primary"
+                  className="rounded-none px-7 py-3.5 text-base font-medium active:translate-y-px"
+                >
+                  <NavbarRouteLink href={primaryTarget}>
+                    {primaryCta}
+                  </NavbarRouteLink>
+                </HeroCta>
+                <HeroCta
+                  asChild
+                  variant="outline"
+                  className="rounded-none border-foreground/25 bg-background px-7 py-3.5 text-base font-medium text-foreground hover:bg-muted active:translate-y-px"
+                >
+                  <NavbarRouteLink href={secondaryTarget}>
+                    {secondaryCta}
+                  </NavbarRouteLink>
+                </HeroCta>
+              </HeroActions>
+            </div>
+            <div className="relative lg:col-span-5">
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -inset-3 border border-border sm:-inset-4"
+              />
+              <div className="relative overflow-hidden border border-border">
+                <Image
+                  alt={imageAlt}
+                  w={800}
+                  h={1000}
+                  className="aspect-[4/5] w-full object-cover"
+                />
+              </div>
+              <span
+                aria-hidden="true"
+                className="absolute -left-3 top-6 hidden bg-background px-1 py-2 font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground [writing-mode:vertical-rl] sm:block"
               >
-                <NavbarRouteLink href={primaryTarget}>
-                  {primaryCta}
-                </NavbarRouteLink>
-              </HeroCta>
-              <HeroCta
-                asChild
-                variant="outline"
-                className="rounded-full border-border bg-card/10 px-8 py-4 font-medium text-background backdrop-blur-sm hover:bg-card/20"
-              >
-                <NavbarRouteLink href={secondaryTarget}>
-                  {secondaryCta}
-                </NavbarRouteLink>
-              </HeroCta>
-            </HeroActions>
-          </HeroContent>
+                On the mat
+              </span>
+            </div>
+          </div>
         </Container>
       </HeroSection>
     )

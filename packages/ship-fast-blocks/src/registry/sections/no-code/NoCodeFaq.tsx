@@ -8,24 +8,27 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
 /**
- * NoCodeFaq — centered-header accordion FAQ in a narrow column on a bright
- * canvas. A muted eyebrow and heading sit above a stack of native
- * details/summary cards: each bordered card shows a question with a chevron that
- * rotates open and reveals a muted answer paragraph. Use as the FAQ / objection-
- * handling section on a no-code builder, SaaS, or product landing page. Renders
- * fully with no props.
+ * NoCodeFaq — block-builder-kinetic asymmetric 4/8 FAQ ledger for a no-code /
+ * app-builder SaaS landing page on a bright canvas. The left rail holds a mono
+ * eyebrow tag, the heading with a tilted primary marker block behind the key
+ * word, and a giant ghost "?" watermark; the right column stacks native
+ * <details> rows in a hairline-divided ledger — each row pairs a mono
+ * question-index numeral with the question, a plus icon that rotates open, and
+ * a revealed muted answer paragraph. Sharp, scannable, ledger-precise. Use as
+ * the FAQ / objection-handling section on a no-code / app-builder SaaS or
+ * product landing page. Renders fully with no props.
  */
 export const NoCodeFaq = defineCapsule({
   name: 'NoCodeFaq',
   description:
-    'Centered-header accordion FAQ in a narrow column on a bright canvas: a muted eyebrow and heading above a stack of native details/summary cards, each bordered card showing a question with a chevron that rotates open and reveals a muted answer paragraph. Use as the FAQ / objection-handling section on a no-code / app-builder SaaS or product landing page.',
+    'Block-builder-kinetic asymmetric 4/8 FAQ ledger for a no-code / app-builder SaaS landing page: a left rail with mono eyebrow, marker-highlighted heading and giant ghost ? watermark beside a hairline-divided ledger of native <details> rows, each pairing a mono question-index numeral with the question, a plus icon that rotates open, and a revealed muted answer paragraph. Sharp and scannable. Use as the FAQ / objection-handling section on a no-code / app-builder SaaS or product landing page.',
   props: z.object({
     /** Muted uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -67,35 +70,80 @@ export const NoCodeFaq = defineCapsule({
           },
         ]
 
+    const headingWords = heading.split(' ')
+    const headingLead = headingWords.slice(0, -1).join(' ')
+    const headingMark = headingWords.at(-1) ?? ''
+
     return (
       <section
-        className={cn('bg-background py-24', props.className)}
+        className={cn(
+          'relative overflow-hidden bg-background py-16 lg:py-24',
+          props.className,
+        )}
         aria-labelledby="nc-faq"
       >
-        <Container size="sm">
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            titleId="nc-faq"
-            className="mb-12 gap-0"
-            eyebrowClassName="mb-3 inline-block text-sm font-medium uppercase tracking-wider text-muted-foreground"
-            titleClassName="text-3xl font-semibold tracking-tight sm:text-4xl"
-          />
-          <FaqAccordion>
-            {items.map((item) => (
-              <FaqItem key={item.q} className="transition-all open:shadow-sm">
-                <FaqQuestion className="p-6">
-                  <h3 className="font-semibold text-card-foreground">
-                    {item.q}
-                  </h3>
-                  <FaqQuestionIcon className="ml-4" />
-                </FaqQuestion>
-                <FaqAnswer asChild className="px-6 pb-6">
-                  <div>{item.a}</div>
-                </FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+        <Container>
+          <div className="grid gap-12 lg:grid-cols-12 lg:gap-10">
+            {/* Left rail: mono eyebrow, marker heading, ghost ? watermark. */}
+            <div className="relative lg:col-span-4">
+              <MonoTag className="mb-4 block">
+                {eyebrow}
+                <span aria-hidden="true" className="text-primary">
+                  {' '}
+                  · {String(items.length).padStart(2, '0')} entries
+                </span>
+              </MonoTag>
+              <h2
+                id="nc-faq"
+                className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl"
+              >
+                {headingLead}{' '}
+                <span className="relative ml-[0.12em] inline-block whitespace-nowrap">
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-[-0.15em] inset-y-[0.05em] -rotate-1 bg-primary"
+                  />
+                  <span className="relative text-primary-foreground">
+                    {headingMark}
+                  </span>
+                </span>
+              </h2>
+              <Watermark className="left-0 top-full hidden -translate-y-8 text-[11rem] lg:block">
+                ?
+              </Watermark>
+            </div>
+
+            {/* Right column: hairline-divided question ledger. */}
+            <FaqAccordion
+              variant="divided"
+              className="border-border lg:col-span-8"
+            >
+              {items.map((item, index) => (
+                <FaqItem key={item.q} variant="divided" className="py-0">
+                  <FaqQuestion className="select-none gap-4 py-5">
+                    <span className="flex min-w-0 items-baseline gap-4">
+                      <span
+                        aria-hidden="true"
+                        className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+                      >
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <span className="font-semibold tracking-tight text-foreground">
+                        {item.q}
+                      </span>
+                    </span>
+                    <FaqQuestionIcon variant="plus" />
+                  </FaqQuestion>
+                  <FaqAnswer
+                    asChild
+                    className="pb-6 pl-0 leading-relaxed sm:pl-10"
+                  >
+                    <div>{item.a}</div>
+                  </FaqAnswer>
+                </FaqItem>
+              ))}
+            </FaqAccordion>
+          </div>
         </Container>
       </section>
     )

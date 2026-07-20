@@ -12,8 +12,7 @@ import { Container } from '#/section-kit/Container.tsx'
 import { CtaAction } from '#/section-kit/CtaBand.tsx'
 import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { cn } from '#/lib/utils.ts'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * InteriorDesignPricing — the page's inverted (ink-surface) services + pricing
  * ledger for an upscale interior-design / architecture studio. A dramatic band on

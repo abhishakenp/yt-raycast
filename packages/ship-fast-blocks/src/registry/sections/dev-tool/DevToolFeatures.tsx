@@ -12,8 +12,7 @@ import {
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * DevToolFeatures — "--flag" ledger features grid for a developer tool / API
  * platform. An asymmetric header (left-aligned heading + intro, aria-hidden

@@ -8,25 +8,28 @@ import {
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 
 /**
- * MobileAppFaq — a narrow, centered FAQ accordion on a calm muted band. A
- * centered heading + description sits above a stacked list of bordered
- * card-style <details> rows; each summary shows the question with a chevron that
- * rotates open, revealing a relaxed answer paragraph. Native disclosure, no
- * JavaScript state, no links. Use as the questions / objection-handling section
- * on a habit tracker, fitness / wellness app, productivity or to-do app, or any
- * consumer app landing page. Renders fully with no props via baked-in defaults.
+ * MobileAppFaq — a kinetic asymmetric 4/8 FAQ ledger on a calm muted band. The
+ * left rail holds a mono "[ FAQ ]" micro-label, the heading with a tilted
+ * primary marker block behind the key word, the supporting paragraph and a giant
+ * ghost "?" watermark; the right column stacks native <details> rows in a
+ * hairline-divided ledger — each row pairs a mono question-index numeral with the
+ * question, a plus icon that rotates open, and a revealed answer paragraph.
+ * Native disclosure, no JavaScript state, no links. Use as the questions /
+ * objection-handling section on a habit tracker, fitness / wellness app,
+ * productivity or to-do app, or any consumer app landing page. Renders fully with
+ * no props via baked-in defaults.
  */
 export const MobileAppFaq = defineCapsule({
   name: 'MobileAppFaq',
   description:
-    'Narrow centered FAQ accordion on a calm muted band: a centered heading + description over a stacked list of bordered card-style <details> rows, each with a question summary and a chevron that rotates open to reveal a relaxed answer paragraph (native disclosure, no JS state). Use as the questions / objection-handling section on a habit tracker, fitness / wellness app, productivity or to-do app, or any consumer app landing page.',
+    'Kinetic asymmetric 4/8 FAQ ledger on a calm muted band: a left rail with mono FAQ micro-label, marker-highlighted heading, supporting paragraph and giant ghost ? watermark beside a hairline-divided ledger of native <details> rows, each pairing a mono question-index numeral with the question, a plus icon that rotates open, and a revealed answer paragraph. Use as the questions / objection-handling section on a habit tracker, fitness / wellness app, productivity or to-do app, or any consumer app landing page.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -74,38 +77,82 @@ export const MobileAppFaq = defineCapsule({
           },
         ]
 
+    const headingWords = heading.split(' ')
+    const headingLead = headingWords.slice(0, -1).join(' ')
+    const headingMark = headingWords.at(-1) ?? ''
     return (
       <section
         className={cn(
-          'bg-muted/50 pt-28 pb-20 lg:pt-32 lg:pb-28',
+          'relative overflow-hidden bg-muted/40 pt-24 pb-20 lg:pt-28 lg:pb-28',
           props.className,
         )}
         aria-labelledby="mobileapp-faq-heading"
       >
-        <Container size="sm">
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            titleId="mobileapp-faq-heading"
-            className="mb-16  gap-0"
-            titleClassName="mb-4 text-3xl font-bold tracking-tight sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <FaqAccordion>
-            {items.map((item) => (
-              <FaqItem key={item.question} variant="overflow-bordered">
-                <FaqQuestion className="p-6">
-                  <span className="font-semibold text-card-foreground">
-                    {item.question}
+        <Container>
+          <div className="grid gap-12 lg:grid-cols-12 lg:gap-10">
+            {/* Left rail: label, marker heading, ghost ? watermark. */}
+            <div className="relative lg:col-span-4">
+              <MonoTag className="mb-4 block">
+                FAQ
+                <span aria-hidden="true" className="text-primary">
+                  {' '}
+                  · support
+                </span>
+              </MonoTag>
+              <h2
+                id="mobileapp-faq-heading"
+                className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl"
+              >
+                {headingLead}{' '}
+                <span className="relative ml-[0.12em] inline-block whitespace-nowrap">
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-[-0.15em] inset-y-[0.05em] -rotate-1 bg-primary"
+                  />
+                  <span className="relative text-primary-foreground">
+                    {headingMark}
                   </span>
-                  <FaqQuestionIcon className="ml-4" />
-                </FaqQuestion>
-                <FaqAnswer asChild className="px-6 pb-6">
-                  <div>{item.answer}</div>
-                </FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+                </span>
+              </h2>
+              <p className="mt-4 text-base text-muted-foreground">
+                {description}
+              </p>
+              <Watermark className="left-0 top-full hidden -translate-y-8 text-[11rem] lg:block">
+                ?
+              </Watermark>
+            </div>
+
+            {/* Right column: hairline-divided question ledger. */}
+            <FaqAccordion
+              variant="divided"
+              className="border-border lg:col-span-8"
+            >
+              {items.map((item, index) => (
+                <FaqItem key={item.question} variant="divided" className="py-0">
+                  <FaqQuestion className="select-none gap-4 py-5">
+                    <span className="flex min-w-0 items-baseline gap-4">
+                      <span
+                        aria-hidden="true"
+                        className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+                      >
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <span className="font-semibold tracking-tight text-foreground">
+                        {item.question}
+                      </span>
+                    </span>
+                    <FaqQuestionIcon variant="plus" />
+                  </FaqQuestion>
+                  <FaqAnswer
+                    asChild
+                    className="pb-6 pl-0 leading-relaxed sm:pl-10"
+                  >
+                    <div>{item.answer}</div>
+                  </FaqAnswer>
+                </FaqItem>
+              ))}
+            </FaqAccordion>
+          </div>
         </Container>
       </section>
     )

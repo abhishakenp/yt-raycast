@@ -31,7 +31,7 @@ import {
   FooterLegal,
 } from '#/section-kit/SiteFooter.tsx'
 import { MonoTag } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const DentalFooter = defineCapsule({
   name: 'DentalFooter',
   description:

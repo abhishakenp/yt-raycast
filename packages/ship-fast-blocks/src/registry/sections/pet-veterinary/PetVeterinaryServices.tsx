@@ -9,6 +9,9 @@ import {
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
+import { cn } from '#/lib/utils.ts'
 
 const ICONS = {
   wellness: (
@@ -123,7 +126,7 @@ const DEFAULT_SERVICES: {
 export const PetVeterinaryServices = defineCapsule({
   name: 'PetVeterinaryServices',
   description:
-    'Warm, caring services band for a veterinary clinic site, composing the FeatureGrid kit composite into a grid of service cards. Each card pairs a friendly outline icon tile (text-primary) with a service name and a reassuring description — Wellness Exams, Dental Care, Surgery, and Emergency Care by default. Accepts a public `services` prop to override the offering list. Use it to show pet parents the breadth of compassionate care available in a scannable, trust-building layout.',
+    'Warm friendly-clinical services band for a veterinary clinic site, composing the FeatureGrid kit composite into a staggered grid of chunky rounded-none service cards with confident hard offset shadows. An asymmetric header (left-aligned heading + lede, mono index meta on the right) sits above cards that each pair a zero-padded mono index numeral and a friendly round icon tile with a service name and a reassuring description — Wellness Exams, Dental Care, Surgery, and Emergency Care by default; alternate cards drop a step on desktop for a playful stagger and the first card carries a rotated rounded-full "same day" sticker. Accepts a public `services` prop to override the offering list. Use it to show pet parents the breadth of compassionate care available in a scannable, trust-building layout.',
   props: z.object({
     heading: z.string().optional(),
     subheading: z.string().optional(),
@@ -161,8 +164,25 @@ export const PetVeterinaryServices = defineCapsule({
         }
       >
         <Container size="xl" className="px-6">
-          <FeatureGrid heading={heading} subheading={subheading} columns={4}>
-            {features.map((f) => {
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={subheading}
+              className="max-w-2xl gap-0"
+              titleClassName="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-[2.75rem] lg:leading-[1.05]"
+              subtitleClassName="mt-4 text-base text-muted-foreground sm:text-lg"
+            />
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="shrink-0 md:pb-1"
+            >
+              {String(features.length).padStart(2, '0')} / services
+            </MonoTag>
+          </div>
+          <FeatureGrid columns={4}>
+            {features.map((f, i) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -173,10 +193,35 @@ export const PetVeterinaryServices = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
-                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                <FeatureCard
+                  key={__iv__.title}
+                  className={cn(
+                    'relative gap-4 rounded-none border-2 border-foreground/15 p-6 shadow-[6px_6px_0_0] shadow-foreground/15 transition-transform duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:border-foreground/15 motion-reduce:transform-none',
+                    i % 2 === 1 && 'lg:translate-y-6',
+                  )}
+                >
+                  {i === 0 ? (
+                    <span
+                      aria-hidden="true"
+                      className="absolute -right-2 -top-3 -rotate-6 rounded-full border-2 border-foreground bg-background px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-foreground shadow-[2px_2px_0_0] shadow-primary/40"
+                    >
+                      same day
+                    </span>
+                  ) : null}
+                  <MonoTag aria-hidden="true" tone="faint">
+                    {String(i + 1).padStart(2, '0')}
+                  </MonoTag>
+                  {__iv__.icon && (
+                    <FeatureIcon className="size-12 rounded-full bg-primary/10">
+                      {__iv__.icon}
+                    </FeatureIcon>
+                  )}
+                  <FeatureTitle className="text-lg font-bold tracking-tight">
+                    {__iv__.title}
+                  </FeatureTitle>
+                  <FeatureDescription className="leading-relaxed">
+                    {__iv__.description}
+                  </FeatureDescription>
                 </FeatureCard>
               )
             })}

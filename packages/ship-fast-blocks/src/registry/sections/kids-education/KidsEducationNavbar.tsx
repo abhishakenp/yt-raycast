@@ -10,9 +10,8 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-  SignInButton,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * KidsEducationNavbar — sticky, backdrop-blurred top navigation bar for a
  * playful-primary kids / family learning platform. A pinned header: a chunky

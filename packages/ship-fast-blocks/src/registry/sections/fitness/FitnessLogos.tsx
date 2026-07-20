@@ -7,6 +7,7 @@ import {
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
+import { Container } from '#/section-kit/Container.tsx'
 
 /**
  * FitnessLogos — compact trusted-by logo / brand strip for a gym or fitness-studio
@@ -31,19 +32,18 @@ export const FitnessLogos = defineCapsule({
       : ['Nike', 'Equinox', 'Lululemon', 'WHOOP', 'Rogue', 'Concept2']
     return (
       <LogoStrip
-        className={cn(
-          'border-y border-border bg-card px-4 py-12 sm:px-6 lg:px-8',
-          props.className,
-        )}
+        className={cn('border-y border-border bg-card', props.className)}
       >
-        <LogoStripLabel className="text-xs font-normal tracking-wider">
-          {logosLabel}
-        </LogoStripLabel>
-        <LogoStripItems layout="flex" className="mt-8">
-          {logoItems.filter(Boolean).map((logo) => (
-            <LogoStripItem key={logo}>{logo}</LogoStripItem>
-          ))}
-        </LogoStripItems>
+        <Container className="py-12">
+          <LogoStripLabel className="text-xs font-normal tracking-wider">
+            {logosLabel}
+          </LogoStripLabel>
+          <LogoStripItems layout="flex" className="mt-8">
+            {logoItems.filter(Boolean).map((logo) => (
+              <LogoStripItem key={logo}>{logo}</LogoStripItem>
+            ))}
+          </LogoStripItems>
+        </Container>
       </LogoStrip>
     )
   },

@@ -12,19 +12,19 @@ import {
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
- * WineryBreweryGallery — captioned image gallery for a winery or brewery page.
- * Thin configuration over the shared `GalleryGrid` composite: a centered serif
- * header (heading + supporting line) above a responsive grid of vineyard rows,
- * the barrel room, the taproom, a tasting flight, the cellar, and harvest, each
- * a photo with a hover zoom and a caption overlay. All imagery is alt-driven.
- * Use to showcase the estate, the cellar, and the tasting experience for
- * wineries, vineyards, breweries, taprooms, or cideries. Renders fully with no
- * props via baked-in defaults (six photos + captions).
+ * WineryBreweryGallery — artisan-editorial captioned image gallery for a winery
+ * or brewery page. A left-aligned mono meta rail + serif header sits above an
+ * asymmetric, staggered bento of sharp square-cornered plates — vineyard rows,
+ * the barrel room, the taproom, a tasting flight, the cellar, and harvest —
+ * each a photo with a hover zoom and a mono museum-label caption stamp. All
+ * imagery is alt-driven. Use to showcase the estate, the cellar, and the
+ * tasting experience for wineries, vineyards, breweries, taprooms, or cideries.
+ * Renders fully with no props via baked-in defaults (six photos + captions).
  */
 export const WineryBreweryGallery = defineCapsule({
   name: 'WineryBreweryGallery',
   description:
-    'Captioned gallery for a winery or brewery page: centered serif header above a responsive 1/2/3-column grid of vineyard rows, the barrel room, the taproom, a tasting flight, the cellar, and harvest, with hover zoom and a token-based caption strip per image. All imagery is alt-driven via the Image component. Use to showcase the estate, cellar, and tasting experience for wineries, vineyards, breweries, taprooms, or cideries.',
+    'Artisan-editorial captioned gallery for a winery or brewery page: a left-aligned mono meta rail + serif header above an asymmetric, staggered bento of sharp square-cornered photo plates (vineyard rows, the barrel room, the taproom, a tasting flight, the cellar, and harvest) with hover zoom and a mono museum-label caption stamp per image. All imagery is alt-driven via the Image component. Use to showcase the estate, cellar, and tasting experience for wineries, vineyards, breweries, taprooms, or cideries.',
   props: z.object({
     /** Section heading (serif, large). */
     heading: z.string().optional(),
@@ -65,38 +65,72 @@ export const WineryBreweryGallery = defineCapsule({
             caption: 'Harvest morning',
           },
         ]
+    const tileSpans = [
+      'col-span-2 row-span-2 lg:col-span-2 lg:row-span-2',
+      'col-span-2 lg:col-span-2',
+      'col-span-1 lg:col-span-1',
+      'col-span-1 lg:col-span-1',
+      'col-span-2 lg:col-span-2',
+      'col-span-2 lg:col-span-2',
+    ]
     return (
       <section
         className={cn(
-          'bg-background pt-28 pb-20 lg:pt-32 lg:pb-28',
+          'relative overflow-hidden bg-background pt-24 pb-20 lg:pt-28 lg:pb-28',
           props.className,
         )}
       >
         <Container>
           <GalleryGrid>
+            <div className="flex items-center gap-4">
+              <span
+                aria-hidden="true"
+                className="size-1.5 shrink-0 bg-primary"
+              />
+              <span className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+                The estate · In frames
+              </span>
+              <span aria-hidden="true" className="h-px flex-1 bg-border" />
+            </div>
             <SectionHeading
+              align="left"
               title={props.heading ?? 'From vine to glass'}
               subtitle={
                 props.description ??
                 'Sun-soaked rows, a candlelit barrel room, and the quiet ritual of the cellar — a look at the place behind every pour.'
               }
+              titleClassName="font-serif text-3xl font-medium tracking-tight sm:text-4xl lg:text-5xl"
+              className="max-w-2xl gap-5"
             />
-            {images.map((img) => {
-              const __iv__ = img as {
-                alt: string
-                caption?: string
-                title?: string
-                location?: string
-              }
-              return (
-                <GalleryTile key={__iv__.alt}>
-                  <GalleryTileImage alt={__iv__.alt} />
-                  {__iv__.caption && (
-                    <GalleryTileCaption>{__iv__.caption}</GalleryTileCaption>
-                  )}
-                </GalleryTile>
-              )
-            })}
+            <div className="grid auto-rows-[9rem] grid-cols-2 gap-3 sm:auto-rows-[13rem] lg:grid-cols-4">
+              {images.map((img, i) => {
+                const __iv__ = img as {
+                  alt: string
+                  caption?: string
+                  title?: string
+                  location?: string
+                }
+                return (
+                  <GalleryTile
+                    key={__iv__.alt}
+                    className={cn(
+                      'aspect-auto h-full rounded-none border-foreground/15',
+                      tileSpans[i % tileSpans.length],
+                    )}
+                  >
+                    <GalleryTileImage
+                      alt={__iv__.alt}
+                      className="grayscale-[0.15] transition-[transform,filter] duration-300 group-hover:scale-105 group-hover:grayscale-0"
+                    />
+                    {__iv__.caption && (
+                      <GalleryTileCaption className="bg-foreground/85 font-mono text-[11px] uppercase tracking-[0.14em] text-background backdrop-blur">
+                        {__iv__.caption}
+                      </GalleryTileCaption>
+                    )}
+                  </GalleryTile>
+                )
+              })}
+            </div>
           </GalleryGrid>
         </Container>
       </section>

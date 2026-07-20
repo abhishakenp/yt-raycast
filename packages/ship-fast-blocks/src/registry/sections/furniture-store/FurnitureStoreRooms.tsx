@@ -19,8 +19,7 @@ import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { RoomGrid, RoomCard } from '#/section-kit/RoomGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const FurnitureStoreRooms = defineCapsule({
   name: 'FurnitureStoreRooms',
   description:

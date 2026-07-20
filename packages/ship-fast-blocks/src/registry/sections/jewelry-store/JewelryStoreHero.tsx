@@ -12,8 +12,7 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * JewelryStoreHero — full-bleed vitrine hero for a luxury fine-jewelry maison.
  * A dimmed full-cover photograph under a left-to-right fade-to-background scrim

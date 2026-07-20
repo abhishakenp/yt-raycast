@@ -10,8 +10,7 @@ import {
   ProcessGrid,
   ProcessStep,
 } from '#/section-kit/ProcessTimeline.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * AccountingFirmProcess — Swiss-ledger dark process band for a CPA /
  * accounting-firm site. The page's full ink inversion (foreground background,

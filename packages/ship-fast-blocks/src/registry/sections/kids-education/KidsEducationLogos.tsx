@@ -13,15 +13,13 @@ import { cn } from '#/lib/utils.ts'
  * defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   LogoStrip,
   LogoStripLabel,
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const KidsEducationLogos = defineCapsule({
   name: 'KidsEducationLogos',
   description:

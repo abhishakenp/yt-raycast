@@ -11,11 +11,12 @@ import {
   TestimonialName,
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 export const TravelAgencyTestimonials = defineCapsule({
   name: 'TravelAgencyTestimonials',
   description:
-    'Social-proof testimonials band for the Travel Agency page family. Composes the shared TestimonialGrid kit composite into a three-column set of glowing traveler reviews, each with a quote, name, five-star rating, and the trip booked. Use to build trust before the closing call to action. All reviews are prop-driven with wanderlust-themed defaults so it renders with no props.',
+    'Editorial-wanderlust traveler pull-quotes for the Travel Agency page family. A muted-surface section carrying a giant ghost quotation-mark watermark and an asymmetric intro (mono eyebrow + heading left, supporting copy right), then a staggered 3-up grid of sharp-cornered cards, each a quote over a hairline rule with the traveler name and the mono trip-booked meta line. Use to build trust before the closing call to action. All reviews are prop-driven with wanderlust-themed defaults so it renders with no props.',
   props: z.object({
     heading: z.string().optional(),
     subheading: z.string().optional(),
@@ -65,20 +66,33 @@ export const TravelAgencyTestimonials = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-background pt-28 pb-20 lg:pt-32 lg:pb-28',
+          'relative overflow-hidden bg-muted pt-28 pb-20 lg:pt-32 lg:pb-28',
           props.className,
         )}
       >
-        <Container>
-          <TestimonialGrid
-            heading={props.heading ?? 'Trusted by travelers worldwide'}
-            subheading={
-              props.subheading ??
-              "Real journeys, real stories — here's what our travelers say after coming home."
-            }
-            columns={3}
-          >
-            {items.map((t) => {
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-16 right-2 select-none font-serif text-[18rem] font-normal leading-none text-foreground/[0.05] lg:text-[26rem]"
+        >
+          &rdquo;
+        </span>
+        <Container size="xl" className="relative">
+          <div className="mb-14 grid items-end gap-8 lg:grid-cols-12 lg:gap-12">
+            <SectionHeading
+              align="left"
+              eyebrow="Travelers"
+              title={props.heading ?? 'Trusted by travelers worldwide'}
+              className="gap-3 lg:col-span-7"
+              eyebrowClassName="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground"
+              titleClassName="text-4xl font-semibold tracking-tight lg:text-5xl"
+            />
+            <p className="text-base leading-relaxed text-muted-foreground lg:col-span-5 lg:pb-1">
+              {props.subheading ??
+                "Real journeys, real stories — here's what our travelers say after coming home."}
+            </p>
+          </div>
+          <TestimonialGrid columns={3} className="gap-6">
+            {items.map((t, i) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -89,12 +103,20 @@ export const TravelAgencyTestimonials = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
+                <TestimonialCard
+                  key={__iv__.name}
+                  className={cn(
+                    'rounded-none border-border bg-card p-8 hover:border-foreground/40',
+                    i % 3 === 1 && 'lg:translate-y-8',
+                  )}
+                >
+                  <TestimonialQuote className="text-lg leading-relaxed">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="mt-6 flex-col items-start gap-1 border-t border-border pt-5">
                     <TestimonialName>{__iv__.name}</TestimonialName>
                     {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
+                      <TestimonialMeta className="font-mono text-[11px] uppercase tracking-[0.12em]">
                         {__iv__.role || __iv__.company || __iv__.meta}
                       </TestimonialMeta>
                     )}

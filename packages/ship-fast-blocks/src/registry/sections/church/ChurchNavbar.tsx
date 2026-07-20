@@ -11,8 +11,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
  * ChurchNavbar — serene editorial fixed top navigation bar for a church or
  * faith-community site. A backdrop-blurred, hairline-bordered header pinned to

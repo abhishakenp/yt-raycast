@@ -1,28 +1,15 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import {
-  OverviewSection,
-  OverviewGrid,
-  OverviewContent,
-  OverviewEyebrow,
-  OverviewBrand,
-  OverviewHeading,
-  OverviewSubheading,
-  OverviewFeatures,
-  OverviewFeature,
-  OverviewCta,
-  OverviewStats,
-  OverviewStat,
-  OverviewStatValue,
-  OverviewStatLabel,
-  OverviewMediaPanel,
-} from '#/section-kit/OverviewSection.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
 
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
+import { Container } from '#/section-kit/Container.tsx'
+import { Watermark, MonoTag } from '#/section-kit/Decor.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const TravelAgencyOverview = defineCapsule({
   name: 'TravelAgencyOverview',
   description:
-    'Reusable overview / hero section for the Travel Agency page family. Derived from the section template catalog to provide section-level coverage without new HTML generation: eyebrow, large heading, supporting copy, dual CTAs, feature pills, KPI strip, and an image panel rendered through the alt-driven Image component. Use when composing a travel agency page or adding a focused travel agency band to a larger generated site.',
+    'Editorial-wanderlust overview band for the Travel Agency page family. An asymmetric 5/7 split: a left column with a mono index eyebrow, a brand kicker, an oversized heading, supporting copy, rotated hairline stamp chips, and dual sharp-cornered route-link CTAs (solid + outline, press-responsive); a right full-bleed destination plate with a single hard offset shadow and a hairline caption bar rendered through the alt-driven Image component; and a full-width collapsed-border stat ledger below with tabular values and mono labels, over a giant ghost watermark. Use when composing a curated travel-agency page or adding a focused travel-agency band to a larger generated site.',
   props: z.object({
     brand: z.string().optional(),
     eyebrow: z.string().optional(),
@@ -73,48 +60,95 @@ export const TravelAgencyOverview = defineCapsule({
         ]
 
     return (
-      <OverviewSection className={props.className}>
-        <OverviewGrid>
-          <OverviewContent>
-            <OverviewEyebrow>{eyebrow}</OverviewEyebrow>
-            <OverviewBrand>{brand}</OverviewBrand>
-            <OverviewHeading>{heading}</OverviewHeading>
-            <OverviewSubheading>{subheading}</OverviewSubheading>
-            <OverviewFeatures>
-              {features.map((feature: string) => (
-                <OverviewFeature key={feature}>{feature}</OverviewFeature>
-              ))}
-            </OverviewFeatures>
-            <OverviewCta>
-              <NavbarRouteLink
-                className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
-                href={primaryCta}
+      <section
+        className={cn(
+          'relative overflow-hidden bg-background py-20 text-foreground sm:py-24',
+          props.className,
+        )}
+      >
+        <Watermark className="-right-4 top-6 text-[9rem] sm:text-[13rem]">
+          {brand.split(' ')[0]}
+        </Watermark>
+        <Container size="xl" className="relative">
+          <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-14">
+            <div className="flex flex-col lg:col-span-5">
+              <div className="flex items-center gap-3">
+                <span aria-hidden="true" className="size-2 bg-primary" />
+                <MonoTag>{eyebrow}</MonoTag>
+              </div>
+              <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+                {brand}
+              </p>
+              <h2 className="mt-4 max-w-xl text-4xl font-semibold leading-[1.02] tracking-tight text-foreground sm:text-5xl">
+                {heading}
+              </h2>
+              <p className="mt-6 max-w-lg text-lg leading-8 text-muted-foreground">
+                {subheading}
+              </p>
+              <div className="mt-8 flex flex-wrap gap-2.5">
+                {features.map((feature: string, i: number) => (
+                  <span
+                    key={feature}
+                    className={cn(
+                      'inline-flex items-center border border-border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground',
+                      i % 2 === 0 ? '-rotate-1' : 'rotate-1',
+                    )}
+                  >
+                    {feature}
+                  </span>
+                ))}
+              </div>
+              <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+                <NavbarRouteLink
+                  className="inline-flex items-center justify-center bg-primary px-7 py-3.5 font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-primary-foreground transition-[background-color,transform] duration-150 hover:bg-primary/90 active:translate-y-px"
+                  href={primaryCta}
+                >
+                  {primaryCta}
+                </NavbarRouteLink>
+                <NavbarRouteLink
+                  className="inline-flex items-center justify-center border border-foreground px-7 py-3.5 font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-foreground transition-[background-color,color,transform] duration-150 hover:bg-foreground hover:text-background active:translate-y-px"
+                  href={secondaryCta}
+                >
+                  {secondaryCta}
+                </NavbarRouteLink>
+              </div>
+            </div>
+
+            <div className="lg:col-span-7">
+              <figure className="border border-border bg-card shadow-[8px_8px_0_0] shadow-foreground">
+                <div className="overflow-hidden">
+                  <Image
+                    alt={imageAlt}
+                    w={900}
+                    h={700}
+                    className="aspect-[4/3] w-full object-cover"
+                  />
+                </div>
+                <figcaption className="flex items-center justify-between gap-4 border-t border-border px-5 py-4">
+                  <span className="text-sm font-semibold text-card-foreground">
+                    {brand}
+                  </span>
+                  <MonoTag tone="faint">Section-level building block</MonoTag>
+                </figcaption>
+              </figure>
+            </div>
+          </div>
+
+          <div className="mt-14 grid grid-cols-1 border-l border-t border-border sm:grid-cols-3">
+            {stats.map((stat: { value: string; label: string }) => (
+              <div
+                key={stat.label}
+                className="flex flex-col gap-2 border-b border-r border-border p-6 sm:p-8"
               >
-                {primaryCta}
-              </NavbarRouteLink>
-              <NavbarRouteLink
-                className="rounded-full border border-border bg-background px-6 py-3 text-sm font-semibold text-foreground transition hover:bg-muted"
-                href={secondaryCta}
-              >
-                {secondaryCta}
-              </NavbarRouteLink>
-            </OverviewCta>
-            <OverviewStats>
-              {stats.map((stat: { value: string; label: string }) => (
-                <OverviewStat key={stat.label}>
-                  <OverviewStatValue>{stat.value}</OverviewStatValue>
-                  <OverviewStatLabel>{stat.label}</OverviewStatLabel>
-                </OverviewStat>
-              ))}
-            </OverviewStats>
-          </OverviewContent>
-          <OverviewMediaPanel
-            alt={imageAlt}
-            brand={brand}
-            caption="Section-level building block for generated multi-page experiences."
-          />
-        </OverviewGrid>
-      </OverviewSection>
+                <span className="text-4xl font-semibold leading-none tracking-tight tabular-nums text-foreground">
+                  {stat.value}
+                </span>
+                <MonoTag>{stat.label}</MonoTag>
+              </div>
+            ))}
+          </div>
+        </Container>
+      </section>
     )
   },
 })

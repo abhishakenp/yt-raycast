@@ -6,24 +6,26 @@ import { Image } from '#/lib/img.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { TopicGrid, TopicCard } from '#/section-kit/TopicGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * NewsTopics — browse-by-topic / section nav grid for a news outlet. On a card
- * surface: a heading with a "View all" link on the right, then a responsive grid
- * of clickable topic tiles. Each tile is a square-ish photo card with a dark
- * gradient scrim over the image and an overlaid section name, a one-line blurb
- * and a story count at the bottom — World, Politics, Business, Tech, Culture,
- * Science, Health, Sports and the like. The view-all link and every topic tile
- * route through section-kit route links. Use as a section-discovery band on a newspaper,
- * magazine or publication homepage to let readers jump into top sections.
- * Renders fully with no props via baked-in defaults.
+ * NewsTopics — browse-by-section index for a news outlet, in a full newsprint
+ * idiom. On a card surface: a serif heading with a mono "view all" arrow-link
+ * on a heavy double masthead rule, then a responsive grid of section plates.
+ * Each plate is a sharp rounded-none hairline-framed grayscale photograph (it
+ * regains color on hover) carrying a mono "Sec. 01" corner stamp and a solid
+ * inverted (bg-foreground/text-background) caption bar with the section name in
+ * serif, a one-line blurb and a mono story count — World, Politics, Business,
+ * Tech, Culture, Science, Health, Sports and the like. The view-all link and
+ * every plate route through section-kit route links. Use as a section-discovery
+ * band on a newspaper, magazine or publication homepage to let readers jump
+ * into top sections. Renders fully with no props via baked-in defaults.
  */
 export const NewsTopics = defineCapsule({
   name: 'NewsTopics',
   description:
-    "Browse-by-topic / section nav grid for a news outlet on a card surface: a heading with a 'View all' link on the right, then a responsive grid of clickable topic tiles. Each tile is a square-ish photo card with a dark gradient scrim and an overlaid section name, a short blurb and a story count at the bottom (World, Politics, Business, Tech, Culture, Science, Health, Sports). The view-all link and every tile route through section-kit route links. Use as a section-discovery band on a newspaper, magazine or publication homepage so readers can jump straight into top sections.",
+    "Browse-by-section index for a news outlet in a full newsprint idiom: on a card surface, a serif heading with a mono 'view all' arrow-link on a heavy double masthead rule, then a responsive grid of section plates. Each plate is a sharp rounded-none hairline-framed grayscale photograph (regains color on hover) with a mono 'Sec. 01' corner stamp and a solid inverted (bg-foreground/text-background) caption bar holding the section name in serif, a one-line blurb and a mono story count (World, Politics, Business, Tech, Culture, Science, Health, Sports). The view-all link and every plate route through section-kit route links. Use as a section-discovery band on a newspaper, magazine or publication homepage so readers can jump straight into top sections.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -120,30 +122,36 @@ export const NewsTopics = defineCapsule({
 
     return (
       <section
-        className={cn('bg-card pt-28 pb-12 lg:pt-32 lg:pb-16', props.className)}
+        className={cn('bg-card pt-20 pb-16 lg:pt-24 lg:pb-20', props.className)}
       >
         <Container>
-          <div className="mb-8 flex items-center justify-between">
-            <SectionHeading
-              align="left"
-              title={heading}
-              className="gap-0"
-              titleClassName="text-xl font-bold text-foreground lg:text-2xl"
-            />
+          {/* Masthead header on a heavy double rule. */}
+          <div className="mb-8 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-3 border-b-2 border-foreground pb-3 shadow-[0_3px_0_-2px] shadow-border">
+            <div className="flex items-baseline gap-4">
+              <MonoTag tone="faint" className="hidden shrink-0 sm:block">
+                Index
+              </MonoTag>
+              <SectionHeading
+                align="left"
+                title={heading}
+                className="gap-0"
+                titleClassName="font-serif text-3xl font-black tracking-tight text-foreground sm:text-4xl"
+              />
+            </div>
             <NavbarRouteLink
-              className="flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="group inline-flex items-center gap-2 border-b border-foreground pb-0.5 font-mono text-[11px] uppercase tracking-[0.16em] text-foreground transition-colors hover:border-primary hover:text-primary active:translate-y-px"
               href={viewAll}
             >
               {viewAll}
-              <ArrowRight className="size-4" />
+              <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
             </NavbarRouteLink>
           </div>
 
           <TopicGrid cols="2-3-4" className="gap-4">
-            {items.map((topic) => (
+            {items.map((topic, i) => (
               <TopicCard asChild key={topic.name}>
                 <NavbarRouteLink
-                  className="group relative aspect-[4/3] overflow-hidden rounded-xl bg-muted text-left"
+                  className="group relative block aspect-[4/3] overflow-hidden rounded-none border border-foreground/25 bg-muted text-left"
                   href={topic.name}
                 >
                   <Image
@@ -151,22 +159,23 @@ export const NewsTopics = defineCapsule({
                     w={300}
                     h={225}
                     loading="lazy"
-                    className="size-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="size-full object-cover grayscale transition-[filter,transform] duration-500 group-hover:scale-105 group-hover:grayscale-0"
                   />
-                  <div
-                    aria-hidden="true"
-                    className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/30 to-transparent"
-                  />
-                  <div className="absolute inset-x-0 bottom-0 p-4">
-                    <h3 className="text-sm font-semibold text-background lg:text-base">
+                  {/* Corner section stamp. */}
+                  <span className="absolute left-0 top-0 bg-foreground px-2 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-background">
+                    Sec. {String(i + 1).padStart(2, '0')}
+                  </span>
+                  {/* Solid inverted caption bar. */}
+                  <div className="absolute inset-x-0 bottom-0 bg-foreground/95 p-3 text-background">
+                    <h3 className="font-serif text-base font-black leading-none tracking-tight lg:text-lg">
                       {topic.name}
                     </h3>
                     {topic.blurb ? (
-                      <p className="mt-0.5 line-clamp-2 text-xs text-background/80">
+                      <p className="mt-1 line-clamp-1 text-xs text-background/70">
                         {topic.blurb}
                       </p>
                     ) : null}
-                    <p className="mt-1 text-xs font-medium text-background/70">
+                    <p className="mt-1.5 font-mono text-[9px] uppercase tracking-[0.18em] text-background/60">
                       {topic.count}
                     </p>
                   </div>

@@ -6,8 +6,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { TopicGrid, TopicCard, TopicIcon } from '#/section-kit/TopicGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * CommunityForumTopics — playful-geometric staggered topic directory for a
  * community-platform landing page. A muted band with an asymmetric header

@@ -16,7 +16,7 @@ import { Container } from '#/section-kit/Container.tsx'
 export const PodcastAuthors = defineCapsule({
   name: 'PodcastAuthors',
   description:
-    "Host roster section for a podcast site, rendering a responsive grid of warm token-styled host cards. Each card pairs a rounded avatar image with the host's name, role, a short bio, and a row of social pills. Use it to introduce the people behind a podcast and give listeners a face and voice to connect with.",
+    "Host roster section for a podcast site, rendering a responsive grid of square hard-shadowed host cards. Each card carries a mono host-index numeral, a square avatar image, the host's name, a mono uppercase role, a short bio, and a row of hairline mono social chips. Use it to introduce the people behind a podcast and give listeners a face and voice to connect with.",
   props: z.object({
     /** Small uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -82,39 +82,51 @@ export const PodcastAuthors = defineCapsule({
       >
         <Container size="lg" className="px-6 lg:px-6">
           <SectionHeading
+            align="left"
             eyebrow={eyebrow}
             title={heading}
             subtitle={subheading}
+            className="max-w-3xl"
+            eyebrowClassName="font-mono tracking-[0.2em]"
+            titleClassName="text-3xl font-extrabold tracking-tight md:text-4xl"
           />
-          <ResponsiveGrid cols="1-md-3" className="mt-16">
+          <ResponsiveGrid cols="1-md-3" className="mt-14">
             {hosts.map((host, i) => (
               <PersonCard
                 key={`${host.name}-${i}`}
                 variant="outlined"
-                className="p-8 rounded-2xl"
+                className="p-8 rounded-none border-foreground/20 transition-[transform,border-color,box-shadow] duration-150 hover:-translate-y-0.5 hover:border-foreground hover:shadow-[8px_8px_0_0] hover:shadow-foreground/10 motion-reduce:transform-none"
               >
-                <Image
-                  alt={host.avatarAlt}
-                  w={96}
-                  h={96}
-                  loading="lazy"
-                  className="size-24 rounded-full object-cover"
-                />
-                <PersonCardName className="mt-6 text-lg font-bold">
+                <div className="flex items-start justify-between gap-4">
+                  <Image
+                    alt={host.avatarAlt}
+                    w={96}
+                    h={96}
+                    loading="lazy"
+                    className="size-20 rounded-none border border-border object-cover"
+                  />
+                  <span
+                    aria-hidden="true"
+                    className="font-mono text-3xl font-extrabold tabular-nums leading-none text-foreground/15"
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                </div>
+                <PersonCardName className="mt-6 text-lg font-extrabold tracking-tight">
                   {host.name}
                 </PersonCardName>
-                <PersonCardRole className="mt-1 font-medium text-primary">
+                <PersonCardRole className="mt-2 font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-primary">
                   {host.role}
                 </PersonCardRole>
                 <PersonCardBio className="mt-4 leading-6">
                   {host.bio}
                 </PersonCardBio>
                 {host.socials?.length ? (
-                  <div className="mt-6 flex flex-wrap gap-2">
+                  <div className="mt-6 flex flex-wrap gap-2 border-t border-border pt-4">
                     {host.socials.map((social, j) => (
                       <span
                         key={`${social}-${j}`}
-                        className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground"
+                        className="rounded-none border border-border px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground"
                       >
                         {social}
                       </span>

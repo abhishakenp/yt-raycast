@@ -14,8 +14,7 @@ import {
 } from '#/components/ui/sheet.tsx'
 import { cn } from '#/lib/utils.ts'
 import type { EventTicketInput, eventLakebed } from './event-lakebed.ts'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export type EventLakebed = LakebedClientRuntime<typeof eventLakebed>
 
 type EventRegistrationSummary = ReturnType<
@@ -139,7 +138,7 @@ export function EventRegistrationBadge({
   return (
     <span
       className={cn(
-        'hidden max-w-44 truncate rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary lg:inline-flex',
+        'hidden max-w-44 truncate rounded-none border border-primary/30 bg-primary/10 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-primary lg:inline-flex',
         className,
       )}
     >
@@ -177,7 +176,7 @@ export function EventMobileMenu({
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="w-[min(100%,22rem)] border-l border-border bg-background p-0 text-foreground sm:max-w-[22rem]"
+        className="w-[min(100%,22rem)] rounded-none border-l border-border bg-background p-0 text-foreground shadow-none sm:max-w-[22rem]"
       >
         <SheetHeader className="border-b border-border px-5 py-4 text-left">
           <SheetTitle className="text-base font-semibold">{brand}</SheetTitle>
@@ -185,9 +184,9 @@ export function EventMobileMenu({
             Navigate event pages or reserve a ticket.
           </SheetDescription>
         </SheetHeader>
-        <div className="flex flex-col gap-1 px-3 py-4">
+        <div className="flex flex-col divide-y divide-border">
           <NavbarRouteLink
-            className="rounded-lg px-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            className="rounded-none border-l-2 border-l-primary bg-muted px-5 py-3.5 text-left text-sm font-medium text-foreground transition-colors duration-150 hover:bg-muted active:translate-y-px"
             href={homeTarget ?? nav[0]}
             onClick={() => setOpen(false)}
           >
@@ -196,7 +195,7 @@ export function EventMobileMenu({
           {nav.map((item) => (
             <NavbarRouteLink
               key={item}
-              className="rounded-lg px-3 py-3 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="rounded-none border-l-2 border-l-transparent px-5 py-3.5 text-left text-sm font-medium text-muted-foreground transition-colors duration-150 hover:border-l-border hover:bg-muted hover:text-foreground active:translate-y-px"
               href={item}
               onClick={() => setOpen(false)}
             >
@@ -216,7 +215,7 @@ export function EventMobileMenu({
                 Reserving
               </>
             }
-            className="mt-3 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+            className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-none bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition-[background-color,transform] duration-150 hover:bg-primary/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
           >
             {ctaLabel}
           </EventActionButton>

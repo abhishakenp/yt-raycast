@@ -62,7 +62,7 @@ const DEFAULT_LEGAL = ['Privacy', 'Terms', 'Cookies']
 export const PetVeterinaryFooter = defineCapsule({
   name: 'PetVeterinaryFooter',
   description:
-    'Warm, friendly site footer for a veterinary clinic / pet-healthcare site, composing the SiteFooter kit composite. Renders a caring paw-glyph brand mark, a heartfelt tagline, social links, and four link columns (Services, Clinic & Hours, Company, Legal), plus a bottom bar with copyright, a reassuring note, and legal links. Accepts public props to override every block. Use it as the closing band of any pet-care or veterinary site for consistent, route-aware navigation and a final note of trust.',
+    'Warm friendly-clinical hairline ledger footer for a veterinary clinic / pet-healthcare site, composing the SiteFooter kit composite. A border-topped band with an asymmetric grid: a wide brand block (round primary smiley-glyph mark + clinic name + heartfelt tagline + square mono social chips), followed by four link columns (Services, Clinic & Hours, Company, Legal) with mono uppercase micro-label titles and quiet block links, closed by a hairline mono copyright + legal bar. Accepts public props to override every block. Use it as the closing band of any pet-care or veterinary site for consistent, route-aware navigation and a final note of trust.',
   props: z.object({
     brand: z.string().optional(),
     tagline: z.string().optional(),
@@ -86,36 +86,58 @@ export const PetVeterinaryFooter = defineCapsule({
 
     return (
       <SiteFooter className={props.className}>
-        <FooterContent>
-          <FooterGrid>
+        <FooterContent className="py-14 sm:py-16">
+          <FooterGrid className="gap-x-8 gap-y-12 md:grid-cols-2 lg:grid-cols-12">
             <FooterBrand
               brand={brand}
               brandMark={brandMark}
-              brandClassName={'font-semibold'}
+              brandClassName="text-lg font-bold tracking-tight"
+              className="md:col-span-2 lg:col-span-4"
             >
-              <FooterTagline>{tagline}</FooterTagline>
-              <FooterSocial>
+              <FooterTagline className="mt-3 max-w-xs leading-relaxed">
+                {tagline}
+              </FooterTagline>
+              <FooterSocial className="mt-5 gap-2">
                 {social.map((s) => (
-                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  <FooterSocialLink
+                    key={s.label}
+                    className="border border-border px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground active:translate-y-px"
+                  >
+                    {s.label}
+                  </FooterSocialLink>
                 ))}
               </FooterSocial>
             </FooterBrand>
             {columns.map((col) => (
-              <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
-                <FooterColumnList>
+              <FooterColumn key={col.title} className="lg:col-span-2">
+                <FooterColumnTitle className="font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground">
+                  {col.title}
+                </FooterColumnTitle>
+                <FooterColumnList className="mt-4 space-y-2.5">
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink
+                      key={link}
+                      className="block w-fit text-foreground/80 hover:text-foreground"
+                    >
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
-          <FooterBottom>
-            <FooterCopyright>{note}</FooterCopyright>
-            <FooterLegal>
+          <FooterBottom className="mt-14">
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.15em]">
+              {note}
+            </FooterCopyright>
+            <FooterLegal className="gap-x-6 gap-y-2">
               {DEFAULT_LEGAL.map((l) => (
-                <FooterLink key={l}>{l}</FooterLink>
+                <FooterLink
+                  key={l}
+                  className="block w-fit text-xs text-muted-foreground hover:text-foreground"
+                >
+                  {l}
+                </FooterLink>
               ))}
             </FooterLegal>
           </FooterBottom>

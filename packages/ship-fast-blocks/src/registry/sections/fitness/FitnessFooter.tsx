@@ -8,9 +8,9 @@ import { z } from 'zod/v4'
  * Use as the closing footer on gyms, fitness studios, yoga / pilates / boxing / spin
  * studios, wellness clubs or class-booking sites.
  */
+import { Container } from '#/section-kit/Container.tsx'
 import {
   SiteFooter,
-  FooterContent,
   FooterGrid,
   FooterBrand,
   FooterTagline,
@@ -76,7 +76,7 @@ export const FitnessFooter = defineCapsule({
       : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
     return (
       <SiteFooter className={props.className}>
-        <FooterContent>
+        <Container className="py-12">
           <FooterGrid>
             <FooterBrand brand={brand}>
               <FooterTagline>{footerTagline}</FooterTagline>
@@ -105,7 +105,7 @@ export const FitnessFooter = defineCapsule({
               ))}
             </FooterLegal>
           </FooterBottom>
-        </FooterContent>
+        </Container>
       </SiteFooter>
     )
   },

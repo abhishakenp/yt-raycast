@@ -21,8 +21,7 @@ import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { SplitStory } from '#/section-kit/SplitStory.tsx'
 import { Watermark } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const FurnitureStoreDesign = defineCapsule({
   name: 'FurnitureStoreDesign',
   description:

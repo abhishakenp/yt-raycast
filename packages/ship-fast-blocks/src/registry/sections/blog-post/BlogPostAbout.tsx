@@ -7,8 +7,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { AboutSection } from '#/section-kit/AboutSection.tsx'
 import { PullQuoteText } from '#/section-kit/PullQuote.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * BlogPostAbout — newsprint long-form article body for a blog post detail
  * page. A serif reading column under a giant ghost pilcrow watermark: the lead

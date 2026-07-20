@@ -8,21 +8,23 @@ import {
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { Container } from '#/section-kit/Container.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * PhotographyLogos — a "Featured In" publication logo strip for a fine-art /
- * wedding photographer portfolio. A muted card band with a centered uppercase
- * tracked label above a faded responsive grid of serif publication wordmarks
- * (2 up on mobile, up to 6 on desktop), each routing through section-kit route links. Use
- * as social-proof / press credibility band beneath a hero for photographers,
+ * PhotographyLogos — a hairline "Featured In" press band for a fine-art /
+ * wedding photographer portfolio. A quiet, hairline-bordered strip inside a
+ * plain Container: a left-aligned mono, wide-tracked press label sits on its
+ * own hairline rule above a faded wrapping row of serif publication wordmarks,
+ * each faded until hover and routing through section-kit route links. Extreme
+ * restraint, tokens-only, so it reads in both light and dark themes. Use as a
+ * social-proof / press-credibility band beneath a hero for photographers,
  * studios, and editorial creatives. Renders fully with no props via baked-in
  * wedding-press defaults.
  */
 export const PhotographyLogos = defineCapsule({
   name: 'PhotographyLogos',
   description:
-    "A 'Featured In' publication logo strip for a fine-art / wedding photographer portfolio: a muted card band with a centered uppercase tracked label above a faded responsive grid of serif publication wordmarks (2 up on mobile, up to 6 on desktop), each routing through section-kit route links. Use as a social-proof / press credibility band beneath a hero for photographers, studios, and editorial creatives.",
+    "A hairline 'Featured In' press band for a fine-art / wedding photographer portfolio: a quiet, hairline-bordered strip inside a plain Container pairing a left-aligned mono, wide-tracked press label on its own hairline rule with a faded wrapping row of serif publication wordmarks that sharpen on hover, each routing through section-kit route links. Extreme restraint, tokens-only. Use as a social-proof / press-credibility band beneath a hero for photographers, studios, and editorial creatives.",
   props: z.object({
     /** Uppercase tracked label above the logos. */
     label: z.string().optional(),
@@ -45,19 +47,37 @@ export const PhotographyLogos = defineCapsule({
 
     return (
       <LogoStrip
-        className={cn(
-          'border-b border-border bg-card py-16 lg:py-20',
-          props.className,
-        )}
+        className={cn('border-y border-border bg-background', props.className)}
       >
-        <LogoStripLabel>{label}</LogoStripLabel>
-        <LogoStripItems layout="flex" className="mt-8">
-          {items.filter(Boolean).map((logo) => (
-            <LogoStripItem key={logo} variant="opacity-hover" asChild>
-              <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
-            </LogoStripItem>
-          ))}
-        </LogoStripItems>
+        <Container className="py-14 lg:py-16">
+          <div className="flex items-center gap-4">
+            <LogoStripLabel className="text-left font-mono text-[11px] tracking-[0.2em] text-muted-foreground">
+              {label}
+            </LogoStripLabel>
+            <span aria-hidden="true" className="h-px flex-1 bg-border" />
+            <span
+              aria-hidden="true"
+              className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+            >
+              Press
+            </span>
+          </div>
+          <LogoStripItems
+            layout="flex"
+            className="mt-8 justify-start gap-x-10 gap-y-5"
+          >
+            {items.filter(Boolean).map((logo) => (
+              <LogoStripItem
+                key={logo}
+                variant="opacity-hover"
+                asChild
+                className="font-serif text-xl tracking-tight"
+              >
+                <NavbarRouteLink href={logo}>{logo}</NavbarRouteLink>
+              </LogoStripItem>
+            ))}
+          </LogoStripItems>
+        </Container>
       </LogoStrip>
     )
   },

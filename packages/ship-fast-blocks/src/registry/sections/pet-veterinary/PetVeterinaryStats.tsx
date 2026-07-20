@@ -9,12 +9,13 @@ import {
 } from '#/section-kit/StatGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import { cn } from '#/lib/utils.ts'
 
 export const PetVeterinaryStats = defineCapsule({
   name: 'PetVeterinaryStats',
   description:
-    'Warm key-figures band for a veterinary clinic site, composing the shared StatGrid kit composite into a friendly four-column row of headline metrics — happy pets cared for, years caring for the community, veterinarians and staff on the team, and client satisfaction. When a heading is provided it wraps the grid in a SectionHeading; otherwise it renders the stats bare. Accepts a public `stats` prop to override the figures. Use it to build trust and convey caring experience between the hero and services bands.',
+    'Warm friendly-clinical key-figures ledger for a veterinary clinic site, composing the shared StatGrid kit composite into a collapsed-border hairline row of headline metrics — happy pets cared for, years caring for the community, veterinarians and staff on the team, and client satisfaction. Each cell pairs a giant fluid extrabold tabular numeral with a short primary tick dash and a mono uppercase micro-label; a mono meta line sits above. When a heading is provided it renders an asymmetric left-aligned SectionHeading with a mono count meta; otherwise it renders the ledger under the bare meta line. Accepts a public `stats` prop to override the figures. Use it to build trust and convey caring experience between the hero and services bands.',
   props: z.object({
     heading: z.string().optional(),
     subheading: z.string().optional(),
@@ -36,27 +37,61 @@ export const PetVeterinaryStats = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-muted/30 py-20 text-foreground sm:py-24',
+          'border-y border-border bg-muted/40 py-16 text-foreground sm:py-20',
           props.className,
         )}
       >
         <Container size="xl" className="px-6">
           {props.heading ? (
-            <SectionHeading title={props.heading} subtitle={props.subheading} />
-          ) : null}
-          <div className={props.heading ? 'mt-14' : ''}>
-            <StatGrid columns={4}>
-              {stats.map((s) => {
-                const __iv__ = s as { value: string; label: string }
-                return (
-                  <StatItem key={__iv__.label}>
-                    <StatValue>{__iv__.value}</StatValue>
-                    <StatLabel>{__iv__.label}</StatLabel>
-                  </StatItem>
-                )
-              })}
-            </StatGrid>
-          </div>
+            <div className="mb-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-12">
+              <SectionHeading
+                align="left"
+                title={props.heading}
+                subtitle={props.subheading}
+                className="max-w-2xl gap-0"
+                titleClassName="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl"
+                subtitleClassName="mt-4 text-base text-muted-foreground sm:text-lg"
+              />
+              <MonoTag
+                aria-hidden="true"
+                tone="faint"
+                className="shrink-0 md:pb-1"
+              >
+                {String(stats.length).padStart(2, '0')} / by the numbers
+              </MonoTag>
+            </div>
+          ) : (
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="mb-8 block sm:mb-10"
+            >
+              [ our little pack, by the numbers ]
+            </MonoTag>
+          )}
+          <StatGrid
+            columns={4}
+            className="gap-0 border-l border-t border-border"
+          >
+            {stats.map((s) => {
+              const __iv__ = s as { value: string; label: string }
+              return (
+                <StatItem
+                  key={__iv__.label}
+                  align="left"
+                  className="gap-3 border-b border-r border-border p-6 sm:p-8"
+                >
+                  <StatValue className="text-[clamp(1.9rem,5.5vw,4.5rem)] font-extrabold leading-none tracking-tight tabular-nums">
+                    {__iv__.value}
+                  </StatValue>
+                  <span aria-hidden="true" className="h-px w-8 bg-primary" />
+                  <StatLabel className="font-mono text-[11px] uppercase tracking-[0.2em]">
+                    {__iv__.label}
+                  </StatLabel>
+                </StatItem>
+              )
+            })}
+          </StatGrid>
         </Container>
       </section>
     )

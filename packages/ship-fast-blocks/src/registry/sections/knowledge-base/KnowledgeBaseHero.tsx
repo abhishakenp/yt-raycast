@@ -6,7 +6,7 @@ import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
-import { FilterChip } from '#/section-kit/index.ts'
+import { FilterChip } from '#/section-kit/FilterChip.tsx'
 import { knowledgeBaseLakebed } from './knowledge-base-lakebed.ts'
 import {
   useKbSearch,

@@ -3,16 +3,18 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * ManufacturingGallery — a dark portfolio / recent-projects gallery for a
- * precision-manufacturing site. On a foreground-colored band, a header row pairs
- * an eyebrow + heading with a right-aligned description, above a responsive
- * three-column grid of project tiles, each an alt-driven photo that zooms on
- * hover plus a title and material/spec caption, the whole tile routing through
- * section-kit route links. Bold, industrial, gallery-like. Use to showcase recently
- * machined parts on machine-shop or fabricator pages. Renders fully with no
- * props via baked-in defaults.
+ * ManufacturingGallery — a dark, heavy-industrial portfolio / recent-projects
+ * gallery for a precision-manufacturing site. On an inverted bg-foreground band,
+ * an asymmetric header pairs a mono index eyebrow + giant heading with a right-
+ * aligned description, above a staggered three-column grid of hard-bordered slab
+ * tiles: each an alt-driven photo that zooms on hover under a mono spec ledger
+ * caption (index + title + material/spec line). A giant ghost watermark bleeds
+ * behind. Tech-brutalist, industrial, gallery-like. Use to showcase recently
+ * machined parts on machine-shop or fabricator pages. Renders fully with no props
+ * via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   GalleryGrid,
@@ -24,7 +26,7 @@ import {
 export const ManufacturingGallery = defineCapsule({
   name: 'ManufacturingGallery',
   description:
-    'A dark portfolio / recent-projects gallery for a precision-manufacturing site: on a foreground-colored band, a header row pairs an eyebrow + heading with a right-aligned description, above a responsive three-column grid of project tiles, each an alt-driven photo that zooms on hover plus a title and material/spec caption, the whole tile routing through section-kit route links. Bold, industrial, gallery-like. Use to showcase recently machined parts on machine-shop or fabricator pages.',
+    'A dark, heavy-industrial portfolio / recent-projects gallery for a precision-manufacturing site: on an inverted bg-foreground band, an asymmetric header pairs a mono index eyebrow + giant heading with a right-aligned description, above a staggered three-column grid of hard-bordered slab tiles, each an alt-driven photo that zooms on hover under a mono spec ledger caption (index + title + material/spec line), with a giant ghost watermark behind. Tech-brutalist, industrial, gallery-like. Use to showcase recently machined parts on machine-shop or fabricator pages.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -74,44 +76,57 @@ export const ManufacturingGallery = defineCapsule({
           },
         ]
     return (
-      <section className={cn('bg-foreground py-20 lg:py-28', props.className)}>
-        <Container>
+      <section
+        className={cn(
+          'relative overflow-hidden bg-foreground py-20 text-background lg:py-28',
+          props.className,
+        )}
+      >
+        <Watermark className="-right-4 top-8 text-[8rem] leading-none text-background/[0.05] sm:text-[13rem]">
+          WORK
+        </Watermark>
+        <Container className="relative">
           <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <SectionHeading
               align="left"
               eyebrow={eyebrow}
               title={heading}
               className="gap-0"
-              eyebrowClassName="text-sm font-medium uppercase tracking-wider text-background/60"
-              titleClassName="mt-3 text-3xl font-semibold tracking-tight text-background sm:text-4xl"
+              eyebrowClassName="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-background/60"
+              titleClassName="mt-3 text-3xl font-extrabold uppercase tracking-tight text-background sm:text-4xl"
             />
-            <p className="max-w-md text-background/70">{description}</p>
+            <p className="max-w-md text-background/70 md:text-right">
+              {description}
+            </p>
           </div>
           <GalleryGrid>
             <GalleryGridItems columns={3}>
-              {items
-                .map((item) => ({
-                  alt: item.title,
-                  caption: item.spec,
-                }))
-                .map((img) => {
-                  const __iv__ = img as {
-                    alt: string
-                    caption?: string
-                    title?: string
-                    location?: string
-                  }
-                  return (
-                    <GalleryTile key={__iv__.alt}>
-                      <GalleryTileImage alt={__iv__.alt} />
-                      {__iv__.caption && (
-                        <GalleryTileCaption>
-                          {__iv__.caption}
-                        </GalleryTileCaption>
-                      )}
-                    </GalleryTile>
-                  )
-                })}
+              {items.map((item, i) => (
+                <GalleryTile
+                  key={item.title}
+                  className={cn(
+                    'rounded-none border-2 border-background/40',
+                    i % 3 === 1 && 'lg:translate-y-6',
+                  )}
+                >
+                  <GalleryTileImage alt={item.title} />
+                  <GalleryTileCaption className="rounded-none border-t-2 border-background/40 bg-foreground/90 px-4 py-3 text-background">
+                    <MonoTag
+                      aria-hidden="true"
+                      tone="inverted"
+                      className="block text-[10px]"
+                    >
+                      {String(i + 1).padStart(2, '0')} / Part
+                    </MonoTag>
+                    <span className="mt-1 block text-sm font-bold uppercase tracking-tight text-background">
+                      {item.title}
+                    </span>
+                    <span className="mt-1 block font-mono text-[11px] tracking-[0.06em] text-background/60">
+                      {item.spec}
+                    </span>
+                  </GalleryTileCaption>
+                </GalleryTile>
+              ))}
             </GalleryGridItems>
           </GalleryGrid>
         </Container>

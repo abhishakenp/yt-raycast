@@ -11,8 +11,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
  * CryptoNavbar — Web3-terminal sticky top navigation bar for a crypto / DeFi
  * infrastructure landing page. A backdrop-blurred, hairline-bottomed header

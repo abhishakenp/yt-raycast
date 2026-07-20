@@ -11,8 +11,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
  * DocsNavbar — "Terminal-docs" sticky reference-manual header for a developer
  * DOCUMENTATION / API-reference site. Built on the shared `SiteNav` composite:

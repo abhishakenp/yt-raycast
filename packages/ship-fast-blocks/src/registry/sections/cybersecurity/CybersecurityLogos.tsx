@@ -9,8 +9,7 @@ import {
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * CybersecurityLogos — terminal-stealth cleared-vendor register. A muted,
  * top-and-bottom hairline-bordered band: a mono uppercase eyebrow rule (primary

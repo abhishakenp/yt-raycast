@@ -9,19 +9,25 @@ import {
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
- * MobileAppHero — a split, two-column hero for a clean, minimalist mobile-app
- * landing page on a calm muted band. The left column stacks a dot status pill,
- * a large two-line headline, a relaxed subheading, App Store + Google Play
- * download buttons (with Apple / Play glyphs), and an overlapping avatar
- * social-proof row. The right column floats a phone mockup (soft blurred glow
- * behind it) with two floating UI chips: a check-in "done" card and a streak
- * counter. Download buttons route through section-kit route links; all imagery is alt-driven
+ * MobileAppHero — a kinetic app-showcase split hero for a consumer mobile-app
+ * landing page on a calm muted band washed with a fading dot grid and a giant
+ * ghost "APP" watermark. An asymmetric 7:5 grid: on the left a square mono
+ * status chip with a pulsing dot, a huge clamp-scaled extrabold headline whose
+ * final word sits on a tilted primary marker block, a relaxed subheading, a
+ * mono "[ INSTALL → OPEN → REPEAT ]" micro-strip, sharp App Store + Google Play
+ * download buttons (Apple / Play glyphs, hard offset shadows, mechanical press
+ * feedback), and an overlapping avatar social-proof row. On the right a
+ * hairline-chromed device frame with a notch + mono status bar wraps the
+ * app-screen mockup, and two rotated hard-shadow stat stickers (a check-in
+ * "done" card and a streak counter) overlap its corners. Download buttons record
+ * shared Lakebed download intent with scoped loading; all imagery is alt-driven
  * via <Image>. Use as the opening hero for a habit tracker, fitness / wellness /
  * meditation app, productivity or to-do app, or any consumer app-download page.
  * Renders fully with no props via baked-in "DailyFlow" defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
+import { DotGrid, MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   HeroStatBadge,
   HeroStatBadgeIcon,
@@ -32,7 +38,7 @@ import {
 export const MobileAppHero = defineCapsule({
   name: 'MobileAppHero',
   description:
-    'Split two-column hero for a clean, minimalist mobile-app landing page on a calm muted band: App Store and Google Play buttons record shared Lakebed download intent with scoped loading, while the right column floats a phone mockup with progress chips. Use as the opening hero for a habit tracker, fitness / wellness / meditation app, productivity or to-do app, or any consumer app-download page.',
+    'Kinetic app-showcase split hero for a consumer mobile-app landing page on a calm muted band with a fading dot grid and giant ghost APP watermark: an asymmetric 7:5 grid with a square mono status chip, a huge clamp-scaled headline whose final word sits on a tilted primary marker block, a mono install micro-strip, sharp App Store and Google Play buttons (hard offset shadows, press feedback) that record shared Lakebed download intent with scoped loading, and a hairline-chromed device frame with a notch + mono status bar wrapping the app-screen mockup plus two rotated hard-shadow stat stickers. Use as the opening hero for a habit tracker, fitness / wellness / meditation app, productivity or to-do app, or any consumer app-download page.',
   props: z.object({
     badge: z.string().optional(),
     headingTop: z.string().optional(),
@@ -111,35 +117,60 @@ export const MobileAppHero = defineCapsule({
         <path d="M5 13l4 4L19 7" />
       </svg>
     )
+    const bottomWords = headingBottom.split(' ')
+    const bottomLead = bottomWords.slice(0, -1).join(' ')
+    const bottomMark = bottomWords.at(-1) ?? ''
     return (
       <HeroSection
         variant="split"
         className={cn(
-          'bg-muted/50 pt-20 pb-20 lg:pt-28 lg:pb-28',
+          'relative overflow-hidden bg-muted/50 pt-24 pb-20 lg:pt-32 lg:pb-28',
           props.className,
         )}
         aria-labelledby="mobileapp-hero-heading"
       >
-        <Container>
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-            <div className="max-w-xl">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1">
-                <span className="size-2 rounded-full bg-primary" />
-                <span className="text-xs font-medium text-muted-foreground">
-                  {badge}
-                </span>
-              </div>
+        {/* Layered wash: dot grid fading out to the right + ghost watermark. */}
+        <DotGrid
+          className="inset-y-0 left-0 w-2/3"
+          fade="right"
+          tone="border"
+        />
+        <Watermark className="-top-8 right-0 text-[8rem] sm:text-[12rem] lg:-top-12 lg:text-[18rem]">
+          APP
+        </Watermark>
+        <Container className="relative">
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
+            <div className="lg:col-span-7">
+              <span className="mb-6 inline-flex items-center gap-2 border border-border bg-background px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.15em] text-foreground/80">
+                <span
+                  aria-hidden="true"
+                  className="size-2 animate-pulse bg-primary"
+                />
+                {badge}
+              </span>
               <h1
                 id="mobileapp-hero-heading"
-                className="mb-6 text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl"
+                className="mb-6 max-w-2xl text-[clamp(2.5rem,6.5vw,4.75rem)] font-extrabold leading-[0.98] tracking-tight text-foreground"
               >
                 {headingTop}
                 <br />
-                {headingBottom}
+                {bottomLead ? <>{bottomLead} </> : null}
+                <span className="relative ml-[0.04em] inline-block whitespace-nowrap">
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-[-0.12em] inset-y-[0.05em] -rotate-1 bg-primary"
+                  />
+                  <span className="relative text-primary-foreground">
+                    {bottomMark}
+                  </span>
+                </span>
               </h1>
-              <p className="mb-8 text-lg leading-relaxed text-muted-foreground">
+              <p className="mb-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
                 {subheading}
               </p>
+              <MonoTag aria-hidden="true" tone="faint" className="mb-8 block">
+                [ install → open → repeat ]
+              </MonoTag>
               <div className="mb-10 flex flex-col gap-4 sm:flex-row">
                 <SaasPlanActionButton
                   lakebed={lakebed}
@@ -152,7 +183,7 @@ export const MobileAppHero = defineCapsule({
                       Opening
                     </>
                   }
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+                  className="inline-flex items-center justify-center gap-2 rounded-none bg-primary px-6 py-3.5 text-base font-semibold text-primary-foreground shadow-[5px_5px_0_0] shadow-foreground transition-[transform,box-shadow,background-color] duration-150 hover:bg-primary/90 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none motion-reduce:transform-none disabled:pointer-events-none disabled:opacity-70"
                 >
                   <AppleIcon />
                   {primaryCta}
@@ -168,7 +199,7 @@ export const MobileAppHero = defineCapsule({
                       Opening
                     </>
                   }
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-input bg-background px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
+                  className="inline-flex items-center justify-center gap-2 rounded-none border border-foreground bg-background px-6 py-3.5 text-base font-semibold text-foreground transition-[transform,background-color] duration-150 hover:bg-muted active:translate-y-px motion-reduce:transform-none disabled:pointer-events-none disabled:opacity-70"
                 >
                   <PlayIcon />
                   {secondaryCta}
@@ -182,43 +213,56 @@ export const MobileAppHero = defineCapsule({
                       alt={a}
                       w={100}
                       h={100}
-                      className="size-8 rounded-full border-2 border-background object-cover"
+                      className="size-8 rounded-none border-2 border-background object-cover"
                     />
                   ))}
                 </div>
                 <span>{socialProof}</span>
               </div>
             </div>
-            <div className="relative flex justify-center lg:justify-end">
+            <div className="relative flex justify-center lg:col-span-5 lg:justify-end">
               <div className="relative">
-                <div
-                  aria-hidden="true"
-                  className="absolute -left-4 -top-4 size-72 rounded-full bg-primary/20 opacity-50 blur-3xl"
-                />
-                <Image
-                  alt={imageAlt}
-                  w={400}
-                  h={800}
-                  className="relative w-72 rounded-[2.5rem] border-8 border-foreground object-cover shadow-2xl sm:w-80 lg:w-96"
-                />
-                <HeroStatBadge className="absolute -bottom-6 -right-6 flex items-center gap-3 rounded-2xl shadow-xl">
-                  <HeroStatBadgeIcon className="size-10 rounded-full bg-primary/10">
+                {/* Device frame: hairline chrome, notch + mono status bar. */}
+                <div className="relative w-64 rounded-[2.5rem] border-8 border-foreground bg-foreground p-0 shadow-[10px_10px_0_0] shadow-foreground/20 sm:w-72 lg:w-80">
+                  <span
+                    aria-hidden="true"
+                    className="absolute left-1/2 top-2 z-10 h-5 w-24 -translate-x-1/2 rounded-b-2xl bg-foreground"
+                  />
+                  <div className="relative overflow-hidden rounded-[1.9rem] bg-background">
+                    <div
+                      aria-hidden="true"
+                      className="flex items-center justify-between px-6 pt-3 pb-1 font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground"
+                    >
+                      <span>9:41</span>
+                      <span>DailyFlow</span>
+                    </div>
+                    <Image
+                      alt={imageAlt}
+                      w={400}
+                      h={800}
+                      className="w-full object-cover"
+                    />
+                  </div>
+                </div>
+                {/* Rotated hard-shadow stat stickers overlapping the frame. */}
+                <HeroStatBadge className="absolute -bottom-6 -right-6 flex rotate-2 items-center gap-3 rounded-none border border-foreground bg-background shadow-[5px_5px_0_0] shadow-foreground">
+                  <HeroStatBadgeIcon className="size-10 rounded-none bg-primary/10">
                     <CheckIcon className="size-5 text-primary" />
                   </HeroStatBadgeIcon>
                   <HeroStatBadgeContent>
-                    <HeroStatBadgeTitle className="text-sm font-semibold">
+                    <HeroStatBadgeTitle className="text-sm font-bold tracking-tight">
                       {chipTitle}
                     </HeroStatBadgeTitle>
-                    <HeroStatBadgeSubtitle className="text-xs">
+                    <HeroStatBadgeSubtitle className="font-mono text-[10px] uppercase tracking-[0.12em]">
                       {chipSubtitle}
                     </HeroStatBadgeSubtitle>
                   </HeroStatBadgeContent>
                 </HeroStatBadge>
-                <HeroStatBadge className="absolute -right-4 -top-4 rounded-2xl p-3 text-center shadow-xl">
-                  <HeroStatBadgeTitle className="text-2xl font-bold">
+                <HeroStatBadge className="absolute -left-6 -top-4 -rotate-2 rounded-none border border-foreground bg-background p-3 text-center shadow-[5px_5px_0_0] shadow-foreground">
+                  <HeroStatBadgeTitle className="text-2xl font-extrabold tracking-tight tabular-nums">
                     {streakValue}
                   </HeroStatBadgeTitle>
-                  <HeroStatBadgeSubtitle className="text-xs">
+                  <HeroStatBadgeSubtitle className="font-mono text-[10px] uppercase tracking-[0.12em]">
                     {streakLabel}
                   </HeroStatBadgeSubtitle>
                 </HeroStatBadge>

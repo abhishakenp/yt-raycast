@@ -6,8 +6,7 @@ import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { NavSidebar } from '#/section-kit/NavSidebar.tsx'
 import { Image } from '#/lib/img.tsx'
 import { analyticsAdminLakebed } from './analytics-admin-lakebed.ts'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * AnalyticsSidebar — Swiss data-grid left sidebar rail for a SaaS analytics /
  * admin product. An inline, hairline-bordered column (hidden below lg — mobile

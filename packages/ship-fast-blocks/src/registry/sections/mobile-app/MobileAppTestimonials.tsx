@@ -3,17 +3,20 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * MobileAppTestimonials — a centered-intro, 6-up testimonials grid on a calm
- * muted band. A centered heading + description sits above a responsive
- * 2-/3-column grid of bordered card quotes; each card shows a 5-star rating row
- * (primary-colored stars), the quote in curly quotation marks, and an avatar +
- * name + role footer. Avatars are alt-driven via <Image>; no links. Use as the
+ * MobileAppTestimonials — a kinetic staggered app-review wall for a consumer
+ * mobile-app page. An asymmetric header (left-aligned heading with a tilted
+ * primary marker block behind the key word, mono "[ REVIEWS ]" meta right) over
+ * a giant ghost quotation mark, above a 3-column grid of sharp hairline-bordered
+ * review cards whose middle column is pushed down for a staggered rhythm: each
+ * card opens with a mono "REVIEW 01" index tag beside a compact 5-star rating
+ * row, carries the quote, and closes with a hairline-topped mono name / role
+ * footer. Cards gain a foreground hairline on hover; no links. Use as the
  * social-proof / reviews wall on a habit tracker, fitness / wellness app,
  * productivity or to-do app, or any consumer app landing page. Renders fully
  * with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -25,7 +28,7 @@ import {
 export const MobileAppTestimonials = defineCapsule({
   name: 'MobileAppTestimonials',
   description:
-    'Centered-intro 6-up testimonials grid on a calm muted band: a centered heading + description over a responsive 2-/3-column grid of bordered card quotes, each with a 5-star rating row (primary-colored stars), the quote in curly quotation marks, and an avatar + name + role footer; avatars are alt-driven via <Image>. Use as the social-proof / reviews wall on a habit tracker, fitness / wellness app, productivity or to-do app, or any consumer app landing page.',
+    'Kinetic staggered app-review wall for a consumer mobile-app page: an asymmetric header (marker-highlighted heading left, mono reviews meta right) over a giant ghost quotation mark, above a 3-column grid of sharp hairline-bordered review cards with a pushed-down middle column, each opening with a mono REVIEW index tag beside a compact 5-star rating row and closing with a hairline-topped mono name / role footer. Use as the social-proof / reviews wall on a habit tracker, fitness / wellness app, productivity or to-do app, or any consumer app landing page.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -98,25 +101,73 @@ export const MobileAppTestimonials = defineCapsule({
               'Professional headshot of Priya Sharma, a young woman with long dark hair and confident expression',
           },
         ]
+    const headingWords = heading.split(' ')
+    const headingLead = headingWords.slice(0, -1).join(' ')
+    const headingMark = headingWords.at(-1) ?? ''
+    const Stars = () => (
+      <span aria-hidden="true" className="flex items-center gap-0.5">
+        {Array.from({ length: 5 }).map((_, s) => (
+          <svg
+            key={s}
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            className="size-3.5 text-primary"
+          >
+            <path d="M12 2l2.9 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l7.1-1.01L12 2z" />
+          </svg>
+        ))}
+      </span>
+    )
     return (
       <section
         className={cn(
-          'bg-muted/50 pt-28 pb-20 lg:pt-32 lg:pb-28',
+          'relative overflow-hidden bg-muted/40 pt-24 pb-20 lg:pt-28 lg:pb-28',
           props.className,
         )}
         aria-labelledby="mobileapp-testimonials-heading"
       >
-        <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            titleId="mobileapp-testimonials-heading"
-            className="mb-16 lg:mb-20 max-w-2xl gap-0"
-            titleClassName="mb-4 text-3xl font-bold tracking-tight sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <TestimonialGrid columns={3}>
-            {items.map((t) => {
+        <Watermark className="-top-16 left-0 font-serif text-[16rem] sm:text-[22rem]">
+          &ldquo;
+        </Watermark>
+        <Container className="relative">
+          {/* Asymmetric header: marker-highlighted heading left, mono meta right. */}
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <div className="max-w-2xl">
+              <MonoTag className="mb-4 block">
+                Reviews
+                <span aria-hidden="true" className="text-primary">
+                  {' '}
+                  · 4.9 ★
+                </span>
+              </MonoTag>
+              <h2
+                id="mobileapp-testimonials-heading"
+                className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl"
+              >
+                {headingLead}{' '}
+                <span className="relative ml-[0.12em] inline-block whitespace-nowrap">
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-[-0.15em] inset-y-[0.05em] -rotate-1 bg-primary"
+                  />
+                  <span className="relative text-primary-foreground">
+                    {headingMark}
+                  </span>
+                </span>
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">
+                {description}
+              </p>
+            </div>
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+            >
+              [ app store ] verified reviews
+            </p>
+          </div>
+          <TestimonialGrid columns={3} className="gap-5 lg:gap-6">
+            {items.map((t, index) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -127,12 +178,32 @@ export const MobileAppTestimonials = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
+                <TestimonialCard
+                  key={__iv__.name}
+                  className={cn(
+                    'rounded-none border border-border bg-card p-6 shadow-none transition-colors duration-150 hover:border-foreground/40',
+                    index % 3 === 1 && 'lg:translate-y-8',
+                  )}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <MonoTag className="flex items-center gap-2" tone="faint">
+                      <span
+                        aria-hidden="true"
+                        className="size-1.5 shrink-0 bg-primary"
+                      />
+                      Review {String(index + 1).padStart(2, '0')}
+                    </MonoTag>
+                    <Stars />
+                  </div>
+                  <TestimonialQuote className="mt-4 text-[15px] leading-relaxed">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="mt-6 flex-col items-start gap-0.5 border-t border-border pt-4">
+                    <TestimonialName className="text-sm font-bold tracking-tight">
+                      {__iv__.name}
+                    </TestimonialName>
                     {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
+                      <TestimonialMeta className="font-mono text-[10px] uppercase tracking-[0.14em]">
                         {__iv__.role || __iv__.company || __iv__.meta}
                       </TestimonialMeta>
                     )}

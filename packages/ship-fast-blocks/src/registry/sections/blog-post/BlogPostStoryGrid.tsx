@@ -18,8 +18,7 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 import { useSyncPublicationArticles } from '../blog/publication-interactions.tsx'
 import { publicationLakebed } from '../blog/publication-lakebed.ts'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * BlogPostStoryGrid — newsprint "further reading" archive band for an
  * editorial blog post detail page. A muted wash band that cuts in on a slanted

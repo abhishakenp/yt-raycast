@@ -9,8 +9,7 @@ import {
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * DevToolLogos — collapsed-border "trusted by" ledger strip for a developer
  * tool / API platform. A hairline-bottomed band where a left-aligned mono

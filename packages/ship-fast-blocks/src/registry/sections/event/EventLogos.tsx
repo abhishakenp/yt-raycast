@@ -9,8 +9,7 @@ import {
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * EventLogos — kinetic-poster sponsor ticker strip for a conference or event page.
  * A hairline top-and-bottom-bordered band carrying a mono uppercase caption on the

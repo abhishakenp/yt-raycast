@@ -15,7 +15,6 @@ import {
   MenuItemName,
   MenuItemTag,
   MenuItemRowDescription,
-  MenuItemPriceColumn,
   MenuItemRowPrice,
   MenuItemAction,
 } from '#/section-kit/MenuItemRow.tsx'
@@ -23,6 +22,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { MenuList } from '#/section-kit/MenuList.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -30,23 +30,26 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * WineryBreweryMenu — printed-style tasting list for a winery or craft brewery
- * page. A centered serif heading and supporting description sit above a stack
- * of categories (e.g. Reds, Whites, Seasonal Ales). Each category shows its
- * name with a divider, then lists pours in a two-column grid. Every pour seeds
- * shared command search and includes a scoped add-to-cart control that writes to
- * the shared Lakebed cart, while the item name still routes through section-kit route links
- * to a visit or tasting-booking target. Use for wineries, vineyards, cellar
- * doors, breweries, taprooms, or cideries that want a readable,
- * conversion-focused tasting menu.
+ * WineryBreweryMenu — artisan-editorial tasting ledger for a winery or craft
+ * brewery page. A left-aligned mono meta rail and serif heading sit above a
+ * giant faint ghost watermark, then a stack of categories (Reds, Whites,
+ * Seasonal Ales). Each category header pairs a serif title with a rotated
+ * mono label-stamp and a hairline divider; below it, pours read as
+ * collapsed-border tasting-ledger rows — a serif pour name, an optional
+ * label-stamp tag, a dotted price leader, and a tabular mono price
+ * (PINOT NOIR ···· $14) — with mono tasting notes beneath and a square-edged
+ * add-to-cart control. Every pour seeds shared command search and its add
+ * button writes to the shared Lakebed cart, while the pour name still routes
+ * through section-kit route links to a visit or tasting-booking target. Use for
+ * wineries, vineyards, cellar doors, breweries, taprooms, or cideries wanting a
+ * readable, conversion-focused tasting menu.
  */
 export const WineryBreweryMenu = defineCapsule({
   name: 'WineryBreweryMenu',
   description:
-    'Printed-style tasting list for a winery or craft brewery page: centered serif heading and description above a stack of categories (Reds, Whites, Seasonal Ales). Each category has a titled divider and a two-column grid of pours. Every pour seeds shared command search and has a scoped add-to-cart control that writes to the shared Lakebed cart; the item name still routes through section-kit route links. Use for wineries, vineyards, cellar doors, breweries, taprooms, or cideries wanting a readable tasting menu.',
+    'Artisan-editorial tasting ledger for a winery or craft brewery page: a left-aligned mono meta rail and serif heading above a giant faint ghost watermark, then a stack of categories (Reds, Whites, Seasonal Ales). Each category header pairs a serif title with a rotated mono label-stamp and a hairline divider; pours read as collapsed-border tasting-ledger rows (serif name, optional label-stamp tag, dotted price leader, tabular mono price) with mono notes and a square add-to-cart control. Every pour seeds shared command search and its add button writes to the shared Lakebed cart; the pour name still routes through section-kit route links. Use for wineries, vineyards, cellar doors, breweries, taprooms, or cideries wanting a readable tasting menu.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -177,68 +180,103 @@ export const WineryBreweryMenu = defineCapsule({
     )
 
     return (
-      <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
-        <Container size="xl" className="px-6">
+      <section
+        className={cn(
+          'relative overflow-hidden pt-24 pb-20 lg:pt-28 lg:pb-28',
+          props.className,
+        )}
+      >
+        <Watermark className="-top-6 right-0 font-serif text-[7rem] font-medium italic sm:text-[11rem] lg:text-[15rem]">
+          Cellar
+        </Watermark>
+
+        <Container size="xl" className="relative px-6">
           <MenuList>
+            <div className="mb-10 flex items-center gap-4">
+              <span
+                aria-hidden="true"
+                className="size-1.5 shrink-0 bg-primary"
+              />
+              <span className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+                By the glass · By the flight
+              </span>
+              <span aria-hidden="true" className="h-px flex-1 bg-border" />
+            </div>
+
             <SectionHeading
               title={heading}
               subtitle={description}
-              align="center"
-              titleClassName="font-serif text-3xl font-medium sm:text-4xl lg:text-5xl"
-              className="mx-auto mb-16 max-w-2xl gap-6"
+              align="left"
+              titleClassName="font-serif text-3xl font-medium tracking-tight sm:text-4xl lg:text-5xl"
+              className="mb-14 max-w-2xl gap-5"
             />
 
-            <div className="space-y-16">
+            <div className="space-y-14">
               {categories.map((category) => (
                 <div key={category.name}>
-                  <MenuCategoryHeader>
-                    <MenuCategoryTitle>{category.name}</MenuCategoryTitle>
+                  <MenuCategoryHeader className="mb-6 gap-4">
+                    <MenuCategoryTitle className="tracking-tight">
+                      {category.name}
+                    </MenuCategoryTitle>
+                    <span className="inline-flex -rotate-2 items-center whitespace-nowrap border border-border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                      {String((category.items ?? []).length).padStart(2, '0')}{' '}
+                      pours
+                    </span>
                     <MenuCategoryDivider />
                   </MenuCategoryHeader>
-                  <ResponsiveGrid
-                    cols="1-md-2"
-                    className="gap-x-12 gap-y-6 gap-0"
-                  >
+                  <ResponsiveGrid cols="1-md-2" className="gap-y-0 gap-x-16">
                     {(category.items ?? []).map((item) => (
-                      <MenuItemRow key={`${category.name}:${item.name}`}>
-                        <MenuItemContent>
-                          <MenuItemBody>
-                            <MenuItemNameRow>
-                              <MenuItemName asChild>
+                      <MenuItemRow
+                        key={`${category.name}:${item.name}`}
+                        className="group border-b border-border/70 py-5"
+                      >
+                        <MenuItemContent className="flex-col items-stretch gap-2">
+                          <MenuItemBody className="flex flex-col gap-2">
+                            <MenuItemNameRow className="items-baseline gap-3">
+                              <MenuItemName
+                                asChild
+                                className="font-serif text-lg font-medium text-foreground transition-colors hover:text-primary"
+                              >
                                 <NavbarRouteLink href={menuTarget}>
                                   {item.name}
                                 </NavbarRouteLink>
                               </MenuItemName>
-                              <MenuItemTag>{item.tag}</MenuItemTag>
+                              {item.tag ? (
+                                <MenuItemTag className="rounded-none border border-border bg-transparent px-1.5 py-0.5 font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-muted-foreground">
+                                  {item.tag}
+                                </MenuItemTag>
+                              ) : null}
+                              <span
+                                aria-hidden="true"
+                                className="mb-1.5 hidden h-px flex-1 self-end border-b border-dotted border-border sm:block"
+                              />
+                              <MenuItemRowPrice className="font-mono text-base font-medium tabular-nums text-foreground">
+                                {item.price}
+                              </MenuItemRowPrice>
                             </MenuItemNameRow>
-                            <MenuItemRowDescription>
+                            <MenuItemRowDescription className="max-w-md text-sm leading-relaxed text-muted-foreground">
                               {item.notes}
                             </MenuItemRowDescription>
                           </MenuItemBody>
-                          <MenuItemPriceColumn>
-                            <MenuItemRowPrice>{item.price}</MenuItemRowPrice>
-                            <MenuItemAction>
-                              {
-                                <CommerceAddItemButton
-                                  lakebed={lakebed}
-                                  item={{
-                                    label: item.name,
-                                    price: item.price,
-                                  }}
-                                  aria-label={`${addLabel} ${item.name} to cart`}
-                                  pendingChildren={
-                                    <>
-                                      <CommerceMutationSpinner className="size-3" />
-                                      Adding
-                                    </>
-                                  }
-                                  className="inline-flex h-8 items-center justify-center gap-1.5 rounded-full border border-border bg-background px-3 text-xs font-medium text-foreground transition-colors hover:bg-primary hover:text-primary-foreground disabled:pointer-events-none disabled:opacity-70"
-                                >
-                                  {addLabel}
-                                </CommerceAddItemButton>
+                          <MenuItemAction className="mt-1">
+                            <CommerceAddItemButton
+                              lakebed={lakebed}
+                              item={{
+                                label: item.name,
+                                price: item.price,
+                              }}
+                              aria-label={`${addLabel} ${item.name} to cart`}
+                              pendingChildren={
+                                <>
+                                  <CommerceMutationSpinner className="size-3" />
+                                  Adding
+                                </>
                               }
-                            </MenuItemAction>
-                          </MenuItemPriceColumn>
+                              className="inline-flex h-8 items-center justify-center gap-1.5 rounded-none border border-border bg-background px-3 text-[11px] font-medium uppercase tracking-[0.12em] text-foreground transition-[transform,background-color,color] duration-150 hover:bg-primary hover:text-primary-foreground active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
+                            >
+                              {addLabel}
+                            </CommerceAddItemButton>
+                          </MenuItemAction>
                         </MenuItemContent>
                       </MenuItemRow>
                     ))}

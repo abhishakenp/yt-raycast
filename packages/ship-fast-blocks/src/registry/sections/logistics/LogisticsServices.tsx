@@ -3,15 +3,17 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * LogisticsServices — a services / capabilities grid for a global-logistics /
- * freight-forwarding company on a subtle muted band. A centered heading + lede
- * over a responsive 1 → 2 → 3 column grid of bordered cards; each card carries a
- * rounded icon tile (tints rotate through theme tokens), a title, a descriptive
- * paragraph and a small "starting from" price line, lifting on hover. Clean and
- * corporate on a light surface with a deep slate primary. Use to present shipping
- * modes / service catalog (air, ocean, ground, warehousing, customs, last-mile)
- * for logistics, freight-forwarding, shipping, courier or cargo/transport
- * companies. Renders fully with no props.
+ * LogisticsServices — an industrial-manifest capabilities ledger for a global-
+ * logistics / freight-forwarding company. An asymmetric header (left-aligned
+ * heading + lede, mono `$ freight modes --list` meta on the right) above a
+ * collapsed-border service ledger: hairline-separated cells (2-col on mobile,
+ * 3-col on desktop), each with a mono index tag, a status square, a title, a
+ * descriptive paragraph and a mono `starting from` price line pinned to the
+ * bottom. A giant ghost route-arrow watermark sits behind. Precise and
+ * operational, tokens-only. Use to present shipping modes / a service catalog
+ * (air, ocean, ground, warehousing, customs, last-mile) for logistics, freight-
+ * forwarding, shipping, courier or cargo/transport companies. Renders fully with
+ * no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -22,10 +24,11 @@ import {
   ServiceTitle,
   ServiceDescription,
 } from '#/section-kit/ServicesGrid.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 export const LogisticsServices = defineCapsule({
   name: 'LogisticsServices',
   description:
-    "Services / capabilities grid for a global-logistics / freight-forwarding company on a subtle muted band: a centered heading + lede over a responsive 1 → 2 → 3 column grid of bordered cards, each with a rounded icon tile (tints rotate through theme tokens), a title, a descriptive paragraph and a small 'starting from' price line, lifting on hover. Clean and corporate on a light surface with a deep slate primary. Use to present shipping modes / a service catalog (Air Freight, Ocean Freight, Ground Transport, Warehousing, Customs Brokerage, Last-Mile Delivery) for logistics, freight-forwarding, shipping, courier, supply-chain or cargo/transport companies.",
+    "Industrial-manifest capabilities ledger for a global-logistics / freight-forwarding company: an asymmetric header (left-aligned heading + lede, mono command meta on the right) above a collapsed-border service ledger of hairline-separated cells (2-col mobile, 3-col desktop), each with a mono index tag, a status square, a title, a descriptive paragraph and a mono 'starting from' price line pinned to the bottom. Giant ghost route-arrow watermark behind. Precise and operational, tokens-only. Use to present shipping modes / a service catalog (Air Freight, Ocean Freight, Ground Transport, Warehousing, Customs Brokerage, Last-Mile Delivery) for logistics, freight-forwarding, shipping, courier, supply-chain or cargo/transport companies.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -86,18 +89,38 @@ export const LogisticsServices = defineCapsule({
           },
         ]
     return (
-      <section className={cn('bg-muted/50 py-16 lg:py-24', props.className)}>
-        <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-2xl gap-0"
-            titleClassName="mb-4 text-3xl font-semibold tracking-tight lg:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
+      <section
+        className={cn(
+          'relative overflow-hidden py-14 sm:py-20 lg:py-24',
+          props.className,
+        )}
+      >
+        <Watermark className="-right-8 -top-6 font-mono text-[8rem] tracking-tighter sm:text-[12rem] lg:text-[15rem]">
+          &rarr;&rarr;
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-10 flex flex-col gap-4 sm:mb-14 md:flex-row md:items-end md:justify-between">
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-3"
+              titleClassName="text-3xl font-extrabold tracking-tight lg:text-4xl"
+              subtitleClassName="text-lg text-muted-foreground"
+            />
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+            >
+              <span className="text-primary">$</span> freight modes --list
+            </p>
+          </div>
 
-          <ServicesGrid columns={3}>
-            {items.map((f) => {
+          <ServicesGrid
+            columns={3}
+            className="[&>div]:grid-cols-2 [&>div]:gap-px [&>div]:border [&>div]:border-border [&>div]:bg-border [&>div]:lg:grid-cols-3"
+          >
+            {items.map((f, i) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -108,10 +131,31 @@ export const LogisticsServices = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <ServiceCard key={__iv__.title}>
+                <ServiceCard
+                  key={__iv__.title}
+                  className="group gap-3 rounded-none border-0 bg-background p-5 shadow-none transition-colors hover:bg-muted/40 sm:p-7"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/70">
+                      {`0${i + 1}`.slice(-2)} /
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="size-1.5 bg-primary opacity-40 transition-opacity group-hover:opacity-100"
+                    />
+                  </div>
                   {__iv__.icon && <ServiceIcon>{__iv__.icon}</ServiceIcon>}
-                  <ServiceTitle>{__iv__.title}</ServiceTitle>
-                  <ServiceDescription>{__iv__.description}</ServiceDescription>
+                  <ServiceTitle className="text-base font-semibold tracking-tight sm:text-lg">
+                    {__iv__.title}
+                  </ServiceTitle>
+                  <ServiceDescription className="text-sm leading-relaxed">
+                    {__iv__.description}
+                  </ServiceDescription>
+                  {__iv__.price && (
+                    <p className="mt-auto pt-4 font-mono text-[11px] uppercase tracking-[0.14em] text-foreground tabular-nums">
+                      {__iv__.price}
+                    </p>
+                  )}
                 </ServiceCard>
               )
             })}

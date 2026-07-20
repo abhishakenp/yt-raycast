@@ -9,8 +9,7 @@ import {
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * CryptoLogos — trusted-by protocol ledger strip for a crypto / DeFi landing
  * page. A hairline-banded section with a left-aligned mono uppercase label

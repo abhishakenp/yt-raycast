@@ -3,7 +3,8 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { FilterChip, ResponsiveGrid } from '#/section-kit/index.ts'
+import { FilterChip } from '#/section-kit/FilterChip.tsx'
+import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import {
   ListingCard,
@@ -28,19 +29,21 @@ import {
 } from './property-listing-interactions.tsx'
 
 /**
- * PropertyListingGallery — search-results grid for a property marketplace. A
- * header row pairs a heading with a horizontal filter-chip strip (For Sale /
- * For Rent / type / price), above a dense responsive 1/2/3-column grid of
- * listing cards. Each card has an alt-driven photo with an optional corner tag
- * and a save-heart button, a bold price, a beds / baths / sqft spec row, and
- * the address. Filter chips update shared Lakebed search state; save-heart and
- * cards update saved/selected listing state. Use to render listing results in a
- * search portal.
+ * PropertyListingGallery — editorial search-results grid for a property
+ * marketplace. An asymmetric header pairs a left-aligned extrabold heading with
+ * a rounded-none mono filter-chip strip and a mono "[ results ]" count, above a
+ * staggered responsive 1/2/3-column grid of sharp hairline-framed listing
+ * plates. Each plate carries an alt-driven photo with an optional corner tag and
+ * a save-heart button, a giant tabular price, a mono beds / baths / sqft spec
+ * ledger, the address, and a hairline-ruled square "Contact agent" button.
+ * Alternating plates step down on a vertical rhythm. Filter chips update shared
+ * Lakebed search state; save-heart and cards update saved/selected listing
+ * state. Use to render listing results in a search portal.
  */
 export const PropertyListingGallery = defineCapsule({
   name: 'PropertyListingGallery',
   description:
-    'Search-results grid for a property marketplace: a header row pairing a heading with a horizontal filter-chip strip, above a dense responsive 1/2/3-column grid of listing cards. Each card has an alt-driven photo with an optional corner tag and a save-heart button, a bold price, a beds / baths / sqft spec row, and the address. Filter chips update shared Lakebed listing search state; save-heart and cards update saved/selected listing state. Use to render listing results in a search portal.',
+    'Editorial search-results grid for a property marketplace: an asymmetric header pairing a left-aligned extrabold heading with a rounded-none mono filter-chip strip and a mono result count, above a staggered responsive 1/2/3-column grid of sharp hairline-framed listing plates. Each plate carries an alt-driven photo with an optional corner tag and a save-heart button, a giant tabular price, a mono beds / baths / sqft spec ledger, the address, and a hairline-ruled square "Contact agent" button. Filter chips update shared Lakebed listing search state; save-heart and cards update saved/selected listing state. Use to render listing results in a search portal.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -160,55 +163,66 @@ export const PropertyListingGallery = defineCapsule({
     return (
       <section className={cn('bg-muted py-16 lg:py-24', props.className)}>
         <Container size="xl" className="px-6">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-            <SectionHeading
-              align="left"
-              title={heading}
-              className="gap-0"
-              titleClassName="text-2xl font-bold tracking-tight text-foreground sm:text-3xl"
-            />
-            <div className="flex flex-wrap gap-2">
-              {filters.map((filter, i) => {
-                const isActive =
-                  activeFilter === filter || (i === 0 && !activeFilter)
-                return (
-                  <FilterChip
-                    key={filter}
-                    active={isActive}
-                    variant={isActive ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() =>
-                      propertySearch.chooseSearch({
-                        filter,
-                        location: propertySearch.state?.location ?? '',
-                        query: propertySearch.state?.query ?? '',
-                      })
-                    }
-                  >
-                    {filter}
-                  </FilterChip>
-                )
-              })}
+          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <div className="flex flex-col gap-5">
+              <SectionHeading
+                align="left"
+                title={heading}
+                className="gap-0"
+                titleClassName="text-3xl font-extrabold tracking-tighter text-foreground sm:text-4xl lg:text-5xl"
+              />
+              <div className="flex flex-wrap gap-2">
+                {filters.map((filter, i) => {
+                  const isActive =
+                    activeFilter === filter || (i === 0 && !activeFilter)
+                  return (
+                    <FilterChip
+                      key={filter}
+                      active={isActive}
+                      variant={isActive ? 'default' : 'outline'}
+                      size="sm"
+                      className="rounded-none font-mono text-[11px] uppercase tracking-[0.12em]"
+                      onClick={() =>
+                        propertySearch.chooseSearch({
+                          filter,
+                          location: propertySearch.state?.location ?? '',
+                          query: propertySearch.state?.query ?? '',
+                        })
+                      }
+                    >
+                      {filter}
+                    </FilterChip>
+                  )
+                })}
+              </div>
             </div>
+            <p
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/70 tabular-nums"
+              aria-live="polite"
+            >
+              [ results ] {String(matchingListings.length).padStart(2, '0')}{' '}
+              listing{matchingListings.length === 1 ? '' : 's'}
+              {propertyActions.state?.savedCount
+                ? ` · ${propertyActions.state.savedCount} saved`
+                : ''}
+            </p>
           </div>
 
-          <p className="mt-4 text-sm text-muted-foreground" aria-live="polite">
-            {matchingListings.length} listing
-            {matchingListings.length === 1 ? '' : 's'} match the current search
-            {propertyActions.state?.savedCount
-              ? ` · ${propertyActions.state.savedCount} saved`
-              : ''}
-          </p>
-
-          <ResponsiveGrid cols="1-2-3" className="mt-10 gap-6">
+          <ResponsiveGrid
+            cols="1-2-3"
+            className="mt-10 items-start gap-x-6 gap-y-10"
+          >
             {matchingListings.map((listing, index) => (
               <ListingCard
                 key={`${listing.address}-${index}`}
                 variant="selectable-card"
                 className={cn(
+                  'rounded-none',
+                  index % 3 === 1 && 'lg:translate-y-8',
+                  index % 2 === 1 && 'sm:translate-y-6 lg:translate-y-0',
                   selectedAddress === listing.address
-                    ? 'border-primary shadow-md'
-                    : 'border-border',
+                    ? 'border-foreground shadow-[6px_6px_0_0] shadow-foreground/15'
+                    : 'border-foreground/15',
                 )}
               >
                 <ListingCardMedia>
@@ -220,7 +234,10 @@ export const PropertyListingGallery = defineCapsule({
                     className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   {listing.tag ? (
-                    <ListingCardBadge variant="glass">
+                    <ListingCardBadge
+                      variant="glass"
+                      className="left-0 top-0 rounded-none border-b border-r border-foreground px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.12em]"
+                    >
                       {listing.tag}
                     </ListingCardBadge>
                   ) : null}
@@ -231,7 +248,7 @@ export const PropertyListingGallery = defineCapsule({
                     aria-pressed={savedAddresses.has(listing.address)}
                     aria-label={`Save ${listing.address}`}
                     className={cn(
-                      'absolute right-3 top-3 grid size-9 place-items-center rounded-full bg-background/90 backdrop-blur transition-colors hover:text-accent',
+                      'absolute right-3 top-3 grid size-9 place-items-center rounded-none border border-foreground/15 bg-background/90 backdrop-blur transition-colors hover:text-accent',
                       savedAddresses.has(listing.address)
                         ? 'text-accent'
                         : 'text-muted-foreground',
@@ -248,23 +265,24 @@ export const PropertyListingGallery = defineCapsule({
                       address: listing.address,
                     })
                   }}
-                  className="flex flex-1 flex-col p-5 text-left"
+                  className="flex flex-1 flex-col border-t border-foreground/10 p-5 text-left"
                 >
-                  <div className="text-lg font-bold text-foreground">
+                  <div className="text-3xl font-extrabold leading-none tracking-tighter text-foreground tabular-nums">
                     {listing.price}
                   </div>
                   <ListingCardSpecRow
+                    className="mt-3 font-mono text-[11px] uppercase tracking-[0.12em] tabular-nums"
                     specs={[
-                      `${listing.beds} bd`,
-                      `${listing.baths} ba`,
-                      `${listing.sqft} sqft`,
+                      `${listing.beds} BD`,
+                      `${listing.baths} BA`,
+                      `${listing.sqft} SQFT`,
                     ]}
                   />
                   <p className="mt-3 text-sm text-muted-foreground">
                     {listing.address}
                   </p>
                 </button>
-                <div className="border-t border-border px-5 py-4">
+                <div className="border-t border-foreground/10 px-5 py-4">
                   <PropertyListingInquiryButton
                     lakebed={lakebed}
                     address={listing.address}
@@ -276,7 +294,7 @@ export const PropertyListingGallery = defineCapsule({
                         Sending
                       </>
                     }
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-70"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-none border border-foreground/25 bg-background px-4 py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.15em] text-foreground transition-all duration-150 hover:bg-foreground hover:text-background active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
                   >
                     Contact agent
                   </PropertyListingInquiryButton>
@@ -284,7 +302,7 @@ export const PropertyListingGallery = defineCapsule({
               </ListingCard>
             ))}
             {!matchingListings.length ? (
-              <Card className="border-dashed text-center text-sm text-muted-foreground sm:col-span-2 lg:col-span-3 rounded-2xl p-8">
+              <Card className="rounded-none border border-dashed border-foreground/25 bg-background p-8 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground sm:col-span-2 lg:col-span-3">
                 No listings match the current search.
               </Card>
             ) : null}

@@ -5,17 +5,18 @@ import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import { useInquirySubmission } from '../contact/inquiry-interactions.tsx'
 
 /**
- * LawFirmContact — a dark, split contact band on the primary surface pairing firm
- * details with a real consultation-request form. The left column carries a
- * tracked-uppercase eyebrow, serif heading, lead paragraph, a phone / email /
- * address contact list with line icons, and a LinkedIn social button; the right
- * column is a light card holding a form (first + last name, email, phone,
- * practice-area select, message textarea and a full-width submit) plus a fine
- * legal disclaimer. Refined, authoritative editorial aesthetic with sharp
- * squared corners. Contact links and the social button route through section-kit route links;
- * submit writes a Lakebed inquiry. Use as the closing conversion section on
- * law-firm, attorney, consulting or professional-services pages. Renders fully
- * with no props via baked-in defaults.
+ * LawFirmContact — an inverted primary-surface split conversion band pairing firm
+ * details with a real consultation-request form, behind a giant faint watermark.
+ * The left column carries a mono eyebrow, giant serif heading, lead paragraph, a
+ * hairline-ruled phone / email / address contact ledger with mono labels and
+ * line icons, and a square hairline-framed LinkedIn social button; the right
+ * column is a sharp light card holding a form (first + last name, email, phone,
+ * practice-area select, message textarea and a full-width submit with press
+ * feedback) plus a fine legal disclaimer. Authoritative, traditional-yet-modern
+ * newsprint aesthetic with sharp binary corners. Contact links and the social
+ * button route through section-kit route links; submit writes a Lakebed inquiry.
+ * Use as the closing conversion section on law-firm, attorney, consulting or
+ * professional-services pages. Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -29,12 +30,11 @@ import {
   ContactFormSubmit,
   ContactFormFooter,
 } from '#/section-kit/ContactForm.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const LawFirmContact = defineCapsule({
   name: 'LawFirmContact',
   description:
-    'Dark split contact band on the primary surface pairing firm details with a real Lakebed consultation-request form: the left column carries a tracked-uppercase eyebrow, serif heading, lead paragraph, a phone / email / address contact list with line icons and a LinkedIn social button; the right column is a light card holding a form (first + last name, email, phone, practice-area select, message textarea, full-width submit) plus a fine legal disclaimer. Refined, authoritative editorial aesthetic with sharp squared corners; contact links and the social button route through section-kit route links, while submit writes a shared inquiry record. Use as the closing consultation / lead-capture conversion section on law-firm, attorney, consulting, accounting or professional-services pages.',
+    'Inverted primary-surface split conversion band for a law firm pairing firm details with a real Lakebed consultation-request form behind a giant faint watermark: the left column carries a mono eyebrow, giant serif heading, lead paragraph, a hairline-ruled phone / email / address contact ledger with mono labels and line icons and a square hairline-framed LinkedIn social button; the right column is a sharp light card holding a form (first + last name, email, phone, practice-area select, message textarea, full-width submit with press feedback) plus a fine legal disclaimer. Authoritative, traditional-yet-modern newsprint aesthetic with sharp binary corners; contact links and the social button route through section-kit route links, while submit writes a shared inquiry record. Use as the closing consultation / lead-capture conversion section on law-firm, attorney, consulting, accounting or professional-services pages.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -84,7 +84,7 @@ export const LawFirmContact = defineCapsule({
         "Thanks. We've received your consultation request and will respond soon.",
     })
     const inputCls =
-      'w-full rounded-sm border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground transition-colors focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring'
+      'w-full rounded-none border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground transition-colors focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring'
     const PhoneIcon = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -149,47 +149,66 @@ export const LawFirmContact = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-primary py-24 text-primary-foreground lg:py-28',
+          'relative overflow-hidden bg-primary py-20 text-primary-foreground sm:py-24 lg:py-28',
           props.className,
         )}
       >
-        <Container>
-          <div className="grid items-center gap-16 lg:grid-cols-2">
-            <div>
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-16 -left-6 select-none font-serif text-[9rem] font-semibold leading-none tracking-tight text-primary-foreground/[0.06] sm:text-[13rem] lg:text-[17rem]"
+        >
+          Counsel
+        </span>
+        <Container className="relative">
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-5">
               <SectionHeading
                 align="left"
                 eyebrow={eyebrow}
                 title={heading}
                 subtitle={description}
                 className="mb-8 gap-0"
-                eyebrowClassName="mb-4 text-sm uppercase tracking-widest text-primary-foreground/70"
-                titleClassName="mb-6 font-serif text-3xl lg:text-5xl"
+                eyebrowClassName="mb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-primary-foreground/70"
+                titleClassName="mb-6 font-serif text-4xl font-semibold tracking-tight lg:text-5xl"
                 subtitleClassName="text-lg leading-relaxed text-primary-foreground/80"
               />
-              <div className="mb-8 space-y-4">
+              <div className="mb-8 border-t border-primary-foreground/20">
                 <NavbarRouteLink
-                  className="flex items-center gap-4 text-primary-foreground/80 transition-colors hover:text-primary-foreground"
+                  className="group flex items-center gap-4 border-b border-primary-foreground/20 py-4 transition-colors"
                   href={phone}
                 >
-                  <PhoneIcon className="size-5 text-primary-foreground/60" />
-                  <span>{phone}</span>
+                  <span className="w-14 shrink-0 font-mono text-[10px] uppercase tracking-[0.2em] text-primary-foreground/50">
+                    Call
+                  </span>
+                  <PhoneIcon className="size-4 shrink-0 text-primary-foreground/60" />
+                  <span className="text-primary-foreground/90 tabular-nums transition-colors group-hover:text-primary-foreground">
+                    {phone}
+                  </span>
                 </NavbarRouteLink>
                 <NavbarRouteLink
-                  className="flex items-center gap-4 text-primary-foreground/80 transition-colors hover:text-primary-foreground"
+                  className="group flex items-center gap-4 border-b border-primary-foreground/20 py-4 transition-colors"
                   href={email}
                 >
-                  <MailIcon className="size-5 text-primary-foreground/60" />
-                  <span>{email}</span>
+                  <span className="w-14 shrink-0 font-mono text-[10px] uppercase tracking-[0.2em] text-primary-foreground/50">
+                    Email
+                  </span>
+                  <MailIcon className="size-4 shrink-0 text-primary-foreground/60" />
+                  <span className="text-primary-foreground/90 transition-colors group-hover:text-primary-foreground">
+                    {email}
+                  </span>
                 </NavbarRouteLink>
-                <div className="flex items-center gap-4 text-primary-foreground/80">
-                  <MapPinIcon className="size-5 shrink-0 text-primary-foreground/60" />
-                  <span>{address}</span>
+                <div className="flex items-center gap-4 border-b border-primary-foreground/20 py-4">
+                  <span className="w-14 shrink-0 font-mono text-[10px] uppercase tracking-[0.2em] text-primary-foreground/50">
+                    Visit
+                  </span>
+                  <MapPinIcon className="size-4 shrink-0 text-primary-foreground/60" />
+                  <span className="text-primary-foreground/90">{address}</span>
                 </div>
               </div>
               <div className="flex gap-4">
                 <NavbarRouteLink
                   aria-label="LinkedIn"
-                  className="grid size-10 place-items-center bg-primary-foreground/10 text-primary-foreground transition-colors hover:bg-primary-foreground/20"
+                  className="grid size-11 place-items-center rounded-none border border-primary-foreground/25 text-primary-foreground transition-colors hover:bg-primary-foreground/10"
                   href={'LinkedIn'}
                 >
                   <LinkedInIcon className="size-5" />
@@ -197,7 +216,7 @@ export const LawFirmContact = defineCapsule({
               </div>
             </div>
 
-            <div className="bg-card p-8 text-foreground lg:p-10">
+            <div className="rounded-none border border-foreground/10 bg-card p-8 text-foreground lg:col-span-7 lg:p-10">
               <h3 className="mb-6 font-serif text-2xl text-foreground">
                 {formHeading}
               </h3>
@@ -300,7 +319,7 @@ export const LawFirmContact = defineCapsule({
                   type="submit"
                   aria-busy={inquiry.isPending}
                   disabled={inquiry.isPending}
-                  className="w-full bg-primary py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+                  className="w-full rounded-none bg-primary py-4 font-medium text-primary-foreground transition-all duration-150 hover:bg-primary/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
                 >
                   {inquiry.isPending ? 'Sending' : submit}
                 </ContactFormSubmit>

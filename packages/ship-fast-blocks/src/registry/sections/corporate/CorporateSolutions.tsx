@@ -17,8 +17,7 @@ import { cn } from '#/lib/utils.ts'
  * services, risk) on SaaS, IT, or consultancy sites.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const CorporateSolutions = defineCapsule({
   name: 'CorporateSolutions',
   description:

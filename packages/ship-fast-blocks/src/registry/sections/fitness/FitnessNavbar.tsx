@@ -9,7 +9,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
+} from '#/section-kit/SiteNav.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import {
   NewsletterAccountButton,

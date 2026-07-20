@@ -11,8 +11,7 @@ import {
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
 import { DownloadBand } from '#/section-kit/DownloadBand.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * DatingAppDownloadCta — playful-geometric inverted download band for a dating
  * / matchmaking app. The page's full bg-foreground/text-background inversion

@@ -17,12 +17,22 @@ import {
   OverviewStatLabel,
   OverviewMediaPanel,
 } from '#/section-kit/OverviewSection.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
+/**
+ * ResumeCvOverview — dark ink-inverted overview band for the Resume Cv page
+ * family. The page's single `bg-foreground` / `text-background` inversion,
+ * cutting in on a slanted clip-path seam over a giant faint ghost watermark: a
+ * mono eyebrow + accent brand tag, a giant extrabold clamp heading, supporting
+ * copy, square mono feature chips, two square CTAs with press feedback, and a
+ * collapsed-border tabular KPI ledger, paired with an alt-driven image plate.
+ * Tokens-only inversion so it adapts to light/dark and generated themes. Use
+ * when composing a resume cv page or adding a focused, dramatic resume cv band
+ * to a larger generated site.
+ */
 export const ResumeCvOverview = defineCapsule({
   name: 'ResumeCvOverview',
   description:
-    'Reusable overview / hero section for the Resume Cv page family. Derived from the section template catalog to provide section-level coverage without new HTML generation: eyebrow, large heading, supporting copy, dual CTAs, feature pills, KPI strip, and an image panel rendered through the alt-driven Image component. Use when composing a resume cv page or adding a focused resume cv band to a larger generated site.',
+    'Dark ink-inverted overview / statement band for the Resume Cv page family, derived from the section template catalog to provide section-level coverage without new HTML generation: a bg-foreground/text-background inversion on a slanted clip-path seam over a giant faint ghost watermark, with a mono eyebrow and accent brand tag, a giant extrabold clamp heading, supporting copy, square mono feature chips, two square CTAs with press feedback, a collapsed-border tabular KPI ledger, and an alt-driven image plate. Use when composing a resume cv page or adding a focused resume cv band to a larger generated site.',
   props: z.object({
     brand: z.string().optional(),
     eyebrow: z.string().optional(),
@@ -72,37 +82,72 @@ export const ResumeCvOverview = defineCapsule({
         ]
 
     return (
-      <OverviewSection className={props.className}>
-        <OverviewGrid>
+      <OverviewSection
+        className={[
+          'relative bg-foreground py-16 pt-24 text-background [clip-path:polygon(0_3rem,100%_0,100%_100%,0_100%)] sm:py-20 sm:pt-28 lg:py-24 lg:pt-36',
+          props.className ?? '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
+        {/* Giant faint ghost watermark. */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-14 -left-4 select-none font-extrabold leading-none tracking-tighter text-background/[0.05] text-[10rem] sm:text-[15rem] lg:text-[19rem]"
+        >
+          CV
+        </span>
+
+        <OverviewGrid className="relative lg:grid-cols-[1.15fr_0.85fr]">
           <OverviewContent>
-            <OverviewEyebrow>{eyebrow}</OverviewEyebrow>
-            <OverviewBrand>{brand}</OverviewBrand>
-            <OverviewHeading>{heading}</OverviewHeading>
-            <OverviewSubheading>{subheading}</OverviewSubheading>
+            <OverviewEyebrow className="mb-4 rounded-none border-transparent bg-transparent px-0 py-0 font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-background/55">
+              {eyebrow}
+            </OverviewEyebrow>
+            <OverviewBrand className="mb-4 font-mono text-[11px] uppercase tracking-[0.22em] text-primary">
+              {brand}
+            </OverviewBrand>
+            <OverviewHeading className="font-extrabold leading-[0.95] tracking-tighter text-background text-[clamp(2rem,5vw,3.5rem)] sm:text-[clamp(2rem,5vw,3.5rem)]">
+              {heading}
+            </OverviewHeading>
+            <OverviewSubheading className="text-background/60">
+              {subheading}
+            </OverviewSubheading>
             <OverviewFeatures>
               {features.map((feature: string) => (
-                <OverviewFeature key={feature}>{feature}</OverviewFeature>
+                <OverviewFeature
+                  key={feature}
+                  className="rounded-none border-background/20 bg-transparent px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.12em] text-background/70"
+                >
+                  {feature}
+                </OverviewFeature>
               ))}
             </OverviewFeatures>
             <OverviewCta>
               <NavbarRouteLink
-                className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+                className="rounded-none bg-background px-6 py-3 font-mono text-xs font-semibold uppercase tracking-[0.12em] text-foreground transition-transform duration-150 hover:bg-background/90 active:translate-y-px"
                 href={primaryCta}
               >
                 {primaryCta}
               </NavbarRouteLink>
               <NavbarRouteLink
-                className="rounded-full border border-border bg-background px-6 py-3 text-sm font-semibold text-foreground transition hover:bg-muted"
+                className="rounded-none border-2 border-background/40 bg-transparent px-6 py-3 font-mono text-xs font-semibold uppercase tracking-[0.12em] text-background transition-transform duration-150 hover:bg-background/10 active:translate-y-px"
                 href={secondaryCta}
               >
                 {secondaryCta}
               </NavbarRouteLink>
             </OverviewCta>
-            <OverviewStats>
+            <OverviewStats className="mt-12 grid-cols-3 gap-0 border-l border-t border-background/20 pt-0">
               {stats.map((stat: { value: string; label: string }) => (
-                <OverviewStat key={stat.label}>
-                  <OverviewStatValue>{stat.value}</OverviewStatValue>
-                  <OverviewStatLabel>{stat.label}</OverviewStatLabel>
+                <OverviewStat
+                  key={stat.label}
+                  className="border-b border-r border-background/20 p-4 sm:p-5"
+                >
+                  <OverviewStatValue className="font-extrabold leading-none tracking-tight text-background tabular-nums text-[clamp(1.75rem,4vw,3rem)]">
+                    {stat.value}
+                  </OverviewStatValue>
+                  <OverviewStatLabel className="mt-2 font-mono text-[10px] uppercase tracking-[0.16em] text-background/55">
+                    {stat.label}
+                  </OverviewStatLabel>
                 </OverviewStat>
               ))}
             </OverviewStats>

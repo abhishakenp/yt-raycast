@@ -10,8 +10,7 @@ import {
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * CoworkingCta — luminous closing band for a coworking or shared-workspace
  * page. A full-bleed rounded panel on a deep primary gradient, framed by

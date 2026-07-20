@@ -20,8 +20,7 @@ import { Container } from '#/section-kit/Container.tsx'
 import { MonoTag } from '#/section-kit/Decor.tsx'
 import { StepTimeline, StepItem } from '#/section-kit/StepTimeline.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const InvestingSteps = defineCapsule({
   name: 'InvestingSteps',
   description:

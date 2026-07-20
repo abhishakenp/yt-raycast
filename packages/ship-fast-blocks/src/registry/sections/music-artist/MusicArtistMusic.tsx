@@ -3,8 +3,6 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 import {
   MusicList,
   MusicItem,
@@ -12,23 +10,25 @@ import {
   MusicPlayer,
 } from '#/section-kit/MusicList.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * MusicArtistMusic — latest-release track grid for a music artist / band page.
- * A centered eyebrow + thin heading + lead, then a responsive grid of bordered
- * track cards (square cover thumbnail, title, duration, and a small "Listen"
- * play button), with a trailing "view all tracks" link with an arrow. Warm,
- * airy, editorial indie-folk aesthetic on a soft neutral canvas. Each track's
- * Listen button and the view-all link route through section-kit route links; cover
- * thumbnails use the alt-driven Image component. Use as the discography /
- * latest-release showcase for musicians, bands, or album-release pages. Renders
- * fully with no props via baked-in defaults.
+ * MusicArtistMusic — latest-release track ledger for a music artist / band
+ * page. An asymmetric header (mono rail eyebrow — hairline — "TRACKS" index, a
+ * giant extrabold uppercase heading left, lead right) over a collapsed-border
+ * ledger of track rows: a mono tabular index, a hard-bordered square cover
+ * thumbnail, an uppercase title, a mono tabular duration, and a small "Listen"
+ * play link; a trailing mono "view all" link with an arrow closes it. Bold
+ * poster aesthetic driven entirely by theme tokens (flips light/dark); binary
+ * rounded-none radius. Each track's Listen link and the view-all link route
+ * through section-kit route links; cover thumbnails use the alt-driven Image
+ * component. Use as the discography / latest-release showcase for musicians,
+ * bands, or album-release pages. Renders fully with no props via baked-in
+ * defaults.
  */
 export const MusicArtistMusic = defineCapsule({
   name: 'MusicArtistMusic',
   description:
-    "Latest-release track grid for a music artist / band page: a centered eyebrow, thin heading and lead, then a responsive grid of bordered track cards (square cover thumbnail, title, duration, and a small 'Listen' play button), with a trailing 'view all tracks' link with an arrow. Warm, airy editorial indie-folk aesthetic on a soft neutral canvas. Each track's Listen button and the view-all link route through section-kit route links; cover thumbnails use the alt-driven Image component. Use as the discography / latest-release showcase for musicians, singers, bands, or album-release pages.",
+    "Latest-release track ledger for a music artist / band page: an asymmetric header (mono rail eyebrow — hairline — index, a giant extrabold uppercase heading left, lead right) over a collapsed-border ledger of track rows — a mono tabular index, a hard-bordered square cover thumbnail, an uppercase title, a mono tabular duration, and a small 'Listen' play link — with a trailing mono 'view all' link with an arrow. Bold poster aesthetic driven entirely by theme tokens (flips light/dark); binary rounded-none radius. Each track's Listen link and the view-all link route through section-kit route links; cover thumbnails use the alt-driven Image component. Use as the discography / latest-release showcase for musicians, singers, bands, or album-release pages.",
   props: z.object({
     /** Small uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -118,7 +118,7 @@ export const MusicArtistMusic = defineCapsule({
 
     const PlayIcon = () => (
       <svg
-        className="size-4"
+        className="size-3.5"
         fill="currentColor"
         viewBox="0 0 24 24"
         aria-hidden="true"
@@ -135,26 +135,38 @@ export const MusicArtistMusic = defineCapsule({
         )}
       >
         <Container size="lg">
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            align="center"
-            eyebrowClassName="text-muted-foreground tracking-wide"
-            titleClassName="text-3xl font-light lg:text-5xl"
-            subtitleClassName="text-lg"
-            className="mb-16 gap-6 lg:mb-24"
-          />
-
-          <MusicList className="mb-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {tracks.map((track) => (
-              <MusicItem asChild key={track.title}>
-                <Card
-                  variant="default"
-                  className="group rounded-sm transition-colors hover:border-muted-foreground/40 rounded-none"
+          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-2xl">
+              <div className="flex items-center gap-4">
+                <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                  {eyebrow}
+                </span>
+                <span aria-hidden="true" className="h-px w-16 bg-border" />
+                <span
+                  aria-hidden="true"
+                  className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground"
                 >
-                  <MusicTrack className="items-start">
-                    <div className="size-16 shrink-0 overflow-hidden rounded-sm bg-muted">
+                  Tracks
+                </span>
+              </div>
+              <h2 className="mt-5 text-4xl font-extrabold uppercase leading-[0.9] tracking-tighter text-foreground sm:text-5xl lg:text-6xl">
+                {heading}
+              </h2>
+            </div>
+            <p className="max-w-sm text-pretty text-muted-foreground md:text-right">
+              {description}
+            </p>
+          </div>
+
+          <MusicList className="mt-12 gap-0 border-t border-border lg:mt-16">
+            {tracks.map((track, i) => (
+              <MusicItem asChild key={track.title}>
+                <div className="group border-b border-border">
+                  <MusicTrack className="items-center gap-4 py-5 transition-colors group-hover:bg-muted/40 sm:gap-6 sm:px-2">
+                    <span className="w-8 shrink-0 font-mono text-sm tabular-nums text-muted-foreground">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <div className="hidden size-14 shrink-0 overflow-hidden border border-border bg-muted sm:block">
                       <Image
                         alt={track.imageAlt}
                         w={100}
@@ -163,37 +175,35 @@ export const MusicArtistMusic = defineCapsule({
                         className="size-full object-cover opacity-80 transition-opacity group-hover:opacity-100"
                       />
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="truncate font-medium text-card-foreground">
-                        {track.title}
-                      </h3>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {track.duration}
-                      </p>
-                      <MusicPlayer
-                        aria-label={`Play ${track.title}`}
-                        className="mt-3 gap-1 rounded-none text-xs text-muted-foreground hover:text-foreground justify-start"
-                        asChild
-                      >
-                        <NavbarRouteLink href={track.title}>
-                          <PlayIcon />
-                          Listen
-                        </NavbarRouteLink>
-                      </MusicPlayer>
-                    </div>
+                    <h3 className="min-w-0 flex-1 truncate text-lg font-extrabold uppercase tracking-tight text-foreground">
+                      {track.title}
+                    </h3>
+                    <span className="shrink-0 font-mono text-sm tabular-nums text-muted-foreground">
+                      {track.duration}
+                    </span>
+                    <MusicPlayer
+                      aria-label={`Play ${track.title}`}
+                      className="shrink-0 justify-start gap-1.5 rounded-none border border-border px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.15em] text-foreground transition-colors hover:bg-foreground hover:text-background active:translate-y-px"
+                      asChild
+                    >
+                      <NavbarRouteLink href={track.title}>
+                        <PlayIcon />
+                        Listen
+                      </NavbarRouteLink>
+                    </MusicPlayer>
                   </MusicTrack>
-                </Card>
+                </div>
               </MusicItem>
             ))}
           </MusicList>
 
-          <div className="text-center">
+          <div className="mt-10">
             <NavbarRouteLink
-              className="inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
               href={viewAll}
             >
               {viewAll}
-              <ArrowRight className="ml-1 size-4" />
+              <ArrowRight className="size-4" />
             </NavbarRouteLink>
           </div>
         </Container>

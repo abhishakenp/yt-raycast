@@ -13,8 +13,7 @@ import {
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { DotGrid, MonoTag, Watermark } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * CommunityForumHero — playful-geometric asymmetric hero for a
  * community-platform / discussion-forum landing page. A 7:5 editorial split:

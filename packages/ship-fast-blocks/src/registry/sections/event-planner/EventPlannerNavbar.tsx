@@ -9,7 +9,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
+} from '#/section-kit/SiteNav.tsx'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import {
   InquiryActionButton,

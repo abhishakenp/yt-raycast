@@ -10,8 +10,7 @@ import {
   HotelMutationSpinner,
 } from './hotel-resort-interactions.tsx'
 import { hotelResortLakebed } from './hotel-resort-lakebed.ts'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * HotelResortHero — full-bleed oceanfront photo hero for a luxury-editorial
  * hotel / resort & spa landing page, composed like a magazine cover. A

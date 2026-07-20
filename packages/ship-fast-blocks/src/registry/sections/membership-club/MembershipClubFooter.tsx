@@ -17,19 +17,20 @@ import {
 } from '#/section-kit/SiteFooter.tsx'
 
 /**
- * MembershipClubFooter — multi-column site footer for a private membership club /
- * exclusive community page. A muted, border-topped band: a wide brand column (thin
- * concentric "compass" club mark + light club name + an about paragraph) beside
- * link columns of text buttons, then a bottom row with a dynamic-year copyright on
- * the left and inline legal links on the right. Brand mark and every link route
- * through section-kit route links. Use as the closing footer for members clubs, founders/social
- * clubs, professional networks, curated communities or paid community
- * subscriptions. Renders fully with no props.
+ * MembershipClubFooter — airy multi-column footer for a private membership club /
+ * exclusive community page. A muted, border-topped band: a wide brand column
+ * (thin concentric club mark + serif club wordmark + an about paragraph) beside
+ * mono micro-label link columns of block hit-target text links, then a bottom row
+ * with a dynamic-year mono copyright on the left and inline mono legal links on
+ * the right. Brand mark and every link route through section-kit route links. Use
+ * as the closing footer for members clubs, founders/social clubs, professional
+ * networks, curated communities or paid community subscriptions. Renders fully
+ * with no props.
  */
 export const MembershipClubFooter = defineCapsule({
   name: 'MembershipClubFooter',
   description:
-    "Multi-column site footer for a private membership club / exclusive community page: a muted, border-topped band with a wide brand column (thin concentric 'compass' club mark + light club name + an about paragraph) beside link columns of text buttons, then a bottom row with a dynamic-year copyright on the left and inline legal links on the right. Brand mark and every link route through section-kit route links. Use as the closing footer for members clubs, founders/social clubs, professional networks, curated communities or paid community subscriptions.",
+    'Airy multi-column footer for a private membership club / exclusive community page: a muted, border-topped band with a wide brand column (thin concentric club mark + serif club wordmark + an about paragraph) beside mono micro-label link columns of block hit-target text links, then a bottom row with a dynamic-year mono copyright on the left and inline mono legal links on the right. Brand mark and every link route through section-kit route links. Use as the closing footer for members clubs, founders/social clubs, professional networks, curated communities or paid community subscriptions.',
   props: z.object({
     /** Brand / club name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -86,27 +87,42 @@ export const MembershipClubFooter = defineCapsule({
 
     return (
       <SiteFooter className={props.className}>
-        <FooterContent>
+        <FooterContent className="py-16">
           <FooterGrid>
-            <FooterBrand brand={brand} brandMark={<LogoMark />}>
-              <FooterTagline>{about}</FooterTagline>
+            <FooterBrand
+              brand={brand}
+              brandMark={<LogoMark />}
+              brandClassName="font-serif text-xl font-normal tracking-tight text-foreground"
+            >
+              <FooterTagline className="max-w-xs">{about}</FooterTagline>
             </FooterBrand>
             {columns.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
-                <FooterColumnList>
+                <FooterColumnTitle className="font-mono text-[11px] font-medium uppercase tracking-[0.24em] text-muted-foreground">
+                  {col.title}
+                </FooterColumnTitle>
+                <FooterColumnList className="mt-4 space-y-3">
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink key={link} className="block w-fit">
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
           <FooterBottom>
-            <FooterCopyright>{copyright}</FooterCopyright>
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.18em]">
+              {copyright}
+            </FooterCopyright>
             <FooterLegal>
               {legal.map((l) => (
-                <FooterLink key={l}>{l}</FooterLink>
+                <FooterLink
+                  key={l}
+                  className="block w-fit font-mono text-[11px] uppercase tracking-[0.18em]"
+                >
+                  {l}
+                </FooterLink>
               ))}
             </FooterLegal>
           </FooterBottom>

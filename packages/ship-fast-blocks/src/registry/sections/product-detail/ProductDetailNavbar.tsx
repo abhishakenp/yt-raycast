@@ -12,7 +12,7 @@ import {
   NavbarNavLink,
   NavbarRouteLink,
   SiteNav,
-} from '#/section-kit/index.ts'
+} from '#/section-kit/SiteNav.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -24,7 +24,7 @@ import { isProductPurchaseIntent } from './product-purchase-intent.ts'
 export const ProductDetailNavbar = defineCapsule({
   name: 'ProductDetailNavbar',
   description:
-    'Top navigation header for the Product Detail page family. Renders the Aurora brand mark, focused in-page links (Overview, Features, Reviews, FAQ), a real Lakebed cart drawer button, and a cart-style primary CTA that adds the flagship product to the shared cart instead of routing a label. Use as the first band of a premium product detail page; all content is prop-driven with sensible Aurora Pro Headphones defaults.',
+    'Editorial-product top navigation header for the Product Detail page family. A sticky, hairline-ruled bar renders the Aurora brand mark beside an extrabold uppercase wordmark, mono uppercase micro-label in-page links (Overview, Features, Reviews, FAQ), a square Lakebed cart drawer chip, and a square ink cart-style primary CTA with press feedback that adds the flagship product to the shared cart instead of routing a label. A real mobile drawer collapses the links on small screens. Use as the first band of a premium product detail page; all content is prop-driven with sensible Aurora Pro Headphones defaults.',
   lakebed: commerceCartLakebed,
   props: z.object({
     brand: z.string().optional(),
@@ -86,16 +86,23 @@ export const ProductDetailNavbar = defineCapsule({
         className={cn('bg-background/95', props.className)}
         containerClassName="max-w-7xl px-6 lg:px-8"
       >
-        <NavbarBrand href={nav[0]} className="flex items-center gap-3">
-          <BrandLogo brand={brand}>
-            <LogoImage fallback={mark} />
-            <LogoLabel className="text-xl font-medium text-foreground" />
+        <NavbarBrand
+          href={nav[0]}
+          className="text-lg font-extrabold uppercase tracking-tight text-foreground"
+        >
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage className="size-7" fallback={mark} />
+            <LogoLabel />
           </BrandLogo>
         </NavbarBrand>
 
-        <NavbarNav>
+        <NavbarNav className="gap-1">
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="rounded-none px-2.5 py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:bg-transparent hover:text-foreground"
+            >
               {label}
             </NavbarNavLink>
           ))}
@@ -104,7 +111,7 @@ export const ProductDetailNavbar = defineCapsule({
         <NavbarActions className="gap-3">
           <CommerceCartButton
             lakebed={lakebed}
-            buttonClassName="relative hidden size-10 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-muted sm:inline-flex"
+            buttonClassName="relative hidden size-10 items-center justify-center rounded-none border border-border text-foreground transition-colors hover:bg-muted sm:inline-flex"
           />
           {ctaAddsProduct ? (
             <CommerceAddItemButton
@@ -118,7 +125,7 @@ export const ProductDetailNavbar = defineCapsule({
               }
               className={cn(
                 kitActionClasses(cta.variant),
-                'hidden items-center justify-center gap-2 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex',
+                'hidden items-center justify-center gap-2 rounded-none font-mono text-[11px] font-semibold uppercase tracking-[0.15em] transition-all duration-150 active:translate-y-px disabled:pointer-events-none disabled:opacity-70 sm:inline-flex',
               )}
             >
               {cta.label}
@@ -128,7 +135,7 @@ export const ProductDetailNavbar = defineCapsule({
               href={cta.target ?? cta.label}
               className={cn(
                 kitActionClasses(cta.variant),
-                'hidden items-center justify-center gap-2 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex',
+                'hidden items-center justify-center gap-2 rounded-none font-mono text-[11px] font-semibold uppercase tracking-[0.15em] transition-all duration-150 active:translate-y-px disabled:pointer-events-none disabled:opacity-70 sm:inline-flex',
               )}
             >
               {cta.label}
@@ -144,7 +151,7 @@ export const ProductDetailNavbar = defineCapsule({
               <div className="flex items-center gap-3 pt-1">
                 <CommerceCartButton
                   lakebed={lakebed}
-                  buttonClassName="relative inline-flex size-10 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-muted"
+                  buttonClassName="relative inline-flex size-10 items-center justify-center rounded-none border border-border text-foreground transition-colors hover:bg-muted"
                 />
                 {ctaAddsProduct ? (
                   <CommerceAddItemButton
@@ -158,7 +165,7 @@ export const ProductDetailNavbar = defineCapsule({
                     }
                     className={cn(
                       kitActionClasses(cta.variant),
-                      'inline-flex flex-1 items-center justify-center gap-2 disabled:pointer-events-none disabled:opacity-70',
+                      'inline-flex flex-1 items-center justify-center gap-2 rounded-none font-mono text-[11px] font-semibold uppercase tracking-[0.15em] transition-all duration-150 active:translate-y-px disabled:pointer-events-none disabled:opacity-70',
                     )}
                   >
                     {cta.label}
@@ -169,7 +176,7 @@ export const ProductDetailNavbar = defineCapsule({
                     onClick={close}
                     className={cn(
                       kitActionClasses(cta.variant),
-                      'inline-flex flex-1 items-center justify-center gap-2 disabled:pointer-events-none disabled:opacity-70',
+                      'inline-flex flex-1 items-center justify-center gap-2 rounded-none font-mono text-[11px] font-semibold uppercase tracking-[0.15em] transition-all duration-150 active:translate-y-px disabled:pointer-events-none disabled:opacity-70',
                     )}
                   >
                     {cta.label}

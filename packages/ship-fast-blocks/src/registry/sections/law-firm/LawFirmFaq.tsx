@@ -12,19 +12,19 @@ import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 
 /**
- * LawFirmFaq — a centered-heading, single-column FAQ stack for a law firm. A
- * tracked-uppercase eyebrow and serif heading sit above a vertical stack of
- * bordered question/answer cards on the card surface, each pairing a serif
- * question with a muted answer paragraph. Refined, authoritative editorial
- * aesthetic with sharp squared corners on a constrained reading width. Use to
- * answer common fee, engagement and scope questions on law-firm, attorney,
- * consulting or professional-services pages. Renders fully with no props via
- * baked-in defaults.
+ * LawFirmFaq — an asymmetric 4/8 editorial FAQ ledger for a law firm. A sticky
+ * left rail carries a mono eyebrow, giant serif heading and a tabular question
+ * count; the right column is a hairline-divided question/answer ledger where
+ * each row pairs a giant faint serif "Q. 0x" case numeral with a serif question
+ * and a muted answer paragraph. Authoritative, traditional-yet-modern newsprint
+ * aesthetic with sharp binary corners. Use to answer common fee, engagement and
+ * scope questions on law-firm, attorney, consulting or professional-services
+ * pages. Renders fully with no props via baked-in defaults.
  */
 export const LawFirmFaq = defineCapsule({
   name: 'LawFirmFaq',
   description:
-    'Centered-heading, single-column FAQ stack for a law firm: a tracked-uppercase eyebrow and serif heading above a vertical stack of bordered question/answer cards on the card surface, each pairing a serif question with a muted answer paragraph, on a constrained reading width. Refined, authoritative editorial aesthetic with sharp squared corners. Use to answer common fee, billing, engagement, jurisdiction and scope questions on law-firm, attorney, consulting, accounting or professional-services pages.',
+    'Asymmetric 4/8 editorial FAQ ledger for a law firm: a sticky left rail with a mono eyebrow, giant serif heading and a tabular question count, beside a hairline-divided right-column question/answer ledger where each row pairs a giant faint serif "Q. 0x" case numeral with a serif question and a muted answer paragraph. Authoritative, traditional-yet-modern newsprint aesthetic with sharp binary corners. Use to answer common fee, billing, engagement, jurisdiction and scope questions on law-firm, attorney, consulting, accounting or professional-services pages.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -67,32 +67,61 @@ export const LawFirmFaq = defineCapsule({
         ]
 
     return (
-      <section className={cn('bg-background py-24 lg:py-28', props.className)}>
-        <Container className="max-w-4xl">
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            className="mb-16 gap-0"
-            eyebrowClassName="mb-4 text-sm uppercase tracking-widest text-muted-foreground"
-            titleClassName="mb-6 font-serif text-3xl text-foreground lg:text-5xl"
-          />
-          <FaqAccordion variant="wide">
-            {items.map((item) => (
-              <FaqItem key={item.question} asChild className="p-8">
-                <div>
-                  <FaqQuestion
+      <section
+        className={cn('bg-background py-20 sm:py-24 lg:py-28', props.className)}
+      >
+        <Container>
+          <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-4">
+              <div className="lg:sticky lg:top-28">
+                <SectionHeading
+                  align="left"
+                  eyebrow={eyebrow}
+                  title={heading}
+                  className="gap-0"
+                  eyebrowClassName="mb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+                  titleClassName="mb-6 font-serif text-4xl font-semibold tracking-tight text-foreground lg:text-5xl"
+                />
+                <span
+                  aria-hidden="true"
+                  className="font-mono text-[11px] uppercase tracking-[0.2em] tabular-nums text-muted-foreground/60"
+                >
+                  {String(items.length).padStart(2, '0')} questions
+                </span>
+              </div>
+            </div>
+            <div className="lg:col-span-8">
+              <FaqAccordion variant="divided">
+                {items.map((item, i) => (
+                  <FaqItem
+                    key={item.question}
                     asChild
-                    className="mb-3 font-serif text-xl text-foreground"
+                    className="rounded-none border-0 bg-transparent py-8"
                   >
-                    <h3>{item.question}</h3>
-                  </FaqQuestion>
-                  <FaqAnswer className="leading-relaxed">
-                    {item.answer}
-                  </FaqAnswer>
-                </div>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+                    <div className="grid grid-cols-[auto_1fr] gap-5 sm:gap-8">
+                      <span
+                        aria-hidden="true"
+                        className="font-serif text-3xl font-semibold leading-none tabular-nums text-foreground/20 sm:text-4xl"
+                      >
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <div>
+                        <FaqQuestion
+                          asChild
+                          className="mb-3 font-serif text-xl text-foreground"
+                        >
+                          <h3>{item.question}</h3>
+                        </FaqQuestion>
+                        <FaqAnswer className="leading-relaxed">
+                          {item.answer}
+                        </FaqAnswer>
+                      </div>
+                    </div>
+                  </FaqItem>
+                ))}
+              </FaqAccordion>
+            </div>
+          </div>
         </Container>
       </section>
     )

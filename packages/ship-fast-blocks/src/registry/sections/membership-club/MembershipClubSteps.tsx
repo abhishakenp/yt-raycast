@@ -2,23 +2,23 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { StepTimeline, StepTimelineGrid } from '#/section-kit/StepTimeline.tsx'
 
 /**
- * MembershipClubSteps — 3-step "How it works" application flow for a private
- * membership club / exclusive community page. A centered eyebrow + thin heading +
- * supporting line sit above a responsive 3-column grid of steps, each led by a
- * numbered primary circle followed by a medium title and a relaxed description.
- * Use to explain the join / application process for members clubs, professional
- * networks, mastermind groups or curated communities. Renders fully with no props.
+ * MembershipClubSteps — hairline application-flow ledger for a private membership
+ * club / exclusive community page. A left-aligned mono micro-label kicker + serif
+ * heading + supporting line sit above a responsive 3-column grid of steps, each
+ * opening with an oversized serif index numeral over a hairline top rule,
+ * followed by a serif title and a relaxed muted description. Use to explain the
+ * join / application process for members clubs, professional networks, mastermind
+ * groups or curated communities. Renders fully with no props.
  */
 export const MembershipClubSteps = defineCapsule({
   name: 'MembershipClubSteps',
   description:
-    "3-step 'How it works' application flow for a private membership club / exclusive community page: a centered eyebrow + thin heading + supporting line above a responsive 3-column grid of steps, each led by a numbered primary circle followed by a medium title and a relaxed description. Use to explain the join / application process for members clubs, professional networks, mastermind groups or curated communities.",
+    'Hairline application-flow ledger for a private membership club / exclusive community page: a left-aligned mono micro-label kicker + serif heading + supporting line above a responsive 3-column grid of steps, each opening with an oversized serif index numeral over a hairline top rule, followed by a serif title and a relaxed muted description. Use to explain the join / application process for members clubs, professional networks, mastermind groups or curated communities.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -61,28 +61,26 @@ export const MembershipClubSteps = defineCapsule({
       >
         <Container>
           <SectionHeading
+            align="left"
             eyebrow={eyebrow}
             title={heading}
             subtitle={description}
             titleId="steps-heading"
-            className="mb-16 max-w-3xl lg:mb-24 gap-0"
-            eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground"
-            titleClassName="mb-6 text-3xl font-light text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
+            className="mb-14 max-w-3xl gap-4 lg:mb-20"
+            eyebrowClassName="font-mono text-[11px] font-medium uppercase tracking-[0.24em] text-muted-foreground"
+            titleClassName="font-serif text-4xl font-normal tracking-tight text-foreground lg:text-5xl"
+            subtitleClassName="text-lg leading-relaxed text-muted-foreground"
           />
-          <StepTimelineGrid
-            columns={3}
-            className="mx-auto max-w-5xl gap-8 lg:gap-16"
-          >
+          <StepTimelineGrid columns={3} className="gap-10 lg:gap-16">
             {items.map((step, i) => (
-              <div key={step.title} className="text-center md:text-left">
-                <div className="mx-auto mb-6 grid size-12 place-items-center rounded-full bg-primary text-lg font-medium text-primary-foreground md:mx-0">
-                  {i + 1}
-                </div>
-                <h3 className="mb-3 text-xl font-medium text-foreground">
+              <div key={step.title} className="border-t border-border pt-6">
+                <span className="font-serif text-5xl font-normal tabular-nums text-foreground">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <h3 className="mt-5 font-serif text-2xl font-normal text-foreground">
                   {step.title}
                 </h3>
-                <p className="leading-relaxed text-muted-foreground">
+                <p className="mt-3 leading-relaxed text-muted-foreground">
                   {step.description}
                 </p>
               </div>

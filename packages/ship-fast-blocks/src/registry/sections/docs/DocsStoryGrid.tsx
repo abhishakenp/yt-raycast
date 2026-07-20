@@ -10,8 +10,7 @@ import {
   ArticleCard,
   ArticleContent,
 } from '#/section-kit/ArticleGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * DocsStoryGrid — "Terminal-docs" popular-guides ledger for a developer
  * DOCUMENTATION site. An asymmetric header row (left-aligned SectionHeading

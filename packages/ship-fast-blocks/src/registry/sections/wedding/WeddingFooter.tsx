@@ -39,7 +39,7 @@ function Mark({ className }: { className?: string }) {
 export const WeddingFooter = defineCapsule({
   name: 'WeddingFooter',
   description:
-    'Elegant wedding site footer built on the shared SiteFooter composite: a serif couple wordmark with an interlocking-rings mark, a warm tagline, the wedding day details, explore links, and a questions/contact column. Use as the closing band of a wedding invitation or celebration page.',
+    'Romantic-editorial wedding site footer on the shared SiteFooter composite: a serif couple wordmark with an interlocking-rings mark and a warm serif tagline, then columns with mono uppercase titles and hairline-quiet stacked links (block width-fit) covering the wedding day details, explore links, and a questions/contact column, closing on a hairline-topped bottom row with a heartfelt note. Use as the closing band of a wedding invitation or celebration page.',
   props: z.object({
     brand: z.string().optional(),
     tagline: z.string().optional(),
@@ -93,30 +93,41 @@ export const WeddingFooter = defineCapsule({
             <FooterBrand
               brand={props.brand ?? 'Ava & Liam'}
               brandMark={<Mark className="size-7 text-primary" />}
-              brandClassName={'font-serif text-lg font-medium'}
+              brandClassName={'font-serif text-lg font-medium tracking-tight'}
             >
-              <FooterTagline>
+              <FooterTagline className="font-serif italic">
                 {props.tagline ?? "Can't wait to celebrate with you."}
               </FooterTagline>
               <FooterSocial>
                 {social.map((s) => (
-                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  <FooterSocialLink
+                    key={s.label}
+                    className="font-mono text-[11px] uppercase tracking-[0.14em]"
+                  >
+                    {s.label}
+                  </FooterSocialLink>
                 ))}
               </FooterSocial>
             </FooterBrand>
             {columns.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnTitle className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  {col.title}
+                </FooterColumnTitle>
                 <FooterColumnList>
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink key={link} className="block w-fit">
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
           <FooterBottom>
-            <FooterCopyright>{props.note ?? 'With love.'}</FooterCopyright>
+            <FooterCopyright className="font-serif italic">
+              {props.note ?? 'With love.'}
+            </FooterCopyright>
           </FooterBottom>
         </FooterContent>
       </SiteFooter>

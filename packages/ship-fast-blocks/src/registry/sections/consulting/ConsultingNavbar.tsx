@@ -11,8 +11,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
  * ConsultingNavbar — Swiss-authority sticky top navigation bar for a
  * management-consulting firm site. A hairline border-bottomed, backdrop-blurred

@@ -1,5 +1,9 @@
-import { getRouteApi, useNavigate } from '@tanstack/react-router'
-import { useEffect, useRef, useState } from 'react'
+import { useMatch, useNavigate, useRouterState } from '@tanstack/react-router'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  PreviewUrlBridgeContext,
+  type PreviewUrlBridgeValue,
+} from '@ship-fast/blocks/runtime'
 
 import { SessionGeneratedPreview } from '@/features/dashboard/components/SessionGeneratedPreview'
 import ThemePicker from '@/genui/components/ThemePicker'
@@ -25,11 +29,22 @@ import {
   getExampleCategories,
   getExampleCategorySite,
 } from '../lib/examples-data'
+import { parseExamplesThemeSearch } from '../lib/examples-theme-search'
 
-const examplesCategoryRouteApi = getRouteApi('/examples/$category')
 const EXAMPLES_PREVIEW_SESSION_ID = 'k574ms14ma9f94keq30r7dq24x89n1k2'
 const SHORTCUT_WINDOW_MS = 2000
 const SHORTCUT_PRESS_COUNT = 5
+
+const extractExamplePageSlug = (
+  pathname: string,
+  category: string,
+): string | null => {
+  const prefix = `/examples/${category}/`
+  if (!pathname.startsWith(prefix)) return null
+  const rest = pathname.slice(prefix.length)
+  if (!rest) return null
+  return rest.split('/')[0] || null
+}
 
 const isEditableShortcutTarget = (target: EventTarget | null): boolean => {
   if (!(target instanceof HTMLElement)) return false
@@ -44,11 +59,31 @@ const isEditableShortcutTarget = (target: EventTarget | null): boolean => {
 }
 
 export const ExamplesCategoryPage = () => {
-  const { category } = examplesCategoryRouteApi.useParams()
-  const { theme, mode } = examplesCategoryRouteApi.useSearch()
-  const navigate = useNavigate()
+  const categoryMatch = useMatch({
+    from: '/examples/$category',
+    shouldThrow: false,
+  })
+  const wildcardMatch = useMatch({
+    from: '/examples/$category/$',
+    shouldThrow: false,
+  })
+  const category =
+    wildcardMatch?.params.category ?? categoryMatch?.params.category ?? ''
+  const search = parseExamplesThemeSearch(
+    wildcardMatch?.search ?? categoryMatch?.search ?? {},
+  )
+  const { theme, mode } = search
+  const navigate = useNavigate({ from: '/examples/$category' })
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  })
   const [themeDialogOpen, setThemeDialogOpen] = useState(false)
   const [themePickerOpen, setThemePickerOpen] = useState(false)
+  const [pageFromUrl, setPageFromUrl] = useState<string | null>(() =>
+    typeof window !== 'undefined'
+      ? extractExamplePageSlug(window.location.pathname, category)
+      : null,
+  )
   const shortcutPressesRef = useRef<number[]>([])
   const site = getExampleCategorySite(category)
 
@@ -78,7 +113,43 @@ export const ExamplesCategoryPage = () => {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
+  useEffect(() => {
+    const handlePopState = () => {
+      setPageFromUrl(extractExamplePageSlug(window.location.pathname, category))
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [category])
+
+  useEffect(() => {
+    setPageFromUrl(extractExamplePageSlug(pathname, category))
+  }, [category, pathname])
+
+  const navigateToPage = useCallback(
+    (pageSlug: string | null) => {
+      const baseUrl = `/examples/${category}`
+      const search = window.location.search
+      const targetUrl = pageSlug
+        ? `${baseUrl}/${pageSlug}${search}`
+        : `${baseUrl}${search}`
+      window.history.pushState(null, '', targetUrl)
+      setPageFromUrl(pageSlug)
+    },
+    [category],
+  )
+
+  const bridgeValue = useMemo<PreviewUrlBridgeValue>(
+    () => ({
+      navigateToPage,
+      pageFromUrl,
+    }),
+    [navigateToPage, pageFromUrl],
+  )
+
   if (!site) return null
+
+  const previewKey = `${category}:${theme}:${mode}:${site.source.length}`
 
   const handleThemeChange = (nextTheme: string) => {
     void navigate({
@@ -167,18 +238,21 @@ export const ExamplesCategoryPage = () => {
           </div>
         </DialogContent>
       </Dialog>
-      <SessionGeneratedPreview
-        source={site.source}
-        sessionId={EXAMPLES_PREVIEW_SESSION_ID}
-        prompt={`${site.label} full site examples`}
-        siteSpecJson={JSON.stringify({
-          brand: site.label,
-          tagline: site.imageContextTitle,
-        })}
-        isDark={mode === 'dark'}
-        themeStyles={resolveThemeStyles(theme)}
-        deviceMode="desktop"
-      />
+      <PreviewUrlBridgeContext.Provider value={bridgeValue}>
+        <SessionGeneratedPreview
+          key={previewKey}
+          source={site.source}
+          sessionId={EXAMPLES_PREVIEW_SESSION_ID}
+          prompt={`${site.label} full site examples`}
+          siteSpecJson={JSON.stringify({
+            brand: site.label,
+            tagline: site.imageContextTitle,
+          })}
+          isDark={mode === 'dark'}
+          themeStyles={resolveThemeStyles(theme)}
+          deviceMode="desktop"
+        />
+      </PreviewUrlBridgeContext.Provider>
     </main>
   )
 }

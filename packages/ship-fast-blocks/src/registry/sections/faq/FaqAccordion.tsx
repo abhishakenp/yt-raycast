@@ -11,8 +11,7 @@ import {
 } from '#/section-kit/FaqAccordion.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { Watermark, MonoTag } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * FaqAccordion — the "Editorial Q&A" ledger: a hairline-divided
  * frequently-asked-questions accordion for a help-center / support page. An

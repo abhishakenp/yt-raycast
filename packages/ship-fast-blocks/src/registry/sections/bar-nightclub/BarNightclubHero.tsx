@@ -14,8 +14,7 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * BarNightclubHero — dark-kinetic poster hero for a cocktail-bar / nightclub
  * landing page. Asymmetric 7:5 split: on the left a ticket-stub eyebrow chip,

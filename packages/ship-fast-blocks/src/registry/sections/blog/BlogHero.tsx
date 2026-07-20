@@ -13,8 +13,7 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 import { useSyncPublicationArticles } from './publication-interactions.tsx'
 import { publicationLakebed } from './publication-lakebed.ts'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * BlogHero — newsprint front-page lead story for an editorial blog /
  * publication index. Under a mono dateline row (badge stamp · date · read

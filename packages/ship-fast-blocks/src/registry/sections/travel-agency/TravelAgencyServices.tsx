@@ -4,12 +4,12 @@ import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
 import {
-  FeatureGrid,
-  FeatureCard,
   FeatureIcon,
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 
 function PlaneIcon({ className }: { className?: string }) {
   return (
@@ -86,7 +86,7 @@ function ShipIcon({ className }: { className?: string }) {
 export const TravelAgencyServices = defineCapsule({
   name: 'TravelAgencyServices',
   description:
-    'Premium services band for the Travel Agency page family. Composes the shared FeatureGrid kit composite into a four-column row covering Flights, Hotels, Packages, and Cruises, each with a token-styled inline icon and a concise benefit-led description. Use to summarize what a travel agency offers beneath the hero. All copy is prop-driven with wanderlust-themed defaults so it renders with no props.',
+    'Editorial-wanderlust services ledger for the Travel Agency page family. An asymmetric intro (mono eyebrow + heading left, supporting copy right) above a collapsed-border grid of four service cells — Flights, Hotels, Packages, Cruises — each sharing hairline rules and carrying a ghost mono index numeral, a token-styled square line icon, a title, and a concise benefit-led description. Use to summarize what a curated travel agency handles beneath the hero. All copy is prop-driven with wanderlust-themed defaults so it renders with no props.',
   props: z.object({
     heading: z.string().optional(),
     subheading: z.string().optional(),
@@ -137,16 +137,23 @@ export const TravelAgencyServices = defineCapsule({
           props.className,
         )}
       >
-        <Container>
-          <FeatureGrid
-            heading={props.heading ?? 'Everything for your journey'}
-            subheading={
-              props.subheading ??
-              'One trusted team handling every detail, so you can simply look forward to the destination.'
-            }
-            columns={4}
-          >
-            {features.map((f) => {
+        <Container size="xl">
+          <div className="mb-14 grid items-end gap-8 lg:grid-cols-12 lg:gap-12">
+            <SectionHeading
+              align="left"
+              eyebrow="Services"
+              title={props.heading ?? 'Everything for your journey'}
+              className="gap-3 lg:col-span-7"
+              eyebrowClassName="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground"
+              titleClassName="text-4xl font-semibold tracking-tight lg:text-5xl"
+            />
+            <p className="text-base leading-relaxed text-muted-foreground lg:col-span-5 lg:pb-1">
+              {props.subheading ??
+                'One trusted team handling every detail, so you can simply look forward to the destination.'}
+            </p>
+          </div>
+          <div className="grid grid-cols-1 border-l border-t border-border sm:grid-cols-2 lg:grid-cols-4">
+            {features.map((f, index) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -157,14 +164,34 @@ export const TravelAgencyServices = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
-                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
-                </FeatureCard>
+                <div
+                  key={__iv__.title}
+                  className="group relative flex flex-col gap-4 border-b border-r border-border p-6 transition-colors duration-150 hover:bg-muted/40 sm:p-8"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute right-5 top-5 select-none font-mono text-5xl font-bold leading-none tabular-nums text-foreground/[0.07]"
+                  >
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <MonoTag tone="faint">
+                    N° {String(index + 1).padStart(2, '0')}
+                  </MonoTag>
+                  {__iv__.icon && (
+                    <FeatureIcon className="mt-2 size-11 rounded-none bg-primary/10">
+                      {__iv__.icon}
+                    </FeatureIcon>
+                  )}
+                  <FeatureTitle className="mt-1 text-lg font-semibold tracking-tight">
+                    {__iv__.title}
+                  </FeatureTitle>
+                  <FeatureDescription className="leading-relaxed">
+                    {__iv__.description}
+                  </FeatureDescription>
+                </div>
               )
             })}
-          </FeatureGrid>
+          </div>
         </Container>
       </section>
     )

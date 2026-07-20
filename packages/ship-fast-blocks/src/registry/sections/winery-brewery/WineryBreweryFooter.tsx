@@ -18,14 +18,17 @@ import {
 } from '#/section-kit/SiteFooter.tsx'
 
 /**
- * WineryBreweryFooter — a rich, multi-column closing footer for a winery or
- * brewery site. Thin configuration over the shared `SiteFooter` composite: a
- * serif wordmark beside an inline grape-cluster mark, a tagline, a social row,
- * and a responsive grid of link columns. Visit (address, phone, email), Hours
- * (day/time rows), Explore, and Contact are folded into columns, and the bottom
- * bar carries an auto-updating copyright line. Use as the site-wide footer for
- * wineries, vineyards, cellar doors, breweries, taprooms, or cideries. Renders
- * fully with no props via rustic-premium baked-in defaults.
+ * WineryBreweryFooter — a rich, artisan-editorial closing footer for a winery
+ * or brewery site. Thin configuration over the shared `SiteFooter` composite: a
+ * warm serif wordmark beside an inline grape-cluster mark, a tagline, a mono
+ * social row, and a responsive grid of link columns with mono label-stamp
+ * titles. Visit (address, phone, email), Hours (day/time ledger rows), Explore,
+ * and Contact are folded into columns whose links each render as a
+ * block-level, width-fit tap target, and the hairline-bordered bottom bar
+ * carries an auto-updating mono copyright line. Every brand, social, contact,
+ * and column link routes through section-kit route links. Use as the site-wide
+ * footer for wineries, vineyards, cellar doors, breweries, taprooms, or
+ * cideries. Renders fully with no props via baked-in defaults.
  */
 function GrapeClusterMark({ className }: { className?: string }) {
   return (
@@ -54,7 +57,7 @@ function GrapeClusterMark({ className }: { className?: string }) {
 export const WineryBreweryFooter = defineCapsule({
   name: 'WineryBreweryFooter',
   description:
-    'Rich, multi-column closing footer for a winery or brewery site: a responsive grid with a brand block (serif wordmark + grape-cluster mark + tagline + social row), a Visit column with address plus tappable phone and email, an Hours column of day/time rows, and extra link columns (Explore, Contact, …); a bordered-top bottom bar holds an auto-updating copyright line. Every brand, social, contact, and column link routes through section-kit route links. Use as the site-wide footer for wineries, vineyards, cellar doors, breweries, taprooms, or cideries.',
+    'Rich, artisan-editorial closing footer for a winery or brewery site: a responsive grid with a brand block (warm serif wordmark + grape-cluster mark + tagline + mono social row), a Visit column with address plus tappable phone and email, an Hours column of day/time ledger rows, and extra link columns (Explore, Contact, …) with mono label-stamp titles and block-level width-fit links; a hairline-bordered bottom bar holds an auto-updating mono copyright line. Every brand, social, contact, and column link routes through section-kit route links. Use as the site-wide footer for wineries, vineyards, cellar doors, breweries, taprooms, or cideries.',
   props: z.object({
     /** Winery / brewery brand name shown as the serif wordmark. */
     brand: z.string().optional(),
@@ -112,32 +115,41 @@ export const WineryBreweryFooter = defineCapsule({
           <FooterGrid>
             <FooterBrand
               brand={props.brand ?? 'Cellar & Cask'}
-              brandMark={<GrapeClusterMark className="size-8 text-primary" />}
+              brandMark={<GrapeClusterMark className="size-7 text-primary" />}
               brandClassName={'font-serif text-xl font-medium'}
             >
-              <FooterTagline>
+              <FooterTagline className="max-w-xs font-serif italic">
                 {props.tagline ??
                   'Estate-grown wine and barrel-aged ale from one sun-soaked hillside.'}
               </FooterTagline>
               <FooterSocial>
                 {social.map((s) => (
-                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  <FooterSocialLink
+                    key={s.label}
+                    className="font-mono text-[11px] uppercase tracking-[0.14em]"
+                  >
+                    {s.label}
+                  </FooterSocialLink>
                 ))}
               </FooterSocial>
             </FooterBrand>
             {columns.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnTitle className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  {col.title}
+                </FooterColumnTitle>
                 <FooterColumnList>
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink key={link} className="block w-fit">
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
           <FooterBottom>
-            <FooterCopyright>
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.14em]">
               {props.note ?? 'All rights reserved.'}
             </FooterCopyright>
           </FooterBottom>

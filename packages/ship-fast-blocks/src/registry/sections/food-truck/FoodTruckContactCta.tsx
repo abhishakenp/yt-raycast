@@ -11,8 +11,7 @@ import {
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
 import { Watermark } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * FoodTruckContactCta — a sticker-poster inverted closing contact CTA band with a slanted
  * clip-path seam. A foreground-filled section under a giant ghost "BOOK" watermark, with a

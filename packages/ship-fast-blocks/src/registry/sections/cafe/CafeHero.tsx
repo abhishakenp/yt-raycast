@@ -12,8 +12,7 @@ import {
 } from '../commerce/commerce-interactions.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * CafeHero — warm newsprint front-page hero for a neighborhood cafe / coffee
  * shop landing page. Opens with a hairline-ruled masthead dateline row: the

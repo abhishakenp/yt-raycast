@@ -2,7 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import { Container } from '#/section-kit/index.ts'
+import { Container } from '#/section-kit/Container.tsx'
 import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   StatGrid,

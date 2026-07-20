@@ -12,8 +12,7 @@ import {
   PersonCardRole,
   PersonCardBio,
 } from '#/section-kit/PersonCard.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * BlogAuthors — newsprint "byline desk" contributor grid for an editorial
  * blog or publication. An asymmetric masthead header (mono "Masthead" tag,

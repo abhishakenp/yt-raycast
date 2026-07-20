@@ -10,21 +10,25 @@ import {
   PortfolioCaption,
 } from '#/section-kit/PortfolioGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { MonoTag } from '#/section-kit/Decor.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * WriterAuthorWork — a "Selected works" books grid for a literary author site.
- * Opens with a centered SectionHeading (uppercase "Books" eyebrow over a serif
- * title) and lays out a responsive grid of book cards, each pairing a tall
- * 2:3 cover image with the title, publication year, and a "Buy" link button
- * that routes through section-kit route links. Tuned for novelists, essayists, poets, and
- * memoirists who want to showcase a backlist with quiet, elegant typography.
- * Ships with five baked-in titles so it renders fully with no props.
+ * WriterAuthorWork — a literary-editorial "Selected works" bibliography for an
+ * author site. A left-aligned SectionHeading (uppercase "Books" eyebrow over a
+ * serif title) with a mono catalog count sits above a staggered grid of book
+ * plates: each pairs a tall 2:3 cover in a sharp rounded-none frame that lifts
+ * onto a hard offset shadow on hover, a mono catalog index numeral, a serif
+ * title, a mono "year · NOVEL" line with tabular figures, and a "Buy" link that
+ * presses on click and routes through section-kit route links. Alternate cards
+ * drop on a staggered vertical rhythm for a bookshelf feel. Tuned for
+ * novelists, essayists, poets, and memoirists showcasing a backlist with
+ * restrained serif typography. Ships with five baked-in titles so it renders
+ * fully with no props.
  */
 export const WriterAuthorWork = defineCapsule({
   name: 'WriterAuthorWork',
   description:
-    "A 'Selected works' books grid for a literary author website: a centered SectionHeading (uppercase 'Books' eyebrow over a serif title) above a responsive grid of book cards. Each card pairs a tall 2:3 cover image with the book title, publication year, and a 'Buy' link button that routes through section-kit route links. Built for novelists, essayists, poets, and memoirists presenting a backlist with restrained, elegant serif typography. Renders fully with no props via five baked-in titles.",
+    "A literary-editorial 'Selected works' bibliography for an author website: a left-aligned SectionHeading (uppercase 'Books' eyebrow over a serif title) with a mono catalog count above a staggered grid of book plates. Each plate pairs a tall 2:3 cover in a sharp rounded-none frame that lifts onto a hard offset shadow on hover, a mono catalog index numeral, a serif book title, a mono 'year · NOVEL' line with tabular figures, and a 'Buy' link that presses on click and routes through section-kit route links; alternate cards sit on a staggered vertical rhythm for a bookshelf feel. Built for novelists, essayists, poets, and memoirists presenting a backlist with restrained, elegant serif typography. Renders fully with no props via five baked-in titles.",
   props: z.object({
     /** Serif title rendered in the heading block. */
     heading: z.string().optional(),
@@ -88,21 +92,40 @@ export const WriterAuthorWork = defineCapsule({
         )}
       >
         <Container size="xl" className="px-6">
-          <SectionHeading
-            eyebrow="Books"
-            title={props.heading ?? 'Selected works'}
-            subtitle={
-              props.subheading ??
-              'A decade of novels exploring memory, place, and the quiet weight of family.'
-            }
-          />
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+            <SectionHeading
+              align="left"
+              eyebrow="Books"
+              title={props.heading ?? 'Selected works'}
+              subtitle={
+                props.subheading ??
+                'A decade of novels exploring memory, place, and the quiet weight of family.'
+              }
+              className="max-w-xl"
+              eyebrowClassName="tracking-[0.2em]"
+              titleClassName="font-serif text-3xl font-normal tracking-tight sm:text-4xl"
+            />
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="shrink-0 tabular-nums"
+            >
+              {String(books.length).padStart(2, '0')} Titles
+            </MonoTag>
+          </div>
 
           <PortfolioGrid cols="1-2-3" className="mt-12">
-            {books.map((book) => (
-              <div key={book.title} className="flex flex-col">
+            {books.map((book, i) => (
+              <div
+                key={book.title}
+                className={cn(
+                  'group flex flex-col',
+                  i % 2 === 1 && 'sm:translate-y-8',
+                )}
+              >
                 <PortfolioMedia
                   aspect="2-3"
-                  className="w-full rounded-lg border border-border"
+                  className="w-full rounded-none border-2 border-foreground/15 transition-transform duration-200 group-hover:-translate-x-1 group-hover:-translate-y-1 group-hover:shadow-[8px_8px_0_0] group-hover:shadow-primary/25"
                 >
                   <Image
                     alt={book.coverAlt}
@@ -110,14 +133,22 @@ export const WriterAuthorWork = defineCapsule({
                     h={450}
                     className="size-full object-cover"
                   />
+                  <span
+                    aria-hidden="true"
+                    className="absolute left-0 top-0 border-b-2 border-r-2 border-foreground/15 bg-background px-2 py-1 font-mono text-[11px] tabular-nums text-muted-foreground"
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
                 </PortfolioMedia>
-                <PortfolioCaption className="mt-4">
+                <PortfolioCaption className="mt-4 border-t border-border pt-3">
                   <h3 className="font-serif text-xl text-foreground">
                     {book.title}
                   </h3>
-                  <p className="text-sm text-muted-foreground">{book.year}</p>
+                  <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground tabular-nums">
+                    {book.year} &middot; Novel
+                  </p>
                   <NavbarRouteLink
-                    className="mt-2 self-start text-sm font-medium text-primary hover:underline"
+                    className="mt-3 self-start font-mono text-[11px] uppercase tracking-[0.16em] text-primary underline-offset-4 transition-transform duration-100 hover:underline active:translate-y-px"
                     href={book.target ?? 'Books'}
                   >
                     {buyLabel}

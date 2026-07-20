@@ -13,8 +13,7 @@ import {
 
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * ArchitectureFirmWork — blueprint drawing-index project gallery for an
  * architecture-studio / design-practice page. An asymmetric header row — mono

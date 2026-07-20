@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { cn } from '#/lib/utils.ts'
 import {
   CtaBand,
   CtaBandInner,
@@ -10,23 +11,25 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { Watermark } from '#/section-kit/Decor.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * NonprofitCta — a warm, centered donation band for a nonprofit / charity / NGO
- * page. Thin configuration over the shared `CtaBand` composite at
- * tone="primary": an eyebrow, a strong appeal headline, a short supporting line,
- * and a centered row of two routable pill CTAs — a high-contrast "Donate Today"
- * button (variant "primary", auto-inverted to a light pill on the primary band)
- * plus an outlined "Become a Volunteer" button. Both actions navigate through
- * section-kit route links so neither is a dead link. Use near the bottom of a nonprofit,
- * foundation, or humanitarian page to drive donations and sign-ups. Renders
- * fully with no props via baked-in "Roots of Hope" defaults.
+ * NonprofitCta — the warm closing donation band for a nonprofit / charity / NGO
+ * page, and the page's single accent moment. Built on the shared `CtaBand`
+ * composite at tone="primary" but restyled to a soft muted wash behind a giant
+ * faint ghost watermark: a mono micro-label eyebrow, a serif appeal headline, a
+ * short supporting line, and a centered row of two square routable CTAs — one
+ * high-contrast filled-primary "Donate Today" button (the one place primary
+ * lives) with press feedback, beside a square hairline outline "Become a
+ * Volunteer" button. Both actions navigate through section-kit route links so
+ * neither is a dead link. Warm, human, trustworthy. Use near the bottom of a
+ * nonprofit, foundation, or humanitarian page to drive donations and sign-ups.
+ * Renders fully with no props via baked-in "Roots of Hope" defaults.
  */
 export const NonprofitCta = defineCapsule({
   name: 'NonprofitCta',
   description:
-    "Warm, centered donation band for a nonprofit / charity / NGO page built on the shared CtaBand composite at tone='primary': an eyebrow, a strong appeal headline, a short supporting line, and a centered row of two routable pill CTAs — a high-contrast 'Donate Today' button plus an outlined 'Become a Volunteer' button. Both CTAs route through section-kit route links. Use near the bottom of a nonprofit, foundation, or humanitarian page to drive donations and volunteer sign-ups.",
+    "Warm closing donation band for a nonprofit / charity / NGO page — the page's single accent moment — built on the shared CtaBand composite at tone='primary' but restyled to a soft muted wash behind a giant faint ghost watermark: a mono micro-label eyebrow, a serif appeal headline, a short supporting line, and a centered row of two square routable CTAs — one high-contrast filled-primary 'Donate Today' button (the one place primary lives) with press feedback, beside a square hairline outline 'Become a Volunteer' button. Both CTAs route through section-kit route links. Warm, human, trustworthy. Use near the bottom of a nonprofit, foundation, or humanitarian page to drive donations and volunteer sign-ups.",
   props: z.object({
     /** Small uppercase eyebrow above the headline. */
     eyebrow: z.string().optional(),
@@ -56,18 +59,41 @@ export const NonprofitCta = defineCapsule({
     const secondaryTarget = props.secondaryTarget ?? 'Volunteer'
 
     return (
-      <CtaBand tone="primary" className={props.className}>
-        <CtaBandInner>
-          <CtaBandEyebrow>{eyebrow}</CtaBandEyebrow>
-          <CtaBandTitle>{headline}</CtaBandTitle>
-          <CtaBandSubtitle>{subheading}</CtaBandSubtitle>
-          <CtaBandActions>
-            <CtaAction variant="primary" asChild>
+      <CtaBand
+        tone="primary"
+        className={cn(
+          'relative overflow-hidden border-y border-border bg-muted/50 text-foreground',
+          props.className,
+        )}
+      >
+        <Watermark className="-bottom-20 -right-6 select-none font-serif text-[11rem] italic text-foreground/[0.04] sm:text-[18rem]">
+          give
+        </Watermark>
+        <CtaBandInner className="relative items-center gap-6 pb-20 pt-20 text-center sm:pb-24 sm:pt-24">
+          <CtaBandEyebrow className="font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground opacity-100">
+            {eyebrow}
+          </CtaBandEyebrow>
+          <CtaBandTitle className="max-w-3xl font-serif text-[clamp(2.25rem,5vw,3.5rem)] font-medium leading-[1.05] tracking-tight text-foreground">
+            {headline}
+          </CtaBandTitle>
+          <CtaBandSubtitle className="max-w-2xl text-base leading-relaxed text-muted-foreground opacity-100 md:text-lg">
+            {subheading}
+          </CtaBandSubtitle>
+          <CtaBandActions className="mt-2 w-full flex-col sm:w-auto sm:flex-row">
+            <CtaAction
+              variant="primary"
+              asChild
+              className="rounded-none px-8 py-4 text-base font-semibold transition-colors active:translate-y-px"
+            >
               <NavbarRouteLink href={primaryTarget}>
                 {primaryCta}
               </NavbarRouteLink>
             </CtaAction>
-            <CtaAction variant="outline" asChild>
+            <CtaAction
+              variant="outline"
+              asChild
+              className="rounded-none border-foreground/25 px-8 py-4 text-base font-semibold transition-colors active:translate-y-px"
+            >
               <NavbarRouteLink href={secondaryTarget}>
                 {secondaryCta}
               </NavbarRouteLink>

@@ -4,14 +4,17 @@ import { cn } from '#/lib/utils.ts'
 import { Card } from '#/section-kit/Card.tsx'
 
 /**
- * LendingRates — a transparent rates-and-fees band plus a sample payment-schedule
- * table on a muted section, for a lending or fintech marketing page. A centered
- * heading + description above a white card with a 3-up divided highlights row
- * (big stat + label + note) and a muted check-listed guarantees footer; below it,
- * a separate card holds a titled, horizontally-scrollable APR-by-credit-tier
- * table with a fine-print disclaimer note. Use to communicate honest pricing —
- * starting APR, $0 fees, sample monthly payments — on personal-loan, debt-
- * consolidation, or financing pages. Renders fully with no props via defaults.
+ * LendingRates — Swiss-fintech transparent rates-and-fees ledger plus a sample
+ * payment-schedule table on a muted section, for a lending or fintech marketing
+ * page. An asymmetric left-aligned header (mono index eyebrow + heading + lede)
+ * sits above a sharp-cornered card with a hard offset shadow: a collapsed-border
+ * highlights ledger of giant tabular-nums rate numerals (value + mono label +
+ * note) and a hairline check-listed guarantees footer; below it a separate
+ * hairline card holds a titled, horizontally-scrollable collapsed-border
+ * APR-by-credit-tier table with mono labels, tabular-nums cells, and a fine-print
+ * disclaimer note. Use to communicate honest pricing — starting APR, $0 fees,
+ * sample monthly payments — on personal-loan, debt-consolidation, or financing
+ * pages. Renders fully with no props via defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -26,7 +29,7 @@ import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 export const LendingRates = defineCapsule({
   name: 'LendingRates',
   description:
-    'Transparent rates-and-fees band + sample payment-schedule table on a muted section for a lending or fintech marketing page: centered heading + description above a white card with a 3-up divided highlights row (big stat + label + note) and a muted check-listed guarantees footer; below it a separate card with a titled, horizontally-scrollable APR-by-credit-tier table and a fine-print disclaimer. Use to communicate honest pricing — starting APR, $0 fees, sample monthly payments — on personal-loan, debt-consolidation, or financing pages.',
+    'Swiss-fintech transparent rates-and-fees ledger + sample payment-schedule table on a muted section for a lending or fintech marketing page: an asymmetric left-aligned header (mono index eyebrow + heading + lede) above a sharp-cornered card with a hard offset shadow — a collapsed-border highlights ledger of giant tabular-nums rate numerals (value + mono label + note) and a hairline check-listed guarantees footer; below it a separate hairline card with a titled, horizontally-scrollable collapsed-border APR-by-credit-tier table (mono labels, tabular-nums cells) and a fine-print disclaimer. Use to communicate honest pricing — starting APR, $0 fees, sample monthly payments — on personal-loan, debt-consolidation, or financing pages.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -141,29 +144,39 @@ export const LendingRates = defineCapsule({
     return (
       <section className={cn('bg-muted py-24 lg:py-28', props.className)}>
         <Container>
-          <SectionHeading
-            title={ratesHeading}
-            subtitle={ratesDesc}
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="tracking-tight sm:text-4xl"
-            subtitleClassName="mt-4 text-lg"
-          />
-          <div className="mx-auto max-w-5xl overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-            <div className="grid divide-y divide-border md:grid-cols-3 md:divide-x md:divide-y-0">
+          <div className="mb-12 border-b border-border pb-6 lg:mb-16">
+            <SectionHeading
+              align="left"
+              eyebrow="03 / Rates & fees"
+              title={ratesHeading}
+              subtitle={ratesDesc}
+              className="max-w-3xl gap-3"
+              eyebrowClassName="font-mono text-[11px] uppercase tracking-[0.2em] text-primary"
+              titleClassName="text-3xl font-extrabold tracking-tight sm:text-4xl"
+              subtitleClassName="text-lg text-muted-foreground"
+            />
+          </div>
+          <div className="mx-auto max-w-5xl overflow-hidden rounded-none border border-foreground bg-card shadow-[8px_8px_0_0] shadow-foreground">
+            <div className="grid gap-0 border-b border-l border-t border-border md:grid-cols-3">
               {rateHighlights.map((h) => (
-                <RateCard key={h.label} className="block p-8 text-center">
-                  <div className="mb-2 text-4xl font-bold text-card-foreground">
+                <RateCard
+                  key={h.label}
+                  className="block border-b border-r border-border p-8"
+                >
+                  <div className="mb-2 text-[clamp(2.5rem,5vw,3.5rem)] font-extrabold leading-none tracking-tight tabular-nums text-card-foreground">
                     {h.value}
                   </div>
-                  <div className="mb-4 text-sm text-muted-foreground">
+                  <div className="mb-4 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                     {h.label}
                   </div>
-                  <p className="text-sm text-muted-foreground">{h.note}</p>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    {h.note}
+                  </p>
                 </RateCard>
               ))}
             </div>
-            <div className="border-t border-border bg-muted px-8 py-6">
-              <ResponsiveGrid cols="1-md-3" className="text-sm gap-6">
+            <div className="bg-muted px-8 py-6">
+              <ResponsiveGrid cols="1-md-3" className="gap-6 text-sm">
                 {rateGuarantees.map((g) => (
                   <div key={g.title} className="flex items-start gap-3">
                     <svg
@@ -190,20 +203,20 @@ export const LendingRates = defineCapsule({
             </div>
           </div>
 
-          <Card className="mx-auto mt-8 max-w-5xl">
-            <h3 className="mb-4 font-semibold text-card-foreground">
+          <Card className="mx-auto mt-8 max-w-5xl rounded-none border border-border">
+            <h3 className="mb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
               {tableTitle}
             </h3>
             <div className="overflow-x-auto">
               <RatesTable className="w-full overflow-hidden text-sm">
-                <table className="w-full text-sm">
+                <table className="w-full border-collapse text-sm">
                   <RatesHeader asChild>
                     <thead>
                       <tr className="border-b border-border">
                         {tableHead.map((th) => (
                           <th
                             key={th}
-                            className="px-4 py-3 text-left font-medium text-muted-foreground"
+                            className="px-4 py-3 text-left font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground"
                           >
                             {th}
                           </th>
@@ -217,6 +230,7 @@ export const LendingRates = defineCapsule({
                         <RatesRow asChild key={row[0]}>
                           <tr
                             className={cn(
+                              'transition-colors duration-150 hover:bg-muted/50',
                               ri < tableRows.length - 1 &&
                                 'border-b border-border',
                             )}
@@ -226,7 +240,9 @@ export const LendingRates = defineCapsule({
                                 key={ci}
                                 className={cn(
                                   'px-4 py-3',
-                                  ci === 0 && 'font-medium',
+                                  ci === 0
+                                    ? 'font-medium'
+                                    : 'tabular-nums text-muted-foreground',
                                 )}
                               >
                                 {cell}
@@ -240,7 +256,9 @@ export const LendingRates = defineCapsule({
                 </table>
               </RatesTable>
             </div>
-            <p className="mt-4 text-xs text-muted-foreground">{tableNote}</p>
+            <p className="mt-4 font-mono text-[11px] leading-relaxed tracking-[0.02em] text-muted-foreground">
+              {tableNote}
+            </p>
           </Card>
         </Container>
       </section>

@@ -18,7 +18,9 @@ vi.mock('@tanstack/react-router', () => {
     )
   }
 
-  return { Link }
+  // RouterLink calls useRouter({ warn: false }) to decide between a TanStack
+  // Link and a plain anchor; provide a truthy stub so it takes the Link path.
+  return { Link, useRouter: () => ({}) }
 })
 
 if (typeof ResizeObserver === 'undefined') {
@@ -45,13 +47,17 @@ import {
   CommandSearchInput,
   CommandSearchList,
   CommandSearchTrigger,
+} from './CommandSearch.tsx'
+import {
   AccountDropdown,
   AccountDropdownTrigger,
   AccountDropdownContent,
   AccountDropdownLabel,
   AccountDropdownSignOut,
   AccountDropdownUnauthenticated,
-  FilterChip,
+} from './AccountDropdown.tsx'
+import { FilterChip } from './FilterChip.tsx'
+import {
   ProductCard,
   ProductCardImage,
   ProductCardBadge,
@@ -60,16 +66,18 @@ import {
   ProductCardTitle,
   ProductCardSubtitle,
   ProductCardPrice,
+} from './ProductCard.tsx'
+import {
   PersonCard,
   PersonCardAvatar,
   PersonCardContent,
   PersonCardName,
   PersonCardRole,
   PersonCardBio,
-  Card,
-  Eyebrow,
-  ResponsiveGrid,
-} from './index.ts'
+} from './PersonCard.tsx'
+import { Card } from './Card.tsx'
+import { Eyebrow } from './Eyebrow.tsx'
+import { ResponsiveGrid } from './ResponsiveGrid.tsx'
 import { RoutesContext } from '#/lib/route-context.tsx'
 
 describe('FilterChip', () => {

@@ -8,7 +8,6 @@ import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { StoryGrid } from '#/section-kit/StoryGrid.tsx'
 import { Card } from '#/section-kit/Card.tsx'
-import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import {
   ArticleGrid,
   ArticleCard,
@@ -16,23 +15,26 @@ import {
   ArticleContent,
   ArticleMeta,
 } from '#/section-kit/ArticleGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * NewsStoryGrid — latest stories grid for a news / editorial outlet. On a subtle
- * muted band: a "Latest Stories" heading with a row of filter chips (All / News /
- * Opinion / Analysis) on the right, then a responsive grid of recent article
- * cards (sm:2-up, lg:3-up) — each a bordered card with a 4:3 photo on top, a
- * category label (rotating accent tone) + timestamp, headline, excerpt and an
- * author/read-time byline — closing with a centered "Load More" button. Every
- * card, filter and the load-more button route through section-kit route links. Use as the
- * latest-articles grid of a newspaper, magazine or publication homepage. Renders
- * fully with no props via baked-in defaults.
+ * NewsStoryGrid — latest-stories broadsheet grid for a news / editorial
+ * outlet, in a full newsprint idiom. On a subtle muted band: a serif "Latest
+ * Stories" heading on a heavy double masthead rule beside a row of mono
+ * square-tab filters (All / News / Opinion / Analysis), then a hairline
+ * article grid where the lead story spans two columns on desktop. Each card is
+ * a sharp rounded-none hairline plate opening on a mono index + category
+ * dateline rule, a grayscale cover that regains color on hover, a serif black
+ * headline that underlines on hover, a clamped excerpt, and a mono "By" byline
+ * / read-time footer rule — closing with a centered square invert-on-hover
+ * "Load More" button. Every card, filter and the load-more button route
+ * through section-kit route links. Use as the latest-articles grid of a
+ * newspaper, magazine or publication homepage. Renders fully with no props via
+ * baked-in defaults.
  */
 export const NewsStoryGrid = defineCapsule({
   name: 'NewsStoryGrid',
   description:
-    "Latest stories grid for a news outlet on a subtle muted band: a 'Latest Stories' heading with a row of filter chips (All / News / Opinion / Analysis) on the right, then a responsive grid of recent article cards (sm:grid-cols-2 lg:grid-cols-3) — each a bordered card with a 4:3 photo on top, a rotating-accent category label + timestamp, headline, excerpt and author/read-time byline — closing with a centered 'Load More' button. Cards, filters and the load-more button route through section-kit route links. Use as the latest-articles grid of a newspaper, magazine or publication homepage.",
+    "Latest-stories broadsheet grid for a news outlet in a full newsprint idiom: on a subtle muted band, a serif 'Latest Stories' heading on a heavy double masthead rule beside a row of mono square-tab filters (All / News / Opinion / Analysis), then a hairline article grid where the lead story spans two columns on desktop. Each card is a sharp rounded-none hairline plate with a mono index + category dateline rule, a grayscale cover that regains color on hover, a serif black headline that underlines on hover, a clamped excerpt, and a mono 'By' byline / read-time footer rule, closing with a centered square invert-on-hover 'Load More' button. Cards, filters and the load-more button route through section-kit route links. Use as the latest-articles grid of a newspaper, magazine or publication homepage.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -138,47 +140,32 @@ export const NewsStoryGrid = defineCapsule({
           },
         ]
 
-    // Rotate category labels through theme accent tokens (no raw palette colors).
-    const catTones = [
-      'text-primary',
-      'text-secondary-foreground',
-      'text-accent-foreground',
-      'text-chart-1',
-      'text-chart-2',
-      'text-chart-3',
-      'text-chart-4',
-      'text-chart-5',
-    ]
-    const toneFor = (key: string) => {
-      let h = 0
-      for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) | 0
-      return catTones[Math.abs(h) % catTones.length]
-    }
-
     return (
       <StoryGrid
         className={cn(
-          'bg-muted/40 pt-28 pb-8 lg:pt-32 lg:pb-12',
+          'bg-muted/40 pt-20 pb-14 lg:pt-24 lg:pb-20',
           props.className,
         )}
       >
         <Container>
-          <div className="mb-8 flex items-center justify-between">
+          {/* Section header on a heavy double masthead rule. */}
+          <div className="mb-8 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-3 border-b-2 border-foreground pb-3 shadow-[0_3px_0_-2px] shadow-border">
             <SectionHeading
               align="left"
               title={heading}
               className="gap-0"
-              titleClassName="text-xl font-bold text-foreground lg:text-2xl"
+              titleClassName="font-serif text-2xl font-black tracking-tight text-foreground lg:text-3xl"
             />
-            <div className="hidden items-center gap-2 sm:flex">
+            <div className="hidden items-center sm:flex">
               {filters.map((f, i) => (
                 <NavbarRouteLink
                   key={f}
                   className={cn(
-                    'rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors',
+                    'px-3 py-1 font-mono text-[11px] uppercase tracking-[0.16em] transition-colors',
+                    i > 0 && 'border-l border-border',
                     i === 0
-                      ? 'border-border bg-card text-foreground'
-                      : 'border-transparent text-muted-foreground hover:border-border hover:bg-card hover:text-foreground',
+                      ? 'text-foreground underline decoration-2 underline-offset-4'
+                      : 'text-muted-foreground hover:text-foreground',
                   )}
                   href={f}
                 >
@@ -189,69 +176,108 @@ export const NewsStoryGrid = defineCapsule({
           </div>
 
           <ArticleGrid cols="1-2-3" className="gap-6 lg:gap-8">
-            {stories.map((story) => (
-              <ArticleCard key={story.title} asChild variant="elevated">
-                <article>
-                  <NavbarRouteLink
-                    className="flex h-full w-full flex-col text-left"
-                    href={story.title}
-                  >
-                    <ArticleMedia aspect="4-3" className="w-full flex-shrink-0">
-                      <Image
-                        alt={story.imageAlt}
-                        w={400}
-                        h={300}
-                        loading="lazy"
-                        className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </ArticleMedia>
-                    <ArticleContent className="p-4 sm:p-5">
-                      <ArticleMeta className="mb-2 gap-2">
-                        <Eyebrow
-                          variant="text"
+            {stories.map((story, i) => {
+              const isLead = i === 0
+              // The final story closes the band as a full-width horizontal
+              // ledger row so the broadsheet never ends on a lone ragged cell.
+              const isCloser = i === stories.length - 1 && stories.length > 4
+              return (
+                <ArticleCard
+                  key={story.title}
+                  asChild
+                  variant="none"
+                  className={cn(
+                    'rounded-none border border-border bg-card transition-[border-color] duration-200 hover:border-foreground',
+                    isLead && 'sm:col-span-2 lg:col-span-2',
+                    isCloser && 'sm:col-span-2 lg:col-span-3',
+                  )}
+                >
+                  <article>
+                    <NavbarRouteLink
+                      className={cn(
+                        'flex h-full w-full flex-col text-left',
+                        isCloser && 'lg:flex-row lg:items-stretch',
+                      )}
+                      href={story.title}
+                    >
+                      <ArticleMedia
+                        aspect={isLead || isCloser ? '16-9' : '4-3'}
+                        className={cn(
+                          'w-full flex-shrink-0 border-b border-border',
+                          isCloser &&
+                            'lg:aspect-auto lg:w-[42%] lg:border-b-0 lg:border-r',
+                        )}
+                      >
+                        <Image
+                          alt={story.imageAlt}
+                          w={isLead || isCloser ? 800 : 400}
+                          h={isLead || isCloser ? 450 : 300}
+                          loading="lazy"
+                          className="size-full object-cover grayscale transition-[filter,transform] duration-500 group-hover:scale-[1.02] group-hover:grayscale-0"
+                        />
+                      </ArticleMedia>
+                      <ArticleContent
+                        className={cn('p-5', isCloser && 'lg:flex-1 lg:p-8')}
+                      >
+                        <ArticleMeta className="items-baseline gap-2 border-b border-border pb-3">
+                          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60">
+                            № {String(i + 1).padStart(2, '0')}
+                          </span>
+                          <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
+                            {story.category}
+                          </span>
+                          <span
+                            aria-hidden="true"
+                            className="h-px flex-1 bg-border"
+                          />
+                          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                            {story.time}
+                          </span>
+                        </ArticleMeta>
+                        <h3
                           className={cn(
-                            'tracking-wider',
-                            toneFor(story.category),
+                            'mt-3 font-serif font-black leading-snug tracking-tight text-foreground underline-offset-4 group-hover:underline group-hover:decoration-2',
+                            isLead || isCloser
+                              ? 'text-2xl lg:text-3xl'
+                              : 'text-xl',
                           )}
                         >
-                          {story.category}
-                        </Eyebrow>
-                        <span
-                          aria-hidden="true"
-                          className="text-xs text-muted-foreground"
+                          {story.title}
+                        </h3>
+                        <p
+                          className={cn(
+                            'mt-2.5 text-sm leading-relaxed text-muted-foreground',
+                            (isLead || isCloser) && 'lg:max-w-2xl lg:text-base',
+                          )}
                         >
-                          •
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {story.time}
-                        </span>
-                      </ArticleMeta>
-                      <h3 className="text-lg font-semibold leading-snug text-foreground transition-colors group-hover:text-muted-foreground">
-                        {story.title}
-                      </h3>
-                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                        {story.excerpt}
-                      </p>
-                      <div className="mt-auto flex items-center gap-3 pt-4 text-xs text-muted-foreground">
-                        <span>{story.author}</span>
-                        <span aria-hidden="true">•</span>
-                        <span>{story.readTime}</span>
-                      </div>
-                    </ArticleContent>
-                  </NavbarRouteLink>
-                </article>
-              </ArticleCard>
-            ))}
+                          {story.excerpt}
+                        </p>
+                        <div className="mt-auto flex items-baseline justify-between gap-3 border-t border-border pt-4">
+                          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-foreground">
+                            {story.author}
+                          </span>
+                          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                            {story.readTime}
+                          </span>
+                        </div>
+                      </ArticleContent>
+                    </NavbarRouteLink>
+                  </article>
+                </ArticleCard>
+              )
+            })}
           </ArticleGrid>
 
-          <div className="mt-10 text-center">
+          <div className="mt-12 flex items-center gap-4">
+            <span aria-hidden="true" className="h-px flex-1 bg-border" />
             <Card
               asChild
               variant="default"
-              className="cursor-pointer px-6 py-3 font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground rounded-lg p-0"
+              className="cursor-pointer rounded-none border border-foreground bg-foreground p-0 px-6 py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-background transition-colors duration-150 hover:bg-background hover:text-foreground active:translate-y-px"
             >
               <NavbarRouteLink href={loadMore}>{loadMore}</NavbarRouteLink>
             </Card>
+            <span aria-hidden="true" className="h-px flex-1 bg-border" />
           </div>
         </Container>
       </StoryGrid>

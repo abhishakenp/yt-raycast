@@ -1,7 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
+import { cn } from '#/lib/utils.ts'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
   NavbarActions,
@@ -10,24 +11,28 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
- * PlumbingHvacNavbar — sticky top navigation bar for a local plumbing & HVAC
- * trade site. Thin configuration over the shared `SiteNav` composite: a
- * pipe/droplet logo mark beside the company wordmark, horizontal desktop nav
- * links (Services, About, Reviews, Service Area, Contact), a click-to-call
- * phone number, a pill "Schedule Service" CTA, and a real mobile drawer on
- * small screens. Every nav item and the CTA route through route hrefs so the
- * labels can drive page-switching. Use as the sticky site header for plumbers,
- * HVAC contractors, drain/sewer services, water heater installers, and other
- * licensed home-service trades. Renders fully with no props via baked-in
- * "Pipeworks Plumbing & HVAC" defaults.
+ * PlumbingHvacNavbar — sticky trade-industrial top navigation bar for a local
+ * plumbing & HVAC site. Thin configuration over the shared `SiteNav` composite
+ * in a tech-brutalist-lite key: a blurred header pinned to the top with a heavy
+ * border-b-2 rule, a squared bg-foreground pipe/droplet logo mark beside the
+ * extrabold company wordmark, a horizontal row of mono uppercase desktop nav
+ * links (Services, About, Reviews, Service Area, Contact), a mono click-to-call
+ * phone number, a squared hard-shadow "Schedule Service" CTA with press
+ * feedback, and a real mobile drawer on small screens. Every nav item and the
+ * CTA route through route hrefs so the labels can drive page-switching. Use as
+ * the sticky site header for plumbers, HVAC contractors, drain/sewer services,
+ * water heater installers, and other licensed home-service trades. Renders
+ * fully with no props via baked-in "Pipeworks Plumbing & HVAC" defaults.
  */
 function PipeMark({ className }: { className?: string }) {
   return (
     <span
-      className="grid size-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm"
+      className={cn(
+        'grid place-items-center rounded-none bg-foreground text-background',
+        className,
+      )}
       aria-hidden="true"
     >
       <svg
@@ -39,7 +44,6 @@ function PipeMark({ className }: { className?: string }) {
         strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className={className}
       >
         <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5S12 5 12 2C12 5 9 7 7 9.5S5 13 5 15a7 7 0 0 0 7 7Z" />
       </svg>
@@ -50,7 +54,7 @@ function PipeMark({ className }: { className?: string }) {
 export const PlumbingHvacNavbar = defineCapsule({
   name: 'PlumbingHvacNavbar',
   description:
-    "Sticky top navigation bar for a local plumbing & HVAC trade site built on the shared SiteNav composite: a pipe/droplet logo mark and company wordmark, horizontal desktop nav links, a click-to-call phone number, a pill 'Schedule Service' CTA, and a real mobile drawer. Nav items and CTA route through route hrefs for page-switching. Use as the sticky site header for plumbers, HVAC contractors, drain/sewer services, water heater installers, and other licensed home-service trades.",
+    "Sticky trade-industrial top navigation bar for a local plumbing & HVAC site built on the shared SiteNav composite: a blurred header pinned to the top with a heavy border-b-2 rule, a squared bg-foreground pipe/droplet logo mark and extrabold company wordmark, horizontal mono uppercase desktop nav links, a mono click-to-call phone number, a squared hard-shadow 'Schedule Service' CTA with press feedback, and a real mobile drawer. Nav items and CTA route through route hrefs for page-switching. Use as the sticky site header for plumbers, HVAC contractors, drain/sewer services, water heater installers, and other licensed home-service trades.",
   props: z.object({
     /** Brand / company name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -77,17 +81,33 @@ export const PlumbingHvacNavbar = defineCapsule({
     const homeTarget = props.homeTarget ?? nav[0]
 
     return (
-      <SiteNav position="fixed" height="default" className={props.className}>
-        <NavbarBrand href={homeTarget} className="gap-3">
-          <PipeMark className="size-[18px]" />
-          <Logo brand={brand}>
-            <LogoImage />
-            <LogoLabel className="text-xl font-extrabold tracking-tight" />
-          </Logo>
+      <SiteNav
+        position="fixed"
+        height="default"
+        className={cn(
+          'border-b-2 border-foreground bg-background/95',
+          props.className,
+        )}
+      >
+        <NavbarBrand href={homeTarget}>
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage
+              className="size-7"
+              fallback={<PipeMark className="size-7" />}
+            />
+            <LogoLabel className="text-xl font-extrabold tracking-tight text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
-        <NavbarNav>
-          {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+        <NavbarNav className="gap-6">
+          {nav.map((label, i) => (
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className={cn(
+                'rounded-none font-mono text-xs uppercase tracking-[0.14em]',
+                i >= 5 && 'hidden lg:inline-flex',
+              )}
+            >
               {label}
             </NavbarNavLink>
           ))}
@@ -96,14 +116,14 @@ export const PlumbingHvacNavbar = defineCapsule({
           {phone ? (
             <a
               href={`tel:${phone.replace(/[^\d+]/g, '')}`}
-              className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline"
+              className="hidden font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground lg:inline"
             >
               {phone}
             </a>
           ) : null}
           <NavbarCta
-            variant="primary-pill"
-            className="hidden px-5 py-2.5 sm:inline-flex"
+            variant="primary"
+            className="hidden rounded-none px-5 py-2.5 font-semibold shadow-[4px_4px_0_0] shadow-foreground transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0] active:translate-y-0 active:shadow-[2px_2px_0_0] motion-reduce:transform-none sm:inline-flex"
             href={ctaTarget}
           >
             {ctaLabel}

@@ -11,8 +11,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
  * AboutNavbar — studio-editorial sticky top navigation bar for a modern
  * company / ABOUT page. A backdrop-blurred, hairline-bordered header pinned to

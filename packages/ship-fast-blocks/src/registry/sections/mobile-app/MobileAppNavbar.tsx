@@ -8,7 +8,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
+} from '#/section-kit/SiteNav.tsx'
 import {
   SaasAccountButton,
   SaasIntentBadge,
@@ -20,20 +20,23 @@ import {
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
- * MobileAppNavbar — a fixed, backdrop-blurred top navigation bar for a clean,
- * minimalist mobile-app / consumer-product marketing site. A bordered-bottom
- * header pinned to the top: a decorative check-in-circle logo mark + app name on
- * the left, a horizontal set of nav links in the center, and a primary pill CTA
- * button (e.g. "Download App") plus a mobile hamburger on the right. The brand
- * button, links and CTA all route through route hrefs for page-switching. Use as
- * the sticky site header for a habit tracker, fitness / wellness / meditation
- * app, productivity or to-do app, or any App-Store-distributed consumer product.
- * Renders fully with no props via baked-in "DailyFlow" defaults.
+ * MobileAppNavbar — a fixed, backdrop-blurred kinetic app-showcase top
+ * navigation bar for a consumer mobile-app marketing site. A hairline-bottomed
+ * header pinned to the top: a check-in-circle logo mark + app name on the left,
+ * mono uppercase nav links in the center (desktop), and command plan search, a
+ * Shoo profile dropdown, a selected-plan badge plus a sharp-cornered
+ * hard-offset-shadow "Download App" CTA with mechanical press feedback and a
+ * mobile hamburger on the right. The brand button, links and CTA route through
+ * route hrefs for page-switching while conversion CTAs write to shared Lakebed
+ * state. Use as the sticky site header for a habit tracker, fitness / wellness /
+ * meditation app, productivity or to-do app, or any App-Store-distributed
+ * consumer product. Renders fully with no props via baked-in "DailyFlow"
+ * defaults.
  */
 export const MobileAppNavbar = defineCapsule({
   name: 'MobileAppNavbar',
   description:
-    'Fixed, backdrop-blurred top navigation bar for a clean, minimalist mobile-app / consumer-product marketing site: a bordered-bottom header pinned to the top with a check-in-circle logo mark + app name, horizontal nav links, command plan search, Shoo profile dropdown, selected-plan badge, scoped download CTA, and a reusable Sheet mobile drawer. Nav links route through route hrefs while conversion CTAs write to shared Lakebed state.',
+    'Fixed, backdrop-blurred kinetic app-showcase top navigation bar for a consumer mobile-app marketing site: a hairline-bottomed header pinned to the top with a check-in-circle logo mark + app name, mono uppercase nav links, command plan search, Shoo profile dropdown, selected-plan badge, a square hard-offset-shadow download CTA with mechanical press feedback, and a reusable Sheet mobile drawer. Nav links route through route hrefs while conversion CTAs write to shared Lakebed state.',
   props: z.object({
     /** Brand / app name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -74,28 +77,38 @@ export const MobileAppNavbar = defineCapsule({
       <SiteNav
         position="fixed"
         height="compact"
-        className={cn('bg-background/80 backdrop-blur-md', props.className)}
+        className={cn(
+          'border-b border-border bg-background/80 backdrop-blur-md',
+          props.className,
+        )}
       >
-        <NavbarBrand href={homeTarget} className="flex items-center gap-2">
-          <BrandLogo brand={brand}>
-            <LogoImage fallback={<LogoMark className="size-8" />} />
-            <LogoLabel className="text-xl font-semibold tracking-tight" />
+        <NavbarBrand href={homeTarget} className="gap-2">
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage
+              className="size-7"
+              fallback={<LogoMark className="size-7 text-primary" />}
+            />
+            <LogoLabel className="text-lg font-bold tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="font-mono text-xs uppercase tracking-[0.14em]"
+            >
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
 
-        <NavbarActions className="gap-4">
+        <NavbarActions className="gap-3">
           <SaasIntentBadge lakebed={lakebed} />
           <SaasSearchButton
             lakebed={lakebed}
-            buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+            buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground lg:inline-flex"
           />
           <SaasAccountButton
             lakebed={lakebed}
@@ -112,7 +125,7 @@ export const MobileAppNavbar = defineCapsule({
                 Opening
               </>
             }
-            className="hidden items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
+            className="hidden items-center gap-2 whitespace-nowrap rounded-none bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-[3px_3px_0_0] shadow-foreground transition-[transform,box-shadow,background-color] duration-150 hover:bg-primary/90 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none motion-reduce:transform-none disabled:pointer-events-none disabled:opacity-70 sm:inline-flex"
           >
             {ctaLabel}
           </SaasPlanActionButton>

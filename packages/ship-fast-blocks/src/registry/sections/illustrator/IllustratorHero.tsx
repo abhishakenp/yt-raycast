@@ -19,8 +19,7 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * IllustratorHero — sketchbook split hero for an illustrator / visual-artist
  * portfolio. Left (7 cols): a mono index micro-label, a large serif headline

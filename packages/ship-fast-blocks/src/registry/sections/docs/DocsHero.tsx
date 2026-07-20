@@ -16,8 +16,7 @@ import {
   SearchFieldHint,
 } from '#/section-kit/SearchForm.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * DocsHero — "Terminal-docs" search-forward lead band for a developer
  * DOCUMENTATION / API-reference home. An asymmetric 8:4 reference-manual

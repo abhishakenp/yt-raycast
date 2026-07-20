@@ -22,8 +22,7 @@ import {
   CategoryCard,
   CategoryIcon,
 } from '#/section-kit/CategoryGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const JobBoardCategories = defineCapsule({
   name: 'JobBoardCategories',
   description:

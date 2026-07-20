@@ -177,9 +177,9 @@ export function useIsActiveSectionKitNavHref(): (
  * Auth-intent targets are intentionally ignored here — `SignInButton` owns the
  * real auth flow now.
  *
- * Implementation note: `useStateField` requires an OpenUI `<Renderer>` context.
- * SiteNav compound components are also rendered in isolation (unit tests,
- * storybook) without a Renderer, so we read the `$page` setter from
+ * Implementation note: `useStateField` requires the generated UI runtime
+ * context. SiteNav compound components are also rendered in isolation (unit
+ * tests, storybook) without that runtime, so we read the `$page` setter from
  * `PageStateContext` (provided by `PageSwitch`) instead of calling
  * `useStateField` directly. The context defaults to a no-op setter, so
  * isolated renders don't crash.

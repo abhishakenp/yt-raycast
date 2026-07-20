@@ -12,8 +12,7 @@ import {
   PopularCard,
   PopularMeta,
 } from '#/section-kit/PopularList.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * KnowledgeBasePopular — "Terminal-docs" most-viewed article ledger beside a
  * hairline-railed support index for a help center. A naturally sidebar-

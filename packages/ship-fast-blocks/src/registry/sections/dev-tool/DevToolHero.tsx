@@ -13,8 +13,7 @@ import {
 } from '../saas/saas-interactions.tsx'
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * DevToolHero — full-terminal asymmetric 7/5 hero for a developer tool / API
  * platform. Left column: a square mono release chip with a blinking block

@@ -19,14 +19,15 @@ import {
 } from '#/section-kit/SiteFooter.tsx'
 
 /**
- * WebinarFooter — a rich, multi-column closing footer for a webinar or virtual
- * event site. Thin configuration over the shared `SiteFooter` composite: a
- * semibold wordmark beside an inline broadcast/calendar mark, a tagline, a
- * social row (LinkedIn / Twitter / YouTube), and a responsive grid of link
- * columns (Event, Resources, Company). A bordered-top bottom bar carries an
- * auto-updating copyright line. Use as the site-wide footer for webinars,
- * summits, masterclasses, or any registration-driven event page. Renders fully
- * with no props.
+ * WebinarFooter — kinetic-event multi-column closing footer for a webinar or
+ * virtual event site. Thin configuration over the shared `SiteFooter` composite:
+ * a brand block (square broadcast mark + extrabold wordmark + tagline + a row of
+ * square-edged social chips) beside mono-titled link columns (Event, Resources,
+ * Company), with a hairline-topped bottom bar carrying a mono auto-updating
+ * copyright line and legal links. Every link sits as a block w-fit hit target and
+ * routes through the kit's section-kit route links. Use as the site-wide footer
+ * for webinars, summits, masterclasses, or any registration-driven event page.
+ * Renders fully with no props.
  */
 function BroadcastMark({ className }: { className?: string }) {
   return (
@@ -52,7 +53,7 @@ function BroadcastMark({ className }: { className?: string }) {
 export const WebinarFooter = defineCapsule({
   name: 'WebinarFooter',
   description:
-    'Rich, multi-column closing footer for a webinar or virtual-event site built on the shared SiteFooter composite: a brand block (semibold wordmark + broadcast mark + tagline + social row of LinkedIn/Twitter/YouTube) beside link columns (Event, Resources, Company), with a bordered-top bottom bar holding an auto-updating copyright line and legal links. Use as the site-wide footer for webinars, summits, masterclasses, or any registration-driven event page.',
+    'Kinetic-event multi-column closing footer for a webinar or virtual-event site built on the shared SiteFooter composite: a brand block (square broadcast mark + extrabold wordmark + tagline + a row of square-edged LinkedIn/Twitter/YouTube social chips) beside mono-titled link columns (Event, Resources, Company), with a hairline-topped bottom bar holding a mono auto-updating copyright line and legal links. Every link is a block w-fit hit target routed through section-kit route links. Use as the site-wide footer for webinars, summits, masterclasses, or any registration-driven event page.',
   props: z.object({
     /** Event host / brand name shown as the wordmark. */
     brand: z.string().optional(),
@@ -100,8 +101,8 @@ export const WebinarFooter = defineCapsule({
           <FooterGrid>
             <FooterBrand
               brand={props.brand ?? 'Catalyst Labs'}
-              brandMark={<BroadcastMark className="size-8 text-primary" />}
-              brandClassName={'font-semibold tracking-tight'}
+              brandMark={<BroadcastMark className="size-7 text-primary" />}
+              brandClassName={'text-lg font-extrabold tracking-tight'}
             >
               <FooterTagline>
                 {props.tagline ??
@@ -109,28 +110,39 @@ export const WebinarFooter = defineCapsule({
               </FooterTagline>
               <FooterSocial>
                 {social.map((s) => (
-                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  <FooterSocialLink
+                    key={s.label}
+                    className="rounded-none border border-border px-3 py-1 font-mono text-[11px] uppercase tracking-[0.12em] transition-colors hover:border-foreground hover:bg-foreground hover:text-background"
+                  >
+                    {s.label}
+                  </FooterSocialLink>
                 ))}
               </FooterSocial>
             </FooterBrand>
             {columns.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnTitle className="font-mono text-[11px] uppercase tracking-[0.18em]">
+                  {col.title}
+                </FooterColumnTitle>
                 <FooterColumnList>
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink key={link} className="block w-fit">
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
           <FooterBottom>
-            <FooterCopyright>
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.12em]">
               {props.note ?? 'All rights reserved.'}
             </FooterCopyright>
             <FooterLegal>
               {legal.map((l) => (
-                <FooterLink key={l}>{l}</FooterLink>
+                <FooterLink key={l} className="block w-fit">
+                  {l}
+                </FooterLink>
               ))}
             </FooterLegal>
           </FooterBottom>

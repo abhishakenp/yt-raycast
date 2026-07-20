@@ -2,17 +2,19 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 
 /**
- * LogisticsProcess — a two-column "how it works" flow for a global-logistics /
- * freight-forwarding company. Left column: a heading + lede above a vertical list
- * of numbered steps, each a primary circular index beside a titled paragraph.
- * Right column: a tall rounded warehouse photo with a floating, shadowed metric
- * badge (clock icon + label/value) overlapping the top-right corner. Clean and
- * corporate on a light surface with a deep slate primary. Use to explain the
- * quote-to-delivery / booking process for logistics, freight-forwarding, shipping,
- * courier or cargo/transport companies. Renders fully with no props.
+ * LogisticsProcess — an industrial-manifest "how it works" route flow for a
+ * global-logistics / freight-forwarding company. Left column: a mono
+ * `$ track --route` meta line and a left-aligned heading + lede above a vertical
+ * route line — a dashed hairline threading square mono index chips, each beside a
+ * `step / 0N` waypoint tag, a title and a paragraph. Right column: a tall
+ * warehouse photo framed as a chamfered manifest pane (inverted mono title bar +
+ * square window dots) with an inverted metric ledger chip (clock icon + mono
+ * label / tabular value) overlapping the top-right corner. Precise and
+ * operational, tokens-only. Use to explain the quote-to-delivery / booking
+ * process for logistics, freight-forwarding, shipping, courier or cargo/transport
+ * companies. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -20,7 +22,7 @@ import { ProcessTimeline } from '#/section-kit/ProcessTimeline.tsx'
 export const LogisticsProcess = defineCapsule({
   name: 'LogisticsProcess',
   description:
-    "Two-column 'how it works' flow for a global-logistics / freight-forwarding company: a left column with a heading + lede above a vertical list of numbered steps (each a primary circular index beside a titled paragraph), and a right column with a tall rounded warehouse photo plus a floating, shadowed metric badge (clock icon + label/value) overlapping the top-right corner. Clean and corporate on a light surface with a deep slate primary. Use to explain the quote-to-delivery / booking process for logistics, freight-forwarding, shipping, courier, supply-chain or cargo/transport companies.",
+    "Industrial-manifest 'how it works' route flow for a global-logistics / freight-forwarding company: a left column with a mono meta line and a left-aligned heading + lede above a vertical route line (a dashed hairline threading square mono index chips, each beside a waypoint tag, a title and a paragraph), and a right column with a tall warehouse photo framed as a chamfered manifest pane plus an inverted metric ledger chip (clock icon + mono label / tabular value) overlapping the top-right corner. Precise and operational, tokens-only. Use to explain the quote-to-delivery / booking process for logistics, freight-forwarding, shipping, courier, supply-chain or cargo/transport companies.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -72,74 +74,113 @@ export const LogisticsProcess = defineCapsule({
     const badgeLabel = props.badgeLabel ?? 'Average booking time'
     const badgeValue = props.badgeValue ?? '3 min'
     return (
-      <ProcessTimeline className={cn('py-16 lg:py-24', props.className)}>
+      <ProcessTimeline
+        className={cn('py-14 sm:py-20 lg:py-24', props.className)}
+      >
         <Container>
-          <div className="grid items-center gap-16 lg:grid-cols-2">
-            <div>
+          <div className="grid items-center gap-14 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-7">
+              <p
+                aria-hidden="true"
+                className="mb-5 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+              >
+                <span className="text-primary">$</span> track --route
+              </p>
               <SectionHeading
                 align="left"
                 title={heading}
                 subtitle={description}
-                className="mb-12 gap-0"
-                titleClassName="mb-6 text-3xl font-semibold tracking-tight lg:text-4xl"
+                className="mb-10 gap-3 lg:mb-12"
+                titleClassName="text-3xl font-extrabold tracking-tight lg:text-4xl"
                 subtitleClassName="text-lg text-muted-foreground"
               />
 
-              <div className="space-y-8">
+              <ol className="relative space-y-7">
+                <span
+                  aria-hidden="true"
+                  className="absolute bottom-3 left-4 top-3 w-px border-l border-dashed border-border"
+                />
                 {items.map((step, i) => (
-                  <div key={step.title} className="flex gap-5">
-                    <div className="grid size-10 shrink-0 place-items-center rounded-full bg-primary font-semibold text-primary-foreground">
+                  <li key={step.title} className="relative flex gap-5">
+                    <span className="relative z-10 grid size-8 shrink-0 place-items-center rounded-none bg-foreground font-mono text-sm font-semibold text-background">
                       {i + 1}
-                    </div>
-                    <div>
-                      <h3 className="mb-2 text-lg font-semibold">
+                    </span>
+                    <div className="pt-0.5">
+                      <p
+                        aria-hidden="true"
+                        className="mb-1 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70"
+                      >
+                        step / {`0${i + 1}`.slice(-2)}
+                        {i === 0
+                          ? ' — origin'
+                          : i === items.length - 1
+                            ? ' — arrival'
+                            : ' — waypoint'}
+                      </p>
+                      <h3 className="mb-1.5 text-lg font-semibold tracking-tight">
                         {step.title}
                       </h3>
                       <p className="text-muted-foreground">
                         {step.description}
                       </p>
                     </div>
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ol>
             </div>
 
-            <div className="relative">
-              <div className="aspect-[4/5] overflow-hidden rounded-2xl bg-muted">
-                <Image
-                  alt={imageAlt}
-                  w={800}
-                  h={1000}
-                  loading="lazy"
-                  className="size-full object-cover"
-                />
-              </div>
-              <Card className="absolute right-6 top-6 p-4 shadow-lg">
-                <div className="flex items-center gap-3">
-                  <div className="grid size-10 place-items-center rounded-full bg-primary text-primary-foreground">
-                    <svg
-                      className="size-5"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-card-foreground">
-                      {badgeLabel}
-                    </p>
-                    <p className="text-2xl font-semibold text-card-foreground">
-                      {badgeValue}
-                    </p>
-                  </div>
+            <div className="relative lg:col-span-5">
+              <div className="border border-border bg-background [clip-path:polygon(0_0,100%_0,100%_calc(100%-1.25rem),calc(100%-1.25rem)_100%,0_100%)]">
+                <div className="flex items-center justify-between bg-foreground px-3 py-2 text-background">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.2em]">
+                    ~/warehouse &mdash; scan
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="flex items-center gap-1.5"
+                  >
+                    <span className="size-1.5 bg-background/40" />
+                    <span className="size-1.5 bg-background/40" />
+                    <span className="size-1.5 bg-background" />
+                  </span>
                 </div>
-              </Card>
+                <div className="aspect-[4/5] overflow-hidden bg-muted">
+                  <Image
+                    alt={imageAlt}
+                    w={800}
+                    h={1000}
+                    loading="lazy"
+                    className="size-full object-cover"
+                  />
+                </div>
+              </div>
+              <div className="absolute -right-3 top-6 flex items-center gap-3 bg-foreground p-4 text-background lg:right-6">
+                <span
+                  aria-hidden="true"
+                  className="grid size-10 shrink-0 place-items-center border border-background/20 text-background/80"
+                >
+                  <svg
+                    className="size-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </span>
+                <div>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-background/60">
+                    {badgeLabel}
+                  </p>
+                  <p className="text-2xl font-semibold tabular-nums tracking-tight text-background">
+                    {badgeValue}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </Container>

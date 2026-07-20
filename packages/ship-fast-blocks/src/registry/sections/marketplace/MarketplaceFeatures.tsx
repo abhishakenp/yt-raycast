@@ -1,11 +1,11 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import type { ReactNode } from 'react'
 import { z } from 'zod/v4'
 
 import {
-  FeatureGrid,
   FeatureCard,
   FeatureIcon,
   FeatureTitle,
@@ -13,21 +13,23 @@ import {
 } from '#/section-kit/FeatureGrid.tsx'
 
 /**
- * MarketplaceFeatures — "Browse by Category" grid for a multi-vendor
- * marketplace / e-commerce home page. Thin configuration over the shared
- * `FeatureGrid` composite: a centered heading block above a responsive 4-column
- * grid of category tiles, each with an inline line-icon tile, a category title,
- * and an item-count-flavored description (Electronics, Fashion, Home & Living,
- * Art & Collectibles, Health & Beauty, Sports & Outdoors, Books & Media, Crafts
- * & Supplies). Theme-token only. Use to surface top shopping categories on
- * online marketplaces, multi-vendor or maker/artisan platforms, handmade/craft
- * stores, and retail aggregators. Renders fully with no props via vibrant
- * baked-in defaults.
+ * MarketplaceFeatures — editorial "Browse by Category" ledger for a multi-vendor
+ * marketplace. An asymmetric header (mono index rule + left extrabold heading +
+ * subheading, mono "[ index ] NN categories" count on the right) sits above a
+ * collapsed-border category grid built from shared FeatureCard cells: each cell
+ * shares hairline rules with its neighbours and pairs an index numeral and small
+ * inline line-icon with a category title and an item-count-flavored description
+ * (Electronics, Fashion, Home & Living, Art & Collectibles, Health & Beauty,
+ * Sports & Outdoors, Books & Media, Crafts & Supplies), inverting to the ink
+ * surface on hover with press feedback. Theme-token only. Use to surface top
+ * shopping categories on online marketplaces, multi-vendor or maker/artisan
+ * platforms, handmade/craft stores, and retail aggregators. Renders fully with
+ * no props via baked-in defaults.
  */
 export const MarketplaceFeatures = defineCapsule({
   name: 'MarketplaceFeatures',
   description:
-    "'Browse by Category' grid for a multi-vendor marketplace / e-commerce home page built on the shared FeatureGrid composite: a centered heading block above a responsive 4-column grid of category tiles, each with an inline line-icon tile, a category title, and an item-count-flavored description (Electronics, Fashion, Home & Living, Art & Collectibles, Health & Beauty, Sports & Outdoors, Books & Media, Crafts & Supplies). Theme-token only. Use to surface top shopping categories on online marketplaces, multi-vendor or maker/artisan platforms, handmade/craft stores, and retail aggregators.",
+    "Editorial commerce-index 'Browse by Category' ledger for a multi-vendor marketplace: an asymmetric header (mono index rule + left extrabold heading + subheading, mono '[ index ] NN categories' count right) above a collapsed-border category grid built from shared FeatureCard cells — each cell shares hairline rules with its neighbours and pairs an index numeral and small inline line-icon with a category title and an item-count-flavored description (Electronics, Fashion, Home & Living, Art & Collectibles, Health & Beauty, Sports & Outdoors, Books & Media, Crafts & Supplies), inverting to the ink surface on hover with press feedback. Theme-token only. Use to surface top shopping categories on online marketplaces, multi-vendor or maker/artisan platforms, handmade/craft stores, and retail aggregators.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -219,18 +221,50 @@ export const MarketplaceFeatures = defineCapsule({
         }))
       : defaults
 
+    const columns = props.columns ?? 4
+    const columnClass =
+      columns === 2
+        ? 'sm:grid-cols-2'
+        : columns === 3
+          ? 'sm:grid-cols-2 lg:grid-cols-3'
+          : 'sm:grid-cols-2 lg:grid-cols-4'
+
     return (
       <section className={cn('bg-background py-20 lg:py-28', props.className)}>
         <Container>
-          <FeatureGrid
-            heading={props.heading ?? 'Browse by Category'}
-            subheading={
-              props.subheading ??
-              'Explore a curated collection across major categories with over 50,000 unique products from verified sellers.'
-            }
-            columns={props.columns ?? 4}
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-2xl">
+              <div className="mb-5 flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                <span aria-hidden="true" className="size-1.5 bg-primary" />
+                Categories
+              </div>
+              <SectionHeading
+                align="left"
+                title={props.heading ?? 'Browse by Category'}
+                subtitle={
+                  props.subheading ??
+                  'Explore a curated collection across major categories with over 50,000 unique products from verified sellers.'
+                }
+                className="gap-3"
+                titleClassName="text-3xl font-extrabold tracking-tighter text-foreground sm:text-4xl lg:text-5xl"
+                subtitleClassName="max-w-xl text-base leading-relaxed text-muted-foreground"
+              />
+            </div>
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60 tabular-nums"
+            >
+              [ index ] {String(features.length).padStart(2, '0')} categories
+            </p>
+          </div>
+
+          <div
+            className={cn(
+              'grid grid-cols-1 border-l border-t border-border',
+              columnClass,
+            )}
           >
-            {features.map((f) => {
+            {features.map((f, i) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -241,14 +275,33 @@ export const MarketplaceFeatures = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
-                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                <FeatureCard
+                  key={__iv__.title}
+                  className="group gap-4 rounded-none border-0 border-b border-r border-border bg-transparent p-6 transition-colors duration-150 hover:translate-y-0 hover:border-border hover:bg-foreground hover:text-background sm:p-7"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <span
+                      aria-hidden="true"
+                      className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60 tabular-nums group-hover:text-background/60"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    {__iv__.icon && (
+                      <FeatureIcon className="size-auto rounded-none bg-transparent p-0 text-muted-foreground group-hover:text-background">
+                        {__iv__.icon}
+                      </FeatureIcon>
+                    )}
+                  </div>
+                  <FeatureTitle className="tracking-tight group-hover:text-background">
+                    {__iv__.title}
+                  </FeatureTitle>
+                  <FeatureDescription className="text-sm leading-relaxed tabular-nums group-hover:text-background/70">
+                    {__iv__.description}
+                  </FeatureDescription>
                 </FeatureCard>
               )
             })}
-          </FeatureGrid>
+          </div>
         </Container>
       </section>
     )

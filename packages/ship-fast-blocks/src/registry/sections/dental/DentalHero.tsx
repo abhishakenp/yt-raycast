@@ -21,8 +21,7 @@ import {
   LocalServiceMutationSpinner,
 } from '../local-service/local-service-interactions.tsx'
 import { localServiceLakebed } from '../local-service/local-service-lakebed.ts'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * DentalHero — clinical Swiss-clean, asymmetric 7/5 hero for a dental practice
  * / dentist landing page. On an airy background with a giant ghost "+" cross

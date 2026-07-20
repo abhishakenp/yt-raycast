@@ -4,27 +4,30 @@ import { z } from 'zod/v4'
 import { Image } from '#/lib/img.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { MonoTag } from '#/section-kit/Decor.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * LinkInBioHero — the opening hero of a minimal "link in bio" / link-hub page,
- * laid out as a single centered narrow column on a calm, light, paper-toned
- * surface. It leads with a circular avatar headshot ringed in the background
- * color with an "available" status dot, then a name, role/tagline, and short
- * bio. Below sits a compact set of headline (primary) link buttons — each with
- * a leading icon tile, a title + subtitle, and a trailing open-link arrow or a
- * 'New' pill — followed by a centered row of round social icon buttons. Every
- * link and social routes through section-kit route links; the avatar photo uses the
- * alt-driven Image component. Use as the opening hero of a Linktree/Bento style
- * personal landing page, creator/influencer link hub, freelancer bio link, or
- * social-profile splash — the full big-link list lives in a companion
- * features section and featured content in a companion gallery section.
- * Renders fully with no props.
+ * LinkInBioHero — the opening hero of a minimal "link in bio" / link-hub page
+ * in the "chunky rounded stack" language: a single centered narrow column of
+ * bold, tactile blocks. It leads with a circular avatar headshot on a slightly
+ * tilted rounded plate (the one restrained ±2° surprise) framed with a 2px rule
+ * and a hard offset token shadow, an "available" status rendered as a rounded-
+ * full sticker chip, then an extrabold name, a mono role micro-label, and a
+ * short bio. Below sits a compact set of headline (primary) link buttons — each
+ * a chunky rounded-2xl full-width tap target with a leading icon tile, a title +
+ * subtitle, a hard offset shadow, press feedback, and a trailing open-link arrow
+ * or a 'New' sticker badge — followed by a centered row of round chunky social
+ * icon buttons. Every link and social routes through section-kit route links; the
+ * avatar photo uses the alt-driven Image component. Use as the opening hero of a
+ * Linktree/Bento style personal landing page, creator/influencer link hub,
+ * freelancer bio link, or social-profile splash — the full big-link list lives
+ * in a companion features section and featured content in a companion gallery
+ * section. Renders fully with no props.
  */
 export const LinkInBioHero = defineCapsule({
   name: 'LinkInBioHero',
   description:
-    "Opening hero of a minimal LINK-IN-BIO / link-hub / bio-link page — a single centered narrow column with a calm, light, paper-toned aesthetic. Leads with a circular avatar headshot (ringed in the page color, with an online/available status dot), a name + role/tagline + short bio, then a compact set of headline (primary) link buttons (each with a leading icon tile, title + subtitle, and a trailing open-arrow or 'New' badge), and a centered row of round social icon buttons (Twitter/X, GitHub, Dribbble, LinkedIn). Use as the opening hero / profile head of a Linktree / Bento style personal landing page, creator or influencer link hub, freelancer/portfolio bio link, or social-profile splash; the full big-link button list belongs to a companion features section and featured content to a companion gallery section. Supply content only — brand/name, profile, primary links, socials; the section owns all layout and styling.",
+    "Opening hero of a minimal LINK-IN-BIO / link-hub / bio-link page in a chunky-rounded, tactile aesthetic — a single centered narrow column of bold blocks. Leads with a circular avatar headshot on a slightly tilted rounded plate (one restrained ±2 degree surprise, 2px-ruled with a hard offset token shadow) and an online/available status shown as a rounded-full sticker chip, then an extrabold name + a mono role micro-label + short bio, then a compact set of chunky rounded-2xl full-width primary link buttons (each with a leading icon tile, title + subtitle, hard offset shadow, press feedback, and a trailing open-arrow or 'New' sticker badge), and a centered row of round chunky social icon buttons (Twitter/X, GitHub, Dribbble, LinkedIn). Use as the opening hero / profile head of a Linktree / Bento style personal landing page, creator or influencer link hub, freelancer/portfolio bio link, or social-profile splash; the full big-link button list belongs to a companion features section and featured content to a companion gallery section. Supply content only — brand/name, profile, primary links, socials; the section owns all layout and styling.",
   props: z.object({
     /** Brand / person name shown as the profile heading. */
     brand: z.string().optional(),
@@ -261,58 +264,83 @@ export const LinkInBioHero = defineCapsule({
       >
         <HeroSection variant="default" className={props.className}>
           {/* Avatar & identity */}
-          <div className="mb-10 text-center">
-            <div className="relative mb-5 inline-block">
-              <Image
-                alt={avatarAlt}
-                w={200}
-                h={200}
-                className="size-24 rounded-full object-cover shadow-sm ring-4 ring-background sm:size-28"
-              />
+          <div className="mb-10 flex flex-col items-center text-center">
+            {/* The one restrained ±2° surprise: a tilted avatar plate */}
+            <div className="relative mb-5 -rotate-2">
+              <div className="rounded-[1.75rem] border-2 border-foreground bg-card p-2 shadow-[6px_6px_0_0] shadow-foreground">
+                <Image
+                  alt={avatarAlt}
+                  w={200}
+                  h={200}
+                  className="size-24 rounded-[1.25rem] object-cover sm:size-28"
+                />
+              </div>
               <span
-                className="absolute bottom-1 right-1 size-4 rounded-full bg-primary ring-2 ring-background"
+                className="absolute -bottom-2 -right-2 grid size-9 rotate-6 place-items-center rounded-full border-2 border-foreground bg-primary text-primary-foreground shadow-[2px_2px_0_0] shadow-foreground"
                 aria-label={status}
-              />
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M20 6L9 17l-5-5" />
+                </svg>
+              </span>
             </div>
 
-            <h1 className="mb-2 text-2xl font-semibold text-foreground sm:text-3xl">
+            <span className="mb-4 inline-flex items-center gap-2 rounded-full border-2 border-foreground bg-background px-3 py-1 shadow-[2px_2px_0_0] shadow-foreground/25">
+              <span
+                aria-hidden="true"
+                className="size-2 rounded-full bg-primary"
+              />
+              <MonoTag className="text-[10px] tracking-[0.18em]">
+                {status}
+              </MonoTag>
+            </span>
+
+            <h1 className="mb-2 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
               {brand}
             </h1>
-            <p className="text-sm font-light text-muted-foreground sm:text-base">
-              {role}
-            </p>
-            <p className="mx-auto mt-3 max-w-xs text-base leading-relaxed text-foreground/80">
+            <MonoTag className="tracking-[0.16em]">{role}</MonoTag>
+            <p className="mx-auto mt-4 max-w-xs text-base leading-relaxed text-foreground/80">
               {bio}
             </p>
           </div>
 
           {/* Primary links */}
-          <nav aria-label="Primary links" className="mb-10 space-y-3">
+          <nav aria-label="Primary links" className="mb-10 space-y-3.5">
             {links.map((link, i) => (
               <NavbarRouteLink
                 key={link.title}
-                className="group flex w-full items-center justify-between rounded-xl border border-border/60 bg-card px-5 py-4 text-left shadow-sm transition-all duration-200 hover:border-border hover:shadow-md"
+                className="group flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-foreground bg-card px-5 py-4 text-left shadow-[4px_4px_0_0] shadow-foreground transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0] hover:shadow-foreground active:translate-y-px active:shadow-[2px_2px_0_0] active:shadow-foreground"
                 href={linkTargets[i] ?? link.title}
               >
-                <span className="flex items-center gap-3">
-                  <span className="grid size-10 place-items-center rounded-lg bg-muted text-muted-foreground">
+                <span className="flex min-w-0 items-center gap-3">
+                  <span className="grid size-11 shrink-0 place-items-center rounded-xl border-2 border-foreground bg-primary/10 text-primary">
                     {linkIcons[link.icon]}
                   </span>
-                  <span className="text-left">
-                    <span className="block font-medium text-card-foreground">
+                  <span className="min-w-0 text-left">
+                    <span className="block truncate font-bold text-card-foreground">
                       {link.title}
                     </span>
-                    <span className="block text-xs text-muted-foreground">
+                    <span className="block truncate text-xs text-muted-foreground">
                       {link.subtitle}
                     </span>
                   </span>
                 </span>
                 {link.badge ? (
-                  <span className="rounded-full bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground">
+                  <span className="shrink-0 -rotate-3 rounded-full border-2 border-foreground bg-primary px-2.5 py-1 text-xs font-bold text-primary-foreground shadow-[2px_2px_0_0] shadow-foreground">
                     {link.badge}
                   </span>
                 ) : (
-                  <span className="text-muted-foreground transition-colors group-hover:text-foreground">
+                  <span className="shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground">
                     <ExternalArrow />
                   </span>
                 )}
@@ -326,7 +354,7 @@ export const LinkInBioHero = defineCapsule({
               <NavbarRouteLink
                 key={social.label}
                 aria-label={social.label}
-                className="grid size-12 place-items-center rounded-full border border-border/60 bg-card text-muted-foreground transition-all duration-200 hover:border-border hover:text-foreground hover:shadow-sm"
+                className="grid size-12 place-items-center rounded-full border-2 border-foreground bg-card text-foreground shadow-[3px_3px_0_0] shadow-foreground transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0] hover:shadow-foreground active:translate-y-px active:shadow-[1px_1px_0_0] active:shadow-foreground"
                 href={social.label}
               >
                 {socialIcons[social.icon]}

@@ -4,8 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * CafeReviews — newsprint press-clipping review wall for a cozy cafe / coffee
  * shop page. A mono dateline rail (cap stamp, hairline rule, clipping count)

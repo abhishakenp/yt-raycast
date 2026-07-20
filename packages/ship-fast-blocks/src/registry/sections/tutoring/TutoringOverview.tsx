@@ -1,5 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
+
+import { Image } from '#/lib/img.tsx'
 import {
   OverviewSection,
   OverviewGrid,
@@ -15,14 +17,12 @@ import {
   OverviewStat,
   OverviewStatValue,
   OverviewStatLabel,
-  OverviewMediaPanel,
 } from '#/section-kit/OverviewSection.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const TutoringOverview = defineCapsule({
   name: 'TutoringOverview',
   description:
-    'Reusable overview / hero section for the Tutoring page family. Derived from the section template catalog to provide section-level coverage without new HTML generation: eyebrow, large heading, supporting copy, dual CTAs, feature pills, KPI strip, and an image panel rendered through the alt-driven Image component. Use when composing a tutoring page or adding a focused tutoring band to a larger generated site.',
+    'Reusable editorial-academic overview / hero section for the Tutoring page family. Derived from the section template catalog to provide section-level coverage without new HTML generation: a mono eyebrow + brand label, a warm serif heading, supporting copy, hairline mono feature chips, dual sharp-cornered route-link CTAs (hard-offset-shadow primary + bracketed outline, both with press feedback), a collapsed-border tabular KPI ledger, and an alt-driven catalog image plate with a sharp-cornered hairline frame, hard offset shadow, and a mono caption bar. Use when composing a tutoring page or adding a focused tutoring band to a larger generated site.',
   props: z.object({
     brand: z.string().optional(),
     eyebrow: z.string().optional(),
@@ -73,45 +73,80 @@ export const TutoringOverview = defineCapsule({
 
     return (
       <OverviewSection className={props.className}>
-        <OverviewGrid>
+        <OverviewGrid className="lg:grid-cols-[1.4fr_1fr]">
           <OverviewContent>
-            <OverviewEyebrow>{eyebrow}</OverviewEyebrow>
-            <OverviewBrand>{brand}</OverviewBrand>
-            <OverviewHeading>{heading}</OverviewHeading>
+            <OverviewEyebrow className="mb-4 rounded-none border-0 bg-transparent px-0 py-0 font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+              {eyebrow}
+            </OverviewEyebrow>
+            <OverviewBrand className="font-mono text-[11px] tracking-[0.2em] text-muted-foreground/70">
+              {brand}
+            </OverviewBrand>
+            <OverviewHeading className="font-serif font-semibold tracking-tight">
+              {heading}
+            </OverviewHeading>
             <OverviewSubheading>{subheading}</OverviewSubheading>
             <OverviewFeatures>
               {features.map((feature: string) => (
-                <OverviewFeature key={feature}>{feature}</OverviewFeature>
+                <OverviewFeature
+                  key={feature}
+                  className="rounded-none border-border bg-transparent px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground"
+                >
+                  {feature}
+                </OverviewFeature>
               ))}
             </OverviewFeatures>
             <OverviewCta>
               <NavbarRouteLink
-                className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+                className="inline-flex items-center justify-center rounded-none bg-primary px-6 py-3 font-mono text-xs font-semibold uppercase tracking-[0.12em] text-primary-foreground shadow-[6px_6px_0_0] shadow-primary/25 transition-[transform,box-shadow,background-color] duration-150 hover:bg-primary/90 active:translate-y-px active:shadow-none"
                 href={primaryCta}
               >
                 {primaryCta}
               </NavbarRouteLink>
               <NavbarRouteLink
-                className="rounded-full border border-border bg-background px-6 py-3 text-sm font-semibold text-foreground transition hover:bg-muted"
+                className="inline-flex items-center justify-center gap-2 rounded-none border border-border bg-background px-6 py-3 font-mono text-xs font-medium uppercase tracking-[0.12em] text-foreground transition-colors duration-150 hover:bg-foreground hover:text-background active:translate-y-px"
                 href={secondaryCta}
               >
+                <span aria-hidden="true">[</span>
                 {secondaryCta}
+                <span aria-hidden="true">]</span>
               </NavbarRouteLink>
             </OverviewCta>
-            <OverviewStats>
+            <OverviewStats className="mt-10 gap-0 border-l border-t border-border pt-0">
               {stats.map((stat: { value: string; label: string }) => (
-                <OverviewStat key={stat.label}>
-                  <OverviewStatValue>{stat.value}</OverviewStatValue>
-                  <OverviewStatLabel>{stat.label}</OverviewStatLabel>
+                <OverviewStat
+                  key={stat.label}
+                  className="border-b border-r border-border p-4"
+                >
+                  <OverviewStatValue className="font-mono text-3xl font-semibold tabular-nums tracking-tight">
+                    {stat.value}
+                  </OverviewStatValue>
+                  <OverviewStatLabel className="mt-1 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground/70">
+                    {stat.label}
+                  </OverviewStatLabel>
                 </OverviewStat>
               ))}
             </OverviewStats>
           </OverviewContent>
-          <OverviewMediaPanel
-            alt={imageAlt}
-            brand={brand}
-            caption="Section-level building block for generated multi-page experiences."
-          />
+          <div
+            data-slot="overview-image-panel"
+            className="relative overflow-hidden border border-border bg-card shadow-[10px_10px_0_0] shadow-foreground/10"
+          >
+            <Image
+              alt={imageAlt}
+              w={900}
+              h={700}
+              className="aspect-[4/3] w-full object-cover"
+            />
+            <div className="border-t border-border bg-card p-5">
+              <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-primary">
+                {brand}
+              </p>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                Section-level building block for generated multi-page
+                experiences.
+              </p>
+            </div>
+          </div>
         </OverviewGrid>
       </OverviewSection>
     )

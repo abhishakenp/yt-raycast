@@ -25,8 +25,7 @@ import {
   useCommerceFilteredProducts,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * JewelryStorePieces — featured-pieces vitrine cabinet for a luxury jewelry
  * maison. A header row pairs a mono micro-label kicker + serif heading with a

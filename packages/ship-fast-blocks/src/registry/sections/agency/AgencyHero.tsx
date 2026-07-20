@@ -4,7 +4,7 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { HeroSection, HeroSubheading } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 import { DotGrid, MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { Marquee } from '#/section-kit/motion.tsx'
 

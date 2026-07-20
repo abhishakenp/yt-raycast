@@ -7,7 +7,7 @@ const routeParamMocks = vi.hoisted(() => ({
   category: 'saas',
   search: {
     theme: 'modern-minimal',
-    mode: 'light' as 'light' | 'dark',
+    mode: 'light',
   },
 }))
 
@@ -44,7 +44,31 @@ vi.mock('@tanstack/react-router', () => ({
     useParams: () => ({ category: routeParamMocks.category }),
     useSearch: () => routeParamMocks.search,
   }),
+  useMatch: ({
+    from,
+    shouldThrow,
+  }: {
+    from: string
+    shouldThrow?: boolean
+  }) => {
+    if (from === '/examples/$category' || from === '/examples/$category/$') {
+      return {
+        params: { category: routeParamMocks.category },
+        search: routeParamMocks.search,
+      }
+    }
+    if (shouldThrow === false) return undefined
+    throw new RouteNotFoundError(`No mocked match for ${from}`)
+  },
   useNavigate: () => navigationMocks.navigate,
+  useRouterState: <TSelected,>({
+    select,
+  }: {
+    select: (state: { location: { pathname: string } }) => TSelected
+  }) =>
+    select({
+      location: { pathname: `/examples/${routeParamMocks.category}` },
+    }),
   lazyRouteComponent: (_importer: unknown, exportName: string) => {
     const LazyRouteComponent = () => (
       <div data-testid="lazy-route">{exportName}</div>
@@ -172,9 +196,61 @@ const importExamplesCategoryRoute = async (): Promise<MockRoute> => {
   return routeFromModule(module)
 }
 
+const importExamplesCategoryWildcardRoute = async (): Promise<MockRoute> => {
+  const module = await import('@/routes/examples.$category.$')
+  return routeFromModule(module)
+}
+
 const importExamplesIndexRoute = async (): Promise<MockRoute> => {
   const module = await import('@/routes/examples.index')
   return routeFromModule(module)
+}
+
+const parseExamplePageSwitch = (
+  source: string,
+): { routes: string[]; targetMap: Record<string, string> } => {
+  const line = source
+    .split('\n')
+    .find((candidate) => candidate.startsWith('root = PageSwitch('))
+  const match =
+    /^root = PageSwitch\((\[.*\]), \[[^\]]*\], "", (\{.*\})\)$/.exec(line ?? '')
+  if (!match?.[1] || !match[2])
+    throw new Error('Expected PageSwitch target map')
+
+  const routes: unknown = JSON.parse(match[1])
+  if (
+    !Array.isArray(routes) ||
+    !routes.every((route): route is string => typeof route === 'string')
+  ) {
+    throw new Error('Expected PageSwitch routes')
+  }
+
+  const parsed: unknown = JSON.parse(match[2])
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error('Expected target map object')
+  }
+
+  const result: Record<string, string> = {}
+  for (const [key, value] of Object.entries(parsed)) {
+    if (typeof value !== 'string') {
+      throw new Error(`Expected string target for ${key}`)
+    }
+    result[key] = value
+  }
+  return { routes, targetMap: result }
+}
+
+const expectMappedAnchor = (
+  source: string,
+  routes: string[],
+  targetMap: Record<string, string>,
+  label: string,
+) => {
+  const target = targetMap[label] ?? targetMap[label.toLowerCase()]
+  expect(target).toMatch(/^[^#]+#[a-z0-9_-]+$/)
+  const [pageLabel, anchorId] = target?.split('#') ?? []
+  expect(routes).toContain(pageLabel)
+  expect(source).toContain(`SectionAnchor("${anchorId}",`)
 }
 
 describe('examples route behavior', () => {
@@ -238,17 +314,32 @@ describe('examples route behavior', () => {
     const Route = await importExamplesCategoryRoute()
 
     expect(Route.path).toBe('/examples/$category')
-    expect(() =>
+    // beforeLoad is async (it dynamically imports the categories module), so it
+    // rejects rather than throwing synchronously.
+    await expect(
       Route.options.beforeLoad?.({ params: { category: 'saas' } }),
-    ).toThrow(RouteNotFoundError)
+    ).rejects.toThrow(RouteNotFoundError)
   })
 
   it('returns not found for unknown categories even when examples are enabled', async () => {
     const Route = await importExamplesCategoryRoute()
 
-    expect(() =>
+    await expect(
       Route.options.beforeLoad?.({ params: { category: 'not-a-category' } }),
-    ).toThrow(RouteNotFoundError)
+    ).rejects.toThrow(RouteNotFoundError)
+  })
+
+  it('mounts wildcard example category pages for internal preview navigation', async () => {
+    const Route = await importExamplesCategoryWildcardRoute()
+
+    expect(Route.path).toBe('/examples/$category/$')
+    expect(() =>
+      Route.options.beforeLoad?.({ params: { category: 'accounting-firm' } }),
+    ).not.toThrow()
+    expect(Route.options.validateSearch?.({ theme: 'twitter' })).toEqual({
+      theme: 'twitter',
+      mode: 'light',
+    })
   })
 
   it('validates examples theme search params with zod defaults', async () => {
@@ -358,7 +449,7 @@ describe('examples route behavior', () => {
     expect(categories.length).toBeGreaterThan(50)
     expect(capsules.length).toBeGreaterThan(0)
     expect(sample?.source).toContain('SaasHero(')
-    expect(sample?.source).toContain('"heading"')
+    expect(sample?.source).toContain('Saas Hero for Saas')
     expect(sample?.source).toContain('root = Stack')
 
     const library = await loadOpenUIRuntimeLibrary(sample?.source ?? '')
@@ -367,15 +458,60 @@ describe('examples route behavior', () => {
 
   it('builds a no-chrome full-site category source with PageSwitch', async () => {
     const site = getExampleCategorySite('saas')
+    const pageSwitch = parseExamplePageSwitch(site?.source ?? '')
 
-    expect(site?.source).toContain(
-      'root = PageSwitch(["Home"], [home], "", {})',
-    )
+    expect(pageSwitch.routes).toContain('Home')
+    expect(pageSwitch.routes).toContain('Pricing')
     expect(site?.source).toContain('SectionAnchor(')
     expect(site?.source).toContain('SaasHero(')
     expect(site?.source).toContain('SaasFooter(')
+    expectMappedAnchor(
+      site?.source ?? '',
+      pageSwitch.routes,
+      pageSwitch.targetMap,
+      'Pricing',
+    )
 
     const library = await loadOpenUIRuntimeLibrary(site?.source ?? '')
     expect(library).toBeTruthy()
+  })
+
+  it('uses the engine route plan for category nav instead of inventing missing pages', () => {
+    const site = getExampleCategorySite('accounting-firm')
+    const pageSwitch = parseExamplePageSwitch(site?.source ?? '')
+
+    expect(pageSwitch.routes).toContain('Home')
+    expect(pageSwitch.routes).toContain('Services')
+    expect(pageSwitch.routes).toContain('About')
+    expect(pageSwitch.routes).toContain('Team')
+    expect(pageSwitch.routes).not.toContain('Pricing')
+    expect(pageSwitch.routes).not.toContain('FAQ')
+    expect(site?.source).toContain(
+      'AccountingFirmNavbar("Accounting Firm Studio", ["Home","Team","Services","About"], "Team")',
+    )
+    expect(site?.source).not.toContain('"Pricing"')
+    expect(site?.source).not.toContain('"FAQ"')
+  })
+
+  it('maps planned category routes to real section anchors for every category', () => {
+    for (const category of getExampleCategories()) {
+      const site = getExampleCategorySite(category.category)
+      expect(site).toBeTruthy()
+      const source = site?.source ?? ''
+      const pageSwitch = parseExamplePageSwitch(source)
+      for (const route of pageSwitch.routes.slice(1)) {
+        const target =
+          pageSwitch.targetMap[route] ??
+          pageSwitch.targetMap[route.toLowerCase()]
+        expect(target).toBeTruthy()
+        if (target?.includes('#')) {
+          const [pageLabel, anchorId] = target.split('#')
+          expect(pageSwitch.routes).toContain(pageLabel)
+          expect(source).toContain(`SectionAnchor("${anchorId}",`)
+        } else {
+          expect(pageSwitch.routes).toContain(target)
+        }
+      }
+    }
   })
 })

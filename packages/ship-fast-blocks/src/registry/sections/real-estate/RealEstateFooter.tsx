@@ -18,18 +18,18 @@ import {
 } from '#/section-kit/SiteFooter.tsx'
 
 /**
- * RealEstateFooter — full sitewide footer for a premium brokerage. A top region
- * pairs a brand block (serif wordmark, blurb, office addresses, and a contact
- * line) with several labeled link columns, all over a token surface. A bordered
- * bottom row carries social links and an auto-updating copyright. The wordmark
- * and every link route through section-kit route links. Use as the closing footer for a
- * real-estate brokerage or agent site. Renders fully with no props via baked
- * defaults.
+ * RealEstateFooter — editorial sitewide footer for a luxury brokerage. A top
+ * region pairs a brand block (serif wordmark, blurb, mono social links) with
+ * mono-titled link columns over a token surface, behind a giant faint serif
+ * ghost wordmark watermark. A hairline bottom row carries an auto-updating
+ * copyright. The wordmark and every link (block-width, left-aligned) route
+ * through section-kit route links. Use as the closing footer for a real-estate
+ * brokerage or agent site. Renders fully with no props via baked defaults.
  */
 export const RealEstateFooter = defineCapsule({
   name: 'RealEstateFooter',
   description:
-    'Full sitewide footer for a premium brokerage: a top region pairing a brand block (serif wordmark, blurb, office addresses, contact line) with several labeled link columns over a token surface, plus a bordered bottom row with social links and an auto-updating copyright. Wordmark and links route through section-kit route links. Use as the closing footer for a real-estate brokerage or agent site.',
+    'Editorial sitewide footer for a luxury brokerage: a top region pairing a brand block (serif wordmark, blurb, mono social links) with mono-titled link columns over a token surface, behind a giant faint serif ghost wordmark watermark, plus a hairline bottom row with an auto-updating copyright. Wordmark and links route through section-kit route links. Use as the closing footer for a real-estate brokerage or agent site.',
   props: z.object({
     /** Serif brand wordmark. */
     brand: z.string().optional(),
@@ -50,6 +50,7 @@ export const RealEstateFooter = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
+    const brand = props.brand ?? 'Marbury & Co.'
     const blurb =
       props.blurb ??
       'A full-service brokerage helping families buy, sell, and invest across the region since 1998.'
@@ -82,11 +83,19 @@ export const RealEstateFooter = defineCapsule({
       : ['Instagram', 'Facebook', 'LinkedIn']
 
     return (
-      <SiteFooter className={props.className}>
-        <FooterContent>
+      <SiteFooter
+        className={`relative overflow-hidden ${props.className ?? ''}`}
+      >
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-12 -left-4 select-none font-serif leading-none tracking-tight text-foreground/[0.04] text-[9rem] sm:text-[13rem]"
+        >
+          {brand}
+        </span>
+        <FooterContent className="relative">
           <FooterGrid>
             <FooterBrand
-              brand={props.brand ?? 'Marbury & Co.'}
+              brand={brand}
               brandClassName={'font-serif text-xl font-semibold tracking-tight'}
             >
               <FooterTagline>{blurb}</FooterTagline>
@@ -94,23 +103,32 @@ export const RealEstateFooter = defineCapsule({
                 {social
                   .map((label) => ({ label }))
                   .map((s) => (
-                    <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                    <FooterSocialLink
+                      key={s.label}
+                      className="font-mono text-[11px] uppercase tracking-[0.14em]"
+                    >
+                      {s.label}
+                    </FooterSocialLink>
                   ))}
               </FooterSocial>
             </FooterBrand>
             {[...columns, visitColumn].map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnTitle className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  {col.title}
+                </FooterColumnTitle>
                 <FooterColumnList>
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink key={link} className="block w-fit">
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
           <FooterBottom>
-            <FooterCopyright>
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.14em]">
               {props.note ?? 'All rights reserved.'}
             </FooterCopyright>
           </FooterBottom>

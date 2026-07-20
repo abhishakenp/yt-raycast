@@ -21,12 +21,15 @@ import {
 /**
  * VideoStreamingFooter — a rich, multi-column closing footer for a
  * video-streaming site. Thin configuration over the shared `SiteFooter`
- * composite: a bold wordmark beside an inline primary play-triangle mark, a
- * tagline, a social row (Instagram, Twitter, TikTok, YouTube), and a responsive
- * grid of link columns (Browse, Account, Company, Support). A bordered-top
- * bottom bar carries an auto-updating copyright line. Use as the site-wide
- * footer for streaming services, OTT apps, or on-demand video platforms.
- * Renders fully with no props via baked-in "Lumen" defaults.
+ * composite, restyled dark-cinematic: a bold wordmark beside an inline primary
+ * play-triangle mark (kept as the BrandLogo image fallback), a tagline, a social
+ * row (Instagram, Twitter, TikTok, YouTube) in mono slate labels, and a
+ * responsive grid of link columns with mono uppercase column titles over
+ * block-level w-fit links (Browse, Account, Company, Support). A bordered-top
+ * bottom bar carries an auto-updating mono copyright line. Tokens-only so it
+ * flips between light and dark themes. Use as the site-wide footer for streaming
+ * services, OTT apps, or on-demand video platforms. Renders fully with no props
+ * via baked-in "Lumen" defaults.
  */
 function PlayMark({ className }: { className?: string }) {
   return (
@@ -44,7 +47,7 @@ function PlayMark({ className }: { className?: string }) {
 export const VideoStreamingFooter = defineCapsule({
   name: 'VideoStreamingFooter',
   description:
-    'Rich, multi-column closing footer for a video-streaming site built on the shared SiteFooter composite: a bold wordmark + inline primary play-triangle mark, a tagline, a social row (Instagram, Twitter, TikTok, YouTube), and a responsive grid of link columns (Browse, Account, Company, Support); a bordered-top bottom bar holds an auto-updating copyright line. Use as the site-wide footer for streaming services, OTT apps, or on-demand video platforms.',
+    'Rich, multi-column closing footer for a video-streaming site built on the shared SiteFooter composite, restyled dark-cinematic: a bold wordmark + inline primary play-triangle mark, a tagline, a mono-labelled social row (Instagram, Twitter, TikTok, YouTube), and a responsive grid of link columns with mono uppercase titles over block-level w-fit links (Browse, Account, Company, Support); a bordered-top bottom bar holds an auto-updating mono copyright line. Tokens-only and theme-adaptive. Use as the site-wide footer for streaming services, OTT apps, or on-demand video platforms.',
   props: z.object({
     /** Streaming brand name shown as the wordmark. */
     brand: z.string().optional(),
@@ -114,30 +117,41 @@ export const VideoStreamingFooter = defineCapsule({
               </FooterTagline>
               <FooterSocial>
                 {social.map((s) => (
-                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  <FooterSocialLink
+                    key={s.label}
+                    className="font-mono text-[11px] uppercase tracking-[0.16em]"
+                  >
+                    {s.label}
+                  </FooterSocialLink>
                 ))}
               </FooterSocial>
             </FooterBrand>
             {columns.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnTitle className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  {col.title}
+                </FooterColumnTitle>
                 <FooterColumnList>
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink key={link} className="block w-fit">
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
           <FooterBottom>
-            <FooterCopyright>
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.16em]">
               {props.note ?? 'All rights reserved.'}
             </FooterCopyright>
             <FooterLegal>
               {props.legal?.length
                 ? props.legal
                 : ['Privacy', 'Terms'].map((l) => (
-                    <FooterLink key={l}>{l}</FooterLink>
+                    <FooterLink key={l} className="block w-fit">
+                      {l}
+                    </FooterLink>
                   ))}
             </FooterLegal>
           </FooterBottom>

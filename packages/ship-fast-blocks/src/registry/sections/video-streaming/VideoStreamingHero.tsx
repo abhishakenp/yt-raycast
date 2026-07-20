@@ -4,29 +4,32 @@ import {
   HeroSection,
   HeroBackgroundImage,
   HeroContent,
-  HeroBadge,
   HeroHeading,
   HeroSubheading,
   HeroActions,
   HeroCta,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { MonoTag } from '#/section-kit/Decor.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * VideoStreamingHero — full-bleed, cinematic dark hero for a video-streaming
- * landing page. A single dramatic show backdrop fills the band edge to edge
- * under layered token-based dark overlays so light text reads cleanly on top.
- * Content stacks a small "Featured" eyebrow, a huge show title, a short
- * logline, dual CTAs (filled "Start Free Trial" + outlined "Browse"), and a
- * divider-separated metadata strip (genre · rating · seasons). CTAs route
- * through section-kit route links. Use as the opening hero for streaming services, OTT
- * apps, and on-demand video platforms. Renders fully with no props.
+ * VideoStreamingHero — full-bleed, dark-cinematic featured-title hero for a
+ * video-streaming landing page. A single dramatic show backdrop fills the band
+ * edge to edge under layered token-based dark overlays, framed by thin
+ * bg-foreground letterbox bars top and bottom and corner mono timecode slates.
+ * Content stacks a mono meta rule (primary dot + "Featured" eyebrow left, a
+ * "S1 · 4K HDR" runtime slate right), a huge credits-style extrabold show title,
+ * a short logline, dual square press-responsive CTAs (a play-icon "Start Free
+ * Trial" + outlined "Browse"), and a mono `·`-separated metadata strip
+ * (genre · rating · seasons). Tokens-only so it flips between light and dark
+ * themes; CTAs route through section-kit route links. Use as the opening hero
+ * for streaming services, OTT apps, and on-demand video platforms. Renders fully
+ * with no props.
  */
 export const VideoStreamingHero = defineCapsule({
   name: 'VideoStreamingHero',
   description:
-    "Full-bleed cinematic dark hero for a video-streaming landing page: one dramatic show backdrop fills the band edge to edge under layered token-based dark overlays so light text stays readable. Content has a small 'Featured' eyebrow, a huge show title, a short logline, dual CTAs (filled 'Start Free Trial' + outlined 'Browse'), and a divider-separated metadata strip (genre · rating · seasons). CTAs route through section-kit route links. Use as the opening hero for streaming services, OTT apps, and on-demand video platforms.",
+    "Full-bleed dark-cinematic featured-title hero for a video-streaming landing page: one dramatic show backdrop fills the band edge to edge under layered token-based dark overlays, framed by thin bg-foreground letterbox bars and corner mono timecode slates. Content has a mono meta rule (primary dot + 'Featured' eyebrow left, a runtime slate right), a huge credits-style extrabold show title, a short logline, dual square press-responsive CTAs (a play-icon 'Start Free Trial' + outlined 'Browse'), and a mono metadata strip (genre · rating · seasons). Tokens-only and theme-adaptive; CTAs route through section-kit route links. Use as the opening hero for streaming services, OTT apps, and on-demand video platforms.",
   props: z.object({
     /** Small uppercase eyebrow above the title. */
     eyebrow: z.string().optional(),
@@ -65,19 +68,62 @@ export const VideoStreamingHero = defineCapsule({
       ? props.meta
       : ['Sci-Fi Thriller', 'TV-MA', '3 Seasons', '4K Ultra HD']
 
+    const PlayIcon = ({ className }: { className?: string }) => (
+      <svg
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        className={className}
+        aria-hidden="true"
+      >
+        <path d="M6 4.5v11a1 1 0 0 0 1.52.85l9-5.5a1 1 0 0 0 0-1.7l-9-5.5A1 1 0 0 0 6 4.5Z" />
+      </svg>
+    )
+
     return (
       <HeroSection variant="full-bleed" className={props.className}>
         <HeroBackgroundImage
           alt={heroImageAlt}
           overlayClassName="bg-foreground/60"
-          gradientClassName="bg-gradient-to-t from-foreground/90 via-foreground/50 to-foreground/70"
+          gradientClassName="bg-gradient-to-t from-foreground/95 via-foreground/50 to-foreground/70"
+        />
+
+        {/* Cinematic letterbox bars + corner slates (decorative). */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 z-0 h-6 bg-foreground sm:h-9"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-6 bg-foreground sm:h-9"
         />
 
         <Container asChild>
           <HeroContent className="flex flex-col items-start pb-28 pt-36 sm:pt-40 lg:pb-32 lg:pt-48">
-            <HeroBadge variant="pill">{heroEyebrow}</HeroBadge>
+            <div className="flex w-full items-center gap-4">
+              <MonoTag
+                tone="inverted"
+                className="flex items-center gap-2.5 text-background/80"
+              >
+                <span
+                  aria-hidden="true"
+                  className="size-2 shrink-0 bg-primary"
+                />
+                {heroEyebrow}
+              </MonoTag>
+              <span
+                aria-hidden="true"
+                className="h-px flex-1 bg-background/20"
+              />
+              <MonoTag
+                aria-hidden="true"
+                tone="inverted"
+                className="hidden text-background/50 sm:inline"
+              >
+                S1 · 4K HDR
+              </MonoTag>
+            </div>
 
-            <HeroHeading className="mt-8 max-w-3xl text-5xl leading-[1.05] text-background sm:text-6xl lg:text-7xl">
+            <HeroHeading className="mt-7 max-w-3xl text-5xl font-extrabold leading-[0.95] tracking-tighter text-background sm:text-6xl lg:text-8xl">
               {heroHeading}
             </HeroHeading>
 
@@ -89,16 +135,17 @@ export const VideoStreamingHero = defineCapsule({
               <HeroCta
                 asChild
                 variant="primary"
-                className="rounded-full px-8 py-4 font-medium"
+                className="rounded-none px-8 py-4 font-medium transition-transform duration-150 active:translate-y-px motion-reduce:transform-none"
               >
                 <NavbarRouteLink href={heroPrimaryTarget}>
+                  <PlayIcon className="mr-2 size-5" />
                   {heroPrimary}
                 </NavbarRouteLink>
               </HeroCta>
               <HeroCta
                 asChild
                 variant="outline"
-                className="rounded-full border-background/40 bg-background/10 px-8 py-4 font-medium text-background backdrop-blur-sm hover:bg-background/20"
+                className="rounded-none border-background/40 bg-background/10 px-8 py-4 font-medium text-background backdrop-blur-sm transition-[transform,background-color] duration-150 hover:bg-background/20 active:translate-y-px motion-reduce:transform-none"
               >
                 <NavbarRouteLink href={heroSecondaryTarget}>
                   {heroSecondary}
@@ -106,14 +153,13 @@ export const VideoStreamingHero = defineCapsule({
               </HeroCta>
             </HeroActions>
 
-            <div className="mt-12 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-background/80">
+            <div className="mt-12 flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-[11px] uppercase tracking-[0.2em] text-background/70">
               {meta.map((item, i) => (
-                <div key={item} className="flex items-center gap-x-4">
+                <div key={item} className="flex items-center gap-x-3">
                   {i > 0 && (
-                    <span
-                      aria-hidden="true"
-                      className="hidden h-4 w-px bg-background/30 sm:block"
-                    />
+                    <span aria-hidden="true" className="text-background/40">
+                      ·
+                    </span>
                   )}
                   <span>{item}</span>
                 </div>

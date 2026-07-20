@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import { z } from 'zod/v4'
 
 import {
@@ -12,10 +13,25 @@ import {
   TestimonialMeta,
 } from '#/section-kit/TestimonialGrid.tsx'
 
+function RatingStars({ rating }: { rating: number }) {
+  return (
+    <div
+      aria-hidden="true"
+      className="flex items-center gap-0.5 font-mono text-sm leading-none"
+    >
+      {Array.from({ length: 5 }).map((_, k) => (
+        <span key={k} className={k < rating ? 'text-primary' : 'text-border'}>
+          ★
+        </span>
+      ))}
+    </div>
+  )
+}
+
 export const PodcastTestimonials = defineCapsule({
   name: 'PodcastTestimonials',
   description:
-    "A 3-up listener-review wall for the Signal & Static podcast, built on TestimonialGrid. Each card renders a star row derived from the rating, the listener's quote, their name, and the review source (Apple Podcasts, Spotify, Overcast). Use it for warm, believable social proof on a podcast or audio-show site.",
+    "A 3-up listener-review wall for the Signal & Static podcast, built on TestimonialGrid, set against a giant ghost quotation watermark. Each square hard-shadowed card leads with a token star row derived from the rating, then the listener's quote, their name, and the review source (Apple Podcasts, Spotify, Overcast) as a mono label. Use it for warm, believable social proof on a podcast or audio-show site.",
   props: z.object({
     heading: z.string().optional(),
     reviews: z
@@ -66,11 +82,14 @@ export const PodcastTestimonials = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-background pt-28 pb-20 lg:pt-32 lg:pb-28',
+          'relative overflow-hidden bg-background pt-24 pb-16 lg:pt-32 lg:pb-28',
           props.className,
         )}
       >
-        <Container>
+        <Watermark className="-top-10 right-2 text-[16rem] leading-none">
+          &rdquo;
+        </Watermark>
+        <Container className="relative">
           <TestimonialGrid heading={heading}>
             {items.map((t) => {
               const __iv__ = t as {
@@ -83,15 +102,23 @@ export const PodcastTestimonials = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
-                    {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
-                        {__iv__.role || __iv__.company || __iv__.meta}
-                      </TestimonialMeta>
-                    )}
+                <TestimonialCard
+                  key={__iv__.name}
+                  className="rounded-none border-foreground/20 transition-[transform,border-color,box-shadow] duration-150 hover:-translate-y-0.5 hover:border-foreground hover:shadow-[8px_8px_0_0] hover:shadow-foreground/10 motion-reduce:transform-none"
+                >
+                  <RatingStars rating={__iv__.rating ?? 5} />
+                  <TestimonialQuote className="text-pretty">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="border-t border-border pt-4">
+                    <div className="flex w-full items-center justify-between gap-3">
+                      <TestimonialName>{__iv__.name}</TestimonialName>
+                      {(__iv__.role || __iv__.company || __iv__.meta) && (
+                        <TestimonialMeta className="font-mono uppercase tracking-[0.14em]">
+                          {__iv__.role || __iv__.company || __iv__.meta}
+                        </TestimonialMeta>
+                      )}
+                    </div>
                   </TestimonialAuthor>
                 </TestimonialCard>
               )

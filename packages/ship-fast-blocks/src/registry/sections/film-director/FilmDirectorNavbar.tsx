@@ -9,8 +9,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
  * FilmDirectorNavbar — fixed, backdrop-blurred cinematic top navigation bar for
  * a film director / cinematographer / DP portfolio. A hairline-bottomed

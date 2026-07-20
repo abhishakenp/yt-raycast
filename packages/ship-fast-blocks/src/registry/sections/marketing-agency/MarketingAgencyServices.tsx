@@ -3,28 +3,27 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * MarketingAgencyServices — a 6-up services / capabilities grid. A centered
- * eyebrow + heading + description above a responsive grid of muted rounded cards
- * (1/2/3 columns), each with a filled primary icon tile, a service title, a short
- * description, and a bulleted list of capabilities with small dot markers; cards
- * lift to an accent surface on hover. Icons rotate through a built-in set
- * (chart, search, mail, pie, users, document). Use to present marketing-agency
- * service lines (performance marketing, SEO, email, CRO, social, analytics).
- * Renders fully with no props.
+ * MarketingAgencyServices — kinetic services / capabilities grid on a diagonal-
+ * seam muted band. An asymmetric header (mono "[ SERVICES ]" meta left, marker-
+ * highlighted heading and description) sits above a 3-up grid of sharp
+ * hard-offset-shadow cards, each opening with a mono "01 / SERVICE" index, a bold
+ * title, a short description, and a hairline-divided capability checklist with
+ * primary ticks; cards gain a foreground hairline on hover. Use to present
+ * marketing-agency service lines (performance marketing, SEO, email, CRO, social,
+ * analytics). Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   FeatureGrid,
   FeatureCard,
-  FeatureIcon,
   FeatureTitle,
   FeatureDescription,
 } from '#/section-kit/FeatureGrid.tsx'
 export const MarketingAgencyServices = defineCapsule({
   name: 'MarketingAgencyServices',
   description:
-    '6-up services / capabilities grid: a centered eyebrow + heading + description above a responsive grid of muted rounded cards (1/2/3 columns), each with a filled primary icon tile, a service title, a short description, and a bulleted capability list with dot markers; cards lift to an accent surface on hover. Icons rotate through a built-in set (chart, search, mail, pie, users, document). Use to present marketing-agency service lines such as performance marketing, SEO & content, email, CRO, social, and analytics.',
+    'Kinetic services / capabilities grid on a diagonal-seam muted band: an asymmetric header (mono services meta, marker-highlighted heading and description) above a 3-up grid of sharp hard-offset-shadow cards, each with a mono service index, a bold title, a short description, and a hairline-divided capability checklist with primary ticks. Use to present marketing-agency service lines such as performance marketing, SEO & content, email, CRO, social, and analytics.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -102,20 +101,52 @@ export const MarketingAgencyServices = defineCapsule({
             ],
           },
         ]
+    const headingWords = heading.split(' ')
+    const headingLead = headingWords.slice(0, -1).join(' ')
+    const headingMark = headingWords.at(-1) ?? ''
     return (
-      <section className={cn('bg-background py-24', props.className)}>
-        <Container>
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            eyebrowClassName="mb-3 normal-case tracking-normal text-muted-foreground"
-            titleClassName="mb-4 tracking-tight sm:text-4xl"
-            subtitleClassName="md:text-base"
-          />
+      <section
+        className={cn(
+          // Diagonal top seam on a contrasting muted band — neighbor-independent.
+          'relative overflow-hidden bg-muted/40 pt-20 pb-20 lg:pt-28 lg:pb-28 [clip-path:polygon(0_2.5rem,100%_0,100%_100%,0_100%)]',
+          props.className,
+        )}
+      >
+        <Container className="relative">
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <div className="max-w-2xl">
+              <MonoTag className="mb-4 block">
+                Services
+                <span aria-hidden="true" className="text-primary">
+                  {' '}
+                  · {String(items.length).padStart(2, '0')}
+                </span>
+              </MonoTag>
+              <h2 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+                {headingLead}{' '}
+                <span className="relative ml-[0.12em] inline-block whitespace-nowrap">
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-[-0.15em] inset-y-[0.05em] -rotate-1 bg-primary"
+                  />
+                  <span className="relative text-primary-foreground">
+                    {headingMark}
+                  </span>
+                </span>
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">
+                {description}
+              </p>
+            </div>
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+            >
+              [ {eyebrow} ]
+            </p>
+          </div>
           <FeatureGrid columns={3}>
-            {items.map((f) => {
+            {items.map((f, i) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -126,10 +157,47 @@ export const MarketingAgencyServices = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
-                  {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                <FeatureCard
+                  key={__iv__.title}
+                  className="gap-0 rounded-none border-foreground/80 p-6 shadow-[6px_6px_0_0] shadow-foreground/10 transition-[transform,box-shadow,border-color] duration-150 hover:-translate-y-0.5 hover:border-foreground hover:shadow-[8px_8px_0_0] hover:shadow-foreground/15 motion-reduce:transform-none"
+                >
+                  <MonoTag className="flex items-center gap-2" tone="faint">
+                    <span
+                      aria-hidden="true"
+                      className="size-1.5 shrink-0 bg-primary"
+                    />
+                    {String(i + 1).padStart(2, '0')} / Service
+                  </MonoTag>
+                  <FeatureTitle className="mt-4 text-xl font-bold tracking-tight">
+                    {__iv__.title}
+                  </FeatureTitle>
+                  <FeatureDescription className="mt-2 leading-relaxed">
+                    {__iv__.description}
+                  </FeatureDescription>
+                  {__iv__.points?.length ? (
+                    <ul className="mt-5 flex flex-col gap-0 divide-y divide-border border-t border-border">
+                      {__iv__.points.map((point) => (
+                        <li
+                          key={point}
+                          className="flex items-center gap-2.5 py-2.5 text-sm text-foreground/85"
+                        >
+                          <svg
+                            className="size-4 shrink-0 text-primary"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
+                            <path d="M5 13l4 4L19 7" />
+                          </svg>
+                          {point}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </FeatureCard>
               )
             })}

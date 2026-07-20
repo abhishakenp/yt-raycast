@@ -3,6 +3,7 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   localServiceItem,
   useSyncLocalServices,
@@ -18,18 +19,20 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 
 /**
- * MentalHealthServices — a centered-heading services grid for a therapy practice.
- * An eyebrow + heading + intro paragraph above a responsive 1/2/3-column grid of
- * rounded bordered cards, each with a primary-tinted icon tile, a service title,
- * a description, and a bulleted list of session details. Calm, warm, sage-and-sand
- * wellness aesthetic with gentle hover shadow. Use to present therapy modalities
- * (individual, couples, family, EMDR/trauma, anxiety & depression, life
- * transitions) for therapists, counselors, psychologists or wellness centers.
+ * MentalHealthServices — a warm-editorial services grid for a therapy practice.
+ * An asymmetric header (left-aligned mono eyebrow + serif heading + lede, mono
+ * index meta on the right) above a responsive 1/2/3-column grid of square cards
+ * on a soft muted wash; each card carries a zero-padded mono index numeral, a
+ * serif service title, a description, and a hairline-divided list of session
+ * details with primary tick dashes. Calm, warm, sage-and-sand wellness
+ * aesthetic with generous air. Use to present therapy modalities (individual,
+ * couples, family, EMDR/trauma, anxiety & depression, life transitions) for
+ * therapists, counselors, psychologists or wellness centers.
  */
 export const MentalHealthServices = defineCapsule({
   name: 'MentalHealthServices',
   description:
-    'Centered-heading services grid for a therapy practice: an eyebrow + heading + intro paragraph above a responsive 1/2/3-column grid of rounded bordered cards, each with a primary-tinted icon tile, a service title, a description, and a bulleted list of session details. Calm, warm, sage-and-sand wellness aesthetic with gentle hover shadow. Use to present therapy modalities (individual, couples, family, EMDR/trauma, anxiety & depression, life transitions) for therapists, counselors, psychologists or wellness centers.',
+    'Warm-editorial services grid for a therapy practice: an asymmetric header (left-aligned mono eyebrow + serif heading + lede, mono index meta right) above a responsive 1/2/3-column grid of square cards on a soft muted wash, each with a zero-padded mono index numeral, a serif service title, a description, and a hairline-divided list of session details with primary tick dashes. Calm, warm, sage-and-sand wellness aesthetic with generous air. Use to present therapy modalities (individual, couples, family, EMDR/trauma, anxiety & depression, life transitions) for therapists, counselors, psychologists or wellness centers.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -123,19 +126,31 @@ export const MentalHealthServices = defineCapsule({
     )
 
     return (
-      <section className={cn('py-20 lg:py-28', props.className)}>
+      <section
+        className={cn('bg-background py-20 sm:py-24 lg:py-28', props.className)}
+      >
         <Container size="lg">
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            align="center"
-            eyebrowClassName="text-primary tracking-wider"
-            subtitleClassName="leading-relaxed"
-            className="mx-auto mb-16 max-w-2xl"
-          />
-          <FeatureGrid columns={3}>
-            {items.map((f) => {
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-0"
+              eyebrowClassName="mb-4 inline-block font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground"
+              titleClassName="mb-4 font-serif text-3xl font-medium tracking-tight text-foreground sm:text-4xl lg:text-[2.75rem] lg:leading-[1.08]"
+              subtitleClassName="text-base leading-relaxed text-muted-foreground sm:text-lg"
+            />
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="shrink-0 md:pb-1"
+            >
+              {String(items.length).padStart(2, '0')} / services
+            </MonoTag>
+          </div>
+          <FeatureGrid columns={3} className="gap-4 lg:gap-6">
+            {items.map((f, i) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -146,10 +161,36 @@ export const MentalHealthServices = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
+                <FeatureCard
+                  key={__iv__.title}
+                  className="gap-4 rounded-none border-border bg-muted/30 p-6 shadow-none transition-colors hover:bg-muted/50 sm:p-8"
+                >
+                  <MonoTag aria-hidden="true" tone="faint">
+                    {String(i + 1).padStart(2, '0')}
+                  </MonoTag>
                   {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                  <FeatureTitle className="font-serif text-xl font-medium tracking-tight">
+                    {__iv__.title}
+                  </FeatureTitle>
+                  <FeatureDescription className="leading-relaxed">
+                    {__iv__.description}
+                  </FeatureDescription>
+                  {__iv__.points?.length ? (
+                    <ul className="mt-1 divide-y divide-border border-t border-border">
+                      {__iv__.points.map((point) => (
+                        <li
+                          key={point}
+                          className="flex items-center gap-3 py-2.5 text-sm text-muted-foreground"
+                        >
+                          <span
+                            aria-hidden="true"
+                            className="h-px w-3.5 shrink-0 bg-primary"
+                          />
+                          {point}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </FeatureCard>
               )
             })}

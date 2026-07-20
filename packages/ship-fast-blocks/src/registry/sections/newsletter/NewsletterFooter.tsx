@@ -2,6 +2,7 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   SiteFooter,
   FooterContent,
@@ -20,20 +21,22 @@ import {
 } from '#/section-kit/SiteFooter.tsx'
 
 /**
- * NewsletterFooter — inverted multi-column footer for an editorial newsletter.
- * A full-width dark foreground band: a wide left brand column (serif initial-mark
- * logo + name, a short tagline, and round social icon buttons — a Twitter glyph,
- * otherwise an RSS-style glyph), then link columns of grouped routes; a bottom
- * bar separates an auto-year copyright line from inline legal links. Warm, calm,
- * literary mood inverted to close the page. Brand, social buttons, every link and
- * legal item route through section-kit route links. Use as the site footer for newsletters,
- * publications, blogs, or content creators. Renders fully with no props via
- * baked-in defaults.
+ * NewsletterFooter — newsprint-lite multi-column footer for an editorial
+ * newsletter. On a clean paper-toned band: a hairline masthead rail carries the
+ * mono publication name and a mono edition tag, then a wide left brand column
+ * (square serif initial-mark nameplate + serif name, a short tagline, and square
+ * social buttons — a Twitter glyph, otherwise an RSS-style glyph) sits beside link
+ * columns of grouped routes under mono column titles, each link a left-aligned
+ * block-width hit target; a hairline bottom bar separates an auto-year copyright
+ * line from inline legal links. Restrained, literary newspaper structure. Brand,
+ * social buttons, every link and legal item route through section-kit route
+ * links. Use as the site footer for newsletters, publications, blogs, or content
+ * creators. Renders fully with no props via baked-in defaults.
  */
 export const NewsletterFooter = defineCapsule({
   name: 'NewsletterFooter',
   description:
-    'Inverted multi-column footer for an editorial newsletter: a full-width dark foreground band with a wide left brand column (serif initial-mark logo + name, a short tagline, and round social icon buttons — a Twitter glyph, otherwise an RSS-style glyph), then link columns of grouped routes; a bottom bar separates an auto-year copyright line from inline legal links. Warm, calm, literary mood inverted to close the page. Brand, social buttons, every link and legal item route through section-kit route links. Use as the site footer for newsletters, publications, blogs, essayists, or content creators.',
+    'Newsprint-lite multi-column footer for an editorial newsletter on a clean paper-toned band: a hairline masthead rail with the mono publication name and a mono edition tag, then a wide left brand column (square serif initial-mark nameplate + serif name, a short tagline, and square social buttons — a Twitter glyph, otherwise an RSS-style glyph) beside link columns of grouped routes under mono column titles, each link a left-aligned block-width hit target; a hairline bottom bar separates an auto-year copyright line from inline legal links. Restrained, literary newspaper structure. Brand, social buttons, every link and legal item route through section-kit route links. Use as the site footer for newsletters, publications, blogs, essayists, or content creators.',
   props: z.object({
     /** Brand / publication name shown beside the serif logo mark. */
     brand: z.string().optional(),
@@ -77,7 +80,7 @@ export const NewsletterFooter = defineCapsule({
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          'grid place-items-center rounded-lg bg-muted-foreground/30 font-serif font-medium text-background',
+          'grid place-items-center rounded-none bg-foreground font-serif font-medium text-background',
           className,
         )}
         aria-hidden="true"
@@ -87,35 +90,61 @@ export const NewsletterFooter = defineCapsule({
     )
 
     return (
-      <SiteFooter className={props.className}>
+      <SiteFooter className={cn('bg-muted/30', props.className)}>
         <FooterContent>
+          <div className="mb-10 flex items-center justify-between gap-4 border-b border-border pb-6">
+            <MonoTag className="tracking-[0.25em]">{brand}</MonoTag>
+            <MonoTag className="hidden tracking-[0.25em] sm:inline">
+              Vol. 3 · Weekly
+            </MonoTag>
+          </div>
           <FooterGrid>
-            <FooterBrand brand={brand} brandMark={<LogoMark />}>
+            <FooterBrand
+              brand={brand}
+              brandMark={<LogoMark />}
+              brandClassName="font-serif text-lg font-medium tracking-tight"
+            >
               <FooterTagline>{tagline}</FooterTagline>
               <FooterSocial>
                 {socials
                   .map((s) => ({ label: s }))
                   .map((s) => (
-                    <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                    <FooterSocialLink
+                      key={s.label}
+                      className="inline-flex items-center rounded-none border border-border px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.15em] transition-colors hover:border-foreground hover:text-foreground"
+                    >
+                      {s.label}
+                    </FooterSocialLink>
                   ))}
               </FooterSocial>
             </FooterBrand>
             {columns.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnTitle className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  {col.title}
+                </FooterColumnTitle>
                 <FooterColumnList>
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink key={link} className="block w-fit">
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
           <FooterBottom>
-            <FooterCopyright>{copyright}</FooterCopyright>
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.15em]">
+              {copyright}
+            </FooterCopyright>
             <FooterLegal>
               {legal.map((l) => (
-                <FooterLink key={l}>{l}</FooterLink>
+                <FooterLink
+                  key={l}
+                  className="font-mono text-[11px] uppercase tracking-[0.15em]"
+                >
+                  {l}
+                </FooterLink>
               ))}
             </FooterLegal>
           </FooterBottom>

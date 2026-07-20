@@ -12,21 +12,24 @@ import {
 } from '#/section-kit/FeatureGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 
 /**
- * NewsletterFeatures — "What You Get" value grid for an editorial newsletter.
- * A centered serif heading + lede introduces a 3-up grid of feature cards, each
- * with a rounded muted icon tile (rotating book / links / chat line icons), a
- * serif title, and a relaxed description; a bordered divider then opens a 2-up /
- * 4-up checklist of smaller perks, each a circular check badge beside a bold
- * title and muted sub-line. Warm, calm, literary mood on a paper-toned surface.
- * Use to explain what lands in subscribers' inbox for newsletters, publications,
- * blogs, or content creators. Renders fully with no props via baked-in defaults.
+ * NewsletterFeatures — "What You Get" newsprint-lite value ledger for an
+ * editorial newsletter. A hairline meta rail (a primary square + mono "In every
+ * issue" label, a mono index tag) tops a left-aligned serif heading + lede; then
+ * a 3-up row of square (rounded-none) hairline feature cards, each carrying a
+ * giant faint ghost index numeral, a mono "№0X" label, a serif title, and a
+ * relaxed description; a hairline divider then opens a collapsed-border 2-up /
+ * 4-up perks ledger, each cell a mono index numeral beside a bold title and muted
+ * sub-line. Clean paper-toned surface with restrained newspaper structure. Use to
+ * explain what lands in subscribers' inbox for newsletters, publications, blogs,
+ * or content creators. Renders fully with no props via baked-in defaults.
  */
 export const NewsletterFeatures = defineCapsule({
   name: 'NewsletterFeatures',
   description:
-    "'What You Get' value grid for an editorial newsletter: a centered serif heading + lede introduces a 3-up grid of feature cards, each with a rounded muted icon tile (rotating book / links / chat line icons), a serif title, and a relaxed description; a bordered divider then opens a 2-up / 4-up checklist of smaller perks, each a circular check badge beside a bold title and muted sub-line. Warm, calm, literary mood on a paper-toned surface. Use to explain what lands in subscribers' inbox for newsletters, publications, blogs, essayists, or content creators.",
+    "'What You Get' newsprint-lite value ledger for an editorial newsletter: a hairline meta rail (a primary square + mono 'In every issue' label, a mono index tag) above a left-aligned serif heading + lede, then a 3-up row of square hairline feature cards each with a giant faint ghost index numeral, a mono '№0X' label, a serif title, and a relaxed description; a hairline divider then opens a collapsed-border 2-up / 4-up perks ledger where each cell is a mono index numeral beside a bold title and muted sub-line. Clean paper-toned surface with restrained newspaper structure. Use to explain what lands in subscribers' inbox for newsletters, publications, blogs, essayists, or content creators.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -75,37 +78,30 @@ export const NewsletterFeatures = defineCapsule({
           { title: 'Private Discord', description: 'Join the conversation' },
         ]
 
-    const Check = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M5 13l4 4L19 7" />
-      </svg>
-    )
-
     return (
       <section className={cn('py-16 md:py-24 lg:py-28', props.className)}>
         <Container size="lg">
+          <div className="mb-8 flex items-center justify-between gap-4 border-b border-border pb-4">
+            <MonoTag className="flex items-center gap-3 tracking-[0.25em]">
+              <span aria-hidden="true" className="size-1.5 bg-primary" />
+              In every issue
+            </MonoTag>
+            <MonoTag className="tracking-[0.25em]">
+              №{String(items.length).padStart(2, '0')}
+            </MonoTag>
+          </div>
+
           <SectionHeading
             title={heading}
             subtitle={description}
-            align="center"
+            align="left"
             titleClassName="font-serif text-3xl font-medium sm:text-4xl"
-            subtitleClassName="text-lg"
-            className="mx-auto mb-12 max-w-2xl gap-6 md:mb-16"
+            subtitleClassName="max-w-2xl text-lg"
+            className="mb-12 max-w-3xl gap-4 md:mb-16"
           />
 
           <FeatureGrid columns={3}>
-            {items.map((f) => {
+            {items.map((f, i) => {
               const __iv__ = f as {
                 title: string
                 description: string
@@ -116,25 +112,47 @@ export const NewsletterFeatures = defineCapsule({
                 imageAlt?: string
               }
               return (
-                <FeatureCard key={__iv__.title}>
+                <FeatureCard
+                  key={__iv__.title}
+                  className="relative gap-4 overflow-hidden rounded-none border-border bg-transparent p-7 hover:translate-y-0 sm:p-8"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -right-2 -top-4 select-none font-serif text-[7rem] font-medium leading-none tracking-tight text-foreground/[0.05] tabular-nums"
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
                   {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                  <FeatureTitle>{__iv__.title}</FeatureTitle>
-                  <FeatureDescription>{__iv__.description}</FeatureDescription>
+                  <span className="relative font-mono text-[11px] uppercase tracking-[0.2em] text-primary tabular-nums">
+                    №{String(i + 1).padStart(2, '0')}
+                  </span>
+                  <FeatureTitle className="relative font-serif text-xl font-medium">
+                    {__iv__.title}
+                  </FeatureTitle>
+                  <FeatureDescription className="relative leading-relaxed">
+                    {__iv__.description}
+                  </FeatureDescription>
                 </FeatureCard>
               )
             })}
           </FeatureGrid>
 
-          <div className="mt-16 border-t border-border pt-16 md:mt-20 md:pt-20">
-            <ResponsiveGrid cols="1-2-4" className="gap-6">
-              {perks.map((perk) => (
-                <div key={perk.title} className="flex items-start gap-3">
-                  <span className="mt-0.5 grid size-5 flex-shrink-0 place-items-center rounded-full bg-muted text-foreground">
-                    <Check className="size-3" />
+          <div className="mt-14 md:mt-20">
+            <ResponsiveGrid
+              cols="1-2-4"
+              className="gap-0 border-l border-t border-border"
+            >
+              {perks.map((perk, i) => (
+                <div
+                  key={perk.title}
+                  className="flex items-start gap-3 border-b border-r border-border p-5 sm:p-6"
+                >
+                  <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/70 tabular-nums">
+                    {String(i + 1).padStart(2, '0')}
                   </span>
                   <div>
                     <p className="font-medium text-foreground">{perk.title}</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="mt-0.5 text-sm text-muted-foreground">
                       {perk.description}
                     </p>
                   </div>

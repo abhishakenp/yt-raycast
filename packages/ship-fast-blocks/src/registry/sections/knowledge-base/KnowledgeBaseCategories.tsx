@@ -10,8 +10,7 @@ import {
   CategoryCard,
   CategoryIcon,
 } from '#/section-kit/CategoryGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * KnowledgeBaseCategories — "Terminal-docs" browse-by-category ledger for a
  * help center. A left-aligned SectionHeading sits under a mono meta rule

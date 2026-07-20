@@ -10,25 +10,24 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
- * ManufacturingNavbar — sticky, translucent top navigation bar for a precision-
- * manufacturing / industrial-fabrication B2B site. A backdrop-blurred, border-
- * bottomed header pinned to the top: an initials brand tile (filled foreground
- * square with two-letter mark) plus wordmark on the left, a horizontal set of
- * nav links in the center, and a solid foreground primary CTA on the right
- * (desktop), with a hamburger menu button on mobile. Every link and the CTA
- * route through route hrefs so labels can drive page-switching; the CTA uses the
- * last nav item. Clean, neutral, industrial. Use as the sticky site header for
- * CNC machine shops, metal fabricators, contract manufacturers or industrial
- * engineering firms. Renders fully with no props via baked-in "Vertex
- * Manufacturing" defaults.
+ * ManufacturingNavbar — sticky, heavy-industrial top navigation bar for a
+ * precision-manufacturing / industrial-fabrication B2B site. A backdrop-blurred
+ * header pinned to the top with a thick foreground bottom rule: a hard-bordered
+ * square initials slab (two-letter mark) plus an extrabold uppercase wordmark on
+ * the left, mono-uppercase nav links in the center, and a squared, hard-bordered
+ * foreground CTA slab with mechanical press feedback on the right (desktop), plus
+ * a hamburger menu on mobile. Every link and the CTA route through route hrefs so
+ * labels can drive page-switching; the CTA uses the last nav item. Tech-brutalist,
+ * industrial, binary-radius. Use as the sticky site header for CNC machine shops,
+ * metal fabricators, contract manufacturers or industrial engineering firms.
+ * Renders fully with no props via baked-in "Vertex Manufacturing" defaults.
  */
 export const ManufacturingNavbar = defineCapsule({
   name: 'ManufacturingNavbar',
   description:
-    'Sticky translucent top navigation bar for a precision-manufacturing / industrial-fabrication B2B site: backdrop-blurred, border-bottomed header pinned to the top with an initials brand tile plus wordmark on the left, horizontal nav links in the center, and a solid foreground primary CTA on the right (desktop), plus a hamburger menu on mobile. Links and CTA route through route hrefs for page-switching; the CTA uses the last nav item. Clean, neutral and industrial. Use as the sticky site header for CNC machine shops, metal fabricators, contract manufacturers or industrial engineering firms.',
+    'Sticky heavy-industrial top navigation bar for a precision-manufacturing / industrial-fabrication B2B site: backdrop-blurred header with a thick foreground bottom rule, a hard-bordered square initials slab plus an extrabold uppercase wordmark on the left, mono-uppercase nav links in the center, and a squared hard-bordered foreground CTA slab with mechanical press feedback on the right (desktop), plus a hamburger menu on mobile. Links and CTA route through route hrefs for page-switching; the CTA uses the last nav item. Tech-brutalist, industrial, binary-radius. Use as the sticky site header for CNC machine shops, metal fabricators, contract manufacturers or industrial engineering firms.',
   props: z.object({
     /** Brand / company name shown in the navbar; initials tile derives from it. */
     brand: z.string().optional(),
@@ -57,38 +56,46 @@ export const ManufacturingNavbar = defineCapsule({
       <SiteNav
         position="sticky"
         height="responsive"
-        className={cn('bg-background/95', props.className)}
+        className={cn(
+          'border-b-2 border-foreground bg-background/95',
+          props.className,
+        )}
       >
         <NavbarBrand
           href={nav[0]}
-          className="gap-2"
+          className="flex items-center gap-2"
           aria-label={`${brand} Home`}
         >
-          <BrandLogo brand={brand}>
+          <BrandLogo brand={brand} className="flex items-center gap-2">
             <LogoImage
+              className="size-7"
               fallback={
                 <span
                   aria-hidden="true"
-                  className="grid size-8 place-items-center rounded-md bg-foreground text-sm font-bold text-background"
+                  className="grid size-7 place-items-center rounded-none border-2 border-foreground bg-foreground font-mono text-xs font-bold text-background"
                 >
                   {brandInitials}
                 </span>
               }
             />
-            <LogoLabel className="text-lg font-semibold tracking-tight text-foreground" />
+            <LogoLabel className="text-lg font-extrabold uppercase tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.slice(0, -1).map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="rounded-none font-mono text-xs uppercase tracking-[0.12em]"
+            >
               {label}
             </NavbarNavLink>
           ))}
           <NavbarCta
             variant="dark"
             href={nav[nav.length - 1]}
-            className="rounded-md px-4 py-2"
+            className="rounded-none border-2 border-foreground px-4 py-2 font-mono text-xs font-bold uppercase tracking-[0.12em] transition-[transform] duration-150 active:translate-x-[2px] active:translate-y-[2px] motion-reduce:transform-none"
           >
             {nav[nav.length - 1]}
           </NavbarCta>

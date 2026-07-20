@@ -10,8 +10,7 @@ import {
 import { Watermark } from '#/section-kit/Decor.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * ComingSoonCta — inverted kinetic closing band for a "launching soon" /
  * waitlist pre-launch landing page. A full inversion band

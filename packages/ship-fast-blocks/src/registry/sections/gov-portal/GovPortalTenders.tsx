@@ -4,7 +4,7 @@ import { z } from 'zod/v4'
 import { DownloadIcon, FileTextIcon, SearchIcon } from 'lucide-react'
 
 import { cn } from '#/lib/utils.ts'
-import { FilterChip } from '#/section-kit/index.ts'
+import { FilterChip } from '#/section-kit/FilterChip.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import {
   Select,

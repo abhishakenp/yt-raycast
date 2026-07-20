@@ -14,8 +14,7 @@ import {
   PortfolioMedia,
   PortfolioCaption,
 } from '#/section-kit/PortfolioGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * ConsultingCaseStudies — Swiss editorial engagement dossier grid for a
  * management-consulting firm page. On a muted wash band: a mono "04 / Selected

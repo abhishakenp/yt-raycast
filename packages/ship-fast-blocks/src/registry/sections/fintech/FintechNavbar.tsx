@@ -10,8 +10,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
  * FintechNavbar — Swiss-fintech sticky site header for a neobank / digital-
  * banking landing page. A thin configuration over the shared `SiteNav`

@@ -9,8 +9,7 @@ import {
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * CleaningServiceLogos — playful-Swiss "trusted by" ledger strip for a
  * home-cleaning / maid-service landing page. A hairline-banded section with a

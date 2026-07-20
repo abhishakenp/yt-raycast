@@ -10,8 +10,7 @@ import {
 } from '#/section-kit/LogoStrip.tsx'
 import { PressList } from '#/section-kit/PressList.tsx'
 import { MonoTag } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * FurnitureStorePress — a slim editorial "featured in" press / publication-logo
  * strip. A hairline-topped-and-bottomed band with a small mono "[ PRESS ]"

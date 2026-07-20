@@ -1,7 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
+import { cn } from '#/lib/utils.ts'
 
-import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
   NavbarActions,
@@ -10,16 +11,18 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
- * VideoStreamingNavbar — sticky site header for a cinematic video-streaming
- * brand (think "Lumen" or "Nova+"). Thin configuration over the shared `SiteNav`
- * composite: a bold wordmark beside an inline play-triangle mark in the primary
- * accent, centered nav links (Browse, Shows, Movies, Pricing), and a high-intent
- * "Start Watching" CTA, with a real mobile drawer on small screens. Use as the
- * header for streaming services, on-demand video apps, or OTT platforms.
- * Renders fully with no props via baked-in defaults.
+ * VideoStreamingNavbar — fixed, backdrop-blurred cinematic site header for a
+ * streaming brand (think "Lumen" or "Nova+"). A hairline-bottomed translucent
+ * bar over the shared `SiteNav` composite: a bold wordmark beside an inline
+ * primary play-triangle mark (kept as the BrandLogo image fallback), a row of
+ * mono, tracked slate-label nav links (Browse, Shows, Movies, Pricing), and a
+ * high-intent primary-pill "Start Watching" CTA with press feedback, plus a real
+ * mobile drawer on small screens. Tokens-only so the dark-cinematic treatment
+ * flips cleanly between light and dark generated themes. Use as the header for
+ * streaming services, on-demand video apps, or OTT platforms. Renders fully with
+ * no props via baked-in defaults.
  */
 function PlayMark({ className }: { className?: string }) {
   return (
@@ -37,7 +40,7 @@ function PlayMark({ className }: { className?: string }) {
 export const VideoStreamingNavbar = defineCapsule({
   name: 'VideoStreamingNavbar',
   description:
-    "Sticky site header for a cinematic video-streaming brand built on the shared SiteNav composite: a bold wordmark + inline primary play-triangle mark, centered desktop nav links (Browse, Shows, Movies, Pricing), a 'Start Watching' CTA, and a real mobile drawer. Use as the header for streaming services, on-demand video apps, or OTT platforms where signup is the primary action.",
+    "Fixed, backdrop-blurred cinematic site header for a streaming brand built on the shared SiteNav composite: a hairline-bottomed translucent bar pairing a bold wordmark + inline primary play-triangle mark with a row of mono tracked slate-label nav links (Browse, Shows, Movies, Pricing) and a primary-pill 'Start Watching' CTA with press feedback, plus a real mobile drawer. Tokens-only so it flips between light and dark themes. Use as the header for streaming services, on-demand video apps, or OTT platforms where signup is the primary action.",
   props: z.object({
     /** Streaming brand name shown beside the play mark. */
     brand: z.string().optional(),
@@ -56,23 +59,31 @@ export const VideoStreamingNavbar = defineCapsule({
       ? props.nav
       : ['Browse', 'Shows', 'Movies', 'Pricing']
     const brand = props.brand ?? 'Lumen'
-    const brandMark = <PlayMark className="size-7 text-primary" />
-    const brandClassName = 'font-bold tracking-tight'
     const ctaLabel = props.ctaLabel ?? 'Start Watching'
     const ctaTarget = props.ctaTarget ?? 'Pricing'
     const homeTarget = props.homeTarget ?? nav[0]
     return (
-      <SiteNav position="fixed" height="default" className={props.className}>
-        <NavbarBrand href={homeTarget} className="gap-3">
-          {brandMark}
-          <Logo brand={brand}>
-            <LogoImage />
-            <LogoLabel className={brandClassName} />
-          </Logo>
+      <SiteNav
+        position="fixed"
+        height="default"
+        className={cn('bg-background/80 backdrop-blur-md', props.className)}
+      >
+        <NavbarBrand href={homeTarget} className="gap-2">
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage
+              className="size-7"
+              fallback={<PlayMark className="size-7 text-primary" />}
+            />
+            <LogoLabel className="text-lg font-bold tracking-tight" />
+          </BrandLogo>
         </NavbarBrand>
-        <NavbarNav>
+        <NavbarNav className="gap-6 lg:gap-8">
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="rounded-none px-1 font-mono text-[11px] uppercase tracking-[0.2em]"
+            >
               {label}
             </NavbarNavLink>
           ))}
@@ -80,7 +91,7 @@ export const VideoStreamingNavbar = defineCapsule({
         <NavbarActions>
           <NavbarCta
             variant="primary-pill"
-            className="hidden px-5 py-2.5 sm:inline-flex"
+            className="hidden px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.2em] transition-transform duration-150 active:translate-y-px motion-reduce:transform-none sm:inline-flex"
             href={ctaTarget}
           >
             {ctaLabel}

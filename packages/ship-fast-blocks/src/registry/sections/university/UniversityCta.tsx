@@ -10,12 +10,13 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { Watermark } from '#/section-kit/Decor.tsx'
+import { cn } from '#/lib/utils.ts'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const UniversityCta = defineCapsule({
   name: 'UniversityCta',
   description:
-    "Admissions conversion band for the University page family with a prestigious, collegiate aesthetic. Composes the shared CtaBand kit composite on a primary-tone surface with an optional deadline eyebrow, an invitational title, supporting copy, and two routable actions — a primary 'Start your application' that targets the Admissions page and an outline 'Request info'. Use as the closing call to action before the footer on a university homepage.",
+    "Editorial-academic admissions conversion band for the University page family. Composes the shared CtaBand kit composite on a primary-tone surface with a giant ghost apply watermark and a left-aligned lockup: a mono tracked-uppercase deadline eyebrow, an invitational serif title, supporting copy, and two square routable actions — a primary 'Start your application' (inverted to read on the band, with press feedback) that targets the Admissions page and an outline 'Request info'. Use as the closing call to action before the footer on a university homepage.",
   props: z.object({
     eyebrow: z.string().optional(),
     title: z.string().optional(),
@@ -38,19 +39,37 @@ export const UniversityCta = defineCapsule({
     const secondaryTarget = props.secondaryTarget ?? 'Admissions'
 
     return (
-      <CtaBand tone="primary" className={props.className}>
-        <CtaBandInner>
-          <CtaBandEyebrow>{eyebrow}</CtaBandEyebrow>
-          <CtaBandTitle>{title}</CtaBandTitle>
-          <CtaBandSubtitle>{subtitle}</CtaBandSubtitle>
-          <CtaBandActions>
-            <CtaAction variant="primary" asChild>
-              <NavbarRouteLink href={primaryTarget}>
+      <CtaBand
+        tone="primary"
+        className={cn('relative overflow-hidden', props.className)}
+      >
+        <Watermark className="-right-4 bottom-[-2.5rem] font-serif text-[12rem] leading-none text-primary-foreground/10 sm:text-[18rem]">
+          Apply
+        </Watermark>
+        <CtaBandInner align="left" className="relative gap-6">
+          <CtaBandEyebrow className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary-foreground/70">
+            {eyebrow}
+          </CtaBandEyebrow>
+          <CtaBandTitle className="font-serif text-4xl font-semibold tracking-tight md:text-5xl">
+            {title}
+          </CtaBandTitle>
+          <CtaBandSubtitle className="text-primary-foreground/80">
+            {subtitle}
+          </CtaBandSubtitle>
+          <CtaBandActions align="left" className="mt-2">
+            <CtaAction variant="primary" invert asChild>
+              <NavbarRouteLink
+                href={primaryTarget}
+                className="rounded-none px-7 py-3.5 transition-transform duration-150 active:translate-y-px"
+              >
                 {primaryLabel}
               </NavbarRouteLink>
             </CtaAction>
             <CtaAction variant="outline" asChild>
-              <NavbarRouteLink href={secondaryTarget}>
+              <NavbarRouteLink
+                href={secondaryTarget}
+                className="rounded-none border-primary-foreground/40 bg-transparent px-7 py-3.5 text-primary-foreground transition-transform duration-150 hover:bg-primary-foreground/10 active:translate-y-px"
+              >
                 {secondaryLabel}
               </NavbarRouteLink>
             </CtaAction>

@@ -3,6 +3,9 @@ import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
 import { z } from 'zod/v4'
 
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
+import { StarRating } from '#/section-kit/StarRating.tsx'
+import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -13,19 +16,21 @@ import {
 } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
- * OnlineCourseTestimonials — a 3-up graduate-review wall for an online-course
- * page. Thin configuration over the shared TestimonialGrid composite: a
- * centered heading above a responsive card grid where each card renders a star
- * row from the rating, the quoted review, and a graduate name paired with their
- * outcome role. The public `reviews` prop ({quote, name, role, rating}) maps to
- * the composite's items, with `role` shown as the card's meta line. Use for
- * social proof on e-learning, bootcamp, or academy landing pages. Renders fully
- * with no props.
+ * OnlineCourseTestimonials — "Curriculum LMS" graduate-transcript wall for an
+ * online-course page. An asymmetric header (left-aligned heading beside a mono
+ * "[ NN certified ]" transcript count) sits above a staggered 1/2/3-column grid
+ * of sharp hairline cards styled as completion transcripts: each card opens
+ * with a hairline-divided mono header row (`log 01` index + a neutral star row
+ * matching the rating), then the quoted review, and the graduate name over a
+ * mono uppercase outcome-role line behind a hairline rule. Alternate cards
+ * offset downward on desktop; a giant ghost "A+" watermark bleeds behind. Use
+ * for social proof on e-learning, bootcamp, or academy landing pages. Renders
+ * fully with no props.
  */
 export const OnlineCourseTestimonials = defineCapsule({
   name: 'OnlineCourseTestimonials',
   description:
-    'A 3-up graduate-review wall for an online-course page built on the shared TestimonialGrid composite: a centered heading above a responsive card grid where each card renders a filled star row matching the rating, a quoted review, and a graduate name paired with their outcome role. Use for social proof on e-learning, bootcamp, or academy landing pages.',
+    'Curriculum-LMS graduate-transcript wall for an online-course page: an asymmetric header (left-aligned heading beside a mono "[ NN certified ]" transcript count) above a staggered 1/2/3-column grid of sharp hairline completion-transcript cards. Each card opens with a hairline-divided mono header row (`log 01` index + a neutral star row matching the rating), then the quoted review, and the graduate name over a mono uppercase outcome-role line behind a hairline rule; alternate cards offset downward on desktop over a giant ghost "A+" watermark. Use for social proof on e-learning, bootcamp, or academy landing pages.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -80,13 +85,27 @@ export const OnlineCourseTestimonials = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-background pt-28 pb-20 lg:pt-32 lg:pb-28',
+          'relative overflow-hidden bg-background pt-24 pb-16 lg:pt-28 lg:pb-24',
           props.className,
         )}
       >
-        <Container>
-          <TestimonialGrid heading={heading}>
-            {items.map((t) => {
+        <Watermark className="right-0 top-4 font-mono text-[8rem] sm:text-[14rem]">
+          A+
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-10 grid items-end gap-4 lg:mb-12 lg:grid-cols-12">
+            <SectionHeading
+              align="left"
+              title={heading}
+              className="max-w-2xl gap-0 lg:col-span-8"
+              titleClassName="text-3xl font-bold tracking-tight sm:text-4xl"
+            />
+            <MonoTag tone="faint" className="lg:col-span-4 lg:justify-self-end">
+              [ {String(items.length).padStart(2, '0')} certified ]
+            </MonoTag>
+          </div>
+          <TestimonialGrid columns={3}>
+            {items.map((t, i) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -97,12 +116,35 @@ export const OnlineCourseTestimonials = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
+                <TestimonialCard
+                  key={__iv__.name}
+                  className={cn(
+                    'gap-3 rounded-none border-border bg-card p-6 transition-[border-color,transform] duration-150 hover:-translate-y-0.5 hover:border-primary/50 motion-reduce:transform-none',
+                    i % 2 === 1 && 'md:max-lg:translate-y-6',
+                    i % 3 === 1 && 'lg:translate-y-8',
+                  )}
+                >
+                  <div className="flex items-center justify-between border-b border-border pb-3">
+                    <MonoTag tone="muted">
+                      log {String(i + 1).padStart(2, '0')}
+                    </MonoTag>
+                    {typeof __iv__.rating === 'number' && (
+                      <StarRating
+                        rating={__iv__.rating}
+                        size="sm"
+                        color="foreground"
+                      />
+                    )}
+                  </div>
+                  <TestimonialQuote className="text-sm leading-relaxed">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="mt-auto flex-col items-start gap-1 border-t border-border pt-3">
+                    <TestimonialName className="text-sm font-semibold tracking-tight">
+                      {__iv__.name}
+                    </TestimonialName>
                     {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
+                      <TestimonialMeta className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
                         {__iv__.role || __iv__.company || __iv__.meta}
                       </TestimonialMeta>
                     )}

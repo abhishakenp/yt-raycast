@@ -22,8 +22,7 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * EcommerceHero — editorial-commerce opening spread for a general online
  * store. An asymmetric 7:5 split over a giant ghost "SHOP" watermark: on the

@@ -15,17 +15,18 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * MusicFestivalFaq — a centered FAQ accordion for a music / arts festival
- * landing page. A card-surface band with a centered eyebrow + heading above a
- * narrow stack of native disclosure rows (question + chevron that rotates open
- * to reveal the answer). Use to answer attendee questions (tickets, camping,
- * food, refunds, getting there) on music festivals, arts festivals, concert
- * series, or any multi-day ticketed event.
+ * MusicFestivalFaq — a kinetic-poster FAQ ledger for a music / arts festival
+ * landing page. A card-surface band with a mono eyebrow + big uppercase heading
+ * above a hairline-divided stack of native disclosure rows, each led by a mono
+ * question index and a chevron that rotates open to reveal the answer. Use to
+ * answer attendee questions (tickets, camping, food, refunds, getting there)
+ * on music festivals, arts festivals, concert series, or any multi-day
+ * ticketed event.
  */
 export const MusicFestivalFaq = defineCapsule({
   name: 'MusicFestivalFaq',
   description:
-    'Centered FAQ accordion for a music / arts festival landing page: a card-surface band with a centered eyebrow + heading above a narrow stack of native disclosure rows (question + chevron that rotates when opened to reveal the answer paragraph). Use to answer attendee questions about tickets, camping, food and drinks, payment plans, refunds and getting there on music festivals, arts festivals, concert series, camping/desert events, or any multi-day ticketed event.',
+    'Kinetic-poster FAQ ledger for a music / arts festival landing page: a card-surface band with a mono eyebrow + big uppercase heading above a hairline-divided stack of native disclosure rows, each led by a mono question index and a chevron that rotates when opened to reveal the answer paragraph. Use to answer attendee questions about tickets, camping, food and drinks, payment plans, refunds and getting there on music festivals, arts festivals, concert series, camping/desert events, or any multi-day ticketed event.',
   props: z.object({
     /** Eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -86,18 +87,32 @@ export const MusicFestivalFaq = defineCapsule({
           <SectionHeading
             eyebrow={eyebrow}
             title={heading}
-            className="mb-16 gap-0"
-            eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-primary"
-            titleClassName="mb-4 text-4xl font-bold tracking-tight lg:text-5xl"
+            align="left"
+            className="mb-12 gap-3"
+            eyebrowClassName="font-mono text-[11px] uppercase tracking-[0.2em] text-primary"
+            titleClassName="text-4xl font-extrabold uppercase tracking-tight lg:text-6xl"
           />
-          <FaqAccordion>
-            {items.map((item) => (
-              <FaqItem key={item.question} variant="minimal">
-                <FaqQuestion className="p-6">
-                  <span className="font-semibold">{item.question}</span>
+          <FaqAccordion variant="divided">
+            {items.map((item, i) => (
+              <FaqItem key={item.question} variant="divided">
+                <FaqQuestion className="gap-4 py-1">
+                  <span className="flex items-start gap-4">
+                    <span
+                      aria-hidden="true"
+                      className="mt-0.5 font-mono text-[11px] tabular-nums tracking-[0.16em] text-primary"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span className="text-lg font-bold tracking-tight">
+                      {item.question}
+                    </span>
+                  </span>
                   <FaqQuestionIcon />
                 </FaqQuestion>
-                <FaqAnswer asChild className="px-6 pb-6 text-foreground/70">
+                <FaqAnswer
+                  asChild
+                  className="pl-9 pr-6 pt-3 text-card-foreground/70"
+                >
                   <div>
                     <p>{item.answer}</p>
                   </div>

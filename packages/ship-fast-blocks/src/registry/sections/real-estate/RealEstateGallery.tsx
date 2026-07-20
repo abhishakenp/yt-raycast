@@ -7,24 +7,24 @@ import {
   GalleryGridItems,
   GalleryTile,
   GalleryTileImage,
-  GalleryTileCaption,
 } from '#/section-kit/GalleryGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * RealEstateGallery — featured-listings grid for a premium brokerage. A
- * centered serif header sits above a responsive 1/2/3-column grid of property
- * cards. Each card has an alt-driven photo with an optional corner badge (e.g.
- * "New" / "Open House"), a bold price, a beds / baths / sqft spec row, the
- * address, and a "View" link that routes through section-kit route links. Use to showcase
- * featured or recently listed homes on a brokerage or agent site. Renders fully
- * with no props via baked-in defaults (six listings).
+ * RealEstateGallery — editorial featured-listings grid for a luxury brokerage.
+ * An asymmetric header (mono index rail + serif heading left, supporting line
+ * right) sits above a staggered 1/2/3-column grid of property plates. Each
+ * sharp-cornered plate pairs an alt-driven photo (with an optional mono corner
+ * badge) with a spec block: a giant tabular price, a collapsed-border BEDS /
+ * BATHS / SQFT ledger with mono labels and tabular values, the address, and a
+ * "View" link that routes through section-kit route links to the listing. Use to
+ * showcase featured or recently listed homes on a brokerage or agent site.
+ * Renders fully with no props via baked-in defaults (six listings).
  */
 export const RealEstateGallery = defineCapsule({
   name: 'RealEstateGallery',
   description:
-    "Featured-listings grid for a premium brokerage: a centered serif header above a responsive 1/2/3-column grid of property cards. Each card has an alt-driven photo with an optional corner badge, a bold price, a beds / baths / sqft spec row, the address, and a 'View' link that routes through section-kit route links. Use to showcase featured or recently listed homes on a brokerage or agent site.",
+    "Editorial featured-listings grid for a luxury brokerage: an asymmetric header (mono index rail + serif heading left, supporting line right) above a staggered 1/2/3-column grid of sharp-cornered property plates. Each plate pairs an alt-driven photo (with an optional mono corner badge) with a spec block: a giant tabular price, a collapsed-border BEDS / BATHS / SQFT ledger with mono labels and tabular values, the address, and a 'View' link that routes through section-kit route links to the listing. Use to showcase featured or recently listed homes on a brokerage or agent site.",
   props: z.object({
     /** Section heading (serif, large). */
     heading: z.string().optional(),
@@ -52,6 +52,7 @@ export const RealEstateGallery = defineCapsule({
     const description =
       props.description ??
       'A handpicked selection of homes just hitting the market across our most sought-after neighborhoods.'
+    const viewLabel = props.viewLabel ?? 'View'
     const listings = props.listings?.length
       ? props.listings
       : [
@@ -105,41 +106,93 @@ export const RealEstateGallery = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-background pt-28 pb-20 lg:pt-32 lg:pb-28',
+          'bg-background pt-24 pb-20 lg:pt-32 lg:pb-28',
           props.className,
         )}
       >
         <Container size="xl" className="px-6">
-          <SectionHeading
-            title={heading}
-            subtitle={description}
-            className="mx-auto max-w-2xl gap-0"
-            titleClassName="font-serif text-3xl font-medium tracking-tight text-foreground sm:text-4xl lg:text-5xl"
-            subtitleClassName="mt-4 text-base text-muted-foreground sm:text-lg"
-          />
+          {/* Asymmetric editorial header. */}
+          <div className="mb-12 grid items-end gap-6 border-b border-border pb-8 lg:grid-cols-12 lg:gap-12 lg:mb-16">
+            <div className="lg:col-span-7">
+              <div className="flex items-center gap-3">
+                <span
+                  aria-hidden="true"
+                  className="size-1.5 shrink-0 bg-primary"
+                />
+                <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                  Listings
+                </span>
+              </div>
+              <h2 className="mt-5 max-w-xl font-serif text-3xl font-medium tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+                {heading}
+              </h2>
+            </div>
+            <p className="text-base leading-relaxed text-muted-foreground lg:col-span-5 lg:pb-1">
+              {description}
+            </p>
+          </div>
 
           <GalleryGrid>
-            <GalleryGridItems columns={3}>
-              {listings
-                .map((l) => ({ alt: l.address, caption: l.price }))
-                .map((img) => {
-                  const __iv__ = img as {
-                    alt: string
-                    caption?: string
-                    title?: string
-                    location?: string
-                  }
-                  return (
-                    <GalleryTile key={__iv__.alt}>
-                      <GalleryTileImage alt={__iv__.alt} />
-                      {__iv__.caption && (
-                        <GalleryTileCaption>
-                          {__iv__.caption}
-                        </GalleryTileCaption>
-                      )}
+            <GalleryGridItems columns={3} className="gap-x-6 gap-y-12">
+              {listings.map((listing, i) => {
+                const specs = [
+                  { label: 'Beds', value: listing.beds },
+                  { label: 'Baths', value: listing.baths },
+                  { label: 'Sqft', value: listing.sqft },
+                ]
+                return (
+                  <article
+                    key={`${listing.address}-${i}`}
+                    className={cn(
+                      'group flex flex-col',
+                      i % 3 === 1 && 'lg:translate-y-12',
+                    )}
+                  >
+                    <GalleryTile className="aspect-[4/3] rounded-none border-border bg-muted">
+                      <GalleryTileImage alt={listing.address} />
+                      {listing.badge ? (
+                        <span className="absolute left-0 top-0 bg-foreground px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-background">
+                          {listing.badge}
+                        </span>
+                      ) : null}
                     </GalleryTile>
-                  )
-                })}
+
+                    <div className="mt-5 flex items-baseline justify-between gap-4">
+                      <p className="font-semibold tabular-nums tracking-tight text-foreground text-2xl sm:text-3xl">
+                        {listing.price}
+                      </p>
+                      <NavbarRouteLink
+                        href={listing.address}
+                        className="inline-flex shrink-0 items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        {viewLabel}
+                        <span aria-hidden="true">&#8594;</span>
+                      </NavbarRouteLink>
+                    </div>
+
+                    {/* Collapsed-border spec ledger. */}
+                    <dl className="mt-4 grid grid-cols-3 border-l border-t border-border">
+                      {specs.map((spec) => (
+                        <div
+                          key={spec.label}
+                          className="border-b border-r border-border px-3 py-2.5"
+                        >
+                          <dt className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground/70">
+                            {spec.label}
+                          </dt>
+                          <dd className="mt-0.5 tabular-nums text-sm font-medium text-foreground">
+                            {spec.value}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+
+                    <p className="mt-4 text-sm text-muted-foreground">
+                      {listing.address}
+                    </p>
+                  </article>
+                )
+              })}
             </GalleryGridItems>
           </GalleryGrid>
         </Container>

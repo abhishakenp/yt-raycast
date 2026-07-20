@@ -21,10 +21,9 @@ import {
   AccountDropdownSeparator,
   AccountDropdownSignOut,
   AccountDropdownUnauthenticated,
-  Card,
-  NavbarRouteLink,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/AccountDropdown.tsx'
+import { Card } from '#/section-kit/Card.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export type InquiryLakebed = LakebedClientRuntime<typeof inquiryLakebed>
 
 function fieldsFromForm(form: HTMLFormElement) {
@@ -107,7 +106,7 @@ export function InquiryActionBadge({
   return (
     <span
       className={cn(
-        'hidden items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary lg:inline-flex',
+        'hidden items-center gap-1.5 rounded-full border border-border bg-muted px-2.5 py-1 font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground lg:inline-flex',
         className,
       )}
     >
@@ -209,15 +208,15 @@ export function InquiryContactSheetButton({
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="w-[min(100%,24rem)] border-l border-border bg-background p-0 text-foreground sm:max-w-[24rem]"
+        className="w-[min(100%,24rem)] rounded-none border-l border-border bg-background p-0 text-foreground shadow-none sm:max-w-[24rem]"
       >
         <SheetHeader className="border-b border-border px-5 py-4 text-left">
           <SheetTitle className="text-base font-semibold">{title}</SheetTitle>
           <SheetDescription>{detail}</SheetDescription>
         </SheetHeader>
         <div className="space-y-4 px-5 py-5">
-          <Card className="rounded-lg p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+          <Card className="rounded-none border-border p-4">
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
               Contact route
             </p>
             <p className="mt-1 text-sm font-medium text-foreground">
@@ -291,7 +290,7 @@ export function InquiryMobileMenu({
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="w-[min(100%,22rem)] border-l border-border bg-background p-0 text-foreground sm:max-w-[22rem]"
+        className="w-[min(100%,22rem)] rounded-none border-l border-border bg-background p-0 text-foreground shadow-none sm:max-w-[22rem]"
       >
         <SheetHeader className="border-b border-border px-5 py-4 text-left">
           <SheetTitle className="text-base font-semibold">{brand}</SheetTitle>
@@ -299,9 +298,9 @@ export function InquiryMobileMenu({
             Navigate to a contact page section.
           </SheetDescription>
         </SheetHeader>
-        <div className="flex flex-col gap-1 px-3 py-4">
+        <div className="flex flex-col px-2 py-2">
           <NavbarRouteLink
-            className="rounded-lg px-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            className="rounded-none border-b border-border border-l-2 border-l-transparent px-3 py-3.5 text-left text-sm font-medium text-foreground transition-colors duration-150 hover:border-l-border hover:bg-muted active:translate-y-px"
             href={homeTarget ?? nav[0]}
             onClick={() => setOpen(false)}
           >
@@ -310,7 +309,7 @@ export function InquiryMobileMenu({
           {nav.map((item) => (
             <NavbarRouteLink
               key={item}
-              className="rounded-lg px-3 py-3 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="rounded-none border-b border-border border-l-2 border-l-transparent px-3 py-3.5 text-left text-sm font-medium text-muted-foreground transition-colors duration-150 hover:border-l-border hover:bg-muted hover:text-foreground active:translate-y-px"
               href={item}
               onClick={() => setOpen(false)}
             >
@@ -322,7 +321,7 @@ export function InquiryMobileMenu({
             label={ctaLabel}
             target={ctaTarget}
             source="mobile menu"
-            className="mt-3 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+            className="mx-1 mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-none bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors duration-150 hover:bg-primary/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
           >
             {ctaLabel}
           </InquiryActionButton>

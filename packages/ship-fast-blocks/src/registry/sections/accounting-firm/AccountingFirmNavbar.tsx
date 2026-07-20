@@ -11,8 +11,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
  * AccountingFirmNavbar — Swiss-ledger sticky top navigation bar for a CPA /
  * accounting-firm site. A backdrop-blurred, hairline-ruled header pinned to the

@@ -39,7 +39,7 @@ function CodeMark({ className }: { className?: string }) {
 export const PortfolioDevFooter = defineCapsule({
   name: 'PortfolioDevFooter',
   description:
-    "Rich, multi-column closing footer for a developer portfolio built on the shared SiteFooter composite: a brand block pairs a mono wordmark with an inline </> code mark, a tagline, and a social row (GitHub, LinkedIn, Twitter, Email), beside a responsive grid of Work and Connect link columns. A bordered-top bottom bar carries an auto-updating copyright line and a closing note. Use as the site-wide footer for developer, engineer, freelancer, or indie-hacker portfolios; renders fully with no props via baked-in 'alex.dev' defaults.",
+    "Rich editorial-terminal closing footer for a developer portfolio built on the shared SiteFooter composite: a brand block pairs a mono wordmark (its logo mark an inline </> code glyph) with a tagline and a social row (GitHub, LinkedIn, Twitter, Email), beside a responsive grid of Work and Connect columns whose mono uppercase titles head stacked block-width links. A giant ghost </> watermark sits behind, and a bordered-top bottom bar carries an auto-updating copyright line and a closing note. Use as the site-wide footer for developer, engineer, freelancer, or indie-hacker portfolios; renders fully with no props via baked-in 'alex.dev' defaults.",
   props: z.object({
     /** Developer / brand handle shown as the mono wordmark. */
     brand: z.string().optional(),
@@ -81,12 +81,18 @@ export const PortfolioDevFooter = defineCapsule({
 
     return (
       <SiteFooter className={props.className}>
-        <FooterContent>
-          <FooterGrid>
+        <FooterContent className="relative overflow-hidden">
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute -bottom-14 -right-4 select-none font-mono text-[8rem] font-extrabold leading-none tracking-tighter text-foreground/[0.04] sm:text-[12rem]"
+          >
+            {'</>'}
+          </span>
+          <FooterGrid className="relative">
             <FooterBrand
               brand={props.brand ?? 'alex.dev'}
               brandMark={<CodeMark className="size-8 text-primary" />}
-              brandClassName={'font-mono text-lg font-semibold'}
+              brandClassName={'font-mono text-lg font-semibold tracking-tight'}
             >
               <FooterTagline>
                 {props.tagline ??
@@ -94,28 +100,42 @@ export const PortfolioDevFooter = defineCapsule({
               </FooterTagline>
               <FooterSocial>
                 {social.map((s) => (
-                  <FooterSocialLink key={s.label}>{s.label}</FooterSocialLink>
+                  <FooterSocialLink
+                    key={s.label}
+                    className="font-mono text-[11px] uppercase tracking-[0.12em]"
+                  >
+                    {s.label}
+                  </FooterSocialLink>
                 ))}
               </FooterSocial>
             </FooterBrand>
             {columns.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle>{col.title}</FooterColumnTitle>
+                <FooterColumnTitle className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                  {col.title}
+                </FooterColumnTitle>
                 <FooterColumnList>
                   {col.links.map((link) => (
-                    <FooterLink key={link}>{link}</FooterLink>
+                    <FooterLink key={link} className="block w-fit">
+                      {link}
+                    </FooterLink>
                   ))}
                 </FooterColumnList>
               </FooterColumn>
             ))}
           </FooterGrid>
-          <FooterBottom>
-            <FooterCopyright>
+          <FooterBottom className="relative">
+            <FooterCopyright className="font-mono text-[11px] uppercase tracking-[0.12em]">
               {props.note ?? 'Built with care.'}
             </FooterCopyright>
             <FooterLegal>
               {['Privacy', 'Terms'].map((l) => (
-                <FooterLink key={l}>{l}</FooterLink>
+                <FooterLink
+                  key={l}
+                  className="block w-fit font-mono text-[11px] uppercase tracking-[0.12em]"
+                >
+                  {l}
+                </FooterLink>
               ))}
             </FooterLegal>
           </FooterBottom>

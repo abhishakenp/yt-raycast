@@ -9,8 +9,7 @@ import {
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
 import { MonoTag } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * BakeryLogos — "Featured in" press / media strip for an artisan-bakery site,
  * as a warm primary-washed band between chunky 2px rules. A single editorial

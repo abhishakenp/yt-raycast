@@ -5,23 +5,25 @@ import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import { TopicGrid, TopicCard } from '#/section-kit/TopicGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * NewsroomTopics — an editorial "Browse by section" block for a digital
- * newsroom / magazine. A serif heading + supporting subheading above a
- * responsive 1/2/4-up grid of topic cards. Each card has an image band, the
- * topic name set in serif, a one-line blurb, the current top headline, and a
- * small story-count badge; cards lift on hover and route through section-kit route links.
- * Use to let readers explore by section (Politics, World, Business, Technology,
- * Science, Culture, Sport, Health…) on a news or magazine homepage. Renders
- * fully with no props.
+ * NewsroomTopics — the inverted newsprint "section index" for a digital
+ * newsroom / magazine. A full-width dark band (bg-foreground / text-background)
+ * with a giant ghost "INDEX" watermark: a serif heading + subheading over a
+ * hairline rule, above a responsive 1/2/4-up run of square (rounded-none) topic
+ * plates framed by tinted hairlines. Each plate has a grayscale image band with
+ * a mono square story-count chip, an index numeral, the topic name in serif, a
+ * one-line blurb and the current top headline over a divider; plates lift on
+ * hover and route through section-kit route links. Use to let readers explore by
+ * section (Politics, World, Business, Technology, Science, Culture, Sport,
+ * Health) on a news or magazine homepage. Renders fully with no props.
  */
 export const NewsroomTopics = defineCapsule({
   name: 'NewsroomTopics',
   description:
-    "Editorial 'Browse by section/topic' block for a digital newsroom or magazine: a serif heading + supporting subheading above a responsive 1/2/4-up grid of topic cards, each with an image band, the topic name in serif, a one-line blurb, the current top headline, and a small story-count badge; cards lift on hover and route through section-kit route links. Use to let readers explore by section (Politics, World, Business, Technology, Science, Culture, Sport, Health) on a news or magazine homepage. Renders fully with no props.",
+    "Inverted newsprint 'section index' for a digital newsroom or magazine: a full-width dark band (bg-foreground / text-background) with a giant ghost INDEX watermark — a serif heading + subheading over a hairline rule, above a responsive 1/2/4-up run of square (rounded-none) topic plates framed by tinted hairlines. Each plate has a grayscale image band with a mono square story-count chip, an index numeral, the topic name in serif, a one-line blurb and the current top headline over a divider; plates lift on hover and route through section-kit route links. Use to let readers explore by section (Politics, World, Business, Technology, Science, Culture, Sport, Health) on a news or magazine homepage. Renders fully with no props.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -112,47 +114,67 @@ export const NewsroomTopics = defineCapsule({
 
     return (
       <section
-        className={cn('bg-background py-20 lg:py-28', props.className)}
+        className={cn(
+          'relative overflow-hidden bg-foreground py-20 text-background lg:py-28',
+          props.className,
+        )}
         aria-labelledby="newsroom-topics-heading"
       >
-        <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={subheading}
-            className="mx-auto mb-14 max-w-3xl gap-0"
-            titleId="newsroom-topics-heading"
-            titleClassName="mb-4 font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
-          <TopicGrid cols="1-2-4" className="gap-8">
-            {topics.map((topic) => (
+        <Watermark className="-right-8 top-2 text-[13rem] text-background/[0.05] sm:text-[18rem]">
+          INDEX
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-14 max-w-3xl border-b border-background/25 pb-6">
+            <SectionHeading
+              align="left"
+              title={heading}
+              subtitle={subheading}
+              className="gap-0"
+              titleId="newsroom-topics-heading"
+              titleClassName="mb-4 font-serif text-3xl font-bold tracking-tight text-background sm:text-4xl"
+              subtitleClassName="text-lg text-background/70"
+            />
+          </div>
+          <TopicGrid
+            cols="1-2-4"
+            className="gap-0 border-l border-t border-background/20"
+          >
+            {topics.map((topic, i) => (
               <TopicCard
                 asChild
                 key={topic.name}
-                className="text-left transition-all hover:-translate-y-1 hover:shadow-lg"
+                className="rounded-none border-b border-r border-l-0 border-t-0 border-background/20 bg-transparent text-left transition-transform hover:-translate-y-0.5"
               >
                 <NavbarRouteLink href={topic.name}>
-                  <div className="relative overflow-hidden bg-muted">
+                  <div className="relative overflow-hidden">
                     <Image
                       alt={topic.imageAlt ?? topic.name}
                       w={600}
                       h={360}
                       loading="lazy"
-                      className="h-40 w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      className="h-40 w-full object-cover grayscale transition-transform duration-300 group-hover:scale-105"
                     />
-                    <span className="absolute right-3 top-3 rounded-full bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground">
+                    <span className="absolute right-0 top-0 rounded-none bg-background px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] tabular-nums text-foreground">
                       {topic.count} stories
                     </span>
                   </div>
                   <div className="flex flex-1 flex-col p-5">
-                    <h3 className="mb-2 font-serif text-xl font-semibold text-card-foreground transition-colors group-hover:text-accent">
-                      {topic.name}
-                    </h3>
-                    <p className="text-sm leading-relaxed text-muted-foreground">
+                    <div className="mb-2 flex items-baseline gap-2">
+                      <span
+                        aria-hidden="true"
+                        className="font-mono text-[11px] tabular-nums text-background/50"
+                      >
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <h3 className="font-serif text-xl font-semibold text-background transition-colors group-hover:text-background/70">
+                        {topic.name}
+                      </h3>
+                    </div>
+                    <p className="text-sm leading-relaxed text-background/60">
                       {topic.blurb}
                     </p>
                     {topic.topHeadline ? (
-                      <p className="mt-4 border-t border-border pt-3 text-sm font-medium leading-snug text-foreground">
+                      <p className="mt-4 border-t border-background/20 pt-3 text-sm font-medium leading-snug text-background">
                         {topic.topHeadline}
                       </p>
                     ) : null}

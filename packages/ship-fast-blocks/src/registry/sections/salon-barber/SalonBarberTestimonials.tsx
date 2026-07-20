@@ -1,21 +1,13 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { z } from 'zod/v4'
-
-import {
-  TestimonialGrid,
-  TestimonialCard,
-  TestimonialQuote,
-  TestimonialAuthor,
-  TestimonialName,
-  TestimonialMeta,
-} from '#/section-kit/TestimonialGrid.tsx'
 
 export const SalonBarberTestimonials = defineCapsule({
   name: 'SalonBarberTestimonials',
   description:
-    "Barbershop / salon client reviews section built on the shared TestimonialGrid composite. Renders a grid of star-rated quotes from regulars, each tagged with the review source (Google, Yelp), to build trust around grooming quality and consistency. Use it as the social-proof band on any barbershop, salon, or men's grooming homepage, ideally just above the booking call-to-action.",
+    "Barbershop / salon client reviews section rendered as a vintage-lite editorial quote wall. An asymmetric header (mono index eyebrow + serif heading left, mono count right) sits over a giant serif ghost quotation-mark watermark, above a staggered grid of hairline-bordered quote cards — each with a small tabular star rating, a serif quotation, and a mono attribution row pairing the reviewer name with the review source (Google, Yelp). Use it as the social-proof band on any barbershop, salon, or men's grooming homepage, ideally just above the booking call-to-action.",
   props: z.object({
     heading: z.string().optional(),
     reviews: z
@@ -58,46 +50,76 @@ export const SalonBarberTestimonials = defineCapsule({
             source: 'Google',
           },
         ]
-    const items = reviews.map((r) => ({
-      quote: r.quote,
-      name: r.name,
-      rating: r.rating,
-      company: r.source,
-    }))
+
     return (
       <section
         className={cn(
-          'bg-background pt-28 pb-20 lg:pt-32 lg:pb-28',
+          'relative overflow-hidden bg-background pt-24 pb-20 lg:pt-28 lg:pb-28',
           props.className,
         )}
       >
-        <Container>
-          <TestimonialGrid heading={heading} subheading={subheading}>
-            {items.map((t) => {
-              const __iv__ = t as {
-                quote: string
-                name: string
-                role?: string
-                company?: string
-                meta?: string
-                rating?: number
-                avatarAlt?: string
-              }
+        <Watermark className="-top-12 left-[-2%] font-serif text-[12rem] leading-none tracking-tighter text-foreground/[0.05] sm:text-[18rem] lg:text-[24rem]">
+          &rdquo;
+        </Watermark>
+
+        <Container className="relative">
+          <div className="flex flex-col gap-5 border-b border-foreground/15 pb-8 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-xl">
+              <MonoTag tone="primary">{subheading}</MonoTag>
+              <h2 className="mt-3 font-serif text-4xl font-medium tracking-tight text-foreground sm:text-5xl">
+                {heading}
+              </h2>
+            </div>
+            <MonoTag aria-hidden="true" tone="faint" className="shrink-0">
+              {String(reviews.length).padStart(2, '0')} / on record
+            </MonoTag>
+          </div>
+
+          <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
+            {reviews.map((review, i) => {
+              const rating = Math.max(0, Math.min(5, review.rating ?? 5))
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
-                    {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
-                        {__iv__.role || __iv__.company || __iv__.meta}
-                      </TestimonialMeta>
-                    )}
-                  </TestimonialAuthor>
-                </TestimonialCard>
+                <figure
+                  key={review.name}
+                  className={cn(
+                    'flex flex-col border border-foreground/20 bg-card p-7 sm:p-8',
+                    i % 3 === 1 && 'md:translate-y-8',
+                    i % 3 === 2 && 'md:translate-y-3',
+                  )}
+                >
+                  <div
+                    className="flex gap-0.5 text-sm tabular-nums text-foreground"
+                    aria-label={`${rating} out of 5 stars`}
+                  >
+                    {Array.from({ length: 5 }).map((_, s) => (
+                      <span
+                        key={s}
+                        aria-hidden="true"
+                        className={
+                          s < rating ? 'text-foreground' : 'text-foreground/20'
+                        }
+                      >
+                        ★
+                      </span>
+                    ))}
+                  </div>
+                  <blockquote className="mt-5 font-serif text-lg italic leading-snug text-foreground">
+                    &ldquo;{review.quote}&rdquo;
+                  </blockquote>
+                  <figcaption className="mt-6 flex items-center justify-between gap-3 border-t border-foreground/15 pt-4">
+                    <span className="font-serif text-base font-medium text-foreground">
+                      {review.name}
+                    </span>
+                    {review.source ? (
+                      <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                        {review.source}
+                      </span>
+                    ) : null}
+                  </figcaption>
+                </figure>
               )
             })}
-          </TestimonialGrid>
+          </div>
         </Container>
       </section>
     )

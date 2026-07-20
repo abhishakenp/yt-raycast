@@ -8,8 +8,7 @@ import {
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
 import { Watermark, MonoTag } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * FaqContactCta — the page's one inverted "Still need help?" band for a help-center
  * / support page. A full ink inversion (bg-foreground / text-background) cut in on a

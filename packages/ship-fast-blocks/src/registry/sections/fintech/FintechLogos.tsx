@@ -9,8 +9,7 @@ import {
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * FintechLogos — Swiss-fintech trusted-by band for a neobank landing page. A
  * hairline-bordered muted band whose content sits in a plain Container: a mono

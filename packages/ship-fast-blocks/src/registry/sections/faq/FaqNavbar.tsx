@@ -11,9 +11,8 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-  SignInButton,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * FaqNavbar — sticky editorial top navigation bar for a help-center / FAQ /
  * support page. Typography-first "Editorial Q&A" header: a sharp square (rounded-none)

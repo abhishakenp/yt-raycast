@@ -25,8 +25,7 @@ import {
   MarketChart,
   MarketIndicator,
 } from '#/section-kit/MarketTable.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const InvestingMarkets = defineCapsule({
   name: 'InvestingMarkets',
   description:

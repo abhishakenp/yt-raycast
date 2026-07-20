@@ -3,26 +3,14 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import {
-  HeroSection,
-  HeroContent,
-  HeroBadge,
-  HeroHeading,
-  HeroSubheading,
-  HeroStatBadge,
-  HeroStatBadgeIcon,
-  HeroStatBadgeContent,
-  HeroStatBadgeTitle,
-  HeroStatBadgeSubtitle,
-} from '#/section-kit/HeroSection.tsx'
+import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { Watermark, MonoTag } from '#/section-kit/Decor.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const WebinarHero = defineCapsule({
   name: 'WebinarHero',
   description:
-    "Conversion-focused webinar hero: an uppercase live-event eyebrow pill, a large headline naming the webinar topic, a prominent date/time badge, a value-proposition subheading, a primary 'Save my seat' CTA with a 'Free · Live + Recording' note, a presenter preview (avatar + name + role), and a static countdown row of token cards (Days/Hours/Mins/Secs). Use as the opening viewport of a webinar, summit, or virtual-event registration page.",
+    "Kinetic-event webinar hero on an asymmetric 7/5 canvas: a mono live-event eyebrow with a pulse-free primary dot above a countdown-scale, fluid extrabold headline naming the topic; a slanted inverted date/time band as the signature element; a value-proposition subheading; a square-edged 'Save my seat' CTA with a hard offset token shadow, press feedback and a mono 'Free · Live + Recording' note; a hairline-framed presenter chip (square portrait + name + mono role); and a bordered countdown panel with a collapsed-border grid of giant tabular numerals (Days/Hours/Mins/Secs). A giant ghost watermark bleeds behind. Use as the opening viewport of a webinar, summit, or virtual-event registration page.",
   props: z.object({
     eyebrow: z.string().optional(),
     title: z.string().optional(),
@@ -67,79 +55,94 @@ export const WebinarHero = defineCapsule({
       <HeroSection
         variant="default"
         className={cn(
-          'bg-background py-20 text-foreground lg:py-28',
+          'relative overflow-hidden bg-background py-20 text-foreground lg:py-28',
           props.className,
         )}
       >
-        <Container asChild size="sm" className="px-6 text-center lg:px-6">
-          <HeroContent>
-            <HeroBadge className="bg-muted text-xs uppercase tracking-[0.2em] shadow-none">
-              <span
-                className="size-2 rounded-full bg-primary"
-                aria-hidden="true"
-              />
-              {eyebrow}
-            </HeroBadge>
+        <Watermark className="-right-6 top-10 text-[7rem] leading-none sm:text-[11rem] lg:text-[14rem]">
+          LIVE
+        </Watermark>
+        <HeroContent asChild>
+          <Container size="xl">
+            <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
+              {/* Left: countdown-scale headline, slanted date band, CTA. */}
+              <div className="lg:col-span-7">
+                <p className="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                  <span
+                    aria-hidden="true"
+                    className="size-2 rounded-full bg-primary"
+                  />
+                  {eyebrow}
+                </p>
+                <h1 className="mt-5 text-[clamp(2.5rem,8vw,5.25rem)] font-extrabold leading-[0.9] tracking-tight text-balance">
+                  {title}
+                </h1>
+                <p className="mt-6 inline-flex -rotate-1 items-center rounded-none border border-foreground bg-foreground px-4 py-2 font-mono text-xs font-bold uppercase tracking-[0.16em] text-background sm:text-sm">
+                  {dateTime}
+                </p>
+                <p className="mt-6 max-w-xl text-lg leading-8 text-muted-foreground text-pretty">
+                  {subheading}
+                </p>
+                <div className="mt-8 flex flex-col items-start gap-3">
+                  <NavbarRouteLink
+                    className="inline-flex w-full items-center justify-center rounded-none border border-foreground bg-primary px-8 py-3.5 font-mono text-xs font-bold uppercase tracking-[0.14em] text-primary-foreground shadow-[5px_5px_0_0] shadow-foreground transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_0] hover:shadow-foreground active:translate-x-[5px] active:translate-y-[5px] active:shadow-none sm:w-auto"
+                    href={primaryTarget}
+                  >
+                    {primaryCta}
+                  </NavbarRouteLink>
+                  <p className="font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
+                    {note}
+                  </p>
+                </div>
+                <div className="mt-8 inline-flex items-center gap-3 border border-border bg-card p-2 pr-5">
+                  <Image
+                    alt={presenterAvatarAlt}
+                    w={96}
+                    h={96}
+                    loading="lazy"
+                    className="size-11 rounded-none border border-border object-cover"
+                  />
+                  <div>
+                    <p className="text-sm font-bold tracking-tight text-card-foreground">
+                      {presenterName}
+                    </p>
+                    <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                      {presenterRole}
+                    </p>
+                  </div>
+                </div>
+              </div>
 
-            <HeroHeading className="mt-6 font-semibold">{title}</HeroHeading>
-
-            <div className="mt-6 inline-flex items-center justify-center rounded-full border border-primary/30 bg-primary/10 px-5 py-2 text-sm font-semibold text-primary">
-              {dateTime}
+              {/* Right: countdown timer panel (collapsed-border numerals). */}
+              <div className="lg:col-span-5">
+                <div className="relative border border-foreground bg-card shadow-[8px_8px_0_0] shadow-foreground/15">
+                  <div className="flex items-center justify-between border-b border-border px-5 py-3">
+                    <MonoTag>Starts in</MonoTag>
+                    <span
+                      aria-hidden="true"
+                      className="size-2 rounded-full bg-primary"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-px bg-border">
+                    {countdown.map((unit, i) => (
+                      <div
+                        key={`${unit.label}-${i}`}
+                        className="bg-card px-2 py-7 text-center"
+                      >
+                        <div className="text-4xl font-extrabold tabular-nums tracking-tight text-card-foreground sm:text-5xl">
+                          {unit.value}
+                        </div>
+                        <div className="mt-2 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                          {unit.label}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
-
-            <HeroSubheading className="mx-auto max-w-2xl leading-8">
-              {subheading}
-            </HeroSubheading>
-
-            <div className="mt-8 flex flex-col items-center gap-3">
-              <NavbarRouteLink
-                className="rounded-full bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
-                href={primaryTarget}
-              >
-                {primaryCta}
-              </NavbarRouteLink>
-              <p className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                {note}
-              </p>
-            </div>
-
-            <HeroStatBadge className="mt-10 inline-flex items-center gap-3 rounded-full px-4 py-2 text-left">
-              <HeroStatBadgeIcon className="size-10 rounded-full bg-transparent p-0">
-                <Image
-                  alt={presenterAvatarAlt}
-                  w={96}
-                  h={96}
-                  loading="lazy"
-                  className="size-10 rounded-full object-cover"
-                />
-              </HeroStatBadgeIcon>
-              <HeroStatBadgeContent>
-                <HeroStatBadgeTitle className="text-sm font-semibold text-foreground">
-                  {presenterName}
-                </HeroStatBadgeTitle>
-                <HeroStatBadgeSubtitle className="text-xs">
-                  {presenterRole}
-                </HeroStatBadgeSubtitle>
-              </HeroStatBadgeContent>
-            </HeroStatBadge>
-
-            <ResponsiveGrid cols="4" className="mx-auto mt-12 max-w-md gap-4">
-              {countdown.map((unit, i) => (
-                <HeroStatBadge
-                  key={`${unit.label}-${i}`}
-                  className="rounded-xl px-2 py-4"
-                >
-                  <HeroStatBadgeTitle className="text-2xl font-semibold tabular-nums text-foreground sm:text-3xl">
-                    {unit.value}
-                  </HeroStatBadgeTitle>
-                  <HeroStatBadgeSubtitle className="mt-1 text-[0.65rem] font-medium uppercase tracking-[0.15em]">
-                    {unit.label}
-                  </HeroStatBadgeSubtitle>
-                </HeroStatBadge>
-              ))}
-            </ResponsiveGrid>
-          </HeroContent>
-        </Container>
+          </Container>
+        </HeroContent>
       </HeroSection>
     )
   },

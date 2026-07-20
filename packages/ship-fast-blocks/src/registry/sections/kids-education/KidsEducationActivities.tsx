@@ -30,8 +30,7 @@ import {
   ActivityTileTitle,
   ActivityTileDescription,
 } from '#/section-kit/ActivityGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const KidsEducationActivities = defineCapsule({
   name: 'KidsEducationActivities',
   description:

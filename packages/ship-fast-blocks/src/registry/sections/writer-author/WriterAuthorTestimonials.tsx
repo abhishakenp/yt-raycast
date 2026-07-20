@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
+import { Watermark, MonoTag } from '#/section-kit/Decor.tsx'
 import { z } from 'zod/v4'
 
 import {
@@ -13,21 +14,21 @@ import {
 } from '#/section-kit/TestimonialGrid.tsx'
 
 /**
- * WriterAuthorTestimonials — 3-up critical-praise wall for a literary author
- * page. Thin configuration over the shared `TestimonialGrid` composite: a
- * centered serif heading and subheading above a responsive card grid where each
- * card renders a star row from the rating, a pull-quote blurb, and the critic's
- * name paired with the publication that ran the review. The public `reviews`
- * prop ({quote, name, company, rating}) maps to the composite's items, with the
- * publication shown as the card's meta line via `company`. Use for social-proof
- * and review pull-quotes on novelist, poet, essayist, or memoirist sites.
- * Renders fully with no props via baked critic blurbs from The New York Times,
- * The Guardian, and Booklist.
+ * WriterAuthorTestimonials — literary-editorial critical-praise wall for an
+ * author page. A mono manuscript rail and a serif heading sit over a giant
+ * ghost serif quotation-mark watermark, above a staggered grid of rounded-none
+ * praise cards. Each card renders a large serif pull-quote blurb over the
+ * critic's serif name and a mono uppercase publication line ("— THE NEW YORK
+ * TIMES"). The public `reviews` prop ({quote, name, company, rating}) maps to
+ * the composite's items, with the publication shown as the card's meta line via
+ * `company`. Use for social-proof and review pull-quotes on novelist, poet,
+ * essayist, or memoirist sites. Renders fully with no props via baked critic
+ * blurbs from The New York Times, The Guardian, and Booklist.
  */
 export const WriterAuthorTestimonials = defineCapsule({
   name: 'WriterAuthorTestimonials',
   description:
-    "3-up critical-praise wall for a literary author page: a centered serif heading and subheading above a responsive card grid. Each card renders a filled star row matching the rating, a pull-quote blurb, and an attribution row pairing the critic's name with the publication that ran the review (The New York Times, The Guardian, Booklist). Use for review pull-quotes and social-proof on novelist, poet, essayist, or memoirist sites.",
+    "Literary-editorial critical-praise wall for an author page: a mono manuscript rail and a serif heading over a giant ghost serif quotation-mark watermark, above a staggered grid of rounded-none praise cards. Each card renders a large serif pull-quote blurb over the critic's serif name and a mono uppercase publication line (The New York Times, The Guardian, Booklist). Use for review pull-quotes and social-proof on novelist, poet, essayist, or memoirist sites.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -85,17 +86,28 @@ export const WriterAuthorTestimonials = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-background pt-28 pb-20 lg:pt-32 lg:pb-28',
+          'relative overflow-hidden bg-background pt-28 pb-20 lg:pt-32 lg:pb-28',
           props.className,
         )}
       >
+        <Watermark className="-top-16 right-4 font-serif text-[16rem] leading-none text-primary/[0.06] sm:text-[24rem] lg:text-[30rem]">
+          &ldquo;
+        </Watermark>
+
         <Container>
-          <TestimonialGrid
-            heading={heading}
-            subheading={subheading}
-            columns={3}
-          >
-            {items.map((t) => {
+          <div className="relative flex items-center gap-4">
+            <MonoTag tone="primary">{heading}</MonoTag>
+            <span aria-hidden="true" className="h-px flex-1 bg-border" />
+            <MonoTag aria-hidden="true" tone="faint">
+              Reviews
+            </MonoTag>
+          </div>
+          <h2 className="relative mt-6 max-w-2xl font-serif text-3xl font-normal tracking-tight text-foreground sm:text-4xl">
+            {subheading}
+          </h2>
+
+          <TestimonialGrid columns={3} className="relative mt-12 gap-0">
+            {items.map((t, i) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -106,13 +118,29 @@ export const WriterAuthorTestimonials = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
+                <TestimonialCard
+                  key={__iv__.name}
+                  className={cn(
+                    'gap-6 rounded-none border-2 border-foreground/15 bg-card p-7 hover:border-foreground/30',
+                    i % 2 === 1 && 'lg:translate-y-8',
+                  )}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="font-serif text-4xl leading-none text-primary/40"
+                  >
+                    &ldquo;
+                  </span>
+                  <TestimonialQuote className="font-serif text-lg leading-relaxed text-foreground">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="mt-auto flex-col items-start gap-1 border-t border-border pt-4">
+                    <TestimonialName className="font-serif text-base font-normal text-foreground">
+                      {__iv__.name}
+                    </TestimonialName>
                     {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
-                        {__iv__.role || __iv__.company || __iv__.meta}
+                      <TestimonialMeta className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                        &mdash; {__iv__.role || __iv__.company || __iv__.meta}
                       </TestimonialMeta>
                     )}
                   </TestimonialAuthor>

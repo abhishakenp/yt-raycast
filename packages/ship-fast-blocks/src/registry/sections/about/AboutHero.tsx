@@ -12,7 +12,7 @@ import {
 } from '#/section-kit/HeroSection.tsx'
 import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 import { DotGrid, Watermark } from '#/section-kit/Decor.tsx'
 
 /**

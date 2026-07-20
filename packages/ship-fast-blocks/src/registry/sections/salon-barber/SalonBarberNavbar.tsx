@@ -1,6 +1,7 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
+import { cn } from '#/lib/utils.ts'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
   NavbarActions,
@@ -9,8 +10,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 function Mark({ className }: { className?: string }) {
   return (
     <svg
@@ -35,7 +35,7 @@ function Mark({ className }: { className?: string }) {
 export const SalonBarberNavbar = defineCapsule({
   name: 'SalonBarberNavbar',
   description:
-    "Sticky barbershop / salon header built on the shared SiteNav composite. Renders a confident grooming brand with a scissors brand mark, desktop nav links, a tap-to-call phone number, and a primary booking CTA, plus a real mobile drawer. Use it as the top-of-page header for any barbershop, salon, or men's grooming site, or as the global nav band when composing a multi-page grooming experience.",
+    "Vintage-lite editorial sticky header for a barbershop / salon built on the shared SiteNav composite. A backdrop-blurred, hairline-bordered bar pairs a square scissors logo tile and a warm serif wordmark on the left with mono uppercase signage nav links on the right, a quiet tap-to-call phone number, and a sharp square primary booking CTA with press feedback, plus a real mobile drawer. Use it as the top-of-page header for any barbershop, salon, or men's grooming site, or as the global nav band when composing a multi-page grooming experience.",
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -50,41 +50,57 @@ export const SalonBarberNavbar = defineCapsule({
       ? props.nav
       : ['Services', 'Gallery', 'Team', 'Pricing']
     const brand = props.brand ?? 'Fade & Co.'
-    const brandMark = <Mark className="size-8 text-primary" />
-    const brandClassName = 'text-xl font-semibold tracking-tight'
     const phone = props.phone ?? '(212) 555-0147'
     const ctaLabel = props.ctaLabel ?? 'Book Now'
     const ctaTarget = props.ctaTarget ?? 'Pricing'
     const homeTarget = props.homeTarget ?? nav[0]
 
+    const LogoBadge = ({ className }: { className?: string }) => (
+      <span
+        className={cn(
+          'grid place-items-center border border-foreground/25 bg-background text-foreground',
+          className,
+        )}
+        aria-hidden="true"
+      >
+        <Mark className="size-4" />
+      </span>
+    )
+
     return (
       <SiteNav position="fixed" height="default" className={props.className}>
-        <NavbarBrand href={homeTarget} className="gap-3">
-          {brandMark}
-          <Logo brand={brand}>
-            <LogoImage />
-            <LogoLabel className={brandClassName} />
-          </Logo>
+        <NavbarBrand href={homeTarget} className="gap-2.5">
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage
+              className="size-7"
+              fallback={<LogoBadge className="size-7" />}
+            />
+            <LogoLabel className="font-serif text-xl font-semibold tracking-tight" />
+          </BrandLogo>
         </NavbarBrand>
-        <NavbarNav>
+        <NavbarNav className="gap-7">
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground"
+            >
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
-        <NavbarActions>
+        <NavbarActions className="gap-3">
           {phone ? (
             <a
               href={`tel:${phone.replace(/[^\d+]/g, '')}`}
-              className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline"
+              className="hidden font-mono text-xs tracking-[0.08em] text-muted-foreground transition-colors hover:text-foreground lg:inline"
             >
               {phone}
             </a>
           ) : null}
           <NavbarCta
             variant="primary-pill"
-            className="hidden px-5 py-2.5 sm:inline-flex"
+            className="hidden rounded-none px-5 py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] transition-[transform,background-color] duration-150 active:translate-y-px sm:inline-flex"
             href={ctaTarget}
           >
             {ctaLabel}

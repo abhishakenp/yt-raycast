@@ -2,17 +2,9 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import {
-  HeroSection,
-  HeroHeading,
-  HeroHighlight,
-  HeroSubheading,
-  HeroActions,
-  HeroCta,
-  HeroMediaPanel,
-} from '#/section-kit/HeroSection.tsx'
-import { Card } from '#/section-kit/Card.tsx'
+import { HeroSection, HeroMediaPanel } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -20,22 +12,24 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * SubscriptionBoxHero — bespoke split hero for a subscription-box brand built
- * for playful, delightful unboxing. The left column stacks a playful eyebrow
- * pill, a headline with a key phrase tinted in the primary color, supporting
- * copy, a primary "Build your box" CTA paired with a secondary "How it works"
- * link, and a row of small delight badges (free shipping, cancel anytime). The
- * right column frames a single alt-driven Image of a curated box unboxing in a
- * rounded, shadowed card. Theme-token only and fully routable via section-kit route links.
- * Renders complete with no props.
+ * SubscriptionBoxHero — playful-commerce split hero for a subscription-box
+ * brand. An asymmetric 7:5 grid pairs a mono index eyebrow, a chunky extrabold
+ * headline whose key phrase sits inside a tilted primary marker highlight,
+ * supporting copy, three squared CTAs (routable primary + secondary links and a
+ * shared Lakebed add-to-cart, all with hard offset token shadows and press
+ * feedback), and a row of rotated rounded-full sticker badges. The right column
+ * frames a single alt-driven unboxing Image inside a token-bordered box motif
+ * with a lid flap, an offset shadow frame, a rotated "Unbox the joy" sticker,
+ * and a mono price tag. A giant ghost "UNBOX" watermark bleeds behind the whole
+ * band. Theme-token only, fully routable via section-kit route links. Renders
+ * complete with no props.
  */
 export const SubscriptionBoxHero = defineCapsule({
   name: 'SubscriptionBoxHero',
   description:
-    "Bespoke split hero for a subscription-box brand with a playful unboxing aesthetic: an eyebrow pill, a headline with a primary-tinted phrase, supporting copy, dual CTAs (primary 'Build your box' + secondary 'How it works'), and small delight badges over a framed alt-driven unboxing image. Use as the opening viewport for any curated monthly box or recurring-delivery brand.",
+    "Playful-commerce split hero for a subscription-box brand: an asymmetric 7:5 grid with a mono index eyebrow, a chunky extrabold headline whose key phrase sits inside a tilted primary marker highlight, supporting copy, three squared CTAs (routable primary 'Build your box' + secondary 'How it works' links and a shared Lakebed add-to-cart, all with hard offset token shadows and press feedback), and rotated rounded-full sticker badges, over a token-bordered box-motif frame around an alt-driven unboxing image plus a giant ghost 'UNBOX' watermark. Use as the opening viewport for any curated monthly box or recurring-delivery brand.",
   props: z.object({
     eyebrow: z.string().optional(),
     headline: z.string().optional(),
@@ -84,44 +78,53 @@ export const SubscriptionBoxHero = defineCapsule({
     return (
       <HeroSection
         className={cn(
-          'overflow-hidden bg-background py-20 text-foreground sm:py-24',
+          'relative overflow-hidden bg-background py-20 text-foreground sm:py-24',
           props.className,
         )}
       >
-        <Container className="grid items-center gap-12 lg:grid-cols-2">
-          <div>
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-accent/10 px-4 py-2 text-sm font-medium text-accent">
+        <Watermark className="-right-8 top-10 text-[7rem] sm:text-[12rem] lg:text-[17rem]">
+          UNBOX
+        </Watermark>
+        <Container className="relative grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
+          <div className="lg:col-span-7">
+            <div className="mb-6 flex items-center gap-3">
               <span
-                className="size-2 rounded-full bg-accent"
+                className="size-1.5 shrink-0 bg-primary"
                 aria-hidden="true"
               />
-              {eyebrow}
+              <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                {eyebrow}
+              </span>
+              <span className="h-px flex-1 bg-border" aria-hidden="true" />
             </div>
-            <HeroHeading>
-              {headline} <HeroHighlight>{headlineAccent}</HeroHighlight>
-            </HeroHeading>
-            <HeroSubheading className="max-w-xl leading-8">
+            <h1 className="text-4xl font-extrabold leading-[1.02] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+              {headline}{' '}
+              <span className="relative inline-block whitespace-nowrap">
+                <span
+                  aria-hidden="true"
+                  className="absolute -inset-x-2 inset-y-1 -rotate-1 bg-primary"
+                />
+                <span className="relative text-primary-foreground">
+                  {headlineAccent}
+                </span>
+              </span>
+            </h1>
+            <p className="mt-6 max-w-xl text-lg leading-8 text-muted-foreground">
               {subheading}
-            </HeroSubheading>
-            <HeroActions className="flex-col gap-3 sm:flex-row">
-              <HeroCta
-                asChild
-                variant="primary"
-                className="rounded-full px-7 py-3.5 text-sm font-semibold shadow-sm"
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <NavbarRouteLink
+                href={primaryCta}
+                className="inline-flex items-center justify-center rounded-none border-2 border-foreground bg-primary px-7 py-3.5 text-sm font-bold text-primary-foreground shadow-[5px_5px_0_0] shadow-foreground transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0] active:translate-y-px active:shadow-none motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <NavbarRouteLink href={primaryCta}>
-                  {primaryCta}
-                </NavbarRouteLink>
-              </HeroCta>
-              <HeroCta
-                asChild
-                variant="outline"
-                className="rounded-full bg-background px-7 py-3.5 text-sm font-semibold"
+                {primaryCta}
+              </NavbarRouteLink>
+              <NavbarRouteLink
+                href={secondaryCta}
+                className="inline-flex items-center justify-center rounded-none border-2 border-foreground bg-background px-7 py-3.5 text-sm font-bold text-foreground shadow-[5px_5px_0_0] shadow-foreground/20 transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 active:translate-y-px active:shadow-none motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <NavbarRouteLink href={secondaryCta}>
-                  {secondaryCta}
-                </NavbarRouteLink>
-              </HeroCta>
+                {secondaryCta}
+              </NavbarRouteLink>
               <CommerceAddItemButton
                 lakebed={lakebed}
                 item={{
@@ -130,56 +133,70 @@ export const SubscriptionBoxHero = defineCapsule({
                 }}
                 aria-label={`${addLabel} ${featuredBoxName}`}
                 pendingChildren={<CommerceMutationSpinner />}
-                className="inline-flex items-center justify-center rounded-full bg-foreground px-7 py-3.5 text-sm font-semibold text-background transition hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-70"
+                className="inline-flex items-center justify-center gap-2 rounded-none border-2 border-foreground bg-foreground px-7 py-3.5 text-sm font-bold text-background shadow-[5px_5px_0_0] shadow-foreground/25 transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 active:translate-y-px active:shadow-none motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-70"
               >
                 {addLabel}
               </CommerceAddItemButton>
-            </HeroActions>
-            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
-              {badges.map((badge) => (
+            </div>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              {badges.map((badge, i) => (
                 <span
                   key={badge}
-                  className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground"
+                  className={cn(
+                    'inline-flex items-center rounded-full border-2 border-foreground bg-background px-3.5 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-foreground shadow-[3px_3px_0_0] shadow-foreground/20',
+                    i % 2 === 0 ? '-rotate-1' : 'rotate-1',
+                  )}
                 >
-                  <svg
-                    className="size-4 shrink-0 text-primary"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="m5 13 4 4L19 7"
-                    />
-                  </svg>
                   {badge}
                 </span>
               ))}
             </div>
           </div>
 
-          <div className="relative">
+          <div className="relative lg:col-span-5">
             <div
-              className="absolute -inset-4 rounded-[2rem] bg-primary/10 blur-3xl"
+              className="pointer-events-none absolute inset-0 translate-x-3 translate-y-3 border-2 border-primary/40 bg-primary/10"
               aria-hidden="true"
             />
-            <Card
-              variant="default"
-              className="relative overflow-hidden rounded-[2rem] shadow-[0_24px_80px_rgba(0,0,0,0.14)] rounded-none p-0"
-            >
-              <HeroMediaPanel
-                alt={imageAlt}
-                w={900}
-                h={760}
-                className="aspect-[5/4] rounded-[2rem]"
-              />
-              <div className="absolute right-5 top-5 rotate-3 rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-lg">
-                Unbox the joy
+            <div className="relative border-2 border-foreground bg-card shadow-[10px_10px_0_0] shadow-foreground">
+              <div
+                className="flex items-center justify-between border-b-2 border-foreground px-4 py-2"
+                aria-hidden="true"
+              >
+                <span className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-foreground">
+                  This month
+                </span>
+                <span className="flex gap-1">
+                  <span className="size-2 rounded-full bg-primary" />
+                  <span className="size-2 rounded-full border border-foreground" />
+                  <span className="size-2 rounded-full border border-foreground" />
+                </span>
               </div>
-            </Card>
+              <div className="relative">
+                <HeroMediaPanel
+                  alt={imageAlt}
+                  w={900}
+                  h={760}
+                  className="aspect-[5/4] rounded-none"
+                />
+                <span className="absolute -right-3 top-4 rotate-3 rounded-full border-2 border-foreground bg-primary px-4 py-1.5 text-sm font-bold text-primary-foreground shadow-[3px_3px_0_0] shadow-foreground">
+                  Unbox the joy
+                </span>
+              </div>
+              <div className="flex items-end justify-between gap-3 border-t-2 border-foreground px-4 py-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-bold text-foreground">
+                    {featuredBoxName}
+                  </p>
+                  <p className="truncate font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                    {featuredBoxSubtitle}
+                  </p>
+                </div>
+                <span className="shrink-0 font-mono text-lg font-bold tabular-nums text-foreground">
+                  {featuredBoxPrice}
+                </span>
+              </div>
+            </div>
           </div>
         </Container>
       </HeroSection>

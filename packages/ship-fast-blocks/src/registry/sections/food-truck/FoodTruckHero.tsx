@@ -13,8 +13,7 @@ import {
   commerceProduct,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * FoodTruckHero — sticker-poster split hero for a gourmet food-truck landing page.
  * An asymmetric 7:5 split under a giant ghost watermark word: on the wide left a
@@ -131,7 +130,7 @@ export const FoodTruckHero = defineCapsule({
                 <MonoTag>01 / Street Food</MonoTag>
               </div>
 
-              <h1 className="text-5xl font-extrabold leading-[0.95] tracking-tighter sm:text-6xl lg:text-7xl">
+              <h1 className="text-5xl font-extrabold leading-[0.95] tracking-tighter text-foreground sm:text-6xl lg:text-7xl">
                 {headingLead.map((line) => (
                   <span key={line} className="block">
                     {line}

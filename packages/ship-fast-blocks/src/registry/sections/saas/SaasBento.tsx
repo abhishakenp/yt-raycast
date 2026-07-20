@@ -3,8 +3,8 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Container } from '#/section-kit/Container.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
 import {
   BentoGrid,
   BentoTile,
@@ -13,19 +13,22 @@ import {
 } from '#/section-kit/BentoGrid.tsx'
 
 /**
- * SaasBento — an asymmetric bento grid of product capabilities for a B2B SaaS /
- * AI-product landing page. A centered heading + optional subheading above a
- * responsive 6-column bento (md:grid-cols-6) where each tile's optional span
- * ("wide" → 4 cols, "tall" → 2 rows) creates a balanced mix of large and small
- * cards; one feature tile carries a gradient accent and a product-dashboard
- * screenshot. Rounded-2xl card/muted surfaces with subtle borders. Use to
- * highlight a product's standout capabilities with visual rhythm. Renders fully
- * with no props via baked-in defaults; no CTAs.
+ * SaasBento — asymmetric collapsed-border bento grid of product capabilities for
+ * a B2B SaaS / AI-product landing page. An asymmetric header (marker-highlighted
+ * heading left, mono "[ CAPABILITIES ]" meta right) above a sharp 6-column bento
+ * where each tile's optional span ("wide" → 4 cols, "tall" → 2 rows) creates a
+ * balanced mix of large and small cells: every cell carries a mono index
+ * numeral, a bold title and description; the feature cell inverts to
+ * bg-foreground/text-background and carries a product-dashboard screenshot, and
+ * a tall cell adds a div-built token bar-chart motif. Sharp corners, hard offset
+ * shadow, hover muted wash. Use to highlight a product's standout capabilities
+ * with visual rhythm; no CTAs. Renders fully with no props via baked-in
+ * defaults.
  */
 export const SaasBento = defineCapsule({
   name: 'SaasBento',
   description:
-    "Asymmetric bento grid of product capabilities for a B2B SaaS / AI-product landing page: a centered heading + optional subheading above a responsive 6-column bento (md:grid-cols-6) where each tile's optional span ('wide' → 4 cols, 'tall' → 2 rows) creates a balanced mix of large and small cards. One feature tile carries a gradient accent and a product-dashboard screenshot. Rounded-2xl card/muted surfaces with subtle borders. Use to highlight a product's standout capabilities with visual rhythm; no CTAs.",
+    "Asymmetric collapsed-border bento grid of product capabilities for a B2B SaaS / AI-product landing page: an asymmetric marker-highlighted header with mono meta above a sharp 6-column bento where each tile's optional span ('wide' → 4 cols, 'tall' → 2 rows) mixes large and small cells, each with a mono index numeral, bold title and description. The feature cell inverts to a dark surface with a product-dashboard screenshot, and a tall cell adds a div-built token bar-chart motif. Sharp corners, hard offset shadow, hover muted wash. Use to highlight a product's standout capabilities with visual rhythm; no CTAs.",
   props: z.object({
     /** Centered section heading above the bento grid. */
     heading: z.string().optional(),
@@ -87,21 +90,54 @@ export const SaasBento = defineCapsule({
           ? 'md:col-span-2 md:row-span-2'
           : 'md:col-span-2'
 
+    const barHeights = ['h-4', 'h-8', 'h-5', 'h-12', 'h-9', 'h-16', 'h-11']
+    const headingWords = heading.split(' ')
+    const headingLead = headingWords.slice(0, -1).join(' ')
+    const headingMark = headingWords.at(-1) ?? ''
+
     return (
-      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
-        <Container size="xl" className="px-6 sm:px-8 lg:px-12">
-          <SectionHeading
-            title={heading}
-            subtitle={subheading}
-            align="center"
-            titleClassName="text-3xl font-extrabold tracking-tight sm:text-4xl"
-            subtitleClassName="text-lg leading-relaxed"
-            className="mx-auto max-w-2xl"
-          />
+      <section
+        className={cn(
+          'relative overflow-hidden bg-background py-16 lg:py-24',
+          props.className,
+        )}
+      >
+        <Container>
+          {/* Asymmetric header: marker-highlighted heading left, mono meta right. */}
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <div className="max-w-2xl">
+              <MonoTag className="mb-4 block">
+                Capabilities
+                <span aria-hidden="true" className="text-primary">
+                  {' '}
+                  · one platform
+                </span>
+              </MonoTag>
+              <h2 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+                {headingLead}{' '}
+                <span className="relative ml-[0.12em] inline-block whitespace-nowrap">
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-[-0.15em] inset-y-[0.05em] rotate-1 bg-primary"
+                  />
+                  <span className="relative text-primary-foreground">
+                    {headingMark}
+                  </span>
+                </span>
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">{subheading}</p>
+            </div>
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+            >
+              [ toolkit ] built to compose
+            </p>
+          </div>
 
           <BentoGrid
             cols="1-sm-2-md-6"
-            className="mt-14 auto-rows-[200px] gap-5 lg:gap-6"
+            className="auto-rows-[200px] gap-0 border-l border-t border-border"
           >
             {tiles.map((tile, i) => {
               const isFeature = i === 0
@@ -110,34 +146,51 @@ export const SaasBento = defineCapsule({
                   key={tile.title}
                   span={spanClass(tile.span)}
                   className={cn(
-                    'group relative flex flex-col overflow-hidden rounded-2xl border border-border p-7 shadow-sm transition-all hover:shadow-lg',
+                    'group relative flex flex-col overflow-hidden rounded-none border-0 border-b border-r border-border p-6 shadow-none transition-colors duration-150 sm:p-7',
                     isFeature
-                      ? 'bg-gradient-to-br from-primary to-primary/80 text-primary-foreground'
-                      : 'bg-card text-card-foreground',
+                      ? 'bg-foreground text-background'
+                      : 'bg-card text-card-foreground hover:bg-muted/60',
                   )}
                 >
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      'font-mono text-[11px] uppercase tracking-[0.2em]',
+                      isFeature
+                        ? 'text-background/60'
+                        : 'text-muted-foreground',
+                    )}
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                    <span
+                      className={cn(
+                        isFeature ? 'text-background' : 'text-primary',
+                      )}
+                    >
+                      {' '}
+                      /
+                    </span>
+                  </span>
                   <BentoTileTitle
                     className={cn(
-                      'text-lg font-bold',
-                      isFeature
-                        ? 'text-primary-foreground'
-                        : 'text-card-foreground',
+                      'mt-3 text-lg font-bold tracking-tight',
+                      isFeature ? 'text-background' : 'text-card-foreground',
                     )}
                   >
                     {tile.title}
                   </BentoTileTitle>
                   <BentoTileDescription
                     className={cn(
-                      'mt-2 max-w-md',
+                      'mt-2 max-w-md text-sm leading-6',
                       isFeature
-                        ? 'text-primary-foreground/80'
+                        ? 'text-background/75'
                         : 'text-muted-foreground',
                     )}
                   >
                     {tile.description}
                   </BentoTileDescription>
                   {isFeature ? (
-                    <div className="mt-5 flex-1 overflow-hidden rounded-xl border border-primary-foreground/20 shadow-lg">
+                    <div className="mt-5 flex-1 overflow-hidden border border-background/25">
                       <Image
                         alt="product dashboard screenshot"
                         w={800}
@@ -145,12 +198,33 @@ export const SaasBento = defineCapsule({
                         className="h-full w-full object-cover"
                       />
                     </div>
+                  ) : tile.span === 'tall' ? (
+                    <span
+                      aria-hidden="true"
+                      className="mt-auto flex items-end gap-1.5 pt-6"
+                    >
+                      {barHeights.map((h, bi) => (
+                        <span
+                          key={bi}
+                          className={cn(
+                            'w-3 sm:w-4',
+                            h,
+                            bi === barHeights.length - 1
+                              ? 'bg-primary'
+                              : 'bg-foreground/15',
+                          )}
+                        />
+                      ))}
+                    </span>
                   ) : (
-                    <div className="mt-auto flex items-center gap-2 pt-4">
-                      <span className="inline-block size-2 rounded-full bg-chart-2" />
-                      <span className="inline-block size-2 rounded-full bg-accent" />
-                      <span className="inline-block size-2 rounded-full bg-muted-foreground/40" />
-                    </div>
+                    <span
+                      aria-hidden="true"
+                      className="mt-auto flex items-center gap-1.5 pt-4"
+                    >
+                      <span className="h-1 w-8 bg-primary" />
+                      <span className="h-1 w-1 bg-foreground/20" />
+                      <span className="h-1 w-1 bg-foreground/20" />
+                    </span>
                   )}
                 </BentoTile>
               )

@@ -13,8 +13,7 @@ import {
   HeroCta,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * ChurchHero — serene editorial hero for a church or faith-community landing
  * page. A light, airy composition over a faint background photo: a giant ghost

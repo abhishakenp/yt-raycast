@@ -8,7 +8,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
+} from '#/section-kit/SiteNav.tsx'
 import { foodDeliveryLakebed } from './food-delivery-lakebed.ts'
 import {
   FoodDeliveryAccountButton,

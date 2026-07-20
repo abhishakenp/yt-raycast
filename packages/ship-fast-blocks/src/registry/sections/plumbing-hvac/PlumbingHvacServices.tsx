@@ -12,14 +12,17 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 
 /**
- * PlumbingHvacServices — a centered-heading feature grid of core trade services
- * for a plumbing & HVAC site. Thin configuration over the shared `FeatureGrid`
- * composite: a centered heading + supporting subheading above a responsive grid
- * of service cards, each pairing an inline stroke-SVG glyph (cycled per index)
- * with a bold title and a muted blurb. Defaults cover the four pillars of the
- * trade — Repair, Installation, Maintenance, and 24/7 Emergency Service. Use to
- * showcase what a plumber or HVAC contractor offers beneath the hero. Renders
- * fully with no props via baked-in defaults.
+ * PlumbingHvacServices — a trade-industrial services ledger for a plumbing &
+ * HVAC site. Thin configuration over the shared `FeatureGrid` composite in a
+ * tech-brutalist-lite key: a left-aligned mono index header (heading +
+ * supporting subheading) above a responsive grid of squared border-2 service
+ * cards, each led by a giant ghost index numeral over a mono service label, a
+ * stroke-SVG glyph (cycled per index) in a squared foreground tile, an extrabold
+ * slab title, and a muted blurb, with a hard offset shadow lifting on hover and
+ * press feedback. Defaults cover the four pillars of the trade — Repair,
+ * Installation, Maintenance, and 24/7 Emergency Service. Use to showcase what a
+ * plumber or HVAC contractor offers beneath the hero. Renders fully with no
+ * props via baked-in defaults.
  */
 const ICONS: ReactNode[] = [
   // repair / wrench
@@ -72,7 +75,7 @@ function ServiceIcon({ glyph }: { glyph: ReactNode }) {
 export const PlumbingHvacServices = defineCapsule({
   name: 'PlumbingHvacServices',
   description:
-    'Centered-heading feature grid of core trade services for a plumbing & HVAC site built on the shared FeatureGrid composite: a centered heading + supporting subheading above a responsive grid of service cards, each pairing an inline stroke-SVG glyph (cycled per index) with a bold title and a muted blurb. Defaults cover the four pillars of the trade — Repair, Installation, Maintenance, and 24/7 Emergency Service. Use to showcase what a plumber or HVAC contractor offers beneath the hero.',
+    'Trade-industrial services ledger for a plumbing & HVAC site built on the shared FeatureGrid composite: a left-aligned mono index header (heading + supporting subheading) above a responsive grid of squared border-2 service cards, each led by a giant ghost index numeral over a mono service label, a stroke-SVG glyph (cycled per index) in a squared foreground tile, an extrabold slab title, and a muted blurb, with a hard offset shadow on hover and press feedback. Defaults cover the four pillars of the trade — Repair, Installation, Maintenance, and 24/7 Emergency Service. Use to showcase what a plumber or HVAC contractor offers beneath the hero.',
   props: z.object({
     /** Centered section heading above the grid. */
     heading: z.string().optional(),
@@ -123,20 +126,27 @@ export const PlumbingHvacServices = defineCapsule({
 
     return (
       <section className="bg-background pt-28 pb-20 lg:pt-32 lg:pb-28">
-        <Container size="xl" className="px-6">
-          <FeatureGrid
-            heading={heading}
-            subheading={subheading}
-            columns={props.columns ?? 4}
-            className={props.className}
-          >
+        <Container size="xl">
+          <div className="mb-12 max-w-3xl">
+            <span className="mb-5 flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+              <span className="tabular-nums">[ 02 ]</span>
+              <span className="text-muted-foreground">What we do</span>
+            </span>
+            <h2 className="text-balance text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
+              {heading}
+            </h2>
+            <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
+              {subheading}
+            </p>
+          </div>
+          <FeatureGrid columns={props.columns ?? 4} className={props.className}>
             {features
               .map((f, i) => ({
                 title: f.title,
                 description: f.description,
                 icon: <ServiceIcon glyph={ICONS[i % ICONS.length]} />,
               }))
-              .map((f) => {
+              .map((f, i) => {
                 const __iv__ = f as {
                   title: string
                   description: string
@@ -147,9 +157,27 @@ export const PlumbingHvacServices = defineCapsule({
                   imageAlt?: string
                 }
                 return (
-                  <FeatureCard key={__iv__.title}>
-                    {__iv__.icon && <FeatureIcon>{__iv__.icon}</FeatureIcon>}
-                    <FeatureTitle>{__iv__.title}</FeatureTitle>
+                  <FeatureCard
+                    key={__iv__.title}
+                    className="relative gap-4 overflow-hidden rounded-none border-2 border-foreground p-6 transition-all duration-150 hover:-translate-y-1 hover:border-foreground hover:shadow-[8px_8px_0_0] hover:shadow-foreground active:translate-y-0 active:shadow-[3px_3px_0_0] motion-reduce:transform-none"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute -right-2 -top-4 select-none font-mono text-7xl font-extrabold leading-none tabular-nums text-foreground/[0.06]"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+                      Service {String(i + 1).padStart(2, '0')}
+                    </span>
+                    {__iv__.icon && (
+                      <FeatureIcon className="rounded-none bg-foreground text-background">
+                        {__iv__.icon}
+                      </FeatureIcon>
+                    )}
+                    <FeatureTitle className="text-xl font-extrabold tracking-tight">
+                      {__iv__.title}
+                    </FeatureTitle>
                     <FeatureDescription>
                       {__iv__.description}
                     </FeatureDescription>

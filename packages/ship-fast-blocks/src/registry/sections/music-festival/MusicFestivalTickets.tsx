@@ -2,13 +2,15 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 /**
- * MusicFestivalTickets — a three-tier tickets / pricing block for a music /
- * arts festival landing page. A centered eyebrow + heading + intro, then a row
- * of three pass cards (GA, GA+, VIP) — each with a name, tagline, big price +
- * unit, a checkmarked feature list and a primary CTA; the popular tier gets a
- * primary ring and a floating "Most Popular" badge. Below, a centered add-ons
- * row of small bordered cards. Every tier CTA and add-on routes through
- * section-kit route links. Use to sell passes on music festivals, arts festivals, concert
+ * MusicFestivalTickets — a kinetic-poster three-tier tickets block for a music
+ * / arts festival landing page. An asymmetric mono-index header, then a row of
+ * three square-cornered pass stubs (GA, GA+, VIP) with dashed perforated edges
+ * — each carrying a mono tier index, name, tagline, a giant tabular-nums price
+ * + mono unit, a hairline-divided feature list and a hard-offset-shadow CTA
+ * with press feedback; the popular tier inverts to a foreground surface with a
+ * rotated "Most Popular" ticket chip. Below, a row of dashed add-on stubs
+ * (camping, RV, glamping). Every tier CTA and add-on routes through section-kit
+ * route links. Use to sell passes on music festivals, arts festivals, concert
  * series, or any multi-day ticketed event.
  */
 import { Container } from '#/section-kit/Container.tsx'
@@ -16,12 +18,11 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Card } from '#/section-kit/Card.tsx'
 import { TicketGrid, TicketCard } from '#/section-kit/TicketGrid.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const MusicFestivalTickets = defineCapsule({
   name: 'MusicFestivalTickets',
   description:
-    "Three-tier tickets / pricing block for a music / arts festival landing page: a centered eyebrow + heading + intro paragraph, then a row of three pass cards (GA, GA+, VIP) — each with a name, tagline, big price + unit, a checkmarked feature list and a primary CTA, with the popular tier highlighted by a primary ring and a floating 'Most Popular' badge — followed by a centered add-ons row of small bordered cards (camping, RV, glamping). Every tier CTA and add-on routes through section-kit route links. Use to sell passes on music festivals, arts festivals, concert series, camping/desert events, or any multi-day ticketed event.",
+    "Kinetic-poster three-tier tickets block for a music / arts festival landing page: an asymmetric mono-index header, then a row of three square-cornered pass stubs (GA, GA+, VIP) with dashed perforated edges — each with a mono tier index, name, tagline, a giant tabular-nums price + mono unit, a hairline-divided feature list and a hard-offset-shadow CTA with press feedback, the popular tier inverted to a foreground surface with a rotated 'Most Popular' ticket chip — followed by a row of dashed add-on stubs (camping, RV, glamping). Every tier CTA and add-on routes through section-kit route links. Use to sell passes on music festivals, arts festivals, concert series, camping/desert events, or any multi-day ticketed event.",
   props: z.object({
     /** Eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -127,75 +128,140 @@ export const MusicFestivalTickets = defineCapsule({
             price: '+ $599 (2-person)',
           },
         ]
-    const Check = () => (
+    const Check = ({ inverted }: { inverted?: boolean }) => (
       <svg
-        width="20"
-        height="20"
+        width="18"
+        height="18"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="shrink-0 text-primary"
+        className={cn(
+          'mt-0.5 shrink-0',
+          inverted ? 'text-background' : 'text-foreground',
+        )}
         aria-hidden="true"
       >
         <path d="M5 13l4 4L19 7" />
       </svg>
     )
     return (
-      <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
+      <section
+        className={cn(
+          'pb-24 pt-24 sm:pt-28 lg:pb-28 lg:pt-32',
+          props.className,
+        )}
+      >
         <Container>
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            className="mb-16 gap-0"
-            eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-primary"
-            titleClassName="mb-4 text-4xl font-bold tracking-tight lg:text-5xl"
-            subtitleClassName="mx-auto max-w-2xl text-lg text-foreground/70"
-          />
+          <div className="mb-14 flex flex-col gap-4 border-b border-border pb-8 md:flex-row md:items-end md:justify-between">
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-3"
+              eyebrowClassName="font-mono text-[11px] uppercase tracking-[0.2em] text-primary"
+              titleClassName="text-4xl font-extrabold uppercase tracking-tight lg:text-6xl"
+              subtitleClassName="max-w-xl text-lg text-foreground/70"
+            />
+            <span
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-foreground/40"
+            >
+              [ passes ]
+            </span>
+          </div>
 
-          <TicketGrid cols="1-3" className="mx-auto max-w-5xl gap-8">
-            {tiers.map((tier) => (
-              <TicketCard
-                key={tier.name}
-                variant={tier.popular ? 'featured' : 'default'}
-                className={cn('relative p-8')}
-              >
-                {tier.badge ? (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-4 py-1 text-xs font-medium text-primary-foreground">
-                    {tier.badge}
-                  </span>
-                ) : null}
-                <h3 className="mb-2 text-xl font-semibold">{tier.name}</h3>
-                <p className="mb-6 text-sm text-card-foreground/60">
-                  {tier.tagline}
-                </p>
-                <div className="mb-6">
-                  <span className="text-4xl font-bold">{tier.price}</span>
-                  <span className="text-card-foreground/60">{tier.unit}</span>
-                </div>
-                <ul className="mb-8 space-y-3 text-sm">
-                  {tier.features.map((feat) => (
-                    <li key={feat} className="flex items-center gap-3">
-                      <Check />
-                      {feat}
-                    </li>
-                  ))}
-                </ul>
-                <NavbarRouteLink
-                  className="w-full rounded-lg bg-primary py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                  href={tier.cta}
+          <TicketGrid cols="1-3" className="mx-auto max-w-5xl gap-6">
+            {tiers.map((tier, i) => {
+              const featured = Boolean(tier.popular)
+              return (
+                <TicketCard
+                  key={tier.name}
+                  variant={featured ? 'featured' : 'default'}
+                  className={cn(
+                    'relative rounded-none border-2 border-dashed p-8',
+                    featured
+                      ? 'border-background/40 bg-foreground text-background md:-my-3 md:py-11'
+                      : 'border-foreground/30 bg-card',
+                  )}
                 >
-                  {tier.cta}
-                </NavbarRouteLink>
-              </TicketCard>
-            ))}
+                  {tier.badge ? (
+                    <span className="absolute -top-3 right-6 rotate-2 rounded-none bg-background px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-foreground">
+                      {tier.badge}
+                    </span>
+                  ) : null}
+                  <span
+                    className={cn(
+                      'font-mono text-[11px] uppercase tracking-[0.2em]',
+                      featured ? 'text-background/60' : 'text-muted-foreground',
+                    )}
+                  >
+                    {String(i + 1).padStart(2, '0')} / pass
+                  </span>
+                  <h3 className="mt-3 text-2xl font-extrabold uppercase tracking-tight">
+                    {tier.name}
+                  </h3>
+                  <p
+                    className={cn(
+                      'mb-6 mt-1 text-sm',
+                      featured
+                        ? 'text-background/70'
+                        : 'text-card-foreground/60',
+                    )}
+                  >
+                    {tier.tagline}
+                  </p>
+                  <div className="mb-6 flex items-baseline gap-2">
+                    <span className="text-5xl font-extrabold tabular-nums tracking-tight">
+                      {tier.price}
+                    </span>
+                    <span
+                      className={cn(
+                        'font-mono text-[11px] uppercase tracking-[0.12em]',
+                        featured
+                          ? 'text-background/60'
+                          : 'text-card-foreground/60',
+                      )}
+                    >
+                      {tier.unit}
+                    </span>
+                  </div>
+                  <ul
+                    className={cn(
+                      'mb-8 divide-y border-t text-sm',
+                      featured
+                        ? 'divide-background/15 border-background/15'
+                        : 'divide-border border-border',
+                    )}
+                  >
+                    {tier.features.map((feat) => (
+                      <li key={feat} className="flex items-start gap-3 py-2.5">
+                        <Check inverted={featured} />
+                        {feat}
+                      </li>
+                    ))}
+                  </ul>
+                  <NavbarRouteLink
+                    className={cn(
+                      'block w-full rounded-none py-3 text-center font-mono text-xs font-bold uppercase tracking-[0.14em] shadow-[4px_4px_0_0] transition-[transform,box-shadow] duration-150 hover:shadow-[6px_6px_0_0] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none motion-reduce:transform-none',
+                      featured
+                        ? 'bg-background text-foreground shadow-background/30 hover:bg-background/90'
+                        : 'bg-primary text-primary-foreground shadow-foreground hover:bg-primary/90',
+                    )}
+                    href={tier.cta}
+                  >
+                    {tier.cta}
+                  </NavbarRouteLink>
+                </TicketCard>
+              )
+            })}
           </TicketGrid>
 
-          <div className="mx-auto mt-12 max-w-3xl">
-            <h3 className="mb-6 text-center text-lg font-semibold">
+          <div className="mx-auto mt-14 max-w-3xl">
+            <h3 className="mb-6 text-center font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/50">
               {addOnsLabel}
             </h3>
             <ResponsiveGrid cols="1-3" className="gap-4">
@@ -204,11 +270,15 @@ export const MusicFestivalTickets = defineCapsule({
                   asChild
                   key={a.name}
                   variant="default"
-                  className="text-center transition-colors hover:border-primary/40 rounded-lg p-4"
+                  className="rounded-none border border-dashed border-foreground/30 p-4 text-center transition-[transform,background-color] duration-150 hover:bg-muted/50 active:translate-y-px motion-reduce:transform-none"
                 >
                   <NavbarRouteLink href={a.name}>
-                    <p className="font-semibold">{a.name}</p>
-                    <p className="text-sm text-card-foreground/60">{a.price}</p>
+                    <p className="font-bold uppercase tracking-tight">
+                      {a.name}
+                    </p>
+                    <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.12em] text-card-foreground/60">
+                      {a.price}
+                    </p>
                   </NavbarRouteLink>
                 </Card>
               ))}

@@ -3,17 +3,20 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * LawFirmTestimonials — a centered-intro, star-rated client testimonials grid on
- * the card surface. A tracked-uppercase eyebrow, serif heading and lead
- * paragraph sit above a responsive 3-up grid of bordered quote cards; each card
- * shows a five-star row, an italic quote, and an avatar + name + role footer.
- * Refined, authoritative editorial aesthetic with sharp squared corners. Avatars
- * use the alt-driven Image component. Use to surface client social proof on
- * law-firm, attorney, consulting or professional-services pages. Renders fully
- * with no props via baked-in defaults.
+ * LawFirmTestimonials — an editorial client-testimonials register on the card
+ * surface. An asymmetric header (mono eyebrow, giant serif heading and lead
+ * paragraph left, tabular quote count right) sits above a giant faint serif
+ * quotation-mark watermark and a responsive 3-up set of open pull-quote plates
+ * staggered in editorial rhythm — each a top hairline rule, a giant faint serif
+ * quotation mark, an oversized italic serif quote, and a serif name over a mono
+ * tracked-uppercase source label. Authoritative, traditional-yet-modern
+ * newsprint aesthetic with sharp binary corners. Use to surface client social
+ * proof on law-firm, attorney, consulting or professional-services pages.
+ * Renders fully with no props via baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -25,7 +28,7 @@ import {
 export const LawFirmTestimonials = defineCapsule({
   name: 'LawFirmTestimonials',
   description:
-    'Centered-intro, star-rated client testimonials grid on the card surface: a tracked-uppercase eyebrow, serif heading and lead paragraph above a responsive 3-up grid of bordered quote cards, each showing a five-star row, an italic quote and an avatar + name + role footer. Refined, authoritative editorial aesthetic with sharp squared corners; avatars use the alt-driven Image component. Use to surface client social proof and reviews on law-firm, attorney, consulting, accounting or professional-services pages.',
+    'Editorial client-testimonials register on the card surface: an asymmetric header (mono eyebrow, giant serif heading and lead paragraph left, tabular quote count right) above a giant faint serif quotation-mark watermark and a responsive 3-up set of open pull-quote plates staggered in editorial rhythm — each a top hairline rule, a giant faint serif quotation mark, an oversized italic serif quote and a serif name over a mono tracked-uppercase source label. Authoritative, traditional-yet-modern newsprint aesthetic with sharp binary corners. Use to surface client social proof and reviews on law-firm, attorney, consulting, accounting or professional-services pages.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -77,19 +80,36 @@ export const LawFirmTestimonials = defineCapsule({
           },
         ]
     return (
-      <section className={cn('bg-card py-24 lg:py-28', props.className)}>
-        <Container>
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            className="mb-20 max-w-3xl gap-0"
-            eyebrowClassName="mb-4 text-sm uppercase tracking-widest text-muted-foreground"
-            titleClassName="mb-6 font-serif text-3xl text-foreground lg:text-5xl"
-            subtitleClassName="text-lg leading-relaxed text-muted-foreground"
-          />
+      <section
+        className={cn(
+          'relative overflow-hidden bg-card py-20 sm:py-24 lg:py-28',
+          props.className,
+        )}
+      >
+        <Watermark className="-right-6 -top-10 font-serif text-[16rem] font-normal not-italic leading-none sm:text-[22rem] lg:text-[28rem]">
+          &rdquo;
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-12 flex flex-col gap-6 sm:mb-16 md:flex-row md:items-end md:justify-between">
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={description}
+              className="max-w-3xl gap-0"
+              eyebrowClassName="mb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+              titleClassName="mb-6 font-serif text-4xl font-semibold tracking-tight text-foreground lg:text-5xl"
+              subtitleClassName="text-lg leading-relaxed text-muted-foreground"
+            />
+            <span
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] tabular-nums text-muted-foreground/60"
+            >
+              {String(items.length).padStart(2, '0')} on record
+            </span>
+          </div>
           <TestimonialGrid columns={3}>
-            {items.map((t) => {
+            {items.map((t, i) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -100,12 +120,28 @@ export const LawFirmTestimonials = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
+                <TestimonialCard
+                  key={__iv__.name}
+                  className={cn(
+                    'relative gap-6 rounded-none border-0 border-t-2 border-foreground bg-transparent p-0 pt-6 transition-colors hover:border-primary',
+                    i % 3 === 1 && 'lg:translate-y-10',
+                  )}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -top-2 left-0 select-none font-serif text-6xl leading-none text-primary/15"
+                  >
+                    &ldquo;
+                  </span>
+                  <TestimonialQuote className="relative mt-4 font-serif text-lg italic leading-relaxed text-foreground">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="mt-auto">
+                    <TestimonialName className="font-serif text-base font-normal">
+                      {__iv__.name}
+                    </TestimonialName>
                     {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
+                      <TestimonialMeta className="mt-1 font-mono text-[11px] uppercase tracking-[0.2em]">
                         {__iv__.role || __iv__.company || __iv__.meta}
                       </TestimonialMeta>
                     )}

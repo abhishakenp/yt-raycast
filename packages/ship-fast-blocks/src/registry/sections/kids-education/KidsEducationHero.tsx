@@ -15,8 +15,7 @@ import {
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * KidsEducationHero — playful-primary split hero for a kids / family learning
  * platform under a giant ghost watermark, on an asymmetric 7:5 grid. Left side:

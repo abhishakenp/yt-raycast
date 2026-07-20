@@ -11,8 +11,7 @@ import {
   CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * InsuranceCta — Swiss-trust closing call-to-action band for an insurance page.
  * A full-width muted band framed by hairline top/bottom rules with a giant ghost

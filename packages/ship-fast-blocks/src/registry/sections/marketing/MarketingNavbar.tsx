@@ -11,22 +11,22 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
- * MarketingNavbar — glassy, sticky top navigation bar for a product-marketing /
- * SaaS landing page. A backdrop-blurred, border-bottomed header pinned to the
- * top with an indigo brand-initial logo tile + product name on the left,
- * centered/right horizontal nav links on desktop, and a "Log in" outline button
- * plus a filled primary "Get started" CTA on the right (with a hamburger button
- * on mobile). Clean, premium indigo-on-light aesthetic. Every link and CTA
- * routes through route hrefs. Use as the sticky site header for B2B SaaS,
+ * MarketingNavbar — sticky bold-kinetic top navigation bar for a product-
+ * marketing / SaaS landing page. A backdrop-blurred, hairline-bottomed header
+ * pinned to the top: a sharp primary brand-initial tile beside the product name
+ * on the left, mono uppercase nav links on the right (desktop), and a square
+ * hairline "Log in" link plus a square hard-offset-shadow primary "Get started"
+ * CTA with press feedback, collapsing to a reusable hamburger drawer on mobile.
+ * Confident kinetic-SaaS aesthetic with binary radius; every link and CTA routes
+ * through route hrefs. Use as the sticky site header for B2B SaaS,
  * team/project-management tools, developer platforms, or modern software products.
  */
 export const MarketingNavbar = defineCapsule({
   name: 'MarketingNavbar',
   description:
-    "Glassy, sticky, backdrop-blurred top navigation bar for a product-marketing / SaaS landing page: border-bottomed header with an indigo brand-initial logo tile + product name on the left, horizontal nav links on the right (desktop), and a 'Log in' outline button plus a filled primary 'Get started' CTA, collapsing to a hamburger on mobile. Clean, premium indigo-on-light aesthetic. All links and CTAs route through route hrefs. Use as the sticky site header for B2B SaaS, team/project-management tools, developer platforms, workspaces, or modern software products.",
+    "Sticky bold-kinetic top navigation bar for a product-marketing / SaaS landing page: a backdrop-blurred, hairline-bottomed header with a sharp primary brand-initial tile + product name on the left, mono uppercase nav links on the right (desktop), and a square hairline 'Log in' link plus a square hard-offset-shadow primary 'Get started' CTA with press feedback, collapsing to a hamburger drawer on mobile. Confident kinetic-SaaS aesthetic with binary radius. All links and CTAs route through route hrefs. Use as the sticky site header for B2B SaaS, team/project-management tools, developer platforms, workspaces, or modern software products.",
   props: z.object({
     /** Brand / product name shown beside the logo tile. */
     brand: z.string().optional(),
@@ -52,11 +52,11 @@ export const MarketingNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Get started'
     const ctaTarget = props.ctaTarget ?? 'Start free trial'
 
-    // Brand logo mark — indigo tile + brand initial (decorative brand asset).
+    // Brand logo mark — sharp primary tile + brand initial (decorative brand asset).
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          'grid size-8 place-items-center rounded-lg bg-primary text-sm font-bold text-primary-foreground',
+          'grid size-7 place-items-center rounded-none bg-primary text-sm font-bold text-primary-foreground',
           className,
         )}
       >
@@ -69,24 +69,25 @@ export const MarketingNavbar = defineCapsule({
         position="sticky"
         height="compact"
         className={cn(
-          'border-border/60 bg-background/85 backdrop-blur-md backdrop-saturate-150 supports-[backdrop-filter]:bg-background/60',
+          'border-b border-border bg-background/80 backdrop-blur-md backdrop-saturate-150 supports-[backdrop-filter]:bg-background/70',
           props.className,
         )}
         containerClassName="max-w-6xl px-6"
       >
-        <NavbarBrand
-          href={homeTarget}
-          className="gap-2 text-xl font-extrabold tracking-tight text-foreground"
-        >
-          <BrandLogo brand={brand}>
-            <LogoImage fallback={<LogoMark />} />
-            <LogoLabel />
+        <NavbarBrand href={homeTarget} className="gap-2">
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage className="size-7" fallback={<LogoMark />} />
+            <LogoLabel className="text-lg font-extrabold tracking-tight text-foreground" />
           </BrandLogo>
         </NavbarBrand>
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="font-mono text-xs uppercase tracking-[0.14em]"
+            >
               {label}
             </NavbarNavLink>
           ))}
@@ -95,13 +96,13 @@ export const MarketingNavbar = defineCapsule({
         <NavbarActions className="gap-3">
           <NavbarRouteLink
             href={loginLabel}
-            className="hidden rounded-xl border border-border bg-muted/60 px-5 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted sm:inline-flex"
+            className="hidden items-center rounded-none border border-border bg-background px-4 py-2 font-mono text-xs font-semibold uppercase tracking-[0.14em] text-foreground transition-colors hover:bg-muted sm:inline-flex"
           >
             {loginLabel}
           </NavbarRouteLink>
           <NavbarRouteLink
             href={ctaTarget}
-            className="hidden rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-[0_4px_14px_rgba(79,70,229,0.35)] transition-colors hover:bg-primary/90 sm:inline-flex"
+            className="hidden items-center whitespace-nowrap rounded-none bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-[3px_3px_0_0] shadow-foreground transition-[transform,box-shadow,background-color] duration-150 hover:bg-primary/90 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none motion-reduce:transform-none sm:inline-flex"
           >
             {ctaLabel}
           </NavbarRouteLink>
@@ -110,7 +111,7 @@ export const MarketingNavbar = defineCapsule({
             nav={nav}
             homeTarget={homeTarget}
             cta={{ label: ctaLabel, target: ctaTarget }}
-            buttonClassName="grid size-10 place-items-center rounded-lg border border-border bg-background text-foreground md:hidden"
+            buttonClassName="grid size-10 place-items-center rounded-none border border-border bg-background text-foreground md:hidden"
           />
         </NavbarActions>
       </SiteNav>

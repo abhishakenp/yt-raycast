@@ -3,21 +3,27 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { StepTimeline, StepItem } from '#/section-kit/StepTimeline.tsx'
+import { MonoTag } from '#/section-kit/Decor.tsx'
+import {
+  StepTimeline,
+  StepItem,
+  StepContent,
+} from '#/section-kit/StepTimeline.tsx'
 
 /**
- * SaasSteps — a "How it works" band for a B2B SaaS landing page. A centered
- * heading + optional intro above a responsive row of 3-4 numbered steps, each
- * with a large gradient/primary numbered badge, a title, and a short
- * description, joined by a faint accent connector line. Use to explain a
- * product onboarding or workflow in a few confident, conversion-focused steps.
- * Renders fully with no props via baked-in defaults.
+ * SaasSteps — kinetic-SaaS "How it works" band for a B2B SaaS landing page. An
+ * asymmetric header (marker-highlighted heading left, mono "[ SETUP ]" meta
+ * right) above a responsive row of 3-4 sharp step cards with hard offset shadows
+ * that stagger down the page on desktop: each card carries a giant ghost step
+ * numeral bleeding behind it, a mono "STEP 01" tag with a primary tick, a bold
+ * title and a short description; a mono pipeline arrow strip runs beneath. Use
+ * to explain a product onboarding or workflow in a few confident,
+ * conversion-focused steps. Renders fully with no props via baked-in defaults.
  */
 export const SaasSteps = defineCapsule({
   name: 'SaasSteps',
   description:
-    "A 'How it works' band for a B2B SaaS landing page: a centered heading + optional intro above a responsive row of 3-4 numbered steps, each with a large gradient/primary numbered badge, a title, and a short description, joined by a faint accent connector line. Use to explain a product onboarding or workflow in a few confident, conversion-focused steps.",
+    "Kinetic-SaaS 'How it works' band for a B2B SaaS landing page: an asymmetric marker-highlighted header with mono meta above a responsive row of 3-4 sharp step cards with hard offset shadows that stagger down the page, each with a giant ghost step numeral, a mono STEP tag with a primary tick, a bold title and a short description, plus a mono pipeline arrow strip beneath. Use to explain a product onboarding or workflow in a few confident, conversion-focused steps.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -64,48 +70,105 @@ export const SaasSteps = defineCapsule({
           },
         ]
 
+    const stagger = [
+      'md:translate-y-0',
+      'md:translate-y-6',
+      'md:translate-y-12',
+      'md:translate-y-[4.5rem]',
+    ]
+    const headingWords = heading.split(' ')
+    const headingLead = headingWords.slice(0, -1).join(' ')
+    const headingMark = headingWords.at(-1) ?? ''
+
     return (
       <StepTimeline
-        className={cn('bg-background py-20 lg:py-28', props.className)}
+        className={cn(
+          'relative overflow-hidden bg-muted/40 py-16 lg:py-24 lg:pb-36',
+          props.className,
+        )}
         aria-labelledby="saas-steps-heading"
       >
         <Container>
-          <SectionHeading
-            title={heading}
-            subtitle={subheading}
-            titleId="saas-steps-heading"
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
+          {/* Asymmetric header: marker-highlighted heading left, mono meta right. */}
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <div className="max-w-2xl">
+              <MonoTag className="mb-4 block">
+                Setup
+                <span aria-hidden="true" className="text-primary">
+                  {' '}
+                  · minutes
+                </span>
+              </MonoTag>
+              <h2
+                id="saas-steps-heading"
+                className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl"
+              >
+                {headingLead}{' '}
+                <span className="relative ml-[0.12em] inline-block whitespace-nowrap">
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-[-0.15em] inset-y-[0.05em] -rotate-1 bg-primary"
+                  />
+                  <span className="relative text-primary-foreground">
+                    {headingMark}
+                  </span>
+                </span>
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">{subheading}</p>
+            </div>
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+            >
+              [ setup ] no migrations
+            </p>
+          </div>
           <ol
             className={cn(
-              'relative grid gap-10 md:gap-8',
+              'grid gap-8 lg:gap-10',
               steps.length >= 4 ? 'md:grid-cols-4' : 'md:grid-cols-3',
             )}
           >
-            {/* Connecting accent line behind the badges on desktop */}
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute left-0 right-0 top-8 hidden h-px bg-gradient-to-r from-transparent via-accent to-transparent md:block"
-            />
             {steps.map((step, i) => (
               <StepItem
                 key={i}
-                className="relative flex flex-col items-center text-center md:items-start md:text-left"
+                className={cn(
+                  'relative list-none',
+                  stagger[i % stagger.length],
+                )}
               >
-                <span className="mb-5 grid size-16 place-items-center rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-2xl font-extrabold text-primary-foreground shadow-lg ring-4 ring-background">
-                  {i + 1}
+                {/* Giant ghost numeral bleeding behind the card. */}
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -top-10 right-0 select-none text-[6rem] font-extrabold leading-none tracking-tighter text-foreground/[0.06] sm:text-[7rem]"
+                >
+                  {String(i + 1).padStart(2, '0')}
                 </span>
-                <h3 className="mb-2 text-lg font-semibold text-foreground">
-                  {step.title}
-                </h3>
-                <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
-                  {step.description}
-                </p>
+                <StepContent className="relative mt-6 gap-0 border border-foreground/80 bg-card p-5 shadow-[6px_6px_0_0] shadow-foreground/15 sm:p-6">
+                  <MonoTag className="flex items-center gap-2">
+                    <span
+                      aria-hidden="true"
+                      className="size-1.5 shrink-0 bg-primary"
+                    />
+                    Step {String(i + 1).padStart(2, '0')}
+                  </MonoTag>
+                  <h3 className="mt-3 text-xl font-bold tracking-tight text-card-foreground">
+                    {step.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {step.description}
+                  </p>
+                </StepContent>
               </StepItem>
             ))}
           </ol>
+          <MonoTag
+            aria-hidden="true"
+            tone="faint"
+            className="mt-12 block md:mt-24"
+          >
+            [ connect → configure → automate → scale ]
+          </MonoTag>
         </Container>
       </StepTimeline>
     )

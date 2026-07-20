@@ -6,8 +6,7 @@ import { Image } from '#/lib/img.tsx'
 import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * BlogPostHero — newsprint front-page masthead for a single-article blog post
  * detail page. A double-ruled mono dateline row (category kicker with a small

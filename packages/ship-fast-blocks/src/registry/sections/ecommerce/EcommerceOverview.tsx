@@ -18,8 +18,7 @@ import {
   OverviewStatLabel,
   OverviewMediaPanel,
 } from '#/section-kit/OverviewSection.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * EcommerceOverview — editorial-commerce overview band for the Ecommerce page
  * family. An asymmetric split with a mono eyebrow (primary tick), a small

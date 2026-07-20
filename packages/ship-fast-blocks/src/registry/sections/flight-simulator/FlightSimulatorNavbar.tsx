@@ -10,8 +10,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
  * FlightSimulatorNavbar — instrument-terminal sticky header for a consumer
  * flight simulator product (PC / console sim, study-level aircraft, photoreal

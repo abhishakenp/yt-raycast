@@ -11,25 +11,28 @@ import {
 } from '#/section-kit/PersonCard.tsx'
 
 /**
- * LawFirmAttorneys — a centered-intro attorney / partner gallery for a law firm.
- * A tracked-uppercase eyebrow, serif heading and lead paragraph sit above a
- * responsive 3-up grid of cards on the card surface; each card has a tall
- * headshot that gently zooms on hover, then a serif name, muted title, bio, and
- * a row of LinkedIn + email icon links. Refined, authoritative editorial
- * aesthetic. Imagery uses the alt-driven Image component; the social links route
- * through section-kit route links. Use to introduce leadership, partners or team members on
- * law-firm, attorney, consulting or professional-services pages. Renders fully
- * with no props via baked-in defaults.
+ * LawFirmAttorneys — a staggered attorney / partner roster for a law firm. An
+ * asymmetric header (mono eyebrow, giant serif heading and lead paragraph left,
+ * tabular partner count right) sits above a responsive 3-up grid of plain
+ * card-surface plates staggered in editorial rhythm; each has a tall hairline-
+ * framed headshot that gently zooms on hover, a mono "No. 0x" index chip in its
+ * corner, then a serif name, a mono tracked-uppercase role, a bio, and a row of
+ * LinkedIn + email icon links. Authoritative, traditional-yet-modern newsprint
+ * aesthetic with sharp binary corners. Imagery uses the alt-driven Image
+ * component; the social links route through section-kit route links. Use to
+ * introduce leadership, partners or team members on law-firm, attorney,
+ * consulting or professional-services pages. Renders fully with no props via
+ * baked-in defaults.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { Watermark } from '#/section-kit/Decor.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const LawFirmAttorneys = defineCapsule({
   name: 'LawFirmAttorneys',
   description:
-    'Centered-intro attorney / partner gallery for a law firm: a tracked-uppercase eyebrow, serif heading and lead paragraph above a responsive 3-up grid of cards on the card surface, each with a tall headshot that gently zooms on hover, a serif name, muted title, bio and a row of LinkedIn + email icon links. Refined, authoritative editorial aesthetic; imagery uses the alt-driven Image component and the social links route through section-kit route links. Use to introduce leadership, partners, attorneys or team members on law-firm, attorney, consulting, accounting or professional-services pages.',
+    'Staggered attorney / partner roster for a law firm: an asymmetric header (mono eyebrow, giant serif heading and lead paragraph left, tabular partner count right) above a responsive 3-up grid of plain card-surface plates staggered in editorial rhythm, each with a tall hairline-framed headshot that gently zooms on hover, a mono "No. 0x" index chip in its corner, a serif name, a mono tracked-uppercase role, a bio and a row of LinkedIn + email icon links. Authoritative, traditional-yet-modern newsprint aesthetic with sharp binary corners; imagery uses the alt-driven Image component and the social links route through section-kit route links. Use to introduce leadership, partners, attorneys or team members on law-firm, attorney, consulting, accounting or professional-services pages.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -127,25 +130,45 @@ export const LawFirmAttorneys = defineCapsule({
       </svg>
     )
     return (
-      <section className={cn('bg-background py-24 lg:py-28', props.className)}>
-        <Container>
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            className="mb-20 max-w-3xl gap-0"
-            eyebrowClassName="mb-4 text-sm uppercase tracking-widest text-muted-foreground"
-            titleClassName="mb-6 font-serif text-3xl text-foreground lg:text-5xl"
-            subtitleClassName="text-lg leading-relaxed text-muted-foreground"
-          />
-          <ResponsiveGrid cols="1-md-2-3">
-            {items.map((person) => (
+      <section
+        className={cn(
+          'relative overflow-hidden bg-background py-20 sm:py-24 lg:py-28',
+          props.className,
+        )}
+      >
+        <Watermark className="-left-4 top-10 font-serif text-[9rem] font-normal tracking-tight sm:text-[13rem] lg:text-[16rem]">
+          Bar
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-12 flex flex-col gap-6 sm:mb-16 md:flex-row md:items-end md:justify-between">
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={description}
+              className="max-w-3xl gap-0"
+              eyebrowClassName="mb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+              titleClassName="mb-6 font-serif text-4xl font-semibold tracking-tight text-foreground lg:text-5xl"
+              subtitleClassName="text-lg leading-relaxed text-muted-foreground"
+            />
+            <span
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] tabular-nums text-muted-foreground/60"
+            >
+              {String(items.length).padStart(2, '0')} partners
+            </span>
+          </div>
+          <ResponsiveGrid cols="1-md-2-3" className="gap-x-8 gap-y-12">
+            {items.map((person, i) => (
               <PersonCard
                 key={person.name}
                 variant="plain"
-                className="group rounded-none"
+                className={cn(
+                  'group rounded-none',
+                  i % 3 === 1 && 'lg:translate-y-12',
+                )}
               >
-                <div className="overflow-hidden">
+                <div className="relative overflow-hidden border border-foreground/15">
                   <Image
                     alt={person.imageAlt}
                     w={400}
@@ -153,18 +176,24 @@ export const LawFirmAttorneys = defineCapsule({
                     loading="lazy"
                     className="h-80 w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
+                  <span
+                    aria-hidden="true"
+                    className="absolute left-0 top-0 border-b border-r border-foreground/15 bg-card px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.2em] tabular-nums text-muted-foreground"
+                  >
+                    No. {String(i + 1).padStart(2, '0')}
+                  </span>
                 </div>
                 <PersonCardContent className="p-6">
-                  <PersonCardName className="mb-1 font-serif text-xl font-normal">
+                  <PersonCardName className="mb-2 font-serif text-xl font-normal">
                     {person.name}
                   </PersonCardName>
-                  <PersonCardRole className="mb-3">
+                  <PersonCardRole className="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-primary">
                     {person.title}
                   </PersonCardRole>
                   <PersonCardBio className="mb-4 leading-relaxed">
                     {person.bio}
                   </PersonCardBio>
-                  <div className="flex gap-3">
+                  <div className="flex gap-3 border-t border-border pt-4">
                     <NavbarRouteLink
                       aria-label={`${person.name} on LinkedIn`}
                       className="text-muted-foreground transition-colors hover:text-foreground"

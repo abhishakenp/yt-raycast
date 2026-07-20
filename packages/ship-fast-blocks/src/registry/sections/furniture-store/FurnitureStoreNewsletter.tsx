@@ -10,8 +10,7 @@ import { NewsletterCtaFineprint } from '#/section-kit/NewsletterCta.tsx'
 import { SubscribeBand } from '#/section-kit/SubscribeBand.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * FurnitureStoreNewsletter — an editorial newsletter subscribe CTA on a soft
  * muted band over a giant faint ghost watermark. A narrow centered column with a

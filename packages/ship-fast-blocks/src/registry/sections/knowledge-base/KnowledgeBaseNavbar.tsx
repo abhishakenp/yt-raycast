@@ -11,8 +11,7 @@ import {
   NavbarNavLink,
   NavbarRouteLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
  * KnowledgeBaseNavbar — "Terminal-docs" sticky reference-manual header for a
  * help-center / knowledge-base / support site. Built on the shared `SiteNav`

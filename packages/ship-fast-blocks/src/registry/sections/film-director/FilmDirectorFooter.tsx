@@ -16,7 +16,7 @@ import {
   FooterContent,
   FooterCopyright,
 } from '#/section-kit/SiteFooter.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const FilmDirectorFooter = defineCapsule({
   name: 'FilmDirectorFooter',
   description:

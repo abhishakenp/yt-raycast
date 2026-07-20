@@ -6,8 +6,7 @@ import { Image } from '#/lib/img.tsx'
 import { GraphPaper, Watermark, MonoTag } from '#/section-kit/Decor.tsx'
 import { HeroSection, HeroContent } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * ArchitectureFirmHero — brutalist-minimal blueprint hero for an
  * architecture-studio / design-practice landing page. A drafting-sheet

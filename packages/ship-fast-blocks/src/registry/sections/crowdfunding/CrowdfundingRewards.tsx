@@ -7,8 +7,7 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { MonoTag } from '#/section-kit/Decor.tsx'
 import { RewardList, RewardItem } from '#/section-kit/RewardList.tsx'
 import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * CrowdfundingRewards — a playful-bold 4-tier REWARDS / pledge board with a
  * stretch-goals progress track for a crowdfunding / campaign landing page. An

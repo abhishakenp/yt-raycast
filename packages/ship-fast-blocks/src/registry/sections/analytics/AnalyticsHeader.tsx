@@ -18,8 +18,7 @@ import {
   type AnalyticsNotificationRecord,
 } from './analytics-admin-lakebed.ts'
 import { PageHeader } from '#/section-kit/PageHeader.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * AnalyticsHeader — Swiss data-grid sticky top header bar for a SaaS analytics
  * dashboard. A backdrop-blurred, hairline border-bottomed row pinned to the

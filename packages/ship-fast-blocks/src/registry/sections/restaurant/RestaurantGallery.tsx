@@ -10,20 +10,23 @@ import {
   GalleryTileCaption,
 } from '#/section-kit/GalleryGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { Watermark } from '#/section-kit/Decor.tsx'
 
 /**
- * RestaurantGallery — captioned image gallery for a restaurant page. Thin
- * configuration over the shared `GalleryGrid` composite: a centered serif
- * header (heading + supporting line) above a responsive 3-column grid of
- * dishes and ambiance, each tile a 4:3 photo with a hover zoom and a caption
- * overlay. All imagery is alt-driven. Use to showcase signature plates, the
- * dining room, and the bar for restaurants, bistros, or fine-dining venues.
- * Renders fully with no props via baked-in defaults (six dishes + captions).
+ * RestaurantGallery — captioned editorial image gallery for a restaurant page.
+ * A left-aligned mono eyebrow and warm serif header sit over a giant faint
+ * "TABLE" ghost watermark, above a staggered, non-uniform grid of square-edged
+ * hairline-framed plates (a wider lead plate, alternating vertical offsets) of
+ * dishes and ambiance. Each tile is a 4:3 photo with a hover zoom and an
+ * indexed mono museum-label caption. All imagery is alt-driven. Use to showcase
+ * signature plates, the dining room, and the bar for restaurants, bistros, or
+ * fine-dining venues. Renders fully with no props via baked-in defaults (six
+ * dishes + captions).
  */
 export const RestaurantGallery = defineCapsule({
   name: 'RestaurantGallery',
   description:
-    'Captioned masonry gallery for a restaurant page: centered serif header above a responsive 1/2/3-column grid of dishes and ambiance, with a tall hero tile, hover zoom, and a token-based gradient caption strip per image. All imagery is alt-driven via the Image component. Use to showcase signature plates, the dining room, and the bar for restaurants, bistros, or fine-dining venues.',
+    'Captioned editorial gallery for a restaurant page: a left-aligned mono eyebrow and warm serif header over a giant faint "TABLE" ghost watermark, above a staggered non-uniform grid of square-edged hairline-framed plates (a wider lead plate, alternating vertical offsets) of dishes and ambiance. Each tile is a 4:3 photo with a hover zoom and an indexed mono museum-label caption. All imagery is alt-driven via the Image component. Use to showcase signature plates, the dining room, and the bar for restaurants, bistros, or fine-dining venues.',
   props: z.object({
     /** Section heading (serif, large). */
     heading: z.string().optional(),
@@ -65,32 +68,60 @@ export const RestaurantGallery = defineCapsule({
           },
         ]
     return (
-      <section className={cn('bg-background py-20 lg:py-28', props.className)}>
-        <Container>
-          <GalleryGrid>
+      <section
+        className={cn(
+          'relative overflow-hidden bg-background py-16 lg:py-24',
+          props.className,
+        )}
+      >
+        <Watermark className="-left-4 top-6 text-[7rem] leading-none sm:text-[12rem] lg:text-[16rem]">
+          TABLE
+        </Watermark>
+        <Container className="relative">
+          <GalleryGrid className="gap-8">
             <SectionHeading
+              align="left"
+              eyebrow="Gallery"
               title={props.heading ?? 'A taste of the evening'}
               subtitle={
                 props.description ??
                 'Seasonal plates, a sunlit dining room, and the little details that make a night out feel like an occasion.'
               }
+              eyebrowClassName="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground"
+              titleClassName="font-serif text-4xl font-medium tracking-tight sm:text-5xl"
+              subtitleClassName="text-muted-foreground"
+              className="max-w-2xl gap-4"
             />
-            {images.map((img) => {
-              const __iv__ = img as {
-                alt: string
-                caption?: string
-                title?: string
-                location?: string
-              }
-              return (
-                <GalleryTile key={__iv__.alt}>
-                  <GalleryTileImage alt={__iv__.alt} />
-                  {__iv__.caption && (
-                    <GalleryTileCaption>{__iv__.caption}</GalleryTileCaption>
-                  )}
-                </GalleryTile>
-              )
-            })}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {images.map((img, i) => {
+                const __iv__ = img as {
+                  alt: string
+                  caption?: string
+                  title?: string
+                  location?: string
+                }
+                return (
+                  <GalleryTile
+                    key={__iv__.alt}
+                    className={cn(
+                      'rounded-none border-foreground/15',
+                      i === 0 && 'sm:col-span-2 lg:row-span-2 lg:aspect-[4/5]',
+                      i % 3 === 2 && 'lg:translate-y-8',
+                    )}
+                  >
+                    <GalleryTileImage alt={__iv__.alt} />
+                    {__iv__.caption && (
+                      <GalleryTileCaption className="rounded-none bg-background/85 font-mono text-[11px] uppercase tracking-[0.14em] text-foreground">
+                        <span className="mr-2 tabular-nums text-muted-foreground">
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                        {__iv__.caption}
+                      </GalleryTileCaption>
+                    )}
+                  </GalleryTile>
+                )
+              })}
+            </div>
           </GalleryGrid>
         </Container>
       </section>

@@ -9,8 +9,7 @@ import {
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * AccountingFirmLogos — Swiss-ledger "trusted by" client strip for a CPA /
  * accounting-firm site. A newsprint-style collapsed-border cell grid: a mono

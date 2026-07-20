@@ -8,8 +8,7 @@ import {
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * AutoDealershipLogos — showroom-kinetic marque strip for an auto dealership
  * site. A hairline border-bottomed band where a mono uppercase caption with a

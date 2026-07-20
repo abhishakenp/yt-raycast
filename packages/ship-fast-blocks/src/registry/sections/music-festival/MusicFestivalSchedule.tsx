@@ -2,13 +2,15 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 /**
- * MusicFestivalSchedule — a three-day schedule grid for a music / arts festival
- * landing page. A centered eyebrow + heading + intro, then a row of three day
- * cards, each with a primary-filled header (day label, name, date), a timed
- * set list (title + stage detail on the left, time on the right), and a
- * full-width outlined "view full schedule" CTA. Each day CTA routes through
- * section-kit route links. Use to lay out the daily program on music festivals, arts
- * festivals, concert series, or any multi-day live event.
+ * MusicFestivalSchedule — a kinetic-poster three-day schedule ledger for a
+ * music / arts festival landing page. An asymmetric mono-index header, then a
+ * row of three square-cornered day cards, each with an inverted
+ * (foreground-background) header carrying a mono day label, a big uppercase day
+ * name and a date, a hairline-divided set list (set title + mono stage detail
+ * on the left, tabular-nums time on the right), and a full-width outlined
+ * "view full schedule" CTA with press feedback. Each day CTA routes through
+ * section-kit route links. Use to lay out the daily program on music festivals,
+ * arts festivals, concert series, or any multi-day live event.
  */
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
@@ -19,12 +21,11 @@ import {
   EventDate,
   EventDetails,
 } from '#/section-kit/EventList.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const MusicFestivalSchedule = defineCapsule({
   name: 'MusicFestivalSchedule',
   description:
-    "Three-day schedule grid for a music / arts festival landing page: a centered eyebrow + heading + intro paragraph, then a row of three day cards, each with a primary-filled header (day label, name, date), a timed set list (set title + stage detail on the left, time on the right), and a full-width outlined 'view full schedule' CTA. Each day CTA routes through section-kit route links. Use to lay out the daily program on music festivals, arts festivals, concert series, conferences-with-lineups, or any multi-day live event.",
+    "Kinetic-poster three-day schedule ledger for a music / arts festival landing page: an asymmetric mono-index header, then a row of three square-cornered day cards, each with an inverted (foreground background) header carrying a mono day label, a big uppercase day name and a date, a hairline-divided set list (set title + mono stage detail on the left, tabular-nums time on the right), and a full-width outlined 'view full schedule' CTA with press feedback. Each day CTA routes through section-kit route links. Use to lay out the daily program on music festivals, arts festivals, concert series, conferences-with-lineups, or any multi-day live event.",
   props: z.object({
     /** Eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -162,47 +163,80 @@ export const MusicFestivalSchedule = defineCapsule({
           },
         ]
     return (
-      <section className={cn('pt-28 pb-24 lg:pt-32 lg:pb-28', props.className)}>
+      <section
+        className={cn(
+          'bg-muted/40 pb-24 pt-24 sm:pt-28 lg:pb-28 lg:pt-32',
+          props.className,
+        )}
+      >
         <Container>
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            className="mb-16 gap-0"
-            eyebrowClassName="mb-4 text-sm font-medium uppercase tracking-widest text-primary"
-            titleClassName="mb-4 text-4xl font-bold tracking-tight lg:text-5xl"
-            subtitleClassName="mx-auto max-w-2xl text-lg text-foreground/70"
-          />
-          <EventList className="grid gap-8 md:grid-cols-3">
-            {days.map((day) => (
+          <div className="mb-14 flex flex-col gap-4 border-b border-border pb-8 md:flex-row md:items-end md:justify-between">
+            <SectionHeading
+              align="left"
+              eyebrow={eyebrow}
+              title={heading}
+              subtitle={description}
+              className="max-w-2xl gap-3"
+              eyebrowClassName="font-mono text-[11px] uppercase tracking-[0.2em] text-primary"
+              titleClassName="text-4xl font-extrabold uppercase tracking-tight lg:text-6xl"
+              subtitleClassName="max-w-xl text-lg text-foreground/70"
+            />
+            <span
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-foreground/40"
+            >
+              [ 3 days ]
+            </span>
+          </div>
+          <EventList className="grid gap-6 md:grid-cols-3">
+            {days.map((day, i) => (
               <EventCard asChild key={day.name}>
-                <Card variant="default" className="overflow-hidden p-0">
-                  <div className="bg-primary p-6 text-primary-foreground">
-                    <p className="mb-1 text-sm opacity-70">{day.label}</p>
-                    <h3 className="text-2xl font-bold">{day.name}</h3>
-                    <p className="mt-1 text-sm opacity-70">{day.date}</p>
+                <Card
+                  variant="default"
+                  className="overflow-hidden rounded-none border-border p-0"
+                >
+                  <div className="flex items-end justify-between bg-foreground p-6 text-background">
+                    <div>
+                      <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-background/60">
+                        {day.label}
+                      </p>
+                      <h3 className="mt-1 text-3xl font-extrabold uppercase tracking-tight">
+                        {day.name}
+                      </h3>
+                      <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.14em] text-background/60">
+                        {day.date}
+                      </p>
+                    </div>
+                    <span
+                      aria-hidden="true"
+                      className="font-mono text-5xl font-extrabold tabular-nums leading-none text-background/20"
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
                   </div>
-                  <div className="space-y-4 p-6">
+                  <div className="divide-y divide-border">
                     {(day.items ?? []).map((item) => (
                       <div
                         key={item.title}
-                        className="flex items-start justify-between"
+                        className="flex items-start justify-between gap-3 px-6 py-3.5"
                       >
                         <EventDetails>
-                          <p className="font-semibold">{item.title}</p>
-                          <p className="text-sm text-card-foreground/60">
+                          <p className="font-semibold tracking-tight">
+                            {item.title}
+                          </p>
+                          <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-card-foreground/60">
                             {item.detail}
                           </p>
                         </EventDetails>
-                        <EventDate className="text-sm font-medium text-primary">
+                        <EventDate className="font-mono text-sm font-semibold tabular-nums text-foreground">
                           {item.time}
                         </EventDate>
                       </div>
                     ))}
                   </div>
-                  <div className="px-6 pb-6">
+                  <div className="p-6">
                     <NavbarRouteLink
-                      className="w-full rounded-lg border border-border py-3 text-center text-sm font-medium transition-colors hover:bg-accent"
+                      className="block w-full rounded-none border border-foreground py-3 text-center font-mono text-[11px] font-semibold uppercase tracking-[0.16em] transition-[transform,background-color] duration-150 hover:bg-foreground hover:text-background active:translate-y-px motion-reduce:transform-none"
                       href={day.cta}
                     >
                       {day.cta}

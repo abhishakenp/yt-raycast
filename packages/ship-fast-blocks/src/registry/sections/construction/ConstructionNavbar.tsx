@@ -11,8 +11,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
  * ConstructionNavbar — industrial-brutalist sticky top navigation for a
  * construction / general contractor site. A backdrop-blurred header with a

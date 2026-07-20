@@ -1,12 +1,14 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { cn } from '#/lib/utils.ts'
 import {
   CtaBand,
   CtaBandInner,
   CtaBandTitle,
   CtaBandSubtitle,
 } from '#/section-kit/CtaBand.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   SaasMutationSpinner,
   SaasPlanActionButton,
@@ -14,18 +16,22 @@ import {
 import { saasLakebed } from '../saas/saas-lakebed.ts'
 
 /**
- * NoCodeCta — bold closing call-to-action band rendered on the inverse
- * foreground surface. A centered, narrow column with a large heading, a muted
- * supporting paragraph, dual CTAs (a filled background-surface primary with
- * arrow + an outlined secondary with play icon), and a small reassurance note
- * beneath. CTAs route through section-kit route links. Use as the final conversion band
- * before the footer on a no-code builder, SaaS, or product landing page.
- * Renders fully with no props.
+ * NoCodeCta — block-builder-kinetic inverted diagonal-seam conversion band for
+ * a no-code / app-builder SaaS landing page. A full-width bg-foreground/
+ * text-background band whose top edge cuts in on a clip-path diagonal, with a
+ * giant ghost "LAUNCH" watermark and a mono "[ ship it ]" micro-label: an
+ * asymmetric 8/4 layout carries the large tight-tracked headline and supporting
+ * paragraph on the left with dual square CTAs (solid background-on-dark primary
+ * + hairline ghost secondary, both with press feedback) stacked on the right,
+ * and a mono fine-print reassurance note beneath. CTAs record trial / demo
+ * intent via shared Lakebed state. Use as the final conversion band before the
+ * footer on a no-code / app-builder SaaS or product landing page. Renders fully
+ * with no props.
  */
 export const NoCodeCta = defineCapsule({
   name: 'NoCodeCta',
   description:
-    'Bold closing call-to-action band rendered on the inverse foreground surface: a centered narrow column with a large heading, muted supporting paragraph, scoped Lakebed trial/demo mutation buttons, and a small reassurance note beneath. CTA buttons record real intent instead of dead route-only navigation.',
+    'Block-builder-kinetic inverted diagonal-seam conversion band for a no-code / app-builder SaaS landing page backed by shared Lakebed conversion state: a bg-foreground/text-background band cut on a clip-path diagonal with a giant ghost LAUNCH watermark and mono ship-it micro-label, an asymmetric left-aligned headline block, scoped trial/demo mutation buttons with hard press feedback, and a mono fine-print reassurance note. CTAs record real intent instead of dead route-only navigation.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -51,83 +57,74 @@ export const NoCodeCta = defineCapsule({
       props.note ??
       'Free forever plan available • 14-day Pro trial • Cancel anytime'
 
-    const ArrowRight = ({ className }: { className?: string }) => (
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-        className={className}
-      >
-        <line x1="3" y1="12" x2="21" y2="12" />
-        <polyline points="14 5 21 12 14 19" />
-      </svg>
-    )
-
-    const PlayIcon = () => (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <circle cx="12" cy="12" r="9" />
-        <polygon points="10 9 15 12 10 15 10 9" />
-      </svg>
-    )
-
     return (
       <CtaBand
         tone="primary"
-        className={`bg-foreground text-background ${props.className ?? ''}`}
+        className={cn(
+          // Inversion band with a diagonal top seam — neighbor-independent.
+          'relative overflow-hidden bg-foreground pt-8 text-background [clip-path:polygon(0_3rem,100%_0,100%_100%,0_100%)] sm:pt-12',
+          props.className,
+        )}
       >
-        <CtaBandInner>
-          <CtaBandTitle>{heading}</CtaBandTitle>
-          <CtaBandSubtitle>{description}</CtaBandSubtitle>
-          <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <SaasPlanActionButton
-              lakebed={lakebed}
-              intentLabel={primaryCta}
-              plan={primaryCta}
-              source="cta"
-              pendingChildren={
-                <>
-                  <SaasMutationSpinner className="size-4" />
-                  Starting
-                </>
-              }
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-background px-8 py-4 text-lg font-medium text-foreground transition-colors hover:bg-background/90 disabled:pointer-events-none disabled:opacity-70"
-            >
-              {primaryCta}
-              <ArrowRight className="size-5" />
-            </SaasPlanActionButton>
-            <SaasPlanActionButton
-              lakebed={lakebed}
-              intentLabel={secondaryCta}
-              source="cta"
-              pendingChildren={
-                <>
-                  <SaasMutationSpinner className="size-4" />
-                  Sending
-                </>
-              }
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-background/30 px-8 py-4 text-lg font-medium text-background transition-colors hover:bg-background/10 disabled:pointer-events-none disabled:opacity-70"
-            >
-              <PlayIcon />
-              {secondaryCta}
-            </SaasPlanActionButton>
+        <Watermark className="-bottom-8 right-0 text-background/[0.05] text-[7rem] sm:text-[11rem] lg:text-[15rem]">
+          LAUNCH
+        </Watermark>
+        <CtaBandInner
+          align="left"
+          className="relative max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24"
+        >
+          <MonoTag tone="inverted" className="flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className="size-1.5 shrink-0 bg-background"
+            />
+            Ship it
+            <span aria-hidden="true" className="text-background/40">
+              · [ live ]
+            </span>
+          </MonoTag>
+          <div className="grid w-full gap-10 lg:grid-cols-12 lg:items-end">
+            <div className="lg:col-span-8">
+              <CtaBandTitle className="max-w-3xl text-4xl font-extrabold tracking-tight text-background sm:text-5xl">
+                {heading}
+              </CtaBandTitle>
+              <CtaBandSubtitle className="mt-5 text-background/70 opacity-100">
+                {description}
+              </CtaBandSubtitle>
+            </div>
+            <div className="flex flex-col gap-4 lg:col-span-4">
+              <SaasPlanActionButton
+                lakebed={lakebed}
+                intentLabel={primaryCta}
+                plan={primaryCta}
+                source="cta"
+                pendingChildren={
+                  <>
+                    <SaasMutationSpinner className="size-4" />
+                    Starting
+                  </>
+                }
+                className="inline-flex items-center justify-center gap-2 rounded-none bg-background px-8 py-4 text-center font-semibold text-foreground shadow-[5px_5px_0_0] shadow-background/25 transition-[transform,box-shadow,background-color] duration-150 hover:bg-background/90 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none motion-reduce:transform-none disabled:pointer-events-none disabled:opacity-70"
+              >
+                {primaryCta}
+              </SaasPlanActionButton>
+              <SaasPlanActionButton
+                lakebed={lakebed}
+                intentLabel={secondaryCta}
+                source="cta"
+                pendingChildren={
+                  <>
+                    <SaasMutationSpinner className="size-4" />
+                    Sending
+                  </>
+                }
+                className="inline-flex items-center justify-center gap-2 rounded-none border border-background/40 px-8 py-4 text-center font-semibold text-background transition-[transform,background-color] duration-150 hover:bg-background/10 active:translate-y-px motion-reduce:transform-none disabled:pointer-events-none disabled:opacity-70"
+              >
+                {secondaryCta}
+              </SaasPlanActionButton>
+            </div>
           </div>
-          <p className="text-sm text-background/50">{note}</p>
+          <p className="font-mono text-xs text-background/50">{note}</p>
         </CtaBandInner>
       </CtaBand>
     )

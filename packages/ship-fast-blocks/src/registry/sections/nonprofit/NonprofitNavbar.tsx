@@ -1,7 +1,8 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { Logo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
+import { cn } from '#/lib/utils.ts'
+import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
   NavbarActions,
@@ -10,18 +11,18 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
- * NonprofitNavbar — sticky site header for a nonprofit / charity / NGO landing
- * page. Thin configuration over the shared `SiteNav` composite: a layered
- * sprout-glyph logo mark beside the organization name on the left, desktop nav
- * links, and a pill-shaped primary "Donate" CTA on the right, plus a real
- * mobile drawer (Sheet) on small screens. Every link and the CTA route through
- * route hrefs so labels can drive page-switching. Use as the sticky site header
- * for nonprofits, charities, NGOs, foundations, humanitarian or community
- * organizations. Renders fully with no props via baked-in "Roots of Hope"
- * defaults.
+ * NonprofitNavbar — warm mission-editorial sticky header for a nonprofit /
+ * charity / NGO landing page. A backdrop-blurred, hairline-bordered bar pins to
+ * the top with a hand-drawn sprout glyph beside a serif organization wordmark on
+ * the left, quiet muted nav links on the right (desktop), and a single square
+ * filled-primary "Donate" CTA with press feedback — the one accent moment — plus
+ * a real mobile drawer (Sheet) on small screens. Every link and the CTA route
+ * through route hrefs so labels can drive page-switching. Warm, human,
+ * trustworthy — not corporate. Use as the sticky site header for nonprofits,
+ * charities, NGOs, foundations, humanitarian or community organizations.
+ * Renders fully with no props via baked-in "Roots of Hope" defaults.
  */
 function SproutMark({ className }: { className?: string }) {
   return (
@@ -45,7 +46,7 @@ function SproutMark({ className }: { className?: string }) {
 export const NonprofitNavbar = defineCapsule({
   name: 'NonprofitNavbar',
   description:
-    "Sticky nonprofit / charity / NGO site header built on the shared SiteNav composite: a layered sprout-glyph logo mark + organization name on the left, desktop nav links, a pill-shaped primary 'Donate' CTA on the right, and a real mobile drawer. Links and CTA route through route hrefs for page-switching. Use as the sticky site header for nonprofits, charities, NGOs, foundations, humanitarian or community organizations.",
+    "Warm mission-editorial sticky nonprofit / charity / NGO site header on the shared SiteNav composite: a backdrop-blurred, hairline-bordered bar with a hand-drawn sprout glyph + serif organization wordmark on the left, quiet muted nav links on the right (desktop), a single square filled-primary 'Donate' CTA with press feedback as the one accent moment, and a real mobile drawer. Links and CTA route through route hrefs for page-switching. Warm, human, trustworthy — not corporate. Use as the sticky site header for nonprofits, charities, NGOs, foundations, humanitarian or community organizations.",
   props: z.object({
     /** Organization / brand name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -68,25 +69,35 @@ export const NonprofitNavbar = defineCapsule({
     const ctaTarget = props.ctaTarget ?? 'Donate'
     const homeTarget = props.homeTarget ?? nav[0]
     return (
-      <SiteNav position="fixed" height="default" className={props.className}>
-        <NavbarBrand href={homeTarget} className="gap-3">
-          <SproutMark className="size-8 text-primary" />
-          <Logo brand={brand}>
-            <LogoImage />
-            <LogoLabel className="text-xl font-semibold tracking-tight" />
-          </Logo>
+      <SiteNav
+        position="sticky"
+        height="default"
+        className={cn('bg-background/80 backdrop-blur-md', props.className)}
+      >
+        <NavbarBrand href={homeTarget} className="text-left">
+          <BrandLogo brand={brand} className="flex items-center gap-2">
+            <LogoImage
+              className="size-7"
+              fallback={<SproutMark className="size-7 text-primary" />}
+            />
+            <LogoLabel className="font-serif text-xl font-medium tracking-tight text-foreground" />
+          </BrandLogo>
         </NavbarBrand>
-        <NavbarNav>
+        <NavbarNav className="gap-8">
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
               {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
-        <NavbarActions>
+        <NavbarActions className="gap-2">
           <NavbarCta
             variant="primary-pill"
-            className="hidden px-5 py-2.5 sm:inline-flex"
+            className="hidden rounded-none px-5 py-2.5 font-semibold transition-colors hover:bg-primary/90 active:translate-y-px sm:inline-flex"
             href={ctaTarget}
           >
             {ctaLabel}
@@ -96,7 +107,7 @@ export const NonprofitNavbar = defineCapsule({
             nav={nav}
             homeTarget={homeTarget}
             cta={{ label: ctaLabel, target: ctaTarget }}
-            buttonClassName="p-2 text-muted-foreground hover:text-foreground md:hidden"
+            buttonClassName="inline-flex size-9 items-center justify-center rounded-none border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:translate-y-px md:hidden"
           />
         </NavbarActions>
       </SiteNav>

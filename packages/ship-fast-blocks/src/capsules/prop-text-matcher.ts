@@ -1,9 +1,3 @@
-import { allCapsules } from '../library'
-import {
-  introspectCapsuleSchema,
-  hasContextInfo,
-} from './prop-schema-introspect'
-import type { CapsuleSchemaInfo } from './prop-schema-introspect'
 import type { JsonRecord } from '@ship-fast/lakebed/server'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -38,15 +32,6 @@ const RESERVED_KEYS = new Set([
   'updatedAt',
 ])
 
-function lookupSchema(capsuleName: string): CapsuleSchemaInfo | null {
-  const capsule = allCapsules.find((c) => c.client.name === capsuleName)
-  if (!capsule) return null
-  const propsSchema = capsule.client.props
-  if (!propsSchema) return null
-  const info = introspectCapsuleSchema(propsSchema)
-  return hasContextInfo(info) ? info : null
-}
-
 /** All string prop keys from merged props, excluding reserved/infrastructure keys. */
 function stringPropKeys(mergedProps: JsonRecord): string[] {
   return Object.entries(mergedProps)
@@ -55,6 +40,12 @@ function stringPropKeys(mergedProps: JsonRecord): string[] {
         !RESERVED_KEYS.has(key) && typeof value === 'string' && value.trim(),
     )
     .map(([key]) => key)
+}
+
+function collectionPropEntries(mergedProps: JsonRecord) {
+  return Object.entries(mergedProps).filter(
+    ([key, value]) => !RESERVED_KEYS.has(key) && Array.isArray(value),
+  ) as Array<[string, unknown[]]>
 }
 
 // ─── Matching ───────────────────────────────────────────────────────────────
@@ -82,8 +73,6 @@ export function matchElementToProp(
   if (!text) return null
 
   const lakebedKey = `${capsuleName}:${statementId}`
-  const schema = lookupSchema(capsuleName)
-
   // 1. Scalar string props — check ALL string props in merged data,
   //    not just schema scalars (heading/subheading are excluded from
   //    schema scalars but are valid inline edit targets).
@@ -102,29 +91,24 @@ export function matchElementToProp(
   }
 
   // 2. Collection item fields
-  if (schema) {
-    for (const collection of schema.collections) {
-      const items = mergedProps[collection.key]
-      if (!Array.isArray(items)) continue
+  for (const [propKey, items] of collectionPropEntries(mergedProps)) {
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i]
+      if (!isPlainObject(item)) continue
 
-      for (let i = 0; i < items.length; i++) {
-        const item = items[i]
-        if (!isPlainObject(item)) continue
-
-        for (const field of collection.itemFields) {
-          if (field.type !== 'string') continue
-          const fieldValue = item[field.key]
-          if (typeof fieldValue !== 'string') continue
-          if (normalizeText(fieldValue) === text) {
-            return {
-              lakebedKey,
-              capsuleName,
-              statementId,
-              propKey: collection.key,
-              index: i,
-              fieldKey: field.key,
-              kind: 'collection',
-            }
+      for (const [fieldKey, fieldValue] of Object.entries(item)) {
+        if (RESERVED_KEYS.has(fieldKey) || typeof fieldValue !== 'string') {
+          continue
+        }
+        if (normalizeText(fieldValue) === text) {
+          return {
+            lakebedKey,
+            capsuleName,
+            statementId,
+            propKey,
+            index: i,
+            fieldKey,
+            kind: 'collection',
           }
         }
       }

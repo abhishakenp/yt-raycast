@@ -16,8 +16,7 @@ import { Image } from '#/lib/img.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { CategoryGrid, CategoryCard } from '#/section-kit/CategoryGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const ElectronicsStoreCategories = defineCapsule({
   name: 'ElectronicsStoreCategories',
   description:

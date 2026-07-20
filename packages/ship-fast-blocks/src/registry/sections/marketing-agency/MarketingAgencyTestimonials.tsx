@@ -3,15 +3,17 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * MarketingAgencyTestimonials — a 3-up star-rated testimonial grid. A centered
- * eyebrow + heading + description above a responsive grid (1/3 columns) of muted
- * rounded cards, each with a 5-star rating row, a quoted client testimonial, and
- * an author block pairing a round avatar with a name and role. Use for social
- * proof on a marketing / growth agency, SaaS, or B2B services landing page.
- * Renders fully with no props.
+ * MarketingAgencyTestimonials — staggered field-notes testimonial wall. An
+ * asymmetric header (mono "[ TESTIMONIALS ]" meta, marker-highlighted heading and
+ * description) over a giant ghost quotation mark, above a 3-column grid of sharp
+ * hairline-bordered quote cards whose middle column is pushed down for a staggered
+ * rhythm: each card opens with a mono log-style index tag with a primary tick,
+ * carries the quote, and closes with a hairline-topped mono name / role footer;
+ * cards gain a foreground hairline on hover. Use for social proof on a marketing /
+ * growth agency, SaaS, or B2B services landing page. Renders fully with no props.
  */
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   TestimonialGrid,
   TestimonialCard,
@@ -23,7 +25,7 @@ import {
 export const MarketingAgencyTestimonials = defineCapsule({
   name: 'MarketingAgencyTestimonials',
   description:
-    '3-up star-rated testimonial grid: a centered eyebrow + heading + description above a responsive grid (1/3 columns) of muted rounded cards, each with a 5-star rating row, a quoted client testimonial, and an author block pairing a round avatar with a name and role. Use for social proof from founders and marketing leaders on a marketing / growth agency, SaaS, or B2B services landing page.',
+    'Staggered field-notes testimonial wall: an asymmetric header (mono testimonials meta, marker-highlighted heading and description) over a giant ghost quotation mark, above a 3-column grid of sharp hairline-bordered quote cards with a pushed-down middle column, each opening with a mono log-style index tag and closing with a hairline-topped mono name / role footer. Use for social proof from founders and marketing leaders on a marketing / growth agency, SaaS, or B2B services landing page.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -67,20 +69,54 @@ export const MarketingAgencyTestimonials = defineCapsule({
             role: 'Founder, LearnHub',
           },
         ]
+    const headingWords = heading.split(' ')
+    const headingLead = headingWords.slice(0, -1).join(' ')
+    const headingMark = headingWords.at(-1) ?? ''
     return (
-      <section className={cn('bg-background py-24', props.className)}>
-        <Container>
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={description}
-            className="mb-16 max-w-3xl gap-0"
-            eyebrowClassName="mb-3 normal-case tracking-normal text-muted-foreground"
-            titleClassName="mb-4 tracking-tight sm:text-4xl"
-            subtitleClassName="md:text-base"
-          />
-          <TestimonialGrid columns={3}>
-            {items.map((t) => {
+      <section
+        className={cn(
+          'relative overflow-hidden bg-background py-20 lg:py-28',
+          props.className,
+        )}
+      >
+        <Watermark className="-top-16 left-0 font-serif text-[16rem] sm:text-[22rem]">
+          &ldquo;
+        </Watermark>
+        <Container className="relative">
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <div className="max-w-2xl">
+              <MonoTag className="mb-4 block">
+                Testimonials
+                <span aria-hidden="true" className="text-primary">
+                  {' '}
+                  · field notes
+                </span>
+              </MonoTag>
+              <h2 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+                {headingLead}{' '}
+                <span className="relative ml-[0.12em] inline-block whitespace-nowrap">
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-[-0.15em] inset-y-[0.05em] -rotate-1 bg-primary"
+                  />
+                  <span className="relative text-primary-foreground">
+                    {headingMark}
+                  </span>
+                </span>
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">
+                {description}
+              </p>
+            </div>
+            <p
+              aria-hidden="true"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+            >
+              [ {eyebrow} ]
+            </p>
+          </div>
+          <TestimonialGrid columns={3} className="gap-5 lg:gap-6">
+            {items.map((t, index) => {
               const __iv__ = t as {
                 quote: string
                 name: string
@@ -91,12 +127,29 @@ export const MarketingAgencyTestimonials = defineCapsule({
                 avatarAlt?: string
               }
               return (
-                <TestimonialCard key={__iv__.name}>
-                  <TestimonialQuote>{__iv__.quote}</TestimonialQuote>
-                  <TestimonialAuthor>
-                    <TestimonialName>{__iv__.name}</TestimonialName>
+                <TestimonialCard
+                  key={__iv__.name}
+                  className={cn(
+                    'rounded-none border border-border bg-card p-6 shadow-none transition-colors duration-150 hover:border-foreground/40',
+                    index % 3 === 1 && 'lg:translate-y-8',
+                  )}
+                >
+                  <MonoTag className="flex items-center gap-2" tone="faint">
+                    <span
+                      aria-hidden="true"
+                      className="size-1.5 shrink-0 bg-primary"
+                    />
+                    Log {String(index + 1).padStart(2, '0')}
+                  </MonoTag>
+                  <TestimonialQuote className="mt-4 text-[15px] leading-relaxed">
+                    {__iv__.quote}
+                  </TestimonialQuote>
+                  <TestimonialAuthor className="mt-6 flex-col items-start gap-0.5 border-t border-border pt-4">
+                    <TestimonialName className="text-sm font-bold tracking-tight">
+                      {__iv__.name}
+                    </TestimonialName>
                     {(__iv__.role || __iv__.company || __iv__.meta) && (
-                      <TestimonialMeta>
+                      <TestimonialMeta className="font-mono text-[10px] uppercase tracking-[0.14em]">
                         {__iv__.role || __iv__.company || __iv__.meta}
                       </TestimonialMeta>
                     )}

@@ -2,26 +2,25 @@ import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
-import {
-  ProgramGrid,
-  ProgramCard,
-  ProgramIcon,
-} from '#/section-kit/ProgramGrid.tsx'
+import { ProgramGrid, ProgramCard } from '#/section-kit/ProgramGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 
 /**
- * YogaStudioPrograms — class-types grid for a yoga-studio page. A warm
- * background band with a centered heading + intro above a responsive grid of
- * class cards, each showing the class name, a level pill, and a short blurb
- * describing the style and who it's for. Use to present the range of practices
- * a studio offers — Vinyasa, Yin, Hot, Restorative, and more. Renders fully
- * with no props via baked-in defaults.
+ * YogaStudioPrograms — collapsed-border class-types ledger for a yoga-studio
+ * page. On a soft muted wash with a giant lowercase ghost watermark word: an
+ * asymmetric left-aligned header (mono index eyebrow + calm clean-sans heading +
+ * grounding intro, mono class-count meta on the right) sits above a
+ * collapsed-border grid of class cells sharing hairline rules — each cell pairs a
+ * mono index numeral with a mono level tag, then a clean-sans class name and a
+ * short blurb describing the style and who it's for. Use to present the range of
+ * practices a studio offers — Vinyasa, Yin, Hot, Restorative, and more. Renders
+ * fully with no props via baked-in defaults.
  */
 export const YogaStudioPrograms = defineCapsule({
   name: 'YogaStudioPrograms',
   description:
-    "Class-types grid for a yoga-studio page: a warm band with a centered heading + intro above a responsive grid of class cards, each showing the class name, a level pill, and a short blurb describing the style and who it's for. Use to present the range of practices a studio offers — Vinyasa, Yin, Hot, Restorative, and more.",
+    'Collapsed-border class-types ledger for a yoga-studio page: a soft muted wash with a giant lowercase ghost watermark word, an asymmetric left-aligned header (mono index eyebrow + calm clean-sans heading + grounding intro, mono class-count meta right) above a collapsed-border grid of class cells sharing hairline rules — each cell pairs a mono index numeral with a mono level tag, then a clean-sans class name and a short blurb. Use to present the range of practices a studio offers — Vinyasa, Yin, Hot, Restorative, and more.',
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -88,45 +87,57 @@ export const YogaStudioPrograms = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-muted/40 pt-28 pb-20 lg:pt-32 lg:pb-28',
+          'relative overflow-hidden bg-muted/30 pt-28 pb-20 lg:pt-32 lg:pb-28',
           props.className,
         )}
         aria-labelledby="yoga-programs-heading"
       >
-        <Container size="xl" className="px-6">
-          <SectionHeading
-            title={heading}
-            subtitle={subheading}
-            titleId="yoga-programs-heading"
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 text-3xl font-bold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
+        <Watermark className="-top-6 right-2 text-[6rem] font-semibold tracking-tight sm:text-[9rem] lg:text-[13rem]">
+          flow
+        </Watermark>
+        <Container size="xl" className="relative px-6">
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <div className="max-w-2xl">
+              <MonoTag className="mb-4 block">02 / The Practice</MonoTag>
+              <h2
+                id="yoga-programs-heading"
+                className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl lg:text-[2.75rem] lg:leading-[1.08]"
+              >
+                {heading}
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">{subheading}</p>
+            </div>
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="shrink-0 md:pb-2"
+            >
+              {String(programs.length).padStart(2, '0')} / classes
+            </MonoTag>
+          </div>
 
-          <ProgramGrid cols="1-md-2-3">
-            {programs.map((program) => (
+          <ProgramGrid
+            cols="1-md-2-3"
+            className="gap-0 border-l border-t border-border"
+          >
+            {programs.map((program, i) => (
               <ProgramCard
                 key={program.name}
-                variant="default"
-                className="flex flex-col rounded-2xl p-6 text-card-foreground shadow-sm transition-shadow hover:shadow-md lg:p-8"
+                variant="none"
+                className="group rounded-none border-b border-r border-border bg-background/40 p-6 transition-colors duration-150 hover:bg-background lg:p-8"
               >
-                <ProgramIcon
-                  shape="circle"
-                  className="mb-4 size-14 bg-primary/10 text-primary"
-                >
-                  <span className="text-lg font-semibold">
-                    {program.name.charAt(0)}
+                <div className="mb-5 flex items-center justify-between gap-3">
+                  <span className="font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-primary tabular-nums">
+                    {String(i + 1).padStart(2, '0')}
                   </span>
-                </ProgramIcon>
-                <div className="flex items-start justify-between gap-3">
-                  <h3 className="text-xl font-semibold text-foreground">
-                    {program.name}
-                  </h3>
-                  <span className="whitespace-nowrap rounded-full bg-accent/15 px-3 py-1 text-xs font-medium text-accent">
+                  <span className="border border-border px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
                     {program.level}
                   </span>
                 </div>
-                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                <h3 className="text-xl font-semibold tracking-tight text-foreground">
+                  {program.name}
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                   {program.description}
                 </p>
               </ProgramCard>

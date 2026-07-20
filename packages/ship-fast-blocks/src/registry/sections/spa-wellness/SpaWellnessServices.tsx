@@ -3,27 +3,27 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import {
-  ServicesGrid,
-  ServiceCard,
-  ServiceIcon,
   ServiceTitle,
   ServiceDescription,
 } from '#/section-kit/ServicesGrid.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 
 /**
- * SpaWellnessServices — treatment-menu grid for a day-spa / wellness page. A
- * calm background band with a centered serif heading + intro above a responsive
- * grid of treatment cards. Each card shows the treatment name, a duration +
- * price row, and a short descriptive blurb. Use to present a spa's menu of
- * services — massages, facials, body treatments, and rituals. Renders fully
+ * SpaWellnessServices — hairline rituals table for a day-spa / wellness page.
+ * On a soft muted wash with a giant ghost watermark word: an asymmetric
+ * left-aligned header (mono index eyebrow + delicate serif heading + calming
+ * intro, mono count meta on the right) sits above a collapsed-border treatment
+ * ledger — each ritual is a full-width hairline-divided row pairing a serif
+ * treatment name and a mono duration label with a right-aligned tabular price
+ * and a short descriptive blurb, spa-menu grammar. Use to present a spa's menu
+ * of services — massages, facials, body treatments, and rituals. Renders fully
  * with no props via baked-in defaults.
  */
 export const SpaWellnessServices = defineCapsule({
   name: 'SpaWellnessServices',
   description:
-    "Treatment-menu grid for a day-spa / wellness page: a calm band with a centered serif heading + intro above a responsive grid of treatment cards, each showing the treatment name, a duration + price row, and a short blurb. Use to present a spa's menu of services — massages, facials, body treatments, and rituals.",
+    "Hairline rituals table for a day-spa / wellness page: a soft muted wash with a giant ghost watermark word, an asymmetric left-aligned header (mono index eyebrow + delicate serif heading + calming intro, mono count meta right) above a collapsed-border treatment ledger where each ritual is a full-width hairline-divided row pairing a serif treatment name and a mono duration label with a right-aligned tabular price and a short blurb — spa-menu grammar. Use to present a spa's menu of services — massages, facials, body treatments, and rituals.",
   props: z.object({
     /** Section heading. */
     heading: z.string().optional(),
@@ -97,48 +97,58 @@ export const SpaWellnessServices = defineCapsule({
     return (
       <section
         className={cn(
-          'bg-muted/40 pt-28 pb-20 lg:pt-32 lg:pb-28',
+          'relative overflow-hidden bg-muted/30 pt-28 pb-20 lg:pt-32 lg:pb-28',
           props.className,
         )}
         aria-labelledby="spa-services-heading"
       >
-        <Container size="xl" className="px-6">
-          <SectionHeading
-            title={heading}
-            subtitle={subheading}
-            titleId="spa-services-heading"
-            className="mb-16 max-w-3xl gap-0"
-            titleClassName="mb-4 font-serif text-3xl font-semibold text-foreground sm:text-4xl"
-            subtitleClassName="text-lg text-muted-foreground"
-          />
+        <Watermark className="-top-6 right-2 font-serif text-[6rem] font-normal tracking-tight sm:text-[9rem] lg:text-[13rem]">
+          rituals
+        </Watermark>
+        <Container size="xl" className="relative px-6">
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mb-16">
+            <div className="max-w-2xl">
+              <MonoTag className="mb-4 block">01 / The Menu</MonoTag>
+              <h2
+                id="spa-services-heading"
+                className="font-serif text-3xl font-normal tracking-tight text-foreground sm:text-4xl lg:text-[2.75rem] lg:leading-[1.08]"
+              >
+                {heading}
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">{subheading}</p>
+            </div>
+            <MonoTag
+              aria-hidden="true"
+              tone="faint"
+              className="shrink-0 md:pb-2"
+            >
+              {String(services.length).padStart(2, '0')} / treatments
+            </MonoTag>
+          </div>
 
-          <ServicesGrid columns={3}>
-            {services
-              .map((s) => ({
-                title: s.name,
-                description: `${s.duration} · ${s.price} — ${s.description}`,
-              }))
-              .map((f) => {
-                const __iv__ = f as {
-                  title: string
-                  description: string
-                  icon?: React.ReactNode
-                  points?: string[]
-                  cta?: string
-                  price?: string
-                  imageAlt?: string
-                }
-                return (
-                  <ServiceCard key={__iv__.title}>
-                    {__iv__.icon && <ServiceIcon>{__iv__.icon}</ServiceIcon>}
-                    <ServiceTitle>{__iv__.title}</ServiceTitle>
-                    <ServiceDescription>
-                      {__iv__.description}
-                    </ServiceDescription>
-                  </ServiceCard>
-                )
-              })}
-          </ServicesGrid>
+          <div className="border-y border-border">
+            {services.map((service) => (
+              <div
+                key={service.name}
+                className="group grid grid-cols-[1fr_auto] items-baseline gap-x-6 border-t border-border py-6 transition-colors duration-150 first:border-t-0 hover:bg-background/60 sm:gap-x-10 sm:py-7"
+              >
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                    <ServiceTitle className="font-serif text-lg font-medium tracking-tight text-foreground sm:text-xl">
+                      {service.name}
+                    </ServiceTitle>
+                    <MonoTag tone="faint">{service.duration}</MonoTag>
+                  </div>
+                  <ServiceDescription className="mt-2 max-w-xl leading-relaxed">
+                    {service.description}
+                  </ServiceDescription>
+                </div>
+                <span className="shrink-0 font-serif text-xl font-medium tabular-nums text-foreground sm:text-2xl">
+                  {service.price}
+                </span>
+              </div>
+            ))}
+          </div>
         </Container>
       </section>
     )

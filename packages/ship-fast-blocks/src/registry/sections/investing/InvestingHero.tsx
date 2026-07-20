@@ -12,8 +12,7 @@ import {
   StatValue,
   StatLabel,
 } from '#/section-kit/StatGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * InvestingHero — Swiss-fintech asymmetric 7/5 split hero for a modern investing
  * / brokerage landing page. The left column carries a mono micro-label index

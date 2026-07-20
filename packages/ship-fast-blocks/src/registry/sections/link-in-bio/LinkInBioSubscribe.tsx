@@ -16,10 +16,12 @@ import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.t
 
 /**
  * LinkInBioSubscribe — a compact, centered email-capture band sized for a
- * mobile link-in-bio / link-hub page. It renders a single rounded card on a
- * card surface: a small mail icon tile, an uppercase eyebrow, a bold headline,
- * a short subtitle, then a stacked newsletter form (an email input + a full
- * width pill submit button) and a small reassurance note underneath. The form
+ * mobile link-in-bio / link-hub page, and the page's one inverted moment. It
+ * renders a single chunky rounded-3xl inverted card (bg-foreground /
+ * text-background) with a 2px rule and a hard offset token shadow: a small mail
+ * icon tile, an uppercase mono eyebrow, a bold headline, a short subtitle, then
+ * a stacked newsletter form (an email input + a full-width chunky pill submit
+ * button with press feedback) and a small reassurance note underneath. The form
  * writes to the shared Lakebed subscriber list. Use as the "Subscribe" /
  * newsletter-capture role of a Linktree / Bento style personal landing page,
  * creator or influencer link hub, or social-profile splash. Renders fully with
@@ -28,7 +30,7 @@ import { NewsletterSubscribeForm } from '../newsletter/newsletter-interactions.t
 export const LinkInBioSubscribe = defineCapsule({
   name: 'LinkInBioSubscribe',
   description:
-    "Compact, centered EMAIL-CAPTURE / newsletter-subscribe band sized for a mobile LINK-IN-BIO / link-hub page. Renders a single rounded card on a card surface with a small mail icon tile, an uppercase eyebrow, a bold headline, a short subtitle, a stacked subscribe form (an email input + a full-width pill submit button), and a small reassurance note. Submitting writes to the shared Lakebed subscriber list so another subscribe block or admin view can react immediately. Use as the 'Subscribe' / 'Join my newsletter' / email-signup role of a Linktree / Bento style personal landing page, creator or influencer link hub, freelancer bio link, or social-profile splash. Supply copy only — eyebrow, heading, subheading, placeholder, CTA label, and note; the section owns all layout and styling.",
+    "Compact, centered EMAIL-CAPTURE / newsletter-subscribe band sized for a mobile LINK-IN-BIO / link-hub page, and the page's one inverted moment. Renders a single chunky rounded-3xl inverted card (bg-foreground / text-background, 2px-ruled with a hard offset token shadow) with a small mail icon tile, an uppercase mono eyebrow, a bold headline, a short subtitle, a stacked subscribe form (an email input + a full-width chunky pill submit button with press feedback), and a small reassurance note. Submitting writes to the shared Lakebed subscriber list so another subscribe block or admin view can react immediately. Use as the 'Subscribe' / 'Join my newsletter' / email-signup role of a Linktree / Bento style personal landing page, creator or influencer link hub, freelancer bio link, or social-profile splash. Supply copy only — eyebrow, heading, subheading, placeholder, CTA label, and note; the section owns all layout and styling.",
   props: z.object({
     /** Small uppercase label above the headline. */
     eyebrow: z.string().optional(),
@@ -61,8 +63,8 @@ export const LinkInBioSubscribe = defineCapsule({
     return (
       <SubscribeBand className={cn('pt-28 pb-10', props.className)}>
         <Container className="max-w-md">
-          <Card className="text-center sm:p-8 rounded-2xl">
-            <div className="mx-auto grid size-12 place-items-center rounded-xl bg-primary/10 text-primary">
+          <Card className="rounded-3xl border-2 border-foreground bg-foreground p-6 text-center text-background shadow-[6px_6px_0_0] shadow-primary sm:p-8">
+            <div className="mx-auto grid size-12 place-items-center rounded-xl border-2 border-background/40 bg-background/10 text-background">
               <svg
                 width="22"
                 height="22"
@@ -80,14 +82,14 @@ export const LinkInBioSubscribe = defineCapsule({
 
             <Eyebrow
               variant="text"
-              className="mt-4 block font-medium tracking-wider text-accent"
+              className="mt-4 block font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-background/70"
             >
               {eyebrow}
             </Eyebrow>
-            <SubscribeHeading className="mt-2 text-xl font-semibold text-foreground sm:text-2xl">
+            <SubscribeHeading className="mt-2 text-xl font-extrabold tracking-tight text-background sm:text-2xl">
               {heading}
             </SubscribeHeading>
-            <SubscribeDescription className="mt-2 text-sm text-muted-foreground">
+            <SubscribeDescription className="mt-2 text-sm text-background/70">
               {subheading}
             </SubscribeDescription>
 
@@ -98,11 +100,11 @@ export const LinkInBioSubscribe = defineCapsule({
               buttonLabel={ctaLabel}
               successMessage="You're subscribed. New links and drops will arrive by email."
               className="mt-6 flex flex-col gap-3"
-              inputClassName="w-full rounded-full border border-input bg-background px-5 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              buttonClassName="w-full rounded-full bg-primary px-5 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-70"
+              inputClassName="w-full rounded-full border-2 border-background/25 bg-background px-5 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-background/40"
+              buttonClassName="w-full rounded-full border-2 border-background bg-primary px-5 py-3 font-bold text-primary-foreground shadow-[3px_3px_0_0] shadow-background/40 transition-all hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0] hover:shadow-background/40 active:translate-y-px active:shadow-none disabled:pointer-events-none disabled:opacity-70"
             />
 
-            <SubscribeFineprint className="mt-3 text-xs text-muted-foreground">
+            <SubscribeFineprint className="mt-3 text-xs text-background/60">
               {note}
             </SubscribeFineprint>
           </Card>

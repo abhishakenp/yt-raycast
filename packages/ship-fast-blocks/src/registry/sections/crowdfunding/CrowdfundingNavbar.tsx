@@ -10,8 +10,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
  * CrowdfundingNavbar — sticky, backdrop-blurred top navigation for a
  * crowdfunding / campaign landing page in a playful-bold campaign language: a

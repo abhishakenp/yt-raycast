@@ -10,7 +10,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
+} from '#/section-kit/SiteNav.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAccountButton,
@@ -20,13 +20,16 @@ import {
 } from '../commerce/commerce-interactions.tsx'
 
 /**
- * WineryBreweryNavbar — sticky site header for a winery, vineyard estate, or
- * craft brewery / taproom. A serif wordmark beside an inline grape-cluster mark
- * sits with centered desktop nav links, product/tasting search, Shoo account
- * dropdown, shared Lakebed cart drawer, a tasting-room phone number, a "Plan a
- * Visit" CTA, and a real mobile drawer on small screens. Use as the header for
- * wineries, cellar doors, vineyards, breweries, taprooms, cideries, or any
- * rustic-premium drinks brand where bookings and visits matter.
+ * WineryBreweryNavbar — sticky, artisan-editorial site header for a winery,
+ * vineyard estate, or craft brewery / taproom. A warm serif wordmark beside an
+ * inline grape-cluster mark anchors the left; the desktop nav links read as a
+ * spaced mono-tracked label row; on the right sit a product/tasting command
+ * search, a Shoo account dropdown, a shared Lakebed cart drawer with a reactive
+ * badge, a tasting-room phone number, and a square-edged "Plan a Visit" CTA
+ * (binary radius, label-stamp gravitas, press feedback) that collapses into a
+ * real mobile drawer on small screens. Backdrop-blurred surface. Use as the
+ * header for wineries, cellar doors, vineyards, breweries, taprooms, cideries,
+ * or any rustic-premium drinks brand where bookings and visits matter.
  */
 function GrapeClusterMark({ className }: { className?: string }) {
   return (
@@ -55,7 +58,7 @@ function GrapeClusterMark({ className }: { className?: string }) {
 export const WineryBreweryNavbar = defineCapsule({
   name: 'WineryBreweryNavbar',
   description:
-    "Sticky winery / brewery site header (vineyard estate or craft taproom): serif wordmark + inline grape-cluster mark, centered desktop nav links, product/tasting command search, Shoo account dropdown, shared Lakebed cart drawer with reactive badge, a tasting-room phone number, a 'Plan a Visit' CTA, and a real mobile drawer. Use as the header for wineries, cellar doors, vineyards, breweries, taprooms, cideries, or any rustic-premium drinks brand where bookings and visits matter.",
+    "Sticky, artisan-editorial winery / brewery site header (vineyard estate or craft taproom): warm serif wordmark + inline grape-cluster mark, a spaced mono-tracked desktop nav row, product/tasting command search, Shoo account dropdown, shared Lakebed cart drawer with reactive badge, a tasting-room phone number, a square-edged 'Plan a Visit' CTA with press feedback, and a real mobile drawer, all on a backdrop-blurred surface. Use as the header for wineries, cellar doors, vineyards, breweries, taprooms, cideries, or any rustic-premium drinks brand where bookings and visits matter.",
   props: z.object({
     /** Winery / brewery brand name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -91,10 +94,11 @@ export const WineryBreweryNavbar = defineCapsule({
         height="default"
         className={cn('bg-background/95', props.className)}
       >
-        <NavbarBrand href={homeTarget} className="gap-3">
-          <BrandLogo brand={brand}>
+        <NavbarBrand href={homeTarget}>
+          <BrandLogo brand={brand} className="flex items-center gap-2">
             <LogoImage
-              fallback={<GrapeClusterMark className="size-8 text-primary" />}
+              className="size-7"
+              fallback={<GrapeClusterMark className="size-7 text-primary" />}
             />
             <LogoLabel className="font-serif text-xl font-medium text-foreground" />
           </BrandLogo>
@@ -102,7 +106,11 @@ export const WineryBreweryNavbar = defineCapsule({
 
         <NavbarNav>
           {nav.map((label) => (
-            <NavbarNavLink key={label} href={label}>
+            <NavbarNavLink
+              key={label}
+              href={label}
+              className="text-[13px] font-medium uppercase tracking-[0.12em] text-muted-foreground"
+            >
               {label}
             </NavbarNavLink>
           ))}
@@ -133,7 +141,7 @@ export const WineryBreweryNavbar = defineCapsule({
           <NavbarCta
             variant="primary-pill"
             href={ctaTarget}
-            className="hidden px-4 py-2 sm:inline-flex"
+            className="hidden rounded-none px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] transition-transform duration-150 active:translate-y-px sm:inline-flex"
           >
             {ctaLabel}
           </NavbarCta>

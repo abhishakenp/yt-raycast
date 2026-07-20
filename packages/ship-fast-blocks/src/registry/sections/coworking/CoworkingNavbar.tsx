@@ -12,8 +12,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
-
+} from '#/section-kit/SiteNav.tsx'
 /**
  * CoworkingNavbar — quiet glass navigation for a coworking / workspace
  * brand. A fixed, full-width frosted bar (backdrop blur + hairline bottom

@@ -11,24 +11,28 @@ import {
   HeroMediaPanel,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
+import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 
 /**
- * ManufacturingHero — split hero band for a precision-manufacturing /
- * industrial-fabrication landing page. A two-column layout: on the left a
- * certification status pill (pulsing dot + label), a large semibold headline, a
- * supporting paragraph, dual CTAs (filled + outlined) and a divided KPI stat
- * strip; on the right a tall CNC machining photo with a floating quality-badge
- * card (check icon + title + subtitle). Clean, neutral, industrial B2B
- * aesthetic. CTAs route through section-kit route links and the photo uses the alt-driven
- * Image component. Use as the opening hero for CNC machine shops, metal
- * fabricators, contract manufacturers or industrial engineering firms. Renders
- * fully with no props via baked-in "Vertex Manufacturing" defaults.
+ * ManufacturingHero — heavy-industrial split hero band for a precision-
+ * manufacturing / industrial-fabrication landing page. An asymmetric 7/5 layout:
+ * on the left a mono model-index eyebrow, a hard-bordered certification status
+ * chip (pulsing accent dot + label), a giant extrabold headline, a supporting
+ * paragraph, dual squared CTA slabs with mechanical press feedback, and a
+ * collapsed-border KPI spec ledger (mono labels + tabular-nums numerals); on the
+ * right a tall CNC machining photo framed as a hard-bordered slab with an offset
+ * shadow, a floating quality-badge slab, and a giant ghost watermark bleeding
+ * behind. Tech-brutalist, industrial B2B aesthetic; CTAs route through section-kit
+ * route links and the photo uses the alt-driven Image component. Use as the
+ * opening hero for CNC machine shops, metal fabricators, contract manufacturers
+ * or industrial engineering firms. Renders fully with no props via baked-in
+ * "Vertex Manufacturing" defaults.
  */
 export const ManufacturingHero = defineCapsule({
   name: 'ManufacturingHero',
   description:
-    'Split hero band for a precision-manufacturing / industrial-fabrication landing page: two-column layout with a certification status pill (pulsing dot + label), a large semibold headline, a supporting paragraph, dual CTAs (filled + outlined) and a divided KPI stat strip on the left, and a tall CNC machining photo with a floating quality-badge card (check icon + title + subtitle) on the right. Clean, neutral, industrial B2B aesthetic; CTAs route through section-kit route links and the photo uses the alt-driven Image component. Use as the opening hero for CNC machine shops, metal fabricators, contract manufacturers or industrial engineering firms.',
+    'Heavy-industrial split hero band for a precision-manufacturing / industrial-fabrication landing page: an asymmetric 7/5 layout with a mono model-index eyebrow, a hard-bordered certification status chip (pulsing accent dot + label), a giant extrabold headline, a supporting paragraph, dual squared CTA slabs with mechanical press feedback, and a collapsed-border KPI spec ledger (mono labels + tabular-nums numerals) on the left, and a tall CNC machining photo framed as a hard-bordered slab with an offset shadow plus a floating quality-badge slab and a giant ghost watermark on the right. Tech-brutalist industrial B2B aesthetic; CTAs route through section-kit route links and the photo uses the alt-driven Image component. Use as the opening hero for CNC machine shops, metal fabricators, contract manufacturers or industrial engineering firms.',
   props: z.object({
     badge: z.string().optional(),
     heading: z.string().optional(),
@@ -67,22 +71,37 @@ export const ManufacturingHero = defineCapsule({
         ]
 
     return (
-      <HeroSection className={cn('relative bg-background', props.className)}>
-        <Container size="xl" className="pb-24 pt-16 lg:pb-32 lg:pt-24">
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-            <div className="space-y-8">
-              <div className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1">
-                <span className="size-2 rounded-full bg-chart-2" />
-                <span className="text-xs font-medium text-muted-foreground">
-                  {badge}
+      <HeroSection
+        className={cn(
+          'relative overflow-hidden bg-background',
+          props.className,
+        )}
+      >
+        <Watermark className="-right-6 top-6 text-[8rem] leading-none sm:text-[12rem] lg:text-[15rem]">
+          CNC
+        </Watermark>
+        <Container size="xl" className="relative pb-20 pt-14 lg:pb-28 lg:pt-20">
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-12">
+            <div className="lg:col-span-7">
+              <div className="flex flex-wrap items-center gap-4">
+                <MonoTag>001 / Precision Manufacturing</MonoTag>
+                <span className="inline-flex items-center gap-2 rounded-none border-2 border-foreground bg-background px-3 py-1">
+                  <span className="size-2 rounded-full bg-primary motion-safe:animate-pulse" />
+                  <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-foreground">
+                    {badge}
+                  </span>
                 </span>
               </div>
-              <HeroHeading className="font-semibold">{heading}</HeroHeading>
-              <HeroSubheading className="max-w-xl">{subheading}</HeroSubheading>
-              <HeroActions className="gap-4">
+              <HeroHeading className="mt-6 font-extrabold uppercase tracking-tight text-foreground">
+                {heading}
+              </HeroHeading>
+              <HeroSubheading className="mt-5 max-w-xl">
+                {subheading}
+              </HeroSubheading>
+              <HeroActions className="mt-8 gap-4">
                 <HeroCta
                   asChild
-                  className="rounded-md bg-foreground px-6 py-3 font-medium text-background hover:bg-foreground/90"
+                  className="rounded-none border-2 border-foreground bg-foreground px-6 py-3 text-sm font-bold uppercase tracking-wide text-background shadow-[5px_5px_0_0] shadow-foreground transition-[transform,box-shadow] duration-150 hover:-translate-x-[2px] hover:-translate-y-[2px] hover:shadow-[7px_7px_0_0] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none motion-reduce:transform-none"
                 >
                   <NavbarRouteLink href={primaryCta}>
                     {primaryCta}
@@ -91,37 +110,42 @@ export const ManufacturingHero = defineCapsule({
                 <HeroCta
                   asChild
                   variant="outline"
-                  className="rounded-md px-6 py-3 font-medium"
+                  className="rounded-none border-2 border-foreground bg-background px-6 py-3 text-sm font-bold uppercase tracking-wide text-foreground shadow-[5px_5px_0_0] shadow-foreground transition-[transform,box-shadow] duration-150 hover:-translate-x-[2px] hover:-translate-y-[2px] hover:shadow-[7px_7px_0_0] hover:bg-muted active:translate-x-[3px] active:translate-y-[3px] active:shadow-none motion-reduce:transform-none"
                 >
                   <NavbarRouteLink href={secondaryCta}>
                     {secondaryCta}
                   </NavbarRouteLink>
                 </HeroCta>
               </HeroActions>
-              <div className="flex items-center gap-6 border-t border-border pt-4">
+              <div className="mt-10 grid grid-cols-3 border-2 border-foreground">
                 {stats.map((s, i) => (
-                  <div key={s.label} className="flex items-center gap-6">
-                    {i > 0 && <span className="h-10 w-px bg-border" />}
-                    <div>
-                      <p className="text-2xl font-semibold text-foreground">
-                        {s.value}
-                      </p>
-                      <p className="text-sm text-muted-foreground">{s.label}</p>
-                    </div>
+                  <div
+                    key={s.label}
+                    className={cn(
+                      'p-4 sm:p-5',
+                      i > 0 && 'border-l-2 border-foreground',
+                    )}
+                  >
+                    <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                      {s.label}
+                    </p>
+                    <p className="mt-1 text-2xl font-extrabold tabular-nums tracking-tight text-foreground sm:text-3xl">
+                      {s.value}
+                    </p>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="relative">
+            <div className="relative lg:col-span-5">
               <HeroMediaPanel
                 alt={imageAlt}
                 w={800}
                 h={500}
-                className="h-[400px] w-full rounded-lg shadow-xl lg:h-[500px]"
+                className="h-[360px] w-full rounded-none border-2 border-foreground shadow-[8px_8px_0_0] shadow-foreground lg:h-[480px]"
               />
-              <div className="absolute -bottom-6 -left-6 hidden rounded-lg bg-card p-4 shadow-lg sm:block">
+              <div className="absolute -bottom-5 -left-5 hidden rounded-none border-2 border-foreground bg-background p-4 shadow-[6px_6px_0_0] shadow-primary sm:block">
                 <div className="flex items-center gap-3">
-                  <span className="grid size-10 place-items-center rounded-full bg-muted text-foreground">
+                  <span className="grid size-10 place-items-center rounded-none border-2 border-foreground bg-foreground text-background">
                     <svg
                       width="20"
                       height="20"
@@ -137,10 +161,10 @@ export const ManufacturingHero = defineCapsule({
                     </svg>
                   </span>
                   <div>
-                    <p className="text-sm font-medium text-card-foreground">
+                    <p className="text-sm font-bold uppercase tracking-tight text-foreground">
                       {floatingTitle}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                       {floatingSubtitle}
                     </p>
                   </div>

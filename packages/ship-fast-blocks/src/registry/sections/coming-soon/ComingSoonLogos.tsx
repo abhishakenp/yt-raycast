@@ -9,8 +9,7 @@ import {
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * ComingSoonLogos — "trusted by" wordmark band for a "launching soon" /
  * waitlist pre-launch landing page. An asymmetric hairline band: a left-aligned

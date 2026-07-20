@@ -5,7 +5,6 @@ import { cn } from '#/lib/utils.ts'
 import {
   HeroSection,
   HeroHeading,
-  HeroHighlight,
   HeroSubheading,
   HeroActions,
   HeroCta,
@@ -14,12 +13,23 @@ import {
   HeroCodeWindowBody,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
+import { DotGrid, Watermark } from '#/section-kit/Decor.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
+function initialsOf(name: string): string {
+  const letters = name
+    .split(/\s+/)
+    .map((part) => part.replace(/[^A-Za-z0-9]/g, '').charAt(0))
+    .filter(Boolean)
+    .join('')
+  return (letters || name.replace(/[^A-Za-z0-9]/g, '').slice(0, 2) || 'DEV')
+    .slice(0, 3)
+    .toUpperCase()
+}
 
 export const PortfolioDevHero = defineCapsule({
   name: 'PortfolioDevHero',
   description:
-    'A split developer-intro hero. The left column leads with a mono `$ whoami` eyebrow, a large name plus a Full-Stack Developer headline, a short intro paragraph, and dual CTAs (a filled View Work and an outlined Resume) that route via section-kit route links, followed by a mono tech-tag row. The right column is a faux terminal/code card with window-chrome dots, a filename, and mono pseudo-code lines. Everything is theme-token only with mono accents — ideal for developer, engineer, and freelancer portfolios.',
+    'Editorial-terminal developer hero on an asymmetric 7/5 split. The left column leads with a mono `$ whoami` eyebrow carrying a blinking block cursor, then a giant extrabold clamp-scaled name signature, the role rendered as a mono metadata rule, a short intro paragraph, and dual square-cornered CTAs (a hard-offset-shadow View Work with mechanical press feedback and a hairline mono Resume) that route via section-kit route links, followed by a monospace stack-chip row. The right column is a sharp-cornered terminal/code pane with square chrome dots, a filename tab, and mono pseudo-code lines. A giant ghost watermark of the developer initials and a faint dot grid sit behind. Theme-token only with mono/terminal accents — ideal for developer, engineer, and freelancer portfolios.',
   props: z.object({
     eyebrow: z.string().optional(),
     name: z.string().optional(),
@@ -46,31 +56,51 @@ export const PortfolioDevHero = defineCapsule({
     const tags = props.tags?.length
       ? props.tags
       : ['TypeScript', 'React', 'Node.js', 'Postgres', 'AWS']
+    const initials = initialsOf(name)
+
     return (
       <HeroSection
+        variant="split"
         className={cn(
-          'bg-background py-20 text-foreground sm:py-28',
+          'relative overflow-hidden bg-background py-20 text-foreground sm:py-28',
           props.className,
         )}
       >
-        <Container className="grid items-center gap-12 lg:grid-cols-2">
-          <div>
-            <span className="font-mono text-sm text-primary">{eyebrow}</span>
-            <HeroHeading className="mt-4">
+        <DotGrid
+          density="default"
+          tone="faint"
+          fade="bottom"
+          className="inset-x-0 top-0 h-64"
+        />
+        <Watermark className="-bottom-16 -right-4 text-[9rem] leading-none sm:text-[15rem] lg:-bottom-24 lg:text-[22rem]">
+          {initials}
+        </Watermark>
+        <Container className="relative grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
+          <div className="min-w-0 lg:col-span-7">
+            <span className="inline-flex items-center gap-2 font-mono text-sm text-primary">
+              {eyebrow}
+              <span
+                aria-hidden="true"
+                className="inline-block h-4 w-2 animate-pulse bg-primary align-middle motion-reduce:animate-none"
+              />
+            </span>
+            <HeroHeading className="mt-5 text-[clamp(2.75rem,9vw,6rem)] font-extrabold leading-[0.9] tracking-tighter">
               {name}
-              <br />
-              <HeroHighlight className="text-muted-foreground">
-                {role}
-              </HeroHighlight>
             </HeroHeading>
-            <HeroSubheading className="max-w-xl leading-8">
+            <div className="mt-5 flex items-center gap-3">
+              <span aria-hidden="true" className="h-px w-8 bg-primary" />
+              <span className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                {role}
+              </span>
+            </div>
+            <HeroSubheading className="mt-6 max-w-xl leading-8">
               {intro}
             </HeroSubheading>
             <HeroActions className="flex-col gap-3 sm:flex-row">
               <HeroCta
                 asChild
                 variant="primary"
-                className="rounded-md px-6 py-3 text-sm font-semibold"
+                className="rounded-none px-6 py-3 font-mono text-xs font-semibold uppercase tracking-[0.12em] shadow-[4px_4px_0_0] shadow-foreground transition-[transform,box-shadow,background-color] duration-150 hover:bg-primary/90 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none motion-reduce:transform-none"
               >
                 <NavbarRouteLink href={primaryTarget}>
                   {primaryCta}
@@ -79,35 +109,44 @@ export const PortfolioDevHero = defineCapsule({
               <HeroCta
                 asChild
                 variant="outline"
-                className="rounded-md px-6 py-3 text-sm font-semibold"
+                className="rounded-none border-foreground/25 px-6 py-3 font-mono text-xs font-semibold uppercase tracking-[0.12em] transition-[background-color,transform] duration-150 hover:bg-muted active:translate-y-px motion-reduce:transform-none"
               >
                 <NavbarRouteLink href={secondaryTarget}>
                   {secondaryCta}
                 </NavbarRouteLink>
               </HeroCta>
             </HeroActions>
-            <div className="mt-8 flex flex-wrap gap-2">
+            <div className="mt-8 flex flex-wrap items-center gap-x-2 gap-y-2">
+              <span
+                aria-hidden="true"
+                className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+              >
+                stack —
+              </span>
               {tags.map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-md border border-border bg-muted px-3 py-1 font-mono text-xs text-muted-foreground"
+                  className="border border-border bg-muted px-2.5 py-1 font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground"
                 >
                   {tag}
                 </span>
               ))}
             </div>
           </div>
-          <HeroCodeWindow asChild>
+          <HeroCodeWindow
+            asChild
+            className="rounded-none border-foreground/20 shadow-[8px_8px_0_0] shadow-foreground/10 lg:col-span-5"
+          >
             <div>
-              <HeroCodeWindowHeader>
-                <span className="size-3 rounded-full bg-muted-foreground/40" />
-                <span className="size-3 rounded-full bg-muted-foreground/30" />
-                <span className="size-3 rounded-full bg-muted-foreground/20" />
-                <span className="ml-2 font-mono text-xs text-muted-foreground">
+              <HeroCodeWindowHeader className="border-border bg-muted">
+                <span className="size-2.5 bg-muted-foreground/40" />
+                <span className="size-2.5 bg-muted-foreground/30" />
+                <span className="size-2.5 bg-muted-foreground/20" />
+                <span className="ml-2 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
                   ~/alex/intro.ts
                 </span>
               </HeroCodeWindowHeader>
-              <HeroCodeWindowBody>
+              <HeroCodeWindowBody className="leading-relaxed">
                 <p className="text-muted-foreground">
                   <span className="text-primary">const</span> dev = {'{'}
                 </p>

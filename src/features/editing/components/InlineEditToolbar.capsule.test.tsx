@@ -41,6 +41,24 @@ vi.mock('@ship-fast/lakebed/server', async (importOriginal) => {
   return { ...actual }
 })
 
+vi.mock('../hooks/useRuntimeCapsuleSchemaInfo', async () => {
+  const { allCapsules } = await import('@ship-fast/blocks')
+  const { hasContextInfo, introspectCapsuleSchema } =
+    await import('@ship-fast/blocks/capsules')
+  const lookup = (capsuleName: string) => {
+    const capsule = allCapsules.find((c) => c.client.name === capsuleName)
+    const propsSchema = capsule?.client.props
+    if (!propsSchema) return null
+    const info = introspectCapsuleSchema(propsSchema)
+    return hasContextInfo(info) ? info : null
+  }
+  return {
+    loadRuntimeCapsuleSchemaInfo: async (capsuleName: string) =>
+      lookup(capsuleName),
+    useRuntimeCapsuleSchemaInfo: lookup,
+  }
+})
+
 // convex/react — no-op for the toolbar's own use
 vi.mock('convex/react', () => ({
   useMutation: () => vi.fn(async () => undefined),

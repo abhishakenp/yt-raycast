@@ -22,6 +22,8 @@ import {
   AccountDropdownSeparator,
   AccountDropdownSignOut,
   AccountDropdownUnauthenticated,
+} from '#/section-kit/AccountDropdown.tsx'
+import {
   CommandSearch,
   CommandSearchTrigger,
   CommandSearchContent,
@@ -29,8 +31,8 @@ import {
   CommandSearchList,
   CommandSearchEmpty,
   CommandSearchGroup,
-  NavbarRouteLink,
-} from '#/section-kit/index.ts'
+} from '#/section-kit/CommandSearch.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 import type {
   RestaurantCatalogInput,
   RestaurantMenuItemInput,
@@ -213,15 +215,19 @@ export function RestaurantSearchButton({
       <CommandSearchContent
         title="Search menu"
         description="Search the generated restaurant menu."
+        className="rounded-none border-border"
       >
         <CommandSearchInput placeholder="Search dishes..." />
         <CommandSearchList>
           <CommandSearchEmpty>No dishes found.</CommandSearchEmpty>
-          <CommandSearchGroup heading="Menu">
+          <CommandSearchGroup
+            heading="Menu"
+            className="[&_[cmdk-group-heading]]:font-mono [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.14em] [&_[cmdk-item]]:rounded-none"
+          >
             {(item) => (
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium">{item.name}</p>
-                <p className="truncate text-xs text-muted-foreground">
+                <p className="truncate font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
                   {[item.category, item.price, item.tag]
                     .filter(Boolean)
                     .join(' · ')}
@@ -251,10 +257,10 @@ export function RestaurantAccountButton({
       <AccountDropdownTrigger aria-label={label} className={buttonClassName}>
         {children}
       </AccountDropdownTrigger>
-      <AccountDropdownContent>
+      <AccountDropdownContent className="rounded-none border-border">
         <AccountDropdownLabel />
         <AccountDropdownSeparator />
-        <AccountDropdownSignOut />
+        <AccountDropdownSignOut className="rounded-none" />
       </AccountDropdownContent>
       <AccountDropdownUnauthenticated />
     </AccountDropdown>
@@ -286,17 +292,19 @@ export function RestaurantMobileMenu({
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="w-[min(100%,22rem)] border-l border-border bg-background p-0 text-foreground sm:max-w-[22rem]"
+        className="w-[min(100%,22rem)] rounded-none border-l border-border bg-background p-0 text-foreground shadow-none sm:max-w-[22rem]"
       >
         <SheetHeader className="border-b border-border px-5 py-4 text-left">
-          <SheetTitle className="font-serif text-lg">{brand}</SheetTitle>
+          <SheetTitle className="font-serif text-lg tracking-tight">
+            {brand}
+          </SheetTitle>
           <SheetDescription className="sr-only">
             Navigate to a restaurant section.
           </SheetDescription>
         </SheetHeader>
-        <div className="flex flex-col gap-1 px-3 py-4">
+        <div className="flex flex-col divide-y divide-border px-3 py-2">
           <NavbarRouteLink
-            className="rounded-lg px-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            className="rounded-none px-3 py-3.5 text-left font-mono text-xs uppercase tracking-[0.14em] text-foreground transition-colors hover:bg-muted active:translate-y-px"
             href={homeTarget ?? nav[0]}
             onClick={() => setOpen(false)}
           >
@@ -305,7 +313,7 @@ export function RestaurantMobileMenu({
           {nav.map((item) => (
             <NavbarRouteLink
               key={item}
-              className="rounded-lg px-3 py-3 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="rounded-none px-3 py-3.5 text-left font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:translate-y-px"
               href={item}
               onClick={() => setOpen(false)}
             >

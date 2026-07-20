@@ -9,8 +9,7 @@ import {
   LogoStripItems,
   LogoStripItem,
 } from '#/section-kit/LogoStrip.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * DatingAppLogos — playful-geometric press rail for a dating / matchmaking
  * landing page. A hairline-bordered band: a left-aligned mono micro-label

@@ -31,6 +31,24 @@ vi.mock('@ship-fast/lakebed/server', async (importOriginal) => {
   return { ...actual }
 })
 
+vi.mock('../hooks/useRuntimeCapsuleSchemaInfo', async () => {
+  const { allCapsules } = await import('@ship-fast/blocks')
+  const { hasContextInfo, introspectCapsuleSchema } =
+    await import('@ship-fast/blocks/capsules')
+  const lookup = (capsuleName: string) => {
+    const capsule = allCapsules.find((c) => c.client.name === capsuleName)
+    const propsSchema = capsule?.client.props
+    if (!propsSchema) return null
+    const info = introspectCapsuleSchema(propsSchema)
+    return hasContextInfo(info) ? info : null
+  }
+  return {
+    loadRuntimeCapsuleSchemaInfo: async (capsuleName: string) =>
+      lookup(capsuleName),
+    useRuntimeCapsuleSchemaInfo: lookup,
+  }
+})
+
 // Mock Sortable — dnd-kit doesn't work in jsdom (no layout engine).
 // Replace with a simple component that calls onMove when a pointer drag
 // sequence is fired on a handle element.

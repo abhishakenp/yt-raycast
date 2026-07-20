@@ -15,18 +15,19 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 
 /**
- * LendingFaq — a native-disclosure accordion FAQ for a lending or fintech
- * marketing page. A centered heading + description above a vertical stack of
- * bordered white <details> cards; each summary shows the question with a chevron
- * that rotates open, revealing the answer paragraph below. Uses no JS state — the
- * browser's open/close handles interactivity. Use to answer common borrower
- * questions on personal-loan, debt-consolidation, or financing pages. Renders
- * fully with no props via baked-in defaults.
+ * LendingFaq — Swiss-fintech native-disclosure FAQ ledger for a lending or
+ * fintech marketing page. An asymmetric left-aligned header (mono index eyebrow +
+ * heading + lede) sits above a vertical stack of sharp-cornered, hairline-bordered
+ * <details> cards; each summary pairs a mono tabular question index with the
+ * question and a chevron that rotates open to reveal the answer paragraph. Uses no
+ * JS state — the browser's open/close handles interactivity. Use to answer common
+ * borrower questions on personal-loan, debt-consolidation, or financing pages.
+ * Renders fully with no props via baked-in defaults.
  */
 export const LendingFaq = defineCapsule({
   name: 'LendingFaq',
   description:
-    'Native-disclosure accordion FAQ for a lending or fintech marketing page: centered heading + description above a vertical stack of bordered white <details> cards; each summary shows the question with a chevron that rotates open, revealing the answer paragraph. No JS state — native open/close handles interactivity. Use to answer common borrower questions on personal-loan, debt-consolidation, or financing pages.',
+    'Swiss-fintech native-disclosure FAQ ledger for a lending or fintech marketing page: an asymmetric left-aligned header (mono index eyebrow + heading + lede) above a vertical stack of sharp-cornered, hairline-bordered <details> cards; each summary pairs a mono tabular question index with the question and a chevron that rotates open to reveal the answer paragraph. No JS state — native open/close handles interactivity. Use to answer common borrower questions on personal-loan, debt-consolidation, or financing pages.',
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -73,25 +74,42 @@ export const LendingFaq = defineCapsule({
     return (
       <section className={cn('py-24 lg:py-28', props.className)}>
         <Container className="max-w-4xl">
-          <SectionHeading
-            title={faqHeading}
-            subtitle={faqDesc}
-            className="mb-16 gap-0"
-            titleClassName="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
-            subtitleClassName="mt-4 text-lg text-muted-foreground"
-          />
+          <div className="mb-12 border-b border-border pb-6">
+            <SectionHeading
+              align="left"
+              eyebrow="FAQ / Borrower questions"
+              title={faqHeading}
+              subtitle={faqDesc}
+              className="gap-3"
+              eyebrowClassName="font-mono text-[11px] uppercase tracking-[0.2em] text-primary"
+              titleClassName="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl"
+              subtitleClassName="text-lg text-muted-foreground"
+            />
+          </div>
           <FaqAccordion>
-            {faqItems.map((item) => (
-              <FaqItem key={item.q} variant="overflow-bordered">
-                <FaqQuestion className="p-6 transition-colors hover:bg-accent">
-                  <span className="pr-4 font-medium text-card-foreground">
+            {faqItems.map((item, i) => (
+              <FaqItem
+                key={item.q}
+                variant="overflow-bordered"
+                className="rounded-none"
+              >
+                <FaqQuestion className="gap-4 p-6 transition-colors hover:bg-muted/50">
+                  <span
+                    aria-hidden="true"
+                    className="mt-0.5 font-mono text-[11px] tabular-nums tracking-[0.2em] text-primary"
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span className="flex-1 pr-4 font-medium tracking-tight text-card-foreground">
                     {item.q}
                   </span>
                   <FaqQuestionIcon />
                 </FaqQuestion>
-                <FaqAnswer asChild className="px-6 pb-6">
+                <FaqAnswer asChild className="px-6 pb-6 pl-16">
                   <div>
-                    <p>{item.a}</p>
+                    <p className="leading-relaxed text-muted-foreground">
+                      {item.a}
+                    </p>
                   </div>
                 </FaqAnswer>
               </FaqItem>

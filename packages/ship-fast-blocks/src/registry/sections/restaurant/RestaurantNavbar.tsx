@@ -9,7 +9,7 @@ import {
   NavbarNav,
   NavbarNavLink,
   SiteNav,
-} from '#/section-kit/index.ts'
+} from '#/section-kit/SiteNav.tsx'
 import {
   RestaurantAccountButton,
   RestaurantMobileMenu,
@@ -22,13 +22,14 @@ import {
 import { restaurantLakebed } from './restaurant-lakebed.ts'
 
 /**
- * RestaurantNavbar — sticky site header for a restaurant (casual neighborhood
- * spot or upscale dining room). Thin configuration over the shared `SiteNav`
- * composite: a serif wordmark beside an inline fork-and-knife mark, centered
- * nav links on desktop, a reservations phone number, a "Book a Table" CTA, and
- * a real mobile drawer (Sheet) on small screens. Use as the header for bistros,
- * trattorias, steak houses, sushi counters, or any dining brand where
- * reservations matter. Renders fully with no props.
+ * RestaurantNavbar — sticky menu-editorial site header for a restaurant (casual
+ * neighborhood spot or upscale dining room). Thin configuration over the shared
+ * `SiteNav` composite with a hairline bottom rule and backdrop blur: a warm
+ * serif wordmark beside an inline fork-and-knife mark, centered desktop nav
+ * links, a reservations phone number, a square-edged ink "Book a Table" CTA
+ * with press feedback, and a real mobile drawer (Sheet) on small screens. Use
+ * as the header for bistros, trattorias, steak houses, sushi counters, or any
+ * dining brand where reservations matter. Renders fully with no props.
  */
 function ForkKnifeMark({ className }: { className?: string }) {
   return (
@@ -53,7 +54,7 @@ function ForkKnifeMark({ className }: { className?: string }) {
 export const RestaurantNavbar = defineCapsule({
   name: 'RestaurantNavbar',
   description:
-    "Sticky restaurant site header (casual or upscale dining) built on the shared SiteNav composite: serif wordmark + fork-and-knife mark, centered desktop nav links, a reservations phone number, a 'Book a Table' CTA, and a real mobile drawer. Use as the header for bistros, trattorias, steak houses, sushi counters, or any dining brand where reservations matter.",
+    "Sticky menu-editorial restaurant site header (casual or upscale dining) built on the shared SiteNav composite: warm serif wordmark + fork-and-knife mark, hairline bottom rule with backdrop blur, centered desktop nav links, a reservations phone number, a square-edged ink 'Book a Table' CTA with press feedback, and a real mobile drawer. Use as the header for bistros, trattorias, steak houses, sushi counters, or any dining brand where reservations matter.",
   props: z.object({
     /** Restaurant / brand name shown beside the logo mark. */
     brand: z.string().optional(),
@@ -84,12 +85,16 @@ export const RestaurantNavbar = defineCapsule({
       <SiteNav
         position="sticky"
         height="default"
-        className={cn('bg-background/95', props.className)}
+        className={cn(
+          'border-b border-border bg-background/90 backdrop-blur',
+          props.className,
+        )}
       >
-        <NavbarBrand href={homeTarget} className="gap-3">
-          <BrandLogo brand={brand}>
+        <NavbarBrand href={homeTarget}>
+          <BrandLogo brand={brand} className="flex items-center gap-2">
             <LogoImage
-              fallback={<ForkKnifeMark className="size-8 text-primary" />}
+              className="size-7"
+              fallback={<ForkKnifeMark className="size-7 text-primary" />}
             />
             <LogoLabel className="font-serif text-xl font-medium text-foreground" />
           </BrandLogo>
@@ -128,7 +133,7 @@ export const RestaurantNavbar = defineCapsule({
           <RestaurantReservationButton
             lakebed={lakebed}
             input={{ label: ctaLabel, source: ctaTarget }}
-            className="hidden items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50 sm:inline-flex"
+            className="hidden items-center justify-center rounded-none bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-[background-color,transform] duration-150 hover:bg-primary/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 sm:inline-flex"
             pendingChildren={<RestaurantMutationSpinner />}
           >
             {ctaLabel}

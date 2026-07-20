@@ -11,8 +11,7 @@ import {
   HeroStatBadgeSubtitle,
 } from '#/section-kit/HeroSection.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * AccountingFirmHero — Swiss-ledger editorial hero for a CPA / accounting-firm
  * landing page. An asymmetric 7:5 split over a faint graph-paper grid: on the

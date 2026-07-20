@@ -5,22 +5,25 @@ import { cn } from '#/lib/utils.ts'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { EventList, EventCard } from '#/section-kit/EventList.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { Watermark } from '#/section-kit/Decor.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * WineryBreweryEvents — tastings, tours, and seasonal-event list for a winery
- * or brewery page. A centered eyebrow + serif heading + supporting line sit
- * above a responsive grid of event cards. Each card pairs a date badge with an
- * event name, a short blurb, an optional price, and a routable CTA, all
- * clickable through section-kit route links to a booking / events target. Use to promote
- * sunset tastings, barrel-room tours, harvest festivals, member nights, or
+ * WineryBreweryEvents — artisan-editorial tastings, tours, and seasonal-event
+ * ledger for a winery or brewery page. A left-aligned mono meta rail + serif
+ * heading + supporting line sit over a giant faint ghost watermark, then a
+ * collapsed-border event ledger: each row is an [date · detail · price]
+ * ledger line with a rotated mono date label-stamp, a serif event name, a
+ * short blurb, an optional tabular mono price, and a routable arrow CTA — the
+ * whole row clickable through section-kit route links to a booking / events
+ * target with a warm hover tint and press feedback. Use to promote sunset
+ * tastings, barrel-room tours, harvest festivals, member nights, or
  * live-music evenings for wineries, vineyards, cellar doors, breweries,
  * taprooms, or cideries. Renders fully with no props via baked-in defaults.
  */
 export const WineryBreweryEvents = defineCapsule({
   name: 'WineryBreweryEvents',
   description:
-    'Tastings, tours, and seasonal-event list for a winery or brewery page: centered eyebrow + serif heading + supporting line above a responsive grid of event cards. Each card pairs a date badge with an event name, a short blurb, an optional price, and a routable CTA, clicking through section-kit route links to a booking / events target. Use to promote sunset tastings, barrel-room tours, harvest festivals, member nights, or live-music evenings for wineries, vineyards, breweries, taprooms, or cideries.',
+    'Artisan-editorial tastings, tours, and seasonal-event ledger for a winery or brewery page: a left-aligned mono meta rail + serif heading + supporting line over a giant faint ghost watermark, then a collapsed-border event ledger. Each row pairs a rotated mono date label-stamp with a serif event name, a short blurb, an optional tabular mono price, and a routable arrow CTA, the whole row clicking through section-kit route links to a booking / events target with a warm hover tint and press feedback. Use to promote sunset tastings, barrel-room tours, harvest festivals, member nights, or live-music evenings for wineries, vineyards, breweries, taprooms, or cideries.',
   props: z.object({
     /** Small uppercase eyebrow above the heading. */
     eyebrow: z.string().optional(),
@@ -89,53 +92,71 @@ export const WineryBreweryEvents = defineCapsule({
         ]
 
     return (
-      <section className={cn('pt-28 pb-20 lg:pt-32 lg:pb-28', props.className)}>
-        <Container size="xl" className="px-6">
+      <section
+        className={cn(
+          'relative overflow-hidden pt-24 pb-20 lg:pt-28 lg:pb-28',
+          props.className,
+        )}
+      >
+        <Watermark className="-top-8 -left-4 font-serif text-[7rem] font-medium italic sm:text-[11rem] lg:text-[15rem]">
+          Estate
+        </Watermark>
+
+        <Container size="xl" className="relative px-6">
+          <div className="mb-8 flex items-center gap-4">
+            <span aria-hidden="true" className="size-1.5 shrink-0 bg-primary" />
+            <span className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+              {eyebrow}
+            </span>
+            <span aria-hidden="true" className="h-px flex-1 bg-border" />
+          </div>
+
           <SectionHeading
-            eyebrow={eyebrow}
+            align="left"
             title={heading}
             subtitle={description}
-            titleClassName="font-serif"
-            className="mb-16"
+            titleClassName="font-serif text-3xl font-medium tracking-tight sm:text-4xl lg:text-5xl"
+            className="mb-14 max-w-2xl gap-5"
           />
 
-          <EventList variant="card" className="grid gap-6 md:grid-cols-2">
+          <EventList
+            variant="list"
+            className="space-y-0 border-t border-border"
+          >
             {events.map((event) => (
               <EventCard
                 asChild
                 key={event.name}
-                className="gap-4 rounded-2xl border bg-card p-6 text-left text-card-foreground transition-colors hover:border-primary sm:flex-row sm:items-start"
+                className="grid grid-cols-[auto_1fr] gap-x-5 gap-y-3 border-b border-border py-6 text-left transition-colors duration-150 hover:bg-muted/40 active:translate-y-px sm:grid-cols-[8.5rem_1fr_auto] sm:items-baseline sm:gap-x-8"
               >
                 <NavbarRouteLink href={eventsTarget}>
-                  <span className="inline-flex shrink-0 items-center justify-center rounded-xl bg-muted px-4 py-3 text-center font-serif text-sm font-medium uppercase tracking-wide text-foreground">
+                  <span className="inline-flex h-fit -rotate-1 items-center justify-center self-start whitespace-nowrap border border-border bg-background px-3 py-2 text-center font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-foreground">
                     {event.date}
                   </span>
-                  <div className="flex-1">
-                    <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-                      <h3 className="font-serif text-xl font-medium text-foreground transition-colors group-hover:text-primary">
-                        {event.name}
-                      </h3>
-                      {event.price ? (
-                        <span className="text-sm font-medium text-muted-foreground">
-                          {event.price}
-                        </span>
-                      ) : null}
-                    </div>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  <div className="col-start-2 sm:col-start-2">
+                    <h3 className="font-serif text-xl font-medium text-foreground transition-colors group-hover:text-primary">
+                      {event.name}
+                    </h3>
+                    <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
                       {event.blurb}
                     </p>
                     {event.cta ? (
-                      <span className="mt-4 inline-flex items-center text-sm font-medium text-primary">
+                      <span className="mt-4 inline-flex items-center font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-primary">
                         {event.cta}
                         <span
                           aria-hidden="true"
-                          className="ml-1 transition-transform group-hover:translate-x-0.5"
+                          className="ml-1.5 transition-transform group-hover:translate-x-0.5"
                         >
                           →
                         </span>
                       </span>
                     ) : null}
                   </div>
+                  {event.price ? (
+                    <span className="col-start-2 font-mono text-sm font-medium tabular-nums text-muted-foreground sm:col-start-3 sm:text-right">
+                      {event.price}
+                    </span>
+                  ) : null}
                 </NavbarRouteLink>
               </EventCard>
             ))}

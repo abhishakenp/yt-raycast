@@ -4,15 +4,15 @@ import { CheckCircle2Icon, FactoryIcon } from 'lucide-react'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
+import { Card } from '#/section-kit/Card.tsx'
 import {
-  Card,
   PersonCard,
   PersonCardAvatar,
   PersonCardContent,
   PersonCardName,
   PersonCardRole,
   PersonCardBio,
-} from '#/section-kit/index.ts'
+} from '#/section-kit/PersonCard.tsx'
 import { govPortalLakebed } from './gov-portal-lakebed.ts'
 import {
   pickLang,

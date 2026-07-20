@@ -1,29 +1,35 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
+import { cn } from '#/lib/utils.ts'
+import { Watermark } from '#/section-kit/Decor.tsx'
 import {
   CtaBand,
   CtaBandInner,
   CtaBandTitle,
   CtaBandSubtitle,
+  CtaBandActions,
   CtaAction,
 } from '#/section-kit/CtaBand.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * LendingCta — a dark, full-width "ready to check your rate?" CTA band for a
- * lending or fintech marketing page. A near-ink (foreground-toned) section with a
- * centered large heading, a supporting paragraph, dual buttons (a solid
- * inverted-background primary with an arrow + a bordered ghost phone button), and
- * a row of check-marked security badges below. All buttons route through
- * section-kit route links. Use as the closing conversion push near the page bottom on
- * personal-loan, debt-consolidation, or financing pages. Renders fully with no
- * props via baked-in defaults.
+ * LendingCta — Swiss-fintech inverted trust band for a lending or fintech
+ * marketing page. The page's one confident ink-inverted band (bg-foreground /
+ * text-background) that cuts in on a slanted clip-path seam conveying
+ * institutional trust, with a giant ghost "$" watermark bleeding behind a
+ * left-aligned lockup: a mono meta rule with a single primary square accent, a
+ * large "ready to check your rate?" title, a supporting paragraph, dual routable
+ * actions (a square light primary action that inverts back to the surface with a
+ * hard offset shadow + press feedback, plus a square outline phone action), and a
+ * hairline mono row of check-marked security badges. All actions route through
+ * section-kit route links. Use as the closing conversion push near the page
+ * bottom on personal-loan, debt-consolidation, or financing pages. Renders fully
+ * with no props via baked-in defaults.
  */
 export const LendingCta = defineCapsule({
   name: 'LendingCta',
   description:
-    "Dark full-width 'ready to check your rate?' CTA band for a lending or fintech marketing page: near-ink (foreground-toned) section with a centered large heading, supporting paragraph, dual buttons (solid inverted-background primary with arrow + bordered ghost phone button) and a row of check-marked security badges below. Buttons route through section-kit route links. Use as the closing conversion push near the page bottom on personal-loan, debt-consolidation, or financing pages.",
+    "Swiss-fintech inverted trust band for a lending or fintech marketing page: the one confident ink-inverted band (bg-foreground / text-background) cut on a slanted clip-path seam conveying institutional trust, with a giant ghost '$' watermark behind a left-aligned lockup — a mono meta rule with a single primary square accent, a large 'ready to check your rate?' title, a supporting paragraph, dual routable actions (a square light primary action that inverts back to the surface with a hard offset shadow + press feedback, plus a square outline phone action), and a hairline mono row of check-marked security badges. Actions route through section-kit route links. Use as the closing conversion push near the page bottom on personal-loan, debt-consolidation, or financing pages.",
   props: z.object({
     heading: z.string().optional(),
     description: z.string().optional(),
@@ -76,26 +82,40 @@ export const LendingCta = defineCapsule({
     return (
       <CtaBand
         tone="primary"
-        className={`bg-foreground text-background ${props.className ?? ''}`}
+        className={cn(
+          'relative overflow-hidden bg-foreground py-16 pt-24 text-background [clip-path:polygon(0_3rem,100%_0,100%_100%,0_100%)] sm:py-20 sm:pt-28 lg:py-28 lg:pt-36',
+          props.className,
+        )}
       >
-        <CtaBandInner>
-          <CtaBandTitle>{ctaHeading}</CtaBandTitle>
-          <CtaBandSubtitle>{ctaDesc}</CtaBandSubtitle>
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+        <Watermark className="-bottom-16 -right-6 text-[16rem] leading-none text-background/5 sm:text-[22rem]">
+          $
+        </Watermark>
+        <CtaBandInner align="left" className="relative max-w-3xl gap-5">
+          <div className="flex items-center gap-3 border-b border-background/20 pb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-background/50">
+            <span aria-hidden="true" className="size-2 bg-primary" />
+            Apply in 2 minutes
+          </div>
+          <CtaBandTitle className="max-w-2xl text-4xl font-extrabold tracking-tight text-background sm:text-5xl">
+            {ctaHeading}
+          </CtaBandTitle>
+          <CtaBandSubtitle className="max-w-2xl text-background/60 opacity-100">
+            {ctaDesc}
+          </CtaBandSubtitle>
+          <CtaBandActions align="left" className="mt-2 gap-4">
             <CtaAction
               variant="primary"
               invert
-              className="w-full gap-2 rounded-xl px-8 py-4 text-base sm:w-auto"
+              className="min-h-11 gap-2 rounded-none px-6 text-sm font-medium tracking-tight shadow-[5px_5px_0_0] shadow-background/25 transition-[transform,box-shadow,background-color] duration-150 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none motion-reduce:transform-none"
               asChild
             >
               <NavbarRouteLink href={ctaPrimary}>
                 {ctaPrimary}
-                <ArrowRight className="size-5" />
+                <ArrowRight className="size-4" />
               </NavbarRouteLink>
             </CtaAction>
             <CtaAction
               variant="outline"
-              className="w-full gap-2 rounded-xl border-border/40 px-8 py-4 text-base text-background hover:bg-background/10 sm:w-auto"
+              className="min-h-11 gap-2 rounded-none border-background/40 px-6 text-sm font-medium tracking-tight text-background transition-[transform,background-color] duration-150 hover:bg-background/10 active:translate-y-px motion-reduce:transform-none"
               asChild
             >
               <NavbarRouteLink href={ctaPhone}>
@@ -106,7 +126,7 @@ export const LendingCta = defineCapsule({
                   strokeWidth={2}
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="size-5"
+                  className="size-4"
                   aria-hidden="true"
                 >
                   <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -114,15 +134,18 @@ export const LendingCta = defineCapsule({
                 {ctaPhone}
               </NavbarRouteLink>
             </CtaAction>
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-primary-foreground/60">
+          </CtaBandActions>
+          <ul className="mt-2 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-background/20 pt-5">
             {ctaBadges.map((badge) => (
-              <div key={badge} className="flex items-center gap-2">
-                <Check className="size-5 text-primary" />
-                <span>{badge}</span>
-              </div>
+              <li
+                key={badge}
+                className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-background/60"
+              >
+                <Check className="size-3.5 text-background" />
+                {badge}
+              </li>
             ))}
-          </div>
+          </ul>
         </CtaBandInner>
       </CtaBand>
     )

@@ -17,8 +17,7 @@ import {
 } from '#/section-kit/StoryCard.tsx'
 import { useSyncPublicationArticles } from './publication-interactions.tsx'
 import { publicationLakebed } from './publication-lakebed.ts'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
  * BlogStoryGrid — collapsed-border newsprint story grid for an editorial blog
  * / publication. A serif section header sits on a heavy double masthead rule

@@ -8,14 +8,13 @@ import {
   FaqQuestion,
   FaqQuestionIcon,
 } from '#/section-kit/FaqAccordion.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { cn } from '#/lib/utils.ts'
 
 export const UniversityFaq = defineCapsule({
   name: 'UniversityFaq',
   description:
-    'Bespoke admissions Q&A band for the University page family with a prestigious, collegiate aesthetic. Opens with a SectionHeading, then renders a vertical list of native <details>/<summary> disclosures covering application deadlines, requirements, financial aid, campus tours, and transfer pathways. Border-divided rows keep the list quiet and authoritative; theme tokens throughout. Use to answer common prospective-student questions on a university homepage or admissions page.',
+    'Editorial-academic admissions Q&A band for the University page family, laid out as an asymmetric 4/8 split: a left rail carries a mono eyebrow, a serif heading, supporting copy, and a mono question count; the right column renders a hairline-divided list of native <details>/<summary> disclosures covering application deadlines, requirements, financial aid, campus tours, and transfer pathways. Each row is numbered like a catalog entry (mono "Q01") with a plus toggle; border-divided rows keep the list quiet and authoritative; theme tokens throughout. Use to answer common prospective-student questions on a university homepage or admissions page.',
   props: z.object({
     eyebrow: z.string().optional(),
     heading: z.string().optional(),
@@ -78,25 +77,54 @@ export const UniversityFaq = defineCapsule({
           props.className,
         )}
       >
-        <Container size="sm" className="px-6 lg:px-6">
-          <SectionHeading
-            eyebrow={eyebrow}
-            title={heading}
-            subtitle={subheading}
-          />
-          <FaqAccordion variant="divided" className="mt-12">
-            {faqs.map((faq, i) => (
-              <FaqItem key={`${faq.question ?? 'faq'}-${i}`} variant="divided">
-                <FaqQuestion className="text-left">
-                  {faq.question}
-                  <FaqQuestionIcon variant="plus" />
-                </FaqQuestion>
-                <FaqAnswer className="mt-3 text-sm leading-7">
-                  {faq.answer}
-                </FaqAnswer>
-              </FaqItem>
-            ))}
-          </FaqAccordion>
+        <Container size="lg" className="px-6">
+          <div className="grid gap-12 lg:grid-cols-12">
+            <div className="lg:col-span-4">
+              <div className="lg:sticky lg:top-28">
+                <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary">
+                  {eyebrow}
+                </p>
+                <h2 className="mt-3 text-balance font-serif text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
+                  {heading}
+                </h2>
+                <p className="mt-4 text-pretty leading-7 text-muted-foreground">
+                  {subheading}
+                </p>
+                <p
+                  aria-hidden="true"
+                  className="mt-8 border-t border-border pt-4 font-mono text-[11px] uppercase tracking-[0.2em] tabular-nums text-muted-foreground"
+                >
+                  {String(faqs.length).padStart(2, '0')} questions
+                </p>
+              </div>
+            </div>
+            <div className="lg:col-span-8">
+              <FaqAccordion variant="divided">
+                {faqs.map((faq, i) => (
+                  <FaqItem
+                    key={`${faq.question ?? 'faq'}-${i}`}
+                    variant="divided"
+                  >
+                    <FaqQuestion className="items-start gap-4 text-left">
+                      <span
+                        aria-hidden="true"
+                        className="mt-0.5 shrink-0 font-mono text-[11px] uppercase tracking-[0.14em] tabular-nums text-primary"
+                      >
+                        Q{String(i + 1).padStart(2, '0')}
+                      </span>
+                      <span className="flex-1 font-serif text-lg font-semibold tracking-tight">
+                        {faq.question}
+                      </span>
+                      <FaqQuestionIcon variant="plus" />
+                    </FaqQuestion>
+                    <FaqAnswer className="mt-3 pl-10 text-sm leading-7">
+                      {faq.answer}
+                    </FaqAnswer>
+                  </FaqItem>
+                ))}
+              </FaqAccordion>
+            </div>
+          </div>
         </Container>
       </section>
     )

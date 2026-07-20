@@ -23,8 +23,7 @@ import {
   PortfolioMedia,
   PortfolioCaption,
 } from '#/section-kit/PortfolioGrid.tsx'
-import { NavbarRouteLink } from '#/section-kit/index.ts'
-
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 export const ConstructionProjects = defineCapsule({
   name: 'ConstructionProjects',
   description:
