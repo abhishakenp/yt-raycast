@@ -24,7 +24,7 @@ type Deferred<Value> = {
   resolve: (value: Value) => void
 }
 
-const createDeferred = <Value,>(): Deferred<Value> => {
+const createDeferred = <Value>(): Deferred<Value> => {
   let resolve: (value: Value) => void = () => undefined
   let reject: (reason?: unknown) => void = () => undefined
   const promise = new Promise<Value>((resolvePromise, rejectPromise) => {
@@ -595,6 +595,8 @@ describe('usePromptHomeController submit guard', () => {
 
     act(() => {
       result.current.setPrompt('Build a zero second launch website')
+    })
+    act(() => {
       result.current.scheduleSpeculativeGeneration()
     })
 
@@ -614,12 +616,14 @@ describe('usePromptHomeController submit guard', () => {
   it('reuses the same in-flight speculative session when the user clicks', async () => {
     vi.useFakeTimers()
     const state = getTestState()
-    const deferred = createDeferred<{ sessionId: string; cached: false }>()
-    state.createSession.mockReturnValueOnce(deferred.promise)
+    const deferred = createDeferred<Response>()
+    vi.mocked(fetch).mockReturnValueOnce(deferred.promise)
     const { result } = renderHook(() => usePromptHomeController())
 
     act(() => {
       result.current.setPrompt('Build a website while generation is running')
+    })
+    act(() => {
       result.current.scheduleSpeculativeGeneration()
     })
 
@@ -633,18 +637,23 @@ describe('usePromptHomeController submit guard', () => {
       submitPromise = result.current.submitPrompt()
     })
 
-    expect(state.createSession).toHaveBeenCalledTimes(1)
+    expect(fetch).toHaveBeenCalledTimes(1)
     expect(state.navigate).not.toHaveBeenCalled()
 
     await act(async () => {
-      deferred.resolve({
-        sessionId: 'session_speculative_in_flight',
-        cached: false,
-      })
+      deferred.resolve(
+        new Response(
+          JSON.stringify({
+            sessionId: 'session_speculative_in_flight',
+            cached: false,
+          }),
+          { headers: { 'Content-Type': 'application/json' } },
+        ),
+      )
       await submitPromise
     })
 
-    expect(state.createSession).toHaveBeenCalledTimes(1)
+    expect(fetch).toHaveBeenCalledTimes(1)
     expect(state.navigate).toHaveBeenCalledWith({
       to: '/generate/$sessionId/$',
       params: { sessionId: 'session_speculative_in_flight' },
@@ -654,14 +663,21 @@ describe('usePromptHomeController submit guard', () => {
   it('navigates from a completed speculative session without creating another one', async () => {
     vi.useFakeTimers()
     const state = getTestState()
-    state.createSession.mockResolvedValueOnce({
-      sessionId: 'session_speculative_ready',
-      cached: false,
-    })
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          sessionId: 'session_speculative_ready',
+          cached: false,
+        }),
+        { headers: { 'Content-Type': 'application/json' } },
+      ),
+    )
     const { result } = renderHook(() => usePromptHomeController())
 
     act(() => {
       result.current.setPrompt('Build a website before I click submit')
+    })
+    act(() => {
       result.current.scheduleSpeculativeGeneration()
     })
 
@@ -671,13 +687,13 @@ describe('usePromptHomeController submit guard', () => {
       await Promise.resolve()
     })
 
-    expect(state.createSession).toHaveBeenCalledTimes(1)
+    expect(fetch).toHaveBeenCalledTimes(1)
 
     await act(async () => {
       await result.current.submitPrompt()
     })
 
-    expect(state.createSession).toHaveBeenCalledTimes(1)
+    expect(fetch).toHaveBeenCalledTimes(1)
     expect(state.navigate).toHaveBeenCalledWith({
       to: '/generate/$sessionId/$',
       params: { sessionId: 'session_speculative_ready' },
