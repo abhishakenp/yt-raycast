@@ -9,6 +9,7 @@ import type {
 } from '../contracts'
 
 export const medusaStoreProductFields = [
+  '*variants.calculated_price',
   '+metadata',
   '*images',
   '*collection',
@@ -22,7 +23,6 @@ export const medusaStoreProductFields = [
   '+variants.manage_inventory',
   '+variants.sku',
   '+variants.metadata',
-  '*variants.calculated_price',
   '*variants.prices',
 ].join(',')
 
@@ -194,6 +194,8 @@ function normalizeVariant(
   const title = stringValue(value.title) ?? 'Default'
 
   const metadata = isRecord(value.metadata) ? value.metadata : {}
+  const generatedSku =
+    stringValue(metadata.ship_fast_generated_sku) ?? stringValue(value.sku)
   const providerId = stringValue(value.id)
   const variantSourceId =
     stringValue(metadata.ship_fast_generated_source_id) ??
@@ -243,9 +245,7 @@ function normalizeVariant(
         : calculatedPrice === undefined
           ? []
           : [calculatedPrice],
-    ...(stringValue(value.sku) === undefined
-      ? {}
-      : { sku: stringValue(value.sku) }),
+    ...(generatedSku === undefined ? {} : { sku: generatedSku }),
     sourceId: variantSourceId,
     title,
   }
@@ -257,10 +257,11 @@ export function normalizeMedusaStoreProduct(
 ): MedusaCommerceProduct | undefined {
   if (!isRecord(value)) return undefined
   const metadata = isRecord(value.metadata) ? value.metadata : {}
-  const taggedTenantId =
-    stringValue(metadata.ship_fast_session_id) ??
-    stringValue(metadata.ship_fast_tenant_id)
-  if (taggedTenantId !== undefined && taggedTenantId !== tenantId) {
+  const taggedTenantIds = [
+    stringValue(metadata.ship_fast_session_id),
+    stringValue(metadata.ship_fast_tenant_id),
+  ].filter((taggedTenantId) => taggedTenantId !== undefined)
+  if (taggedTenantIds.some((taggedTenantId) => taggedTenantId !== tenantId)) {
     return undefined
   }
 

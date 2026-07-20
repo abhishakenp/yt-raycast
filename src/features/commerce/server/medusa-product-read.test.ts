@@ -1,9 +1,23 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { createSessionMedusaProductsResponse } from './medusa-product-read'
+import { normalizeMedusaStoreProduct } from './medusa-store-product'
 
 describe('createSessionMedusaProductsResponse', () => {
   const realSessionId = 'k574ms14ma9f94keq30r7dq24x89n1k2'
+
+  it('rejects products when either present tenant metadata key conflicts', () => {
+    expect(
+      normalizeMedusaStoreProduct('session_123', {
+        handle: 'conflicting-product',
+        metadata: {
+          ship_fast_session_id: 'session_123',
+          ship_fast_tenant_id: 'other_tenant',
+        },
+        title: 'Conflicting Product',
+      }),
+    ).toBeUndefined()
+  })
 
   it('requests rich Store fields and preserves every provider variant losslessly', async () => {
     const fetchImpl = vi
@@ -63,6 +77,7 @@ describe('createSessionMedusaProductsResponse', () => {
                     inventory_quantity: 7,
                     manage_inventory: true,
                     metadata: {
+                      ship_fast_generated_sku: 'LINEN-S',
                       ship_fast_generated_source_id: 'variant_small',
                     },
                     options: [
@@ -75,7 +90,7 @@ describe('createSessionMedusaProductsResponse', () => {
                       { amount: 29, currency_code: 'USD' },
                       { amount: 27, currency_code: 'EUR' },
                     ],
-                    sku: 'LINEN-S',
+                    sku: 'SHIP-FAST-SESSION-123-LINEN-TEE-LINEN-S',
                     title: 'Small',
                   },
                   {

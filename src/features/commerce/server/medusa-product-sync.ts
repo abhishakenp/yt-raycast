@@ -100,6 +100,17 @@ function deterministicVariantSku(
   )
 }
 
+export function createTenantScopedVariantSku(
+  sessionId: string,
+  handle: string,
+  variant: Pick<CommerceProductVariant, 'sku' | 'sourceId' | 'title'>,
+): string {
+  const generatedSku = deterministicVariantSku(handle, variant)
+  return `ship-fast-${slugify(sessionId)}-${slugify(handle)}-${slugify(
+    generatedSku,
+  )}`.toUpperCase()
+}
+
 function hasSalesChannel(
   key: { sales_channels?: Array<{ id?: unknown }> },
   salesChannelId: string,
@@ -376,6 +387,68 @@ async function findExistingProductId({
   return typeof productId === 'string' ? productId : undefined
 }
 
+async function resolveProductCollectionId({
+  backendUrl,
+  fetchImpl,
+  product,
+  sessionId,
+  token,
+}: {
+  backendUrl: string
+  fetchImpl: FetchLike
+  product: GeneratedCommerceProduct
+  sessionId: string
+  token: string
+}): Promise<string | undefined> {
+  const collection = product.collections?.[0]
+  if (collection === undefined) return undefined
+
+  const headers = createAdminHeaders(token)
+  const lookupResponse = await fetchImpl(
+    `${backendUrl}/admin/product-collections?handle=${encodeURIComponent(
+      collection.handle,
+    )}&limit=1`,
+    { headers },
+  )
+  if (!lookupResponse.ok) {
+    throw new Error(
+      `Medusa product collection lookup failed (${lookupResponse.status}).`,
+    )
+  }
+  const lookupPayload = await readJson<{
+    collections?: Array<{ id?: unknown }>
+  }>(lookupResponse)
+  const existingCollectionId = firstStringId(lookupPayload.collections)
+  if (existingCollectionId !== undefined) return existingCollectionId
+
+  const createResponse = await fetchImpl(`${backendUrl}/admin/collections`, {
+    body: JSON.stringify({
+      external_id: collection.sourceId,
+      handle: collection.handle,
+      metadata: {
+        ship_fast_generated_source_id: collection.sourceId,
+        ship_fast_session_id: sessionId,
+      },
+      title: collection.title,
+    }),
+    headers,
+    method: 'POST',
+  })
+  if (!createResponse.ok) {
+    throw new Error(
+      `Medusa product collection creation failed (${createResponse.status}).`,
+    )
+  }
+  const createPayload = await readJson<{
+    collection?: { id?: unknown }
+  }>(createResponse)
+  const collectionId = createPayload.collection?.id
+  if (typeof collectionId !== 'string') {
+    throw new Error('Medusa product collection id not found.')
+  }
+  return collectionId
+}
+
 async function loadStockLocationId({
   backendUrl,
   fetchImpl,
@@ -402,9 +475,40 @@ async function loadStockLocationId({
   return stockLocationId
 }
 
+async function ensureSalesChannelStockLocation({
+  backendUrl,
+  fetchImpl,
+  headers,
+  locationId,
+  salesChannelId,
+}: {
+  backendUrl: string
+  fetchImpl: FetchLike
+  headers: Record<string, string>
+  locationId: string
+  salesChannelId: string
+}): Promise<void> {
+  const response = await fetchImpl(
+    `${backendUrl}/admin/sales-channels/${encodeURIComponent(
+      salesChannelId,
+    )}/stock-locations`,
+    {
+      body: JSON.stringify({ location_ids: [locationId] }),
+      headers,
+      method: 'POST',
+    },
+  )
+  if (!response.ok) {
+    throw new Error(
+      `Medusa sales channel stock location link failed (${response.status}).`,
+    )
+  }
+}
+
 async function getOrCreateInventoryItem({
   backendUrl,
   fetchImpl,
+  generatedSku,
   headers,
   product,
   sessionId,
@@ -413,6 +517,7 @@ async function getOrCreateInventoryItem({
 }: {
   backendUrl: string
   fetchImpl: FetchLike
+  generatedSku: string
   headers: Record<string, string>
   product: GeneratedCommerceProduct
   sessionId: string
@@ -439,6 +544,7 @@ async function getOrCreateInventoryItem({
     {
       body: JSON.stringify({
         metadata: {
+          ship_fast_generated_sku: generatedSku,
           ship_fast_generated_source_id: variant.sourceId,
           ship_fast_session_id: sessionId,
         },
@@ -479,35 +585,51 @@ async function ensureInventoryLevel({
   locationId: string
   stockedQuantity: number
 }): Promise<void> {
-  const lookupResponse = await fetchImpl(
-    `${backendUrl}/admin/inventory-levels?inventory_item_id=${encodeURIComponent(
-      inventoryItemId,
-    )}&location_id=${encodeURIComponent(locationId)}&limit=1`,
-    { headers },
-  )
+  const locationLevelsPath = `${backendUrl}/admin/inventory-items/${encodeURIComponent(
+    inventoryItemId,
+  )}/location-levels`
+  const lookupResponse = await fetchImpl(locationLevelsPath, { headers })
   if (!lookupResponse.ok) {
     throw new Error(
       `Medusa inventory level lookup failed (${lookupResponse.status}).`,
     )
   }
   const lookupPayload = await readJson<{
-    inventory_levels?: Array<{ id?: unknown }>
+    inventory_levels?: Array<{
+      location_id?: unknown
+      stocked_quantity?: unknown
+    }>
   }>(lookupResponse)
-  if (firstStringId(lookupPayload.inventory_levels) !== undefined) return
-
-  const createResponse = await fetchImpl(
-    `${backendUrl}/admin/inventory-items/${encodeURIComponent(
-      inventoryItemId,
-    )}/location-levels`,
-    {
-      body: JSON.stringify({
-        location_id: locationId,
-        stocked_quantity: stockedQuantity,
-      }),
-      headers,
-      method: 'POST',
-    },
+  const existingLevel = lookupPayload.inventory_levels?.find(
+    (level) => level.location_id === locationId,
   )
+  if (existingLevel !== undefined) {
+    if (existingLevel.stocked_quantity === stockedQuantity) return
+
+    const updateResponse = await fetchImpl(
+      `${locationLevelsPath}/${encodeURIComponent(locationId)}`,
+      {
+        body: JSON.stringify({ stocked_quantity: stockedQuantity }),
+        headers,
+        method: 'POST',
+      },
+    )
+    if (!updateResponse.ok) {
+      throw new Error(
+        `Medusa inventory level update failed (${updateResponse.status}).`,
+      )
+    }
+    return
+  }
+
+  const createResponse = await fetchImpl(locationLevelsPath, {
+    body: JSON.stringify({
+      location_id: locationId,
+      stocked_quantity: stockedQuantity,
+    }),
+    headers,
+    method: 'POST',
+  })
   if (!createResponse.ok) {
     throw new Error(
       `Medusa inventory level creation failed (${createResponse.status}).`,
@@ -518,18 +640,27 @@ async function ensureInventoryLevel({
 async function prepareMedusaVariantInventory({
   backendUrl,
   fetchImpl,
-  handle,
   product,
+  salesChannelId,
   sessionId,
   token,
 }: {
   backendUrl: string
   fetchImpl: FetchLike
-  handle: string
   product: GeneratedCommerceProduct
+  salesChannelId: string
   sessionId: string
   token: string
-}): Promise<Map<string, string>> {
+}): Promise<
+  Map<
+    string,
+    {
+      generatedSku: string
+      inventoryItemId: string
+      providerSku: string
+    }
+  >
+> {
   const managedVariants =
     product.variants?.filter((variant) => variant.manageInventory) ?? []
   if (managedVariants.length === 0) return new Map()
@@ -540,17 +671,37 @@ async function prepareMedusaVariantInventory({
     fetchImpl,
     headers,
   })
-  const inventoryItemIds = new Map<string, string>()
+  await ensureSalesChannelStockLocation({
+    backendUrl,
+    fetchImpl,
+    headers,
+    locationId,
+    salesChannelId,
+  })
+  const preparedInventory = new Map<
+    string,
+    {
+      generatedSku: string
+      inventoryItemId: string
+      providerSku: string
+    }
+  >()
 
   for (const variant of managedVariants) {
-    const sku = deterministicVariantSku(handle, variant)
+    const generatedSku = deterministicVariantSku(product.handle, variant)
+    const providerSku = createTenantScopedVariantSku(
+      sessionId,
+      product.handle,
+      variant,
+    )
     const inventoryItemId = await getOrCreateInventoryItem({
       backendUrl,
       fetchImpl,
+      generatedSku,
       headers,
       product,
       sessionId,
-      sku,
+      sku: providerSku,
       variant,
     })
     await ensureInventoryLevel({
@@ -561,24 +712,37 @@ async function prepareMedusaVariantInventory({
       locationId,
       stockedQuantity: variant.inventoryQuantity ?? 0,
     })
-    inventoryItemIds.set(variant.sourceId, inventoryItemId)
+    preparedInventory.set(variant.sourceId, {
+      generatedSku,
+      inventoryItemId,
+      providerSku,
+    })
   }
 
-  return inventoryItemIds
+  return preparedInventory
 }
 
 function createProductBody({
+  collectionId,
   currencyCode,
   defaults,
   handle,
-  inventoryItemIds,
+  preparedInventory,
   product,
   sessionId,
 }: {
+  collectionId?: string
   currencyCode: string
   defaults: MedusaProductDefaults
   handle: string
-  inventoryItemIds: Map<string, string>
+  preparedInventory: Map<
+    string,
+    {
+      generatedSku: string
+      inventoryItemId: string
+      providerSku: string
+    }
+  >
   product: GeneratedCommerceProduct
   sessionId: string
 }) {
@@ -610,15 +774,7 @@ function createProductBody({
         : [{ title: 'Default', values: ['Default'] }]
 
   return {
-    ...(product.collections?.find(
-      (collection) => collection.sourceId !== undefined,
-    )?.sourceId === undefined
-      ? {}
-      : {
-          collection_id: product.collections.find(
-            (collection) => collection.sourceId !== undefined,
-          )?.sourceId,
-        }),
+    ...(collectionId === undefined ? {} : { collection_id: collectionId }),
     ...(product.description === undefined
       ? {}
       : { description: product.description }),
@@ -640,29 +796,30 @@ function createProductBody({
     ...(product.tags === undefined
       ? {}
       : {
-          tags: product.tags.flatMap((tag) =>
-            tag.sourceId === undefined ? [] : [{ id: tag.sourceId }],
-          ),
+          tags: product.tags.map((tag) => ({ value: tag.value })),
         }),
     ...(product.thumbnail === undefined
       ? {}
       : { thumbnail: product.thumbnail }),
     title: product.title,
     variants: variants.map((variant) => {
-      const inventoryItemId = inventoryItemIds.get(variant.sourceId)
+      const inventory = preparedInventory.get(variant.sourceId)
       return {
-        ...(inventoryItemId === undefined
+        ...(inventory === undefined
           ? {}
           : {
               inventory_items: [
                 {
-                  inventory_item_id: inventoryItemId,
+                  inventory_item_id: inventory.inventoryItemId,
                   required_quantity: 1,
                 },
               ],
             }),
         manage_inventory: variant.manageInventory,
         metadata: {
+          ...(inventory === undefined
+            ? {}
+            : { ship_fast_generated_sku: inventory.generatedSku }),
           ship_fast_generated_source_id: variant.sourceId,
         },
         options:
@@ -673,7 +830,7 @@ function createProductBody({
           amount: parsePriceToMedusaAmount(price.amount),
           currency_code: price.currencyCode.toLowerCase(),
         })),
-        sku: deterministicVariantSku(handle, variant),
+        sku: inventory?.providerSku ?? deterministicVariantSku(handle, variant),
         title: variant.title,
       }
     }),
@@ -739,11 +896,18 @@ export async function syncGeneratedProductsToMedusa({
         continue
       }
 
-      const inventoryItemIds = await prepareMedusaVariantInventory({
+      const collectionId = await resolveProductCollectionId({
         backendUrl: normalizedBackendUrl,
         fetchImpl,
-        handle,
         product,
+        sessionId,
+        token: auth.token,
+      })
+      const preparedInventory = await prepareMedusaVariantInventory({
+        backendUrl: normalizedBackendUrl,
+        fetchImpl,
+        product,
+        salesChannelId: defaults.tenant.salesChannelId,
         sessionId,
         token: auth.token,
       })
@@ -752,10 +916,11 @@ export async function syncGeneratedProductsToMedusa({
         {
           body: JSON.stringify(
             createProductBody({
+              collectionId,
               currencyCode,
               defaults,
               handle,
-              inventoryItemIds,
+              preparedInventory,
               product,
               sessionId,
             }),
