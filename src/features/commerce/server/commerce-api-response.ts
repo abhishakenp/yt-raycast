@@ -18,7 +18,10 @@ import {
 import type { GeneratedCommerceProduct } from '../services/generated-commerce-products'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
-type CommerceApiClient = Pick<ConvexHttpClient, 'query' | 'mutation'>
+type CommerceApiClient = Pick<
+  ConvexHttpClient,
+  'query' | 'mutation' | 'setAuth'
+>
 type FetchLike = typeof fetch
 type MedusaContainerInfo = {
   backendUrl: string
@@ -109,6 +112,12 @@ function getOwnerSecret(
     request.headers.get('x-ship-fast-owner-secret') ??
     undefined
   )
+}
+
+function getBearerToken(request: Request): string | null {
+  const auth = request.headers.get('authorization') ?? ''
+  const match = auth.match(/^Bearer\s+(.+)$/i)
+  return match?.[1]?.trim() || null
 }
 
 function generatedProductValue(
@@ -320,6 +329,8 @@ export async function createSessionMedusaProvisionResponse(
     const body = await readJsonBody(request)
     const anonymousOwnerSecret = getOwnerSecret(request, body)
     const client = createClient(clientOverride)
+    const authToken = getBearerToken(request)
+    if (authToken !== null) client.setAuth(authToken)
     await client.query(api.sessions.authorizeSessionCommerceProvision, {
       sessionId,
       anonymousOwnerSecret,
