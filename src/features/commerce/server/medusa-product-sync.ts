@@ -57,6 +57,15 @@ export function createSessionScopedProductHandle(
   return `ship-fast-${tenant}-${productHandle}`.slice(0, 120)
 }
 
+export function createSessionScopedCollectionHandle(
+  sessionId: string,
+  collectionHandle: string,
+): string {
+  const tenant = slugify(sessionId) || 'session'
+  const collection = slugify(collectionHandle) || 'collection'
+  return `ship-fast-${tenant}-${collection}`.slice(0, 120)
+}
+
 export function parsePriceToMedusaAmount(price: number | string): number {
   const numericPrice =
     typeof price === 'number'
@@ -404,9 +413,13 @@ async function resolveProductCollectionId({
   if (collection === undefined) return undefined
 
   const headers = createAdminHeaders(token)
+  const providerHandle = createSessionScopedCollectionHandle(
+    sessionId,
+    collection.handle,
+  )
   const lookupResponse = await fetchImpl(
-    `${backendUrl}/admin/product-collections?handle=${encodeURIComponent(
-      collection.handle,
+    `${backendUrl}/admin/collections?handle=${encodeURIComponent(
+      providerHandle,
     )}&limit=1`,
     { headers },
   )
@@ -424,8 +437,9 @@ async function resolveProductCollectionId({
   const createResponse = await fetchImpl(`${backendUrl}/admin/collections`, {
     body: JSON.stringify({
       external_id: collection.sourceId,
-      handle: collection.handle,
+      handle: providerHandle,
       metadata: {
+        ship_fast_generated_handle: collection.handle,
         ship_fast_generated_source_id: collection.sourceId,
         ship_fast_session_id: sessionId,
       },
@@ -489,11 +503,11 @@ async function ensureSalesChannelStockLocation({
   salesChannelId: string
 }): Promise<void> {
   const response = await fetchImpl(
-    `${backendUrl}/admin/sales-channels/${encodeURIComponent(
-      salesChannelId,
-    )}/stock-locations`,
+    `${backendUrl}/admin/stock-locations/${encodeURIComponent(
+      locationId,
+    )}/sales-channels`,
     {
-      body: JSON.stringify({ location_ids: [locationId] }),
+      body: JSON.stringify({ add: [salesChannelId] }),
       headers,
       method: 'POST',
     },
@@ -804,6 +818,12 @@ function createProductBody({
     title: product.title,
     variants: variants.map((variant) => {
       const inventory = preparedInventory.get(variant.sourceId)
+      const generatedSku =
+        inventory?.generatedSku ??
+        deterministicVariantSku(product.handle, variant)
+      const providerSku =
+        inventory?.providerSku ??
+        createTenantScopedVariantSku(sessionId, product.handle, variant)
       return {
         ...(inventory === undefined
           ? {}
@@ -817,9 +837,7 @@ function createProductBody({
             }),
         manage_inventory: variant.manageInventory,
         metadata: {
-          ...(inventory === undefined
-            ? {}
-            : { ship_fast_generated_sku: inventory.generatedSku }),
+          ship_fast_generated_sku: generatedSku,
           ship_fast_generated_source_id: variant.sourceId,
         },
         options:
@@ -830,7 +848,7 @@ function createProductBody({
           amount: parsePriceToMedusaAmount(price.amount),
           currency_code: price.currencyCode.toLowerCase(),
         })),
-        sku: inventory?.providerSku ?? deterministicVariantSku(handle, variant),
+        sku: providerSku,
         title: variant.title,
       }
     }),

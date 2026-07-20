@@ -33,8 +33,13 @@ describe('createSessionMedusaProductsResponse', () => {
             products: [
               {
                 collection: {
-                  handle: 'summer-edit',
+                  handle: 'ship-fast-session-123-summer-edit',
                   id: 'pcol_summer',
+                  metadata: {
+                    ship_fast_generated_handle: 'summer-edit',
+                    ship_fast_generated_source_id: 'collection_summer',
+                    ship_fast_session_id: 'session_123',
+                  },
                   title: 'Summer Edit',
                 },
                 description: 'A breathable everyday tee',
@@ -146,7 +151,7 @@ describe('createSessionMedusaProductsResponse', () => {
           collections: [
             {
               handle: 'summer-edit',
-              sourceId: 'pcol_summer',
+              sourceId: 'collection_summer',
               title: 'Summer Edit',
             },
           ],

@@ -465,7 +465,7 @@ describe('deployment Medusa tenant API responses', () => {
       ],
     })
     const expectedFields =
-      '*variants.calculated_price,+metadata,*images,*collection,*tags,*options,*options.values,*variants,*variants.options,*variants.options.option,+variants.inventory_quantity,+variants.manage_inventory,+variants.sku,+variants.metadata,*variants.prices'
+      '*variants.calculated_price,+metadata,*images,*collection,+collection.metadata,*tags,*options,*options.values,*variants,*variants.options,*variants.options.option,+variants.inventory_quantity,+variants.manage_inventory,+variants.sku,+variants.metadata,*variants.prices'
     const deploymentFields = new URL(
       String(deploymentFetch.mock.calls[1]?.[0]),
     ).searchParams.get('fields')
