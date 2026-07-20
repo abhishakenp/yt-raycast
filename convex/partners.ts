@@ -2,7 +2,7 @@ import { ConvexError, v } from 'convex/values'
 
 import { internal } from './_generated/api'
 import type { Doc } from './_generated/dataModel'
-import { env, internalMutation, mutation, query } from './_generated/server'
+import { internalMutation, mutation, query } from './_generated/server'
 import type { MutationCtx, QueryCtx } from './_generated/server'
 import {
   getOrBackfillAcquisitionAttribution,
@@ -32,7 +32,7 @@ const partnerBillingEvent = v.union(
 )
 
 function isPartnersEnabled(): boolean {
-  return env.DUB_PARTNERS_ENABLED?.trim().toLowerCase() === 'true'
+  return process.env.DUB_PARTNERS_ENABLED?.trim().toLowerCase() === 'true'
 }
 
 function requirePartnersEnabled(): void {
@@ -45,8 +45,8 @@ function requirePartnersEnabled(): void {
 
 function requireBillingSecret(secret: string): void {
   if (
-    !env.BILLING_WEBHOOK_MUTATION_SECRET ||
-    secret !== env.BILLING_WEBHOOK_MUTATION_SECRET
+    !process.env.BILLING_WEBHOOK_MUTATION_SECRET ||
+    secret !== process.env.BILLING_WEBHOOK_MUTATION_SECRET
   ) {
     throw new ConvexError({
       code: 'FORBIDDEN',

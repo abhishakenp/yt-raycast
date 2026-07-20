@@ -3,7 +3,7 @@ import { v } from 'convex/values'
 
 import { internal } from './_generated/api'
 import type { Doc } from './_generated/dataModel'
-import { env, internalAction } from './_generated/server'
+import { internalAction } from './_generated/server'
 import {
   deliverDubOutboxEvent,
   DubTerminalDeliveryError,
@@ -34,16 +34,18 @@ export const processOutboxEvent = internalAction({
 
     try {
       if (
-        env.DUB_PARTNERS_ENABLED?.trim().toLowerCase() !== 'true' ||
-        !env.DUB_API_KEY
+        process.env.DUB_PARTNERS_ENABLED?.trim().toLowerCase() !== 'true' ||
+        !process.env.DUB_API_KEY
       ) {
         throw new Error('Dub partner delivery is not configured')
       }
       await deliverDubOutboxEvent(
         event,
         new Dub({
-          token: env.DUB_API_KEY,
-          ...(env.DUB_API_URL ? { serverURL: env.DUB_API_URL } : {}),
+          token: process.env.DUB_API_KEY,
+          ...(process.env.DUB_API_URL
+            ? { serverURL: process.env.DUB_API_URL }
+            : {}),
         }),
       )
       await ctx.runMutation(internal.partners.completeOutboxEvent, {
