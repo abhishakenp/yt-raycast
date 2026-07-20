@@ -49,13 +49,25 @@ export {
   type CommerceRuntimeStatus,
 } from './registry/sections/commerce/commerce-provider.tsx'
 export type {
+  AddCommerceItemInput,
+  AddCommerceShippingMethodInput,
+  CommerceAdapter,
   CommerceCatalogAdapter,
   CommerceCatalogEnvelope,
   CommerceCatalogProduct,
+  CommerceCartEnvelope,
+  CommercePaymentProvidersEnvelope,
+  CommercePaymentSessionsEnvelope,
   CommerceProduct,
   CommerceProductSlot,
   CommerceRuntimeMode,
+  CommerceRuntimeCart,
   CommerceScope,
+  CommerceShippingOptionsEnvelope,
+  CompleteCommerceCartInput,
+  CreateCommerceCartInput,
+  CreateCommercePaymentSessionsInput,
+  UpdateCommerceItemInput,
 } from './registry/sections/commerce/commerce-contracts.ts'
 
 export * from './theme-presets.ts'
