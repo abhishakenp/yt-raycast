@@ -30,6 +30,7 @@ describe('createSessionMedusaProvisionResponse', () => {
           `Convex commerce config failed for ${realSessionId}: ${realPrompt}`,
         )
       }),
+      setAuth: vi.fn(),
     })
 
     expect(response.status).toBe(503)
@@ -59,7 +60,7 @@ describe('createSessionMedusaProvisionResponse', () => {
           method: 'POST',
         },
       ),
-      { mutation, query },
+      { mutation, query, setAuth: vi.fn() },
       {
         containerProvider,
         env: { MEDUSA_BACKEND_URL: 'https://backend.medusa.test' },
@@ -94,7 +95,7 @@ describe('createSessionMedusaProvisionResponse', () => {
         'http://ship-fast.test/api/sessions/missing_session/provision/medusa',
         { method: 'POST' },
       ),
-      { mutation, query },
+      { mutation, query, setAuth: vi.fn() },
       {
         containerProvider,
         env: { MEDUSA_BACKEND_URL: 'https://backend.medusa.test' },
@@ -108,6 +109,59 @@ describe('createSessionMedusaProvisionResponse', () => {
     expect(containerProvider.provision).not.toHaveBeenCalled()
     expect(fetchImpl).not.toHaveBeenCalled()
     expect(mutation).not.toHaveBeenCalled()
+  })
+
+  it('applies an incoming bearer token before authorizing a signed-in owner', async () => {
+    const setAuth = vi.fn()
+    const query = vi.fn(async () => {
+      if (setAuth.mock.calls.length === 0) {
+        throw new Error('FORBIDDEN')
+      }
+      return { sessionId: 'session_123' }
+    })
+    const mutation = vi.fn().mockResolvedValue({ sessionId: 'session_123' })
+    const fetchImpl = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ regions: [{ id: 'reg_1' }] }), {
+        status: 200,
+      }),
+    )
+    const containerProvider = mockContainerProvider({
+      MEDUSA_ADMIN_URL: 'https://admin.medusa.test',
+      MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
+      MEDUSA_STOREFRONT_URL: 'https://store.medusa.test',
+    })
+
+    const response = await createSessionMedusaProvisionResponse(
+      'session_123',
+      new Request(
+        'http://ship-fast.test/api/sessions/session_123/provision/medusa',
+        {
+          headers: { authorization: 'Bearer convex-jwt' },
+          method: 'POST',
+        },
+      ),
+      { mutation, query, setAuth },
+      {
+        containerProvider,
+        env: {
+          MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
+          MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
+        },
+        fetch: fetchImpl,
+        metaEnv: {},
+      },
+    )
+
+    expect(response.status).toBe(200)
+    expect(setAuth).toHaveBeenCalledWith('convex-jwt')
+    expect(setAuth.mock.invocationCallOrder[0]).toBeLessThan(
+      query.mock.invocationCallOrder[0],
+    )
+    expect(query).toHaveBeenCalledWith(expect.anything(), {
+      anonymousOwnerSecret: undefined,
+      sessionId: 'session_123',
+    })
+    expect(containerProvider.findRunning).toHaveBeenCalledWith('session_123')
   })
 
   it('provisions commerce from server Medusa settings without URL input', async () => {
@@ -133,7 +187,7 @@ describe('createSessionMedusaProvisionResponse', () => {
           headers: { 'x-ship-fast-owner-secret': 'owner_secret' },
         },
       ),
-      { mutation, query },
+      { mutation, query, setAuth: vi.fn() },
       {
         env: {
           MEDUSA_ADMIN_URL: 'https://admin.medusa.test',
@@ -187,7 +241,7 @@ describe('createSessionMedusaProvisionResponse', () => {
         'http://ship-fast.test/api/sessions/session_123/provision/medusa',
         { method: 'POST' },
       ),
-      { mutation, query: vi.fn() },
+      { mutation, query: vi.fn(), setAuth: vi.fn() },
       {
         env: { MEDUSA_BACKEND_URL: 'https://backend.medusa.test' },
         containerProvider: mockContainerProvider({
@@ -225,7 +279,7 @@ describe('createSessionMedusaProvisionResponse', () => {
         'http://ship-fast.test/api/sessions/session_123/provision/medusa',
         { method: 'POST' },
       ),
-      { mutation, query: vi.fn() },
+      { mutation, query: vi.fn(), setAuth: vi.fn() },
       {
         env: {},
         containerProvider: mockContainerProvider({}),
@@ -252,7 +306,7 @@ describe('createSessionMedusaProvisionResponse', () => {
         'http://ship-fast.test/api/sessions/session_123/provision/medusa',
         { method: 'POST' },
       ),
-      { mutation, query: vi.fn() },
+      { mutation, query: vi.fn(), setAuth: vi.fn() },
       {
         env: {
           MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
@@ -292,7 +346,7 @@ describe('createSessionMedusaProvisionResponse', () => {
           headers: { 'x-ship-fast-owner-secret': 'owner_secret' },
         },
       ),
-      { mutation, query: vi.fn() },
+      { mutation, query: vi.fn(), setAuth: vi.fn() },
       {
         env: {
           MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
@@ -342,7 +396,7 @@ describe('createSessionMedusaProvisionResponse', () => {
           headers: { 'x-ship-fast-owner-secret': 'owner_secret' },
         },
       ),
-      { mutation, query: vi.fn() },
+      { mutation, query: vi.fn(), setAuth: vi.fn() },
       {
         env: {
           MEDUSA_ADMIN_EMAIL: 'admin@store.test',
@@ -454,7 +508,7 @@ describe('createSessionMedusaProvisionResponse', () => {
           method: 'POST',
         },
       ),
-      { mutation, query: vi.fn() },
+      { mutation, query: vi.fn(), setAuth: vi.fn() },
       {
         env: {
           MEDUSA_ADMIN_EMAIL: 'admin@test.com',
@@ -578,6 +632,7 @@ describe('createSessionMedusaProvisionResponse', () => {
       {
         mutation,
         query: vi.fn().mockResolvedValue({ sessionId: 'session_123' }),
+        setAuth: vi.fn(),
       },
       {
         env: {
@@ -678,7 +733,7 @@ describe('createSessionMedusaProvisionResponse', () => {
           method: 'POST',
         },
       ),
-      { mutation, query: vi.fn() },
+      { mutation, query: vi.fn(), setAuth: vi.fn() },
       {
         env: {
           MEDUSA_ADMIN_EMAIL: 'admin@test.com',
@@ -733,7 +788,7 @@ describe('createSessionMedusaProvisionResponse', () => {
           method: 'POST',
         },
       ),
-      { mutation, query: vi.fn() },
+      { mutation, query: vi.fn(), setAuth: vi.fn() },
       {
         env: {
           MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
@@ -784,7 +839,7 @@ describe('createSessionMedusaProvisionResponse', () => {
           method: 'POST',
         },
       ),
-      { mutation, query: vi.fn() },
+      { mutation, query: vi.fn(), setAuth: vi.fn() },
       {
         env: {
           MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
