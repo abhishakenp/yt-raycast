@@ -903,9 +903,15 @@ describe('auth fullstack generated section behavior', () => {
     const tiers = document.querySelectorAll('[data-slot="pricing-tier"]')
 
     expect(headings).toHaveLength(1)
-    expect(grid?.className).toContain('md:grid-cols-2')
+    expect(grid?.className).toContain('pt-5')
+    expect(grid?.className).toContain('md:grid-cols-3')
     expect(grid?.className).toContain('xl:grid-cols-3')
     expect(tiers).toHaveLength(3)
+    expect(tiers[0]?.className).toContain('md:-rotate-1')
+    expect(tiers[1]?.className).toContain('z-10')
+    expect(tiers[1]?.className).toContain('md:-translate-y-2')
+    expect(tiers[2]?.className).toContain('md:rotate-1')
+    expect(tiers[2]?.className).not.toContain('col-span-2')
     expect(tiers[1]?.className).toContain('h-full')
     expect(tiers[1]?.className).toContain('ring-primary')
 

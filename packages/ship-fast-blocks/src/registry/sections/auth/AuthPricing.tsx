@@ -109,9 +109,9 @@ export const AuthPricing = defineCapsule({
           },
         ]
     const tierLayouts = [
-      'xl:translate-y-8 xl:-rotate-1 max-lg:-rotate-1 max-lg:-translate-x-1',
-      'max-lg:z-10',
-      'xl:translate-y-8 xl:rotate-1 max-lg:rotate-1 max-lg:translate-x-1 md:max-lg:col-span-2',
+      'md:translate-y-6 md:-rotate-1 max-md:-rotate-1 max-md:-translate-x-2',
+      'z-10 md:-translate-y-2 max-md:translate-x-3',
+      'md:translate-y-6 md:rotate-1 max-md:rotate-1 max-md:-translate-x-1',
     ]
 
     useSyncSaasPlans(
@@ -140,14 +140,14 @@ export const AuthPricing = defineCapsule({
             className="mx-auto max-w-3xl"
           />
 
-          <PricingGrid className="mt-12 sm:mt-14">
+          <PricingGrid className="mt-12 pt-5 md:grid-cols-3 md:gap-5 lg:gap-6 xl:pt-0">
             {tiers.map((tier, index) => {
               return (
                 <PricingTier
                   key={tier.name}
                   variant={tier.highlighted ? 'highlighted' : undefined}
                   className={cn(
-                    'shadow-sm shadow-foreground/5',
+                    'snap-center shadow-sm shadow-foreground/5',
                     tierLayouts[index % tierLayouts.length],
                   )}
                 >
@@ -168,7 +168,7 @@ export const AuthPricing = defineCapsule({
                       {tier.name}
                     </PricingTierName>
                     <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                      <PricingTierPrice className="font-semibold tabular-nums tracking-tight sm:text-5xl">
+                      <PricingTierPrice className="font-semibold tabular-nums tracking-tight sm:text-5xl md:text-4xl lg:text-5xl">
                         {tier.price}
                       </PricingTierPrice>
                       {tier.period ? (
