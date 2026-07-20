@@ -18,10 +18,6 @@ vi.mock('@tanstack/react-query', () => ({
   useQuery: () => ({ data: undefined, isPending: true }),
 }))
 
-vi.mock('../server/gallery-preview-server-fn', () => ({
-  fetchGalleryPreviewHtml: vi.fn(async () => null),
-}))
-
 import { GalleryGrid, type GalleryPayload } from './PublicGallery'
 
 const gallery: GalleryPayload = {
@@ -49,11 +45,6 @@ const createGalleryRouter = () => {
     path: '/gallery',
     component: GalleryRouteComponent,
   })
-  const generateRoute = createRoute({
-    getParentRoute: () => rootRoute,
-    path: '/generate/$sessionId',
-    component: () => <main>Generate</main>,
-  })
   const generateSplatRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/generate/$sessionId/$',
@@ -62,11 +53,7 @@ const createGalleryRouter = () => {
 
   return createRouter({
     history: createMemoryHistory({ initialEntries: ['/gallery'] }),
-    routeTree: rootRoute.addChildren([
-      galleryRoute,
-      generateRoute,
-      generateSplatRoute,
-    ]),
+    routeTree: rootRoute.addChildren([galleryRoute, generateSplatRoute]),
   })
 }
 
@@ -76,7 +63,7 @@ describe('public gallery router integration', () => {
     vi.restoreAllMocks()
   })
 
-  it('builds dashboard links without resolving them through the page-splat route', async () => {
+  it('builds dashboard links through the page-splat route without warnings', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
     const router = createGalleryRouter()
 

@@ -91,7 +91,10 @@ vi.mock('../../../../convex/_generated/api', () => ({
 
 vi.mock('@/lib/stock-image', () => ({
   searchStockImages: searchStockImagesMock,
-  buildBackgroundImageUrl: (result: { baseUrl?: string; imageUrl?: string }, resolution: string) =>
+  buildBackgroundImageUrl: (
+    result: { baseUrl?: string; imageUrl?: string },
+    resolution: string,
+  ) =>
     result.baseUrl ? `${result.baseUrl}?res=${resolution}` : result.imageUrl,
 }))
 vi.mock('@/lib/image-context', () => ({
@@ -134,7 +137,15 @@ vi.mock('#/components/ui/alert-dialog', () => {
       children,
     )
   }
-  const AlertDialogTrigger = ({ children, asChild: _asChild, ...rest }: { children?: ReactNode; asChild?: boolean; [key: string]: unknown }) => {
+  const AlertDialogTrigger = ({
+    children,
+    asChild: _asChild,
+    ...rest
+  }: {
+    children?: ReactNode
+    asChild?: boolean
+    [key: string]: unknown
+  }) => {
     const ctx = React.useContext(Ctx)
     const child = React.Children.only(children) as React.ReactElement<{
       onClick?: (e: React.MouseEvent) => void
@@ -165,7 +176,15 @@ vi.mock('#/components/ui/alert-dialog', () => {
     React.createElement('p', null, children)
   const AlertDialogFooter = ({ children }: { children?: ReactNode }) =>
     React.createElement('div', null, children)
-  const AlertDialogCancel = ({ children, onClick, ...rest }: { children?: ReactNode; onClick?: (e: React.MouseEvent) => void; [key: string]: unknown }) => {
+  const AlertDialogCancel = ({
+    children,
+    onClick,
+    ...rest
+  }: {
+    children?: ReactNode
+    onClick?: (e: React.MouseEvent) => void
+    [key: string]: unknown
+  }) => {
     const ctx = React.useContext(Ctx)
     return React.createElement(
       'button',
@@ -179,7 +198,15 @@ vi.mock('#/components/ui/alert-dialog', () => {
       children,
     )
   }
-  const AlertDialogAction = ({ children, onClick, ...rest }: { children?: ReactNode; onClick?: (e: React.MouseEvent) => void; [key: string]: unknown }) => {
+  const AlertDialogAction = ({
+    children,
+    onClick,
+    ...rest
+  }: {
+    children?: ReactNode
+    onClick?: (e: React.MouseEvent) => void
+    [key: string]: unknown
+  }) => {
     const ctx = React.useContext(Ctx)
     return React.createElement(
       'button',
@@ -234,15 +261,21 @@ vi.mock('#/components/ui/select', () => {
       {
         ...rest,
         value: value ?? defaultValue ?? '',
-        onChange: (e: { target: { value: string } }) => onValueChange?.(e.target.value),
+        onChange: (e: { target: { value: string } }) =>
+          onValueChange?.(e.target.value),
       },
       content,
     )
   }
   const SelectTrigger = () => null
   const SelectValue = () => null
-  const SelectItem = ({ value, children }: { value?: string; children?: ReactNode }) =>
-    React.createElement('option', { value }, children)
+  const SelectItem = ({
+    value,
+    children,
+  }: {
+    value?: string
+    children?: ReactNode
+  }) => React.createElement('option', { value }, children)
   const SelectGroup = ({ children }: { children?: ReactNode }) => children
   const SelectLabel = ({ children }: { children?: ReactNode }) =>
     React.createElement('span', null, children)
@@ -270,13 +303,31 @@ vi.mock('#/components/ui/toggle-group', () => {
     value: string | undefined
     onValueChange: ((value: string) => void) | undefined
   }>({ value: undefined, onValueChange: undefined })
-  const ToggleGroup = ({ children, value, onValueChange, ...rest }: { children?: ReactNode; value?: string; onValueChange?: (v: string) => void; [key: string]: unknown }) =>
+  const ToggleGroup = ({
+    children,
+    value,
+    onValueChange,
+    ...rest
+  }: {
+    children?: ReactNode
+    value?: string
+    onValueChange?: (v: string) => void
+    [key: string]: unknown
+  }) =>
     React.createElement(
       ToggleGroupContext.Provider,
       { value: { value, onValueChange } },
       React.createElement('div', { ...rest, role: 'group' }, children),
     )
-  const ToggleGroupItem = ({ value, children, ...rest }: { value?: string; children?: ReactNode; [key: string]: unknown }) => {
+  const ToggleGroupItem = ({
+    value,
+    children,
+    ...rest
+  }: {
+    value?: string
+    children?: ReactNode
+    [key: string]: unknown
+  }) => {
     const group = React.useContext(ToggleGroupContext)
     return React.createElement(
       'button',

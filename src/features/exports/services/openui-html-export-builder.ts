@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import {
   createParser,
   jsonToOpenUI,
@@ -7,6 +7,7 @@ import {
 } from '@openuidev/lang-core'
 import { loadOpenUIRuntimeLibrary } from '@ship-fast/blocks/runtime'
 import { renderOpenUIToHTMLWithTheme } from '@ship-fast/engine/openui-ssr.js'
+import { compile } from '@tailwindcss/node'
 
 import { preprocessOpenUIResponse } from '@ship-fast/engine'
 import { localeTextDirection } from '@/features/localization/locale-direction'
@@ -33,13 +34,16 @@ type ParsedOpenUIProgram = {
   library: Awaited<ReturnType<typeof loadOpenUIRuntimeLibrary>>
 }
 
-const cssPath = join(
-  process.cwd(),
-  'public',
-  'styles',
-  'openui-preview-tailwind.css',
-)
-
+const appStylesPath = join(process.cwd(), 'src', 'styles.css')
+const appStylesBase = dirname(appStylesPath)
+const cssCompileBaseCandidates = [
+  'min-h-screen',
+  'bg-background',
+  'text-foreground',
+  'genui-preview',
+  'size-full',
+  'dark',
+]
 const themeVarKeys: readonly string[] = [
   'background',
   'foreground',
@@ -87,9 +91,50 @@ const themeVarKeys: readonly string[] = [
   'spacing',
 ]
 
-function readPreviewCss(): string {
+type TailwindCompiler = Awaited<ReturnType<typeof compile>>
+
+let tailwindCompilerPromise: Promise<TailwindCompiler> | undefined
+const previewCssCache = new Map<string, string>()
+
+const loadTailwindCompiler = async (): Promise<TailwindCompiler> => {
+  if (tailwindCompilerPromise === undefined) {
+    tailwindCompilerPromise = compile(readFileSync(appStylesPath, 'utf8'), {
+      base: appStylesBase,
+      from: appStylesPath,
+      onDependency: () => {},
+    })
+  }
+
+  return tailwindCompilerPromise
+}
+
+const readClassCandidates = (markup: string): string[] => {
+  const candidates = new Set(cssCompileBaseCandidates)
+  const classAttributePattern = /\sclass=(['"])(.*?)\1/gis
+
+  for (const match of markup.matchAll(classAttributePattern)) {
+    const value = match[2]
+    value
+      ?.split(/\s+/)
+      .map((candidate) => candidate.trim())
+      .filter(Boolean)
+      .forEach((candidate) => candidates.add(candidate))
+  }
+
+  return [...candidates].sort()
+}
+
+async function readPreviewCss(markup: string): Promise<string> {
+  const candidates = readClassCandidates(markup)
+  const cacheKey = candidates.join('\n')
+  const cached = previewCssCache.get(cacheKey)
+  if (cached !== undefined) return cached
+
   try {
-    return readFileSync(cssPath, 'utf8')
+    const compiler = await loadTailwindCompiler()
+    const css = compiler.build(candidates)
+    previewCssCache.set(cacheKey, css)
+    return css
   } catch {
     return ''
   }
@@ -1355,7 +1400,6 @@ async function buildStandaloneHtmlDocument(
     undefined,
     input.selectedBrandLogo,
   )
-  const css = readPreviewCss()
   const hasPreviewMarkup = isUsablePreviewHtml(input.previewHtml)
   const pagesMarkup = hasPreviewMarkup
     ? ''
@@ -1387,6 +1431,7 @@ async function buildStandaloneHtmlDocument(
   const rootMarkup = hasPreviewMarkup
     ? applyPreviewRootTheme(bodyMarkup, themeStyle, isDark)
     : `<main id="openui-root" class="genui-preview size-full bg-background${isDark ? ' dark' : ''}" style="${escapeAttribute(`${themeStyle} color-scheme: ${isDark ? 'dark' : 'light'}`)}">${bodyMarkup}</main>`
+  const css = await readPreviewCss(rootMarkup)
   const rootId = 'openui-root'
   const genui = readGenUIExportMetadata(siteSpec)
   const seoBundle = buildExportSeoBundle(

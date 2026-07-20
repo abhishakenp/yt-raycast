@@ -53,7 +53,7 @@ import {
   extractDomainHint,
   type ImageContext,
 } from './lib/image-search-query.ts'
-import { parseRouteTarget, resolveRouteTarget } from './lib/use-navigate.tsx'
+import { parseRouteTarget, resolveRouteTarget } from './lib/route-context.tsx'
 
 // ─── Shared helpers ────────────────────────────────────────────────────────
 
@@ -902,9 +902,9 @@ describe('image search query', () => {
   })
 })
 
-// ─── use-navigate ──────────────────────────────────────────────────────────
+// ─── Route context ─────────────────────────────────────────────────────────
 
-describe('use-navigate', () => {
+describe('route context', () => {
   it('28. parseRouteTarget resolves "/about" into a page target', () => {
     expect(parseRouteTarget('/about')).toEqual({
       type: 'page',

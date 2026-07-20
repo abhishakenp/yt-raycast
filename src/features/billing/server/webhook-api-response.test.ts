@@ -224,6 +224,54 @@ describe('createWebhookApiResponse', () => {
     })
   })
 
+  it('maps a signed Stripe paid invoice to a Dub partner sale', async () => {
+    const body = JSON.stringify({
+      id: 'evt_stripe_1',
+      type: 'invoice.paid',
+      data: {
+        object: {
+          id: 'in_123',
+          subscription: 'sub_stripe_123',
+          payment_intent: 'pi_123',
+          amount_paid: 9900,
+          currency: 'USD',
+        },
+      },
+    })
+    const signature = `t=1,v1=${await sign('whsec_test', `1.${body}`)}`
+    const client = { mutation: vi.fn().mockResolvedValue({ processed: true }) }
+
+    const response = await createWebhookApiResponse(
+      new Request('https://ship-fast.test/api/stripe/webhook', {
+        body,
+        headers: { 'stripe-signature': signature },
+        method: 'POST',
+      }),
+      'stripe',
+      {
+        BILLING_WEBHOOK_MUTATION_SECRET: 'mutation_secret',
+        DUB_PARTNERS_ENABLED: 'true',
+        STRIPE_WEBHOOK_SECRET: 'whsec_test',
+      },
+      client,
+    )
+
+    expect(response.status).toBe(200)
+    expect(client.mutation).toHaveBeenCalledWith(expect.anything(), {
+      idempotencyKey: 'invoice.paid:in_123',
+      partnerEvent: {
+        amount: 9900,
+        currency: 'usd',
+        invoiceId: 'in_123',
+        kind: 'sale',
+        providerPaymentId: 'pi_123',
+        providerSubscriptionId: 'sub_stripe_123',
+      },
+      provider: 'stripe',
+      secret: 'mutation_secret',
+    })
+  })
+
   it('maps a signed Razorpay partial refund with its cumulative remaining amount', async () => {
     const body = JSON.stringify({
       event: 'refund.processed',

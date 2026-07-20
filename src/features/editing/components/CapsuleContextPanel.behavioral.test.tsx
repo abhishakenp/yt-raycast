@@ -43,7 +43,15 @@ vi.mock('#/components/ui/sortable', () => {
     contentRef: React.MutableRefObject<HTMLElement | null>
   } | null>(null)
 
-  const Sortable = ({ value, onMove, children }: { value: unknown[]; onMove: (event: { activeIndex: number; overIndex: number }) => void; children?: ReactNode }) => {
+  const Sortable = ({
+    value,
+    onMove,
+    children,
+  }: {
+    value: unknown[]
+    onMove: (event: { activeIndex: number; overIndex: number }) => void
+    children?: ReactNode
+  }) => {
     const startIndex = React.useRef<number | null>(null)
     const contentRef = React.useRef<HTMLElement | null>(null)
     return (
@@ -54,14 +62,28 @@ vi.mock('#/components/ui/sortable', () => {
       </SortableContext.Provider>
     )
   }
-  const SortableContent = ({ children, ...props }: { children?: ReactNode; [key: string]: unknown }) => {
+  const SortableContent = ({
+    children,
+    ...props
+  }: {
+    children?: ReactNode
+    [key: string]: unknown
+  }) => {
     return (
       <div data-sortable-content {...props}>
         {children}
       </div>
     )
   }
-  const SortableItem = ({ value, children, asChild: _asChild }: { value: unknown; children?: ReactNode; asChild?: boolean }) => {
+  const SortableItem = ({
+    value,
+    children,
+    asChild: _asChild,
+  }: {
+    value: unknown
+    children?: ReactNode
+    asChild?: boolean
+  }) => {
     const ctx = React.useContext(SortableContext)
     // Store the item's index in a data attribute so the handle can read it
     // value may be string or number; compare loosely
@@ -70,7 +92,14 @@ vi.mock('#/components/ui/sortable', () => {
       : -1
     return <div data-sortable-idx={idx}>{children}</div>
   }
-  const SortableItemHandle = ({ children, ...props }: { children?: ReactNode; 'aria-label'?: string; [key: string]: unknown }) => {
+  const SortableItemHandle = ({
+    children,
+    ...props
+  }: {
+    children?: ReactNode
+    'aria-label'?: string
+    [key: string]: unknown
+  }) => {
     const ctx = React.useContext(SortableContext)
     const refCallback = (el: HTMLElement | null) => {
       if (!el) return

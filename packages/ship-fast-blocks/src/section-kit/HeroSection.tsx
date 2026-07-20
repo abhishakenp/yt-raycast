@@ -305,31 +305,19 @@ interface HeroImageProps extends React.ComponentProps<'div'> {
 const HeroMediaPanel = React.forwardRef<
   HTMLDivElement,
   HeroImageProps & { asChild?: boolean }
->(
-  (
-    {
-      className,
-      alt,
-      w = 1200,
-      h = 1200,
-      asChild = false,
-      ...props
-    },
-    ref,
-  ) => {
-    const Comp = asChild ? Slot : 'div'
-    return (
-      <Comp
-        ref={ref}
-        data-slot="hero-image"
-        className={cn('overflow-hidden rounded-2xl', className)}
-        {...props}
-      >
-        <Image alt={alt} w={w} h={h} className="size-full object-cover" />
-      </Comp>
-    )
-  },
-)
+>(({ className, alt, w = 1200, h = 1200, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="hero-image"
+      className={cn('overflow-hidden rounded-2xl', className)}
+      {...props}
+    >
+      <Image alt={alt} w={w} h={h} className="size-full object-cover" />
+    </Comp>
+  )
+})
 HeroMediaPanel.displayName = 'HeroMediaPanel'
 
 /* ---------- HeroSocialProof ---------- */

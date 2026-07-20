@@ -61,10 +61,7 @@ const HoverAccordionPanel = React.forwardRef<
       <Comp
         ref={ref}
         data-slot="hover-accordion-panel"
-        className={cn(
-          hoverAccordionPanelVariants({ ring }),
-          className,
-        )}
+        className={cn(hoverAccordionPanelVariants({ ring }), className)}
         style={{
           flexGrow: expanded ? grow.expanded : grow.collapsed,
           flexBasis: 0,

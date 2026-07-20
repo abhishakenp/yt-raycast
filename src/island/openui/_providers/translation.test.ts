@@ -462,7 +462,9 @@ describe('translation shimmer removal', () => {
       return {
         ok: true,
         json: async () => ({
-          translations: (body.texts ?? []).map((text: string) => `मॉडल ${text}`),
+          translations: (body.texts ?? []).map(
+            (text: string) => `मॉडल ${text}`,
+          ),
         }),
       } as Response
     }) as unknown as typeof fetch

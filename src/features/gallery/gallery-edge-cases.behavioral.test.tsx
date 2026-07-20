@@ -97,10 +97,6 @@ vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
   ),
 }))
 
-vi.mock('./server/gallery-preview-server-fn', () => ({
-  fetchGalleryPreviewHtml: vi.fn(async () => null),
-}))
-
 /* -------------------------------------------------------------------------- */
 /* GalleryPage controller mock (flexible, controllable from tests)           */
 /* -------------------------------------------------------------------------- */

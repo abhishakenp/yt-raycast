@@ -98,10 +98,16 @@ function readmeRoutes(siteSpec: any): string[] {
   const routes: string[] = Array.from(
     new Set(
       (siteSpec?.pages || [])
-        .map((page: Record<string, unknown>) => String(page?.route || '').trim())
+        .map((page: Record<string, unknown>) =>
+          String(page?.route || '').trim(),
+        )
         .filter(Boolean)
         .map((route: unknown) =>
-          route === '/' ? '/' : String(route).startsWith('/') ? route : `/${route}`,
+          route === '/'
+            ? '/'
+            : String(route).startsWith('/')
+              ? route
+              : `/${route}`,
         ),
     ),
   )

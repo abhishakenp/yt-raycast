@@ -69,10 +69,6 @@ vi.mock('@tanstack/react-query', () => ({
   useQuery: () => ({ data: undefined, isPending: true }),
 }))
 
-vi.mock('../server/gallery-preview-server-fn', () => ({
-  fetchGalleryPreviewHtml: vi.fn(async () => null),
-}))
-
 const controllerState = {
   loading: false,
   sessions: [] as GallerySession[],

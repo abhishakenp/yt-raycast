@@ -301,9 +301,15 @@ const AccountDropdownUnauthenticated = React.forwardRef<
     <Button
       ref={ref}
       data-slot="account-dropdown-unauthenticated"
-      variant="shiny"
+      variant="outline"
       size="sm"
-      className={cn('gap-2', className)}
+      // Neutral mono-metadata chip: matches the shared design-language grammar
+      // (square, mono micro-label, flood-invert hover) across every category
+      // instead of the old glossy primary pill that ignored page languages.
+      className={cn(
+        'gap-2 rounded-none border-border bg-transparent font-mono text-[11px] font-semibold uppercase tracking-[0.15em] text-foreground transition-colors duration-150 hover:bg-foreground hover:text-background active:translate-y-px',
+        className,
+      )}
       disabled={authState.isLoading}
       onClick={() => void auth.signInWithGoogle()}
       {...props}

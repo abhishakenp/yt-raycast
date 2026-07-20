@@ -32,8 +32,11 @@
   --radius: 0.625rem;
 }
 
+/* Dark-scheme token overrides. NOTE: must be a plain `:root` block, not
+   `@theme` — Tailwind v4 hoists `@theme` out of media queries, which silently
+   overwrote the light palette and locked the whole app into dark tokens. */
 @media (prefers-color-scheme: dark) {
-  @theme {
+  :root {
     --color-background: oklch(0.141 0.005 285.823);
     --color-foreground: oklch(0.985 0 0);
     --color-card: oklch(0.141 0.005 285.823);

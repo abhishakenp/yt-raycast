@@ -102,7 +102,13 @@ function createMockEventStreamCtx(
         let rows: MockEvent[] = table === 'generationEvents' ? [...events] : []
 
         const builder = {
-          withIndex: (_name: string, applyIndex: (index: { eq: (field: string, value: unknown) => typeof index; gt: (field: string, value: number) => typeof index }) => void) => {
+          withIndex: (
+            _name: string,
+            applyIndex: (index: {
+              eq: (field: string, value: unknown) => typeof index
+              gt: (field: string, value: number) => typeof index
+            }) => void,
+          ) => {
             const eqFilters = new Map<string, unknown>()
             const gtFilters = new Map<string, number>()
             const index = {

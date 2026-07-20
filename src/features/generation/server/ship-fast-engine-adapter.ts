@@ -131,7 +131,12 @@ export function createShipFastEngineAdapter({
   onEvent,
 }: ShipFastEngineAdapterOptions) {
   return {
-    generate: async ({ sessionId, prompt, preferredLanguage, signal }: ShipFastEngineAdapterInput) => {
+    generate: async ({
+      sessionId,
+      prompt,
+      preferredLanguage,
+      signal,
+    }: ShipFastEngineAdapterInput) => {
       const startedAt = now()
       const events: ShipFastEngineSessionEvent[] = []
       const deferredEvents: ShipFastEngineSessionEvent[] = []

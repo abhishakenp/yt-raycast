@@ -1,7 +1,4 @@
-import {
-  createLibrary,
-  isCapsule,
-} from './capsules/openui.ts'
+import { createLibrary, isCapsule } from './capsules/openui.ts'
 import * as registry from './registry/all.ts'
 
 // The OpenUI component library is assembled from the registry's defined

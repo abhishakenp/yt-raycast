@@ -60,7 +60,9 @@ export type TypedTableDefinition<TFields extends Record<string, Field<any>>> =
     seedFromProps?: boolean
   }
 
-export function table<TFields extends Record<string, Field<any>>>(fields: TFields): TypedTableDefinition<TFields> {
+export function table<TFields extends Record<string, Field<any>>>(
+  fields: TFields,
+): TypedTableDefinition<TFields> {
   return lakebedTable(fields) as TypedTableDefinition<TFields>
 }
 

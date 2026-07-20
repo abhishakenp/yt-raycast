@@ -24,6 +24,18 @@ export const RoutesContext = createContext<RoutesContextValue>({
   setPendingSectionId: () => {},
 })
 
+/**
+ * Provides `setPage` — the OpenUI runtime's `$page` state setter — to nav
+ * components outside the `<Renderer>` tree. `PageSwitch` populates this when
+ * it renders (it calls `useStateField('page')` inside a Renderer). Nav link
+ * click handlers read from this context instead of calling `useStateField`
+ * directly, so they don't crash when rendered in isolation (unit tests,
+ * storybook) without a Renderer.
+ */
+export const PageStateContext = createContext<{
+  setPage: (page: string) => void
+}>({ setPage: () => {} })
+
 function normalizeTarget(value: string): string {
   return value.trim().toLowerCase()
 }

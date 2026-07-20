@@ -34,7 +34,7 @@ const statItemVariants = cva('flex flex-col', {
   },
 })
 
-const statValueVariants = cva('', {
+const statValueVariants = cva('tabular-nums tracking-tight', {
   variants: {
     fontFamily: {
       sans: '',
@@ -234,25 +234,17 @@ const StatCard = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<'div'> &
     VariantProps<typeof statCardVariants> & { asChild?: boolean }
->(
-  (
-    { className, variant, asChild = false, ...props },
-    ref,
-  ) => {
-    const Comp = asChild ? Slot : 'div'
-    return (
-      <Comp
-        ref={ref}
-        data-slot="stat-card"
-        className={cn(
-          statCardVariants({ variant }),
-          className,
-        )}
-        {...props}
-      />
-    )
-  },
-)
+>(({ className, variant, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'div'
+  return (
+    <Comp
+      ref={ref}
+      data-slot="stat-card"
+      className={cn(statCardVariants({ variant }), className)}
+      {...props}
+    />
+  )
+})
 StatCard.displayName = 'StatCard'
 
 const StatCardHeader = React.forwardRef<

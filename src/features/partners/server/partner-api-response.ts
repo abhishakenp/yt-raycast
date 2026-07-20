@@ -28,6 +28,7 @@ type PartnerApiEnv = {
   DUB_API_KEY?: string
   DUB_PARTNERS_ENABLED?: string
   DUB_PARTNER_GROUP_ID?: string
+  DUB_API_URL?: string
 }
 
 type PartnerApiDependencies = {
@@ -155,7 +156,8 @@ export async function createPartnerEmbedTokenApiResponse(
     }
 
     const dubClient =
-      dependencies.dubClient ?? createDubServerClient(env.DUB_API_KEY)
+      dependencies.dubClient ??
+      createDubServerClient(env.DUB_API_KEY, env.DUB_API_URL)
     const tokenResult = await dubClient.embedTokens.referrals({
       partner: {
         email: identity.email,

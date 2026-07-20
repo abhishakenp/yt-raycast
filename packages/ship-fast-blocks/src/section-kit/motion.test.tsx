@@ -21,9 +21,8 @@ class MockIntersectionObserver {
   unobserve() {}
 }
 
-const { act, cleanup, fireEvent, render } = await import(
-  '@testing-library/react'
-)
+const { act, cleanup, fireEvent, render } =
+  await import('@testing-library/react')
 const {
   CountUp,
   Drift,

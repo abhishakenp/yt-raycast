@@ -5,10 +5,8 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '#/lib/utils.ts'
 
 const RewardListVariants = cva('flex flex-col gap-4', {
-  variants: {
-  },
-  defaultVariants: {
-  },
+  variants: {},
+  defaultVariants: {},
 })
 
 const RewardList = React.forwardRef<

@@ -485,7 +485,9 @@ export const HomePage = () => {
     setPrompt(value)
   }
 
-  const handlePromptKeyDown = (event: ReactKeyboardEvent<HTMLTextAreaElement>) => {
+  const handlePromptKeyDown = (
+    event: ReactKeyboardEvent<HTMLTextAreaElement>,
+  ) => {
     if (promptSuggestionsOpen) {
       if (event.key === 'ArrowDown') {
         event.preventDefault()

@@ -12,6 +12,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Dashboard } from './Dashboard'
 
 const routerMocks = vi.hoisted(() => ({
+  canGoBack: false,
+  historyBack: vi.fn(),
   navigate: vi.fn(),
 }))
 
@@ -192,9 +194,10 @@ vi.mock('@tanstack/react-router', () => ({
       {children}
     </a>
   ),
+  useCanGoBack: () => routerMocks.canGoBack,
   useNavigate: () => routerMocks.navigate,
   useParams: () => ({}),
-  useRouter: () => ({ state: { location: { pathname: '/' } } }),
+  useRouter: () => ({ history: { back: routerMocks.historyBack } }),
 }))
 
 vi.mock('@ship-fast/lakebed/react', () => ({
@@ -354,6 +357,8 @@ const setupReady = () => {
 // ─── tests ─────────────────────────────────────────────────────────────────
 describe('Dashboard toolbar + device switcher + status indicators', () => {
   beforeEach(() => {
+    routerMocks.canGoBack = false
+    routerMocks.historyBack.mockReset()
     routerMocks.navigate.mockReset()
     ensureWindowStorage()
     getConvexState().generationView = null
@@ -534,17 +539,27 @@ describe('Dashboard toolbar + device switcher + status indicators', () => {
     ).toBe('false')
   })
 
-  // 4. Back to home button
-  it('renders a back-to-home button that navigates to /', () => {
+  // 4. Back button
+  it('uses home navigation when router history cannot go back', () => {
     setupReady()
     render(<Dashboard sessionId="ready-session" />)
 
-    const backBtn = screen.getByRole('link', { name: 'Back to home' })
-    expect(backBtn.getAttribute('data-tip')).toBe('Back to home')
-    expect(backBtn.getAttribute('href')).toBe('/')
+    const backBtn = screen.getByRole('button', { name: 'Back' })
+    expect(backBtn.getAttribute('data-tip')).toBe('Back')
 
     fireEvent.click(backBtn)
-    expect(routerMocks.navigate).toHaveBeenCalledWith('/')
+    expect(routerMocks.navigate).toHaveBeenCalledWith({ to: '/' })
+    expect(routerMocks.historyBack).not.toHaveBeenCalled()
+  })
+
+  it('uses router history when router history can go back', () => {
+    routerMocks.canGoBack = true
+    setupReady()
+    render(<Dashboard sessionId="ready-session" />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }))
+    expect(routerMocks.historyBack).toHaveBeenCalledOnce()
+    expect(routerMocks.navigate).not.toHaveBeenCalled()
   })
 
   // 5. URL pill
@@ -737,9 +752,8 @@ describe('Dashboard toolbar + device switcher + status indicators', () => {
     // preview tools are hidden when session is missing
     expect(screen.queryByRole('button', { name: 'Publish preview' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Open auto admin' })).toBeNull()
-    // the missing-state back-to-home button navigates to /. Two back-to-home
-    // buttons exist (topbar + missing-state card); assert both are present.
-    const backButtons = screen.getAllByRole('link', { name: 'Back to home' })
+    // The missing-state card and topbar both expose back buttons.
+    const backButtons = screen.getAllByRole('button', { name: 'Back' })
     expect(backButtons.length).toBeGreaterThanOrEqual(2)
   })
 

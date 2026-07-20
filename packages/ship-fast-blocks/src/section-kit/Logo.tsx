@@ -242,7 +242,14 @@ const LogoLabel = React.forwardRef<
   const ctx = useContext(LogoContext)
   const Comp = asChild ? Slot : 'span'
   return (
-    <Comp ref={ref} data-slot="logo-label" className={className} {...props}>
+    <Comp
+      ref={ref}
+      data-slot="logo-label"
+      // Wordmarks must never wrap letter-by-letter when a narrow width class
+      // lands on an ancestor (recurring capsule-authoring mistake).
+      className={cn('whitespace-nowrap', className)}
+      {...props}
+    >
       {ctx?.brand}
     </Comp>
   )

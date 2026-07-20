@@ -38,7 +38,10 @@ vi.mock('@/lib/stock-image', () => ({
   // Mirror production behaviour: with no hi-res baseUrl, fall back to the
   // thumbnail; when a baseUrl exists, hand back a resolution-tagged URL so
   // tests can assert the quality tier is threaded through.
-  buildBackgroundImageUrl: (result: { baseUrl?: string; imageUrl?: string }, resolution: string) =>
+  buildBackgroundImageUrl: (
+    result: { baseUrl?: string; imageUrl?: string },
+    resolution: string,
+  ) =>
     result.baseUrl ? `${result.baseUrl}?res=${resolution}` : result.imageUrl,
 }))
 vi.mock('convex/react', () => ({

@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  applyGeneratedSitePseoGuardrails,
-} from './pseo-guardrails'
+import { applyGeneratedSitePseoGuardrails } from './pseo-guardrails'
 
 function page(
   route: string,

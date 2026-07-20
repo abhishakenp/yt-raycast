@@ -75,7 +75,7 @@ const TestimonialCard = React.forwardRef<
       ref={ref}
       data-slot="testimonial-card"
       className={cn(
-        'flex flex-col gap-4 rounded-xl border border-border bg-card p-6',
+        'flex flex-col gap-4 rounded-xl border border-border bg-card p-6 transition-[border-color] duration-150 hover:border-foreground/25',
         className,
       )}
       {...props}

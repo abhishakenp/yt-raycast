@@ -13,6 +13,9 @@ type MarketingConsentControllerProps = {
   publishableKey?: string
   referralDomain?: string
   siteDomain?: string
+  // Point client-side tracking at a self-hosted Dub (e.g. https://api.ship-fast.ai);
+  // unset → Dub SaaS default.
+  apiHost?: string
 }
 
 function isEnabled(value: string | undefined): boolean {
@@ -24,6 +27,7 @@ export function MarketingConsentController({
   publishableKey = import.meta.env.VITE_DUB_PUBLISHABLE_KEY,
   referralDomain = import.meta.env.VITE_DUB_REFERRAL_DOMAIN,
   siteDomain = import.meta.env.VITE_DUB_SITE_DOMAIN,
+  apiHost = import.meta.env.VITE_DUB_API_HOST,
 }: MarketingConsentControllerProps): React.ReactNode {
   const [consent, setConsent] = useState<MarketingConsent | null>(null)
   useEffect(() => {
@@ -50,6 +54,7 @@ export function MarketingConsentController({
           site: siteDomain,
         }}
         publishableKey={publishableKey}
+        {...(apiHost ? { apiHost } : {})}
       />
     )
   }

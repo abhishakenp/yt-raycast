@@ -20,9 +20,11 @@ import { Route as MineRouteImport } from './routes/mine'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as HealthRouteImport } from './routes/health'
 import { Route as GalleryRouteImport } from './routes/gallery'
+import { Route as ExamplesRouteImport } from './routes/examples'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ExamplesIndexRouteImport } from './routes/examples.index'
 import { Route as PreviewSlugRouteImport } from './routes/preview.$slug'
-import { Route as GenerateSessionIdRouteImport } from './routes/generate.$sessionId'
+import { Route as ExamplesCategoryRouteImport } from './routes/examples.$category'
 import { Route as ApiTranslateRouteImport } from './routes/api/translate'
 import { Route as ApiSubscriptionStatusRouteImport } from './routes/api/subscription-status'
 import { Route as ApiShareBonusRouteImport } from './routes/api/share-bonus'
@@ -38,6 +40,7 @@ import { Route as ApiBillingOverviewRouteImport } from './routes/api/billing-ove
 import { Route as PreviewSlugSitemapDotxmlRouteImport } from './routes/preview.$slug.sitemap[.]xml'
 import { Route as PreviewSlugRobotsDottxtRouteImport } from './routes/preview.$slug.robots[.]txt'
 import { Route as PreviewSlugLlmsDottxtRouteImport } from './routes/preview.$slug.llms[.]txt'
+import { Route as PreviewSlugSplatRouteImport } from './routes/preview.$slug.$'
 import { Route as GenerateSessionIdAdminRouteImport } from './routes/generate.$sessionId.admin'
 import { Route as GenerateSessionIdSplatRouteImport } from './routes/generate.$sessionId.$'
 import { Route as ExportSessionIdTargetRouteImport } from './routes/export.$sessionId.$target'
@@ -136,20 +139,30 @@ const GalleryRoute = GalleryRouteImport.update({
   path: '/gallery',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExamplesRoute = ExamplesRouteImport.update({
+  id: '/examples',
+  path: '/examples',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ExamplesIndexRoute = ExamplesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ExamplesRoute,
 } as any)
 const PreviewSlugRoute = PreviewSlugRouteImport.update({
   id: '/preview/$slug',
   path: '/preview/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GenerateSessionIdRoute = GenerateSessionIdRouteImport.update({
-  id: '/generate/$sessionId',
-  path: '/generate/$sessionId',
-  getParentRoute: () => rootRouteImport,
+const ExamplesCategoryRoute = ExamplesCategoryRouteImport.update({
+  id: '/$category',
+  path: '/$category',
+  getParentRoute: () => ExamplesRoute,
 } as any)
 const ApiTranslateRoute = ApiTranslateRouteImport.update({
   id: '/api/translate',
@@ -227,15 +240,20 @@ const PreviewSlugLlmsDottxtRoute = PreviewSlugLlmsDottxtRouteImport.update({
   path: '/llms.txt',
   getParentRoute: () => PreviewSlugRoute,
 } as any)
-const GenerateSessionIdAdminRoute = GenerateSessionIdAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => GenerateSessionIdRoute,
-} as any)
-const GenerateSessionIdSplatRoute = GenerateSessionIdSplatRouteImport.update({
+const PreviewSlugSplatRoute = PreviewSlugSplatRouteImport.update({
   id: '/$',
   path: '/$',
-  getParentRoute: () => GenerateSessionIdRoute,
+  getParentRoute: () => PreviewSlugRoute,
+} as any)
+const GenerateSessionIdAdminRoute = GenerateSessionIdAdminRouteImport.update({
+  id: '/generate/$sessionId/admin',
+  path: '/generate/$sessionId/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GenerateSessionIdSplatRoute = GenerateSessionIdSplatRouteImport.update({
+  id: '/generate/$sessionId/$',
+  path: '/generate/$sessionId/$',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ExportSessionIdTargetRoute = ExportSessionIdTargetRouteImport.update({
   id: '/export/$sessionId/$target',
@@ -464,6 +482,7 @@ const ApiSessionsSessionIdHistoryVersionRestoreRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/examples': typeof ExamplesRouteWithChildren
   '/gallery': typeof GalleryRoute
   '/health': typeof HealthRoute
   '/llms.txt': typeof LlmsDottxtRoute
@@ -487,8 +506,9 @@ export interface FileRoutesByFullPath {
   '/api/share-bonus': typeof ApiShareBonusRoute
   '/api/subscription-status': typeof ApiSubscriptionStatusRoute
   '/api/translate': typeof ApiTranslateRoute
-  '/generate/$sessionId': typeof GenerateSessionIdRouteWithChildren
+  '/examples/$category': typeof ExamplesCategoryRoute
   '/preview/$slug': typeof PreviewSlugRouteWithChildren
+  '/examples/': typeof ExamplesIndexRoute
   '/api/checkout/start': typeof ApiCheckoutStartRoute
   '/api/images/$sessionId': typeof ApiImagesSessionIdRoute
   '/api/medusa-admin/config': typeof ApiMedusaAdminConfigRoute
@@ -505,6 +525,7 @@ export interface FileRoutesByFullPath {
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
   '/generate/$sessionId/$': typeof GenerateSessionIdSplatRoute
   '/generate/$sessionId/admin': typeof GenerateSessionIdAdminRoute
+  '/preview/$slug/$': typeof PreviewSlugSplatRoute
   '/preview/$slug/llms.txt': typeof PreviewSlugLlmsDottxtRoute
   '/preview/$slug/robots.txt': typeof PreviewSlugRobotsDottxtRoute
   '/preview/$slug/sitemap.xml': typeof PreviewSlugSitemapDotxmlRoute
@@ -560,8 +581,9 @@ export interface FileRoutesByTo {
   '/api/share-bonus': typeof ApiShareBonusRoute
   '/api/subscription-status': typeof ApiSubscriptionStatusRoute
   '/api/translate': typeof ApiTranslateRoute
-  '/generate/$sessionId': typeof GenerateSessionIdRouteWithChildren
+  '/examples/$category': typeof ExamplesCategoryRoute
   '/preview/$slug': typeof PreviewSlugRouteWithChildren
+  '/examples': typeof ExamplesIndexRoute
   '/api/checkout/start': typeof ApiCheckoutStartRoute
   '/api/images/$sessionId': typeof ApiImagesSessionIdRoute
   '/api/medusa-admin/config': typeof ApiMedusaAdminConfigRoute
@@ -578,6 +600,7 @@ export interface FileRoutesByTo {
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
   '/generate/$sessionId/$': typeof GenerateSessionIdSplatRoute
   '/generate/$sessionId/admin': typeof GenerateSessionIdAdminRoute
+  '/preview/$slug/$': typeof PreviewSlugSplatRoute
   '/preview/$slug/llms.txt': typeof PreviewSlugLlmsDottxtRoute
   '/preview/$slug/robots.txt': typeof PreviewSlugRobotsDottxtRoute
   '/preview/$slug/sitemap.xml': typeof PreviewSlugSitemapDotxmlRoute
@@ -611,6 +634,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/examples': typeof ExamplesRouteWithChildren
   '/gallery': typeof GalleryRoute
   '/health': typeof HealthRoute
   '/llms.txt': typeof LlmsDottxtRoute
@@ -634,8 +658,9 @@ export interface FileRoutesById {
   '/api/share-bonus': typeof ApiShareBonusRoute
   '/api/subscription-status': typeof ApiSubscriptionStatusRoute
   '/api/translate': typeof ApiTranslateRoute
-  '/generate/$sessionId': typeof GenerateSessionIdRouteWithChildren
+  '/examples/$category': typeof ExamplesCategoryRoute
   '/preview/$slug': typeof PreviewSlugRouteWithChildren
+  '/examples/': typeof ExamplesIndexRoute
   '/api/checkout/start': typeof ApiCheckoutStartRoute
   '/api/images/$sessionId': typeof ApiImagesSessionIdRoute
   '/api/medusa-admin/config': typeof ApiMedusaAdminConfigRoute
@@ -652,6 +677,7 @@ export interface FileRoutesById {
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
   '/generate/$sessionId/$': typeof GenerateSessionIdSplatRoute
   '/generate/$sessionId/admin': typeof GenerateSessionIdAdminRoute
+  '/preview/$slug/$': typeof PreviewSlugSplatRoute
   '/preview/$slug/llms.txt': typeof PreviewSlugLlmsDottxtRoute
   '/preview/$slug/robots.txt': typeof PreviewSlugRobotsDottxtRoute
   '/preview/$slug/sitemap.xml': typeof PreviewSlugSitemapDotxmlRoute
@@ -686,6 +712,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/examples'
     | '/gallery'
     | '/health'
     | '/llms.txt'
@@ -709,8 +736,9 @@ export interface FileRouteTypes {
     | '/api/share-bonus'
     | '/api/subscription-status'
     | '/api/translate'
-    | '/generate/$sessionId'
+    | '/examples/$category'
     | '/preview/$slug'
+    | '/examples/'
     | '/api/checkout/start'
     | '/api/images/$sessionId'
     | '/api/medusa-admin/config'
@@ -727,6 +755,7 @@ export interface FileRouteTypes {
     | '/export/$sessionId/$target'
     | '/generate/$sessionId/$'
     | '/generate/$sessionId/admin'
+    | '/preview/$slug/$'
     | '/preview/$slug/llms.txt'
     | '/preview/$slug/robots.txt'
     | '/preview/$slug/sitemap.xml'
@@ -782,8 +811,9 @@ export interface FileRouteTypes {
     | '/api/share-bonus'
     | '/api/subscription-status'
     | '/api/translate'
-    | '/generate/$sessionId'
+    | '/examples/$category'
     | '/preview/$slug'
+    | '/examples'
     | '/api/checkout/start'
     | '/api/images/$sessionId'
     | '/api/medusa-admin/config'
@@ -800,6 +830,7 @@ export interface FileRouteTypes {
     | '/export/$sessionId/$target'
     | '/generate/$sessionId/$'
     | '/generate/$sessionId/admin'
+    | '/preview/$slug/$'
     | '/preview/$slug/llms.txt'
     | '/preview/$slug/robots.txt'
     | '/preview/$slug/sitemap.xml'
@@ -832,6 +863,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/examples'
     | '/gallery'
     | '/health'
     | '/llms.txt'
@@ -855,8 +887,9 @@ export interface FileRouteTypes {
     | '/api/share-bonus'
     | '/api/subscription-status'
     | '/api/translate'
-    | '/generate/$sessionId'
+    | '/examples/$category'
     | '/preview/$slug'
+    | '/examples/'
     | '/api/checkout/start'
     | '/api/images/$sessionId'
     | '/api/medusa-admin/config'
@@ -873,6 +906,7 @@ export interface FileRouteTypes {
     | '/export/$sessionId/$target'
     | '/generate/$sessionId/$'
     | '/generate/$sessionId/admin'
+    | '/preview/$slug/$'
     | '/preview/$slug/llms.txt'
     | '/preview/$slug/robots.txt'
     | '/preview/$slug/sitemap.xml'
@@ -906,6 +940,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ExamplesRoute: typeof ExamplesRouteWithChildren
   GalleryRoute: typeof GalleryRoute
   HealthRoute: typeof HealthRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
@@ -929,7 +964,6 @@ export interface RootRouteChildren {
   ApiShareBonusRoute: typeof ApiShareBonusRoute
   ApiSubscriptionStatusRoute: typeof ApiSubscriptionStatusRoute
   ApiTranslateRoute: typeof ApiTranslateRoute
-  GenerateSessionIdRoute: typeof GenerateSessionIdRouteWithChildren
   PreviewSlugRoute: typeof PreviewSlugRouteWithChildren
   ApiCheckoutStartRoute: typeof ApiCheckoutStartRoute
   ApiImagesSessionIdRoute: typeof ApiImagesSessionIdRoute
@@ -945,6 +979,8 @@ export interface RootRouteChildren {
   ApiSessionsCreateRoute: typeof ApiSessionsCreateRoute
   ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
   ExportSessionIdTargetRoute: typeof ExportSessionIdTargetRoute
+  GenerateSessionIdSplatRoute: typeof GenerateSessionIdSplatRoute
+  GenerateSessionIdAdminRoute: typeof GenerateSessionIdAdminRoute
   ApiDeploymentsDeploymentSlugMedusaConfigRoute: typeof ApiDeploymentsDeploymentSlugMedusaConfigRoute
   ApiDeploymentsDeploymentSlugMedusaProductsRoute: typeof ApiDeploymentsDeploymentSlugMedusaProductsRoute
   ApiDeploymentsDeploymentSlugMedusaPullRoute: typeof ApiDeploymentsDeploymentSlugMedusaPullRoute
@@ -1035,12 +1071,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GalleryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/examples': {
+      id: '/examples'
+      path: '/examples'
+      fullPath: '/examples'
+      preLoaderRoute: typeof ExamplesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/examples/': {
+      id: '/examples/'
+      path: '/'
+      fullPath: '/examples/'
+      preLoaderRoute: typeof ExamplesIndexRouteImport
+      parentRoute: typeof ExamplesRoute
     }
     '/preview/$slug': {
       id: '/preview/$slug'
@@ -1049,12 +1099,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PreviewSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/generate/$sessionId': {
-      id: '/generate/$sessionId'
-      path: '/generate/$sessionId'
-      fullPath: '/generate/$sessionId'
-      preLoaderRoute: typeof GenerateSessionIdRouteImport
-      parentRoute: typeof rootRouteImport
+    '/examples/$category': {
+      id: '/examples/$category'
+      path: '/$category'
+      fullPath: '/examples/$category'
+      preLoaderRoute: typeof ExamplesCategoryRouteImport
+      parentRoute: typeof ExamplesRoute
     }
     '/api/translate': {
       id: '/api/translate'
@@ -1161,19 +1211,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PreviewSlugLlmsDottxtRouteImport
       parentRoute: typeof PreviewSlugRoute
     }
+    '/preview/$slug/$': {
+      id: '/preview/$slug/$'
+      path: '/$'
+      fullPath: '/preview/$slug/$'
+      preLoaderRoute: typeof PreviewSlugSplatRouteImport
+      parentRoute: typeof PreviewSlugRoute
+    }
     '/generate/$sessionId/admin': {
       id: '/generate/$sessionId/admin'
-      path: '/admin'
+      path: '/generate/$sessionId/admin'
       fullPath: '/generate/$sessionId/admin'
       preLoaderRoute: typeof GenerateSessionIdAdminRouteImport
-      parentRoute: typeof GenerateSessionIdRoute
+      parentRoute: typeof rootRouteImport
     }
     '/generate/$sessionId/$': {
       id: '/generate/$sessionId/$'
-      path: '/$'
+      path: '/generate/$sessionId/$'
       fullPath: '/generate/$sessionId/$'
       preLoaderRoute: typeof GenerateSessionIdSplatRouteImport
-      parentRoute: typeof GenerateSessionIdRoute
+      parentRoute: typeof rootRouteImport
     }
     '/export/$sessionId/$target': {
       id: '/export/$sessionId/$target'
@@ -1259,18 +1316,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMedusaAdminConfigRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/checkout/start': {
-      id: '/api/checkout/start'
-      path: '/api/checkout/start'
-      fullPath: '/api/checkout/start'
-      preLoaderRoute: typeof ApiCheckoutStartRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/images/$sessionId': {
       id: '/api/images/$sessionId'
       path: '/api/images/$sessionId'
       fullPath: '/api/images/$sessionId'
       preLoaderRoute: typeof ApiImagesSessionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/checkout/start': {
+      id: '/api/checkout/start'
+      path: '/api/checkout/start'
+      fullPath: '/api/checkout/start'
+      preLoaderRoute: typeof ApiCheckoutStartRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/sessions/$sessionId/stream': {
@@ -1458,26 +1515,29 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface GenerateSessionIdRouteChildren {
-  GenerateSessionIdSplatRoute: typeof GenerateSessionIdSplatRoute
-  GenerateSessionIdAdminRoute: typeof GenerateSessionIdAdminRoute
+interface ExamplesRouteChildren {
+  ExamplesCategoryRoute: typeof ExamplesCategoryRoute
+  ExamplesIndexRoute: typeof ExamplesIndexRoute
 }
 
-const GenerateSessionIdRouteChildren: GenerateSessionIdRouteChildren = {
-  GenerateSessionIdSplatRoute: GenerateSessionIdSplatRoute,
-  GenerateSessionIdAdminRoute: GenerateSessionIdAdminRoute,
+const ExamplesRouteChildren: ExamplesRouteChildren = {
+  ExamplesCategoryRoute: ExamplesCategoryRoute,
+  ExamplesIndexRoute: ExamplesIndexRoute,
 }
 
-const GenerateSessionIdRouteWithChildren =
-  GenerateSessionIdRoute._addFileChildren(GenerateSessionIdRouteChildren)
+const ExamplesRouteWithChildren = ExamplesRoute._addFileChildren(
+  ExamplesRouteChildren,
+)
 
 interface PreviewSlugRouteChildren {
+  PreviewSlugSplatRoute: typeof PreviewSlugSplatRoute
   PreviewSlugLlmsDottxtRoute: typeof PreviewSlugLlmsDottxtRoute
   PreviewSlugRobotsDottxtRoute: typeof PreviewSlugRobotsDottxtRoute
   PreviewSlugSitemapDotxmlRoute: typeof PreviewSlugSitemapDotxmlRoute
 }
 
 const PreviewSlugRouteChildren: PreviewSlugRouteChildren = {
+  PreviewSlugSplatRoute: PreviewSlugSplatRoute,
   PreviewSlugLlmsDottxtRoute: PreviewSlugLlmsDottxtRoute,
   PreviewSlugRobotsDottxtRoute: PreviewSlugRobotsDottxtRoute,
   PreviewSlugSitemapDotxmlRoute: PreviewSlugSitemapDotxmlRoute,
@@ -1562,6 +1622,7 @@ const ApiSessionsSessionIdRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ExamplesRoute: ExamplesRouteWithChildren,
   GalleryRoute: GalleryRoute,
   HealthRoute: HealthRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
@@ -1585,7 +1646,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiShareBonusRoute: ApiShareBonusRoute,
   ApiSubscriptionStatusRoute: ApiSubscriptionStatusRoute,
   ApiTranslateRoute: ApiTranslateRoute,
-  GenerateSessionIdRoute: GenerateSessionIdRouteWithChildren,
   PreviewSlugRoute: PreviewSlugRouteWithChildren,
   ApiCheckoutStartRoute: ApiCheckoutStartRoute,
   ApiImagesSessionIdRoute: ApiImagesSessionIdRoute,
@@ -1601,6 +1661,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiSessionsCreateRoute: ApiSessionsCreateRoute,
   ApiStripeWebhookRoute: ApiStripeWebhookRoute,
   ExportSessionIdTargetRoute: ExportSessionIdTargetRoute,
+  GenerateSessionIdSplatRoute: GenerateSessionIdSplatRoute,
+  GenerateSessionIdAdminRoute: GenerateSessionIdAdminRoute,
   ApiDeploymentsDeploymentSlugMedusaConfigRoute:
     ApiDeploymentsDeploymentSlugMedusaConfigRoute,
   ApiDeploymentsDeploymentSlugMedusaProductsRoute:

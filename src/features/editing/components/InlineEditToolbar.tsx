@@ -1046,7 +1046,8 @@ export function InlineEditToolbar({
       setPendingImageSrc(null)
       return
     }
-    ;(activeElement as HTMLImageElement).src = firstImageSrc(newSrc) ?? (activeElement as HTMLImageElement).src
+    ;(activeElement as HTMLImageElement).src =
+      firstImageSrc(newSrc) ?? (activeElement as HTMLImageElement).src
     pendingImageSrcRef.current = newSrc
     imagePreviewClearedRef.current = false
     setPendingImageSrc(newSrc)

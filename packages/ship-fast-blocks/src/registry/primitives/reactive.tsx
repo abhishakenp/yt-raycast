@@ -71,7 +71,8 @@ export const StateButton = defineCapsule({
     const state = useStateField<number | string | boolean>(props.field, initial)
     const op = props.op ?? 'increment'
     const step = props.amount ?? 1
-    const asNumber = (v: unknown) => (typeof v === 'number' ? v : Number(v) || 0)
+    const asNumber = (v: unknown) =>
+      typeof v === 'number' ? v : Number(v) || 0
     const onClick = () => {
       const cur = state.value ?? initial
       if (op === 'increment') state.setValue(asNumber(cur) + step)

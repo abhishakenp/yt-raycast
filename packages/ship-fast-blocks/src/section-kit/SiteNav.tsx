@@ -14,6 +14,7 @@ import { Container } from './Container.tsx'
 import {
   SectionKitNavHrefProvider,
   useIsActiveSectionKitNavHref,
+  useSectionKitNavClick,
   useSectionKitNavHref,
 } from './nav-href.tsx'
 import { RouterLink } from './RouterLink.tsx'
@@ -57,7 +58,7 @@ const siteNavRowVariants = cva('flex items-center justify-between', {
 })
 
 const navbarCtaVariants = cva(
-  'inline-flex items-center justify-center text-sm font-medium transition-colors',
+  'inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-colors',
   {
     variants: {
       variant: {
@@ -89,11 +90,19 @@ const NavbarBrand = React.forwardRef<
 >(({ className, href, asChild = false, ...props }, ref) => {
   const resolvedHref = useSectionKitNavHref(href)
   const Comp = asChild ? Slot : resolvedHref ? RouterLink : 'div'
+  const onNavClick = useSectionKitNavClick(href)
   return (
     <Comp
       data-slot="navbar-brand"
       href={resolvedHref}
-      className={cn('flex items-center', className)}
+      onClick={onNavClick}
+      // Below `sm`, collapse the wordmark to the logo mark only so dense navbars
+      // never overflow on phones. `sr-only` keeps it as the link's accessible
+      // name; it returns to normal flow at `sm+`.
+      className={cn(
+        'flex items-center [&_[data-slot=logo-label]]:sr-only sm:[&_[data-slot=logo-label]]:not-sr-only',
+        className,
+      )}
       ref={ref}
       {...props}
     />
@@ -129,14 +138,16 @@ const NavbarNavLink = React.forwardRef<
     const resolvedHref = useSectionKitNavHref(href)
     const Comp = asChild ? Slot : resolvedHref ? RouterLink : 'a'
     const isActive = useIsActiveSectionKitNavHref()(href)
+    const onNavClick = useSectionKitNavClick(href)
 
     return (
       <Comp
         data-slot="navbar-nav-link"
         href={resolvedHref}
         aria-current={isActive ? 'page' : ariaCurrent}
+        onClick={onNavClick}
         className={cn(
-          'rounded-md px-2.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
+          'whitespace-nowrap rounded-md px-2.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
           className,
           isActive &&
             'bg-muted text-foreground underline decoration-primary underline-offset-8',
@@ -168,13 +179,18 @@ NavbarActions.displayName = 'NavbarActions'
 const NavbarRouteLink = React.forwardRef<
   HTMLAnchorElement,
   React.ComponentProps<'a'> & { asChild?: boolean }
->(({ className, href, asChild = false, ...props }, ref) => {
+>(({ className, href, asChild = false, onClick, ...props }, ref) => {
   const resolvedHref = useSectionKitNavHref(href)
   const Comp = asChild ? Slot : resolvedHref ? RouterLink : 'a'
+  const onNavClick = useSectionKitNavClick(href)
   return (
     <Comp
       data-slot="navbar-route-link"
       href={resolvedHref}
+      onClick={(event) => {
+        onNavClick(event)
+        onClick?.(event)
+      }}
       className={className}
       ref={ref}
       {...props}
@@ -191,10 +207,12 @@ const NavbarCta = React.forwardRef<
 >(({ className, href, variant, asChild = false, type, ...props }, ref) => {
   const resolvedHref = useSectionKitNavHref(href)
   const Comp = asChild ? Slot : resolvedHref ? RouterLink : 'button'
+  const onNavClick = useSectionKitNavClick(href)
   return (
     <Comp
       data-slot="navbar-cta"
       href={resolvedHref}
+      onClick={onNavClick}
       type={resolvedHref ? undefined : (type ?? 'button')}
       className={cn(navbarCtaVariants({ variant }), className)}
       ref={ref}

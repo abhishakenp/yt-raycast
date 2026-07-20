@@ -203,7 +203,9 @@ async function renderExactCloneAndClickLinks(
     for (const id of ['hash', 'mail', 'external']) {
       dom.window.document
         .getElementById(id)
-        ?.addEventListener('click', (event: React.MouseEvent<HTMLElement>) => event.preventDefault())
+        ?.addEventListener('click', (event: React.MouseEvent<HTMLElement>) =>
+          event.preventDefault(),
+        )
     }
 
     fireEvent.click(dom.window.document.getElementById('internal')!)

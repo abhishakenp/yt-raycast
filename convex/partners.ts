@@ -234,7 +234,7 @@ export const applyPartnerBillingWebhook = mutation({
   args: {
     idempotencyKey: v.string(),
     partnerEvent: partnerBillingEvent,
-    provider: v.literal('razorpay'),
+    provider: v.union(v.literal('razorpay'), v.literal('stripe')),
     secret: v.string(),
   },
   handler: async (ctx, args) => {
@@ -282,7 +282,7 @@ export const applyPartnerBillingWebhook = mutation({
       if (!providerSubscriptionId) {
         throw new ConvexError({
           code: 'INVALID_PARTNER_BILLING_EVENT',
-          message: 'Razorpay subscription identifier is required.',
+          message: 'Subscription identifier is required.',
         })
       }
       const subscription = await ctx.db
@@ -296,7 +296,7 @@ export const applyPartnerBillingWebhook = mutation({
       if (!subscription) {
         throw new ConvexError({
           code: 'PARTNER_SUBSCRIPTION_NOT_FOUND',
-          message: 'Razorpay subscription was not found.',
+          message: 'Subscription was not found.',
         })
       }
       userId = subscription.userId
@@ -310,7 +310,7 @@ export const applyPartnerBillingWebhook = mutation({
         })
         return { processed: true, queued: false }
       }
-      outboxIdempotencyKey = `dub:sale:razorpay:${invoiceId}`
+      outboxIdempotencyKey = `dub:sale:${args.provider}:${invoiceId}`
     } else {
       const originalSale = await ctx.db
         .query('dubEventOutbox')

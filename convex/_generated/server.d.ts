@@ -27,6 +27,7 @@ import type { DataModel } from "./dataModel.js";
 type Env = {
   readonly BILLING_WEBHOOK_MUTATION_SECRET: string | undefined;
   readonly DUB_API_KEY: string | undefined;
+  readonly DUB_API_URL: string | undefined;
   readonly DUB_PARTNERS_ENABLED: string | undefined;
   readonly DUB_PARTNER_GROUP_ID: string | undefined;
 };
