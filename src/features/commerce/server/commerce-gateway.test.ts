@@ -5,14 +5,14 @@ import { MedusaCommerceGateway } from './commerce-gateway'
 import type { ResolvedCommerceTenant } from './commerce-tenant-resolver'
 
 const tenantA: ResolvedCommerceTenant = {
-  backendUrl: 'https://tenant-a.medusa.test',
+  backendUrl: 'https://8.8.8.8',
   publishableKey: 'pk_tenant_a',
   scope: 'deployments',
   tenant: 'tenant-a',
 }
 
 const tenantB: ResolvedCommerceTenant = {
-  backendUrl: 'https://tenant-b.medusa.test',
+  backendUrl: 'https://1.1.1.1',
   publishableKey: 'pk_tenant_b',
   scope: 'deployments',
   tenant: 'tenant-b',
@@ -223,7 +223,7 @@ describe('Medusa commerce gateway', () => {
 
     expect(fetch).toHaveBeenNthCalledWith(
       2,
-      'https://tenant-a.medusa.test/store/carts',
+      'https://8.8.8.8/store/carts',
       expect.objectContaining({
         body: JSON.stringify({
           metadata: {
@@ -237,7 +237,7 @@ describe('Medusa commerce gateway', () => {
     )
     expect(fetch).toHaveBeenNthCalledWith(
       5,
-      'https://tenant-a.medusa.test/store/carts/cart_123',
+      'https://8.8.8.8/store/carts/cart_123',
       expect.objectContaining({
         body: JSON.stringify({ email: 'shopper@test.dev' }),
         method: 'POST',
@@ -245,15 +245,15 @@ describe('Medusa commerce gateway', () => {
     )
     expect(fetch).toHaveBeenNthCalledWith(
       7,
-      'https://tenant-a.medusa.test/store/carts/cart_123/line-items',
+      'https://8.8.8.8/store/carts/cart_123/line-items',
       expect.objectContaining({
-        body: JSON.stringify({ quantity: 2, variant_id: 'variant_1' }),
+        body: JSON.stringify({ variant_id: 'variant_1', quantity: 2 }),
         method: 'POST',
       }),
     )
     expect(fetch).toHaveBeenNthCalledWith(
       9,
-      'https://tenant-a.medusa.test/store/carts/cart_123/line-items/line_1',
+      'https://8.8.8.8/store/carts/cart_123/line-items/line_1',
       expect.objectContaining({
         body: JSON.stringify({ quantity: 3 }),
         method: 'POST',
@@ -261,7 +261,7 @@ describe('Medusa commerce gateway', () => {
     )
     expect(fetch).toHaveBeenNthCalledWith(
       11,
-      'https://tenant-a.medusa.test/store/carts/cart_123/line-items/line_1',
+      'https://8.8.8.8/store/carts/cart_123/line-items/line_1',
       expect.objectContaining({ method: 'DELETE' }),
     )
   })
@@ -302,6 +302,28 @@ describe('Medusa commerce gateway', () => {
       status: 400,
     })
     expect(invalidFetch).not.toHaveBeenCalled()
+  })
+
+  it('rejects cart metadata attempts to rebind tenant A to tenant B before provider access', async () => {
+    const fetch = vi.fn()
+    const gateway = new MedusaCommerceGateway(tenantA, {
+      correlationId: 'metadata-correlation',
+      fetch,
+    })
+
+    await expect(
+      gateway.updateCart('cart_123', {
+        metadata: {
+          gift_message: 'Happy birthday',
+          ship_fast_scope: 'deployments',
+          ship_fast_tenant: 'tenant-b',
+        },
+      }),
+    ).rejects.toMatchObject({
+      commerceError: { code: 'RESERVED_CART_METADATA' },
+      status: 400,
+    })
+    expect(fetch).not.toHaveBeenCalled()
   })
 
   it('preserves upstream status in a stable CommerceError envelope', async () => {
@@ -371,6 +393,118 @@ describe('Medusa commerce gateway', () => {
       },
       status: 504,
     })
+  })
+
+  it('blocks private provider targets and unsafe backend URL shapes before fetch', async () => {
+    const blockedBackendUrls = [
+      'http://localhost:9000',
+      'http://10.0.0.8',
+      'http://169.254.169.254',
+      'https://user:password@8.8.8.8',
+      'https://8.8.8.8/admin',
+      'https://8.8.8.8?tenant=other',
+      'https://8.8.8.8#internal',
+    ]
+
+    for (const backendUrl of blockedBackendUrls) {
+      const fetch = vi.fn()
+      const gateway = new MedusaCommerceGateway(
+        { ...tenantA, backendUrl },
+        { correlationId: 'blocked-provider', fetch },
+      )
+
+      await expect(gateway.getCart('cart_123')).rejects.toMatchObject({
+        commerceError: { code: 'COMMERCE_PROVIDER_BLOCKED' },
+        status: 502,
+      })
+      expect(fetch).not.toHaveBeenCalled()
+    }
+  })
+
+  it('disables redirect following for provider requests', async () => {
+    const fetch = vi.fn(
+      async (_input: RequestInfo | URL, init?: RequestInit) => {
+        expect(init?.redirect).toBe('error')
+        return new Response(null, {
+          headers: { location: 'http://169.254.169.254/latest/meta-data' },
+          status: 302,
+        })
+      },
+    )
+    const gateway = new MedusaCommerceGateway(tenantA, {
+      correlationId: 'redirect-provider',
+      fetch,
+    })
+
+    await expect(gateway.getCart('cart_123')).rejects.toMatchObject({
+      commerceError: { code: 'COMMERCE_PROVIDER_ERROR' },
+      status: 302,
+    })
+    expect(fetch).toHaveBeenCalledOnce()
+  })
+
+  it('maps a provider timeout after headers while reading the body', async () => {
+    const fetch = vi.fn(
+      async (_input: RequestInfo | URL, init?: RequestInit) => {
+        const signal = init?.signal
+        if (!(signal instanceof AbortSignal)) {
+          throw new Error('Expected provider abort signal')
+        }
+        const body = new ReadableStream({
+          start(controller) {
+            signal.addEventListener(
+              'abort',
+              () => controller.error(signal.reason),
+              { once: true },
+            )
+          },
+        })
+        return new Response(body, { status: 200 })
+      },
+    )
+    const gateway = new MedusaCommerceGateway(tenantA, {
+      correlationId: 'body-timeout-provider',
+      fetch,
+      timeoutMs: 5,
+    })
+
+    await expect(gateway.getCart('cart_123')).rejects.toMatchObject({
+      commerceError: {
+        code: 'COMMERCE_PROVIDER_TIMEOUT',
+        retryable: true,
+      },
+      status: 504,
+    })
+  })
+
+  it('allows private Medusa only through an explicit non-production option', async () => {
+    const localTenant = { ...tenantA, backendUrl: 'http://localhost:9000' }
+    const fetch = vi
+      .fn()
+      .mockResolvedValue(jsonResponse({ cart: boundCart(localTenant) }))
+
+    vi.stubEnv('NODE_ENV', 'development')
+    await expect(
+      new MedusaCommerceGateway(localTenant, {
+        allowPrivateBackendInDevelopment: true,
+        correlationId: 'local-development-provider',
+        fetch,
+      }).getCart('cart_123'),
+    ).resolves.toMatchObject({ cart: { id: 'cart_123' } })
+
+    vi.stubEnv('NODE_ENV', 'production')
+    await expect(
+      new MedusaCommerceGateway(localTenant, {
+        allowPrivateBackendInDevelopment: true,
+        correlationId: 'local-production-provider',
+        fetch,
+      }).getCart('cart_123'),
+    ).rejects.toMatchObject({
+      commerceError: { code: 'COMMERCE_PROVIDER_BLOCKED' },
+      status: 502,
+    })
+    expect(fetch).toHaveBeenCalledOnce()
+    vi.unstubAllEnvs()
   })
 
   it('supports explicit unbound compatibility calls without mutation preflights', async () => {
