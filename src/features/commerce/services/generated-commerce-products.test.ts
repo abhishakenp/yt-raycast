@@ -384,6 +384,34 @@ describe('countGeneratedCommerceProducts', () => {
     })
   })
 
+  it('rejects negative currency strings in sign and accounting formats', () => {
+    const products = extractGeneratedCommerceProducts({
+      siteSpecJson: JSON.stringify({
+        ecommerce: {
+          products: [
+            {
+              handle: 'leading-sign',
+              price: '-$19.99',
+              title: 'Leading sign',
+            },
+            {
+              handle: 'spaced-sign',
+              price: 'USD - 19.99',
+              title: 'Spaced sign',
+            },
+            {
+              handle: 'accounting',
+              price: '($19.99)',
+              title: 'Accounting',
+            },
+          ],
+        },
+      }),
+    })
+
+    expect(products).toEqual([])
+  })
+
   it('deduplicates products and variants and caps output at 25 products', () => {
     const generated = Array.from({ length: 28 }, (_, index) => ({
       handle: `product-${index}`,

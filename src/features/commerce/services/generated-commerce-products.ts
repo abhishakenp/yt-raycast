@@ -139,7 +139,13 @@ function parsePrice(value: unknown): number | undefined {
   if (typeof value !== 'string') return undefined
 
   const normalized = value.replace(/,/g, '').trim()
-  if (/^-?Infinity$|^NaN$/i.test(normalized)) return undefined
+  if (
+    /-/.test(normalized) ||
+    /^\(.*\)$/.test(normalized) ||
+    /^Infinity$|^NaN$/i.test(normalized)
+  ) {
+    return undefined
+  }
   const match = normalized.match(/-?\d+(?:\.\d+)?/)
   if (!match) return undefined
 
