@@ -241,15 +241,15 @@ export const decideCommerceOperationBegin: DecideCommerceOperationBegin = (
   if (operation === null) {
     return { type: 'execute', attempt: 1, reset: false }
   }
-  if (operation.requestHash !== requestHash) {
-    return { type: 'conflict' }
-  }
   if (operation.expiresAt <= now) {
     return {
       type: 'execute',
       attempt: operation.attempt + 1,
       reset: true,
     }
+  }
+  if (operation.requestHash !== requestHash) {
+    return { type: 'conflict' }
   }
   if (operation.state === 'succeeded') {
     if (operation.resultJson === undefined) {

@@ -381,4 +381,109 @@ describe('commerce operation ledger', () => {
       }),
     ).rejects.toThrow('different failure')
   })
+
+  test('refreshes replay retention when a late commit wins the race', async () => {
+    const t = convexTest(schema, modules)
+    const started = await t.mutation(
+      internal.commerce_operations.begin,
+      beginArgs,
+    )
+    if (started.type !== 'execute') {
+      throw new Error('expected an executable operation')
+    }
+    const lateCommitAt = beginArgs.now + beginArgs.retentionMs + 1
+
+    await t.mutation(internal.commerce_operations.commit, {
+      operationId: started.operationId,
+      attempt: started.attempt,
+      now: lateCommitAt,
+      result: {
+        kind: 'payment-session',
+        paymentSessionId: 'payses_late',
+        actionType: 'none',
+      },
+    })
+    const replay = await t.mutation(internal.commerce_operations.begin, {
+      ...beginArgs,
+      now: lateCommitAt + 1,
+    })
+
+    expect(replay).toEqual({
+      type: 'replay',
+      result: {
+        kind: 'payment-session',
+        paymentSessionId: 'payses_late',
+        actionType: 'none',
+      },
+    })
+  })
+
+  test('expires identity before hash comparison and rejects the displaced attempt', async () => {
+    const t = convexTest(schema, modules)
+    const started = await t.mutation(
+      internal.commerce_operations.begin,
+      beginArgs,
+    )
+    if (started.type !== 'execute') {
+      throw new Error('expected an executable operation')
+    }
+    const expiresAt = beginArgs.now + beginArgs.retentionMs
+
+    const reset = await t.mutation(internal.commerce_operations.begin, {
+      ...beginArgs,
+      requestHash: 'c'.repeat(64),
+      now: expiresAt,
+    })
+
+    expect(reset).toMatchObject({ type: 'execute', attempt: 2 })
+    await expect(
+      t.mutation(internal.commerce_operations.commit, {
+        operationId: started.operationId,
+        attempt: started.attempt,
+        now: expiresAt + 1,
+        result: {
+          kind: 'payment-session',
+          paymentSessionId: 'payses_stale',
+          actionType: 'none',
+        },
+      }),
+    ).rejects.toThrow('no longer current')
+  })
+
+  test('rejects a changed retry delay for an already failed attempt', async () => {
+    const t = convexTest(schema, modules)
+    const started = await t.mutation(
+      internal.commerce_operations.begin,
+      beginArgs,
+    )
+    if (started.type !== 'execute') {
+      throw new Error('expected an executable operation')
+    }
+
+    const failure = {
+      operationId: started.operationId,
+      attempt: started.attempt,
+      now: 2_000,
+      outcome: 'failed',
+      retryable: true,
+      failureCode: 'provider_timeout',
+      retryAfterMs: 5_000,
+    } satisfies {
+      operationId: typeof started.operationId
+      attempt: number
+      now: number
+      outcome: 'failed' | 'unknown'
+      retryable: boolean
+      failureCode?: string
+      retryAfterMs?: number
+    }
+    await t.mutation(internal.commerce_operations.fail, failure)
+    await expect(
+      t.mutation(internal.commerce_operations.fail, {
+        ...failure,
+        now: 3_000,
+        retryAfterMs: 10_000,
+      }),
+    ).rejects.toThrow('different failure')
+  })
 })

@@ -250,6 +250,12 @@ export const commit = internalMutation({
         'failed operation must begin a new attempt before commit',
       )
     }
+    const replayRetentionMs = validateInteger(
+      'stored retentionMs',
+      operation.expiresAt - operation.startedAt,
+      MIN_RETENTION_MS,
+      MAX_RETENTION_MS,
+    )
 
     await ctx.db.patch(operation._id, {
       state: 'succeeded',
@@ -258,6 +264,7 @@ export const commit = internalMutation({
       resultJson,
       updatedAt: now,
       retryAfterAt: undefined,
+      expiresAt: now + replayRetentionMs,
     })
     return { type: 'succeeded', result } satisfies {
       type: 'succeeded'
@@ -328,9 +335,17 @@ export const fail = internalMutation({
 
     if (operation.state === args.outcome) {
       const expectedRetryable = args.outcome === 'failed' && args.retryable
+      const expectedRetryAfterMs = expectedRetryable
+        ? (retryAfterMs ?? 0)
+        : undefined
+      const recordedRetryAfterMs =
+        operation.retryAfterAt === undefined
+          ? undefined
+          : operation.retryAfterAt - operation.updatedAt
       if (
         operation.retryable !== expectedRetryable ||
-        operation.failureCode !== failureCode
+        operation.failureCode !== failureCode ||
+        recordedRetryAfterMs !== expectedRetryAfterMs
       ) {
         ledgerError(
           'COMMERCE_OPERATION_CONFLICT',
