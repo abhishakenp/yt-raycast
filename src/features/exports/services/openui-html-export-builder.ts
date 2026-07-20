@@ -1,5 +1,5 @@
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
+import { dirname, extname, join, resolve } from 'node:path'
 import {
   createParser,
   jsonToOpenUI,
@@ -10,7 +10,6 @@ import {
   type ImageContext,
 } from '@ship-fast/blocks/runtime'
 import { renderOpenUIToHTMLWithTheme } from '@ship-fast/engine/openui-ssr.js'
-import { compile } from '@tailwindcss/node'
 
 import { preprocessOpenUIResponse } from '@ship-fast/engine'
 import { localeTextDirection } from '@/features/localization/locale-direction'
@@ -94,17 +93,106 @@ const themeVarKeys: readonly string[] = [
   'spacing',
 ]
 
-type TailwindCompiler = Awaited<ReturnType<typeof compile>>
+type TailwindNodeModule = typeof import('@tailwindcss/node')
+type TailwindOxideModule = typeof import('@tailwindcss/oxide')
+type TailwindCompiler = Awaited<ReturnType<TailwindNodeModule['compile']>>
+type TailwindSourcePattern = TailwindCompiler['sources'][number]
+type TailwindCompilerContext = {
+  compiler: TailwindCompiler
+  sourceCandidates: string[]
+}
 
-let tailwindCompilerPromise: Promise<TailwindCompiler> | undefined
+let tailwindCompilerPromise: Promise<TailwindCompilerContext> | undefined
 const previewCssCache = new Map<string, string>()
+const previewCssCandidates = new Set(cssCompileBaseCandidates)
+const tailwindSourceExtensions = new Set([
+  '.html',
+  '.js',
+  '.jsx',
+  '.mjs',
+  '.ts',
+  '.tsx',
+])
 
-const loadTailwindCompiler = async (): Promise<TailwindCompiler> => {
+const hasGlobSyntax = (pattern: string): boolean => /[*?![\]{}()]/.test(pattern)
+
+const collectTailwindSourceFiles = (
+  sourcePatterns: TailwindSourcePattern[],
+): string[] => {
+  const files: string[] = []
+  const visit = (path: string): void => {
+    const stat = statSync(path)
+
+    if (stat.isDirectory()) {
+      readdirSync(path)
+        .filter((entry) => entry !== 'node_modules' && !entry.startsWith('.'))
+        .forEach((entry) => visit(join(path, entry)))
+      return
+    }
+
+    if (stat.isFile() && tailwindSourceExtensions.has(extname(path))) {
+      files.push(path)
+    }
+  }
+
+  sourcePatterns
+    .filter((source) => !source.negated && !hasGlobSyntax(source.pattern))
+    .map((source) => resolve(source.base, source.pattern))
+    .filter((path) => existsSync(path))
+    .forEach((path) => visit(path))
+
+  return files
+}
+
+const scanTailwindSourceCandidates = (
+  Scanner: TailwindOxideModule['Scanner'],
+  sourcePatterns: TailwindSourcePattern[],
+): string[] => {
+  const scanner = new Scanner({ sources: sourcePatterns })
+  const sourceCandidates = new Set(scanner.scan())
+  const sourceFiles = collectTailwindSourceFiles(sourcePatterns)
+
+  if (sourceFiles.length > 0) {
+    scanner
+      .scanFiles(
+        sourceFiles.map((file) => ({
+          file,
+          extension: extname(file).slice(1),
+          contents: readFileSync(file, 'utf8'),
+        })),
+      )
+      .forEach((candidate) => sourceCandidates.add(candidate))
+  }
+
+  return [...sourceCandidates]
+}
+
+const runtimeImport = async <Module>(specifier: string): Promise<Module> =>
+  import(specifier) as Promise<Module>
+
+const loadTailwindCompiler = async (): Promise<TailwindCompilerContext> => {
   if (tailwindCompilerPromise === undefined) {
-    tailwindCompilerPromise = compile(readFileSync(appStylesPath, 'utf8'), {
-      base: appStylesBase,
-      from: appStylesPath,
-      onDependency: () => {},
+    tailwindCompilerPromise = Promise.all([
+      runtimeImport<TailwindNodeModule>('@tailwindcss/node'),
+      runtimeImport<TailwindOxideModule>('@tailwindcss/oxide'),
+    ]).then(async ([{ compile }, { Scanner }]) => {
+      const compiler = await compile(readFileSync(appStylesPath, 'utf8'), {
+        base: appStylesBase,
+        from: appStylesPath,
+        onDependency: () => {},
+      })
+      const sourcePatterns = (
+        compiler.root === 'none'
+          ? []
+          : compiler.root === null
+            ? [{ base: appStylesBase, pattern: '**/*', negated: false }]
+            : [{ ...compiler.root, negated: false }]
+      ).concat(compiler.sources)
+
+      return {
+        compiler,
+        sourceCandidates: scanTailwindSourceCandidates(Scanner, sourcePatterns),
+      }
     })
   }
 
@@ -134,8 +222,10 @@ async function readPreviewCss(markup: string): Promise<string> {
   if (cached !== undefined) return cached
 
   try {
-    const compiler = await loadTailwindCompiler()
-    const css = compiler.build(candidates)
+    const { compiler, sourceCandidates } = await loadTailwindCompiler()
+    sourceCandidates.forEach((candidate) => previewCssCandidates.add(candidate))
+    candidates.forEach((candidate) => previewCssCandidates.add(candidate))
+    const css = compiler.build([...previewCssCandidates])
     previewCssCache.set(cacheKey, css)
     return css
   } catch {
