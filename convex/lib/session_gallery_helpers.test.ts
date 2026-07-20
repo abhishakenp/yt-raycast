@@ -7,6 +7,7 @@ import {
   listPublicGallerySessions,
   loadPublicGalleryArtifacts,
   loadPublicGallerySession,
+  hasRenderablePublicGalleryArtifact,
   serializePublicGallerySession,
 } from './session_gallery_helpers'
 
@@ -359,6 +360,19 @@ describe('serializePublicGallerySession', () => {
 })
 
 describe('listPublicGallerySessions', () => {
+  it('marks malformed/refusal OpenUI source as not renderable for public gallery use', () => {
+    expect(
+      hasRenderablePublicGalleryArtifact({
+        homeModule: generatedModuleDoc({
+          source:
+            'Heading("Playable 3D Flight Simulator", "1")\nText("This interactive UI framework does not support embedding a full Three.js 3D flight simulator.", "muted")\nroot = Stack([Heading, Text])',
+        }),
+        preview: null,
+        siteSpec: null,
+      }),
+    ).toBe(false)
+  })
+
   it('lists visible public sessions with pagination, categories, and artifact serialization', async () => {
     const analyticsSessionId = 'session_analytics' as Id<'sessions'>
     const blogSessionId = 'session_blog' as Id<'sessions'>
@@ -494,9 +508,7 @@ describe('listPublicGallerySessions', () => {
     expect(result.items[0]?.updatedAt).toBe(333)
   })
 
-  it('does not load artifact tables during listing (metadata-only query)', async () => {
-    // The minimal-metadata LIST endpoint no longer loads artifacts (generatedModules,
-    // siteSpecs, previews, edits) during listing.  Only the sessions table is queried.
+  it('loads artifact tables during listing so broken public previews are excluded', async () => {
     const sessions: Doc<'sessions'>[] = []
     const previews: Doc<'previews'>[] = []
     for (let i = 0; i < 10; i++) {
@@ -519,7 +531,6 @@ describe('listPublicGallerySessions', () => {
 
     await listPublicGallerySessions(ctx, { limit: 12, page: 1 })
 
-    // The LIST endpoint should NOT query artifact tables at all.
     const moduleQueries = ctx.queriedTables.filter(
       (t) => t === 'generatedModules',
     ).length
@@ -530,9 +541,9 @@ describe('listPublicGallerySessions', () => {
       (t) => t === 'previews',
     ).length
 
-    expect(moduleQueries).toBe(0)
-    expect(siteSpecQueries).toBe(0)
-    expect(previewQueries).toBe(0)
+    expect(moduleQueries).toBeGreaterThan(0)
+    expect(siteSpecQueries).toBeGreaterThan(0)
+    expect(previewQueries).toBeGreaterThan(0)
   })
 
   it('filters gallery lists by search before reporting category options and clamps requested pages', async () => {
@@ -691,10 +702,10 @@ describe('listPublicGallerySessions', () => {
       sessionId: siteSpecOnlySessionId,
       prompt: 'Launch page with source stored in site spec',
     })
-    expect(ctx.queriedTables).not.toContain('previews')
+    expect(ctx.queriedTables).toContain('siteSpecs')
   })
 
-  it('does not expose real renderer-error preview HTML in public gallery lists', async () => {
+  it('excludes real renderer-error preview HTML from public gallery lists', async () => {
     const brokenSessionId =
       realConvexRendererErrorGalleryPreview.sessionId as Id<'sessions'>
     const ctx = ctxFor({
@@ -724,17 +735,43 @@ describe('listPublicGallerySessions', () => {
       page: 1,
     })
 
-    // The minimal-metadata LIST endpoint no longer loads preview HTML or
-    // artifacts, so it cannot detect renderer-error HTML at the list level.
-    // The session appears in the list, but the error HTML is NOT exposed —
-    // only sessionId, prompt, categories, elapsed, and openuiReady are returned.
-    expect(result.items).toHaveLength(1)
-    expect(result.total).toBe(1)
+    expect(result.items).toHaveLength(0)
+    expect(result.total).toBe(0)
     expect(result.totalPages).toBe(1)
     expect(JSON.stringify(result).toLowerCase()).not.toContain('openui-error')
     expect(JSON.stringify(result).toLowerCase()).not.toContain(
       'failed to render',
     )
+  })
+
+  it('excludes OpenUI fallback/refusal placeholders that cannot render a real preview', async () => {
+    const unsupportedSessionId = 'session_unsupported_source' as Id<'sessions'>
+    const ctx = ctxFor({
+      sessions: [
+        sessionDoc({
+          _id: unsupportedSessionId,
+          prompt: 'Playable 3D flight simulator game',
+          status: 'preview_ready',
+          previewVersion: 1,
+          isPrivate: false,
+        }),
+      ],
+      generatedModules: [
+        generatedModuleDoc({
+          sessionId: unsupportedSessionId,
+          source:
+            'Heading("Playable 3D Flight Simulator", "1")\nText("This interactive UI framework does not support embedding a full Three.js 3D flight simulator.", "muted")\nroot = Stack([Heading, Text])',
+        }),
+      ],
+    })
+
+    const result = await listPublicGallerySessions(ctx, {
+      limit: 12,
+      page: 1,
+    })
+
+    expect(result.items).toHaveLength(0)
+    expect(result.total).toBe(0)
   })
 
   it('keeps DB-observed OpenUI rows renderable for the web server without exposing handoff preview HTML', async () => {

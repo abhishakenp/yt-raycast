@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render } from '@testing-library/react'
+import { cleanup, fireEvent, render } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@tanstack/react-router', () => ({
@@ -124,6 +124,29 @@ describe('public gallery preview cards', () => {
     expect(image?.getAttribute('decoding')).toBe('async')
     expect(image?.getAttribute('fetchpriority')).toBe('low')
     expect(container.querySelector('iframe')).toBeNull()
+  })
+
+  it('falls back to the preview backdrop when the server image fails', () => {
+    const gallery: GalleryPayload = {
+      ...emptyGallery,
+      items: [
+        sessionWith({
+          sessionId: 'session_broken_preview',
+          prompt: 'Broken preview project',
+          updatedAt: 12345,
+        }),
+      ],
+      total: 1,
+    }
+
+    const { container } = render(<GalleryGrid gallery={gallery} />)
+
+    const image = container.querySelector('img')
+    expect(image).not.toBeNull()
+
+    fireEvent.error(image as HTMLImageElement)
+
+    expect(container.querySelector('img')).toBeNull()
   })
 
   it('updates the preview image url when session updatedAt changes', () => {
