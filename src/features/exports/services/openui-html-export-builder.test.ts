@@ -1,5 +1,5 @@
 import { parseHTML } from 'linkedom'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { buildOpenUIHtmlExport } from './openui-html-export-builder'
 import type { OpenUIExportInput } from './openui-export-types'
@@ -130,5 +130,66 @@ describe('buildOpenUIHtmlExport — OpenUI source parsing', () => {
     expect(style).toContain('grid-column: span 7 / span 7')
     expect(style).toContain('font-size: clamp(2.75rem, 7vw, 6rem)')
     expect(html).not.toContain('openui-preview-tailwind.css')
+  })
+
+  it('uses dashboard-equivalent image context and writes detached public image URLs', async () => {
+    const originalPexelsKey = process.env.PEXELS_API_KEY
+    const originalVitePexelsKey = process.env.VITE_PEXELS_API_KEY
+    const originalFetch = globalThis.fetch
+    const fetchMock = vi.fn(async () =>
+      Response.json({
+        photos: [
+          {
+            src: {
+              large: 'https://images.pexels.test/citeable-route-large.jpg',
+            },
+          },
+        ],
+      }),
+    )
+
+    try {
+      process.env.PEXELS_API_KEY = 'pexels-key'
+      delete process.env.VITE_PEXELS_API_KEY
+      globalThis.fetch = fetchMock as unknown as typeof fetch
+
+      const result = await buildOpenUIHtmlExport(
+        baseInput({
+          source: 'root = Image("hero image")',
+          prompt: 'how do i get cited by chatgpt?',
+          siteSpecJson: JSON.stringify({
+            brand: 'citeable',
+            tagline: 'answers.watch',
+          }),
+          includeBadge: false,
+        }),
+      )
+      const html = typeof result.body === 'string' ? result.body : ''
+      const calls = fetchMock.mock.calls as unknown as Array<
+        [RequestInfo | URL, RequestInit | undefined]
+      >
+      const providerUrls = calls.map((call) => String(call[0]))
+
+      expect(providerUrls.length).toBeGreaterThan(0)
+      expect(
+        providerUrls.every((url) =>
+          url.includes('query=citeable+answers+watch+how+hero'),
+        ),
+      ).toBe(true)
+      expect(html).toContain(
+        'https://images.pexels.test/citeable-route-large.jpg',
+      )
+      expect(html).not.toContain('/api/pexels')
+      expect(html).not.toContain('PEXELS_API_KEY')
+    } finally {
+      globalThis.fetch = originalFetch
+      if (originalPexelsKey === undefined) delete process.env.PEXELS_API_KEY
+      else process.env.PEXELS_API_KEY = originalPexelsKey
+      if (originalVitePexelsKey === undefined) {
+        delete process.env.VITE_PEXELS_API_KEY
+      } else {
+        process.env.VITE_PEXELS_API_KEY = originalVitePexelsKey
+      }
+    }
   })
 })

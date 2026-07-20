@@ -8,6 +8,7 @@ import { buildOpenUIHtmlExport } from '../../exports/services/openui-html-export
 const gallerySessionSchema = z.object({
   html: z.string().nullable(),
   moduleSource: z.string().nullable(),
+  prompt: z.string().nullable().optional(),
   siteSpecJson: z.string().nullable().optional(),
   preferredLanguage: z.string().nullable().optional(),
   themeOverride: z.string().nullable().optional(),
@@ -63,6 +64,7 @@ const renderOpenUiHtml = async (
     const rendered = await buildOpenUIHtmlExport({
       source,
       previewHtml: undefined,
+      prompt: session.prompt ?? undefined,
       siteSpecJson: session.siteSpecJson ?? undefined,
       sessionId,
       target: 'html',

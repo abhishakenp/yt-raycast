@@ -5,7 +5,10 @@ import {
   jsonToOpenUI,
   type ElementNode,
 } from '@openuidev/lang-core'
-import { loadOpenUIRuntimeLibrary } from '@ship-fast/blocks/runtime'
+import {
+  loadOpenUIRuntimeLibrary,
+  type ImageContext,
+} from '@ship-fast/blocks/runtime'
 import { renderOpenUIToHTMLWithTheme } from '@ship-fast/engine/openui-ssr.js'
 import { compile } from '@tailwindcss/node'
 
@@ -337,6 +340,36 @@ function parseSiteSpec(
   } catch {
     return {}
   }
+}
+
+function stringFromSpecValue(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim().length > 0
+    ? value.trim()
+    : undefined
+}
+
+function parseSiteSpecBrandContext(
+  siteSpec: Record<string, unknown>,
+): string | undefined {
+  const parts = [
+    siteSpec.brand,
+    siteSpec.brandName,
+    siteSpec.name,
+    siteSpec.tagline,
+  ]
+    .map(stringFromSpecValue)
+    .filter((value): value is string => value !== undefined)
+  const descriptor = [...new Set(parts)].join(' ').trim()
+  return descriptor || undefined
+}
+
+function buildExportImageContext(
+  input: OpenUIExportInput,
+): ImageContext | null {
+  const siteSpec = parseSiteSpec(input.siteSpecJson)
+  const prompt = input.prompt?.trim() || undefined
+  const brandContext = parseSiteSpecBrandContext(siteSpec)
+  return prompt || brandContext ? { prompt, brandContext } : null
 }
 
 function enrichSiteSpecJson(
@@ -1349,6 +1382,7 @@ async function renderPageHtml(
   page: ElementNode,
   library: ParsedOpenUIProgram['library'],
   locale: string,
+  imageContext: ImageContext | null,
   brandLogo?: BrandLogoSelection | null,
 ): Promise<string> {
   const pageSource = jsonToOpenUI(page, library)
@@ -1357,7 +1391,7 @@ async function renderPageHtml(
     undefined,
     locale,
     undefined,
-    undefined,
+    imageContext,
     brandLogo,
   )
   return html
@@ -1366,13 +1400,14 @@ async function renderPageHtml(
 async function buildPagesMarkup(
   parsed: ParsedOpenUIProgram,
   locale: string,
+  imageContext: ImageContext | null,
   brandLogo?: BrandLogoSelection | null,
 ): Promise<string> {
   return (
     await Promise.all(
       parsed.pages.map(async (page, index) => {
         const label = parsed.routes[index] ?? `Page ${index + 1}`
-        return `<section data-sf-export-page="${escapeHtml(label)}"${index === 0 ? '' : ' hidden'}>${await renderPageHtml(page, parsed.library, locale, brandLogo)}</section>`
+        return `<section data-sf-export-page="${escapeHtml(label)}"${index === 0 ? '' : ' hidden'}>${await renderPageHtml(page, parsed.library, locale, imageContext, brandLogo)}</section>`
       }),
     )
   ).join('\n')
@@ -1392,19 +1427,25 @@ async function buildStandaloneHtmlDocument(
   const themeStylesheet = buildThemeStylesheet(themeStyles)
   const themeFontLinks =
     input.includeBadge === false ? '' : buildThemeFontLinks(themeStyles)
+  const imageContext = buildExportImageContext(input)
   const { cssVars } = await renderOpenUIToHTMLWithTheme(
     input.source,
     undefined,
     locale,
     undefined,
-    undefined,
+    imageContext,
     input.selectedBrandLogo,
   )
   const hasPreviewMarkup = isUsablePreviewHtml(input.previewHtml)
   const pagesMarkup = hasPreviewMarkup
     ? ''
     : await rewritePreviewImageUrls(
-        await buildPagesMarkup(parsed, locale, input.selectedBrandLogo),
+        await buildPagesMarkup(
+          parsed,
+          locale,
+          imageContext,
+          input.selectedBrandLogo,
+        ),
       )
   const previewMarkup = hasPreviewMarkup
     ? stripPreviewSourceMetadata(

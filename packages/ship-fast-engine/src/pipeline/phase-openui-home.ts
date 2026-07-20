@@ -182,6 +182,7 @@ export async function generateAndWriteOpenUIHome(p: {
     locale,
     skeleton: '',
     modules: { home: source },
+    userPrompt: p.prompt,
   }
 
   // Finalize: persist the complete program + shell (for reload), then close the
@@ -198,12 +199,14 @@ export async function generateAndWriteOpenUIHome(p: {
 
   // Server-side render final HTML
   const { html: renderedFinalHtml, cssVars: themeCssVars } =
-    (await renderOpenUIToHTMLWithTheme(
-      source,
-      undefined,
-      locale,
-      undefined,
-    )) as OpenUIRenderResult
+    (await renderOpenUIToHTMLWithTheme(source, undefined, locale, undefined, {
+      prompt: p.prompt,
+      brandContext: [brand, title, tagline]
+        .filter((value): value is string => typeof value === 'string')
+        .map((value) => value.trim())
+        .filter(Boolean)
+        .join(' '),
+    })) as OpenUIRenderResult
   let finalHtml = renderedFinalHtml
   if (p.languageMode?.needsTranslation) {
     try {

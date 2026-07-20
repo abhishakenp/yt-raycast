@@ -148,6 +148,31 @@ describe('preview image URL resolution', () => {
     expect(rewritten).not.toContain('picsum.photos')
   })
 
+  it('rewrites generated image preload hrefs so exports do not depend on Ship Fast image routes', async () => {
+    process.env.PEXELS_API_KEY = 'pexels-key'
+    const fetchMock = vi.fn(async () =>
+      Response.json({
+        photos: [
+          {
+            src: {
+              large: 'https://images.pexels.test/context-large.jpg',
+            },
+          },
+        ],
+      }),
+    )
+    globalThis.fetch = fetchMock as unknown as typeof fetch
+
+    const rewritten = await rewritePreviewImageUrls(
+      '<link rel="preload" as="image" href="/api/pexels?query=cited+answers&w=800&h=600&seed=hero">',
+    )
+
+    expect(rewritten).toContain(
+      'href="https://images.pexels.test/context-large.jpg"',
+    )
+    expect(rewritten).not.toContain('/api/pexels')
+  })
+
   it('normalizes unseeded Pexels queries exactly like the dashboard route', async () => {
     process.env.PEXELS_API_KEY = 'pexels-key'
     const fetchMock = vi.fn(async () =>

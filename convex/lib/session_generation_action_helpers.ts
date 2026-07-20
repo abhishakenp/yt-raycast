@@ -96,6 +96,37 @@ function safeParseSiteSpecBrand(siteSpecJson: string): string {
   }
 }
 
+function stringFromSpecValue(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim().length > 0
+    ? value.trim()
+    : undefined
+}
+
+function safeParseSiteSpecBrandContext(
+  siteSpecJson: string | undefined,
+): string | undefined {
+  if (!siteSpecJson) return undefined
+  try {
+    const spec = JSON.parse(siteSpecJson) as Record<string, unknown>
+    const parts = [spec.brand, spec.brandName, spec.name, spec.tagline]
+      .map(stringFromSpecValue)
+      .filter((value): value is string => value !== undefined)
+    const descriptor = [...new Set(parts)].join(' ').trim()
+    return descriptor || undefined
+  } catch {
+    return undefined
+  }
+}
+
+function buildSsrImageContext(
+  session: Doc<'sessions'>,
+  siteSpecJson: string | undefined,
+): Record<string, string> | undefined {
+  const prompt = session.prompt?.trim() || undefined
+  const brandContext = safeParseSiteSpecBrandContext(siteSpecJson)
+  return prompt || brandContext ? { prompt, brandContext } : undefined
+}
+
 export async function completeGenerationAction(
   ctx: Pick<ActionCtx, 'runMutation' | 'runQuery'>,
   args: CompleteGenerationActionInput,
@@ -131,6 +162,7 @@ export async function completeGenerationAction(
         undefined,
         session.preferredLanguage ?? 'en',
         undefined,
+        buildSsrImageContext(session, args.siteSpecJson),
       )) as { html: string; cssVars?: string }
       if (html.includes('openui-error')) {
         throw new Error('OpenUI renderer returned error HTML')

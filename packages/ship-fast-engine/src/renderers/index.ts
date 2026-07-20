@@ -470,12 +470,16 @@ async function renderOpenUIHomeHtml(
     .filter((v): v is string => typeof v === 'string' && v.trim().length > 0)
     .join(' ')
     .trim()
+  const prompt =
+    typeof siteSpec?.userPrompt === 'string' && siteSpec.userPrompt.trim()
+      ? siteSpec.userPrompt.trim()
+      : undefined
   const { html, cssVars } = (await renderOpenUIToHTMLWithTheme(
     source,
     undefined,
     'en',
     undefined,
-    brandContext ? { brandContext } : undefined,
+    prompt || brandContext ? { prompt, brandContext } : undefined,
   )) as OpenUIRenderResult
   const previewSeoHead = buildPreviewSeoHead(
     siteSpec,
