@@ -35,12 +35,17 @@ export type CommerceController = {
 
 type CommerceProviderProps = PropsWithChildren<{
   adapter?: CommerceCatalogAdapter
+  catalogRefetchIntervalMs?: number | false
   fallbackProducts: Array<CommerceProduct>
   mode: CommerceRuntimeMode
   regionId?: string
   scope: CommerceScope
   tenant: string
 }>
+
+const DEFAULT_CATALOG_REFETCH_INTERVAL_MS = 5_000
+const MIN_CATALOG_REFETCH_INTERVAL_MS = 1_000
+const MAX_CATALOG_REFETCH_INTERVAL_MS = 60_000
 
 const disabledController: CommerceController = {
   catalog: [],
@@ -64,6 +69,7 @@ const runtimeError = (
 
 export const CommerceProvider = ({
   adapter,
+  catalogRefetchIntervalMs,
   children,
   fallbackProducts,
   mode,
@@ -72,6 +78,20 @@ export const CommerceProvider = ({
   tenant,
 }: CommerceProviderProps) => {
   const enabled = mode !== 'disabled' && adapter !== undefined
+  const pollsCatalog = mode === 'hosted' || mode === 'sdk'
+  const catalogRefetchInterval =
+    pollsCatalog && catalogRefetchIntervalMs !== false
+      ? Math.min(
+          MAX_CATALOG_REFETCH_INTERVAL_MS,
+          Math.max(
+            MIN_CATALOG_REFETCH_INTERVAL_MS,
+            Number.isFinite(catalogRefetchIntervalMs)
+              ? (catalogRefetchIntervalMs ??
+                  DEFAULT_CATALOG_REFETCH_INTERVAL_MS)
+              : DEFAULT_CATALOG_REFETCH_INTERVAL_MS,
+          ),
+        )
+      : false
   const catalogQuery = useQuery({
     enabled,
     queryFn: async () => {
@@ -79,6 +99,8 @@ export const CommerceProvider = ({
       return await adapter.catalog()
     },
     queryKey: commerceQueryKeys.catalog(scope, tenant, regionId),
+    refetchInterval: enabled ? catalogRefetchInterval : false,
+    refetchIntervalInBackground: false,
     retry: false,
   })
 

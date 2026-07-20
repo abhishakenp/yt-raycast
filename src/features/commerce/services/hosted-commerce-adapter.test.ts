@@ -37,6 +37,26 @@ const memoryStorage = () => {
 }
 
 describe('HostedCommerceAdapter', () => {
+  it('loads a signed-in catalog with the bearer token and no owner secret', async () => {
+    const axios = axiosClient()
+    const catalog = { products: [{ handle: 'linen-shirt' }] }
+    axios.get.mockResolvedValueOnce({ data: catalog })
+    const adapter = new HostedCommerceAdapter({
+      axios: axios.client,
+      bearerToken: 'signed-in-token',
+      scope: 'sessions',
+      tenant: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+    })
+
+    await expect(adapter.catalog()).resolves.toEqual(catalog)
+    expect(axios.get).toHaveBeenCalledWith(
+      '/api/commerce/sessions/k574ms14ma9f94keq30r7dq24x89n1k2/catalog',
+      {
+        headers: { Authorization: 'Bearer signed-in-token' },
+      },
+    )
+  })
+
   it('implements catalog and every cart operation over the canonical Axios API', async () => {
     const axios = axiosClient()
     const storage = memoryStorage()
