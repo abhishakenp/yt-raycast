@@ -4,14 +4,15 @@ import {
   notFound,
 } from '@tanstack/react-router'
 
-import { hasExampleCategory } from '@/features/examples/lib/examples-categories'
 import { isExamplesEnabled } from '@/features/examples/lib/examples-gate'
 import { parseExamplesThemeSearch } from '@/features/examples/lib/examples-theme-search'
 
 export const Route = createFileRoute('/examples/$category')({
   validateSearch: parseExamplesThemeSearch,
-  beforeLoad: ({ params }) => {
+  beforeLoad: async ({ params }) => {
     if (!isExamplesEnabled()) throw notFound()
+    const { hasExampleCategory } =
+      await import('@/features/examples/lib/examples-categories')
     if (!hasExampleCategory(params.category)) throw notFound()
   },
   component: lazyRouteComponent(

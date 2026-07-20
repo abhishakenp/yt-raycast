@@ -1,8 +1,5 @@
 import { createFileRoute, lazyRouteComponent } from '@tanstack/react-router'
 
-import { createDeploymentPreviewResponse } from '@/features/deployments/server/deployment-preview-response'
-import { getDeploymentSlugFromRequest } from '@/features/deployments/server/public-metadata-response'
-
 export const Route = createFileRoute('/')({
   component: lazyRouteComponent(
     () => import('@/features/home/components/HomePage'),
@@ -11,6 +8,10 @@ export const Route = createFileRoute('/')({
   server: {
     handlers: {
       GET: async ({ request, next }) => {
+        const { createDeploymentPreviewResponse } =
+          await import('@/features/deployments/server/deployment-preview-response')
+        const { getDeploymentSlugFromRequest } =
+          await import('@/features/deployments/server/public-metadata-response')
         const deploymentSlug = getDeploymentSlugFromRequest(request)
         return deploymentSlug === undefined
           ? await next()
