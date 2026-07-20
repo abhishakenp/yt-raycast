@@ -1,5 +1,3 @@
-import { z } from 'zod'
-
 const EXAMPLES_THEME_NAMES = new Set([
   'modern-minimal',
   'violet-bloom',
@@ -51,19 +49,16 @@ export const DEFAULT_EXAMPLES_THEME = 'modern-minimal'
 const isKnownExamplesTheme = (value: unknown): value is string =>
   typeof value === 'string' && EXAMPLES_THEME_NAMES.has(value)
 
-export const examplesThemeSearchSchema = z.object({
-  theme: z.preprocess(
-    (value) => (isKnownExamplesTheme(value) ? value : DEFAULT_EXAMPLES_THEME),
-    z.string(),
-  ),
-  mode: z.preprocess(
-    (value) => (value === 'dark' ? 'dark' : 'light'),
-    z.enum(['light', 'dark']),
-  ),
-})
-
-export type ExamplesThemeSearch = z.infer<typeof examplesThemeSearchSchema>
+export type ExamplesThemeSearch = {
+  theme: string
+  mode: 'light' | 'dark'
+}
 
 export const parseExamplesThemeSearch = (
   search: Record<string, unknown>,
-): ExamplesThemeSearch => examplesThemeSearchSchema.parse(search)
+): ExamplesThemeSearch => ({
+  theme: isKnownExamplesTheme(search.theme)
+    ? search.theme
+    : DEFAULT_EXAMPLES_THEME,
+  mode: search.mode === 'dark' ? 'dark' : 'light',
+})
