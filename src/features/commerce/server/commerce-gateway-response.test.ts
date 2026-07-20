@@ -190,4 +190,43 @@ describe('commerce gateway HTTP response', () => {
     expect(serialized).not.toContain('admin-token-secret')
     expect(serialized).toContain('route-correlation')
   })
+
+  it('supports a provisioner-local session backend only outside production', async () => {
+    const localTenant = {
+      backendUrl: 'http://localhost:9100',
+      publishableKey: 'pk_local',
+      scope: 'sessions' as const,
+      tenant: 'k574ms14ma9f94keq30r7dq24x89n1k2',
+    }
+    const providerFetch = vi.fn().mockResolvedValue(
+      Response.json({
+        cart: {
+          id: 'cart_local',
+          metadata: {
+            ship_fast_scope: localTenant.scope,
+            ship_fast_tenant: localTenant.tenant,
+          },
+        },
+      }),
+    )
+    vi.stubEnv('NODE_ENV', 'development')
+    vi.stubGlobal('fetch', providerFetch)
+
+    const response = await handleCommerceGatewayRequest(
+      {
+        operation: { cartId: 'cart_local', type: 'get-cart' },
+        request: requestFor(),
+        scope: localTenant.scope,
+        tenant: localTenant.tenant,
+      },
+      {
+        resolveTenant: vi.fn().mockResolvedValue(localTenant),
+      },
+    )
+
+    expect(response.status).toBe(200)
+    expect(providerFetch).toHaveBeenCalledOnce()
+    vi.unstubAllGlobals()
+    vi.unstubAllEnvs()
+  })
 })

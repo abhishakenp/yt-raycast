@@ -191,7 +191,10 @@ export async function handleCommerceGatewayRequest(
     )
     const gateway =
       options.createGateway?.(tenant, correlationId) ??
-      new MedusaCommerceGateway(tenant, { correlationId })
+      new MedusaCommerceGateway(tenant, {
+        allowPrivateBackendInDevelopment: true,
+        correlationId,
+      })
     const result = await runOperation(
       gateway,
       input.operation,

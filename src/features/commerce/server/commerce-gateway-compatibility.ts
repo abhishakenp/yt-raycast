@@ -23,7 +23,7 @@ function gateway(): MedusaCommerceGateway | undefined {
       tenant: LEGACY_TENANT,
     },
     {
-      allowPrivateBackendInDevelopment: true,
+      allowPrivateBackendFromTrustedConfiguration: true,
       bindCarts: false,
       correlationId: crypto.randomUUID(),
       validateCartBeforeMutation: false,
