@@ -5,6 +5,7 @@ import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 import { readJsonOrThrow } from '@/lib/safe-fetch'
+import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
 import type { GeneratedCommerceProduct } from '../services/generated-commerce-products'
 
 type CommerceHandoff = {
@@ -20,6 +21,7 @@ export function useCommerceController(
   sessionId: string,
   visualProducts: Array<GeneratedCommerceProduct> = [],
 ) {
+  const { getToken, isSignedIn } = useOptionalAuth()
   const config = useQuery(api.sessions.getCommerceConfig, {
     sessionId: sessionId as Id<'sessions'>,
   })
@@ -36,12 +38,16 @@ export function useCommerceController(
         typeof window === 'undefined'
           ? undefined
           : readAnonymousOwnerSecret(window.localStorage, sessionId)
+      const authToken = isSignedIn
+        ? await getToken({ template: 'convex' })
+        : null
 
       const response = await fetch(
         `/api/sessions/${encodeURIComponent(sessionId)}/provision/medusa`,
         {
           method: 'POST',
           headers: {
+            ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
             'Content-Type': 'application/json',
             ...(anonymousOwnerSecret === undefined
               ? {}
