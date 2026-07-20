@@ -9,6 +9,7 @@ import type { ThemeStyles } from '@/genui/theme-presets'
 import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 import { lazy, Suspense } from 'react'
+import type { CommerceRuntimeMode } from '@ship-fast/blocks/commerce'
 
 type BrandLogoSelection = {
   name: string
@@ -19,6 +20,7 @@ type BrandLogoSelection = {
 }
 
 type GeneratedModulePreviewProps = {
+  commerceMode?: CommerceRuntimeMode
   source: string
   sourceUrl?: string | null
   sessionId: string
@@ -145,6 +147,7 @@ export function HtmlModuleUrlRenderer({ sourceUrl }: { sourceUrl: string }) {
 }
 
 export function OpenUIModuleRenderer({
+  commerceMode = 'disabled',
   source,
   sessionId,
   siteSpecJson,
@@ -152,7 +155,8 @@ export function OpenUIModuleRenderer({
   prompt,
   selectedBrandLogo,
   imageOverrides,
-}: GeneratedModulePreviewProps) {
+  anonymousOwnerSecret,
+}: GeneratedModulePreviewProps & { anonymousOwnerSecret?: string }) {
   const brandContext = parseSiteSpecBrand(siteSpecJson)
   const hasOverrides =
     !!imageOverrides && Object.keys(imageOverrides).length > 0
@@ -165,6 +169,14 @@ export function OpenUIModuleRenderer({
       fallback={<div className="size-full bg-background" aria-hidden="true" />}
     >
       <LazyOpenUIViewer
+        commerce={{
+          ...(anonymousOwnerSecret === undefined
+            ? {}
+            : { anonymousOwnerSecret }),
+          mode: commerceMode,
+          scope: 'sessions',
+          tenant: sessionId,
+        }}
         response={source}
         theme={parseSiteSpecTheme(siteSpecJson)}
         locale={locale}
@@ -178,6 +190,7 @@ export function OpenUIModuleRenderer({
 }
 
 export function GeneratedModulePreview({
+  commerceMode = 'disabled',
   source,
   sourceUrl = null,
   sessionId,
@@ -231,6 +244,8 @@ export function GeneratedModulePreview({
           <HtmlModuleRenderer source={source} />
         ) : source && source.trim().length > 0 ? (
           <OpenUIModuleRenderer
+            anonymousOwnerSecret={anonymousOwnerSecret}
+            commerceMode={commerceMode}
             source={source}
             sessionId={sessionId}
             siteSpecJson={siteSpecJson}
