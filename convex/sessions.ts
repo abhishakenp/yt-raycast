@@ -26,6 +26,7 @@ import { loadSessionApiResponse } from './lib/session_api_response_helpers'
 import { deleteSessionGraph } from './lib/session_delete_helpers'
 import {
   authorizeDeploymentCommerceTenantProvision,
+  authorizeSessionCommerceProvision as authorizeSessionCommerceProvisionHelper,
   loadDeploymentCommerceTenantBySlugForWebhook,
   loadDeploymentCommerceTenantBySlug,
   loadOwnedDeploymentCommerceTenantBySlug,
@@ -890,6 +891,11 @@ export const setBrandLogo = mutation({
 export const upsertCommerceConfig = mutation({
   args: upsertCommerceConfigArgs,
   handler: (ctx, args) => upsertSessionCommerceConfig(ctx, args),
+})
+
+export const authorizeSessionCommerceProvision = query({
+  args: ownedSessionArgs,
+  handler: (ctx, args) => authorizeSessionCommerceProvisionHelper(ctx, args),
 })
 
 export const getCommerceConfig = query({

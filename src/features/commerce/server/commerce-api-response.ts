@@ -318,6 +318,13 @@ export async function createSessionMedusaProvisionResponse(
 ): Promise<Response> {
   try {
     const body = await readJsonBody(request)
+    const anonymousOwnerSecret = getOwnerSecret(request, body)
+    const client = createClient(clientOverride)
+    await client.query(api.sessions.authorizeSessionCommerceProvision, {
+      sessionId,
+      anonymousOwnerSecret,
+    })
+
     const generatedProducts = getGeneratedProducts(body)
     const fetchImpl = options.fetch ?? fetch
     const adminEmail = getMedusaAdminEmail(options.env, options.metaEnv)
@@ -385,10 +392,9 @@ export async function createSessionMedusaProvisionResponse(
       availability.warning ?? productSync.warning,
     )
 
-    const client = createClient(clientOverride)
     const mutationArgs = {
       sessionId: sessionId as Id<'sessions'>,
-      anonymousOwnerSecret: getOwnerSecret(request, body),
+      anonymousOwnerSecret,
       backendUrl,
       adminUrl,
       storefrontUrl,
@@ -406,7 +412,6 @@ export async function createSessionMedusaProvisionResponse(
             }))
           : JSON.stringify(body.config),
     }
-    let persisted = true
     const result = await client
       .mutation(api.sessions.upsertCommerceConfig, mutationArgs)
       .catch(async (error) => {
@@ -418,10 +423,6 @@ export async function createSessionMedusaProvisionResponse(
             compatibleArgs,
           )
         }
-        if (errorStatus(error) === 403 && generatedProducts.length > 0) {
-          persisted = false
-          return { sessionId }
-        }
         throw error
       })
 
@@ -429,12 +430,15 @@ export async function createSessionMedusaProvisionResponse(
       ...result,
       handoff,
       liveStoreApiReady: availability.liveStoreApiReady,
-      persisted,
       syncedProducts: productSync.synced,
       status: 'ready',
       ...(warning === undefined ? {} : { warning }),
     })
-  } catch {
-    return json({ error: 'Commerce provisioning failed.' }, { status: 503 })
+  } catch (error) {
+    const status = errorStatus(error)
+    return json(
+      { error: 'Commerce provisioning failed.' },
+      { status: status === 500 ? 503 : status },
+    )
   }
 }

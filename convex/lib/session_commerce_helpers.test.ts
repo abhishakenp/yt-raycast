@@ -5,6 +5,7 @@ import type { MutationCtx, QueryCtx } from '../_generated/server'
 import { hashOwnerSecret } from './session_access_helpers'
 import {
   authorizeDeploymentCommerceTenantProvision,
+  authorizeSessionCommerceProvision,
   loadDeploymentCommerceTenantBySlugForWebhook,
   loadDeploymentCommerceTenantBySlug,
   loadOwnedDeploymentCommerceTenantBySlug,
@@ -32,6 +33,10 @@ type UpsertCommerceConfigArgs = {
 
 type SessionIdArgs = {
   sessionId: Id<'sessions'>
+}
+
+type OwnedSessionArgs = SessionIdArgs & {
+  anonymousOwnerSecret?: string
 }
 
 type ProvisionMedusaTenantArgs = {
@@ -132,6 +137,7 @@ function commerceTenantDoc(
 async function ctxFor(
   options: {
     session?: Doc<'sessions'> | null
+    identity?: { tokenIdentifier: string } | null
     configs?: CommerceConfigDoc[]
     deployments?: DeploymentDoc[]
     tenants?: CommerceTenantDoc[]
@@ -173,7 +179,7 @@ async function ctxFor(
 
   const ctx = {
     auth: {
-      getUserIdentity: async () => null,
+      getUserIdentity: async () => options.identity ?? null,
     },
     db: {
       get: async (id: string) => {
@@ -250,6 +256,60 @@ async function ctxFor(
 }
 
 describe('session commerce helpers', () => {
+  it('authorizes session commerce provisioning with the matching anonymous owner secret', async () => {
+    const { ctx } = await ctxFor()
+
+    await expect(
+      authorizeSessionCommerceProvision(ctx, {
+        sessionId,
+        anonymousOwnerSecret: 'owner-secret',
+      }),
+    ).resolves.toEqual({ sessionId })
+  })
+
+  it('authorizes session commerce provisioning for the authenticated owner', async () => {
+    const ownerId = 'https://auth.test|owner'
+    const session = {
+      ...(await sessionDoc()),
+      userId: ownerId,
+    }
+    const { ctx } = await ctxFor({
+      identity: { tokenIdentifier: ownerId },
+      session,
+    })
+
+    await expect(
+      authorizeSessionCommerceProvision(ctx, { sessionId }),
+    ).resolves.toEqual({ sessionId })
+  })
+
+  it('rejects session commerce provisioning for an invalid owner', async () => {
+    const { ctx } = await ctxFor()
+
+    await expect(
+      authorizeSessionCommerceProvision(ctx, {
+        sessionId,
+        anonymousOwnerSecret: 'wrong-secret',
+      }),
+    ).rejects.toMatchObject({
+      data: {
+        code: 'FORBIDDEN',
+      },
+    })
+  })
+
+  it('rejects session commerce provisioning when the session is missing', async () => {
+    const { ctx } = await ctxFor({ session: null })
+
+    await expect(
+      authorizeSessionCommerceProvision(ctx, { sessionId }),
+    ).rejects.toMatchObject({
+      data: {
+        code: 'NOT_FOUND',
+      },
+    })
+  })
+
   it('creates an owned commerce config', async () => {
     const { ctx, configs } = await ctxFor()
 
@@ -691,6 +751,7 @@ describe('session commerce helpers', () => {
   it('session commerce and Medusa handlers delegate to commerce helpers', async () => {
     vi.resetModules()
     vi.doMock('./session_commerce_helpers', () => ({
+      authorizeSessionCommerceProvision: vi.fn(async () => null),
       upsertSessionCommerceConfig: vi.fn(async () => null),
       loadSessionCommerceConfig: vi.fn(async () => null),
       provisionSessionMedusaTenant: vi.fn(async () => null),
@@ -704,6 +765,8 @@ describe('session commerce helpers', () => {
     }))
     try {
       const {
+        authorizeSessionCommerceProvision:
+          authorizeSessionCommerceProvisionQuery,
         upsertCommerceConfig,
         getCommerceConfig,
         provisionMedusaTenant,
@@ -716,6 +779,9 @@ describe('session commerce helpers', () => {
         recordCommerceTenantPull,
       } = await import('../sessions')
       const mockedModule = await import('./session_commerce_helpers')
+      const mockedAuthorizeSessionCommerceProvision = vi.mocked(
+        mockedModule.authorizeSessionCommerceProvision,
+      )
       const mockedUpsertSessionCommerceConfig = vi.mocked(
         mockedModule.upsertSessionCommerceConfig,
       )
@@ -747,6 +813,19 @@ describe('session commerce helpers', () => {
         mockedModule.recordDeploymentCommerceTenantPull,
       )
       const ctx = { db: {} } as unknown as MutationCtx
+      const queryCtx = { db: {} } as unknown as QueryCtx
+
+      const sessionAuthorizationArgs: OwnedSessionArgs = {
+        sessionId: 's1' as Id<'sessions'>,
+        anonymousOwnerSecret: 'owner-secret',
+      }
+      const sessionAuthorizationHandler =
+        authorizeSessionCommerceProvisionQuery as unknown as QueryHandler<OwnedSessionArgs>
+      await sessionAuthorizationHandler(queryCtx, sessionAuthorizationArgs)
+      expect(mockedAuthorizeSessionCommerceProvision).toHaveBeenCalledWith(
+        queryCtx,
+        sessionAuthorizationArgs,
+      )
 
       const upsertArgs: UpsertCommerceConfigArgs = {
         sessionId: 's1' as Id<'sessions'>,
@@ -760,7 +839,6 @@ describe('session commerce helpers', () => {
         upsertArgs,
       )
 
-      const queryCtx = { db: {} } as unknown as QueryCtx
       const getArgs: SessionIdArgs = {
         sessionId: 's1' as Id<'sessions'>,
       }
