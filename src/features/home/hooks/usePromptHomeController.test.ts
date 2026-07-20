@@ -18,6 +18,23 @@ type PromptHomeControllerTestState = {
 
 let originalFetch: typeof globalThis.fetch
 
+type Deferred<Value> = {
+  promise: Promise<Value>
+  reject: (reason?: unknown) => void
+  resolve: (value: Value) => void
+}
+
+const createDeferred = <Value,>(): Deferred<Value> => {
+  let resolve: (value: Value) => void = () => undefined
+  let reject: (reason?: unknown) => void = () => undefined
+  const promise = new Promise<Value>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise
+    reject = rejectPromise
+  })
+
+  return { promise, reject, resolve }
+}
+
 function getTestState(): PromptHomeControllerTestState {
   const testGlobal = globalThis as typeof globalThis & {
     __shipFastPromptHomeControllerState?: PromptHomeControllerTestState
@@ -569,5 +586,143 @@ describe('usePromptHomeController submit guard', () => {
 
     expect(state.createSession).toHaveBeenCalledTimes(1)
     expect(state.mutationRefs).toEqual(['sessions.create'])
+  })
+
+  it('starts immediately on click before the speculative three-second debounce and never creates twice', async () => {
+    vi.useFakeTimers()
+    const state = getTestState()
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.setPrompt('Build a zero second launch website')
+      result.current.scheduleSpeculativeGeneration()
+    })
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2_999)
+      await result.current.submitPrompt()
+      await vi.advanceTimersByTimeAsync(3_000)
+    })
+
+    expect(state.createSession).toHaveBeenCalledTimes(1)
+    expect(state.navigate).toHaveBeenCalledWith({
+      to: '/generate/$sessionId/$',
+      params: { sessionId: 'session_double_submit_guard' },
+    })
+  })
+
+  it('reuses the same in-flight speculative session when the user clicks', async () => {
+    vi.useFakeTimers()
+    const state = getTestState()
+    const deferred = createDeferred<{ sessionId: string; cached: false }>()
+    state.createSession.mockReturnValueOnce(deferred.promise)
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.setPrompt('Build a website while generation is running')
+      result.current.scheduleSpeculativeGeneration()
+    })
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3_000)
+      await Promise.resolve()
+    })
+
+    let submitPromise: Promise<void> | undefined
+    act(() => {
+      submitPromise = result.current.submitPrompt()
+    })
+
+    expect(state.createSession).toHaveBeenCalledTimes(1)
+    expect(state.navigate).not.toHaveBeenCalled()
+
+    await act(async () => {
+      deferred.resolve({
+        sessionId: 'session_speculative_in_flight',
+        cached: false,
+      })
+      await submitPromise
+    })
+
+    expect(state.createSession).toHaveBeenCalledTimes(1)
+    expect(state.navigate).toHaveBeenCalledWith({
+      to: '/generate/$sessionId/$',
+      params: { sessionId: 'session_speculative_in_flight' },
+    })
+  })
+
+  it('navigates from a completed speculative session without creating another one', async () => {
+    vi.useFakeTimers()
+    const state = getTestState()
+    state.createSession.mockResolvedValueOnce({
+      sessionId: 'session_speculative_ready',
+      cached: false,
+    })
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.setPrompt('Build a website before I click submit')
+      result.current.scheduleSpeculativeGeneration()
+    })
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3_000)
+      await Promise.resolve()
+      await Promise.resolve()
+    })
+
+    expect(state.createSession).toHaveBeenCalledTimes(1)
+
+    await act(async () => {
+      await result.current.submitPrompt()
+    })
+
+    expect(state.createSession).toHaveBeenCalledTimes(1)
+    expect(state.navigate).toHaveBeenCalledWith({
+      to: '/generate/$sessionId/$',
+      params: { sessionId: 'session_speculative_ready' },
+    })
+  })
+
+  it('invalidates a pending speculative timer when generation options change', async () => {
+    vi.useFakeTimers()
+    const state = getTestState()
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.scheduleSpeculativeGeneration({
+        prompt: 'Build a first product website',
+        preferredLanguage: 'en',
+      })
+    })
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2_000)
+    })
+
+    act(() => {
+      result.current.scheduleSpeculativeGeneration({
+        prompt: 'Build a different portfolio website',
+        preferredLanguage: 'en',
+        engineVersion: 'v2',
+      })
+    })
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2_999)
+    })
+
+    expect(state.createSession).not.toHaveBeenCalled()
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1)
+      await Promise.resolve()
+    })
+
+    expect(state.createSession).toHaveBeenCalledTimes(1)
+    expect(state.createSession.mock.calls[0]?.[0]).toMatchObject({
+      engineVersion: 'v2',
+      prompt: 'Build a different portfolio website',
+    })
   })
 })
