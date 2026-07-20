@@ -23,8 +23,7 @@ import {
   HeroStat,
   HeroStatValue,
   HeroStatLabel,
-} from './index.ts'
-
+} from './HeroSection.tsx'
 describe('HeroSection', () => {
   it('renders as section with data-slot', () => {
     render(

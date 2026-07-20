@@ -1,10 +1,21 @@
 import { useEffect, useRef } from 'react'
 
+import {
+  LAUNCH_BACKDROP_PARTICLE_STRIDE,
+  loadLaunchBackdropWasm,
+  type LaunchBackdropWasmExports,
+} from './launch-backdrop-wasm'
+
 const BACKDROP_START_DELAY_MS = 550
 const BACKDROP_IDLE_TIMEOUT_MS = 1200
-const BACKDROP_MAX_FPS = 20
-const BACKDROP_FRAME_INTERVAL_MS = 1000 / BACKDROP_MAX_FPS
-const BACKDROP_ACTIVE_DURATION_MS = 7500
+const BACKDROP_CYAN_TRAIL = 'hsl(190 100% 62%)'
+const BACKDROP_MAGENTA_TRAIL = 'hsl(310 100% 80%)'
+const BACKDROP_CYAN_ROCKET = 'hsl(190 100% 74%)'
+const BACKDROP_MAGENTA_ROCKET = 'hsl(310 100% 86%)'
+const BACKDROP_ROCKET_CORE = 'hsl(198 100% 92%)'
+const BACKDROP_ROCKET_FLAME = 'hsl(36 100% 68%)'
+const BACKDROP_ROCKET_SPRITE_ANGLES = 32
+const BACKDROP_ROCKET_SPRITE_SIZES = [2.4, 3.2, 4.1] as const
 
 type IdleWindow = Window & {
   requestIdleCallback?: (
@@ -14,30 +25,129 @@ type IdleWindow = Window & {
   cancelIdleCallback?: (handle: number) => void
 }
 
-function initLaunchBackdrop(canvas: HTMLCanvasElement) {
-  const ctx = canvas.getContext('2d', { alpha: true })
-  if (!ctx) return () => {}
-  const context = ctx
+type RocketSprite = {
+  canvas: HTMLCanvasElement
+  offset: number
+}
 
-  const particles: Array<{
-    x: number
-    y: number
-    life: number
-    speed: number
-    size: number
-    seed: number
-    hue: number
-    alpha: number
-  }> = []
+type RocketSpriteSet = {
+  cyan: RocketSprite[][]
+  magenta: RocketSprite[][]
+}
+
+const drawRocketSprite = (size: number, angle: number, bodyColor: string) => {
+  const spriteSize = Math.ceil(size * 8)
+  const center = spriteSize / 2
+  const canvas = document.createElement('canvas')
+  canvas.width = spriteSize
+  canvas.height = spriteSize
+  const spriteContext = canvas.getContext('2d', { alpha: true })
+  if (!spriteContext) return { canvas, offset: center }
+
+  spriteContext.translate(center, center)
+  spriteContext.rotate(angle)
+  spriteContext.lineCap = 'round'
+  spriteContext.lineJoin = 'round'
+  spriteContext.globalCompositeOperation = 'lighter'
+
+  spriteContext.globalAlpha = 0.82
+  spriteContext.strokeStyle = bodyColor
+  spriteContext.lineWidth = Math.max(0.75, size * 0.45)
+  spriteContext.beginPath()
+  spriteContext.moveTo(-size * 1.65, 0)
+  spriteContext.lineTo(size * 0.65, 0)
+  spriteContext.stroke()
+
+  spriteContext.globalAlpha = 0.95
+  spriteContext.strokeStyle = BACKDROP_ROCKET_CORE
+  spriteContext.lineWidth = Math.max(0.5, size * 0.16)
+  spriteContext.beginPath()
+  spriteContext.moveTo(-size * 1.65, 0)
+  spriteContext.lineTo(size * 0.65, 0)
+  spriteContext.stroke()
+
+  spriteContext.globalAlpha = 0.86
+  spriteContext.fillStyle = bodyColor
+  spriteContext.beginPath()
+  spriteContext.moveTo(size * 2.15, 0)
+  spriteContext.lineTo(size * 0.65, size * 0.48)
+  spriteContext.lineTo(size * 0.65, -size * 0.48)
+  spriteContext.closePath()
+  spriteContext.fill()
+
+  spriteContext.strokeStyle = bodyColor
+  spriteContext.lineWidth = Math.max(0.45, size * 0.18)
+  spriteContext.beginPath()
+  spriteContext.moveTo(-size * 1.2, size * 0.25)
+  spriteContext.lineTo(-size * 1.65, size * 0.88)
+  spriteContext.moveTo(-size * 1.2, -size * 0.25)
+  spriteContext.lineTo(-size * 1.65, -size * 0.88)
+  spriteContext.stroke()
+
+  spriteContext.globalAlpha = 0.64
+  spriteContext.strokeStyle = BACKDROP_ROCKET_FLAME
+  spriteContext.lineWidth = Math.max(0.5, size * 0.22)
+  spriteContext.beginPath()
+  spriteContext.moveTo(-size * 1.65, 0)
+  spriteContext.lineTo(-size * 3, 0)
+  spriteContext.stroke()
+
+  return { canvas, offset: center }
+}
+
+const createRocketSprites = () => {
+  const createColorSprites = (bodyColor: string) =>
+    BACKDROP_ROCKET_SPRITE_SIZES.map((size) =>
+      Array.from(
+        { length: BACKDROP_ROCKET_SPRITE_ANGLES },
+        (_value, angleIndex) =>
+          drawRocketSprite(
+            size,
+            (angleIndex / BACKDROP_ROCKET_SPRITE_ANGLES) * Math.PI * 2,
+            bodyColor,
+          ),
+      ),
+    )
+
+  return {
+    cyan: createColorSprites(BACKDROP_CYAN_ROCKET),
+    magenta: createColorSprites(BACKDROP_MAGENTA_ROCKET),
+  }
+}
+
+const getRocketSprite = (
+  sprites: RocketSpriteSet,
+  isMagenta: boolean,
+  size: number,
+  angle: number,
+) => {
+  const sizeIndex =
+    size < 2.8 ? 0 : size < 3.65 ? 1 : BACKDROP_ROCKET_SPRITE_SIZES.length - 1
+  const normalizedAngle = angle < 0 ? angle + Math.PI * 2 : angle
+  const angleIndex =
+    Math.round(
+      (normalizedAngle / (Math.PI * 2)) * BACKDROP_ROCKET_SPRITE_ANGLES,
+    ) % BACKDROP_ROCKET_SPRITE_ANGLES
+  return (isMagenta ? sprites.magenta : sprites.cyan)[sizeIndex][angleIndex]
+}
+
+function initLaunchBackdrop(
+  trailCanvas: HTMLCanvasElement,
+  rocketCanvas: HTMLCanvasElement,
+) {
+  const trailCtx = trailCanvas.getContext('2d', { alpha: true })
+  const rocketCtx = rocketCanvas.getContext('2d', { alpha: true })
+  if (!trailCtx || !rocketCtx) return () => {}
+  const trailContext = trailCtx
+  const rocketContext = rocketCtx
 
   const dpr = Math.min(window.devicePixelRatio || 1, 2)
   let width = 0
   let height = 0
-  let tick = 0
   let raf = 0
-  let startedAt = 0
   let lastFrameAt = 0
   let running = false
+<<<<<<< Updated upstream
 
   function noise2d(x: number, y: number) {
     const n = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453
@@ -78,10 +188,15 @@ function initLaunchBackdrop(canvas: HTMLCanvasElement) {
     p.alpha =
       p.hue === 310 ? 0.45 + Math.random() * 0.35 : 0.08 + Math.random() * 0.18
   }
+=======
+  let wasm: LaunchBackdropWasmExports | undefined
+  let sprites: RocketSpriteSet | undefined
+>>>>>>> Stashed changes
 
   function resize() {
     width = Math.max(1, window.innerWidth)
     height = Math.max(1, window.innerHeight)
+<<<<<<< Updated upstream
     canvas.width = Math.floor(width * dpr)
     canvas.height = Math.floor(height * dpr)
     context.setTransform(dpr, 0, 0, dpr, 0, 0)
@@ -105,40 +220,78 @@ function initLaunchBackdrop(canvas: HTMLCanvasElement) {
       particles.push(p)
     }
     particles.length = target
+=======
+    trailCanvas.width = Math.floor(width * dpr)
+    trailCanvas.height = Math.floor(height * dpr)
+    rocketCanvas.width = trailCanvas.width
+    rocketCanvas.height = trailCanvas.height
+    trailContext.setTransform(dpr, 0, 0, dpr, 0, 0)
+    rocketContext.setTransform(dpr, 0, 0, dpr, 0, 0)
+    wasm?.backdrop_resize(width, height)
+>>>>>>> Stashed changes
   }
 
   function draw(now = performance.now()) {
     if (!running) return
-    if (!document.body.contains(canvas)) {
-      stop()
-      return
-    }
-    if (now - startedAt >= BACKDROP_ACTIVE_DURATION_MS) {
+    if (
+      !document.body.contains(trailCanvas) ||
+      !document.body.contains(rocketCanvas)
+    ) {
       stop()
       return
     }
     raf = window.requestAnimationFrame(draw)
-    if (now - lastFrameAt < BACKDROP_FRAME_INTERVAL_MS) return
+    if (!wasm) return
+    const deltaMs = lastFrameAt === 0 ? 16.7 : now - lastFrameAt
     lastFrameAt = now
-    tick += 1
+    const count = wasm.backdrop_count()
+    const pointer = wasm.backdrop_step(deltaMs)
+    if (!sprites) return
+    const frame = new Float32Array(
+      wasm.memory.buffer,
+      pointer,
+      count * LAUNCH_BACKDROP_PARTICLE_STRIDE,
+    )
 
-    context.globalCompositeOperation = 'source-over'
-    context.fillStyle = 'rgba(2, 4, 18, 0.065)'
-    context.fillRect(0, 0, width, height)
-    context.globalCompositeOperation = 'lighter'
+    trailContext.globalCompositeOperation = 'source-over'
+    trailContext.globalAlpha = 1
+    trailContext.fillStyle = 'rgba(2, 4, 18, 0.065)'
+    trailContext.fillRect(0, 0, width, height)
+    trailContext.globalCompositeOperation = 'lighter'
+    rocketContext.clearRect(0, 0, width, height)
+    rocketContext.globalCompositeOperation = 'lighter'
+    rocketContext.lineCap = 'round'
+    rocketContext.lineJoin = 'round'
 
-    for (const p of particles) {
-      const px = p.x
-      const py = p.y
-      const n = smoothNoise(p.x * 0.0036 + tick * 0.0007, p.y * 0.0036 + p.seed)
-      const drift = smoothNoise(p.x * 0.0022, p.y * 0.0022 + 50)
-      const angle = n * Math.PI * 5.4 - Math.PI * 0.22
-      const speed = p.speed * (0.75 + drift * 1.45)
+    for (
+      let offset = 0;
+      offset < frame.length;
+      offset += LAUNCH_BACKDROP_PARTICLE_STRIDE
+    ) {
+      const alpha = frame[offset + 6]
+      if (alpha <= 0) continue
+      const hue = frame[offset + 5]
+      const fromX = frame[offset]
+      const fromY = frame[offset + 1]
+      const toX = frame[offset + 2]
+      const toY = frame[offset + 3]
+      const dx = toX - fromX
+      const dy = toY - fromY
+      const distance = Math.hypot(dx, dy)
+      if (distance < 0.2) continue
+      const isMagenta = hue === 310
 
-      p.x += Math.cos(angle) * speed + 0.34
-      p.y += Math.sin(angle) * speed * 0.82
-      p.life -= 0.0011
+      trailContext.globalAlpha = alpha
+      trailContext.beginPath()
+      trailContext.moveTo(fromX, fromY)
+      trailContext.lineTo(toX, toY)
+      trailContext.strokeStyle = isMagenta
+        ? BACKDROP_MAGENTA_TRAIL
+        : BACKDROP_CYAN_TRAIL
+      trailContext.lineWidth = frame[offset + 4]
+      trailContext.stroke()
 
+<<<<<<< Updated upstream
       if (
         p.life <= 0 ||
         p.x < -40 ||
@@ -158,23 +311,55 @@ function initLaunchBackdrop(canvas: HTMLCanvasElement) {
       context.strokeStyle = `hsla(${p.hue}, 100%, ${p.hue === 310 ? 80 : 62}%, ${alpha})`
       context.lineWidth = p.size
       context.stroke()
+=======
+      const size = Math.max(1.3, frame[offset + 4] * 1.95)
+      const angle = Math.atan2(dy, dx)
+      const sprite = getRocketSprite(sprites, isMagenta, size, angle)
+      rocketContext.globalAlpha = Math.min(0.9, alpha * 1.7)
+      rocketContext.drawImage(
+        sprite.canvas,
+        toX - sprite.offset,
+        toY - sprite.offset,
+      )
+>>>>>>> Stashed changes
     }
 
-    context.globalAlpha = 1
+    trailContext.globalAlpha = 1
+    rocketContext.globalAlpha = 1
   }
 
   function start() {
     if (running) return
     running = true
-    startedAt = performance.now()
     lastFrameAt = 0
-    draw()
+    sprites ??= createRocketSprites()
+    if (wasm) {
+      wasm.backdrop_init(width, height)
+      draw()
+      return
+    }
+    void loadLaunchBackdropWasm().then((loadedWasm) => {
+      if (!running) return
+      wasm = loadedWasm
+      wasm.backdrop_init(width, height)
+      draw()
+    })
   }
 
   function stop() {
     running = false
     cancelAnimationFrame(raf)
     raf = 0
+    rocketContext.clearRect(0, 0, width, height)
+  }
+
+  function pause() {
+    stop()
+  }
+
+  function resume() {
+    if (document.hidden) return
+    start()
   }
 
   function handleVisibilityChange() {
@@ -187,22 +372,32 @@ function initLaunchBackdrop(canvas: HTMLCanvasElement) {
 
   resize()
   window.addEventListener('resize', resize, { passive: true })
+  window.addEventListener('blur', pause)
+  window.addEventListener('focus', resume)
+  window.addEventListener('pagehide', pause)
+  window.addEventListener('pageshow', resume)
   document.addEventListener('visibilitychange', handleVisibilityChange)
   start()
 
   return () => {
     window.removeEventListener('resize', resize)
+    window.removeEventListener('blur', pause)
+    window.removeEventListener('focus', resume)
+    window.removeEventListener('pagehide', pause)
+    window.removeEventListener('pageshow', resume)
     document.removeEventListener('visibilitychange', handleVisibilityChange)
     stop()
   }
 }
 
 export function LaunchBackdrop() {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const trailCanvasRef = useRef<HTMLCanvasElement>(null)
+  const rocketCanvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
+    const trailCanvas = trailCanvasRef.current
+    const rocketCanvas = rocketCanvasRef.current
+    if (!trailCanvas || !rocketCanvas) return
     const reduce =
       typeof window !== 'undefined' &&
       window.matchMedia &&
@@ -217,7 +412,7 @@ export function LaunchBackdrop() {
 
     const start = () => {
       if (cancelled || document.hidden) return
-      cleanup = initLaunchBackdrop(canvas)
+      cleanup = initLaunchBackdrop(trailCanvas, rocketCanvas)
     }
 
     const delayHandle = window.setTimeout(() => {
@@ -259,17 +454,21 @@ export function LaunchBackdrop() {
       }}
     >
       <div
-        className="absolute inset-[-12%_-18%_-18%_-24%] z-0 pointer-events-none opacity-58 blur-[7px] saturate-[1.4]"
+        className="absolute inset-[-12%_-18%_-18%_-24%] z-0 pointer-events-none opacity-58 blur-[7px] saturate-[1.4] animate-pulse"
         style={{
           background: `
           radial-gradient(circle at 67% 39%, rgba(28, 206, 255, 0.18), transparent 30rem),
           radial-gradient(circle at 78% 28%, rgba(255, 55, 221, 0.12), transparent 24rem)
         `,
-          animation: 'heroAuraOnly 5.5s ease-in-out 2 alternate forwards',
+          animation: 'heroAuraOnly 5.5s ease-in-out infinite alternate',
         }}
       />
       <canvas
-        ref={canvasRef}
+        ref={trailCanvasRef}
+        className="absolute inset-0 z-1 w-full h-full pointer-events-none opacity-82 mix-blend-screen saturate-[1.35] contrast-[1.05]"
+      />
+      <canvas
+        ref={rocketCanvasRef}
         className="absolute inset-0 z-1 w-full h-full pointer-events-none opacity-82 mix-blend-screen saturate-[1.35] contrast-[1.05]"
       />
     </div>

@@ -13,8 +13,7 @@ import {
   FaqQuestion,
   FaqQuestionIcon,
   FaqAnswer,
-} from './index.ts'
-
+} from './FaqAccordion.tsx'
 describe('FaqAccordion', () => {
   it('renders as div with space-y-4 by default', () => {
     render(

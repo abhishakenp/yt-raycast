@@ -163,7 +163,7 @@ const AccountDropdownContent = React.forwardRef<
       ref={ref}
       data-slot="account-dropdown-content"
       align={align}
-      className={cn('w-56', className)}
+      className={cn('w-56 rounded-none border-border shadow-lg', className)}
       {...props}
     />
   )
@@ -185,6 +185,12 @@ const AccountDropdownLabel = React.forwardRef<
     >
       {children ?? (
         <>
+          <span
+            aria-hidden="true"
+            className="mb-1 block font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground"
+          >
+            Account
+          </span>
           <span className="block truncate">{user?.displayName ?? 'Guest'}</span>
           <span className="block truncate text-xs font-normal text-muted-foreground">
             {user?.email ?? (user?.isGuest ? 'Guest profile' : 'Signed in')}
@@ -216,7 +222,7 @@ const AccountDropdownItem = React.forwardRef<
   <DropdownMenuItem
     ref={ref}
     data-slot="account-dropdown-item"
-    className={className}
+    className={cn('rounded-none active:translate-y-px', className)}
     {...props}
   />
 ))
@@ -252,7 +258,7 @@ const AccountDropdownSignOut = React.forwardRef<
             ref={ref}
             data-slot="account-dropdown-signout"
             className={cn(
-              'cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive',
+              'cursor-pointer rounded-none text-destructive transition-colors focus:bg-destructive/10 focus:text-destructive active:translate-y-px',
               className,
             )}
             onSelect={(event) => event.preventDefault()}
@@ -261,15 +267,18 @@ const AccountDropdownSignOut = React.forwardRef<
             {children ?? 'Sign out'}
           </DropdownMenuItem>
         </AlertDialogTrigger>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-none border-border shadow-lg">
           <AlertDialogHeader>
             <AlertDialogTitle>{title}</AlertDialogTitle>
             <AlertDialogDescription>{description}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{cancelLabel}</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-none active:translate-y-px">
+              {cancelLabel}
+            </AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
+              className="rounded-none active:translate-y-px"
               onClick={() => auth.signOut()}
             >
               {confirmLabel}

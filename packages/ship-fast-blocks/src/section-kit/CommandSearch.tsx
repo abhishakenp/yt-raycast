@@ -116,7 +116,7 @@ function CommandSearchContent({
     <CommandDialog
       open={open}
       onOpenChange={setOpen}
-      className={className}
+      className={cn('rounded-none border-border shadow-xl', className)}
       {...props}
     >
       {children}
@@ -166,8 +166,16 @@ CommandSearchList.displayName = 'CommandSearchList'
 const CommandSearchEmpty = React.forwardRef<
   React.ComponentRef<typeof CommandEmpty>,
   React.ComponentProps<typeof CommandEmpty>
->((props, ref) => (
-  <CommandEmpty ref={ref} data-slot="command-search-empty" {...props} />
+>(({ className, ...props }, ref) => (
+  <CommandEmpty
+    ref={ref}
+    data-slot="command-search-empty"
+    className={cn(
+      'py-8 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground',
+      className,
+    )}
+    {...props}
+  />
 ))
 CommandSearchEmpty.displayName = 'CommandSearchEmpty'
 
@@ -186,7 +194,14 @@ function CommandSearchGroup({
 }: CommandSearchGroupProps) {
   const { search, setOpen } = useCommandSearchContext()
   return (
-    <CommandGroup heading={heading} className={className} {...props}>
+    <CommandGroup
+      heading={heading}
+      className={cn(
+        '[&_[cmdk-group-heading]]:font-mono [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.14em] [&_[cmdk-group-heading]]:text-muted-foreground',
+        className,
+      )}
+      {...props}
+    >
       {search.items.map((item) => {
         const key = search.getKey(item)
         const value = search.getValue(item)
@@ -210,6 +225,7 @@ function CommandSearchGroup({
               key={key}
               value={value}
               onSelect={handleSelect}
+              className="rounded-none border-l-2 border-transparent data-[selected=true]:border-primary data-[selected=true]:bg-muted"
               asChild
             >
               <NavbarRouteLink href={href}>{content}</NavbarRouteLink>
@@ -217,7 +233,12 @@ function CommandSearchGroup({
           )
         }
         return (
-          <CommandItem key={key} value={value} onSelect={handleSelect}>
+          <CommandItem
+            key={key}
+            value={value}
+            onSelect={handleSelect}
+            className="rounded-none border-l-2 border-transparent data-[selected=true]:border-primary data-[selected=true]:bg-muted"
+          >
             {content}
           </CommandItem>
         )

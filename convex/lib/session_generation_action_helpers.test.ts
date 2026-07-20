@@ -165,7 +165,7 @@ describe('completeGenerationAction', () => {
     ])
   })
 
-  it('renders DB-observed OpenUI output with the session language and resolved theme before completing generation', async () => {
+  it('renders DB-observed OpenUI output with the session language and image context before completing generation', async () => {
     const renderCalls: unknown[][] = []
     const { ctx, mutationCalls } = ctxFor(
       sessionDoc({
@@ -198,12 +198,16 @@ describe('completeGenerationAction', () => {
     ).resolves.toEqual({ sessionId, previewVersion: 1 })
 
     expect(renderCalls).toHaveLength(1)
-    const [sourceArg, themeArg, languageArg, integrationsArg] =
+    const [sourceArg, themeArg, languageArg, integrationsArg, imageContextArg] =
       renderCalls[0] ?? []
     expect(sourceArg).toBe(dbObservedBreweryGeneration.source)
-    expect(themeArg).toEqual(expect.objectContaining({}))
+    expect(themeArg).toBeUndefined()
     expect(languageArg).toBe(dbObservedBreweryGeneration.preferredLanguage)
     expect(integrationsArg).toBeUndefined()
+    expect(imageContextArg).toEqual({
+      brandContext: dbObservedBreweryGeneration.brand,
+      prompt: 'Build a homepage',
+    })
     expect(mutationCalls[0].args).toMatchObject({
       html: expect.stringContaining(dbObservedBreweryGeneration.menuItem),
       openUiSource: dbObservedBreweryGeneration.source,

@@ -123,12 +123,18 @@ const MobileNavDrawer = React.forwardRef<
         <SheetContent
           side={side}
           data-slot="mobile-nav-drawer-content"
-          className="w-[min(100%,22rem)] border-border bg-background p-0 text-foreground sm:max-w-[22rem]"
+          className="w-[min(100%,22rem)] rounded-none border-border bg-background p-0 text-foreground shadow-none sm:max-w-[22rem]"
         >
           <SheetHeader
             data-slot="mobile-nav-drawer-header"
-            className="border-b border-border px-5 py-4 text-left"
+            className="gap-2 border-b border-border px-5 py-4 text-left"
           >
+            <span
+              aria-hidden="true"
+              className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:text-[11px]"
+            >
+              Menu
+            </span>
             <SheetTitle className="text-base font-semibold">{brand}</SheetTitle>
             <SheetDescription className="sr-only">
               Navigate site sections.
@@ -143,7 +149,7 @@ const MobileNavDrawer = React.forwardRef<
               onNavigate={navigate}
               ariaCurrent={isActiveNavHref(targetHome) ? 'page' : undefined}
               className={cn(
-                'rounded-lg px-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted',
+                'rounded-none border-l-2 border-transparent px-3 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted active:translate-y-px',
                 isActiveNavHref(targetHome) &&
                   'border-l-2 border-primary bg-muted',
               )}
@@ -159,7 +165,7 @@ const MobileNavDrawer = React.forwardRef<
                   onNavigate={navigate}
                   ariaCurrent={isActive ? 'page' : undefined}
                   className={cn(
-                    'rounded-lg px-3 py-3 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
+                    'rounded-none border-l-2 border-transparent px-3 py-3 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:translate-y-px',
                     isActive &&
                       'border-l-2 border-primary bg-muted text-foreground',
                   )}
@@ -172,7 +178,10 @@ const MobileNavDrawer = React.forwardRef<
               <MobileNavAnchor
                 target={cta.target ?? cta.label}
                 onNavigate={navigate}
-                className={cn(kitActionClasses(cta.variant), 'mt-2 min-h-11')}
+                className={cn(
+                  kitActionClasses(cta.variant),
+                  'mt-2 min-h-11 rounded-none active:translate-y-px',
+                )}
               >
                 {cta.label}
               </MobileNavAnchor>

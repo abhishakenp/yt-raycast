@@ -67,12 +67,8 @@ import {
   TooltipTrigger,
 } from '#/components/ui/tooltip'
 import { firstImageSrc } from '@ship-fast/blocks/multi-image-src'
-import {
-  introspectCapsuleSchema,
-  hasContextInfo,
-} from '@ship-fast/blocks/capsules'
-import { allCapsules } from '@ship-fast/blocks'
 import { isEditableTextLeaf } from '../hooks/useTextEdit'
+import { useRuntimeCapsuleSchemaInfo } from '../hooks/useRuntimeCapsuleSchemaInfo'
 import { StyleControlsPanel } from './StyleControlsPanel'
 import { TypographyControlsPanel } from './TypographyControlsPanel'
 import { LinkEditPopover } from './LinkEditPopover'
@@ -154,17 +150,6 @@ export function __resetCopiedStyleForTests(): void {
 
 // Check if a capsule has editable schema (variants, collections, or scalars).
 // Used to hide the "Capsule controls" button when the panel would be empty.
-const capsuleSchemaCache = new Map<string, boolean>()
-function capsuleHasContext(capsuleName: string): boolean {
-  const cached = capsuleSchemaCache.get(capsuleName)
-  if (cached !== undefined) return cached
-  const capsule = allCapsules.find((c) => c.client.name === capsuleName)
-  const schema = capsule?.client.props
-  const has = schema ? hasContextInfo(introspectCapsuleSchema(schema)) : false
-  capsuleSchemaCache.set(capsuleName, has)
-  return has
-}
-
 function parsePixelValue(value: unknown): number | null {
   if (typeof value === 'number') return Number.isFinite(value) ? value : null
   const parsed = Number.parseFloat(String(value ?? ''))
@@ -422,6 +407,11 @@ export function InlineEditToolbar({
     | 'capsule-inline'
     | null
   >(null)
+  const activePanelRef = useRef<typeof activePanel>(null)
+  const autoOpenedCapsuleKeyRef = useRef<string | null>(null)
+  useEffect(() => {
+    activePanelRef.current = activePanel
+  }, [activePanel])
   // Keep the last panel mounted during collapse animation so it can animate
   // out instead of vanishing instantly.
   const [displayPanel, setDisplayPanel] = useState<
@@ -805,17 +795,8 @@ export function InlineEditToolbar({
     // inside a capsule (and capsule editing is available). This surfaces
     // variant switchers + collection controls without requiring the user to
     // click the "Capsule controls" button.
-    const capsuleEl = activeElement.closest('[data-openui-component]')
-    const cName = capsuleEl?.getAttribute('data-openui-component') ?? undefined
-    const cVar = capsuleEl?.getAttribute('data-openui-var') ?? undefined
-    const canCapsule =
-      !!cName &&
-      !!cVar &&
-      !!sessionId &&
-      cName !== 'Stack' &&
-      !/(Navbar|Footer)$/.test(cName) &&
-      capsuleHasContext(cName)
-    setActivePanel(canCapsule ? 'capsule-inline' : null)
+    autoOpenedCapsuleKeyRef.current = null
+    setActivePanel(null)
 
     const computed = window.getComputedStyle(activeElement)
     // Parse the computed font-size into numeric value + unit. The browser
@@ -1209,13 +1190,22 @@ export function InlineEditToolbar({
     capsuleElement?.getAttribute('data-openui-component') ?? undefined
   const capsuleStatementId =
     capsuleElement?.getAttribute('data-openui-var') ?? undefined
+  const capsuleSchemaInfo = useRuntimeCapsuleSchemaInfo(capsuleName ?? '')
   const canCapsuleEdit =
     !!capsuleName &&
     !!capsuleStatementId &&
     !!sessionId &&
     capsuleName !== 'Stack' &&
     !/(Navbar|Footer)$/.test(capsuleName) &&
-    capsuleHasContext(capsuleName)
+    !!capsuleSchemaInfo
+  useEffect(() => {
+    if (!canCapsuleEdit || !activeElement || !capsuleName) return
+    const autoOpenKey = `${capsuleName}\0${capsuleStatementId ?? ''}`
+    if (autoOpenedCapsuleKeyRef.current === autoOpenKey) return
+    if (activePanelRef.current !== null) return
+    autoOpenedCapsuleKeyRef.current = autoOpenKey
+    setActivePanel('capsule-inline')
+  }, [activeElement, canCapsuleEdit, capsuleName, capsuleStatementId])
   // Detect which collection item the active element is inside (if any).
   // Walk up from the active element to find an ancestor that is one of
   // several repeated siblings inside the capsule (e.g. a card in a grid).

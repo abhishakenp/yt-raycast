@@ -16,6 +16,7 @@ declare module '@ship-fast/blocks' {
     baseQuery: string,
     context?: ImageContext,
   ): string
+  export function sanitizeProps<T>(props: T, schema: unknown): T
   export const BrandLogoProvider: ComponentType<any>
   export const Logo: ComponentType<any>
   export function getBrandLogoImageSrc(value: any): string | null
@@ -88,6 +89,7 @@ declare module '@ship-fast/blocks/runtime' {
     pageFromUrl: string | null
   }
   export function extractOpenUIRuntimeComponentNames(source: string): string[]
+  export function isRuntimeComponentName(name: string): boolean
   export type AiCapsuleRecord = {
     capsuleName: string
     parentCapsule: string

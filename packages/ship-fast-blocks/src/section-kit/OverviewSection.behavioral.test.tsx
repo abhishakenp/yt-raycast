@@ -23,8 +23,7 @@ import {
   OverviewStatValue,
   OverviewStatLabel,
   OverviewMediaPanel,
-} from './index.ts'
-
+} from './OverviewSection.tsx'
 describe('OverviewSection', () => {
   it('renders as section with bg-background py-20', () => {
     render(

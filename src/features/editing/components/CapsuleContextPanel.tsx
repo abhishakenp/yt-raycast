@@ -1,15 +1,12 @@
-import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { Plus, Trash2, Boxes, ChevronUp, ChevronDown } from 'lucide-react'
 import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
-import { allCapsules } from '@ship-fast/blocks'
 import {
-  introspectCapsuleSchema,
   createDefaultItem,
-  hasContextInfo,
-  type CapsuleSchemaInfo,
   type CollectionField,
 } from '@ship-fast/blocks/capsules'
 import { useSectionCapsuleActions } from '../hooks/useSectionCapsuleActions'
+import { useRuntimeCapsuleSchemaInfo } from '../hooks/useRuntimeCapsuleSchemaInfo'
 import { cn } from '#/lib/utils'
 import { Button } from '#/components/ui/button'
 import {
@@ -69,15 +66,6 @@ export function CapsuleContextPanel({
 
 function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v)
-}
-
-function lookupCapsuleSchema(capsuleName: string): CapsuleSchemaInfo | null {
-  const capsule = allCapsules.find((c) => c.client.name === capsuleName)
-  if (!capsule) return null
-  const propsSchema = capsule.client.props
-  if (!propsSchema) return null
-  const info = introspectCapsuleSchema(propsSchema)
-  return hasContextInfo(info) ? info : null
 }
 
 function titleCase(s: string) {
@@ -156,10 +144,7 @@ function CapsuleContextPanelInner({
   handleRef?: React.MutableRefObject<CapsulePanelHandle | null>
 }) {
   const actions = useSectionCapsuleActions(capsuleName, statementId)
-  const schemaInfo = useMemo(
-    () => lookupCapsuleSchema(capsuleName),
-    [capsuleName],
-  )
+  const schemaInfo = useRuntimeCapsuleSchemaInfo(capsuleName)
 
   // Buffer variant/scalar edits locally — only persist on Apply (via
   // handleRef.commit), discard on close (via handleRef.discard).

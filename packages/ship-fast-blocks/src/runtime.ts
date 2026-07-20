@@ -37,6 +37,7 @@ export {
   extractAllComponentNames,
   extractOpenUIRuntimeComponentNames,
   getOpenUIRuntimeLibraryCacheKey,
+  isRuntimeComponentName,
   loadAiCapsule,
   loadOpenUIRuntimeComponent,
   loadOpenUIRuntimeLibrary,

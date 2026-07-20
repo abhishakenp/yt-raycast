@@ -12,8 +12,7 @@ import {
   LogoStripLabel,
   LogoStripItems,
   LogoStripItem,
-} from './index.ts'
-
+} from './LogoStrip.tsx'
 describe('LogoStrip', () => {
   it('renders as section with data-slot', () => {
     render(

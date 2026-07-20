@@ -102,13 +102,29 @@ describe('route target resolution', () => {
     })
   })
 
-  it('does not fall back unresolved targets to Home', () => {
-    expect(resolveRouteTarget('Definitely missing', ['Home'], {})).toBeNull()
+  it('keeps unresolved targets on single-page sites on the single route', () => {
+    expect(resolveRouteTarget('Definitely missing', ['Home'], {})).toEqual({
+      page: 'Home',
+      type: 'page',
+    })
+    expect(resolveRouteHref('Missing', ['Home'], {})).toBe('/')
+    expect(
+      resolveRouteHref(
+        'Stripe',
+        ['Home'],
+        {},
+        {
+          currentPage: 'Home',
+          currentPathname: '/examples/job-board',
+          previewBase: true,
+        },
+      ),
+    ).toBe('/examples/job-board')
   })
 
   it('keeps commerce mutations out of navigation resolution', () => {
     expect(
-      resolveRouteTarget('Add Hydrating Serum to cart', ['Home'], {}),
+      resolveRouteTarget('Add Hydrating Serum to cart', ['Home', 'Cart'], {}),
     ).toBe(null)
   })
 
@@ -165,6 +181,8 @@ describe('route target resolution', () => {
 
   it('falls back unresolved labels to hash hrefs', () => {
     expect(resolveRouteHref('Pricing Plans', [], {})).toBe('#pricing-plans')
-    expect(resolveRouteHref('Missing', ['Home'], {})).toBe('#missing')
+    expect(resolveRouteHref('Missing', ['Home', 'Pricing'], {})).toBe(
+      '#missing',
+    )
   })
 })

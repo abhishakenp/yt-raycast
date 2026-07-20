@@ -1,5 +1,11 @@
 import { allCapsules } from '@ship-fast/blocks'
 import {
+  buildRouteTargetMap,
+  planPages,
+  type PagePlan,
+  type RoutePlanFamily,
+} from '@ship-fast/engine/genui/navigation-plan.ts'
+import {
   createDefaultItem,
   introspectCapsuleSchema,
   type CapsuleSchemaInfo,
@@ -26,6 +32,17 @@ type CapsuleRecord = {
   componentName: string
   functionalType: string
   propsSchema: unknown
+}
+
+type ZodObjectDef = {
+  type?: string
+  shape?: Record<string, unknown>
+}
+
+type ZodContainer = {
+  _zod?: {
+    def?: ZodObjectDef
+  }
 }
 
 export type ExampleCapsule = {
@@ -132,6 +149,31 @@ const capsuleRecords = (): CapsuleRecord[] =>
     .sort((left, right) =>
       left.componentName.localeCompare(right.componentName),
     )
+
+const isZodContainer = (value: unknown): value is ZodContainer =>
+  value !== null && typeof value === 'object' && '_zod' in value
+
+const orderedPropKeys = (propsSchema: unknown): string[] => {
+  const def = isZodContainer(propsSchema) ? propsSchema._zod?.def : undefined
+  if (def?.type !== 'object' || !def.shape) return []
+  return Object.keys(def.shape)
+}
+
+const serializeOpenUIArg = (value: unknown): string => {
+  if (value === undefined) return 'undefined'
+  return JSON.stringify(value) ?? 'null'
+}
+
+const serializeOpenUICallArgs = (
+  propsSchema: unknown,
+  props: Record<string, unknown>,
+): string => {
+  const args = orderedPropKeys(propsSchema).map((key) =>
+    key === 'className' ? undefined : props[key],
+  )
+  while (args.at(-1) === undefined) args.pop()
+  return args.map(serializeOpenUIArg).join(', ')
+}
 
 const demoLabel = (category: string): string => labelFromExampleSlug(category)
 
@@ -285,13 +327,6 @@ const variableNameForCapsule = (componentName: string): string =>
       offset === 0 ? match.toLowerCase() : `_${match.toLowerCase()}`,
     )
 
-const anchorIdForCapsule = (category: string, componentName: string): string =>
-  `${category}_${componentName}`
-    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
-    .replace(/[^a-zA-Z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .toLowerCase()
-
 const capsuleOrderRank = ({ functionalType }: CapsuleRecord): number => {
   const normalized = functionalType.toLowerCase()
   if (normalized === 'navbar') return 0
@@ -310,6 +345,131 @@ const sortCapsulesForSite = (capsules: CapsuleRecord[]): CapsuleRecord[] =>
       : rankDelta
   })
 
+const unique = (values: string[]): string[] => [...new Set(values)]
+
+const pascalNameFromCategory = (category: string): string =>
+  category
+    .split(/[^a-zA-Z0-9]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('')
+
+const buildRouteFamilyFromCapsules = (
+  category: string,
+  capsules: CapsuleRecord[],
+): RoutePlanFamily => ({
+  name: pascalNameFromCategory(category),
+  sections: unique(capsules.map((capsule) => capsule.functionalType)),
+})
+
+const pageVariableName = (page: PagePlan): string =>
+  variableNameForCapsule(page.id)
+
+const propsByRoleForPages = (
+  pagePlans: PagePlan[],
+  propsByRole: Record<string, Record<string, unknown>>,
+): Record<string, Record<string, Record<string, unknown>>> =>
+  Object.fromEntries(
+    pagePlans.map((page) => [
+      page.id,
+      Object.fromEntries(
+        page.sections
+          .map((section) => [
+            section.toLowerCase(),
+            propsByRole[section.toLowerCase()],
+          ])
+          .filter(
+            (entry): entry is [string, Record<string, unknown>] =>
+              entry[1] !== undefined,
+          ),
+      ),
+    ]),
+  )
+
+const isRouteListKey = (key: string): boolean =>
+  /^(nav|links|routes?)$/i.test(key)
+
+const isRouteStringKey = (key: string): boolean =>
+  /(^|_)(cta|button|submit|href|target|route|action)(_|$)/i.test(key) ||
+  /^(cta|buttonLabel|ctaLabel|primaryCta|secondaryCta|href|target|action)$/i.test(
+    key,
+  )
+
+const replaceNavigationValues = (
+  value: unknown,
+  nav: string[],
+  primaryRoute: string,
+  secondaryRoute: string,
+  key = '',
+): unknown => {
+  if (Array.isArray(value)) {
+    if (
+      isRouteListKey(key) &&
+      value.every((item) => typeof item === 'string')
+    ) {
+      return nav
+    }
+    return value.map((item) =>
+      replaceNavigationValues(item, nav, primaryRoute, secondaryRoute, key),
+    )
+  }
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([entryKey, entryValue]) => [
+        entryKey,
+        replaceNavigationValues(
+          entryValue,
+          nav,
+          primaryRoute,
+          secondaryRoute,
+          entryKey,
+        ),
+      ]),
+    )
+  }
+  if (typeof value === 'string' && isRouteStringKey(key)) {
+    return /secondary/i.test(key) ? secondaryRoute : primaryRoute
+  }
+  return value
+}
+
+const routeAwareProps = (
+  props: Record<string, unknown>,
+  nav: string[],
+): Record<string, unknown> => {
+  const primaryRoute = nav[1] ?? nav[0] ?? 'Home'
+  const secondaryRoute = nav[2] ?? nav[0] ?? primaryRoute
+  const replaced = replaceNavigationValues(
+    props,
+    nav,
+    primaryRoute,
+    secondaryRoute,
+  )
+  if (!replaced || typeof replaced !== 'object' || Array.isArray(replaced)) {
+    return props
+  }
+  return {
+    ...replaced,
+    nav,
+    links: nav,
+    homeTarget: nav[0] ?? 'Home',
+    primaryCta: primaryRoute,
+    secondaryCta: secondaryRoute,
+    cta: primaryRoute,
+    ctaLabel: primaryRoute,
+    buttonLabel: primaryRoute,
+    submit: primaryRoute,
+    primaryTarget: primaryRoute,
+    secondaryTarget: secondaryRoute,
+    ctaTarget: primaryRoute,
+    contactTarget: secondaryRoute,
+    eventsTarget: primaryRoute,
+    menuTarget: primaryRoute,
+    href: primaryRoute,
+    target: primaryRoute,
+  }
+}
+
 export const buildExampleOpenUISource = (
   capsule: Pick<
     CapsuleRecord,
@@ -317,30 +477,61 @@ export const buildExampleOpenUISource = (
   >,
 ): string => {
   const variableName = variableNameForCapsule(capsule.componentName)
-  const props = JSON.stringify(generatedPropsForCapsule(capsule))
-  return `${variableName} = ${capsule.componentName}(${props})\nroot = Stack([${variableName}])`
+  const props = generatedPropsForCapsule(capsule)
+  const args = serializeOpenUICallArgs(capsule.propsSchema, props)
+  return `${variableName} = ${capsule.componentName}(${args})\nroot = Stack([${variableName}])`
 }
 
 export const buildExampleCategoryOpenUISource = (category: string): string => {
   const capsules = sortCapsulesForSite(
     capsuleRecords().filter((capsule) => capsule.category === category),
   )
+  const family = buildRouteFamilyFromCapsules(category, capsules)
+  const pagePlans = planPages(family, `examples:${category}`)
+  const nav = pagePlans.map((page) => page.label)
+  const propsByRole: Record<string, Record<string, unknown>> = {}
   const statements: string[] = []
-  const anchorNames: string[] = []
+  const componentByRole = new Map<string, string>()
 
   for (const capsule of capsules) {
     const variableName = variableNameForCapsule(capsule.componentName)
-    const anchorName = `${variableName}_anchor`
-    const props = JSON.stringify(generatedPropsForCapsule(capsule))
-    statements.push(`${variableName} = ${capsule.componentName}(${props})`)
-    statements.push(
-      `${anchorName} = SectionAnchor("${anchorIdForCapsule(category, capsule.componentName)}", ${variableName}, "scroll-mt-28")`,
-    )
-    anchorNames.push(anchorName)
+    const props = routeAwareProps(generatedPropsForCapsule(capsule), nav)
+    const args = serializeOpenUICallArgs(capsule.propsSchema, props)
+    propsByRole[capsule.functionalType.toLowerCase()] = props
+    if (!componentByRole.has(capsule.functionalType)) {
+      componentByRole.set(capsule.functionalType, variableName)
+    }
+    statements.push(`${variableName} = ${capsule.componentName}(${args})`)
   }
 
-  statements.push(`home = Stack([${anchorNames.join(', ')}])`)
-  statements.push('root = PageSwitch(["Home"], [home], "", {})')
+  for (const page of pagePlans) {
+    const anchorNames: string[] = []
+    for (const section of page.sections) {
+      const variableName = componentByRole.get(section)
+      if (!variableName) continue
+      const sectionId = `${page.id}_${section.toLowerCase()}`
+      const anchorName = `${sectionId}_anchor`
+      const anchorStatement =
+        section === 'Navbar'
+          ? `${anchorName} = SectionAnchor("${sectionId}", ${variableName})`
+          : `${anchorName} = SectionAnchor("${sectionId}", ${variableName}, "scroll-mt-28")`
+      statements.push(anchorStatement)
+      anchorNames.push(anchorName)
+    }
+    statements.push(
+      `${pageVariableName(page)} = Stack([${unique(anchorNames).join(', ')}])`,
+    )
+  }
+  statements.push(
+    `root = PageSwitch(${JSON.stringify(pagePlans.map((page) => page.label))}, [${pagePlans
+      .map(pageVariableName)
+      .join(', ')}], "", ${JSON.stringify(
+      buildRouteTargetMap({
+        pages: pagePlans,
+        pageProps: propsByRoleForPages(pagePlans, propsByRole),
+      }),
+    )})`,
+  )
 
   return statements.join('\n')
 }

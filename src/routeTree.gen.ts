@@ -44,6 +44,7 @@ import { Route as PreviewSlugSplatRouteImport } from './routes/preview.$slug.$'
 import { Route as GenerateSessionIdAdminRouteImport } from './routes/generate.$sessionId.admin'
 import { Route as GenerateSessionIdSplatRouteImport } from './routes/generate.$sessionId.$'
 import { Route as ExportSessionIdTargetRouteImport } from './routes/export.$sessionId.$target'
+import { Route as ExamplesCategorySplatRouteImport } from './routes/examples.$category.$'
 import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe.webhook'
 import { Route as ApiSessionsCreateRouteImport } from './routes/api/sessions.create'
 import { Route as ApiSessionsSessionIdRouteImport } from './routes/api/sessions.$sessionId'
@@ -259,6 +260,11 @@ const ExportSessionIdTargetRoute = ExportSessionIdTargetRouteImport.update({
   id: '/export/$sessionId/$target',
   path: '/export/$sessionId/$target',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ExamplesCategorySplatRoute = ExamplesCategorySplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => ExamplesCategoryRoute,
 } as any)
 const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
   id: '/api/stripe/webhook',
@@ -506,7 +512,7 @@ export interface FileRoutesByFullPath {
   '/api/share-bonus': typeof ApiShareBonusRoute
   '/api/subscription-status': typeof ApiSubscriptionStatusRoute
   '/api/translate': typeof ApiTranslateRoute
-  '/examples/$category': typeof ExamplesCategoryRoute
+  '/examples/$category': typeof ExamplesCategoryRouteWithChildren
   '/preview/$slug': typeof PreviewSlugRouteWithChildren
   '/examples/': typeof ExamplesIndexRoute
   '/api/checkout/start': typeof ApiCheckoutStartRoute
@@ -522,6 +528,7 @@ export interface FileRoutesByFullPath {
   '/api/sessions/$sessionId': typeof ApiSessionsSessionIdRouteWithChildren
   '/api/sessions/create': typeof ApiSessionsCreateRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
+  '/examples/$category/$': typeof ExamplesCategorySplatRoute
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
   '/generate/$sessionId/$': typeof GenerateSessionIdSplatRoute
   '/generate/$sessionId/admin': typeof GenerateSessionIdAdminRoute
@@ -581,7 +588,7 @@ export interface FileRoutesByTo {
   '/api/share-bonus': typeof ApiShareBonusRoute
   '/api/subscription-status': typeof ApiSubscriptionStatusRoute
   '/api/translate': typeof ApiTranslateRoute
-  '/examples/$category': typeof ExamplesCategoryRoute
+  '/examples/$category': typeof ExamplesCategoryRouteWithChildren
   '/preview/$slug': typeof PreviewSlugRouteWithChildren
   '/examples': typeof ExamplesIndexRoute
   '/api/checkout/start': typeof ApiCheckoutStartRoute
@@ -597,6 +604,7 @@ export interface FileRoutesByTo {
   '/api/sessions/$sessionId': typeof ApiSessionsSessionIdRouteWithChildren
   '/api/sessions/create': typeof ApiSessionsCreateRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
+  '/examples/$category/$': typeof ExamplesCategorySplatRoute
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
   '/generate/$sessionId/$': typeof GenerateSessionIdSplatRoute
   '/generate/$sessionId/admin': typeof GenerateSessionIdAdminRoute
@@ -658,7 +666,7 @@ export interface FileRoutesById {
   '/api/share-bonus': typeof ApiShareBonusRoute
   '/api/subscription-status': typeof ApiSubscriptionStatusRoute
   '/api/translate': typeof ApiTranslateRoute
-  '/examples/$category': typeof ExamplesCategoryRoute
+  '/examples/$category': typeof ExamplesCategoryRouteWithChildren
   '/preview/$slug': typeof PreviewSlugRouteWithChildren
   '/examples/': typeof ExamplesIndexRoute
   '/api/checkout/start': typeof ApiCheckoutStartRoute
@@ -674,6 +682,7 @@ export interface FileRoutesById {
   '/api/sessions/$sessionId': typeof ApiSessionsSessionIdRouteWithChildren
   '/api/sessions/create': typeof ApiSessionsCreateRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
+  '/examples/$category/$': typeof ExamplesCategorySplatRoute
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
   '/generate/$sessionId/$': typeof GenerateSessionIdSplatRoute
   '/generate/$sessionId/admin': typeof GenerateSessionIdAdminRoute
@@ -752,6 +761,7 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId'
     | '/api/sessions/create'
     | '/api/stripe/webhook'
+    | '/examples/$category/$'
     | '/export/$sessionId/$target'
     | '/generate/$sessionId/$'
     | '/generate/$sessionId/admin'
@@ -827,6 +837,7 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId'
     | '/api/sessions/create'
     | '/api/stripe/webhook'
+    | '/examples/$category/$'
     | '/export/$sessionId/$target'
     | '/generate/$sessionId/$'
     | '/generate/$sessionId/admin'
@@ -903,6 +914,7 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId'
     | '/api/sessions/create'
     | '/api/stripe/webhook'
+    | '/examples/$category/$'
     | '/export/$sessionId/$target'
     | '/generate/$sessionId/$'
     | '/generate/$sessionId/admin'
@@ -1239,6 +1251,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExportSessionIdTargetRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/examples/$category/$': {
+      id: '/examples/$category/$'
+      path: '/$'
+      fullPath: '/examples/$category/$'
+      preLoaderRoute: typeof ExamplesCategorySplatRouteImport
+      parentRoute: typeof ExamplesCategoryRoute
+    }
     '/api/stripe/webhook': {
       id: '/api/stripe/webhook'
       path: '/api/stripe/webhook'
@@ -1515,13 +1534,24 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface ExamplesCategoryRouteChildren {
+  ExamplesCategorySplatRoute: typeof ExamplesCategorySplatRoute
+}
+
+const ExamplesCategoryRouteChildren: ExamplesCategoryRouteChildren = {
+  ExamplesCategorySplatRoute: ExamplesCategorySplatRoute,
+}
+
+const ExamplesCategoryRouteWithChildren =
+  ExamplesCategoryRoute._addFileChildren(ExamplesCategoryRouteChildren)
+
 interface ExamplesRouteChildren {
-  ExamplesCategoryRoute: typeof ExamplesCategoryRoute
+  ExamplesCategoryRoute: typeof ExamplesCategoryRouteWithChildren
   ExamplesIndexRoute: typeof ExamplesIndexRoute
 }
 
 const ExamplesRouteChildren: ExamplesRouteChildren = {
-  ExamplesCategoryRoute: ExamplesCategoryRoute,
+  ExamplesCategoryRoute: ExamplesCategoryRouteWithChildren,
   ExamplesIndexRoute: ExamplesIndexRoute,
 }
 
