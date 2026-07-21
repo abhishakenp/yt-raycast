@@ -314,19 +314,17 @@ describe('examples route behavior', () => {
     const Route = await importExamplesCategoryRoute()
 
     expect(Route.path).toBe('/examples/$category')
-    // beforeLoad is async (it dynamically imports the categories module), so it
-    // rejects rather than throwing synchronously.
-    await expect(
+    expect(() =>
       Route.options.beforeLoad?.({ params: { category: 'saas' } }),
-    ).rejects.toThrow(RouteNotFoundError)
+    ).toThrow(RouteNotFoundError)
   })
 
   it('returns not found for unknown categories even when examples are enabled', async () => {
     const Route = await importExamplesCategoryRoute()
 
-    await expect(
+    expect(() =>
       Route.options.beforeLoad?.({ params: { category: 'not-a-category' } }),
-    ).rejects.toThrow(RouteNotFoundError)
+    ).toThrow(RouteNotFoundError)
   })
 
   it('mounts wildcard example category pages for internal preview navigation', async () => {
@@ -449,11 +447,99 @@ describe('examples route behavior', () => {
     expect(categories.length).toBeGreaterThan(50)
     expect(capsules.length).toBeGreaterThan(0)
     expect(sample?.source).toContain('SaasHero(')
-    expect(sample?.source).toContain('Saas Hero for Saas')
+    expect(sample?.source).toContain(
+      'Launch faster with a clearer product story',
+    )
     expect(sample?.source).toContain('root = Stack')
 
     const library = await loadOpenUIRuntimeLibrary(sample?.source ?? '')
     expect(library).toBeTruthy()
+  })
+
+  it('uses professional category copy instead of prop-name placeholders', () => {
+    const analyticsSite = getExampleCategorySite('analytics')
+    const aeoSite = getExampleCategorySite('aeo')
+    const winerySite = getExampleCategorySite('winery-brewery')
+
+    expect(analyticsSite?.source).not.toContain('Analytics Analytics Header')
+    expect(analyticsSite?.source).not.toContain('Analytics Analytics Footer')
+    expect(aeoSite?.source).not.toContain('Aeo Aeo Footer')
+    expect(winerySite?.source).not.toContain(
+      'Winery Brewery Menu for Winery Brewery',
+    )
+    expect(winerySite?.source).not.toContain(
+      'Deterministic example copy for reviewing Winery Brewery Menu',
+    )
+    expect(analyticsSite?.source).toContain(
+      'Launch faster with a clearer product story',
+    )
+    expect(aeoSite?.source).toContain('Product resources')
+    expect(winerySite?.source).toContain('Seasonal pours and cellar bites')
+    expect(winerySite?.source).toContain(
+      'Explore tasting flights, reserve bottles, crisp lagers, and shareable boards selected for the current release list.',
+    )
+  })
+
+  it('builds cafe zero-argument capsules without hanging', () => {
+    const cafeGallery = getExampleCapsules('cafe').find(
+      (capsule) => capsule.componentName === 'CafeGallery',
+    )
+    const cafeSite = getExampleCategorySite('cafe')
+
+    expect(cafeGallery?.source).toContain('CafeGallery()')
+    expect(cafeGallery?.source).toContain('root = Stack([cafe_gallery])')
+    expect(cafeSite?.source).toContain('CafeGallery()')
+    expect(cafeSite?.source).toContain('root = PageSwitch')
+  })
+
+  it('keeps generated split headings and auth labels compact', () => {
+    const musicFestivalSite = getExampleCategorySite('music-festival')
+    const onlineCourseSite = getExampleCategorySite('online-course')
+    const cafeSite = getExampleCategorySite('cafe')
+
+    expect(musicFestivalSite?.source).toContain(
+      'MusicFestivalHero("Built for momentum", "A sharper music", "festival"',
+    )
+    expect(musicFestivalSite?.source).not.toContain(
+      'MusicFestivalHero("Built for momentum", "A sharper music festival experience", "A sharper music festival experience"',
+    )
+    expect(onlineCourseSite?.source).toContain(
+      'OnlineCourseNavbar("Online Course Institute", ["Home","Pricing"], "Sign in"',
+    )
+    expect(onlineCourseSite?.source).not.toContain(
+      'OnlineCourseNavbar("Online Course Institute", ["Home","Pricing"], "Explain programs',
+    )
+    expect(cafeSite?.source).toContain(
+      'CafeHero("Fresh service, local flavor", "Book a table", "tonight", ""',
+    )
+    expect(cafeSite?.source).toContain(
+      'CafeNavbar("Cafe House", ["Home","Menu","Gallery","Newsletter"], "Home", "Menu", "Menu", "3")',
+    )
+  })
+
+  it('does not leak internal demo or layout-review copy into category sources', () => {
+    const bannedCopy = [
+      'Deterministic example copy',
+      'local demo content',
+      'weak blocks',
+      'Reusable blocks',
+      'Local previews',
+      'preview copy',
+    ]
+
+    for (const category of [
+      'winery-brewery',
+      'restaurant',
+      'analytics',
+      'aeo',
+      'fitness',
+      'accounting-firm',
+    ]) {
+      const source = getExampleCategorySite(category)?.source ?? ''
+      for (const banned of bannedCopy) {
+        expect(source, `${category} leaked "${banned}"`).not.toContain(banned)
+      }
+    }
   })
 
   it('builds a no-chrome full-site category source with PageSwitch', async () => {
@@ -476,6 +562,15 @@ describe('examples route behavior', () => {
     expect(library).toBeTruthy()
   })
 
+  it('loads the target category sources in the OpenUI runtime', async () => {
+    for (const category of ['music-festival', 'online-course', 'cafe']) {
+      const site = getExampleCategorySite(category)
+      const library = await loadOpenUIRuntimeLibrary(site?.source ?? '')
+
+      expect(library, category).toBeTruthy()
+    }
+  })
+
   it('uses the engine route plan for category nav instead of inventing missing pages', () => {
     const site = getExampleCategorySite('accounting-firm')
     const pageSwitch = parseExamplePageSwitch(site?.source ?? '')
@@ -487,7 +582,7 @@ describe('examples route behavior', () => {
     expect(pageSwitch.routes).not.toContain('Pricing')
     expect(pageSwitch.routes).not.toContain('FAQ')
     expect(site?.source).toContain(
-      'AccountingFirmNavbar("Accounting Firm Studio", ["Home","Team","Services","About"], "Team")',
+      'AccountingFirmNavbar("Accounting Firm Partners", ["Home","Team","Services","About"], "Team")',
     )
     expect(site?.source).not.toContain('"Pricing"')
     expect(site?.source).not.toContain('"FAQ"')
