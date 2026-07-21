@@ -20,3 +20,4 @@ scripts/.lakebed-logs/
 scripts/.lakebed-conversion-report.json
 /.forge
 /.playwright-mcp
+.env.prod
