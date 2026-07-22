@@ -3,7 +3,10 @@ import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { GitHubPanel } from './GitHubPanel'
-import { persistAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
+import {
+  persistAnonymousOwnerSecret,
+  resetAnonymousOwnerSecretPersistenceForTest,
+} from '@/features/session/services/anonymous-owner-secret'
 
 const authState = vi.hoisted(() => ({
   getToken: vi.fn(async () => 'app-token'),
@@ -99,6 +102,7 @@ describe('GitHubPanel', () => {
     setExportTargets([])
     localStorage.clear()
     sessionStorage.clear()
+    resetAnonymousOwnerSecretPersistenceForTest()
     vi.spyOn(window, 'open').mockImplementation(() => null)
   })
 

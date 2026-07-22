@@ -147,7 +147,7 @@ describe('partner billing events', () => {
     const t = convexTest(schema, modules)
 
     await expect(applySale(t, 'inv_missing', 'sub_missing')).rejects.toThrow(
-      'Razorpay subscription was not found',
+      'Subscription was not found',
     )
     const webhooks = await t.run(async (ctx) =>
       ctx.db

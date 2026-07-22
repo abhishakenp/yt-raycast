@@ -17,7 +17,7 @@ vi.mock('@tanstack/react-router', () => {
     )
   }
 
-  return { Link }
+  return { Link, useRouter: () => undefined }
 })
 
 if (typeof ResizeObserver === 'undefined') {
