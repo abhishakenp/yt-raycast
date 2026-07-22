@@ -68,9 +68,21 @@ async function createReadySessionWithFixture(
 }
 
 /**
+ * Strip HTML tags and comments from a string to approximate textContent.
+ * Used to extract visible text from HTML fragments that contain inline
+ * markup (e.g. <span> highlight markers on the last word of a heading).
+ */
+function stripHtmlTags(html: string): string {
+  return html.replace(/<!--[^>]*-->/g, '').replace(/<[^>]+>/g, '')
+}
+
+/**
  * Find a <br> separated hero in the HTML.
  * The real pizza-delivery fixture renders:
- *   <h1 ...>Craving Something Hot?<br/>Pizza Delivered Fast</h1>
+ *   <h1 ...>Craving Something Hot?<br/>Pizza Delivered<!-- --> <span ...>Fast</span></h1>
+ * The second fragment may contain inline markup (highlight spans, comments)
+ * so we capture the raw inner HTML after <br/> and derive textContent by
+ * stripping tags.
  */
 function findBrSeparatedHero(html: string): {
   fullMatch: string
@@ -78,10 +90,13 @@ function findBrSeparatedHero(html: string): {
   firstFragment: string
   secondFragment: string
 } | null {
-  // Match <h1...>text<br/>text</h1> (br may be <br> or <br/>)
-  const match = html.match(/<h1[^>]*>([^<]+)<br\s*\/?>([^<]+)<\/h1>/)
+  // Match <h1...>text<br/>...content...</h1> (br may be <br> or <br/>)
+  // The first fragment is pure text (before <br>); the second fragment may
+  // contain inline elements (spans, comments) so capture non-greedily.
+  const match = html.match(/<h1[^>]*>([^<]+)<br\s*\/?>(.*?)<\/h1>/)
   if (!match) return null
-  const [, first, second] = match
+  const [, first, secondRaw] = match
+  const second = stripHtmlTags(secondRaw)
   return {
     fullMatch: match[0],
     textContent: `${first}${second}`,
@@ -144,7 +159,8 @@ describe('inline edit persistence — <br> separated text nodes', () => {
   // ─────────────────────────────────────────────────────────────────────
   // INTEGRATION TEST: Full createEdit mutation with real pizza fixture
   // Uses the pizza-delivery-real fixture captured from a real user session.
-  // The hero renders as <h1>Craving Something Hot?<br/>Pizza Delivered Fast</h1>
+  // The hero renders as <h1>Craving Something Hot?<br/>Pizza Delivered<!-- --> <span...>Fast</span></h1>
+  // (the last word of headingBottom gets a highlight marker span).
   // ─────────────────────────────────────────────────────────────────────
 
   it('createEdit with single-fragment text edit on real pizza fixture persists', async () => {
@@ -155,11 +171,17 @@ describe('inline edit persistence — <br> separated text nodes', () => {
       'pizza delivery app',
     )
 
-    // Verify "Pizza Delivered Fast" is in the HTML
-    expect(html).toContain('Pizza Delivered Fast')
+    // Verify "Pizza Delivered Fast" is in the HTML textContent.
+    // The hero's headingBottom is now split by a highlight <span> on the
+    // last word, so the raw HTML has "Pizza Delivered<!-- --> <span...>Fast</span>"
+    // rather than a contiguous "Pizza Delivered Fast" string.
+    const brHero = findBrSeparatedHero(html)
+    expect(brHero).toBeTruthy()
+    expect(brHero?.secondFragment).toBe('Pizza Delivered Fast')
 
     // Edit just "Pizza Delivered Fast" → "Pizza Delivered NOW"
-    // This is within a single text node and should work
+    // applyPreviewTextEdit's tolerant matching tiers handle the inline
+    // <span> markup around "Fast".
     await expect(
       t.mutation(api.sessions.createEdit, {
         sessionId,

@@ -1,3 +1,4 @@
+import * as React from 'react'
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
@@ -36,18 +37,18 @@ export const Breadcrumb = defineCapsule({
       <UIBreadcrumb className={props.className}>
         <BreadcrumbList>
           {items.map((item, i) => (
-            <BreadcrumbItem key={i}>
-              {i === lastIndex ? (
-                <BreadcrumbPage>{item.label}</BreadcrumbPage>
-              ) : (
-                <>
+            <React.Fragment key={i}>
+              <BreadcrumbItem>
+                {i === lastIndex ? (
+                  <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                ) : (
                   <BreadcrumbLink href={item.href ?? '#'}>
                     {item.label}
                   </BreadcrumbLink>
-                  <BreadcrumbSeparator />
-                </>
-              )}
-            </BreadcrumbItem>
+                )}
+              </BreadcrumbItem>
+              {i < lastIndex && <BreadcrumbSeparator />}
+            </React.Fragment>
           ))}
         </BreadcrumbList>
       </UIBreadcrumb>

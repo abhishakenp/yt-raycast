@@ -53,7 +53,7 @@ const SignInButton = React.forwardRef<
 
   if (!signedIn) {
     const buttonVariant =
-      variant === 'outline' || variant === 'ghost' ? variant : 'shiny'
+      variant === 'outline' || variant === 'ghost' ? variant : 'outline'
 
     const Comp = asChild ? Slot : 'div'
     return (
@@ -71,7 +71,7 @@ const SignInButton = React.forwardRef<
           onClick={() => {
             void signInWithGoogle({ returnTo: currentRoute() })
           }}
-          className="gap-2"
+          className="gap-2 rounded-none border-border bg-transparent font-mono text-[11px] font-semibold uppercase tracking-[0.15em] text-foreground transition-colors duration-150 hover:bg-foreground hover:text-background active:translate-y-px"
         >
           <svg
             aria-hidden="true"

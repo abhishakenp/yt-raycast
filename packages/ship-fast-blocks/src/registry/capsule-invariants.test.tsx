@@ -51,11 +51,17 @@ import {
   type CapsuleRenderer,
 } from '#/capsules/openui.ts'
 import { library, componentNames } from '#/library.ts'
-import { capsuleCategories } from '#/generated/capsule-categories.ts'
+import * as primitiveRegistry from '#/registry/primitives/index.ts'
 import { Button } from '#/registry/primitives/button.tsx'
 import { ChurchNavbar } from '#/registry/sections/church/ChurchNavbar.tsx'
 import { ChurchFaq } from '#/registry/sections/church/ChurchFaq.tsx'
 import { ChurchStats } from '#/registry/sections/church/ChurchStats.tsx'
+
+const primitiveNames = new Set(
+  Object.values(primitiveRegistry)
+    .filter(isCapsule)
+    .map((capsule) => capsule.client.name),
+)
 
 function renderCapsule(
   Component: CapsuleRenderer<Record<string, unknown>>,
@@ -192,8 +198,7 @@ describe('registry capsule invariants', () => {
   it('renders every section capsule with default props without throwing', () => {
     const capsules = Object.values(registry).filter(
       (value): value is ShipFastCapsule =>
-        isCapsule(value) &&
-        capsuleCategories[value.client.name]?.category !== 'primitives',
+        isCapsule(value) && !primitiveNames.has(value.client.name),
     )
     const failures: Array<{ name: string; error: string }> = []
 
@@ -218,8 +223,7 @@ describe('registry capsule invariants', () => {
   it('renders every section capsule when common generated collection props have malformed shapes', () => {
     const capsules = Object.values(registry).filter(
       (value): value is ShipFastCapsule =>
-        isCapsule(value) &&
-        capsuleCategories[value.client.name]?.category !== 'primitives',
+        isCapsule(value) && !primitiveNames.has(value.client.name),
     )
     const malformedGeneratedProps = {
       actions: { label: 'Act now' },
@@ -263,8 +267,7 @@ describe('registry capsule invariants', () => {
   it('renders every section capsule when generated collection rows and nested rows are malformed', () => {
     const capsules = Object.values(registry).filter(
       (value): value is ShipFastCapsule =>
-        isCapsule(value) &&
-        capsuleCategories[value.client.name]?.category !== 'primitives',
+        isCapsule(value) && !primitiveNames.has(value.client.name),
     )
     const malformedGeneratedProps = {
       actions: [null, false, { label: 'Act now', href: 123 }],

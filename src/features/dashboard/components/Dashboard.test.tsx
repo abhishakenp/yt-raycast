@@ -63,6 +63,29 @@ const ensureWindowStorage = () => {
   }
 }
 
+vi.mock('@tanstack/react-router', () => ({
+  Link: ({
+    children,
+    to,
+    ...props
+  }: {
+    children: ReactNode
+    to: string
+    [key: string]: unknown
+  }) => (
+    <a href={to} {...props}>
+      {children}
+    </a>
+  ),
+  useCanGoBack: () => false,
+  useNavigate: () => vi.fn(),
+  useParams: () => ({}),
+  useRouter: () => ({
+    history: { back: vi.fn() },
+    state: { location: { pathname: '/' } },
+  }),
+}))
+
 vi.mock('@clerk/tanstack-react-start', () => ({
   useAuth: () => ({
     isSignedIn: false,

@@ -117,7 +117,8 @@ function withRealtimeSection(
 
 const isGeneratedLoaderUnavailableMessage = (message: string): boolean =>
   message.includes('import.meta.glob') ||
-  message.includes('.glob is not a function')
+  message.includes('.glob is not a function') ||
+  message.includes('has no module loader for')
 
 const isGeneratedLoaderUnavailableError = (error: unknown): boolean => {
   const message = error instanceof Error ? error.message : String(error)

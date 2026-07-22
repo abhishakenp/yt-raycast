@@ -43,6 +43,19 @@ vi.mock('@/features/gallery/server/gallery-preview-server-fn', () => ({
   fetchGalleryPreviewHtml: vi.fn(async () => null),
 }))
 
+// Mock the WASM module so initLaunchBackdrop does not call fetch() with a
+// Vite ?url import that jsdom cannot resolve (causes an unhandled error).
+vi.mock('@/components/launch-backdrop-wasm', () => ({
+  LAUNCH_BACKDROP_PARTICLE_STRIDE: 7,
+  loadLaunchBackdropWasm: vi.fn(async () => ({
+    backdrop_init: vi.fn(),
+    backdrop_resize: vi.fn(),
+    backdrop_count: vi.fn(() => 0),
+    backdrop_step: vi.fn(() => 0),
+    memory: { buffer: new ArrayBuffer(0) },
+  })),
+}))
+
 describe('homepage gallery section', () => {
   it('renders the home gallery surface with loading cards and navigation links', async () => {
     const { HomeGallerySection } =
@@ -92,12 +105,21 @@ describe('homepage gallery section', () => {
         setTransform: vi.fn(),
         fillRect: vi.fn(),
         beginPath: vi.fn(),
+        closePath: vi.fn(),
         moveTo: vi.fn(),
         lineTo: vi.fn(),
         stroke: vi.fn(),
+        fill: vi.fn(),
+        translate: vi.fn(),
+        rotate: vi.fn(),
+        save: vi.fn(),
+        restore: vi.fn(),
+        clearRect: vi.fn(),
         fillStyle: '',
         strokeStyle: '',
         lineWidth: 0,
+        lineCap: '',
+        lineJoin: '',
         globalCompositeOperation: '',
         globalAlpha: 1,
       }) as unknown as typeof originalGetContext

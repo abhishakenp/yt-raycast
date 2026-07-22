@@ -149,8 +149,20 @@ export function resolveRouteTarget(
 
   if (semanticTarget) return semanticTarget
 
+  // Commerce mutation phrases (add/remove from cart, checkout actions) are
+  // not navigation — they mutate shared client state. Never fall back to a
+  // single route for these, even when no explicit commerce route exists.
+  if (isCommerceMutationPhrase(normalized)) return null
+
   const singleRoute = routes.length === 1 ? routes[0] : undefined
   return singleRoute ? { type: 'page', page: singleRoute } : null
+}
+
+const COMMERCE_MUTATION_RE =
+  /\b(?:add|remove|update|delete)\b.*\b(?:to|from|in)\b.*\bcart\b|\b(?:checkout|place order|complete order|submit order)\b/
+
+function isCommerceMutationPhrase(normalizedTarget: string): boolean {
+  return COMMERCE_MUTATION_RE.test(normalizedTarget)
 }
 
 export function slugifyRoute(value: string): string {
