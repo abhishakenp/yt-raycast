@@ -74,6 +74,11 @@ Then: one line per section, in order
 Then: a @pages line listing secondary page names (REQUIRED when the site has multiple substantial sections)
 Then: optional + lines for custom tables/operations
 
+METADATA LINES (emit these AFTER the @pages line, BEFORE any + lines):
+@brand <the real brand/business/person name extracted from the build request — the proper noun the site is FOR, e.g. "Acme Cafe", "Kaveri Silks", "Dr. Pepper"; if none, infer a short plausible brand from the vertical/topic, e.g. "Coffee House" for a coffee shop; NEVER use the verb "generate"/"build"/"create" or generic words like "website"/"app" as the brand>
+@title <a concise, descriptive site title for the <title> tag — include the brand AND what the site is about, e.g. "Kaveri Silks — Premium Sarees & Traditional Wear", NOT just the brand name>
+@nav home:<Home label> <pageId>:<label> <pageId>:<label> ... (English navigation labels for the site's pages; "home" is always first; only include page ids relevant to the chosen kind and your @pages line; use the page id before the colon and the display label after)
+
 Section line format:
 role value1|value2|value3
 - Values are positional, matching the role's field order shown below
@@ -114,16 +119,27 @@ features Brewed for the Early Shift|Fresh coffee ready before sunrise|Mobile Ord
 Example (primitive array — items have no sub-fields):
 products Best Sellers|Espresso Blend~Cold Brew Pouch~Single Origin Sampler
 Example @pages line for a restaurant: @pages menu reservations
+Example metadata lines for a restaurant:
+@brand Acme Cafe
+@title Acme Cafe — Artisan Coffee & Fresh Bakes
+@nav home:Home menu:Menu reservations:Reserve about:Our Story
 
 Rules:
 - ${vocabs.length === 1 ? 'Use the pre-selected kind listed above' : 'Pick the kind that best fits the build request'}
 - Include only sections this specific site needs — not all available sections
 - ONLY use roles listed in the vocabulary for the chosen kind — every section line's role must match one of the roles shown in "Sections for {kind}:"
 - ALWAYS emit a @pages line when the site has multiple substantial sections — list each secondary page by its lowercase role name
+- ALWAYS emit @brand, @title, and @nav metadata lines — extract the real brand from the build request, write a descriptive title, and suggest nav labels
 - Write rich, realistic, on-topic content — no lorem ipsum
 - Arrays should have several distinct entries
 - The engine injects brand, nav, CTAs, routing, and contact info automatically
 - Write all content in ${locale}
+
+IMAGE ALT TEXT RULES (CRITICAL — alt text is used as the stock-photo search query):
+1. Alt text MUST ALWAYS be in English, regardless of the page content language. No exceptions — not for avatars, not for product images, not for hero images.
+2. When the brief contains non-English concepts, TRANSLATE them to their closest English visual equivalent. Examples: Malayalam "sarikk" → "silk saree", "onam" → "harvest festival", "ponnundu" → "gift box"; Hindi "mithai" → "Indian sweets"; Tamil "pookkalam" → "flower rangoli". Never transliterate — Pexels/Unsplash search in English and cannot match transliterated words.
+3. Alt text must be a descriptive English phrase that a stock photographer would use. Write "Traditional Kerala saree on display" not "onam sarikk". Write "Portrait of smiling woman" not a non-English name. Write "Festive gift box with flowers" not "/images/hero1.jpg".
+4. Never use file paths, URLs, or non-English script as alt text.
 
 Content Quality (CRITICAL — generic, templatey content is a failure):
 - Use SPECIFIC, creative content that directly reflects the user's prompt — not generic SaaS language

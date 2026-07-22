@@ -14,6 +14,7 @@ export const KINDS: KindEntry[] = [
       'BeautyStore',
       'Ecommerce',
       'SubscriptionBox',
+      'ProductDetail',
     ],
   },
   {
@@ -61,6 +62,8 @@ export const KINDS: KindEntry[] = [
       'NoCode',
       'AiProduct',
       'Auth',
+      'Aeo',
+      'Analytics',
     ],
   },
   {
@@ -158,6 +161,8 @@ export const KINDS: KindEntry[] = [
       'MusicArtist',
       'Agency',
       'MarketingAgency',
+      'ArchitectureFirm',
+      'PortfolioDev',
     ],
   },
   {
@@ -173,7 +178,15 @@ export const KINDS: KindEntry[] = [
       'publication',
       'blog',
     ],
-    covers: ['Newsroom', 'Newsletter', 'Blog', 'Podcast', 'WriterAuthor'],
+    covers: [
+      'Newsroom',
+      'Newsletter',
+      'Blog',
+      'Podcast',
+      'WriterAuthor',
+      'BlogPost',
+      'News',
+    ],
   },
   {
     kind: 'service',
@@ -198,6 +211,7 @@ export const KINDS: KindEntry[] = [
       'SpaWellness',
       'Fitness',
       'YogaStudio',
+      'LawFirm',
     ],
   },
   {
@@ -258,7 +272,7 @@ export const KINDS: KindEntry[] = [
       'portal',
       'ministry',
     ],
-    covers: ['Nonprofit', 'Church'],
+    covers: ['Nonprofit', 'Church', 'GovPortal'],
   },
   {
     kind: 'logistics',

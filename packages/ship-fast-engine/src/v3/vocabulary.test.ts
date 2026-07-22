@@ -223,13 +223,19 @@ describe('restaurant vocabulary', () => {
   })
 })
 
-// ── Publication — only roles with existing components ─────────────────────────
+// ── Publication — roles with existing Newsroom/Blog/News components ─────────
 describe('publication vocabulary', () => {
-  it('only has hero, navbar, footer (no articles/featured/archive)', () => {
+  it('has hero, featuredStory, storyGrid, topics, authors, subscribe, navbar, footer', () => {
     const roles = getVocabulary('publication').roles.map((r) => r.role)
-    expect(roles).toEqual(['hero', 'navbar', 'footer'])
+    expect(roles).toContain('hero')
+    expect(roles).toContain('navbar')
+    expect(roles).toContain('footer')
+    expect(roles).toContain('featuredStory')
+    expect(roles).toContain('storyGrid')
+    expect(roles).toContain('topics')
+    expect(roles).toContain('authors')
+    expect(roles).toContain('subscribe')
     expect(roles).not.toContain('articles')
-    expect(roles).not.toContain('featured')
     expect(roles).not.toContain('archive')
   })
 

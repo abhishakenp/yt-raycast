@@ -42,6 +42,12 @@ export interface ParsedSitePlan {
   pages: string[]
   tables: CustomTable[]
   operations: CustomOperation[]
+  /** LLM-extracted brand name (from @brand metadata line). */
+  brand?: string
+  /** LLM-decided descriptive site title (from @title metadata line). */
+  title?: string
+  /** LLM-suggested nav labels: pageId → display label (from @nav metadata line). */
+  navLabels?: Record<string, string>
 }
 
 export interface LakebedField {
@@ -135,6 +141,7 @@ export interface ConfidenceResult {
 
 export interface V3SiteSpec {
   brand: string
+  projectName?: string
   tagline: string
   theme: string
   locale: string
@@ -142,10 +149,32 @@ export interface V3SiteSpec {
   modules: Record<string, string>
   kind: string
   lakebed: LakebedDefinition
+  /** Generated Convex backend files (schema + functions + seed). */
+  convexBackend?: Record<string, string>
+  /** Data bindings: component id → lakebed operation keys. */
+  dataBindings?: Record<string, DataBinding>
   fullstackManifest: {
     tables: string[]
     schemaVersion: number
     auth: boolean
   }
   sitePlan: ParsedSitePlan
+}
+
+/** Describes how a component binds to lakebed operations at runtime. */
+export interface DataBinding {
+  /** The component id (e.g. "home_menu"). */
+  componentId: string
+  /** The component name (e.g. "RestaurantMenu"). */
+  component: string
+  /** Interaction profiles (collection, cart, submission, search, favorites, auth). */
+  profiles: string[]
+  /** Query operation key → Convex function name. */
+  queries: Record<string, string>
+  /** Mutation operation key → Convex function name. */
+  mutations: Record<string, string>
+  /** Seed table name (if this component seeds data from its props). */
+  seedTable?: string
+  /** Path into the component props to extract seed data from. */
+  seedPath?: string
 }

@@ -131,6 +131,9 @@ export function parseSitePlan(raw: string): ParsedSitePlan {
   const tables: CustomTable[] = []
   const operations: CustomOperation[] = []
   let kind = ''
+  let brand: string | undefined
+  let title: string | undefined
+  let navLabels: Record<string, string> | undefined
 
   let kindSeen = false
   for (const rawLine of lines) {
@@ -155,6 +158,37 @@ export function parseSitePlan(raw: string): ParsedSitePlan {
       continue
     }
 
+    if (line.startsWith('@brand')) {
+      const rest = line.replace(/^@brand\s*/, '').trim()
+      if (rest.length > 0) brand = rest
+      continue
+    }
+
+    if (line.startsWith('@title')) {
+      const rest = line.replace(/^@title\s*/, '').trim()
+      if (rest.length > 0) title = rest
+      continue
+    }
+
+    if (line.startsWith('@nav')) {
+      const rest = line.replace(/^@nav\s*/, '').trim()
+      if (rest.length > 0) {
+        navLabels = {}
+        for (const token of rest.split(/\s+/)) {
+          const colonIdx = token.indexOf(':')
+          if (colonIdx > 0) {
+            const pageId = token.slice(0, colonIdx).trim()
+            const label = token.slice(colonIdx + 1).trim()
+            if (pageId.length > 0 && label.length > 0) {
+              navLabels[pageId] = label
+            }
+          }
+        }
+        if (Object.keys(navLabels).length === 0) navLabels = undefined
+      }
+      continue
+    }
+
     if (line.startsWith('+')) {
       const parsed = parsePlusLine(line)
       if (parsed) {
@@ -174,5 +208,9 @@ export function parseSitePlan(raw: string): ParsedSitePlan {
     // Unknown line shape: skip silently.
   }
 
-  return { kind, sections, pages, tables, operations }
+  const plan: ParsedSitePlan = { kind, sections, pages, tables, operations }
+  if (brand) plan.brand = brand
+  if (title) plan.title = title
+  if (navLabels) plan.navLabels = navLabels
+  return plan
 }

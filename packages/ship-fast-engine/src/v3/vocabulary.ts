@@ -97,6 +97,11 @@ const COMMERCE: RoleVocabulary[] = [
   },
   { role: 'cta', fields: [f('heading'), f('subheading')] },
   { role: 'logos', fields: [f('eyebrow'), fa('items', [f('label')])] },
+  // ProductDetail-specific role
+  {
+    role: 'overview',
+    fields: [f('heading'), f('description'), fa('features', FEATURE_ITEMS)],
+  },
   { role: 'navbar', fields: NAVBAR_FIELDS },
   { role: 'footer', fields: FOOTER_FIELDS },
 ]
@@ -171,6 +176,28 @@ const SAAS: RoleVocabulary[] = [
   },
   { role: 'cta', fields: [f('heading'), f('subheading')] },
   { role: 'logos', fields: [f('label'), fa('names')] },
+  // Aeo-specific roles
+  {
+    role: 'directAnswer',
+    fields: [f('heading'), f('body')],
+  },
+  {
+    role: 'faqSection',
+    fields: [f('heading'), f('description'), fa('items', FAQ_ITEMS)],
+  },
+  {
+    role: 'useCases',
+    fields: [f('heading'), f('description'), fa('items', FEATURE_ITEMS)],
+  },
+  // Analytics-specific roles
+  {
+    role: 'kpis',
+    fields: [f('heading'), fa('items', STAT_ITEMS)],
+  },
+  {
+    role: 'sidebar',
+    fields: [f('heading'), fa('items', [f('label')])],
+  },
   { role: 'navbar', fields: NAVBAR_FIELDS },
   { role: 'footer', fields: FOOTER_FIELDS },
 ]
@@ -375,6 +402,38 @@ const PORTFOLIO: RoleVocabulary[] = [
     fields: [f('heading'), f('subheading'), fa('services', FEATURE_ITEMS)],
   },
   { role: 'logos', fields: [fa('clients')] },
+  // ArchitectureFirm-specific roles
+  {
+    role: 'process',
+    fields: [f('eyebrow'), f('heading'), fa('steps', STEP_ITEMS)],
+  },
+  {
+    role: 'work',
+    fields: [
+      f('eyebrow'),
+      f('heading'),
+      f('description'),
+      fa('items', [f('title'), f('meta'), f('location'), f('imageAlt')]),
+    ],
+  },
+  {
+    role: 'philosophy',
+    fields: [
+      f('eyebrow'),
+      f('heading'),
+      fa('points', FEATURE_ITEMS),
+      f('imageAlt'),
+    ],
+  },
+  // PortfolioDev-specific roles
+  {
+    role: 'projects',
+    fields: [f('heading'), f('description'), fa('items', FEATURE_ITEMS)],
+  },
+  {
+    role: 'overview',
+    fields: [f('heading'), f('description')],
+  },
   { role: 'navbar', fields: NAVBAR_FIELDS },
   { role: 'footer', fields: FOOTER_FIELDS },
 ]
@@ -383,6 +442,66 @@ const PUBLICATION: RoleVocabulary[] = [
   {
     role: 'hero',
     fields: [f('kicker'), f('headline'), f('dek'), f('imageAlt'), f('caption')],
+  },
+  // Newsroom/News-specific roles
+  {
+    role: 'featuredStory',
+    fields: [
+      f('eyebrow'),
+      f('headline'),
+      f('excerpt'),
+      fa('points'),
+      f('author'),
+      f('date'),
+      f('imageAlt'),
+    ],
+  },
+  {
+    role: 'storyGrid',
+    fields: [
+      f('heading'),
+      fa('stories', [
+        f('tag'),
+        f('title'),
+        f('excerpt'),
+        f('author'),
+        f('date'),
+        f('readTime'),
+        f('imageAlt'),
+      ]),
+    ],
+  },
+  {
+    role: 'topics',
+    fields: [
+      f('heading'),
+      f('subheading'),
+      fa('topics', [
+        f('name'),
+        f('count'),
+        f('blurb'),
+        f('topHeadline'),
+        f('imageAlt'),
+      ]),
+    ],
+  },
+  {
+    role: 'authors',
+    fields: [
+      f('heading'),
+      f('subheading'),
+      fa('authors', [
+        f('name'),
+        f('role'),
+        f('bio'),
+        f('latest'),
+        f('avatarAlt'),
+      ]),
+    ],
+  },
+  {
+    role: 'subscribe',
+    fields: [f('heading'), f('subheading'), fa('benefits')],
   },
   { role: 'navbar', fields: NAVBAR_FIELDS },
   {
@@ -428,6 +547,34 @@ const SERVICE: RoleVocabulary[] = [
     fields: [f('heading'), f('description'), fa('items', STEP_ITEMS)],
   },
   { role: 'logos', fields: [f('label'), fa('items')] },
+  // LawFirm-specific roles
+  {
+    role: 'process',
+    fields: [
+      f('eyebrow'),
+      f('heading'),
+      f('description'),
+      fa('steps', STEP_ITEMS),
+    ],
+  },
+  {
+    role: 'attorneys',
+    fields: [
+      f('eyebrow'),
+      f('heading'),
+      f('description'),
+      fa('items', [f('name'), f('title'), f('bio'), f('imageAlt')]),
+    ],
+  },
+  {
+    role: 'practiceAreas',
+    fields: [
+      f('eyebrow'),
+      f('heading'),
+      f('description'),
+      fa('items', FEATURE_ITEMS),
+    ],
+  },
   { role: 'navbar', fields: NAVBAR_FIELDS },
   {
     role: 'footer',
@@ -624,6 +771,66 @@ const GOVERNMENT: RoleVocabulary[] = [
     ],
   },
   { role: 'about', fields: [f('sectionHeading'), f('overview')] },
+  // GovPortal-specific roles
+  {
+    role: 'directory',
+    fields: [f('heading'), fa('directory')],
+  },
+  {
+    role: 'downloads',
+    fields: [f('heading'), fa('downloads')],
+  },
+  {
+    role: 'grievance',
+    fields: [f('heading'), f('description')],
+  },
+  {
+    role: 'leadership',
+    fields: [f('heading'), fa('messages'), fa('boardMembers')],
+  },
+  {
+    role: 'media',
+    fields: [f('heading'), f('subheading'), fa('media')],
+  },
+  {
+    role: 'newsEvents',
+    fields: [f('heading'), fa('newsEvents')],
+  },
+  {
+    role: 'notices',
+    fields: [
+      f('heading'),
+      fa('circulars'),
+      fa('publicNotices'),
+      fa('employmentNotices'),
+      fa('updates'),
+    ],
+  },
+  {
+    role: 'powerPlants',
+    fields: [f('heading'), fa('powerPlants')],
+  },
+  {
+    role: 'quickLinks',
+    fields: [
+      f('heading'),
+      fa('items', [f('label'), f('description'), f('target')]),
+    ],
+  },
+  {
+    role: 'tenderBoard',
+    fields: [
+      f('heading'),
+      fa('tenders'),
+      fa('extensionNotices'),
+      fa('corrigendums'),
+      fa('cancellationNotices'),
+    ],
+  },
+  {
+    role: 'vendor',
+    fields: [f('heading')],
+  },
   { role: 'navbar', fields: NAVBAR_FIELDS },
   {
     role: 'footer',

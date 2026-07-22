@@ -11,9 +11,11 @@ import type { SiteSpecProject } from '../spec/index.ts'
 import { resolvePipelineLanguage } from '../pipeline/prompt-language'
 // @ts-ignore -- renderers module lacks TypeScript declarations.
 import { renderPreviewToWorkspace } from '../renderers/index.ts'
+// @ts-ignore -- legacy JS module lacks TypeScript declarations.
+import { translateHtml } from '../llm/translator'
 
-import type { ConfidenceResult, V3SiteSpec } from './types.ts'
-import { inferKind, KIND_NAMES } from './kinds.ts'
+import type { ConfidenceResult, V3SiteSpec, ParsedSitePlan } from './types.ts'
+import { inferKind, KIND_NAMES, getDefaultFamily } from './kinds.ts'
 import { retryLoop } from './retry.ts'
 import {
   compileSitePlan,
@@ -27,6 +29,13 @@ import {
   buildLowConfidenceFillPrompt,
 } from './prompt.ts'
 import { StreamingParser } from './streaming.ts'
+import { pickThemeForContext } from '../genui/theme-affinity.ts'
+import { getVocabulary } from './vocabulary.ts'
+
+/** Count roles in a kind's vocabulary (for the content-substance quality gate). */
+function getVocabularyRoleCount(kind: string): number {
+  return getVocabulary(kind).roles.length
+}
 
 function log(sessionCtx: any) {
   return (msg: string) => {
@@ -59,42 +68,11 @@ function makeSeededRng(seed: string): () => number {
   }
 }
 
-// Derive a brand name from the prompt: first 1-3 significant words, Title-Cased.
-const STOP_WORDS = new Set([
-  'the',
-  'and',
-  'for',
-  'with',
-  'about',
-  'site',
-  'shop',
-  'store',
-  'make',
-  'build',
-  'app',
-  'website',
-  'a',
-  'an',
-  'of',
-  'to',
-  'in',
-  'on',
-  'my',
-  'our',
-])
-
-function deriveBrand(prompt: string): string {
-  const words = prompt
-    .replace(/https?:\/\/\S+/g, ' ')
-    .replace(/[^A-Za-z0-9 ]+/g, ' ')
-    .split(/\s+/)
-    .filter((w) => w.length > 2 && !STOP_WORDS.has(w.toLowerCase()))
-    .slice(0, 3)
-  if (words.length === 0) return 'Brand'
-  return words
-    .map((w) => w[0].toUpperCase() + w.slice(1).toLowerCase())
-    .join(' ')
-}
+// No heuristic brand fallback — the LLM extracts the brand via the @brand
+// metadata line (instructed in the prompt, enforced by the quality gate). If
+// the LLM still omits it, a minimal generic constant is the last resort so
+// downstream components don't receive an empty string.
+const DEFAULT_BRAND = 'Studio'
 
 function pascalCase(s: string): string {
   return s
@@ -163,14 +141,6 @@ export async function runAllV3({
     )
     timings.kind_end = Date.now()
 
-    // ── Theme (seeded RNG) ──────────────────────────────────────────────────
-    const seed = sessionCtx?.id || ws
-    const rng = makeSeededRng(seed)
-    const theme = pickRandomTheme(rng)
-    sessionCtx?.broadcast?.({ type: 'theme', name: theme })
-    sessionCtx?.broadcast?.({ type: 'locale', code: languageMode.code })
-    _log(`  theme: ${theme}`)
-
     // ── Build prompt (one-call vs two-call) ─────────────────────────────────
     timings.prompt_start = Date.now()
     let system: string
@@ -213,7 +183,7 @@ export async function runAllV3({
     _status('Generating site-plan…', 'plan')
     timings.llm_start = Date.now()
     const controller = new AbortController()
-    const raw = await generateText(
+    let raw = await generateText(
       DEFAULT_MODEL,
       system,
       user,
@@ -240,27 +210,95 @@ export async function runAllV3({
 
     // ── Retry loop: parse → validate → fix ──────────────────────────────────
     timings.parse_start = Date.now()
-    const { plan, attempts, valid } = retryLoop(raw, conf.kind)
+    let { plan, attempts, valid } = retryLoop(raw, conf.kind)
     _log(
       `  site-plan: ${plan.sections.length} sections, ${plan.pages.length} pages (attempts: ${attempts}, valid: ${valid})`,
     )
+
+    // ── Content-substance quality gate (ported from v1 enough()) ─────────────
+    // The home must be substantially filled: a hero (or first content section)
+    // plus at least half the kind's vocabulary roles. If not, retry the LLM
+    // call once with a stricter instruction — never ship a thin homepage.
+    const vocabRoles = getVocabularyRoleCount(plan.kind)
+    const hasHero = plan.sections.some((s) => s.role.toLowerCase() === 'hero')
+    const enoughSections =
+      plan.sections.length >= Math.max(3, Math.ceil(vocabRoles / 2))
+    if ((!hasHero || !enoughSections) && attempts <= 1) {
+      _status(
+        'Content quality gate failed — retrying with stricter prompt',
+        'plan',
+      )
+      const strictSystem = `${system}\n\nYou MUST fill EVERY section listed for the chosen kind with rich, distinct content. NEVER return an empty or partial plan. ALWAYS include a hero section. Emit @brand, @title, and @nav metadata lines.`
+      const strictController = new AbortController()
+      const strictRaw = await generateText(
+        DEFAULT_MODEL,
+        strictSystem,
+        user,
+        strictController.signal,
+        2,
+      )
+      const strictResult = retryLoop(strictRaw, conf.kind)
+      if (strictResult.plan.sections.length >= plan.sections.length) {
+        raw = strictRaw
+        plan = strictResult.plan
+        attempts = strictResult.attempts
+        valid = strictResult.valid
+        _log(
+          `  site-plan (retry): ${plan.sections.length} sections, ${plan.pages.length} pages`,
+        )
+      }
+    }
+
     sessionCtx?.broadcast?.({
       type: 'plan',
       ids: ['home', ...plan.pages],
     })
     timings.parse_end = Date.now()
 
+    // ── Theme (seeded RNG + category-aware mood pools, ported from v1) ───────
+    // pickThemeForContext narrows the pick to a mood pool for commerce kinds
+    // (luxury/street-bold/organic-craft/pop-retail/tech-mono/fresh-active) so a
+    // jewelry atelier doesn't land on 'doom-64'. Non-commerce → full catalog.
+    const seed = sessionCtx?.id || ws
+    const rng = makeSeededRng(seed)
+    const themeRoll = rng()
+    const familyForTheme = getDefaultFamily(plan.kind)
+    const theme =
+      pickThemeForContext({
+        prompt: normalizedPrompt,
+        familyName: familyForTheme,
+        rng: () => themeRoll,
+      }) ?? pickRandomTheme(rng)
+    sessionCtx?.broadcast?.({ type: 'theme', name: theme })
+    sessionCtx?.broadcast?.({ type: 'locale', code: languageMode.code })
+    _log(`  theme: ${theme}`)
+
     // ── Compile ─────────────────────────────────────────────────────────────
     timings.compile_start = Date.now()
-    const brand = deriveBrand(normalizedPrompt)
-    const tagline = plan.sections[0]?.content?.[0] ?? brand
+    // LLM-extracted brand (from @brand line) is the only source — no heuristic
+    // fallback. The prompt + quality gate enforce emitting @brand; DEFAULT_BRAND
+    // is the last resort if the LLM still omits it.
+    const brand =
+      (plan.brand && plan.brand.length >= 2 ? plan.brand : undefined) ||
+      DEFAULT_BRAND
+    // LLM-decided descriptive title (from @title line) — falls back to brand.
+    const title =
+      (plan.title && plan.title.length >= 2 ? plan.title : undefined) || brand
+    // LLM-suggested nav labels (from @nav line) — falls back to PascalCase.
+    const navLabels = plan.navLabels ?? {}
+    const nav = [
+      navLabels.home || 'Home',
+      ...plan.pages.map((p) => navLabels[p] || pascalCase(p)),
+    ]
+    const tagline = title
     const compileOptions: CompileOptions = {
       brand,
       theme,
       locale: languageMode.code,
-      nav: ['Home', ...plan.pages.map((p) => pascalCase(p))],
+      nav,
       kind: plan.kind,
       tagline,
+      title,
     }
     const result: CompileResult = compileSitePlan(plan, compileOptions)
 
@@ -270,10 +308,13 @@ export async function runAllV3({
     // signalHomepageReady fires when the first section's OpenUI is emitted.
     let homepageSignaled = false
     for (const section of plan.sections) {
-      const { statements } = compileSection(section, plan.kind, 'home', brand, [
-        'Home',
-        ...plan.pages.map((p) => pascalCase(p)),
-      ])
+      const { statements } = compileSection(
+        section,
+        plan.kind,
+        'home',
+        brand,
+        nav,
+      )
       const sectionId = `home_${section.role}`
       sessionCtx?.broadcast?.({
         type: 'module',
@@ -350,6 +391,32 @@ export async function runAllV3({
     manifest.generatedAt = new Date().toISOString()
     writeFileSync(manifestPath, JSON.stringify(manifest, null, 2))
 
+    // ── Write Convex backend files to workspace ─────────────────────────────
+    // The compiler generates actual Convex schema + function files from the
+    // lakebed. Write them to the workspace so they're deployable.
+    if (result.siteSpec.convexBackend) {
+      for (const [filePath, content] of Object.entries(
+        result.siteSpec.convexBackend,
+      )) {
+        if (content.length === 0) continue
+        const fullPath = join(ws, filePath)
+        const dir = fullPath.slice(0, fullPath.lastIndexOf('/'))
+        try {
+          if (!existsSync(dir)) {
+            await import('node:fs/promises').then((fs) =>
+              fs.mkdir(dir, { recursive: true }),
+            )
+          }
+          writeFileSync(fullPath, content)
+        } catch {
+          // non-fatal — convex files are optional artifacts
+        }
+      }
+      _log(
+        `  convex backend: ${Object.keys(result.siteSpec.convexBackend).length} files written`,
+      )
+    }
+
     // ── SSR: render OpenUI → index.html (required by engine adapter) ────────
     timings.ssr_start = Date.now()
     _status('Rendering preview…', 'render')
@@ -368,6 +435,39 @@ export async function runAllV3({
       )
     }
     timings.ssr_end = Date.now()
+
+    // ── Post-render translation (ported from v1 phase-openui-home) ──────────
+    // If the pipeline language needs translation (non-English locale), translate
+    // the rendered index.html visible text in-place. The LLM authors in the
+    // target locale, but for Indian-language locales the translator polishes
+    // and ensures native-script output where the LLM may have mixed scripts.
+    if (languageMode?.needsTranslation) {
+      try {
+        const previewPath = join(ws, 'index.html')
+        if (existsSync(previewPath)) {
+          const translatedPreview = await translateHtml(
+            readFileSync(previewPath, 'utf-8'),
+            {
+              code: languageMode.code,
+              name: languageMode.name,
+              nativeName: languageMode.nativeName,
+              script: languageMode.script,
+              language: languageMode.language ?? undefined,
+            },
+          )
+          if (translatedPreview?.content && !translatedPreview.error) {
+            writeFileSync(previewPath, translatedPreview.content)
+            _log(`  v3: translated preview to ${languageMode.code}`)
+          } else {
+            _log(
+              `  v3: translation skipped — ${translatedPreview?.error ?? 'empty response'}`,
+            )
+          }
+        }
+      } catch (error: any) {
+        _log(`  v3: translation error — ${error?.message || String(error)}`)
+      }
+    }
 
     // ── Integrations hook ───────────────────────────────────────────────────
     if (integrations?.afterSiteSpecSaved) {

@@ -13,6 +13,9 @@ import { getDefaultFamily } from './kinds.ts'
 import { getVocabulary } from './vocabulary.ts'
 import { inferLakebed } from './inference.ts'
 import { buildComponentCall } from '../genui/openui-signature.ts'
+import { getInteraction } from './interactions.ts'
+import { generateConvexBackend } from './convex-codegen.ts'
+import type { DataBinding } from './types.ts'
 
 export interface CompileOptions {
   brand: string
@@ -21,6 +24,7 @@ export interface CompileOptions {
   nav: string[]
   kind: string
   tagline?: string
+  title?: string
 }
 
 export interface CompileResult {
@@ -395,8 +399,71 @@ export function compileSitePlan(
     plan.operations.some((o) => o.macroType === 'auth') ||
     lakebed.tables.some((t) => t.name === 'authSessions')
 
+  // ── Fullstack wiring: generate data bindings for interactive components ──
+  // For each section, check if its component has an interaction profile. If so,
+  // create a DataBinding record mapping the component to its lakebed queries/
+  // mutations. This is what makes v3 fully fullstack — the bindings tell the
+  // renderer which Convex functions each component should call.
+  const dataBindings: Record<string, DataBinding> = {}
+  const seedData: Record<string, unknown[]> = {}
+
+  for (const section of plan.sections) {
+    const component = `${getDefaultFamily(kind)}${pascal(section.role)}`
+    const profile = getInteraction(component)
+    if (!profile || profile.profiles[0] === 'none') continue
+
+    const componentId = `home_${section.role.toLowerCase()}`
+    const binding: DataBinding = {
+      componentId,
+      component,
+      profiles: profile.profiles,
+      queries: {},
+      mutations: {},
+    }
+
+    // Map operation keys to Convex function names.
+    // Operations with "list"/"sync" → queries; others → mutations.
+    for (const [opKey, opName] of Object.entries(profile.operations)) {
+      if (
+        opKey.startsWith('list') ||
+        opKey.startsWith('saved') ||
+        opKey.startsWith('session') ||
+        opKey.startsWith('search') ||
+        opKey.startsWith('order')
+      ) {
+        binding.queries[opKey] = opName
+      } else {
+        binding.mutations[opKey] = opName
+      }
+    }
+
+    if (profile.seedTable) {
+      binding.seedTable = profile.seedTable
+      binding.seedPath = profile.seedPath
+      // Extract seed data from the section's compiled props
+      const fields = roleFields(kind, section.role)
+      const props = contentToProps(section, fields)
+      if (profile.seedPath && props) {
+        const pathParts = profile.seedPath.split('.')
+        let extracted: unknown = props
+        for (const part of pathParts) {
+          extracted = (extracted as Record<string, unknown>)?.[part]
+        }
+        if (Array.isArray(extracted)) {
+          seedData[profile.seedTable] = extracted
+        }
+      }
+    }
+
+    dataBindings[componentId] = binding
+  }
+
+  // Generate the actual Convex backend code (schema + functions + seed).
+  const convexBackend = generateConvexBackend(lakebed, seedData)
+
   const siteSpec: V3SiteSpec = {
     brand: opts.brand,
+    projectName: opts.title,
     tagline: opts.tagline ?? opts.brand,
     theme: opts.theme,
     locale: opts.locale,
@@ -404,6 +471,8 @@ export function compileSitePlan(
     modules: pageSources,
     kind: plan.kind,
     lakebed,
+    convexBackend,
+    dataBindings,
     fullstackManifest: {
       tables: lakebed.tables.map((t) => t.name),
       schemaVersion: 1,
