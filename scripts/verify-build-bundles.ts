@@ -98,6 +98,19 @@ const forbiddenPublicAssetRules: ForbiddenAssetRule[] = [
     pattern: /^openui-runtime-(?:capsules|sections|primitives).+\.js$/,
     reason: 'browser OpenUI runtime must keep on-demand chunks narrow',
   },
+  {
+    pattern: /^openui-(?:primitive|section|capsule)-.*-test-.+\.js$/,
+    reason:
+      'test files must not be bundled into production — import.meta.glob must exclude *.test.tsx',
+  },
+]
+
+const forbiddenServerAssetRules: ForbiddenAssetRule[] = [
+  {
+    pattern: /^openui-(?:primitive|section|capsule)-.*-test-.+\.mjs$/,
+    reason:
+      'test files must not be bundled into production — import.meta.glob must exclude *.test.tsx',
+  },
 ]
 
 export function listAssets(dir: string): BundleAsset[] {
@@ -193,6 +206,7 @@ export function verifyBuildBundles(root = process.cwd()): void {
     ...verifyOptionalAssetRules(publicAssets, optionalNamedChunkRules),
     ...verifyOptionalAssetRules(serverAssets, optionalNamedChunkRules),
     ...verifyForbiddenAssetRules(publicAssets, forbiddenPublicAssetRules),
+    ...verifyForbiddenAssetRules(serverAssets, forbiddenServerAssetRules),
   ]
 
   if (failures.length > 0) {

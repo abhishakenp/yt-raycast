@@ -200,4 +200,30 @@ describe('verifyBuildBundles', () => {
       /openui-capsule-index-test\.js/,
     )
   })
+
+  it('rejects test-file chunks bundled into production browser assets', () => {
+    const root = createBuildRoot()
+    writePassingAssets(root)
+    writeAsset(
+      root,
+      '.output/public/assets/openui-primitive-freeform-test-BhiLfsmD.js',
+      'export const vitestLeak = true',
+    )
+
+    expect(() => verifyBuildBundles(root)).toThrow(
+      /openui-primitive-freeform-test/,
+    )
+  })
+
+  it('rejects test-file chunks bundled into production server assets', () => {
+    const root = createBuildRoot()
+    writePassingAssets(root)
+    writeAsset(
+      root,
+      '.output/server/_ssr/openui-section-blog-test-AbCd123.mjs',
+      'export const vitestLeak = true',
+    )
+
+    expect(() => verifyBuildBundles(root)).toThrow(/openui-section-blog-test/)
+  })
 })

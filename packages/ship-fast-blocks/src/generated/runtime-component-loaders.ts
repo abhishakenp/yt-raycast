@@ -15,7 +15,9 @@ type RuntimeComponentLoader = () => Promise<ShipFastCapsule>
 
 const runtimeComponentModules = import.meta.glob<RuntimeComponentModule>([
   '../registry/primitives/**/*.tsx',
+  '!../registry/primitives/**/*.test.tsx',
   '../registry/sections/**/*.tsx',
+  '!../registry/sections/**/*.test.tsx',
 ])
 
 const toCapsule = (
@@ -672,6 +674,7 @@ const runtimeComponentModulePaths = {
   FoodTruckStats: '../registry/sections/food-truck/FoodTruckStats.tsx',
   FoodTruckTestimonials:
     '../registry/sections/food-truck/FoodTruckTestimonials.tsx',
+  Freeform: '../registry/primitives/freeform.tsx',
   FurnitureStoreDesign:
     '../registry/sections/furniture-store/FurnitureStoreDesign.tsx',
   FurnitureStoreFeatures:
