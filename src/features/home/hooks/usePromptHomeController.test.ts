@@ -10,22 +10,27 @@ import {
   vi,
 } from 'vitest'
 
-type PrewarmGenerationViewOptions = {
-  args: { lookup: string }
-  extendSubscriptionFor?: number
-  query: unknown
-}
-
-interface PrewarmGenerationView {
-  (options: PrewarmGenerationViewOptions): void
+type WatchGenerationView = {
+  localQueryResult: () => unknown
+  onUpdate: (callback: () => void) => () => void
 }
 
 type PromptHomeControllerTestState = {
   createSession: Mock<(...args: any[]) => Promise<unknown>>
+  generationView: unknown
   mutationRefs: unknown[]
   navigate: Mock<(...args: any[]) => unknown>
   preloadRoute: Mock<(...args: any[]) => Promise<unknown>>
-  prewarmQuery: Mock<PrewarmGenerationView>
+  prewarmQuery: Mock<
+    (options: {
+      args: { lookup: string }
+      extendSubscriptionFor?: number
+      query: unknown
+    }) => void
+  >
+  watchQuery: Mock<
+    (query: unknown, args: { lookup: string }) => WatchGenerationView
+  >
 }
 
 let originalFetch: typeof globalThis.fetch
@@ -53,13 +58,23 @@ function getTestState(): PromptHomeControllerTestState {
   }
   testGlobal.__shipFastPromptHomeControllerState ??= {
     createSession: vi.fn(),
+    generationView: undefined,
     mutationRefs: [],
     navigate: vi.fn(),
     preloadRoute: vi.fn(),
     prewarmQuery: vi.fn(),
+    watchQuery: vi.fn(() => ({
+      localQueryResult: () => getTestState().generationView,
+      onUpdate: () => () => undefined,
+    })),
   }
   return testGlobal.__shipFastPromptHomeControllerState
 }
+
+const readyGenerationView = () => ({
+  session: { status: 'preview_ready' },
+  homeModule: { source: 'export default function ReadyPreview() {}' },
+})
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -100,6 +115,11 @@ vi.mock('convex/react', () => ({
         __shipFastPromptHomeControllerState?: PromptHomeControllerTestState
       }
     ).__shipFastPromptHomeControllerState?.prewarmQuery,
+    watchQuery: (
+      globalThis as typeof globalThis & {
+        __shipFastPromptHomeControllerState?: PromptHomeControllerTestState
+      }
+    ).__shipFastPromptHomeControllerState?.watchQuery,
   }),
 }))
 
@@ -141,7 +161,13 @@ describe('usePromptHomeController submit guard', () => {
     state.navigate.mockResolvedValue(undefined)
     state.preloadRoute.mockReset()
     state.preloadRoute.mockResolvedValue(undefined)
+    state.generationView = undefined
     state.prewarmQuery.mockReset()
+    state.watchQuery.mockReset()
+    state.watchQuery.mockImplementation(() => ({
+      localQueryResult: () => getTestState().generationView,
+      onUpdate: () => () => undefined,
+    }))
     originalFetch = globalThis.fetch
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: false,
@@ -640,7 +666,7 @@ describe('usePromptHomeController submit guard', () => {
     expect(state.mutationRefs).toEqual(['sessions.create'])
   })
 
-  it('starts immediately on click before the speculative three-second debounce and never creates twice', async () => {
+  it('starts immediately on click before the speculative debounce and never creates twice', async () => {
     vi.useFakeTimers()
     const state = getTestState()
     const { result } = renderHook(() => usePromptHomeController())
@@ -653,9 +679,9 @@ describe('usePromptHomeController submit guard', () => {
     })
 
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(2_999)
+      await vi.advanceTimersByTimeAsync(499)
       await result.current.submitPrompt()
-      await vi.advanceTimersByTimeAsync(3_000)
+      await vi.advanceTimersByTimeAsync(500)
     })
 
     expect(state.createSession).toHaveBeenCalledTimes(1)
@@ -680,7 +706,7 @@ describe('usePromptHomeController submit guard', () => {
     })
 
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(3_000)
+      await vi.advanceTimersByTimeAsync(500)
       await Promise.resolve()
     })
 
@@ -712,6 +738,10 @@ describe('usePromptHomeController submit guard', () => {
       to: '/generate/$sessionId/$',
       params: { sessionId: 'session_speculative_in_flight' },
     })
+    expect(state.watchQuery).toHaveBeenCalledWith(
+      'sessions.getGenerationView',
+      { lookup: 'session_speculative_in_flight' },
+    )
     expect(state.prewarmQuery).toHaveBeenCalledWith({
       query: 'sessions.getGenerationView',
       args: { lookup: 'session_speculative_in_flight' },
@@ -734,6 +764,7 @@ describe('usePromptHomeController submit guard', () => {
   it('navigates from a completed speculative session without creating another one', async () => {
     vi.useFakeTimers()
     const state = getTestState()
+    state.generationView = readyGenerationView()
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(
         JSON.stringify({
@@ -753,7 +784,7 @@ describe('usePromptHomeController submit guard', () => {
     })
 
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(3_000)
+      await vi.advanceTimersByTimeAsync(500)
       await Promise.resolve()
       await Promise.resolve()
     })
@@ -764,6 +795,10 @@ describe('usePromptHomeController submit guard', () => {
       to: '/generate/$sessionId/$',
       params: { sessionId: 'session_speculative_ready' },
     })
+    expect(state.watchQuery).toHaveBeenCalledWith(
+      'sessions.getGenerationView',
+      { lookup: 'session_speculative_ready' },
+    )
     expect(state.prewarmQuery).toHaveBeenCalledWith({
       query: 'sessions.getGenerationView',
       args: { lookup: 'session_speculative_ready' },
@@ -790,10 +825,65 @@ describe('usePromptHomeController submit guard', () => {
     ).toBeNull()
   })
 
+  it('rechecks the native Convex prewarm cache at submit before showing loader', async () => {
+    vi.useFakeTimers()
+    const state = getTestState()
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          sessionId: 'session_ready_before_click',
+          cached: false,
+        }),
+        { headers: { 'Content-Type': 'application/json' } },
+      ),
+    )
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.setPrompt('Build a site that becomes ready before click')
+    })
+    act(() => {
+      result.current.scheduleSpeculativeGeneration()
+    })
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(500)
+      await Promise.resolve()
+      await Promise.resolve()
+    })
+
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(
+      window.sessionStorage.getItem(
+        'ship-fast:generation-launch:session_ready_before_click',
+      ),
+    ).toBeNull()
+
+    state.generationView = readyGenerationView()
+
+    await act(async () => {
+      await result.current.submitPrompt()
+    })
+
+    expect(state.watchQuery).toHaveBeenCalledWith(
+      'sessions.getGenerationView',
+      { lookup: 'session_ready_before_click' },
+    )
+    expect(
+      window.sessionStorage.getItem(
+        'ship-fast:generation-launch:session_ready_before_click',
+      ),
+    ).toBeNull()
+    expect(state.navigate).toHaveBeenCalledWith({
+      to: '/generate/$sessionId/$',
+      params: { sessionId: 'session_ready_before_click' },
+    })
+  })
+
   it('keeps the launch handoff when native Convex prewarm is unavailable', async () => {
     vi.useFakeTimers()
     const state = getTestState()
-    state.prewarmQuery.mockImplementationOnce(() => {
+    state.watchQuery.mockImplementationOnce(() => {
       throw new Error('prewarm unavailable')
     })
     vi.mocked(fetch).mockResolvedValueOnce(
@@ -815,7 +905,7 @@ describe('usePromptHomeController submit guard', () => {
     })
 
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(3_000)
+      await vi.advanceTimersByTimeAsync(500)
       await Promise.resolve()
       await Promise.resolve()
     })
@@ -824,7 +914,7 @@ describe('usePromptHomeController submit guard', () => {
       await result.current.submitPrompt()
     })
 
-    expect(state.prewarmQuery).toHaveBeenCalledTimes(1)
+    expect(state.watchQuery).toHaveBeenCalledTimes(1)
     expect(
       window.sessionStorage.getItem(
         'ship-fast:generation-launch:session_speculative_unprewarmed',
@@ -860,7 +950,7 @@ describe('usePromptHomeController submit guard', () => {
     })
 
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(3_000)
+      await vi.advanceTimersByTimeAsync(500)
       await Promise.resolve()
       await Promise.resolve()
     })
@@ -948,7 +1038,7 @@ describe('usePromptHomeController submit guard', () => {
     })
 
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(2_000)
+      await vi.advanceTimersByTimeAsync(250)
     })
 
     act(() => {
@@ -960,7 +1050,7 @@ describe('usePromptHomeController submit guard', () => {
     })
 
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(2_999)
+      await vi.advanceTimersByTimeAsync(499)
     })
 
     expect(state.createSession).not.toHaveBeenCalled()

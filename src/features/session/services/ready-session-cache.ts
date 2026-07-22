@@ -2,7 +2,6 @@ import { normalizePromptDraft } from '@/features/home/services/home-prompts'
 import { isUnsafePublicPreviewHtml } from '../../../../convex/lib/openui_error_html'
 
 const READY_SESSION_CACHE_PREFIX = 'ship-fast:ready-session:v1:'
-const READY_SESSION_PREVIEW_CACHE_PREFIX = 'ship-fast:ready-session-preview:v1:'
 const READY_SESSION_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000
 const READY_SESSION_VERIFY_TIMEOUT_MS = 1_800
 
@@ -23,47 +22,6 @@ type ReadySessionApiResponse = {
   openuiReady?: unknown
   preview?: { html?: unknown; source?: unknown } | null
   homeModule?: { source?: unknown } | null
-}
-
-export type ReadySessionPreviewCacheEntry = {
-  sessionId: string
-  status: 'preview_ready'
-  prompt: string
-  preferredLanguage: string
-  preferredExportTarget?: string
-  previewVersion?: number
-  elapsed?: number | null
-  themeOverride?: string | null
-  selectedBrandLogo?: {
-    name: string
-    domain: string | null
-    brandId: string | null
-    icon: string | null
-    logo: string | null
-  } | null
-  homeModule: {
-    moduleKey?: string
-    source: string
-    status?: string
-    updatedAt?: number
-  }
-  preview?: {
-    html?: string
-    openUiSource?: string
-    siteSpecJson?: string
-    version?: number
-  }
-  siteSpec?: {
-    specJson?: string
-    updatedAt?: number
-  }
-  tasks?: Array<{
-    id?: string
-    title: string
-    status: string
-    order?: number
-  }>
-  createdAt: number
 }
 
 function normalizeLanguage(value: string) {
@@ -192,108 +150,6 @@ export function forgetReadySession(
   storage.removeItem(
     getReadySessionCacheKey(input.prompt, input.preferredLanguage),
   )
-}
-
-function getReadySessionPreviewCacheKey(sessionId: string): string {
-  return `${READY_SESSION_PREVIEW_CACHE_PREFIX}${sessionId.trim()}`
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
-export function rememberReadySessionPreview(
-  storage: Pick<Storage, 'setItem'>,
-  input: Omit<ReadySessionPreviewCacheEntry, 'createdAt'> & {
-    createdAt?: number
-  },
-) {
-  const sessionId = input.sessionId.trim()
-  const prompt = normalizePromptDraft(input.prompt)
-  const preferredLanguage = normalizeLanguage(input.preferredLanguage)
-  const source = input.homeModule.source.trim()
-
-  if (!sessionId || input.status !== 'preview_ready' || !prompt || !source) {
-    return
-  }
-
-  // Reject snapshots whose home module source or preview HTML is real OpenUI
-  // renderer-error output — these are broken artifacts that must never be
-  // cached for reuse.
-  if (
-    isUnsafePublicPreviewHtml(source) ||
-    isUnsafePublicPreviewHtml(input.preview?.html)
-  ) {
-    return
-  }
-
-  const entry: ReadySessionPreviewCacheEntry = {
-    ...input,
-    sessionId,
-    prompt,
-    preferredLanguage,
-    homeModule: {
-      ...input.homeModule,
-      source,
-    },
-    createdAt: input.createdAt ?? Date.now(),
-  }
-
-  try {
-    storage.setItem(
-      getReadySessionPreviewCacheKey(sessionId),
-      JSON.stringify(entry),
-    )
-  } catch {
-    // localStorage quota exceeded or unavailable (private mode / disabled).
-    // The ready-session preview cache is a best-effort optimization; a failed
-    // write must never crash the dashboard or break preview rendering.
-  }
-}
-
-export function readReadySessionPreview(
-  storage: Pick<Storage, 'getItem' | 'removeItem'>,
-  input: { sessionId: string; now?: number },
-): ReadySessionPreviewCacheEntry | null {
-  const sessionId = input.sessionId.trim()
-  if (!sessionId) return null
-
-  const key = getReadySessionPreviewCacheKey(sessionId)
-  const raw = storage.getItem(key)
-  if (!raw) return null
-
-  try {
-    const parsed = JSON.parse(raw) as unknown
-    const now = input.now ?? Date.now()
-
-    if (
-      !isRecord(parsed) ||
-      parsed.sessionId !== sessionId ||
-      parsed.status !== 'preview_ready' ||
-      typeof parsed.prompt !== 'string' ||
-      typeof parsed.preferredLanguage !== 'string' ||
-      typeof parsed.createdAt !== 'number' ||
-      !isRecord(parsed.homeModule) ||
-      typeof parsed.homeModule.source !== 'string' ||
-      parsed.homeModule.source.trim().length === 0 ||
-      now - parsed.createdAt > READY_SESSION_CACHE_TTL_MS
-    ) {
-      storage.removeItem(key)
-      return null
-    }
-
-    return parsed as ReadySessionPreviewCacheEntry
-  } catch {
-    storage.removeItem(key)
-    return null
-  }
-}
-
-export function forgetReadySessionPreview(
-  storage: Pick<Storage, 'removeItem'>,
-  input: { sessionId: string },
-) {
-  storage.removeItem(getReadySessionPreviewCacheKey(input.sessionId))
 }
 
 export async function verifyReadySession(

@@ -48,12 +48,7 @@ import { createPendingDashboardSaves } from '@/features/dashboard/lib/pending-da
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 import { extractGeneratedCommerceProducts } from '@/features/commerce/services/generated-commerce-products'
 import { takeGenerationLaunchHandoff } from '@/features/session/services/generation-launch-handoff'
-import {
-  readReadySessionPreview,
-  rememberReadySession,
-  rememberReadySessionPreview,
-  type ReadySessionPreviewCacheEntry,
-} from '@/features/session/services/ready-session-cache'
+import { rememberReadySession } from '@/features/session/services/ready-session-cache'
 import { useEditController } from '@/features/editing/hooks/useEditController'
 import { useUndoRedo } from '@/features/editing/hooks/useUndoRedo'
 import { useReorderElement } from '@/features/editing/hooks/useReorderElement'
@@ -469,50 +464,6 @@ function GenerationFailureState({ errorMessage }: { errorMessage: string }) {
   )
 }
 
-function toDashboardGenerationView(
-  data: ReadySessionPreviewCacheEntry,
-): DashboardGenerationView {
-  return {
-    events: [],
-    homeModule: {
-      moduleKey: data.homeModule.moduleKey ?? 'home',
-      source: data.homeModule.source,
-      status: data.homeModule.status ?? 'succeeded',
-      updatedAt: data.homeModule.updatedAt ?? data.createdAt,
-    },
-    latestPreview: data.preview,
-    session: {
-      sessionId: data.sessionId as Id<'sessions'>,
-      status: data.status,
-      previewVersion: data.previewVersion ?? data.preview?.version ?? 1,
-      prompt: data.prompt,
-      preferredLanguage: data.preferredLanguage,
-      preferredExportTarget: data.preferredExportTarget ?? 'html',
-      elapsed: data.elapsed,
-      isPrivate: false,
-      themeOverride: data.themeOverride ?? null,
-      selectedBrandLogo: data.selectedBrandLogo ?? null,
-      designReferenceUrls: [],
-      designReferenceNotes: '',
-    },
-    siteSpec: data.siteSpec,
-    tasks: (data.tasks ?? []).map((task) => ({
-      taskKey: task.id,
-      title: task.title,
-      status: task.status,
-      order: task.order ?? 0,
-    })),
-  }
-}
-
-function readCachedGenerationView(
-  sessionId: string,
-): DashboardGenerationView | undefined {
-  if (typeof window === 'undefined') return undefined
-  const cached = readReadySessionPreview(window.localStorage, { sessionId })
-  return cached === null ? undefined : toDashboardGenerationView(cached)
-}
-
 const subscribeToHydration = () => () => undefined
 const getHydratedClientSnapshot = () => true
 const getHydratedServerSnapshot = () => false
@@ -665,15 +616,7 @@ export function Dashboard({
     getHydratedClientSnapshot,
     getHydratedServerSnapshot,
   )
-  const [fallbackGenerationView, setFallbackGenerationView] = useState<
-    DashboardGenerationView | undefined
-  >(() => readCachedGenerationView(sessionId))
-  const generationView = !hasHydrated
-    ? undefined
-    : liveGenerationView === undefined ||
-        (liveGenerationView === null && fallbackGenerationView !== undefined)
-      ? fallbackGenerationView
-      : liveGenerationView
+  const generationView = hasHydrated ? liveGenerationView : undefined
   const resolvedSessionId = generationView?.session.sessionId
   const clonePageNav = useClonePageNav(resolvedSessionId ?? sessionId)
   const isMissingSession = generationView === null
@@ -737,18 +680,6 @@ export function Dashboard({
       return generationView?.homeModule?.source
     },
   })
-
-  useEffect(() => {
-    if (liveGenerationView !== undefined && liveGenerationView !== null) {
-      setFallbackGenerationView(undefined)
-      return
-    }
-
-    const cached = readCachedGenerationView(sessionId)
-    if (cached === undefined) return
-
-    setFallbackGenerationView((current) => current ?? cached)
-  }, [liveGenerationView, sessionId])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -818,31 +749,6 @@ export function Dashboard({
       sessionId: session.sessionId,
       prompt: session.prompt,
       preferredLanguage: session.preferredLanguage,
-    })
-    rememberReadySessionPreview(window.localStorage, {
-      sessionId: session.sessionId,
-      status: 'preview_ready',
-      prompt: session.prompt,
-      preferredLanguage: session.preferredLanguage ?? 'en',
-      preferredExportTarget: session.preferredExportTarget,
-      previewVersion: session.previewVersion,
-      elapsed: session.elapsed,
-      themeOverride: session.themeOverride ?? null,
-      selectedBrandLogo: session.selectedBrandLogo ?? null,
-      homeModule: {
-        moduleKey: readyHomeModule.moduleKey,
-        source: readyHomeModule.source,
-        status: readyHomeModule.status,
-        updatedAt: readyHomeModule.updatedAt,
-      },
-      preview: generationView.latestPreview,
-      siteSpec: generationView.siteSpec,
-      tasks: generationView.tasks.map((task) => ({
-        id: task.taskKey ?? task._id,
-        title: task.title,
-        status: task.status,
-        order: task.order,
-      })),
     })
   }, [generationView, isPreviewReady])
 
