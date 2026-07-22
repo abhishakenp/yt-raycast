@@ -19,7 +19,7 @@ vi.mock('@tanstack/react-router', () => {
     )
   }
 
-  return { Link }
+  return { Link, useRouter: () => undefined }
 })
 
 vi.mock('#/lib/route-context.tsx', async (importOriginal) => ({
@@ -46,9 +46,13 @@ const {
   NavbarNav,
   NavbarNavLink,
   NavbarActions,
+  NavbarRouteLink,
   NavbarCta,
 } = await import('./SiteNav.tsx')
-const { RoutesContext } = await import('../lib/route-context.tsx')
+const { PageStateContext, RoutesContext } =
+  await import('../lib/route-context.tsx')
+const { PreviewUrlBridgeContext } =
+  await import('../lib/preview-url-bridge.tsx')
 
 afterEach(() => {
   cleanup()
@@ -259,6 +263,34 @@ describe('NavbarNavLink', () => {
     )
   })
 
+  it('does not throw when generated nav href props are null', () => {
+    const generatedNullHref = null as unknown as string
+
+    expect(() =>
+      render(
+        <>
+          <NavbarBrand href={generatedNullHref} data-testid="brand-link">
+            Broken brand input
+          </NavbarBrand>
+          <NavbarNavLink href={generatedNullHref} data-testid="nav-link">
+            Broken nav input
+          </NavbarNavLink>
+          <NavbarRouteLink href={generatedNullHref} data-testid="route-link">
+            Broken route input
+          </NavbarRouteLink>
+          <NavbarCta href={generatedNullHref} data-testid="cta-link">
+            Broken CTA input
+          </NavbarCta>
+        </>,
+      ),
+    ).not.toThrow()
+
+    expect(screen.getByTestId('brand-link').getAttribute('href')).toBeNull()
+    expect(screen.getByTestId('nav-link').getAttribute('href')).toBeNull()
+    expect(screen.getByTestId('route-link').getAttribute('href')).toBeNull()
+    expect(screen.getByTestId('cta-link').getAttribute('href')).toBeNull()
+  })
+
   it('scopes compound nav hrefs to the SiteNav base path', () => {
     window.history.pushState(null, '', '/lakebed/site/pricing')
 
@@ -437,6 +469,46 @@ describe('NavbarNavLink', () => {
     expect(pricingLink.className).toContain('bg-muted')
     expect(pricingLink.className).toContain('text-foreground')
     expect(pricingLink.className).toContain('underline')
+  })
+
+  it('switches preview pages when a generated absolute home href matches the base path', () => {
+    window.history.pushState(null, '', '/preview/session-123/gallery')
+    const setCurrentPage = vi.fn()
+    const setPage = vi.fn()
+    const navigateToPage = vi.fn()
+
+    render(
+      <PreviewUrlBridgeContext.Provider
+        value={{ navigateToPage, pageFromUrl: 'gallery' }}
+      >
+        <PageStateContext.Provider value={{ setPage }}>
+          <RoutesContext.Provider
+            value={{
+              routes: ['Home', 'Gallery'],
+              targetMap: {},
+              currentPage: 'Gallery',
+              setCurrentPage,
+              pendingSectionId: null,
+              setPendingSectionId: vi.fn(),
+            }}
+          >
+            <SiteNav>
+              <NavbarNav>
+                <NavbarNavLink href="/" data-testid="home-link">
+                  Home
+                </NavbarNavLink>
+              </NavbarNav>
+            </SiteNav>
+          </RoutesContext.Provider>
+        </PageStateContext.Provider>
+      </PreviewUrlBridgeContext.Provider>,
+    )
+
+    fireEvent.click(screen.getByTestId('home-link'))
+
+    expect(setCurrentPage).toHaveBeenCalledWith('Home')
+    expect(setPage).toHaveBeenCalledWith('Home')
+    expect(navigateToPage).toHaveBeenCalledWith(null)
   })
 
   it('fires onClick', () => {

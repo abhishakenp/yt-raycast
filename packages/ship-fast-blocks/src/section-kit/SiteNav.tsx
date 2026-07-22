@@ -88,9 +88,10 @@ const NavbarBrand = React.forwardRef<
   HTMLElement,
   React.ComponentProps<'a'> & { asChild?: boolean }
 >(({ className, href, asChild = false, ...props }, ref) => {
-  const resolvedHref = useSectionKitNavHref(href)
+  const navHref = typeof href === 'string' ? href : undefined
+  const resolvedHref = useSectionKitNavHref(navHref)
   const Comp = asChild ? Slot : resolvedHref ? RouterLink : 'div'
-  const onNavClick = useSectionKitNavClick(href)
+  const onNavClick = useSectionKitNavClick(navHref)
   return (
     <Comp
       data-slot="navbar-brand"
@@ -135,10 +136,11 @@ const NavbarNavLink = React.forwardRef<
     { className, href, asChild = false, 'aria-current': ariaCurrent, ...props },
     ref,
   ) => {
-    const resolvedHref = useSectionKitNavHref(href)
+    const navHref = typeof href === 'string' ? href : undefined
+    const resolvedHref = useSectionKitNavHref(navHref)
     const Comp = asChild ? Slot : resolvedHref ? RouterLink : 'a'
-    const isActive = useIsActiveSectionKitNavHref()(href)
-    const onNavClick = useSectionKitNavClick(href)
+    const isActive = useIsActiveSectionKitNavHref()(navHref)
+    const onNavClick = useSectionKitNavClick(navHref)
 
     return (
       <Comp
@@ -180,9 +182,10 @@ const NavbarRouteLink = React.forwardRef<
   HTMLAnchorElement,
   React.ComponentProps<'a'> & { asChild?: boolean }
 >(({ className, href, asChild = false, onClick, ...props }, ref) => {
-  const resolvedHref = useSectionKitNavHref(href)
+  const navHref = typeof href === 'string' ? href : undefined
+  const resolvedHref = useSectionKitNavHref(navHref)
   const Comp = asChild ? Slot : resolvedHref ? RouterLink : 'a'
-  const onNavClick = useSectionKitNavClick(href)
+  const onNavClick = useSectionKitNavClick(navHref)
   return (
     <Comp
       data-slot="navbar-route-link"
@@ -205,9 +208,10 @@ const NavbarCta = React.forwardRef<
     Pick<React.ComponentProps<'button'>, 'type' | 'disabled'> &
     VariantProps<typeof navbarCtaVariants> & { asChild?: boolean }
 >(({ className, href, variant, asChild = false, type, ...props }, ref) => {
-  const resolvedHref = useSectionKitNavHref(href)
+  const navHref = typeof href === 'string' ? href : undefined
+  const resolvedHref = useSectionKitNavHref(navHref)
   const Comp = asChild ? Slot : resolvedHref ? RouterLink : 'button'
-  const onNavClick = useSectionKitNavClick(href)
+  const onNavClick = useSectionKitNavClick(navHref)
   return (
     <Comp
       data-slot="navbar-cta"

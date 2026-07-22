@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  estimateObservedRemainingMs,
   estimateRemainingMs,
   formatDurationShort,
 } from './format-progress-duration'
@@ -45,5 +46,50 @@ describe('estimateRemainingMs', () => {
 
   it('never returns a negative estimate', () => {
     expect(estimateRemainingMs(1, 99)).toBeGreaterThanOrEqual(0)
+  })
+})
+
+describe('estimateObservedRemainingMs', () => {
+  it('does not invent ETA before enough real server samples exist', () => {
+    expect(
+      estimateObservedRemainingMs({
+        now: 1_000,
+        percent: 25,
+        progressSampleCount: 2,
+        progressStartedAt: 0,
+        progressUpdatedAt: 200,
+      }),
+    ).toBeNull()
+  })
+
+  it('projects from actual observed server progress timing', () => {
+    expect(
+      estimateObservedRemainingMs({
+        now: 80_000,
+        percent: 76,
+        progressSampleCount: 3,
+        progressStartedAt: 0,
+        progressUpdatedAt: 76_000,
+      }),
+    ).toBe(20_000)
+  })
+
+  it('changes with real workload duration at the same percent', () => {
+    const tenBlockEta = estimateObservedRemainingMs({
+      now: 80_000,
+      percent: 76,
+      progressSampleCount: 3,
+      progressStartedAt: 0,
+      progressUpdatedAt: 76_000,
+    })
+    const twelveBlockEta = estimateObservedRemainingMs({
+      now: 120_000,
+      percent: 76,
+      progressSampleCount: 3,
+      progressStartedAt: 0,
+      progressUpdatedAt: 116_000,
+    })
+
+    expect(twelveBlockEta).toBeGreaterThan(tenBlockEta ?? 0)
   })
 })

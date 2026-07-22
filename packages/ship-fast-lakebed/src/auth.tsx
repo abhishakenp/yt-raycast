@@ -156,10 +156,13 @@ function deriveClientIdFromRedirectUri(redirectUri: string) {
 function resolveGoogleAuthOptions(
   options: GoogleAuthOptions = {},
 ): Required<GoogleAuthOptions> {
+  const config = authConfig()
   const configuredShooBaseUrl =
-    typeof authConfig().shooBaseUrl === 'string'
-      ? authConfig().shooBaseUrl
-      : DEFAULT_SHOO_BASE_URL
+    typeof config.shooBaseUrl === 'string'
+      ? config.shooBaseUrl
+      : typeof config.authBaseUrl === 'string'
+        ? config.authBaseUrl
+        : DEFAULT_SHOO_BASE_URL
   const callbackPath =
     normalizeReturnTo(options.callbackPath) ??
     normalizeReturnTo(currentPath()) ??

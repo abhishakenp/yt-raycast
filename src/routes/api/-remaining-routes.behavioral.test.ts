@@ -406,7 +406,9 @@ describe('remaining API route behavior', () => {
 
   it('falls back to deterministic Picsum redirects for real prompt-like image queries without provider keys', async () => {
     delete process.env.PEXELS_API_KEY
+    delete process.env.VITE_PEXELS_API_KEY
     delete process.env.UNSPLASH_ACCESS_KEY
+    delete process.env.VITE_UNSPLASH_ACCESS_KEY
     const Route = await importRoute('./pexels')
     const request = new Request(
       'https://ship-fast.io/api/pexels?query=a%20craft%20beer%20brewery%20with%20taproom%20tours&w=5000&h=50&seed=a-craft-beer-brewery',

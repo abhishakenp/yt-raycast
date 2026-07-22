@@ -4,11 +4,22 @@ import { isUnsafePublicPreviewHtml } from '../../../../convex/lib/openui_error_h
 const READY_SESSION_CACHE_PREFIX = 'ship-fast:ready-session:v1:'
 const READY_SESSION_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000
 const READY_SESSION_VERIFY_TIMEOUT_MS = 1_800
+const READY_SESSION_CACHE_MAX_ENTRIES = 24
+const READY_SESSION_CACHE_MAX_BYTES = 64 * 1024
 
 type ReadySessionCacheEntry = {
   sessionId: string
   prompt: string
   preferredLanguage: string
+  createdAt: number
+}
+
+type WritableReadySessionStorage = Pick<Storage, 'setItem'> &
+  Partial<Pick<Storage, 'getItem' | 'removeItem' | 'key' | 'length'>>
+
+type CacheEntryMeta = {
+  key: string
+  bytes: number
   createdAt: number
 }
 
@@ -34,6 +45,114 @@ function normalizeLanguage(value: string) {
 
 function normalizePromptForCache(value: string) {
   return normalizePromptDraft(value).toLowerCase()
+}
+
+function estimateStorageBytes(key: string, value: string): number {
+  return (key.length + value.length) * 2
+}
+
+function canEnumerateStorage(
+  storage: WritableReadySessionStorage,
+): storage is WritableReadySessionStorage &
+  Pick<Storage, 'getItem' | 'removeItem' | 'key' | 'length'> {
+  return (
+    typeof storage.getItem === 'function' &&
+    typeof storage.removeItem === 'function' &&
+    typeof storage.key === 'function' &&
+    typeof storage.length === 'number'
+  )
+}
+
+function readCreatedAt(raw: string): number | null {
+  try {
+    const parsed = JSON.parse(raw) as { createdAt?: unknown }
+    return typeof parsed.createdAt === 'number' ? parsed.createdAt : null
+  } catch {
+    return null
+  }
+}
+
+function pruneReadySessionStorage(
+  storage: WritableReadySessionStorage,
+  input: {
+    pendingKey: string
+    pendingValue: string
+    maxEntries: number
+    maxBytes: number
+    now?: number
+  },
+) {
+  if (!canEnumerateStorage(storage)) return
+
+  const now = input.now ?? Date.now()
+  const entries: CacheEntryMeta[] = []
+
+  for (let i = storage.length - 1; i >= 0; i -= 1) {
+    const key = storage.key(i)
+    if (key === null || !key.startsWith(READY_SESSION_CACHE_PREFIX)) continue
+    if (key === input.pendingKey) continue
+
+    const raw = storage.getItem(key)
+    if (raw === null) continue
+
+    const createdAt = readCreatedAt(raw)
+    if (createdAt === null || now - createdAt > READY_SESSION_CACHE_TTL_MS) {
+      storage.removeItem(key)
+      continue
+    }
+
+    entries.push({
+      key,
+      bytes: estimateStorageBytes(key, raw),
+      createdAt,
+    })
+  }
+
+  entries.sort((a, b) => a.createdAt - b.createdAt)
+
+  let totalBytes =
+    estimateStorageBytes(input.pendingKey, input.pendingValue) +
+    entries.reduce((sum, entry) => sum + entry.bytes, 0)
+  let totalEntries = entries.length + 1
+
+  for (const entry of entries) {
+    if (totalEntries <= input.maxEntries && totalBytes <= input.maxBytes) break
+
+    storage.removeItem(entry.key)
+    totalBytes -= entry.bytes
+    totalEntries -= 1
+  }
+}
+
+function writeReadySessionCacheEntry(
+  storage: WritableReadySessionStorage,
+  input: { key: string; value: string; now?: number },
+) {
+  try {
+    pruneReadySessionStorage(storage, {
+      pendingKey: input.key,
+      pendingValue: input.value,
+      maxEntries: READY_SESSION_CACHE_MAX_ENTRIES,
+      maxBytes: READY_SESSION_CACHE_MAX_BYTES,
+      now: input.now,
+    })
+    storage.setItem(input.key, input.value)
+  } catch {
+    pruneReadySessionStorage(storage, {
+      pendingKey: input.key,
+      pendingValue: input.value,
+      maxEntries: 1,
+      maxBytes: READY_SESSION_CACHE_MAX_BYTES,
+      now: input.now,
+    })
+    try {
+      storage.setItem(input.key, input.value)
+    } catch {
+      // localStorage quota exceeded or unavailable (private mode / disabled).
+      // The ready-session cache is a best-effort optimization; a failed write
+      // must never crash the dashboard or break preview rendering.
+    }
+  }
 }
 
 async function withTimeout<T>(
@@ -73,7 +192,7 @@ export function getReadySessionCacheKey(
 }
 
 export function rememberReadySession(
-  storage: Pick<Storage, 'setItem'>,
+  storage: WritableReadySessionStorage,
   input: {
     sessionId: string
     prompt: string
@@ -92,16 +211,12 @@ export function rememberReadySession(
     createdAt: input.now ?? Date.now(),
   }
 
-  try {
-    storage.setItem(
-      getReadySessionCacheKey(entry.prompt, entry.preferredLanguage),
-      JSON.stringify(entry),
-    )
-  } catch {
-    // localStorage quota exceeded or unavailable (private mode / disabled).
-    // The ready-session cache is a best-effort optimization; a failed write
-    // must never crash the dashboard or break preview rendering.
-  }
+  const key = getReadySessionCacheKey(entry.prompt, entry.preferredLanguage)
+  writeReadySessionCacheEntry(storage, {
+    key,
+    value: JSON.stringify(entry),
+    now: entry.createdAt,
+  })
 }
 
 export function readReadySessionCache(

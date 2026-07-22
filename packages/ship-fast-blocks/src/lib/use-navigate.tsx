@@ -16,7 +16,7 @@ export type RouteTarget = {
 
 export type RoutesContextValue = {
   routes: string[]
-  targetMap: Record<string, string>
+  targetMap: Record<string, string | null | undefined>
   currentPage: string
   setCurrentPage: (page: string) => void
   pendingSectionId: string | null
@@ -47,12 +47,14 @@ const SIGN_OUT_INTENT = /\b(sign\s*-?\s*out|log\s*-?\s*out|logout)\b/i
 const SIGN_IN_INTENT =
   /\b(sign\s*-?\s*in|log\s*-?\s*in|login|signin|sign\s*-?\s*up|signup|my\s*account|create\s*(?:a\s*|an\s*|your\s*|free\s*)?account)\b/i
 
-function normalizeTarget(value: string): string {
-  return value.trim().toLowerCase()
+function normalizeTarget(value: string | null | undefined): string {
+  return typeof value === 'string' ? value.trim().toLowerCase() : ''
 }
 
-export function parseRouteTarget(value: string): RouteTarget | null {
-  const raw = value.trim()
+export function parseRouteTarget(
+  value: string | null | undefined,
+): RouteTarget | null {
+  const raw = typeof value === 'string' ? value.trim() : ''
   if (!raw) return null
   const hash = raw.indexOf('#')
   if (hash >= 0) {
@@ -66,12 +68,14 @@ export function parseRouteTarget(value: string): RouteTarget | null {
 }
 
 export function resolveRouteTarget(
-  target: string,
+  target: string | null | undefined,
   routes: string[],
-  targetMap: Record<string, string>,
+  targetMap: Record<string, string | null | undefined>,
 ): RouteTarget | null {
   const normalized = normalizeTarget(target)
-  const mapped = targetMap[target] ?? targetMap[normalized]
+  if (!normalized) return null
+  const rawTarget = typeof target === 'string' ? target.trim() : ''
+  const mapped = targetMap[rawTarget] ?? targetMap[normalized]
   if (mapped) return parseRouteTarget(mapped)
 
   function isExactRoute(route: string) {
@@ -179,9 +183,9 @@ function previewBasePath(currentPathname: string, currentPage: string): string {
 }
 
 export function resolveRouteHref(
-  target: string | undefined,
+  target: string | null | undefined,
   routes: string[],
-  targetMap: Record<string, string>,
+  targetMap: Record<string, string | null | undefined>,
   options: {
     currentPage?: string
     currentPathname?: string
@@ -222,7 +226,9 @@ export function resolveRouteHref(
   return `${base.replace(/\/$/, '')}${path}${hash}`
 }
 
-export function useRouteHref(target: string | undefined): string | undefined {
+export function useRouteHref(
+  target: string | null | undefined,
+): string | undefined {
   const routing = useContext(RoutesContext)
   const urlBridge = useContext(PreviewUrlBridgeContext)
   return resolveRouteHref(target, routing.routes, routing.targetMap, {
@@ -233,11 +239,13 @@ export function useRouteHref(target: string | undefined): string | undefined {
   })
 }
 
-export function useIsActiveRoute(): (target: string | undefined) => boolean {
+export function useIsActiveRoute(): (
+  target: string | null | undefined,
+) => boolean {
   const routing = useContext(RoutesContext)
   const urlBridge = useContext(PreviewUrlBridgeContext)
 
-  function isActiveRoute(target: string | undefined) {
+  function isActiveRoute(target: string | null | undefined) {
     if (typeof window === 'undefined') return false
     const href = resolveRouteHref(target, routing.routes, routing.targetMap, {
       currentPage: routing.currentPage,

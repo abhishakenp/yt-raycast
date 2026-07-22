@@ -790,23 +790,27 @@ describe('Lakebed static project builder', () => {
     })
   })
 
-  describe('Tailwind CDN injection', () => {
-    it('adds the Tailwind CDN script when no local runtime is present', async () => {
+  describe('shared preview Tailwind CSS injection', () => {
+    it('adds shared preview CSS when no local runtime is present', async () => {
       const project = await buildStaticLakebedProjectFiles({
         source:
           '<!doctype html><html><head><title>Styled</title></head><body class="bg-background text-foreground"><div class="border-border">Hi</div></body></html>',
       })
       const preview = project.files['client/preview.ts']
-      expect(preview).toContain('https://cdn.tailwindcss.com')
+      expect(preview).toContain('data-ship-fast-preview-tailwind-css')
+      expect(preview).toContain('.bg-background')
+      expect(preview).not.toContain('https://cdn.tailwindcss.com')
     })
 
-    it('replaces the ShipFast-local Tailwind runtime with the CDN script', async () => {
+    it('replaces the ShipFast-local Tailwind runtime with shared preview CSS', async () => {
       const project = await buildStaticLakebedProjectFiles({
         source:
           '<!doctype html><html><head><title>Styled</title><script src="/scripts/tailwind-browser.js"></script></head><body class="bg-background"><div class="border-border">Styled</div></body></html>',
       })
       const preview = project.files['client/preview.ts']
-      expect(preview).toContain('https://cdn.tailwindcss.com')
+      expect(preview).toContain('data-ship-fast-preview-tailwind-css')
+      expect(preview).toContain('.bg-background')
+      expect(preview).not.toContain('https://cdn.tailwindcss.com')
       expect(preview).not.toContain('/scripts/tailwind-browser.js')
     })
   })
@@ -900,13 +904,13 @@ describe('Lakebed static project builder', () => {
       const agents = project.files['AGENTS.md']
       const claude = project.files['CLAUDE.md']
       expect(agents).toContain('Lakebed App Instructions')
-      expect(agents).toContain('npx lakebed <command>')
+      expect(agents).toContain('bunx lakebed <command>')
       expect(agents).toContain('client/index.tsx')
       expect(agents).toContain('server/index.ts')
       expect(claude).toBe(agents)
     })
 
-    it('generates a README with the project name and ShipFast attribution', async () => {
+    it('generates a README with the project name and no ShipFast attribution', async () => {
       const project = await buildStaticLakebedProjectFiles({
         source:
           '<!doctype html><html><head><title>Readme</title></head><body><h1>Readme</h1></body></html>',
@@ -914,10 +918,8 @@ describe('Lakebed static project builder', () => {
       })
       const readme = project.files['README.md']
       expect(readme).toContain('# Readme App')
-      expect(readme).toContain('npx lakebed dev')
-      expect(readme).toContain(
-        'Generated with [ShipFast](https://ship-fast.io)',
-      )
+      expect(readme).toContain('bunx lakebed dev')
+      expect(readme).not.toMatch(/ShipFast|ship-fast\.io/i)
     })
   })
 
@@ -959,13 +961,16 @@ describe('Lakebed publish response', () => {
       },
     )
 
-  it('returns an existing ready deployment without re-deploying', async () => {
+  it('does not return a stale ready deployment when the current artifact is missing', async () => {
     const client = {
-      query: vi.fn(async () => ({
-        provider: 'lakebed',
-        status: 'ready',
-        url: 'https://existing.lakebed.app',
-      })),
+      query: vi
+        .fn()
+        .mockResolvedValueOnce({
+          provider: 'lakebed',
+          status: 'ready',
+          url: 'https://existing.lakebed.app',
+        })
+        .mockResolvedValueOnce({ status: 'queued', filesUrl: null }),
       action: vi.fn(),
       setAuth: vi.fn(),
     }
@@ -976,13 +981,12 @@ describe('Lakebed publish response', () => {
       client,
     )
 
-    expect(response.status).toBe(200)
+    expect(response.status).toBe(202)
     expect(client.setAuth).toHaveBeenCalledWith('app-token')
     expect(client.action).not.toHaveBeenCalled()
     await expect(response.json()).resolves.toMatchObject({
-      provider: 'lakebed',
-      status: 'ready',
-      url: 'https://existing.lakebed.app',
+      status: 'queued',
+      error: 'Lakebed app is still being prepared.',
     })
   })
 

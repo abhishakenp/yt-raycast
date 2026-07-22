@@ -24,7 +24,7 @@ import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-
 import { readJsonOrThrow } from '@/lib/safe-fetch'
 import { useProgressTick } from '@/features/exports/hooks/use-progress-tick'
 import {
-  estimateRemainingMs,
+  estimateObservedRemainingMs,
   formatDurationShort,
 } from '@/features/exports/services/format-progress-duration'
 
@@ -50,6 +50,8 @@ type DeploymentExportTarget = {
   artifactProgressStage?: string
   artifactProgressPercent?: number
   artifactProgressStartedAt?: number
+  artifactProgressUpdatedAt?: number
+  artifactProgressSampleCount?: number
   deployedUrl?: string | null
 }
 
@@ -106,7 +108,17 @@ function isPublishResponse(value: unknown): value is PublishResult {
   )
 }
 
-function artifactProgressPercent(target: DeploymentExportTarget | undefined) {
+function artifactProgressPercent(
+  target: DeploymentExportTarget | undefined,
+  isRefreshing = false,
+) {
+  if (
+    target?.artifactStatus === 'building' ||
+    target?.artifactStatus === 'queued'
+  ) {
+    return target.artifactProgressPercent ?? 0
+  }
+  if (isRefreshing) return 0
   if (target?.artifactReady) return 100
   return target?.artifactProgressPercent ?? 0
 }
@@ -154,22 +166,41 @@ export function DeploymentPanel({ sessionId }: DeploymentPanelProps) {
     lakebedTarget?.artifactStatus === 'failed'
       ? (lakebedTarget.artifactError ?? 'Lakebed export failed.')
       : undefined
-  const lakebedProgressPercent = artifactProgressPercent(lakebedTarget)
-  const showLakebedProgress = waitingTarget === 'lakebed' && lakebedPreparing
+  const lakebedProgressPercent = artifactProgressPercent(
+    lakebedTarget,
+    lakebedRefreshing,
+  )
+  const lakebedArtifactInFlight =
+    lakebedTarget?.artifactReady !== true &&
+    (lakebedTarget?.artifactStatus === 'queued' ||
+      lakebedTarget?.artifactStatus === 'building')
+  const showLakebedProgress =
+    waitingTarget === 'lakebed' || lakebedRefreshing || lakebedArtifactInFlight
   const lakebedProgressBackground =
     showLakebedProgress && lakebedProgressPercent > 0
       ? `linear-gradient(110deg, rgba(34, 211, 238, 0.16) 0%, rgba(34, 211, 238, 0.08) ${lakebedProgressPercent}%, transparent ${lakebedProgressPercent}%, transparent 100%)`
       : undefined
   const now = useProgressTick(showLakebedProgress)
-  const lakebedElapsedMs =
-    lakebedTarget?.artifactProgressStartedAt !== undefined
-      ? now - lakebedTarget.artifactProgressStartedAt
-      : 0
-  const lakebedRemainingMs = estimateRemainingMs(
-    lakebedElapsedMs,
-    lakebedProgressPercent,
-  )
-  const lakebedStageLabel = lakebedTarget?.artifactProgressStage ?? 'Working'
+  const lakebedRemainingMs = showLakebedProgress
+    ? estimateObservedRemainingMs({
+        now,
+        percent: lakebedProgressPercent,
+        progressSampleCount: lakebedTarget?.artifactProgressSampleCount,
+        progressStartedAt: lakebedTarget?.artifactProgressStartedAt,
+        progressUpdatedAt: lakebedTarget?.artifactProgressUpdatedAt,
+      })
+    : null
+  const lakebedStageLabel =
+    lakebedTarget?.artifactProgressStage ??
+    (lakebedRefreshing ? 'Updating deployment' : 'Preparing deployment')
+  const lakebedProgressText =
+    showLakebedProgress && lakebedProgressPercent > 0
+      ? `${lakebedProgressPercent}%${
+          lakebedRemainingMs !== null
+            ? ` · ~${formatDurationShort(lakebedRemainingMs)} left`
+            : ''
+        }`
+      : lakebedStageLabel
   const visibleError =
     error && !(error.target === 'lakebed' && lakebedDeploymentUrl !== undefined)
       ? error.message
@@ -390,14 +421,14 @@ export function DeploymentPanel({ sessionId }: DeploymentPanelProps) {
             {activeTarget === 'lakebed'
               ? 'Publishing...'
               : lakebedRefreshing
-                ? 'Updating deployment...'
+                ? showLakebedProgress && lakebedProgressPercent > 0
+                  ? lakebedProgressText
+                  : 'Updating deployment...'
                 : showLakebedProgress && lakebedProgressPercent > 0
-                  ? `${lakebedStageLabel} · ${lakebedProgressPercent}%${
-                      lakebedRemainingMs !== null
-                        ? ` · ~${formatDurationShort(lakebedRemainingMs)} left`
-                        : ''
-                    }`
-                  : targetDetails.lakebed.description}
+                  ? lakebedProgressText
+                  : showLakebedProgress
+                    ? lakebedStageLabel
+                    : targetDetails.lakebed.description}
           </span>
         </span>
         <span
@@ -407,6 +438,7 @@ export function DeploymentPanel({ sessionId }: DeploymentPanelProps) {
         >
           {activeTarget === 'lakebed' ||
           waitingTarget === 'lakebed' ||
+          lakebedArtifactInFlight ||
           lakebedRefreshing ? (
             <LoaderCircle className="size-4 animate-spin" strokeWidth={1.8} />
           ) : (

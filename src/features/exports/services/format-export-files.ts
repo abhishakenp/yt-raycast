@@ -38,6 +38,7 @@ function parserForPath(
   // thread, that one file's stall serializes the entire export build and can blow
   // past the platform's action time limit. Exclude the whole vendor tree.
   if (path.includes('/vendor/')) return null
+  if (path === 'client/lib/compiled-tailwind.ts') return null
   if (path.endsWith('.ts') || path.endsWith('.tsx')) return 'babel-ts'
   if (path.endsWith('.mjs') || path.endsWith('.js')) return 'babel'
   if (path.endsWith('.json')) return 'json'

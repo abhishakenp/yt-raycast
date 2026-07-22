@@ -566,9 +566,17 @@ export function CommerceMobileMenu({
   nav: string[]
 }) {
   const [open, setOpen] = useState(false)
-  const homeNavigationTarget = homeTarget ?? nav[0]
-  const mobileNavItems = nav.filter(
-    (item) => item.trim().toLowerCase() !== 'home',
+  const navItems = nav
+    .filter((item): item is string => typeof item === 'string')
+    .map((item) => item.trim())
+    .filter(Boolean)
+  const normalizedHomeTarget =
+    typeof homeTarget === 'string' && homeTarget.trim()
+      ? homeTarget.trim()
+      : undefined
+  const homeNavigationTarget = normalizedHomeTarget ?? navItems[0]
+  const mobileNavItems = navItems.filter(
+    (item) => item.toLowerCase() !== 'home',
   )
 
   return (

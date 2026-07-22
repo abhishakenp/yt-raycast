@@ -41,11 +41,7 @@ export const getExampleCategories = (): ExampleCategory[] => {
         left.localeCompare(right),
       ),
     }))
-    .sort((left, right) => {
-      if (left.category === 'primitives') return 1
-      if (right.category === 'primitives') return -1
-      return left.label.localeCompare(right.label)
-    })
+    .sort((left, right) => left.label.localeCompare(right.label))
 }
 
 export const getExampleCategory = (

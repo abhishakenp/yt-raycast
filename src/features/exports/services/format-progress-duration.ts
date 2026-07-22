@@ -27,3 +27,47 @@ export function estimateRemainingMs(
   if (percent <= 0 || percent >= 100 || elapsedMs <= 0) return null
   return Math.max(0, Math.round((elapsedMs * (100 - percent)) / percent))
 }
+
+export type ObservedProgressTiming = {
+  now: number
+  percent: number
+  progressSampleCount?: number
+  progressStartedAt?: number
+  progressUpdatedAt?: number
+}
+
+/**
+ * ETA from real server progress observations only.
+ *
+ * The first non-zero percent is not enough signal: fast setup stages can
+ * finish in milliseconds and would project nonsense like "<1s left". Wait
+ * until the server has recorded at least three stage samples for this run,
+ * then project from the run's actual observed average rate and count down
+ * locally between server updates.
+ */
+export function estimateObservedRemainingMs({
+  now,
+  percent,
+  progressSampleCount,
+  progressStartedAt,
+  progressUpdatedAt,
+}: ObservedProgressTiming): number | null {
+  if (
+    progressSampleCount === undefined ||
+    progressSampleCount < 3 ||
+    progressStartedAt === undefined ||
+    progressUpdatedAt === undefined
+  ) {
+    return null
+  }
+
+  const elapsedAtLastServerSample = progressUpdatedAt - progressStartedAt
+  const remainingAtLastServerSample = estimateRemainingMs(
+    elapsedAtLastServerSample,
+    percent,
+  )
+  if (remainingAtLastServerSample === null) return null
+
+  const elapsedSinceLastServerSample = Math.max(0, now - progressUpdatedAt)
+  return Math.max(0, remainingAtLastServerSample - elapsedSinceLastServerSample)
+}

@@ -30,14 +30,24 @@ const dbObservedOpenUiHandoffHtml =
   '<!DOCTYPE html><html lang="en"><head><title>Boutique Coffee Roastery - Preview</title></head><body><main id="openui-root" data-openui-ready="source"><section><p>Generated OpenUI source is ready.</p><h1>Boutique Coffee Roastery</h1><p>The interactive source is available for export and deployment.</p></section></main><script type="application/json" id="ship-fast-openui-source">"home_hero = EcommerceHero(\\"Boutique Coffee Roastery\\")"</script></body></html>'
 
 describe('createLakebedPublishResponse', () => {
-  it('returns an existing ready Lakebed deployment without redeploying', async () => {
+  it('updates an existing ready Lakebed deployment when the current artifact is ready', async () => {
     const client = {
-      query: vi.fn(async () => ({
+      query: vi
+        .fn()
+        .mockResolvedValueOnce({
+          provider: 'lakebed',
+          status: 'ready',
+          url: 'https://site.lakebed.app',
+        })
+        .mockResolvedValueOnce({
+          status: 'ready',
+          filesUrl: 'https://storage.test/lakebed-files.json',
+        }),
+      action: vi.fn(async () => ({
         provider: 'lakebed',
         status: 'ready',
         url: 'https://site.lakebed.app',
       })),
-      action: vi.fn(),
       setAuth: vi.fn(),
     }
 
@@ -49,11 +59,42 @@ describe('createLakebedPublishResponse', () => {
 
     expect(response.status).toBe(200)
     expect(client.setAuth).toHaveBeenCalledWith('app-token')
-    expect(client.action).not.toHaveBeenCalled()
+    expect(client.action).toHaveBeenCalledWith(expect.anything(), {
+      lookup: 'session_123',
+      anonymousOwnerSecret: undefined,
+    })
     await expect(response.json()).resolves.toMatchObject({
       provider: 'lakebed',
       status: 'ready',
       url: 'https://site.lakebed.app',
+    })
+  })
+
+  it('returns 202 instead of a stale ready URL while an existing Lakebed deployment is updating', async () => {
+    const client = {
+      query: vi
+        .fn()
+        .mockResolvedValueOnce({
+          provider: 'lakebed',
+          status: 'ready',
+          url: 'https://old-site.lakebed.app',
+        })
+        .mockResolvedValueOnce({ status: 'building', filesUrl: null }),
+      action: vi.fn(),
+      setAuth: vi.fn(),
+    }
+
+    const response = await createLakebedPublishResponse(
+      requestFor(),
+      'session_123',
+      client,
+    )
+
+    expect(response.status).toBe(202)
+    expect(client.action).not.toHaveBeenCalled()
+    await expect(response.json()).resolves.toMatchObject({
+      status: 'building',
+      error: 'Lakebed app is still being prepared.',
     })
   })
 

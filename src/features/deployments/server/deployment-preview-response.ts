@@ -10,8 +10,8 @@ import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
 type DeploymentPreviewClient = Pick<ConvexHttpClient, 'query'>
 
-const DEPLOYMENT_PREVIEW_CSS_MARKER = 'data-ship-fast-preview-css="1"'
-const DEPLOYMENT_PREVIEW_CSS_URL = '/styles/openui-preview-tailwind.css'
+const PREVIEW_TAILWIND_CSS_MARKER = 'data-ship-fast-preview-tailwind-css="1"'
+const PREVIEW_TAILWIND_CSS_URL = '/styles/preview-tailwind.css'
 const DEPLOYMENT_PREVIEW_CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
   "base-uri 'self'",
@@ -56,10 +56,10 @@ const createPlainTextResponse = (
     },
   })
 
-function readDeploymentPreviewCss(): string {
+function readPreviewTailwindCss(): string {
   try {
     return readFileSync(
-      join(process.cwd(), 'public', 'styles', 'openui-preview-tailwind.css'),
+      join(process.cwd(), 'public', 'styles', 'preview-tailwind.css'),
       'utf8',
     )
   } catch {
@@ -67,14 +67,14 @@ function readDeploymentPreviewCss(): string {
   }
 }
 
-const deploymentPreviewCss = readDeploymentPreviewCss()
+const previewTailwindCss = readPreviewTailwindCss()
 
-function injectDeploymentPreviewCss(html: string): string {
-  if (html.includes(DEPLOYMENT_PREVIEW_CSS_MARKER)) return html
+function injectPreviewTailwindCss(html: string): string {
+  if (html.includes(PREVIEW_TAILWIND_CSS_MARKER)) return html
 
-  const stylesheet = deploymentPreviewCss
-    ? `<style ${DEPLOYMENT_PREVIEW_CSS_MARKER}>${deploymentPreviewCss}</style>`
-    : `<link ${DEPLOYMENT_PREVIEW_CSS_MARKER} rel="stylesheet" href="${DEPLOYMENT_PREVIEW_CSS_URL}" />`
+  const stylesheet = previewTailwindCss
+    ? `<style ${PREVIEW_TAILWIND_CSS_MARKER}>${previewTailwindCss}</style>`
+    : `<link ${PREVIEW_TAILWIND_CSS_MARKER} rel="stylesheet" href="${PREVIEW_TAILWIND_CSS_URL}" />`
 
   if (/<\/head>/i.test(html)) {
     return html.replace(/<\/head>/i, `${stylesheet}</head>`)
@@ -170,7 +170,7 @@ export async function createDeploymentPreviewResponse(
     return createPlainTextResponse('Deployment preview is not available', 422)
   }
 
-  const html = injectDeploymentPreviewCss(
+  const html = injectPreviewTailwindCss(
     buildHtmlExport(previewHtml, {
       includeBadge: false,
       canonicalUrl: getRequestCanonicalUrl(request, deployment.url),

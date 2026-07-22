@@ -4,6 +4,7 @@ import { api, internal } from './_generated/api'
 import { action } from './_generated/server'
 import { v } from 'convex/values'
 import type { Id } from './_generated/dataModel'
+import type { ActionCtx } from './_generated/server'
 import type { LakebedDeployResult } from '../src/features/deployments/server/lakebed-deploy-service'
 import { publishPreviewArgs } from './lib/session_validators'
 
@@ -72,6 +73,20 @@ function successArgs(
     expiresAt: deployed.expiresAt,
     inspectPolicy: deployed.inspectPolicy,
   }
+}
+
+async function recordLakebedDeployProgress(
+  ctx: ActionCtx,
+  prepared: Pick<PreparedLakebedDeployment, 'sessionId' | 'previewVersion'>,
+  stageKey: string,
+) {
+  await ctx.runMutation(internal.sessions.updateExportArtifactProgress, {
+    sessionId: prepared.sessionId,
+    target: 'lakebed',
+    previewVersion: prepared.previewVersion,
+    stageKey,
+    willDeploy: true,
+  })
 }
 
 function isPrebuiltLakebedArtifact(value: unknown): value is {
@@ -159,8 +174,8 @@ export const deploy = action({
                 `lakebed-api:${message}`,
                 details,
               ),
-            onProgress: (stageKey: string) => {
-              void ctx.runMutation(
+            onProgress: async (stageKey: string) => {
+              await ctx.runMutation(
                 internal.sessions.updateExportArtifactProgress,
                 {
                   sessionId: artifact.sessionId,
@@ -172,6 +187,7 @@ export const deploy = action({
               )
             },
           })
+          await recordLakebedDeployProgress(ctx, prepared, 'deployed')
           const result: unknown = await ctx.runMutation(
             internal.sessions.recordLakebedDeploymentSuccess,
             successArgs(prepared, args.requestedSlug, deployed),
@@ -268,16 +284,20 @@ export const deploy = action({
             `lakebed-api:${message}`,
             details,
           ),
-        onProgress: (stageKey: string) => {
-          void ctx.runMutation(internal.sessions.updateExportArtifactProgress, {
-            sessionId: prepared!.sessionId,
-            target: 'lakebed',
-            previewVersion: prepared!.previewVersion,
-            stageKey,
-            willDeploy: true,
-          })
+        onProgress: async (stageKey: string) => {
+          await ctx.runMutation(
+            internal.sessions.updateExportArtifactProgress,
+            {
+              sessionId: prepared!.sessionId,
+              target: 'lakebed',
+              previewVersion: prepared!.previewVersion,
+              stageKey,
+              willDeploy: true,
+            },
+          )
         },
       })
+      await recordLakebedDeployProgress(ctx, prepared, 'deployed')
       logLakebedDeploy(prepared.sessionId, 'lakebed-api:complete', {
         clientBundleBytes: deployed.clientBundleBytes,
         deployId: deployed.deployId,

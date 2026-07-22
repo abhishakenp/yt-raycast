@@ -19,6 +19,9 @@ import {
 } from './nav-href.tsx'
 import { RouterLink } from './RouterLink.tsx'
 
+const normalizeNavTarget = (value: string | null | undefined): string =>
+  typeof value === 'string' ? value.trim() : ''
+
 function MobileNavAnchor({
   ariaCurrent,
   children,
@@ -30,7 +33,7 @@ function MobileNavAnchor({
   children: React.ReactNode
   className?: string
   onNavigate: () => void
-  target: string
+  target: string | null | undefined
 }) {
   const href = useSectionKitNavHref(target)
   return (
@@ -54,10 +57,10 @@ const MobileNavDrawer = React.forwardRef<
     children?: React.ReactNode
     cta?: KitAction
     footer?: React.ReactNode | ((close: () => void) => React.ReactNode)
-    homeLabel?: string
-    homeTarget?: string
+    homeLabel?: string | null
+    homeTarget?: string | null
     label?: string
-    nav: string[]
+    nav: Array<string | null | undefined>
     side?: 'left' | 'right'
   }
 >(
@@ -81,12 +84,15 @@ const MobileNavDrawer = React.forwardRef<
   ) => {
     const isActiveNavHref = useIsActiveSectionKitNavHref()
     const [open, setOpen] = React.useState(false)
-    const targetHome = homeTarget ?? homeLabel
-    const normalizedHomeLabel = homeLabel.trim().toLowerCase()
-    const links = nav.filter((item) => {
-      const navLabel = item.trim()
-      return navLabel && navLabel.toLowerCase() !== normalizedHomeLabel
-    })
+    const displayHomeLabel = normalizeNavTarget(homeLabel) || 'Home'
+    const targetHome = normalizeNavTarget(homeTarget) || displayHomeLabel
+    const normalizedHomeLabel = displayHomeLabel.toLowerCase()
+    const links = nav
+      .map((item) => normalizeNavTarget(item))
+      .filter(
+        (navLabel) =>
+          navLabel && navLabel.toLowerCase() !== normalizedHomeLabel,
+      )
     const close = () => setOpen(false)
     const footerContent = typeof footer === 'function' ? footer(close) : footer
 
@@ -154,7 +160,7 @@ const MobileNavDrawer = React.forwardRef<
                   'border-l-2 border-primary bg-muted',
               )}
             >
-              {homeLabel}
+              {displayHomeLabel}
             </MobileNavAnchor>
             {links.map((item) => {
               const isActive = isActiveNavHref(item)

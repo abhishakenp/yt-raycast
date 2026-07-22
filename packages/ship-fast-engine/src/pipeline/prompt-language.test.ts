@@ -29,9 +29,9 @@ describe('pipeline prompt language enforcement', () => {
 
     expect(mode.code).toBe('hi-latn')
     expect(mode.script).toBe('Latin')
-    expect(mode.prompt).toContain('server language code `hi-latn`')
-    expect(mode.prompt).toContain('Romanized Hindi')
-    expect(mode.prompt).toContain('Latin script')
+    expect(mode.prompt).toContain('English only')
+    expect(mode.prompt).toContain('closest natural English equivalents')
+    expect(mode.prompt).not.toContain('hi-latn')
   })
 
   it('preserves code-mixed language variants instead of collapsing them to the base code', async () => {
@@ -41,8 +41,8 @@ describe('pipeline prompt language enforcement', () => {
     })
 
     expect(mode.code).toBe('ta-en')
-    expect(mode.prompt).toContain('server language code `ta-en`')
-    expect(mode.prompt).toContain('natural Tamil + English mix')
+    expect(mode.prompt).toContain('English only')
+    expect(mode.prompt).not.toContain('ta-en')
   })
 
   it('detects romanized requests from the prompt when no explicit preference exists', async () => {
@@ -52,7 +52,8 @@ describe('pipeline prompt language enforcement', () => {
     })
 
     expect(mode.code).toBe('hi-latn')
-    expect(mode.prompt).toContain('Romanized Hindi')
+    expect(mode.prompt).toContain('English only')
+    expect(mode.prompt).not.toContain('hi-latn')
   })
 
   it('detects explicit native language requests from the prompt without provider fallback', async () => {
@@ -63,7 +64,8 @@ describe('pipeline prompt language enforcement', () => {
 
     expect(mode.code).toBe('hi')
     expect(mode.name).toBe('Hindi')
-    expect(mode.prompt).toContain('server language code `hi`')
+    expect(mode.prompt).toContain('English only')
+    expect(mode.prompt).not.toContain('server language code')
   })
 
   it('detects Hinglish and code-mixed requests from prompt keywords', async () => {
@@ -73,7 +75,8 @@ describe('pipeline prompt language enforcement', () => {
     })
 
     expect(mode.code).toBe('hinglish')
-    expect(mode.prompt).toContain('server language code `hinglish`')
+    expect(mode.prompt).toContain('English only')
+    expect(mode.prompt).not.toContain('hinglish')
   })
 
   it('detects romanized Malayalam prompts even when the default dropdown submits English', async () => {
@@ -84,7 +87,8 @@ describe('pipeline prompt language enforcement', () => {
 
     expect(mode.code).toBe('ml')
     expect(mode.name).toBe('Malayalam')
-    expect(mode.prompt).toContain('server language code `ml`')
+    expect(mode.prompt).toContain('English only')
+    expect(mode.prompt).not.toContain('server language code')
   })
 
   it('keeps English prompts explicitly constrained to English', () => {
@@ -93,25 +97,28 @@ describe('pipeline prompt language enforcement', () => {
       name: 'English',
     })
 
-    expect(prompt).toContain('server language code `en`')
     expect(prompt).toContain('English only')
+    expect(prompt).not.toContain('server language code')
   })
 
-  it('adds generic quality constraints for localized visible copy', () => {
+  it('adds English-only generation constraints for localized sessions', () => {
     const prompt = withLanguageEnforcementBlock('Build a utility homepage', {
       code: 'ml',
       name: 'Malayalam',
     })
 
     expect(prompt).toContain('native-speaker quality')
+    expect(prompt).toContain('closest natural English equivalents')
+    expect(prompt).toContain('Do not output native-script')
+    expect(prompt).not.toContain('Malayalam')
     expect(prompt).toContain('Do not use placeholder filenames')
     expect(prompt).toContain('logo1.png')
   })
 
   // ── Malayalam romanized detection regression suite ────────────────
   // Ensures the engine pipeline detects romanized Malayalam prompts
-  // (Manglish) across a range of prompt lengths and styles, so the
-  // generated site content is in Malayalam, not Hindi or English.
+  // (Manglish) across a range of prompt lengths and styles, while the
+  // generator prompt remains English-only and localization happens later.
 
   describe('romanized Malayalam detection (Manglish)', () => {
     const romanizedCases = [
@@ -137,7 +144,8 @@ describe('pipeline prompt language enforcement', () => {
         })
         expect(mode.code).toBe('ml')
         expect(mode.name).toBe('Malayalam')
-        expect(mode.prompt).toContain('server language code `ml`')
+        expect(mode.prompt).toContain('English only')
+        expect(mode.prompt).not.toContain('server language code')
       })
     }
   })

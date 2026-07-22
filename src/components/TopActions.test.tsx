@@ -19,10 +19,11 @@ type LinkMockProps = Omit<ComponentPropsWithoutRef<'a'>, 'href'> & {
 }
 
 const topActionMocks = vi.hoisted(() => ({
-  authControls: vi.fn(({ autoOpen, wrapProvider }) => (
+  authControls: vi.fn(({ autoOpen, renderButton, wrapProvider }) => (
     <div
       data-testid="homepage-auth-controls"
       data-auto-open={String(autoOpen)}
+      data-render-button={String(renderButton)}
       data-wrap-provider={String(wrapProvider)}
     />
   )),
@@ -43,6 +44,10 @@ vi.mock('@tanstack/react-router', () => {
 vi.mock('@/components/HomepageAuthControls', () => ({
   HomepageAuthControls: topActionMocks.authControls,
 }))
+
+vi.mock('@/features/home/components/HomePage', () => {
+  throw new Error('TopActions must import glass primitives directly')
+})
 
 vi.mock('@clerk/tanstack-react-start', () => {
   function ShowMock({ children }: ChildrenProps) {
@@ -139,8 +144,16 @@ describe('TopActions', () => {
     expect(
       screen.getByTestId('homepage-auth-controls').dataset.wrapProvider,
     ).toBe('false')
+    expect(
+      screen.getByTestId('homepage-auth-controls').dataset.renderButton,
+    ).toBe('false')
+    expect(screen.getAllByRole('button', { name: /sign in/i })).toHaveLength(1)
     expect(topActionMocks.authControls).toHaveBeenCalledWith(
-      expect.objectContaining({ autoOpen: true, wrapProvider: false }),
+      expect.objectContaining({
+        autoOpen: true,
+        renderButton: false,
+        wrapProvider: false,
+      }),
       undefined,
     )
   })

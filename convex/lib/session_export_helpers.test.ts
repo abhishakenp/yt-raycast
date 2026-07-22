@@ -17,6 +17,7 @@ import {
   prepareExportArtifactBuild,
   recordGitHubExportRepository,
   recordExportArtifactStalled,
+  updateExportArtifactBuildProgress,
 } from './session_export_helpers'
 import { hashOwnerSecret } from './session_access_helpers'
 
@@ -698,7 +699,7 @@ describe('loadSessionExportTargets', () => {
           fileCount: undefined,
           byteLength: undefined,
           hash: undefined,
-          updatedAt: 1_700_000_000_000 - 121_000,
+          updatedAt: 1_700_000_000_000 - 901_000,
         }),
       ],
     })
@@ -713,6 +714,38 @@ describe('loadSessionExportTargets', () => {
       artifact: expect.objectContaining({
         status: 'failed',
         errorMessage: 'Export build stalled before completion. Click to retry.',
+      }),
+    })
+  })
+
+  it('keeps active long Lakebed builds visible instead of failing after two minutes', async () => {
+    vi.setSystemTime(1_700_000_000_000)
+    const { ctx } = workflowCtxFor({
+      exportArtifacts: [
+        exportArtifactDoc({
+          target: 'lakebed',
+          status: 'building',
+          storageId: undefined,
+          filename: undefined,
+          contentType: undefined,
+          fileCount: undefined,
+          byteLength: undefined,
+          hash: undefined,
+          updatedAt: 1_700_000_000_000 - 121_000,
+        }),
+      ],
+    })
+
+    const result = await loadSessionExportTargets(ctx, sessionId)
+    const lakebed = result.targets.find((target) => target.target === 'lakebed')
+
+    expect(lakebed).toMatchObject({
+      artifactReady: false,
+      artifactStatus: 'building',
+      artifactError: undefined,
+      artifact: expect.objectContaining({
+        status: 'building',
+        errorMessage: undefined,
       }),
     })
   })
@@ -1121,6 +1154,11 @@ describe('ensureExportArtifactBuild', () => {
         target: 'lakebed',
         previewVersion: 2,
         status: 'queued',
+        progressStage: 'Queued',
+        progressPercent: 0,
+        progressStartedAt: 1_700_000_000_000,
+        progressUpdatedAt: 1_700_000_000_000,
+        progressSampleCount: 0,
         createdAt: 1_700_000_000_000,
         updatedAt: 1_700_000_000_000,
       }),
@@ -1165,6 +1203,11 @@ describe('ensureExportArtifactBuild', () => {
     expect(stalled.exportArtifacts[0]).toMatchObject({
       status: 'queued',
       errorMessage: undefined,
+      progressStage: 'Queued',
+      progressPercent: 0,
+      progressStartedAt: 1_700_000_000_000,
+      progressUpdatedAt: 1_700_000_000_000,
+      progressSampleCount: 0,
       updatedAt: 1_700_000_000_000,
     })
     expect(stalled.scheduledBuilds).toHaveLength(1)
@@ -1303,6 +1346,112 @@ describe('ensureExportArtifactBuild', () => {
 })
 
 describe('export artifact build watchdog', () => {
+  it('starts public Lakebed auto-deploy builds on the combined build/deploy progress scale', async () => {
+    vi.setSystemTime(1_700_000_000_000)
+    const { ctx, exportArtifacts } = workflowCtxFor({
+      identityUserId: userId,
+    })
+
+    await expect(
+      markExportArtifactBuilding(ctx, {
+        sessionId,
+        target: 'lakebed',
+        previewVersion: 2,
+        autoDeployPublic: true,
+      }),
+    ).resolves.toMatchObject({ status: 'building' })
+
+    expect(exportArtifacts[0]).toMatchObject({
+      status: 'building',
+      progressStage: 'Starting build',
+      progressPercent: 3,
+      progressStartedAt: 1_700_000_000_000,
+      progressUpdatedAt: 1_700_000_000_000,
+      progressSampleCount: 1,
+    })
+  })
+
+  it('records server progress timing samples for accurate ETA after remount', async () => {
+    vi.setSystemTime(1_700_000_000_000)
+    const { ctx, exportArtifacts } = workflowCtxFor({
+      identityUserId: userId,
+    })
+
+    await markExportArtifactBuilding(ctx, {
+      sessionId,
+      target: 'lakebed',
+      previewVersion: 2,
+      autoDeployPublic: true,
+    })
+
+    vi.setSystemTime(1_700_000_010_000)
+    await updateExportArtifactBuildProgress(ctx, {
+      sessionId,
+      target: 'lakebed',
+      previewVersion: 2,
+      stageKey: 'parsing',
+      willDeploy: true,
+    })
+
+    vi.setSystemTime(1_700_000_076_000)
+    await updateExportArtifactBuildProgress(ctx, {
+      sessionId,
+      target: 'lakebed',
+      previewVersion: 2,
+      stageKey: 'generating',
+      willDeploy: true,
+    })
+
+    expect(exportArtifacts[0]).toMatchObject({
+      progressStage: 'Generating components',
+      progressPercent: 47,
+      progressStartedAt: 1_700_000_000_000,
+      progressUpdatedAt: 1_700_000_076_000,
+      progressSampleCount: 3,
+      updatedAt: 1_700_000_076_000,
+    })
+  })
+
+  it('keeps Lakebed progress monotonic when deploy stage mutations resolve out of order', async () => {
+    const { ctx, exportArtifacts } = workflowCtxFor({
+      identityUserId: userId,
+      exportArtifacts: [
+        exportArtifactDoc({
+          target: 'lakebed',
+          status: 'ready',
+          progressStage: 'Bundling client app',
+          progressPercent: 84,
+        }),
+      ],
+    })
+
+    await updateExportArtifactBuildProgress(ctx, {
+      sessionId,
+      target: 'lakebed',
+      previewVersion: 2,
+      stageKey: 'bundling-server',
+      willDeploy: true,
+    })
+
+    expect(exportArtifacts[0]).toMatchObject({
+      progressStage: 'Bundling client app',
+      progressPercent: 84,
+    })
+
+    await updateExportArtifactBuildProgress(ctx, {
+      sessionId,
+      target: 'lakebed',
+      previewVersion: 2,
+      stageKey: 'uploading',
+      willDeploy: true,
+    })
+
+    expect(exportArtifacts[0]).toMatchObject({
+      progressStage: 'Uploading to Lakebed',
+      progressPercent: 97,
+    })
+  })
+
   it('schedules a stall watchdog when an artifact build starts', async () => {
     vi.setSystemTime(1_700_000_000_000)
     const { ctx, scheduledBuilds } = workflowCtxFor({
@@ -1320,7 +1469,7 @@ describe('export artifact build watchdog', () => {
 
     expect(scheduledBuilds).toEqual([
       {
-        delayMs: 120_000,
+        delayMs: 900_000,
         args: {
           sessionId,
           target: 'lakebed',
@@ -1416,6 +1565,7 @@ describe('prepareExportArtifactBuild', () => {
       previewVersion: 2,
       source: openUiSource,
       html: '',
+      previewHtml: '<main>Preview</main>',
       isDark: true,
       locale: 'en',
       isPrivate: false,
@@ -1423,7 +1573,38 @@ describe('prepareExportArtifactBuild', () => {
     expect(result).toMatchObject({
       siteSpecJson: '{"title":"Preview"}',
     })
-    expect(result).not.toHaveProperty('previewHtml')
+  })
+
+  it('prefers generated home source over stale preview source for Lakebed artifact builds', async () => {
+    const stalePreviewSource =
+      'root = Text("Lakebed Tailwind CSS patched canary 1784728272712")'
+    const generatedHomeSource =
+      'home_hero = AeoHero("Beta Release", "Supercharge Your Designs")\nroot = PageSwitch(["Home"], [home_hero])'
+    const { ctx } = workflowCtxFor({
+      previews: [
+        previewDoc({
+          html: '<main>Lakebed Tailwind CSS patched canary 1784728272712</main>',
+          openUiSource: stalePreviewSource,
+        }),
+      ],
+      generatedModules: [
+        generatedModuleDoc({
+          source: generatedHomeSource,
+        }),
+      ],
+    })
+
+    const result = await prepareExportArtifactBuild(ctx, {
+      sessionId,
+      target: 'lakebed',
+      previewVersion: 2,
+    })
+
+    expect(result).toMatchObject({
+      source: generatedHomeSource,
+      previewHtml:
+        '<main>Lakebed Tailwind CSS patched canary 1784728272712</main>',
+    })
   })
 
   it('prepares exports with applied language, theme, brand logo, and inline edits without stale preview HTML', async () => {
@@ -1479,8 +1660,8 @@ describe('prepareExportArtifactBuild', () => {
       source:
         'root = SaasHero("Redaguota lietuviška peržiūra", ["Home"], {"heading":"Preview"})',
       html: '',
+      previewHtml: '<main><h1>Preview</h1><p>Stale English preview</p></main>',
     })
-    expect(JSON.stringify(result)).not.toContain('Stale English preview')
     expect(JSON.stringify(result)).not.toContain('Redaguota peržiūra"')
   })
 

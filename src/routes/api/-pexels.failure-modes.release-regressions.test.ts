@@ -14,7 +14,9 @@ describe('/api/pexels provider failure modes', () => {
   beforeEach(() => {
     process.env = { ...originalEnv }
     delete process.env.PEXELS_API_KEY
+    delete process.env.VITE_PEXELS_API_KEY
     delete process.env.UNSPLASH_ACCESS_KEY
+    delete process.env.VITE_UNSPLASH_ACCESS_KEY
   })
 
   afterEach(() => {

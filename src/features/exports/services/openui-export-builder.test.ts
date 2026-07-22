@@ -1388,6 +1388,66 @@ createRoot(document.getElementById('root')!).render(
     }
   })
 
+  it('keeps React and Next preview image swaps when runtime alt text drifts', async () => {
+    const previewHtml =
+      '<main><img alt="Dashboard edited playground hero" src="/api/pexels?query=playground+structures&w=600&h=400&seed=dashboard-hero" /></main>'
+
+    process.env.APP_BASE_URL = 'https://ship-fast.test'
+    globalThis.fetch = (async (url) => {
+      const parsed = new URL(String(url))
+      expect(parsed.origin).toBe('https://ship-fast.test')
+      return new Response(null, {
+        headers: {
+          Location: 'https://cdn.example.test/dashboard-playground.jpg',
+        },
+        status: 302,
+      })
+    }) as typeof fetch
+
+    const react = unzipBuiltExportTextFiles(
+      (
+        await buildOpenUIExport({
+          source,
+          siteSpecJson,
+          sessionId: 'edited-alt-react',
+          target: 'react',
+          previewHtml,
+        })
+      ).body,
+    )
+    const next = unzipBuiltExportTextFiles(
+      (
+        await buildOpenUIExport({
+          source,
+          siteSpecJson,
+          sessionId: 'edited-alt-next',
+          target: 'next',
+          previewHtml,
+        })
+      ).body,
+    )
+
+    for (const files of [react, next]) {
+      const { dom, renderError, runtimeErrors } =
+        await renderExportedBrowserEntry(
+          files,
+          `import React from 'react'
+import { createRoot } from 'react-dom/client'
+import { Image } from './src/lib/image'
+
+createRoot(document.getElementById('root')!).render(
+  <Image alt="White cat walking through grass" src="/api/pexels?query=playground+structures&w=600&h=400&seed=dashboard-hero" />,
+)`,
+        )
+
+      expect(renderError).toBeUndefined()
+      expect(runtimeErrors).toEqual([])
+      expect(
+        dom.window.document.querySelector('img')?.getAttribute('src'),
+      ).toBe('https://cdn.example.test/dashboard-playground.jpg')
+    }
+  })
+
   it('embeds preview style edits as CSS in React and Next exports', async () => {
     const previewHtml =
       '<main><h1 class="hero-title text-4xl" style="color: rgb(255, 0, 0); text-align: center;">Hello export</h1></main>'

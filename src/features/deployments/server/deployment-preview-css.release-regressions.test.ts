@@ -52,6 +52,8 @@ describe('deployment preview CSS release gate', () => {
         .join('\n')
 
       expect(response.status).toBe(200)
+      expect(html).toContain('data-ship-fast-preview-tailwind-css="1"')
+      expect(html).not.toContain('/styles/preview-tailwind.css')
       expect(styleText.length).toBeGreaterThan(1_000)
       expect(styleText).toMatch(/\.bg-red-500\b/)
       expect(styleText).toMatch(/\.p-4\b/)

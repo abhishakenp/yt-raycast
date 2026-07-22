@@ -19,7 +19,7 @@ vi.mock('@tanstack/react-router', () => {
     )
   }
 
-  return { Link }
+  return { Link, useRouter: () => null }
 })
 
 vi.mock('#/lib/route-context.tsx', async (importOriginal) => ({
@@ -129,6 +129,28 @@ describe('MobileNavDrawer', () => {
     expect(screen.getAllByRole('link', { name: 'Home' })).toHaveLength(1)
     expect(screen.getByRole('link', { name: 'Services' })).toBeTruthy()
     expect(screen.getByRole('link', { name: 'Pricing' })).toBeTruthy()
+  })
+
+  it('ignores generated null and empty nav entries', () => {
+    renderWithRoutes(
+      <MobileNavDrawer
+        brand="Northridge"
+        homeLabel={null}
+        homeTarget={null}
+        nav={['Home', null, '  ', undefined, ' Services ', 'Pricing']}
+        buttonClassName="md:hidden"
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
+
+    expect(screen.getAllByRole('link', { name: 'Home' })).toHaveLength(1)
+    expect(
+      screen.getByRole('link', { name: 'Services' }).getAttribute('href'),
+    ).toBe('/services')
+    expect(
+      screen.getByRole('link', { name: 'Pricing' }).getAttribute('href'),
+    ).toBe('/pricing')
   })
 
   it('keeps the active drawer route visually highlighted', () => {

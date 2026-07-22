@@ -100,7 +100,8 @@ const loadTailwindCompiler = async (): Promise<TailwindCompilerContext> => {
 
 const readClassCandidates = (markup: string): string[] => {
   const candidates = new Set(cssCompileBaseCandidates)
-  const classAttributePattern = /\sclass(?:Name)?=(['"])(.*?)\1/gis
+  const classAttributePattern =
+    /\b(?:class(?:Name)?|[A-Za-z_$][\w$]*ClassName)\s*(?:=|:)\s*(['"`])([\s\S]*?)\1/g
 
   for (const match of markup.matchAll(classAttributePattern)) {
     const value = match[2]
@@ -197,7 +198,7 @@ const themeTokenUtilityDeclaration = (
   themeColorTokens: Set<string>,
 ): string | undefined => {
   const colorMatch = utility.match(
-    /^(bg|text|border|decoration|outline|ring|shadow)-([a-z][a-z0-9-]*)(?:\/(\d{1,3}|\[[^\]]+\]))?$/,
+    /^(bg|text|border|decoration|outline|ring|shadow|from|via|to)-([a-z][a-z0-9-]*)(?:\/(\d{1,3}|\[[^\]]+\]))?$/,
   )
   if (!colorMatch) return undefined
 
@@ -213,6 +214,21 @@ const themeTokenUtilityDeclaration = (
   if (kind === 'outline') return `outline-color: ${value};`
   if (kind === 'ring') return `--tw-ring-color: ${value};`
   if (kind === 'shadow') return `--tw-shadow-color: ${value};`
+  if (kind === 'from') {
+    return [
+      `--tw-gradient-from: ${value};`,
+      `--tw-gradient-to: color-mix(in oklab, ${value} 0%, transparent);`,
+      '--tw-gradient-stops: var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position, 0%), var(--tw-gradient-to) var(--tw-gradient-to-position, 100%);',
+    ].join(' ')
+  }
+  if (kind === 'via') {
+    return [
+      `--tw-gradient-via: ${value};`,
+      '--tw-gradient-via-stops: var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position, 0%), var(--tw-gradient-via) var(--tw-gradient-via-position, 50%), var(--tw-gradient-to) var(--tw-gradient-to-position, 100%);',
+      '--tw-gradient-stops: var(--tw-gradient-via-stops);',
+    ].join(' ')
+  }
+  if (kind === 'to') return `--tw-gradient-to: ${value};`
   return undefined
 }
 
@@ -312,7 +328,15 @@ export const buildCompiledTailwindCssForSources = async (
     scanVirtualSources(Scanner, [...sources, ...projectSources]).forEach(
       (candidate) => candidates.add(candidate),
     )
-    const css = compiler.build([...candidates])
+    const css = [
+      compiler.build([...candidates]),
+      buildFallbackThemeUtilityCss(
+        [...sources, ...projectSources],
+        [...candidates],
+      ),
+    ]
+      .filter(Boolean)
+      .join('\n')
     compiledCssCache.set(cacheKey, css)
     return css
   } catch {

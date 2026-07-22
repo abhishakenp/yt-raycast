@@ -33,8 +33,9 @@ export const PageSwitch = defineCapsule({
     )
     const urlBridge = useContext(PreviewUrlBridgeContext)
     useEffect(() => {
+      if (urlBridge.navigateToPage !== null) return
       if (page.value && page.value !== currentPage) setCurrentPage(page.value)
-    }, [currentPage, page.value])
+    }, [currentPage, page.value, urlBridge.navigateToPage])
     // Sync from the host URL router (preview dashboard). When the URL path
     // changes (e.g. browser back/forward), match the slug to a route label
     // and update the active page. Skipped when no bridge is provided
