@@ -169,6 +169,7 @@ interface RealDashboardEditSurfaceProps {
 
 type ConvexTestState = {
   generationView: GenerationView | null | undefined
+  prewarmedGenerationView: GenerationView | null | undefined
   sidePanelData: { status?: string; url?: string; slug?: string } | null
   publishMutation: ReturnType<typeof vi.fn>
   themeMutation: ReturnType<typeof vi.fn>
@@ -197,6 +198,7 @@ function getConvexState(): ConvexTestState {
   }
   testGlobal.__shipFastDashboardSessionConvexState ??= {
     generationView: null,
+    prewarmedGenerationView: undefined,
     sidePanelData: null,
     publishMutation: vi.fn().mockResolvedValue(undefined),
     themeMutation: vi.fn().mockResolvedValue(undefined),
@@ -315,6 +317,21 @@ vi.mock('@/shared/auth/clerk-runtime', () => ({
 
 vi.mock('convex/react', () => ({
   useAction: () => vi.fn(),
+  useConvex: () => ({
+    watchQuery: (_query: unknown, args: unknown) => ({
+      localQueryResult: () => {
+        const state = (
+          globalThis as typeof globalThis & {
+            __shipFastDashboardSessionConvexState?: ConvexTestState
+          }
+        ).__shipFastDashboardSessionConvexState
+        if (typeof args === 'object' && args !== null && 'lookup' in args) {
+          return state?.prewarmedGenerationView
+        }
+        return undefined
+      },
+    }),
+  }),
   useMutation: () => {
     const state = (
       globalThis as typeof globalThis & {
@@ -1382,6 +1399,7 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     restoreWindowLocation()
     ensureWindowStorage()
     getConvexState().generationView = null
+    getConvexState().prewarmedGenerationView = undefined
     getConvexState().sidePanelData = null
     getConvexState().publishMutation = vi.fn().mockResolvedValue(undefined)
     getConvexState().themeMutation = vi.fn().mockResolvedValue(undefined)
@@ -1417,6 +1435,7 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     window.sessionStorage.clear()
     window.history.replaceState(null, '', '/')
     getConvexState().generationView = null
+    getConvexState().prewarmedGenerationView = undefined
     getConvexState().sidePanelData = null
     vi.unstubAllGlobals()
     vi.clearAllMocks()
@@ -1767,6 +1786,31 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     expect(screen.getByTestId('generated-module-preview')).toBeTruthy()
     expect(screen.getByTestId('gmp-source').textContent).toContain(
       'Realtime Ready',
+    )
+  })
+
+  it('renders a prewarmed Convex preview on first paint without mounting the intro loader', () => {
+    getConvexState().generationView = undefined
+    getConvexState().prewarmedGenerationView = readyGenerationView({
+      session: {
+        sessionId: 'prewarmed-ready-session',
+        status: 'preview_ready',
+      },
+      homeModule: {
+        moduleKey: 'home',
+        source:
+          '<!doctype html><html><body><h1>Prewarmed Ready</h1></body></html>',
+        status: 'succeeded',
+        updatedAt: 1782814095840,
+      },
+    })
+
+    render(<Dashboard sessionId="prewarmed-ready-session" />)
+
+    expect(screen.queryByTestId('intro-loader')).toBeNull()
+    expect(screen.getByTestId('generated-module-preview')).toBeTruthy()
+    expect(screen.getByTestId('gmp-source').textContent).toContain(
+      'Prewarmed Ready',
     )
   })
 

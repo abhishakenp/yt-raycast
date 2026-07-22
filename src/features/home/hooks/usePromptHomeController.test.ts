@@ -31,6 +31,7 @@ type PromptHomeControllerTestState = {
   watchQuery: Mock<
     (query: unknown, args: { lookup: string }) => WatchGenerationView
   >
+  watchUpdateCallbacks: Array<() => void>
 }
 
 let originalFetch: typeof globalThis.fetch
@@ -63,9 +64,18 @@ function getTestState(): PromptHomeControllerTestState {
     navigate: vi.fn(),
     preloadRoute: vi.fn(),
     prewarmQuery: vi.fn(),
+    watchUpdateCallbacks: [],
     watchQuery: vi.fn(() => ({
       localQueryResult: () => getTestState().generationView,
-      onUpdate: () => () => undefined,
+      onUpdate: (callback) => {
+        getTestState().watchUpdateCallbacks.push(callback)
+        return () => {
+          getTestState().watchUpdateCallbacks =
+            getTestState().watchUpdateCallbacks.filter(
+              (stored) => stored !== callback,
+            )
+        }
+      },
     })),
   }
   return testGlobal.__shipFastPromptHomeControllerState
@@ -163,10 +173,19 @@ describe('usePromptHomeController submit guard', () => {
     state.preloadRoute.mockResolvedValue(undefined)
     state.generationView = undefined
     state.prewarmQuery.mockReset()
+    state.watchUpdateCallbacks = []
     state.watchQuery.mockReset()
     state.watchQuery.mockImplementation(() => ({
       localQueryResult: () => getTestState().generationView,
-      onUpdate: () => () => undefined,
+      onUpdate: (callback) => {
+        getTestState().watchUpdateCallbacks.push(callback)
+        return () => {
+          getTestState().watchUpdateCallbacks =
+            getTestState().watchUpdateCallbacks.filter(
+              (stored) => stored !== callback,
+            )
+        }
+      },
     }))
     originalFetch = globalThis.fetch
     globalThis.fetch = vi.fn().mockResolvedValue({
@@ -877,6 +896,67 @@ describe('usePromptHomeController submit guard', () => {
     expect(state.navigate).toHaveBeenCalledWith({
       to: '/generate/$sessionId/$',
       params: { sessionId: 'session_ready_before_click' },
+    })
+  })
+
+  it('waits briefly for a mature speculative Convex prewarm before navigating', async () => {
+    vi.useFakeTimers()
+    const state = getTestState()
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          sessionId: 'session_ready_during_grace',
+          cached: false,
+        }),
+        { headers: { 'Content-Type': 'application/json' } },
+      ),
+    )
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.setPrompt('Build a site that becomes ready during grace')
+    })
+    act(() => {
+      result.current.scheduleSpeculativeGeneration()
+    })
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(500)
+      await Promise.resolve()
+      await Promise.resolve()
+    })
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2_500)
+    })
+
+    let submitPromise: Promise<void> = Promise.resolve()
+    await act(async () => {
+      submitPromise = result.current.submitPrompt()
+      await Promise.resolve()
+    })
+
+    expect(state.navigate).not.toHaveBeenCalled()
+    expect(
+      window.sessionStorage.getItem(
+        'ship-fast:generation-launch:session_ready_during_grace',
+      ),
+    ).toBeNull()
+
+    await act(async () => {
+      state.generationView = readyGenerationView()
+      state.watchUpdateCallbacks.forEach((callback) => callback())
+      await submitPromise
+    })
+
+    expect(
+      window.sessionStorage.getItem(
+        'ship-fast:generation-launch:session_ready_during_grace',
+      ),
+    ).toBeNull()
+    expect(state.navigate).toHaveBeenCalledWith({
+      to: '/generate/$sessionId/$',
+      params: { sessionId: 'session_ready_during_grace' },
     })
   })
 

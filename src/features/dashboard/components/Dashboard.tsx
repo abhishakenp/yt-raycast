@@ -1,5 +1,5 @@
 import { useCanGoBack, useNavigate, useRouter } from '@tanstack/react-router'
-import { useMutation, useQuery } from 'convex/react'
+import { useConvex, useMutation, useQuery } from 'convex/react'
 import type { CSSProperties, ReactNode } from 'react'
 import {
   lazy,
@@ -608,6 +608,7 @@ export function Dashboard({
   const [publishError, setPublishError] = useState<string>()
   const [isSectionEditing, setIsSectionEditing] = useState(false)
   const [sectionEditError, setSectionEditError] = useState<string>()
+  const convex = useConvex()
   const liveGenerationView = useQuery(api.sessions.getGenerationView, {
     lookup: sessionId,
   }) as DashboardGenerationView | null | undefined
@@ -616,7 +617,22 @@ export function Dashboard({
     getHydratedClientSnapshot,
     getHydratedServerSnapshot,
   )
-  const generationView = hasHydrated ? liveGenerationView : undefined
+  const prewarmedGenerationView = useMemo(() => {
+    if (!hasHydrated) return undefined
+
+    try {
+      return convex
+        .watchQuery(api.sessions.getGenerationView, { lookup: sessionId })
+        .localQueryResult() as DashboardGenerationView | null | undefined
+    } catch {
+      return undefined
+    }
+  }, [convex, hasHydrated, sessionId])
+  const generationView = !hasHydrated
+    ? undefined
+    : liveGenerationView === undefined
+      ? prewarmedGenerationView
+      : liveGenerationView
   const resolvedSessionId = generationView?.session.sessionId
   const clonePageNav = useClonePageNav(resolvedSessionId ?? sessionId)
   const isMissingSession = generationView === null
