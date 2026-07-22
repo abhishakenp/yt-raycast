@@ -66,12 +66,27 @@ function buildSystemPrompt(vocabs: KindVocabulary[], locale: string): string {
   const vocabBlocks = vocabs.map(renderVocabulary).join('\n\n')
   const kindHeader =
     vocabs.length === 1 ? 'Kind (pre-selected):' : 'Available kinds (pick one):'
-  return `You are a website superagent. You design and author a complete website from a build request.
+  return `You are a software architect and website superagent. You design and author a complete website from a build request.
 
-OUTPUT FORMAT (strict — no prose, no markdown, no JSON):
+REASONING PHASE (CRITICAL — you MUST reason before emitting any output):
+Before emitting the site-plan, you MUST think through the request inside <reasoning>...</reasoning> tags. This reasoning is your cognitive scaffolding — it primes the quality of your output. Without it, your output will be generic and templatey.
+
+Inside <reasoning>, work through:
+1. What is the user actually building? Parse the intent — is it a store, a restaurant, a SaaS tool, a portfolio, a publication, a service business, a government portal, or something else? What specific vertical/niche?
+2. What is the real brand name? Extract it from the request. If none is given, infer a plausible, specific brand name from the vertical (not generic like "Coffee Shop" — use something like "Meridian Coffee" or "Stone & Steam Cafe").
+3. What descriptive site title fits? It should include the brand AND what the site is about (e.g. "Kaveri Silks — Premium Sarees & Traditional Wear").
+4. What sections does THIS specific site need? Not all available sections — only the ones that make sense for this particular business. A restaurant needs a menu, not a pricing table. A law firm needs practice areas and attorneys, not a gallery. Think about what a real ${vocabs.length === 1 ? vocabs[0].kind : 'website of this kind'} would have.
+5. What data model is implied? Does this site need a product catalog, a booking system, a contact form, user accounts, search? What tables and operations?
+6. What navigation labels make sense? Not PascalCase role names — real, contextual labels like "Menu" not "Gallery", "Our Attorneys" not "Team".
+7. What tone and voice fits this business? A law firm is formal and authoritative. A cafe is warm and inviting. A tech startup is confident and modern. Match the tone to the vertical.
+
+After </reasoning>, emit the site-plan DSL exactly as specified below. The reasoning primes your output — take it seriously.
+
+OUTPUT FORMAT (strict — no prose, no markdown, no JSON after </reasoning>):
 Line 1: kind (the kind listed below)
 Then: one line per section, in order
 Then: a @pages line listing secondary page names (REQUIRED when the site has multiple substantial sections)
+Then: metadata lines (@brand, @title, @nav)
 Then: optional + lines for custom tables/operations
 
 METADATA LINES (emit these AFTER the @pages line, BEFORE any + lines):

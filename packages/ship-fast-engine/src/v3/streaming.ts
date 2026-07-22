@@ -17,6 +17,8 @@ export class StreamingParser {
   private operations: CustomOperation[] = []
   private sectionStartCb?: (role: string) => void
   private sectionCompleteCb?: (section: Section) => void
+  // Reasoning block tracking — skip lines inside <reasoning>...</reasoning>
+  private inReasoning = false
 
   onSectionStart(cb: (role: string) => void): void {
     this.sectionStartCb = cb
@@ -42,6 +44,17 @@ export class StreamingParser {
     if (line.length === 0) return
     if (line.startsWith('#')) return
 
+    // Skip reasoning blocks — cognitive scaffolding, not part of the DSL.
+    if (this.inReasoning) {
+      if (/<\/reasoning>/i.test(line)) this.inReasoning = false
+      return
+    }
+    if (/<reasoning>/i.test(line)) {
+      if (/<\/reasoning>/i.test(line)) return // same-line block
+      this.inReasoning = true
+      return
+    }
+
     if (!this.kindSeen) {
       this.kind = line.split(/\s+/)[0] ?? ''
       this.kindSeen = true
@@ -56,6 +69,14 @@ export class StreamingParser {
         }
       }
       return
+    }
+
+    if (
+      line.startsWith('@brand') ||
+      line.startsWith('@title') ||
+      line.startsWith('@nav')
+    ) {
+      return // metadata lines — handled by parseSitePlan, not streaming
     }
 
     if (line.startsWith('+')) {

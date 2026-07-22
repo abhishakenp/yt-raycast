@@ -123,9 +123,16 @@ function parsePlusLine(line: string): CustomTable | CustomOperation | null {
   return table
 }
 
-/** Parse raw positional DSL text into a structured ParsedSitePlan. */
+/** Parse raw positional DSL text into a structured ParsedSitePlan.
+ *  Strips <reasoning>...</reasoning> blocks (cognitive scaffolding phase) before
+ *  parsing the DSL. The reasoning is not part of the site-plan — it primes the
+ *  LLM's output quality, then the parser extracts the structured DSL after it.
+ */
 export function parseSitePlan(raw: string): ParsedSitePlan {
-  const lines = raw.split('\n')
+  // Strip reasoning blocks — the LLM emits <reasoning>...</reasoning> before
+  // the DSL as cognitive scaffolding. Everything inside is discarded.
+  const stripped = raw.replace(/<reasoning>[\s\S]*?<\/reasoning>/gi, '').trim()
+  const lines = stripped.split('\n')
   const sections: Section[] = []
   const pages: string[] = []
   const tables: CustomTable[] = []

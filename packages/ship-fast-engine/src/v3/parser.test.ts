@@ -174,3 +174,48 @@ describe('parseSectionLine', () => {
     )
   })
 })
+
+describe('reasoning block stripping', () => {
+  it('strips <reasoning>...</reasoning> blocks before parsing', () => {
+    const raw = `<reasoning>
+The user wants a coffee shop website. Brand: "Meridian Coffee".
+Sections needed: hero, features, menu, footer.
+Tone: warm, inviting.
+</reasoning>
+restaurant
+hero Meridian Coffee|Fresh coffee daily|Warm and inviting cafe|Cozy cafe interior
+footer
+@pages menu`
+    const plan = parseSitePlan(raw)
+    expect(plan.kind).toBe('restaurant')
+    expect(plan.sections).toHaveLength(2)
+    expect(plan.sections[0].role).toBe('hero')
+    expect(plan.pages).toEqual(['menu'])
+  })
+
+  it('handles reasoning block with DSL-like content inside it', () => {
+    const raw = `<reasoning>
+I think this is a restaurant. Let me plan:
+hero with heading
+menu with categories
+</reasoning>
+restaurant
+hero Test Brand|Test subtitle
+footer`
+    const plan = parseSitePlan(raw)
+    expect(plan.kind).toBe('restaurant')
+    expect(plan.sections).toHaveLength(2)
+    // The "hero" and "menu" lines inside reasoning must NOT be parsed as sections
+    expect(plan.sections[0].role).toBe('hero')
+    expect(plan.sections[1].role).toBe('footer')
+  })
+
+  it('parses normally when no reasoning block present', () => {
+    const raw = `restaurant
+hero Test|Subtitle
+footer`
+    const plan = parseSitePlan(raw)
+    expect(plan.kind).toBe('restaurant')
+    expect(plan.sections).toHaveLength(2)
+  })
+})
