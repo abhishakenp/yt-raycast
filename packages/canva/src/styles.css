@@ -1,0 +1,274 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg-primary: #070710;
+  --bg-secondary: rgba(255, 255, 255, 0.035);
+  --bg-tertiary: rgba(255, 255, 255, 0.055);
+  --bg-input: rgba(0, 0, 0, 0.4);
+  --border-primary: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.18);
+  --border-accent: rgba(138, 180, 255, 0.4);
+  --text-primary: #f0f0f5;
+  --text-secondary: rgba(255, 255, 255, 0.62);
+  --text-muted: rgba(255, 255, 255, 0.32);
+  --accent-primary: rgba(138, 180, 255, 0.9);
+  --accent-hover: rgba(120, 160, 240, 1);
+  --accent-secondary: rgba(180, 140, 255, 0.8);
+  --error: #ef4444;
+  --warning: #f59e0b;
+  --success: #10b981;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --glass-bg: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.06),
+    rgba(255, 255, 255, 0.015)
+  );
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --ring: rgba(255, 255, 255, 0.15);
+  --ring-strong: rgba(255, 255, 255, 0.4);
+  --glow: rgba(138, 180, 255, 0.2);
+  --glow-strong: rgba(138, 180, 255, 0.32);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur: 320ms;
+  --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg-primary);
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  overflow: hidden;
+}
+
+/* Ship Fast Top Bar */
+.ship-fast-header {
+  height: 64px;
+  background: var(--glass-bg);
+  border-bottom: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  box-shadow: var(--glass-shadow);
+  position: relative;
+  z-index: 100;
+}
+
+.ship-fast-logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ship-fast-logo-img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.ship-fast-logo-text {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 6px;
+  color: #ededef;
+  -webkit-text-fill-color: #ededef;
+}
+
+/* Override BlueprintJS styles to match Ship Fast theme */
+.bp3-dark {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+.bp3-button {
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border-primary) !important;
+  color: var(--text-primary) !important;
+  border-radius: var(--radius-md) !important;
+  font-family: var(--font-sans) !important;
+}
+
+.bp3-button:hover {
+  background: var(--bg-tertiary) !important;
+  border-color: var(--border-hover) !important;
+  transform: translateY(-1px);
+}
+
+.bp3-input {
+  background: var(--bg-input) !important;
+  border: 1px solid var(--border-primary) !important;
+  color: var(--text-primary) !important;
+  border-radius: var(--radius-md) !important;
+  font-family: var(--font-sans) !important;
+}
+
+.bp3-input:focus {
+  border-color: var(--border-accent) !important;
+  box-shadow: 0 0 0 3px var(--glow) !important;
+}
+
+.bp3-menu {
+  background: var(--bg-primary) !important;
+  border: 1px solid var(--border-primary) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--glass-shadow) !important;
+}
+
+.bp3-menu-item {
+  color: var(--text-primary) !important;
+  font-family: var(--font-sans) !important;
+}
+
+.bp3-menu-item:hover {
+  background: var(--bg-secondary) !important;
+}
+
+.bp3-popover2-content {
+  background: var(--bg-primary) !important;
+  border: 1px solid var(--border-primary) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--glass-shadow) !important;
+}
+
+/* Polotno container overrides */
+.polotno-container {
+  background: var(--bg-primary);
+}
+
+/* Polotno side panel — force dark theme */
+.polotno-side-panel-wrap,
+.polotno-side-pan,
+.bp3-navbar.polotno-side-pan {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  border-right: 1px solid var(--border-primary) !important;
+}
+
+/* Polotno side panel tabs */
+.polotno-side-pan .bp3-button {
+  background: transparent !important;
+  border: none !important;
+  color: var(--text-muted) !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+.polotno-side-pan .bp3-button:hover,
+.polotno-side-pan .bp3-button.bp3-active {
+  background: var(--bg-secondary) !important;
+  color: var(--accent-primary) !important;
+}
+
+/* Polotno top toolbar */
+.polotno-top-toolbar,
+.polotno-toolbar {
+  background: var(--bg-primary) !important;
+  border-bottom: 1px solid var(--border-primary) !important;
+}
+
+/* Polotno canvas area */
+.polotno-canvas-container {
+  background: var(--bg-primary) !important;
+}
+
+/* Polotno page background */
+.polotno-page-container {
+  background: var(--bg-primary) !important;
+}
+
+/* BlueprintJS dark theme overrides for polotno */
+.bp3-dark .bp3-navbar {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  box-shadow: none !important;
+}
+
+.bp3-dark .bp3-button {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+.bp3-dark .bp3-button.bp3-minimal {
+  background: transparent !important;
+}
+
+.bp3-dark .bp3-button.bp3-minimal:hover {
+  background: var(--bg-secondary) !important;
+}
+
+.bp3-dark .bp3-input {
+  background: var(--bg-input) !important;
+  color: var(--text-primary) !important;
+}
+
+.bp3-dark .bp3-input::placeholder {
+  color: var(--text-muted) !important;
+}
+
+.bp3-dark .bp3-menu {
+  background: var(--bg-primary) !important;
+}
+
+.bp3-dark .bp3-menu-item {
+  color: var(--text-primary) !important;
+}
+
+.bp3-dark .bp3-menu-item:hover {
+  background: var(--bg-secondary) !important;
+}
+
+.bp3-dark .bp3-popover2-content {
+  background: var(--bg-primary) !important;
+}
+
+.bp3-dark .bp3-popover2-target .bp3-button {
+  background: transparent !important;
+}
+
+.bp3-dark .bp3-divider {
+  border-color: var(--border-primary) !important;
+}
+
+.bp3-dark .bp3-icon {
+  color: var(--text-secondary) !important;
+}
+
+.bp3-dark .bp3-button:hover .bp3-icon {
+  color: var(--accent-primary) !important;
+}
+
+/* Polotno download button */
+.polotno-download-button,
+.polotno-top-toolbar .bp3-intent-primary {
+  background: var(--accent-primary) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: var(--radius-md) !important;
+}
+
+.polotno-download-button:hover,
+.polotno-top-toolbar .bp3-intent-primary:hover {
+  background: var(--accent-hover) !important;
+  box-shadow: 0 4px 16px var(--glow) !important;
+}
+
+/* Polotno resize panel */
+.polotno-resize-panel {
+  background: var(--bg-primary) !important;
+  border: 1px solid var(--border-primary) !important;
+  border-radius: var(--radius-lg) !important;
+}
