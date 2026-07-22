@@ -34,6 +34,8 @@ const CREATE_SESSION_TIMEOUT_MS = 12_000
 const CREATE_SESSION_RETRY_DELAY_MS = 450
 const MIN_LAUNCH_FEEDBACK_MS = 1_200
 const SPECULATIVE_GENERATION_DELAY_MS = 500
+const SPECULATIVE_READY_NAVIGATION_GRACE_MS = 1_500
+const SPECULATIVE_READY_NAVIGATION_MIN_AGE_MS = 2_500
 
 type CreateSessionPayload = ReturnType<typeof buildCreateSessionPayload>
 type RunSubmitOptions = Partial<
@@ -66,11 +68,14 @@ type SpeculativeGeneration = SessionLaunch & {
   cleanupPrewarm?: () => void
   isPrewarmReady?: () => boolean
   prewarmed: boolean
+  prewarmStartedAt: number
+  readyPromise?: Promise<boolean>
   request: Promise<CreateSessionResult>
 }
 type PreloadedGenerationRoute = {
   cleanup: () => void
   isReady: () => boolean
+  ready: Promise<boolean>
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -124,6 +129,36 @@ function delay(ms: number) {
 async function waitForMinimumLaunchFeedback(startedAt: number) {
   const remainingMs = MIN_LAUNCH_FEEDBACK_MS - (Date.now() - startedAt)
   if (remainingMs > 0) await delay(remainingMs)
+}
+
+async function waitForSpeculativePrewarmReady(
+  speculativeGeneration: SpeculativeGeneration | null,
+) {
+  if (speculativeGeneration === null) return false
+  if (
+    speculativeGeneration.prewarmed ||
+    speculativeGeneration.isPrewarmReady?.() === true
+  ) {
+    return true
+  }
+
+  const speculativeAgeMs = Date.now() - speculativeGeneration.prewarmStartedAt
+  if (
+    speculativeAgeMs < SPECULATIVE_READY_NAVIGATION_MIN_AGE_MS ||
+    speculativeGeneration.readyPromise === undefined
+  ) {
+    return false
+  }
+
+  await Promise.race([
+    speculativeGeneration.readyPromise,
+    delay(SPECULATIVE_READY_NAVIGATION_GRACE_MS),
+  ])
+
+  return (
+    speculativeGeneration.prewarmed ||
+    speculativeGeneration.isPrewarmReady?.() === true
+  )
 }
 
 async function withTimeout<T>(
@@ -331,9 +366,14 @@ export const usePromptHomeController = () => {
       let cleanupTimer: number | null = null
       let cleanedUp = false
       let readPrewarmedResult = () => false
+      let resolveReady: (ready: boolean) => void = () => undefined
+      const ready = new Promise<boolean>((resolve) => {
+        resolveReady = resolve
+      })
       const cleanup = () => {
         if (cleanedUp) return
         cleanedUp = true
+        resolveReady(false)
         if (cleanupTimer !== null) {
           window.clearTimeout(cleanupTimer)
           cleanupTimer = null
@@ -345,6 +385,7 @@ export const usePromptHomeController = () => {
         const ready = isPreviewReadyGenerationView(read())
         if (!ready) return false
         markReady()
+        resolveReady(true)
         cleanup()
         return true
       }
@@ -365,11 +406,13 @@ export const usePromptHomeController = () => {
         cleanupTimer = window.setTimeout(cleanup, 30_000)
         readPrewarmedResult()
       } catch {
+        resolveReady(false)
         cleanup()
       }
       return {
         cleanup,
         isReady: readPrewarmedResult,
+        ready,
       }
     },
     [convex, router],
@@ -483,6 +526,7 @@ export const usePromptHomeController = () => {
         const speculativeGeneration: SpeculativeGeneration = {
           ...launch,
           prewarmed: false,
+          prewarmStartedAt: Date.now(),
           request,
         }
         speculativeGenerationRef.current = speculativeGeneration
@@ -498,6 +542,7 @@ export const usePromptHomeController = () => {
                 )
                 speculativeGeneration.cleanupPrewarm = preloaded.cleanup
                 speculativeGeneration.isPrewarmReady = preloaded.isReady
+                speculativeGeneration.readyPromise = preloaded.ready
                 return
               }
               const preloaded = preloadGenerationRoute(result.sessionId, () => {
@@ -505,6 +550,7 @@ export const usePromptHomeController = () => {
               })
               speculativeGeneration.cleanupPrewarm = preloaded.cleanup
               speculativeGeneration.isPrewarmReady = preloaded.isReady
+              speculativeGeneration.readyPromise = preloaded.ready
             }
           })
           .catch(() => {
@@ -622,7 +668,8 @@ export const usePromptHomeController = () => {
 
       const speculativePrewarmReady =
         speculativeGeneration?.prewarmed === true ||
-        speculativeGeneration?.isPrewarmReady?.() === true
+        speculativeGeneration?.isPrewarmReady?.() === true ||
+        (await waitForSpeculativePrewarmReady(speculativeGeneration))
 
       if (result.cached !== true && !speculativePrewarmReady) {
         try {
