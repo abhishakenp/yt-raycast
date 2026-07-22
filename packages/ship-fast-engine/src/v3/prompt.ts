@@ -89,6 +89,12 @@ Then: a @pages line listing secondary page names (REQUIRED when the site has mul
 Then: metadata lines (@brand, @title, @nav)
 Then: optional + lines for custom tables/operations
 
+CRITICAL FORMAT RULES (violation = broken output):
+- Section lines use a SPACE after the role name, NOT a colon. Write "hero value1|value2" NOT "hero: value1|value2". NEVER use colons after role names.
+- The role name is the first word on the line, followed by a space, then values separated by |.
+- + table lines use SPACES between field names, NOT pipes. Write "+ customers name email phone" NOT "+ customers name|email|phone".
+- + operation lines: "+ opName macroType tableName [key]" — macroType must be one of: collection, cart, submission, search, favorites, auth. Do NOT invent macro types like "sql".
+
 METADATA LINES (emit these AFTER the @pages line, BEFORE any + lines):
 @brand <the real brand/business/person name extracted from the build request — the proper noun the site is FOR, e.g. "Acme Cafe", "Kaveri Silks", "Dr. Pepper"; if none, infer a short plausible brand from the vertical/topic, e.g. "Coffee House" for a coffee shop; NEVER use the verb "generate"/"build"/"create" or generic words like "website"/"app" as the brand>
 @title <a concise, descriptive site title for the <title> tag — include the brand AND what the site is about, e.g. "Kaveri Silks — Premium Sarees & Traditional Wear", NOT just the brand name>
@@ -96,6 +102,7 @@ METADATA LINES (emit these AFTER the @pages line, BEFORE any + lines):
 
 Section line format:
 role value1|value2|value3
+- The role name is followed by a SPACE, then values. NO COLON after the role name.
 - Values are positional, matching the role's field order shown below
 - Scalar fields come first, separated by | (pipe)
 - Flat array (one level of items, each with fields): put items inline after the scalars, items separated by ^ (caret), fields within each item separated by ~ (tilde)
@@ -138,6 +145,21 @@ Example metadata lines for a restaurant:
 @brand Acme Cafe
 @title Acme Cafe — Artisan Coffee & Fresh Bakes
 @nav home:Home menu:Menu reservations:Reserve about:Our Story
+Example + lines for custom data:
++ customers name email phone +
++ syncCustomers collection customers name
+
+WRONG (do NOT do this — output will be broken):
+hero: Trusted by 10,000+ Businesses|Simplify Customer Management
+features: Key Features|Streamline customer interactions
++ customers name|email|phone
++ getCustomerById sql customers [id]
+
+RIGHT (do this instead):
+hero Trusted by 10,000+ Businesses|Simplify Customer Management
+features Key Features|Streamline customer interactions
++ customers name email phone
++ syncCustomers collection customers name
 
 Rules:
 - ${vocabs.length === 1 ? 'Use the pre-selected kind listed above' : 'Pick the kind that best fits the build request'}
