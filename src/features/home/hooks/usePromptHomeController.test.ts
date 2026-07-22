@@ -10,11 +10,22 @@ import {
   vi,
 } from 'vitest'
 
+type PrewarmGenerationViewOptions = {
+  args: { lookup: string }
+  extendSubscriptionFor?: number
+  query: unknown
+}
+
+interface PrewarmGenerationView {
+  (options: PrewarmGenerationViewOptions): void
+}
+
 type PromptHomeControllerTestState = {
   createSession: Mock<(...args: any[]) => Promise<unknown>>
   mutationRefs: unknown[]
   navigate: Mock<(...args: any[]) => unknown>
   preloadRoute: Mock<(...args: any[]) => Promise<unknown>>
+  prewarmQuery: Mock<PrewarmGenerationView>
 }
 
 let originalFetch: typeof globalThis.fetch
@@ -45,6 +56,7 @@ function getTestState(): PromptHomeControllerTestState {
     mutationRefs: [],
     navigate: vi.fn(),
     preloadRoute: vi.fn(),
+    prewarmQuery: vi.fn(),
   }
   return testGlobal.__shipFastPromptHomeControllerState
 }
@@ -81,10 +93,21 @@ vi.mock('@tanstack/react-router', () => ({
   }),
 }))
 
+vi.mock('convex/react', () => ({
+  useConvex: () => ({
+    prewarmQuery: (
+      globalThis as typeof globalThis & {
+        __shipFastPromptHomeControllerState?: PromptHomeControllerTestState
+      }
+    ).__shipFastPromptHomeControllerState?.prewarmQuery,
+  }),
+}))
+
 vi.mock('../../../../convex/_generated/api', () => ({
   api: {
     sessions: {
       create: 'sessions.create',
+      getGenerationView: 'sessions.getGenerationView',
     },
   },
 }))
@@ -118,6 +141,7 @@ describe('usePromptHomeController submit guard', () => {
     state.navigate.mockResolvedValue(undefined)
     state.preloadRoute.mockReset()
     state.preloadRoute.mockResolvedValue(undefined)
+    state.prewarmQuery.mockReset()
     originalFetch = globalThis.fetch
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: false,
@@ -688,6 +712,11 @@ describe('usePromptHomeController submit guard', () => {
       to: '/generate/$sessionId/$',
       params: { sessionId: 'session_speculative_in_flight' },
     })
+    expect(state.prewarmQuery).toHaveBeenCalledWith({
+      query: 'sessions.getGenerationView',
+      args: { lookup: 'session_speculative_in_flight' },
+      extendSubscriptionFor: 30_000,
+    })
     expect(state.createSession.mock.calls[0]?.[0]).toMatchObject({
       isDraft: false,
     })
@@ -695,6 +724,11 @@ describe('usePromptHomeController submit guard', () => {
       to: '/generate/$sessionId/$',
       params: { sessionId: 'session_speculative_in_flight' },
     })
+    expect(
+      window.sessionStorage.getItem(
+        'ship-fast:generation-launch:session_speculative_in_flight',
+      ),
+    ).toBe('1')
   })
 
   it('navigates from a completed speculative session without creating another one', async () => {
@@ -730,6 +764,11 @@ describe('usePromptHomeController submit guard', () => {
       to: '/generate/$sessionId/$',
       params: { sessionId: 'session_speculative_ready' },
     })
+    expect(state.prewarmQuery).toHaveBeenCalledWith({
+      query: 'sessions.getGenerationView',
+      args: { lookup: 'session_speculative_ready' },
+      extendSubscriptionFor: 30_000,
+    })
 
     await act(async () => {
       await result.current.submitPrompt()
@@ -743,6 +782,57 @@ describe('usePromptHomeController submit guard', () => {
     expect(state.navigate).toHaveBeenCalledWith({
       to: '/generate/$sessionId/$',
       params: { sessionId: 'session_speculative_ready' },
+    })
+    expect(
+      window.sessionStorage.getItem(
+        'ship-fast:generation-launch:session_speculative_ready',
+      ),
+    ).toBeNull()
+  })
+
+  it('keeps the launch handoff when native Convex prewarm is unavailable', async () => {
+    vi.useFakeTimers()
+    const state = getTestState()
+    state.prewarmQuery.mockImplementationOnce(() => {
+      throw new Error('prewarm unavailable')
+    })
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          sessionId: 'session_speculative_unprewarmed',
+          cached: false,
+        }),
+        { headers: { 'Content-Type': 'application/json' } },
+      ),
+    )
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.setPrompt('Build a website before unavailable prewarm')
+    })
+    act(() => {
+      result.current.scheduleSpeculativeGeneration()
+    })
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3_000)
+      await Promise.resolve()
+      await Promise.resolve()
+    })
+
+    await act(async () => {
+      await result.current.submitPrompt()
+    })
+
+    expect(state.prewarmQuery).toHaveBeenCalledTimes(1)
+    expect(
+      window.sessionStorage.getItem(
+        'ship-fast:generation-launch:session_speculative_unprewarmed',
+      ),
+    ).toBe('1')
+    expect(state.navigate).toHaveBeenCalledWith({
+      to: '/generate/$sessionId/$',
+      params: { sessionId: 'session_speculative_unprewarmed' },
     })
   })
 
