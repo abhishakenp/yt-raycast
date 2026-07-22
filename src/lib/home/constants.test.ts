@@ -5,7 +5,6 @@ import {
   GENERATION_LIMIT_WITH_BONUS,
   GALLERY_PAGE_SIZE,
   MIN_PROMPT_LENGTH,
-  PROMPT_SUGGEST_MAX_SHOW,
   SUBMIT_BTN_DEFAULT_LABEL,
   isLocalDevHost,
 } from './constants'
@@ -19,7 +18,6 @@ describe('home constants', () => {
     expect(GALLERY_PAGE_SIZE).toBe(12)
     expect(GENERATION_LIMIT_WITH_BONUS).toBeGreaterThan(GENERATION_LIMIT)
     expect(MIN_PROMPT_LENGTH).toBeLessThanOrEqual(15)
-    expect(PROMPT_SUGGEST_MAX_SHOW).toBe(4)
     expect(SUBMIT_BTN_DEFAULT_LABEL).toBe('Generate')
   })
 
