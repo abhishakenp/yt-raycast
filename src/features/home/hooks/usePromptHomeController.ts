@@ -1,8 +1,6 @@
 import { useNavigate, useRouter } from '@tanstack/react-router'
-import { useConvex } from 'convex/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { api } from '../../../../convex/_generated/api'
 import {
   checkPromptContentPolicy,
   CONTENT_POLICY_CLIENT_MESSAGE,
@@ -27,15 +25,12 @@ import {
   rememberReadySession,
   verifyReadySession,
 } from '@/features/session/services/ready-session-cache'
-import { rememberGenerationLaunchHandoff } from '@/features/session/services/generation-launch-handoff'
 import { AppError } from '@/shared/errors/app-error'
 
 const CREATE_SESSION_TIMEOUT_MS = 12_000
 const CREATE_SESSION_RETRY_DELAY_MS = 450
 const MIN_LAUNCH_FEEDBACK_MS = 1_200
 const SPECULATIVE_GENERATION_DELAY_MS = 500
-const SPECULATIVE_READY_NAVIGATION_GRACE_MS = 1_500
-const SPECULATIVE_READY_NAVIGATION_MIN_AGE_MS = 2_500
 
 type CreateSessionPayload = ReturnType<typeof buildCreateSessionPayload>
 type RunSubmitOptions = Partial<
@@ -65,49 +60,11 @@ type SessionLaunch = {
   payload: CreateSessionPayload
 }
 type SpeculativeGeneration = SessionLaunch & {
-  cleanupPrewarm?: () => void
-  isPrewarmReady?: () => boolean
-  prewarmed: boolean
-  prewarmStartedAt: number
-  readyPromise?: Promise<boolean>
   request: Promise<CreateSessionResult>
-}
-type PreloadedGenerationRoute = {
-  cleanup: () => void
-  isReady: () => boolean
-  ready: Promise<boolean>
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === 'object' && !Array.isArray(value)
-
-const hasRenderableGenerationSource = (view: Record<string, unknown>) => {
-  const homeModule = view.homeModule
-  if (
-    isRecord(homeModule) &&
-    typeof homeModule.source === 'string' &&
-    homeModule.source.trim().length > 0
-  ) {
-    return true
-  }
-
-  const latestPreview = view.latestPreview
-  return (
-    isRecord(latestPreview) &&
-    typeof latestPreview.html === 'string' &&
-    latestPreview.html.trim().length > 0
-  )
-}
-
-const isPreviewReadyGenerationView = (value: unknown) => {
-  if (!isRecord(value)) return false
-  const session = value.session
-  return (
-    isRecord(session) &&
-    session.status === 'preview_ready' &&
-    hasRenderableGenerationSource(value)
-  )
-}
 
 const admissionErrorFromResponse = (data: unknown): AppError | null => {
   if (!isRecord(data) || typeof data.error !== 'string') return null
@@ -129,36 +86,6 @@ function delay(ms: number) {
 async function waitForMinimumLaunchFeedback(startedAt: number) {
   const remainingMs = MIN_LAUNCH_FEEDBACK_MS - (Date.now() - startedAt)
   if (remainingMs > 0) await delay(remainingMs)
-}
-
-async function waitForSpeculativePrewarmReady(
-  speculativeGeneration: SpeculativeGeneration | null,
-) {
-  if (speculativeGeneration === null) return false
-  if (
-    speculativeGeneration.prewarmed ||
-    speculativeGeneration.isPrewarmReady?.() === true
-  ) {
-    return true
-  }
-
-  const speculativeAgeMs = Date.now() - speculativeGeneration.prewarmStartedAt
-  if (
-    speculativeAgeMs < SPECULATIVE_READY_NAVIGATION_MIN_AGE_MS ||
-    speculativeGeneration.readyPromise === undefined
-  ) {
-    return false
-  }
-
-  await Promise.race([
-    speculativeGeneration.readyPromise,
-    delay(SPECULATIVE_READY_NAVIGATION_GRACE_MS),
-  ])
-
-  return (
-    speculativeGeneration.prewarmed ||
-    speculativeGeneration.isPrewarmReady?.() === true
-  )
 }
 
 async function withTimeout<T>(
@@ -337,7 +264,6 @@ const getGeneratedSessionPath = (sessionId: string): string =>
   `/generate/${encodeURIComponent(sessionId)}/`
 
 export const usePromptHomeController = () => {
-  const convex = useConvex()
   const navigate = useNavigate()
   const router = useRouter()
   const [prompt, setPrompt] = useState('')
@@ -354,68 +280,15 @@ export const usePromptHomeController = () => {
   const speculativeGenerationTimerFingerprintRef = useRef<string | null>(null)
 
   const preloadGenerationRoute = useCallback(
-    (sessionId: string, markReady: () => void): PreloadedGenerationRoute => {
+    (sessionId: string) => {
       void router
         .preloadRoute({
           to: '/generate/$sessionId/$',
           params: { sessionId },
         })
         .catch(() => undefined)
-
-      let unsubscribe: (() => void) | null = null
-      let cleanupTimer: number | null = null
-      let cleanedUp = false
-      let readPrewarmedResult = () => false
-      let resolveReady: (ready: boolean) => void = () => undefined
-      const ready = new Promise<boolean>((resolve) => {
-        resolveReady = resolve
-      })
-      const cleanup = () => {
-        if (cleanedUp) return
-        cleanedUp = true
-        resolveReady(false)
-        if (cleanupTimer !== null) {
-          window.clearTimeout(cleanupTimer)
-          cleanupTimer = null
-        }
-        unsubscribe?.()
-        unsubscribe = null
-      }
-      const checkReady = (read: () => unknown) => {
-        const ready = isPreviewReadyGenerationView(read())
-        if (!ready) return false
-        markReady()
-        resolveReady(true)
-        cleanup()
-        return true
-      }
-
-      try {
-        convex.prewarmQuery({
-          query: api.sessions.getGenerationView,
-          args: { lookup: sessionId },
-          extendSubscriptionFor: 30_000,
-        })
-        const watch = convex.watchQuery(api.sessions.getGenerationView, {
-          lookup: sessionId,
-        })
-        readPrewarmedResult = () => checkReady(() => watch.localQueryResult())
-        unsubscribe = watch.onUpdate(() => {
-          readPrewarmedResult()
-        })
-        cleanupTimer = window.setTimeout(cleanup, 30_000)
-        readPrewarmedResult()
-      } catch {
-        resolveReady(false)
-        cleanup()
-      }
-      return {
-        cleanup,
-        isReady: readPrewarmedResult,
-        ready,
-      }
     },
-    [convex, router],
+    [router],
   )
 
   const clearSpeculativeGenerationTimer = useCallback(() => {
@@ -428,7 +301,6 @@ export const usePromptHomeController = () => {
 
   const invalidateSpeculativeGeneration = useCallback(() => {
     clearSpeculativeGenerationTimer()
-    speculativeGenerationRef.current?.cleanupPrewarm?.()
     speculativeGenerationRef.current = null
   }, [clearSpeculativeGenerationTimer])
 
@@ -525,32 +397,13 @@ export const usePromptHomeController = () => {
         )
         const speculativeGeneration: SpeculativeGeneration = {
           ...launch,
-          prewarmed: false,
-          prewarmStartedAt: Date.now(),
           request,
         }
         speculativeGenerationRef.current = speculativeGeneration
         void request
           .then((result) => {
             if (typeof result.sessionId === 'string' && result.sessionId) {
-              if (!submitInFlightRef.current) {
-                const preloaded = preloadGenerationRoute(
-                  result.sessionId,
-                  () => {
-                    speculativeGeneration.prewarmed = true
-                  },
-                )
-                speculativeGeneration.cleanupPrewarm = preloaded.cleanup
-                speculativeGeneration.isPrewarmReady = preloaded.isReady
-                speculativeGeneration.readyPromise = preloaded.ready
-                return
-              }
-              const preloaded = preloadGenerationRoute(result.sessionId, () => {
-                speculativeGeneration.prewarmed = true
-              })
-              speculativeGeneration.cleanupPrewarm = preloaded.cleanup
-              speculativeGeneration.isPrewarmReady = preloaded.isReady
-              speculativeGeneration.readyPromise = preloaded.ready
+              preloadGenerationRoute(result.sessionId)
             }
           })
           .catch(() => {
@@ -666,18 +519,7 @@ export const usePromptHomeController = () => {
         }
       }
 
-      const speculativePrewarmReady =
-        speculativeGeneration?.prewarmed === true ||
-        speculativeGeneration?.isPrewarmReady?.() === true ||
-        (await waitForSpeculativePrewarmReady(speculativeGeneration))
-
-      if (result.cached !== true && !speculativePrewarmReady) {
-        try {
-          rememberGenerationLaunchHandoff(window.sessionStorage, sessionId)
-        } catch {
-          // Storage can be blocked; session launch should still continue.
-        }
-      } else if (canUseVerifiedReadyCache) {
+      if (result.cached === true && canUseVerifiedReadyCache) {
         try {
           rememberReadySession(window.localStorage, {
             sessionId,
