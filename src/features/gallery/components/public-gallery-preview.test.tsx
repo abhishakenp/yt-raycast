@@ -42,8 +42,11 @@ vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
   ),
 }))
 
-import { GalleryGrid, type GalleryPayload } from './PublicGallery'
-import type { GallerySession } from './PublicGallery'
+import {
+  GalleryGrid,
+  type GalleryPayload,
+  type GallerySession,
+} from './PublicGallery'
 
 const emptyGallery: GalleryPayload = {
   availableCategories: [],

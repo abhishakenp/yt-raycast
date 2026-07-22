@@ -27,7 +27,6 @@ const controller = vi.hoisted(() => ({
   scheduleSpeculativeGeneration: vi.fn(),
   submitPrompt: vi.fn(),
   selectExamplePrompt: vi.fn(),
-  scheduleSpeculativeGeneration: vi.fn(),
   setPrompt: vi.fn(),
 }))
 

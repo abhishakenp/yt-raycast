@@ -251,7 +251,7 @@ function prepareGeneratedMarkup(html: string, locale: string): string {
   return decorateAccountTrigger(html)
     .replace(
       /(<nav\b[^>]*>)([\s\S]*?)(<\/nav>)/gi,
-      (match, open, body, close) => {
+      (_match, open, body, close) => {
         const upgraded = String(body).replace(
           /<a\b([^>]*)>([\s\S]*?)<\/a>/gi,
           (anchor, attributes, children) => {

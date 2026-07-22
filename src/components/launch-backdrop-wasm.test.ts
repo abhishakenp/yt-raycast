@@ -12,15 +12,19 @@ describe('launch backdrop wasm simulation', () => {
   it('exports a dense particle simulation buffer', async () => {
     const bytes = await readFile('src/components/launch-backdrop-sim.wasm')
     const { instance } = await WebAssembly.instantiate(bytes, {})
-    const exports = instance.exports as LaunchBackdropWasmExports
+    const wasmExports = instance.exports as LaunchBackdropWasmExports
 
-    const count = exports.backdrop_init(1440, 900)
-    const pointer = exports.backdrop_step(16.7)
-    const frame = new Float32Array(exports.memory.buffer, pointer, count * 7)
+    const count = wasmExports.backdrop_init(1440, 900)
+    const pointer = wasmExports.backdrop_step(16.7)
+    const frame = new Float32Array(
+      wasmExports.memory.buffer,
+      pointer,
+      count * 7,
+    )
 
     expect(count).toBeGreaterThanOrEqual(96)
     expect(count).toBeLessThanOrEqual(210)
-    expect(exports.backdrop_count()).toBe(count)
+    expect(wasmExports.backdrop_count()).toBe(count)
     expect(frame.length).toBe(count * 7)
     expect(frame[6]).toBeGreaterThan(0)
   })
@@ -28,14 +32,18 @@ describe('launch backdrop wasm simulation', () => {
   it('does not emit long reset streaks as straight paths', async () => {
     const bytes = await readFile('src/components/launch-backdrop-sim.wasm')
     const { instance } = await WebAssembly.instantiate(bytes, {})
-    const exports = instance.exports as LaunchBackdropWasmExports
+    const wasmExports = instance.exports as LaunchBackdropWasmExports
 
-    const count = exports.backdrop_init(320, 240)
-    let pointer = exports.backdrop_step(16.7)
+    const count = wasmExports.backdrop_init(320, 240)
+    let pointer = wasmExports.backdrop_step(16.7)
     for (let frameIndex = 0; frameIndex < 700; frameIndex += 1) {
-      pointer = exports.backdrop_step(48)
+      pointer = wasmExports.backdrop_step(48)
     }
-    const frame = new Float32Array(exports.memory.buffer, pointer, count * 7)
+    const frame = new Float32Array(
+      wasmExports.memory.buffer,
+      pointer,
+      count * 7,
+    )
     const segmentLengths = []
     for (let offset = 0; offset < frame.length; offset += 7) {
       segmentLengths.push(

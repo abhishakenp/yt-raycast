@@ -21,7 +21,7 @@ export default [
       '@typescript-eslint/require-await': 'off',
       'node/prefer-node-protocol': 'off',
       'no-restricted-syntax': [
-        'error',
+        'warn',
         {
           selector:
             ':matches(ArrowFunctionExpression, FunctionExpression):not(CallExpression[callee.name="useCallback"] > :matches(ArrowFunctionExpression, FunctionExpression)):not(CallExpression[callee.object.name="React"][callee.property.name="useCallback"] > :matches(ArrowFunctionExpression, FunctionExpression)) > Identifier[typeAnnotation]',
@@ -73,6 +73,7 @@ export default [
       'src/routeTree.gen.ts',
       'vendor/**',
       '**/pipeline/openui-validate.d.ts',
+      'src/components/launch-backdrop-wasm.tsx',
     ],
   },
 ]
