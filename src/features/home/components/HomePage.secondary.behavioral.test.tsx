@@ -24,6 +24,7 @@ const controller = vi.hoisted(() => ({
   shareBonusClaimed: false,
   claimShareBonus: vi.fn(),
   refreshShareBonusStatus: vi.fn(),
+  scheduleSpeculativeGeneration: vi.fn(),
   submitPrompt: vi.fn(),
   selectExamplePrompt: vi.fn(),
   setPrompt: vi.fn(),
@@ -87,7 +88,7 @@ const ORIGINAL_FETCH = globalThis.fetch
 
 const fetchMock = vi.fn(
   async () =>
-    new Response(JSON.stringify({ suggestions: [] }), {
+    new Response(JSON.stringify({ claimed: false }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     }),

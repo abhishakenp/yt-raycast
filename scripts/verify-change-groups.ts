@@ -77,7 +77,7 @@ export const changeGroups: ChangeGroup[] = [
       /^scripts\/(?:deploy-convex|export-review-groups|git-hook-quality-gate|homepage-quality-gate|quality-gates-config|test-slack-notification|verify-admission|verify-build-bundles|verify-change-groups|verify-convex-openui-ssr|verify-provider-gate-lib|verify-quality-exit|verify-review-readiness)(?:\.test)?\.(?:mjs|ts)$/,
       /^src\/features\/verification\//,
       /^src\/lib\/(?:dev-flags|vite-config)\.test\.ts$/,
-      /^src\/routes\/api\/-?(?:payments-webhook-alias|prompt-suggestions-logic|rewrite-route|route-test-files|share-bonus-route)\.test\.ts$/,
+      /^src\/routes\/api\/-?(?:payments-webhook-alias|rewrite-route|route-test-files|share-bonus-route)\.test\.ts$/,
       /^tsconfig\.json$/,
       /^tsconfig\.typecheck\.json$/,
       /^src\/types\/tanstack-start\.d\.ts$/,

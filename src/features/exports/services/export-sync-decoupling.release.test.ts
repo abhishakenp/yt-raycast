@@ -165,7 +165,7 @@ describe('generated export sync decoupling', () => {
         /shipFast/,
         /@ship-fast\//i,
         /\bconvex\b/i,
-        /\/api\/(?:sessions|deployments|billing|checkout|prompt-suggestions)/i,
+        /\/api\/(?:sessions|deployments|billing|checkout)/i,
         /(?:devliv\.io|liviogama\.com)/i,
       ]
       const violations = runtimeFiles(artifacts[target]).flatMap(

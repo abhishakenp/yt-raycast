@@ -1537,67 +1537,6 @@ button.share-icon.pill {
   }
 }
 
-.prompt-suggestions {
-  position: absolute;
-  left: 10px;
-  right: 10px;
-  bottom: 44px;
-  z-index: 5;
-  max-height: 9.5rem;
-  overflow: hidden;
-  border-radius: var(--radius-md);
-  border: 1px solid rgba(138, 180, 255, 0.22);
-  background: rgba(12, 14, 22, 0.92);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  opacity: 0;
-  transform: translateY(6px);
-  pointer-events: none;
-  transition:
-    opacity 0.18s ease,
-    transform 0.18s ease;
-}
-
-.prompt-suggestions.is-open {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-
-.prompt-suggestions-list {
-  margin: 0;
-  padding: 4px 0;
-  list-style: none;
-}
-
-.prompt-suggestions-item {
-  margin: 0;
-  padding: 8px 12px;
-  font-family: var(--font-sans);
-  font-size: 12.5px;
-  line-height: 1.45;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition:
-    background 0.12s ease,
-    color 0.12s ease;
-}
-
-.prompt-suggestions-item mark {
-  background: rgba(138, 180, 255, 0.2);
-  color: var(--text-primary);
-  font-weight: 500;
-  padding: 0 1px;
-  border-radius: 2px;
-}
-
-.prompt-suggestions-item:hover,
-.prompt-suggestions-item.is-active {
-  background: rgba(138, 180, 255, 0.1);
-  color: var(--text-primary);
-}
-
 .prompt-language-row {
   position: absolute;
   right: 12px;

@@ -15,16 +15,8 @@ import { HomeGallerySection } from '@/features/gallery/components/PublicGallery'
 import { isPartnerProgramClientEnabled } from '@/features/partners/lib/partner-config'
 import { usePromptHomeController } from '@/features/home/hooks/usePromptHomeController'
 import {
-  buildLocalPromptSuggestions,
-  getPromptSuggestionCacheKey,
-  sanitizePromptSuggestions,
-} from '@/features/home/services/prompt-suggestions'
-import {
   PROMPT_LANG_DETECT_DEBOUNCE_MS,
   PROMPT_LANG_DETECT_SNIPPET_MAX,
-  PROMPT_SUGGEST_DEBOUNCE_MS,
-  PROMPT_SUGGEST_MAX_SHOW,
-  PROMPT_SUGGEST_MIN_CHARS,
   PREFERRED_LANGUAGE_KEY,
   SUBMIT_BTN_DEFAULT_LABEL,
 } from '@/lib/home/constants'
@@ -209,17 +201,11 @@ export const HomePage = () => {
   >(DEFAULT_LANGUAGE_OPTIONS)
   const [languageRowUnlocked, setLanguageRowUnlocked] = useState(false)
   const [preferredLanguage, setPreferredLanguage] = useState('en')
-  const [promptFocused, setPromptFocused] = useState(false)
-  const [promptSuggestActive, setPromptSuggestActive] = useState(0)
-  const [promptSuggestions, setPromptSuggestions] = useState<string[]>([])
   const [submitCtaShaking, setSubmitCtaShaking] = useState(false)
   const [showSharePanel, setShowSharePanel] = useState(false)
   const partnersEnabled = isPartnerProgramClientEnabled()
   const promptLanguageDetectTokenRef = useRef(0)
-  const promptSuggestAbortRef = useRef<AbortController | null>(null)
-  const promptSuggestTokenRef = useRef(0)
   const promptFormRef = useRef<HTMLFormElement | null>(null)
-  const suppressSuggestionsRef = useRef(false)
   const [generationDraftVersion, setGenerationDraftVersion] = useState(0)
 
   const placeholderText = SAMPLE_PLACEHOLDERS[placeholderIndex]
@@ -235,7 +221,6 @@ export const HomePage = () => {
   const logoTagline = languageRowVisible
     ? getLogoTaglineText(preferredLanguage)
     : ''
-  const promptSuggestionsOpen = promptFocused && promptSuggestions.length > 0
   const promptCaption = prompt.length > 0 ? 'My prompt' : 'Try a prompt like'
 
   useEffect(() => {
@@ -347,110 +332,6 @@ export const HomePage = () => {
     return () => window.clearTimeout(timeout)
   }, [languageRowUnlocked, languageRowVisible, prompt])
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    // If a suggestion was just accepted (applyPromptSuggestion), the
-    // subsequent setPrompt re-triggers this effect. Skip rebuilding the
-    // suggestions list so it stays closed as the caller intended.
-    if (suppressSuggestionsRef.current) {
-      suppressSuggestionsRef.current = false
-      promptSuggestAbortRef.current?.abort()
-      promptSuggestAbortRef.current = null
-      promptSuggestTokenRef.current += 1
-      return
-    }
-
-    promptSuggestAbortRef.current?.abort()
-    promptSuggestAbortRef.current = null
-
-    const partial = prompt.trim()
-    const promptElementActive = document.activeElement?.id === 'prompt-input'
-    if (!promptFocused && promptElementActive) {
-      setPromptFocused(true)
-    }
-    if (
-      (!promptFocused && !promptElementActive) ||
-      partial.length < PROMPT_SUGGEST_MIN_CHARS
-    ) {
-      promptSuggestTokenRef.current += 1
-      setPromptSuggestions([])
-      setPromptSuggestActive(0)
-      return
-    }
-
-    const runToken = ++promptSuggestTokenRef.current
-    const cacheKey = getPromptSuggestionCacheKey(partial, preferredLanguage)
-    const localSuggestions = buildLocalPromptSuggestions(
-      partial,
-      preferredLanguage,
-      PROMPT_SUGGEST_MAX_SHOW,
-    )
-    let immediateSuggestions = localSuggestions
-    try {
-      const cached = window.sessionStorage.getItem(cacheKey)
-      const cachedSuggestions = sanitizePromptSuggestions(
-        cached ? JSON.parse(cached) : [],
-        partial,
-        PROMPT_SUGGEST_MAX_SHOW,
-      )
-      if (cachedSuggestions.length > 0) {
-        immediateSuggestions = cachedSuggestions
-      }
-    } catch {
-      window.sessionStorage.removeItem(cacheKey)
-    }
-    setPromptSuggestions(immediateSuggestions)
-    setPromptSuggestActive(0)
-
-    const controller = new AbortController()
-    promptSuggestAbortRef.current = controller
-    const timeout = window.setTimeout(() => {
-      void (async () => {
-        try {
-          const response = await fetch('/api/prompt-suggestions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ partial, language: preferredLanguage }),
-            signal: controller.signal,
-          })
-          if (runToken !== promptSuggestTokenRef.current) return
-          if (!response.ok) {
-            setPromptSuggestions((current) =>
-              current.length > 0 ? current : immediateSuggestions,
-            )
-            return
-          }
-          const data = await response.json()
-          if (runToken !== promptSuggestTokenRef.current) return
-          const suggestions = sanitizePromptSuggestions(
-            data?.suggestions,
-            partial,
-            PROMPT_SUGGEST_MAX_SHOW,
-          )
-          if (suggestions.length > 0) {
-            window.sessionStorage.setItem(cacheKey, JSON.stringify(suggestions))
-          }
-          setPromptSuggestions(
-            suggestions.length > 0 ? suggestions : immediateSuggestions,
-          )
-          setPromptSuggestActive(0)
-        } catch (error) {
-          if ((error as { name?: string })?.name === 'AbortError') return
-          if (runToken !== promptSuggestTokenRef.current) return
-          setPromptSuggestions((current) =>
-            current.length > 0 ? current : immediateSuggestions,
-          )
-        }
-      })()
-    }, PROMPT_SUGGEST_DEBOUNCE_MS)
-
-    return () => {
-      window.clearTimeout(timeout)
-      controller.abort()
-    }
-  }, [preferredLanguage, prompt, promptFocused])
-
   // Show share panel when quota is exceeded and bonus not claimed
   useEffect(() => {
     if (errorMessage?.includes('quota exhausted') && !shareBonusClaimed) {
@@ -499,57 +380,9 @@ export const HomePage = () => {
     window.requestAnimationFrame(() => setSubmitCtaShaking(true))
   }
 
-  const closePromptSuggestions = () => {
-    promptSuggestAbortRef.current?.abort()
-    promptSuggestAbortRef.current = null
-    promptSuggestTokenRef.current += 1
-    setPromptSuggestions([])
-    setPromptSuggestActive(0)
-  }
-
-  const applyPromptSuggestion = (value: string) => {
-    if (!value) return
-    closePromptSuggestions()
-    suppressSuggestionsRef.current = true
-    setPrompt(value)
-  }
-
   const handlePromptKeyDown = (
     event: ReactKeyboardEvent<HTMLTextAreaElement>,
   ) => {
-    if (promptSuggestionsOpen) {
-      if (event.key === 'ArrowDown') {
-        event.preventDefault()
-        setPromptSuggestActive(
-          (index) => (index + 1) % promptSuggestions.length,
-        )
-        return
-      }
-      if (event.key === 'ArrowUp') {
-        event.preventDefault()
-        setPromptSuggestActive(
-          (index) =>
-            (index - 1 + promptSuggestions.length) % promptSuggestions.length,
-        )
-        return
-      }
-      if (event.key === 'Escape') {
-        event.preventDefault()
-        closePromptSuggestions()
-        return
-      }
-      if (event.key === 'Tab' && !event.shiftKey) {
-        event.preventDefault()
-        applyPromptSuggestion(promptSuggestions[promptSuggestActive])
-        return
-      }
-      if (event.key === 'Enter' && !event.shiftKey) {
-        event.preventDefault()
-        applyPromptSuggestion(promptSuggestions[promptSuggestActive])
-        return
-      }
-    }
-
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault()
       event.currentTarget.form?.requestSubmit()
@@ -680,27 +513,9 @@ export const HomePage = () => {
                             rows={3}
                             maxLength={5000}
                             value={prompt}
-                            aria-activedescendant={
-                              promptSuggestionsOpen
-                                ? `prompt-suggest-${promptSuggestActive}`
-                                : undefined
-                            }
-                            aria-autocomplete="list"
-                            aria-controls="prompt-suggestions-list"
-                            onBlur={() => {
-                              window.setTimeout(() => {
-                                setPromptFocused(false)
-                                closePromptSuggestions()
-                              }, 120)
-                            }}
                             onChange={(event) => {
-                              setPromptFocused(true)
                               setPrompt(event.currentTarget.value)
                             }}
-                            onClick={() => setPromptFocused(true)}
-                            onFocus={() => setPromptFocused(true)}
-                            onInput={() => setPromptFocused(true)}
-                            onPointerDown={() => setPromptFocused(true)}
                             onKeyDown={handlePromptKeyDown}
                           />
                           <div
@@ -719,46 +534,6 @@ export const HomePage = () => {
                                 <span className="ml-0.5 inline-block h-5 w-px animate-pulse bg-cyan-200/60 align-middle" />
                               </span>
                             ) : null}
-                          </div>
-                          <div
-                            className={cn(
-                              'prompt-suggestions',
-                              promptSuggestionsOpen && 'is-open',
-                            )}
-                            id="prompt-suggestions"
-                            hidden={!promptSuggestionsOpen}
-                          >
-                            <ul
-                              className="prompt-suggestions-list"
-                              id="prompt-suggestions-list"
-                              role="listbox"
-                              aria-label="Prompt ideas"
-                            >
-                              {promptSuggestions.map((suggestion, index) => (
-                                <li
-                                  className={cn(
-                                    'prompt-suggestions-item',
-                                    index === promptSuggestActive &&
-                                      'is-active',
-                                  )}
-                                  id={`prompt-suggest-${index}`}
-                                  key={suggestion}
-                                  role="option"
-                                  aria-selected={index === promptSuggestActive}
-                                  onMouseDown={(event) => {
-                                    event.preventDefault()
-                                    applyPromptSuggestion(suggestion)
-                                  }}
-                                >
-                                  <span>
-                                    {suggestion.slice(0, prompt.trim().length)}
-                                  </span>
-                                  <mark>
-                                    {suggestion.slice(prompt.trim().length)}
-                                  </mark>
-                                </li>
-                              ))}
-                            </ul>
                           </div>
                           <div
                             className={cn(

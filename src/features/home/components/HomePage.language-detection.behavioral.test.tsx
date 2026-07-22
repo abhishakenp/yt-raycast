@@ -25,7 +25,6 @@ import { HomePage } from './HomePage'
  * detection (`detectExplicitLanguageKeyword`) works at any length, so the
  * min-char gate should not block it.
  *
- * Mock setup mirrors HomePage.language-suggestions.behavioral.test.tsx.
  * `detectSnippetLanguageBcp47` is mocked to return 'hi' for any input
  * containing "hindi".
  */
@@ -125,14 +124,6 @@ vi.mock('@/features/home/hooks/usePromptHomeController', () => {
 
 const ORIGINAL_FETCH = globalThis.fetch
 
-const fetchMock = vi.fn(
-  async () =>
-    new Response(JSON.stringify({ suggestions: [] }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    }),
-)
-
 const getPromptInput = () =>
   document.getElementById('prompt-input') as HTMLTextAreaElement
 
@@ -145,8 +136,6 @@ const getLanguageSelect = () =>
 describe('HomePage — language detection for short explicit-keyword prompts', () => {
   beforeEach(() => {
     vi.useFakeTimers()
-    globalThis.fetch = fetchMock as unknown as typeof globalThis.fetch
-    fetchMock.mockClear()
     mocks.submitPrompt.mockReset()
     mocks.selectExamplePromptSpy.mockReset()
     mocks.scheduleSpeculativeGeneration.mockReset()
@@ -224,6 +213,31 @@ describe('HomePage — language detection for short explicit-keyword prompts', (
         prompt: 'Build a fast customer onboarding website',
       }),
     )
+  })
+
+  it('does not render or request typeahead completions while typing', () => {
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ claimed: false }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    )
+    globalThis.fetch = fetchMock as unknown as typeof globalThis.fetch
+
+    render(<HomePage />)
+    const input = getPromptInput()
+    fireEvent.focus(input)
+    fireEvent.change(input, {
+      target: { value: 'Build a polished AI studio homepage' },
+    })
+
+    act(() => {
+      vi.advanceTimersByTime(1_000)
+    })
+
+    expect(document.querySelector('[role="listbox"]')).toBeNull()
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 
   it('language auto-detection runs for short prompts with explicit language keyword', async () => {

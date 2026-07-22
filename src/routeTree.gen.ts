@@ -29,7 +29,6 @@ import { Route as ApiTranslateRouteImport } from './routes/api/translate'
 import { Route as ApiSubscriptionStatusRouteImport } from './routes/api/subscription-status'
 import { Route as ApiShareBonusRouteImport } from './routes/api/share-bonus'
 import { Route as ApiRewriteRouteImport } from './routes/api/rewrite'
-import { Route as ApiPromptSuggestionsRouteImport } from './routes/api/prompt-suggestions'
 import { Route as ApiPexelsRouteImport } from './routes/api/pexels'
 import { Route as ApiMedusaCheckoutRouteImport } from './routes/api/medusa-checkout'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
@@ -183,11 +182,6 @@ const ApiShareBonusRoute = ApiShareBonusRouteImport.update({
 const ApiRewriteRoute = ApiRewriteRouteImport.update({
   id: '/api/rewrite',
   path: '/api/rewrite',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPromptSuggestionsRoute = ApiPromptSuggestionsRouteImport.update({
-  id: '/api/prompt-suggestions',
-  path: '/api/prompt-suggestions',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPexelsRoute = ApiPexelsRouteImport.update({
@@ -507,7 +501,6 @@ export interface FileRoutesByFullPath {
   '/api/health': typeof ApiHealthRoute
   '/api/medusa-checkout': typeof ApiMedusaCheckoutRoute
   '/api/pexels': typeof ApiPexelsRoute
-  '/api/prompt-suggestions': typeof ApiPromptSuggestionsRoute
   '/api/rewrite': typeof ApiRewriteRoute
   '/api/share-bonus': typeof ApiShareBonusRoute
   '/api/subscription-status': typeof ApiSubscriptionStatusRoute
@@ -583,7 +576,6 @@ export interface FileRoutesByTo {
   '/api/health': typeof ApiHealthRoute
   '/api/medusa-checkout': typeof ApiMedusaCheckoutRoute
   '/api/pexels': typeof ApiPexelsRoute
-  '/api/prompt-suggestions': typeof ApiPromptSuggestionsRoute
   '/api/rewrite': typeof ApiRewriteRoute
   '/api/share-bonus': typeof ApiShareBonusRoute
   '/api/subscription-status': typeof ApiSubscriptionStatusRoute
@@ -661,7 +653,6 @@ export interface FileRoutesById {
   '/api/health': typeof ApiHealthRoute
   '/api/medusa-checkout': typeof ApiMedusaCheckoutRoute
   '/api/pexels': typeof ApiPexelsRoute
-  '/api/prompt-suggestions': typeof ApiPromptSuggestionsRoute
   '/api/rewrite': typeof ApiRewriteRoute
   '/api/share-bonus': typeof ApiShareBonusRoute
   '/api/subscription-status': typeof ApiSubscriptionStatusRoute
@@ -740,7 +731,6 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/api/medusa-checkout'
     | '/api/pexels'
-    | '/api/prompt-suggestions'
     | '/api/rewrite'
     | '/api/share-bonus'
     | '/api/subscription-status'
@@ -816,7 +806,6 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/api/medusa-checkout'
     | '/api/pexels'
-    | '/api/prompt-suggestions'
     | '/api/rewrite'
     | '/api/share-bonus'
     | '/api/subscription-status'
@@ -893,7 +882,6 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/api/medusa-checkout'
     | '/api/pexels'
-    | '/api/prompt-suggestions'
     | '/api/rewrite'
     | '/api/share-bonus'
     | '/api/subscription-status'
@@ -971,7 +959,6 @@ export interface RootRouteChildren {
   ApiHealthRoute: typeof ApiHealthRoute
   ApiMedusaCheckoutRoute: typeof ApiMedusaCheckoutRoute
   ApiPexelsRoute: typeof ApiPexelsRoute
-  ApiPromptSuggestionsRoute: typeof ApiPromptSuggestionsRoute
   ApiRewriteRoute: typeof ApiRewriteRoute
   ApiShareBonusRoute: typeof ApiShareBonusRoute
   ApiSubscriptionStatusRoute: typeof ApiSubscriptionStatusRoute
@@ -1144,13 +1131,6 @@ declare module '@tanstack/react-router' {
       path: '/api/rewrite'
       fullPath: '/api/rewrite'
       preLoaderRoute: typeof ApiRewriteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/prompt-suggestions': {
-      id: '/api/prompt-suggestions'
-      path: '/api/prompt-suggestions'
-      fullPath: '/api/prompt-suggestions'
-      preLoaderRoute: typeof ApiPromptSuggestionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/pexels': {
@@ -1671,7 +1651,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiHealthRoute: ApiHealthRoute,
   ApiMedusaCheckoutRoute: ApiMedusaCheckoutRoute,
   ApiPexelsRoute: ApiPexelsRoute,
-  ApiPromptSuggestionsRoute: ApiPromptSuggestionsRoute,
   ApiRewriteRoute: ApiRewriteRoute,
   ApiShareBonusRoute: ApiShareBonusRoute,
   ApiSubscriptionStatusRoute: ApiSubscriptionStatusRoute,

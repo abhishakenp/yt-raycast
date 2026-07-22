@@ -10,6 +10,7 @@ const controller = vi.hoisted(() => ({
   isSubmitting: false,
   prompt: '',
   refreshShareBonusStatus: vi.fn(),
+  scheduleSpeculativeGeneration: vi.fn(),
   selectExamplePrompt: vi.fn(),
   setPrompt: vi.fn(),
   shareBonusClaimed: false,
@@ -119,6 +120,7 @@ describe('HomePage rendered entry surface', () => {
     controller.shareBonusClaimed = false
     controller.claimShareBonus.mockReset()
     controller.refreshShareBonusStatus.mockReset()
+    controller.scheduleSpeculativeGeneration.mockReset()
     controller.selectExamplePrompt.mockReset()
     controller.setPrompt.mockReset()
     controller.submitPrompt.mockReset()
@@ -126,7 +128,7 @@ describe('HomePage rendered entry surface', () => {
 
     globalThis.fetch = vi.fn(async () => ({
       ok: true,
-      json: async () => ({ suggestions: [] }),
+      json: async () => ({ claimed: false }),
     })) as unknown as typeof fetch
     window.localStorage.clear()
 
