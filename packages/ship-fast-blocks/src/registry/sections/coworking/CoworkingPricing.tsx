@@ -1,40 +1,23 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { Sparkles } from 'lucide-react'
 import { cn } from '#/lib/utils.ts'
-import { GridField } from '#/section-kit/motion.tsx'
-import { MonoTag } from '#/section-kit/Decor.tsx'
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { Eyebrow } from '#/section-kit/Eyebrow.tsx'
-import {
-  PricingGrid,
-  PricingTier,
-  PricingTierBadge,
-  PricingTierHeader,
-  PricingTierName,
-  PricingTierTagline,
-  PricingTierPrice,
-  PricingTierPeriod,
-  PricingTierFeatures,
-  PricingTierFeature,
-  PricingTierCta,
-} from '#/section-kit/PricingGrid.tsx'
+import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * CoworkingPricing — calm, dimensional membership pricing for a coworking or
- * shared-workspace page. An asymmetric 7:5 editorial header (mono index
- * eyebrow chip "03 / Membership plans" + display heading left, supporting
- * line right) above a grid of frosted glass tier cards. Each card has a
- * gradient hairline, a large tracked price, a hairline-ledger benefit list
- * (collapsed dividers between rows), and a full-width CTA with press
- * feedback; the highlighted tier is elevated — lifted on desktop with a
- * primary ring and a "Popular" pill — and gets a filled primary CTA. A
- * collapsed-border mono reassurance ledger (no setup fees / month-to-month /
- * cancel anytime) closes the section, and the backdrop continues the page's
- * light-field (hairline rails, seam hairline). Any tier count renders
- * cleanly. CTAs route through section-kit route links. Use to convert
- * prospective members for coworking spaces, shared offices, or flex-office
- * providers.
+ * CoworkingPricing — flat editorial membership pricing rendered as a hairline
+ * pricing LEDGER. An asymmetric 7:5 header (mono square-marker eyebrow "03 /
+ * Membership plans" + solid display heading left, supporting line right) sits
+ * above a single bordered ledger whose tiers are columns on desktop and
+ * stacked rows on mobile, separated by hairline `border-border` seams. Each
+ * column carries a large `tabular-nums` price, a `divide-y divide-border`
+ * feature list with small inline check rows (no filled circles), and a SQUARE
+ * CTA with press feedback. Exactly ONE accent tier is highlighted with a
+ * `border-primary` frame and a flat mono `POPULAR` label plus a filled primary
+ * CTA — no glow, gradient, or lift. A collapsed-border mono reassurance ledger
+ * (no setup fees / month-to-month / cancel anytime) closes the section. Any
+ * tier count renders cleanly. CTAs route through section-kit route links. Use
+ * to convert prospective members for coworking spaces, shared offices, or
+ * flex-office providers.
  */
 export const CoworkingPricing = defineCapsule({
   name: 'CoworkingPricing',
@@ -120,6 +103,22 @@ export const CoworkingPricing = defineCapsule({
       ?.filter(Boolean)
       .filter((tier) => typeof tier?.name === 'string')
     const tiers = authored?.length ? authored : defaults
+
+    const Check = ({ className }: { className?: string }) => (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={className}
+        aria-hidden="true"
+      >
+        <path d="M5 13l4 4L19 7" />
+      </svg>
+    )
+
     return (
       <section
         className={cn(
@@ -127,51 +126,34 @@ export const CoworkingPricing = defineCapsule({
           props.className,
         )}
       >
-        <div
-          aria-hidden="true"
-          className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-border/60 to-transparent"
-        />
-        <GridField
-          className="-z-10 text-foreground/[0.045]"
-          size={64}
-          mask="radial-gradient(ellipse 90% 75% at 50% 30%, black 25%, transparent 80%)"
-        />
         <Container className="relative">
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-y-0 left-0 hidden w-px bg-gradient-to-b from-transparent via-border/70 to-transparent lg:block"
+            className="pointer-events-none absolute inset-y-0 left-0 hidden w-px bg-border/70 lg:block"
           />
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-y-0 right-0 hidden w-px bg-gradient-to-b from-transparent via-border/70 to-transparent lg:block"
+            className="pointer-events-none absolute inset-y-0 right-0 hidden w-px bg-border/70 lg:block"
           />
           <div className="grid items-end gap-6 lg:grid-cols-[7fr_5fr] lg:gap-16">
             <div>
-              <Eyebrow
-                variant="default"
-                icon={
-                  <Sparkles
-                    className="size-3.5 text-primary"
-                    aria-hidden="true"
-                  />
-                }
-                className="border-border/60 bg-card/70 px-4 py-1.5 font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground backdrop-blur"
-              >
-                03 / Membership plans
-              </Eyebrow>
-              <SectionHeading
-                align="left"
-                title={heading}
-                className="mt-5 max-w-xl gap-0"
-                titleClassName="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl"
-              />
+              <span className="inline-flex items-center gap-2.5">
+                <span aria-hidden="true" className="size-2 bg-primary" />
+                <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                  03 / Membership plans
+                </span>
+              </span>
+              <h2 className="mt-5 max-w-xl text-balance text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
+                {heading}
+              </h2>
             </div>
-            <p className="text-lg leading-relaxed text-muted-foreground lg:pb-1">
+            <p className="text-pretty text-lg leading-relaxed text-muted-foreground lg:pb-1">
               {subheading}
             </p>
           </div>
-          <PricingGrid className="mx-auto mt-16 grid max-w-md grid-cols-1 items-stretch gap-7 lg:mx-0 lg:max-w-none lg:grid-cols-3">
-            {tiers.map((tier) => {
+
+          <div className="mt-16 grid grid-cols-1 border border-border lg:grid-cols-3">
+            {tiers.map((tier, index) => {
               const t = tier as {
                 name: string
                 price: string
@@ -199,98 +181,104 @@ export const CoworkingPricing = defineCapsule({
               const isHighlighted = Boolean(
                 t.highlighted || t.featured || t.popular,
               )
+              const taglines = [
+                t.tagline,
+                t.blurb,
+                t.description,
+                t.audience,
+              ].filter((line): line is string => typeof line === 'string')
+              const period = t.period ?? t.unit ?? t.cadence ?? t.suffix
               return (
-                <PricingTier
+                <div
                   key={t.name}
-                  variant={isHighlighted ? 'highlighted' : undefined}
+                  data-slot="pricing-tier"
                   className={cn(
-                    'rounded-3xl border-border/60 bg-card/70 backdrop-blur transition-shadow duration-500 hover:shadow-lg hover:shadow-primary/10',
+                    'relative flex min-w-0 flex-col p-6 sm:p-8',
+                    index > 0 &&
+                      'border-t border-border lg:border-l lg:border-t-0',
                     isHighlighted &&
-                      'border-primary/40 bg-card/85 lg:-translate-y-4',
+                      'z-10 border border-primary lg:-m-px lg:border',
                   )}
                 >
-                  <div
-                    aria-hidden="true"
-                    className={cn(
-                      'absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent to-transparent',
-                      isHighlighted ? 'via-primary/60' : 'via-border',
+                  <div className="flex min-h-5 items-center justify-between">
+                    <h3 className="text-lg font-semibold leading-none text-foreground">
+                      {t.name}
+                    </h3>
+                    {isHighlighted && (
+                      <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
+                        {t.badge ?? 'Popular'}
+                      </span>
                     )}
-                  />
-                  {isHighlighted ? (
-                    <PricingTierBadge>{t.badge ?? 'Popular'}</PricingTierBadge>
-                  ) : null}
-                  <PricingTierHeader>
-                    <PricingTierName>{t.name}</PricingTierName>
-                    {t.tagline && (
-                      <PricingTierTagline>{t.tagline}</PricingTierTagline>
-                    )}
-                    {t.blurb && (
-                      <PricingTierTagline>{t.blurb}</PricingTierTagline>
-                    )}
-                    {t.description && (
-                      <PricingTierTagline>{t.description}</PricingTierTagline>
-                    )}
-                    {t.audience && (
-                      <PricingTierTagline>{t.audience}</PricingTierTagline>
-                    )}
-                    <PricingTierPrice className="text-4xl font-semibold tracking-tight sm:text-5xl">
+                  </div>
+
+                  {taglines.map((line) => (
+                    <p
+                      key={line}
+                      className="mt-2 text-sm leading-6 text-muted-foreground"
+                    >
+                      {line}
+                    </p>
+                  ))}
+
+                  <p className="mt-5 flex items-baseline gap-1">
+                    <span className="text-4xl font-semibold tracking-tight tabular-nums text-foreground sm:text-5xl">
                       {t.price}
-                    </PricingTierPrice>
-                    {t.period && (
-                      <PricingTierPeriod>{t.period}</PricingTierPeriod>
+                    </span>
+                    {period && (
+                      <span className="text-sm text-muted-foreground">
+                        {period}
+                      </span>
                     )}
-                    {t.unit && <PricingTierPeriod>{t.unit}</PricingTierPeriod>}
-                    {t.cadence && (
-                      <PricingTierPeriod>{t.cadence}</PricingTierPeriod>
-                    )}
-                    {t.suffix && (
-                      <PricingTierPeriod>{t.suffix}</PricingTierPeriod>
-                    )}
-                  </PricingTierHeader>
+                  </p>
+
                   {t.features && (
-                    <PricingTierFeatures className="gap-0 divide-y divide-border/40 border-t border-border/40">
-                      {t.features.map((feature) => (
-                        <PricingTierFeature
-                          key={
-                            typeof feature === 'string'
-                              ? feature
-                              : (feature as { label: string }).label
-                          }
-                          className="py-3"
-                        >
-                          {typeof feature === 'string'
+                    <ul className="mt-6 flex-1 divide-y divide-border border-t border-border text-sm">
+                      {t.features.map((feature) => {
+                        const label =
+                          typeof feature === 'string'
                             ? feature
-                            : (feature as { label: string }).label}
-                        </PricingTierFeature>
-                      ))}
-                    </PricingTierFeatures>
+                            : (feature as { label: string }).label
+                        return (
+                          <li
+                            key={label}
+                            className="flex items-start gap-2.5 py-3 leading-6 text-muted-foreground"
+                          >
+                            <Check className="mt-1 size-3.5 shrink-0 text-primary" />
+                            <span>{label}</span>
+                          </li>
+                        )
+                      })}
+                    </ul>
                   )}
+
                   {t.cta && (
-                    <PricingTierCta
-                      target={t.ctaTarget}
+                    <NavbarRouteLink
+                      data-slot="pricing-tier-cta"
+                      href={t.ctaTarget}
                       className={cn(
-                        'rounded-2xl font-semibold transition-all duration-300 active:translate-y-px',
+                        'mt-8 inline-flex min-h-11 w-full items-center justify-center rounded-none px-5 py-3 text-sm font-semibold transition-colors duration-200 active:translate-y-px',
                         isHighlighted
-                          ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35'
-                          : 'border border-border/70 bg-background/60 text-foreground backdrop-blur hover:bg-card',
+                          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                          : 'border border-border bg-background text-foreground hover:bg-muted',
                       )}
                     >
                       {t.cta}
-                    </PricingTierCta>
+                    </NavbarRouteLink>
                   )}
-                </PricingTier>
+                </div>
               )
             })}
-          </PricingGrid>
-          <div className="mx-auto mt-14 grid max-w-xl grid-cols-3 divide-x divide-border/60 border-y border-border/60">
+          </div>
+
+          <div className="mx-auto mt-14 grid max-w-xl grid-cols-3 divide-x divide-border border-y border-border">
             {['No setup fees', 'Month-to-month', 'Cancel anytime'].map(
               (assurance) => (
-                <MonoTag
+                <span
                   key={assurance}
-                  className="px-2 py-3.5 text-center tracking-[0.14em]"
+                  className="px-2 py-3.5 text-center font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground"
                 >
                   {assurance}
-                </MonoTag>
+                </span>
               ),
             )}
           </div>

@@ -94,6 +94,7 @@ export const createGenerationSessionArgs = {
   designReferenceNotes: v.optional(v.string()),
   cloneUrl: v.optional(v.string()),
   engineVersion: v.optional(v.string()),
+  isDraft: v.optional(v.boolean()),
 }
 
 export const ownedSessionArgs = {

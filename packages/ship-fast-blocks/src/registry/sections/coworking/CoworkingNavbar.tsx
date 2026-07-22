@@ -14,21 +14,23 @@ import {
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
 /**
- * CoworkingNavbar — quiet glass navigation for a coworking / workspace
- * brand. A fixed, full-width frosted bar (backdrop blur + hairline bottom
- * border, always on) that gains a soft shadow and slightly deeper glass once
- * the page scrolls. Desktop links share a hover pill, the brand is a
- * gradient tile beside the wordmark, an optional front-desk phone sits
- * right, and the CTA is a primary pill with a shimmer sweep on hover. Small
- * screens get the real shared mobile drawer. All links route through
- * route hrefs. Use as the fixed site header for coworking spaces, shared
- * offices, flex-office platforms, or any membership-driven workspace brand.
- * Renders fully with no props via baked-in "Northside" defaults.
+ * CoworkingNavbar — flat editorial navigation for a coworking / workspace
+ * brand. A fixed, full-width glass bar (the one allowed backdrop blur +
+ * hairline bottom border, always on) that firms up its background and gains a
+ * flat hairline shadow once the page scrolls. Desktop links are plain sans
+ * labels — no hover pills — whose active route is signalled by a thin primary
+ * underline. The brand mark is a flat square tile beside the wordmark, an
+ * optional front-desk phone sits right in mono, and the CTA is a SHARP square
+ * primary button with an active press. Small screens get the real shared
+ * mobile drawer. All links route through route hrefs. Use as the fixed site
+ * header for coworking spaces, shared offices, flex-office platforms, or any
+ * membership-driven workspace brand. Renders fully with no props via baked-in
+ * "Northside" defaults.
  */
 function BrandTile({ letter }: { letter: string }) {
   return (
     <span
-      className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-primary/70 text-sm font-bold text-primary-foreground shadow-sm shadow-primary/25 ring-1 ring-primary/30"
+      className="grid size-9 place-items-center rounded-none bg-foreground text-sm font-semibold text-background"
       aria-hidden="true"
     >
       {letter}
@@ -57,7 +59,6 @@ export const CoworkingNavbar = defineCapsule({
   }),
   component: ({ props }) => {
     const [scrolled, setScrolled] = useState(false)
-    const [hovered, setHovered] = useState<string | null>(null)
 
     useEffect(() => {
       const onScroll = () => setScrolled(window.scrollY > 16)
@@ -91,15 +92,13 @@ export const CoworkingNavbar = defineCapsule({
         position="fixed"
         height="default"
         className={cn(
-          'border-border/50 backdrop-blur-xl transition-[background-color,box-shadow] duration-500',
-          scrolled
-            ? 'bg-background/80 shadow-[0_8px_30px_-12px] shadow-foreground/10'
-            : 'bg-background/65',
+          'border-border/60 backdrop-blur-xl transition-[background-color,box-shadow] duration-300',
+          scrolled ? 'bg-background/85 shadow-sm' : 'bg-background/65',
           props.className,
         )}
       >
         <NavbarBrand href={homeTarget} className="gap-3">
-          <Logo brand={brand} className="flex items-center gap-2">
+          <Logo brand={brand} className="flex items-center gap-2.5">
             <LogoImage
               className="size-9"
               fallback={<BrandTile letter={brand.charAt(0).toUpperCase()} />}
@@ -108,45 +107,34 @@ export const CoworkingNavbar = defineCapsule({
           </Logo>
         </NavbarBrand>
 
-        <NavbarNav className="gap-1" onMouseLeave={() => setHovered(null)}>
+        <NavbarNav className="gap-8">
           {nav.map((label) => (
             <NavbarNavLink
               key={label}
               href={label}
-              onMouseEnter={() => setHovered(label)}
-              className="relative rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground"
+              className="rounded-none px-1 py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-transparent hover:text-foreground"
             >
-              {hovered === label ? (
-                <span
-                  className="absolute inset-0 rounded-full bg-muted"
-                  aria-hidden="true"
-                />
-              ) : null}
-              <span className="relative z-10">{label}</span>
+              {label}
             </NavbarNavLink>
           ))}
         </NavbarNav>
 
-        <NavbarActions className="gap-3">
+        <NavbarActions className="gap-4">
           {phone ? (
             <a
               href={`tel:${phone.replace(/[^\d+]/g, '')}`}
-              className="hidden font-mono text-xs tracking-wide text-muted-foreground transition-colors hover:text-foreground xl:inline"
+              className="hidden font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground xl:inline"
             >
               {phone}
             </a>
           ) : null}
 
           <NavbarCta
-            variant="primary-pill"
+            variant="primary"
             href={ctaTarget}
-            className="group relative hidden overflow-hidden px-5 py-2.5 font-semibold shadow-sm shadow-primary/25 transition-shadow duration-300 hover:shadow-md hover:shadow-primary/30 active:translate-y-px sm:inline-flex"
+            className="hidden rounded-none px-5 py-2.5 font-semibold transition-colors duration-200 hover:bg-primary/90 active:translate-y-px sm:inline-flex"
           >
-            <span
-              aria-hidden="true"
-              className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-primary-foreground/25 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full"
-            />
-            <span className="relative">{ctaLabel}</span>
+            {ctaLabel}
           </NavbarCta>
 
           <MobileNavDrawer

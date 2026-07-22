@@ -34,6 +34,7 @@ import { Route as ApiMedusaCheckoutRouteImport } from './routes/api/medusa-check
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiCreditsRouteImport } from './routes/api/credits'
 import { Route as ApiCloneRouteImport } from './routes/api/clone'
+import { Route as ApiClearPromptCacheRouteImport } from './routes/api/clear-prompt-cache'
 import { Route as ApiBrandProfileRouteImport } from './routes/api/brand-profile'
 import { Route as ApiBillingOverviewRouteImport } from './routes/api/billing-overview'
 import { Route as PreviewSlugSitemapDotxmlRouteImport } from './routes/preview.$slug.sitemap[.]xml'
@@ -207,6 +208,11 @@ const ApiCreditsRoute = ApiCreditsRouteImport.update({
 const ApiCloneRoute = ApiCloneRouteImport.update({
   id: '/api/clone',
   path: '/api/clone',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiClearPromptCacheRoute = ApiClearPromptCacheRouteImport.update({
+  id: '/api/clear-prompt-cache',
+  path: '/api/clear-prompt-cache',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiBrandProfileRoute = ApiBrandProfileRouteImport.update({
@@ -496,6 +502,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/api/billing-overview': typeof ApiBillingOverviewRoute
   '/api/brand-profile': typeof ApiBrandProfileRoute
+  '/api/clear-prompt-cache': typeof ApiClearPromptCacheRoute
   '/api/clone': typeof ApiCloneRoute
   '/api/credits': typeof ApiCreditsRoute
   '/api/health': typeof ApiHealthRoute
@@ -571,6 +578,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/api/billing-overview': typeof ApiBillingOverviewRoute
   '/api/brand-profile': typeof ApiBrandProfileRoute
+  '/api/clear-prompt-cache': typeof ApiClearPromptCacheRoute
   '/api/clone': typeof ApiCloneRoute
   '/api/credits': typeof ApiCreditsRoute
   '/api/health': typeof ApiHealthRoute
@@ -648,6 +656,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/api/billing-overview': typeof ApiBillingOverviewRoute
   '/api/brand-profile': typeof ApiBrandProfileRoute
+  '/api/clear-prompt-cache': typeof ApiClearPromptCacheRoute
   '/api/clone': typeof ApiCloneRoute
   '/api/credits': typeof ApiCreditsRoute
   '/api/health': typeof ApiHealthRoute
@@ -726,6 +735,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/api/billing-overview'
     | '/api/brand-profile'
+    | '/api/clear-prompt-cache'
     | '/api/clone'
     | '/api/credits'
     | '/api/health'
@@ -801,6 +811,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/api/billing-overview'
     | '/api/brand-profile'
+    | '/api/clear-prompt-cache'
     | '/api/clone'
     | '/api/credits'
     | '/api/health'
@@ -877,6 +888,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/api/billing-overview'
     | '/api/brand-profile'
+    | '/api/clear-prompt-cache'
     | '/api/clone'
     | '/api/credits'
     | '/api/health'
@@ -954,6 +966,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   ApiBillingOverviewRoute: typeof ApiBillingOverviewRoute
   ApiBrandProfileRoute: typeof ApiBrandProfileRoute
+  ApiClearPromptCacheRoute: typeof ApiClearPromptCacheRoute
   ApiCloneRoute: typeof ApiCloneRoute
   ApiCreditsRoute: typeof ApiCreditsRoute
   ApiHealthRoute: typeof ApiHealthRoute
@@ -1166,6 +1179,13 @@ declare module '@tanstack/react-router' {
       path: '/api/clone'
       fullPath: '/api/clone'
       preLoaderRoute: typeof ApiCloneRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/clear-prompt-cache': {
+      id: '/api/clear-prompt-cache'
+      path: '/api/clear-prompt-cache'
+      fullPath: '/api/clear-prompt-cache'
+      preLoaderRoute: typeof ApiClearPromptCacheRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/brand-profile': {
@@ -1646,6 +1666,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   ApiBillingOverviewRoute: ApiBillingOverviewRoute,
   ApiBrandProfileRoute: ApiBrandProfileRoute,
+  ApiClearPromptCacheRoute: ApiClearPromptCacheRoute,
   ApiCloneRoute: ApiCloneRoute,
   ApiCreditsRoute: ApiCreditsRoute,
   ApiHealthRoute: ApiHealthRoute,

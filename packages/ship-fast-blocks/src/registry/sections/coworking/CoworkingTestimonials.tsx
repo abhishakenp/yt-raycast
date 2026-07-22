@@ -3,8 +3,6 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
-import { GridField } from '#/section-kit/motion.tsx'
-import { MonoTag, Watermark } from '#/section-kit/Decor.tsx'
 import {
   TestimonialCard,
   TestimonialQuote,
@@ -18,18 +16,18 @@ import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { StarRating } from '#/section-kit/StarRating.tsx'
 
 /**
- * CoworkingTestimonials — quiet editorial member-quote wall for a coworking
- * or shared-workspace page. An asymmetric 7:5 editorial header (mono index
- * eyebrow chip "04 / Member stories" + display heading left, supporting line
- * right) above a gently staggered grid of frosted glass cards: each carries
- * an oversized ghosted quote glyph, a primary star row, the member's words
- * in relaxed reading type, and a mono attribution row with an alt-driven
- * avatar. On desktop the cards step in a rising-falling rhythm with the
- * middle card lifted behind a primary hairline; a giant ghost quotation mark
- * watermarks the section edge. The backdrop continues the page's light-field
- * — hairline content rails and a seam hairline. Any member count renders
- * cleanly. Use for social proof on coworking spaces, shared offices, or
- * flex-office providers.
+ * CoworkingTestimonials — flat editorial member-quote wall for a coworking or
+ * shared-workspace page. A left-aligned header (square-marker mono index
+ * "04 / Member stories" + display heading + supporting line) sits above ONE
+ * dominant pull-quote: an oversized balanced display quote with quotation
+ * marks used as a quiet typographic device, a small primary star row, and a
+ * mono attribution beside a round avatar. The remaining members drop into a
+ * hairline ledger — a `divide-y` stack on mobile that becomes a `divide-x`
+ * row of equal cells on desktop, each with a star row, a smaller quote, and a
+ * round-avatar mono attribution. No glass cards, no glow, no gradient, no
+ * ghost quote-mark blobs — a single primary accent, tokens only. Any member
+ * count renders cleanly. Use for social proof on coworking spaces, shared
+ * offices, or flex-office providers.
  */
 export const CoworkingTestimonials = defineCapsule({
   name: 'CoworkingTestimonials',
@@ -99,6 +97,24 @@ export const CoworkingTestimonials = defineCapsule({
       )
     const members = authored?.length ? authored : defaults
 
+    const [lead, ...rest] = members
+
+    const clampRating = (value: unknown) =>
+      Math.max(
+        0,
+        Math.min(5, Math.round(typeof value === 'number' ? value : 5)),
+      )
+
+    const attributionOf = (member: (typeof members)[number]) =>
+      [
+        typeof member.role === 'string' ? member.role : '',
+        typeof member.company === 'string' ? member.company : '',
+      ]
+        .filter(Boolean)
+        .join(' · ')
+
+    const leadAttribution = attributionOf(lead)
+
     return (
       <section
         className={cn(
@@ -108,117 +124,100 @@ export const CoworkingTestimonials = defineCapsule({
       >
         <div
           aria-hidden="true"
-          className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-border/60 to-transparent"
+          className="absolute inset-x-0 top-0 h-px bg-border"
         />
-        <GridField
-          className="-z-10 text-foreground/[0.045]"
-          size={64}
-          mask="radial-gradient(ellipse 90% 70% at 50% 25%, black 25%, transparent 78%)"
-        />
-
-        <Watermark className="right-[-2%] top-[2%] -z-10 font-serif text-[clamp(9rem,22vw,20rem)]">
-          &ldquo;
-        </Watermark>
 
         <Container className="relative">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-y-0 left-0 hidden w-px bg-gradient-to-b from-transparent via-border/70 to-transparent lg:block"
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-y-0 right-0 hidden w-px bg-gradient-to-b from-transparent via-border/70 to-transparent lg:block"
-          />
-
-          <div className="grid items-end gap-6 lg:grid-cols-[7fr_5fr] lg:gap-16">
-            <div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/70 px-4 py-1.5 backdrop-blur">
-                <StarRating rating={1} max={1} size="sm" color="primary" />
-                <MonoTag>04 / Member stories</MonoTag>
+          <div className="flex flex-col gap-5">
+            <span className="inline-flex items-center gap-2.5">
+              <span aria-hidden="true" className="size-2 bg-primary" />
+              <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                04 / Member stories
               </span>
-              <SectionHeading
-                align="left"
-                title={heading}
-                className="mt-5 max-w-xl gap-0"
-                titleClassName="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl"
-              />
-            </div>
-            <p className="text-lg leading-relaxed text-muted-foreground lg:pb-1">
+            </span>
+            <SectionHeading
+              align="left"
+              title={heading}
+              className="max-w-xl gap-0"
+              titleClassName="text-balance text-4xl font-semibold tracking-tight text-foreground sm:text-5xl"
+            />
+            <p className="max-w-xl text-lg leading-relaxed text-muted-foreground text-pretty">
               {subheading}
             </p>
           </div>
 
-          <div className="mx-auto mt-16 grid max-w-md grid-cols-1 items-start gap-7 lg:mx-0 lg:max-w-none lg:grid-cols-3">
-            {members.map((member, index) => {
-              const featured = members.length >= 3 && index % 3 === 1
-              const rating = Math.max(
-                0,
-                Math.min(
-                  5,
-                  Math.round(
-                    typeof member.rating === 'number' ? member.rating : 5,
-                  ),
-                ),
-              )
-              const attribution = [
-                typeof member.role === 'string' ? member.role : '',
-                typeof member.company === 'string' ? member.company : '',
-              ]
-                .filter(Boolean)
-                .join(' · ')
-              return (
-                <TestimonialCard
-                  key={`${member.name}-${index}`}
-                  className={cn(
-                    'relative h-full overflow-hidden rounded-3xl bg-card/75 p-8 shadow-sm backdrop-blur transition-shadow duration-500 hover:shadow-lg hover:shadow-primary/10',
-                    featured
-                      ? 'border-primary/30 lg:-translate-y-5'
-                      : 'border-border/60',
-                    !featured && index % 3 === 2 && 'lg:translate-y-4',
-                  )}
-                >
-                  <div
-                    aria-hidden="true"
-                    className={cn(
-                      'absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent to-transparent',
-                      featured ? 'via-primary/60' : 'via-border',
-                    )}
-                  />
-                  <span
-                    aria-hidden="true"
-                    className="pointer-events-none absolute -top-3 right-5 font-serif text-8xl leading-none text-primary/10"
+          <figure className="mt-14 border-t border-border pt-12 lg:mt-16 lg:pt-14">
+            <StarRating
+              rating={clampRating(lead.rating)}
+              size="sm"
+              color="primary"
+            />
+            <TestimonialQuote className="mt-6 max-w-4xl text-balance text-3xl font-semibold leading-[1.18] tracking-tight text-foreground sm:text-4xl lg:text-[2.6rem]">
+              <span aria-hidden="true" className="text-muted-foreground/40">
+                &ldquo;
+              </span>
+              {lead.quote}
+              <span aria-hidden="true" className="text-muted-foreground/40">
+                &rdquo;
+              </span>
+            </TestimonialQuote>
+            <TestimonialAuthor className="mt-8 items-center gap-4">
+              <Image
+                alt={`Professional headshot portrait of ${lead.name}`}
+                w={96}
+                h={96}
+                className="size-12 rounded-full object-cover"
+              />
+              <div className="flex flex-col">
+                <TestimonialName className="text-base text-foreground">
+                  {lead.name}
+                </TestimonialName>
+                {leadAttribution ? (
+                  <TestimonialMeta className="font-mono text-[11px] uppercase tracking-[0.12em]">
+                    {leadAttribution}
+                  </TestimonialMeta>
+                ) : null}
+              </div>
+            </TestimonialAuthor>
+          </figure>
+
+          {rest.length ? (
+            <div className="mt-14 flex flex-col divide-y divide-border border-y border-border sm:flex-row sm:divide-x sm:divide-y-0">
+              {rest.map((member, index) => {
+                const rating = clampRating(member.rating)
+                const attribution = attributionOf(member)
+                return (
+                  <TestimonialCard
+                    key={`${member.name}-${index}`}
+                    className="flex-1 gap-0 rounded-none border-0 bg-transparent p-0 py-8 sm:px-8 sm:py-7 sm:first:pl-0 sm:last:pr-0"
                   >
-                    &ldquo;
-                  </span>
-
-                  <StarRating rating={rating} size="sm" color="primary" />
-
-                  <TestimonialQuote className="mt-5 flex-1 text-[15px] font-medium leading-relaxed text-card-foreground">
-                    &ldquo;{member.quote}&rdquo;
-                  </TestimonialQuote>
-
-                  <TestimonialAuthor className="mt-7 gap-3.5 border-t border-border/50 pt-5">
-                    <Image
-                      alt={`Professional headshot portrait of ${member.name}`}
-                      w={96}
-                      h={96}
-                      className="size-11 rounded-full object-cover ring-2 ring-border/60"
-                    />
-                    <div>
-                      <TestimonialName className="text-card-foreground">
-                        {member.name}
-                      </TestimonialName>
-                      {attribution ? (
-                        <TestimonialMeta className="font-mono text-[11px] uppercase tracking-[0.12em]">
-                          {attribution}
-                        </TestimonialMeta>
-                      ) : null}
-                    </div>
-                  </TestimonialAuthor>
-                </TestimonialCard>
-              )
-            })}
-          </div>
+                    <StarRating rating={rating} size="sm" color="primary" />
+                    <TestimonialQuote className="mt-4 text-[15px] leading-relaxed text-muted-foreground text-pretty">
+                      &ldquo;{member.quote}&rdquo;
+                    </TestimonialQuote>
+                    <TestimonialAuthor className="mt-6 items-center gap-3">
+                      <Image
+                        alt={`Professional headshot portrait of ${member.name}`}
+                        w={96}
+                        h={96}
+                        className="size-10 rounded-full object-cover"
+                      />
+                      <div className="flex flex-col">
+                        <TestimonialName className="text-foreground">
+                          {member.name}
+                        </TestimonialName>
+                        {attribution ? (
+                          <TestimonialMeta className="font-mono text-[11px] uppercase tracking-[0.12em]">
+                            {attribution}
+                          </TestimonialMeta>
+                        ) : null}
+                      </div>
+                    </TestimonialAuthor>
+                  </TestimonialCard>
+                )
+              })}
+            </div>
+          ) : null}
         </Container>
       </section>
     )

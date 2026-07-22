@@ -4,28 +4,22 @@ import { Clock, Coffee, Phone, Sparkles, Users, Wifi } from 'lucide-react'
 
 import { cn } from '#/lib/utils.ts'
 import { GridField } from '#/section-kit/motion.tsx'
-import { MonoTag } from '#/section-kit/Decor.tsx'
 
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import { BentoGrid, BentoTile } from '#/section-kit/BentoGrid.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 
 /**
- * CoworkingFeatures — calm, dimensional amenity grid for a coworking or
- * shared-workspace page. An editorial split header (mono index eyebrow chip
- * "01 / Amenities" + display heading left, supporting line right) above a
- * bento of frosted glass cards: each card opens with a mono index numeral
- * beside a hairline icon chip that lifts softly on hover, carries a giant
- * ghost numeral in its corner, and a hairline that warms under the pointer;
- * cards lift and warm their border on hover. The backdrop continues the
- * page's light-field — hairline content rails and a seam hairline at the top
- * edge — so the section reads as part of one connected canvas. Default
- * content forms a varied-span bento; authored features or an explicit column
- * count render a clean uniform grid. Renders fully with no props via bright
- * "Northside" defaults. Use to communicate what's included with a membership
- * for coworking spaces, shared offices, flex-office providers, or business
- * centers.
+ * CoworkingFeatures — flat editorial amenity LEDGER for a coworking or
+ * shared-workspace page. An asymmetric split header (mono index eyebrow with a
+ * square accent marker + display heading left, supporting line right) sits
+ * above an open hairline ledger: each amenity is a numbered row
+ * (`01 / 02 / 03…` mono tabular index) with a small inline monochrome icon,
+ * a title, and a benefit-led description laid out across a three-track
+ * asymmetric grid, separated by `border-b border-border` hairlines — no cards,
+ * no icon tiles, no glass. A restrained architectural hairline field and flat
+ * content rails keep the section reading as part of one connected canvas.
+ * Renders fully with no props via bright "Northside" defaults. Use to
+ * communicate what's included with a membership for coworking spaces, shared
+ * offices, flex-office providers, or business centers.
  */
 export const CoworkingFeatures = defineCapsule({
   name: 'CoworkingFeatures',
@@ -99,21 +93,6 @@ export const CoworkingFeatures = defineCapsule({
         }))
       : defaults
 
-    // Bento only for the untouched default composition; authored content or
-    // an explicit column count always gets a clean uniform grid.
-    const bento = !authored?.length && props.columns == null
-    const columns = props.columns ?? 3
-    const uniformCols =
-      columns === 2 ? '1-sm-2' : columns === 4 ? '1-2-4' : '1-sm-2-lg-3'
-    const bentoSpans = [
-      'sm:col-span-2 lg:col-span-4',
-      'sm:col-span-1 lg:col-span-2',
-      'sm:col-span-1 lg:col-span-2',
-      'sm:col-span-2 lg:col-span-4',
-      'sm:col-span-1 lg:col-span-3',
-      'sm:col-span-2 lg:col-span-3',
-    ]
-
     return (
       <section
         className={cn(
@@ -121,12 +100,9 @@ export const CoworkingFeatures = defineCapsule({
           props.className,
         )}
       >
-        <div
-          aria-hidden="true"
-          className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-border/60 to-transparent"
-        />
+        {/* Restrained architectural hairline field — flat, no glow wash. */}
         <GridField
-          className="-z-10 text-foreground/[0.045]"
+          className="-z-10 text-foreground/[0.035]"
           size={64}
           mask="radial-gradient(ellipse 90% 70% at 50% 20%, black 25%, transparent 78%)"
         />
@@ -134,78 +110,57 @@ export const CoworkingFeatures = defineCapsule({
         <Container className="relative">
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-y-0 left-0 hidden w-px bg-gradient-to-b from-transparent via-border/70 to-transparent lg:block"
+            className="pointer-events-none absolute inset-y-0 left-0 hidden w-px bg-border/70 lg:block"
           />
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-y-0 right-0 hidden w-px bg-gradient-to-b from-transparent via-border/70 to-transparent lg:block"
+            className="pointer-events-none absolute inset-y-0 right-0 hidden w-px bg-border/70 lg:block"
           />
 
           <div className="grid items-end gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:gap-16">
             <div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/70 px-4 py-1.5 backdrop-blur">
-                <Sparkles
-                  className="size-3.5 text-primary"
-                  aria-hidden="true"
-                />
-                <MonoTag>01 / Amenities</MonoTag>
+              <span className="inline-flex items-center gap-2.5">
+                <span aria-hidden="true" className="size-2 bg-primary" />
+                <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                  01 / Amenities
+                </span>
               </span>
-              <SectionHeading
-                align="left"
-                title={heading}
-                className="mt-5 max-w-xl gap-0"
-                titleClassName="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl"
-              />
+              <h2 className="mt-6 max-w-xl text-balance text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
+                {heading}
+              </h2>
             </div>
-            <p className="text-lg leading-relaxed text-muted-foreground lg:pb-1">
+            <p className="text-pretty text-lg leading-relaxed text-muted-foreground lg:pb-1">
               {subheading}
             </p>
           </div>
 
-          <BentoGrid
-            cols={bento ? '1-sm-2-lg-6' : uniformCols}
-            className="mt-14 gap-5"
-          >
+          <div className="mt-14 border-t border-border">
             {features.map((feature, index) => {
               const Icon = icons[index % icons.length]
               return (
-                <BentoTile
+                <div
                   key={`${feature.title}-${index}`}
-                  span={bento ? bentoSpans[index % bentoSpans.length] : ''}
-                  className="rounded-3xl"
+                  className="group grid gap-x-8 gap-y-2.5 border-b border-border py-8 sm:grid-cols-[3rem_minmax(0,1fr)] sm:py-9 lg:grid-cols-[4rem_minmax(0,20rem)_minmax(0,1fr)] lg:gap-x-12"
                 >
-                  <Card className="group relative flex h-full flex-col overflow-hidden border-border/60 bg-card/70 backdrop-blur transition-all duration-500 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 rounded-3xl p-8 shadow-sm">
-                    <div
+                  <span className="font-mono text-[11px] uppercase leading-none tracking-[0.16em] tabular-nums text-muted-foreground transition-colors duration-200 group-hover:text-foreground">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <h3 className="flex items-start gap-2.5 text-xl font-semibold tracking-tight text-foreground sm:col-start-2">
+                    <Icon
+                      className="mt-1 size-4 shrink-0 text-primary"
                       aria-hidden="true"
-                      className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
                     />
-                    <span
-                      aria-hidden="true"
-                      className="pointer-events-none absolute -right-2 -top-5 select-none text-[5.5rem] font-extrabold leading-none tracking-tighter text-foreground/[0.045]"
-                    >
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
-                    <div className="flex items-center justify-between gap-4">
-                      <MonoTag tone="faint">
-                        {String(index + 1).padStart(2, '0')}
-                      </MonoTag>
-                      <span className="grid size-11 place-items-center rounded-2xl border border-border/60 bg-background/40 text-primary transition-transform duration-500 group-hover:-translate-y-1">
-                        <Icon className="size-4.5" aria-hidden="true" />
-                      </span>
-                    </div>
-                    <h3 className="mt-6 text-lg font-semibold tracking-tight text-card-foreground">
-                      {feature.title}
-                    </h3>
-                    {feature.description ? (
-                      <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">
-                        {feature.description}
-                      </p>
-                    ) : null}
-                  </Card>
-                </BentoTile>
+                    <span>{feature.title}</span>
+                  </h3>
+                  {feature.description ? (
+                    <p className="text-pretty leading-relaxed text-muted-foreground sm:col-start-2 lg:col-start-3">
+                      {feature.description}
+                    </p>
+                  ) : null}
+                </div>
               )
             })}
-          </BentoGrid>
+          </div>
         </Container>
       </section>
     )

@@ -6,6 +6,9 @@ const navigate = vi.hoisted(() => vi.fn(async () => undefined))
 
 vi.mock('@tanstack/react-router', () => ({
   useNavigate: () => navigate,
+  useRouter: () => ({
+    preloadRoute: async () => undefined,
+  }),
 }))
 
 import { usePromptHomeController } from './usePromptHomeController'

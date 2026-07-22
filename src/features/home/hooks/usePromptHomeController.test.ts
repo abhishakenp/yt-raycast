@@ -14,6 +14,7 @@ type PromptHomeControllerTestState = {
   createSession: Mock<(...args: any[]) => Promise<unknown>>
   mutationRefs: unknown[]
   navigate: Mock<(...args: any[]) => unknown>
+  preloadRoute: Mock<(...args: any[]) => Promise<unknown>>
 }
 
 let originalFetch: typeof globalThis.fetch
@@ -43,8 +44,25 @@ function getTestState(): PromptHomeControllerTestState {
     createSession: vi.fn(),
     mutationRefs: [],
     navigate: vi.fn(),
+    preloadRoute: vi.fn(),
   }
   return testGlobal.__shipFastPromptHomeControllerState
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function fetchRequestBodyAt(index: number): Record<string, unknown> {
+  const [, init] = vi.mocked(fetch).mock.calls[index] ?? []
+  if (init === undefined || typeof init.body !== 'string') {
+    throw new Error(`Expected fetch call ${index} to have a JSON string body`)
+  }
+  const parsed: unknown = JSON.parse(init.body)
+  if (!isRecord(parsed)) {
+    throw new Error(`Expected fetch call ${index} body to be a JSON object`)
+  }
+  return parsed
 }
 
 vi.mock('@tanstack/react-router', () => ({
@@ -54,6 +72,13 @@ vi.mock('@tanstack/react-router', () => ({
         __shipFastPromptHomeControllerState?: PromptHomeControllerTestState
       }
     ).__shipFastPromptHomeControllerState?.navigate,
+  useRouter: () => ({
+    preloadRoute: (
+      globalThis as typeof globalThis & {
+        __shipFastPromptHomeControllerState?: PromptHomeControllerTestState
+      }
+    ).__shipFastPromptHomeControllerState?.preloadRoute,
+  }),
 }))
 
 vi.mock('../../../../convex/_generated/api', () => ({
@@ -91,6 +116,8 @@ describe('usePromptHomeController submit guard', () => {
     state.mutationRefs = []
     state.navigate.mockReset()
     state.navigate.mockResolvedValue(undefined)
+    state.preloadRoute.mockReset()
+    state.preloadRoute.mockResolvedValue(undefined)
     originalFetch = globalThis.fetch
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: false,
@@ -279,6 +306,7 @@ describe('usePromptHomeController submit guard', () => {
     })
 
     expect(state.createSession).toHaveBeenCalledTimes(1)
+    expect(state.createSession.mock.calls[0]?.[0]).not.toHaveProperty('isDraft')
     expect(state.navigate).toHaveBeenCalledWith({
       to: '/generate/$sessionId/$',
       params: { sessionId: 'session_double_submit_guard' },
@@ -638,6 +666,7 @@ describe('usePromptHomeController submit guard', () => {
     })
 
     expect(fetch).toHaveBeenCalledTimes(1)
+    expect(fetchRequestBodyAt(0)).toMatchObject({ isDraft: true })
     expect(state.navigate).not.toHaveBeenCalled()
 
     await act(async () => {
@@ -653,7 +682,15 @@ describe('usePromptHomeController submit guard', () => {
       await submitPromise
     })
 
-    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(fetch).toHaveBeenCalledTimes(2)
+    expect(fetchRequestBodyAt(1)).toMatchObject({ isDraft: false })
+    expect(state.preloadRoute).toHaveBeenCalledWith({
+      to: '/generate/$sessionId/$',
+      params: { sessionId: 'session_speculative_in_flight' },
+    })
+    expect(state.createSession.mock.calls[0]?.[0]).toMatchObject({
+      isDraft: false,
+    })
     expect(state.navigate).toHaveBeenCalledWith({
       to: '/generate/$sessionId/$',
       params: { sessionId: 'session_speculative_in_flight' },
@@ -688,15 +725,123 @@ describe('usePromptHomeController submit guard', () => {
     })
 
     expect(fetch).toHaveBeenCalledTimes(1)
+    expect(fetchRequestBodyAt(0)).toMatchObject({ isDraft: true })
+    expect(state.preloadRoute).toHaveBeenCalledWith({
+      to: '/generate/$sessionId/$',
+      params: { sessionId: 'session_speculative_ready' },
+    })
 
     await act(async () => {
       await result.current.submitPrompt()
     })
 
-    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(fetch).toHaveBeenCalledTimes(2)
+    expect(fetchRequestBodyAt(1)).toMatchObject({ isDraft: false })
+    expect(state.createSession.mock.calls[0]?.[0]).toMatchObject({
+      isDraft: false,
+    })
     expect(state.navigate).toHaveBeenCalledWith({
       to: '/generate/$sessionId/$',
       params: { sessionId: 'session_speculative_ready' },
+    })
+  })
+
+  it('does not show a launch error when draft publish fails after speculative creation succeeded', async () => {
+    vi.useFakeTimers()
+    const state = getTestState()
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            sessionId: 'session_speculative_publish_failure',
+            cached: false,
+          }),
+          { headers: { 'Content-Type': 'application/json' } },
+        ),
+      )
+      .mockRejectedValueOnce(new Error('publish request failed'))
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.setPrompt('Build a website before publish flakes')
+    })
+    act(() => {
+      result.current.scheduleSpeculativeGeneration()
+    })
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3_000)
+      await Promise.resolve()
+      await Promise.resolve()
+    })
+
+    await act(async () => {
+      await result.current.submitPrompt()
+      await Promise.resolve()
+    })
+
+    expect(fetch).toHaveBeenCalledTimes(2)
+    expect(fetchRequestBodyAt(0)).toMatchObject({ isDraft: true })
+    expect(fetchRequestBodyAt(1)).toMatchObject({ isDraft: false })
+    expect(result.current.errorMessage).toBeUndefined()
+    expect(state.navigate).toHaveBeenCalledWith({
+      to: '/generate/$sessionId/$',
+      params: { sessionId: 'session_speculative_publish_failure' },
+    })
+  })
+
+  it('falls back to a generated session URL when router navigation rejects after session creation', async () => {
+    const state = getTestState()
+    state.navigate.mockRejectedValueOnce(new Error('router navigation failed'))
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.setPrompt(
+        'Build a website even if client navigation fails',
+      )
+    })
+
+    await act(async () => {
+      await result.current.submitPrompt()
+    })
+
+    expect(result.current.errorMessage).toBeUndefined()
+    expect(state.navigate).toHaveBeenCalledWith({
+      to: '/generate/$sessionId/$',
+      params: { sessionId: 'session_double_submit_guard' },
+    })
+  })
+
+  it('does not show a launch error when storage is blocked after session creation', async () => {
+    const state = getTestState()
+    const setItem = vi.spyOn(Storage.prototype, 'setItem')
+    state.createSession.mockImplementationOnce(async () => {
+      setItem.mockImplementation(() => {
+        throw new Error('storage blocked')
+      })
+      return {
+        sessionId: 'session_storage_blocked_after_create',
+        cached: false,
+      }
+    })
+    const { result } = renderHook(() => usePromptHomeController())
+
+    try {
+      act(() => {
+        result.current.setPrompt('Build a website even if storage is blocked')
+      })
+
+      await act(async () => {
+        await result.current.submitPrompt()
+      })
+    } finally {
+      setItem.mockRestore()
+    }
+
+    expect(result.current.errorMessage).toBeUndefined()
+    expect(state.navigate).toHaveBeenCalledWith({
+      to: '/generate/$sessionId/$',
+      params: { sessionId: 'session_storage_blocked_after_create' },
     })
   })
 

@@ -129,6 +129,15 @@ jobs:
         with:
           bun-version: 1.2.5
 
+      # isolated-vm (a transitive dep) has no prebuilt binaries and is compiled
+      # from source on a cache miss. The runner's default Node is 20.x, but the
+      # node-gyp bun fetches bundles undici, which requires the
+      # node:worker_threads markAsUncloneable API added in Node 22. Pin Node 22
+      # (matching package.json engines) so the native build succeeds.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
       - name: Cache Bun dependencies
         uses: actions/cache@v4
         with:

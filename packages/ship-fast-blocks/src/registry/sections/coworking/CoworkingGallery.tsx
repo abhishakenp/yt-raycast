@@ -1,43 +1,25 @@
-import { useState } from 'react'
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { Camera } from 'lucide-react'
 
 import { Image } from '#/lib/img.tsx'
 import { cn } from '#/lib/utils.ts'
 import { GridField } from '#/section-kit/motion.tsx'
-import { MonoTag } from '#/section-kit/Decor.tsx'
-
 import { Container } from '#/section-kit/Container.tsx'
-import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
-import {
-  HoverAccordion,
-  HoverAccordionPanel,
-} from '#/section-kit/HoverAccordion.tsx'
-import {
-  GalleryGrid,
-  GalleryGridItems,
-  GalleryTile,
-  GalleryTileImage,
-  GalleryTileCaption,
-} from '#/section-kit/GalleryGrid.tsx'
-import { ResponsiveGrid } from '#/section-kit/ResponsiveGrid.tsx'
 
 /**
- * CoworkingGallery — immersive space tour for a coworking or shared-
- * workspace page. On large screens the default six photos form a single
- * accordion row of tall panels: hovering a panel eases it wide while its
- * glass caption plate fades up and the photo zooms softly — an exploratory,
- * editorial way to wander the space. Small screens and authored image lists
- * render a calm uniform grid honoring the column prop, with gentle zoom and
- * caption hovers. The header splits asymmetrically 7:5 (mono index eyebrow
- * chip "02 / The space" + display heading left, supporting line right), and
- * captions render as mono index plates ("01 — Open desks"). Every tile is an
- * alt-driven Image with ring borders and a soft gradient overlay; the
- * backdrop continues the page's light-field (hairline rails, seam hairline).
- * SSR renders static equal panels with captions visible. Use to let
- * prospective members picture themselves in the space for coworking spaces,
- * shared offices, or flex-office providers.
+ * CoworkingGallery — flat editorial space tour for a coworking or shared-
+ * workspace page. Photos flow into an editorial MASONRY of varied-height
+ * hairline tiles (`border border-border`) across a token multi-column layout
+ * — no uniform equal grid, no rounded glow cards, no glass caption plates.
+ * Each tile carries a mono index + caption ledger row under the image
+ * (`font-mono text-[10px] uppercase tracking-[0.14em]`) and only a restrained
+ * hover (a soft image zoom, no lift — the tiles are non-interactive). The
+ * header splits asymmetrically 7:5: a mono micro-label eyebrow with a square
+ * accent marker ("02 / The space") plus a solid display heading on the left,
+ * and a supporting line on the right. The backdrop is a subtle architectural
+ * hairline field with hairline content rails. Every tile is an alt-driven
+ * Image. Use to let prospective members picture themselves in the space for
+ * coworking spaces, shared offices, or flex-office providers.
  */
 export const CoworkingGallery = defineCapsule({
   name: 'CoworkingGallery',
@@ -57,7 +39,6 @@ export const CoworkingGallery = defineCapsule({
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const [expanded, setExpanded] = useState<number | null>(null)
     const heading =
       typeof props.heading === 'string' && props.heading
         ? props.heading
@@ -102,43 +83,25 @@ export const CoworkingGallery = defineCapsule({
       caption: typeof image.caption === 'string' ? image.caption : '',
     }))
 
-    // The hover-accordion row is reserved for the untouched default set;
-    // authored content or an explicit column count gets a uniform grid.
-    const accordion = !authored?.length && props.columns == null
+    // Multi-column masonry: the column count honors the authored `columns`
+    // prop (default 3); varied tile heights cycle so the flow reads editorial
+    // rather than as a uniform equal grid.
     const columns = props.columns ?? 3
-    const uniformCols =
-      columns === 2 ? '1-2' : columns === 4 ? '1-2-4' : '1-2-3'
+    const columnClass =
+      columns === 2
+        ? 'columns-1 sm:columns-2'
+        : columns === 4
+          ? 'columns-1 sm:columns-2 lg:columns-4'
+          : 'columns-1 sm:columns-2 lg:columns-3'
 
-    const captionPlate = (caption: string, visible: boolean, index: number) =>
-      caption ? (
-        <div
-          className={cn(
-            'absolute inset-x-0 bottom-0 flex items-end p-4 transition-all duration-500',
-            visible
-              ? 'translate-y-0 opacity-100'
-              : 'translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100',
-          )}
-        >
-          <span className="inline-flex items-baseline gap-2 rounded-full border border-border/40 bg-background/70 px-3.5 py-1.5 shadow-sm backdrop-blur-md">
-            <span
-              aria-hidden="true"
-              className="font-mono text-[10px] tracking-[0.16em] text-muted-foreground"
-            >
-              {String(index + 1).padStart(2, '0')} —
-            </span>
-            <span className="text-sm font-medium text-foreground">
-              {caption}
-            </span>
-          </span>
-        </div>
-      ) : null
-
-    const overlay = (
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-gradient-to-t from-background/70 via-background/10 to-transparent opacity-60 transition-opacity duration-500 group-hover:opacity-90"
-      />
-    )
+    const aspects = [
+      'aspect-[4/5]',
+      'aspect-[4/3]',
+      'aspect-square',
+      'aspect-[3/4]',
+      'aspect-[5/4]',
+      'aspect-[4/3]',
+    ]
 
     return (
       <section
@@ -149,119 +112,72 @@ export const CoworkingGallery = defineCapsule({
       >
         <div
           aria-hidden="true"
-          className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-border/60 to-transparent"
+          className="absolute inset-x-0 top-0 h-px bg-border/60"
         />
-        <GridField
-          className="-z-10 text-foreground/[0.045]"
-          size={64}
-          mask="radial-gradient(ellipse 90% 70% at 50% 25%, black 25%, transparent 78%)"
-        />
+        <GridField className="-z-10 text-foreground/[0.025]" size={64} />
 
         <Container className="relative">
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-y-0 left-0 hidden w-px bg-gradient-to-b from-transparent via-border/70 to-transparent lg:block"
+            className="pointer-events-none absolute inset-y-0 left-0 hidden w-px bg-border/70 lg:block"
           />
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-y-0 right-0 hidden w-px bg-gradient-to-b from-transparent via-border/70 to-transparent lg:block"
+            className="pointer-events-none absolute inset-y-0 right-0 hidden w-px bg-border/70 lg:block"
           />
 
           <div className="grid items-end gap-6 lg:grid-cols-[7fr_5fr] lg:gap-16">
             <div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/70 px-4 py-1.5 backdrop-blur">
-                <Camera className="size-3.5 text-primary" aria-hidden="true" />
-                <MonoTag>02 / The space</MonoTag>
+              <span className="inline-flex items-center gap-2.5">
+                <span aria-hidden="true" className="size-2 bg-primary" />
+                <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                  02 / The space
+                </span>
               </span>
-              <SectionHeading
-                align="left"
-                title={heading}
-                className="mt-5 max-w-xl gap-0"
-                titleClassName="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl"
-              />
+              <h2 className="mt-5 max-w-xl text-balance text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
+                {heading}
+              </h2>
             </div>
-            <p className="text-lg leading-relaxed text-muted-foreground lg:pb-1">
+            <p className="text-pretty text-lg leading-relaxed text-muted-foreground lg:pb-1">
               {description}
             </p>
           </div>
 
-          {accordion ? (
-            <>
-              {/* Desktop: hover-accordion row — the hovered panel eases wide. */}
-              <HoverAccordion
-                className="mt-14 hidden h-[30rem] lg:flex"
-                onExpandedChange={setExpanded}
+          <div className={cn('mt-14 gap-4', columnClass)}>
+            {images.map((image, index) => (
+              <figure
+                key={`${image.alt}-${index}`}
+                className="group mb-4 break-inside-avoid border border-border bg-muted/30"
               >
-                {images.map((image, index) => {
-                  const isExpanded = expanded === index
-                  return (
-                    <HoverAccordionPanel
-                      key={`${image.alt}-${index}`}
-                      expanded={isExpanded}
-                      onMouseEnter={() => setExpanded(index)}
-                      onFocus={() => setExpanded(index)}
-                    >
-                      <Image
-                        alt={image.alt}
-                        w={900}
-                        h={1200}
-                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                      {overlay}
-                      {captionPlate(image.caption, isExpanded, index)}
-                    </HoverAccordionPanel>
-                  )
-                })}
-              </HoverAccordion>
-
-              {/* Small screens: calm 2-col grid of the same tiles. */}
-              <GalleryGrid className="mt-12 lg:hidden">
-                <GalleryGridItems columns={3} className="grid-cols-2 gap-3">
-                  {images
-                    .map((img) => ({
-                      alt: img.alt,
-                      caption: img.caption,
-                    }))
-                    .map((img) => {
-                      const __iv__ = img as {
-                        alt: string
-                        caption?: string
-                        title?: string
-                        location?: string
-                      }
-                      return (
-                        <GalleryTile key={__iv__.alt}>
-                          <GalleryTileImage alt={__iv__.alt} />
-                          {__iv__.caption && (
-                            <GalleryTileCaption>
-                              {__iv__.caption}
-                            </GalleryTileCaption>
-                          )}
-                        </GalleryTile>
-                      )
-                    })}
-                </GalleryGridItems>
-              </GalleryGrid>
-            </>
-          ) : (
-            <ResponsiveGrid cols={uniformCols} className="mt-14 gap-4">
-              {images.map((image, index) => (
                 <div
-                  key={`${image.alt}-${index}`}
-                  className="group relative aspect-[4/3] overflow-hidden rounded-3xl ring-1 ring-border/60 transition-shadow duration-500 hover:shadow-lg hover:shadow-primary/10 hover:ring-primary/40"
+                  className={cn(
+                    'relative overflow-hidden',
+                    aspects[index % aspects.length],
+                  )}
                 >
                   <Image
                     alt={image.alt}
                     w={800}
                     h={600}
-                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                   />
-                  {overlay}
-                  {captionPlate(image.caption, false, index)}
                 </div>
-              ))}
-            </ResponsiveGrid>
-          )}
+                {image.caption ? (
+                  <figcaption className="flex items-baseline gap-2 border-t border-border px-3.5 py-2.5">
+                    <span
+                      aria-hidden="true"
+                      className="font-mono text-[10px] uppercase tracking-[0.14em] tabular-nums text-muted-foreground"
+                    >
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-foreground">
+                      {image.caption}
+                    </span>
+                  </figcaption>
+                ) : null}
+              </figure>
+            ))}
+          </div>
         </Container>
       </section>
     )

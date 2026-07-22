@@ -1,6 +1,5 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
-import { GridField } from '#/section-kit/motion.tsx'
 import {
   CtaBand,
   CtaBandInner,
@@ -12,16 +11,16 @@ import {
 import { Container } from '#/section-kit/Container.tsx'
 import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * CoworkingCta — luminous closing band for a coworking or shared-workspace
- * page. A full-bleed rounded panel on a deep primary gradient, framed by
- * faint oversized ring outlines, floating over a slanted muted seam band
- * that cuts diagonally across the section backdrop. Content is centered: a
- * mono uppercase eyebrow, a display headline, a short supporting line, and
- * two CTAs with press feedback — an inverted pill with a shimmer sweep on
- * hover beside a translucent outline pill. Both route through section-kit
- * route links. Renders fully with no props via baked-in defaults. Use near
- * the bottom of a coworking, shared-office, or flex-office page to drive
- * tour bookings.
+ * CoworkingCta — flat editorial closing band for a coworking or
+ * shared-workspace page. A full-bleed hairline band (`border-y border-border`)
+ * on a plain token background, left-aligned: a mono kicker (square primary
+ * marker + mono uppercase label), a big two-tone display headline
+ * (`text-foreground` lead + `text-muted-foreground` continuation), a short
+ * supporting line, and two SQUARE (`rounded-none`) CTAs with press feedback —
+ * one primary fill beside a hairline outline. Both route through section-kit
+ * route links. No gradients, glow shadows, rounded pills, or shimmer sweeps.
+ * Renders fully with no props via baked-in defaults. Use near the bottom of a
+ * coworking, shared-office, or flex-office page to drive tour bookings.
  */
 export const CoworkingCta = defineCapsule({
   name: 'CoworkingCta',
@@ -66,53 +65,44 @@ export const CoworkingCta = defineCapsule({
         ? props.secondaryCta
         : 'View pricing'
 
+    const headlineWords = headline.split(/\s+/).filter(Boolean)
+    const splitAt = Math.ceil(headlineWords.length / 2)
+    const headlineLead = headlineWords.slice(0, splitAt).join(' ')
+    const headlineTail = headlineWords.slice(splitAt).join(' ')
+
     return (
       <CtaBand
         tone="muted"
-        className={`relative isolate overflow-hidden bg-background py-24 sm:py-28 ${props.className ?? ''}`}
+        className={`relative isolate border-y border-border bg-background py-20 sm:py-24 ${props.className ?? ''}`}
       >
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-3/4 bg-muted/50 [clip-path:polygon(0_22%,100%_0,100%_100%,0_100%)]"
-        />
         <Container>
-          <CtaBandInner className="relative max-w-3xl gap-5 overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-primary via-primary to-primary/85 px-6 py-20 shadow-[0_40px_120px_-30px] shadow-primary/50 ring-1 ring-primary/40 sm:py-24">
-            <CtaBandEyebrow className="font-mono text-[11px] font-normal uppercase tracking-[0.24em] text-primary-foreground/80">
+          <CtaBandInner align="left" className="max-w-3xl gap-6 px-0 py-0">
+            <CtaBandEyebrow className="inline-flex items-center gap-2.5 font-mono text-[11px] font-normal uppercase tracking-[0.16em] text-muted-foreground opacity-100">
+              <span aria-hidden="true" className="size-2 bg-primary" />
               {eyebrow}
             </CtaBandEyebrow>
-            <CtaBandTitle className="text-4xl font-semibold leading-tight tracking-tight text-primary-foreground sm:text-5xl lg:text-6xl">
-              {headline}
+            <CtaBandTitle className="text-balance text-4xl font-semibold leading-[1.05] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+              {headlineLead}
+              {headlineTail ? (
+                <>
+                  {' '}
+                  <span className="text-muted-foreground">{headlineTail}</span>
+                </>
+              ) : null}
             </CtaBandTitle>
-            <CtaBandSubtitle className="max-w-2xl text-lg leading-relaxed text-primary-foreground/85">
+            <CtaBandSubtitle className="max-w-2xl text-pretty text-lg leading-relaxed text-muted-foreground opacity-100">
               {subheading}
             </CtaBandSubtitle>
-            <GridField
-              className="text-primary-foreground/10"
-              size={56}
-              mask="radial-gradient(ellipse 95% 95% at 50% 50%, black 35%, transparent 88%)"
-            />
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute -right-24 -top-24 size-96 rounded-full border border-primary-foreground/10"
-            />
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute -bottom-32 -left-16 size-[26rem] rounded-full border border-primary-foreground/10"
-            />
-            <div className="relative mt-5 flex flex-col gap-4 sm:flex-row">
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
               <NavbarRouteLink
-                className="group relative inline-flex items-center justify-center overflow-hidden rounded-2xl bg-background px-8 py-4 text-base font-semibold text-foreground shadow-lg transition-all duration-300 hover:shadow-xl active:translate-y-px"
+                className="inline-flex items-center justify-center rounded-none bg-primary px-7 py-3.5 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary/90 active:translate-y-px"
                 href={props.primaryTarget ?? primaryCta}
               >
-                <span
-                  aria-hidden="true"
-                  className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-foreground/10 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full"
-                />
-                <span className="relative">{primaryCta}</span>
+                {primaryCta}
               </NavbarRouteLink>
               <CtaAction
                 variant="outline"
-                className="inline-flex items-center justify-center rounded-2xl border border-primary-foreground/30 bg-transparent px-8 py-4 text-base font-medium text-primary-foreground transition-colors duration-300 hover:bg-primary-foreground/10 active:translate-y-px"
+                className="inline-flex items-center justify-center rounded-none border border-border bg-background px-7 py-3.5 text-base font-medium text-foreground transition-colors hover:bg-muted active:translate-y-px"
                 asChild
               >
                 <NavbarRouteLink href={props.secondaryTarget ?? secondaryCta}>

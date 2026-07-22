@@ -11,6 +11,7 @@ export type BuildCreateSessionPayloadInput = {
   designReferenceNotes?: string
   cloneUrl?: string
   engineVersion?: 'v1' | 'v2' | 'v3'
+  isDraft?: boolean
 }
 
 function toHex(bytes: Uint8Array): string {
@@ -52,6 +53,7 @@ export function buildCreateSessionPayload({
   designReferenceNotes = '',
   cloneUrl = '',
   engineVersion,
+  isDraft,
 }: BuildCreateSessionPayloadInput) {
   const refs = designReferenceUrls
     .map((url) => url.trim())
@@ -68,6 +70,7 @@ export function buildCreateSessionPayload({
     anonymousOwnerSecret,
     anonymousClientId,
     workspace,
+    ...(isDraft === true ? { isDraft: true } : {}),
     ...(refs.length > 0 ? { designReferenceUrls: refs } : {}),
     ...(notes ? { designReferenceNotes: notes } : {}),
     ...(clone ? { cloneUrl: clone } : {}),

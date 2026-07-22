@@ -4,22 +4,19 @@ import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { Image } from '#/lib/img.tsx'
 import { GridField } from '#/section-kit/motion.tsx'
-import { Watermark } from '#/section-kit/Decor.tsx'
 import { HeroSection } from '#/section-kit/HeroSection.tsx'
-import { Card } from '#/section-kit/Card.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import { NavbarRouteLink } from '#/section-kit/SiteNav.tsx'
 /**
- * CoworkingHero — luminous editorial opening scene for a coworking /
- * workspace landing page. The backdrop is a blueprint light-field: an
- * architectural hairline grid with crosshair accents, vertical rails at the
- * content edges, and a giant ghost watermark of the headline's opening word.
- * The stage splits asymmetrically 7:5 — left: a mono-label eyebrow chip with
- * a soft pulsing dot, a display headline with a gradient-ink closing phrase,
- * supporting paragraph, a shimmer primary CTA beside a glass secondary CTA
- * (both with press feedback), and a quiet trust-chip row. Right: an offset
- * outline frame behind a hero photo with specular ring, and one glass proof
- * card with an avatar stack. CTAs route through section-kit route links;
+ * CoworkingHero — flat editorial opening scene for a coworking / workspace
+ * landing page. The backdrop is a restrained architectural hairline field
+ * (no glow wash, no watermark) with hairline rails at the content edges. The
+ * stage splits asymmetrically 7:5 — left: a mono micro-label eyebrow with a
+ * square accent marker, a solid two-tone display headline, supporting
+ * paragraph, sharp square primary + outline CTAs with press feedback, and a
+ * hairline mono trust-check row. Right: an offset hairline frame behind a
+ * bordered hero photo, and one flat hairline proof card with an avatar stack
+ * and a tabular member metric. CTAs route through section-kit route links;
  * photos use the alt-driven Image component. Use as the opening section for
  * coworking spaces, shared offices, flex-office providers, or business
  * centers.
@@ -140,162 +137,112 @@ export const CoworkingHero = defineCapsule({
           props.className,
         )}
       >
-        {/* Blueprint light-field: hairline grid, crosshair accents. */}
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 -z-10 bg-gradient-to-b from-muted/50 via-background to-background"
-        />
+        {/* Restrained architectural hairline field — flat, no glow wash. */}
         <GridField
-          className="-z-10 text-foreground/[0.06]"
-          size={64}
-          mask="radial-gradient(ellipse 95% 85% at 50% 10%, black 30%, transparent 78%)"
+          className="-z-10 text-foreground/[0.035]"
+          size={72}
+          mask="radial-gradient(ellipse 90% 80% at 50% 0%, black 45%, transparent 82%)"
         />
-        <Watermark className="right-[-4%] top-[6%] -z-10 text-[clamp(6rem,16vw,15rem)] uppercase">
-          {headingLead.split(/\s+/)[0] ?? ''}
-        </Watermark>
-        <div aria-hidden="true" className="absolute inset-0 -z-10">
-          {[
-            'left-[16%] top-[22%]',
-            'left-[42%] top-[64%]',
-            'right-[12%] top-[18%]',
-            'right-[34%] bottom-[16%]',
-          ].map((position) => (
-            <span
-              key={position}
-              className={cn(
-                'absolute text-lg font-light leading-none text-foreground/15',
-                position,
-              )}
-            >
-              +
-            </span>
-          ))}
-        </div>
 
         <Container
           size="xl"
-          className="relative pb-20 pt-32 sm:pb-28 sm:pt-36 lg:pb-32 lg:pt-44"
+          className="relative pb-20 pt-32 sm:pb-24 sm:pt-36 lg:pb-28 lg:pt-40"
         >
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-y-0 left-0 hidden w-px bg-gradient-to-b from-transparent via-border/70 to-transparent lg:block"
+            className="pointer-events-none absolute inset-y-0 left-0 hidden w-px bg-border/70 lg:block"
           />
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-y-0 right-0 hidden w-px bg-gradient-to-b from-transparent via-border/70 to-transparent lg:block"
+            className="pointer-events-none absolute inset-y-0 right-0 hidden w-px bg-border/70 lg:block"
           />
 
-          <div className="grid items-center gap-14 lg:grid-cols-[7fr_5fr] lg:gap-20">
+          <div className="grid items-center gap-14 lg:grid-cols-[7fr_5fr] lg:gap-16">
             <div className="max-w-2xl">
-              <span className="inline-flex items-center gap-2.5 rounded-full border border-border/60 bg-card/70 px-4 py-1.5 shadow-sm backdrop-blur">
-                <span className="relative flex size-2">
-                  <span className="absolute inline-flex size-full animate-ping rounded-full bg-primary opacity-50" />
-                  <span className="relative inline-flex size-2 rounded-full bg-primary" />
-                </span>
-                <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+              <span className="inline-flex items-center gap-2.5">
+                <span aria-hidden="true" className="size-2 bg-primary" />
+                <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                   {eyebrow}
                 </span>
               </span>
 
-              <h1 className="mt-8 text-5xl font-semibold leading-[1.04] tracking-tight text-foreground sm:text-6xl lg:text-7xl">
+              <h1 className="mt-6 text-balance text-5xl font-semibold leading-[1.02] tracking-tight text-foreground sm:text-6xl lg:text-7xl">
                 {headingLead}{' '}
-                <span className="bg-gradient-to-r from-primary via-primary/80 to-foreground/50 bg-clip-text text-transparent">
-                  {headingMuted}
-                </span>
+                <span className="text-muted-foreground">{headingMuted}</span>
               </h1>
 
-              <p className="mt-7 max-w-xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
+              <p className="mt-6 max-w-xl text-pretty text-lg leading-relaxed text-muted-foreground">
                 {subheading}
               </p>
 
-              <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <NavbarRouteLink
-                  className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/35 active:translate-y-px"
+                  className="group inline-flex items-center justify-center gap-2 rounded-none bg-primary px-7 py-3.5 text-base font-semibold text-primary-foreground transition-colors duration-200 hover:bg-primary/90 active:translate-y-px"
                   href={primaryCta}
                 >
-                  <span
-                    aria-hidden="true"
-                    className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-primary-foreground/25 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full"
-                  />
-                  <span className="relative">{primaryCta}</span>
-                  <ArrowRight className="relative size-5 transition-transform duration-300 group-hover:translate-x-1" />
+                  <span>{primaryCta}</span>
+                  <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
                 </NavbarRouteLink>
                 <NavbarRouteLink
-                  className="inline-flex items-center justify-center rounded-2xl border border-border/70 bg-card/60 px-8 py-4 text-base font-medium text-foreground backdrop-blur transition-colors duration-300 hover:bg-card active:translate-y-px"
+                  className="inline-flex items-center justify-center rounded-none border border-border bg-background px-7 py-3.5 text-base font-medium text-foreground transition-colors duration-200 hover:bg-muted active:translate-y-px"
                   href={secondaryCta}
                 >
                   {secondaryCta}
                 </NavbarRouteLink>
               </div>
 
-              <div className="mt-10 flex flex-wrap items-center gap-3">
+              <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2">
                 {checks.map((check) => (
                   <span
                     key={check}
-                    className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/60 py-1.5 pl-2 pr-4 text-sm text-muted-foreground backdrop-blur"
+                    className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground"
                   >
-                    <span className="grid size-5 place-items-center rounded-full bg-primary/15 text-primary">
-                      <Check className="size-3" />
-                    </span>
+                    <Check className="size-3.5 text-primary" />
                     {check}
                   </span>
                 ))}
               </div>
             </div>
 
-            {/* Scene: back frame plane, photo, floating proof card. */}
+            {/* Scene: offset hairline back frame, bordered photo, flat proof card. */}
             <div className="relative">
-              <div className="relative [perspective:1200px]">
-                <div className="pointer-events-none absolute -inset-6 -z-10">
-                  <div
-                    aria-hidden="true"
-                    className="absolute inset-0 translate-x-7 translate-y-7 rounded-[2rem] border border-border/50 bg-muted/30"
+              <div className="relative">
+                <div
+                  aria-hidden="true"
+                  className="absolute -right-4 -top-4 hidden h-full w-full border border-border sm:block"
+                />
+
+                <div className="relative border border-border bg-muted/30">
+                  <Image
+                    alt={imageAlt}
+                    w={1200}
+                    h={800}
+                    className="h-[360px] w-full object-cover sm:h-[460px] lg:h-[520px]"
                   />
                 </div>
 
-                <div className="relative rounded-[1.75rem]">
-                  <div className="relative overflow-hidden rounded-[1.75rem] shadow-[0_32px_80px_-20px] shadow-primary/20 ring-1 ring-border/60">
-                    <Image
-                      alt={imageAlt}
-                      w={1200}
-                      h={800}
-                      className="h-[400px] w-full object-cover sm:h-[500px] lg:h-[600px]"
-                    />
-                    <div
-                      aria-hidden="true"
-                      className="absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-transparent"
-                    />
-                    <div
-                      aria-hidden="true"
-                      className="absolute inset-0 rounded-[1.75rem] ring-1 ring-inset ring-foreground/10"
-                    />
-                  </div>
-                </div>
-
-                <div className="absolute -bottom-8 -left-4 hidden sm:block lg:-left-10">
-                  <Card className="border-border/60 bg-card/85 backdrop-blur-xl rounded-2xl shadow-xl">
-                    <div className="flex items-center gap-4">
-                      <div className="flex -space-x-3">
-                        {proofAvatars.map((alt) => (
-                          <Image
-                            key={alt}
-                            alt={alt}
-                            w={100}
-                            h={100}
-                            className="size-10 rounded-full border-2 border-card object-cover"
-                          />
-                        ))}
-                      </div>
-                      <div>
-                        <p className="text-lg font-semibold leading-tight text-card-foreground">
-                          {proofValue}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {proofLabel}
-                        </p>
-                      </div>
+                <div className="absolute -bottom-6 -left-4 hidden border border-border bg-background px-4 py-3 shadow-sm sm:block lg:-left-8">
+                  <div className="flex items-center gap-3">
+                    <div className="flex -space-x-2">
+                      {proofAvatars.map((alt) => (
+                        <Image
+                          key={alt}
+                          alt={alt}
+                          w={100}
+                          h={100}
+                          className="size-9 rounded-full border-2 border-background object-cover"
+                        />
+                      ))}
                     </div>
-                  </Card>
+                    <div>
+                      <p className="font-mono text-sm font-semibold tabular-nums leading-tight text-foreground">
+                        {proofValue}
+                      </p>
+                      <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                        {proofLabel}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

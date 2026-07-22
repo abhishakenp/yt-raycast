@@ -1,7 +1,6 @@
 import { defineCapsule } from '#/capsules/openui.ts'
 import { z } from 'zod/v4'
 
-import { Watermark } from '#/section-kit/Decor.tsx'
 import {
   SiteFooter,
   FooterContent,
@@ -19,21 +18,22 @@ import {
 } from '#/section-kit/SiteFooter.tsx'
 
 /**
- * CoworkingFooter — deep, quiet closing footer for a coworking or shared-
- * workspace site. A giant watermark wordmark sits behind the content — the
- * page's light-field fading out — under a primary-tinted seam hairline.
- * Left: gradient brand tile, wordmark, tagline, and a row of social pills
- * that lift softly on hover. Right: link columns with uppercase tracked
- * titles and links that slide subtly on hover. The bottom bar carries the
- * auto-updating copyright and a back-to-top pill. Every brand, social, and
- * column link routes through section-kit route links. Renders fully with no props via
- * baked-in "Northside" defaults. Use as the site-wide footer for coworking
- * spaces, shared offices, flex-office providers, or business centers.
+ * CoworkingFooter — flat editorial LEDGER footer for a coworking or shared-
+ * workspace site. A brand/summary row sits on top (a solid square brand mark,
+ * wordmark, and tagline beside a row of square hairline social links), then a
+ * `border-t border-border` seam opens onto clean link columns headed by mono
+ * micro-labels. The bottom bar is a second hairline seam carrying the
+ * auto-updating copyright and a square back-to-top control. No watermark,
+ * gradients, pills, or glow — one primary accent (the brand mark). Every
+ * brand, social, and column link routes through section-kit route links.
+ * Renders fully with no props via baked-in "Northside" defaults. Use as the
+ * site-wide footer for coworking spaces, shared offices, flex-office
+ * providers, or business centers.
  */
 function BrandTile({ letter }: { letter: string }) {
   return (
     <span
-      className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-primary to-primary/70 text-base font-bold text-primary-foreground shadow-sm shadow-primary/25 ring-1 ring-primary/30"
+      className="grid size-9 place-items-center rounded-none bg-primary text-base font-semibold text-primary-foreground"
       aria-hidden="true"
     >
       {letter}
@@ -114,46 +114,42 @@ export const CoworkingFooter = defineCapsule({
           ]
     ) as Array<{ title: string; links: string[] }>
     return (
-      <SiteFooter
-        className={`relative isolate overflow-hidden ${props.className ?? ''}`}
-      >
-        <div
-          aria-hidden="true"
-          className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent"
-        />
-        <Watermark className="bottom-[-0.12em] left-1/2 -z-10 -translate-x-1/2 text-[clamp(5rem,17vw,15rem)]">
-          {brand}
-        </Watermark>
-        <FooterContent className="relative">
-          <FooterGrid className="lg:grid-cols-[2fr_1fr_1fr_1fr_1.4fr] lg:gap-8">
+      <SiteFooter className={props.className}>
+        <FooterContent>
+          {/* Brand / summary row on top. */}
+          <div className="flex flex-col gap-8 pb-10 sm:flex-row sm:items-start sm:justify-between">
             <FooterBrand
               brand={brand}
               brandMark={<BrandTile letter={brand[0] ?? 'C'} />}
             >
-              <FooterTagline className="max-w-xs leading-relaxed">
+              <FooterTagline className="mt-4 max-w-sm leading-relaxed">
                 {tagline}
               </FooterTagline>
-              <FooterSocial className="mt-5">
-                {social.map((s) => (
-                  <FooterSocialLink
-                    key={s.label}
-                    className="rounded-full border border-border/60 bg-card/60 px-3.5 py-1.5 backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:text-foreground active:translate-y-0"
-                  >
-                    {s.label}
-                  </FooterSocialLink>
-                ))}
-              </FooterSocial>
             </FooterBrand>
+            <FooterSocial className="mt-0 gap-2">
+              {social.map((s) => (
+                <FooterSocialLink
+                  key={s.label}
+                  className="rounded-none border border-border bg-background px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.14em] hover:bg-muted hover:text-foreground active:translate-y-px"
+                >
+                  {s.label}
+                </FooterSocialLink>
+              ))}
+            </FooterSocial>
+          </div>
+
+          {/* Link columns ledger, opened by a hairline seam. */}
+          <FooterGrid className="border-t border-border pt-10 sm:grid-cols-2 lg:grid-cols-4">
             {columns.map((col) => (
               <FooterColumn key={col.title}>
-                <FooterColumnTitle className="font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-muted-foreground">
+                <FooterColumnTitle className="font-mono text-[10px] font-normal uppercase tracking-[0.16em] text-muted-foreground">
                   {col.title}
                 </FooterColumnTitle>
                 <FooterColumnList className="mt-4 space-y-2.5">
                   {col.links.map((link) => (
                     <FooterLink
                       key={link}
-                      className="block w-fit transition-transform duration-200 hover:translate-x-0.5 hover:text-foreground"
+                      className="block w-fit hover:text-foreground"
                     >
                       {link}
                     </FooterLink>
@@ -162,7 +158,8 @@ export const CoworkingFooter = defineCapsule({
               </FooterColumn>
             ))}
           </FooterGrid>
-          <FooterBottom className="border-border/60">
+
+          <FooterBottom>
             <FooterCopyright>
               &copy; {new Date().getFullYear()} {brand}. {note}
             </FooterCopyright>
@@ -173,7 +170,7 @@ export const CoworkingFooter = defineCapsule({
                   window.scrollTo({ top: 0, behavior: 'smooth' })
                 }
               }}
-              className="inline-flex w-fit items-center gap-2 rounded-full border border-border/60 bg-card/60 px-4 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:text-foreground active:translate-y-0"
+              className="inline-flex w-fit items-center gap-2 rounded-none border border-border bg-background px-4 py-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground hover:bg-muted hover:text-foreground active:translate-y-px"
             >
               Back to top
               <svg
