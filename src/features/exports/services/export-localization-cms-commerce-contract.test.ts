@@ -163,8 +163,8 @@ describe('CMS annotation export contract', () => {
     // Inject a CMS-bound span around a hero heading, matching the
     // `<tag ... data-cms="selector">...</tag>` shape cms_helpers parses.
     const cmsAnnotatedHtml = baseHtml.replace(
-      /(<h1[^>]*>)([^<]+)/,
-      `$1<span data-cms="hero.title">$2</span>`,
+      /(<h1[^>]*>(?:(?!<\/h1>).)*?)([^<>\s][^<>]*)(<\/(?:a|span|strong|em)>|<\/h1>)/s,
+      `$1<span data-cms="hero.title">$2</span>$3`,
     )
     expect(cmsAnnotatedHtml).toContain('data-cms="hero.title"')
 

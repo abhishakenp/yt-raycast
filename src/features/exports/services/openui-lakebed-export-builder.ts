@@ -11,13 +11,18 @@ import {
   sanitizeProps,
 } from '@ship-fast/blocks'
 import {
-  lakebedExportDepsBase64,
-  lakebedExportDepsEncoding,
+  lakebedExportComponentChunks,
+  lakebedExportDepsChunkEncoding,
+  lakebedExportFileChunks,
   reactExportSourcesBase64,
   reactExportSourcesEncoding,
   vendorSourceFilesBase64,
   vendorSourceFilesEncoding,
 } from '@ship-fast/blocks/generated'
+import {
+  lakebedAppCssSourcesBase64,
+  lakebedAppCssSourcesEncoding,
+} from '@ship-fast/blocks/generated/lakebed-app-css-sources.compressed'
 
 import {
   getBlockSourceFile,
@@ -27,10 +32,8 @@ import {
 import { resolveThemeStyles } from '../../../genui/theme-apply'
 import type { ThemeStyles } from '../../../genui/theme-presets'
 import {
-  orientationFromSize,
   picsumUrl,
   searchQueryFromAlt,
-  seedFromAlt,
   slugifyAlt,
 } from '../../../lib/image-query'
 import type { BuiltExport, OpenUIExportInput } from './openui-export-types'
@@ -41,10 +44,20 @@ import {
 import { formatExportFiles } from './format-export-files'
 import { buildExportSeoBundle } from './export-seo'
 import {
+  extractPreviewImageSourceReferences,
+  previewImageSourceKey,
   resolvePreviewImageUrl,
   rewritePreviewImageUrls,
   type PreviewImageUrlResolutionOptions,
 } from './preview-image-url-resolution'
+import {
+  type AppCssSourceMap,
+  buildCompiledTailwindCssForSources,
+  readAppLocalCssImports,
+  readAppTailwindBaseThemeCss,
+} from './export-tailwind-css'
+import { buildExportFontStylesheetHrefs } from './export-theme-fonts'
+import { generatedClientRuntimeGlobals } from './client-runtime-globals.generated'
 
 type ReactExportSourceEntry = {
   file: string
@@ -112,6 +125,7 @@ type LakebedGeneratedDependencyEntry = {
 }
 
 export type LakebedExportDependencyManifest = {
+  appCssFiles?: AppCssSourceMap
   components: Record<string, LakebedGeneratedDependencyEntry | undefined>
   files: Record<string, string | undefined>
 }
@@ -119,6 +133,7 @@ export type LakebedExportDependencyManifest = {
 type ImageSource = {
   alt: string
   originalSrc?: string
+  originalSrcKey?: string
   src: string
 }
 
@@ -128,8 +143,11 @@ type ResolvedExtractedImageSource = ImageSource & {
 
 type RouteImageReference = {
   alt: string
+  dimensions?: ImageDimensions
   src?: string
 }
+
+type ImageDimensionHintsByAlt = Map<string, ImageDimensions>
 
 type StyleOverride = {
   classAnchor: string
@@ -154,10 +172,13 @@ let manifestSourceIndex: Record<
   ReactExportSourceEntry | undefined
 > | null = null
 let vendorSourceFileIndex: Record<string, string | undefined> | null = null
-let lakebedExportDependencyManifest: LakebedExportDependencyManifest | null =
-  null
+let lakebedAppCssFiles: AppCssSourceMap | null = null
+const lakebedGeneratedDependencyEntryCache = new Map<
+  string,
+  LakebedGeneratedDependencyEntry | null
+>()
+const lakebedGeneratedFileCache = new Map<string, string | null>()
 const lakebedImageResolveConcurrency = 8
-const lakebedImageFetchTimeoutMs = 2_500
 
 function toPosixPath(value: string): string {
   return value.replaceAll('\\', '/')
@@ -243,15 +264,6 @@ function readHtmlAttribute(tag: string, name: string): string | null {
   return value ? decodeHtmlAttribute(value).trim() : null
 }
 
-type PexelsPhoto = {
-  src?: {
-    large?: string
-    large2x?: string
-    original?: string
-    medium?: string
-  }
-}
-
 function isString(value: unknown): value is string {
   return typeof value === 'string'
 }
@@ -263,95 +275,6 @@ function isNonEmptyString(value: unknown): value is string {
 function parseJsonRecord(source: string): Record<string, unknown> | null {
   const parsed: unknown = JSON.parse(source)
   return isRecord(parsed) ? parsed : null
-}
-
-function isPexelsPhoto(value: unknown): value is PexelsPhoto {
-  if (!isRecord(value)) return false
-  if (value.src === undefined) return true
-  if (!isRecord(value.src)) return false
-  return ['large', 'large2x', 'original', 'medium'].every(
-    (key) =>
-      (value.src as Record<string, unknown>)?.[key] === undefined ||
-      isString((value.src as Record<string, unknown>)[key]),
-  )
-}
-
-function readServerEnv(...keys: string[]): string {
-  if (typeof process === 'undefined') return ''
-  for (const key of keys) {
-    const value = process.env[key]?.trim()
-    if (value) return value
-  }
-  return ''
-}
-
-function choosePexelsPhotoUrl(
-  photo: PexelsPhoto | undefined,
-  w: number,
-  h: number,
-): string | null {
-  if (!photo?.src) return null
-  if (w > 1200 || h > 1200) {
-    return (
-      photo.src.original ??
-      photo.src.large2x ??
-      photo.src.large ??
-      photo.src.medium ??
-      null
-    )
-  }
-  if (w > 800 || h > 800) {
-    return (
-      photo.src.large2x ??
-      photo.src.large ??
-      photo.src.original ??
-      photo.src.medium ??
-      null
-    )
-  }
-  if (w > 400 || h > 400) {
-    return (
-      photo.src.large ??
-      photo.src.large2x ??
-      photo.src.medium ??
-      photo.src.original ??
-      null
-    )
-  }
-  return (
-    photo.src.medium ??
-    photo.src.large ??
-    photo.src.large2x ??
-    photo.src.original ??
-    null
-  )
-}
-
-async function resolvePexelsImageForLakebed(
-  alt: string,
-  w: number,
-  h: number,
-): Promise<string | null> {
-  const pexelsApiKey = readServerEnv('PEXELS_API_KEY', 'VITE_PEXELS_API_KEY')
-  if (!pexelsApiKey) return null
-  const searchUrl = new URL('https://api.pexels.com/v1/search')
-  searchUrl.searchParams.set('query', searchQueryFromAlt(alt))
-  searchUrl.searchParams.set('per_page', '15')
-  searchUrl.searchParams.set('orientation', orientationFromSize(w, h))
-  try {
-    const response = await fetch(searchUrl, {
-      headers: { Authorization: pexelsApiKey },
-      signal: AbortSignal.timeout(lakebedImageFetchTimeoutMs),
-    })
-    if (!response.ok) return null
-    const data: unknown = await response.json()
-    if (!isRecord(data) || !Array.isArray(data.photos)) return null
-    const photos = data.photos.filter(isPexelsPhoto)
-    if (!photos.length) return null
-    return choosePexelsPhotoUrl(photos[seedFromAlt(alt) % photos.length], w, h)
-  } catch {
-    return null
-  }
 }
 
 async function mapWithConcurrency<TItem, TResult>(
@@ -375,15 +298,102 @@ async function mapWithConcurrency<TItem, TResult>(
   return results
 }
 
+const staticTailwindClassNames = new Set([
+  'absolute',
+  'block',
+  'flex',
+  'grid',
+  'hidden',
+  'inline',
+  'relative',
+])
+
+function collectTailwindCandidatesFromString(
+  value: string,
+  into: Set<string>,
+): void {
+  value
+    .split(/\s+/)
+    .map((candidate) => candidate.trim())
+    .map((candidate) => candidate.replace(/^[`"',;:({]+|[`"',;:)}]+$/g, ''))
+    .filter(Boolean)
+    .filter((candidate) => candidate.length <= 200)
+    .filter((candidate) => /^-?[A-Za-z0-9_:\[\]./%#(),-]+$/.test(candidate))
+    .filter(
+      (candidate) =>
+        staticTailwindClassNames.has(candidate) || /[-:[\]/]/.test(candidate),
+    )
+    .forEach((candidate) => into.add(candidate))
+}
+
+function collectTailwindCandidatesFromValue(
+  value: unknown,
+  into: Set<string>,
+): void {
+  if (typeof value === 'string') {
+    collectTailwindCandidatesFromString(value, into)
+    return
+  }
+  if (Array.isArray(value)) {
+    value.forEach((item) => collectTailwindCandidatesFromValue(item, into))
+    return
+  }
+  if (!isRecord(value)) return
+  Object.values(value).forEach((item) =>
+    collectTailwindCandidatesFromValue(item, into),
+  )
+}
+
+function collectRouteTailwindCandidates(routes: LakebedRoute[]): string[] {
+  const candidates = new Set<string>()
+  routes.forEach((route) =>
+    collectTailwindCandidatesFromValue(route.props, candidates),
+  )
+  return [...candidates].sort()
+}
+
+function collectVirtualSourceTailwindCandidates(
+  sources: Array<{ contents: string }>,
+): string[] {
+  const candidates = new Set<string>()
+  sources.forEach((source) =>
+    collectTailwindCandidatesFromString(source.contents, candidates),
+  )
+  return [...candidates].sort()
+}
+
 function lakebedImageDimensionsForAlt(alt: string): ImageDimensions {
   if (
-    /\b(avatar|headshot|portrait)\b/i.test(alt) ||
+    /\b(avatar|headshot|portrait|thumbnail|logo|icon)\b/i.test(alt) ||
     /\bwith (her|his|their)\b/i.test(alt)
   ) {
     return { height: 400, width: 400 }
   }
 
-  return { height: 800, width: 1200 }
+  return { height: 1200, width: 1200 }
+}
+
+function lakebedImageDimensionsForSource(
+  src: string,
+  fallback: ImageDimensions,
+): ImageDimensions {
+  try {
+    const url = new URL(src, 'https://ship-fast.local')
+    const width = Number.parseInt(url.searchParams.get('w') ?? '', 10)
+    const height = Number.parseInt(url.searchParams.get('h') ?? '', 10)
+    return {
+      height:
+        Number.isFinite(height) && height > 0
+          ? Math.min(height, 2400)
+          : fallback.height,
+      width:
+        Number.isFinite(width) && width > 0
+          ? Math.min(width, 2400)
+          : fallback.width,
+    }
+  } catch {
+    return fallback
+  }
 }
 
 function normalizeRemoteImageUrlForLakebed(
@@ -420,6 +430,13 @@ function isLikelyImageAltKey(key: string): boolean {
   if (normalized.endsWith('imagealt') || normalized.endsWith('imagealts'))
     return true
   if (normalized.endsWith('photoalt') || normalized.endsWith('photoalts'))
+    return true
+  if (normalized.endsWith('thumbalt') || normalized.endsWith('thumbalts'))
+    return true
+  if (
+    normalized.endsWith('thumbnailalt') ||
+    normalized.endsWith('thumbnailalts')
+  )
     return true
   if (normalized.endsWith('avataralt') || normalized.endsWith('avataralts'))
     return true
@@ -488,6 +505,7 @@ function addRouteImageReference(
   references: Map<string, RouteImageReference>,
   alt: string,
   src?: string,
+  dimensions?: ImageDimensions,
 ): void {
   const normalizedAlt = alt.trim()
   if (!normalizedAlt) return
@@ -497,23 +515,61 @@ function addRouteImageReference(
       : undefined
   const existing = references.get(normalizedAlt)
   if (!existing || (!existing.src && normalizedSrc)) {
-    references.set(normalizedAlt, { alt: normalizedAlt, src: normalizedSrc })
+    references.set(normalizedAlt, {
+      alt: normalizedAlt,
+      dimensions,
+      src: normalizedSrc,
+    })
   }
+}
+
+function imageDimensionsForAltWithHints(
+  alt: string,
+  dimensionsByAlt: ImageDimensionHintsByAlt,
+  fallback?: ImageDimensions,
+): ImageDimensions {
+  return (
+    dimensionsByAlt.get(alt.trim()) ??
+    fallback ??
+    lakebedImageDimensionsForAlt(alt)
+  )
 }
 
 function collectImageReferences(
   value: unknown,
   into: Map<string, RouteImageReference>,
   key = '',
+  dimensionsHint?: ImageDimensions,
+  dimensionsByAlt: ImageDimensionHintsByAlt = new Map(),
 ): void {
   if (typeof value === 'string') {
     if (isLikelyImageAltKey(key) && !/^https?:\/\//i.test(value)) {
-      addRouteImageReference(into, value)
+      addRouteImageReference(
+        into,
+        value,
+        undefined,
+        imageDimensionsForAltWithHints(value, dimensionsByAlt, dimensionsHint),
+      )
     }
     return
   }
   if (Array.isArray(value)) {
-    for (const item of value) collectImageReferences(item, into, key)
+    const itemDimensionsHint =
+      isLikelyImageAltKey(key) &&
+      value.some(
+        (item) => typeof item === 'string' && !/^https?:\/\//i.test(item),
+      )
+        ? { height: 400, width: 400 }
+        : dimensionsHint
+    for (const item of value) {
+      collectImageReferences(
+        item,
+        into,
+        key,
+        itemDimensionsHint,
+        dimensionsByAlt,
+      )
+    }
     return
   }
   if (!isRecord(value)) return
@@ -523,7 +579,7 @@ function collectImageReferences(
       isLikelyImageAltKey(entryKey) &&
       typeof entryValue === 'string' &&
       !/^https?:\/\//i.test(entryValue)
-        ? [entryValue.trim()]
+        ? [{ alt: entryValue.trim(), key: entryKey }]
         : [],
   )
   const srcCandidates = Object.entries(value).flatMap(
@@ -535,25 +591,181 @@ function collectImageReferences(
         : [],
   )
 
-  for (const [index, alt] of altCandidates.entries()) {
-    addRouteImageReference(into, alt, srcCandidates[index] ?? srcCandidates[0])
+  for (const [index, candidate] of altCandidates.entries()) {
+    const src = srcCandidates[index] ?? srcCandidates[0]
+    addRouteImageReference(
+      into,
+      candidate.alt,
+      src,
+      src
+        ? lakebedImageDimensionsForSource(
+            src,
+            imageDimensionsForAltWithHints(candidate.alt, dimensionsByAlt),
+          )
+        : imageDimensionsForAltWithHints(candidate.alt, dimensionsByAlt),
+    )
   }
 
   const derivedAlts = new Set<string>()
   collectDerivedImageAltCandidates(value, derivedAlts)
-  for (const alt of derivedAlts) addRouteImageReference(into, alt)
+  for (const alt of derivedAlts) {
+    addRouteImageReference(
+      into,
+      alt,
+      undefined,
+      imageDimensionsForAltWithHints(alt, dimensionsByAlt),
+    )
+  }
 
   for (const [childKey, childValue] of Object.entries(value)) {
-    collectImageReferences(childValue, into, childKey)
+    collectImageReferences(
+      childValue,
+      into,
+      key ? `${key}.${childKey}` : childKey,
+      undefined,
+      dimensionsByAlt,
+    )
   }
 }
 
 function collectRouteImageReferences(
   routes: LakebedRoute[],
+  dimensionsByAlt: ImageDimensionHintsByAlt = new Map(),
 ): RouteImageReference[] {
   const references = new Map<string, RouteImageReference>()
-  for (const route of routes) collectImageReferences(route.props, references)
+  for (const route of routes)
+    collectImageReferences(
+      route.props,
+      references,
+      '',
+      undefined,
+      dimensionsByAlt,
+    )
   return [...references.values()].slice(0, 80)
+}
+
+function readJsxNumericProp(tag: string, prop: 'h' | 'w'): number | undefined {
+  const match = tag.match(new RegExp(`\\b${prop}\\s*=\\s*\\{\\s*(\\d+)\\s*\\}`))
+  const value = Number.parseInt(match?.[1] ?? '', 10)
+  return Number.isFinite(value) && value > 0 ? value : undefined
+}
+
+function collectDefaultImageDimensionsByComponent(
+  files: Record<string, string>,
+): Map<string, ImageDimensions> {
+  const dimensionsByComponent = new Map<string, ImageDimensions>()
+  for (const source of Object.values(files)) {
+    for (const match of source.matchAll(
+      /const\s+([A-Z][A-Za-z0-9_]*)\s*=\s*React\.forwardRef[\s\S]*?(?=\n[A-Z][A-Za-z0-9_]*\.displayName|\n\/\* ---------- |\nexport\s+const|$)/g,
+    )) {
+      const componentName = match[1]
+      const componentSource = match[0]
+      const width = Number.parseInt(
+        componentSource.match(/\bw\s*=\s*(\d+)/)?.[1] ?? '',
+        10,
+      )
+      const height = Number.parseInt(
+        componentSource.match(/\bh\s*=\s*(\d+)/)?.[1] ?? '',
+        10,
+      )
+      if (componentName && width > 0 && height > 0) {
+        dimensionsByComponent.set(componentName, { height, width })
+      }
+    }
+  }
+  return dimensionsByComponent
+}
+
+function findRouteComponentSource(
+  files: Record<string, string>,
+  componentName: string,
+): string | undefined {
+  const byPath = files[`client/components/${toIdentifier(componentName)}.tsx`]
+  if (byPath) return byPath
+  const namePatterns = [
+    `name: '${componentName}'`,
+    `name: "${componentName}"`,
+    `export const ${componentName}`,
+  ]
+  return Object.values(files).find((source) =>
+    namePatterns.some((pattern) => source.includes(pattern)),
+  )
+}
+
+function inferImageDimensionsForAltKey(
+  source: string,
+  altKey: string,
+  defaultDimensionsByComponent: Map<string, ImageDimensions>,
+): ImageDimensions | undefined {
+  const escapedKey = escapeRegExp(altKey)
+  const variableNames = new Set([altKey])
+  const variablePattern = new RegExp(
+    `const\\s+([A-Za-z_$][\\w$]*)\\s*=\\s*props\\.${escapedKey}\\b`,
+    'g',
+  )
+  for (const match of source.matchAll(variablePattern)) {
+    if (match[1]) variableNames.add(match[1])
+  }
+
+  for (const variableName of variableNames) {
+    const escapedVariable = escapeRegExp(variableName)
+    const tagPattern = new RegExp(
+      `<([A-Z][A-Za-z0-9_]*)\\b[^>]*\\balt=\\{(?:props\\.)?${escapedVariable}\\}[^>]*>`,
+      'g',
+    )
+    for (const match of source.matchAll(tagPattern)) {
+      const tag = match[0]
+      const width = readJsxNumericProp(tag, 'w')
+      const height = readJsxNumericProp(tag, 'h')
+      if (width && height) return { height, width }
+      const componentName = match[1]
+      if (!componentName) continue
+      const defaultDimensions = defaultDimensionsByComponent.get(componentName)
+      if (defaultDimensions) return defaultDimensions
+    }
+  }
+  return undefined
+}
+
+export function inferLakebedImageDimensionHints(
+  routes: LakebedRoute[],
+  files: Record<string, string>,
+): ImageDimensionHintsByAlt {
+  const dimensionsByAlt: ImageDimensionHintsByAlt = new Map()
+  const defaultDimensionsByComponent =
+    collectDefaultImageDimensionsByComponent(files)
+  const visit = (value: unknown, fallbackComponentName?: string): void => {
+    if (Array.isArray(value)) {
+      value.forEach((item) => visit(item))
+      return
+    }
+    if (!isRecord(value)) return
+    const componentName =
+      typeof value.typeName === 'string'
+        ? value.typeName
+        : fallbackComponentName
+    const props = isRecord(value.props) ? value.props : value
+    if (componentName) {
+      const source = findRouteComponentSource(files, componentName)
+      if (source) {
+        for (const [key, propValue] of Object.entries(props)) {
+          if (!isLikelyImageAltKey(key) || typeof propValue !== 'string')
+            continue
+          const dimensions = inferImageDimensionsForAltKey(
+            source,
+            key,
+            defaultDimensionsByComponent,
+          )
+          if (dimensions) dimensionsByAlt.set(propValue.trim(), dimensions)
+        }
+      }
+    }
+    Object.values(props).forEach((item) => visit(item))
+  }
+  for (const route of routes) {
+    visit(route.props, route.componentName)
+  }
+  return dimensionsByAlt
 }
 
 export function collectRouteImageAlts(routes: LakebedRoute[]): string[] {
@@ -565,7 +777,10 @@ async function normalizePreviewImageSource(
   src: string,
   options: PreviewImageUrlResolutionOptions = {},
 ): Promise<string> {
-  const dimensions = lakebedImageDimensionsForAlt(alt)
+  const dimensions = lakebedImageDimensionsForSource(
+    src,
+    lakebedImageDimensionsForAlt(alt),
+  )
   const resolved = await resolvePreviewImageUrl(src, {
     fallbackAlt: alt,
     ...options,
@@ -663,55 +878,33 @@ function buildRuntimeGeneratedImageSrc(
   return `/api/pexels?${params.toString()}`
 }
 
-function asciiTokens(value: string): string[] {
-  return value
-    .toLowerCase()
-    .split(/[^a-z0-9]+/)
-    .filter((token) => token.length >= 4)
-}
-
-function hasMeaningfulTokenOverlap(left: string, right: string): boolean {
-  const rightTokens = new Set(asciiTokens(right))
-  return asciiTokens(left).some((token) => rightTokens.has(token))
-}
-
-function hasNonAscii(value: string): boolean {
-  for (const char of value) {
-    if (char.charCodeAt(0) > 127) return true
-  }
-  return false
-}
-
-function shouldPairGeneratedPreviewImagesByOrder(
-  routeAlts: string[],
-  generatedPreviewSources: ResolvedExtractedImageSource[],
-): boolean {
-  if (generatedPreviewSources.length < routeAlts.length) return false
-  if (routeAlts.some(hasNonAscii)) return true
-  return routeAlts.some((routeAlt) =>
-    generatedPreviewSources.some((source) =>
-      hasMeaningfulTokenOverlap(routeAlt, source.alt),
-    ),
-  )
+function buildRuntimeGeneratedImageSrcForDimensions(
+  alt: string,
+  dimensions: ImageDimensions,
+  input: Pick<OpenUIExportInput, 'prompt' | 'siteSpecJson'> | undefined,
+): string {
+  const baseQuery = searchQueryFromAlt(alt)
+  const brandContext = parseSiteSpecBrandContext(input?.siteSpecJson)
+  const query = buildImageSearchQuery(alt, baseQuery, {
+    prompt: input?.prompt,
+    brandContext,
+  })
+  const params = new URLSearchParams({
+    query,
+    w: String(dimensions.width),
+    h: String(dimensions.height),
+    seed: alt,
+  })
+  return `/api/pexels?${params.toString()}`
 }
 
 function extractImageSources(html: string | undefined): ImageSource[] {
-  if (!html) return []
-  const byAlt = new Map<string, string>()
-  for (const match of html.matchAll(/<img\b[^>]*>/gi)) {
-    const tag = match[0]
-    const alt = readHtmlAttribute(tag, 'alt')
-    const src = readHtmlAttribute(tag, 'src')
-    if (!alt || !src || byAlt.has(alt)) continue
-    if (
-      /^(https?:)?\/\//i.test(src) ||
-      src.startsWith('/') ||
-      src.startsWith('data:image/')
-    ) {
-      byAlt.set(alt, src)
-    }
-  }
-  return [...byAlt].map(([alt, src]) => ({ alt, src }))
+  return extractPreviewImageSourceReferences(html).map((source) => ({
+    alt: source.alt,
+    originalSrc: source.originalSrc,
+    originalSrcKey: source.originalSrcKey,
+    src: source.originalSrc,
+  }))
 }
 
 async function resolveExtractedImageSources(
@@ -722,6 +915,7 @@ async function resolveExtractedImageSources(
     extractImageSources(html).map(async ({ alt, src }) => ({
       alt,
       originalSrc: src,
+      originalSrcKey: previewImageSourceKey(src),
       src: await normalizePreviewImageSource(alt, src, {
         overrideGeneratedSrc: buildRuntimeGeneratedImageSrc(alt, src, input),
       }),
@@ -750,54 +944,65 @@ export async function resolveLakebedImageSources(
   routes: LakebedRoute[],
   previewHtml: string | undefined,
   input?: Pick<OpenUIExportInput, 'prompt' | 'siteSpecJson'>,
+  dimensionsByAlt: ImageDimensionHintsByAlt = new Map(),
 ): Promise<ImageSource[]> {
   const extractedSources = await resolveExtractedImageSources(
     previewHtml,
     input,
   )
-  const byAlt = new Map<string, ImageSource>(
-    extractedSources.map((source) => [
-      source.alt,
-      { alt: source.alt, originalSrc: source.originalSrc, src: source.src },
-    ]),
-  )
+  const byAlt = new Map<string, ImageSource>()
+  for (const source of extractedSources) {
+    if (byAlt.has(source.alt)) continue
+    byAlt.set(source.alt, {
+      alt: source.alt,
+      originalSrc: source.originalSrc,
+      originalSrcKey: source.originalSrcKey,
+      src: source.src,
+    })
+  }
 
-  const routeReferences = collectRouteImageReferences(routes)
+  const routeReferences = collectRouteImageReferences(routes, dimensionsByAlt)
   for (const reference of routeReferences) {
     if (!reference.src) continue
+    const existing = byAlt.get(reference.alt)
+    if (
+      existing &&
+      !isGeneratedPreviewImageSource(existing.originalSrc ?? '')
+    ) {
+      continue
+    }
     byAlt.set(reference.alt, {
       alt: reference.alt,
       originalSrc: reference.src,
+      originalSrcKey: previewImageSourceKey(reference.src),
       src: await normalizePreviewImageSource(reference.alt, reference.src),
     })
   }
 
   const routeAlts = routeReferences.map((reference) => reference.alt)
-  const generatedPreviewSources = extractedSources.filter((source) =>
-    isGeneratedPreviewImageSource(source.originalSrc),
-  )
-  const pairGeneratedPreviewImagesByOrder =
-    shouldPairGeneratedPreviewImagesByOrder(routeAlts, generatedPreviewSources)
-  let generatedPreviewIndex = 0
+  let previewIndex = 0
+  const shouldPairPreviewImagesByOrder =
+    extractedSources.length > 1 && extractedSources.length >= routeAlts.length
   for (const alt of routeAlts) {
-    const exactGeneratedIndex = generatedPreviewSources.findIndex(
-      (source, index) => index >= generatedPreviewIndex && source.alt === alt,
+    const exactPreviewIndex = extractedSources.findIndex(
+      (source, index) => index >= previewIndex && source.alt === alt,
     )
     if (byAlt.has(alt)) {
-      if (exactGeneratedIndex >= 0) {
-        generatedPreviewIndex = exactGeneratedIndex + 1
+      if (exactPreviewIndex >= 0) {
+        previewIndex = exactPreviewIndex + 1
       }
       continue
     }
-    if (!pairGeneratedPreviewImagesByOrder) continue
-    const orderedPreviewSource = generatedPreviewSources[generatedPreviewIndex]
+    if (!shouldPairPreviewImagesByOrder) continue
+    const orderedPreviewSource = extractedSources[previewIndex]
     if (!orderedPreviewSource) continue
     byAlt.set(alt, {
       alt,
       originalSrc: orderedPreviewSource.originalSrc,
+      originalSrcKey: orderedPreviewSource.originalSrcKey,
       src: orderedPreviewSource.src,
     })
-    generatedPreviewIndex += 1
+    previewIndex += 1
   }
 
   const missingAlts = routeAlts.filter((alt) => !byAlt.has(alt))
@@ -805,19 +1010,28 @@ export async function resolveLakebedImageSources(
     missingAlts,
     lakebedImageResolveConcurrency,
     async (alt) => {
-      const { height, width } = lakebedImageDimensionsForAlt(alt)
-      const resolved =
-        (await resolvePexelsImageForLakebed(alt, width, height)) ??
-        picsumUrl(slugifyAlt(alt), width, height)
+      const reference = routeReferences.find((item) => item.alt === alt)
+      const dimensions =
+        reference?.dimensions ?? lakebedImageDimensionsForAlt(alt)
+      const generatedSrc = buildRuntimeGeneratedImageSrcForDimensions(
+        alt,
+        dimensions,
+        input,
+      )
+      const resolved = await normalizePreviewImageSource(alt, generatedSrc, {
+        overrideGeneratedSrc: generatedSrc,
+      })
       return {
         alt,
-        src: normalizeRemoteImageUrlForLakebed(resolved, { height, width }),
+        originalSrc: generatedSrc,
+        originalSrcKey: previewImageSourceKey(generatedSrc),
+        src: resolved,
       }
     },
   )
 
-  for (const { alt, src } of resolvedImages) {
-    byAlt.set(alt, { alt, src })
+  for (const source of resolvedImages) {
+    byAlt.set(source.alt, source)
   }
 
   return [...byAlt.values()]
@@ -1058,6 +1272,7 @@ const lakebedColorKeys: string[] = [
 export function buildLakebedThemeCss(
   styles: ThemeStyles | null,
   isDark: boolean,
+  appCssFiles: AppCssSourceMap = {},
 ): string {
   void isDark
   // Ship BOTH palettes: the light vars on `:root` and the dark vars on `.dark`
@@ -1070,35 +1285,51 @@ export function buildLakebedThemeCss(
     ? { ...styles.light, ...styles.dark }
     : defaultLakebedThemeVars
   const declarationsFor = (vars: Record<string, unknown>) =>
-    themeVarKeys
-      .map((key) => {
+    [
+      ...themeVarKeys.map((key) => {
         const value = vars[key] ?? defaultLakebedThemeVars[key]
         return value == null ? null : `  --${key}: ${String(value)};`
-      })
+      }),
+      ...lakebedColorKeys.map((key) => `  --color-${key}: var(--${key});`),
+    ]
       .filter(isString)
       .join('\n')
 
+  const appLocalCss = readAppLocalCssImports(appCssFiles, {
+    detachedDocument: true,
+  })
+  const appBaseThemeCss = readAppTailwindBaseThemeCss(appCssFiles)
+
+  const lightDeclarations = declarationsFor(lightVars)
+  const darkDeclarations = declarationsFor(darkVars)
+
   return `:root {
-${declarationsFor(lightVars)}
+${lightDeclarations}
   color-scheme: light;
 }
 
 .dark {
-${declarationsFor(darkVars)}
+${darkDeclarations}
   color-scheme: dark;
 }
 
-html,
-body,
-#root {
-  min-height: 100%;
+${[appLocalCss, appBaseThemeCss].filter(Boolean).join('\n\n')}
+
+.genui-preview {
+${lightDeclarations}
+  color-scheme: light;
 }
 
-body {
-  margin: 0;
+.genui-preview.dark {
+${darkDeclarations}
+  color-scheme: dark;
+}
+
+.genui-preview {
+  min-height: 100vh;
+  width: 100%;
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans);
 }
 
 .bg-background { background-color: var(--background); }
@@ -1139,47 +1370,6 @@ body {
 .hover\\:text-muted-foreground:hover { color: var(--muted-foreground); }
 .hover\\:text-accent-foreground:hover { color: var(--accent-foreground); }
 .hover\\:text-destructive:hover { color: var(--destructive); }`
-}
-
-/**
- * Generates a Tailwind v4 `@theme` block that maps the site's custom color
- * tokens to Tailwind's `--color-*` namespace. Without this, `@tailwindcss/browser`
- * only generates utilities for its default palette — custom classes like
- * `bg-background`, `text-foreground`, `border-border/50`, `bg-background/65`,
- * and all responsive/state variants are silently dropped.
- *
- * The `--color-*` values reference the `:root` CSS variables (e.g.
- * `var(--background)`) so runtime theme switching still works.
- */
-function buildLakebedTailwindThemeCss(
-  styles: ThemeStyles | null,
-  isDark: boolean,
-): string {
-  const selected = styles
-    ? { ...styles.light, ...(isDark ? styles.dark : {}) }
-    : defaultLakebedThemeVars
-  const colorDeclarations = lakebedColorKeys
-    .map((key) => {
-      const value = selected[key] ?? defaultLakebedThemeVars[key]
-      return value == null ? null : `  --color-${key}: var(--${key});`
-    })
-    .filter(isString)
-    .join('\n')
-  const fontDeclarations = [
-    selected['font-sans'] && `  --font-sans: var(--font-sans);`,
-    selected['font-serif'] && `  --font-serif: var(--font-serif);`,
-    selected['font-mono'] && `  --font-mono: var(--font-mono);`,
-  ]
-    .filter(isString)
-    .join('\n')
-  const radiusDeclaration = selected['radius']
-    ? `  --radius: var(--radius);`
-    : ''
-  return `@theme {
-${colorDeclarations}
-${fontDeclarations}
-${radiusDeclaration}
-}`
 }
 
 function slugifyRoute(value: string): string {
@@ -1295,47 +1485,191 @@ function isLakebedGeneratedDependencyEntry(
   )
 }
 
-function getLakebedExportDependencyManifest(): LakebedExportDependencyManifest {
-  if (lakebedExportDependencyManifest) return lakebedExportDependencyManifest
-  if (lakebedExportDepsEncoding !== 'br+base64') {
+function decompressLakebedJsonChunk(value: string): unknown {
+  if (lakebedExportDepsChunkEncoding !== 'br+base64-json') {
     throw new Error(
-      `Unsupported Lakebed export dependency manifest encoding: ${lakebedExportDepsEncoding}`,
+      `Unsupported Lakebed export dependency chunk encoding: ${lakebedExportDepsChunkEncoding}`,
+    )
+  }
+  return JSON.parse(
+    brotliDecompressSync(Buffer.from(value, 'base64')).toString('utf8'),
+  )
+}
+
+function getLakebedGeneratedDependencyEntry(
+  componentName: string,
+): LakebedGeneratedDependencyEntry | null {
+  const cached = lakebedGeneratedDependencyEntryCache.get(componentName)
+  if (cached !== undefined) return cached
+
+  const encoded =
+    lakebedExportComponentChunks[
+      componentName as keyof typeof lakebedExportComponentChunks
+    ]
+  if (encoded === undefined) {
+    lakebedGeneratedDependencyEntryCache.set(componentName, null)
+    return null
+  }
+
+  const entry = decompressLakebedJsonChunk(encoded)
+  if (!isLakebedGeneratedDependencyEntry(entry)) {
+    throw new Error(`Invalid Lakebed export dependency entry: ${componentName}`)
+  }
+  lakebedGeneratedDependencyEntryCache.set(componentName, entry)
+  return entry
+}
+
+function getLakebedGeneratedFile(path: string): string | undefined {
+  const cached = lakebedGeneratedFileCache.get(path)
+  if (cached !== undefined) return cached ?? undefined
+
+  const encoded =
+    lakebedExportFileChunks[path as keyof typeof lakebedExportFileChunks]
+  if (encoded === undefined) {
+    lakebedGeneratedFileCache.set(path, null)
+    return undefined
+  }
+
+  const source = decompressLakebedJsonChunk(encoded)
+  if (typeof source !== 'string') {
+    throw new Error(`Invalid Lakebed export dependency source: ${path}`)
+  }
+  lakebedGeneratedFileCache.set(path, source)
+  return source
+}
+
+function getLakebedAppCssFiles(): AppCssSourceMap {
+  if (lakebedAppCssFiles) return lakebedAppCssFiles
+  if (lakebedAppCssSourcesEncoding !== 'br+base64') {
+    throw new Error(
+      `Unsupported Lakebed app CSS source encoding: ${lakebedAppCssSourcesEncoding}`,
     )
   }
   const parsed = parseJsonRecord(
     brotliDecompressSync(
-      Buffer.from(lakebedExportDepsBase64, 'base64'),
+      Buffer.from(lakebedAppCssSourcesBase64, 'base64'),
     ).toString('utf8'),
   )
-  if (!parsed) throw new Error('Invalid Lakebed export dependency manifest')
-  if (!isRecord(parsed.components) || !isRecord(parsed.files)) {
-    throw new Error('Invalid Lakebed export dependency manifest shape')
-  }
-  const components: Record<
-    string,
-    LakebedGeneratedDependencyEntry | undefined
-  > = {}
-  for (const [name, entry] of Object.entries(parsed.components)) {
-    if (!isLakebedGeneratedDependencyEntry(entry)) {
-      throw new Error(`Invalid Lakebed export dependency entry: ${name}`)
-    }
-    components[name] = entry
-  }
-  const files: Record<string, string | undefined> = {}
-  for (const [path, source] of Object.entries(parsed.files)) {
+  if (!parsed) throw new Error('Invalid Lakebed app CSS source manifest')
+  const files: AppCssSourceMap = {}
+  for (const [path, source] of Object.entries(parsed)) {
     if (typeof source !== 'string') {
-      throw new Error(`Invalid Lakebed export dependency source: ${path}`)
+      throw new Error(`Invalid Lakebed app CSS source: ${path}`)
     }
     files[path] = source
   }
-  lakebedExportDependencyManifest = { components, files }
-  return lakebedExportDependencyManifest
+  lakebedAppCssFiles = files
+  return files
 }
 
 function printNode(node: ts.Node, sourceFile: ts.SourceFile): string {
   return ts
     .createPrinter({ newLine: ts.NewLineKind.LineFeed, removeComments: true })
     .printNode(ts.EmitHint.Unspecified, node, sourceFile)
+}
+
+function stripLakebedSourceComments(source: string, path: string): string {
+  const sourceFile = ts.createSourceFile(
+    path,
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    path.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+  )
+  return ts
+    .createPrinter({ newLine: ts.NewLineKind.LineFeed, removeComments: true })
+    .printFile(sourceFile)
+}
+
+function stripLakebedExportOnlyTypeSyntax(
+  source: string,
+  path: string,
+): string {
+  if (!/\.(tsx?|jsx?)$/.test(path)) return source
+  const sourceFile = ts.createSourceFile(
+    path,
+    source
+      .replace(
+        /const (__iv__) = ([A-Za-z_$][\w$]*) as \{[\s\S]*?\n\s*\}/g,
+        'const $1 = { points: undefined, cta: undefined, imageAlt: undefined, company: undefined, meta: undefined, ...$2 }',
+      )
+      .replace(
+        /\(\{\s*([A-Za-z_$][\w$]*)\s*\}:\s*\{\s*\1:\s*boolean\s*\}\)\s*=>/g,
+        '({ $1 }) =>',
+      )
+      .replace(
+        /(\.map\(\([A-Za-z_$][\w$]*)\s*:\s*(?:\{[^)]*?\}|[A-Za-z_$][\w$<>\[\] |.&]+)\)\s*=>/g,
+        '$1) =>',
+      )
+      .replace(
+        /\(([A-Za-z_$][\w$]*)\s*:\s*[A-Za-z_$][\w$<>\[\] |.&]*\)\s*=>/g,
+        '($1) =>',
+      ),
+    ts.ScriptTarget.Latest,
+    true,
+    path.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+  )
+  const transformer =
+    (context: ts.TransformationContext): ts.Transformer<ts.SourceFile> =>
+    (root: ts.SourceFile): ts.SourceFile => {
+      const stripParameterType = (
+        parameter: ts.ParameterDeclaration,
+      ): ts.ParameterDeclaration =>
+        context.factory.updateParameterDeclaration(
+          parameter,
+          parameter.modifiers,
+          parameter.dotDotDotToken,
+          parameter.name,
+          parameter.questionToken,
+          undefined,
+          parameter.initializer,
+        )
+
+      const visit = (node: ts.Node): ts.VisitResult<ts.Node> => {
+        if (
+          ts.isAsExpression(node) ||
+          ts.isTypeAssertionExpression(node) ||
+          ts.isNonNullExpression(node)
+        ) {
+          return ts.visitNode(node.expression, visit)
+        }
+        if (ts.isArrowFunction(node)) {
+          return context.factory.updateArrowFunction(
+            node,
+            node.modifiers,
+            node.typeParameters,
+            node.parameters.map(stripParameterType),
+            undefined,
+            node.equalsGreaterThanToken,
+            node.body,
+          )
+        }
+        return ts.visitEachChild(node, visit, context)
+      }
+
+      return ts.visitEachChild(root, visit, context)
+    }
+
+  const result = ts.transform(sourceFile, [transformer])
+  const transformed = result.transformed.find(ts.isSourceFile) ?? sourceFile
+  const printed = ts
+    .createPrinter({ newLine: ts.NewLineKind.LineFeed, removeComments: true })
+    .printFile(transformed)
+  result.dispose()
+  return printed
+    .replace(/\{ref as never\}/g, '{ref}')
+    .replace(/const TitleTag = titleAs as [^\n;]+/g, 'const TitleTag = titleAs')
+}
+
+function stripLakebedExportOnlyTypeSyntaxFromFiles(
+  files: Record<string, string>,
+): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(files).map(([path, source]) => [
+      path,
+      stripLakebedExportOnlyTypeSyntax(source, path),
+    ]),
+  )
 }
 
 export function isExportableFactory(expression: string): boolean {
@@ -1396,192 +1730,110 @@ function collectValueIdentifierTexts(node: ts.Node) {
   return identifiers
 }
 
-// JS + browser globals available at runtime in a Lakebed client bundle without
-// an import. Used by the free-variable guard below: anything referenced but
-// neither bound in the module nor listed here is a dropped/stripped import.
-const CLIENT_RUNTIME_GLOBALS = new Set<string>([
-  // ECMAScript
-  'globalThis',
-  'undefined',
-  'NaN',
-  'Infinity',
-  'Object',
-  'Array',
-  'String',
-  'Number',
-  'Boolean',
-  'Symbol',
-  'BigInt',
-  'Math',
-  'JSON',
-  'Date',
-  'RegExp',
-  'Function',
-  'Promise',
-  'Map',
-  'Set',
-  'WeakMap',
-  'WeakSet',
-  'WeakRef',
-  'Proxy',
-  'Reflect',
-  'Error',
-  'EvalError',
-  'RangeError',
-  'ReferenceError',
-  'SyntaxError',
-  'TypeError',
-  'URIError',
-  'AggregateError',
-  'parseInt',
-  'parseFloat',
-  'isNaN',
-  'isFinite',
-  'encodeURI',
-  'encodeURIComponent',
-  'decodeURI',
-  'decodeURIComponent',
-  'escape',
-  'unescape',
-  'Intl',
-  'ArrayBuffer',
-  'SharedArrayBuffer',
-  'DataView',
-  'Atomics',
-  'Int8Array',
-  'Uint8Array',
-  'Uint8ClampedArray',
-  'Int16Array',
-  'Uint16Array',
-  'Int32Array',
-  'Uint32Array',
-  'Float32Array',
-  'Float64Array',
-  'BigInt64Array',
-  'BigUint64Array',
-  'structuredClone',
-  'queueMicrotask',
-  'eval',
-  // Console / timers / scheduling
-  'console',
-  'setTimeout',
-  'clearTimeout',
-  'setInterval',
-  'clearInterval',
-  'requestAnimationFrame',
-  'cancelAnimationFrame',
-  'requestIdleCallback',
-  'cancelIdleCallback',
-  'performance',
-  'queueMicrotask',
-  // DOM / BOM
-  'window',
-  'self',
-  'top',
-  'parent',
-  'frames',
-  'document',
-  'navigator',
-  'location',
-  'history',
-  'screen',
-  'localStorage',
-  'sessionStorage',
-  'alert',
-  'confirm',
-  'prompt',
-  'getComputedStyle',
-  'matchMedia',
-  'getSelection',
-  'scrollTo',
-  'scrollBy',
-  'scrollX',
-  'scrollY',
-  'innerWidth',
-  'innerHeight',
-  'devicePixelRatio',
-  'customElements',
-  'crypto',
-  'caches',
-  // Fetch / network / encoding
-  'fetch',
-  'XMLHttpRequest',
-  'URL',
-  'URLSearchParams',
-  'Headers',
-  'Request',
-  'Response',
-  'FormData',
-  'Blob',
-  'File',
-  'FileReader',
-  'WebSocket',
-  'EventSource',
-  'AbortController',
-  'AbortSignal',
-  'TextEncoder',
-  'TextDecoder',
-  'atob',
-  'btoa',
-  'BroadcastChannel',
-  'MessageChannel',
-  'Worker',
-  // DOM constructors / observers / events
-  'Node',
-  'Element',
-  'HTMLElement',
-  'DocumentFragment',
-  'Text',
-  'Comment',
-  'ShadowRoot',
-  'Event',
-  'CustomEvent',
-  'EventTarget',
-  'KeyboardEvent',
-  'MouseEvent',
-  'PointerEvent',
-  'TouchEvent',
-  'FocusEvent',
-  'InputEvent',
-  'DragEvent',
-  'WheelEvent',
-  'ClipboardEvent',
-  'SubmitEvent',
-  'PopStateEvent',
-  'HashChangeEvent',
-  'MessageEvent',
-  'StorageEvent',
-  'ProgressEvent',
-  'CloseEvent',
-  'ErrorEvent',
-  'PromiseRejectionEvent',
-  'AnimationEvent',
-  'TransitionEvent',
-  'PageTransitionEvent',
-  'BeforeUnloadEvent',
-  'UIEvent',
-  'CompositionEvent',
-  'MediaQueryListEvent',
-  'MutationObserver',
-  'ResizeObserver',
-  'IntersectionObserver',
-  'PerformanceObserver',
-  'DOMParser',
-  'XMLSerializer',
-  'Image',
-  'Audio',
-  'Option',
-  'CSS',
-  'DOMException',
-  'HTMLInputElement',
-  'HTMLElement',
-  'FontFace',
-  // Preact / JSX runtime helpers that may appear un-imported in generated code
-  'Fragment',
-  // Node-ish (defensive; should not appear in client code)
-  'process',
-  'Buffer',
-])
+let cachedClientRuntimeGlobals: Set<string> | null = null
+
+function addAmbientDeclarationName(
+  globals: Set<string>,
+  statement: ts.Statement,
+): void {
+  if (ts.isVariableStatement(statement)) {
+    for (const declaration of statement.declarationList.declarations) {
+      for (const name of bindingIdentifierNames(declaration.name)) {
+        globals.add(name)
+      }
+    }
+    return
+  }
+  if (
+    (ts.isFunctionDeclaration(statement) ||
+      ts.isClassDeclaration(statement) ||
+      ts.isEnumDeclaration(statement) ||
+      ts.isInterfaceDeclaration(statement) ||
+      ts.isTypeAliasDeclaration(statement)) &&
+    statement.name
+  ) {
+    globals.add(statement.name.text)
+    return
+  }
+  if (!ts.isModuleDeclaration(statement)) return
+
+  if (ts.isIdentifier(statement.name)) globals.add(statement.name.text)
+  if (statement.name.text !== 'global') return
+  const body = statement.body
+  if (!body || !ts.isModuleBlock(body)) return
+  for (const nested of body.statements) {
+    addAmbientDeclarationName(globals, nested)
+  }
+}
+
+function resolveTypeScriptLibFileName(libFileName: string): string {
+  return libFileName.startsWith('lib.')
+    ? libFileName
+    : `lib.${libFileName}.d.ts`
+}
+
+function getClientRuntimeGlobals(): Set<string> {
+  if (cachedClientRuntimeGlobals) return cachedClientRuntimeGlobals
+
+  const globals = new Set<string>()
+  const compilerOptions: ts.CompilerOptions = {
+    lib: ['lib.es2022.d.ts', 'lib.dom.d.ts', 'lib.dom.iterable.d.ts'],
+    target: ts.ScriptTarget.ES2022,
+  }
+  const libDir = dirname(ts.getDefaultLibFilePath(compilerOptions))
+  const queuedLibs =
+    compilerOptions.lib?.map(resolveTypeScriptLibFileName) ?? []
+  const visitedLibs = new Set<string>()
+  const referencedAmbientNames = new Set<string>()
+
+  for (let index = 0; index < queuedLibs.length; index += 1) {
+    const libFileName = queuedLibs[index]
+    if (!libFileName || visitedLibs.has(libFileName)) continue
+    visitedLibs.add(libFileName)
+
+    const libPath = join(libDir, libFileName)
+    const source = ts.sys.readFile(libPath)
+    if (!source) continue
+
+    const sourceFile = ts.createSourceFile(
+      libPath,
+      source,
+      ts.ScriptTarget.Latest,
+      true,
+      ts.ScriptKind.TS,
+    )
+    const collectReferencedAmbientNames = (node: ts.Node) => {
+      if (ts.isIdentifier(node)) referencedAmbientNames.add(node.text)
+      ts.forEachChild(node, collectReferencedAmbientNames)
+    }
+    collectReferencedAmbientNames(sourceFile)
+    for (const reference of sourceFile.libReferenceDirectives) {
+      queuedLibs.push(resolveTypeScriptLibFileName(reference.fileName))
+    }
+    for (const reference of sourceFile.referencedFiles) {
+      queuedLibs.push(reference.fileName)
+    }
+    for (const statement of sourceFile.statements) {
+      addAmbientDeclarationName(globals, statement)
+    }
+  }
+
+  for (const name of Object.getOwnPropertyNames(globalThis)) {
+    if (
+      referencedAmbientNames.has(name) ||
+      Reflect.get(globalThis, name) === undefined
+    ) {
+      globals.add(name)
+    }
+  }
+
+  if (globals.size < generatedClientRuntimeGlobals.length) {
+    for (const name of generatedClientRuntimeGlobals) globals.add(name)
+  }
+
+  cachedClientRuntimeGlobals = globals
+  return globals
+}
 
 // Identifiers that must be skipped when collecting *references* because they
 // are member names, property keys, JSX attribute names, or binding targets —
@@ -1701,6 +1953,7 @@ export function findUnboundClientReferences(
     fileName.endsWith('.ts') ? ts.ScriptKind.TS : ts.ScriptKind.TSX,
   )
   const bound = collectAllBoundNames(sourceFile)
+  const runtimeGlobals = getClientRuntimeGlobals()
   const unbound = new Set<string>()
   const visit = (node: ts.Node) => {
     if (ts.isTypeNode(node)) return
@@ -1708,7 +1961,7 @@ export function findUnboundClientReferences(
       ts.isIdentifier(node) &&
       isReferenceIdentifier(node) &&
       !bound.has(node.text) &&
-      !CLIENT_RUNTIME_GLOBALS.has(node.text)
+      !runtimeGlobals.has(node.text)
     ) {
       unbound.add(node.text)
     }
@@ -2491,7 +2744,7 @@ export function buildLakebedExportDependencyManifestForGenerator(
     }
   }
 
-  return { components, files }
+  return { appCssFiles: {}, components, files }
 }
 
 function collectDefinitionsDynamically(
@@ -2508,12 +2761,11 @@ function collectDefinitionsDynamically(
 }
 
 function collectDefinitions(componentNames: string[]): LakebedDefinition[] {
-  const generatedManifest = getLakebedExportDependencyManifest()
   const generatedDefinitions: LakebedDefinition[] = []
   const dynamicComponentNames: string[] = []
 
   for (const componentName of componentNames) {
-    const generatedEntry = generatedManifest.components[componentName]
+    const generatedEntry = getLakebedGeneratedDependencyEntry(componentName)
     if (generatedEntry) {
       generatedDefinitions.push(...generatedEntry.definitions)
     } else {
@@ -2555,19 +2807,18 @@ function collectClientComponents(
   seenVendorFiles: Set<string>,
   seenBlockFiles: Set<string>,
 ): ClientComponentDefinition[] {
-  const generatedManifest = getLakebedExportDependencyManifest()
   const clientComponents: ClientComponentDefinition[] = []
   const dynamicComponentNames: string[] = []
 
   for (const componentName of componentNames) {
-    const generatedEntry = generatedManifest.components[componentName]
+    const generatedEntry = getLakebedGeneratedDependencyEntry(componentName)
     if (!generatedEntry) {
       dynamicComponentNames.push(componentName)
       continue
     }
 
     const missingFile = generatedEntry.filePaths.find(
-      (filePath) => generatedManifest.files[filePath] === undefined,
+      (filePath) => getLakebedGeneratedFile(filePath) === undefined,
     )
     if (missingFile) {
       dynamicComponentNames.push(componentName)
@@ -2575,11 +2826,11 @@ function collectClientComponents(
     }
 
     for (const filePath of generatedEntry.filePaths) {
-      const source = generatedManifest.files[filePath]
+      const source = getLakebedGeneratedFile(filePath)
       if (source !== undefined) files[filePath] = source
     }
     for (const vendorFile of generatedEntry.vendorFiles) {
-      const source = generatedManifest.files[vendorFile]
+      const source = getLakebedGeneratedFile(vendorFile)
       if (source !== undefined) files[vendorFile] = source
       seenVendorFiles.add(vendorFile)
       copyVendorCommonJsCompanions(
@@ -2589,7 +2840,7 @@ function collectClientComponents(
       )
     }
     for (const blockFile of generatedEntry.blockFiles) {
-      const source = generatedManifest.files[blockFile]
+      const source = getLakebedGeneratedFile(blockFile)
       if (source !== undefined) files[blockFile] = source
       seenBlockFiles.add(blockFile)
     }
@@ -2648,9 +2899,6 @@ export function resolveLakebedExportDependenciesForTest(
 }
 
 function normalizePortablePunctuation(value: unknown): unknown {
-  if (typeof value === 'string') {
-    return value.replace(/[\u2010\u2011\u2012\u2013]/g, '-')
-  }
   if (Array.isArray(value)) return value.map(normalizePortablePunctuation)
   if (!isRecord(value)) return value
   return Object.fromEntries(
@@ -2994,7 +3242,9 @@ ${renderRouteNodeChildren(props.children)}
   // (`title.split is not a function`) on render. Keyed off the declared schema,
   // never a component name.
   const capsuleSchema = library.components[value.typeName]?.props
-  const safeProps = capsuleSchema ? sanitizeProps(props, capsuleSchema) : props
+  const safeProps = sanitizeExportTextValue(
+    capsuleSchema ? sanitizeProps(props, capsuleSchema) : props,
+  )
   return `<${toIdentifier(value.typeName)}Block props={${JSON.stringify(
     safeProps,
   )}} lakebed={input.lakebed} />`
@@ -3073,12 +3323,26 @@ function firstString(
 
 function sanitizeSharedText(value: string): string {
   return value
+    .replaceAll('‑', '-')
+    .replaceAll('–', '-')
     .replace(/\bprocesses\b/gi, (match) =>
       match[0] === match[0]?.toUpperCase() ? 'Workflows' : 'workflows',
     )
     .replace(/\bprocess\b/gi, (match) =>
       match[0] === match[0]?.toUpperCase() ? 'Workflow' : 'workflow',
     )
+}
+
+function sanitizeExportTextValue(value: unknown): unknown {
+  if (typeof value === 'string') return sanitizeSharedText(value)
+  if (Array.isArray(value)) return value.map(sanitizeExportTextValue)
+  if (!isRecord(value)) return value
+  return Object.fromEntries(
+    Object.entries(value).map(([key, child]) => [
+      key,
+      sanitizeExportTextValue(child),
+    ]),
+  )
 }
 
 const sectionTitleKeys = [
@@ -4092,13 +4356,16 @@ export function RouterLink({ href, children, ...props }: RouterLinkProps) {
     return outPath
   }
   const source = getBlockSourceFile(sourcePath)
-  files[outPath] = rewriteLakebedClientImports(source, {
+  files[outPath] = stripLakebedSourceComments(
+    rewriteLakebedClientImports(source, {
+      outPath,
+      sourcePath,
+      files,
+      seenVendorFiles,
+      seenBlockFiles,
+    }),
     outPath,
-    sourcePath,
-    files,
-    seenVendorFiles,
-    seenBlockFiles,
-  })
+  )
   return outPath
 }
 
@@ -4501,6 +4768,11 @@ function renderClientRoutes(
   imageSources: ImageSource[],
   targetMap: Record<string, string>,
 ): string {
+  const clientImageSources = imageSources.map((image) => ({
+    alt: image.alt,
+    originalSrcKey: image.originalSrcKey,
+    src: image.src,
+  }))
   const routeData = routes.map((route) => ({
     label: route.label,
     path: route.path,
@@ -4522,21 +4794,21 @@ export const routeByLabel = new Map(
 
 export const routeTargets = ${JSON.stringify(targetMap, null, 2)} satisfies Record<string, string>
 
-export const imageSources = ${JSON.stringify(imageSources, null, 2)} satisfies Array<{ alt: string; originalSrc?: string; src: string }>
+export const imageSources = ${JSON.stringify(clientImageSources, null, 2)} satisfies Array<{ alt: string; originalSrcKey?: string; src: string }>
 `
 }
 
 function renderClientTheme(
   themeCss: string,
-  tailwindThemeCss: string,
   defaultDark: boolean,
-  includeLegacyTailwindRuntime: boolean,
+  fontStylesheetHrefs: string[],
 ): string {
   return `import { useEffect } from "preact/hooks";
+import { compiledTailwindCss } from "./compiled-tailwind";
 
 export const themeCss = ${JSON.stringify(themeCss)};
-${includeLegacyTailwindRuntime ? `export const tailwindThemeCss = ${JSON.stringify(tailwindThemeCss)};` : ''}
 export const defaultDark = ${defaultDark ? 'true' : 'false'};
+export const fontStylesheetHrefs = ${JSON.stringify(fontStylesheetHrefs)};
 
 // Shared dark-mode contract for the whole site: the \`.dark\` class on <html>
 // selects the dark CSS-var palette (see themeCss). The active mode is persisted
@@ -4556,14 +4828,31 @@ export function isThemeDark() {
 export function applyThemeMode(dark) {
   if (typeof document === "undefined") return;
   document.documentElement.classList.toggle("dark", dark);
+  document.querySelectorAll(".genui-preview").forEach((element) => {
+    element.classList.toggle("dark", dark);
+  });
   try {
     window.localStorage.setItem(THEME_STORAGE_KEY, dark ? "1" : "0");
   } catch {}
   window.dispatchEvent(new CustomEvent("lakebed:themechange", { detail: { dark } }));
 }
 
+function applyThemeFontLinks() {
+  document
+    .querySelectorAll("link[data-lakebed-theme-font]")
+    .forEach((link) => link.remove());
+  for (const href of fontStylesheetHrefs) {
+    const link = document.createElement("link");
+    link.setAttribute("data-lakebed-theme-font", "");
+    link.rel = "stylesheet";
+    link.href = href;
+    document.head.appendChild(link);
+  }
+}
+
 export function StyleRuntime() {
   useEffect(() => {
+    applyThemeFontLinks();
     // Apply the persisted (or default) light/dark mode before first paint of
     // themed content so the deployed site opens in the right palette.
     applyThemeMode(isThemeDark());
@@ -4574,20 +4863,7 @@ export function StyleRuntime() {
       style.id = "site-theme";
       document.head.appendChild(style);
     }
-    style.textContent = themeCss;
-${
-  includeLegacyTailwindRuntime
-    ? `
-    let twStyle = document.getElementById("site-tailwind-theme");
-    if (!twStyle) {
-      twStyle = document.createElement("style");
-      twStyle.id = "site-tailwind-theme";
-      twStyle.setAttribute("type", "text/tailwindcss");
-      document.head.appendChild(twStyle);
-    }
-    twStyle.textContent = tailwindThemeCss;`
-    : ''
-}
+    style.textContent = [themeCss, compiledTailwindCss].filter(Boolean).join("\\n\\n");
   }, []);
 
   return null;
@@ -4610,7 +4886,6 @@ const brandName = ${JSON.stringify(brandName)};
 const LogoContext = createContext<{ brand?: string; src?: string } | null>(null);
 
 type LogoImageProps = {
-  fallback?: ComponentChildren;
   className?: string;
   [key: string]: unknown;
 };
@@ -4623,20 +4898,16 @@ type LogoLabelProps = {
 
 export function Logo({
   children,
-  fallback,
   className,
   imageClassName,
   labelClassName,
-  showLabel = true,
   brand = brandName,
 }: {
   brand?: string;
   children?: ComponentChildren;
-  fallback?: ComponentChildren;
   className?: string;
   imageClassName?: string;
   labelClassName?: string;
-  showLabel?: boolean;
   [key: string]: unknown;
 }) {
   return (
@@ -4644,8 +4915,8 @@ export function Logo({
       <span data-slot="logo" className={cn("inline-flex items-center gap-2", className)}>
         {children ?? (
           <>
-            <LogoImage className={imageClassName} fallback={fallback} />
-            {showLabel ? <LogoLabel brand={brand} className={labelClassName} /> : null}
+            <LogoImage className={imageClassName} />
+            <LogoLabel brand={brand} className={labelClassName} />
           </>
         )}
       </span>
@@ -4653,10 +4924,10 @@ export function Logo({
   );
 }
 
-export function LogoImage({ fallback = null, className, ...props }: LogoImageProps) {
+export function LogoImage({ className, ...props }: LogoImageProps) {
   const logo = useContext(LogoContext);
   const src = logo?.src || brandLogoSrc;
-  if (!src) return <>{fallback}</>;
+  if (!src) return null;
   return (
     <span
       data-slot="logo-image"
@@ -4665,7 +4936,6 @@ export function LogoImage({ fallback = null, className, ...props }: LogoImagePro
         "inline-grid size-8 shrink-0 place-items-center overflow-hidden rounded-md bg-transparent",
         className,
       )}
-      data-brand-logo-selected="true"
       {...props}
     >
       <img
@@ -4688,6 +4958,13 @@ export function LogoLabel({ brand = brandName, className, ...props }: LogoLabelP
   );
 }
 `
+}
+
+function hasSelectedBrandLogoSrc(input: OpenUIExportInput): boolean {
+  const selection = input.selectedBrandLogo
+  const icon = typeof selection?.icon === 'string' ? selection.icon.trim() : ''
+  const logo = typeof selection?.logo === 'string' ? selection.logo.trim() : ''
+  return Boolean(icon || logo)
 }
 
 function renderClientStyleOverridesCss(
@@ -4722,18 +4999,22 @@ function renderClientImage(): string {
 
 type ImageSource = (typeof imageSources)[number];
 
-function hasOriginalSrc(image: ImageSource): image is ImageSource & { originalSrc: string } {
-  return typeof image.originalSrc === "string" && image.originalSrc.trim().length > 0;
+function hasOriginalSrcKey(image: ImageSource): image is ImageSource & { originalSrcKey: string } {
+  return typeof image.originalSrcKey === "string" && image.originalSrcKey.trim().length > 0;
 }
 
 const imageSourcesByAlt = new Map(
   imageSources.map((image) => [image.alt, image.src]),
 );
-const imageSourcesByOriginalSrc = new Map(
+const imageSourcesByOriginalSrcKey = new Map(
   imageSources
-    .filter(hasOriginalSrc)
-    .map((image) => [image.originalSrc, image.src]),
+    .filter(hasOriginalSrcKey)
+    .map((image) => [image.originalSrcKey, image.src]),
 );
+
+function sourceKey(src: string): string {
+  return encodeURIComponent(src.trim());
+}
 
 function isGeneratedImageSrc(src: string): boolean {
   return (
@@ -4757,7 +5038,7 @@ function imageUrl(alt: unknown, src?: string): string {
   const altText = String(alt || "").trim();
   if (typeof src === "string" && src.trim()) {
     const srcText = src.trim();
-    const resolvedSrc = imageSourcesByOriginalSrc.get(srcText);
+    const resolvedSrc = imageSourcesByOriginalSrcKey.get(sourceKey(srcText));
     if (resolvedSrc) return resolvedSrc;
     if (!isGeneratedImageSrc(srcText)) return srcText;
   }
@@ -5384,49 +5665,49 @@ function renderClientIndex(
     ? 'import { useMemo, useState } from "preact/hooks";'
     : ''
   const adminRuntime = adminAccess
-    ? `const shipFastAdminEmails = ${JSON.stringify(adminEmails, null, 2)};
-const shipFastAdminRouteLabels = ${JSON.stringify(adminRouteLabels, null, 2)};
-const shipFastAdminRoutePaths = ${JSON.stringify(adminRoutePaths, null, 2)};
+    ? `const siteAdminEmails = ${JSON.stringify(adminEmails, null, 2)};
+const siteAdminRouteLabels = ${JSON.stringify(adminRouteLabels, null, 2)};
+const siteAdminRoutePaths = ${JSON.stringify(adminRoutePaths, null, 2)};
 
 function normalizeAdminValue(value: unknown): string {
   return String(value || "").trim().toLowerCase();
 }
 
-function isShipFastAdminRoute(page: SitePage): boolean {
+function isSiteAdminRoute(page: SitePage): boolean {
   return (
-    shipFastAdminRouteLabels.includes(normalizeAdminValue(page.label)) ||
-    shipFastAdminRoutePaths.includes(normalizeAdminValue(page.path))
+    siteAdminRouteLabels.includes(normalizeAdminValue(page.label)) ||
+    siteAdminRoutePaths.includes(normalizeAdminValue(page.path))
   );
 }
 
-function assertShipFastAdminAccess(email: string) {
+function assertSiteAdminAccess(email: string) {
   const normalized = normalizeAdminValue(email);
-  if (!normalized || !shipFastAdminEmails.includes(normalized)) {
-    throw new Error("Ship Fast admin access denied for this email.");
+  if (!normalized || !siteAdminEmails.includes(normalized)) {
+    throw new Error("Site admin access denied for this email.");
   }
-  return { email: normalized, role: normalized === shipFastAdminEmails[0] ? "owner" : "editor" };
+  return { email: normalized, role: normalized === siteAdminEmails[0] ? "owner" : "editor" };
 }
 
-function ShipFastAdminGate({
+function SiteAdminGate({
   children,
   routeLabel,
 }: {
   children: ComponentChildren;
   routeLabel: string;
 }) {
-  const firstAdminEmail = shipFastAdminEmails[0] ?? "";
+  const firstAdminEmail = siteAdminEmails[0] ?? "";
   const [email, setEmail] = useState(() =>
-    window.localStorage.getItem("shipFastAdminEmail") ?? firstAdminEmail,
+    window.localStorage.getItem("siteAdminEmail") ?? firstAdminEmail,
   );
   const [submittedEmail, setSubmittedEmail] = useState(() =>
-    window.localStorage.getItem("shipFastAdminEmail") ?? "",
+    window.localStorage.getItem("siteAdminEmail") ?? "",
   );
   const [error, setError] = useState("");
 
   const access = useMemo(() => {
-    if (shipFastAdminEmails.length === 0) return { email: "", role: "owner" };
+    if (siteAdminEmails.length === 0) return { email: "", role: "owner" };
     try {
-      return assertShipFastAdminAccess(submittedEmail);
+      return assertSiteAdminAccess(submittedEmail);
     } catch {
       return null;
     }
@@ -5441,8 +5722,8 @@ function ShipFastAdminGate({
         onSubmit={(event) => {
           event.preventDefault();
           try {
-            const result = assertShipFastAdminAccess(email);
-            window.localStorage.setItem("shipFastAdminEmail", result.email);
+            const result = assertSiteAdminAccess(email);
+            window.localStorage.setItem("siteAdminEmail", result.email);
             setSubmittedEmail(result.email);
             setError("");
           } catch (cause) {
@@ -5451,7 +5732,7 @@ function ShipFastAdminGate({
         }}
       >
         <p className="text-xs font-bold uppercase tracking-widest text-blue-300">
-          Ship Fast Admin
+          Site Admin
         </p>
         <h1 className="mt-3 text-3xl font-bold tracking-tight">
           Verify access to {routeLabel}
@@ -5484,17 +5765,28 @@ function ShipFastAdminGate({
 `
     : ''
   const pageViewResult = adminAccess
-    ? `  return isShipFastAdminRoute(page) ? (
-    <ShipFastAdminGate routeLabel={page.label}>{rendered}</ShipFastAdminGate>
+    ? `  return isSiteAdminRoute(page) ? (
+    <SiteAdminGate routeLabel={page.label}>{rendered}</SiteAdminGate>
   ) : (
     rendered
   );`
     : '  return rendered;'
+  const appFrameClass = [
+    'genui-preview',
+    'min-h-screen',
+    'bg-background',
+    'text-foreground',
+    (input.isDark ?? true) ? 'dark' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   return `import { Link, Route, Router, Routes } from "lakebed/client";
 import type { ComponentChildren } from "preact";
+import { useMemo, useState } from "preact/hooks";
 ${adminHooksImport}
-import { pages, type SitePage } from "./routes";
+import { pages, routeTargets, type SitePage } from "./routes";
+import { PageStateContext, RoutesContext } from "./vendor/blocks-runtime/src/lib/route-context";
 import { AuthRuntime, useLakebedAdapter, type LakebedAdapter } from "./lib/lakebed";
 import { StyleRuntime } from "./lib/theme";
 ${brandImport}
@@ -5523,6 +5815,42 @@ function PageView({ page }: { page: SitePage }) {
 ${pageViewResult}
 }
 
+function PageRouteFrame({ page }: { page: SitePage }) {
+  const [pendingSectionId, setPendingSectionId] = useState<string | null>(null);
+  const routeLabels = useMemo(() => pages.map((entry) => entry.label), []);
+  const routesContext = useMemo(
+    () => ({
+      routes: routeLabels,
+      targetMap: routeTargets,
+      currentPage: page.label,
+      setCurrentPage: (nextPage: string) => {
+        const target = pages.find((entry) => entry.label === nextPage);
+        if (target && typeof window !== "undefined") window.location.href = target.path;
+      },
+      pendingSectionId,
+      setPendingSectionId,
+    }),
+    [page.label, pendingSectionId, routeLabels],
+  );
+  const pageState = useMemo(
+    () => ({
+      setPage: (nextPage: string) => {
+        const target = pages.find((entry) => entry.label === nextPage);
+        if (target && typeof window !== "undefined") window.location.href = target.path;
+      },
+    }),
+    [],
+  );
+
+  return (
+    <PageStateContext.Provider value={pageState}>
+      <RoutesContext.Provider value={routesContext}>
+        <PageView page={page} />
+      </RoutesContext.Provider>
+    </PageStateContext.Provider>
+  );
+}
+
 function NotFoundPage() {
   return (
     <main className="min-h-screen bg-background px-6 py-16 text-foreground">
@@ -5541,16 +5869,18 @@ export function App() {
     <Router>
       <StyleRuntime />
       <AuthRuntime />
-      <Routes>
-        {pages.map((page) => (
-          <Route
-            element={<PageView page={page} />}
-            key={page.path}
-            path={page.path}
-          />
-        ))}
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
+      <div className=${JSON.stringify(appFrameClass)}>
+        <Routes>
+          {pages.map((page) => (
+            <Route
+              element={<PageRouteFrame page={page} />}
+              key={page.path}
+              path={page.path}
+            />
+          ))}
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </div>
     </Router>
   );
   return app;
@@ -6921,8 +7251,15 @@ export async function buildOpenUILakebedProjectFiles(
   const files: Record<string, string> = {}
   const seenVendorFiles = new Set<string>()
   const seenBlockFiles = new Set<string>()
+  await input.onProgress?.('collecting-sources')
   const nestedClientComponents = collectClientComponents(
     componentNames,
+    files,
+    seenVendorFiles,
+    seenBlockFiles,
+  )
+  copyBlocksClientSourceForLakebed(
+    'src/lib/route-context.tsx',
     files,
     seenVendorFiles,
     seenBlockFiles,
@@ -6936,15 +7273,30 @@ export async function buildOpenUILakebedProjectFiles(
   const resolvedThemeStyles =
     resolveThemeStyles(themeName) ?? resolveThemeStyles('modern-minimal')
   const isDarkTheme = input.isDark ?? true
-  const themeCss = buildLakebedThemeCss(resolvedThemeStyles, isDarkTheme)
-  const tailwindThemeCss = buildLakebedTailwindThemeCss(
+  const themeCss = buildLakebedThemeCss(
     resolvedThemeStyles,
     isDarkTheme,
+    getLakebedAppCssFiles(),
   )
+  const fontStylesheetHrefs = buildExportFontStylesheetHrefs(
+    resolvedThemeStyles,
+    themeCss,
+  )
+  const clientComponentFiles = Object.fromEntries(
+    clientComponents.map((component) => [
+      `client/components/${toIdentifier(component.name)}.tsx`,
+      renderClientComponentModule(component),
+    ]),
+  )
+  const dimensionHintsByAlt = inferLakebedImageDimensionHints(routes, {
+    ...files,
+    ...clientComponentFiles,
+  })
   const imageSources = await resolveLakebedImageSources(
     routes,
     input.previewHtml,
     input,
+    dimensionHintsByAlt,
   )
   await input.onProgress?.('resolving-images')
   const targetMap = buildLakebedTargetMap(routes, parsed.targetMap)
@@ -6963,16 +7315,58 @@ export async function buildOpenUILakebedProjectFiles(
       '',
     theme: themeName ?? 'default',
   }
+  const clientIndexSource = renderClientIndex(
+    routes,
+    clientComponents,
+    adminAccess,
+    input,
+    Boolean(files['client/section-kit/Logo.tsx']),
+  )
+  const clientRoutesSource = renderClientRoutes(routes, imageSources, targetMap)
+  await input.onProgress?.('compiling-styles')
+  const tailwindSources = [
+    ...Object.entries(files)
+      .filter(
+        ([path]) =>
+          path.startsWith('client/') && /\.(?:[cm]?[jt]sx?|html)$/.test(path),
+      )
+      .map(([path, contents]) => ({
+        contents,
+        extension: path.split('.').pop() ?? 'tsx',
+        file: path,
+      })),
+    {
+      contents: clientIndexSource,
+      extension: 'tsx',
+      file: 'client/index.tsx',
+    },
+    {
+      contents: clientRoutesSource,
+      extension: 'ts',
+      file: 'client/routes.ts',
+    },
+    {
+      contents: themeCss,
+      extension: 'css',
+      file: 'client/lib/theme.css',
+    },
+    ...Object.entries(clientComponentFiles).map(([path, contents]) => ({
+      contents,
+      extension: 'tsx',
+      file: path,
+    })),
+  ]
+  const compiledTailwindCss = await buildCompiledTailwindCssForSources(
+    tailwindSources,
+    [
+      ...collectRouteTailwindCandidates(routes),
+      ...collectVirtualSourceTailwindCandidates(tailwindSources),
+    ],
+  )
   Object.assign(files, {
     'README.md': renderReadme(parsed.projectName),
-    'client/index.tsx': renderClientIndex(
-      routes,
-      clientComponents,
-      adminAccess,
-      input,
-      Boolean(files['client/section-kit/Logo.tsx']),
-    ),
-    'client/routes.ts': renderClientRoutes(routes, imageSources, targetMap),
+    'client/index.tsx': clientIndexSource,
+    'client/routes.ts': clientRoutesSource,
     ...(input.selectedBrandLogo
       ? {
           'client/brand.ts': `export const brandName = ${JSON.stringify(input.selectedBrandLogo.name?.trim() ?? '')};
@@ -6990,15 +7384,13 @@ export const commerceStorefrontUrl = ${JSON.stringify(commerceConfig.storefrontU
     'client/lib/image.tsx': renderClientImage(),
     'client/lib/lakebed.ts': renderClientLakebed(),
     'client/lib/state-field.ts': renderClientStateFieldRuntime(),
+    'client/lib/compiled-tailwind.ts': `export const compiledTailwindCss = ${JSON.stringify(compiledTailwindCss)};\n`,
     'client/lib/theme.tsx': renderClientTheme(
-      themeCss + renderClientStyleOverridesCss(styleOverrides),
-      tailwindThemeCss,
+      [themeCss, renderClientStyleOverridesCss(styleOverrides)]
+        .filter(Boolean)
+        .join('\n\n'),
       isDarkTheme,
-      !input.themeName &&
-        !input.locale &&
-        !input.selectedBrandLogo &&
-        !input.lakebedSeedData &&
-        !input.syncSecret,
+      fontStylesheetHrefs,
     ),
     'server/index.ts': renderServerIndex(
       parsed.projectName,
@@ -7017,11 +7409,8 @@ export const commerceStorefrontUrl = ${JSON.stringify(commerceConfig.storefrontU
     ),
     'public/favicon.svg': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#171717"/><circle cx="32" cy="32" r="15" fill="#f5f5f5"/></svg>`,
   })
-  for (const component of clientComponents) {
-    files[`client/components/${toIdentifier(component.name)}.tsx`] =
-      renderClientComponentModule(component)
-  }
-  if (input.selectedBrandLogo || files['client/section-kit/Logo.tsx']) {
+  Object.assign(files, clientComponentFiles)
+  if (hasSelectedBrandLogoSrc(input)) {
     files['client/section-kit/Logo.tsx'] = renderLakebedLogoComponent(input)
   }
   const seoBundle = buildExportSeoBundle(
@@ -7036,7 +7425,9 @@ export const commerceStorefrontUrl = ${JSON.stringify(commerceConfig.storefrontU
   pruneUnreachableLakebedSources(files)
   ensureUseSyncExternalStoreCompanionFiles(files)
   await input.onProgress?.('formatting')
-  const formattedFiles = await formatExportFiles(files, input.formatCache)
+  const formattedFiles = stripLakebedExportOnlyTypeSyntaxFromFiles(
+    await formatExportFiles(files, input.formatCache),
+  )
   assertNoLeakedSourceTerms(formattedFiles)
   assertNoUnboundClientReferences(formattedFiles)
 

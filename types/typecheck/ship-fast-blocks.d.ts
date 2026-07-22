@@ -122,12 +122,22 @@ declare module '@ship-fast/blocks/generated' {
   export const componentSpecBase64: string
   export const componentSpecEncoding: string
   export function findSimilarCapsules(name: string, limit?: number): string[]
+  export const lakebedExportComponentChunks: Record<string, string>
   export const lakebedExportDepsBase64: string
+  export const lakebedExportDepsChunkEncoding: string
   export const lakebedExportDepsEncoding: string
+  export const lakebedExportFileChunks: Record<string, string>
+  export const lakebedAppCssSourcesBase64: string
+  export const lakebedAppCssSourcesEncoding: string
   export const reactExportSourcesBase64: string
   export const reactExportSourcesEncoding: string
   export const vendorSourceFilesBase64: string
   export const vendorSourceFilesEncoding: string
+}
+
+declare module '@ship-fast/blocks/generated/lakebed-app-css-sources.compressed' {
+  export const lakebedAppCssSourcesBase64: string
+  export const lakebedAppCssSourcesEncoding: string
 }
 
 declare module '@ship-fast/blocks/theme' {

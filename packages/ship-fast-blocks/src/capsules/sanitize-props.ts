@@ -51,6 +51,37 @@ function OK(value: unknown): Coerced {
 }
 const FAIL: Coerced = { ok: false, value: undefined }
 
+function aliasedObjectValue(
+  source: Record<string, unknown>,
+  key: string,
+): unknown {
+  if (key in source) return source[key]
+  if (key === 'q' && 'question' in source) return source.question
+  if (key === 'a') {
+    if ('answer' in source) return source.answer
+    if ('answers' in source) return source.answers
+  }
+  return undefined
+}
+
+function schemaAcceptsArray(schema: unknown, depth = 0): boolean {
+  if (depth > 12) return false
+  const def = defOf(schema)
+  if (!def?.type) return false
+  if (def.type === 'array') return true
+  if (
+    def.type === 'optional' ||
+    def.type === 'nullable' ||
+    def.type === 'default' ||
+    def.type === 'catch' ||
+    def.type === 'readonly' ||
+    def.type === 'lazy'
+  ) {
+    return schemaAcceptsArray(def.innerType, depth + 1)
+  }
+  return false
+}
+
 /** Keys whose schema is optional or has a default may be dropped safely. */
 function isDroppableKey(schema: unknown): boolean {
   const def = defOf(schema)
@@ -176,7 +207,14 @@ function coerce(value: unknown, schema: unknown, depth: number): Coerced {
       const shape = def.shape ?? {}
       const out: Record<string, unknown> = { ...value }
       for (const [key, childSchema] of Object.entries(shape)) {
-        const res = coerce(value[key], childSchema, depth + 1)
+        const aliasedValue = aliasedObjectValue(value, key)
+        const childValue =
+          key === 'a' &&
+          typeof aliasedValue === 'string' &&
+          schemaAcceptsArray(childSchema)
+            ? [aliasedValue]
+            : aliasedValue
+        const res = coerce(childValue, childSchema, depth + 1)
         if (res.ok) {
           if (res.value === undefined) delete out[key]
           else out[key] = res.value
