@@ -79,6 +79,10 @@ vi.mock('@/shared/auth/use-optional-auth', () => ({
   openSignInEventName: 'ship-fast:open-sign-in',
 }))
 
+vi.mock('@/shared/auth/use-clerk-signup-mode', () => ({
+  useClerkSignUpMode: () => 'waitlist',
+}))
+
 vi.mock('@/app/providers/clerk-appearance', () => ({
   clerkFrostedGlassAppearance: {},
 }))

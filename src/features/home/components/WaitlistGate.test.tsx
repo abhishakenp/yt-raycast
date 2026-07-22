@@ -1,22 +1,28 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { clerkFrostedGlassAppearance } from '@/app/providers/clerk-appearance'
 import { WaitlistGate } from './WaitlistGate'
 
-const { mockAuth, capturedWaitlistProps, mockClerkClientEnabled } = vi.hoisted(
-  () => ({
-    mockAuth: {
-      isLoaded: true,
-      isSignedIn: false,
-    },
-    capturedWaitlistProps: {} as Record<string, unknown>,
-    mockClerkClientEnabled: {
-      value: true,
-    },
-  }),
-)
+const {
+  mockAuth,
+  capturedWaitlistProps,
+  mockClerkClientEnabled,
+  mockSignUpMode,
+} = vi.hoisted(() => ({
+  mockAuth: {
+    isLoaded: true,
+    isSignedIn: false,
+  },
+  capturedWaitlistProps: {} as Record<string, unknown>,
+  mockClerkClientEnabled: {
+    value: true,
+  },
+  mockSignUpMode: {
+    value: 'waitlist' as 'public' | 'restricted' | 'waitlist' | undefined,
+  },
+}))
 
 vi.mock('@clerk/tanstack-react-start', () => ({
   Waitlist: (props: unknown) => {
@@ -37,6 +43,10 @@ vi.mock('@/shared/auth/clerk-runtime', () => ({
   isClerkClientEnabled: () => mockClerkClientEnabled.value,
 }))
 
+vi.mock('@/shared/auth/use-clerk-signup-mode', () => ({
+  useClerkSignUpMode: () => mockSignUpMode.value,
+}))
+
 const TestChildren = () => <div data-testid="prompt-form">Prompt form</div>
 
 function setAuth(
@@ -49,12 +59,20 @@ function setAuth(
   mockClerkClientEnabled.value = clerkClientEnabled
 }
 
+function setSignUpMode(mode: 'public' | 'restricted' | 'waitlist' | undefined) {
+  mockSignUpMode.value = mode
+}
+
 describe('WaitlistGate', () => {
   afterEach(cleanup)
 
-  describe('when signed out', () => {
-    it('renders the Clerk Waitlist component', () => {
+  describe('when signUp mode is waitlist and signed out', () => {
+    beforeEach(() => {
       setAuth(true, false)
+      setSignUpMode('waitlist')
+    })
+
+    it('renders the Clerk Waitlist component', () => {
       render(
         <WaitlistGate>
           <TestChildren />
@@ -64,7 +82,6 @@ describe('WaitlistGate', () => {
     })
 
     it('does not render children (prompt form)', () => {
-      setAuth(true, false)
       render(
         <WaitlistGate>
           <TestChildren />
@@ -74,7 +91,6 @@ describe('WaitlistGate', () => {
     })
 
     it('passes afterJoinWaitlistUrl="/" to Waitlist', () => {
-      setAuth(true, false)
       for (const key of Object.keys(capturedWaitlistProps))
         delete capturedWaitlistProps[key]
       render(
@@ -88,7 +104,6 @@ describe('WaitlistGate', () => {
     })
 
     it('does not pass a custom appearance prop to Waitlist', () => {
-      setAuth(true, false)
       for (const key of Object.keys(capturedWaitlistProps))
         delete capturedWaitlistProps[key]
       render(
@@ -98,22 +113,15 @@ describe('WaitlistGate', () => {
       )
       expect(capturedWaitlistProps).not.toHaveProperty('appearance')
     })
-
-    it('renders children when client-side Clerk is disabled', () => {
-      setAuth(true, false, false)
-      render(
-        <WaitlistGate>
-          <TestChildren />
-        </WaitlistGate>,
-      )
-      expect(screen.getByTestId('prompt-form')).toBeTruthy()
-      expect(screen.queryByTestId('clerk-waitlist')).toBeNull()
-    })
   })
 
-  describe('when signed in', () => {
-    it('renders children (prompt form)', () => {
+  describe('when signUp mode is waitlist and signed in', () => {
+    beforeEach(() => {
       setAuth(true, true)
+      setSignUpMode('waitlist')
+    })
+
+    it('renders children (prompt form)', () => {
       render(
         <WaitlistGate>
           <TestChildren />
@@ -123,7 +131,6 @@ describe('WaitlistGate', () => {
     })
 
     it('does not render the Waitlist component', () => {
-      setAuth(true, true)
       render(
         <WaitlistGate>
           <TestChildren />
@@ -133,9 +140,13 @@ describe('WaitlistGate', () => {
     })
   })
 
-  describe('while auth is loading', () => {
-    it('renders a loading spinner', () => {
+  describe('when signUp mode is waitlist and auth is loading', () => {
+    beforeEach(() => {
       setAuth(false, false)
+      setSignUpMode('waitlist')
+    })
+
+    it('renders a loading spinner', () => {
       const { container } = render(
         <WaitlistGate>
           <TestChildren />
@@ -145,13 +156,96 @@ describe('WaitlistGate', () => {
     })
 
     it('does not render children or Waitlist', () => {
-      setAuth(false, false)
       render(
         <WaitlistGate>
           <TestChildren />
         </WaitlistGate>,
       )
       expect(screen.queryByTestId('prompt-form')).toBeNull()
+      expect(screen.queryByTestId('clerk-waitlist')).toBeNull()
+    })
+  })
+
+  describe('when waitlist is OFF (signUp mode is public)', () => {
+    beforeEach(() => {
+      setAuth(true, false)
+      setSignUpMode('public')
+    })
+
+    it('renders children (prompt form) even when signed out', () => {
+      render(
+        <WaitlistGate>
+          <TestChildren />
+        </WaitlistGate>,
+      )
+      expect(screen.getByTestId('prompt-form')).toBeTruthy()
+    })
+
+    it('does not render the Waitlist component', () => {
+      render(
+        <WaitlistGate>
+          <TestChildren />
+        </WaitlistGate>,
+      )
+      expect(screen.queryByTestId('clerk-waitlist')).toBeNull()
+    })
+  })
+
+  describe('when waitlist is OFF (signUp mode is restricted)', () => {
+    beforeEach(() => {
+      setAuth(true, false)
+      setSignUpMode('restricted')
+    })
+
+    it('renders children (prompt form) even when signed out', () => {
+      render(
+        <WaitlistGate>
+          <TestChildren />
+        </WaitlistGate>,
+      )
+      expect(screen.getByTestId('prompt-form')).toBeTruthy()
+    })
+  })
+
+  describe('when signUp mode is unknown (SSR / Clerk loading)', () => {
+    beforeEach(() => {
+      setAuth(true, false)
+      setSignUpMode(undefined)
+    })
+
+    it('renders a loading spinner', () => {
+      const { container } = render(
+        <WaitlistGate>
+          <TestChildren />
+        </WaitlistGate>,
+      )
+      expect(container.querySelector('.animate-spin')).toBeTruthy()
+    })
+
+    it('does not render children or Waitlist', () => {
+      render(
+        <WaitlistGate>
+          <TestChildren />
+        </WaitlistGate>,
+      )
+      expect(screen.queryByTestId('prompt-form')).toBeNull()
+      expect(screen.queryByTestId('clerk-waitlist')).toBeNull()
+    })
+  })
+
+  describe('when Clerk is not configured', () => {
+    beforeEach(() => {
+      setAuth(true, false, false)
+      setSignUpMode('waitlist')
+    })
+
+    it('renders children (prompt form)', () => {
+      render(
+        <WaitlistGate>
+          <TestChildren />
+        </WaitlistGate>,
+      )
+      expect(screen.getByTestId('prompt-form')).toBeTruthy()
       expect(screen.queryByTestId('clerk-waitlist')).toBeNull()
     })
   })
