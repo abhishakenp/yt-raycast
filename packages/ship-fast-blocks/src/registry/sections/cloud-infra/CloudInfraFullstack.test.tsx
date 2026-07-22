@@ -155,6 +155,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { CloudInfraNavbar } = await import('./CloudInfraNavbar.tsx')
 const { CloudInfraPricing } = await import('./CloudInfraPricing.tsx')
 const { CloudInfraHero } = await import('./CloudInfraHero.tsx')
@@ -511,6 +513,7 @@ function createCloudInfraLakebedStub({
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   lakebedRef.current = null
   navigate.mockReset()
   document.body.removeAttribute('style')
@@ -520,6 +523,7 @@ describe('cloud-infra fullstack generated section behavior', () => {
   it('shares cloud plan catalog with search, Shoo account, and mobile navigation', async () => {
     const { lakebed, signInWithGoogle, state } = createCloudInfraLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     function CloudProbe() {
       return (
@@ -597,7 +601,7 @@ describe('cloud-infra fullstack generated section behavior', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
     expect(screen.getByRole('dialog')).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'Pricing' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Pricing' }))
 
     await waitFor(() => {
       expect(navigate).toHaveBeenCalledWith('Pricing')
@@ -614,6 +618,7 @@ describe('cloud-infra fullstack generated section behavior', () => {
       },
     })
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     function CloudProbe() {
       return (

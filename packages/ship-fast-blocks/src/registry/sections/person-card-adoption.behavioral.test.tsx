@@ -118,7 +118,7 @@ describe('PersonCard adoption — capsules render person cards', () => {
   it('BootcampMentors: 4 bare clickable cards (name + role only)', () => {
     const { container } = render(<BootcampMentors.component props={{}} />)
     expect(cards(container)).toHaveLength(4)
-    expect(firstCard(container).tagName).toBe('BUTTON')
+    expect(firstCard(container).tagName).toBe('A')
     expect(container.querySelector('[data-slot="person-card-bio"]')).toBeNull()
   })
 

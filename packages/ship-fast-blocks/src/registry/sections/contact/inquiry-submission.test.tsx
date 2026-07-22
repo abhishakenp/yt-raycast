@@ -90,6 +90,8 @@ if (typeof window !== 'undefined' && 'FormData' in window) {
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { AgencyContactCta } = await import('../agency/AgencyContactCta.tsx')
 const { BootcampApplyCta } = await import('../bootcamp/BootcampApplyCta.tsx')
 const { ConstructionQuote } =
@@ -361,6 +363,7 @@ function createInquiryLakebedStub() {
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   navigate.mockReset()
   lakebedRef.current = null
 })
@@ -369,6 +372,7 @@ describe('inquiry submission capsules', () => {
   it('records contact navbar CTAs and keeps nav links as navigation', async () => {
     const { actions, lakebed } = createInquiryLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Navbar: InquiryComponent = ContactNavbar.client.component
 
     render(
@@ -393,13 +397,14 @@ describe('inquiry submission capsules', () => {
     expect(navigate).not.toHaveBeenCalled()
     expect(screen.getAllByText('Talk to sales').length).toBeGreaterThan(0)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Features' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Features' }))
     expect(navigate).toHaveBeenCalledWith('Features')
   })
 
   it('uses a Shoo profile dropdown and Sheet hamburger menu', async () => {
     const { lakebed } = createInquiryLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Navbar: InquiryComponent = ContactNavbar.client.component
 
     render(<Navbar props={{ nav: ['Services', 'FAQ'] }} />)
@@ -411,13 +416,14 @@ describe('inquiry submission capsules', () => {
     fireEvent.click(screen.getByRole('button', { name: /open menu/i }))
     const menu = await screen.findByRole('dialog')
     expect(menu.textContent).toContain('Orbit Digital')
-    fireEvent.click(within(menu).getByRole('button', { name: 'FAQ' }))
+    fireEvent.click(within(menu).getByRole('link', { name: 'FAQ' }))
     expect(navigate).toHaveBeenCalledWith('FAQ')
   })
 
   it('records event planner conversion CTAs while keeping normal links routable', async () => {
     const { actions, lakebed } = createInquiryLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Navbar = EventPlannerNavbar.client.component
     const Hero = EventPlannerHero.client.component
     const Pricing = EventPlannerPricing.client.component
@@ -497,8 +503,8 @@ describe('inquiry submission capsules', () => {
       target: 'Signature',
     })
 
-    fireEvent.click(screen.getByRole('button', { name: 'View Our Work' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Services' }))
+    fireEvent.click(screen.getByRole('link', { name: 'View Our Work' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Services' }))
 
     expect(navigate).toHaveBeenCalledWith('View Our Work')
     expect(navigate).toHaveBeenCalledWith('Services')
@@ -510,6 +516,7 @@ describe('inquiry submission capsules', () => {
   it('opens contact detail actions in a Sheet and stores the action', async () => {
     const { actions, lakebed } = createInquiryLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Contact: InquiryComponent = ContactFormDetails.client.component
 
     render(<Contact props={{ details: { socials: ['LinkedIn'] } }} />)
@@ -532,6 +539,7 @@ describe('inquiry submission capsules', () => {
   it('submits contact details through Lakebed without routing away', async () => {
     const { inquiries, lakebed } = createInquiryLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Contact: InquiryComponent = ContactFormDetails.client.component
     const Agency: InquiryComponent = AgencyContactCta.client.component
 
@@ -576,6 +584,7 @@ describe('inquiry submission capsules', () => {
   it('captures service-specific form fields and keeps submit buttons scoped', async () => {
     const { inquiries, lakebed } = createInquiryLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Construction: InquiryComponent = ConstructionQuote.client.component
 
     render(<Construction props={{ submit: 'Request Estimate' }} />)
@@ -738,6 +747,7 @@ describe('inquiry submission capsules', () => {
       navigate.mockReset()
       const { inquiries, lakebed } = createInquiryLakebedStub()
       lakebedRef.current = lakebed
+      setSectionKitNavClickFallback(navigate)
 
       render(<scenario.Component props={scenario.props ?? {}} />)
       scenario.fill()

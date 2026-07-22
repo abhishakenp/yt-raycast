@@ -97,6 +97,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { CafeHero } = await import('./CafeHero.tsx')
 const { CafeMenu } = await import('./CafeMenu.tsx')
 const { CafeNavbar } = await import('./CafeNavbar.tsx')
@@ -579,6 +581,7 @@ function createCommerceLakebedStub() {
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   navigate.mockReset()
   lakebedRef.current = null
   document.body.removeAttribute('style')
@@ -588,6 +591,7 @@ describe('Cafe fullstack commerce behavior', () => {
   it('shares hero and menu catalog with search, Shoo account, and cart drawer state', async () => {
     const { lakebed, signInWithGoogle, state } = createCommerceLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     render(
       <RoutesProvider>
@@ -667,7 +671,9 @@ describe('Cafe fullstack commerce behavior', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Cart' }))
     const cartDialog = screen.getByRole('dialog')
-    expect(within(cartDialog).getByText('Your cart')).toBeTruthy()
+    expect(
+      within(cartDialog).getByRole('heading', { name: 'Your cart' }),
+    ).toBeTruthy()
     expect(within(cartDialog).getByText('Honey Oat Latte')).toBeTruthy()
     expect(within(cartDialog).getByText('Honey Cortado')).toBeTruthy()
     expect(navigate).not.toHaveBeenCalledWith('Cart')
@@ -676,6 +682,7 @@ describe('Cafe fullstack commerce behavior', () => {
   it('keeps hero CTAs as navigation and uses the hero pick button for cart mutations', async () => {
     const { lakebed, state } = createCommerceLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     render(
       <RoutesProvider>

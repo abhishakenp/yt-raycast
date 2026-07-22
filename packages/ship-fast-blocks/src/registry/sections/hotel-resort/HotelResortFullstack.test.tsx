@@ -174,6 +174,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 
 function useTestMutation<TMutation>({
   lastError,
@@ -412,6 +414,7 @@ function createHotelLakebedStub({
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   navigate.mockReset()
   lakebedRef.current = null
   document.body.removeAttribute('style')
@@ -597,6 +600,7 @@ describe('hotel resort rendered section behavior', () => {
   it('wires generated hotel sections through shared Lakebed state instead of fake booking navigation', async () => {
     const { lakebed, signInWithGoogle, state } = createHotelLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     render(
       <>
@@ -733,7 +737,7 @@ describe('hotel resort rendered section behavior', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
     const menu = await screen.findByRole('dialog', { name: 'Azure Test' })
-    fireEvent.click(within(menu).getByRole('button', { name: 'Rooms' }))
+    fireEvent.click(within(menu).getByRole('link', { name: 'Rooms' }))
     expect(navigate).toHaveBeenCalledWith('Rooms')
   })
 })

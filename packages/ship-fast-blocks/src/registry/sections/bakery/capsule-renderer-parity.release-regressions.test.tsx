@@ -105,6 +105,8 @@ vi.mock('@ship-fast/lakebed/react', async (importOriginal) => {
 })
 
 const { loadOpenUIRuntimeLibrary } = await import('../../../runtime-library.ts')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { BakeryMenu } = await import('./BakeryMenu.tsx')
 const { BakeryNavbar } = await import('./BakeryNavbar.tsx')
 
@@ -186,6 +188,7 @@ beforeAll(() => {
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   runtime.addItem.mockClear()
   runtime.addItem.runWithLifecycle.mockClear()
   runtime.fallbackMutation.mockClear()
@@ -221,7 +224,9 @@ describe('Bakery capsule and Renderer interaction parity', () => {
       fireEvent.click(cartButton)
 
       const cartDialog = await view.findByRole('dialog')
-      expect(within(cartDialog).getByText('Your cart')).toBeTruthy()
+      expect(
+        within(cartDialog).getByRole('heading', { name: 'Your cart' }),
+      ).toBeTruthy()
       expect(within(cartDialog).getByText('Country Sourdough')).toBeTruthy()
       expect(
         within(cartDialog).getByText('You have 1 item in your cart.'),

@@ -99,6 +99,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { CleaningServiceNavbar } = await import('./CleaningServiceNavbar.tsx')
 const { CleaningServiceServices } =
   await import('./CleaningServiceServices.tsx')
@@ -378,6 +380,7 @@ function createCleaningServiceLakebedStub({
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   lakebedRef.current = null
   navigate.mockReset()
   document.body.removeAttribute('style')
@@ -422,6 +425,7 @@ describe('CleaningService fullstack behavior', () => {
     const { lakebed, signInWithGoogle, state } =
       createCleaningServiceLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     render(
       <>
@@ -463,7 +467,7 @@ describe('CleaningService fullstack behavior', () => {
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
-    fireEvent.click(await screen.findByRole('button', { name: 'Pricing' }))
+    fireEvent.click(await screen.findByRole('link', { name: 'Pricing' }))
     expect(navigate).toHaveBeenCalledWith('Pricing')
   })
 
@@ -475,6 +479,7 @@ describe('CleaningService fullstack behavior', () => {
       },
     })
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     render(
       <>

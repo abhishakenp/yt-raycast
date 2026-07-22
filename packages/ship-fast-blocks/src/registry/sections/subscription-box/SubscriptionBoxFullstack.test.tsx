@@ -118,6 +118,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { SubscriptionBoxHero } = await import('./SubscriptionBoxHero.tsx')
 const { SubscriptionBoxNavbar } = await import('./SubscriptionBoxNavbar.tsx')
 const { SubscriptionBoxPricing } = await import('./SubscriptionBoxPricing.tsx')
@@ -300,6 +302,7 @@ function createSubscriptionBoxLakebedStub() {
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   navigate.mockReset()
   lakebedRef.current = null
   document.body.removeAttribute('style')
@@ -310,6 +313,7 @@ describe('Subscription-box fullstack commerce behavior', () => {
     const { lakebed, signInWithGoogle, state } =
       createSubscriptionBoxLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Hero = SubscriptionBoxHero.client.component
     const Navbar = SubscriptionBoxNavbar.client.component
     const Pricing = SubscriptionBoxPricing.client.component
@@ -440,7 +444,9 @@ describe('Subscription-box fullstack commerce behavior', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Cart' }))
     const cartDrawer = await screen.findByRole('dialog')
-    expect(within(cartDrawer).getByText('Your cart')).toBeTruthy()
+    expect(
+      within(cartDrawer).getByRole('heading', { name: 'Your cart' }),
+    ).toBeTruthy()
     expect(within(cartDrawer).getByText('Surprise Starter Box')).toBeTruthy()
     expect(within(cartDrawer).getByText('Classic box')).toBeTruthy()
     expect(

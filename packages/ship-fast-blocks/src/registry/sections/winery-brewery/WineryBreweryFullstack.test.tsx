@@ -116,6 +116,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { WineryBreweryHero } = await import('./WineryBreweryHero.tsx')
 const { WineryBreweryMenu } = await import('./WineryBreweryMenu.tsx')
 const { WineryBreweryNavbar } = await import('./WineryBreweryNavbar.tsx')
@@ -283,6 +285,7 @@ function createWineryBreweryLakebedStub() {
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   navigate.mockReset()
   lakebedRef.current = null
   document.body.removeAttribute('style')
@@ -293,6 +296,7 @@ describe('Winery/brewery fullstack commerce behavior', () => {
     const { lakebed, signInWithGoogle, state } =
       createWineryBreweryLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Hero = WineryBreweryHero.client.component
     const Navbar = WineryBreweryNavbar.client.component
     const Menu = WineryBreweryMenu.client.component
@@ -417,7 +421,9 @@ describe('Winery/brewery fullstack commerce behavior', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Cart' }))
     const cartDrawer = await screen.findByRole('dialog')
-    expect(within(cartDrawer).getByText('Your cart')).toBeTruthy()
+    expect(
+      within(cartDrawer).getByRole('heading', { name: 'Your cart' }),
+    ).toBeTruthy()
     expect(within(cartDrawer).getByText('Reserve Tasting Flight')).toBeTruthy()
     expect(within(cartDrawer).getByText('Old-Vine Zinfandel')).toBeTruthy()
     expect(

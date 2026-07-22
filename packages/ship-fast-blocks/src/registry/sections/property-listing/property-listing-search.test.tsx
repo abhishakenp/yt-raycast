@@ -174,6 +174,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { PropertyListingHero } = await import('./PropertyListingHero.tsx')
 const { PropertyListingGallery } = await import('./PropertyListingGallery.tsx')
 const { PropertyListingNavbar } = await import('./PropertyListingNavbar.tsx')
@@ -602,6 +604,7 @@ function createPropertyListingLakebedStub(
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   lakebedRef.current = null
   navigate.mockReset()
 })
@@ -611,6 +614,7 @@ describe('property listing fullstack search', () => {
     const { inquiries, lakebed, saved, searches, state } =
       createPropertyListingLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Hero = PropertyListingHero.client.component
     const Gallery = PropertyListingGallery.client.component
 
@@ -669,6 +673,7 @@ describe('property listing fullstack search', () => {
   it('lets gallery filters and hero popular chips share the same result state', async () => {
     const { lakebed, state } = createPropertyListingLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Hero = PropertyListingHero.client.component
     const Gallery = PropertyListingGallery.client.component
 
@@ -706,6 +711,7 @@ describe('property listing fullstack search', () => {
   it('lets navbar command search drive shared listing results without navigation fallback', async () => {
     const { catalog, lakebed, state } = createPropertyListingLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Navbar = PropertyListingNavbar.client.component
     const Gallery = PropertyListingGallery.client.component
 
@@ -742,6 +748,7 @@ describe('property listing fullstack search', () => {
       setPropertySearch: 20,
     })
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Navbar = PropertyListingNavbar.client.component
     const Gallery = PropertyListingGallery.client.component
 
@@ -773,6 +780,7 @@ describe('property listing fullstack search', () => {
   it('records navbar and CTA inquiries while preserving page navigation for nav links', async () => {
     const { inquiries, lakebed } = createPropertyListingLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Navbar = PropertyListingNavbar.client.component
     const Cta = PropertyListingCta.client.component
 
@@ -783,7 +791,7 @@ describe('property listing fullstack search', () => {
       </>,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'For Sale' }))
+    fireEvent.click(screen.getByRole('link', { name: 'For Sale' }))
     expect(navigate).toHaveBeenCalledWith('For Sale')
     navigate.mockClear()
 
@@ -807,6 +815,7 @@ describe('property listing fullstack search', () => {
   it('records overview CTA inquiries without routing action labels', async () => {
     const { inquiries, lakebed } = createPropertyListingLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Overview = PropertyListingOverview.client.component
 
     render(
@@ -843,6 +852,7 @@ describe('property listing fullstack search', () => {
   it('exposes Shoo account dropdown and Sheet mobile navigation', async () => {
     const { lakebed } = createPropertyListingLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Navbar = PropertyListingNavbar.client.component
 
     render(<Navbar props={{}} statementId="property_listing_navbar" />)
@@ -854,7 +864,7 @@ describe('property listing fullstack search', () => {
     const dialog = await screen.findByRole('dialog', {
       name: 'Nestable',
     })
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Agents' }))
+    fireEvent.click(within(dialog).getByRole('link', { name: 'Agents' }))
 
     await waitFor(() => expect(navigate).toHaveBeenCalledWith('Agents'))
   })

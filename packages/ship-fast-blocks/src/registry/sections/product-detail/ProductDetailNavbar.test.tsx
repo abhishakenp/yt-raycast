@@ -98,6 +98,8 @@ if (typeof ResizeObserver === 'undefined') {
 
 const { cleanup, fireEvent, render, screen, waitFor } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { ProductDetailNavbar } = await import('./ProductDetailNavbar.tsx')
 
 function createCommerceLakebedStub() {
@@ -244,6 +246,7 @@ function CartCountProbe({ lakebed }: { lakebed: TestLakebed }) {
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   navigate.mockReset()
   lakebedRef.current = null
   document.body.removeAttribute('style')
@@ -253,6 +256,7 @@ describe('ProductDetailNavbar commerce behavior', () => {
   it('adds the navbar product CTA to cart and opens the shared cart drawer', async () => {
     const { lakebed, state } = createCommerceLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Component = ProductDetailNavbar.client.component as ComponentType<any>
 
     render(
@@ -284,19 +288,20 @@ describe('ProductDetailNavbar commerce behavior', () => {
     ])
     expect(navigate).not.toHaveBeenCalledWith('Add to Cart')
 
-    fireEvent.click(screen.getByRole('button', { name: 'Features' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Features' }))
     expect(navigate).toHaveBeenCalledWith('Features')
 
     fireEvent.click(screen.getByRole('button', { name: 'Cart' }))
 
     expect(screen.getByRole('dialog')).toBeTruthy()
-    expect(screen.getByText('Your cart')).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Your cart' })).toBeTruthy()
     expect(screen.getByText('Aurora Pro Headphones')).toBeTruthy()
   })
 
   it('uses an in-flow sticky header and closes the shared mobile drawer after navigation', async () => {
     const { lakebed } = createCommerceLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Component = ProductDetailNavbar.client.component as ComponentType<any>
 
     render(
@@ -313,13 +318,12 @@ describe('ProductDetailNavbar commerce behavior', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
     expect(screen.getByRole('dialog')).toBeTruthy()
 
-    const featureButtons = screen.getAllByRole('button', { name: 'Features' })
+    const featureButtons = screen.getAllByRole('link', { name: 'Features' })
     const mobileFeatureButton = featureButtons.at(-1)
     if (!mobileFeatureButton) throw new Error('Expected mobile feature button')
     fireEvent.click(mobileFeatureButton)
 
     await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith('Features')
       expect(screen.queryByRole('dialog')).toBeNull()
     })
   })

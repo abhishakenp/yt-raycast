@@ -390,9 +390,12 @@ function createCommerceLakebedStub() {
 
 const { cleanup, fireEvent, render, screen, waitFor } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   navigate.mockReset()
   lakebedRef.current = null
 })
@@ -401,6 +404,7 @@ describe('product detail add-to-cart loading state', () => {
   it('shows loading only on the clicked add button while the shared cart mutation is pending', async () => {
     const { completeAddItem, lakebed, state } = createCommerceLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     render(
       <>
@@ -473,6 +477,7 @@ describe('product detail add-to-cart loading state', () => {
   it('treats purchase labels beyond Add to Cart as cart mutations', async () => {
     const { completeAddItem, lakebed, state } = createCommerceLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     render(
       <>
@@ -532,6 +537,7 @@ describe('product detail add-to-cart loading state', () => {
   it('adds the selected product detail variant as a distinct cart line', async () => {
     const { completeAddItem, lakebed, state } = createCommerceLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     render(
       <ProductDetailHero.component
@@ -565,6 +571,7 @@ describe('product detail add-to-cart loading state', () => {
   it('routes non-purchase primary labels instead of mutating the cart', () => {
     const { lakebed, state } = createCommerceLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     render(
       <ProductDetailHero.component
@@ -577,7 +584,7 @@ describe('product detail add-to-cart loading state', () => {
       />,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'View details' }))
+    fireEvent.click(screen.getByRole('link', { name: 'View details' }))
 
     expect(navigate).toHaveBeenCalledWith('View details')
     expect(state().items).toEqual([])

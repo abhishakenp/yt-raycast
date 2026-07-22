@@ -150,6 +150,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { AnalyticsHero } = await import('./AnalyticsHero.tsx')
 const { AnalyticsNavbar } = await import('./AnalyticsNavbar.tsx')
 const { AnalyticsPricing } = await import('./AnalyticsPricing.tsx')
@@ -506,6 +508,7 @@ function createAnalyticsLakebedStub({
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   lakebedRef.current = null
   navigate.mockReset()
   document.body.removeAttribute('style')
@@ -515,6 +518,7 @@ describe('analytics fullstack generated section behavior', () => {
   it('shares plan catalog, search selection, Shoo auth, and mobile navigation', async () => {
     const { lakebed, signInWithGoogle, state } = createAnalyticsLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     function AnalyticsProbe() {
       return (
@@ -583,7 +587,7 @@ describe('analytics fullstack generated section behavior', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
     expect(screen.getByRole('dialog')).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'Pricing' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Pricing' }))
 
     await waitFor(() => {
       expect(navigate).toHaveBeenCalledWith('Pricing')
@@ -600,6 +604,7 @@ describe('analytics fullstack generated section behavior', () => {
       },
     })
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     function AnalyticsProbe() {
       return (
@@ -706,6 +711,7 @@ describe('analytics fullstack generated section behavior', () => {
       },
     })
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     function AnalyticsProbe() {
       return (

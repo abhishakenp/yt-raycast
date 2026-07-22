@@ -116,6 +116,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { BarNightclubHero } = await import('./BarNightclubHero.tsx')
 const { BarNightclubMenu } = await import('./BarNightclubMenu.tsx')
 const { BarNightclubNavbar } = await import('./BarNightclubNavbar.tsx')
@@ -283,6 +285,7 @@ function createBarNightclubLakebedStub() {
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   navigate.mockReset()
   lakebedRef.current = null
   document.body.removeAttribute('style')
@@ -292,6 +295,7 @@ describe('Bar/nightclub fullstack commerce behavior', () => {
   it('shares drinks catalog, Shoo account, add-to-cart, cart drawer, and mobile navigation state', async () => {
     const { lakebed, signInWithGoogle, state } = createBarNightclubLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Hero = BarNightclubHero.client.component
     const Navbar = BarNightclubNavbar.client.component
     const Menu = BarNightclubMenu.client.component
@@ -365,12 +369,12 @@ describe('Bar/nightclub fullstack commerce behavior', () => {
     fireEvent.click(within(searchDialog).getByText('Midnight in Paris'))
     expect(navigate).not.toHaveBeenCalledWith('Midnight in Paris')
 
-    const reservationButtons = screen.getAllByRole('button', {
+    const reservationButtons = screen.getAllByRole('link', {
       name: 'Reservations',
     })
     fireEvent.click(reservationButtons[0])
     fireEvent.click(reservationButtons[1])
-    const menuButtons = screen.getAllByRole('button', { name: 'Menu' })
+    const menuButtons = screen.getAllByRole('link', { name: 'Menu' })
     fireEvent.click(menuButtons[0])
     fireEvent.click(menuButtons[1])
     await waitFor(() => {
@@ -413,7 +417,9 @@ describe('Bar/nightclub fullstack commerce behavior', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Cart' }))
     const cartDrawer = await screen.findByRole('dialog')
-    expect(within(cartDrawer).getByText('Your cart')).toBeTruthy()
+    expect(
+      within(cartDrawer).getByRole('heading', { name: 'Your cart' }),
+    ).toBeTruthy()
     expect(within(cartDrawer).getByText('Noir Champagne Flight')).toBeTruthy()
     expect(within(cartDrawer).getByText('Midnight in Paris')).toBeTruthy()
     expect(
@@ -427,7 +433,7 @@ describe('Bar/nightclub fullstack commerce behavior', () => {
     const menuDrawer = await screen.findByRole('dialog')
     expect(within(menuDrawer).getByText('NOIR')).toBeTruthy()
     fireEvent.click(
-      within(menuDrawer).getByRole('button', { name: 'Reservations' }),
+      within(menuDrawer).getByRole('link', { name: 'Reservations' }),
     )
 
     await waitFor(() => {

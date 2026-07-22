@@ -180,6 +180,10 @@ describe('convex generation action', () => {
       undefined,
       DB_OBSERVED_GENERATION.preferredLanguage,
       undefined,
+      {
+        prompt: DB_OBSERVED_GENERATION.prompt,
+        brandContext: DB_OBSERVED_GENERATION.brand,
+      },
     )
     expect(JSON.stringify(mutations)).not.toContain('ship-fast-openui-source')
     expect(queries).toEqual(
@@ -283,6 +287,10 @@ describe('convex generation action', () => {
       undefined,
       DB_OBSERVED_GENERATION.preferredLanguage,
       undefined,
+      {
+        prompt: DB_OBSERVED_GENERATION.prompt,
+        brandContext: DB_OBSERVED_GENERATION.brand,
+      },
     )
     expect(JSON.stringify(mutations)).not.toContain('ship-fast-openui-source')
     expect(queries).toEqual(
@@ -359,6 +367,10 @@ describe('convex generation action', () => {
       undefined,
       DB_OBSERVED_GENERATION.preferredLanguage,
       undefined,
+      {
+        prompt: DB_OBSERVED_GENERATION.prompt,
+        brandContext: DB_OBSERVED_GENERATION.brand,
+      },
     )
     expect(mutations.map((call) => call.args)).toEqual(
       expect.arrayContaining([
@@ -474,6 +486,10 @@ describe('convex generation action', () => {
       undefined,
       DB_OBSERVED_GENERATION.preferredLanguage,
       undefined,
+      {
+        prompt: DB_OBSERVED_GENERATION.prompt,
+        brandContext: DB_OBSERVED_GENERATION.brand,
+      },
     )
     expect(JSON.stringify(mutations)).not.toContain('ship-fast-openui-source')
   })

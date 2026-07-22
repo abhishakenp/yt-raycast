@@ -96,6 +96,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { ElectronicsStoreNavbar } = await import('./ElectronicsStoreNavbar.tsx')
 const { ElectronicsStoreHero } = await import('./ElectronicsStoreHero.tsx')
 const { ElectronicsStoreProducts } =
@@ -567,6 +569,7 @@ function createCommerceLakebedStub() {
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   navigate.mockReset()
   lakebedRef.current = null
   document.body.removeAttribute('style')
@@ -604,6 +607,7 @@ describe('ElectronicsStore fullstack commerce behavior', () => {
   it('shares hero, deals, and product catalog with search, Shoo account, and cart drawer state', async () => {
     const { lakebed, signInWithGoogle, state } = createCommerceLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     render(
       <>
@@ -686,7 +690,9 @@ describe('ElectronicsStore fullstack commerce behavior', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Cart' }))
     const cartDialog = screen.getByRole('dialog')
-    expect(within(cartDialog).getByText('Your cart')).toBeTruthy()
+    expect(
+      within(cartDialog).getByRole('heading', { name: 'Your cart' }),
+    ).toBeTruthy()
     expect(within(cartDialog).getByText('Sony WH-1000XM5')).toBeTruthy()
     expect(within(cartDialog).getByText('Bose QuietComfort Ultra')).toBeTruthy()
     expect(navigate).not.toHaveBeenCalledWith('Cart')
@@ -695,6 +701,7 @@ describe('ElectronicsStore fullstack commerce behavior', () => {
   it('keeps cart row mutations scoped and requires confirmation before delete', async () => {
     const { lakebed, state } = createCommerceLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     render(
       <>

@@ -91,6 +91,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { AutoDealershipFinancing } =
   await import('./AutoDealershipFinancing.tsx')
 const { AutoDealershipHero } = await import('./AutoDealershipHero.tsx')
@@ -328,6 +330,7 @@ function createAutoDealershipLakebedStub() {
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   navigate.mockReset()
   lakebedRef.current = null
   document.body.removeAttribute('style')
@@ -338,6 +341,7 @@ describe('auto dealership fullstack behavior', () => {
     const { lakebed, signInWithGoogle, state } =
       createAutoDealershipLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     render(
       <>
@@ -401,7 +405,7 @@ describe('auto dealership fullstack behavior', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Browse Cars' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Browse Cars' }))
     expect(navigate).toHaveBeenCalledWith('Browse Cars')
 
     fireEvent.click(screen.getByRole('button', { name: 'Schedule Test Drive' }))
@@ -444,7 +448,7 @@ describe('auto dealership fullstack behavior', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
     const menu = await screen.findByRole('dialog', { name: 'Meridian Test' })
-    fireEvent.click(within(menu).getByRole('button', { name: 'Financing' }))
+    fireEvent.click(within(menu).getByRole('link', { name: 'Financing' }))
     expect(navigate).toHaveBeenCalledWith('Financing')
   })
 })

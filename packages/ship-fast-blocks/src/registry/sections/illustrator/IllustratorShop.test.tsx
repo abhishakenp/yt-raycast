@@ -115,6 +115,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { IllustratorHero } = await import('./IllustratorHero.tsx')
 const { IllustratorNavbar } = await import('./IllustratorNavbar.tsx')
 const { IllustratorShop } = await import('./IllustratorShop.tsx')
@@ -294,6 +296,7 @@ function createIllustratorLakebedStub() {
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   navigate.mockReset()
   lakebedRef.current = null
   document.body.removeAttribute('style')
@@ -303,6 +306,7 @@ describe('Illustrator fullstack commerce behavior', () => {
   it('shares print catalog, Shoo account, add-to-cart, cart drawer, and mobile navigation state', async () => {
     const { lakebed, signInWithGoogle, state } = createIllustratorLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Hero = IllustratorHero.client.component
     const Navbar = IllustratorNavbar.client.component
     const Shop = IllustratorShop.client.component
@@ -384,10 +388,10 @@ describe('Illustrator fullstack commerce behavior', () => {
     })
     expect(navigate).not.toHaveBeenCalledWith('Golden Hour Mountains')
 
-    const workButtons = screen.getAllByRole('button', { name: 'Work' })
+    const workButtons = screen.getAllByRole('link', { name: 'Work' })
     fireEvent.click(workButtons[0])
     fireEvent.click(workButtons[1])
-    const shopButtons = screen.getAllByRole('button', { name: 'Shop' })
+    const shopButtons = screen.getAllByRole('link', { name: 'Shop' })
     fireEvent.click(shopButtons[0])
     fireEvent.click(shopButtons[1])
     await waitFor(() => {
@@ -428,7 +432,9 @@ describe('Illustrator fullstack commerce behavior', () => {
 
     fireEvent.click(screen.getAllByRole('button', { name: 'Cart' })[0])
     const cartDrawer = await screen.findByRole('dialog')
-    expect(within(cartDrawer).getByText('Your cart')).toBeTruthy()
+    expect(
+      within(cartDrawer).getByRole('heading', { name: 'Your cart' }),
+    ).toBeTruthy()
     expect(within(cartDrawer).getByText('Moonlit Garden')).toBeTruthy()
     expect(within(cartDrawer).getByText('Golden Hour Mountains')).toBeTruthy()
     expect(
@@ -441,7 +447,7 @@ describe('Illustrator fullstack commerce behavior', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
     const menuDrawer = await screen.findByRole('dialog')
     expect(within(menuDrawer).getByText('Mira Studio')).toBeTruthy()
-    fireEvent.click(within(menuDrawer).getByRole('button', { name: 'About' }))
+    fireEvent.click(within(menuDrawer).getByRole('link', { name: 'About' }))
 
     await waitFor(() => {
       expect(navigate).toHaveBeenCalledWith('About')

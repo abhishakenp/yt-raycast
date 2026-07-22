@@ -304,9 +304,12 @@ function createEventLakebedStub() {
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   navigate.mockReset()
   lakebedRef.current = null
   document.body.removeAttribute('style')
@@ -316,6 +319,7 @@ describe('event fullstack behavior', () => {
   it('shares tickets, registration actions, mail links, and mobile drawer navigation through Lakebed', async () => {
     const { lakebed, state } = createEventLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     render(
       <>
@@ -426,7 +430,7 @@ describe('event fullstack behavior', () => {
     expect(navigate).not.toHaveBeenCalledWith('Get Ticket')
     expect(navigate).not.toHaveBeenCalledWith('Download Brochure')
 
-    fireEvent.click(screen.getByRole('button', { name: 'View Full Agenda' }))
+    fireEvent.click(screen.getByRole('link', { name: 'View Full Agenda' }))
     expect(navigate).toHaveBeenCalledWith('View Full Agenda')
 
     const emailLink = screen.getByRole('link', { name: 'team@frontconf.dev' })
@@ -434,7 +438,7 @@ describe('event fullstack behavior', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
     const menu = await screen.findByRole('dialog', { name: 'FrontConf' })
-    fireEvent.click(within(menu).getByRole('button', { name: 'Speakers' }))
+    fireEvent.click(within(menu).getByRole('link', { name: 'Speakers' }))
     expect(navigate).toHaveBeenCalledWith('Speakers')
   })
 })

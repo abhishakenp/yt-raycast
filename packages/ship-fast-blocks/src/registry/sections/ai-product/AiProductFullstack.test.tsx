@@ -150,6 +150,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { AiProductNavbar } = await import('./AiProductNavbar.tsx')
 const { AiProductHero } = await import('./AiProductHero.tsx')
 const { AiProductSteps } = await import('./AiProductSteps.tsx')
@@ -503,6 +505,7 @@ function createAiProductLakebedStub({
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   lakebedRef.current = null
   navigate.mockReset()
   document.body.removeAttribute('style')
@@ -512,6 +515,7 @@ describe('AI product fullstack generated section behavior', () => {
   it('shares search, Shoo auth, selected plan badge, and mobile navigation', async () => {
     const { lakebed, signInWithGoogle, state } = createAiProductLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     function AiProductProbe() {
       return (
@@ -551,7 +555,7 @@ describe('AI product fullstack generated section behavior', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
     expect(screen.getByRole('dialog')).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'Pricing' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Pricing' }))
 
     await waitFor(() => {
       expect(navigate).toHaveBeenCalledWith('Pricing')
@@ -568,6 +572,7 @@ describe('AI product fullstack generated section behavior', () => {
       },
     })
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     function AiProductProbe() {
       return (

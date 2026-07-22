@@ -98,6 +98,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { CrmNavbar } = await import('./CrmNavbar.tsx')
 const { CrmPricing } = await import('./CrmPricing.tsx')
 const { CrmHero } = await import('./CrmHero.tsx')
@@ -451,6 +453,7 @@ function createCrmLakebedStub({
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   lakebedRef.current = null
   navigate.mockReset()
   document.body.removeAttribute('style')
@@ -460,6 +463,7 @@ describe('CRM fullstack generated section behavior', () => {
   it('shares plan catalog, command search, Shoo auth, and mobile navigation', async () => {
     const { lakebed, signInWithGoogle, state } = createCrmLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     function CrmProbe() {
       return (
@@ -540,7 +544,7 @@ describe('CRM fullstack generated section behavior', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
     expect(screen.getByRole('dialog')).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'Pricing' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Pricing' }))
 
     await waitFor(() => {
       expect(navigate).toHaveBeenCalledWith('Pricing')
@@ -557,6 +561,7 @@ describe('CRM fullstack generated section behavior', () => {
       },
     })
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     function CrmProbe() {
       return (

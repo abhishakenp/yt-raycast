@@ -100,6 +100,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { MobileAppNavbar } = await import('./MobileAppNavbar.tsx')
 const { MobileAppPricing } = await import('./MobileAppPricing.tsx')
 const { MobileAppHero } = await import('./MobileAppHero.tsx')
@@ -453,6 +455,7 @@ function createMobileAppLakebedStub({
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   lakebedRef.current = null
   navigate.mockReset()
   document.body.removeAttribute('style')
@@ -482,6 +485,7 @@ describe('Mobile app fullstack generated section behavior', () => {
   it('shares plans across search, Shoo auth, and mobile navigation', async () => {
     const { lakebed, signInWithGoogle, state } = createMobileAppLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     function MobileAppProbe() {
       return (
@@ -541,7 +545,7 @@ describe('Mobile app fullstack generated section behavior', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
     expect(screen.getByRole('dialog')).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'Pricing' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Pricing' }))
 
     await waitFor(() => {
       expect(navigate).toHaveBeenCalledWith('Pricing')
@@ -559,6 +563,7 @@ describe('Mobile app fullstack generated section behavior', () => {
       },
     })
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     function MobileAppProbe() {
       return (

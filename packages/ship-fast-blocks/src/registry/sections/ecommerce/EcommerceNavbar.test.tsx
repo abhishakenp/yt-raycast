@@ -102,6 +102,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { EcommerceHero } = await import('./EcommerceHero.tsx')
 const { EcommerceNavbar } = await import('./EcommerceNavbar.tsx')
 const { EcommerceGallery } = await import('./EcommerceGallery.tsx')
@@ -308,6 +310,7 @@ function createCommerceLakebedStub() {
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   navigate.mockReset()
   lakebedRef.current = null
   document.body.removeAttribute('style')
@@ -317,6 +320,7 @@ describe('EcommerceNavbar fullstack commerce behavior', () => {
   it('uses gallery catalog and cart data through search, account, and cart controls', async () => {
     const { lakebed, signInWithGoogle, state } = createCommerceLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Hero = EcommerceHero.client.component
     const Navbar = EcommerceNavbar.client.component
     const Gallery = EcommerceGallery.client.component
@@ -388,10 +392,10 @@ describe('EcommerceNavbar fullstack commerce behavior', () => {
     })
     expect(navigate).not.toHaveBeenCalledWith('Wireless Headphones')
 
-    const shopButtons = screen.getAllByRole('button', { name: 'Shop' })
+    const shopButtons = screen.getAllByRole('link', { name: 'Shop' })
     fireEvent.click(shopButtons[0])
     fireEvent.click(shopButtons[1])
-    const dealButtons = screen.getAllByRole('button', { name: 'Deals' })
+    const dealButtons = screen.getAllByRole('link', { name: 'Deals' })
     fireEvent.click(dealButtons[0])
     fireEvent.click(dealButtons[1])
     await waitFor(() => {
@@ -428,7 +432,9 @@ describe('EcommerceNavbar fullstack commerce behavior', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Cart' }))
     const cartDialog = screen.getByRole('dialog')
-    expect(within(cartDialog).getByText('Your cart')).toBeTruthy()
+    expect(
+      within(cartDialog).getByRole('heading', { name: 'Your cart' }),
+    ).toBeTruthy()
     expect(within(cartDialog).getByText('Portable Speaker')).toBeTruthy()
     expect(within(cartDialog).getByText('Wireless Headphones')).toBeTruthy()
     expect(navigate).not.toHaveBeenCalledWith('Cart')

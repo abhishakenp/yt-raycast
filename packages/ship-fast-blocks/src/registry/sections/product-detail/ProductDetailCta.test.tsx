@@ -76,6 +76,8 @@ if (typeof document === 'undefined') {
 
 const { cleanup, fireEvent, render, screen, waitFor } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { ProductDetailCta } = await import('./ProductDetailCta.tsx')
 
 function createCommerceLakebedStub() {
@@ -184,6 +186,7 @@ function CartCountProbe({ lakebed }: { lakebed: TestLakebed }) {
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   navigate.mockReset()
   lakebedRef.current = null
 })
@@ -192,6 +195,7 @@ describe('ProductDetailCta commerce behavior', () => {
   it('mutates the shared cart for Add to Cart intent and still routes secondary actions', async () => {
     const { lakebed, state } = createCommerceLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Component = ProductDetailCta.client.component as ComponentType<any>
 
     render(
@@ -226,7 +230,7 @@ describe('ProductDetailCta commerce behavior', () => {
     ])
     expect(navigate).not.toHaveBeenCalledWith('Add to Cart')
 
-    fireEvent.click(screen.getByRole('button', { name: 'Learn More' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Learn More' }))
     expect(navigate).toHaveBeenCalledWith('Features')
   })
 })

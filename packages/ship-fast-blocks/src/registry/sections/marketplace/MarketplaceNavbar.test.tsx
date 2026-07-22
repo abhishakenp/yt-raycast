@@ -101,6 +101,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { MarketplaceHero } = await import('./MarketplaceHero.tsx')
 const { MarketplaceNavbar } = await import('./MarketplaceNavbar.tsx')
 const { EcommerceGallery } = await import('../ecommerce/EcommerceGallery.tsx')
@@ -274,6 +276,7 @@ function createCommerceLakebedStub() {
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   navigate.mockReset()
   lakebedRef.current = null
   document.body.removeAttribute('style')
@@ -283,6 +286,7 @@ describe('MarketplaceNavbar fullstack commerce behavior', () => {
   it('shares catalog, auth, and cart state with generated product capsules', async () => {
     const { lakebed, signInWithGoogle, state } = createCommerceLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Hero = MarketplaceHero.client.component
     const Navbar = MarketplaceNavbar.client.component
     const Gallery = EcommerceGallery.client.component
@@ -353,12 +357,12 @@ describe('MarketplaceNavbar fullstack commerce behavior', () => {
     fireEvent.click(within(searchDialog).getByText('Ceramic Planter'))
     expect(navigate).not.toHaveBeenCalledWith('Ceramic Planter')
 
-    const categoryButtons = screen.getAllByRole('button', {
+    const categoryButtons = screen.getAllByRole('link', {
       name: 'Categories',
     })
     fireEvent.click(categoryButtons[0])
     fireEvent.click(categoryButtons[1])
-    const sellButtons = screen.getAllByRole('button', {
+    const sellButtons = screen.getAllByRole('link', {
       name: 'Sell on Maker Market',
     })
     fireEvent.click(sellButtons[0])
@@ -398,7 +402,9 @@ describe('MarketplaceNavbar fullstack commerce behavior', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Cart' }))
     const cartDialog = screen.getByRole('dialog')
-    expect(within(cartDialog).getByText('Your cart')).toBeTruthy()
+    expect(
+      within(cartDialog).getByRole('heading', { name: 'Your cart' }),
+    ).toBeTruthy()
     expect(within(cartDialog).getByText('Curated Maker Set')).toBeTruthy()
     expect(within(cartDialog).getByText('Ceramic Planter')).toBeTruthy()
 

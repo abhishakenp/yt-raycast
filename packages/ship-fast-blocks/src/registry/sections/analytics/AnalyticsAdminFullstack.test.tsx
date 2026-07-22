@@ -393,9 +393,12 @@ function createAnalyticsAdminLakebedStub() {
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   navigate.mockReset()
   lakebedRef.current = null
   document.body.removeAttribute('style')
@@ -405,6 +408,7 @@ describe('analytics admin fullstack behavior', () => {
   it('shares Shoo profile, notifications, mobile drawer, and header actions through Lakebed', async () => {
     const { lakebed, signOut, state } = createAnalyticsAdminLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     render(
       <>
@@ -486,7 +490,7 @@ describe('analytics admin fullstack behavior', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Toggle menu' }))
     const menuDialog = await screen.findByRole('dialog', { name: 'DataFlow' })
-    fireEvent.click(within(menuDialog).getByRole('button', { name: 'Reports' }))
+    fireEvent.click(within(menuDialog).getByRole('link', { name: 'Reports' }))
     expect(navigate).toHaveBeenCalledWith('Reports')
   })
 })

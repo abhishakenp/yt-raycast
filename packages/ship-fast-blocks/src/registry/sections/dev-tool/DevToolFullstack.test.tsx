@@ -149,6 +149,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { DevToolNavbar } = await import('./DevToolNavbar.tsx')
 const { DevToolPricing } = await import('./DevToolPricing.tsx')
 const { DevToolHero } = await import('./DevToolHero.tsx')
@@ -501,6 +503,7 @@ function createDevToolLakebedStub({
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   lakebedRef.current = null
   navigate.mockReset()
   document.body.removeAttribute('style')
@@ -510,6 +513,7 @@ describe('dev-tool fullstack generated section behavior', () => {
   it('shares dev-tool plan catalog with search, Shoo account, and mobile navigation', async () => {
     const { lakebed, signInWithGoogle, state } = createDevToolLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     function DevToolProbe() {
       return (
@@ -586,7 +590,7 @@ describe('dev-tool fullstack generated section behavior', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
     expect(screen.getByRole('dialog')).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'Pricing' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Pricing' }))
 
     await waitFor(() => {
       expect(navigate).toHaveBeenCalledWith('Pricing')
@@ -603,6 +607,7 @@ describe('dev-tool fullstack generated section behavior', () => {
       },
     })
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     function DevToolProbe() {
       return (
@@ -658,7 +663,7 @@ describe('dev-tool fullstack generated section behavior', () => {
     const heroStart = screen.getAllByRole('button', {
       name: /Start Building Free/,
     })[0]
-    const docsButton = screen.getByRole('button', {
+    const docsButton = screen.getByRole('link', {
       name: 'View Documentation',
     })
     const salesButton = screen.getByRole('button', { name: 'Talk to Sales' })

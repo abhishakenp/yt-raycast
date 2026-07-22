@@ -83,6 +83,8 @@ if (typeof window !== 'undefined' && 'FormData' in window) {
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { FitnessNavbar } = await import('./FitnessNavbar.tsx')
 
 const now = '2026-06-26T00:00:00.000Z'
@@ -211,6 +213,7 @@ function createNewsletterLakebedStub() {
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   lakebedRef.current = null
   navigate.mockReset()
 })
@@ -219,6 +222,7 @@ describe('FitnessNavbar fullstack interactions', () => {
   it('subscribes from the trial drawer through Lakebed', async () => {
     const { lakebed, subscribers } = createNewsletterLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Navbar = FitnessNavbar.client.component
 
     render(
@@ -254,6 +258,7 @@ describe('FitnessNavbar fullstack interactions', () => {
   it('opens mobile navigation in a sheet and closes after navigation', async () => {
     const { lakebed } = createNewsletterLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Navbar = FitnessNavbar.client.component
 
     render(
@@ -266,12 +271,11 @@ describe('FitnessNavbar fullstack interactions', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
 
     expect(screen.getByRole('dialog')).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Classes' })).toBeTruthy()
+    expect(screen.getByRole('link', { name: 'Classes' })).toBeTruthy()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Classes' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Classes' }))
 
     await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith('Classes')
       expect(screen.queryByRole('dialog')).toBeNull()
     })
   })

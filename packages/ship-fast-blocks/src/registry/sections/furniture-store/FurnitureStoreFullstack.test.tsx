@@ -96,6 +96,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { FurnitureStoreHero } = await import('./FurnitureStoreHero.tsx')
 const { FurnitureStoreNavbar } = await import('./FurnitureStoreNavbar.tsx')
 const { FurnitureStoreProducts } = await import('./FurnitureStoreProducts.tsx')
@@ -549,6 +551,7 @@ function createCommerceLakebedStub() {
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   navigate.mockReset()
   lakebedRef.current = null
   document.body.removeAttribute('style')
@@ -558,6 +561,7 @@ describe('FurnitureStore fullstack commerce behavior', () => {
   it('shares hero and product catalog with search, Shoo account, and shopping cart drawer state', async () => {
     const { lakebed, signInWithGoogle, state } = createCommerceLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     render(
       <>
@@ -634,7 +638,9 @@ describe('FurnitureStore fullstack commerce behavior', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Shopping cart' }))
     const cartDialog = screen.getByRole('dialog')
-    expect(within(cartDialog).getByText('Your cart')).toBeTruthy()
+    expect(
+      within(cartDialog).getByRole('heading', { name: 'Your cart' }),
+    ).toBeTruthy()
     expect(within(cartDialog).getByText('Cloud Linen Sofa')).toBeTruthy()
     expect(within(cartDialog).getByText('Oak Dining Table')).toBeTruthy()
     expect(navigate).not.toHaveBeenCalledWith('Cart')
@@ -643,6 +649,7 @@ describe('FurnitureStore fullstack commerce behavior', () => {
   it('keeps room CTAs as navigation and uses the hero featured button for cart mutations', async () => {
     const { lakebed, state } = createCommerceLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     render(
       <FurnitureStoreHero.component
@@ -655,8 +662,8 @@ describe('FurnitureStore fullstack commerce behavior', () => {
       />,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Explore Rooms' }))
-    fireEvent.click(screen.getByRole('button', { name: 'New Arrivals' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Explore Rooms' }))
+    fireEvent.click(screen.getByRole('link', { name: 'New Arrivals' }))
 
     expect(navigate).toHaveBeenCalledWith('Explore Rooms')
     expect(navigate).toHaveBeenCalledWith('New Arrivals')

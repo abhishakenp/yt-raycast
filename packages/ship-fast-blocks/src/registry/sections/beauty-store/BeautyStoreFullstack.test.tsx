@@ -96,6 +96,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { BeautyStoreHero } = await import('./BeautyStoreHero.tsx')
 const { BeautyStoreNavbar } = await import('./BeautyStoreNavbar.tsx')
 const { BeautyStoreProducts } = await import('./BeautyStoreProducts.tsx')
@@ -549,6 +551,7 @@ function createCommerceLakebedStub() {
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   navigate.mockReset()
   lakebedRef.current = null
   document.body.removeAttribute('style')
@@ -558,6 +561,7 @@ describe('BeautyStore fullstack commerce behavior', () => {
   it('shares hero and product data with search, Shoo account, and the cart drawer', async () => {
     const { lakebed, signInWithGoogle, state } = createCommerceLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     render(
       <>
@@ -636,7 +640,9 @@ describe('BeautyStore fullstack commerce behavior', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Cart' }))
     const cartDialog = screen.getByRole('dialog')
-    expect(within(cartDialog).getByText('Your cart')).toBeTruthy()
+    expect(
+      within(cartDialog).getByRole('heading', { name: 'Your cart' }),
+    ).toBeTruthy()
     expect(within(cartDialog).getByText('Glow Reset Ritual Kit')).toBeTruthy()
     expect(within(cartDialog).getByText('Barrier Dew Cream')).toBeTruthy()
     expect(navigate).not.toHaveBeenCalledWith('Cart')
@@ -645,6 +651,7 @@ describe('BeautyStore fullstack commerce behavior', () => {
   it('keeps storefront CTAs as navigation and uses the hero bundle button for cart mutations', async () => {
     const { lakebed, state } = createCommerceLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     render(
       <BeautyStoreHero.component
@@ -657,10 +664,8 @@ describe('BeautyStore fullstack commerce behavior', () => {
       />,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Shop Bestsellers' }))
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Explore New Arrivals' }),
-    )
+    fireEvent.click(screen.getByRole('link', { name: 'Shop Bestsellers' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Explore New Arrivals' }))
 
     expect(navigate).toHaveBeenCalledWith('Shop Bestsellers')
     expect(navigate).toHaveBeenCalledWith('Explore New Arrivals')

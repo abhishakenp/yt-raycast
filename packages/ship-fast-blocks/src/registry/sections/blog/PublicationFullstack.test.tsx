@@ -172,6 +172,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { BlogNavbar } = await import('./BlogNavbar.tsx')
 const { BlogStoryGrid } = await import('./BlogStoryGrid.tsx')
 const { NewsroomSubscribe } = await import('../newsroom/NewsroomSubscribe.tsx')
@@ -376,6 +378,7 @@ function createPublicationLakebedStub() {
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   lakebedRef.current = null
   navigate.mockReset()
 })
@@ -385,6 +388,7 @@ describe('publication fullstack interactions', () => {
     const { articles, lakebed, searches, subscribers } =
       createPublicationLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Navbar = BlogNavbar.client.component
     const Grid = BlogStoryGrid.client.component
 
@@ -450,12 +454,13 @@ describe('publication fullstack interactions', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Menu' }))
     expect(screen.getByRole('dialog')).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Engineering' })).toBeTruthy()
+    expect(screen.getByRole('link', { name: 'Engineering' })).toBeTruthy()
   })
 
   it('records newsroom plan choices without fake navigation', async () => {
     const { actions, lakebed } = createPublicationLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Subscribe = NewsroomSubscribe.client.component
 
     render(<Subscribe props={{}} statementId="newsroom_subscribe" />)

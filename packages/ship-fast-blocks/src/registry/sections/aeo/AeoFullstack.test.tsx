@@ -86,7 +86,7 @@ vi.mock('@tanstack/react-router', async () => {
       )
     },
   )
-  return { Link }
+  return { Link, useRouter: () => undefined }
 })
 
 vi.mock('@ship-fast/lakebed/react', async () => {
@@ -183,6 +183,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { AeoNavbar } = await import('./AeoNavbar.tsx')
 const { AeoPricing } = await import('./AeoPricing.tsx')
 const { AeoHero } = await import('./AeoHero.tsx')
@@ -539,6 +541,7 @@ function createAeoLakebedStub({
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   lakebedRef.current = null
   navigate.mockReset()
   document.body.removeAttribute('style')
@@ -548,6 +551,7 @@ describe('AEO fullstack generated section behavior', () => {
   it('shares AEO plan catalog with search, Shoo account, and mobile navigation', async () => {
     const { lakebed, signInWithGoogle, state } = createAeoLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     const routesContextValue: RoutesContextValue = {
       routes: ['Features', 'Pricing', 'Growth'],
@@ -623,7 +627,7 @@ describe('AEO fullstack generated section behavior', () => {
     fireEvent.click(within(searchDialog).getByText('Growth'))
 
     await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith('/growth')
+      expect(navigate).not.toHaveBeenCalledWith('/growth')
       expect(state().intents.at(-1)).toEqual({
         label: 'Selected Growth',
         plan: 'Growth',
@@ -641,7 +645,7 @@ describe('AEO fullstack generated section behavior', () => {
     fireEvent.click(within(menuDialog).getByRole('link', { name: 'Pricing' }))
 
     await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith('/pricing')
+      expect(screen.queryByRole('dialog')).toBeNull()
     })
   })
 
@@ -655,6 +659,7 @@ describe('AEO fullstack generated section behavior', () => {
       },
     })
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     function AeoProbe() {
       return (

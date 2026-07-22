@@ -305,9 +305,12 @@ function createDashboardLakebedStub() {
 
 const { cleanup, fireEvent, render, screen, waitFor } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   navigate.mockReset()
   lakebedRef.current = null
 })
@@ -316,6 +319,7 @@ describe('dashboard fullstack behavior', () => {
   it('shares Shoo auth and live orders across sidebar, header, and table capsules', async () => {
     const { lakebed, signOut, state } = createDashboardLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     render(
       <>
@@ -327,7 +331,7 @@ describe('dashboard fullstack behavior', () => {
     )
 
     expect(screen.getByText('Taylor Admin')).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Orders 0' })).toBeTruthy()
+    expect(screen.getByRole('link', { name: 'Orders 0' })).toBeTruthy()
     expect(screen.getByLabelText('Orders: 0')).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: 'Sign out' }))
     expect(signOut).toHaveBeenCalledTimes(1)
@@ -340,7 +344,7 @@ describe('dashboard fullstack behavior', () => {
     })
     expect(screen.getByText('New Customer')).toBeTruthy()
     expect(screen.getByText('Manual order')).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Orders 1' })).toBeTruthy()
+    expect(screen.getByRole('link', { name: 'Orders 1' })).toBeTruthy()
     expect(screen.getByLabelText('Orders: 1')).toBeTruthy()
     expect(screen.getByText('Showing 1 live order')).toBeTruthy()
     expect(navigate).not.toHaveBeenCalledWith('New Order')
@@ -356,7 +360,7 @@ describe('dashboard fullstack behavior', () => {
     })
     expect(screen.getByText('Completed')).toBeTruthy()
 
-    fireEvent.click(screen.getAllByRole('button', { name: 'Export' })[0])
+    fireEvent.click(screen.getAllByRole('link', { name: 'Export' })[0])
     expect(navigate).toHaveBeenCalledWith('Export')
   })
 })

@@ -153,6 +153,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { RestaurantMenu } = await import('./RestaurantMenu.tsx')
 const { RestaurantNavbar } = await import('./RestaurantNavbar.tsx')
 const { RestaurantTestimonials } = await import('./RestaurantTestimonials.tsx')
@@ -649,6 +651,7 @@ function createRestaurantLakebedStub({
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   navigate.mockReset()
   lakebedRef.current = null
   document.body.removeAttribute('style')
@@ -664,6 +667,7 @@ describe('RestaurantMenu fullstack ordering', () => {
       },
     })
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Menu = RestaurantMenu.client.component
 
     expect(() =>
@@ -725,6 +729,7 @@ describe('RestaurantMenu fullstack ordering', () => {
       },
     })
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Menu = RestaurantMenu.client.component
 
     expect(() =>
@@ -764,6 +769,7 @@ describe('RestaurantMenu fullstack ordering', () => {
   it('does not crash when generated category data is array-like instead of a real array', () => {
     const { lakebed } = createRestaurantLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Menu = RestaurantMenu.client.component
 
     expect(() =>
@@ -803,6 +809,7 @@ describe('RestaurantMenu fullstack ordering', () => {
     const { catalog, lakebed, reservations, signInWithGoogle, state } =
       createRestaurantLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Navbar = RestaurantNavbar.client.component
     const Menu = RestaurantMenu.client.component
 
@@ -890,7 +897,7 @@ describe('RestaurantMenu fullstack ordering', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
     const mobileMenu = await screen.findByRole('dialog')
-    fireEvent.click(within(mobileMenu).getByRole('button', { name: 'Gallery' }))
+    fireEvent.click(within(mobileMenu).getByRole('link', { name: 'Gallery' }))
     await waitFor(() => {
       expect(navigate).toHaveBeenCalledWith('Gallery')
     })
@@ -899,6 +906,7 @@ describe('RestaurantMenu fullstack ordering', () => {
   it('adds dishes to shared restaurant order state and clears the order', async () => {
     const { lakebed, orderItems, selections } = createRestaurantLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Menu = RestaurantMenu.client.component
 
     render(
@@ -966,6 +974,7 @@ describe('RestaurantMenu fullstack ordering', () => {
       addDelay: () => addDeferred.promise,
     })
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Menu = RestaurantMenu.client.component
 
     render(
@@ -1016,6 +1025,7 @@ describe('RestaurantMenu fullstack ordering', () => {
       reserveDelay: () => reserveDeferred.promise,
     })
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Navbar = RestaurantNavbar.client.component
 
     render(

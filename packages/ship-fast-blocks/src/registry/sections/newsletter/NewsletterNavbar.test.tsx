@@ -84,6 +84,8 @@ if (typeof window !== 'undefined' && 'FormData' in window) {
 
 const { cleanup, fireEvent, render, screen, waitFor } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { NewsletterNavbar } = await import('./NewsletterNavbar.tsx')
 
 const now = '2026-06-26T00:00:00.000Z'
@@ -219,6 +221,7 @@ function createNewsletterLakebedStub() {
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   lakebedRef.current = null
   navigate.mockReset()
 })
@@ -227,6 +230,7 @@ describe('NewsletterNavbar fullstack interactions', () => {
   it('subscribes from the navbar drawer through Lakebed', async () => {
     const { lakebed, subscribers } = createNewsletterLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Navbar = NewsletterNavbar.client.component
 
     render(<Navbar props={{}} statementId="newsletter_navbar" />)
@@ -254,6 +258,7 @@ describe('NewsletterNavbar fullstack interactions', () => {
   it('opens mobile navigation in a sheet instead of jumping to the first route', () => {
     const { lakebed } = createNewsletterLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Navbar = NewsletterNavbar.client.component
 
     render(
@@ -266,7 +271,7 @@ describe('NewsletterNavbar fullstack interactions', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Menu' }))
 
     expect(screen.getByRole('dialog')).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Issues' })).toBeTruthy()
+    expect(screen.getByRole('link', { name: 'Issues' })).toBeTruthy()
     expect(navigate).not.toHaveBeenCalled()
   })
 })

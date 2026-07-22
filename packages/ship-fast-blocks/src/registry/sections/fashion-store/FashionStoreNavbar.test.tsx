@@ -96,6 +96,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { FashionStoreHero } = await import('./FashionStoreHero.tsx')
 const { FashionStoreNavbar } = await import('./FashionStoreNavbar.tsx')
 const { FashionStoreProducts } = await import('./FashionStoreProducts.tsx')
@@ -565,6 +567,7 @@ function createCommerceLakebedStub() {
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   navigate.mockReset()
   lakebedRef.current = null
   document.body.removeAttribute('style')
@@ -574,6 +577,7 @@ describe('FashionStore fullstack commerce behavior', () => {
   it('shares hero and product catalog with search, Shoo account, and shopping bag drawer state', async () => {
     const { lakebed, signInWithGoogle, state } = createCommerceLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     render(
       <>
@@ -655,7 +659,9 @@ describe('FashionStore fullstack commerce behavior', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Shopping bag' }))
     const cartDialog = screen.getByRole('dialog')
-    expect(within(cartDialog).getByText('Your cart')).toBeTruthy()
+    expect(
+      within(cartDialog).getByRole('heading', { name: 'Your cart' }),
+    ).toBeTruthy()
     expect(within(cartDialog).getByText('Archive Linen Capsule')).toBeTruthy()
     expect(within(cartDialog).getByText('Black Wool Coat')).toBeTruthy()
     expect(navigate).not.toHaveBeenCalledWith('Cart')
@@ -664,6 +670,7 @@ describe('FashionStore fullstack commerce behavior', () => {
   it('keeps editorial CTAs as navigation and uses the hero capsule button for cart mutations', async () => {
     const { lakebed, state } = createCommerceLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     render(
       <FashionStoreHero.component
@@ -676,8 +683,8 @@ describe('FashionStore fullstack commerce behavior', () => {
       />,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Shop the Collection' }))
-    fireEvent.click(screen.getByRole('button', { name: 'View Lookbook' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Shop the Collection' }))
+    fireEvent.click(screen.getByRole('link', { name: 'View Lookbook' }))
 
     expect(navigate).toHaveBeenCalledWith('Shop the Collection')
     expect(navigate).toHaveBeenCalledWith('View Lookbook')

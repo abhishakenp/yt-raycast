@@ -101,6 +101,8 @@ vi.mock('@ship-fast/lakebed/react', async (importOriginal) => {
 })
 
 const { loadOpenUIRuntimeLibrary } = await import('../../../runtime-library.ts')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 
 const SOURCE = `
   home_navbar = BakeryNavbar(
@@ -161,6 +163,7 @@ beforeAll(() => {
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   runtime.signInWithGoogle.mockClear()
   runtime.runMutation.mockClear()
 })
@@ -187,7 +190,9 @@ describe('BakeryNavbar generated runtime behavior', () => {
     await renderGeneratedNavbar()
     fireEvent.click(screen.getByRole('button', { name: 'Cart' }))
     const cartDialog = await screen.findByRole('dialog')
-    expect(within(cartDialog).getByText('Your cart')).toBeTruthy()
+    expect(
+      within(cartDialog).getByRole('heading', { name: 'Your cart' }),
+    ).toBeTruthy()
     expect(within(cartDialog).getByText('Country Sourdough')).toBeTruthy()
     expect(
       within(cartDialog).getByText('You have 1 item in your cart.'),

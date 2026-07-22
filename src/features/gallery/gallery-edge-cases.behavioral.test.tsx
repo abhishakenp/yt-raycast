@@ -47,6 +47,7 @@ vi.mock('@tanstack/react-router', () => ({
         href = href.replace(`$${key}`, String(value))
       }
     }
+    href = href.replace(/\/\$$/, '')
     return (
       <a
         href={href}

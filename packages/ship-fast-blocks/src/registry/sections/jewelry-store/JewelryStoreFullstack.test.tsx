@@ -96,6 +96,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { JewelryStoreHero } = await import('./JewelryStoreHero.tsx')
 const { JewelryStoreNavbar } = await import('./JewelryStoreNavbar.tsx')
 const { JewelryStorePieces } = await import('./JewelryStorePieces.tsx')
@@ -549,6 +551,7 @@ function createCommerceLakebedStub() {
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   navigate.mockReset()
   lakebedRef.current = null
   document.body.removeAttribute('style')
@@ -558,6 +561,7 @@ describe('JewelryStore fullstack commerce behavior', () => {
   it('binds hero and piece data to search, Shoo account, and the cart drawer without navigation-data collisions', async () => {
     const { lakebed, signInWithGoogle, state } = createCommerceLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     render(
       <>
@@ -633,7 +637,9 @@ describe('JewelryStore fullstack commerce behavior', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Cart' }))
     const cartDialog = screen.getByRole('dialog')
-    expect(within(cartDialog).getByText('Your cart')).toBeTruthy()
+    expect(
+      within(cartDialog).getByRole('heading', { name: 'Your cart' }),
+    ).toBeTruthy()
     expect(within(cartDialog).getByText('Celeste Pendant')).toBeTruthy()
     expect(within(cartDialog).getByText('Sapphire Halo Ring')).toBeTruthy()
     expect(navigate).not.toHaveBeenCalledWith('Cart')
@@ -643,6 +649,7 @@ describe('JewelryStore fullstack commerce behavior', () => {
   it('keeps collection CTAs as navigation while featured-piece actions mutate cart data', async () => {
     const { lakebed, state } = createCommerceLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     render(
       <JewelryStoreHero.component
@@ -655,8 +662,8 @@ describe('JewelryStore fullstack commerce behavior', () => {
       />,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Explore Collections' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Private Viewing' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Explore Collections' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Private Viewing' }))
 
     expect(navigate).toHaveBeenCalledWith('Explore Collections')
     expect(navigate).toHaveBeenCalledWith('Private Viewing')

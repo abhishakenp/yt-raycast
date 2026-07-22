@@ -100,6 +100,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { CybersecurityNavbar } = await import('./CybersecurityNavbar.tsx')
 const { CybersecurityPricing } = await import('./CybersecurityPricing.tsx')
 const { CybersecurityHero } = await import('./CybersecurityHero.tsx')
@@ -465,6 +467,7 @@ function createCybersecurityLakebedStub({
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   lakebedRef.current = null
   navigate.mockReset()
   document.body.removeAttribute('style')
@@ -475,6 +478,7 @@ describe('Cybersecurity fullstack generated section behavior', () => {
     const { lakebed, signInWithGoogle, state } =
       createCybersecurityLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     function CybersecurityProbe() {
       return (
@@ -557,7 +561,7 @@ describe('Cybersecurity fullstack generated section behavior', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
     expect(screen.getByRole('dialog')).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'Pricing' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Pricing' }))
 
     await waitFor(() => {
       expect(navigate).toHaveBeenCalledWith('Pricing')
@@ -574,6 +578,7 @@ describe('Cybersecurity fullstack generated section behavior', () => {
       },
     })
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     function CybersecurityProbe() {
       return (

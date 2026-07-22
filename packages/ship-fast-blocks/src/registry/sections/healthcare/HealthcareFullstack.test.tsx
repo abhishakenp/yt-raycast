@@ -99,6 +99,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { HealthcareNavbar } = await import('./HealthcareNavbar.tsx')
 const { HealthcareHero } = await import('./HealthcareHero.tsx')
 const { HealthcareServices } = await import('./HealthcareServices.tsx')
@@ -372,6 +374,7 @@ function createHealthcareLakebedStub({
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   lakebedRef.current = null
   navigate.mockReset()
   document.body.removeAttribute('style')
@@ -415,6 +418,7 @@ describe('Healthcare fullstack behavior', () => {
   it('shares services and plans with command search, Shoo account, and mobile drawer navigation', async () => {
     const { lakebed, signInWithGoogle, state } = createHealthcareLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     render(
       <>
@@ -453,7 +457,7 @@ describe('Healthcare fullstack behavior', () => {
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
-    fireEvent.click(await screen.findByRole('button', { name: 'Pricing' }))
+    fireEvent.click(await screen.findByRole('link', { name: 'Pricing' }))
     expect(navigate).toHaveBeenCalledWith('Pricing')
   })
 
@@ -465,6 +469,7 @@ describe('Healthcare fullstack behavior', () => {
       },
     })
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     render(
       <>

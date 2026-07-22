@@ -99,6 +99,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { MentalHealthNavbar } = await import('./MentalHealthNavbar.tsx')
 const { MentalHealthHero } = await import('./MentalHealthHero.tsx')
 const { MentalHealthServices } = await import('./MentalHealthServices.tsx')
@@ -372,6 +374,7 @@ function createMentalHealthLakebedStub({
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   lakebedRef.current = null
   navigate.mockReset()
   document.body.removeAttribute('style')
@@ -414,6 +417,7 @@ describe('MentalHealth fullstack behavior', () => {
   it('shares therapy services and tiers with command search, Shoo account, and mobile drawer navigation', async () => {
     const { lakebed, signInWithGoogle, state } = createMentalHealthLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     render(
       <>
@@ -453,7 +457,7 @@ describe('MentalHealth fullstack behavior', () => {
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
-    fireEvent.click(await screen.findByRole('button', { name: 'Pricing' }))
+    fireEvent.click(await screen.findByRole('link', { name: 'Pricing' }))
     expect(navigate).toHaveBeenCalledWith('Pricing')
   })
 
@@ -465,6 +469,7 @@ describe('MentalHealth fullstack behavior', () => {
       },
     })
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
 
     render(
       <>

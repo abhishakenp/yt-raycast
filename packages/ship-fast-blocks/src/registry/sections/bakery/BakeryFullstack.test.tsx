@@ -116,6 +116,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { BakeryHero } = await import('./BakeryHero.tsx')
 const { BakeryMenu } = await import('./BakeryMenu.tsx')
 const { BakeryNavbar } = await import('./BakeryNavbar.tsx')
@@ -283,6 +285,7 @@ function createBakeryLakebedStub() {
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   navigate.mockReset()
   lakebedRef.current = null
   document.body.removeAttribute('style')
@@ -292,6 +295,7 @@ describe('Bakery fullstack commerce behavior', () => {
   it('shares menu catalog, account, add-to-cart, and cart drawer state', async () => {
     const { lakebed, signInWithGoogle, state } = createBakeryLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Hero = BakeryHero.client.component
     const Navbar = BakeryNavbar.client.component
     const Menu = BakeryMenu.client.component
@@ -358,8 +362,8 @@ describe('Bakery fullstack commerce behavior', () => {
     fireEvent.click(within(searchDialog).getByText('Country Sourdough'))
     expect(navigate).not.toHaveBeenCalledWith('Country Sourdough')
 
-    fireEvent.click(screen.getByRole('button', { name: 'Order for Pickup' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Visit Our Bakery' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Order for Pickup' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Visit Our Bakery' }))
     await waitFor(() => {
       expect(navigate).toHaveBeenCalledWith('Order')
       expect(navigate).toHaveBeenCalledWith('Visit')
@@ -396,7 +400,9 @@ describe('Bakery fullstack commerce behavior', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Cart' }))
     const cartDrawer = await screen.findByRole('dialog')
-    expect(within(cartDrawer).getByText('Your cart')).toBeTruthy()
+    expect(
+      within(cartDrawer).getByRole('heading', { name: 'Your cart' }),
+    ).toBeTruthy()
     expect(within(cartDrawer).getByText('Apricot Danish')).toBeTruthy()
     expect(within(cartDrawer).getByText('Country Sourdough')).toBeTruthy()
     expect(

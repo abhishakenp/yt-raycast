@@ -102,6 +102,7 @@ vi.mock('@tanstack/react-router', () => {
     getRouteApi(path) {
       return {
         useParams: () => routeParamMocks.paramsByPath[path] ?? {},
+        useLoaderData: () => undefined,
       }
     },
     lazyRouteComponent(_importer, exportName) {

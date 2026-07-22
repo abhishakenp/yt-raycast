@@ -116,6 +116,8 @@ if (
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { CafeMenu } = await import('./CafeMenu.tsx')
 const { CafeNavbar } = await import('./CafeNavbar.tsx')
 
@@ -270,6 +272,7 @@ function createCafeLakebedStub() {
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   navigate.mockReset()
   lakebedRef.current = null
   document.body.removeAttribute('style')
@@ -279,6 +282,7 @@ describe('Cafe fullstack commerce behavior', () => {
   it('shares menu catalog, Shoo account, add-to-cart, cart drawer, and mobile navigation state', async () => {
     const { lakebed, signInWithGoogle, state } = createCafeLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Navbar = CafeNavbar.client.component
     const Menu = CafeMenu.client.component
 
@@ -345,7 +349,9 @@ describe('Cafe fullstack commerce behavior', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Cart' }))
     const cartDrawer = await screen.findByRole('dialog')
-    expect(within(cartDrawer).getByText('Your cart')).toBeTruthy()
+    expect(
+      within(cartDrawer).getByRole('heading', { name: 'Your cart' }),
+    ).toBeTruthy()
     expect(within(cartDrawer).getByText('Espresso')).toBeTruthy()
     expect(
       within(cartDrawer).getByText('You have 1 item in your cart.'),
@@ -357,7 +363,7 @@ describe('Cafe fullstack commerce behavior', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
     const menuDrawer = await screen.findByRole('dialog')
     expect(within(menuDrawer).getByText('Owl Cup')).toBeTruthy()
-    fireEvent.click(within(menuDrawer).getByRole('button', { name: 'Visit' }))
+    fireEvent.click(within(menuDrawer).getByRole('link', { name: 'Visit' }))
 
     await waitFor(() => {
       expect(navigate).toHaveBeenCalledWith('Visit')

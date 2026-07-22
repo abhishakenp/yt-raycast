@@ -127,6 +127,8 @@ if (typeof window !== 'undefined' && 'FormData' in window) {
 
 const { cleanup, fireEvent, render, screen, waitFor, within } =
   await import('@testing-library/react')
+const { setSectionKitNavClickFallback } =
+  await import('#/section-kit/nav-href.tsx')
 const { DocsHero } = await import('./DocsHero.tsx')
 const { DocsSidebar } = await import('./DocsSidebar.tsx')
 
@@ -353,6 +355,7 @@ function createDocsLakebedStub() {
 
 afterEach(() => {
   cleanup()
+  setSectionKitNavClickFallback(null)
   navigate.mockReset()
   lakebedRef.current = null
 })
@@ -361,6 +364,7 @@ describe('docs fullstack search', () => {
   it('lets the hero search query the Lakebed catalog and render matching articles inline', async () => {
     const { articles, lakebed, searches, state } = createDocsLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Hero = DocsHero.client.component
 
     render(<Hero props={{}} statementId="docs_hero" />)
@@ -390,6 +394,7 @@ describe('docs fullstack search', () => {
   it('shows a no-results message when the hero search matches nothing', async () => {
     const { lakebed, state } = createDocsLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Hero = DocsHero.client.component
 
     render(<Hero props={{}} statementId="docs_hero" />)
@@ -414,6 +419,7 @@ describe('docs fullstack search', () => {
   it('lets the sidebar search query the Lakebed catalog and render matching articles inline', async () => {
     const { articles, lakebed, searches, state } = createDocsLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Sidebar = DocsSidebar.client.component
 
     render(<Sidebar props={{}} statementId="docs_sidebar" />)
@@ -448,6 +454,7 @@ describe('docs fullstack search', () => {
   it('navigates to an article when a hero search result is selected', async () => {
     const { lakebed, state } = createDocsLakebedStub()
     lakebedRef.current = lakebed
+    setSectionKitNavClickFallback(navigate)
     const Hero = DocsHero.client.component
 
     render(<Hero props={{}} statementId="docs_hero" />)
