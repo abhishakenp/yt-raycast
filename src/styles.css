@@ -656,6 +656,11 @@ button.pill:hover:not(:disabled),
   max-width: 100%;
   overflow-x: hidden;
   transform: translateZ(0);
+  /* Bind the subtree's base text color to the themed foreground token. Without
+     this, any element that relies on inherited color (e.g. a raw <h1> with no
+     `text-foreground` class) inherits the dark app shell's near-white text color
+     and renders invisible on the light preview background. */
+  color: var(--color-foreground);
 }
 
 .genui-preview :where(*) {

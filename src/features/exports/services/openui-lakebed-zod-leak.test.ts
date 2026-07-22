@@ -76,6 +76,25 @@ export const Block = ({ items }: { items: string[] }) => {
       findUnboundClientReferences(clean, 'client/components/x.tsx'),
     ).toEqual([])
   })
+
+  it('accepts browser ambient values from TypeScript libs without allowing Node globals', () => {
+    const browserOnly = `export const Block = () => {
+  const svg = document.querySelector('svg')
+  return svg instanceof SVGElement ? window.location.pathname : null
+}
+`
+    const nodeLeak = `export const Block = () => {
+  return process.env.NODE_ENV ?? Buffer.from('x').toString('base64')
+}
+`
+
+    expect(
+      findUnboundClientReferences(browserOnly, 'client/components/x.tsx'),
+    ).toEqual([])
+    expect(
+      findUnboundClientReferences(nodeLeak, 'client/components/x.tsx'),
+    ).toEqual(['process', 'Buffer'])
+  })
 })
 
 describe('lakebed client component zod handling', () => {

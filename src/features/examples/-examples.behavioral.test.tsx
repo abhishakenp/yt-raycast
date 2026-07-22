@@ -373,6 +373,16 @@ describe('examples route behavior', () => {
       screen.getByRole('link', { name: /Saas/i }).getAttribute('href'),
     ).toBe('/examples/saas')
     expect(hasExampleCategory('saas')).toBe(true)
+
+    // `primitives` are the generation engine's building blocks (Button, Card…),
+    // not a browsable example site — excluded from the catalog entirely so the
+    // route 404s and no category card renders. The capsules stay registered for
+    // the engine's component-spec; they just are not surfaced as examples.
+    expect(hasExampleCategory('primitives')).toBe(false)
+    expect(
+      getExampleCategories().some((entry) => entry.category === 'primitives'),
+    ).toBe(false)
+    expect(screen.queryByRole('link', { name: /^Primitives$/i })).toBeNull()
   })
 
   it('renders a selected category through the themed generated preview', () => {

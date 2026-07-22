@@ -1,5 +1,11 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  waitFor,
+} from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { DeploymentPanel } from './DeploymentPanel'
@@ -13,6 +19,8 @@ type MockDeploymentTarget = {
   artifactProgressStage?: string
   artifactProgressPercent?: number
   artifactProgressStartedAt?: number
+  artifactProgressUpdatedAt?: number
+  artifactProgressSampleCount?: number
   deployedUrl?: string | null
 }
 
@@ -127,6 +135,7 @@ describe('DeploymentPanel (behavioral)', () => {
 
   afterEach(() => {
     cleanup()
+    vi.useRealTimers()
     vi.unstubAllGlobals()
     vi.restoreAllMocks()
   })
@@ -149,7 +158,7 @@ describe('DeploymentPanel (behavioral)', () => {
       expect(view.queryByText('Open Lakebed')).toBeNull()
     })
 
-    it('building: shows the real server-pushed stage + percentage for Lakebed while preparing', async () => {
+    it('building: shows the real server-pushed percentage for Lakebed while preparing', async () => {
       setExportTargets([
         {
           target: 'lakebed',
@@ -164,9 +173,29 @@ describe('DeploymentPanel (behavioral)', () => {
       const button = view.getByText('Publish Lakebed').closest('button')!
       fireEvent.click(button)
 
-      await waitFor(() =>
-        expect(view.getByText('Generating components · 76%')).toBeTruthy(),
-      )
+      await waitFor(() => expect(view.getByText(/76%/)).toBeTruthy())
+      expect(view.queryByText(/Generating components/)).toBeNull()
+      expect(
+        view.container.querySelector(
+          '[data-deployment-action="lakebed"] .animate-spin',
+        ),
+      ).toBeTruthy()
+    })
+
+    it('auto-deploy: shows Lakebed progress from server state without a local click', () => {
+      setExportTargets([
+        {
+          target: 'lakebed',
+          artifactReady: false,
+          artifactStatus: 'building',
+          artifactProgressStage: 'Bundling client app',
+          artifactProgressPercent: 84,
+        },
+      ])
+      const view = render(<DeploymentPanel sessionId="session_123" />)
+
+      expect(view.getByText(/84%/)).toBeTruthy()
+      expect(view.queryByText(/Bundling client app/)).toBeNull()
       expect(
         view.container.querySelector(
           '[data-deployment-action="lakebed"] .animate-spin',
@@ -475,6 +504,37 @@ describe('DeploymentPanel (behavioral)', () => {
       fireEvent.click(button)
       expect(convexState.publishPreview).not.toHaveBeenCalled()
     })
+
+    it('shows Lakebed update progress while preserving the existing Lakebed URL state', () => {
+      setExportTargets([
+        {
+          target: 'lakebed',
+          artifactReady: false,
+          artifactStatus: 'building',
+          artifactProgressStage: 'Uploading to Lakebed',
+          artifactProgressPercent: 97,
+          deployedUrl: 'https://lakebed-launch.lakebed.app',
+        },
+      ])
+      setDeploymentStatus({
+        provider: 'lakebed',
+        status: 'updating',
+        url: 'https://lakebed-launch.lakebed.app',
+        pendingPreviewVersion: 3,
+      })
+
+      const view = render(<DeploymentPanel sessionId="session_123" />)
+      const button = view.getByText('Open Lakebed').closest('button')!
+
+      expect(button.disabled).toBe(true)
+      expect(view.getByText(/97%/)).toBeTruthy()
+      expect(view.queryByText(/Uploading to Lakebed/)).toBeNull()
+      expect(
+        view.container.querySelector(
+          '[data-deployment-action="lakebed"] .animate-spin',
+        ),
+      ).toBeTruthy()
+    })
   })
 
   describe('8. published URL is clickable (opens in new tab)', () => {
@@ -516,10 +576,42 @@ describe('DeploymentPanel (behavioral)', () => {
         ),
       )
     })
+
+    it('does not show stale deployed 100 percent text while Lakebed auto-update is running', () => {
+      setExportTargets([
+        {
+          target: 'lakebed',
+          artifactReady: true,
+          artifactStatus: 'deployed',
+          artifactProgressStage: 'Deployed',
+          artifactProgressPercent: 100,
+          deployedUrl: 'https://lakebed-launch.lakebed.app',
+        },
+      ])
+      setDeploymentStatus({
+        provider: 'lakebed',
+        status: 'updating',
+        url: 'https://lakebed-launch.lakebed.app',
+        pendingPreviewVersion: 4,
+      })
+
+      const view = render(<DeploymentPanel sessionId="session_123" />)
+      const button = view.getByText('Open Lakebed').closest('button')!
+
+      expect(button.disabled).toBe(true)
+      expect(view.getByText('Updating deployment...')).toBeTruthy()
+      expect(view.queryByText(/Deployed · 100%/)).toBeNull()
+      expect(view.queryByText(/100%/)).toBeNull()
+      expect(
+        view.container.querySelector(
+          '[data-deployment-action="lakebed"] .animate-spin',
+        ),
+      ).toBeTruthy()
+    })
   })
 
   describe('9. progress percentage during deployment', () => {
-    it('shows the real server-pushed stage + percent while a Lakebed artifact is building and waiting', async () => {
+    it('shows the real server-pushed percent while a Lakebed artifact is building and waiting', async () => {
       setExportTargets([
         {
           target: 'lakebed',
@@ -533,14 +625,102 @@ describe('DeploymentPanel (behavioral)', () => {
 
       fireEvent.click(view.getByText('Publish Lakebed').closest('button')!)
 
-      await waitFor(() =>
-        expect(view.getByText('Generating components · 76%')).toBeTruthy(),
-      )
+      await waitFor(() => expect(view.getByText(/76%/)).toBeTruthy())
+      expect(view.queryByText(/Generating components/)).toBeNull()
       expect(
         view.container.querySelector(
           '[data-deployment-action="lakebed"] .animate-spin',
         ),
       ).toBeTruthy()
+    })
+
+    it('shows ETA from observed server timing while hiding internal stage names', async () => {
+      const startedAt = Date.now() - 76_000
+      const updatedAt = Date.now()
+      setExportTargets([
+        {
+          target: 'lakebed',
+          artifactReady: false,
+          artifactStatus: 'building',
+          artifactProgressStage: 'Generating components',
+          artifactProgressPercent: 76,
+          artifactProgressStartedAt: startedAt,
+          artifactProgressUpdatedAt: updatedAt,
+          artifactProgressSampleCount: 3,
+        },
+      ])
+      const view = render(<DeploymentPanel sessionId="session_123" />)
+
+      fireEvent.click(view.getByText('Publish Lakebed').closest('button')!)
+
+      await waitFor(() =>
+        expect(view.getByText(/76% · ~24s left/)).toBeTruthy(),
+      )
+      expect(view.queryByText(/Generating components/)).toBeNull()
+    })
+
+    it('does not invent ETA when early Lakebed progress has too few measured samples', () => {
+      vi.useFakeTimers()
+      vi.setSystemTime(100_000)
+      setExportTargets([
+        {
+          target: 'lakebed',
+          artifactReady: false,
+          artifactStatus: 'building',
+          artifactProgressStage: 'Loading generator',
+          artifactProgressPercent: 25,
+          artifactProgressStartedAt: Date.now() - 200,
+          artifactProgressUpdatedAt: Date.now(),
+          artifactProgressSampleCount: 2,
+        },
+      ])
+      const view = render(<DeploymentPanel sessionId="session_123" />)
+
+      expect(view.getByText('25%')).toBeTruthy()
+      expect(view.queryByText(/<1s left/)).toBeNull()
+      expect(view.queryByText(/Loading generator/)).toBeNull()
+    })
+
+    it('updates ETA from observed server timing when percent changes', () => {
+      vi.useFakeTimers()
+      vi.setSystemTime(100_000)
+      const startedAt = Date.now() - 76_000
+      const firstUpdatedAt = Date.now()
+      setExportTargets([
+        {
+          target: 'lakebed',
+          artifactReady: false,
+          artifactStatus: 'building',
+          artifactProgressStage: 'Generating components',
+          artifactProgressPercent: 76,
+          artifactProgressStartedAt: startedAt,
+          artifactProgressUpdatedAt: firstUpdatedAt,
+          artifactProgressSampleCount: 3,
+        },
+      ])
+      const view = render(<DeploymentPanel sessionId="session_123" />)
+
+      expect(view.getByText(/76% · ~24s left/)).toBeTruthy()
+
+      act(() => {
+        vi.advanceTimersByTime(1000)
+      })
+      setExportTargets([
+        {
+          target: 'lakebed',
+          artifactReady: false,
+          artifactStatus: 'building',
+          artifactProgressStage: 'Uploading to Lakebed',
+          artifactProgressPercent: 90,
+          artifactProgressStartedAt: startedAt,
+          artifactProgressUpdatedAt: Date.now(),
+          artifactProgressSampleCount: 4,
+        },
+      ])
+      view.rerender(<DeploymentPanel sessionId="session_123" />)
+
+      expect(view.getByText(/90% · ~9s left/)).toBeTruthy()
+      expect(view.queryByText(/Uploading to Lakebed/)).toBeNull()
     })
 
     it('shows a progress background gradient while building', async () => {
@@ -558,9 +738,7 @@ describe('DeploymentPanel (behavioral)', () => {
 
       fireEvent.click(button)
 
-      await waitFor(() =>
-        expect(view.getByText('Generating components · 76%')).toBeTruthy(),
-      )
+      await waitFor(() => expect(view.getByText(/76%/)).toBeTruthy())
       expect(button.style.backgroundImage).toContain('110deg')
     })
 
@@ -577,18 +755,14 @@ describe('DeploymentPanel (behavioral)', () => {
       const view = render(<DeploymentPanel sessionId="session_123" />)
       fireEvent.click(view.getByText('Publish Lakebed').closest('button')!)
 
-      await waitFor(() =>
-        expect(view.getByText('Generating components · 76%')).toBeTruthy(),
-      )
+      await waitFor(() => expect(view.getByText(/76%/)).toBeTruthy())
 
       setExportTargets([
         { target: 'lakebed', artifactReady: true, artifactStatus: 'ready' },
       ])
       view.rerender(<DeploymentPanel sessionId="session_123" />)
 
-      await waitFor(() =>
-        expect(view.queryByText('Generating components · 76%')).toBeNull(),
-      )
+      await waitFor(() => expect(view.queryByText(/76%/)).toBeNull())
     })
   })
 

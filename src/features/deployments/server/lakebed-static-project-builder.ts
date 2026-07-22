@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+
 import type { LakebedProjectFiles } from '../../exports/services/openui-lakebed-export-builder'
 import { resolvePreviewImageUrl } from '../../exports/services/preview-image-url-resolution'
 
@@ -95,16 +98,36 @@ async function rewriteDetachedPreviewImageUrls(html: string): Promise<string> {
   )
 }
 
-const tailwindCdnScript = '<script src="https://cdn.tailwindcss.com"></script>'
+const previewTailwindCssMarker = 'data-ship-fast-preview-tailwind-css="1"'
+
+function readPreviewTailwindCss(): string {
+  try {
+    return readFileSync(
+      join(process.cwd(), 'public', 'styles', 'preview-tailwind.css'),
+      'utf8',
+    )
+  } catch {
+    return ''
+  }
+}
+
+const previewTailwindCss = readPreviewTailwindCss()
+
+function previewTailwindStylesheet(): string {
+  return previewTailwindCss
+    ? `<style ${previewTailwindCssMarker}>${previewTailwindCss}</style>`
+    : '<script src="https://cdn.tailwindcss.com"></script>'
+}
 
 function ensureDetachedTailwindRuntime(html: string): string {
+  const stylesheet = previewTailwindStylesheet()
   const rewritten = html.replace(
     /<script\b([^>]*?)\bsrc=(["'])\/scripts\/tailwind-browser\.js\2([^>]*)><\/script>/i,
-    tailwindCdnScript,
+    stylesheet,
   )
   if (rewritten !== html) return rewritten
 
-  return html.replace(/<\/head>/i, `  ${tailwindCdnScript}\n</head>`)
+  return html.replace(/<\/head>/i, `  ${stylesheet}\n</head>`)
 }
 
 function stripShipFastOpenUIMetadata(html: string): string {
@@ -129,19 +152,17 @@ function renderReadme(projectName: string): string {
 Run this Lakebed app:
 
 \`\`\`sh
-npx lakebed dev
+bunx lakebed dev
 \`\`\`
 
 The exported app has one client entry, one server entry, and shared TypeScript.
-
-Generated with [ShipFast](https://ship-fast.io) 🚀.
 `
 }
 
 function renderAgents(): string {
   return `# Lakebed App Instructions
 
-- Run Lakebed commands with \`npx lakebed <command>\`.
+- Run Lakebed commands with \`bunx lakebed <command>\`.
 - Client code belongs in \`client/index.tsx\`.
 - Server code belongs in \`server/index.ts\`.
 - Shared code belongs in \`shared/\` and must stay free of DOM, Node, env, and runtime imports.

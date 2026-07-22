@@ -1923,10 +1923,33 @@ describe('commerce interaction surfaces', () => {
     expect(screen.getByRole('dialog')).toBeTruthy()
     expect(screen.getByText('Lumiere')).toBeTruthy()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Skincare' }))
+    const skincareLink = screen.getByRole('link', { name: 'Skincare' })
+    expect(skincareLink.getAttribute('href')).toBe('#skincare')
+    fireEvent.click(skincareLink)
 
     await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith('Skincare')
+      expect(screen.queryByRole('dialog')).toBeNull()
     })
+  })
+
+  it('ignores generated null and empty mobile nav entries', () => {
+    const generatedNav = ['Home', null, '  ', 'Skincare'] as unknown as string[]
+    const generatedHomeTarget = null as unknown as string
+
+    expect(() =>
+      render(
+        <CommerceMobileMenu
+          brand="Lumiere"
+          nav={generatedNav}
+          homeTarget={generatedHomeTarget}
+        />,
+      ),
+    ).not.toThrow()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
+
+    expect(screen.getByRole('dialog')).toBeTruthy()
+    expect(screen.getByText('Home')).toBeTruthy()
+    expect(screen.getByText('Skincare')).toBeTruthy()
   })
 })

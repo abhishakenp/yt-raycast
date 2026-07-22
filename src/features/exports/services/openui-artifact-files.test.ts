@@ -316,7 +316,7 @@ describe('openui artifact files', () => {
     }
   })
 
-  it('does not ship dead ship-fast-admin.js or public/ship-fast-admin.js in any export target', async () => {
+  it('does not ship dead site-admin.js or public/site-admin.js in any export target', async () => {
     for (const target of ['react', 'next', 'lakebed', 'html'] as const) {
       const { files } = await buildOpenUIArtifactFiles({
         source:
@@ -328,10 +328,10 @@ describe('openui artifact files', () => {
         target,
       })
       expect(Object.keys(files), `target=${target}`).not.toContain(
-        'ship-fast-admin.js',
+        'site-admin.js',
       )
       expect(Object.keys(files), `target=${target}`).not.toContain(
-        'public/ship-fast-admin.js',
+        'public/site-admin.js',
       )
     }
   })
@@ -360,11 +360,11 @@ describe('openui artifact files', () => {
       target: 'react',
     })
 
-    expect(files['src/ship-fast-admin.ts']).toContain(
-      'export function assertShipFastAdminAccess',
+    expect(files['src/site-admin.ts']).toContain(
+      'export function assertSiteAdminAccess',
     )
-    expect(files['src/ship-fast-admin.ts']).toContain(
-      'shipFastAdminEmails: readonly string[] = [\n  "founder@example.com"\n]',
+    expect(files['src/site-admin.ts']).toContain(
+      'siteAdminEmails: readonly string[] = [\n  "founder@example.com"\n]',
     )
   })
 
@@ -453,7 +453,7 @@ describe('openui artifact files', () => {
       ),
     )
 
-    expect(react.files['src/section-kit/Logo.tsx']).toContain(
+    expect(react.files['src/section-kit/Logo.tsx']).not.toContain(
       'data-brand-logo-selected',
     )
     expect(react.files['src/section-kit/Logo.tsx']).toContain(
@@ -461,7 +461,7 @@ describe('openui artifact files', () => {
     )
     expect(react.files['src/lib/brand-logo-provider.tsx']).toBeUndefined()
 
-    expect(next.files['src/section-kit/Logo.tsx']).toContain(
+    expect(next.files['src/section-kit/Logo.tsx']).not.toContain(
       'data-brand-logo-selected',
     )
     expect(next.files['src/section-kit/Logo.tsx']).toContain(
@@ -469,7 +469,7 @@ describe('openui artifact files', () => {
     )
     expect(next.files['src/lib/brand-logo-provider.tsx']).toBeUndefined()
 
-    expect(lakebed.files['client/section-kit/Logo.tsx']).toContain(
+    expect(lakebed.files['client/section-kit/Logo.tsx']).not.toContain(
       'data-brand-logo-selected',
     )
   })
@@ -504,9 +504,10 @@ describe('openui artifact files', () => {
     })
 
     expect(download?.filename).toBe('index.html')
-    expect(files['index.html']).toContain('window.__SHIP_FAST_ADMIN__')
-    expect(files['index.html']).toContain('window.assertShipFastAdminAccess')
+    expect(files['index.html']).toContain('window.__SITE_ADMIN__')
+    expect(files['index.html']).toContain('window.assertSiteAdminAccess')
     expect(files['index.html']).toContain('founder@example.com')
+    expect(files['index.html']).not.toMatch(/Ship Fast|SHIP_FAST|ship-fast/i)
   })
 
   it('exports v1 PageSwitch publication/admin source as HTML with baked admin metadata', async () => {
@@ -521,8 +522,9 @@ describe('openui artifact files', () => {
     expect(download?.filename).toBe('index.html')
     expect(files['index.html']).toContain('Artifact Gazette')
     expect(files['index.html']).toContain('Newsroom Admin')
-    expect(files['index.html']).toContain('window.__SHIP_FAST_ADMIN__')
+    expect(files['index.html']).toContain('window.__SITE_ADMIN__')
     expect(files['index.html']).toContain('founder@example.com')
+    expect(files['index.html']).not.toMatch(/Ship Fast|SHIP_FAST|ship-fast/i)
   })
 
   it('wires baked admin access into React artifact routes', async () => {
@@ -533,15 +535,13 @@ describe('openui artifact files', () => {
       target: 'react',
     })
 
-    expect(files['src/App.tsx']).toContain('ShipFastAdminGate')
-    expect(files['src/App.tsx']).toContain('isShipFastAdminRoute')
-    expect(files['src/lib/ship-fast-admin-gate.tsx']).toContain(
-      'assertShipFastAdminAccess',
+    expect(files['src/App.tsx']).toContain('SiteAdminGate')
+    expect(files['src/App.tsx']).toContain('isSiteAdminRoute')
+    expect(files['src/lib/site-admin-gate.tsx']).toContain(
+      'assertSiteAdminAccess',
     )
-    expect(files['src/lib/ship-fast-admin-gate.tsx']).toContain(
-      'shipFastAdminEmail',
-    )
-    expect(files['src/ship-fast-admin.ts']).toContain('founder@example.com')
+    expect(files['src/lib/site-admin-gate.tsx']).toContain('siteAdminEmail')
+    expect(files['src/site-admin.ts']).toContain('founder@example.com')
   })
 
   it('wires baked admin access into Next admin route files', async () => {
@@ -552,13 +552,13 @@ describe('openui artifact files', () => {
       target: 'next',
     })
 
-    expect(files['app/admin/page.tsx']).toContain('ShipFastAdminGate')
+    expect(files['app/admin/page.tsx']).toContain('SiteAdminGate')
     expect(files['app/admin/page.tsx']).toContain('routeLabel="Admin"')
-    expect(files['src/lib/ship-fast-admin-gate.tsx']).toContain(
-      'assertShipFastAdminAccess',
+    expect(files['src/lib/site-admin-gate.tsx']).toContain(
+      'assertSiteAdminAccess',
     )
-    expect(files['src/lib/ship-fast-admin-gate.tsx']).toContain("'use client'")
-    expect(files['src/ship-fast-admin.ts']).toContain('founder@example.com')
+    expect(files['src/lib/site-admin-gate.tsx']).toContain("'use client'")
+    expect(files['src/site-admin.ts']).toContain('founder@example.com')
   })
 
   it('preserves Next SEO JSON-LD when wrapping admin routes', async () => {
@@ -570,7 +570,7 @@ describe('openui artifact files', () => {
     })
 
     const adminPage = files['app/admin/page.tsx']
-    expect(adminPage).toContain('ShipFastAdminGate')
+    expect(adminPage).toContain('SiteAdminGate')
     expect(adminPage).toContain('routeLabel="Admin"')
     expect(adminPage).toContain('application/ld+json')
     expect(adminPage).toContain('</>')
@@ -589,13 +589,13 @@ describe('openui artifact files', () => {
 
     // Admin route page should always be generated
     expect(files['app/admin/page.tsx']).toBeDefined()
-    expect(files['app/admin/page.tsx']).toContain('ShipFastAdminGate')
+    expect(files['app/admin/page.tsx']).toContain('SiteAdminGate')
     expect(files['app/admin/page.tsx']).toContain('routeLabel="Admin"')
     // Admin gate module should always be present
-    expect(files['src/lib/ship-fast-admin-gate.tsx']).toBeDefined()
-    expect(files['src/ship-fast-admin.ts']).toBeDefined()
+    expect(files['src/lib/site-admin-gate.tsx']).toBeDefined()
+    expect(files['src/site-admin.ts']).toBeDefined()
     // Default owner email should be baked in
-    expect(files['src/ship-fast-admin.ts']).toContain('owner@ship-fast.local')
+    expect(files['src/site-admin.ts']).toContain('owner@site.local')
   })
 
   it('includes generated admin metadata in Lakebed artifact files', async () => {
@@ -606,8 +606,8 @@ describe('openui artifact files', () => {
       target: 'lakebed',
     })
 
-    expect(files['src/ship-fast-admin.ts']).toContain(
-      'shipFastAdminEmails: readonly string[] = [\n  "founder@example.com"\n]',
+    expect(files['src/site-admin.ts']).toContain(
+      'siteAdminEmails: readonly string[] = [\n  "founder@example.com"\n]',
     )
   })
 
@@ -619,10 +619,10 @@ describe('openui artifact files', () => {
       target: 'lakebed',
     })
 
-    expect(files['client/index.tsx']).toContain('ShipFastAdminGate')
-    expect(files['client/index.tsx']).toContain('shipFastAdminEmails')
+    expect(files['client/index.tsx']).toContain('SiteAdminGate')
+    expect(files['client/index.tsx']).toContain('siteAdminEmails')
     expect(files['client/index.tsx']).toContain('founder@example.com')
-    expect(files['client/index.tsx']).toContain('isShipFastAdminRoute(page)')
+    expect(files['client/index.tsx']).toContain('isSiteAdminRoute(page)')
   })
 
   it('exports generic v1 commerce source across targets with baked admin access', async () => {
@@ -635,7 +635,11 @@ describe('openui artifact files', () => {
     })
     expect(html.files['index.html']).toContain('Artifact Store')
     expect(html.files['index.html']).toContain('Store Admin')
-    expect(html.files['index.html']).toContain('window.__SHIP_FAST_ADMIN__')
+    expect(html.files['index.html']).toContain('window.__SITE_ADMIN__')
+    expect(html.files['index.html']).toContain('window.assertSiteAdminAccess')
+    expect(html.files['index.html']).not.toMatch(
+      /Ship Fast|SHIP_FAST|ship-fast/i,
+    )
 
     const react = await buildOpenUIArtifactFiles({
       source: v1CommerceSource,
@@ -643,10 +647,10 @@ describe('openui artifact files', () => {
       sessionId: 'commerce-demo',
       target: 'react',
     })
-    expect(react.files['src/App.tsx']).toContain('ShipFastAdminGate')
-    expect(react.files['src/App.tsx']).toContain('isShipFastAdminRoute')
+    expect(react.files['src/App.tsx']).toContain('SiteAdminGate')
+    expect(react.files['src/App.tsx']).toContain('isSiteAdminRoute')
     expect(react.files['src/data/pages.ts']).toContain('Artifact Store Catalog')
-    expect(react.files['src/ship-fast-admin.ts']).toContain('store@example.com')
+    expect(react.files['src/site-admin.ts']).toContain('store@example.com')
 
     const next = await buildOpenUIArtifactFiles({
       source: v1CommerceSource,
@@ -654,11 +658,11 @@ describe('openui artifact files', () => {
       sessionId: 'commerce-demo',
       target: 'next',
     })
-    expect(next.files['app/admin/page.tsx']).toContain('ShipFastAdminGate')
+    expect(next.files['app/admin/page.tsx']).toContain('SiteAdminGate')
     await expect(
       renderGeneratedRouteText(next.files, 'ShopPage'),
     ).resolves.toEqual(expect.any(String))
-    expect(next.files['src/ship-fast-admin.ts']).toContain('store@example.com')
+    expect(next.files['src/site-admin.ts']).toContain('store@example.com')
 
     const lakebed = await buildOpenUIArtifactFiles({
       source: v1CommerceSource,
@@ -666,9 +670,9 @@ describe('openui artifact files', () => {
       sessionId: 'commerce-demo',
       target: 'lakebed',
     })
-    expect(lakebed.files['client/index.tsx']).toContain('ShipFastAdminGate')
+    expect(lakebed.files['client/index.tsx']).toContain('SiteAdminGate')
     expect(lakebed.files['client/index.tsx']).toContain(
-      'isShipFastAdminRoute(page)',
+      'isSiteAdminRoute(page)',
     )
   })
 
@@ -679,10 +683,10 @@ describe('openui artifact files', () => {
       sessionId: 'software-demo',
       target: 'react',
     })
-    expect(react.files['src/App.tsx']).toContain('ShipFastAdminGate')
+    expect(react.files['src/App.tsx']).toContain('SiteAdminGate')
     expect(react.files['src/data/pages.ts']).toContain('Artifact SaaS Docs')
     expect(react.files['src/data/pages.ts']).toContain('Talk to Artifact SaaS')
-    expect(react.files['src/ship-fast-admin.ts']).toContain('saas@example.com')
+    expect(react.files['src/site-admin.ts']).toContain('saas@example.com')
 
     const next = await buildOpenUIArtifactFiles({
       source: v1SoftwareSource,
@@ -696,8 +700,8 @@ describe('openui artifact files', () => {
     await expect(
       renderGeneratedRouteText(next.files, 'ContactPage'),
     ).resolves.toContain('Talk to Artifact SaaS')
-    expect(next.files['app/admin/page.tsx']).toContain('ShipFastAdminGate')
-    expect(next.files['src/ship-fast-admin.ts']).toContain('saas@example.com')
+    expect(next.files['app/admin/page.tsx']).toContain('SiteAdminGate')
+    expect(next.files['src/site-admin.ts']).toContain('saas@example.com')
   })
 
   it('fails HTML artifacts when source rendering fails instead of packaging preview fallback', async () => {

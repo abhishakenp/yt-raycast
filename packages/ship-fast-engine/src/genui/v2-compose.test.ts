@@ -209,11 +209,9 @@ describe('composePage (valid by construction, no fallback)', () => {
     expect(await auditOk(src)).toBe(true)
   })
 
-  // Regression: non-English locales (e.g. Malayalam) previously caused the LLM
-  // to write image alt text in the locale, which then became the Pexels search
-  // query and returned irrelevant images. The compose system prompt must force
-  // alt text to English regardless of locale.
-  it('forces image alt text to English for non-English locales (Malayalam)', async () => {
+  // Regression: non-English locales and non-English prompts must not make the
+  // generator author localized copy. Locale is only for post-render translation.
+  it('forces all visible copy and image text to English for non-English locales', async () => {
     mocks.generateText.mockImplementation(async (..._a) =>
       richProps(String(_a[2])),
     )
@@ -230,8 +228,12 @@ describe('composePage (valid by construction, no fallback)', () => {
       locale: 'ml',
     })
     const systemPrompt = String(mocks.generateText.mock.calls[0][1])
-    expect(systemPrompt).toContain('Malayalam')
     expect(systemPrompt).toMatch(/alt text.*English/i)
+    expect(systemPrompt).toContain('ALL user-visible content')
+    expect(systemPrompt).toContain('polished English only')
+    expect(systemPrompt).toContain('closest natural English equivalents')
+    expect(systemPrompt).not.toContain('Target locale ml')
+    expect(systemPrompt).not.toContain('in Malayalam (ml)')
   })
 
   it('forces image alt text to English even for the default (en) locale', async () => {

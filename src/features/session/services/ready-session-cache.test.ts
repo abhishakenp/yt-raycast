@@ -12,6 +12,10 @@ const createStorage = () => {
   const store = new Map<string, string>()
   return {
     getItem: (key: string) => store.get(key) ?? null,
+    key: (index: number) => Array.from(store.keys())[index] ?? null,
+    get length() {
+      return store.size
+    },
     removeItem: (key: string) => {
       store.delete(key)
     },
@@ -97,6 +101,67 @@ describe('ready session cache', () => {
       preferredLanguage: 'en',
     })
     expect(storage.getItem(key)).toBeNull()
+  })
+
+  it('prunes expired ready session entries before writing a new prompt cache entry', () => {
+    const storage = createStorage()
+    const oldKey = getReadySessionCacheKey('old prompt', 'en')
+    const freshKey = getReadySessionCacheKey('fresh prompt', 'en')
+    storage.setItem(
+      oldKey,
+      JSON.stringify({
+        sessionId: 'old_session',
+        prompt: 'old prompt',
+        preferredLanguage: 'en',
+        createdAt: 1_000,
+      }),
+    )
+
+    rememberReadySession(storage, {
+      sessionId: 'fresh_session',
+      prompt: 'fresh prompt',
+      preferredLanguage: 'en',
+      now: 9 * 24 * 60 * 60 * 1000,
+    })
+
+    expect(storage.getItem(oldKey)).toBeNull()
+    expect(storage.getItem(freshKey)).toContain('fresh_session')
+  })
+
+  it('keeps the ready prompt cache bounded to the newest entries', () => {
+    const storage = createStorage()
+
+    for (let i = 0; i < 30; i += 1) {
+      rememberReadySession(storage, {
+        sessionId: `session_${i}`,
+        prompt: `cached prompt ${i}`,
+        preferredLanguage: 'en',
+        now: i + 1,
+      })
+    }
+
+    const sessionKeys = Array.from({ length: storage.length }, (_, i) =>
+      storage.key(i),
+    ).filter(
+      (key): key is string =>
+        key !== null && key.startsWith('ship-fast:ready-session:v1:'),
+    )
+
+    expect(sessionKeys.length).toBeLessThanOrEqual(24)
+    expect(
+      readReadySessionCache(storage, {
+        prompt: 'cached prompt 0',
+        preferredLanguage: 'en',
+        now: 31,
+      }),
+    ).toBeNull()
+    expect(
+      readReadySessionCache(storage, {
+        prompt: 'cached prompt 29',
+        preferredLanguage: 'en',
+        now: 31,
+      })?.sessionId,
+    ).toBe('session_29')
   })
 
   it('swallows QuotaExceededError from setItem in rememberReadySession', () => {

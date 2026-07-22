@@ -38,6 +38,9 @@
       "@ship-fast/blocks/generated": [
         "./types/typecheck/ship-fast-blocks.d.ts"
       ],
+      "@ship-fast/blocks/generated/lakebed-app-css-sources.compressed": [
+        "./types/typecheck/ship-fast-blocks.d.ts"
+      ],
       "@ship-fast/blocks/theme": ["./types/typecheck/ship-fast-blocks.d.ts"],
       "@ship-fast/blocks/component-names": [
         "./types/typecheck/ship-fast-blocks.d.ts"

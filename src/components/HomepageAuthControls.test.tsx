@@ -85,6 +85,21 @@ describe('HomepageAuthControls', () => {
     )
   })
 
+  it('renders the visible sign-in control with the liquid-glass pill structure', async () => {
+    setClerk({ openSignIn: vi.fn() })
+    const { HomepageAuthControls } = await importControls('pk_test_homepage')
+
+    const { container } = render(<HomepageAuthControls wrapProvider={false} />)
+    const button = screen.getByRole('button', { name: /sign in/i })
+
+    expect(button.classList.contains('pill')).toBe(true)
+    expect(button.classList.contains('pill--top-actions')).toBe(true)
+    expect(container.querySelector('.pill__body')?.textContent).toContain(
+      'Sign in',
+    )
+    expect(container.querySelectorAll('[aria-hidden="true"]').length).toBe(7)
+  })
+
   it('opens Clerk sign-in from the visible control', async () => {
     const openSignIn = vi.fn()
     setClerk({ openSignIn })

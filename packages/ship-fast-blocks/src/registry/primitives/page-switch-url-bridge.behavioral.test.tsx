@@ -4,6 +4,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
 
 const openUiState = vi.hoisted(() => ({
+  holdValue: false,
+  initialValue: undefined as string | undefined,
   setValue: vi.fn(),
 }))
 
@@ -15,9 +17,9 @@ vi.mock('@openuidev/react-lang', async (importOriginal) => {
   return {
     ...actual,
     useStateField: (_key: string, initial: unknown) => {
-      const [value, setValue] = useState(initial)
+      const [value, setValue] = useState(openUiState.initialValue ?? initial)
       const stableSetValue = useCallback((next: unknown) => {
-        setValue(next)
+        if (!openUiState.holdValue) setValue(next)
         openUiState.setValue(next)
       }, [])
       return { setValue: stableSetValue, value }
@@ -102,6 +104,8 @@ function PageSwitchHost({
 afterEach(() => {
   cleanup()
   vi.restoreAllMocks()
+  openUiState.holdValue = false
+  openUiState.initialValue = undefined
   openUiState.setValue.mockReset()
 })
 
@@ -182,5 +186,24 @@ describe('PageSwitch URL bridge sync behavior', () => {
     )
 
     expect(screen.getByTestId('page-Home')).toBeTruthy()
+  })
+
+  it('keeps URL bridge state authoritative over a stale OpenUI page field', async () => {
+    openUiState.holdValue = true
+    openUiState.initialValue = 'Gallery'
+
+    render(
+      <PageSwitchHost
+        routes={['Home', 'Gallery']}
+        pages={[makePageNode('Home'), makePageNode('Gallery')]}
+        bridgeValue={{ navigateToPage: vi.fn(), pageFromUrl: null }}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('page-Home')).toBeTruthy()
+    })
+    expect(screen.queryByTestId('page-Gallery')).toBeNull()
+    expect(openUiState.setValue).toHaveBeenCalledWith('Home')
   })
 })

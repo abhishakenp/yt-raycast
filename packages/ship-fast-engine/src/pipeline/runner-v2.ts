@@ -192,6 +192,7 @@ export const runAllV2 = async ({
       prompt: languageMode.prompt,
       siteSpec: siteSpec ?? undefined,
       preferredLanguage: languageMode.code ?? preferredLanguage,
+      languageMode,
       brandProfile,
       imageHints,
       log: _log,

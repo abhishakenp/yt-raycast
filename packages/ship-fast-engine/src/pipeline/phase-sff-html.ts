@@ -2,6 +2,7 @@ import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { HOMEPAGE_MODEL, LLM_CONFIG } from '../config'
 import { groqStream } from '../llm/groq'
+import { translateHtml } from '../llm/translator'
 import { brandProfilePromptBlock } from '../prompts/brand-profile'
 import { ensureLucideIconRuntime } from './lucide-icons'
 
@@ -14,6 +15,16 @@ type GenerateHtmlInput = {
 type GenerateHtmlResult = {
   content: string
   cost?: number
+}
+
+type SffLanguageMode = {
+  code?: string
+  name?: string
+  nativeName?: string
+  script?: string
+  prompt?: string
+  projectBrief?: string
+  needsTranslation?: boolean
 }
 
 const SFF_HTML_GENERATION_ATTEMPTS = 2
@@ -43,6 +54,7 @@ type WriteSffHtmlHomeInput = {
   prompt: string
   siteSpec?: Record<string, unknown>
   preferredLanguage?: string
+  languageMode?: SffLanguageMode | null
   imageHints?: {
     photos?: Array<{ query?: string; alt?: string; url?: string }>
     videos?: Array<{
@@ -58,6 +70,7 @@ type WriteSffHtmlHomeInput = {
     broadcast?: (payload: unknown) => void
   }
   generateHtml?: (input: GenerateHtmlInput) => Promise<GenerateHtmlResult>
+  translateHtmlContent?: typeof translateHtml
 }
 
 export const SFF_HTML_SYSTEM_PROMPT = `You are an elite web designer that outputs a single complete HTML file and nothing else.
@@ -69,6 +82,7 @@ Rules:
 - Build a premium responsive website: bold hero, generous spacing, gradient or dark accents when appropriate, hover states, and subtle CSS animations.
 - Include a sticky nav, hero with CTA, 3 feature cards, stats/social-proof strip, and footer.
 - Use specific content from the user prompt. No lorem ipsum and no generic placeholder brands.
+- Generate ALL user-visible site copy in polished English only, regardless of the user prompt language/script or any request to create the site in another language. If the prompt is written in any other language/script, understand it as source context and translate concepts to their closest natural English equivalents before writing copy. Localization runs later as post-processing.
 - Use verified Pexels media from the supplied media block. If no verified media is supplied, use /api/pexels?query=<specific visual query>&w=<width>&h=<height>&seed=<stable slug>; do not use Unsplash, Picsum, placeholder.com, fake stock URLs, base64 images, or invented image URLs.
 - CRITICAL — IMAGE ALT TEXT AND PEXELS QUERY MUST ALWAYS BE IN ENGLISH. No exceptions. When the brief contains non-English concepts, TRANSLATE them to their closest English visual equivalent (e.g. Malayalam "sarikk" → "silk saree", "onam" → "harvest festival", "ponnundu" → "gift box"; Hindi "mithai" → "Indian sweets"; Tamil "pookkalam" → "flower rangoli"). Never transliterate — Pexels/Unsplash search in English and cannot match transliterated words. Alt text must be a descriptive English phrase a stock photographer would use, never a file path or non-English script.
 - Use official Brandfetch/brand-profile logo and brand facts from the supplied brand block when present. If no verified logo exists, render a restrained text wordmark instead of inventing a logo.
@@ -253,7 +267,6 @@ function buildMediaPromptBlock(
 export function buildSffHtmlPrompt({
   prompt,
   siteSpec,
-  preferredLanguage,
   imageHints,
   brandProfile,
 }: {
@@ -270,7 +283,7 @@ Generated planning context:
 ${summarizeSiteSpec(siteSpec)}
 
 Language:
-${preferredLanguage?.trim() || 'Use the language implied by the brief; default to English.'}
+Generate visible site copy in English only. Ignore any requested or detected target locale while authoring; translation/localization is a separate post-processing step.
 
 ${buildMediaPromptBlock(imageHints)}
 ${brandProfilePromptBlockTyped(brandProfile)}
@@ -299,11 +312,13 @@ export async function writeSffHtmlHome({
   prompt,
   siteSpec,
   preferredLanguage,
+  languageMode,
   imageHints,
   brandProfile,
   log,
   sessionCtx,
   generateHtml = defaultGenerateHtml,
+  translateHtmlContent = translateHtml,
 }: WriteSffHtmlHomeInput) {
   const user = buildSffHtmlPrompt({
     prompt,
@@ -335,8 +350,29 @@ export async function writeSffHtmlHome({
         )
       }
 
-      writeFileSync(join(workspace, 'index.html'), html)
-      writeFileSync(join(workspace, 'home.openui'), html)
+      let finalHtml = html
+      if (languageMode?.needsTranslation) {
+        try {
+          const translated = await translateHtmlContent(html, languageMode)
+          if (translated?.content && !translated.error) {
+            finalHtml = translated.content
+            log?.(`  sff-html: translated preview to ${languageMode.code}`)
+          } else {
+            log?.(
+              `  sff-html: translation skipped — ${translated?.error ?? 'empty response'}`,
+            )
+          }
+        } catch (error) {
+          log?.(
+            `  sff-html: translation error — ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          )
+        }
+      }
+
+      writeFileSync(join(workspace, 'index.html'), finalHtml)
+      writeFileSync(join(workspace, 'home.openui'), finalHtml)
       for (const snapshot of streamSnapshots) {
         sessionCtx?.broadcast?.({
           type: 'source',
@@ -344,11 +380,11 @@ export async function writeSffHtmlHome({
         })
       }
       log?.(
-        `  sff-html: ${html.length} chars generated${streamSnapshots.length ? ` in ${streamSnapshots.length} chunks` : ''}`,
+        `  sff-html: ${finalHtml.length} chars generated${streamSnapshots.length ? ` in ${streamSnapshots.length} chunks` : ''}`,
       )
 
       return {
-        chars: html.length,
+        chars: finalHtml.length,
         cost: result.cost ?? 0,
       }
     } catch (error) {

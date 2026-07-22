@@ -7,8 +7,10 @@ import { JSDOM } from 'jsdom'
 import { afterEach, describe, expect, it } from 'vitest'
 
 import {
+  buildLakebedThemeCss,
   buildOpenUILakebedProjectFiles,
   collectRouteImageAlts,
+  inferLakebedImageDimensionHints,
   readLakebedDefinition,
   resolveLakebedImageSources,
 } from './openui-lakebed-export-builder'
@@ -437,6 +439,22 @@ describe('openui lakebed seo integration', () => {
 })
 
 describe('openui lakebed image source generation', () => {
+  it('does not override copied logo components with an empty image src', async () => {
+    const built = await buildOpenUILakebedProjectFiles({
+      source: `navbar = EcommerceNavbar("Shodidas", ["Home"], null, "Shop Now", "/shop", "0")
+navbarAnchor = SectionAnchor("home_navbar", navbar)
+root = Stack([navbarAnchor])`,
+      siteSpecJson: JSON.stringify({ projectName: 'Shodidas' }),
+      sessionId: 'lakebed-empty-logo',
+      target: 'lakebed',
+      selectedBrandLogo: null,
+    })
+
+    expect(built.files['client/section-kit/Logo.tsx']).not.toContain(
+      'const brandLogoSrc = "";',
+    )
+  })
+
   it('exports nested composed route capsules as native Lakebed components and schema', async () => {
     const built = await buildOpenUILakebedProjectFiles({
       source: v2ComposedLakebedSource,
@@ -2049,6 +2067,94 @@ export const WebhookHero = defineCapsule({
     ])
   })
 
+  it('uses actual image URL dimensions instead of static reference-path heuristics', async () => {
+    process.env.APP_BASE_URL = 'https://ship-fast.test'
+    delete process.env.PEXELS_API_KEY
+    delete process.env.VITE_PEXELS_API_KEY
+    delete process.env.UNSPLASH_ACCESS_KEY
+    delete process.env.VITE_UNSPLASH_ACCESS_KEY
+
+    const requests: string[] = []
+    globalThis.fetch = (async (url, init?) => {
+      requests.push(String(url))
+      expect(init).toMatchObject({ redirect: 'manual' })
+      return new Response(null, {
+        headers: {
+          Location:
+            'https://images.pexels.com/photos/4242/gallery-panorama.jpeg?auto=compress&cs=tinysrgb&h=900&w=1200',
+        },
+        status: 302,
+      })
+    }) as typeof fetch
+
+    const sources = await resolveLakebedImageSources(
+      [
+        {
+          componentName: 'GalleryPage',
+          label: 'Home',
+          path: '/',
+          props: {
+            gallery: [
+              {
+                imageAlt: 'Wide venue panorama',
+                imageSrc:
+                  '/api/pexels?query=wide+venue+panorama&w=1200&h=900&seed=wide',
+              },
+            ],
+          },
+        },
+      ],
+      undefined,
+    )
+
+    expect(requests).toEqual([
+      'https://ship-fast.test/api/pexels?query=wide+venue+panorama&w=1200&h=900&seed=wide',
+    ])
+    expect(sources).toEqual([
+      expect.objectContaining({
+        alt: 'Wide venue panorama',
+        src: 'https://images.pexels.com/photos/4242/gallery-panorama.jpeg?auto=compress&cs=tinysrgb&h=900&w=1200&fit=crop',
+      }),
+    ])
+  })
+
+  it('derives missing image dimensions from component source defaults', async () => {
+    const alt = 'artisan polishing a crystal-embellished shoe in a workshop'
+    const hints = inferLakebedImageDimensionHints(
+      [
+        {
+          componentName: 'HomePage',
+          label: 'Home',
+          path: '/',
+          props: {
+            children: [
+              {
+                typeName: 'EcommerceOverview',
+                props: { imageAlt: alt },
+              },
+            ],
+          },
+        },
+      ],
+      {
+        'client/components/EcommerceOverview.tsx': `
+export function EcommerceOverviewBlock({ props }) {
+  const imageAlt = props.imageAlt ?? 'Ecommerce website experience';
+  return <OverviewMediaPanel alt={imageAlt} />;
+}
+`,
+        'client/section-kit/OverviewSection.tsx': `
+const OverviewMediaPanel = React.forwardRef(({ w = 900, h = 700, alt }, ref) => {
+  return <Image alt={alt} w={w} h={h} />;
+});
+OverviewMediaPanel.displayName = 'OverviewMediaPanel';
+`,
+      },
+    )
+
+    expect(hints.get(alt)).toEqual({ height: 700, width: 900 })
+  })
+
   it('keeps deployed route images identical to direct-preview resolved images when alts are translated', async () => {
     process.env.APP_BASE_URL = 'https://ship-fast.test'
     delete process.env.PEXELS_API_KEY
@@ -2168,19 +2274,19 @@ export const WebhookHero = defineCapsule({
       expect.arrayContaining([
         expect.objectContaining({
           alt: 'पॉलिश ग्लास इंस्टॉलेशन का शोकेस',
-          src: 'https://images.pexels.com/photos/7195588/pexels-photo-7195588.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200&fit=crop',
+          src: 'https://images.pexels.com/photos/7195588/pexels-photo-7195588.jpeg?auto=compress&cs=tinysrgb&h=600&w=800&fit=crop',
         }),
         expect.objectContaining({
           alt: 'स्काईलाइन रिटेल हब खुदरा marketing case study',
-          src: 'https://images.pexels.com/photos/1111111/pexels-photo-1111111.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200&fit=crop',
+          src: 'https://images.pexels.com/photos/1111111/pexels-photo-1111111.jpeg?auto=compress&cs=tinysrgb&h=400&w=600&fit=crop',
         }),
         expect.objectContaining({
           alt: 'लक्से होटल लॉबी सत्कार marketing case study',
-          src: 'https://images.pexels.com/photos/2222222/pexels-photo-2222222.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200&fit=crop',
+          src: 'https://images.pexels.com/photos/2222222/pexels-photo-2222222.jpeg?auto=compress&cs=tinysrgb&h=400&w=600&fit=crop',
         }),
         expect.objectContaining({
           alt: 'मेट्रो कॉरपोरेट कैंपस दफ्तर marketing case study',
-          src: 'https://images.pexels.com/photos/3333333/pexels-photo-3333333.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200&fit=crop',
+          src: 'https://images.pexels.com/photos/3333333/pexels-photo-3333333.jpeg?auto=compress&cs=tinysrgb&h=400&w=600&fit=crop',
         }),
       ]),
     )
@@ -2189,6 +2295,138 @@ export const WebhookHero = defineCapsule({
         .filter((source) => source.alt.includes('marketing case study'))
         .every((source) => !source.src.includes('picsum.photos')),
     ).toBe(true)
+  })
+
+  it('pairs deployed route images with dashboard preview order when edited alts no longer overlap', async () => {
+    delete process.env.PEXELS_API_KEY
+    delete process.env.VITE_PEXELS_API_KEY
+    delete process.env.UNSPLASH_ACCESS_KEY
+    delete process.env.VITE_UNSPLASH_ACCESS_KEY
+
+    globalThis.fetch = (async (url) => {
+      throw new Error(`deployed artifact re-searched provider: ${String(url)}`)
+    }) as typeof fetch
+
+    const sources = await resolveLakebedImageSources(
+      [
+        {
+          componentName: 'PetInnovationPage',
+          label: 'Home',
+          path: '/',
+          props: {
+            hero: { imageAlt: 'White cat walking through grass' },
+            gallery: [
+              { imageAlt: 'Mountain landscape thumbnail' },
+              { imageAlt: 'Tea cup beside notebook' },
+              { imageAlt: 'Walking path thumbnail' },
+            ],
+          },
+        },
+      ],
+      [
+        '<main>',
+        '<img alt="Playground structures hero image" src="https://cdn.example.test/playground-hero.jpg">',
+        '<img alt="French bulldog thumbnail" src="https://cdn.example.test/french-bulldog.jpg">',
+        '<img alt="Smiling gray cat thumbnail" src="https://cdn.example.test/gray-cat.jpg">',
+        '<img alt="Curly dog portrait thumbnail" src="https://cdn.example.test/curly-dog.jpg">',
+        '</main>',
+      ].join(''),
+    )
+
+    expect(sources).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          alt: 'White cat walking through grass',
+          src: 'https://cdn.example.test/playground-hero.jpg',
+        }),
+        expect.objectContaining({
+          alt: 'Mountain landscape thumbnail',
+          src: 'https://cdn.example.test/french-bulldog.jpg',
+        }),
+        expect.objectContaining({
+          alt: 'Tea cup beside notebook',
+          src: 'https://cdn.example.test/gray-cat.jpg',
+        }),
+        expect.objectContaining({
+          alt: 'Walking path thumbnail',
+          src: 'https://cdn.example.test/curly-dog.jpg',
+        }),
+      ]),
+    )
+  })
+
+  it('renders OpenUI bootstrap previews before extracting Lakebed image sources', async () => {
+    process.env.APP_BASE_URL = 'https://ship-fast.test'
+    delete process.env.PEXELS_API_KEY
+    delete process.env.VITE_PEXELS_API_KEY
+    delete process.env.UNSPLASH_ACCESS_KEY
+    delete process.env.VITE_UNSPLASH_ACCESS_KEY
+
+    const resolvedByRequest = new Map([
+      [
+        '/api/pexels?query=paws+playgrounds+colorful+dog+cat+playground&w=1200&h=1200&seed=colorful+dog+and+cat+playground+with+interactive+structures',
+        'https://images.pexels.com/photos/100/rendered-hero.jpg?auto=compress&cs=tinysrgb&h=650&w=940',
+      ],
+      [
+        '/api/pexels?query=paws+playgrounds+interactive+dog+tunnel&w=400&h=400&seed=interactive+dog+tunnel',
+        'https://images.pexels.com/photos/101/rendered-dog-tunnel.jpg?auto=compress&cs=tinysrgb&h=350',
+      ],
+      [
+        '/api/pexels?query=paws+playgrounds+cat+climbing+tower&w=400&h=400&seed=cat+climbing+tower',
+        'https://images.pexels.com/photos/102/rendered-cat-tower.jpg?auto=compress&cs=tinysrgb&h=350',
+      ],
+      [
+        '/api/pexels?query=paws+playgrounds+water+feature+pets&w=400&h=400&seed=water+feature+for+pets',
+        'https://images.pexels.com/photos/103/rendered-water-feature.jpg?auto=compress&cs=tinysrgb&h=350',
+      ],
+    ])
+    const requests: string[] = []
+    globalThis.fetch = (async (url, init?) => {
+      const parsed = new URL(String(url))
+      const requestPath = `${parsed.pathname}${parsed.search}`
+      requests.push(requestPath)
+      expect(init).toMatchObject({ redirect: 'manual' })
+      const location = resolvedByRequest.get(requestPath)
+      if (!location) {
+        throw new Error(
+          `unexpected rendered preview image request ${requestPath}`,
+        )
+      }
+      return new Response(null, {
+        headers: { Location: location },
+        status: 302,
+      })
+    }) as typeof fetch
+
+    const built = await buildOpenUILakebedProjectFiles({
+      source: `home_hero = CrowdfundingHero("Pet Innovation", "Live", "A Playground Like Never Seen Before", "Animated, beautiful spaces where dogs and cats can explore, play, and bond.", "colorful dog and cat playground with interactive structures", ["interactive dog tunnel","cat climbing tower","water feature for pets"], "$45,000", "Goal", 72, null, [{"value":"150+","label":"Backers"},{"value":"3","label":"Months Funded"},{"value":"2","label":"Locations Planned"}], "Back This Project", "Campaign ends July 31, 2026")
+root = home_hero`,
+      siteSpecJson: JSON.stringify({
+        brand: 'Paws Playgrounds',
+        projectName: 'Paws Playgrounds',
+      }),
+      previewHtml:
+        '<!doctype html><html><body><div id="openui-root"></div><script id="openui-client-source" type="application/json">"root = home_hero"</script></body></html>',
+      prompt: 'A Playground Like Never Seen Before for dogs and cats',
+      sessionId: 'lakebed-bootstrap-image-parity',
+      target: 'lakebed',
+    })
+
+    const routesFile = built.files['client/routes.ts'] ?? ''
+    const imageRuntime = built.files['client/lib/image.tsx'] ?? ''
+
+    expect(requests).toEqual([...resolvedByRequest.keys()])
+    expect(routesFile).toContain(
+      'https://images.pexels.com/photos/100/rendered-hero.jpg?auto=compress&cs=tinysrgb&h=1200&w=1200&fit=crop',
+    )
+    expect(routesFile).toContain(
+      'https://images.pexels.com/photos/101/rendered-dog-tunnel.jpg?auto=compress&cs=tinysrgb&h=400&w=400&fit=crop',
+    )
+    expect(routesFile).toContain(
+      "originalSrcKey: '%2Fapi%2Fpexels%3Fquery%3Dpaws%2Bplaygrounds%2Bcolorful%2Bdog%2Bcat%2Bplayground%26w%3D1200%26h%3D1200%26seed%3Dcolorful%2Bdog%2Band%2Bcat%2Bplayground%2Bwith%2Binteractive%2Bstructures'",
+    )
+    expect(routesFile).not.toContain('picsum.photos')
+    expect(imageRuntime).toContain('imageSourcesByOriginalSrcKey')
   })
 
   it('resolves edited image src overrides in deployed runtime instead of leaking preview API URLs', async () => {
@@ -2256,13 +2494,13 @@ render(h(Image, {
     )
     expect(rendered.errors).toEqual([])
     expect(image?.getAttribute('src')).toBe(
-      'https://images.pexels.com/photos/4444444/pexels-photo-4444444.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200&fit=crop',
+      'https://images.pexels.com/photos/4444444/pexels-photo-4444444.jpeg?auto=compress&cs=tinysrgb&h=400&w=600&fit=crop',
     )
     expect(image?.getAttribute('src')).not.toContain('/api/pexels')
     expect(image?.getAttribute('src')).not.toContain('9999999')
     expect(routeRendered.errors).toEqual([])
     expect(routeImage?.getAttribute('src')).toBe(
-      'https://images.pexels.com/photos/4444444/pexels-photo-4444444.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200&fit=crop',
+      'https://images.pexels.com/photos/4444444/pexels-photo-4444444.jpeg?auto=compress&cs=tinysrgb&h=400&w=600&fit=crop',
     )
     expect(routeImage?.getAttribute('src')).not.toContain('/api/pexels')
     expect(routeImage?.getAttribute('src')).not.toContain('9999999')
@@ -2312,7 +2550,9 @@ render(h(Image, {
         }),
         expect.objectContaining({
           alt: 'Golden retriever puppy playing with a ball',
-          src: 'https://images.pexels.com/photos/dog-large2x.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop',
+          originalSrc:
+            '/api/pexels?query=golden+retriever+puppy+playing&w=1200&h=1200&seed=Golden+retriever+puppy+playing+with+a+ball',
+          src: 'https://images.pexels.com/photos/dog-large2x.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop',
         }),
       ]),
     )
@@ -2377,7 +2617,11 @@ render(h(Image, {
     expect(sources).toEqual([
       {
         alt: 'Polished glass showroom installation',
-        src: 'https://images.pexels.com/photos/vite-large2x.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop',
+        originalSrc:
+          '/api/pexels?query=polished+glass+showroom+installation&w=1200&h=1200&seed=Polished+glass+showroom+installation',
+        originalSrcKey:
+          '%2Fapi%2Fpexels%3Fquery%3Dpolished%2Bglass%2Bshowroom%2Binstallation%26w%3D1200%26h%3D1200%26seed%3DPolished%2Bglass%2Bshowroom%2Binstallation',
+        src: 'https://images.pexels.com/photos/vite-large2x.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1200&fit=crop',
       },
     ])
     expect(sources[0]?.src).not.toContain('picsum.photos')
@@ -2459,7 +2703,9 @@ render(h(Image, {
         }),
         expect.objectContaining({
           alt: 'Golden retriever puppy playing with a ball',
-          src: 'https://picsum.photos/seed/golden-retriever-puppy-playing-with-a-ball/1200/800',
+          originalSrc:
+            '/api/pexels?query=golden+retriever+puppy+playing&w=1200&h=1200&seed=Golden+retriever+puppy+playing+with+a+ball',
+          src: 'https://picsum.photos/seed/golden-retriever-puppy-playing-with-a-ball/1200/1200',
         }),
       ]),
     )
@@ -2711,15 +2957,33 @@ export function signOut() {}
   })
 })
 
-describe('openui lakebed export — Tailwind v4 @theme block', () => {
+describe('openui lakebed export — compiled Tailwind theme CSS', () => {
   const singlePageSource = `home_navbar = CoworkingNavbar("Test", ["Home"], "555-0100", null, "Book", "#tour")
 home_navbar_anchor = SectionAnchor("home_navbar", home_navbar)
 home_hero = CoworkingHero("Hub", "Work", "Terms", "Flex", "See", "Tour", ["Wi-Fi"], "space", "150+", "Members", ["m1"])
-home_hero_anchor = SectionAnchor("home_hero", home_hero, "scroll-mt-28")
+home_hero_anchor = SectionAnchor("home_hero", home_hero, "scroll-mt-28 text-foreground/[0.04] bg-background/65 shadow-primary/40 shadow-foreground/20")
 home = Stack([home_navbar_anchor, home_hero_anchor])
 root = PageSwitch(["Home"], [home], "", {})`
 
-  it('generates a @theme block with --color-* tokens for Tailwind v4 utility generation', async () => {
+  const realEstateHeroSource = `home_hero = RealEstateHero("Exclusive Luxury", "Find the World's Most Expensive Penthouses", "Discover unparalleled views, private elevators, and celebrity-owned residences across the United States.", "Browse Listings", "Listings", "Get a Private Consultation", "Contact", "luxury penthouse interior with skyline view", "City or State", "Penthouse", "Min Price", "Search Penthouses", "Listings")
+home = Stack([home_hero])
+root = PageSwitch(["Home"], [home], "", {})`
+
+  const readThemeCss = (themeFile: string): string => {
+    const match = themeFile.match(/export const themeCss = (.*?);\n/s)
+    expect(match?.[1]).toBeDefined()
+    return new Function(`return ${match?.[1] ?? '""'}`)() as string
+  }
+
+  const readCompiledTailwindCss = (tailwindFile: string): string => {
+    const match = tailwindFile.match(
+      /export const compiledTailwindCss = (.*?);\n/s,
+    )
+    expect(match?.[1]).toBeDefined()
+    return new Function(`return ${match?.[1] ?? '""'}`)() as string
+  }
+
+  it('emits selected theme vars for both Tailwind color tokens and runtime theme tokens', async () => {
     const built = await buildOpenUILakebedProjectFiles({
       source: singlePageSource,
       siteSpecJson: JSON.stringify({ projectName: 'Theme Test' }),
@@ -2730,30 +2994,69 @@ root = PageSwitch(["Home"], [home], "", {})`
 
     const themeFile = built.files['client/lib/theme.tsx']
     expect(themeFile).toBeDefined()
+    const css = readThemeCss(themeFile)
 
-    // The @theme block must be present so @tailwindcss/browser generates
-    // custom-color utilities (bg-background, text-foreground, border-border/50, etc.)
-    expect(themeFile).toContain('@theme')
-    expect(themeFile).toContain('--color-background')
-    expect(themeFile).toContain('--color-foreground')
-    expect(themeFile).toContain('--color-border')
-    expect(themeFile).toContain('--color-primary')
-    expect(themeFile).toContain('--color-muted-foreground')
-    expect(themeFile).toContain('--color-destructive')
-
-    // The --color-* values must reference the :root CSS variables
-    // (not hardcoded hex values) so runtime theme switching works
-    expect(themeFile).toContain('--color-background: var(--background)')
-    expect(themeFile).toContain('--color-foreground: var(--foreground)')
-    expect(themeFile).toContain('--color-border: var(--border)')
-
-    // Font tokens must be mapped for Tailwind v4 font-family utilities
-    expect(themeFile).toContain('--font-sans: var(--font-sans)')
-    expect(themeFile).toContain('--font-serif: var(--font-serif)')
-    expect(themeFile).toContain('--font-mono: var(--font-mono)')
+    expect(css).toContain('.genui-preview')
+    expect(css).toContain('.genui-preview.dark')
+    expect(css).toContain('.genui-preview .p-5')
+    expect(css).toContain('padding: 1.25rem !important')
+    expect(css).toContain(':root')
+    expect(css).toContain(
+      "--font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;",
+    )
+    expect(css).toContain('--background:')
+    expect(css).toContain('--foreground:')
+    expect(css).toContain('--color-background: var(--background)')
+    expect(css).toContain('--color-foreground: var(--foreground)')
+    expect(css).toContain('--color-border: var(--border)')
+    expect(css).toContain('--color-primary: var(--primary)')
+    expect(css).toContain('color-scheme: dark')
   })
 
-  it('injects the @theme block into a <style type="text/tailwindcss"> element', async () => {
+  it('uses bundled app CSS sources when the Lakebed build runtime cannot read src/styles.css', () => {
+    const css = buildLakebedThemeCss(null, true, {
+      'src/styles.css': [
+        '@import url("./styles/index.css");',
+        '@theme { --font-sans: "Bundled Sans", sans-serif; }',
+        '* { box-sizing: border-box; }',
+        'html, body, #app, #root, #__root { min-height: 100%; }',
+        '#app, #root, #__root { width: 100%; min-width: 0; align-self: stretch; }',
+        'body { margin: 0; }',
+      ].join('\n'),
+      'src/styles/index.css':
+        'body { display: flex; align-items: center; }\n:root { --dashboard-token: 1; }',
+    })
+
+    expect(css).toContain('--dashboard-token: 1')
+    expect(css).toContain('--font-sans: "Bundled Sans", sans-serif;')
+    expect(css).toContain(
+      '#app, #root, #__root { width: 100%; min-width: 0; align-self: stretch; }',
+    )
+    expect(css).toContain('body { margin: 0; }')
+    expect(css).not.toContain('display: flex')
+    expect(css).not.toContain('align-items: center')
+    expect(css).not.toContain('max-width: none')
+  })
+
+  it('preserves generated unicode punctuation exactly in Lakebed route props', async () => {
+    const built = await buildOpenUILakebedProjectFiles({
+      source: `home_hero = EcommerceHero("New", "Crystal Shoes", "Copy", "Shop", "Learn", "Heel", "$199", "Hand‑crafted heel", "Add", "sparkling shoe", "Limited", ["30‑Day Returns"])
+home = Stack([home_hero])
+root = PageSwitch(["Home"], [home], "", {})`,
+      siteSpecJson: JSON.stringify({ projectName: 'Punctuation Test' }),
+      sessionId: 'punctuation-test',
+      target: 'lakebed',
+      isDark: true,
+    })
+
+    const routesFile = built.files['client/routes.ts']
+    expect(routesFile).toContain('Hand‑crafted heel')
+    expect(routesFile).toContain('30‑Day Returns')
+    expect(routesFile).not.toContain('Hand-crafted heel')
+    expect(routesFile).not.toContain('30-Day Returns')
+  })
+
+  it('ships compiled Tailwind CSS instead of depending on @tailwindcss/browser theme compilation', async () => {
     const built = await buildOpenUILakebedProjectFiles({
       source: singlePageSource,
       siteSpecJson: JSON.stringify({ projectName: 'Theme Test' }),
@@ -2763,20 +3066,68 @@ root = PageSwitch(["Home"], [home], "", {})`
     })
 
     const themeFile = built.files['client/lib/theme.tsx']
+    const tailwindFile = built.files['client/lib/compiled-tailwind.ts']
     expect(themeFile).toBeDefined()
+    expect(tailwindFile).toBeDefined()
+    const css = readCompiledTailwindCss(tailwindFile)
 
-    // StyleRuntime must create a <style type="text/tailwindcss"> element
-    // so @tailwindcss/browser picks up the @theme block
-    expect(themeFile).toContain('text/tailwindcss')
-    expect(themeFile).toContain('site-tailwind-theme')
-    expect(themeFile).toContain('tailwindThemeCss')
-
-    // The :root variables must still be in a regular <style> element
     expect(themeFile).toContain('site-theme')
-    expect(themeFile).toContain('--background:')
+    expect(themeFile).toContain('compiledTailwindCss')
+    expect(themeFile).toContain('fontStylesheetHrefs')
+    expect(themeFile).toContain('fonts.googleapis.com/css2')
+    expect(themeFile).toContain('wght@400;500;600;700;800')
+    expect(themeFile).not.toContain('text/tailwindcss')
+    expect(themeFile).not.toContain('site-tailwind-theme')
+    expect(themeFile).not.toContain('tailwindThemeCss')
+    expect(css).toContain('.text-foreground\\/\\[0\\.04\\]')
+    expect(css).toMatch(
+      /color-mix\(in oklab, var\(--(?:color-)?foreground\) 4%, transparent\)/,
+    )
+    expect(css).toContain('.bg-background\\/65')
+    expect(css).toContain('.bg-foreground')
+    expect(css).toContain('.text-background')
+    expect(css).toContain('.shadow-primary\\/40')
+    expect(css).toContain('.shadow-foreground\\/20')
+    expect(css).toContain('--font-sans:')
+    expect(css).toContain('.font-sans')
+    expect(css).toContain(
+      'color-mix(in oklab, var(--color-foreground) 4%, transparent)',
+    )
+    expect(css).toContain(
+      'color-mix(in oklab, var(--color-background) 65%, transparent)',
+    )
+    expect(css).toContain(
+      'color-mix(in oklab, var(--color-primary) 40%, transparent)',
+    )
   })
 
-  it('preserves :root CSS variables alongside the @theme block', async () => {
+  it('compiles class-like section-kit props used by hero overlays', async () => {
+    const built = await buildOpenUILakebedProjectFiles({
+      source: realEstateHeroSource,
+      siteSpecJson: JSON.stringify({ projectName: 'Real Estate Theme Test' }),
+      sessionId: 'real-estate-theme-test',
+      target: 'lakebed',
+      isDark: true,
+    })
+
+    const tailwindFile = built.files['client/lib/compiled-tailwind.ts']
+    expect(tailwindFile).toBeDefined()
+    const css = readCompiledTailwindCss(tailwindFile)
+
+    expect(css).toContain('.bg-foreground\\/55')
+    expect(css).toContain('.bg-gradient-to-t')
+    expect(css).toContain('.from-foreground\\/80')
+    expect(css).toContain('.via-foreground\\/30')
+    expect(css).toContain('.to-foreground\\/50')
+    expect(css).toMatch(/\.from-foreground\\\/80\s*\{[^}]*--tw-gradient-from:/)
+    expect(css).toMatch(/\.via-foreground\\\/30\s*\{[^}]*--tw-gradient-via:/)
+    expect(css).toMatch(/\.to-foreground\\\/50\s*\{[^}]*--tw-gradient-to:/)
+    expect(css).toContain('var(--tw-gradient-from-position, 0%)')
+    expect(css).toContain('var(--tw-gradient-via-position, 50%)')
+    expect(css).toContain('var(--tw-gradient-to-position, 100%)')
+  })
+
+  it('preserves scoped CSS variables alongside compiled Tailwind CSS', async () => {
     const built = await buildOpenUILakebedProjectFiles({
       source: singlePageSource,
       siteSpecJson: JSON.stringify({ projectName: 'Theme Test' }),
@@ -2787,16 +3138,25 @@ root = PageSwitch(["Home"], [home], "", {})`
 
     const themeFile = built.files['client/lib/theme.tsx']
     expect(themeFile).toBeDefined()
+    const css = readThemeCss(themeFile)
 
-    // :root variables must still be present for runtime theming
-    expect(themeFile).toContain(':root')
+    expect(css).toContain('.genui-preview')
+    expect(css).toContain('--background:')
+    expect(css).toContain('--foreground:')
+    expect(css).toContain('color-scheme: light')
     expect(themeFile).toContain('--background:')
-    expect(themeFile).toContain('--foreground:')
-    expect(themeFile).toContain('color-scheme: light')
-
-    // The manual shims must still be present as fallback
-    expect(themeFile).toContain('.bg-background')
-    expect(themeFile).toContain('.text-foreground')
+    expect(css).toContain('.bg-background')
+    expect(css).toContain('.text-foreground')
+    expect(css).toContain('body {\n  margin: 0;\n}')
+    expect(css).toContain('#app,\n#root,\n#__root')
+    expect(css).not.toContain('#app {\n  display: block;\n  margin: 0;\n}')
+    const clientIndex = built.files['client/index.tsx']
+    expect(clientIndex).toContain(
+      'genui-preview min-h-screen bg-background text-foreground',
+    )
+    expect(clientIndex).toContain('RoutesContext.Provider')
+    expect(clientIndex).toContain('currentPage: page.label')
+    expect(clientIndex).toContain('<PageRouteFrame page={page}')
   })
 })
 
@@ -2895,7 +3255,7 @@ root = PageSwitch(["Home", "Gallery", "Pricing"], [home, gallery, pricing], "", 
 
     // Exactly one Router, one Routes, one App
     expect(indexFile.match(/<Router/g)).toHaveLength(1)
-    expect(indexFile.match(/<Routes/g)).toHaveLength(1)
+    expect(indexFile.match(/<Routes\b/g)).toHaveLength(1)
     expect(indexFile.match(/export function App/g)).toHaveLength(1)
 
     // Exactly one StyleRuntime and one AuthRuntime

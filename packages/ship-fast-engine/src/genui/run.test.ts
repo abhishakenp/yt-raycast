@@ -121,6 +121,34 @@ describe('runHomepageOrchestrator (composable engine)', () => {
     expect(result.locale).toBe('fr')
   })
 
+  it('detects a non-English target but keeps generator prompts English-only', async () => {
+    mocks.detectLanguage.mockResolvedValue({
+      code: 'ne',
+      name: 'Nepali',
+    })
+    mocks.generateText.mockImplementation(async (..._a) => reply(String(_a[2])))
+
+    const result = await runHomepageOrchestrator({
+      prompt: 'मेरो कुकुर ब्लगको लागि वेबसाइट बनाउनुहोस्',
+      preferredLanguage: 'en',
+      sessionSeed: 'seed-nepali',
+    })
+
+    expect(result.locale).toBe('ne')
+    const systemPrompts = mocks.generateText.mock.calls.map((call) =>
+      String(call[1]),
+    )
+    expect(
+      systemPrompts.some((system) => system.includes('English only')),
+    ).toBe(true)
+    expect(
+      systemPrompts.every((system) => !system.includes('Target locale ne')),
+    ).toBe(true)
+    expect(systemPrompts.every((system) => !system.includes('Nepali'))).toBe(
+      true,
+    )
+  })
+
   it('skips language and content model calls on cached composition content', async () => {
     const result = await runHomepageOrchestrator({
       prompt: 'a cached crm',

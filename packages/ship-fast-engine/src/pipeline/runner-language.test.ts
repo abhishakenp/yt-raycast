@@ -58,10 +58,8 @@ describe('runner language integration', () => {
     })
 
     expect(openuiCalls).toHaveLength(1)
-    expect((openuiCalls[0].languageMode as { code: string }).code).toBe(
-      'hi-latn',
-    )
-    expect(openuiCalls[0].prompt).toContain('server language code `hi-latn`')
-    expect(openuiCalls[0].prompt).toContain('Romanized Hindi')
+    expect(openuiCalls[0]?.languageMode).toMatchObject({ code: 'hi-latn' })
+    expect(openuiCalls[0].prompt).toContain('English only')
+    expect(openuiCalls[0].prompt).not.toContain('hi-latn')
   })
 })

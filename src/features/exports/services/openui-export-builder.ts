@@ -44,7 +44,10 @@ import {
   renderSpecializedNextStore,
   renderSpecializedReactStore,
 } from './export-specialized-store'
-import { resolvePreviewImageUrl } from './preview-image-url-resolution'
+import {
+  extractPreviewImageSourceReferences,
+  resolvePreviewImageUrl,
+} from './preview-image-url-resolution'
 
 type ParsedOpenUIProgram = {
   root: ElementNode
@@ -80,6 +83,7 @@ type LakebedEndpointDefinition = {
 
 type ImageSource = {
   alt: string
+  originalSrcKey?: string
   src: string
 }
 
@@ -123,12 +127,21 @@ function toProjectSlug(value: string): string {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '')
-      .slice(0, 60) || 'ship-fast-export'
+      .slice(0, 60) || 'exported-site'
   )
 }
 
 function toIdentifier(value: string): string {
   return value.replace(/[^A-Za-z0-9_$]/g, '_').replace(/^[^A-Za-z_$]/, '_$&')
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
 }
 
 function isHtmlDocumentSource(source: string): boolean {
@@ -184,22 +197,19 @@ async function normalizePreviewImageSource(
 async function extractImageSources(
   html: string | undefined,
 ): Promise<ImageSource[]> {
-  if (!html) return []
-  const byAlt = new Map<string, string>()
-  for (const match of html.matchAll(/<img\b[^>]*>/gi)) {
-    const tag = match[0]
-    const alt = readHtmlAttribute(tag, 'alt')
-    const src = readHtmlAttribute(tag, 'src')
-    if (!alt || !src || byAlt.has(alt)) continue
-    if (
-      /^(https?:)?\/\//i.test(src) ||
-      src.startsWith('/') ||
-      src.startsWith('data:image/')
-    ) {
-      byAlt.set(alt, await normalizePreviewImageSource(src, alt))
-    }
+  const byAlt = new Map<string, ImageSource>()
+  for (const reference of extractPreviewImageSourceReferences(html)) {
+    if (byAlt.has(reference.alt)) continue
+    byAlt.set(reference.alt, {
+      alt: reference.alt,
+      originalSrcKey: reference.originalSrcKey,
+      src: await normalizePreviewImageSource(
+        reference.originalSrc,
+        reference.alt,
+      ),
+    })
   }
-  return [...byAlt].map(([alt, src]) => ({ alt, src }))
+  return [...byAlt.values()]
 }
 
 function extractStyleOverrides(html: string | undefined): StyleOverride[] {
@@ -352,7 +362,9 @@ function assertNoOpenUIInternals(files: Record<string, string>): void {
   for (const [name, content] of Object.entries(files)) {
     for (const token of forbiddenExportTokens) {
       if (name.includes(token) || content.includes(token)) {
-        throw new Error(`Export contains forbidden internal token: ${token}`)
+        throw new Error(
+          `Export contains forbidden internal token: ${token} in ${name}`,
+        )
       }
     }
   }
@@ -546,6 +558,53 @@ function printNode(node: ts.Node, sourceFile: ts.SourceFile): string {
   return ts
     .createPrinter({ newLine: ts.NewLineKind.LineFeed, removeComments: true })
     .printNode(ts.EmitHint.Unspecified, node, sourceFile)
+}
+
+function stripSourceComments(source: string, path: string): string {
+  const sourceFile = ts.createSourceFile(
+    path,
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    sourceFileScriptKind(path),
+  )
+  return ts
+    .createPrinter({ newLine: ts.NewLineKind.LineFeed, removeComments: true })
+    .printFile(sourceFile)
+}
+
+function stripExportOnlyTypeSyntax(source: string, path: string): string {
+  if (!/\.(tsx?|jsx?)$/.test(path)) return source
+  let next = source
+    .replace(
+      /const (__iv__) = ([A-Za-z_$][\w$]*) as \{[\s\S]*?\n\s*\}/g,
+      'const $1 = { points: undefined, cta: undefined, imageAlt: undefined, company: undefined, meta: undefined, ...$2 }',
+    )
+    .replace(
+      /\(\{\s*([A-Za-z_$][\w$]*)\s*\}:\s*\{\s*\1:\s*boolean\s*\}\)\s*=>/g,
+      '({ $1 }) =>',
+    )
+    .replace(
+      /(\.map\(\([A-Za-z_$][\w$]*)\s*:\s*(?:\{[^)]*?\}|[A-Za-z_$][\w$<>\[\] |.&]+)\)\s*=>/g,
+      '$1) =>',
+    )
+
+  if (path.includes('/vendor/')) {
+    next = `// @ts-nocheck\n${next.replace(/^\/\/ @ts-nocheck\s*\n/, '')}`
+  }
+
+  return next
+}
+
+function stripExportOnlyTypeSyntaxFromFiles(
+  files: Record<string, string>,
+): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(files).map(([path, source]) => [
+      path,
+      stripExportOnlyTypeSyntax(source, path),
+    ]),
+  )
 }
 
 function propertyNameText(name: ts.PropertyName, sourceFile: ts.SourceFile) {
@@ -2076,13 +2135,16 @@ function collectBlockSourceFiles(
         outPath,
       )
       if (result.skip) continue
-      files[outPath] = result.source.replace(/Shoo\/lakebed/gi, 'site')
+      files[outPath] = stripSourceComments(
+        result.source.replace(/Shoo\/lakebed/gi, 'site'),
+        outPath,
+      )
     } else {
       const rawSource = prependImports(
         removeImportDeclarations(source, sourceFile),
         ensureReactNodeImport(transformed.imports, source),
       )
-      files[outPath] = rawSource
+      files[outPath] = stripSourceComments(rawSource, outPath)
     }
   }
 
@@ -3153,8 +3215,17 @@ export function cn(...inputs: ClassValue[]) {
 function renderImageHelper(imageSources: ImageSource[]): string {
   return `import type { ImgHTMLAttributes } from 'react'
 
-const previewImageSources: Array<{ alt: string; src: string }> = ${JSON.stringify(imageSources, null, 2)}
+const previewImageSources: Array<{ alt: string; originalSrcKey?: string; src: string }> = ${JSON.stringify(imageSources, null, 2)}
 const previewImageSourceByAlt = new Map(previewImageSources.map((image) => [image.alt, image.src]))
+const previewImageSourceByOriginalSrcKey = new Map(
+  previewImageSources
+    .filter((image) => typeof image.originalSrcKey === 'string' && image.originalSrcKey.trim().length > 0)
+    .map((image) => [image.originalSrcKey || '', image.src])
+)
+
+function sourceKey(src: string): string {
+  return encodeURIComponent(src.trim())
+}
 
 function normalizeAlt(alt: unknown): string {
   if (typeof alt === 'string') return alt.trim() || 'image'
@@ -3195,9 +3266,13 @@ export function Image({
   h?: number
 } & Omit<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'alt' | 'width' | 'height'>) {
   const normalizedAlt = normalizeAlt(alt)
+  const normalizedSrc = typeof src === 'string' ? src.trim() : ''
+  const previewSrcByOriginalSrc = normalizedSrc
+    ? previewImageSourceByOriginalSrcKey.get(sourceKey(normalizedSrc))
+    : undefined
   const previewSrc = previewImageSourceByAlt.get(normalizedAlt)
-  const imageSrc = previewSrc || (typeof src === 'string' && src.trim()
-    ? src
+  const imageSrc = previewSrcByOriginalSrc || previewSrc || (normalizedSrc
+    ? normalizedSrc
     : fallbackImageUrl(normalizedAlt, w, h))
 
   return (
@@ -3712,13 +3787,14 @@ export function getBrandLogoImageSrc(value: BrandLogoSelection | null = brandLog
 
 const LogoContext = React.createContext<{ brand?: string; src?: string } | null>(null)
 
-type LogoProps = React.ComponentProps<'span'> & {
+type LogoProps = {
   asChild?: boolean
   brand?: string
-  fallback?: React.ReactNode
+  children?: React.ReactNode
+  className?: string
+  [key: string]: React.ReactNode | string | boolean | undefined
   imageClassName?: string
   labelClassName?: string
-  showLabel?: boolean
 }
 
 export function Logo({
@@ -3726,11 +3802,8 @@ export function Logo({
   brand = brandName,
   children,
   className,
-  fallback,
   imageClassName,
   labelClassName,
-  showLabel = true,
-  ...props
 }: LogoProps) {
   const value = React.useMemo(() => ({ brand, src: brandLogoSrc }), [brand])
   return (
@@ -3738,12 +3811,11 @@ export function Logo({
       <span
         data-slot="logo"
         className={cn('inline-flex items-center gap-2', className)}
-        {...props}
       >
         {children ?? (
           <>
-            <LogoImage className={imageClassName} fallback={fallback} />
-            {showLabel ? <LogoLabel className={labelClassName} /> : null}
+            <LogoImage className={imageClassName} />
+            <LogoLabel className={labelClassName} />
           </>
         )}
       </span>
@@ -3753,21 +3825,13 @@ export function Logo({
 
 export const LogoImage = React.forwardRef<
   HTMLSpanElement,
-  React.ComponentProps<'span'> & {
-    asChild?: boolean
-    fallback?: React.ReactNode
-  }
->(function LogoImage(
   {
-    asChild: _asChild,
-    className,
-    fallback = null,
-    ...props
-  },
-  ref,
-) {
+    asChild?: boolean
+    className?: string
+    [key: string]: React.ReactNode | string | boolean | undefined
+  }
+>(function LogoImage({ asChild: _asChild, className }, ref) {
   const ctx = React.useContext(LogoContext)
-  if (!ctx?.src) return <>{fallback}</>
   return (
     <span
       ref={ref}
@@ -3777,14 +3841,12 @@ export const LogoImage = React.forwardRef<
         'inline-grid size-8 shrink-0 place-items-center overflow-hidden rounded-md bg-transparent',
         className,
       )}
-      data-brand-logo-selected="true"
-      {...props}
     >
       <img
         alt=""
         className="block size-full object-contain"
         draggable={false}
-        src={ctx.src}
+        src={ctx?.src ?? brandLogoSrc}
       />
     </span>
   )
@@ -3792,11 +3854,11 @@ export const LogoImage = React.forwardRef<
 
 export const LogoLabel = React.forwardRef<
   HTMLSpanElement,
-  React.ComponentProps<'span'> & { asChild?: boolean }
->(function LogoLabel({ asChild: _asChild, className, ...props }, ref) {
+  { asChild?: boolean; className?: string }
+>(function LogoLabel({ asChild: _asChild, className }, ref) {
   const ctx = React.useContext(LogoContext)
   return (
-    <span ref={ref} data-slot="logo-label" className={className} {...props}>
+    <span ref={ref} data-slot="logo-label" className={className}>
       {ctx?.brand}
     </span>
   )
@@ -4080,7 +4142,7 @@ async function buildReactExport(
   const indexHtml =
     homeHeadTags.length > 0
       ? `<!doctype html><html lang="${htmlLang}"${themeClass}><head>${homeHeadTags.join('\n')}</head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>\n`
-      : `<!doctype html><html${themeClass}><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Ship Fast Export</title></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>\n`
+      : `<!doctype html><html${themeClass}><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>${escapeHtml(parsed.projectName)}</title></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>\n`
   const files: Record<string, string> = {
     'package.json': renderReactPackageJson(
       parsed.projectName,
@@ -4140,7 +4202,9 @@ async function buildReactExport(
 
   stripGeneratedOwnedTypes(files)
   await input.onProgress?.('formatting')
-  const formattedFiles = await formatExportFiles(files, input.formatCache)
+  const formattedFiles = stripExportOnlyTypeSyntaxFromFiles(
+    await formatExportFiles(files, input.formatCache),
+  )
   return {
     body: zipFiles(formattedFiles),
     contentType: 'application/zip',
@@ -4318,7 +4382,9 @@ export default function Page() {
 
   stripGeneratedOwnedTypes(files)
   await input.onProgress?.('formatting')
-  const formattedFiles = await formatExportFiles(files, input.formatCache)
+  const formattedFiles = stripExportOnlyTypeSyntaxFromFiles(
+    await formatExportFiles(files, input.formatCache),
+  )
   return {
     body: zipFiles(formattedFiles),
     contentType: 'application/zip',
@@ -4333,7 +4399,7 @@ function buildRawHtmlExport(input: OpenUIExportInput): BuiltExport {
   const projectName =
     typeof spec.projectName === 'string' && spec.projectName.trim()
       ? spec.projectName.trim()
-      : (readHtmlTitle(html) ?? 'Ship Fast Site')
+      : (readHtmlTitle(html) ?? 'Exported Site')
 
   if (input.target === 'html') {
     return {

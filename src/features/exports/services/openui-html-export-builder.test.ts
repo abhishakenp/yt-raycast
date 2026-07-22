@@ -1,7 +1,10 @@
 import { parseHTML } from 'linkedom'
 import { describe, expect, it, vi } from 'vitest'
 
-import { buildOpenUIHtmlExport } from './openui-html-export-builder'
+import {
+  buildOpenUIHtmlExport,
+  isUsablePreviewHtml,
+} from './openui-html-export-builder'
 import type { OpenUIExportInput } from './openui-export-types'
 
 function baseInput(overrides: Partial<OpenUIExportInput>): OpenUIExportInput {
@@ -102,6 +105,14 @@ describe('buildOpenUIHtmlExport — HTML-like fragment source', () => {
 })
 
 describe('buildOpenUIHtmlExport — OpenUI source parsing', () => {
+  it('does not treat OpenUI client bootstrap shells as usable rendered preview HTML', async () => {
+    expect(
+      isUsablePreviewHtml(
+        '<!doctype html><html><body><div id="openui-root"></div><script id="openui-client-source" type="application/json">"root = Image()"</script></body></html>',
+      ),
+    ).toBe(false)
+  })
+
   it('rejects an empty non-HTML source with an OpenUI parser error', async () => {
     await expect(
       buildOpenUIHtmlExport(baseInput({ source: '' })),
@@ -129,7 +140,7 @@ describe('buildOpenUIHtmlExport — OpenUI source parsing', () => {
     expect(style).toContain('.lg\\:col-span-7')
     expect(style).toContain('grid-column: span 7 / span 7')
     expect(style).toContain('font-size: clamp(2.75rem, 7vw, 6rem)')
-    expect(html).not.toContain('openui-preview-tailwind.css')
+    expect(html).not.toContain('preview-tailwind.css')
   })
 
   it('uses dashboard-equivalent image context and writes detached public image URLs', async () => {

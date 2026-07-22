@@ -23,7 +23,7 @@ import { progressForStage } from './export_progress_stages'
 export type ExportTarget = 'html' | 'react' | 'next' | 'lakebed'
 export type ExportArtifactStatus = 'queued' | 'building' | 'ready' | 'failed'
 const exportTargets: ExportTarget[] = ['html', 'react', 'next', 'lakebed']
-const exportArtifactBuildStallMs = 2 * 60 * 1000
+const exportArtifactBuildStallMs = 15 * 60 * 1000
 const stalledExportArtifactMessage =
   'Export build stalled before completion. Click to retry.'
 
@@ -228,18 +228,19 @@ function resolveExportOpenUISource(
   homeModule: Doc<'generatedModules'> | null,
   siteSpec: Doc<'siteSpecs'> | null,
 ): string {
-  return preview &&
+  return (
+    (homeModule && homeModule.source && isLikelyOpenUISource(homeModule.source)
+      ? homeModule.source
+      : undefined) ??
+    readOpenUISourceFromSiteSpec(siteSpec) ??
+    (preview &&
     preview.openUiSource &&
     isLikelyOpenUISource(preview.openUiSource)
-    ? preview.openUiSource
-    : (readOpenUISourceFromSiteSpec(siteSpec) ??
-        (homeModule &&
-        homeModule.source &&
-        isLikelyOpenUISource(homeModule.source)
-          ? homeModule.source
-          : undefined) ??
-        preview?.html ??
-        '')
+      ? preview.openUiSource
+      : undefined) ??
+    preview?.html ??
+    ''
+  )
 }
 
 function isTextEditAlreadyMaterialized(
@@ -416,6 +417,8 @@ function toArtifactPayload(artifact: Doc<'exportArtifacts'> | null) {
     progressStage: artifact.progressStage,
     progressPercent: artifact.progressPercent,
     progressStartedAt: artifact.progressStartedAt,
+    progressUpdatedAt: artifact.progressUpdatedAt,
+    progressSampleCount: artifact.progressSampleCount,
     createdAt: artifact.createdAt,
     updatedAt: artifact.updatedAt,
   }
@@ -533,9 +536,26 @@ export async function updateExportArtifactBuildProgress(
   const { stage, percent } = progressForStage(args.stageKey, {
     willDeploy: args.willDeploy,
   })
+  if (
+    existing.progressPercent !== undefined &&
+    percent < existing.progressPercent
+  ) {
+    return
+  }
+  const now = Date.now()
+  const previousPercent = existing.progressPercent
+  const percentAdvanced =
+    previousPercent === undefined || percent > previousPercent
+  const progressSampleCount =
+    (existing.progressSampleCount ??
+      (existing.progressPercent === undefined ? 0 : 1)) +
+    (percentAdvanced ? 1 : 0)
   await ctx.db.patch(existing._id, {
     progressStage: stage,
     progressPercent: percent,
+    progressUpdatedAt: now,
+    progressSampleCount,
+    updatedAt: now,
   })
 }
 
@@ -607,6 +627,8 @@ export async function loadSessionExportTargets(
         artifactProgressStage: artifactPayload?.progressStage,
         artifactProgressPercent: artifactPayload?.progressPercent,
         artifactProgressStartedAt: artifactPayload?.progressStartedAt,
+        artifactProgressUpdatedAt: artifactPayload?.progressUpdatedAt,
+        artifactProgressSampleCount: artifactPayload?.progressSampleCount,
       }
     }),
   )
@@ -701,6 +723,11 @@ export async function queueSessionExportArtifactBuild(
         locale,
         status: 'queued',
         ...(generatorRevision === undefined ? {} : { generatorRevision }),
+        progressStage: 'Queued',
+        progressPercent: 0,
+        progressStartedAt: args.now,
+        progressUpdatedAt: args.now,
+        progressSampleCount: 0,
         createdAt: args.now,
         updatedAt: args.now,
       })
@@ -708,6 +735,11 @@ export async function queueSessionExportArtifactBuild(
         status: 'queued',
         ...(generatorRevision === undefined ? {} : { generatorRevision }),
         errorMessage: undefined,
+        progressStage: 'Queued',
+        progressPercent: 0,
+        progressStartedAt: args.now,
+        progressUpdatedAt: args.now,
+        progressSampleCount: 0,
         updatedAt: args.now,
       })
 
@@ -752,7 +784,9 @@ export async function markExportArtifactBuilding(
   if (existing?.status === 'ready') return toArtifactPayload(existing)
 
   const status = 'building'
-  const startProgress = progressForStage('starting', { willDeploy: false })
+  const startProgress = progressForStage('starting', {
+    willDeploy: args.autoDeployPublic === true,
+  })
   const patch = {
     sessionId: args.sessionId,
     target: args.target,
@@ -766,6 +800,8 @@ export async function markExportArtifactBuilding(
     progressStage: startProgress.stage,
     progressPercent: startProgress.percent,
     progressStartedAt: now,
+    progressUpdatedAt: now,
+    progressSampleCount: 1,
     updatedAt: now,
   } satisfies Omit<
     Doc<'exportArtifacts'>,
@@ -1430,6 +1466,9 @@ export async function prepareExportArtifactBuild(
   const themeName = readAppliedThemeName(session)
   const isDark = readAppliedIsDark(session)
   const html = isHtmlDocumentSource(source) ? source : ''
+  const previewHtml = isUnsafePublicPreviewHtml(preview.html)
+    ? undefined
+    : preview.html
   const prepared = {
     sessionId: args.sessionId,
     prompt: session.prompt,
@@ -1438,6 +1477,7 @@ export async function prepareExportArtifactBuild(
     source,
     html,
     ...(siteSpecJson === undefined ? {} : { siteSpecJson }),
+    ...(previewHtml === undefined ? {} : { previewHtml }),
     ...(themeName === undefined ? {} : { themeName }),
     isDark,
     locale,

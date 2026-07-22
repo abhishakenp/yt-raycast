@@ -187,6 +187,19 @@ describe('formatExportFiles skips vendored dependency bundles', () => {
     expect(cache.store.size).toBe(0)
   })
 
+  it('skips the generated Lakebed compiled Tailwind module byte-for-byte', async () => {
+    const raw =
+      'export const compiledTailwindCss = "/* compiled */\\n.text-foreground\\\\/\\\\[0\\\\.04\\\\]{color:red}".repeat(1000);'
+    const cache = inMemoryFormatFileCache()
+    const result = await formatExportFiles(
+      { 'client/lib/compiled-tailwind.ts': raw },
+      cache,
+    )
+
+    expect(result['client/lib/compiled-tailwind.ts']).toBe(raw)
+    expect(cache.store.size).toBe(0)
+  })
+
   it('does NOT exclude a file merely named "vendor" outside a /vendor/ directory', async () => {
     const result = await formatExportFiles({
       'src/vendor.ts': 'export const x=1',

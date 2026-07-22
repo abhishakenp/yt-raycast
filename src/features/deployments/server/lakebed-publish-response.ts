@@ -76,14 +76,6 @@ export async function createLakebedPublishResponse(
         lookup: sessionId,
       },
     )
-    if (
-      existing?.provider === 'lakebed' &&
-      existing.status === 'ready' &&
-      typeof existing.url === 'string'
-    ) {
-      return json(existing)
-    }
-
     if (existing?.provider === 'lakebed' && existing.status === 'failed') {
       return json(
         {

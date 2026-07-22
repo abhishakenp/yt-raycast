@@ -1,1 +1,26 @@
-{"rustc":11722972603611519644,"features":"[\"default\", \"std\", \"wide\"]","declared_features":"[\"cordic\", \"cuda\", \"cuda_std\", \"cust_core\", \"decimal\", \"default\", \"fixed\", \"libm\", \"libm_force\", \"packed_simd\", \"partial_fixed_point_support\", \"rand\", \"rkyv\", \"rkyv-serialize\", \"serde\", \"serde_serialize\", \"std\", \"wide\"]","target":18314989904106682660,"profile":2040997289075261528,"path":18023715830444346919,"deps":[[5157631553186200874,"num_traits",false,6229555077266744263],[11243818633362483251,"wide",false,6507543038624177211],[12319020793864570031,"num_complex",false,12807818644538910479],[15677050387741058262,"approx",false,4018877749077626516],[17605717126308396068,"paste",false,8225729075686545922]],"local":[{"CheckDepInfo":{"dep_info":"wasm32-unknown-unknown/release/.fingerprint/simba-fd162695e5595dae/dep-lib-simba","checksum":false}}],"rustflags":[],"config":9396254390672932401,"compile_kind":14682669768258224367}
+{
+  "rustc": 11722972603611519644,
+  "features": "[\"default\", \"std\", \"wide\"]",
+  "declared_features": "[\"cordic\", \"cuda\", \"cuda_std\", \"cust_core\", \"decimal\", \"default\", \"fixed\", \"libm\", \"libm_force\", \"packed_simd\", \"partial_fixed_point_support\", \"rand\", \"rkyv\", \"rkyv-serialize\", \"serde\", \"serde_serialize\", \"std\", \"wide\"]",
+  "target": 18314989904106682660,
+  "profile": 2040997289075261528,
+  "path": 18023715830444346919,
+  "deps": [
+    [5157631553186200874, "num_traits", false, 6229555077266744263],
+    [11243818633362483251, "wide", false, 6507543038624177211],
+    [12319020793864570031, "num_complex", false, 12807818644538910479],
+    [15677050387741058262, "approx", false, 4018877749077626516],
+    [17605717126308396068, "paste", false, 8225729075686545922]
+  ],
+  "local": [
+    {
+      "CheckDepInfo": {
+        "dep_info": "wasm32-unknown-unknown/release/.fingerprint/simba-fd162695e5595dae/dep-lib-simba",
+        "checksum": false
+      }
+    }
+  ],
+  "rustflags": [],
+  "config": 9396254390672932401,
+  "compile_kind": 14682669768258224367
+}

@@ -190,7 +190,7 @@ describe('buildStaticLakebedProjectFiles', () => {
     expect(clientBundle).not.toContain('picsum.photos')
   })
 
-  it('replaces ShipFast-local Tailwind runtime in the deployable payload', async () => {
+  it('replaces ShipFast-local Tailwind runtime with shared preview CSS in the deployable payload', async () => {
     const project = await buildStaticLakebedProjectFiles({
       source:
         '<!doctype html><html><head><title>Styled</title><script src="/scripts/tailwind-browser.js"></script></head><body class="bg-background text-foreground"><div class="border-border bg-card text-card-foreground">Styled</div></body></html>',
@@ -200,8 +200,10 @@ describe('buildStaticLakebedProjectFiles', () => {
     )
     const clientBundle = decodeClientBundle(deployRequest.requestBody)
 
-    expect(clientBundle).toContain('https://cdn.tailwindcss.com')
+    expect(clientBundle).toContain('data-ship-fast-preview-tailwind-css')
+    expect(clientBundle).toContain('.bg-background')
     expect(clientBundle).toContain('bg-background')
+    expect(clientBundle).not.toContain('https://cdn.tailwindcss.com')
     expect(clientBundle).not.toContain('/scripts/tailwind-browser.js')
     expect(clientBundle).not.toContain('tailwind.config')
   })

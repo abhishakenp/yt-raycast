@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { resolvePexelsSearchQuery } from '../routes/api/pexels'
+import { resolvePexelsSearchQuery } from '../features/images/server/pexels-preview-image'
 import { stripNonAscii } from './transliteration-detect'
 
 describe('/api/pexels query resolution', () => {

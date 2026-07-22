@@ -63,7 +63,9 @@ describe('phase-sff-html', () => {
     expect(prompt).toContain('Brand: Launch Ledger')
     expect(prompt).toContain('Tagline: Finance clarity before lunch')
     expect(prompt).toContain('Home, Pricing')
-    expect(prompt).toContain('fr')
+    expect(prompt).toContain('English only')
+    expect(prompt).toContain('post-processing step')
+    expect(prompt).not.toContain('Language:\nfr')
     expect(prompt).toContain('Verified Pexels media')
     expect(prompt).toContain(
       'https://images.pexels.com/photos/123/pexels-photo-123.jpeg',
@@ -79,6 +81,15 @@ describe('phase-sff-html', () => {
   it('system prompt forces image alt text and pexels queries to English', () => {
     expect(SFF_HTML_SYSTEM_PROMPT).toMatch(/alt text.*English/i)
     expect(SFF_HTML_SYSTEM_PROMPT).toMatch(/pexels.*English/i)
+  })
+
+  it('system prompt forces visible copy to English even for non-English briefs', () => {
+    expect(SFF_HTML_SYSTEM_PROMPT).toContain('ALL user-visible site copy')
+    expect(SFF_HTML_SYSTEM_PROMPT).toContain('English only')
+    expect(SFF_HTML_SYSTEM_PROMPT).toContain(
+      'closest natural English equivalents',
+    )
+    expect(SFF_HTML_SYSTEM_PROMPT).toContain('post-processing')
   })
 
   it('passes the system prompt to the generator and injects the Lucide runtime when the model emits icon placeholders', async () => {
@@ -144,6 +155,55 @@ describe('phase-sff-html', () => {
     )
     expect(stats).toEqual({ chars: htmlFixture.length, cost: 0.001 })
     expect(events).toHaveLength(2)
+  })
+
+  it('translates persisted SFF HTML after English generation when locale needs translation', async () => {
+    const workspace = mkdtempSync(join(tmpdir(), 'ship-fast-sff-translated-'))
+    const translatedHtml = htmlFixture.replace('Launch Ledger', 'लन्च लेजर')
+    const logs: string[] = []
+    let translatedInput = ''
+
+    try {
+      const stats = await writeSffHtmlHome({
+        workspace,
+        prompt: 'मेरो कुकुर ब्लगको लागि वेबसाइट बनाउनुहोस्',
+        siteSpec: { projectName: 'Dog Blog' },
+        languageMode: {
+          code: 'ne',
+          name: 'Nepali',
+          nativeName: 'नेपाली',
+          script: 'Devanagari',
+          needsTranslation: true,
+        },
+        log: (message) => logs.push(message),
+        sessionCtx: { broadcast: () => {} },
+        generateHtml: async ({ onToken }) => {
+          onToken?.('<!DOCTYPE html>', '<!DOCTYPE html>')
+          onToken?.(htmlFixture.slice('<!DOCTYPE html>'.length), htmlFixture)
+          return { content: htmlFixture, cost: 0.001 }
+        },
+        translateHtmlContent: async (html, languageMode) => {
+          translatedInput = html
+          if (!languageMode) throw new Error('Expected language mode')
+          expect(languageMode.code).toBe('ne')
+          return { content: translatedHtml, translatedCount: 1 }
+        },
+      })
+
+      expect(translatedInput).toBe(htmlFixture)
+      expect(readFileSync(join(workspace, 'index.html'), 'utf8')).toBe(
+        translatedHtml,
+      )
+      expect(readFileSync(join(workspace, 'home.openui'), 'utf8')).toBe(
+        translatedHtml,
+      )
+      expect(stats).toEqual({ chars: translatedHtml.length, cost: 0.001 })
+      expect(
+        logs.some((message) => message.includes('translated preview to ne')),
+      ).toBe(true)
+    } finally {
+      rmSync(workspace, { recursive: true, force: true })
+    }
   })
 
   it('stripDangerousScripts removes inline script tags', () => {

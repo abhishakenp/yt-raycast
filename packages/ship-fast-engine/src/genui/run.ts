@@ -67,7 +67,7 @@ export async function runHomepageOrchestrator(p: {
     prompt: p.prompt,
     modelId,
     sessionSeed: p.sessionSeed,
-    preferredLanguage: languageMode.code,
+    preferredLanguage: 'en',
     signal: p.signal,
     cachedContent: p.cachedContent,
     onContent: p.onContent,
@@ -77,7 +77,7 @@ export async function runHomepageOrchestrator(p: {
   return {
     source: result.source,
     theme: result.theme,
-    locale: result.locale,
+    locale: languageMode.code,
     brand: result.brand,
     title: result.title,
     category: result.category,

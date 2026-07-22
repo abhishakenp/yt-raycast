@@ -12,8 +12,8 @@ describe('pipeline language behavior from live session preferences', () => {
 
     expect(mode.code).toBe('en')
     expect(mode.needsTranslation).toBe(false)
-    expect(mode.prompt).toContain('server language code `en`')
     expect(mode.prompt).toContain('English only')
-    expect(mode.prompt).not.toContain('server language code `english`')
+    expect(mode.prompt).not.toContain('server language code')
+    expect(mode.prompt).not.toContain('english')
   })
 })

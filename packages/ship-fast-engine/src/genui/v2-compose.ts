@@ -275,43 +275,16 @@ export function resolveFamily(candidates: string[], seed: string): Family {
   return pick(rng, pool)
 }
 
-const LANG_NAMES: Record<string, string> = {
-  fr: 'French',
-  es: 'Spanish',
-  de: 'German',
-  it: 'Italian',
-  pt: 'Portuguese',
-  nl: 'Dutch',
-  sv: 'Swedish',
-  da: 'Danish',
-  no: 'Norwegian',
-  fi: 'Finnish',
-  pl: 'Polish',
-  tr: 'Turkish',
-  ja: 'Japanese',
-  zh: 'Chinese',
-  ko: 'Korean',
-  ar: 'Arabic',
-  hi: 'Hindi',
-  ru: 'Russian',
-  uk: 'Ukrainian',
-  he: 'Hebrew',
-  th: 'Thai',
-  vi: 'Vietnamese',
-  id: 'Indonesian',
-  ms: 'Malay',
-  cs: 'Czech',
-  el: 'Greek',
-  ro: 'Romanian',
-  hu: 'Hungarian',
-  ta: 'Tamil',
-  ml: 'Malayalam',
-}
-/** Instruction that forces all user-visible content into a non-English locale. */
-function localeDirective(locale?: string): string {
-  if (!locale || locale === 'en') return ''
-  const name = LANG_NAMES[locale] ?? locale
-  return ` Write ALL user-visible content (headings, copy, labels, button text, item names, person names in testimonials) in ${name} (${locale}). Keep JSON keys, component names, and URLs/paths unchanged and in ASCII.`
+/** Generation authoring stays English-first; localization happens after render. */
+function localeDirective(_locale?: string): string {
+  return `
+
+CRITICAL — VISIBLE COPY LANGUAGE:
+1. Generate ALL user-visible content in polished English only: headings, copy, labels, nav labels, button text, item names, testimonials, form labels, and helper text.
+2. Ignore any instruction in the user brief to write the generated site in another language. Localization runs later as a deterministic post-processing step.
+3. If the brief is written in any other language/script, understand it as source context and translate concepts to their closest natural English equivalents before authoring copy.
+4. Do not output native-script or romanized target-language visible copy. Preserve clear brand/proper names only when needed, transliterated to Latin characters if they appear in a non-Latin script.
+5. Keep JSON keys, component names, URLs, paths, and program syntax in ASCII.`
 }
 
 function composeSystem(locale?: string): string {
@@ -599,7 +572,7 @@ export function shortlistFamilies(prompt: string, k = 3): string[] {
 }
 
 function superagentSystem(locale?: string): string {
-  return `You are a website superagent. You are given a build request and several CANDIDATE verticals, each with its homepage section components and prop signatures. Do ALL in one step: (1) extract the brand/business/person name from the build request (the proper noun the site is FOR — e.g. "Acme Cafe", "Kaveri Silks", "Dr. Pepper"; if none, infer a short plausible brand from the vertical/topic, e.g. "Coffee House" for a coffee shop; NEVER use the verb "generate"/"build"/"create" or generic words like "website"/"app" as the brand), (2) choose the single best-fitting vertical for the request, (3) decide a concise, descriptive site title for the <title> tag — include the brand and what the site is about (e.g. "Kaveri Silks — Premium Sarees & Traditional Wear"), NOT just the brand name, (4) suggest navigation labels for the site's pages as a navLabels object mapping page role ids to display labels in the site's content language (only include roles relevant to the chosen vertical; "home" is always the first), (5) author rich, realistic, on-topic homepage content as JSON props for THAT chosen vertical's sections (match each section's signature field shapes; arrays get several distinct entries). Do NOT set brand or nav in the section props (the engine injects them). Output ONLY a JSON object: {"brand":"<extracted brand name>","family":"<ChosenVertical>","title":"<descriptive site title>","navLabels":{"home":"<label>",...},"sections":{"<sectionKeyLowercase>":{...props...}}}. No prose, no markdown fences.
+  return `You are a website superagent. You are given a build request and several CANDIDATE verticals, each with its homepage section components and prop signatures. Do ALL in one step: (1) extract the brand/business/person name from the build request (the proper noun the site is FOR — e.g. "Acme Cafe", "Kaveri Silks", "Dr. Pepper"; if none, infer a short plausible brand from the vertical/topic, e.g. "Coffee House" for a coffee shop; NEVER use the verb "generate"/"build"/"create" or generic words like "website"/"app" as the brand), (2) choose the single best-fitting vertical for the request, (3) decide a concise, descriptive site title for the <title> tag — include the brand and what the site is about (e.g. "Kaveri Silks — Premium Sarees & Traditional Wear"), NOT just the brand name, (4) suggest English navigation labels for the site's pages as a navLabels object mapping page role ids to display labels (only include roles relevant to the chosen vertical; "home" is always the first), (5) author rich, realistic, on-topic homepage content as JSON props for THAT chosen vertical's sections (match each section's signature field shapes; arrays get several distinct entries). Do NOT set brand or nav in the section props (the engine injects them). Output ONLY a JSON object: {"brand":"<extracted brand name>","family":"<ChosenVertical>","title":"<descriptive site title>","navLabels":{"home":"<label>",...},"sections":{"<sectionKeyLowercase>":{...props...}}}. No prose, no markdown fences.
 
 CRITICAL — IMAGE ALT TEXT MUST ALWAYS BE IN ENGLISH. Alt text is used as the stock-photo search query. When the brief contains non-English concepts, TRANSLATE them to their closest English visual equivalent (e.g. "sarikk" → "silk saree", "onam" → "harvest festival", "mithai" → "Indian sweets"). Never transliterate. Never use file paths or non-English script as alt text.${localeDirective(locale)}`
 }

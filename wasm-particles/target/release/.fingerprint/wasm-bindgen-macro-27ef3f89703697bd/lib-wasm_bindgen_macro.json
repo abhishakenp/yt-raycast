@@ -1,1 +1,28 @@
-{"rustc":11722972603611519644,"features":"[]","declared_features":"[\"strict-macro\"]","target":6875603382767429092,"profile":11854849244486183875,"path":13014135589260217816,"deps":[[8949245912927223590,"quote",false,11178276555302955050],[16345275096901121305,"wasm_bindgen_macro_support",false,3619739603510983012]],"local":[{"CheckDepInfo":{"dep_info":"release/.fingerprint/wasm-bindgen-macro-27ef3f89703697bd/dep-lib-wasm_bindgen_macro","checksum":false}}],"rustflags":[],"config":9396254390672932401,"compile_kind":0}
+{
+  "rustc": 11722972603611519644,
+  "features": "[]",
+  "declared_features": "[\"strict-macro\"]",
+  "target": 6875603382767429092,
+  "profile": 11854849244486183875,
+  "path": 13014135589260217816,
+  "deps": [
+    [8949245912927223590, "quote", false, 11178276555302955050],
+    [
+      16345275096901121305,
+      "wasm_bindgen_macro_support",
+      false,
+      3619739603510983012
+    ]
+  ],
+  "local": [
+    {
+      "CheckDepInfo": {
+        "dep_info": "release/.fingerprint/wasm-bindgen-macro-27ef3f89703697bd/dep-lib-wasm_bindgen_macro",
+        "checksum": false
+      }
+    }
+  ],
+  "rustflags": [],
+  "config": 9396254390672932401,
+  "compile_kind": 0
+}

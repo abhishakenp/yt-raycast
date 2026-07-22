@@ -14,9 +14,17 @@ describe('capsuleCategories', () => {
     expect(capsuleCategories['EcommerceNavbar']?.functionalType).toBe('Navbar')
   })
 
-  it('categorizes primitives under primitives', () => {
-    expect(capsuleCategories['Button']?.category).toBe('primitives')
-    expect(capsuleCategories['Stack']?.category).toBe('primitives')
+  it('excludes primitives from the catalog (engine building blocks, not example sites)', () => {
+    // Raw shadcn atoms (Button, Card, Stack, Dialog…) remain in the engine's
+    // component-spec but are omitted from the capsule category catalog, so they
+    // never surface as a browsable examples category or similar-capsule target.
+    expect(capsuleCategories['Button']).toBeUndefined()
+    expect(capsuleCategories['Stack']).toBeUndefined()
+    expect(
+      Object.values(capsuleCategories).some(
+        (info) => info.category === 'primitives',
+      ),
+    ).toBe(false)
   })
 })
 

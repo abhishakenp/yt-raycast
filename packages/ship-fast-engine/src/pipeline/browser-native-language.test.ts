@@ -66,8 +66,9 @@ describe('browser-native language pipeline handoff', () => {
     expect(mode.code).toBe('lt')
     expect(mode.name).toBe('lt')
     expect(mode.needsTranslation).toBe(true)
-    expect(mode.prompt).toContain('server language code `lt`')
-    expect(mode.prompt).toContain('single primary language')
+    expect(mode.prompt).toContain('English only')
+    expect(mode.prompt).not.toContain('server language code')
+    expect(mode.prompt).not.toContain('lt')
   })
 
   it('passes a live browser-native workspace language into the OpenUI homepage phase', async () => {
@@ -87,6 +88,7 @@ describe('browser-native language pipeline handoff', () => {
     }
     expect(call.languageMode.code).toBe('lt')
     expect(call.languageMode.needsTranslation).toBe(true)
-    expect(call.prompt).toContain('server language code `lt`')
+    expect(call.prompt).toContain('English only')
+    expect(call.prompt).not.toContain('server language code')
   })
 })

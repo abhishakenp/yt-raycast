@@ -12,6 +12,8 @@ type MockDeploymentTarget = {
   artifactProgressStage?: string
   artifactProgressPercent?: number
   artifactProgressStartedAt?: number
+  artifactProgressUpdatedAt?: number
+  artifactProgressSampleCount?: number
   deployedUrl?: string | null
 }
 
@@ -117,7 +119,8 @@ describe('DeploymentPanel', () => {
     const view = render(<DeploymentPanel sessionId="session_123" />)
 
     expect(view.getByText('Publish Lakebed')).toBeTruthy()
-    expect(view.queryByText('Generating components · 76%')).toBeNull()
+    expect(view.getByText(/76%/)).toBeTruthy()
+    expect(view.queryByText(/Generating components/)).toBeNull()
     expect(view.queryByText('Preparing')).toBeNull()
 
     const button = view.getByText('Publish Lakebed').closest('button')
@@ -131,7 +134,7 @@ describe('DeploymentPanel', () => {
         ),
       ).toBeTruthy()
     })
-    expect(view.getByText('Generating components · 76%')).toBeTruthy()
+    expect(view.getByText(/76%/)).toBeTruthy()
     expect(button?.style.backgroundImage).toContain('110deg')
 
     await new Promise((resolve) => window.setTimeout(resolve, 650))
@@ -166,7 +169,7 @@ describe('DeploymentPanel', () => {
         ),
       ).toBeNull()
     })
-    expect(view.queryByText('72%')).toBeNull()
+    expect(view.queryByText(/72%/)).toBeNull()
     await waitFor(() =>
       expect(window.open).toHaveBeenCalledWith(
         'https://lakebed-launch.lakebed.app',

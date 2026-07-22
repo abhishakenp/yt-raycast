@@ -328,6 +328,8 @@ export default defineSchema({
     progressStage: v.optional(v.string()),
     progressPercent: v.optional(v.number()),
     progressStartedAt: v.optional(v.number()),
+    progressUpdatedAt: v.optional(v.number()),
+    progressSampleCount: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })

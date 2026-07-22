@@ -257,6 +257,30 @@ describe('lakebed browser auth', () => {
     )
   })
 
+  it('uses Lakebed deployed authBaseUrl config for Google sign-in', async () => {
+    const { assign } = installBrowser('https://deploy.example.com/')
+    const lakebedWindow = window as Window & {
+      __LAKEBED_AUTH__?: Record<string, unknown>
+    }
+    lakebedWindow.__LAKEBED_AUTH__ = {
+      authBaseUrl: 'https://auth.lakebed.dev',
+    }
+    const auth = await importAuth()
+
+    const { url } = await auth.signInWithGoogle()
+    const parsed = new URL(url)
+
+    expect(assign).toHaveBeenCalledWith(url)
+    expect(parsed.origin).toBe('https://auth.lakebed.dev')
+    expect(parsed.pathname).toBe('/authorize')
+    expect(parsed.searchParams.get('redirect_uri')).toBe(
+      'https://deploy.example.com/',
+    )
+    expect(parsed.searchParams.get('client_id')).toBe(
+      'origin:https://deploy.example.com',
+    )
+  })
+
   it('clears stored identity and returns to guest auth on sign-out', async () => {
     const { localStorage } = installBrowser(
       'https://app.example.com/base/dashboard?lakebed_guest=Preview%20User',

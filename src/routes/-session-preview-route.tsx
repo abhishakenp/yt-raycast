@@ -1,5 +1,5 @@
 import { getRouteApi, useRouterState } from '@tanstack/react-router'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { SessionPreviewPage } from '@/features/dashboard/components/SessionPreviewPage'
 import {
@@ -26,12 +26,33 @@ export const PreviewRoute = () => {
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   })
-  const pageFromUrl = extractPreviewPageSlugFromPath(pathname, slug)
+  const [pageFromUrl, setPageFromUrl] = useState<string | null>(() =>
+    typeof window !== 'undefined'
+      ? extractPreviewPageSlugFromPath(window.location.pathname, slug)
+      : null,
+  )
+
+  useEffect(() => {
+    const onPopState = () => {
+      setPageFromUrl(
+        extractPreviewPageSlugFromPath(window.location.pathname, slug),
+      )
+    }
+
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [slug])
+
+  useEffect(() => {
+    setPageFromUrl(extractPreviewPageSlugFromPath(pathname, slug))
+  }, [pathname, slug])
+
   const navigateToPage = useCallback(
     (pageSlug: string | null) => {
       const baseUrl = `/preview/${slug}`
       const targetUrl = pageSlug ? `${baseUrl}/${pageSlug}` : baseUrl
       window.history.pushState(null, '', targetUrl)
+      setPageFromUrl(pageSlug)
     },
     [slug],
   )
@@ -45,7 +66,10 @@ export const PreviewRoute = () => {
 
   return (
     <PreviewUrlBridgeContext.Provider value={bridgeValue}>
-      <SessionPreviewPage sessionId={slug} />
+      <SessionPreviewPage
+        key={`${slug}:${pageFromUrl ?? 'home'}`}
+        sessionId={slug}
+      />
     </PreviewUrlBridgeContext.Provider>
   )
 }

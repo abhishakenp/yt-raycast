@@ -2,6 +2,7 @@ import { ClerkProvider } from '@clerk/tanstack-react-start'
 import { useEffect, useRef, useState } from 'react'
 
 import { clerkFrostedGlassAppearance } from '@/app/providers/clerk-appearance'
+import { GlassPillButton } from '@/features/home/components/GlassPill'
 import { getClerkPublishableKey } from '@/shared/auth/clerk-runtime'
 
 const clerkPublishableKey = getClerkPublishableKey()
@@ -23,9 +24,6 @@ type ClerkWindow = Window & {
 
 const appContentElementId = 'ship-fast-app-content'
 const clerkDialogSelector = '.cl-modalContent[role="dialog"]'
-
-const signInButtonClassName =
-  'pill pill--top-actions relative isolate inline-flex min-h-9 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/[0.055] px-4 py-0 font-sans text-[13px] font-medium tracking-[-0.015em] text-[#f0f0f5] shadow-[0_14px_32px_rgba(0,0,0,0.38)] transition-transform duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.25)] [-webkit-tap-highlight-color:transparent] active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white'
 
 const syncAuthModalBackgroundState = () => {
   if (typeof document === 'undefined') return
@@ -141,15 +139,12 @@ function HomepageAuthInner({
   return isSignedIn ? (
     <div ref={userButtonRef} className="grid size-9 place-items-center" />
   ) : (
-    <button
-      className={signInButtonClassName}
-      type="button"
+    <GlassPillButton
+      className="pill--top-actions min-h-9 px-4 py-0 font-sans text-[13px] font-medium text-[#f0f0f5] [&>span:last-child]:gap-1.5"
       onClick={openSignIn}
     >
-      <span className="relative z-[7] inline-flex items-center justify-center gap-1.5">
-        Sign in
-      </span>
-    </button>
+      Sign in
+    </GlassPillButton>
   )
 }
 

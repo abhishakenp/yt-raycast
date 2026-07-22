@@ -3,7 +3,7 @@ import { Show, SignInButton, UserButton } from '@clerk/tanstack-react-start'
 import {
   GlassPillAnchor,
   GlassPillButton,
-} from '@/features/home/components/HomePage'
+} from '@/features/home/components/GlassPill'
 import { isPartnerProgramClientEnabled } from '@/features/partners/lib/partner-config'
 import { isClerkClientEnabled } from '@/shared/auth/clerk-runtime'
 
@@ -49,6 +49,7 @@ export const TopActions = () => {
             <Suspense fallback={null}>
               <LazyHomepageAuthControls
                 autoOpen={authRequested}
+                renderButton={false}
                 wrapProvider={false}
               />
             </Suspense>

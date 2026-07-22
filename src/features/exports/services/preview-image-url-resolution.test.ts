@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { rewritePreviewImageUrls } from './preview-image-url-resolution'
+import {
+  extractPreviewImageSourceReferences,
+  rewritePreviewImageUrls,
+} from './preview-image-url-resolution'
 
 const originalPexelsKey = process.env.PEXELS_API_KEY
 const originalVitePexelsKey = process.env.VITE_PEXELS_API_KEY
@@ -49,6 +52,32 @@ describe('preview image URL resolution', () => {
   afterEach(() => {
     globalThis.fetch = originalFetch
     restoreEnv()
+  })
+
+  it('extracts preview image sources with decoded alt text and encoded source keys', () => {
+    const sources = extractPreviewImageSourceReferences(
+      [
+        '<main>',
+        '<img alt="Dashboard &amp; hero" src="/api/pexels?query=playground+structures&w=600&h=400">',
+        '<img alt=Thumbnail src="https://cdn.example.test/thumb.jpg">',
+        '<img alt="Ignored" src="mailto:nope">',
+        '</main>',
+      ].join(''),
+    )
+
+    expect(sources).toEqual([
+      {
+        alt: 'Dashboard & hero',
+        originalSrc: '/api/pexels?query=playground+structures&w=600&h=400',
+        originalSrcKey:
+          '%2Fapi%2Fpexels%3Fquery%3Dplayground%2Bstructures%26w%3D600%26h%3D400',
+      },
+      {
+        alt: 'Thumbnail',
+        originalSrc: 'https://cdn.example.test/thumb.jpg',
+        originalSrcKey: 'https%3A%2F%2Fcdn.example.test%2Fthumb.jpg',
+      },
+    ])
   })
 
   it('reuses the dashboard preview route resolved image instead of re-searching Pexels', async () => {

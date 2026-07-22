@@ -24,13 +24,15 @@ type StageDef = {
 
 const BUILD_STAGES: StageDef[] = [
   { key: 'starting', label: 'Starting build', weight: 4 },
-  { key: 'loading-generator', label: 'Loading generator', weight: 22 },
-  { key: 'parsing', label: 'Parsing source', weight: 12 },
-  { key: 'generating', label: 'Generating components', weight: 38 },
+  { key: 'loading-generator', label: 'Loading generator', weight: 18 },
+  { key: 'parsing', label: 'Parsing source', weight: 8 },
+  { key: 'collecting-sources', label: 'Collecting source files', weight: 18 },
+  { key: 'generating', label: 'Generating components', weight: 24 },
   { key: 'resolving-images', label: 'Resolving images', weight: 6 },
-  { key: 'formatting', label: 'Formatting files', weight: 10 },
-  { key: 'packaging', label: 'Packaging files', weight: 4 },
-  { key: 'saving', label: 'Saving artifact', weight: 4 },
+  { key: 'compiling-styles', label: 'Compiling styles', weight: 10 },
+  { key: 'formatting', label: 'Formatting files', weight: 6 },
+  { key: 'packaging', label: 'Packaging files', weight: 3 },
+  { key: 'saving', label: 'Saving artifact', weight: 3 },
 ]
 
 const DEPLOY_STAGES: StageDef[] = [

@@ -20,6 +20,7 @@ const componentCallPattern = /\b([A-Z][A-Za-z0-9_]*)\s*\(/g
 const capsuleCache = new Map<RuntimeComponentName, Promise<ShipFastCapsule>>()
 const libraryCache = new Map<string, Promise<Library>>()
 const runtimeComponentNameSet = new Set<string>(runtimeComponentNames)
+let staticRegistryCapsulesPromise: Promise<ShipFastCapsule[]> | undefined
 
 export function isRuntimeComponentName(
   name: string,
@@ -114,6 +115,40 @@ function withRealtimeSection(
   return wrapped
 }
 
+const isGeneratedLoaderUnavailableMessage = (message: string): boolean =>
+  message.includes('import.meta.glob') ||
+  message.includes('.glob is not a function')
+
+const isGeneratedLoaderUnavailableError = (error: unknown): boolean => {
+  const message = error instanceof Error ? error.message : String(error)
+  if (isGeneratedLoaderUnavailableMessage(message)) return true
+
+  if (error instanceof Error && error.cause !== undefined) {
+    return isGeneratedLoaderUnavailableError(error.cause)
+  }
+
+  return false
+}
+
+const loadStaticRegistryCapsules = (): Promise<ShipFastCapsule[]> => {
+  staticRegistryCapsulesPromise ??= import('./library.ts').then(
+    ({ allCapsules }) => allCapsules,
+  )
+  return staticRegistryCapsulesPromise
+}
+
+const loadOpenUIStaticRegistryComponent = async (
+  name: RuntimeComponentName,
+): Promise<ShipFastCapsule> => {
+  const capsule = (await loadStaticRegistryCapsules()).find(
+    (candidate) => candidate.name === name,
+  )
+  if (!capsule) {
+    throw new Error(`OpenUI runtime component "${name}" is not registered`)
+  }
+  return withRealtimeSection(name, capsule)
+}
+
 export function loadOpenUIRuntimeComponent(
   name: RuntimeComponentName,
 ): Promise<ShipFastCapsule> {
@@ -125,6 +160,12 @@ export function loadOpenUIRuntimeComponent(
           withRealtimeSection(name, capsule),
         ),
     )
+    cached = cached.catch((error: unknown) => {
+      if (isGeneratedLoaderUnavailableError(error)) {
+        return loadOpenUIStaticRegistryComponent(name)
+      }
+      throw error
+    })
     capsuleCache.set(name, cached)
   }
   return cached
