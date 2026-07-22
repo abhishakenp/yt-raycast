@@ -70,15 +70,18 @@ vi.mock('@ship-fast/lakebed/react', () => ({
 }))
 
 import * as registry from '#/registry/all.ts'
+import * as primitiveRegistry from '#/registry/primitives/index.ts'
 import { isCapsule } from '#/capsules/openui.ts'
-import { capsuleCategories } from '#/generated/capsule-categories.ts'
+
+const primitiveNames = new Set(
+  Object.values(primitiveRegistry)
+    .filter(isCapsule)
+    .map((capsule) => capsule.client.name),
+)
 
 const capsules = Object.values(registry)
   .filter(isCapsule)
-  .filter(
-    (capsule) =>
-      capsuleCategories[capsule.client.name]?.category !== 'primitives',
-  )
+  .filter((capsule) => !primitiveNames.has(capsule.client.name))
   .sort((left, right) => left.client.name.localeCompare(right.client.name))
 const capsuleCases = capsules.map((capsule) => ({
   capsule,

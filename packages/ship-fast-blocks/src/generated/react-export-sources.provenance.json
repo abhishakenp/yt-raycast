@@ -13,7 +13,7 @@
     "src/generated/capsule-categories.ts",
     "src/generated/react-export-sources.provenance.json"
   ],
-  "componentCount": 1145,
+  "componentCount": 1146,
   "sectionComponentCount": 1073,
   "components": [
     {
@@ -2019,6 +2019,10 @@
     {
       "name": "FoodTruckTestimonials",
       "sourceFile": "src/registry/sections/food-truck/FoodTruckTestimonials.tsx"
+    },
+    {
+      "name": "Freeform",
+      "sourceFile": "src/registry/primitives/freeform.tsx"
     },
     {
       "name": "FurnitureStoreDesign",
