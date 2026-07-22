@@ -1,6 +1,8 @@
 import { useNavigate, useRouter } from '@tanstack/react-router'
+import { useConvex } from 'convex/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import { api } from '../../../../convex/_generated/api'
 import {
   checkPromptContentPolicy,
   CONTENT_POLICY_CLIENT_MESSAGE,
@@ -61,6 +63,7 @@ type SessionLaunch = {
   payload: CreateSessionPayload
 }
 type SpeculativeGeneration = SessionLaunch & {
+  prewarmed: boolean
   request: Promise<CreateSessionResult>
 }
 
@@ -243,13 +246,14 @@ async function createSessionFromHttp(
     }
   }
 
-  const [{ api }, { createRuntimeConvexHttpClient }] = await Promise.all([
-    import('../../../../convex/_generated/api'),
-    import('@/shared/convex/http-client'),
-  ])
+  const [{ api: convexApi }, { createRuntimeConvexHttpClient }] =
+    await Promise.all([
+      import('../../../../convex/_generated/api'),
+      import('@/shared/convex/http-client'),
+    ])
   const client = createRuntimeConvexHttpClient(CREATE_SESSION_TIMEOUT_MS)
   return (await client.mutation(
-    api.sessions.create,
+    convexApi.sessions.create,
     payload,
   )) as CreateSessionResult
 }
@@ -264,6 +268,7 @@ const getGeneratedSessionPath = (sessionId: string): string =>
   `/generate/${encodeURIComponent(sessionId)}/`
 
 export const usePromptHomeController = () => {
+  const convex = useConvex()
   const navigate = useNavigate()
   const router = useRouter()
   const [prompt, setPrompt] = useState('')
@@ -280,15 +285,27 @@ export const usePromptHomeController = () => {
   const speculativeGenerationTimerFingerprintRef = useRef<string | null>(null)
 
   const preloadGenerationRoute = useCallback(
-    (sessionId: string) => {
+    (sessionId: string): boolean => {
       void router
         .preloadRoute({
           to: '/generate/$sessionId/$',
           params: { sessionId },
         })
         .catch(() => undefined)
+
+      try {
+        convex.prewarmQuery({
+          query: api.sessions.getGenerationView,
+          args: { lookup: sessionId },
+          extendSubscriptionFor: 30_000,
+        })
+        return true
+      } catch {
+        // Convex prewarm is an optimization; route navigation still works.
+        return false
+      }
     },
-    [router],
+    [convex, router],
   )
 
   const clearSpeculativeGenerationTimer = useCallback(() => {
@@ -395,11 +412,21 @@ export const usePromptHomeController = () => {
           createSessionFromHttp,
           launch.payload,
         )
-        const speculativeGeneration = { ...launch, request }
+        const speculativeGeneration: SpeculativeGeneration = {
+          ...launch,
+          prewarmed: false,
+          request,
+        }
         speculativeGenerationRef.current = speculativeGeneration
         void request
           .then((result) => {
             if (typeof result.sessionId === 'string' && result.sessionId) {
+              if (!submitInFlightRef.current) {
+                speculativeGeneration.prewarmed = preloadGenerationRoute(
+                  result.sessionId,
+                )
+                return
+              }
               preloadGenerationRoute(result.sessionId)
             }
           })
@@ -516,7 +543,7 @@ export const usePromptHomeController = () => {
         }
       }
 
-      if (result.cached !== true) {
+      if (result.cached !== true && speculativeGeneration?.prewarmed !== true) {
         try {
           rememberGenerationLaunchHandoff(window.sessionStorage, sessionId)
         } catch {
