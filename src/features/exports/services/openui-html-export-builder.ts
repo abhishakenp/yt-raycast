@@ -1,5 +1,3 @@
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
-import { dirname, extname, join, resolve } from 'node:path'
 import {
   createParser,
   jsonToOpenUI,
@@ -20,6 +18,8 @@ import {
   buildExportSeoBundle,
   extractDescriptionFromMarkup,
 } from './export-seo'
+import { buildCompiledTailwindCssForMarkup } from './export-tailwind-css'
+import { buildExportFontLinkTags } from './export-theme-fonts'
 import type {
   BuiltExport,
   OpenUIExportInput,
@@ -36,16 +36,6 @@ type ParsedOpenUIProgram = {
   library: Awaited<ReturnType<typeof loadOpenUIRuntimeLibrary>>
 }
 
-const appStylesPath = join(process.cwd(), 'src', 'styles.css')
-const appStylesBase = dirname(appStylesPath)
-const cssCompileBaseCandidates = [
-  'min-h-screen',
-  'bg-background',
-  'text-foreground',
-  'genui-preview',
-  'size-full',
-  'dark',
-]
 const themeVarKeys: readonly string[] = [
   'background',
   'foreground',
@@ -93,153 +83,28 @@ const themeVarKeys: readonly string[] = [
   'spacing',
 ]
 
-type TailwindNodeModule = typeof import('@tailwindcss/node')
-type TailwindOxideModule = typeof import('@tailwindcss/oxide')
-type TailwindCompiler = Awaited<ReturnType<TailwindNodeModule['compile']>>
-type TailwindSourcePattern = TailwindCompiler['sources'][number]
-type TailwindCompilerContext = {
-  compiler: TailwindCompiler
-  sourceCandidates: string[]
-}
-
-let tailwindCompilerPromise: Promise<TailwindCompilerContext> | undefined
-const previewCssCache = new Map<string, string>()
-const previewCssCandidates = new Set(cssCompileBaseCandidates)
-const tailwindSourceExtensions = new Set([
-  '.html',
-  '.js',
-  '.jsx',
-  '.mjs',
-  '.ts',
-  '.tsx',
-])
-
-const hasGlobSyntax = (pattern: string): boolean => /[*?![\]{}()]/.test(pattern)
-
-const collectTailwindSourceFiles = (
-  sourcePatterns: TailwindSourcePattern[],
-): string[] => {
-  const files: string[] = []
-  const visit = (path: string): void => {
-    const stat = statSync(path)
-
-    if (stat.isDirectory()) {
-      readdirSync(path)
-        .filter((entry) => entry !== 'node_modules' && !entry.startsWith('.'))
-        .forEach((entry) => visit(join(path, entry)))
-      return
-    }
-
-    if (stat.isFile() && tailwindSourceExtensions.has(extname(path))) {
-      files.push(path)
-    }
-  }
-
-  sourcePatterns
-    .filter((source) => !source.negated && !hasGlobSyntax(source.pattern))
-    .map((source) => resolve(source.base, source.pattern))
-    .filter((path) => existsSync(path))
-    .forEach((path) => visit(path))
-
-  return files
-}
-
-const scanTailwindSourceCandidates = (
-  Scanner: TailwindOxideModule['Scanner'],
-  sourcePatterns: TailwindSourcePattern[],
-): string[] => {
-  const scanner = new Scanner({ sources: sourcePatterns })
-  const sourceCandidates = new Set(scanner.scan())
-  const sourceFiles = collectTailwindSourceFiles(sourcePatterns)
-
-  if (sourceFiles.length > 0) {
-    scanner
-      .scanFiles(
-        sourceFiles.map((file) => ({
-          file,
-          extension: extname(file).slice(1),
-          contents: readFileSync(file, 'utf8'),
-        })),
-      )
-      .forEach((candidate) => sourceCandidates.add(candidate))
-  }
-
-  return [...sourceCandidates]
-}
-
-const runtimeImport = async <Module>(specifier: string): Promise<Module> =>
-  import(specifier) as Promise<Module>
-
-const loadTailwindCompiler = async (): Promise<TailwindCompilerContext> => {
-  if (tailwindCompilerPromise === undefined) {
-    tailwindCompilerPromise = Promise.all([
-      runtimeImport<TailwindNodeModule>('@tailwindcss/node'),
-      runtimeImport<TailwindOxideModule>('@tailwindcss/oxide'),
-    ]).then(async ([{ compile }, { Scanner }]) => {
-      const compiler = await compile(readFileSync(appStylesPath, 'utf8'), {
-        base: appStylesBase,
-        from: appStylesPath,
-        onDependency: () => {},
-      })
-      const sourcePatterns = (
-        compiler.root === 'none'
-          ? []
-          : compiler.root === null
-            ? [{ base: appStylesBase, pattern: '**/*', negated: false }]
-            : [{ ...compiler.root, negated: false }]
-      ).concat(compiler.sources)
-
-      return {
-        compiler,
-        sourceCandidates: scanTailwindSourceCandidates(Scanner, sourcePatterns),
-      }
-    })
-  }
-
-  return tailwindCompilerPromise
-}
-
-const readClassCandidates = (markup: string): string[] => {
-  const candidates = new Set(cssCompileBaseCandidates)
-  const classAttributePattern = /\sclass=(['"])(.*?)\1/gis
-
-  for (const match of markup.matchAll(classAttributePattern)) {
-    const value = match[2]
-    value
-      ?.split(/\s+/)
-      .map((candidate) => candidate.trim())
-      .filter(Boolean)
-      .forEach((candidate) => candidates.add(candidate))
-  }
-
-  return [...candidates].sort()
-}
-
-async function readPreviewCss(markup: string): Promise<string> {
-  const candidates = readClassCandidates(markup)
-  const cacheKey = candidates.join('\n')
-  const cached = previewCssCache.get(cacheKey)
-  if (cached !== undefined) return cached
-
-  try {
-    const { compiler, sourceCandidates } = await loadTailwindCompiler()
-    sourceCandidates.forEach((candidate) => previewCssCandidates.add(candidate))
-    candidates.forEach((candidate) => previewCssCandidates.add(candidate))
-    const css = compiler.build([...previewCssCandidates])
-    previewCssCache.set(cacheKey, css)
-    return css
-  } catch {
-    return ''
-  }
-}
+const readPreviewCss = buildCompiledTailwindCssForMarkup
 
 export function isUsablePreviewHtml(html: string | undefined): html is string {
   const trimmed = html?.trim()
+  const withoutSourceMetadata = trimmed
+    ?.replace(
+      /<script\b[^>]*\bid=(["'])openui-client-source\1[^>]*>[\s\S]*?<\/script>/gi,
+      '',
+    )
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+  const isSourceOnlyShell =
+    /\bid=(["'])openui-client-source\1/i.test(trimmed ?? '') &&
+    !withoutSourceMetadata
   return Boolean(
     trimmed &&
     !/\bopenui-error\b/i.test(trimmed) &&
     !/failed to render/i.test(trimmed) &&
     !/\bship-fast-openui-source\b/i.test(trimmed) &&
+    !isSourceOnlyShell &&
     !/generated openui source is ready/i.test(trimmed),
   )
 }
@@ -352,12 +217,25 @@ function staticUiMessages(locale: string): StaticUiMessages {
 
 function decorateAccountTrigger(html: string): string {
   return html.replace(
-    /<button\b(?=[^>]*data-slot="account-dropdown-unauthenticated")[^>]*>/gi,
-    (openingTag) => {
+    /<button\b(?=[^>]*data-slot="account-dropdown-unauthenticated")[^>]*>[\s\S]*?<\/button>/gi,
+    (button) => {
+      const parts = button.match(
+        /^(<button\b(?=[^>]*data-slot="account-dropdown-unauthenticated")[^>]*>)([\s\S]*?)<\/button>$/i,
+      )
+      if (!parts) return button
+      const openingTag = parts[1] ?? ''
+      const body = parts[2] ?? ''
       const type = /\stype=(['"])[^'"]*\1/i.test(openingTag)
         ? openingTag
         : openingTag.replace('<button', '<button type="button"')
-      return type.replace('<button', '<button data-static-overlay-kind="auth"')
+      const trigger = type.replace(
+        '<button',
+        '<button data-static-overlay-kind="auth"',
+      )
+      const motionLayer = /aria-hidden=(["'])true\1/i.test(body)
+        ? ''
+        : '<span aria-hidden="true" class="hidden motion-reduce:transition-none"></span>'
+      return `${trigger}${motionLayer}${body}</button>`
     },
   )
 }
@@ -371,6 +249,22 @@ function includesNonAscii(value: string): boolean {
 function prepareGeneratedMarkup(html: string, locale: string): string {
   const messages = staticUiMessages(locale)
   return decorateAccountTrigger(html)
+    .replace(
+      /(<nav\b[^>]*>)([\s\S]*?)(<\/nav>)/gi,
+      (match, open, body, close) => {
+        const upgraded = String(body).replace(
+          /<a\b([^>]*)>([\s\S]*?)<\/a>/gi,
+          (anchor, attributes, children) => {
+            const text = String(children)
+              .replace(/<[^>]+>/g, '')
+              .trim()
+            if (!text) return anchor
+            return `<button type="button"${attributes}>${children}</button>`
+          },
+        )
+        return `${open}${upgraded}${close}`
+      },
+    )
     .replaceAll(
       'data-slot="command-search-trigger"',
       'data-static-overlay-kind="search" data-slot="command-search-trigger"',
@@ -394,6 +288,14 @@ function prepareGeneratedMarkup(html: string, locale: string): string {
     .replaceAll(
       'group-hover/shiny:translate-x-full',
       'group-hover/shiny:translate-x-full motion-reduce:transition-none',
+    )
+    .replace(
+      /(<span\b(?=[^>]*aria-hidden=["']true["'])(?=[^>]*-translate-x-full)([^>]*\bclass=(["'])(?![^"']*\bmotion-reduce:transition-none\b)([^"']*)\3[^>]*)>)/i,
+      (_match, _opening, attributes, quote, classValue) =>
+        `<span${String(attributes).replace(
+          `${quote}${classValue}${quote}`,
+          `${quote}${classValue} motion-reduce:transition-none${quote}`,
+        )}>`,
     )
 }
 
@@ -597,7 +499,7 @@ function buildInlineAdminBootstrap(
   if (genui === null) return ''
   const adminPolicy = readGenUIAdminPolicy(genui)
   return `
-    window.__SHIP_FAST_ADMIN__ = ${stringifyJs({
+    window.__SITE_ADMIN__ = ${stringifyJs({
       version: 1,
       target,
       authProvider:
@@ -607,11 +509,11 @@ function buildInlineAdminBootstrap(
       adminEmails: readGenUIAdminEmails(genui),
       policy: adminPolicy,
     })};
-    window.assertShipFastAdminAccess = function assertShipFastAdminAccess(email) {
+    window.assertSiteAdminAccess = function assertSiteAdminAccess(email) {
       var normalized = String(email || '').trim().toLowerCase();
-      var allowed = (window.__SHIP_FAST_ADMIN__.adminEmails || []);
+      var allowed = (window.__SITE_ADMIN__.adminEmails || []);
       if (!normalized || allowed.indexOf(normalized) === -1) {
-        throw new Error('Ship Fast admin access denied for this email.');
+        throw new Error('Site admin access denied for this email.');
       }
       return { email: normalized, role: normalized === allowed[0] ? 'owner' : 'editor' };
     };`
@@ -987,35 +889,6 @@ function buildInteractionRuntime(
   restorePersistedState();
   renderCart();
 })();`
-}
-
-type FontKey = 'font-sans' | 'font-serif' | 'font-mono'
-const fontKeys: readonly FontKey[] = ['font-sans', 'font-serif', 'font-mono']
-
-function buildThemeFontLinks(styles: ThemeStyles | null): string {
-  if (!styles) return ''
-  const systemFontRe =
-    /^(ui-|system|-apple|blinkmac|segoe|roboto$|helvetica|arial|sans-serif|serif|monospace|menlo|consolas|courier|georgia|cambria|times)/i
-  const families = new Set<string>()
-  for (const variant of [styles.light, styles.dark]) {
-    for (const key of fontKeys) {
-      const raw = variant[key]
-      if (typeof raw !== 'string') continue
-      const first = raw
-        .split(',')[0]
-        ?.trim()
-        .replace(/^["']|["']$/g, '')
-      if (first && !systemFontRe.test(first)) families.add(first)
-    }
-  }
-  if (families.size === 0) return ''
-  const params = [...families]
-    .map(
-      (family) =>
-        `family=${encodeURIComponent(family).replace(/%20/g, '+')}:wght@400;500;600;700`,
-    )
-    .join('&')
-  return `<link rel="stylesheet" href="https://fonts.googleapis.com/css2?${params}&display=swap" />`
 }
 
 function stringifyJs(value: unknown): string {
@@ -1503,6 +1376,26 @@ async function buildPagesMarkup(
   ).join('\n')
 }
 
+export async function buildOpenUIRenderedPreviewMarkup(
+  input: OpenUIExportInput,
+): Promise<string | undefined> {
+  if (isHtmlDocumentSource(input.source) || isHtmlLikeSource(input.source)) {
+    return undefined
+  }
+  const parsed = await parseOpenUIForHtmlExport(
+    input.source,
+    input.siteSpecJson,
+  )
+  return stripPreviewSourceMetadata(
+    await buildPagesMarkup(
+      parsed,
+      input.locale ?? 'en',
+      buildExportImageContext(input),
+      input.selectedBrandLogo,
+    ),
+  )
+}
+
 async function buildStandaloneHtmlDocument(
   input: OpenUIExportInput,
   parsed: ParsedOpenUIProgram,
@@ -1516,7 +1409,9 @@ async function buildStandaloneHtmlDocument(
   const themeStyle = buildThemeStyle(themeStyles, isDark)
   const themeStylesheet = buildThemeStylesheet(themeStyles)
   const themeFontLinks =
-    input.includeBadge === false ? '' : buildThemeFontLinks(themeStyles)
+    input.includeBadge === false
+      ? ''
+      : buildExportFontLinkTags(themeStyles, themeStylesheet)
   const imageContext = buildExportImageContext(input)
   const { cssVars } = await renderOpenUIToHTMLWithTheme(
     input.source,

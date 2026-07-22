@@ -23,6 +23,7 @@ const FallbackRoutesContext = React.createContext<RoutesContextValue>(
   DEFAULT_ROUTES_CONTEXT,
 )
 const SectionKitNavBaseContext = React.createContext<string | null>(null)
+const leadingHashPattern = new RegExp('^#')
 
 function normalizeBasePath(pathname: string): string {
   return pathname.replace(/\/+$/, '') || '/'
@@ -117,20 +118,26 @@ export function SectionKitNavHrefProvider({
 }
 
 export function useSectionKitNavHref(
-  target: string | undefined,
+  target: string | null | undefined,
 ): string | undefined {
   const resolveHref = useSectionKitNavHrefResolver()
   return resolveHref(target)
 }
 
 export function useSectionKitNavHrefResolver(): (
-  target: string | undefined,
+  target: string | null | undefined,
 ) => string | undefined {
   const routing = useRoutesContextValue()
   const basePath = React.useContext(SectionKitNavBaseContext)
   return React.useCallback(
-    (target: string | undefined) => {
-      const href = resolveRouteHref(target, routing.routes, routing.targetMap)
+    (target: string | null | undefined) => {
+      const rawTarget = (target ?? '').trim()
+      if (!rawTarget) return undefined
+      const href = resolveRouteHref(
+        rawTarget,
+        routing.routes,
+        routing.targetMap,
+      )
       return appendBasePath(href, basePath)
     },
     [basePath, routing.routes, routing.targetMap],
@@ -138,7 +145,7 @@ export function useSectionKitNavHrefResolver(): (
 }
 
 export function useIsActiveSectionKitNavHref(): (
-  target: string | undefined,
+  target: string | null | undefined,
 ) => boolean {
   const resolveHref = useSectionKitNavHrefResolver()
   const routing = useRoutesContextValue()
@@ -147,7 +154,7 @@ export function useIsActiveSectionKitNavHref(): (
     return resolveHref(routing.currentPage)
   }, [resolveHref, routing.currentPage])
   return React.useCallback(
-    (target: string | undefined) => {
+    (target: string | null | undefined) => {
       const href = resolveHref(target)
       if (
         typeof window === 'undefined' ||
@@ -197,7 +204,7 @@ export function setSectionKitNavClickFallback(
 }
 
 export function useSectionKitNavClick(
-  target: string | undefined,
+  target: string | null | undefined,
 ): (event: React.MouseEvent) => void {
   const routing = useRoutesContextValue()
   const urlBridge = React.useContext(PreviewUrlBridgeContext)
@@ -215,11 +222,49 @@ export function useSectionKitNavClick(
         }
         return
       }
-      const resolved = resolveRouteTarget(
+      let resolved = resolveRouteTarget(
         rawTarget,
         routing.routes,
         routing.targetMap,
       )
+      if (
+        resolved === null &&
+        urlBridge.navigateToPage !== null &&
+        typeof window !== 'undefined' &&
+        window.location &&
+        event.currentTarget instanceof HTMLAnchorElement
+      ) {
+        const targetUrl = new URL(
+          event.currentTarget.href,
+          window.location.href,
+        )
+        if (targetUrl.origin === window.location.origin) {
+          const matchedRoute = routing.routes.find((route) => {
+            const href = resolveRouteHref(
+              route,
+              routing.routes,
+              routing.targetMap,
+              {
+                currentPage: routing.currentPage,
+                currentPathname: window.location.pathname,
+                previewBase: true,
+              },
+            )
+            if (typeof href !== 'string') return false
+            const routeUrl = new URL(href, window.location.href)
+            return (
+              normalizePathname(routeUrl.pathname) ===
+              normalizePathname(targetUrl.pathname)
+            )
+          })
+          if (matchedRoute) {
+            const sectionId = targetUrl.hash.replace(leadingHashPattern, '')
+            resolved = sectionId
+              ? { type: 'section', page: matchedRoute, sectionId }
+              : { type: 'page', page: matchedRoute }
+          }
+        }
+      }
       if (!resolved) return
       const nextPage =
         routing.routes.find(

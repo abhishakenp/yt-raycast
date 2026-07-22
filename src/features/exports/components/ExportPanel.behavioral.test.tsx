@@ -18,6 +18,8 @@ type ExportTargetTuple = {
   artifactProgressStage?: string
   artifactProgressPercent?: number
   artifactProgressStartedAt?: number
+  artifactProgressUpdatedAt?: number
+  artifactProgressSampleCount?: number
   previewVersion?: number | null
   currentPreviewVersion?: number | null
   downloadUrl: string | null
@@ -275,6 +277,80 @@ describe('ExportPanel behavioral', () => {
     )
 
     pending.resolve(Response.json({ ok: true }))
+  })
+
+  it('shows live server progress without requiring the user to click first', () => {
+    setExportTargets([
+      target({
+        target: 'next',
+        ready: false,
+        status: 'available',
+        artifactReady: false,
+        artifactStatus: 'building',
+        artifactProgressStage: 'Generating components',
+        artifactProgressPercent: 76,
+        downloadUrl: null,
+      }),
+    ])
+
+    const view = render(<ExportPanel sessionId="session_123" />)
+
+    expect(view.getByText('Generating components · 76%')).toBeTruthy()
+    expect(
+      view.container.querySelector('[data-export-action="next"] .animate-spin'),
+    ).toBeTruthy()
+    const button = view.getByText('Next.js').closest('button')
+    expect(button?.style.backgroundImage).toContain('110deg')
+  })
+
+  it('shows observed ETA once the export build has enough server samples', () => {
+    const now = Date.now()
+    const startedAt = now - 76_000
+    setExportTargets([
+      target({
+        target: 'react',
+        ready: false,
+        status: 'available',
+        artifactReady: false,
+        artifactStatus: 'building',
+        artifactProgressStage: 'Generating components',
+        artifactProgressPercent: 76,
+        artifactProgressStartedAt: startedAt,
+        artifactProgressUpdatedAt: now,
+        artifactProgressSampleCount: 3,
+        downloadUrl: null,
+      }),
+    ])
+
+    const view = render(<ExportPanel sessionId="session_123" />)
+
+    expect(
+      view.getByText('Generating components · 76% · ~24s left'),
+    ).toBeTruthy()
+  })
+
+  it('does not invent ETA for early export progress with too few samples', () => {
+    const now = Date.now()
+    setExportTargets([
+      target({
+        target: 'html',
+        ready: false,
+        status: 'available',
+        artifactReady: false,
+        artifactStatus: 'building',
+        artifactProgressStage: 'Loading generator',
+        artifactProgressPercent: 26,
+        artifactProgressStartedAt: now - 200,
+        artifactProgressUpdatedAt: now,
+        artifactProgressSampleCount: 2,
+        downloadUrl: null,
+      }),
+    ])
+
+    const view = render(<ExportPanel sessionId="session_123" />)
+
+    expect(view.getByText('Loading generator · 26%')).toBeTruthy()
+    expect(view.queryByText(/left/)).toBeNull()
   })
 
   it('status "failed" shows the artifact error message', () => {
@@ -660,11 +736,7 @@ describe('ExportPanel behavioral', () => {
       expect(view.getByText('Loading generator · 26%')).toBeTruthy(),
     )
     pending.resolve(Response.json({ ok: true }))
-
-    // Wait for the active target to clear before re-rendering with next status.
-    await waitFor(() =>
-      expect(view.queryByText('Loading generator · 26%')).toBeNull(),
-    )
+    await waitFor(() => expect(button?.disabled).toBe(false))
 
     // parsing → 38%
     setExportTargets([
@@ -679,6 +751,7 @@ describe('ExportPanel behavioral', () => {
         downloadUrl: null,
       }),
     ])
+    view.rerender(<ExportPanel sessionId="session_123" />)
     const pendingParsing = deferred()
     fetchMock.mockImplementation(async (url) => {
       if (String(url).endsWith('/export')) return pendingParsing.promise
@@ -690,9 +763,7 @@ describe('ExportPanel behavioral', () => {
       expect(view.getByText('Parsing source · 38%')).toBeTruthy(),
     )
     pendingParsing.resolve(Response.json({ ok: true }))
-    await waitFor(() =>
-      expect(view.queryByText('Parsing source · 38%')).toBeNull(),
-    )
+    await waitFor(() => expect(buttonParsing?.disabled).toBe(false))
 
     // generating → 76%
     setExportTargets([
@@ -707,6 +778,7 @@ describe('ExportPanel behavioral', () => {
         downloadUrl: null,
       }),
     ])
+    view.rerender(<ExportPanel sessionId="session_123" />)
     const pendingGenerating = deferred()
     fetchMock.mockImplementation(async (url) => {
       if (String(url).endsWith('/export')) return pendingGenerating.promise

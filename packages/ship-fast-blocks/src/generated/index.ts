@@ -12,9 +12,16 @@ export {
   vendorSourceFilesEncoding,
 } from './vendor-source-files.compressed'
 export {
+  lakebedExportComponentChunks,
   lakebedExportDepsBase64,
+  lakebedExportDepsChunkEncoding,
   lakebedExportDepsEncoding,
+  lakebedExportFileChunks,
 } from './lakebed-export-deps.compressed'
+export {
+  lakebedAppCssSourcesBase64,
+  lakebedAppCssSourcesEncoding,
+} from './lakebed-app-css-sources.compressed'
 export { capsuleCategories, findSimilarCapsules } from './capsule-categories'
 
 export { componentSpec }

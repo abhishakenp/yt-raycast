@@ -9,7 +9,7 @@ import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-
 import { readJsonOrThrow } from '@/lib/safe-fetch'
 import { useProgressTick } from '../hooks/use-progress-tick'
 import {
-  estimateRemainingMs,
+  estimateObservedRemainingMs,
   formatDurationShort,
 } from '../services/format-progress-duration'
 import { HtmlIcon, ReactIcon, NextIcon, LakebedIcon } from './ExportIcons'
@@ -29,6 +29,8 @@ type ExportTarget = {
   artifactProgressStage?: string
   artifactProgressPercent?: number
   artifactProgressStartedAt?: number
+  artifactProgressUpdatedAt?: number
+  artifactProgressSampleCount?: number
   previewVersion?: number | null
   currentPreviewVersion?: number | null
   downloadUrl: string | null
@@ -119,6 +121,27 @@ function readDownloadFilename(response: Response, fallback: string): string {
 
 function isDownloadResult(value: unknown): value is { downloadUrl?: unknown } {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function isArtifactInFlight(target: ExportTarget): boolean {
+  return (
+    !target.artifactReady &&
+    (target.artifactStatus === 'queued' || target.artifactStatus === 'building')
+  )
+}
+
+function exportProgressText(target: ExportTarget, now: number): string {
+  const progressPercent = artifactProgressPercent(target)
+  const remainingMs = estimateObservedRemainingMs({
+    now,
+    percent: progressPercent,
+    progressSampleCount: target.artifactProgressSampleCount,
+    progressStartedAt: target.artifactProgressStartedAt,
+    progressUpdatedAt: target.artifactProgressUpdatedAt,
+  })
+  return `${target.artifactProgressStage ?? 'Working'} · ${progressPercent}%${
+    remainingMs !== null ? ` · ~${formatDurationShort(remainingMs)} left` : ''
+  }`
 }
 
 export function ExportPanel({ sessionId }: ExportPanelProps) {
@@ -271,11 +294,7 @@ export function ExportPanel({ sessionId }: ExportPanelProps) {
   const visibleTargets = hasResolvedTargets
     ? exportTargets.targets
     : loadingTargets
-  const hasActiveBuild = visibleTargets.some(
-    (item) =>
-      !item.artifactReady &&
-      (item.artifactStatus === 'queued' || item.artifactStatus === 'building'),
-  )
+  const hasActiveBuild = visibleTargets.some((item) => isArtifactInFlight(item))
   const now = useProgressTick(hasActiveBuild)
 
   return (
@@ -310,24 +329,16 @@ export function ExportPanel({ sessionId }: ExportPanelProps) {
               item.artifactStatus === 'building' ||
               item.artifactStatus === 'loading' ||
               item.artifactStatus === 'not_ready')
+          const artifactInFlight = isArtifactInFlight(item)
           const progressPercent = artifactProgressPercent(item)
-          const showProgress = activeTarget === item.target && isBuildPending
+          const showProgress =
+            artifactInFlight || (activeTarget === item.target && isBuildPending)
           const progressBackground =
             showProgress && progressPercent > 0
               ? `linear-gradient(110deg, rgba(34, 211, 238, 0.16) 0%, rgba(34, 211, 238, 0.08) ${progressPercent}%, transparent ${progressPercent}%, transparent 100%)`
               : undefined
-          const elapsedMs =
-            item.artifactProgressStartedAt !== undefined
-              ? now - item.artifactProgressStartedAt
-              : 0
-          const remainingMs = estimateRemainingMs(elapsedMs, progressPercent)
-          const stageLabel = item.artifactProgressStage ?? 'Working'
           const statusText = showProgress
-            ? `${stageLabel} · ${progressPercent}%${
-                remainingMs !== null
-                  ? ` · ~${formatDurationShort(remainingMs)} left`
-                  : ''
-              }`
+            ? exportProgressText(item, now)
             : activeTarget === item.target || downloadingTarget === item.target
               ? 'Working...'
               : item.artifactStatus === 'failed'
@@ -379,7 +390,7 @@ export function ExportPanel({ sessionId }: ExportPanelProps) {
                 className="export-target-action grid size-9 place-items-center rounded-lg border border-white/10 bg-white/[0.06] text-white/48 transition-colors group-hover/export:border-cyan-200/30 group-hover/export:bg-cyan-200/10 group-hover/export:text-cyan-100"
                 data-export-action={item.target}
               >
-                {isBusy ? (
+                {isBusy || artifactInFlight ? (
                   <LoaderCircle
                     className="size-4 animate-spin"
                     strokeWidth={1.8}

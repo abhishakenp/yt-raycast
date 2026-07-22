@@ -808,8 +808,14 @@ const extractFunctionalType = (name) => {
 
 const capsuleCategories = {}
 for (const [name, entry] of Object.entries(manifest)) {
+  const category = extractCategory(entry.file, name)
+  // `primitives` are the generation engine's raw building blocks (Button, Card,
+  // Stack, Dialog…). They stay in component-spec.json for the engine, but are
+  // NOT a browsable example site — omit them from the capsule category catalog
+  // so they never surface as an examples category or similar-capsule target.
+  if (category === 'primitives') continue
   capsuleCategories[name] = {
-    category: extractCategory(entry.file, name),
+    category,
     functionalType: extractFunctionalType(name),
   }
 }
