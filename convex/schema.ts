@@ -131,6 +131,7 @@ export default defineSchema({
     promptCacheKey: v.optional(v.string()),
     engineVersion: v.optional(v.string()),
     isPrivate: v.boolean(),
+    isDraft: v.optional(v.boolean()),
     previewVersion: v.optional(v.number()),
     cloneMode: v.optional(v.boolean()),
     createdAt: v.number(),
@@ -153,6 +154,7 @@ export default defineSchema({
     .index('by_workspace', ['workspace'])
     .index('by_promptCacheKey', ['promptCacheKey'])
     .index('by_public_createdAt', ['isPrivate', 'createdAt'])
+    .index('by_isDraft_createdAt', ['isDraft', 'createdAt'])
     .index('by_deploymentSlug', ['deploymentSlug']),
 
   tasks: defineTable({

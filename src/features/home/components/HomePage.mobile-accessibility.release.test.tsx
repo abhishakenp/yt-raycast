@@ -10,6 +10,7 @@ interface PromptController {
   isSubmitting: boolean
   prompt: string
   refreshShareBonusStatus: () => Promise<void>
+  scheduleSpeculativeGeneration: (request?: object) => void
   selectExamplePrompt: (prompt: string) => void
   setPrompt: (prompt: string) => void
   shareBonusClaimed: boolean
@@ -49,6 +50,7 @@ const promptController = vi.hoisted<PromptController>(
       refreshShareBonusStatus: vi.fn(
         async function refreshShareBonusStatus() {},
       ),
+      scheduleSpeculativeGeneration: vi.fn(),
       selectExamplePrompt: vi.fn(),
       setPrompt: vi.fn(),
       shareBonusClaimed: false,

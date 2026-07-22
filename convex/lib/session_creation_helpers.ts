@@ -19,6 +19,7 @@ import {
 } from './session_access_helpers'
 import { cloneCachedGeneratedArtifacts } from './session_artifact_helpers'
 import { reserveDefaultDeploymentSlug } from './session_deployment_helpers'
+import { deleteSessionGraph } from './session_delete_helpers'
 import { recordOperationalGenerationEvent } from './session_operational_notifications'
 import {
   assertPrompt,
@@ -40,6 +41,7 @@ type GenerationLimitEnv = {
 
 export const SHORT_WINDOW_LIMIT = 5
 export const PROMPT_CACHE_LOOKBACK_LIMIT = 12
+const DRAFT_SESSION_TTL_MS = 15 * 60 * 1_000
 
 export function areGenerationLimitsDisabled(
   env: GenerationLimitEnv = process.env,
@@ -68,7 +70,9 @@ export async function findReusablePromptCacheSession(
   return (
     candidates.find(
       (session) =>
-        session.isPrivate === false && (session.previewVersion ?? 0) > 0,
+        session.isPrivate === false &&
+        session.isDraft !== true &&
+        (session.previewVersion ?? 0) > 0,
     ) ?? null
   )
 }
@@ -258,6 +262,7 @@ export type CreateGenerationSessionInput = {
   designReferenceNotes?: string
   cloneUrl?: string
   engineVersion?: string
+  isDraft?: boolean
 }
 
 export type CreateGenerationSessionReferences = {
@@ -282,6 +287,7 @@ export async function createGenerationSession(
   const disableLimits = areGenerationLimitsDisabled()
   const publicPreviewMode = isPublicPreviewModeEnabled()
   const prompt = args.prompt.trim()
+  const isDraft = args.isDraft === true
   const userId = await getUserId(ctx)
   const ownerEmail = userId === undefined ? undefined : await getUserEmail(ctx)
   const anonOwnerSecretHash =
@@ -299,6 +305,10 @@ export async function createGenerationSession(
   const now = Date.now()
 
   assertPrompt(prompt)
+
+  if (!isDraft) {
+    await deleteExpiredDraftSessions(ctx, now)
+  }
 
   const designReferenceUrls = (args.designReferenceUrls ?? [])
     .slice(0, 4)
@@ -329,6 +339,13 @@ export async function createGenerationSession(
   })
 
   if (idempotentSession !== null) {
+    if (idempotentSession.isDraft === true && !isDraft) {
+      await ctx.db.patch(idempotentSession._id, {
+        isDraft: false,
+        updatedAt: now,
+      })
+    }
+
     return {
       sessionId: idempotentSession._id,
       cached: (idempotentSession.previewVersion ?? 0) > 0,
@@ -400,6 +417,7 @@ export async function createGenerationSession(
     promptCacheKey,
     engineVersion: args.engineVersion,
     isPrivate: args.isPrivate,
+    isDraft,
     previewVersion: 0,
     createdAt: now,
     updatedAt: now,
@@ -490,5 +508,21 @@ export async function createGenerationSession(
     sessionId,
     cached: false,
     remaining: admission.remaining,
+  }
+}
+
+async function deleteExpiredDraftSessions(
+  ctx: MutationCtx,
+  now: number,
+): Promise<void> {
+  const cutoff = now - DRAFT_SESSION_TTL_MS
+  const expiredDrafts = ctx.db
+    .query('sessions')
+    .withIndex('by_isDraft_createdAt', (index) => index.eq('isDraft', true))
+    .order('asc')
+
+  for await (const session of expiredDrafts) {
+    if (session.createdAt >= cutoff) break
+    await deleteSessionGraph(ctx, session._id)
   }
 }

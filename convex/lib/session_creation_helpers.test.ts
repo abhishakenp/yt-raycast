@@ -105,6 +105,11 @@ function chainFor(rows: Row[]) {
     take: async (limit: number) => rows.slice(0, limit),
     unique: async () => rows[0] ?? null,
     first: async () => rows[0] ?? null,
+    [Symbol.asyncIterator]: async function* () {
+      for (const row of rows) {
+        yield row
+      }
+    },
   }
 }
 
@@ -568,7 +573,9 @@ describe('session creation helpers', () => {
     })
     expect(patches).toContainEqual({
       id: session?.id ?? '',
-      value: { deploymentSlug: 'build-a-luxury-ski' },
+      value: expect.objectContaining({
+        deploymentSlug: 'build-a-luxury-ski',
+      }),
     })
     expect(runAfter).toHaveBeenCalledWith(0, references.startGeneration, {
       sessionId: session?.id,

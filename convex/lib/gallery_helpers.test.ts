@@ -98,6 +98,18 @@ describe('hasGalleryReadySignal', () => {
 })
 
 describe('isGalleryVisibleSession', () => {
+  it('returns false for draft sessions even when they have ready output', () => {
+    expect(
+      isGalleryVisibleSession(
+        makeSession({
+          isDraft: true,
+          status: 'preview_ready',
+          previewVersion: 1,
+        }),
+      ),
+    ).toBe(false)
+  })
+
   it('returns true for ongoing status with ready signal', () => {
     expect(
       isGalleryVisibleSession(

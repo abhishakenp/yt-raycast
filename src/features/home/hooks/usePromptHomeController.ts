@@ -1,4 +1,4 @@
-import { useNavigate } from '@tanstack/react-router'
+import { useNavigate, useRouter } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import {
@@ -147,6 +147,7 @@ async function createSessionWithRetry<Payload, Result>(
 function createSessionLaunch(
   opts: RunSubmitOptions | undefined,
   fallbackPrompt: string,
+  isDraft = false,
 ): SessionLaunch {
   const prompt = normalizePromptDraft(opts?.prompt ?? fallbackPrompt)
   const preferredLanguage = opts?.preferredLanguage?.trim() || 'en'
@@ -185,6 +186,7 @@ function createSessionLaunch(
       designReferenceNotes,
       cloneUrl,
       engineVersion,
+      isDraft,
     }),
   }
 }
@@ -252,8 +254,18 @@ async function createSessionFromHttp(
   )) as CreateSessionResult
 }
 
+async function publishDraftSessionFromHttp(
+  payload: CreateSessionPayload,
+): Promise<CreateSessionResult> {
+  return await createSessionFromHttp({ ...payload, isDraft: false })
+}
+
+const getGeneratedSessionPath = (sessionId: string): string =>
+  `/generate/${encodeURIComponent(sessionId)}/`
+
 export const usePromptHomeController = () => {
   const navigate = useNavigate()
+  const router = useRouter()
   const [prompt, setPrompt] = useState('')
   const [errorMessage, setErrorMessage] = useState<string>()
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -266,6 +278,18 @@ export const usePromptHomeController = () => {
   const speculativeGenerationRef = useRef<SpeculativeGeneration | null>(null)
   const speculativeGenerationTimerRef = useRef<number | null>(null)
   const speculativeGenerationTimerFingerprintRef = useRef<string | null>(null)
+
+  const preloadGenerationRoute = useCallback(
+    (sessionId: string) => {
+      void router
+        .preloadRoute({
+          to: '/generate/$sessionId/$',
+          params: { sessionId },
+        })
+        .catch(() => undefined)
+    },
+    [router],
+  )
 
   const clearSpeculativeGenerationTimer = useCallback(() => {
     if (speculativeGenerationTimerRef.current !== null) {
@@ -346,7 +370,7 @@ export const usePromptHomeController = () => {
         invalidateSpeculativeGeneration()
         return
       }
-      const launch = createSessionLaunch(opts, prompt)
+      const launch = createSessionLaunch(opts, prompt, true)
 
       if (
         speculativeGenerationRef.current?.fingerprint === launch.fingerprint ||
@@ -373,14 +397,20 @@ export const usePromptHomeController = () => {
         )
         const speculativeGeneration = { ...launch, request }
         speculativeGenerationRef.current = speculativeGeneration
-        void request.catch(() => {
-          if (speculativeGenerationRef.current === speculativeGeneration) {
-            speculativeGenerationRef.current = null
-          }
-        })
+        void request
+          .then((result) => {
+            if (typeof result.sessionId === 'string' && result.sessionId) {
+              preloadGenerationRoute(result.sessionId)
+            }
+          })
+          .catch(() => {
+            if (speculativeGenerationRef.current === speculativeGeneration) {
+              speculativeGenerationRef.current = null
+            }
+          })
       }, SPECULATIVE_GENERATION_DELAY_MS)
     },
-    [invalidateSpeculativeGeneration, prompt],
+    [invalidateSpeculativeGeneration, preloadGenerationRoute, prompt],
   )
 
   const runSubmit = async (opts?: RunSubmitOptions) => {
@@ -436,10 +466,14 @@ export const usePromptHomeController = () => {
                 preferredLanguage,
               })
             })
-          await navigate({
-            to: '/generate/$sessionId/$',
-            params: { sessionId: cached.sessionId },
-          })
+          try {
+            await navigate({
+              to: '/generate/$sessionId/$',
+              params: { sessionId: cached.sessionId },
+            })
+          } catch {
+            window.location.assign(getGeneratedSessionPath(cached.sessionId))
+          }
           return
         }
       }
@@ -463,31 +497,53 @@ export const usePromptHomeController = () => {
       const isOwnedCachedClone =
         result.cached === true && result.cloned === true
 
-      if (result.cached !== true || isOwnedCachedClone) {
-        persistAnonymousOwnerSecret(
-          window.localStorage,
-          sessionId,
-          speculativeGeneration?.anonymousOwnerSecret ??
-            launch.anonymousOwnerSecret,
+      if (speculativeGeneration !== null && result.cached !== true) {
+        void publishDraftSessionFromHttp(speculativeGeneration.payload).catch(
+          () => undefined,
         )
       }
 
-      if (result.cached !== true) {
-        rememberGenerationLaunchHandoff(window.sessionStorage, sessionId)
-      } else if (canUseVerifiedReadyCache) {
-        rememberReadySession(window.localStorage, {
-          sessionId,
-          prompt: runtimePrompt,
-          preferredLanguage,
-        })
+      if (result.cached !== true || isOwnedCachedClone) {
+        try {
+          persistAnonymousOwnerSecret(
+            window.localStorage,
+            sessionId,
+            speculativeGeneration?.anonymousOwnerSecret ??
+              launch.anonymousOwnerSecret,
+          )
+        } catch {
+          // Storage can be blocked; session launch should still continue.
+        }
       }
 
-      await navigate({
-        to: '/generate/$sessionId/$',
-        params: {
-          sessionId,
-        },
-      })
+      if (result.cached !== true) {
+        try {
+          rememberGenerationLaunchHandoff(window.sessionStorage, sessionId)
+        } catch {
+          // Storage can be blocked; session launch should still continue.
+        }
+      } else if (canUseVerifiedReadyCache) {
+        try {
+          rememberReadySession(window.localStorage, {
+            sessionId,
+            prompt: runtimePrompt,
+            preferredLanguage,
+          })
+        } catch {
+          // Storage can be blocked; session launch should still continue.
+        }
+      }
+
+      try {
+        await navigate({
+          to: '/generate/$sessionId/$',
+          params: {
+            sessionId,
+          },
+        })
+      } catch {
+        window.location.assign(getGeneratedSessionPath(sessionId))
+      }
     } catch (error) {
       await waitForMinimumLaunchFeedback(launchFeedbackStartedAt)
       submitInFlightRef.current = false

@@ -106,6 +106,32 @@ describe('session create payload', () => {
     })
   })
 
+  it('includes draft mode only for speculative session creation', () => {
+    expect(
+      buildCreateSessionPayload({
+        prompt: 'build a portfolio',
+        preferredLanguage: 'en',
+        isPrivate: false,
+        anonymousOwnerSecret: 'owner-secret',
+        workspace: 'workspace_abc123',
+        isDraft: true,
+      }),
+    ).toMatchObject({
+      isDraft: true,
+    })
+
+    expect(
+      buildCreateSessionPayload({
+        prompt: 'build a portfolio',
+        preferredLanguage: 'en',
+        isPrivate: false,
+        anonymousOwnerSecret: 'owner-secret',
+        workspace: 'workspace_abc123',
+        isDraft: false,
+      }),
+    ).not.toHaveProperty('isDraft')
+  })
+
   it('omits the default engine version for v1 compatibility', () => {
     expect(
       buildCreateSessionPayload({
