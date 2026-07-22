@@ -1740,78 +1740,6 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     }
   })
 
-  it('restores a cached ready preview when the Convex realtime query is still loading', async () => {
-    getConvexState().generationView = undefined
-    window.localStorage.setItem(
-      'ship-fast:ready-session-preview:v1:cached-ready-session',
-      JSON.stringify({
-        sessionId: 'cached-ready-session',
-        status: 'preview_ready',
-        prompt: 'Build a cached dashboard preview',
-        preferredLanguage: 'en',
-        homeModule: {
-          moduleKey: 'home',
-          source:
-            '<!doctype html><html><body><h1>Cached Ready</h1></body></html>',
-          status: 'succeeded',
-          updatedAt: Date.now(),
-        },
-        previewVersion: 3,
-        tasks: [
-          {
-            id: 'homepage',
-            title: 'Generate homepage',
-            status: 'succeeded',
-            order: 0,
-          },
-        ],
-        createdAt: Date.now(),
-      }),
-    )
-
-    render(<Dashboard sessionId="cached-ready-session" />)
-
-    await waitFor(() => {
-      expect(screen.queryByTestId('intro-loader')).toBeNull()
-      expect(screen.getByTestId('generated-module-preview')).toBeTruthy()
-    })
-    expect(screen.getByTestId('gmp-source').textContent).toContain(
-      'Cached Ready',
-    )
-  })
-
-  it('restores a cached ready preview when live lookup is unavailable but cache is valid', async () => {
-    getConvexState().generationView = null
-    window.localStorage.setItem(
-      'ship-fast:ready-session-preview:v1:cached-null-session',
-      JSON.stringify({
-        sessionId: 'cached-null-session',
-        status: 'preview_ready',
-        prompt: 'Build a cached fallback preview',
-        preferredLanguage: 'en',
-        homeModule: {
-          moduleKey: 'home',
-          source:
-            '<!doctype html><html><body><h1>Cached Null Ready</h1></body></html>',
-          status: 'succeeded',
-          updatedAt: Date.now(),
-        },
-        previewVersion: 4,
-        createdAt: Date.now(),
-      }),
-    )
-
-    render(<Dashboard sessionId="cached-null-session" />)
-
-    await waitFor(() => {
-      expect(screen.queryByTestId('intro-loader')).toBeNull()
-      expect(screen.getByTestId('generated-module-preview')).toBeTruthy()
-    })
-    expect(screen.getByTestId('gmp-source').textContent).toContain(
-      'Cached Null Ready',
-    )
-  })
-
   it('renders when the Convex realtime query emits a renderable preview', () => {
     getConvexState().generationView = undefined
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: vi.fn() })
@@ -1899,18 +1827,16 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     }
   })
 
-  // 4. Ready session → cached in localStorage
-  it('caches a ready session in localStorage', () => {
+  // 4. Ready session -> session id cached in localStorage
+  it('caches a ready session id in localStorage without storing preview source', () => {
     setupReady()
     render(<Dashboard sessionId="ready-session" />)
 
-    // Expected: rememberReadySessionPreview writes the ready snapshot under the
-    // preview cache key so a later WebSocket failure can restore from cache.
-    const previewCache = window.localStorage.getItem(
-      'ship-fast:ready-session-preview:v1:ready-session',
-    )
-    expect(previewCache).not.toBeNull()
-    expect(previewCache).toContain('ready-session')
+    expect(
+      window.localStorage.getItem(
+        'ship-fast:ready-session-preview:v1:ready-session',
+      ),
+    ).toBeNull()
 
     // Expected: rememberReadySession writes a session cache entry under the
     // shared ready-session key prefix.

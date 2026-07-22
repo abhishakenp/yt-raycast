@@ -5,11 +5,6 @@ import {
   generationViewArgs,
   lookupArgs,
 } from '../../../../convex/lib/session_validators'
-import {
-  forgetReadySessionPreview,
-  readReadySessionPreview,
-  rememberReadySessionPreview,
-} from '@/features/session/services/ready-session-cache'
 import type { Id } from '../../../../convex/_generated/dataModel'
 
 type MockDb = {
@@ -143,75 +138,5 @@ describe('dashboard session lookup', () => {
       kind: 'string',
     })
     expect(generationViewArgs.lookup?.isOptional).toBe('optional')
-  })
-
-  it('hydrates and clears ready session preview cache entries by session id', () => {
-    const store = new Map<string, string>()
-    const storage = {
-      getItem: (key: string) => store.get(key) ?? null,
-      setItem: (key: string, value: string) => {
-        store.set(key, value)
-      },
-      removeItem: (key: string) => {
-        store.delete(key)
-      },
-    }
-    const sessionId = 'session-preview-cache'
-
-    // Nothing cached yet.
-    expect(readReadySessionPreview(storage, { sessionId })).toBeNull()
-
-    rememberReadySessionPreview(storage, {
-      sessionId,
-      status: 'preview_ready',
-      prompt: 'Build a cached preview site',
-      preferredLanguage: 'en',
-      homeModule: { source: '<html><body>cached</body></html>' },
-      createdAt: 1_000,
-    })
-
-    const cached = readReadySessionPreview(storage, { sessionId, now: 2_000 })
-    expect(cached).toMatchObject({
-      sessionId,
-      status: 'preview_ready',
-      prompt: 'Build a cached preview site',
-    })
-    expect(cached?.homeModule.source).toBe('<html><body>cached</body></html>')
-
-    // Forgetting the preview removes the entry.
-    forgetReadySessionPreview(storage, { sessionId })
-    expect(readReadySessionPreview(storage, { sessionId })).toBeNull()
-  })
-
-  it('rejects expired or malformed ready session preview cache entries', () => {
-    const store = new Map<string, string>()
-    const storage = {
-      getItem: (key: string) => store.get(key) ?? null,
-      setItem: (key: string, value: string) => {
-        store.set(key, value)
-      },
-      removeItem: (key: string) => {
-        store.delete(key)
-      },
-    }
-    const sessionId = 'session-preview-expired'
-
-    rememberReadySessionPreview(storage, {
-      sessionId,
-      status: 'preview_ready',
-      prompt: 'Build an expiring preview site',
-      preferredLanguage: 'en',
-      homeModule: { source: '<html>expiring</html>' },
-      createdAt: 0,
-    })
-
-    // Beyond the 7-day TTL the entry is treated as stale and removed.
-    const stale = readReadySessionPreview(storage, {
-      sessionId,
-      now: 8 * 24 * 60 * 60 * 1000,
-    })
-    expect(stale).toBeNull()
-    // The stale read also evicts the corrupt/expired entry.
-    expect(store.size).toBe(0)
   })
 })

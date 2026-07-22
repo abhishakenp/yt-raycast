@@ -33,7 +33,7 @@ import { AppError } from '@/shared/errors/app-error'
 const CREATE_SESSION_TIMEOUT_MS = 12_000
 const CREATE_SESSION_RETRY_DELAY_MS = 450
 const MIN_LAUNCH_FEEDBACK_MS = 1_200
-const SPECULATIVE_GENERATION_DELAY_MS = 3_000
+const SPECULATIVE_GENERATION_DELAY_MS = 500
 
 type CreateSessionPayload = ReturnType<typeof buildCreateSessionPayload>
 type RunSubmitOptions = Partial<
@@ -63,12 +63,46 @@ type SessionLaunch = {
   payload: CreateSessionPayload
 }
 type SpeculativeGeneration = SessionLaunch & {
+  cleanupPrewarm?: () => void
+  isPrewarmReady?: () => boolean
   prewarmed: boolean
   request: Promise<CreateSessionResult>
+}
+type PreloadedGenerationRoute = {
+  cleanup: () => void
+  isReady: () => boolean
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === 'object' && !Array.isArray(value)
+
+const hasRenderableGenerationSource = (view: Record<string, unknown>) => {
+  const homeModule = view.homeModule
+  if (
+    isRecord(homeModule) &&
+    typeof homeModule.source === 'string' &&
+    homeModule.source.trim().length > 0
+  ) {
+    return true
+  }
+
+  const latestPreview = view.latestPreview
+  return (
+    isRecord(latestPreview) &&
+    typeof latestPreview.html === 'string' &&
+    latestPreview.html.trim().length > 0
+  )
+}
+
+const isPreviewReadyGenerationView = (value: unknown) => {
+  if (!isRecord(value)) return false
+  const session = value.session
+  return (
+    isRecord(session) &&
+    session.status === 'preview_ready' &&
+    hasRenderableGenerationSource(value)
+  )
+}
 
 const admissionErrorFromResponse = (data: unknown): AppError | null => {
   if (!isRecord(data) || typeof data.error !== 'string') return null
@@ -285,7 +319,7 @@ export const usePromptHomeController = () => {
   const speculativeGenerationTimerFingerprintRef = useRef<string | null>(null)
 
   const preloadGenerationRoute = useCallback(
-    (sessionId: string): boolean => {
+    (sessionId: string, markReady: () => void): PreloadedGenerationRoute => {
       void router
         .preloadRoute({
           to: '/generate/$sessionId/$',
@@ -293,16 +327,49 @@ export const usePromptHomeController = () => {
         })
         .catch(() => undefined)
 
+      let unsubscribe: (() => void) | null = null
+      let cleanupTimer: number | null = null
+      let cleanedUp = false
+      let readPrewarmedResult = () => false
+      const cleanup = () => {
+        if (cleanedUp) return
+        cleanedUp = true
+        if (cleanupTimer !== null) {
+          window.clearTimeout(cleanupTimer)
+          cleanupTimer = null
+        }
+        unsubscribe?.()
+        unsubscribe = null
+      }
+      const checkReady = (read: () => unknown) => {
+        const ready = isPreviewReadyGenerationView(read())
+        if (!ready) return false
+        markReady()
+        cleanup()
+        return true
+      }
+
       try {
         convex.prewarmQuery({
           query: api.sessions.getGenerationView,
           args: { lookup: sessionId },
           extendSubscriptionFor: 30_000,
         })
-        return true
+        const watch = convex.watchQuery(api.sessions.getGenerationView, {
+          lookup: sessionId,
+        })
+        readPrewarmedResult = () => checkReady(() => watch.localQueryResult())
+        unsubscribe = watch.onUpdate(() => {
+          readPrewarmedResult()
+        })
+        cleanupTimer = window.setTimeout(cleanup, 30_000)
+        readPrewarmedResult()
       } catch {
-        // Convex prewarm is an optimization; route navigation still works.
-        return false
+        cleanup()
+      }
+      return {
+        cleanup,
+        isReady: readPrewarmedResult,
       }
     },
     [convex, router],
@@ -318,6 +385,7 @@ export const usePromptHomeController = () => {
 
   const invalidateSpeculativeGeneration = useCallback(() => {
     clearSpeculativeGenerationTimer()
+    speculativeGenerationRef.current?.cleanupPrewarm?.()
     speculativeGenerationRef.current = null
   }, [clearSpeculativeGenerationTimer])
 
@@ -422,12 +490,21 @@ export const usePromptHomeController = () => {
           .then((result) => {
             if (typeof result.sessionId === 'string' && result.sessionId) {
               if (!submitInFlightRef.current) {
-                speculativeGeneration.prewarmed = preloadGenerationRoute(
+                const preloaded = preloadGenerationRoute(
                   result.sessionId,
+                  () => {
+                    speculativeGeneration.prewarmed = true
+                  },
                 )
+                speculativeGeneration.cleanupPrewarm = preloaded.cleanup
+                speculativeGeneration.isPrewarmReady = preloaded.isReady
                 return
               }
-              preloadGenerationRoute(result.sessionId)
+              const preloaded = preloadGenerationRoute(result.sessionId, () => {
+                speculativeGeneration.prewarmed = true
+              })
+              speculativeGeneration.cleanupPrewarm = preloaded.cleanup
+              speculativeGeneration.isPrewarmReady = preloaded.isReady
             }
           })
           .catch(() => {
@@ -543,7 +620,11 @@ export const usePromptHomeController = () => {
         }
       }
 
-      if (result.cached !== true && speculativeGeneration?.prewarmed !== true) {
+      const speculativePrewarmReady =
+        speculativeGeneration?.prewarmed === true ||
+        speculativeGeneration?.isPrewarmReady?.() === true
+
+      if (result.cached !== true && !speculativePrewarmReady) {
         try {
           rememberGenerationLaunchHandoff(window.sessionStorage, sessionId)
         } catch {
