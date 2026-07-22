@@ -1,5 +1,5 @@
 import { useCanGoBack, useNavigate, useRouter } from '@tanstack/react-router'
-import { useConvex, useMutation, useQuery } from 'convex/react'
+import { useMutation, useQuery } from 'convex/react'
 import type { CSSProperties, ReactNode } from 'react'
 import {
   lazy,
@@ -111,9 +111,10 @@ const BrandMediaPanel = lazy(() =>
 interface DashboardProps {
   sessionId: string
   initialAdminView?: boolean
+  initialGenerationView?: DashboardGenerationView | null
 }
 
-type DashboardGenerationView = {
+export type DashboardGenerationView = {
   events: Array<{
     _id?: string
     eventType?: string
@@ -130,18 +131,18 @@ type DashboardGenerationView = {
   homeModule?: {
     moduleKey?: string
     source: string
-    status: string
-    updatedAt: number
-  }
+    status?: string
+    updatedAt?: number
+  } | null
   latestPreview?: {
     html?: string
     openUiSource?: string
     siteSpecJson?: string
     version?: number
-  }
+  } | null
   session: {
     sessionId: Id<'sessions'>
-    status: string
+    status?: string
     previewVersion?: number
     prompt: string
     preferredLanguage?: string
@@ -161,7 +162,7 @@ type DashboardGenerationView = {
   siteSpec?: {
     specJson?: string
     updatedAt?: number
-  }
+  } | null
   tasks: Array<{
     _id?: string
     taskKey?: string
@@ -489,6 +490,7 @@ export function resolveSectionEditSelection({
 }
 
 export function Dashboard({
+  initialGenerationView,
   sessionId,
   initialAdminView = false,
 }: DashboardProps) {
@@ -608,7 +610,6 @@ export function Dashboard({
   const [publishError, setPublishError] = useState<string>()
   const [isSectionEditing, setIsSectionEditing] = useState(false)
   const [sectionEditError, setSectionEditError] = useState<string>()
-  const convex = useConvex()
   const liveGenerationView = useQuery(api.sessions.getGenerationView, {
     lookup: sessionId,
   }) as DashboardGenerationView | null | undefined
@@ -617,22 +618,12 @@ export function Dashboard({
     getHydratedClientSnapshot,
     getHydratedServerSnapshot,
   )
-  const prewarmedGenerationView = useMemo(() => {
-    if (!hasHydrated) return undefined
-
-    try {
-      return convex
-        .watchQuery(api.sessions.getGenerationView, { lookup: sessionId })
-        .localQueryResult() as DashboardGenerationView | null | undefined
-    } catch {
-      return undefined
-    }
-  }, [convex, hasHydrated, sessionId])
-  const generationView = !hasHydrated
-    ? undefined
-    : liveGenerationView === undefined
-      ? prewarmedGenerationView
-      : liveGenerationView
+  const generationView =
+    !hasHydrated && initialGenerationView === undefined
+      ? undefined
+      : liveGenerationView === undefined
+        ? initialGenerationView
+        : liveGenerationView
   const resolvedSessionId = generationView?.session.sessionId
   const clonePageNav = useClonePageNav(resolvedSessionId ?? sessionId)
   const isMissingSession = generationView === null
