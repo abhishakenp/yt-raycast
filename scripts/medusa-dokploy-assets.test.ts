@@ -12,7 +12,7 @@ describe('Medusa Dokploy production assets', () => {
 
     expect(compose).toContain('medusa-postgres:')
     expect(compose).toContain('medusa-redis:')
-    expect(compose).toContain('medusa-server:')
+    expect(compose).toContain('server:')
     expect(compose).toContain('medusa-worker:')
     expect(compose).toContain('context: ../../medusa-backend')
     expect(compose).toContain('MEDUSA_WORKER_MODE: server')
@@ -20,7 +20,7 @@ describe('Medusa Dokploy production assets', () => {
     expect(compose).toContain("DISABLE_MEDUSA_ADMIN: 'false'")
     expect(compose).toContain("DISABLE_MEDUSA_ADMIN: 'true'")
     expect(compose).toContain('http://127.0.0.1:9000/health')
-    expect(compose).toContain('medusa-server:')
+    expect(compose).toContain('server:')
     expect(compose).toContain('condition: service_healthy')
     expect(compose).toContain('traefik.docker.network=dokploy-network')
     expect(compose).toContain(
