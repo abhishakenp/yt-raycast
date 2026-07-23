@@ -22,6 +22,16 @@ describe('Medusa Dokploy production assets', () => {
     expect(compose).toContain('http://127.0.0.1:9000/health')
     expect(compose).toContain('medusa-server:')
     expect(compose).toContain('condition: service_healthy')
+    expect(compose).toContain('traefik.docker.network=dokploy-network')
+    expect(compose).toContain(
+      'traefik.http.routers.ship-fast-medusa-direct-websecure.priority=300',
+    )
+    expect(compose).toContain(
+      'traefik.http.routers.ship-fast-medusa-direct-websecure.service=ship-fast-medusa-direct',
+    )
+    expect(compose).toContain(
+      'traefik.http.services.ship-fast-medusa-direct.loadbalancer.server.port=9000',
+    )
     expect(compose).toContain("RUN_MIGRATIONS: 'false'")
     expect(compose).toContain('MEDUSA_DB_CONNECTION_TIMEOUT_MS')
     expect(compose).toContain('__MEDUSA_DB_CONNECTION_MAX_RETRIES')
