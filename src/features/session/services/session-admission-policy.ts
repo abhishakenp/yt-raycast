@@ -359,7 +359,7 @@ export function parseSessionAdmission(
         code: 'QUOTA_EXCEEDED',
         message: isAuthenticated
           ? 'Daily limit reached. Come back tomorrow, or upgrade for unlimited daily generations.'
-          : 'Your anonymous daily generation quota is exhausted. Share on social media for +1 free generation, or sign in to continue.',
+          : 'Your anonymous daily generation quota is exhausted. Share on social media for +1 free generation.',
         status: 429,
       }
     }
