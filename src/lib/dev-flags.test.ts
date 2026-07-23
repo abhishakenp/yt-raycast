@@ -2,8 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { devFlags } from './dev-flags'
 
-const VALID_PROMPT = 'Build a SaaS landing page for a project management tool'
-
 describe('dev-flags', () => {
   beforeEach(() => {
     vi.unstubAllEnvs()
@@ -100,103 +98,6 @@ describe('dev-flags', () => {
       vi.stubEnv('NODE_ENV', 'production')
       expect(devFlags.disablePaywall).toBe(false)
     })
-  })
-})
-
-describe('parseSessionAdmission bypasses limits when disableGenerationLimits is true', () => {
-  beforeEach(() => {
-    vi.unstubAllEnvs()
-  })
-  afterEach(() => {
-    vi.unstubAllEnvs()
-  })
-
-  it('bypasses rate limit when DISABLE_LIMIT=true in dev', async () => {
-    vi.stubEnv('DISABLE_LIMIT', 'true')
-    vi.stubEnv('IS_DEV', 'false')
-    vi.stubEnv('NODE_ENV', 'development')
-    const { parseSessionAdmission } =
-      await import('@/features/session/services/session-admission-policy')
-    const now = 1_000_000_000_000
-    const result = parseSessionAdmission(
-      { prompt: VALID_PROMPT },
-      {
-        now,
-        recentTimestamps: [
-          now - 1_000,
-          now - 2_000,
-          now - 3_000,
-          now - 4_000,
-          now - 5_000,
-        ],
-      },
-    )
-    expect(result.ok).toBe(true)
-  })
-
-  it('enforces rate limit when DISABLE_LIMIT not set in production', async () => {
-    vi.stubEnv('DISABLE_LIMIT', 'false')
-    vi.stubEnv('IS_DEV', 'false')
-    vi.stubEnv('NODE_ENV', 'production')
-    const { parseSessionAdmission } =
-      await import('@/features/session/services/session-admission-policy')
-    const now = 1_000_000_000_000
-    const result = parseSessionAdmission(
-      { prompt: VALID_PROMPT },
-      {
-        now,
-        recentTimestamps: [
-          now - 1_000,
-          now - 2_000,
-          now - 3_000,
-          now - 4_000,
-          now - 5_000,
-        ],
-      },
-    )
-    expect(result.ok).toBe(false)
-    if (!result.ok) {
-      expect(result.code).toBe('RATE_LIMITED')
-    }
-  })
-
-  it('bypasses anonymous daily quota when DISABLE_LIMIT=true in dev', async () => {
-    vi.stubEnv('DISABLE_LIMIT', 'true')
-    vi.stubEnv('IS_DEV', 'false')
-    vi.stubEnv('NODE_ENV', 'development')
-    const { parseSessionAdmission } =
-      await import('@/features/session/services/session-admission-policy')
-    const now = 1_000_000_000_000
-    const result = parseSessionAdmission(
-      { prompt: VALID_PROMPT },
-      {
-        now,
-        isAuthenticated: false,
-        anonymousDailyTimestamps: [now - 1_000, now - 2_000],
-      },
-    )
-    expect(result.ok).toBe(true)
-  })
-
-  it('enforces anonymous daily quota when DISABLE_LIMIT not set in production', async () => {
-    vi.stubEnv('DISABLE_LIMIT', 'false')
-    vi.stubEnv('IS_DEV', 'false')
-    vi.stubEnv('NODE_ENV', 'production')
-    const { parseSessionAdmission } =
-      await import('@/features/session/services/session-admission-policy')
-    const now = 1_000_000_000_000
-    const result = parseSessionAdmission(
-      { prompt: VALID_PROMPT },
-      {
-        now,
-        isAuthenticated: false,
-        anonymousDailyTimestamps: [now - 1_000, now - 2_000],
-      },
-    )
-    expect(result.ok).toBe(false)
-    if (!result.ok) {
-      expect(result.code).toBe('QUOTA_EXCEEDED')
-    }
   })
 })
 

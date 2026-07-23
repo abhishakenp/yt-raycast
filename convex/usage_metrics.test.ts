@@ -29,6 +29,7 @@ function createTestSession(
     isPrivate: false,
     workspace: 'workspace_test',
     anonymousClientId: `anon-${prompt}`,
+    clientIpHash: 'test_ip_bucket',
   })
 }
 
@@ -208,6 +209,7 @@ test('duplicate public prompt cache hits record replayable alert metadata', asyn
     preferredExportTarget: 'html',
     isPrivate: false,
     workspace: 'workspace_cache_first',
+    clientIpHash: 'test_ip_bucket',
   })
 
   await t.action(internal.sessions.completeGeneration, {
@@ -223,6 +225,7 @@ test('duplicate public prompt cache hits record replayable alert metadata', asyn
     preferredExportTarget: 'html',
     isPrivate: false,
     workspace: 'workspace_cache_second',
+    clientIpHash: 'test_ip_bucket',
   })
 
   const metrics = await t.query(api.sessions.getUsageMetrics, { sessionId })
