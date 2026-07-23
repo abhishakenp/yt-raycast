@@ -934,7 +934,7 @@ describe('usePromptHomeController submit guard', () => {
     })
 
     expect(result.current.errorMessage).toBe(
-      'Anonymous daily quota exhausted. Sign in to continue — logged in users get 5 generations per day.',
+      'Anonymous daily quota exhausted. Sign in to get 2 more free generations.',
     )
   })
 
@@ -947,7 +947,7 @@ describe('usePromptHomeController submit guard', () => {
       status: 429,
       json: async () => ({
         error:
-          'Anonymous daily quota exhausted. Share on social media for +1 free generation, or sign in to continue.',
+          'Anonymous daily quota exhausted. Share on social media for +1 free generation.',
         code: 'QUOTA_EXCEEDED',
       }),
     } as Response)
@@ -961,7 +961,7 @@ describe('usePromptHomeController submit guard', () => {
     })
 
     expect(result.current.errorMessage).toBe(
-      'Anonymous daily quota exhausted. Share on social media for +1 free generation, or sign in to continue.',
+      'Anonymous daily quota exhausted. Share on social media for +1 free generation.',
     )
   })
 })

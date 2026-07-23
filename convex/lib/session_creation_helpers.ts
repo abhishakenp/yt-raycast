@@ -245,7 +245,7 @@ export async function loadGenerationAdmission(
           code: 'QUOTA_EXCEEDED',
           message:
             args.userId === undefined
-              ? 'Anonymous daily quota exhausted. Share on social media for +1 free generation, or sign in to continue.'
+              ? 'Anonymous daily quota exhausted. Share on social media for +1 free generation.'
               : 'Daily limit reached. Come back tomorrow, or upgrade for unlimited daily generations.',
         })
       })()

@@ -2,18 +2,18 @@ import { GlassPillButton } from './GlassPill'
 import { ShareIcon } from './HomeIcons'
 
 const buildShareMessages = () => {
-  const siteUrl = 'https://ship-fast.io'
+  const siteUrl = 'https://ship-fast.ai'
   return {
-    en: `I just built a site in minutes with Ship Fast — try it free: ${siteUrl}`,
-    hi: `मैंने Ship Fast से मिनटों में साइट बनाई — आप भी बनाएं: ${siteUrl}`,
-    ta: `Ship Fast மூலம் நிமிடங்களில் தளம் உருவாக்கினேன் — நீங்களும் முயற்சிக்கவும்: ${siteUrl}`,
-    te: `Ship Fast తో నిమిషాల్లో సైట్ చేశాను — మీరూ ట్రై చేయండి: ${siteUrl}`,
-    bn: `Ship Fast দিয়ে মিনিটে সাইট বানিয়েছি — আপনিও চেষ্টা করুন: ${siteUrl}`,
-    mr: `Ship Fast ने मिनिटांत साइट बनवली — तुम्हीही बनवा: ${siteUrl}`,
-    kn: `Ship Fast ನಿಂದ ನಿಮಿಷಗಳಲ್ಲಿ ಸೈಟ್ ಮಾಡಿದೆ — ನೀವೂ ಮಾಡಿ: ${siteUrl}`,
-    ml: `Ship Fast ഉപയോഗിച്ച് മിനിറ്റുകളിൽ സൈറ്റ് ഉണ്ടാക്കി — നിങ്ങളും ചെയ്യൂ: ${siteUrl}`,
-    pa: `Ship Fast ਨਾਲ ਮਿੰਟਾਂ 'ਚ ਸਾਈਟ ਬਣਾਈ — ਤੁਸੀਂ ਵੀ ਬਣਾਓ: ${siteUrl}`,
-    gu: `Ship Fast વડે મિનિટોમાં સાઇટ બનાવી — તમે પણ બનાવો: ${siteUrl}`,
+    en: `I just built a site in seconds with Ship Fast — try it free: ${siteUrl}`,
+    hi: `मैंने Ship Fast से सेकंडों में साइट बनाई — आप भी बनाएं: ${siteUrl}`,
+    ta: `Ship Fast மூலம் விநாடிகளில் தளம் உருவாக்கினேன் — நீங்களும் முயற்சிக்கவும்: ${siteUrl}`,
+    te: `Ship Fast తో సెకన్లలో సైట్ చేశాను — మీరూ ట్రై చేయండి: ${siteUrl}`,
+    bn: `Ship Fast দিয়ে সেকেন্ডে সাইট বানিয়েছি — আপনিও চেষ্টা করুন: ${siteUrl}`,
+    mr: `Ship Fast ने सेकंदांत साइट बनवली — तुम्हीही बनवा: ${siteUrl}`,
+    kn: `Ship Fast ನಿಂದ ಸೆಕೆಂಡುಗಳಲ್ಲಿ ಸೈಟ್ ಮಾಡಿದೆ — ನೀವೂ ಮಾಡಿ: ${siteUrl}`,
+    ml: `Ship Fast ഉപയോഗിച്ച് സെക്കൻഡുകളിൽ സൈറ്റ് ഉണ്ടാക്കി — നിങ്ങളും ചെയ്യൂ: ${siteUrl}`,
+    pa: `Ship Fast ਨਾਲ ਸਕਿੰਟਾਂ 'ਚ ਸਾਈਟ ਬਣਾਈ — ਤੁਸੀਂ ਵੀ ਬਣਾਓ: ${siteUrl}`,
+    gu: `Ship Fast વડે સેકંડોમાં સાઇટ બનાવી — તમે પણ બનાવો: ${siteUrl}`,
   } as Record<string, string>
 }
 
@@ -22,7 +22,7 @@ export async function handleShareClick(
   claimShareBonus: () => Promise<void>,
 ) {
   await claimShareBonus()
-  const siteUrl = 'https://ship-fast.io'
+  const siteUrl = 'https://ship-fast.ai'
   const messages = buildShareMessages()
 
   const langs = navigator.languages?.length

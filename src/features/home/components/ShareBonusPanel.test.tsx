@@ -101,7 +101,7 @@ describe('handleShareClick', () => {
     )
     const openedUrl = String(vi.mocked(window.open).mock.calls[0]?.[0])
     expect(decodeURIComponent(openedUrl)).toContain(
-      'Ship Fast மூலம் நிமிடங்களில் தளம் உருவாக்கினேன்',
+      'Ship Fast மூலம் விநாடிகளில் தளம் உருவாக்கினேன்',
     )
   })
 
@@ -122,8 +122,8 @@ describe('handleShareClick', () => {
     expect(claimShareBonus).toHaveBeenCalledTimes(1)
     expect(share).toHaveBeenCalledWith({
       title: 'Ship Fast',
-      text: expect.stringContaining('I just built a site in minutes'),
-      url: 'https://ship-fast.io',
+      text: expect.stringContaining('I just built a site in seconds'),
+      url: 'https://ship-fast.ai',
     })
     expect(window.open).not.toHaveBeenCalled()
   })

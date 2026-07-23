@@ -525,15 +525,14 @@ export const usePromptHomeController = () => {
         (error.code === 'UNAUTHENTICATED' || error.code === 'QUOTA_EXCEEDED')
       if (isQuotaOrAuthError) {
         // When the share bonus is already claimed, the anonymous daily quota
-        // message should not offer sharing again — only show the sign-in CTA.
-        const msg = error.message
-        const stripped = shareBonusClaimedRef.current
-          ? msg.replace(
-              /Share on social media for \+1 free generation, or sign in to continue\./i,
-              'Sign in to continue — logged in users get 5 generations per day.',
-            )
-          : msg
-        setErrorMessage(stripped)
+        // message should not offer sharing again — show a sign-in CTA instead.
+        if (shareBonusClaimedRef.current) {
+          setErrorMessage(
+            'Anonymous daily quota exhausted. Sign in to get 2 more free generations.',
+          )
+        } else {
+          setErrorMessage(error.message)
+        }
       } else {
         setErrorMessage('Generation could not start. Try again.')
       }
