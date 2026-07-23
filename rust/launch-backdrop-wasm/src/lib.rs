@@ -1,6 +1,9 @@
 use std::cell::RefCell;
 
 const PARTICLE_STRIDE: usize = 7;
+const LEFT_RESET_CHANCE: f32 = 0.28;
+const ROCKET_SPEED_SCALE: f32 = 0.66;
+const ROCKET_HORIZONTAL_PUSH: f32 = 0.2;
 
 #[derive(Clone, Copy)]
 struct Particle {
@@ -62,9 +65,9 @@ impl Simulation {
             );
             let drift = smooth_noise(particle.x * 0.0022, particle.y * 0.0022 + 50.0);
             let angle = noise * std::f32::consts::PI * 5.4 - std::f32::consts::PI * 0.22;
-            let speed = particle.speed * (0.75 + drift * 1.45);
+            let speed = particle.speed * (0.75 + drift * 1.45) * ROCKET_SPEED_SCALE;
 
-            particle.x += angle.cos() * speed + 0.34;
+            particle.x += angle.cos() * speed + ROCKET_HORIZONTAL_PUSH;
             particle.y += angle.sin() * speed * 0.82;
             particle.life -= 0.0011;
 
@@ -74,7 +77,7 @@ impl Simulation {
                 || particle.y < -40.0
                 || particle.y > self.height + 40.0
             {
-                let reset_left = self.next_unit() > 0.35;
+                let reset_left = self.next_unit() < LEFT_RESET_CHANCE;
                 particle = self.create_particle(reset_left);
                 prev_x = particle.x;
                 prev_y = particle.y;
@@ -116,11 +119,7 @@ impl Simulation {
             0.08 + self.next_unit() * 0.18
         };
         Particle {
-            x: if left_edge {
-                -12.0
-            } else {
-                self.next_unit() * self.width
-            },
+            x: self.spawn_x(left_edge),
             y: self.next_unit() * self.height,
             life: 0.45 + self.next_unit() * 0.55,
             speed: 0.45 + self.next_unit() * 1.35,
@@ -137,6 +136,21 @@ impl Simulation {
             .wrapping_mul(1_664_525)
             .wrapping_add(1_013_904_223);
         ((self.rng_state >> 8) as f32) / 16_777_216.0
+    }
+
+    fn spawn_x(&mut self, left_edge: bool) -> f32 {
+        if left_edge {
+            return -12.0;
+        }
+
+        let section = self.next_unit();
+        if section < 0.24 {
+            self.next_unit() * (self.width * 0.25)
+        } else if section < 0.68 {
+            self.width * 0.25 + self.next_unit() * (self.width * 0.5)
+        } else {
+            self.width * 0.75 + self.next_unit() * (self.width * 0.25)
+        }
     }
 }
 
