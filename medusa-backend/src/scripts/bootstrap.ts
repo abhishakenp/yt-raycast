@@ -16,6 +16,11 @@ const DEFAULT_REGION_NAME = 'United States'
 const DEFAULT_SALES_CHANNEL_NAME = 'Ship Fast Default Sales Channel'
 const DEFAULT_STOCK_LOCATION_NAME = 'Ship Fast Warehouse'
 
+export const createDefaultStoreUpdate = (defaultSalesChannelId: string) => ({
+  default_sales_channel_id: defaultSalesChannelId,
+  supported_currencies: [{ currency_code: DEFAULT_CURRENCY, is_default: true }],
+})
+
 export default async function bootstrapShipFastMedusa({ container }: ExecArgs) {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
   const link = container.resolve(ContainerRegistrationKeys.LINK)
@@ -47,10 +52,7 @@ export default async function bootstrapShipFastMedusa({ container }: ExecArgs) {
   await updateStoresWorkflow(container).run({
     input: {
       selector: { id: store.id },
-      update: {
-        default_sales_channel_id: defaultSalesChannel.id,
-        supported_currencies: [{ currency_code: DEFAULT_CURRENCY }],
-      },
+      update: createDefaultStoreUpdate(defaultSalesChannel.id),
     },
   })
 
