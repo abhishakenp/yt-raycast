@@ -35,7 +35,7 @@ services:
     networks:
       - medusa-internal
 
-  medusa-server:
+  server:
     build:
       context: ../../medusa-backend
       dockerfile: Dockerfile
@@ -109,7 +109,7 @@ services:
         condition: service_healthy
       medusa-redis:
         condition: service_healthy
-      medusa-server:
+      server:
         condition: service_healthy
     env_file:
       - .env
