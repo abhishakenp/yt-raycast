@@ -284,6 +284,41 @@ describe('usePromptHomeController submit guard', () => {
     expect(result.current.prompt).toBe('')
   })
 
+  it('clears the prompt before navigate resolves', async () => {
+    const state = getTestState()
+    let promptAtNavigateCall: string | undefined
+    state.navigate.mockImplementationOnce(() => {
+      promptAtNavigateCall = window.localStorage.getItem(
+        'ship-fast:last-prompt',
+      )
+      return Promise.resolve()
+    })
+
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        sessionId: 'session_clear_before_navigate',
+        cached: false,
+      }),
+    } as Response)
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.setPrompt('Build a product website')
+    })
+    expect(window.localStorage.getItem('ship-fast:last-prompt')).toBe(
+      'Build a product website',
+    )
+
+    await act(async () => {
+      await result.current.submitPrompt()
+    })
+
+    expect(promptAtNavigateCall).toBeNull()
+    expect(result.current.prompt).toBe('')
+  })
+
   it('uses the server create route for all session creation', async () => {
     const state = getTestState()
     vi.mocked(fetch).mockResolvedValueOnce({

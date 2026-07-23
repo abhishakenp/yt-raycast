@@ -480,6 +480,13 @@ export const usePromptHomeController = () => {
         }
       }
 
+      setPrompt('')
+      try {
+        window.localStorage.removeItem(LAST_PROMPT_STORAGE_KEY)
+      } catch {
+        // Storage may be blocked; session launch should still continue.
+      }
+
       try {
         await navigate({
           to: '/generate/$sessionId/$',
@@ -490,8 +497,6 @@ export const usePromptHomeController = () => {
       } catch {
         window.location.assign(getGeneratedSessionPath(sessionId))
       }
-
-      setPrompt('')
     } catch (error) {
       await waitForMinimumLaunchFeedback(launchFeedbackStartedAt)
       submitInFlightRef.current = false
