@@ -56,6 +56,13 @@ function normalizeString(value: unknown): string {
   return typeof value === 'string' ? value.trim() : ''
 }
 
+function isAuthFailure(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error)
+  return /UNAUTHENTICATED|Unauthenticated|Unauthorized|No auth provider|auth/i.test(
+    message,
+  )
+}
+
 function getOrigin(request: Request): string {
   const url = new URL(request.url)
   return `${url.protocol}//${url.host}`
@@ -353,7 +360,10 @@ export async function createCheckoutApiResponse(
     overview = (await client.query(api.billing.getBillingOverview, {})) as {
       userId?: string
     }
-  } catch {
+  } catch (error) {
+    if (isAuthFailure(error)) {
+      return json({ error: 'Sign in before checkout.' }, { status: 401 })
+    }
     return json({ error: 'Unable to start checkout.' }, { status: 503 })
   }
   if (!overview.userId) {

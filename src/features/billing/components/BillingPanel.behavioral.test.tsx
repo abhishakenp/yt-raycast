@@ -481,6 +481,126 @@ describe('BillingPanel: behavioral', () => {
     })
   })
 
+  it('opens Razorpay Checkout for a Clerk-authenticated subscription checkout', async () => {
+    const checkoutOpen = vi.fn()
+    const checkoutOn = vi.fn()
+    const razorpayOptions: Record<string, unknown>[] = []
+    class RazorpayMock {
+      constructor(options: Record<string, unknown>) {
+        razorpayOptions.push(options)
+      }
+
+      open = checkoutOpen
+      on = checkoutOn
+    }
+    vi.stubGlobal('Razorpay', RazorpayMock)
+    fetchMock.mockResolvedValue(
+      overviewResponse({
+        subscription: { active: false },
+        credits: { remaining: 0 },
+        exportAccess: { unlocked: false },
+      }),
+    )
+
+    const { container } = render(<BillingPanel sessionId="sess-razorpay-sub" />)
+    const scope = within(container)
+    const upgrade = await scope.findByRole('button', {
+      name: /upgrade to pro/i,
+    })
+
+    fetchMock.mockResolvedValueOnce(
+      checkoutResponse({
+        provider: 'razorpay',
+        keyId: 'rzp_test_key',
+        subscriptionId: 'sub_test_123',
+      }),
+    )
+
+    fireEvent.click(upgrade)
+
+    await waitFor(() => expect(checkoutOpen).toHaveBeenCalledTimes(1))
+    expect(razorpayOptions[0]).toMatchObject({
+      key: 'rzp_test_key',
+      subscription_id: 'sub_test_123',
+      notes: {
+        mode: 'subscription',
+        sessionId: 'sess-razorpay-sub',
+      },
+    })
+    expect(checkoutOn).toHaveBeenCalledWith(
+      'payment.failed',
+      expect.any(Function),
+    )
+
+    const postCall = fetchMock.mock.calls.find(
+      (c) => (c[1] as RequestInit)?.method === 'POST',
+    )!
+    const headers = (postCall[1] as RequestInit).headers as Record<
+      string,
+      string
+    >
+    expect(headers.Authorization).toBe('Bearer convex-token')
+  })
+
+  it('opens Razorpay Checkout for Clerk-authenticated credit pack orders', async () => {
+    const checkoutOpen = vi.fn()
+    const checkoutOn = vi.fn()
+    const razorpayOptions: Record<string, unknown>[] = []
+    class RazorpayMock {
+      constructor(options: Record<string, unknown>) {
+        razorpayOptions.push(options)
+      }
+
+      open = checkoutOpen
+      on = checkoutOn
+    }
+    vi.stubGlobal('Razorpay', RazorpayMock)
+    fetchMock.mockResolvedValue(
+      overviewResponse({
+        subscription: { active: false },
+        credits: { remaining: 0 },
+        exportAccess: { unlocked: false },
+      }),
+    )
+
+    const { container } = render(
+      <BillingPanel sessionId="sess-razorpay-pack" />,
+    )
+    const scope = within(container)
+    const threeCreditBtn = await scope.findByRole('button', {
+      name: /3 credits/i,
+    })
+
+    fetchMock.mockResolvedValueOnce(
+      checkoutResponse({
+        provider: 'razorpay',
+        keyId: 'rzp_test_key',
+        orderId: 'order_test_123',
+        amount: 19900,
+        currency: 'INR',
+      }),
+    )
+
+    fireEvent.click(threeCreditBtn)
+
+    await waitFor(() => expect(checkoutOpen).toHaveBeenCalledTimes(1))
+    expect(razorpayOptions[0]).toMatchObject({
+      key: 'rzp_test_key',
+      order_id: 'order_test_123',
+      amount: 19900,
+      currency: 'INR',
+      notes: {
+        mode: 'credit_pack',
+        packId: '3_credits',
+        sessionId: 'sess-razorpay-pack',
+      },
+    })
+    expect(checkoutOn).toHaveBeenCalledWith(
+      'payment.failed',
+      expect.any(Function),
+    )
+  })
+
   it('shows a stable checkout error when checkout returns malformed JSON', async () => {
     fetchMock.mockResolvedValue(
       overviewResponse({
