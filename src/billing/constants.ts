@@ -11,7 +11,7 @@ export const MAX_ANON_PER_MONTH = 10
 export const UNLIMITED_CREDITS = 999
 
 /** Per-day cap for anonymous (unauthenticated) users */
-export const MAX_ANON_PER_DAY = 3
+export const MAX_ANON_PER_DAY = 2
 
 /** Per-day cap for authenticated free users */
 export const MAX_FREE_AUTH_PER_DAY = 5
