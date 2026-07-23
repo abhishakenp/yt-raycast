@@ -222,13 +222,13 @@ describe('createSessionMedusaProvisionResponse', () => {
     )
 
     expect(response.status).toBe(200)
-    expect(containerProvider.findRunning).toHaveBeenCalledWith('session_123')
+    expect(containerProvider.findRunning).not.toHaveBeenCalled()
     expect(containerProvider.provision).not.toHaveBeenCalled()
     expect(mutation).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
         anonymousOwnerSecret: 'owner_secret',
-        backendUrl: 'https://backend.tenant.test',
+        backendUrl: 'https://backend.medusa.test',
         sessionId: 'session_123',
       }),
     )
@@ -286,12 +286,8 @@ describe('createSessionMedusaProvisionResponse', () => {
       anonymousOwnerSecret: undefined,
       sessionId: 'session_123',
     })
-    expect(containerProvider.findRunning).toHaveBeenCalledWith('session_123')
-    expect(containerProvider.provision).toHaveBeenCalledWith('session_123', {
-      adminEmail: 'admin@test.com',
-      adminPassword: 'secret-password',
-      fetch: fetchImpl,
-    })
+    expect(containerProvider.findRunning).not.toHaveBeenCalled()
+    expect(containerProvider.provision).not.toHaveBeenCalled()
   })
 
   it('provisions commerce from server Medusa settings without URL input', async () => {
@@ -338,12 +334,8 @@ describe('createSessionMedusaProvisionResponse', () => {
       anonymousOwnerSecret: 'owner_secret',
       sessionId: 'session_123',
     })
-    expect(containerProvider.findRunning).toHaveBeenCalledWith('session_123')
-    expect(containerProvider.provision).toHaveBeenCalledWith('session_123', {
-      adminEmail: 'admin@test.com',
-      adminPassword: 'secret-password',
-      fetch: fetchImpl,
-    })
+    expect(containerProvider.findRunning).not.toHaveBeenCalled()
+    expect(containerProvider.provision).not.toHaveBeenCalled()
     expect(fetchImpl).toHaveBeenCalledWith(
       'https://backend.medusa.test/store/regions',
       {
@@ -369,7 +361,7 @@ describe('createSessionMedusaProvisionResponse', () => {
     })
   })
 
-  it('provisions an isolated tenant even when shared Medusa URLs are configured', async () => {
+  it('uses configured shared Medusa URLs without local container provisioning', async () => {
     const mutation = vi.fn().mockResolvedValue({ sessionId: 'session_123' })
     const query = vi.fn().mockResolvedValue({ sessionId: 'session_123' })
     const fetchImpl = vi.fn().mockResolvedValue(
@@ -409,14 +401,10 @@ describe('createSessionMedusaProvisionResponse', () => {
     )
 
     expect(response.status).toBe(200)
-    expect(containerProvider.findRunning).toHaveBeenCalledWith('session_123')
-    expect(containerProvider.provision).toHaveBeenCalledWith('session_123', {
-      adminEmail: 'admin@test.com',
-      adminPassword: 'secret-password',
-      fetch: fetchImpl,
-    })
+    expect(containerProvider.findRunning).not.toHaveBeenCalled()
+    expect(containerProvider.provision).not.toHaveBeenCalled()
     expect(fetchImpl).toHaveBeenCalledWith(
-      'https://backend.tenant.test/store/regions',
+      'https://backend.medusa.test/store/regions',
       {
         headers: { 'x-publishable-api-key': 'pk_medusa' },
       },
@@ -424,15 +412,20 @@ describe('createSessionMedusaProvisionResponse', () => {
     expect(mutation).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
-        adminUrl: 'https://admin.tenant.test',
-        backendUrl: 'https://backend.tenant.test',
-        storefrontUrl: 'https://store.tenant.test',
+        adminUrl: 'https://admin.medusa.test',
+        backendUrl: 'https://backend.medusa.test',
+        storefrontUrl: 'https://store.medusa.test',
       }),
     )
   })
 
-  it('provisions visual commerce with a warning when Medusa is not configured', async () => {
+  it('uses configured backend with a warning when publishable key is missing', async () => {
     const mutation = vi.fn().mockResolvedValue({ sessionId: 'session_123' })
+    const containerProvider = mockContainerProvider({
+      MEDUSA_ADMIN_URL: 'https://admin.container.test',
+      MEDUSA_BACKEND_URL: 'https://backend.container.test',
+      MEDUSA_STOREFRONT_URL: 'https://store.container.test',
+    })
     const response = await createSessionMedusaProvisionResponse(
       'session_123',
       new Request(
@@ -442,11 +435,7 @@ describe('createSessionMedusaProvisionResponse', () => {
       { mutation, query: vi.fn(), setAuth: vi.fn() },
       {
         env: { MEDUSA_BACKEND_URL: 'https://backend.medusa.test' },
-        containerProvider: mockContainerProvider({
-          MEDUSA_ADMIN_URL: 'https://admin.medusa.test',
-          MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
-          MEDUSA_STOREFRONT_URL: 'https://store.medusa.test',
-        }),
+        containerProvider,
         fetch: vi.fn(),
         metaEnv: {},
       },
@@ -458,17 +447,19 @@ describe('createSessionMedusaProvisionResponse', () => {
       status: 'ready',
       warning: 'Medusa Store API not configured.',
     })
+    expect(containerProvider.findRunning).not.toHaveBeenCalled()
+    expect(containerProvider.provision).not.toHaveBeenCalled()
     expect(mutation).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
         backendUrl: 'https://backend.medusa.test',
         errorMessage: 'Medusa Store API not configured.',
         sessionId: 'session_123',
+        storefrontUrl: 'http://ship-fast.test/generate/session_123',
       }),
     )
     const [, args] = mutation.mock.calls[0]
-    expect(args.adminUrl).toBe('https://admin.medusa.test')
-    expect(args.storefrontUrl).toBe('https://store.medusa.test')
+    expect(args).not.toHaveProperty('adminUrl')
   })
 
   it('does not return localhost handoff links when Medusa backend is not configured', async () => {
@@ -862,7 +853,8 @@ describe('createSessionMedusaProvisionResponse', () => {
         containerProvider,
         env: {
           MEDUSA_ADMIN_API_TOKEN: 'admin-token',
-          MEDUSA_BACKEND_URL: 'http://localhost:9000',
+          MEDUSA_ADMIN_URL: 'http://localhost:9116/app',
+          MEDUSA_BACKEND_URL: 'http://localhost:9116',
         },
         fetch: fetchImpl,
         metaEnv: {},
@@ -870,6 +862,8 @@ describe('createSessionMedusaProvisionResponse', () => {
     )
 
     expect(response.status).toBe(200)
+    expect(containerProvider.findRunning).not.toHaveBeenCalled()
+    expect(containerProvider.provision).not.toHaveBeenCalled()
     expect(await response.json()).toMatchObject({
       handoff: {
         adminUrl: 'http://localhost:9116/app',
@@ -889,8 +883,13 @@ describe('createSessionMedusaProvisionResponse', () => {
     })
   })
 
-  it('syncs generated visual products to Medusa Admin and stores the synced count', async () => {
+  it('syncs products to configured shared Medusa without provisioning a local container', async () => {
     const mutation = vi.fn().mockResolvedValue({ sessionId: 'session_123' })
+    const containerProvider = mockContainerProvider({
+      MEDUSA_ADMIN_URL: 'https://admin.container.test',
+      MEDUSA_BACKEND_URL: 'https://backend.container.test',
+      MEDUSA_STOREFRONT_URL: 'https://store.container.test',
+    })
     const fetchImpl = vi
       .fn()
       .mockResolvedValueOnce(
@@ -966,16 +965,12 @@ describe('createSessionMedusaProvisionResponse', () => {
         env: {
           MEDUSA_ADMIN_EMAIL: 'admin@test.com',
           MEDUSA_ADMIN_PASSWORD: 'provided-admin-password',
-          MEDUSA_ADMIN_URL: 'http://localhost:9000/app',
-          MEDUSA_BACKEND_URL: 'http://localhost:9000',
+          MEDUSA_ADMIN_URL: 'https://medusa.devliv.io/app',
+          MEDUSA_BACKEND_URL: 'https://medusa.devliv.io',
           MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
-          MEDUSA_STOREFRONT_URL: 'http://localhost:8001',
+          MEDUSA_STOREFRONT_URL: 'https://ship-fast.io',
         },
-        containerProvider: mockContainerProvider({
-          MEDUSA_ADMIN_URL: 'http://localhost:9000/app',
-          MEDUSA_BACKEND_URL: 'http://localhost:9000',
-          MEDUSA_STOREFRONT_URL: 'http://localhost:8001',
-        }),
+        containerProvider,
         fetch: fetchImpl,
         metaEnv: {},
       },
@@ -986,15 +981,26 @@ describe('createSessionMedusaProvisionResponse', () => {
       liveStoreApiReady: true,
       syncedProducts: 1,
     })
+    expect(containerProvider.findRunning).not.toHaveBeenCalled()
+    expect(containerProvider.provision).not.toHaveBeenCalled()
     expect(fetchImpl).toHaveBeenCalledWith(
-      'http://localhost:9000/admin/products',
+      'https://medusa.devliv.io/admin/products',
       expect.objectContaining({ method: 'POST' }),
+    )
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'https://medusa.devliv.io/store/regions',
+      {
+        headers: { 'x-publishable-api-key': 'pk_tenant_session' },
+      },
     )
     expect(mutation).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
+        adminUrl: 'https://medusa.devliv.io/app',
+        backendUrl: 'https://medusa.devliv.io',
         productCount: 1,
         sessionId: 'session_123',
+        storefrontUrl: 'https://ship-fast.io',
       }),
     )
     const [, args] = mutation.mock.calls[0]
@@ -1587,12 +1593,11 @@ describe('createSessionMedusaProvisionResponse', () => {
     )
 
     expect(response.status).toBe(200)
-    expect(containerProvider.provision).toHaveBeenCalledWith(
-      'session_123',
-      expect.anything(),
-    )
+    expect(containerProvider.findRunning).not.toHaveBeenCalled()
+    expect(containerProvider.provision).not.toHaveBeenCalled()
     expect(mutation.mock.calls[0]?.[1]).toMatchObject({
       anonymousOwnerSecret: 'owner_secret',
+      backendUrl: 'https://backend.medusa.test',
       sessionId: 'session_123',
     })
   })

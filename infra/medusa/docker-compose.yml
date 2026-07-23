@@ -1,0 +1,113 @@
+services:
+  medusa-postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${MEDUSA_POSTGRES_DB:-medusa}
+      POSTGRES_USER: ${MEDUSA_POSTGRES_USER:-medusa}
+      POSTGRES_PASSWORD: ${MEDUSA_POSTGRES_PASSWORD}
+    volumes:
+      - medusa-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - medusa-internal
+
+  medusa-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - medusa-redis-data:/data
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - ping
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - medusa-internal
+
+  medusa-server:
+    build:
+      context: ../../medusa-backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      medusa-postgres:
+        condition: service_healthy
+      medusa-redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: 9000
+      MEDUSA_WORKER_MODE: server
+      DISABLE_MEDUSA_ADMIN: 'false'
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL:-redis://medusa-redis:6379}
+      CACHE_REDIS_URL: ${CACHE_REDIS_URL:-redis://medusa-redis:6379}
+      LOCKING_REDIS_URL: ${LOCKING_REDIS_URL:-redis://medusa-redis:6379}
+      MEDUSA_BACKEND_URL: ${MEDUSA_BACKEND_URL:-https://medusa.devliv.io}
+      STORE_CORS: ${STORE_CORS:-https://ship-fast.io,https://ship-fast.devliv.io}
+      ADMIN_CORS: ${ADMIN_CORS:-https://medusa.devliv.io}
+      AUTH_CORS: ${AUTH_CORS:-https://ship-fast.io,https://ship-fast.devliv.io,https://medusa.devliv.io}
+      JWT_SECRET: ${JWT_SECRET}
+      COOKIE_SECRET: ${COOKIE_SECRET}
+      MEDUSA_SEED_ADMIN_EMAIL: ${MEDUSA_SEED_ADMIN_EMAIL}
+      MEDUSA_SEED_ADMIN_PASSWORD: ${MEDUSA_SEED_ADMIN_PASSWORD}
+    expose:
+      - 9000
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.ship-fast-medusa.rule=Host(`medusa.devliv.io`)
+      - traefik.http.routers.ship-fast-medusa.entrypoints=websecure
+      - traefik.http.routers.ship-fast-medusa.tls.certresolver=letsencrypt
+      - traefik.http.services.ship-fast-medusa.loadbalancer.server.port=9000
+    networks:
+      - medusa-internal
+      - dokploy-network
+
+  medusa-worker:
+    build:
+      context: ../../medusa-backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      medusa-postgres:
+        condition: service_healthy
+      medusa-redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: 9000
+      MEDUSA_WORKER_MODE: worker
+      DISABLE_MEDUSA_ADMIN: 'true'
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL:-redis://medusa-redis:6379}
+      CACHE_REDIS_URL: ${CACHE_REDIS_URL:-redis://medusa-redis:6379}
+      LOCKING_REDIS_URL: ${LOCKING_REDIS_URL:-redis://medusa-redis:6379}
+      JWT_SECRET: ${JWT_SECRET}
+      COOKIE_SECRET: ${COOKIE_SECRET}
+      RUN_BOOTSTRAP: 'false'
+    networks:
+      - medusa-internal
+
+volumes:
+  medusa-postgres-data:
+  medusa-redis-data:
+
+networks:
+  medusa-internal:
+  dokploy-network:
+    external: true

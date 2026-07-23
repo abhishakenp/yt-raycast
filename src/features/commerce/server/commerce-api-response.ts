@@ -3,6 +3,9 @@ import type { FunctionReference } from 'convex/server'
 
 import { api } from '../../../../convex/_generated/api'
 import {
+  getConfiguredMedusaAdminUrl,
+  getConfiguredMedusaBackendUrl,
+  getConfiguredMedusaStorefrontUrl,
   getMedusaAdminApiToken,
   getMedusaAdminEmail,
   getMedusaAdminPassword,
@@ -77,6 +80,11 @@ type MedusaHandoff = {
   backendUrl: string
   storefrontUrl: string
   tenantId: string
+}
+type MedusaProvisionTarget = {
+  adminUrl?: string
+  backendUrl?: string
+  storefrontUrl?: string
 }
 type CommerceConfigMutationArgs = {
   sessionId: string
@@ -447,6 +455,64 @@ function createMedusaHandoff(
   }
 }
 
+async function resolveMedusaProvisionTarget({
+  adminEmail,
+  adminPassword,
+  containerProvider,
+  env,
+  fetchImpl,
+  metaEnv,
+  sessionId,
+}: {
+  adminEmail?: string
+  adminPassword?: string
+  containerProvider: MedusaContainerProvider
+  env?: MedusaEnv
+  fetchImpl: FetchLike
+  metaEnv?: MedusaEnv
+  sessionId: string
+}): Promise<MedusaProvisionTarget> {
+  const configuredBackendUrl = getConfiguredMedusaBackendUrl(env, metaEnv)
+  if (configuredBackendUrl !== undefined) {
+    return {
+      adminUrl: getConfiguredMedusaAdminUrl(env, metaEnv),
+      backendUrl: configuredBackendUrl,
+      storefrontUrl:
+        getConfiguredMedusaStorefrontUrl(env, metaEnv) ?? configuredBackendUrl,
+    }
+  }
+
+  const runningContainer = await containerProvider.findRunning(sessionId)
+  const container =
+    runningContainer ??
+    (await containerProvider.provision(sessionId, {
+      adminEmail,
+      adminPassword,
+      fetch: fetchImpl,
+      razorpayKeyId: readMedusaEnv(
+        ['RAZORPAY_ID', 'RAZORPAY_KEY_ID'],
+        env,
+        metaEnv,
+      ),
+      razorpayKeySecret: readMedusaEnv(
+        ['RAZORPAY_SECRET', 'RAZORPAY_KEY_SECRET'],
+        env,
+        metaEnv,
+      ),
+      razorpayWebhookSecret: readMedusaEnv(
+        ['RAZORPAY_WEBHOOK_SECRET'],
+        env,
+        metaEnv,
+      ),
+    }))
+
+  return {
+    adminUrl: container.adminUrl,
+    backendUrl: container.backendUrl,
+    storefrontUrl: container.storefrontUrl,
+  }
+}
+
 export async function createSessionMedusaConfigResponse(
   sessionId: string,
   clientOverride?: CommerceApiClient,
@@ -516,38 +582,23 @@ export async function createSessionMedusaProvisionResponse(
       provision: async (sid, opts) =>
         medusaContainerInfo(await provisionSessionMedusaContainer(sid, opts)),
     }
-    const runningContainer =
-      await containerProvider.findRunning(provisionSessionId)
-    const container =
-      runningContainer ??
-      (await containerProvider.provision(provisionSessionId, {
-        adminEmail,
-        adminPassword,
-        fetch: fetchImpl,
-        razorpayKeyId: readMedusaEnv(
-          ['RAZORPAY_ID', 'RAZORPAY_KEY_ID'],
-          options.env,
-          options.metaEnv,
-        ),
-        razorpayKeySecret: readMedusaEnv(
-          ['RAZORPAY_SECRET', 'RAZORPAY_KEY_SECRET'],
-          options.env,
-          options.metaEnv,
-        ),
-        razorpayWebhookSecret: readMedusaEnv(
-          ['RAZORPAY_WEBHOOK_SECRET'],
-          options.env,
-          options.metaEnv,
-        ),
-      }))
+    const target = await resolveMedusaProvisionTarget({
+      adminEmail,
+      adminPassword,
+      containerProvider,
+      env: options.env,
+      fetchImpl,
+      metaEnv: options.metaEnv,
+      sessionId: provisionSessionId,
+    })
 
-    const backendUrl = container.backendUrl
-    const adminUrl = container.adminUrl
+    const backendUrl = target.backendUrl
+    const adminUrl = target.adminUrl
     const storefrontUrl = resolveStorefrontUrl(
       provisionSessionId,
       request,
       backendUrl,
-      container.storefrontUrl,
+      target.storefrontUrl,
     )
     const handoff = createMedusaHandoff(
       provisionSessionId,
@@ -558,7 +609,7 @@ export async function createSessionMedusaProvisionResponse(
       options.metaEnv,
     )
     const productSync =
-      generatedProducts.length > 0
+      generatedProducts.length > 0 && backendUrl !== undefined
         ? await syncGeneratedProductsToMedusa({
             adminApiToken: getMedusaAdminApiToken(options.env, options.metaEnv),
             adminEmail,
@@ -570,7 +621,9 @@ export async function createSessionMedusaProvisionResponse(
           })
         : { synced: 0 }
     const tenantSetup =
-      productSync.tenant !== undefined || generatedProducts.length > 0
+      backendUrl === undefined ||
+      productSync.tenant !== undefined ||
+      generatedProducts.length > 0
         ? {}
         : await ensureMedusaSessionTenant({
             adminApiToken: getMedusaAdminApiToken(options.env, options.metaEnv),
@@ -584,11 +637,14 @@ export async function createSessionMedusaProvisionResponse(
       productSync.tenant?.publishableKey ??
       tenantSetup.tenant?.publishableKey ??
       getMedusaPublishableKey(options.env, options.metaEnv)
-    const availability = await validateMedusaStoreApi(
-      backendUrl,
-      publishableKey,
-      fetchImpl,
-    )
+    const availability =
+      backendUrl === undefined
+        ? {
+            liveStoreApiReady: false,
+            publishableKeyConfigured: false,
+            warning: 'Medusa Store API not configured.',
+          }
+        : await validateMedusaStoreApi(backendUrl, publishableKey, fetchImpl)
     const warning = normalizeMedusaStoreApiWarning(
       availability.warning ?? productSync.warning ?? tenantSetup.warning,
     )
