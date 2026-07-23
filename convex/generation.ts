@@ -341,7 +341,7 @@ export const startGeneration = internalAction({
         },
       )
 
-      if (session === null) {
+      if (session === null || session.deletedAt !== undefined) {
         return null
       }
 

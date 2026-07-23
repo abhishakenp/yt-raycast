@@ -141,6 +141,7 @@ export default defineSchema({
     agentationEnabled: v.optional(v.boolean()),
     agentationEnabledAt: v.optional(v.number()),
     agentationSessionId: v.optional(v.string()),
+    deletedAt: v.optional(v.number()),
   })
     .index('by_userId', ['userId'])
     .index('by_userId_createdAt', ['userId', 'createdAt'])

@@ -11,6 +11,7 @@ import {
   getUserId,
   hashOwnerSecret,
   isSessionOwner,
+  isUserAdmin,
   setSessionBrandLogo,
   setSessionThemeOverride,
 } from './session_access_helpers'
@@ -30,12 +31,17 @@ type TestIdentity = NonNullable<
 >
 
 function identityFor(
-  values: Partial<Pick<TestIdentity, 'subject' | 'tokenIdentifier'>>,
+  values: Partial<
+    Pick<TestIdentity, 'subject' | 'tokenIdentifier' | 'system_role'>
+  >,
 ): TestIdentity {
   return {
     issuer: 'https://convex.test',
     subject: values.subject ?? 'subject',
     tokenIdentifier: values.tokenIdentifier,
+    ...(values.system_role !== undefined
+      ? { system_role: values.system_role }
+      : {}),
   } as TestIdentity
 }
 
@@ -73,7 +79,19 @@ function mutationCtxForSessions(input: {
     get: async (id: Id<'sessions'>) =>
       sessions.find((session) => session._id === id) ?? null,
     query: (table: string) => {
-      expect(table).toBe('sessions')
+      if (table !== 'sessions') {
+        const emptyBuilder = {
+          withIndex: () => emptyBuilder,
+          filter: () => emptyBuilder,
+          order: () => emptyBuilder,
+          collect: async () => [],
+          take: async () => [],
+          first: async () => null,
+          unique: async () => null,
+          [Symbol.asyncIterator]: async function* () {},
+        }
+        return emptyBuilder
+      }
       let rows = [...sessions]
 
       const builder = {
@@ -102,6 +120,15 @@ function mutationCtxForSessions(input: {
 
           return builder
         },
+        filter: (fn: (q: unknown) => (row: Doc<'sessions'>) => boolean) => {
+          const helper = {
+            field: (name: string) => ({ field: name }),
+            eq: (a: { field: string }, b: unknown) => (row: Doc<'sessions'>) =>
+              (row as Record<string, unknown>)[a.field] === b,
+          }
+          rows = rows.filter(fn(helper))
+          return builder
+        },
         collect: async () => rows,
       }
 
@@ -122,6 +149,9 @@ function mutationCtxForSessions(input: {
   const ctx = {
     db,
     auth: authCtx(input.identity ?? null).auth,
+    storage: {
+      delete: async () => undefined,
+    },
   } as unknown as MutationCtx
 
   return { ctx, sessions, deletedIds, patches }
@@ -200,15 +230,19 @@ describe('session access helpers', () => {
       _id: 'session_other' as Id<'sessions'>,
       userId: 'token:other',
     })
-    const { ctx, deletedIds, sessions } = mutationCtxForSessions({
+    const { ctx, patches, sessions } = mutationCtxForSessions({
       identity: identityFor({ tokenIdentifier: 'token:user' }),
       sessions: [owned, other],
     })
 
     await expect(deleteOwnedSessions(ctx, {})).resolves.toEqual({ deleted: 1 })
 
-    expect(deletedIds).toEqual([owned._id])
-    expect(sessions).toEqual([other])
+    expect(patches).toContainEqual({
+      id: owned._id,
+      patch: expect.objectContaining({ deletedAt: expect.any(Number) }),
+    })
+    expect(sessions.find((s) => s._id === owned._id)?.deletedAt).toBeDefined()
+    expect(sessions.find((s) => s._id === other._id)?.deletedAt).toBeUndefined()
   })
 
   it('deletes only anonymous sessions matching the hashed client id', async () => {
@@ -221,7 +255,7 @@ describe('session access helpers', () => {
       _id: 'session_anon_other' as Id<'sessions'>,
       anonymousClientIdHash: 'other_hash',
     })
-    const { ctx, deletedIds } = mutationCtxForSessions({
+    const { ctx, patches } = mutationCtxForSessions({
       sessions: [owned, other],
     })
 
@@ -229,7 +263,10 @@ describe('session access helpers', () => {
       deleteOwnedSessions(ctx, { anonymousClientId: 'anon-client' }),
     ).resolves.toEqual({ deleted: 1 })
 
-    expect(deletedIds).toEqual([owned._id])
+    expect(patches).toContainEqual({
+      id: owned._id,
+      patch: expect.objectContaining({ deletedAt: expect.any(Number) }),
+    })
   })
 
   it('deletes one authenticated session when a matching session id is provided', async () => {
@@ -245,7 +282,7 @@ describe('session access helpers', () => {
       _id: 'session_foreign_single' as Id<'sessions'>,
       userId: 'token:other',
     })
-    const { ctx, deletedIds, sessions } = mutationCtxForSessions({
+    const { ctx, patches, sessions } = mutationCtxForSessions({
       identity: identityFor({ tokenIdentifier: 'token:user' }),
       sessions: [owned, otherOwned, foreign],
     })
@@ -258,8 +295,14 @@ describe('session access helpers', () => {
       deleteOwnedSessions(ctx, { sessionId: foreign._id }),
     ).resolves.toEqual({ deleted: 0 })
 
-    expect(deletedIds).toEqual([owned._id])
-    expect(sessions).toEqual([otherOwned, foreign])
+    expect(patches).toContainEqual({
+      id: owned._id,
+      patch: expect.objectContaining({ deletedAt: expect.any(Number) }),
+    })
+    expect(sessions.find((s) => s._id === owned._id)?.deletedAt).toBeDefined()
+    expect(
+      sessions.find((s) => s._id === otherOwned._id)?.deletedAt,
+    ).toBeUndefined()
   })
 
   it('deletes one anonymous session when the session id and client id match', async () => {
@@ -276,7 +319,7 @@ describe('session access helpers', () => {
       _id: 'session_anon_foreign' as Id<'sessions'>,
       anonymousClientIdHash: 'other_hash',
     })
-    const { ctx, deletedIds, sessions } = mutationCtxForSessions({
+    const { ctx, patches, sessions } = mutationCtxForSessions({
       sessions: [owned, otherOwned, foreign],
     })
 
@@ -294,8 +337,14 @@ describe('session access helpers', () => {
       }),
     ).resolves.toEqual({ deleted: 0 })
 
-    expect(deletedIds).toEqual([owned._id])
-    expect(sessions).toEqual([otherOwned, foreign])
+    expect(patches).toContainEqual({
+      id: owned._id,
+      patch: expect.objectContaining({ deletedAt: expect.any(Number) }),
+    })
+    expect(sessions.find((s) => s._id === owned._id)?.deletedAt).toBeDefined()
+    expect(
+      sessions.find((s) => s._id === otherOwned._id)?.deletedAt,
+    ).toBeUndefined()
   })
 
   it('claims anonymous sessions for signed-in owners with the matching secret', async () => {
@@ -471,6 +520,52 @@ describe('session access helpers', () => {
 
     await expect(
       assertCanReadOwnedSession(ctx, { userId: 'token:owner' }, undefined),
+    ).resolves.toBeUndefined()
+  })
+})
+
+describe('isUserAdmin', () => {
+  it('returns true when system_role is admin', async () => {
+    const ctx = authCtx(
+      identityFor({ tokenIdentifier: 'token:admin', system_role: 'admin' }),
+    )
+    await expect(isUserAdmin(ctx)).resolves.toBe(true)
+  })
+
+  it('returns false when system_role is not admin', async () => {
+    const ctx = authCtx(
+      identityFor({ tokenIdentifier: 'token:user', system_role: 'user' }),
+    )
+    await expect(isUserAdmin(ctx)).resolves.toBe(false)
+  })
+
+  it('returns false when system_role is absent', async () => {
+    const ctx = authCtx(identityFor({ tokenIdentifier: 'token:user' }))
+    await expect(isUserAdmin(ctx)).resolves.toBe(false)
+  })
+
+  it('returns false when not authenticated', async () => {
+    const ctx = authCtx(null)
+    await expect(isUserAdmin(ctx)).resolves.toBe(false)
+  })
+})
+
+describe('assertCanMutateSession admin bypass', () => {
+  it('bypasses ownership check when user is admin', async () => {
+    ;(areExportPaywallsDisabled as ReturnType<typeof vi.fn>).mockReturnValue(
+      false,
+    )
+    ;(isAuthDisabled as ReturnType<typeof vi.fn>).mockReturnValue(false)
+    const { ctx } = mutationCtxForSessions({
+      identity: identityFor({
+        tokenIdentifier: 'token:admin',
+        system_role: 'admin',
+      }),
+      sessions: [sessionDoc({ userId: 'token:owner' })],
+    })
+
+    await expect(
+      assertCanMutateSession(ctx, sessionDoc({ userId: 'token:owner' })),
     ).resolves.toBeUndefined()
   })
 })

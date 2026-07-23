@@ -2,6 +2,7 @@ import { ConvexError } from 'convex/values'
 
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
+import { deleteSessionGraph } from './session_delete_helpers'
 import {
   areExportPaywallsDisabled,
   isAuthDisabled,
@@ -81,6 +82,18 @@ export async function getUserId(ctx: AuthCtx) {
   return identity?.tokenIdentifier ?? identity?.subject
 }
 
+/**
+ * Returns true when the authenticated user has `system_role: "admin"` in their
+ * Clerk publicMetadata (exposed as a JWT claim via the Clerk "convex" JWT
+ * template). Admin users bypass rate limits, quota, and the export paywall —
+ * everything `DISABLE_LIMIT`/`DISABLE_PAYWALL` bypass, except auth/ownership
+ * (which mirrors `VITE_DISABLE_CLERK` and stays enforced).
+ */
+export async function isUserAdmin(ctx: AuthCtx): Promise<boolean> {
+  const identity = await ctx.auth.getUserIdentity()
+  return identity?.system_role === 'admin'
+}
+
 export async function getUserEmail(ctx: AuthCtx): Promise<string | undefined> {
   const identity = await ctx.auth.getUserIdentity()
   const email = identity?.email?.trim().toLowerCase()
@@ -158,6 +171,7 @@ export async function assertCanMutateSession(
   anonymousOwnerSecret?: string,
 ) {
   if (areExportPaywallsDisabled() || isAuthDisabled()) return
+  if (await isUserAdmin(ctx)) return
   ;(await isSessionOwner(ctx, session, anonymousOwnerSecret)) ||
     (() => {
       throw new ConvexError({
@@ -170,17 +184,13 @@ export async function assertCanMutateSession(
 export async function deleteOwnedSessions(
   ctx: MutationCtx,
   args: DeleteOwnedSessionsInput,
-  deleteSession: (
-    ctx: MutationCtx,
-    sessionId: Id<'sessions'>,
-  ) => Promise<void> = async (mutationCtx, sessionId) =>
-    mutationCtx.db.delete(sessionId),
 ) {
   const userId = await getUserId(ctx)
 
   if (args.sessionId !== undefined) {
     const session = await ctx.db.get(args.sessionId)
-    if (session === null) return { deleted: 0 }
+    if (session === null || session.deletedAt !== undefined)
+      return { deleted: 0 }
 
     if (userId !== undefined) {
       if (session.userId !== userId) return { deleted: 0 }
@@ -194,7 +204,7 @@ export async function deleteOwnedSessions(
       }
     }
 
-    await deleteSession(ctx, session._id)
+    await deleteSessionGraph(ctx, session._id)
     return { deleted: 1 }
   }
 
@@ -203,6 +213,7 @@ export async function deleteOwnedSessions(
     sessions = await ctx.db
       .query('sessions')
       .withIndex('by_userId', (index) => index.eq('userId', userId))
+      .filter((q) => q.eq(q.field('deletedAt'), undefined))
       .collect()
   } else if (args.anonymousClientId !== undefined) {
     const anonymousClientIdHash = await hashOwnerSecret(args.anonymousClientId)
@@ -211,11 +222,12 @@ export async function deleteOwnedSessions(
       .withIndex('by_anonymousClientIdHash', (index) =>
         index.eq('anonymousClientIdHash', anonymousClientIdHash),
       )
+      .filter((q) => q.eq(q.field('deletedAt'), undefined))
       .collect()
   }
 
   for (const session of sessions) {
-    await deleteSession(ctx, session._id)
+    await deleteSessionGraph(ctx, session._id)
   }
 
   return { deleted: sessions.length }
@@ -300,6 +312,7 @@ export async function claimAnonymousSessionsByClientId(
   let claimed = 0
   for (const session of sessions) {
     if (session.userId !== undefined) continue
+    if (session.deletedAt !== undefined) continue
     await ctx.db.patch(session._id, {
       userId,
       anonOwnerSecretHash: undefined,

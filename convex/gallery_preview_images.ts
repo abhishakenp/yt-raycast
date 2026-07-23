@@ -9,7 +9,11 @@ const assertPublicSession = async (
   sessionId: Id<'sessions'>,
 ) => {
   const session = await ctx.db.get(sessionId)
-  if (!session || session.isPrivate === true) {
+  if (
+    !session ||
+    session.isPrivate === true ||
+    session.deletedAt !== undefined
+  ) {
     throw new ConvexError({
       code: 'NOT_FOUND',
       message: 'Preview session not found',

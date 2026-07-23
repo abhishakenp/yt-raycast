@@ -11,7 +11,11 @@ export async function loadSessionWorkspace(
   sessionId: Id<'sessions'>,
 ) {
   const session = await ctx.db.get(sessionId)
-  if (session === null || !(await canReadPrivateSession(ctx, session))) {
+  if (
+    session === null ||
+    session.deletedAt !== undefined ||
+    !(await canReadPrivateSession(ctx, session))
+  ) {
     return null
   }
 

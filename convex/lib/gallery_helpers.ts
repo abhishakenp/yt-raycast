@@ -22,6 +22,7 @@ export function hasGalleryReadySignal(session: Doc<'sessions'>): boolean {
 }
 
 export function isGalleryVisibleSession(session: Doc<'sessions'>): boolean {
+  if (session.deletedAt !== undefined) return false
   if (session.isDraft === true) return false
 
   const status = session.status
