@@ -45,7 +45,6 @@ import { Route as GenerateSessionIdAdminRouteImport } from './routes/generate.$s
 import { Route as GenerateSessionIdSplatRouteImport } from './routes/generate.$sessionId.$'
 import { Route as ExportSessionIdTargetRouteImport } from './routes/export.$sessionId.$target'
 import { Route as ExamplesCategorySplatRouteImport } from './routes/examples.$category.$'
-import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe.webhook'
 import { Route as ApiSessionsCreateRouteImport } from './routes/api/sessions.create'
 import { Route as ApiSessionsSessionIdRouteImport } from './routes/api/sessions.$sessionId'
 import { Route as ApiReferralsStatusRouteImport } from './routes/api/referrals.status'
@@ -68,9 +67,9 @@ import { Route as ApiSessionsSessionIdMedusaProductsRouteImport } from './routes
 import { Route as ApiSessionsSessionIdMedusaConfigRouteImport } from './routes/api/sessions.$sessionId.medusa-config'
 import { Route as ApiSessionsSessionIdHistoryRouteImport } from './routes/api/sessions.$sessionId.history'
 import { Route as ApiSessionsSessionIdExportRouteImport } from './routes/api/sessions.$sessionId.export'
-import { Route as ApiPaymentsStripeWebhookRouteImport } from './routes/api/payments.stripe.webhook'
 import { Route as ApiPaymentsRazorpayWebhookRouteImport } from './routes/api/payments.razorpay.webhook'
-import { Route as ApiPaymentsGatewayStartRouteImport } from './routes/api/payments.$gateway.start'
+import { Route as ApiPaymentsRazorpayStartRouteImport } from './routes/api/payments.razorpay.start'
+import { Route as ApiPaymentsRazorpayConfirmRouteImport } from './routes/api/payments.razorpay.confirm'
 import { Route as ApiMedusaStoreCartLineItemsRouteImport } from './routes/api/medusa-store.cart.line-items'
 import { Route as ApiMedusaStoreCartIdRouteImport } from './routes/api/medusa-store.cart.$id'
 import { Route as ApiGithubConnectStartRouteImport } from './routes/api/github.connect.start'
@@ -277,11 +276,6 @@ const ExamplesCategorySplatRoute = ExamplesCategorySplatRouteImport.update({
   path: '/$',
   getParentRoute: () => ExamplesCategoryRoute,
 } as any)
-const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
-  id: '/api/stripe/webhook',
-  path: '/api/stripe/webhook',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiSessionsCreateRoute = ApiSessionsCreateRouteImport.update({
   id: '/api/sessions/create',
   path: '/api/sessions/create',
@@ -402,23 +396,24 @@ const ApiSessionsSessionIdExportRoute =
     path: '/export',
     getParentRoute: () => ApiSessionsSessionIdRoute,
   } as any)
-const ApiPaymentsStripeWebhookRoute =
-  ApiPaymentsStripeWebhookRouteImport.update({
-    id: '/api/payments/stripe/webhook',
-    path: '/api/payments/stripe/webhook',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiPaymentsRazorpayWebhookRoute =
   ApiPaymentsRazorpayWebhookRouteImport.update({
     id: '/api/payments/razorpay/webhook',
     path: '/api/payments/razorpay/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPaymentsGatewayStartRoute = ApiPaymentsGatewayStartRouteImport.update({
-  id: '/api/payments/$gateway/start',
-  path: '/api/payments/$gateway/start',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const ApiPaymentsRazorpayStartRoute =
+  ApiPaymentsRazorpayStartRouteImport.update({
+    id: '/api/payments/razorpay/start',
+    path: '/api/payments/razorpay/start',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPaymentsRazorpayConfirmRoute =
+  ApiPaymentsRazorpayConfirmRouteImport.update({
+    id: '/api/payments/razorpay/confirm',
+    path: '/api/payments/razorpay/confirm',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiMedusaStoreCartLineItemsRoute =
   ApiMedusaStoreCartLineItemsRouteImport.update({
     id: '/line-items',
@@ -603,7 +598,6 @@ export interface FileRoutesByFullPath {
   '/api/referrals/status': typeof ApiReferralsStatusRoute
   '/api/sessions/$sessionId': typeof ApiSessionsSessionIdRouteWithChildren
   '/api/sessions/create': typeof ApiSessionsCreateRoute
-  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/examples/$category/$': typeof ExamplesCategorySplatRoute
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
   '/generate/$sessionId/$': typeof GenerateSessionIdSplatRoute
@@ -620,9 +614,9 @@ export interface FileRoutesByFullPath {
   '/api/github/connect/start': typeof ApiGithubConnectStartRoute
   '/api/medusa-store/cart/$id': typeof ApiMedusaStoreCartIdRoute
   '/api/medusa-store/cart/line-items': typeof ApiMedusaStoreCartLineItemsRoute
-  '/api/payments/$gateway/start': typeof ApiPaymentsGatewayStartRoute
+  '/api/payments/razorpay/confirm': typeof ApiPaymentsRazorpayConfirmRoute
+  '/api/payments/razorpay/start': typeof ApiPaymentsRazorpayStartRoute
   '/api/payments/razorpay/webhook': typeof ApiPaymentsRazorpayWebhookRoute
-  '/api/payments/stripe/webhook': typeof ApiPaymentsStripeWebhookRoute
   '/api/sessions/$sessionId/export': typeof ApiSessionsSessionIdExportRoute
   '/api/sessions/$sessionId/history': typeof ApiSessionsSessionIdHistoryRouteWithChildren
   '/api/sessions/$sessionId/medusa-config': typeof ApiSessionsSessionIdMedusaConfigRoute
@@ -690,7 +684,6 @@ export interface FileRoutesByTo {
   '/api/referrals/status': typeof ApiReferralsStatusRoute
   '/api/sessions/$sessionId': typeof ApiSessionsSessionIdRouteWithChildren
   '/api/sessions/create': typeof ApiSessionsCreateRoute
-  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/examples/$category/$': typeof ExamplesCategorySplatRoute
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
   '/generate/$sessionId/$': typeof GenerateSessionIdSplatRoute
@@ -707,9 +700,9 @@ export interface FileRoutesByTo {
   '/api/github/connect/start': typeof ApiGithubConnectStartRoute
   '/api/medusa-store/cart/$id': typeof ApiMedusaStoreCartIdRoute
   '/api/medusa-store/cart/line-items': typeof ApiMedusaStoreCartLineItemsRoute
-  '/api/payments/$gateway/start': typeof ApiPaymentsGatewayStartRoute
+  '/api/payments/razorpay/confirm': typeof ApiPaymentsRazorpayConfirmRoute
+  '/api/payments/razorpay/start': typeof ApiPaymentsRazorpayStartRoute
   '/api/payments/razorpay/webhook': typeof ApiPaymentsRazorpayWebhookRoute
-  '/api/payments/stripe/webhook': typeof ApiPaymentsStripeWebhookRoute
   '/api/sessions/$sessionId/export': typeof ApiSessionsSessionIdExportRoute
   '/api/sessions/$sessionId/history': typeof ApiSessionsSessionIdHistoryRouteWithChildren
   '/api/sessions/$sessionId/medusa-config': typeof ApiSessionsSessionIdMedusaConfigRoute
@@ -779,7 +772,6 @@ export interface FileRoutesById {
   '/api/referrals/status': typeof ApiReferralsStatusRoute
   '/api/sessions/$sessionId': typeof ApiSessionsSessionIdRouteWithChildren
   '/api/sessions/create': typeof ApiSessionsCreateRoute
-  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/examples/$category/$': typeof ExamplesCategorySplatRoute
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
   '/generate/$sessionId/$': typeof GenerateSessionIdSplatRoute
@@ -796,9 +788,9 @@ export interface FileRoutesById {
   '/api/github/connect/start': typeof ApiGithubConnectStartRoute
   '/api/medusa-store/cart/$id': typeof ApiMedusaStoreCartIdRoute
   '/api/medusa-store/cart/line-items': typeof ApiMedusaStoreCartLineItemsRoute
-  '/api/payments/$gateway/start': typeof ApiPaymentsGatewayStartRoute
+  '/api/payments/razorpay/confirm': typeof ApiPaymentsRazorpayConfirmRoute
+  '/api/payments/razorpay/start': typeof ApiPaymentsRazorpayStartRoute
   '/api/payments/razorpay/webhook': typeof ApiPaymentsRazorpayWebhookRoute
-  '/api/payments/stripe/webhook': typeof ApiPaymentsStripeWebhookRoute
   '/api/sessions/$sessionId/export': typeof ApiSessionsSessionIdExportRoute
   '/api/sessions/$sessionId/history': typeof ApiSessionsSessionIdHistoryRouteWithChildren
   '/api/sessions/$sessionId/medusa-config': typeof ApiSessionsSessionIdMedusaConfigRoute
@@ -869,7 +861,6 @@ export interface FileRouteTypes {
     | '/api/referrals/status'
     | '/api/sessions/$sessionId'
     | '/api/sessions/create'
-    | '/api/stripe/webhook'
     | '/examples/$category/$'
     | '/export/$sessionId/$target'
     | '/generate/$sessionId/$'
@@ -886,9 +877,9 @@ export interface FileRouteTypes {
     | '/api/github/connect/start'
     | '/api/medusa-store/cart/$id'
     | '/api/medusa-store/cart/line-items'
-    | '/api/payments/$gateway/start'
+    | '/api/payments/razorpay/confirm'
+    | '/api/payments/razorpay/start'
     | '/api/payments/razorpay/webhook'
-    | '/api/payments/stripe/webhook'
     | '/api/sessions/$sessionId/export'
     | '/api/sessions/$sessionId/history'
     | '/api/sessions/$sessionId/medusa-config'
@@ -956,7 +947,6 @@ export interface FileRouteTypes {
     | '/api/referrals/status'
     | '/api/sessions/$sessionId'
     | '/api/sessions/create'
-    | '/api/stripe/webhook'
     | '/examples/$category/$'
     | '/export/$sessionId/$target'
     | '/generate/$sessionId/$'
@@ -973,9 +963,9 @@ export interface FileRouteTypes {
     | '/api/github/connect/start'
     | '/api/medusa-store/cart/$id'
     | '/api/medusa-store/cart/line-items'
-    | '/api/payments/$gateway/start'
+    | '/api/payments/razorpay/confirm'
+    | '/api/payments/razorpay/start'
     | '/api/payments/razorpay/webhook'
-    | '/api/payments/stripe/webhook'
     | '/api/sessions/$sessionId/export'
     | '/api/sessions/$sessionId/history'
     | '/api/sessions/$sessionId/medusa-config'
@@ -1044,7 +1034,6 @@ export interface FileRouteTypes {
     | '/api/referrals/status'
     | '/api/sessions/$sessionId'
     | '/api/sessions/create'
-    | '/api/stripe/webhook'
     | '/examples/$category/$'
     | '/export/$sessionId/$target'
     | '/generate/$sessionId/$'
@@ -1061,9 +1050,9 @@ export interface FileRouteTypes {
     | '/api/github/connect/start'
     | '/api/medusa-store/cart/$id'
     | '/api/medusa-store/cart/line-items'
-    | '/api/payments/$gateway/start'
+    | '/api/payments/razorpay/confirm'
+    | '/api/payments/razorpay/start'
     | '/api/payments/razorpay/webhook'
-    | '/api/payments/stripe/webhook'
     | '/api/sessions/$sessionId/export'
     | '/api/sessions/$sessionId/history'
     | '/api/sessions/$sessionId/medusa-config'
@@ -1131,7 +1120,6 @@ export interface RootRouteChildren {
   ApiReferralsStatusRoute: typeof ApiReferralsStatusRoute
   ApiSessionsSessionIdRoute: typeof ApiSessionsSessionIdRouteWithChildren
   ApiSessionsCreateRoute: typeof ApiSessionsCreateRoute
-  ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
   ExportSessionIdTargetRoute: typeof ExportSessionIdTargetRoute
   GenerateSessionIdSplatRoute: typeof GenerateSessionIdSplatRoute
   GenerateSessionIdAdminRoute: typeof GenerateSessionIdAdminRoute
@@ -1141,9 +1129,9 @@ export interface RootRouteChildren {
   ApiDeploymentsDeploymentSlugMedusaWebhookRoute: typeof ApiDeploymentsDeploymentSlugMedusaWebhookRoute
   ApiGithubConnectCallbackRoute: typeof ApiGithubConnectCallbackRoute
   ApiGithubConnectStartRoute: typeof ApiGithubConnectStartRoute
-  ApiPaymentsGatewayStartRoute: typeof ApiPaymentsGatewayStartRoute
+  ApiPaymentsRazorpayConfirmRoute: typeof ApiPaymentsRazorpayConfirmRoute
+  ApiPaymentsRazorpayStartRoute: typeof ApiPaymentsRazorpayStartRoute
   ApiPaymentsRazorpayWebhookRoute: typeof ApiPaymentsRazorpayWebhookRoute
-  ApiPaymentsStripeWebhookRoute: typeof ApiPaymentsStripeWebhookRoute
   ApiCommerceScopeTenantCartsRoute: typeof ApiCommerceScopeTenantCartsRouteWithChildren
   ApiCommerceScopeTenantCatalogRoute: typeof ApiCommerceScopeTenantCatalogRoute
   ApiDeploymentsDeploymentSlugProvisionMedusaRoute: typeof ApiDeploymentsDeploymentSlugProvisionMedusaRoute
@@ -1403,13 +1391,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExamplesCategorySplatRouteImport
       parentRoute: typeof ExamplesCategoryRoute
     }
-    '/api/stripe/webhook': {
-      id: '/api/stripe/webhook'
-      path: '/api/stripe/webhook'
-      fullPath: '/api/stripe/webhook'
-      preLoaderRoute: typeof ApiStripeWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/sessions/create': {
       id: '/api/sessions/create'
       path: '/api/sessions/create'
@@ -1564,13 +1545,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSessionsSessionIdExportRouteImport
       parentRoute: typeof ApiSessionsSessionIdRoute
     }
-    '/api/payments/stripe/webhook': {
-      id: '/api/payments/stripe/webhook'
-      path: '/api/payments/stripe/webhook'
-      fullPath: '/api/payments/stripe/webhook'
-      preLoaderRoute: typeof ApiPaymentsStripeWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/payments/razorpay/webhook': {
       id: '/api/payments/razorpay/webhook'
       path: '/api/payments/razorpay/webhook'
@@ -1578,11 +1552,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPaymentsRazorpayWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/payments/$gateway/start': {
-      id: '/api/payments/$gateway/start'
-      path: '/api/payments/$gateway/start'
-      fullPath: '/api/payments/$gateway/start'
-      preLoaderRoute: typeof ApiPaymentsGatewayStartRouteImport
+    '/api/payments/razorpay/start': {
+      id: '/api/payments/razorpay/start'
+      path: '/api/payments/razorpay/start'
+      fullPath: '/api/payments/razorpay/start'
+      preLoaderRoute: typeof ApiPaymentsRazorpayStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/payments/razorpay/confirm': {
+      id: '/api/payments/razorpay/confirm'
+      path: '/api/payments/razorpay/confirm'
+      fullPath: '/api/payments/razorpay/confirm'
+      preLoaderRoute: typeof ApiPaymentsRazorpayConfirmRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/medusa-store/cart/line-items': {
@@ -1971,7 +1952,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiReferralsStatusRoute: ApiReferralsStatusRoute,
   ApiSessionsSessionIdRoute: ApiSessionsSessionIdRouteWithChildren,
   ApiSessionsCreateRoute: ApiSessionsCreateRoute,
-  ApiStripeWebhookRoute: ApiStripeWebhookRoute,
   ExportSessionIdTargetRoute: ExportSessionIdTargetRoute,
   GenerateSessionIdSplatRoute: GenerateSessionIdSplatRoute,
   GenerateSessionIdAdminRoute: GenerateSessionIdAdminRoute,
@@ -1985,9 +1965,9 @@ const rootRouteChildren: RootRouteChildren = {
     ApiDeploymentsDeploymentSlugMedusaWebhookRoute,
   ApiGithubConnectCallbackRoute: ApiGithubConnectCallbackRoute,
   ApiGithubConnectStartRoute: ApiGithubConnectStartRoute,
-  ApiPaymentsGatewayStartRoute: ApiPaymentsGatewayStartRoute,
+  ApiPaymentsRazorpayConfirmRoute: ApiPaymentsRazorpayConfirmRoute,
+  ApiPaymentsRazorpayStartRoute: ApiPaymentsRazorpayStartRoute,
   ApiPaymentsRazorpayWebhookRoute: ApiPaymentsRazorpayWebhookRoute,
-  ApiPaymentsStripeWebhookRoute: ApiPaymentsStripeWebhookRoute,
   ApiCommerceScopeTenantCartsRoute:
     ApiCommerceScopeTenantCartsRouteWithChildren,
   ApiCommerceScopeTenantCatalogRoute: ApiCommerceScopeTenantCatalogRoute,

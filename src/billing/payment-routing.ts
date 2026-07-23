@@ -1,32 +1,21 @@
-export type PaymentGateway = 'stripe' | 'razorpay'
-export type PaymentCurrency = 'usd' | 'inr'
+export type PaymentGateway = 'razorpay'
+export type PaymentCurrency = 'inr'
 
-const INDIA_COUNTRY_CODE = 'IN'
+export const resolvePaymentGateway = (
+  _countryCode?: string | null,
+): PaymentGateway => 'razorpay'
 
-export function resolvePaymentGateway(
-  countryCode: string | null | undefined,
-): PaymentGateway {
-  return String(countryCode || '').toUpperCase() === INDIA_COUNTRY_CODE
-    ? 'razorpay'
-    : 'stripe'
-}
+export const resolvePaymentCurrency = (
+  _gateway: PaymentGateway,
+): PaymentCurrency => 'inr'
 
-export function resolvePaymentCurrency(
-  gateway: PaymentGateway,
-): PaymentCurrency {
-  return gateway === 'stripe' ? 'usd' : 'inr'
-}
-
-export function isGatewayConfigured(
-  gateway: PaymentGateway,
+export const isGatewayConfigured = (
+  _gateway: PaymentGateway,
   env: Record<string, string | undefined> = process.env as Record<
     string,
     string | undefined
   >,
-): boolean {
-  if (gateway === 'stripe') {
-    return Boolean(env.STRIPE_SECRET_KEY && env.STRIPE_PRO_PRICE_ID)
-  }
+): boolean => {
   return Boolean(
     env.RAZORPAY_KEY_ID && env.RAZORPAY_KEY_SECRET && env.RAZORPAY_PRO_PLAN_ID,
   )

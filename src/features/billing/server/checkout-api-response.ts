@@ -7,7 +7,6 @@ import {
   resolvePaymentCurrency,
   resolvePaymentGateway,
 } from '@/billing/payment-routing.js'
-import { ensureStripeReferralCoupon } from '@/features/referrals/server/referral-discount'
 
 type CheckoutConvexClient = Pick<ConvexHttpClient, 'query' | 'setAuth'>
 
@@ -24,12 +23,10 @@ type CheckoutEnv = NodeJS.ProcessEnv
 
 const creditPacks = {
   '3_credits': {
-    stripePriceEnv: 'STRIPE_CREDITS_3_PRICE_ID',
     razorpayAmountEnv: 'RAZORPAY_CREDITS_3_PAISE',
     credits: 3,
   },
   '10_credits': {
-    stripePriceEnv: 'STRIPE_CREDITS_10_PRICE_ID',
     razorpayAmountEnv: 'RAZORPAY_CREDITS_10_PAISE',
     credits: 10,
   },
@@ -63,135 +60,12 @@ function isAuthFailure(error: unknown): boolean {
   )
 }
 
-function getOrigin(request: Request): string {
-  const url = new URL(request.url)
-  return `${url.protocol}//${url.host}`
-}
-
-function getCheckoutUrls(request: Request, sessionId: string) {
-  const origin = getOrigin(request)
-  const sessionPath = sessionId
-    ? `/generate/${encodeURIComponent(sessionId)}`
-    : '/'
-  return {
-    successUrl: `${origin}${sessionPath}?checkout=success`,
-    cancelUrl: `${origin}${sessionPath}?checkout=cancelled`,
-  }
-}
-
-function formBody(entries: Record<string, string>): URLSearchParams {
-  const params = new URLSearchParams()
-  for (const [key, value] of Object.entries(entries)) {
-    if (value) params.set(key, value)
-  }
-  return params
-}
-
-async function fetchStripeCheckout(
-  env: CheckoutEnv,
-  request: Request,
-  body: CheckoutBody,
-  userId: string,
-  referralCouponId: string | null,
-) {
-  const mode = normalizeString(body.mode)
-  const tier = normalizeString(body.tier) || 'pro'
-  const packId = normalizeString(body.packId)
-  const sessionId = normalizeString(body.sessionId)
-  const { successUrl, cancelUrl } = getCheckoutUrls(request, sessionId)
-  const priceId =
-    mode === 'credit_pack'
-      ? env[creditPacks[packId as keyof typeof creditPacks]?.stripePriceEnv]
-      : tier === 'early_adopter'
-        ? env.STRIPE_EARLY_ADOPTER_PRICE_ID
-        : env.STRIPE_PRO_PRICE_ID
-
-  if (!env.STRIPE_SECRET_KEY || !priceId) {
-    return json(
-      { error: 'Stripe checkout is not configured.' },
-      { status: 503 },
-    )
-  }
-
-  // Apply the lifetime referral discount only to recurring subscriptions.
-  const checkoutFields: Record<string, string> = {
-    mode: mode === 'credit_pack' ? 'payment' : 'subscription',
-    success_url: successUrl,
-    cancel_url: cancelUrl,
-    client_reference_id: userId,
-    'line_items[0][price]': priceId,
-    'line_items[0][quantity]': '1',
-    'metadata[userId]': userId,
-    'metadata[mode]': mode,
-    'metadata[tier]': tier,
-    'metadata[packId]': packId,
-  }
-  if (mode !== 'credit_pack') {
-    // Stripe rejects subscription_data in payment mode.
-    checkoutFields['subscription_data[metadata][userId]'] = userId
-    checkoutFields['subscription_data[metadata][tier]'] = tier
-    if (env.DUB_PARTNERS_ENABLED?.trim().toLowerCase() === 'true') {
-      checkoutFields['metadata[dubCustomerExternalId]'] = userId
-    }
-  }
-  if (mode === 'subscription' && referralCouponId) {
-    checkoutFields['discounts[0][coupon]'] = referralCouponId
-  }
-
-  let response: Response
-  try {
-    response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: formBody(checkoutFields),
-    })
-  } catch {
-    return json({ error: 'Stripe checkout failed.' }, { status: 502 })
-  }
-  let data: {
-    id?: string
-    url?: string
-    error?: { message?: string }
-  }
-  let parseFailed = false
-  try {
-    data = (await response.json()) as typeof data
-  } catch {
-    data = {}
-    parseFailed = true
-  }
-
-  if (!response.ok) {
-    return json(
-      { error: data.error?.message ?? 'Stripe checkout failed.' },
-      { status: response.status },
-    )
-  }
-
-  if (parseFailed) {
-    return json({ error: 'Stripe checkout failed.' }, { status: 502 })
-  }
-
-  if (!data.id || !data.url) {
-    return json({ error: 'Stripe checkout failed.' }, { status: 502 })
-  }
-
-  return json({
-    provider: 'stripe',
-    checkoutSessionId: data.id,
-    url: data.url,
-  })
-}
-
-async function fetchRazorpayCheckout(
+const fetchRazorpayCheckout = async (
   env: CheckoutEnv,
   body: CheckoutBody,
   userId: string,
   referralOfferId: string | null,
-) {
+) => {
   const mode = normalizeString(body.mode)
   const tier = normalizeString(body.tier) || 'pro'
   const packId = normalizeString(body.packId) as keyof typeof creditPacks
@@ -229,7 +103,7 @@ async function fetchRazorpayCheckout(
           plan_id: planId,
           total_count: 120,
           customer_notify: 1,
-          // Lifetime referral reward → apply the pre-configured Razorpay offer.
+          // Lifetime referral reward: apply the pre-configured Razorpay offer.
           ...(referralOfferId ? { offer_id: referralOfferId } : {}),
           notes: { userId, tier },
         }),
@@ -353,6 +227,12 @@ export async function createCheckoutApiResponse(
     return json({ error: 'Invalid checkout mode.' }, { status: 400 })
   }
 
+  const requestedGateway =
+    normalizeString(gatewayOverride) || normalizeString(body.gateway)
+  if (requestedGateway !== '' && requestedGateway !== 'razorpay') {
+    return json({ error: 'Invalid payment gateway.' }, { status: 400 })
+  }
+
   const client = clientOverride ?? createRuntimeConvexHttpClient()
   client.setAuth(token)
   let overview: { userId?: string }
@@ -370,23 +250,7 @@ export async function createCheckoutApiResponse(
     return json({ error: 'Sign in before checkout.' }, { status: 401 })
   }
 
-  const requestedGateway =
-    normalizeString(gatewayOverride) || normalizeString(body.gateway)
-  // Fail closed: an explicit but unsupported gateway (e.g. the alias route
-  // /api/payments/<gateway>/start or a body.gateway) must be rejected rather
-  // than silently falling back to country-based routing.
-  if (
-    requestedGateway !== '' &&
-    requestedGateway !== 'stripe' &&
-    requestedGateway !== 'razorpay'
-  ) {
-    return json({ error: 'Invalid payment gateway.' }, { status: 400 })
-  }
-  const countryCode = normalizeString(body.countryCode)
-  const gateway =
-    requestedGateway === 'stripe' || requestedGateway === 'razorpay'
-      ? requestedGateway
-      : resolvePaymentGateway(countryCode)
+  const gateway = resolvePaymentGateway()
   if (!isGatewayConfigured(gateway, env)) {
     return json(
       {
@@ -414,28 +278,13 @@ export async function createCheckoutApiResponse(
     }
   }
 
-  if (gateway === 'razorpay') {
-    // Razorpay offers must be pre-created in the dashboard and referenced by id.
-    const referralOfferId = referralUnlocked
-      ? (env.RAZORPAY_REFERRAL_OFFER_ID ?? '').trim() || null
-      : null
-    return await fetchRazorpayCheckout(
-      env,
-      body,
-      overview.userId,
-      referralOfferId,
-    )
-  }
-
-  const referralCouponId = referralUnlocked
-    ? await ensureStripeReferralCoupon(env)
+  const referralOfferId = referralUnlocked
+    ? (env.RAZORPAY_REFERRAL_OFFER_ID ?? '').trim() || null
     : null
-
-  return await fetchStripeCheckout(
+  return await fetchRazorpayCheckout(
     env,
-    request,
     body,
     overview.userId,
-    referralCouponId,
+    referralOfferId,
   )
 }
