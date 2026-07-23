@@ -12,6 +12,27 @@ describe('detectSnippetLanguageBcp47', () => {
     ).resolves.toBe('hi')
   })
 
+  // ── ISO-code collision regression ─────────────────────────────────
+  // Two-letter language codes ('as', 'or', 'no', 'it', 'id', 'ne', 'hi',
+  // 'pa', 'ta') are common English words. They must NOT be treated as an
+  // explicit language request. Regression for: "dog blog post with cats as
+  // their friends not enemies" wrongly detected as Assamese.
+  describe('English prompts containing words that collide with ISO codes', () => {
+    const cases = [
+      'dog blog post with cats as their friends not enemies',
+      'a landing page, no signup required, clean and modern',
+      'a store with products or services and a contact form',
+      'a portfolio site, it should feel bold and minimal',
+      'do not add tracking or analytics to the site',
+    ]
+
+    for (const prompt of cases) {
+      it(`stays English: "${prompt.slice(0, 48)}…"`, async () => {
+        await expect(detectSnippetLanguageBcp47(prompt)).resolves.toBe('en')
+      })
+    }
+  })
+
   it('detects romanized Malayalam website briefs as Malayalam', async () => {
     await expect(
       detectSnippetLanguageBcp47(romanizedMalayalamBrief),

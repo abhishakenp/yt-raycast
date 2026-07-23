@@ -178,7 +178,12 @@ function detectExplicitLanguageKeyword(text: string) {
       Math.max(...a.keywords.map((k) => k.length), a.name.length),
   )
   for (const language of ordered) {
-    const keywords = [language.code, language.name, ...language.keywords]
+    // NOTE: never match the bare ISO code (e.g. 'as', 'or', 'no', 'it', 'id',
+    // 'ne', 'hi', 'pa', 'ta') as a standalone word — those collide with common
+    // English words ("cats as their friends" → Assamese). Only the language
+    // name and explicit keywords ("assamese", "in assamese") are reliable
+    // signals of an intentional language request.
+    const keywords = [language.name, ...language.keywords]
     for (const keyword of keywords) {
       const value = keyword.toLowerCase()
       if (/^[a-z0-9-]+$/.test(value)) {
