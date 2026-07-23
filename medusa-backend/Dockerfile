@@ -1,6 +1,10 @@
-FROM oven/bun:1.3.12-alpine AS deps
+FROM oven/bun:1.3.12-alpine AS base
+
+RUN apk add --no-cache nodejs
 
 WORKDIR /app
+
+FROM base AS deps
 
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
@@ -8,9 +12,7 @@ RUN bun install --frozen-lockfile
 COPY . .
 RUN bun run build
 
-FROM oven/bun:1.3.12-alpine AS runtime
-
-WORKDIR /app
+FROM base AS runtime
 
 ENV NODE_ENV=production
 
@@ -20,4 +22,4 @@ RUN chmod +x ./docker-entrypoint.sh
 EXPOSE 9000
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
-CMD ["./node_modules/.bin/medusa", "start"]
+CMD ["node", "./node_modules/@medusajs/cli/cli.js", "start"]

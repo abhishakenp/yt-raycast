@@ -38,13 +38,17 @@ describe('Medusa Dokploy production assets', () => {
     const entrypoint = read('medusa-backend/docker-entrypoint.sh')
 
     expect(dockerfile).toContain('FROM oven/bun:1.3.12-alpine')
+    expect(dockerfile).toContain('RUN apk add --no-cache nodejs')
     expect(dockerfile).toContain('RUN bun install --frozen-lockfile')
     expect(dockerfile).toContain('RUN bun run build')
     expect(dockerfile).toContain('ENTRYPOINT ["./docker-entrypoint.sh"]')
-    expect(entrypoint).toContain('"$MEDUSA_BIN" db:migrate')
-    expect(entrypoint).toContain(
-      '"$MEDUSA_BIN" exec ./src/scripts/bootstrap.ts',
+    expect(dockerfile).toContain(
+      'CMD ["node", "./node_modules/@medusajs/cli/cli.js", "start"]',
     )
-    expect(entrypoint).toContain('"$MEDUSA_BIN" user')
+    expect(entrypoint).toContain('node "$MEDUSA_CLI" db:migrate')
+    expect(entrypoint).toContain(
+      'node "$MEDUSA_CLI" exec ./src/scripts/bootstrap.ts',
+    )
+    expect(entrypoint).toContain('node "$MEDUSA_CLI" user')
   })
 })

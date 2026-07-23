@@ -5,10 +5,10 @@
   "description": "Ship Fast shared Medusa v2 backend for generated commerce sessions.",
   "license": "UNLICENSED",
   "scripts": {
-    "build": "medusa build",
-    "seed": "medusa exec ./src/scripts/bootstrap.ts",
-    "start": "medusa start",
-    "medusa": "medusa"
+    "build": "node ./node_modules/@medusajs/cli/cli.js build",
+    "seed": "node ./node_modules/@medusajs/cli/cli.js exec ./src/scripts/bootstrap.ts",
+    "start": "node ./node_modules/@medusajs/cli/cli.js start",
+    "medusa": "node ./node_modules/@medusajs/cli/cli.js"
   },
   "dependencies": {
     "@medusajs/admin-sdk": "2.18.0",
