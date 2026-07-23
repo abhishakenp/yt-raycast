@@ -20,6 +20,16 @@ type SyncGeneratedProductsToMedusaResult = {
   warning?: string
 }
 
+type EnsureMedusaSessionTenantInput = Omit<
+  SyncGeneratedProductsToMedusaInput,
+  'currencyCode' | 'products'
+>
+
+type EnsureMedusaSessionTenantResult = {
+  tenant?: MedusaTenant
+  warning?: string
+}
+
 type AdminAuth = {
   token: string
 }
@@ -33,6 +43,25 @@ type MedusaTenant = {
 type MedusaProductDefaults = {
   shippingProfileId: string
   tenant: MedusaTenant
+}
+
+type ExistingMedusaPrice = {
+  currencyCode?: string
+  id?: string
+}
+
+type ExistingMedusaVariant = {
+  id?: string
+  metadata: Record<string, unknown>
+  prices: Array<ExistingMedusaPrice>
+  sku?: string
+  title?: string
+}
+
+type ExistingMedusaProduct = {
+  id: string
+  metadata: Record<string, unknown>
+  variants: Array<ExistingMedusaVariant>
 }
 
 function normalizeBackendUrl(backendUrl: string): string {
@@ -76,7 +105,7 @@ export function parsePriceToMedusaAmount(price: number | string): number {
 }
 
 async function readJson<T>(response: Response): Promise<T> {
-  return (await response.json()) as T
+  return await response.json()
 }
 
 function createAdminHeaders(token: string): Record<string, string> {
@@ -89,10 +118,8 @@ function createAdminHeaders(token: string): Record<string, string> {
 function firstStringId(
   items: Array<{ id?: unknown }> | undefined,
 ): string | undefined {
-  const match = items?.find((item): item is { id: string } => {
-    return typeof item.id === 'string'
-  })
-  return match?.id
+  const match = items?.find((item) => typeof item.id === 'string')
+  return typeof match?.id === 'string' ? match.id : undefined
 }
 
 function createTenantName(sessionId: string): string {
@@ -128,6 +155,105 @@ function hasSalesChannel(
     key.sales_channels?.some((channel) => channel.id === salesChannelId) ??
     false
   )
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function stringValue(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined
+}
+
+function stableJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`
+  if (isRecord(value)) {
+    return `{${Object.entries(value)
+      .filter(([, entry]) => entry !== undefined)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, entry]) => `${JSON.stringify(key)}:${stableJson(entry)}`)
+      .join(',')}}`
+  }
+  return JSON.stringify(value)
+}
+
+function stableHash(value: string): string {
+  let hash = 0x811c9dc5
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index)
+    hash = Math.imul(hash, 0x01000193)
+  }
+  return (hash >>> 0).toString(36)
+}
+
+function generatedProductVariants(
+  product: GeneratedCommerceProduct,
+  currencyCode: string,
+): Array<CommerceProductVariant> {
+  return product.variants && product.variants.length > 0
+    ? product.variants
+    : [
+        {
+          manageInventory: false,
+          optionValues: { Default: 'Default' },
+          prices: [{ amount: product.price, currencyCode }],
+          sourceId: `variant:${product.handle}:default`,
+          title: 'Default',
+        },
+      ]
+}
+
+export function createGeneratedProductSyncSignature(
+  product: GeneratedCommerceProduct,
+  currencyCode = 'usd',
+): string {
+  const payload = {
+    collections:
+      product.collections?.map(({ handle, sourceId, title }) => ({
+        handle,
+        sourceId,
+        title,
+      })) ?? [],
+    description: product.description ?? null,
+    handle: product.handle,
+    images: product.images?.map(({ url }) => ({ url })) ?? [],
+    options:
+      product.options?.map(({ title, values }) => ({
+        title,
+        values: [...values].sort(),
+      })) ?? [],
+    price: product.price,
+    sourceId: product.sourceId ?? `product:${product.handle}`,
+    tags:
+      product.tags
+        ?.map(({ value }) => ({ value }))
+        .sort((left, right) => left.value.localeCompare(right.value)) ?? [],
+    thumbnail: product.thumbnail ?? null,
+    title: product.title,
+    variants: generatedProductVariants(product, currencyCode).map(
+      ({
+        inventoryQuantity,
+        manageInventory,
+        optionValues,
+        prices,
+        sku,
+        sourceId,
+        title,
+      }) => ({
+        inventoryQuantity: inventoryQuantity ?? null,
+        manageInventory,
+        optionValues,
+        prices: prices.map(({ amount, currencyCode: priceCurrencyCode }) => ({
+          amount: parsePriceToMedusaAmount(amount),
+          currencyCode: priceCurrencyCode.toLowerCase(),
+        })),
+        sku: sku ?? null,
+        sourceId,
+        title,
+      }),
+    ),
+  }
+  return `v1:${stableHash(stableJson(payload))}`
 }
 
 async function authenticateAdmin({
@@ -222,11 +348,14 @@ async function loadProductDefaults({
   }
 
   const existingSalesChannel = channels.sales_channels?.find(
-    (channel): channel is { id: string; name: string } =>
-      typeof channel.id === 'string' && channel.name === tenantName,
+    (channel) => typeof channel.id === 'string' && channel.name === tenantName,
   )
+  const existingSalesChannelId =
+    typeof existingSalesChannel?.id === 'string'
+      ? existingSalesChannel.id
+      : undefined
   const salesChannelId =
-    existingSalesChannel?.id ??
+    existingSalesChannelId ??
     (await createTenantSalesChannel({
       backendUrl,
       fetchImpl,
@@ -234,22 +363,30 @@ async function loadProductDefaults({
       tenantName,
       sessionId,
     }))
-  const existingApiKey = apiKeys.api_keys?.find(
-    (
-      key,
-    ): key is {
-      id: string
-      sales_channels?: Array<{ id?: unknown }>
-      title: string
-      token: string
-      type: string
-    } =>
+  const existingApiKeyCandidate = apiKeys.api_keys?.find(
+    (key) =>
       typeof key.id === 'string' &&
       key.title === tenantName &&
       key.type === 'publishable' &&
       typeof key.token === 'string' &&
       key.token.trim().length > 0,
   )
+  const existingApiKeyId =
+    typeof existingApiKeyCandidate?.id === 'string'
+      ? existingApiKeyCandidate.id
+      : undefined
+  const existingApiKeyToken =
+    typeof existingApiKeyCandidate?.token === 'string'
+      ? existingApiKeyCandidate.token
+      : undefined
+  const existingApiKey =
+    existingApiKeyId === undefined || existingApiKeyToken === undefined
+      ? undefined
+      : {
+          id: existingApiKeyId,
+          sales_channels: existingApiKeyCandidate?.sales_channels,
+          token: existingApiKeyToken,
+        }
   const apiKey =
     existingApiKey ??
     (await createTenantPublishableKey({
@@ -283,6 +420,47 @@ async function loadProductDefaults({
       publishableKey: apiKey.token,
       salesChannelId,
     },
+  }
+}
+
+export async function ensureMedusaSessionTenant({
+  adminApiToken,
+  adminEmail,
+  adminPassword,
+  backendUrl,
+  fetch: fetchOverride,
+  sessionId,
+}: EnsureMedusaSessionTenantInput): Promise<EnsureMedusaSessionTenantResult> {
+  const fetchImpl = fetchOverride ?? fetch
+
+  try {
+    const normalizedBackendUrl = normalizeBackendUrl(backendUrl)
+    const auth = await authenticateAdmin({
+      adminApiToken,
+      adminEmail,
+      adminPassword,
+      backendUrl: normalizedBackendUrl,
+      fetchImpl,
+    })
+
+    if (auth === undefined) {
+      return {
+        warning: 'Medusa Admin API credentials are not configured.',
+      }
+    }
+
+    const defaults = await loadProductDefaults({
+      backendUrl: normalizedBackendUrl,
+      fetchImpl,
+      sessionId,
+      token: auth.token,
+    })
+
+    return { tenant: defaults.tenant }
+  } catch {
+    return {
+      warning: 'Medusa tenant setup failed.',
+    }
   }
 }
 
@@ -379,9 +557,13 @@ async function findExistingProductId({
   fetchImpl: FetchLike
   handle: string
   token: string
-}): Promise<string | undefined> {
+}): Promise<ExistingMedusaProduct | undefined> {
   const response = await fetchImpl(
-    `${backendUrl}/admin/products?handle=${encodeURIComponent(handle)}&limit=1`,
+    `${backendUrl}/admin/products?handle=${encodeURIComponent(
+      handle,
+    )}&limit=1&fields=${encodeURIComponent(
+      '+metadata,*variants,+variants.metadata,*variants.prices,+variants.sku',
+    )}`,
     { headers: createAdminHeaders(token) },
   )
 
@@ -389,11 +571,54 @@ async function findExistingProductId({
     throw new Error(`Medusa product lookup failed (${response.status}).`)
   }
 
-  const payload = await readJson<{ products?: Array<{ id?: unknown }> }>(
-    response,
-  )
-  const productId = payload.products?.[0]?.id
-  return typeof productId === 'string' ? productId : undefined
+  const payload = await readJson<{ products?: Array<unknown> }>(response)
+  const product = payload.products?.[0]
+  if (!isRecord(product)) return undefined
+  const productId = stringValue(product.id)
+  if (productId === undefined) return undefined
+  return {
+    id: productId,
+    metadata: isRecord(product.metadata) ? product.metadata : {},
+    variants: Array.isArray(product.variants)
+      ? product.variants.flatMap(normalizeExistingMedusaVariant)
+      : [],
+  }
+}
+
+function normalizeExistingMedusaPrice(
+  price: unknown,
+): Array<ExistingMedusaPrice> {
+  if (!isRecord(price)) return []
+  const currencyCode = stringValue(price.currency_code)
+  const id = stringValue(price.id)
+  return [
+    {
+      ...(currencyCode === undefined
+        ? {}
+        : { currencyCode: currencyCode.toLowerCase() }),
+      ...(id === undefined ? {} : { id }),
+    },
+  ]
+}
+
+function normalizeExistingMedusaVariant(
+  variant: unknown,
+): Array<ExistingMedusaVariant> {
+  if (!isRecord(variant)) return []
+  const id = stringValue(variant.id)
+  const sku = stringValue(variant.sku)
+  const title = stringValue(variant.title)
+  return [
+    {
+      ...(id === undefined ? {} : { id }),
+      metadata: isRecord(variant.metadata) ? variant.metadata : {},
+      prices: Array.isArray(variant.prices)
+        ? variant.prices.flatMap(normalizeExistingMedusaPrice)
+        : [],
+      ...(sku === undefined ? {} : { sku }),
+      ...(title === undefined ? {} : { title }),
+    },
+  ]
 }
 
 async function resolveProductCollectionId({
@@ -740,14 +965,17 @@ function createProductBody({
   collectionId,
   currencyCode,
   defaults,
+  existingProduct,
   handle,
   preparedInventory,
   product,
   sessionId,
+  syncSignature,
 }: {
   collectionId?: string
   currencyCode: string
   defaults: MedusaProductDefaults
+  existingProduct?: ExistingMedusaProduct
   handle: string
   preparedInventory: Map<
     string,
@@ -759,19 +987,9 @@ function createProductBody({
   >
   product: GeneratedCommerceProduct
   sessionId: string
+  syncSignature: string
 }) {
-  const variants =
-    product.variants && product.variants.length > 0
-      ? product.variants
-      : [
-          {
-            manageInventory: false,
-            optionValues: { Default: 'Default' },
-            prices: [{ amount: product.price, currencyCode }],
-            sourceId: `variant:${product.handle}:default`,
-            title: 'Default',
-          },
-        ]
+  const variants = generatedProductVariants(product, currencyCode)
   const derivedOptions = new Map<string, Array<string>>()
   for (const variant of variants) {
     for (const [title, value] of Object.entries(variant.optionValues)) {
@@ -801,6 +1019,7 @@ function createProductBody({
       ship_fast_generated_product: true,
       ship_fast_generated_source_id:
         product.sourceId ?? `product:${product.handle}`,
+      ship_fast_generated_sync_signature: syncSignature,
       ship_fast_session_id: sessionId,
     },
     options,
@@ -818,6 +1037,16 @@ function createProductBody({
     title: product.title,
     variants: variants.map((variant) => {
       const inventory = preparedInventory.get(variant.sourceId)
+      const existingVariant = existingProduct?.variants.find((candidate) => {
+        const sourceId = stringValue(
+          candidate.metadata.ship_fast_generated_source_id,
+        )
+        return (
+          sourceId === variant.sourceId ||
+          candidate.sku === variant.sku ||
+          candidate.title === variant.title
+        )
+      })
       const generatedSku =
         inventory?.generatedSku ??
         deterministicVariantSku(product.handle, variant)
@@ -840,6 +1069,9 @@ function createProductBody({
           ship_fast_generated_sku: generatedSku,
           ship_fast_generated_source_id: variant.sourceId,
         },
+        ...(existingVariant?.id === undefined
+          ? {}
+          : { id: existingVariant.id }),
         options:
           Object.keys(variant.optionValues).length > 0
             ? variant.optionValues
@@ -847,11 +1079,50 @@ function createProductBody({
         prices: variant.prices.map((price) => ({
           amount: parsePriceToMedusaAmount(price.amount),
           currency_code: price.currencyCode.toLowerCase(),
+          ...(existingVariant?.prices.find(
+            (existingPrice) =>
+              existingPrice.currencyCode === price.currencyCode.toLowerCase(),
+          )?.id === undefined
+            ? {}
+            : {
+                id: existingVariant.prices.find(
+                  (existingPrice) =>
+                    existingPrice.currencyCode ===
+                    price.currencyCode.toLowerCase(),
+                )?.id,
+              }),
         })),
         sku: providerSku,
         title: variant.title,
       }
     }),
+  }
+}
+
+async function updateExistingProduct({
+  backendUrl,
+  body,
+  existingProductId,
+  fetchImpl,
+  headers,
+}: {
+  backendUrl: string
+  body: unknown
+  existingProductId: string
+  fetchImpl: FetchLike
+  headers: Record<string, string>
+}): Promise<void> {
+  const response = await fetchImpl(
+    `${backendUrl}/admin/products/${encodeURIComponent(existingProductId)}`,
+    {
+      body: JSON.stringify(body),
+      headers,
+      method: 'POST',
+    },
+  )
+
+  if (!response.ok) {
+    throw new Error(`Medusa product update failed (${response.status}).`)
   }
 }
 
@@ -897,7 +1168,11 @@ export async function syncGeneratedProductsToMedusa({
 
     for (const product of syncProducts) {
       const handle = createSessionScopedProductHandle(sessionId, product)
-      const existingProductId = await findExistingProductId({
+      const syncSignature = createGeneratedProductSyncSignature(
+        product,
+        currencyCode,
+      )
+      const existingProduct = await findExistingProductId({
         backendUrl: normalizedBackendUrl,
         fetchImpl,
         handle,
@@ -905,11 +1180,61 @@ export async function syncGeneratedProductsToMedusa({
       })
       const headers = createAdminHeaders(auth.token)
 
-      // Medusa admin is the source of truth once a product exists. Skip
-      // existing products so admin edits (title, price, description, images,
-      // variants) are preserved across re-provisions. Only create products
-      // that don't exist yet.
-      if (existingProductId !== undefined) {
+      if (existingProduct !== undefined) {
+        const existingSignature = stringValue(
+          existingProduct.metadata.ship_fast_generated_sync_signature,
+        )
+        if (existingSignature === undefined) {
+          await updateExistingProduct({
+            backendUrl: normalizedBackendUrl,
+            body: {
+              metadata: {
+                ship_fast_generated_handle: product.handle,
+                ship_fast_generated_product: true,
+                ship_fast_generated_source_id:
+                  product.sourceId ?? `product:${product.handle}`,
+                ship_fast_generated_sync_signature: syncSignature,
+                ship_fast_session_id: sessionId,
+              },
+            },
+            existingProductId: existingProduct.id,
+            fetchImpl,
+            headers,
+          })
+        } else if (existingSignature !== syncSignature) {
+          const collectionId = await resolveProductCollectionId({
+            backendUrl: normalizedBackendUrl,
+            fetchImpl,
+            product,
+            sessionId,
+            token: auth.token,
+          })
+          const preparedInventory = await prepareMedusaVariantInventory({
+            backendUrl: normalizedBackendUrl,
+            fetchImpl,
+            product,
+            salesChannelId: defaults.tenant.salesChannelId,
+            sessionId,
+            token: auth.token,
+          })
+          await updateExistingProduct({
+            backendUrl: normalizedBackendUrl,
+            body: createProductBody({
+              collectionId,
+              currencyCode,
+              defaults,
+              existingProduct,
+              handle,
+              preparedInventory,
+              product,
+              sessionId,
+              syncSignature,
+            }),
+            existingProductId: existingProduct.id,
+            fetchImpl,
+            headers,
+          })
+        }
         synced += 1
         continue
       }
@@ -941,6 +1266,7 @@ export async function syncGeneratedProductsToMedusa({
               preparedInventory,
               product,
               sessionId,
+              syncSignature,
             }),
           ),
           headers,

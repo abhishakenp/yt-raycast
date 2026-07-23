@@ -56,6 +56,42 @@ function generateSecret(length = 32): string {
     .slice(0, length)
 }
 
+function shellArg(value: string): string {
+  return `'${value.replaceAll("'", `'"'"'`)}'`
+}
+
+function requireProvisionCredential(
+  label: string,
+  value: string | undefined,
+): string {
+  const normalized = value?.trim()
+  if (normalized) return normalized
+  throw new Error(`${label} is required to provision a Medusa tenant`)
+}
+
+function parseDockerPublishedPort(value: string): number | undefined {
+  const normalized = value.trim()
+  const candidates = normalized.split(/\s+/).filter(Boolean)
+
+  for (const candidate of candidates) {
+    const port = Number(candidate)
+    if (Number.isInteger(port) && port > 0 && port <= 65_535) return port
+  }
+
+  if (
+    normalized.length % 2 === 0 &&
+    normalized.slice(0, normalized.length / 2) ===
+      normalized.slice(normalized.length / 2)
+  ) {
+    const deduped = Number(normalized.slice(0, normalized.length / 2))
+    if (Number.isInteger(deduped) && deduped > 0 && deduped <= 65_535) {
+      return deduped
+    }
+  }
+
+  return undefined
+}
+
 function isPortFree(port: number): Promise<boolean> {
   return new Promise((resolve) => {
     const server = net.createServer()
@@ -130,11 +166,23 @@ export async function provisionSessionMedusaContainer(
     fetch?: typeof fetch
     adminEmail?: string
     adminPassword?: string
+    razorpayKeyId?: string
+    razorpayKeySecret?: string
+    razorpayWebhookSecret?: string
     storeCors?: string
     adminCors?: string
     authCors?: string
   } = {},
 ): Promise<MedusaContainerProvision> {
+  const adminEmail = requireProvisionCredential(
+    'Medusa admin email',
+    options.adminEmail,
+  )
+  const adminPassword = requireProvisionCredential(
+    'Medusa admin password',
+    options.adminPassword,
+  )
+
   await ensureSharedInfra()
 
   const token = shortToken(sessionId, 16)
@@ -163,8 +211,6 @@ export async function provisionSessionMedusaContainer(
 
   const jwtSecret = generateSecret(32)
   const cookieSecret = generateSecret(32)
-  const adminEmail = options.adminEmail ?? 'admin@ship-fast.local'
-  const adminPassword = options.adminPassword ?? 'supersecret'
   const storeCors =
     options.storeCors ??
     'http://localhost:3000,http://localhost:7420,http://localhost:7430,http://127.0.0.1:3000,http://127.0.0.1:7420,http://127.0.0.1:7430'
@@ -185,8 +231,19 @@ export async function provisionSessionMedusaContainer(
     `-e STORE_CORS=${storeCors}`,
     `-e ADMIN_CORS=${adminCors}`,
     `-e AUTH_CORS=${authCors}`,
-    `-e MEDUSA_SEED_ADMIN_EMAIL=${adminEmail}`,
-    `-e MEDUSA_SEED_ADMIN_PASSWORD=${adminPassword}`,
+    `-e MEDUSA_SEED_ADMIN_EMAIL=${shellArg(adminEmail)}`,
+    `-e MEDUSA_SEED_ADMIN_PASSWORD=${shellArg(adminPassword)}`,
+    ...(options.razorpayKeyId?.trim() && options.razorpayKeySecret?.trim()
+      ? [
+          `-e RAZORPAY_ID=${shellArg(options.razorpayKeyId.trim())}`,
+          `-e RAZORPAY_SECRET=${shellArg(options.razorpayKeySecret.trim())}`,
+          ...(options.razorpayWebhookSecret?.trim()
+            ? [
+                `-e RAZORPAY_WEBHOOK_SECRET=${shellArg(options.razorpayWebhookSecret.trim())}`,
+              ]
+            : []),
+        ]
+      : []),
   ]
 
   await execAsync(
@@ -233,12 +290,12 @@ export async function findRunningSessionContainer(
 
   try {
     const { stdout } = await execAsync(
-      `docker inspect ${containerName} --format '{{.State.Running}}:{{range .NetworkSettings.Ports}}{{range .}}{{.HostPort}}{{end}}{{end}}'`,
+      `docker inspect ${containerName} --format '{{.State.Running}}:{{range .NetworkSettings.Ports}}{{range .}}{{.HostPort}}{{"\\n"}}{{end}}{{end}}'`,
     )
     const [running, portStr] = stdout.trim().split(':')
     if (running !== 'true') return undefined
-    const port = Number(portStr)
-    if (!Number.isFinite(port)) return undefined
+    const port = parseDockerPublishedPort(portStr ?? '')
+    if (port === undefined) return undefined
 
     const backendUrl = `http://localhost:${port}`
     return {

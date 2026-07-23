@@ -1,12 +1,28 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import {
+  createGeneratedProductSyncSignature,
   createSessionScopedCollectionHandle,
   createSessionScopedProductHandle,
   createTenantScopedVariantSku,
+  ensureMedusaSessionTenant,
   parsePriceToMedusaAmount,
   syncGeneratedProductsToMedusa,
 } from './medusa-product-sync'
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function requestMethod(init: unknown): string | undefined {
+  return isRecord(init) && typeof init.method === 'string'
+    ? init.method
+    : undefined
+}
+
+function requestBody(init: unknown): string | undefined {
+  return isRecord(init) && typeof init.body === 'string' ? init.body : undefined
+}
 
 describe('medusa product sync', () => {
   it('creates deterministic session-scoped handles for multitenant products', () => {
@@ -48,9 +64,75 @@ describe('medusa product sync', () => {
     ).toBe('ship-fast-session-tenant-b-summer-edit')
   })
 
+  it('creates and links a tenant publishable key without requiring generated products', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ token: 'admin-token' }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ shipping_profiles: [{ id: 'sp_default' }] }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ sales_channels: [] }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ api_keys: [] }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ sales_channel: { id: 'sc_tenant' } }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            api_key: {
+              id: 'apk_tenant',
+              token: 'pk_tenant_session',
+            },
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(new Response(null, { status: 200 }))
+
+    const result = await ensureMedusaSessionTenant({
+      adminEmail: 'admin@test.com',
+      adminPassword: 'provided-admin-password',
+      backendUrl: 'http://localhost:9000',
+      fetch: fetchImpl,
+      sessionId: 'session_abc123456789',
+    })
+
+    expect(result).toEqual({
+      tenant: {
+        apiKeyId: 'apk_tenant',
+        publishableKey: 'pk_tenant_session',
+        salesChannelId: 'sc_tenant',
+      },
+    })
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'http://localhost:9000/admin/api-keys/apk_tenant/sales-channels',
+      expect.objectContaining({
+        body: JSON.stringify({ add: ['sc_tenant'] }),
+        method: 'POST',
+      }),
+    )
+  })
+
   it('isolates the same unmanaged SKU and collection across two tenant syncs', async () => {
-    const createFetch = (sessionId: string, suffix: string) =>
-      vi
+    function createFetch(sessionId: string, suffix: string) {
+      return vi
         .fn()
         .mockResolvedValueOnce(
           new Response(
@@ -101,6 +183,7 @@ describe('medusa product sync', () => {
             status: 200,
           }),
         )
+    }
     const product = {
       collections: [
         {
@@ -149,7 +232,7 @@ describe('medusa product sync', () => {
       'http://localhost:9000/admin/collections?handle=ship-fast-session-tenant-b-summer-edit&limit=1',
       expect.anything(),
     )
-    const providerSku = (fetchImpl: typeof tenantAFetch) => {
+    function providerSku(fetchImpl: typeof tenantAFetch) {
       const createProductCall = fetchImpl.mock.calls.find(
         ([url]) => url === 'http://localhost:9000/admin/products',
       )
@@ -303,6 +386,7 @@ describe('medusa product sync', () => {
         ship_fast_generated_handle: 'linen-tee',
         ship_fast_generated_product: true,
         ship_fast_generated_source_id: 'product_linen_tee',
+        ship_fast_generated_sync_signature: expect.stringMatching(/^v1:/),
         ship_fast_session_id: 'session_abc123456789',
       },
       options: [{ title: 'Size', values: ['Small', 'Large'] }],
@@ -820,7 +904,9 @@ describe('medusa product sync', () => {
       }),
     )
     expect(fetchImpl).toHaveBeenCalledWith(
-      'http://localhost:9000/admin/products?handle=ship-fast-session-abc123456789-truffle-box&limit=1',
+      expect.stringContaining(
+        'http://localhost:9000/admin/products?handle=ship-fast-session-abc123456789-truffle-box&limit=1',
+      ),
       expect.objectContaining({
         headers: expect.objectContaining({
           authorization: 'Bearer admin-token',
@@ -996,6 +1082,7 @@ describe('medusa product sync', () => {
   })
 
   it('skips existing products so admin edits survive re-provisions', async () => {
+    const product = { handle: 'dark-bar', price: 12, title: 'Dark Bar' }
     const fetchImpl = vi
       .fn()
       .mockResolvedValueOnce(
@@ -1038,9 +1125,20 @@ describe('medusa product sync', () => {
         ),
       )
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ products: [{ id: 'prod_existing' }] }), {
-          status: 200,
-        }),
+        new Response(
+          JSON.stringify({
+            products: [
+              {
+                id: 'prod_existing',
+                metadata: {
+                  ship_fast_generated_sync_signature:
+                    createGeneratedProductSyncSignature(product),
+                },
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
       )
 
     const result = await syncGeneratedProductsToMedusa({
@@ -1049,7 +1147,7 @@ describe('medusa product sync', () => {
       backendUrl: 'http://localhost:9000',
       currencyCode: 'usd',
       fetch: fetchImpl,
-      products: [{ handle: 'dark-bar', price: 12, title: 'Dark Bar' }],
+      products: [product],
       sessionId: 'session_abc123456789',
     })
 
@@ -1066,14 +1164,14 @@ describe('medusa product sync', () => {
       ([url, init]) =>
         typeof url === 'string' &&
         url.includes('/admin/products/prod_existing') &&
-        (init as RequestInit)?.method === 'DELETE',
+        requestMethod(init) === 'DELETE',
     )
     expect(deleteCall).toBeUndefined()
     // Must NOT create a new product — the existing one is preserved as-is.
     const createCall = fetchImpl.mock.calls.find(
       ([url, init]) =>
         url === 'http://localhost:9000/admin/products' &&
-        (init as RequestInit)?.method === 'POST',
+        requestMethod(init) === 'POST',
     )
     expect(createCall).toBeUndefined()
     expect(
@@ -1088,7 +1186,203 @@ describe('medusa product sync', () => {
     ).toBe(false)
   })
 
+  it('seeds sync metadata on legacy products without overwriting Studio-visible edits', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ shipping_profiles: [{ id: 'sp_default' }] }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            sales_channels: [
+              { id: 'sc_tenant', name: 'Ship Fast session_abc123456789' },
+            ],
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            api_keys: [
+              {
+                id: 'apk_tenant',
+                sales_channels: [{ id: 'sc_tenant' }],
+                title: 'Ship Fast session_abc123456789',
+                token: 'pk_tenant_session',
+                type: 'publishable',
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            products: [{ id: 'prod_existing', metadata: {} }],
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ product: { id: 'prod_existing' } }), {
+          status: 200,
+        }),
+      )
+
+    const result = await syncGeneratedProductsToMedusa({
+      adminApiToken: 'admin-token',
+      backendUrl: 'http://localhost:9000',
+      fetch: fetchImpl,
+      products: [{ handle: 'dark-bar', price: 12, title: 'Dark Bar' }],
+      sessionId: 'session_abc123456789',
+    })
+
+    expect(result.synced).toBe(1)
+    const updateCall = fetchImpl.mock.calls.find(
+      ([url]) => url === 'http://localhost:9000/admin/products/prod_existing',
+    )
+    expect(updateCall).toBeTruthy()
+    expect(JSON.parse(String(updateCall?.[1]?.body))).toEqual({
+      metadata: {
+        ship_fast_generated_handle: 'dark-bar',
+        ship_fast_generated_product: true,
+        ship_fast_generated_source_id: 'product:dark-bar',
+        ship_fast_generated_sync_signature: expect.stringMatching(/^v1:/),
+        ship_fast_session_id: 'session_abc123456789',
+      },
+    })
+  })
+
+  it('pushes generated UI product edits and images into an existing Medusa product when the signature changes', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ shipping_profiles: [{ id: 'sp_default' }] }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            sales_channels: [
+              { id: 'sc_tenant', name: 'Ship Fast session_abc123456789' },
+            ],
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            api_keys: [
+              {
+                id: 'apk_tenant',
+                sales_channels: [{ id: 'sc_tenant' }],
+                title: 'Ship Fast session_abc123456789',
+                token: 'pk_tenant_session',
+                type: 'publishable',
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            products: [
+              {
+                id: 'prod_existing',
+                metadata: {
+                  ship_fast_generated_sync_signature: 'v1:old-ui-state',
+                },
+                variants: [
+                  {
+                    id: 'variant_existing',
+                    metadata: {
+                      ship_fast_generated_source_id: 'variant_dark_bar_default',
+                    },
+                    prices: [{ currency_code: 'usd', id: 'price_existing' }],
+                    sku: 'DARK-BAR-OLD',
+                    title: 'Default',
+                  },
+                ],
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ product: { id: 'prod_existing' } }), {
+          status: 200,
+        }),
+      )
+
+    const result = await syncGeneratedProductsToMedusa({
+      adminApiToken: 'admin-token',
+      backendUrl: 'http://localhost:9000',
+      fetch: fetchImpl,
+      products: [
+        {
+          description: 'Changed in generated UI',
+          handle: 'dark-bar',
+          images: [{ url: 'https://cdn.example.com/dark-bar-new.jpg' }],
+          price: 18,
+          sourceId: 'product_dark_bar',
+          thumbnail: 'https://cdn.example.com/dark-bar-thumb.jpg',
+          title: 'Dark Bar Updated',
+          variants: [
+            {
+              manageInventory: false,
+              optionValues: {},
+              prices: [{ amount: 18, currencyCode: 'usd' }],
+              sku: 'DARK-BAR-NEW',
+              sourceId: 'variant_dark_bar_default',
+              title: 'Default',
+            },
+          ],
+        },
+      ],
+      sessionId: 'session_abc123456789',
+    })
+
+    expect(result.synced).toBe(1)
+    const updateCall = fetchImpl.mock.calls.find(
+      ([url]) => url === 'http://localhost:9000/admin/products/prod_existing',
+    )
+    expect(updateCall).toBeTruthy()
+    expect(JSON.parse(String(updateCall?.[1]?.body))).toMatchObject({
+      description: 'Changed in generated UI',
+      images: [{ url: 'https://cdn.example.com/dark-bar-new.jpg' }],
+      metadata: {
+        ship_fast_generated_handle: 'dark-bar',
+        ship_fast_generated_product: true,
+        ship_fast_generated_source_id: 'product_dark_bar',
+        ship_fast_generated_sync_signature: expect.stringMatching(/^v1:/),
+        ship_fast_session_id: 'session_abc123456789',
+      },
+      thumbnail: 'https://cdn.example.com/dark-bar-thumb.jpg',
+      title: 'Dark Bar Updated',
+      variants: [
+        {
+          id: 'variant_existing',
+          prices: [{ amount: 18, currency_code: 'usd', id: 'price_existing' }],
+          sku: 'SHIP-FAST-SESSION-ABC123456789-DARK-BAR-DARK-BAR-NEW',
+        },
+      ],
+    })
+  })
+
   it('creates new products and skips existing ones in the same batch', async () => {
+    const existingProduct = { handle: 'dark-bar', price: 12, title: 'Dark Bar' }
     const fetchImpl = vi
       .fn()
       .mockResolvedValueOnce(
@@ -1130,9 +1424,20 @@ describe('medusa product sync', () => {
       )
       // First product lookup: exists → skip
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ products: [{ id: 'prod_existing' }] }), {
-          status: 200,
-        }),
+        new Response(
+          JSON.stringify({
+            products: [
+              {
+                id: 'prod_existing',
+                metadata: {
+                  ship_fast_generated_sync_signature:
+                    createGeneratedProductSyncSignature(existingProduct),
+                },
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
       )
       // Second product lookup: does not exist → create
       .mockResolvedValueOnce(
@@ -1151,7 +1456,7 @@ describe('medusa product sync', () => {
       currencyCode: 'usd',
       fetch: fetchImpl,
       products: [
-        { handle: 'dark-bar', price: 12, title: 'Dark Bar' },
+        existingProduct,
         { handle: 'new-mug', price: 25, title: 'New Mug' },
       ],
       sessionId: 'session_abc123456789',
@@ -1162,20 +1467,18 @@ describe('medusa product sync', () => {
     const createCalls = fetchImpl.mock.calls.filter(
       ([url, init]) =>
         url === 'http://localhost:9000/admin/products' &&
-        (init as RequestInit)?.method === 'POST' &&
-        (init as RequestInit)?.body &&
-        JSON.parse(String((init as RequestInit).body)).handle !== undefined,
+        requestMethod(init) === 'POST' &&
+        requestBody(init) !== undefined &&
+        JSON.parse(String(requestBody(init))).handle !== undefined,
     )
     expect(createCalls).toHaveLength(1)
-    expect(
-      JSON.parse(String((createCalls[0]?.[1] as RequestInit)?.body)),
-    ).toMatchObject({
+    expect(JSON.parse(String(requestBody(createCalls[0]?.[1])))).toMatchObject({
       handle: 'ship-fast-session-abc123456789-new-mug',
       title: 'New Mug',
     })
     // No DELETE calls at all.
     const deleteCalls = fetchImpl.mock.calls.filter(
-      ([, init]) => (init as RequestInit)?.method === 'DELETE',
+      ([, init]) => requestMethod(init) === 'DELETE',
     )
     expect(deleteCalls).toHaveLength(0)
   })

@@ -14,7 +14,7 @@ export const Route = createFileRoute(
           params.sessionId,
           request,
           client,
-          { env: process.env, fetch, metaEnv: {} },
+          { fetch },
         )
       },
     },

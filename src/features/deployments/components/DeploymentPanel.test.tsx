@@ -47,9 +47,12 @@ vi.mock('convex/react', () => ({
   },
   useQuery: () => {
     convexState.queryCallCount += 1
-    return convexState.queryCallCount % 2 === 1
-      ? convexState.exportTargets
-      : (convexState.deploymentStatuses.get('current') ?? null)
+    const queryPosition = convexState.queryCallCount % 3
+    if (queryPosition === 1) return convexState.exportTargets
+    if (queryPosition === 2) {
+      return convexState.deploymentStatuses.get('current') ?? null
+    }
+    return null
   },
 }))
 

@@ -20,6 +20,10 @@ import {
 type FetchLike = typeof fetch
 type CommerceApiClient = Pick<ConvexHttpClient, 'query' | 'mutation'>
 type ContainerInfo = { backendUrl: string }
+type SessionLookupResponse = {
+  sessionId?: unknown
+  id?: unknown
+}
 
 type MedusaProductReadOptions = {
   env?: MedusaEnv
@@ -56,6 +60,21 @@ function stringValue(value: unknown): string | undefined {
 
 function createClient(clientOverride?: CommerceApiClient): CommerceApiClient {
   return clientOverride ?? createRuntimeConvexHttpClient()
+}
+
+async function resolveProductReadSessionId(
+  client: CommerceApiClient,
+  lookup: string,
+): Promise<string> {
+  try {
+    const response = (await client.query(api.sessions.getSessionApiResponse, {
+      lookup,
+    })) as SessionLookupResponse | null
+    const resolved = response?.sessionId ?? response?.id
+    return typeof resolved === 'string' && resolved.trim() ? resolved : lookup
+  } catch {
+    return lookup
+  }
 }
 
 function createTenantName(sessionId: string): string {
@@ -198,14 +217,20 @@ export async function createSessionMedusaProductsResponse(
   clientOverride?: CommerceApiClient,
 ): Promise<Response> {
   const fetchImpl = options.fetch ?? fetch
+  const client =
+    clientOverride === undefined ? undefined : createClient(clientOverride)
+  const resolvedSessionId =
+    client === undefined
+      ? sessionId
+      : await resolveProductReadSessionId(client, sessionId)
 
   // Resolve the per-session container URL. Priority:
   //   1. backendUrl stored in commerce config (set during provisioning)
   //   2. running container discovered via docker inspect (or injected mock)
   //   3. MEDUSA_BACKEND_URL from env (fallback, shared backend)
-  const tenantConfig = await readTenantConfig(sessionId, clientOverride)
+  const tenantConfig = await readTenantConfig(resolvedSessionId, client)
   const containerFinder = options.containerFinder ?? findRunningSessionContainer
-  const runningContainer = await containerFinder(sessionId)
+  const runningContainer = await containerFinder(resolvedSessionId)
   const backendUrl = normalizeBackendUrl(
     tenantConfig.backendUrl ??
       runningContainer?.backendUrl ??
@@ -220,14 +245,14 @@ export async function createSessionMedusaProductsResponse(
         backendUrl,
         fetchImpl,
         options,
-        sessionId,
+        sessionId: resolvedSessionId,
       })) ??
       getMedusaPublishableKey(options.env, options.metaEnv)
   } catch {
     return json(
       {
         products: [],
-        sessionId,
+        sessionId: resolvedSessionId,
         warning: 'Medusa Store API product read failed.',
       },
       { status: 200 },
@@ -236,7 +261,7 @@ export async function createSessionMedusaProductsResponse(
   if (!publishableKey.trim()) {
     return json({
       products: [],
-      sessionId,
+      sessionId: resolvedSessionId,
       warning: 'Medusa Store API not configured.',
     })
   }
@@ -249,7 +274,7 @@ export async function createSessionMedusaProductsResponse(
     })
     const regionQuery =
       regionId === undefined ? '' : `&region_id=${encodeURIComponent(regionId)}`
-    const response = await fetchImpl(
+    let response = await fetchImpl(
       `${backendUrl}/store/products?limit=100${regionQuery}&fields=${encodeURIComponent(
         medusaStoreProductFields,
       )}`,
@@ -257,12 +282,17 @@ export async function createSessionMedusaProductsResponse(
         headers: { 'x-publishable-api-key': publishableKey.trim() },
       },
     )
+    if (regionId === undefined && response.status === 400) {
+      response = await fetchImpl(`${backendUrl}/store/products?limit=100`, {
+        headers: { 'x-publishable-api-key': publishableKey.trim() },
+      })
+    }
 
     if (!response.ok) {
       return json(
         {
           products: [],
-          sessionId,
+          sessionId: resolvedSessionId,
           warning: `Medusa Store API product read failed (${response.status}).`,
         },
         { status: 200 },
@@ -274,22 +304,22 @@ export async function createSessionMedusaProductsResponse(
       return json(
         {
           products: [],
-          sessionId,
+          sessionId: resolvedSessionId,
           warning: 'Medusa Store API product read failed.',
         },
         { status: 200 },
       )
     }
     const products = payload.products
-      .map((product) => normalizeMedusaStoreProduct(sessionId, product))
+      .map((product) => normalizeMedusaStoreProduct(resolvedSessionId, product))
       .filter((product) => product !== undefined)
 
-    return json({ products, sessionId })
+    return json({ products, sessionId: resolvedSessionId })
   } catch {
     return json(
       {
         products: [],
-        sessionId,
+        sessionId: resolvedSessionId,
         warning: 'Medusa Store API product read failed.',
       },
       { status: 200 },

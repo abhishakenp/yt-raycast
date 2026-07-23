@@ -31,7 +31,7 @@ type RouteWithHandlers = {
 }
 
 describe('session Medusa API routes', () => {
-  it('passes explicit server env into Medusa provisioning', async () => {
+  it('lets Medusa provisioning use default server env fallback', async () => {
     const request = new Request(
       'https://ship-fast.test/api/sessions/session_123/provision/medusa',
       {
@@ -59,19 +59,17 @@ describe('session Medusa API routes', () => {
         query: expect.any(Function),
       }),
       expect.objectContaining({
-        env: process.env,
         fetch,
-        metaEnv: {},
       }),
     )
     expect(client).toMatchObject({
       mutation: expect.any(Function),
       query: expect.any(Function),
     })
-    expect(options.env).toBe(process.env)
+    expect(options.env).toBeUndefined()
   })
 
-  it('passes explicit server env into Medusa product reads', async () => {
+  it('lets Medusa product reads use default server env fallback', async () => {
     productsMock.mockResolvedValue(new Response('{}'))
 
     const { Route } = await import('./sessions.$sessionId.medusa-products')
@@ -82,9 +80,11 @@ describe('session Medusa API routes', () => {
     expect(productsMock).toHaveBeenCalledWith(
       'session_123',
       expect.objectContaining({
-        env: process.env,
         fetch,
-        metaEnv: {},
+      }),
+      expect.objectContaining({
+        mutation: expect.any(Function),
+        query: expect.any(Function),
       }),
     )
   })

@@ -44,12 +44,17 @@ const convexState = vi.hoisted(() => ({
     ensureArtifact: { ref: 'ensureExportArtifactByLookup' },
     getExportTargets: { ref: 'getExportTargets' },
     getDeploymentStatus: { ref: 'getDeploymentStatusByLookup' },
+    getCommerceConfig: { ref: 'getCommerceConfig' },
   },
   exportTargets: {
     isPrivate: false,
     targets: Array<MockDeploymentTarget>(),
   } as MockExportTargets,
   deploymentStatus: null as MockDeploymentStatus | null,
+  commerceConfig: null as {
+    status: string
+    configJson?: string
+  } | null,
   publishPreview: vi.fn(async () => ({ url: 'https://ship-fast.test/site' })),
   ensureExportArtifact: vi.fn(async () => ({
     target: 'lakebed',
@@ -65,6 +70,7 @@ vi.mock('../../../../convex/_generated/api', () => ({
       ensureExportArtifactByLookup: convexState.refs.ensureArtifact,
       getExportTargets: convexState.refs.getExportTargets,
       getDeploymentStatusByLookup: convexState.refs.getDeploymentStatus,
+      getCommerceConfig: convexState.refs.getCommerceConfig,
     },
   },
 }))
@@ -82,6 +88,8 @@ vi.mock('convex/react', () => ({
       return convexState.exportTargets
     if (ref === convexState.refs.getDeploymentStatus)
       return convexState.deploymentStatus
+    if (ref === convexState.refs.getCommerceConfig)
+      return convexState.commerceConfig
     throw new Error(`useQuery: unknown ref ${String(ref)}`)
   },
 }))
@@ -130,6 +138,7 @@ describe('DeploymentPanel (behavioral)', () => {
     })
     setExportTargets([])
     setDeploymentStatus(null)
+    convexState.commerceConfig = null
     vi.spyOn(window, 'open').mockImplementation(() => null)
   })
 
@@ -234,6 +243,21 @@ describe('DeploymentPanel (behavioral)', () => {
   })
 
   describe('3. publish ShipFast flow', () => {
+    it('blocks ShipFast publishing for a Medusa store until Razorpay credentials are entered', async () => {
+      convexState.commerceConfig = {
+        status: 'ready',
+        configJson: '{"provider":"medusa"}',
+      }
+      const view = render(<DeploymentPanel sessionId="session_123" />)
+
+      fireEvent.click(view.getByText('Publish ShipFast').closest('button')!)
+
+      expect(document.body.textContent).toContain(
+        'Connect Razorpay before deployment',
+      )
+      expect(convexState.publishPreview).not.toHaveBeenCalled()
+    })
+
     it('clicking Publish ShipFast triggers the publishPreview mutation', async () => {
       const view = render(<DeploymentPanel sessionId="session_123" />)
 
@@ -285,6 +309,90 @@ describe('DeploymentPanel (behavioral)', () => {
   })
 
   describe('4. publish Lakebed flow', () => {
+    it('blocks a Medusa store deployment until Razorpay test credentials are entered', async () => {
+      convexState.commerceConfig = {
+        status: 'ready',
+        configJson: '{"provider":"medusa"}',
+      }
+      setExportTargets([
+        { target: 'lakebed', artifactReady: true, artifactStatus: 'ready' },
+      ])
+      const fetchMock = lakebedJsonResponse(
+        'https://lakebed-launch.lakebed.app',
+      )
+      vi.stubGlobal('fetch', fetchMock)
+
+      const view = render(<DeploymentPanel sessionId="session_123" />)
+      fireEvent.click(view.getByText('Publish Lakebed').closest('button')!)
+
+      expect(
+        document.body.textContent?.includes(
+          'Connect Razorpay before deployment',
+        ),
+      ).toBe(true)
+      expect(fetchMock).not.toHaveBeenCalled()
+
+      fireEvent.click(
+        document.body.querySelector(
+          '[data-slot="alert-dialog-action"]',
+        ) as HTMLButtonElement,
+      )
+      expect(document.body.textContent).toContain(
+        'Razorpay key ID and key secret are required',
+      )
+      expect(fetchMock).not.toHaveBeenCalled()
+    })
+
+    it('sends entered Razorpay credentials only in the Lakebed deployment request', async () => {
+      convexState.commerceConfig = {
+        status: 'ready',
+        configJson: '{"provider":"medusa"}',
+      }
+      setExportTargets([
+        { target: 'lakebed', artifactReady: true, artifactStatus: 'ready' },
+      ])
+      const fetchMock = lakebedJsonResponse(
+        'https://lakebed-launch.lakebed.app',
+      )
+      vi.stubGlobal('fetch', fetchMock)
+
+      const view = render(<DeploymentPanel sessionId="session_123" />)
+      fireEvent.click(view.getByText('Publish Lakebed').closest('button')!)
+      fireEvent.change(
+        document.body.querySelector(
+          '[aria-label="Razorpay key ID"]',
+        ) as HTMLInputElement,
+        { target: { value: 'rzp_test_store' } },
+      )
+      fireEvent.change(
+        document.body.querySelector(
+          '[aria-label="Razorpay key secret"]',
+        ) as HTMLInputElement,
+        { target: { value: 'store-secret' } },
+      )
+      fireEvent.click(
+        document.body.querySelector(
+          '[data-slot="alert-dialog-action"]',
+        ) as HTMLButtonElement,
+      )
+
+      await waitFor(() =>
+        expect(fetchMock).toHaveBeenCalledWith(
+          '/api/sessions/session_123/deploy/lakebed',
+          expect.objectContaining({
+            body: JSON.stringify({
+              anonymousOwnerSecret: undefined,
+              razorpay: {
+                environment: 'test',
+                keyId: 'rzp_test_store',
+                keySecret: 'store-secret',
+              },
+            }),
+          }),
+        ),
+      )
+    })
+
     it('clicking Publish Lakebed (ready artifact) triggers the lakebed deploy API', async () => {
       setExportTargets([
         { target: 'lakebed', artifactReady: true, artifactStatus: 'ready' },

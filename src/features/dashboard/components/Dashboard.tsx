@@ -771,12 +771,14 @@ export function Dashboard({
   const visualProducts = useMemo(
     () =>
       extractGeneratedCommerceProducts({
-        source: homeModule?.source,
+        source:
+          generationView?.latestPreview?.openUiSource ?? homeModule?.source,
         siteSpecJson:
           generationView?.siteSpec?.specJson ??
           generationView?.latestPreview?.siteSpecJson,
       }),
     [
+      generationView?.latestPreview?.openUiSource,
       generationView?.latestPreview?.siteSpecJson,
       generationView?.siteSpec?.specJson,
       homeModule?.source,
