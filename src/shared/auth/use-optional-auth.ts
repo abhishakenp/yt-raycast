@@ -105,6 +105,8 @@ export function requestClerkSignIn(): void {
   if (!isClerkConfigured || typeof window === 'undefined') return
 
   const clerk = getClerk()
+  if (clerk?.user || clerk?.session) return
+
   if (typeof clerk?.openSignIn === 'function') {
     void clerk.openSignIn()
     return
@@ -121,6 +123,8 @@ function requestClerkUserProfile(): void {
     void clerk.openUserProfile()
     return
   }
+
+  if (clerk?.user || clerk?.session) return
 
   requestClerkSignIn()
 }

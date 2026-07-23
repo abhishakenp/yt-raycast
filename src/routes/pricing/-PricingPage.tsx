@@ -9,13 +9,83 @@ import '@/styles/pricing-page.css'
 
 type CheckoutStartResponse = {
   error?: string
+  provider?: string
+  keyId?: string
   url?: string
   subscriptionId?: string
   orderId?: string
+  amount?: number
+  currency?: string
+}
+
+type PricingRazorpayCheckoutOptions = {
+  key: string
+  name: string
+  description: string
+  handler: () => void
+  modal: { ondismiss: () => void }
+  notes: Record<string, string>
+  theme: { color: string }
+  amount?: number
+  currency?: string
+  order_id?: string
+  subscription_id?: string
+}
+
+type PricingRazorpayCheckout = {
+  open: () => void
+  on: (event: 'payment.failed', handler: () => void) => void
+}
+
+type PricingRazorpayConstructor = new (
+  options: PricingRazorpayCheckoutOptions,
+) => PricingRazorpayCheckout
+
+type PricingRazorpayWindow = Window & {
+  Razorpay?: PricingRazorpayConstructor
+  Clerk?: {
+    session?: unknown | null
+    user?: unknown | null
+  }
+}
+
+let razorpayScriptPromise: Promise<void> | null = null
+const signedInVerificationMessage =
+  'Your signed-in session could not be verified. Refresh the page or sign out and sign in again.'
+const proCheckoutEndpoint = '/api/payments/razorpay/start'
+
+const hasActiveClerkSession = (): boolean => {
+  if (typeof window === 'undefined') return false
+
+  const clerk = (window as PricingRazorpayWindow).Clerk
+  return Boolean(clerk?.user || clerk?.session)
+}
+
+const loadRazorpayCheckout = async (): Promise<PricingRazorpayConstructor> => {
+  const razorpayWindow = window as PricingRazorpayWindow
+  if (razorpayWindow.Razorpay) return razorpayWindow.Razorpay
+
+  razorpayScriptPromise ??= new Promise<void>((resolve, reject) => {
+    const script = document.createElement('script')
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+    script.async = true
+    script.onload = () => resolve()
+    script.onerror = () => {
+      razorpayScriptPromise = null
+      reject(new Error('Unable to load Razorpay checkout.'))
+    }
+    document.body.appendChild(script)
+  })
+
+  await razorpayScriptPromise
+  if (!razorpayWindow.Razorpay) {
+    throw new Error('Razorpay checkout is unavailable.')
+  }
+  return razorpayWindow.Razorpay
 }
 
 export const PricingPage = () => {
-  const { getToken } = useOptionalAuth()
+  const { getToken, isSignedIn } = useOptionalAuth()
   const [checkoutMessage, setCheckoutMessage] = useState<string>()
   const [isCheckoutStarting, setIsCheckoutStarting] = useState(false)
   const pricingContentRef = useRef<HTMLDivElement>(null)
@@ -38,13 +108,26 @@ export const PricingPage = () => {
     setCheckoutMessage('Opening Pro checkout...')
 
     try {
+      const hasCheckoutSession = isSignedIn || hasActiveClerkSession()
+
+      if (!hasCheckoutSession) {
+        setCheckoutMessage('Sign in before checkout.')
+        requestClerkSignIn()
+        return
+      }
+
       const token = await getToken({ template: 'convex' })
+      if (!token) {
+        setCheckoutMessage(signedInVerificationMessage)
+        return
+      }
+
       const headers: Record<string, string> = {
+        Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       }
-      if (token) headers.Authorization = `Bearer ${token}`
 
-      const response = await fetch('/api/checkout/start', {
+      const response = await fetch(proCheckoutEndpoint, {
         method: 'POST',
         headers,
         body: JSON.stringify({
@@ -57,6 +140,11 @@ export const PricingPage = () => {
         .catch(() => ({}))) as CheckoutStartResponse
 
       if (response.status === 401) {
+        if (hasCheckoutSession || hasActiveClerkSession()) {
+          setCheckoutMessage(signedInVerificationMessage)
+          return
+        }
+
         setCheckoutMessage(data.error ?? 'Sign in before checkout.')
         requestClerkSignIn()
         return
@@ -68,6 +156,39 @@ export const PricingPage = () => {
 
       if (typeof data.url === 'string' && data.url.length > 0) {
         window.location.href = data.url
+        return
+      }
+
+      if (
+        data.provider === 'razorpay' &&
+        typeof data.keyId === 'string' &&
+        typeof data.subscriptionId === 'string'
+      ) {
+        setCheckoutMessage('Opening Razorpay checkout...')
+        const Razorpay = await loadRazorpayCheckout()
+        const checkout = new Razorpay({
+          key: data.keyId,
+          name: 'Ship Fast',
+          description: 'Ship Fast Pro subscription',
+          subscription_id: data.subscriptionId,
+          handler: () => {
+            setCheckoutMessage('Payment submitted. Refreshing billing...')
+          },
+          modal: {
+            ondismiss: () => {
+              setCheckoutMessage('Checkout closed.')
+            },
+          },
+          notes: {
+            mode: 'subscription',
+            tier: 'pro',
+          },
+          theme: { color: '#67e8f9' },
+        })
+        checkout.on('payment.failed', () => {
+          setCheckoutMessage('Razorpay payment failed.')
+        })
+        checkout.open()
         return
       }
 
@@ -85,7 +206,7 @@ export const PricingPage = () => {
     } finally {
       setIsCheckoutStarting(false)
     }
-  }, [getToken, isCheckoutStarting])
+  }, [getToken, isCheckoutStarting, isSignedIn])
 
   useEffect(() => {
     const content = pricingContentRef.current
@@ -96,15 +217,19 @@ export const PricingPage = () => {
         '[data-pricing-checkout-cta="true"]',
       ),
     )
-    const handleCtaClick = (event: MouseEvent) => {
+    const handleCheckoutClick = (event: MouseEvent) => {
       event.preventDefault()
       void startCheckout()
     }
 
-    for (const cta of ctas) cta.addEventListener('click', handleCtaClick)
+    for (const cta of ctas) {
+      cta.addEventListener('click', handleCheckoutClick)
+    }
 
     return () => {
-      for (const cta of ctas) cta.removeEventListener('click', handleCtaClick)
+      for (const cta of ctas) {
+        cta.removeEventListener('click', handleCheckoutClick)
+      }
     }
   }, [startCheckout])
 

@@ -28,6 +28,93 @@ type BillingOverview = {
 
 type CheckoutMode = 'subscription' | 'credit_pack'
 
+type RazorpayCheckoutData = {
+  keyId: string
+  orderId?: string
+  subscriptionId?: string
+  amount?: number
+  currency?: string
+}
+
+type RazorpayCheckoutOptions = {
+  key: string
+  name: string
+  description: string
+  handler: () => void
+  modal: { ondismiss: () => void }
+  notes: Record<string, string>
+  theme: { color: string }
+  amount?: number
+  currency?: string
+  order_id?: string
+  subscription_id?: string
+}
+
+type RazorpayCheckout = {
+  open: () => void
+  on: (event: 'payment.failed', handler: () => void) => void
+}
+
+type RazorpayConstructor = new (
+  options: RazorpayCheckoutOptions,
+) => RazorpayCheckout
+
+declare global {
+  interface Window {
+    Razorpay?: RazorpayConstructor
+  }
+}
+
+let razorpayScriptPromise: Promise<void> | null = null
+
+const stringField = (value: unknown): string | undefined =>
+  typeof value === 'string' && value.length > 0 ? value : undefined
+
+const numberField = (value: unknown): number | undefined =>
+  typeof value === 'number' && Number.isFinite(value) ? value : undefined
+
+const razorpayCheckoutDataFrom = (
+  data: Record<string, unknown>,
+): RazorpayCheckoutData | null => {
+  if (data.provider !== 'razorpay') return null
+
+  const keyId = stringField(data.keyId)
+  const orderId = stringField(data.orderId)
+  const subscriptionId = stringField(data.subscriptionId)
+  if (!keyId || (!orderId && !subscriptionId)) return null
+
+  return {
+    keyId,
+    orderId,
+    subscriptionId,
+    amount: numberField(data.amount),
+    currency: stringField(data.currency),
+  }
+}
+
+const loadRazorpayCheckout = async (): Promise<RazorpayConstructor> => {
+  if (typeof window === 'undefined') {
+    throw new Error('Razorpay checkout is unavailable.')
+  }
+  if (window.Razorpay) return window.Razorpay
+
+  razorpayScriptPromise ??= new Promise<void>((resolve, reject) => {
+    const script = document.createElement('script')
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+    script.async = true
+    script.onload = () => resolve()
+    script.onerror = () => {
+      razorpayScriptPromise = null
+      reject(new Error('Unable to load Razorpay checkout.'))
+    }
+    document.body.appendChild(script)
+  })
+
+  await razorpayScriptPromise
+  if (!window.Razorpay) throw new Error('Razorpay checkout is unavailable.')
+  return window.Razorpay
+}
+
 export function BillingPanel({ sessionId }: BillingPanelProps) {
   const { getToken, isSignedIn } = useOptionalAuth()
   const [overview, setOverview] = useState<BillingOverview | null>(null)
@@ -115,6 +202,48 @@ export function BillingPanel({ sessionId }: BillingPanelProps) {
 
       if (typeof data.url === 'string' && data.url) {
         window.location.href = data.url
+        return
+      }
+
+      const razorpayData = razorpayCheckoutDataFrom(data)
+      if (razorpayData) {
+        const Razorpay = await loadRazorpayCheckout()
+        const description =
+          mode === 'subscription'
+            ? 'Ship Fast Pro subscription'
+            : `${packId === '10_credits' ? 10 : 3} export credits`
+        const checkout = new Razorpay({
+          key: razorpayData.keyId,
+          name: 'Ship Fast',
+          description,
+          handler: () => {
+            setCheckoutState('Payment submitted. Refreshing billing...')
+            void loadOverview()
+          },
+          modal: {
+            ondismiss: () => {
+              setCheckoutState('Checkout closed.')
+            },
+          },
+          notes: {
+            mode,
+            sessionId,
+            ...(packId ? { packId } : {}),
+          },
+          theme: { color: '#67e8f9' },
+          ...(razorpayData.subscriptionId
+            ? { subscription_id: razorpayData.subscriptionId }
+            : {
+                order_id: razorpayData.orderId,
+                amount: razorpayData.amount,
+                currency: razorpayData.currency ?? 'INR',
+              }),
+        })
+        checkout.on('payment.failed', () => {
+          setCheckoutState(undefined)
+          setError('Razorpay payment failed.')
+        })
+        checkout.open()
         return
       }
 

@@ -11,12 +11,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const authState = vi.hoisted(() => ({
   getToken: vi.fn(),
+  isSignedIn: false,
   requestClerkSignIn: vi.fn(),
 }))
 
 vi.mock('@/shared/auth/use-optional-auth', () => ({
   requestClerkSignIn: authState.requestClerkSignIn,
-  useOptionalAuth: () => ({ getToken: authState.getToken }),
+  useOptionalAuth: () => ({
+    getToken: authState.getToken,
+    isSignedIn: authState.isSignedIn,
+  }),
 }))
 
 vi.mock('./-MarketingShell', () => ({
@@ -44,6 +48,7 @@ describe('PricingPage', () => {
   beforeEach(() => {
     authState.getToken.mockReset()
     authState.getToken.mockResolvedValue(null)
+    authState.isSignedIn = false
     authState.requestClerkSignIn.mockReset()
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: false,
@@ -65,16 +70,7 @@ describe('PricingPage', () => {
 
     fireEvent.click(getByText('Start Pro'))
 
-    await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith('/api/checkout/start', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mode: 'subscription',
-          tier: 'pro',
-        }),
-      })
-    })
+    expect(fetch).not.toHaveBeenCalled()
     expect(authState.requestClerkSignIn).toHaveBeenCalledTimes(1)
     expect(screen.getByRole('status').textContent).toContain(
       'Sign in before checkout.',
@@ -82,6 +78,7 @@ describe('PricingPage', () => {
   })
 
   it('sends an auth token when one is available for checkout', async () => {
+    authState.isSignedIn = true
     authState.getToken.mockResolvedValue('convex-token')
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: false,
@@ -93,7 +90,7 @@ describe('PricingPage', () => {
     fireEvent.click(getByText('Start Pro'))
 
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith('/api/checkout/start', {
+      expect(fetch).toHaveBeenCalledWith('/api/payments/razorpay/start', {
         method: 'POST',
         headers: {
           Authorization: 'Bearer convex-token',
@@ -108,6 +105,83 @@ describe('PricingPage', () => {
     expect(authState.requestClerkSignIn).not.toHaveBeenCalled()
     expect(screen.getByRole('status').textContent).toContain(
       'razorpay checkout is not configured.',
+    )
+  })
+
+  it('does not reopen Clerk when checkout rejects a signed-in session token', async () => {
+    authState.isSignedIn = true
+    authState.getToken.mockResolvedValue('convex-token')
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 401,
+      json: async () => ({ error: 'Sign in before checkout.' }),
+    }) as unknown as typeof fetch
+    const { getByText } = render(<PricingPage />)
+
+    fireEvent.click(getByText('Start Pro'))
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith('/api/payments/razorpay/start', {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer convex-token',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mode: 'subscription',
+          tier: 'pro',
+        }),
+      })
+    })
+    expect(authState.requestClerkSignIn).not.toHaveBeenCalled()
+    expect(screen.getByRole('status').textContent).toContain(
+      'Your signed-in session could not be verified.',
+    )
+  })
+
+  it('opens Razorpay checkout when Pro checkout returns a subscription', async () => {
+    const checkoutOpen = vi.fn()
+    const checkoutOn = vi.fn()
+    const razorpayOptions: Record<string, unknown>[] = []
+    class RazorpayMock {
+      constructor(options: Record<string, unknown>) {
+        razorpayOptions.push(options)
+      }
+
+      open = checkoutOpen
+      on = checkoutOn
+    }
+    vi.stubGlobal('Razorpay', RazorpayMock)
+    authState.isSignedIn = true
+    authState.getToken.mockResolvedValue('convex-token')
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        provider: 'razorpay',
+        keyId: 'rzp_test_key',
+        subscriptionId: 'sub_test_123',
+      }),
+    }) as unknown as typeof fetch
+    const { getByText } = render(<PricingPage />)
+
+    fireEvent.click(getByText('Start Pro'))
+
+    await waitFor(() => expect(checkoutOpen).toHaveBeenCalledTimes(1))
+    expect(razorpayOptions[0]).toMatchObject({
+      key: 'rzp_test_key',
+      subscription_id: 'sub_test_123',
+      notes: {
+        mode: 'subscription',
+        tier: 'pro',
+      },
+    })
+    expect(checkoutOn).toHaveBeenCalledWith(
+      'payment.failed',
+      expect.any(Function),
+    )
+    expect(screen.getByRole('status').textContent).toContain(
+      'Opening Razorpay checkout...',
     )
   })
 

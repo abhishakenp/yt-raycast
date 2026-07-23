@@ -458,6 +458,33 @@ describe('createCheckoutApiResponse', () => {
     expect(fetchSpy).not.toHaveBeenCalled()
   })
 
+  it('returns 401 when Convex rejects the Clerk billing token before checkout starts', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+    client.query.mockRejectedValueOnce(
+      new Error('ConvexError: UNAUTHENTICATED'),
+    )
+
+    const response = await createCheckoutApiResponse(
+      new Request('https://ship-fast.test/api/checkout/start', {
+        method: 'POST',
+        headers: { authorization: 'Bearer token_123' },
+        body: JSON.stringify({
+          mode: 'subscription',
+          gateway: 'razorpay',
+        }),
+      }),
+      env,
+      client,
+    )
+
+    expect(response.status).toBe(401)
+    await expect(response.json()).resolves.toEqual({
+      error: 'Sign in before checkout.',
+    })
+    expect(client.setAuth).toHaveBeenCalledWith('token_123')
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+
   it('does not treat a Stripe 200 response without a checkout URL or session id as successful checkout', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(JSON.stringify({ object: 'checkout.session' }), {
