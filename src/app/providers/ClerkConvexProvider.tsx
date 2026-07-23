@@ -5,21 +5,12 @@ import { useMemo } from 'react'
 import type { ReactNode } from 'react'
 
 import { clerkFrostedGlassAppearance } from '@/app/providers/clerk-appearance'
-import { useClaimAnonymousSessionsOnSignIn } from '@/shared/auth/useClaimAnonymousSessionsOnSignIn'
+import { SyncSessions } from '@/shared/auth/SyncSessions'
 
 type ClerkConvexProviderProps = {
   children: ReactNode
   clerkPublishableKey: string
   convexUrl: string
-}
-
-// Mounts the claim-on-sign-in effect inside the Convex+Clerk provider tree so
-// the mutation is available. Renders nothing. Only mounted here, where both
-// Clerk and Convex are configured, so anonymous sessions are linked to the
-// signed-in userId on the anon→authenticated transition.
-const AnonymousSessionClaimer = () => {
-  useClaimAnonymousSessionsOnSignIn()
-  return null
 }
 
 export function ClerkConvexProvider({
@@ -39,7 +30,7 @@ export function ClerkConvexProvider({
       appearance={clerkFrostedGlassAppearance}
     >
       <ConvexProviderWithClerk client={convexClient} useAuth={useAuth}>
-        <AnonymousSessionClaimer />
+        <SyncSessions />
         {children}
       </ConvexProviderWithClerk>
     </ClerkProvider>

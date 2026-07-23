@@ -6,7 +6,7 @@ import { shouldUseAuthenticatedProviders } from '@/app/providers/provider-config
 
 const appProviderMocks = vi.hoisted(() => ({
   clerkPublishableKey: 'pk_test_dummy' as string | undefined,
-  claimAnonymousSessionsOnSignIn: vi.fn(),
+  syncSessions: vi.fn(() => null),
   clerkProviderProps: [] as Array<Record<string, unknown>>,
   convexClients: [] as Array<{ options: unknown; url: string }>,
   convexWithClerkProps: [] as Array<{ client: unknown; useAuth: unknown }>,
@@ -90,9 +90,8 @@ vi.mock('@/lib/chunk-load-recovery', () => ({
   installDynamicImportRecovery: () => () => {},
 }))
 
-vi.mock('@/shared/auth/useClaimAnonymousSessionsOnSignIn', () => ({
-  useClaimAnonymousSessionsOnSignIn:
-    appProviderMocks.claimAnonymousSessionsOnSignIn,
+vi.mock('@/shared/auth/SyncSessions', () => ({
+  SyncSessions: appProviderMocks.syncSessions,
 }))
 
 vi.mock('sonner', () => ({
@@ -133,7 +132,7 @@ describe('app provider loading', () => {
   afterEach(() => {
     cleanup()
     appProviderMocks.clerkPublishableKey = 'pk_test_dummy'
-    appProviderMocks.claimAnonymousSessionsOnSignIn.mockClear()
+    appProviderMocks.syncSessions.mockClear()
     appProviderMocks.clerkProviderProps.length = 0
     appProviderMocks.convexClients.length = 0
     appProviderMocks.convexWithClerkProps.length = 0
@@ -206,9 +205,7 @@ describe('app provider loading', () => {
           useAuth: expect.any(Function),
         },
       ])
-      expect(
-        appProviderMocks.claimAnonymousSessionsOnSignIn,
-      ).toHaveBeenCalledTimes(1)
+      expect(appProviderMocks.syncSessions).toHaveBeenCalledTimes(1)
       expect(screen.getByTestId('child')).toBeTruthy()
     })
 

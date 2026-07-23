@@ -4,7 +4,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 
 const rootMocks = vi.hoisted(() => ({
   acquisitionCapture: vi.fn(),
-  claimOnSignIn: vi.fn(),
+  syncSessions: vi.fn(() => null),
   installDynamicImportRecovery: vi.fn(() => vi.fn()),
 }))
 
@@ -46,8 +46,8 @@ vi.mock('@/lib/chunk-load-recovery', () => ({
   installDynamicImportRecovery: rootMocks.installDynamicImportRecovery,
 }))
 
-vi.mock('@/shared/auth/useClaimAnonymousSessionsOnSignIn', () => ({
-  useClaimAnonymousSessionsOnSignIn: rootMocks.claimOnSignIn,
+vi.mock('@/shared/auth/SyncSessions', () => ({
+  SyncSessions: rootMocks.syncSessions,
 }))
 
 vi.mock('sonner', () => ({
@@ -91,7 +91,7 @@ describe('root document hydration hardening', () => {
 
   afterEach(() => {
     cleanup()
-    rootMocks.claimOnSignIn.mockReset()
+    rootMocks.syncSessions.mockReset()
     rootMocks.acquisitionCapture.mockReset()
     rootMocks.installDynamicImportRecovery.mockClear()
     document.documentElement.className = ''
@@ -181,9 +181,9 @@ describe('root document hydration hardening', () => {
     // Clerk is lazy-loaded via ClerkConvexProvider on authenticated routes,
     // not mounted in the root shell itself.
     expect(screen.queryByTestId('clerk-provider')).toBeNull()
-    // Claim-on-sign-in lives inside ClerkConvexProvider, not the root, so it
+    // SyncSessions lives inside ClerkConvexProvider, not the root, so it
     // is not invoked from the root shell.
-    expect(rootMocks.claimOnSignIn).not.toHaveBeenCalled()
+    expect(rootMocks.syncSessions).not.toHaveBeenCalled()
     // Referral attribution capture is app-wide and must mount before route
     // content so ?ref= links are handled from any entry route.
     expect(rootMocks.acquisitionCapture).toHaveBeenCalled()
@@ -230,8 +230,8 @@ describe('root document hydration hardening', () => {
 
     render(<RootComponent />)
 
-    // Claim-on-sign-in is mounted inside ClerkConvexProvider (lazy, route-gated
+    // SyncSessions is mounted inside ClerkConvexProvider (lazy, route-gated
     // via AppProviders), not the root shell, so it is not invoked from root.
-    expect(rootMocks.claimOnSignIn).not.toHaveBeenCalled()
+    expect(rootMocks.syncSessions).not.toHaveBeenCalled()
   })
 })
