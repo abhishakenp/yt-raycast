@@ -487,7 +487,7 @@ const config = defineConfig({
   ],
   resolve: { tsconfigPaths: true },
   server: {
-    allowedHosts: ['.ship-fast.io'],
+    allowedHosts: ['.ship-fast.ai', '.ship-fast.test'],
   },
   // esbuild pulls in fsevents (native macOS binary) which Vite's rolldown
   // optimizer cannot parse as UTF-8. Exclude both from dep pre-bundling.

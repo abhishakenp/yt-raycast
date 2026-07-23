@@ -1,0 +1,18 @@
+entryPoints:
+  web:
+    address: ':80'
+  websecure:
+    address: ':443'
+  traefik:
+    address: ':8082'
+
+providers:
+  file:
+    filename: /Users/abhi/proj/sensei/ship-fast-all/ship-fast/.local-proxy/dynamic.yml
+
+api:
+  dashboard: true
+  insecure: true
+
+log:
+  level: INFO

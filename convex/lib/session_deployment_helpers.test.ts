@@ -323,8 +323,24 @@ describe('session deployment helpers', () => {
 
   it('creates public deployment URLs from slugs', () => {
     expect(createDeploymentUrl('my-fancy-site')).toBe(
-      'https://my-fancy-site.ship-fast.io',
+      'https://my-fancy-site.ship-fast.ai',
     )
+  })
+
+  it('uses DEPLOYMENT_BASE_DOMAIN env var when set', () => {
+    const original = process.env.DEPLOYMENT_BASE_DOMAIN
+    process.env.DEPLOYMENT_BASE_DOMAIN = 'ship-fast.test'
+    try {
+      expect(createDeploymentUrl('my-fancy-site')).toBe(
+        'https://my-fancy-site.ship-fast.test',
+      )
+    } finally {
+      if (original === undefined) {
+        delete process.env.DEPLOYMENT_BASE_DOMAIN
+      } else {
+        process.env.DEPLOYMENT_BASE_DOMAIN = original
+      }
+    }
   })
 
   it('patches updatedAt when reserving a deployment slug', async () => {
@@ -876,7 +892,7 @@ describe('session deployment helpers', () => {
     ).resolves.toEqual({
       sessionId,
       slug: 'launch-site',
-      url: 'https://launch-site.ship-fast.io',
+      url: 'https://launch-site.ship-fast.ai',
       status: 'ready',
     })
 
@@ -894,7 +910,7 @@ describe('session deployment helpers', () => {
         value: expect.objectContaining({
           sessionId,
           slug: 'launch-site',
-          url: 'https://launch-site.ship-fast.io',
+          url: 'https://launch-site.ship-fast.ai',
           status: 'ready',
           previewVersion: 4,
         }),
@@ -904,7 +920,7 @@ describe('session deployment helpers', () => {
         value: expect.objectContaining({
           sessionId,
           eventType: 'published',
-          message: 'Published preview to https://launch-site.ship-fast.io',
+          message: 'Published preview to https://launch-site.ship-fast.ai',
           previewVersion: 4,
         }),
       },
@@ -927,7 +943,7 @@ describe('session deployment helpers', () => {
       publishSessionPreview(ctx, { sessionId }),
     ).resolves.toMatchObject({
       slug: 'existing-site',
-      url: 'https://existing-site.ship-fast.io',
+      url: 'https://existing-site.ship-fast.ai',
     })
 
     expect(patches).toEqual([
@@ -935,7 +951,7 @@ describe('session deployment helpers', () => {
         id: existingDeployment._id,
         patch: expect.objectContaining({
           slug: 'existing-site',
-          url: 'https://existing-site.ship-fast.io',
+          url: 'https://existing-site.ship-fast.ai',
           status: 'ready',
           previewVersion: 5,
           errorMessage: undefined,
@@ -955,7 +971,7 @@ describe('session deployment helpers', () => {
     ).resolves.toMatchObject({
       slug: 'build-a-deployable-site',
       status: 'ready',
-      url: 'https://build-a-deployable-site.ship-fast.io',
+      url: 'https://build-a-deployable-site.ship-fast.ai',
     })
     expect(privatePublish.patches).toEqual(
       expect.arrayContaining([
@@ -1225,7 +1241,7 @@ describe('session deployment helpers', () => {
       publishSessionPreview(ctx, { sessionId }),
     ).resolves.toMatchObject({
       slug: reservedSlug,
-      url: 'https://reserved-publish-slug.ship-fast.io',
+      url: 'https://reserved-publish-slug.ship-fast.ai',
       status: 'ready',
     })
 

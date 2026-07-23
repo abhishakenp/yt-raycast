@@ -1,0 +1,48 @@
+tls:
+  certificates:
+    - certFile: /Users/abhi/proj/sensei/ship-fast-all/ship-fast/.local-proxy/certs/ship-fast.test+1.pem
+      keyFile: /Users/abhi/proj/sensei/ship-fast-all/ship-fast/.local-proxy/certs/ship-fast.test+1-key.pem
+
+http:
+  routers:
+    # Apex domain → Vite dev server (port 3000)
+    apex:
+      rule: Host(`ship-fast.test`)
+      entryPoints:
+        - websecure
+      service: vite
+      tls: {}
+
+    # Wildcard subdomains → Vite dev server (port 3000)
+    # The app reads the Host header to extract the deployment slug.
+    wildcard:
+      rule: HostRegexp(`^[a-z0-9-]+\.ship-fast\.test$`)
+      entryPoints:
+        - websecure
+      service: vite
+      tls: {}
+
+    # HTTP → HTTPS redirect
+    http-redirect:
+      rule: HostRegexp(`{host:.+}`)
+      entryPoints:
+        - web
+      middlewares:
+        - redirect-to-https
+      service: noop
+
+  middlewares:
+    redirect-to-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
+
+  services:
+    vite:
+      loadBalancer:
+        servers:
+          - url: http://localhost:3000
+    noop:
+      loadBalancer:
+        servers:
+          - url: http://localhost:3000
