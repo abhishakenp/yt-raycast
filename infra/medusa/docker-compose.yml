@@ -53,6 +53,13 @@ services:
       MEDUSA_WORKER_MODE: server
       DISABLE_MEDUSA_ADMIN: 'false'
       DATABASE_URL: ${DATABASE_URL}
+      MEDUSA_DB_CONNECTION_TIMEOUT_MS: ${MEDUSA_DB_CONNECTION_TIMEOUT_MS:-30000}
+      MEDUSA_DB_KEEPALIVE_INITIAL_DELAY_MS: ${MEDUSA_DB_KEEPALIVE_INITIAL_DELAY_MS:-10000}
+      MEDUSA_DB_POOL_MIN: ${MEDUSA_DB_POOL_MIN:-0}
+      MEDUSA_DB_POOL_MAX: ${MEDUSA_DB_POOL_MAX:-5}
+      MEDUSA_DB_POOL_CREATE_RETRY_INTERVAL_MS: ${MEDUSA_DB_POOL_CREATE_RETRY_INTERVAL_MS:-3000}
+      __MEDUSA_DB_CONNECTION_MAX_RETRIES: ${__MEDUSA_DB_CONNECTION_MAX_RETRIES:-10}
+      __MEDUSA_DB_CONNECTION_RETRY_DELAY: ${__MEDUSA_DB_CONNECTION_RETRY_DELAY:-3000}
       REDIS_URL: ${REDIS_URL:-redis://medusa-redis:6379}
       CACHE_REDIS_URL: ${CACHE_REDIS_URL:-redis://medusa-redis:6379}
       LOCKING_REDIS_URL: ${LOCKING_REDIS_URL:-redis://medusa-redis:6379}
@@ -66,6 +73,14 @@ services:
       MEDUSA_SEED_ADMIN_PASSWORD: ${MEDUSA_SEED_ADMIN_PASSWORD}
     expose:
       - 9000
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -q -O- http://127.0.0.1:9000/health >/dev/null 2>&1
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
     labels:
       - traefik.enable=true
       - traefik.http.routers.ship-fast-medusa.rule=Host(`medusa.devliv.io`)
@@ -86,6 +101,8 @@ services:
         condition: service_healthy
       medusa-redis:
         condition: service_healthy
+      medusa-server:
+        condition: service_healthy
     env_file:
       - .env
     environment:
@@ -93,7 +110,15 @@ services:
       PORT: 9000
       MEDUSA_WORKER_MODE: worker
       DISABLE_MEDUSA_ADMIN: 'true'
+      RUN_MIGRATIONS: 'false'
       DATABASE_URL: ${DATABASE_URL}
+      MEDUSA_DB_CONNECTION_TIMEOUT_MS: ${MEDUSA_DB_CONNECTION_TIMEOUT_MS:-30000}
+      MEDUSA_DB_KEEPALIVE_INITIAL_DELAY_MS: ${MEDUSA_DB_KEEPALIVE_INITIAL_DELAY_MS:-10000}
+      MEDUSA_DB_POOL_MIN: ${MEDUSA_DB_POOL_MIN:-0}
+      MEDUSA_DB_POOL_MAX: ${MEDUSA_DB_POOL_MAX:-5}
+      MEDUSA_DB_POOL_CREATE_RETRY_INTERVAL_MS: ${MEDUSA_DB_POOL_CREATE_RETRY_INTERVAL_MS:-3000}
+      __MEDUSA_DB_CONNECTION_MAX_RETRIES: ${__MEDUSA_DB_CONNECTION_MAX_RETRIES:-10}
+      __MEDUSA_DB_CONNECTION_RETRY_DELAY: ${__MEDUSA_DB_CONNECTION_RETRY_DELAY:-3000}
       REDIS_URL: ${REDIS_URL:-redis://medusa-redis:6379}
       CACHE_REDIS_URL: ${CACHE_REDIS_URL:-redis://medusa-redis:6379}
       LOCKING_REDIS_URL: ${LOCKING_REDIS_URL:-redis://medusa-redis:6379}

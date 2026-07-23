@@ -19,6 +19,12 @@ describe('Medusa Dokploy production assets', () => {
     expect(compose).toContain('MEDUSA_WORKER_MODE: worker')
     expect(compose).toContain("DISABLE_MEDUSA_ADMIN: 'false'")
     expect(compose).toContain("DISABLE_MEDUSA_ADMIN: 'true'")
+    expect(compose).toContain('http://127.0.0.1:9000/health')
+    expect(compose).toContain('medusa-server:')
+    expect(compose).toContain('condition: service_healthy')
+    expect(compose).toContain("RUN_MIGRATIONS: 'false'")
+    expect(compose).toContain('MEDUSA_DB_CONNECTION_TIMEOUT_MS')
+    expect(compose).toContain('__MEDUSA_DB_CONNECTION_MAX_RETRIES')
     expect(compose).toContain(
       'STORE_CORS:-https://ship-fast.io,https://ship-fast.devliv.io',
     )
@@ -42,13 +48,11 @@ describe('Medusa Dokploy production assets', () => {
     expect(dockerfile).toContain('RUN bun install --frozen-lockfile')
     expect(dockerfile).toContain('RUN bun run build')
     expect(dockerfile).toContain('ENTRYPOINT ["./docker-entrypoint.sh"]')
-    expect(dockerfile).toContain(
-      'CMD ["node", "./node_modules/@medusajs/cli/cli.js", "start"]',
-    )
-    expect(entrypoint).toContain('node "$MEDUSA_CLI" db:migrate')
-    expect(entrypoint).toContain(
-      'node "$MEDUSA_CLI" exec ./src/scripts/bootstrap.ts',
-    )
-    expect(entrypoint).toContain('node "$MEDUSA_CLI" user')
+    expect(dockerfile).toContain('CMD ["start"]')
+    expect(entrypoint).toContain('SERVER_DIR=')
+    expect(entrypoint).toContain('run_medusa db:migrate')
+    expect(entrypoint).toContain('run_medusa exec ./src/scripts/bootstrap.js')
+    expect(entrypoint).toContain('run_medusa user')
+    expect(entrypoint).toContain('exec node "$MEDUSA_CLI" start "$@"')
   })
 })

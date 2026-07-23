@@ -22,4 +22,4 @@ RUN chmod +x ./docker-entrypoint.sh
 EXPOSE 9000
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
-CMD ["node", "./node_modules/@medusajs/cli/cli.js", "start"]
+CMD ["start"]
