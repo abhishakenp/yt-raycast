@@ -29,10 +29,6 @@ function json(body: unknown, init?: ResponseInit) {
   })
 }
 
-function isPublicPreviewMode(): boolean {
-  return process.env.SHIP_FAST_PUBLIC_PREVIEW_MODE === 'true'
-}
-
 export function getClientIp(request: Request): string {
   const forwarded = request.headers.get('x-forwarded-for')
   if (forwarded) {
@@ -106,7 +102,7 @@ function errorPayload(error: unknown) {
       body: {
         code: 'QUOTA_EXCEEDED',
         error:
-          'Free preview quota exhausted for this IP address. Try again tomorrow.',
+          'Anonymous daily quota exhausted. Share on social media for +1 free generation, or sign in to continue.',
       },
     }
   }
@@ -130,13 +126,6 @@ export async function createSessionCreateResponse(
   request: Request,
   clientOverride?: SessionCreateClient,
 ): Promise<Response> {
-  if (!isPublicPreviewMode()) {
-    return json(
-      { error: 'Public preview session creation is disabled.' },
-      { status: 404 },
-    )
-  }
-
   const contentType = request.headers
     .get('content-type')
     ?.split(';', 1)[0]

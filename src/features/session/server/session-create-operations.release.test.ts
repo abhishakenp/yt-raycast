@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { createSessionCreateResponse } from './session-create-response'
 
@@ -12,12 +12,7 @@ const successfulMutation = () =>
   })
 
 describe('public session creation release operations', () => {
-  afterEach(() => {
-    delete process.env.SHIP_FAST_PUBLIC_PREVIEW_MODE
-  })
-
   it('rejects cross-origin browser-simple bodies before mutation', async () => {
-    process.env.SHIP_FAST_PUBLIC_PREVIEW_MODE = 'true'
     const mutation = successfulMutation()
     const response = await createSessionCreateResponse(
       new Request(endpoint, {
@@ -39,7 +34,6 @@ describe('public session creation release operations', () => {
   })
 
   it('rejects JSON bodies larger than one MiB before mutation', async () => {
-    process.env.SHIP_FAST_PUBLIC_PREVIEW_MODE = 'true'
     const mutation = successfulMutation()
     const response = await createSessionCreateResponse(
       new Request(endpoint, {
@@ -58,7 +52,6 @@ describe('public session creation release operations', () => {
   })
 
   it('marks state-changing responses private and non-sniffable', async () => {
-    process.env.SHIP_FAST_PUBLIC_PREVIEW_MODE = 'true'
     const mutation = successfulMutation()
     const response = await createSessionCreateResponse(
       new Request(endpoint, {

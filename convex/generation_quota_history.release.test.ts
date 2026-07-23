@@ -5,7 +5,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { api } from './_generated/api'
 import schema from './schema'
-import { hashOwnerSecret } from './lib/session_access_helpers'
 import {
   DAILY_WINDOW_MS,
   MAX_ANON_PER_DAY,
@@ -61,17 +60,16 @@ async function seedUserSessions(
 
 async function seedAnonymousSessions(
   t: ReturnType<typeof convexTest>,
-  anonymousClientId: string,
+  clientIpHash: string,
   oldCount: number,
   currentCount: number,
   currentCreatedAt: number,
 ) {
-  const anonymousClientIdHash = await hashOwnerSecret(anonymousClientId)
   await t.run(async (ctx) => {
     const oldCreatedAt = Date.now() - DAILY_WINDOW_MS - 1_000
     for (let index = 0; index < oldCount; index += 1) {
       await ctx.db.insert('sessions', {
-        anonymousClientIdHash,
+        clientIpHash,
         prompt: `Historical anonymous generation ${index}`,
         preferredLanguage: 'en',
         preferredExportTarget: 'html',
@@ -81,7 +79,7 @@ async function seedAnonymousSessions(
     }
     for (let index = 0; index < currentCount; index += 1) {
       await ctx.db.insert('sessions', {
-        anonymousClientIdHash,
+        clientIpHash,
         prompt: `Current anonymous generation ${index}`,
         preferredLanguage: 'en',
         preferredExportTarget: 'html',
@@ -143,10 +141,10 @@ describe('generation quota checks with long account histories', () => {
 
   it('enforces the anonymous daily cap after more than 36 older sessions', async () => {
     const t = convexTest(schema, modules)
-    const anonymousClientId = 'anonymous-long-history'
+    const clientIpHash = 'ip_hash_long_history'
     await seedAnonymousSessions(
       t,
-      anonymousClientId,
+      clientIpHash,
       historicalRows,
       MAX_ANON_PER_DAY + SHARE_BONUS_EXTRA,
       Date.now() - RATE_WINDOW_MS - 1_000,
@@ -155,7 +153,7 @@ describe('generation quota checks with long account histories', () => {
     await expect(
       t.mutation(api.sessions.create, {
         ...createPayload('anonymous-daily-long-history'),
-        anonymousClientId,
+        clientIpHash,
         anonymousOwnerSecret: 'anonymous-owner-secret',
       }),
     ).rejects.toMatchObject({

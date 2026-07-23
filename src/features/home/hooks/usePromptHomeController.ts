@@ -199,59 +199,35 @@ async function createSessionFromHttp(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(payload),
-  }).catch(() => null)
+  })
 
-  if (response !== null) {
-    const contentType = response.headers?.get('content-type') ?? ''
-    const isHtml = contentType.includes('text/html')
-    const data = isHtml
-      ? null
-      : ((await response.json().catch(() => null)) as
-          | CreateSessionResult
-          | CreateSessionErrorResult
-          | null)
-    const disabled =
-      response.status === 404 &&
-      data !== null &&
+  const contentType = response.headers?.get('content-type') ?? ''
+  const isHtml = contentType.includes('text/html')
+  const data = isHtml
+    ? null
+    : ((await response.json().catch(() => null)) as
+        | CreateSessionResult
+        | CreateSessionErrorResult
+        | null)
+
+  const hasSessionId =
+    data !== null &&
+    'sessionId' in data &&
+    typeof data.sessionId === 'string' &&
+    data.sessionId.trim() !== ''
+
+  if (response.ok && hasSessionId) return data as CreateSessionResult
+
+  const admissionError = admissionErrorFromResponse(data)
+  if (admissionError) throw admissionError
+  throw new Error(
+    data !== null &&
       'error' in data &&
-      data.error === 'Public preview session creation is disabled.'
-
-    const hasSessionId =
-      data !== null &&
-      'sessionId' in data &&
-      typeof data.sessionId === 'string' &&
-      data.sessionId.trim() !== ''
-
-    // A 200 response with a non-JSON/HTML body, or JSON missing a session id,
-    // is a malformed success — fall back to the Convex mutation instead of
-    // navigating with an undefined id.
-    const malformedSuccess = response.ok && (data === null || !hasSessionId)
-
-    if (response.ok && hasSessionId) return data as CreateSessionResult
-    if (!disabled && !malformedSuccess) {
-      const admissionError = admissionErrorFromResponse(data)
-      if (admissionError) throw admissionError
-      throw new Error(
-        data !== null &&
-          'error' in data &&
-          typeof data.error === 'string' &&
-          data.error
-          ? data.error
-          : 'Generation could not start.',
-      )
-    }
-  }
-
-  const [{ api: convexApi }, { createRuntimeConvexHttpClient }] =
-    await Promise.all([
-      import('../../../../convex/_generated/api'),
-      import('@/shared/convex/http-client'),
-    ])
-  const client = createRuntimeConvexHttpClient(CREATE_SESSION_TIMEOUT_MS)
-  return (await client.mutation(
-    convexApi.sessions.create,
-    payload,
-  )) as CreateSessionResult
+      typeof data.error === 'string' &&
+      data.error
+      ? data.error
+      : 'Generation could not start. Try again.',
+  )
 }
 
 async function publishDraftSessionFromHttp(

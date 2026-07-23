@@ -121,10 +121,11 @@ describe('usePromptHomeController submit guard', () => {
     state.preloadRoute.mockResolvedValue(undefined)
     originalFetch = globalThis.fetch
     globalThis.fetch = vi.fn().mockResolvedValue({
-      ok: false,
-      status: 404,
+      ok: true,
+      status: 200,
       json: async () => ({
-        error: 'Public preview session creation is disabled.',
+        sessionId: 'session_double_submit_guard',
+        cached: false,
       }),
     }) as unknown as typeof globalThis.fetch
     window.localStorage.clear()
@@ -139,7 +140,6 @@ describe('usePromptHomeController submit guard', () => {
   })
 
   it('guards generation creation against same-tick duplicate submits', async () => {
-    const state = getTestState()
     const { result } = renderHook(() => usePromptHomeController())
 
     act(() => {
@@ -153,8 +153,10 @@ describe('usePromptHomeController submit guard', () => {
       ])
     })
 
-    expect(state.createSession).toHaveBeenCalledTimes(1)
-    expect(state.navigate).toHaveBeenCalledTimes(1)
+    const publicCreateCalls = vi
+      .mocked(fetch)
+      .mock.calls.filter(([input]) => input === '/api/sessions/create')
+    expect(publicCreateCalls).toHaveLength(1)
     expect(
       window.sessionStorage.getItem(
         'ship-fast:generation-launch:session_double_submit_guard',
@@ -162,11 +164,13 @@ describe('usePromptHomeController submit guard', () => {
     ).toBeNull()
   }, 15_000)
 
-  it('does not replay both session transports after one rejected launch', async () => {
+  it('does not retry via a second transport after one rejected launch', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      json: async () => ({ error: 'Convex launch request rejected' }),
+    } as Response)
     const state = getTestState()
-    state.createSession.mockRejectedValue(
-      new Error('Convex launch request rejected'),
-    )
     const { result } = renderHook(() => usePromptHomeController())
 
     act(() => {
@@ -180,13 +184,8 @@ describe('usePromptHomeController submit guard', () => {
     const publicCreateCalls = vi
       .mocked(fetch)
       .mock.calls.filter(([input]) => input === '/api/sessions/create')
-    expect({
-      convexCreateRequests: state.createSession.mock.calls.length,
-      publicCreateRequests: publicCreateCalls.length,
-    }).toEqual({
-      convexCreateRequests: 1,
-      publicCreateRequests: 1,
-    })
+    expect(publicCreateCalls).toHaveLength(1)
+    expect(state.createSession).not.toHaveBeenCalled()
     expect(state.navigate).not.toHaveBeenCalled()
     expect(result.current.errorMessage).toBe(
       'Generation could not start. Try again.',
@@ -194,7 +193,6 @@ describe('usePromptHomeController submit guard', () => {
   }, 15_000)
 
   it('does not request public cache replay for private or v2 submissions', async () => {
-    const state = getTestState()
     const first = renderHook(() => usePromptHomeController())
 
     act(() => {
@@ -205,12 +203,11 @@ describe('usePromptHomeController submit guard', () => {
       await first.result.current.submitPrompt({ isPrivate: true })
     })
 
-    expect(state.createSession.mock.calls[0]?.[0]).not.toHaveProperty(
-      'reusePublicCache',
-    )
+    const firstBody = fetchRequestBodyAt(0)
+    expect(firstBody).not.toHaveProperty('reusePublicCache')
 
     first.unmount()
-    state.createSession.mockClear()
+    vi.mocked(fetch).mockClear()
 
     const second = renderHook(() => usePromptHomeController())
 
@@ -221,19 +218,26 @@ describe('usePromptHomeController submit guard', () => {
       })
     })
 
-    expect(state.createSession.mock.calls[0]?.[0]).not.toHaveProperty(
-      'reusePublicCache',
-    )
+    const secondBody = fetchRequestBodyAt(0)
+    expect(secondBody).not.toHaveProperty('reusePublicCache')
   })
 
   it('retries a failed create call with the same workspace idempotency key', async () => {
     const state = getTestState()
-    state.createSession
-      .mockRejectedValueOnce(new Error('create_session_timeout'))
+    vi.mocked(fetch)
       .mockResolvedValueOnce({
-        sessionId: 'session_retry_success',
-        cached: false,
-      })
+        ok: false,
+        status: 500,
+        json: async () => ({ error: 'create_session_timeout' }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          sessionId: 'session_retry_success',
+          cached: false,
+        }),
+      } as Response)
     const { result } = renderHook(() => usePromptHomeController())
 
     act(() => {
@@ -244,17 +248,20 @@ describe('usePromptHomeController submit guard', () => {
       await result.current.submitPrompt()
     })
 
-    expect(state.createSession).toHaveBeenCalledTimes(2)
-    expect(state.createSession.mock.calls[0]?.[0].workspace).toBe(
-      state.createSession.mock.calls[1]?.[0].workspace,
-    )
+    const publicCreateCalls = vi
+      .mocked(fetch)
+      .mock.calls.filter(([input]) => input === '/api/sessions/create')
+    expect(publicCreateCalls).toHaveLength(2)
+    const firstBody = fetchRequestBodyAt(0)
+    const secondBody = fetchRequestBodyAt(1)
+    expect(firstBody.workspace).toBe(secondBody.workspace)
     expect(state.navigate).toHaveBeenCalledWith({
       to: '/generate/$sessionId/$',
       params: { sessionId: 'session_retry_success' },
     })
   })
 
-  it('uses the server create route when public preview creation is enabled', async () => {
+  it('uses the server create route for all session creation', async () => {
     const state = getTestState()
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
@@ -288,7 +295,7 @@ describe('usePromptHomeController submit guard', () => {
     })
   })
 
-  it('falls back to Convex instead of navigating when the public create route returns malformed success JSON', async () => {
+  it('errors instead of navigating when the create route returns malformed HTML', async () => {
     const state = getTestState()
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response('<!doctype html><title>create unavailable</title>', {
@@ -306,19 +313,15 @@ describe('usePromptHomeController submit guard', () => {
       await result.current.submitPrompt()
     })
 
-    expect(state.createSession).toHaveBeenCalledTimes(1)
-    expect(state.createSession.mock.calls[0]?.[0]).not.toHaveProperty('isDraft')
-    expect(state.navigate).toHaveBeenCalledWith({
-      to: '/generate/$sessionId/$',
-      params: { sessionId: 'session_double_submit_guard' },
-    })
-    expect(state.navigate).not.toHaveBeenCalledWith({
-      to: '/generate/$sessionId/$',
-      params: { sessionId: undefined },
-    })
+    expect(state.createSession).not.toHaveBeenCalled()
+    expect(state.navigate).not.toHaveBeenCalled()
+    expect(result.current.isSubmitting).toBe(false)
+    expect(result.current.errorMessage).toBe(
+      'Generation could not start. Try again.',
+    )
   })
 
-  it('falls back to Convex instead of navigating when the public create route returns JSON without a session id', async () => {
+  it('errors instead of navigating when the create route returns JSON without a session id', async () => {
     const state = getTestState()
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
@@ -341,24 +344,26 @@ describe('usePromptHomeController submit guard', () => {
       await result.current.submitPrompt()
     })
 
-    expect(state.createSession).toHaveBeenCalledTimes(1)
-    expect(state.navigate).toHaveBeenCalledWith({
-      to: '/generate/$sessionId/$',
-      params: { sessionId: 'session_double_submit_guard' },
-    })
-    expect(state.navigate).not.toHaveBeenCalledWith({
-      to: '/generate/$sessionId/$',
-      params: { sessionId: undefined },
-    })
+    expect(state.createSession).not.toHaveBeenCalled()
+    expect(state.navigate).not.toHaveBeenCalled()
+    expect(result.current.isSubmitting).toBe(false)
+    expect(result.current.errorMessage).toBe(
+      'Generation could not start. Try again.',
+    )
   })
 
-  it('does not navigate or write a launch handoff when the fallback Convex create result is missing a session id', async () => {
+  it('does not navigate or write a launch handoff when the create result is missing a session id', async () => {
     const state = getTestState()
-    state.createSession.mockResolvedValueOnce({
-      cached: false,
-      prompt:
-        'a boutique coffee roastery with subscription delivery and tasting events',
-    })
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: async () => ({
+        cached: false,
+        prompt:
+          'a boutique coffee roastery with subscription delivery and tasting events',
+      }),
+    } as Response)
     const { result } = renderHook(() => usePromptHomeController())
 
     act(() => {
@@ -371,7 +376,7 @@ describe('usePromptHomeController submit guard', () => {
       await result.current.submitPrompt()
     })
 
-    expect(state.createSession).toHaveBeenCalledTimes(1)
+    expect(state.createSession).not.toHaveBeenCalled()
     expect(state.navigate).not.toHaveBeenCalled()
     expect(
       Object.keys(window.sessionStorage).filter((key) =>
@@ -386,8 +391,7 @@ describe('usePromptHomeController submit guard', () => {
 
   it('keeps launch feedback visible briefly when session creation fails immediately', async () => {
     vi.useFakeTimers()
-    const state = getTestState()
-    state.createSession.mockRejectedValue(new Error('network unavailable'))
+    vi.mocked(fetch).mockRejectedValue(new Error('network unavailable'))
     const { result } = renderHook(() => usePromptHomeController())
 
     act(() => {
@@ -407,7 +411,10 @@ describe('usePromptHomeController submit guard', () => {
       await vi.advanceTimersByTimeAsync(1199)
     })
 
-    expect(state.createSession).toHaveBeenCalledTimes(2)
+    const publicCreateCalls = vi
+      .mocked(fetch)
+      .mock.calls.filter(([input]) => input === '/api/sessions/create')
+    expect(publicCreateCalls).toHaveLength(2)
     expect(result.current.isSubmitting).toBe(true)
     expect(result.current.errorMessage).toBeUndefined()
 
@@ -601,22 +608,6 @@ describe('usePromptHomeController submit guard', () => {
     })
   })
 
-  it('falls back to the runtime Convex mutation only when the public HTTP create endpoint is disabled', async () => {
-    const state = getTestState()
-    const { result } = renderHook(() => usePromptHomeController())
-
-    act(() => {
-      result.current.setPrompt('Build a fallback product website')
-    })
-
-    await act(async () => {
-      await result.current.submitPrompt()
-    })
-
-    expect(state.createSession).toHaveBeenCalledTimes(1)
-    expect(state.mutationRefs).toEqual(['sessions.create'])
-  })
-
   it('starts immediately on click before the speculative debounce and never creates twice', async () => {
     vi.useFakeTimers()
     const state = getTestState()
@@ -635,7 +626,10 @@ describe('usePromptHomeController submit guard', () => {
       await vi.advanceTimersByTimeAsync(500)
     })
 
-    expect(state.createSession).toHaveBeenCalledTimes(1)
+    const publicCreateCalls = vi
+      .mocked(fetch)
+      .mock.calls.filter(([input]) => input === '/api/sessions/create')
+    expect(publicCreateCalls).toHaveLength(1)
     expect(state.navigate).toHaveBeenCalledWith({
       to: '/generate/$sessionId/$',
       params: { sessionId: 'session_double_submit_guard' },
@@ -689,7 +683,7 @@ describe('usePromptHomeController submit guard', () => {
       to: '/generate/$sessionId/$',
       params: { sessionId: 'session_speculative_in_flight' },
     })
-    expect(state.createSession.mock.calls[0]?.[0]).toMatchObject({
+    expect(fetchRequestBodyAt(1)).toMatchObject({
       isDraft: false,
     })
     expect(state.navigate).toHaveBeenCalledWith({
@@ -743,9 +737,6 @@ describe('usePromptHomeController submit guard', () => {
 
     expect(fetch).toHaveBeenCalledTimes(2)
     expect(fetchRequestBodyAt(1)).toMatchObject({ isDraft: false })
-    expect(state.createSession.mock.calls[0]?.[0]).toMatchObject({
-      isDraft: false,
-    })
     expect(state.navigate).toHaveBeenCalledWith({
       to: '/generate/$sessionId/$',
       params: { sessionId: 'session_speculative_ready' },
@@ -826,15 +817,19 @@ describe('usePromptHomeController submit guard', () => {
   it('does not show a launch error when storage is blocked after session creation', async () => {
     const state = getTestState()
     const setItem = vi.spyOn(Storage.prototype, 'setItem')
-    state.createSession.mockImplementationOnce(async () => {
-      setItem.mockImplementation(() => {
-        throw new Error('storage blocked')
-      })
-      return {
-        sessionId: 'session_storage_blocked_after_create',
-        cached: false,
-      }
-    })
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => {
+        setItem.mockImplementation(() => {
+          throw new Error('storage blocked')
+        })
+        return {
+          sessionId: 'session_storage_blocked_after_create',
+          cached: false,
+        }
+      },
+    } as Response)
     const { result } = renderHook(() => usePromptHomeController())
 
     try {
@@ -858,7 +853,6 @@ describe('usePromptHomeController submit guard', () => {
 
   it('invalidates a pending speculative timer when generation options change', async () => {
     vi.useFakeTimers()
-    const state = getTestState()
     const { result } = renderHook(() => usePromptHomeController())
 
     act(() => {
@@ -884,15 +878,21 @@ describe('usePromptHomeController submit guard', () => {
       await vi.advanceTimersByTimeAsync(499)
     })
 
-    expect(state.createSession).not.toHaveBeenCalled()
+    const publicCreateCallsBefore = vi
+      .mocked(fetch)
+      .mock.calls.filter(([input]) => input === '/api/sessions/create')
+    expect(publicCreateCallsBefore).toHaveLength(0)
 
     await act(async () => {
       await vi.advanceTimersByTimeAsync(1)
       await Promise.resolve()
     })
 
-    expect(state.createSession).toHaveBeenCalledTimes(1)
-    expect(state.createSession.mock.calls[0]?.[0]).toMatchObject({
+    const publicCreateCallsAfter = vi
+      .mocked(fetch)
+      .mock.calls.filter(([input]) => input === '/api/sessions/create')
+    expect(publicCreateCallsAfter).toHaveLength(1)
+    expect(fetchRequestBodyAt(0)).toMatchObject({
       engineVersion: 'v2',
       prompt: 'Build a different portfolio website',
     })
