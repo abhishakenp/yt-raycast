@@ -19,6 +19,7 @@ import {
   getOwnedAnonymousClientId,
   useOwnedGalleryController,
 } from '../hooks/useGalleryController'
+import { SyncSessions } from '@/shared/auth/SyncSessions'
 
 const PAGE_SIZE = 12
 
@@ -64,6 +65,7 @@ export const MinePage = () => {
 
   return (
     <main className="sf-gallery-page sf-mine-page min-h-screen w-full bg-[#030511] text-slate-100">
+      <SyncSessions />
       <div className="flex min-h-screen flex-col">
         <header className="sf-gallery-header sticky top-0 z-20 border-b border-white/10 bg-[#030511]/88 px-4 py-3 backdrop-blur-xl md:px-5">
           <div className="sf-gallery-header-inner mx-auto flex max-w-7xl flex-col gap-3 md:flex-row md:items-center md:justify-between">
