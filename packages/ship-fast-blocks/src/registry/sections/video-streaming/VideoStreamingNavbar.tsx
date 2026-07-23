@@ -12,6 +12,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * VideoStreamingNavbar — fixed, backdrop-blurred cinematic site header for a
  * streaming brand (think "Lumen" or "Nova+"). A hairline-bottomed translucent
@@ -52,6 +53,8 @@ export const VideoStreamingNavbar = defineCapsule({
     ctaLabel: z.string().optional(),
     /** Navigation target for the pill CTA. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -62,6 +65,7 @@ export const VideoStreamingNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Start Watching'
     const ctaTarget = props.ctaTarget ?? 'Pricing'
     const homeTarget = props.homeTarget ?? nav[0]
+    const signIn = props.signIn ?? 'Sign in'
     return (
       <SiteNav
         position="fixed"
@@ -89,6 +93,11 @@ export const VideoStreamingNavbar = defineCapsule({
           ))}
         </NavbarNav>
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="primary-pill"
             className="hidden px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.2em] transition-transform duration-150 active:translate-y-px motion-reduce:transform-none sm:inline-flex"

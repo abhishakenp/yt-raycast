@@ -11,6 +11,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 function CompassMark({ className }: { className?: string }) {
   return (
     <svg
@@ -40,6 +41,8 @@ export const TravelAgencyNavbar = defineCapsule({
     homeTarget: z.string().optional(),
     ctaLabel: z.string().optional(),
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -51,6 +54,7 @@ export const TravelAgencyNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Plan a Trip'
     const ctaTarget = props.ctaTarget ?? 'Plan a Trip'
     const homeTarget = props.homeTarget ?? nav[0]
+    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -84,6 +88,11 @@ export const TravelAgencyNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           {phone ? (
             <a
               href={`tel:${phone.replace(/[^\d+]/g, '')}`}

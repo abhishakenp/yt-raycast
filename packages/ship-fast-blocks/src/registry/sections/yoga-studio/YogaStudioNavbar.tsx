@@ -13,6 +13,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * YogaStudioNavbar — serene, airy top navigation for a yoga-studio site. A thin,
  * backdrop-blurred, hairline-bordered header on the shared `SiteNav` composite:
@@ -39,6 +40,8 @@ export const YogaStudioNavbar = defineCapsule({
     ctaTarget: z.string().optional(),
     /** Route label the wordmark navigates to. */
     homeTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -50,6 +53,7 @@ export const YogaStudioNavbar = defineCapsule({
     const ctaLabel = props.cta ?? 'Start Free Trial'
     const ctaTarget = props.ctaTarget ?? 'Trial'
     const homeTarget = props.homeTarget ?? 'Home'
+    const signIn = props.signIn ?? 'Sign in'
     return (
       <SiteNav
         position="fixed"
@@ -79,6 +83,11 @@ export const YogaStudioNavbar = defineCapsule({
           ))}
         </NavbarNav>
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="primary-pill"
             className="hidden rounded-none px-5 py-2.5 transition-colors active:translate-y-px sm:inline-flex"

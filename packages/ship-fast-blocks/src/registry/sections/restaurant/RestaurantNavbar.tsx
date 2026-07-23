@@ -10,6 +10,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import {
   RestaurantAccountButton,
   RestaurantMobileMenu,
@@ -68,6 +69,8 @@ export const RestaurantNavbar = defineCapsule({
     ctaLabel: z.string().optional(),
     /** Navigation target for the pill CTA. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   lakebed: restaurantLakebed,
@@ -80,6 +83,7 @@ export const RestaurantNavbar = defineCapsule({
     const phone = props.phone ?? '(415) 555-0182'
     const ctaLabel = props.ctaLabel ?? 'Book a Table'
     const ctaTarget = props.ctaTarget ?? 'Reservations'
+    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -109,6 +113,11 @@ export const RestaurantNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-3">
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <RestaurantSearchButton
             lakebed={lakebed}
             buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"

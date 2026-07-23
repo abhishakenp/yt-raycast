@@ -11,6 +11,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * MarketingAgencyNavbar — sticky kinetic top navigation bar for a growth /
  * digital marketing-agency site. A backdrop-blurred, hairline-bottomed header
@@ -31,6 +32,8 @@ export const MarketingAgencyNavbar = defineCapsule({
     brand: z.string().optional(),
     /** Nav link labels; last item also drives the pill CTA target. */
     nav: z.array(z.string()).optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -39,6 +42,7 @@ export const MarketingAgencyNavbar = defineCapsule({
       ? props.nav
       : ['Services', 'Case Studies', 'Pricing', 'FAQ', 'Get Started']
     const navCta = nav[nav.length - 1]
+    const signIn = props.signIn ?? 'Sign in'
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
@@ -92,6 +96,11 @@ export const MarketingAgencyNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <MobileNavDrawer
             brand={brand}
             nav={nav}

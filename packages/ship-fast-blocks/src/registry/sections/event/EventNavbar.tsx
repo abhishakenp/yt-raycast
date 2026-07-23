@@ -10,6 +10,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import {
   EventActionButton,
   EventMobileMenu,
@@ -43,6 +44,8 @@ export const EventNavbar = defineCapsule({
     homeTarget: z.string().optional(),
     /** Navigation target for the primary CTA button. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   lakebed: eventLakebed,
@@ -54,6 +57,7 @@ export const EventNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Get Tickets'
     const homeTarget = props.homeTarget ?? nav[0]
     const ctaTarget = props.ctaTarget ?? nav[nav.length - 1]
+    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -91,6 +95,11 @@ export const EventNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-3">
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <EventRegistrationBadge
             lakebed={lakebed}
             className="rounded-none border-primary/30 font-mono text-[11px] uppercase tracking-[0.12em]"

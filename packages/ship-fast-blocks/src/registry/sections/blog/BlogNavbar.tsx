@@ -10,6 +10,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import {
   PublicationAccountButton,
   PublicationMobileMenu,
@@ -69,6 +70,8 @@ export const BlogNavbar = defineCapsule({
     ctaLabel: z.string().optional(),
     /** Navigation target for the pill CTA. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   lakebed: publicationLakebed,
@@ -80,6 +83,7 @@ export const BlogNavbar = defineCapsule({
     const homeTarget = props.homeTarget ?? nav[0]
     const ctaLabel = props.ctaLabel ?? 'Subscribe'
     const ctaTarget = props.ctaTarget ?? 'Subscribe'
+    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -116,6 +120,11 @@ export const BlogNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-2.5">
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <PublicationSearchButton
             lakebed={lakebed}
             buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"

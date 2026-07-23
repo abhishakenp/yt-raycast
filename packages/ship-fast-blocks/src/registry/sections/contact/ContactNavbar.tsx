@@ -10,6 +10,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import {
   InquiryAccountButton,
   InquiryActionBadge,
@@ -46,6 +47,8 @@ export const ContactNavbar = defineCapsule({
     ctaLabel: z.string().optional(),
     /** Target routed to when the CTA is clicked. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   lakebed: inquiryLakebed,
@@ -57,6 +60,7 @@ export const ContactNavbar = defineCapsule({
     const homeTarget = props.homeTarget ?? nav[0] ?? 'Home'
     const ctaLabel = props.ctaLabel ?? 'Get Started'
     const ctaTarget = props.ctaTarget ?? 'Contact'
+    const signIn = props.signIn ?? 'Sign in'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <span
@@ -118,6 +122,11 @@ export const ContactNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-3">
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <InquiryActionBadge lakebed={lakebed} />
           <InquiryAccountButton
             lakebed={lakebed}

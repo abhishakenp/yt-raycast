@@ -12,6 +12,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * SpaWellnessNavbar — airy calm-luxury navigation bar for a day-spa / wellness
  * site. A thin, backdrop-blurred, hairline-bordered header on the shared
@@ -39,6 +40,8 @@ export const SpaWellnessNavbar = defineCapsule({
     ctaTarget: z.string().optional(),
     /** Route label the wordmark navigates to. */
     homeTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -50,6 +53,7 @@ export const SpaWellnessNavbar = defineCapsule({
     const ctaLabel = props.cta ?? 'Book Now'
     const ctaTarget = props.ctaTarget ?? 'Booking'
     const homeTarget = props.homeTarget ?? 'Home'
+    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -80,6 +84,11 @@ export const SpaWellnessNavbar = defineCapsule({
           ))}
         </NavbarNav>
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="primary-pill"
             className="hidden rounded-none px-5 py-2.5 transition-colors active:translate-y-px sm:inline-flex"

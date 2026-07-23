@@ -5,12 +5,14 @@ import { cn } from '#/lib/utils.ts'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
+  NavbarActions,
   NavbarBrand,
   NavbarCta,
   NavbarNav,
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * AgencyNavbar — fixed neo-brutalist top navigation bar for a creative
  * digital-agency / studio site. A backdrop-blurred header with a thick 2px
@@ -35,6 +37,8 @@ export const AgencyNavbar = defineCapsule({
     nav: z.array(z.string()).optional(),
     /** Pill-shaped primary CTA label on the right. */
     cta: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -43,6 +47,7 @@ export const AgencyNavbar = defineCapsule({
       ? props.nav
       : ['Services', 'Work', 'About', 'Contact']
     const cta = props.cta ?? 'Start a project'
+    const signIn = props.signIn ?? 'Sign in'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <span
@@ -94,6 +99,14 @@ export const AgencyNavbar = defineCapsule({
             {cta}
           </NavbarCta>
         </NavbarNav>
+
+        <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
+        </NavbarActions>
 
         <MobileNavDrawer
           brand={brand}

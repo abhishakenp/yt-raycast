@@ -9,6 +9,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import {
   SaasAccountButton,
   SaasIntentBadge,
@@ -45,6 +46,8 @@ export const CloudInfraNavbar = defineCapsule({
     homeTarget: z.string().optional(),
     /** Navigation target for the sign-in text link. */
     signInTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   lakebed: saasLakebed,
@@ -55,6 +58,7 @@ export const CloudInfraNavbar = defineCapsule({
       : ['Features', 'Pricing', 'Showcase', 'FAQ']
     const ctaLabel = props.ctaLabel ?? 'Get Started'
     const homeTarget = props.homeTarget ?? nav[0]
+    const signIn = props.signIn ?? 'Sign in'
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
@@ -105,6 +109,11 @@ export const CloudInfraNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-3">
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <SaasIntentBadge lakebed={lakebed} />
           <SaasSearchButton
             lakebed={lakebed}

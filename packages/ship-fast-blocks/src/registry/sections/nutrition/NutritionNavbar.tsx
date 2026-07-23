@@ -13,6 +13,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * NutritionNavbar — fresh clean-editorial sticky navigation header for a
  * nutrition-coaching / wellness site, built on the shared SiteNav kit
@@ -43,6 +44,8 @@ export const NutritionNavbar = defineCapsule({
     ctaTarget: z.string().optional(),
     /** Navigation target for the brand / home click. */
     homeTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -53,6 +56,7 @@ export const NutritionNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Start Now'
     const ctaTarget = props.ctaTarget ?? 'Pricing'
     const homeTarget = props.homeTarget ?? nav[0]
+    const signIn = props.signIn ?? 'Sign in'
 
     const LeafBadge = ({ className }: { className?: string }) => (
       <span
@@ -111,6 +115,11 @@ export const NutritionNavbar = defineCapsule({
           ))}
         </NavbarNav>
         <NavbarActions className="gap-2">
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="primary-pill"
             className="hidden rounded-none px-5 py-2.5 transition-colors active:translate-y-px sm:inline-flex"

@@ -5,12 +5,14 @@ import { cn } from '#/lib/utils.ts'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
+  NavbarActions,
   NavbarBrand,
   NavbarCta,
   NavbarNav,
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * LandscapingNavbar — sticky, backdrop-blurred site header for a landscaping /
  * outdoor-design company in the "Organic editorial" language. A hairline-
@@ -39,6 +41,8 @@ export const LandscapingNavbar = defineCapsule({
     contactTarget: z.string().optional(),
     /** Navigation target for the brand mark and mobile menu button. */
     homeTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -50,6 +54,7 @@ export const LandscapingNavbar = defineCapsule({
     const contactTarget =
       props.contactTarget ?? nav[nav.length - 1] ?? 'Get a Quote'
     const homeTarget = props.homeTarget ?? nav[0] ?? 'Services'
+    const signIn = props.signIn ?? 'Sign in'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
@@ -100,6 +105,14 @@ export const LandscapingNavbar = defineCapsule({
             {cta}
           </NavbarCta>
         </NavbarNav>
+
+        <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
+        </NavbarActions>
 
         <MobileNavDrawer
           brand={brand}

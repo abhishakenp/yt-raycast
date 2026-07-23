@@ -11,6 +11,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * LogisticsNavbar — industrial-manifest sticky, backdrop-blurred top navigation
  * bar for a global-logistics / freight-forwarding company. A hairline
@@ -39,6 +40,8 @@ export const LogisticsNavbar = defineCapsule({
     ctaTarget: z.string().optional(),
     /** Navigation target for the brand mark and mobile menu button. */
     homeTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -49,6 +52,7 @@ export const LogisticsNavbar = defineCapsule({
     const cta = props.cta ?? 'Get a Quote'
     const ctaTarget = props.ctaTarget ?? cta
     const homeTarget = props.homeTarget ?? nav[0] ?? 'Services'
+    const signIn = props.signIn ?? 'Sign in'
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
@@ -99,6 +103,11 @@ export const LogisticsNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-4">
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="primary"
             href={ctaTarget}

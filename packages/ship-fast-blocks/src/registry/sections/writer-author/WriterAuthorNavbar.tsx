@@ -11,6 +11,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * WriterAuthorNavbar — sticky site header for a literary author or novelist
  * site with a serif, letterpress sensibility. Thin configuration over the
@@ -59,6 +60,8 @@ export const WriterAuthorNavbar = defineCapsule({
     ctaLabel: z.string().optional(),
     /** Navigation target for the pill CTA. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -72,6 +75,7 @@ export const WriterAuthorNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Get the Book'
     const ctaTarget = props.ctaTarget ?? 'Books'
     const homeTarget = props.homeTarget ?? nav[0]
+    const signIn = props.signIn ?? 'Sign in'
     return (
       <SiteNav position="fixed" height="default" className={props.className}>
         <NavbarBrand href={homeTarget} className="flex items-center gap-2">
@@ -88,6 +92,11 @@ export const WriterAuthorNavbar = defineCapsule({
           ))}
         </NavbarNav>
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           {phone ? (
             <a
               href={`tel:${phone.replace(/[^\d+]/g, '')}`}

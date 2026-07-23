@@ -12,6 +12,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * PhotographyNavbar — fixed, backdrop-blurred gallery header for a fine-art /
  * wedding photographer portfolio. Extreme-restraint chrome over the shared
@@ -40,6 +41,8 @@ export const PhotographyNavbar = defineCapsule({
     ctaLabel: z.string().optional(),
     /** Navigation target for the pill CTA. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -50,6 +53,7 @@ export const PhotographyNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Book a Shoot'
     const ctaTarget = props.ctaTarget ?? 'Contact'
     const homeTarget = props.homeTarget ?? nav[0]
+    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -78,6 +82,11 @@ export const PhotographyNavbar = defineCapsule({
           ))}
         </NavbarNav>
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="dark"
             className="hidden rounded-none px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.2em] transition-transform duration-150 active:translate-y-px motion-reduce:transform-none sm:inline-flex"

@@ -11,6 +11,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 function Mark({ className }: { className?: string }) {
   return (
     <svg
@@ -43,6 +44,8 @@ export const SalonBarberNavbar = defineCapsule({
     homeTarget: z.string().optional(),
     ctaLabel: z.string().optional(),
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -54,6 +57,7 @@ export const SalonBarberNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Book Now'
     const ctaTarget = props.ctaTarget ?? 'Pricing'
     const homeTarget = props.homeTarget ?? nav[0]
+    const signIn = props.signIn ?? 'Sign in'
 
     const LogoBadge = ({ className }: { className?: string }) => (
       <span
@@ -90,6 +94,11 @@ export const SalonBarberNavbar = defineCapsule({
           ))}
         </NavbarNav>
         <NavbarActions className="gap-3">
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           {phone ? (
             <a
               href={`tel:${phone.replace(/[^\d+]/g, '')}`}

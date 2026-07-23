@@ -10,6 +10,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 
 /**
@@ -34,6 +35,8 @@ export const MusicArtistNavbar = defineCapsule({
     nav: z.array(z.string()).optional(),
     /** Navigation target for the brand wordmark and the mobile menu button. */
     homeTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -42,6 +45,7 @@ export const MusicArtistNavbar = defineCapsule({
       ? props.nav
       : ['Music', 'Tour', 'About', 'Contact']
     const homeTarget = props.homeTarget ?? 'Music'
+    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -73,6 +77,11 @@ export const MusicArtistNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <MobileNavDrawer
             brand={brand}
             nav={nav}

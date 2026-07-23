@@ -11,6 +11,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 function UniversityBrandSeal() {
   return (
     <span
@@ -46,6 +47,8 @@ export const UniversityNavbar = defineCapsule({
     ctaTarget: z.string().optional(),
     homeTarget: z.string().optional(),
     sticky: z.boolean().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -57,6 +60,7 @@ export const UniversityNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Apply'
     const ctaTarget = props.ctaTarget ?? 'Admissions'
     const homeTarget = props.homeTarget ?? nav[0]
+    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -90,6 +94,11 @@ export const UniversityNavbar = defineCapsule({
           ))}
         </NavbarNav>
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           {phone ? (
             <a
               href={`tel:${phone.replace(/[^\d+]/g, '')}`}

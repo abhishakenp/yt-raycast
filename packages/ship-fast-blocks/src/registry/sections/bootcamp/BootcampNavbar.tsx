@@ -12,6 +12,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * BootcampNavbar — "Terminal Classroom" sticky top navigation for a coding
  * bootcamp / career-school landing page. A blurred, hairline-bordered header
@@ -37,6 +38,8 @@ export const BootcampNavbar = defineCapsule({
     homeTarget: z.string().optional(),
     /** CTA button route target. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -46,6 +49,7 @@ export const BootcampNavbar = defineCapsule({
       : ['Curriculum', 'Outcomes', 'Mentors', 'Pricing', 'FAQ']
     const homeTarget = props.homeTarget ?? nav[0]
     const ctaTarget = props.ctaTarget ?? 'Start Your Application'
+    const signIn = props.signIn ?? 'Sign in'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <span
@@ -96,6 +100,11 @@ export const BootcampNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="primary"
             href={ctaTarget}

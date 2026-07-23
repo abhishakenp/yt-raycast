@@ -12,6 +12,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * NewsNavbar — sticky newspaper masthead header for a news / editorial
  * publication. Thin configuration over the shared `SiteNav` composite in a
@@ -63,6 +64,8 @@ export const NewsNavbar = defineCapsule({
     subscribeCta: z.string().optional(),
     /** Navigation target for the logo / brand click. */
     homeTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -73,6 +76,7 @@ export const NewsNavbar = defineCapsule({
     const ctaLabel = props.subscribeCta ?? 'Subscribe'
     const ctaTarget = 'Subscribe'
     const homeTarget = props.homeTarget ?? nav[0]
+    const signIn = props.signIn ?? 'Sign in'
     return (
       <SiteNav
         position="fixed"
@@ -105,6 +109,11 @@ export const NewsNavbar = defineCapsule({
           ))}
         </NavbarNav>
         <NavbarActions className="gap-2.5">
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="dark"
             className="hidden rounded-none border border-foreground px-4 py-2 font-mono text-[11px] uppercase tracking-[0.16em] transition-colors duration-150 hover:bg-background hover:text-foreground active:translate-y-px sm:inline-flex"

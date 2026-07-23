@@ -9,6 +9,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import { foodDeliveryLakebed } from './food-delivery-lakebed.ts'
 import {
   FoodDeliveryAccountButton,
@@ -105,6 +106,11 @@ export const FoodDeliveryNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-2.5">
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <FoodDeliverySearchButton
             lakebed={lakebed}
             buttonClassName="inline-flex size-10 items-center justify-center rounded-full border-2 border-transparent text-muted-foreground transition-colors hover:border-foreground hover:bg-background hover:text-foreground"

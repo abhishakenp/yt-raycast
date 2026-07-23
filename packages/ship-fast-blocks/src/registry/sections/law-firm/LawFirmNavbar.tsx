@@ -4,12 +4,14 @@ import { cn } from '#/lib/utils.ts'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
+  NavbarActions,
   NavbarBrand,
   NavbarCta,
   NavbarNav,
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * LawFirmNavbar — sticky editorial-gravitas top navigation for a corporate /
  * trial law-firm site. A backdrop-blurred bordered header pinned to the top on
@@ -38,6 +40,8 @@ export const LawFirmNavbar = defineCapsule({
     nav: z.array(z.string()).optional(),
     /** CTA button label on the right of the bar. */
     ctaLabel: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -52,6 +56,7 @@ export const LawFirmNavbar = defineCapsule({
         .replace(/[^A-Za-z]/g, '')
         .charAt(0)
         .toUpperCase() || 'R'
+    const signIn = props.signIn ?? 'Sign in'
     return (
       <SiteNav
         position="sticky"
@@ -105,6 +110,14 @@ export const LawFirmNavbar = defineCapsule({
             {ctaLabel}
           </NavbarCta>
         </NavbarNav>
+
+        <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
+        </NavbarActions>
 
         <MobileNavDrawer
           brand={brand}

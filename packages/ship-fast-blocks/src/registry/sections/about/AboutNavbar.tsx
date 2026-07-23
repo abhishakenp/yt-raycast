@@ -12,6 +12,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * AboutNavbar — studio-editorial sticky top navigation bar for a modern
  * company / ABOUT page. A backdrop-blurred, hairline-bordered header pinned to
@@ -39,6 +40,8 @@ export const AboutNavbar = defineCapsule({
     cta: z.string().optional(),
     /** Navigation target for the right-side CTA button. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -48,6 +51,7 @@ export const AboutNavbar = defineCapsule({
       : ['Our Story', 'Values', 'Team', 'Stats']
     const cta = props.cta ?? 'Work with us'
     const ctaTarget = props.ctaTarget ?? 'Get in touch'
+    const signIn = props.signIn ?? 'Sign in'
 
     // Shared brand mark — sharp primary block + zap glyph (decorative brand asset).
     const LogoMark = ({ className }: { className?: string }) => (
@@ -127,6 +131,11 @@ export const AboutNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="dark"
             href={ctaTarget}

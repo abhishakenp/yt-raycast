@@ -11,6 +11,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * MembershipClubNavbar — sticky, backdrop-blurred vitrine top navigation bar for
  * a private membership club / exclusive community site. A hairline-bottomed
@@ -37,6 +38,8 @@ export const MembershipClubNavbar = defineCapsule({
     cta: z.string().optional(),
     /** Route target fired by the primary CTA (application flow). */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -46,6 +49,7 @@ export const MembershipClubNavbar = defineCapsule({
       : ['Benefits', 'Membership', 'About', 'FAQ']
     const cta = props.cta ?? 'Apply Now'
     const ctaTarget = props.ctaTarget ?? 'Apply for Membership'
+    const signIn = props.signIn ?? 'Sign in'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
@@ -94,6 +98,11 @@ export const MembershipClubNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="primary-pill"
             href={ctaTarget}

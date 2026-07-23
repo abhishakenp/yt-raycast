@@ -11,6 +11,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * FintechNavbar — Swiss-fintech sticky site header for a neobank / digital-
  * banking landing page. A thin configuration over the shared `SiteNav`
@@ -57,6 +58,8 @@ export const FintechNavbar = defineCapsule({
     ctaLabel: z.string().optional(),
     /** Navigation target for the primary CTA. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -67,6 +70,7 @@ export const FintechNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Get Started'
     const ctaTarget = props.ctaTarget ?? 'Open an Account'
     const homeTarget = props.homeTarget ?? nav[0]
+    const signIn = props.signIn ?? 'Sign in'
     return (
       <SiteNav position="fixed" height="default" className={props.className}>
         <NavbarBrand href={homeTarget} className="flex items-center gap-2">
@@ -96,6 +100,11 @@ export const FintechNavbar = defineCapsule({
           ))}
         </NavbarNav>
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="primary"
             className="hidden rounded-none px-5 py-2.5 text-[13px] tracking-tight transition-[transform,background-color] duration-150 active:translate-y-px motion-reduce:transform-none sm:inline-flex"

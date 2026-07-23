@@ -11,6 +11,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * FlightSimulatorNavbar — instrument-terminal sticky header for a consumer
  * flight simulator product (PC / console sim, study-level aircraft, photoreal
@@ -58,6 +59,8 @@ export const FlightSimulatorNavbar = defineCapsule({
     ctaLabel: z.string().optional(),
     /** Navigation target for the pill CTA. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -68,6 +71,7 @@ export const FlightSimulatorNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Get the Sim'
     const ctaTarget = props.ctaTarget ?? 'Buy'
     const homeTarget = props.homeTarget ?? nav[0]
+    const signIn = props.signIn ?? 'Sign in'
     return (
       <SiteNav position="fixed" height="default" className={props.className}>
         <NavbarBrand href={homeTarget} className="gap-3">
@@ -85,6 +89,11 @@ export const FlightSimulatorNavbar = defineCapsule({
           ))}
         </NavbarNav>
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <span
             aria-hidden="true"
             className="hidden items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground xl:inline-flex"

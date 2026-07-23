@@ -13,6 +13,7 @@ import {
   NavbarRouteLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAddItemButton,
@@ -38,6 +39,8 @@ export const ProductDetailNavbar = defineCapsule({
         variant: z.enum(['primary', 'outline', 'ghost']).optional(),
       })
       .optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props, lakebed }) => {
@@ -78,6 +81,7 @@ export const ProductDetailNavbar = defineCapsule({
         <rect x="17" y="13" width="4" height="7" rx="1.4" />
       </svg>
     )
+    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -109,6 +113,11 @@ export const ProductDetailNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-3">
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <CommerceCartButton
             lakebed={lakebed}
             buttonClassName="relative hidden size-10 items-center justify-center rounded-none border border-border text-foreground transition-colors hover:bg-muted sm:inline-flex"

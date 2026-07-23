@@ -11,6 +11,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 
 /**
@@ -40,6 +41,8 @@ export const MusicFestivalNavbar = defineCapsule({
     homeTarget: z.string().optional(),
     /** Navigation target for the primary CTA button. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -50,6 +53,7 @@ export const MusicFestivalNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Get Tickets'
     const homeTarget = props.homeTarget ?? nav[0]
     const ctaTarget = props.ctaTarget ?? 'Buy Tickets'
+    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -81,6 +85,11 @@ export const MusicFestivalNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-4">
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="primary"
             href={ctaTarget}

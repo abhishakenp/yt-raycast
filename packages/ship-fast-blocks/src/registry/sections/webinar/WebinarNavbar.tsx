@@ -11,6 +11,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * WebinarNavbar — sticky kinetic-event site header for a live webinar or virtual
  * summit. A blurred, hairline-bottomed bar pinned to the top: a square broadcast
@@ -58,6 +59,8 @@ export const WebinarNavbar = defineCapsule({
     ctaLabel: z.string().optional(),
     /** Navigation target for the pill CTA. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -68,6 +71,7 @@ export const WebinarNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Register'
     const ctaTarget = props.ctaTarget ?? 'Register'
     const homeTarget = props.homeTarget ?? nav[0]
+    const signIn = props.signIn ?? 'Sign in'
     return (
       <SiteNav
         position="fixed"
@@ -92,6 +96,11 @@ export const WebinarNavbar = defineCapsule({
           ))}
         </NavbarNav>
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="primary-pill"
             className="hidden rounded-none border border-foreground px-5 py-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.14em] shadow-[3px_3px_0_0] shadow-foreground transition-[transform,box-shadow] duration-150 hover:-translate-y-px hover:shadow-[4px_4px_0_0] hover:shadow-foreground active:translate-x-[3px] active:translate-y-[3px] active:shadow-none sm:inline-flex"

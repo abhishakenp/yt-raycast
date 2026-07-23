@@ -11,6 +11,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 function CodeMark({ className }: { className?: string }) {
   return (
     <svg
@@ -44,6 +45,8 @@ export const PortfolioDevNavbar = defineCapsule({
     ctaLabel: z.string().optional(),
     /** Navigation target for the CTA. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -54,6 +57,7 @@ export const PortfolioDevNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Hire Me'
     const ctaTarget = props.ctaTarget ?? 'Contact'
     const homeTarget = props.homeTarget ?? nav[0]
+    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav position="fixed" height="default" className={props.className}>
@@ -78,6 +82,11 @@ export const PortfolioDevNavbar = defineCapsule({
           ))}
         </NavbarNav>
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="primary-pill"
             className="hidden rounded-none px-5 py-2.5 font-mono text-xs font-semibold uppercase tracking-[0.12em] shadow-[3px_3px_0_0] shadow-foreground transition-[transform,box-shadow,background-color] duration-150 hover:bg-primary/90 active:translate-x-[1.5px] active:translate-y-[1.5px] active:shadow-none motion-reduce:transform-none sm:inline-flex"

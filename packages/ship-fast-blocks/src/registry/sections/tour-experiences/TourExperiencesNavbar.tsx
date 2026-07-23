@@ -11,6 +11,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /** Inline compass brand mark — adventurous, currentColor → theme token. */
 function CompassMark({ className }: { className?: string }) {
   return (
@@ -62,6 +63,8 @@ export const TourExperiencesNavbar = defineCapsule({
     ctaLabel: z.string().optional(),
     /** Navigation target for the pill CTA. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -73,6 +76,7 @@ export const TourExperiencesNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Book a Tour'
     const ctaTarget = props.ctaTarget ?? 'Book a Tour'
     const homeTarget = props.homeTarget ?? nav[0]
+    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -100,6 +104,11 @@ export const TourExperiencesNavbar = defineCapsule({
           ))}
         </NavbarNav>
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           {phone ? (
             <a
               href={`tel:${phone.replace(/[^\d+]/g, '')}`}

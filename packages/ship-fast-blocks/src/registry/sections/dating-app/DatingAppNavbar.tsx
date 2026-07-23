@@ -12,6 +12,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * DatingAppNavbar — playful-geometric sticky navigation for a dating /
  * matchmaking app landing page. A backdrop-blurred bg-background/80 header with
@@ -41,6 +42,8 @@ export const DatingAppNavbar = defineCapsule({
     cta: z.string().optional(),
     /** Navigation target fired by the primary CTA. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -51,6 +54,7 @@ export const DatingAppNavbar = defineCapsule({
     const loginLabel = props.loginLabel ?? 'Log In'
     const cta = props.cta ?? 'Get the App'
     const ctaTarget = props.ctaTarget ?? 'Download Free'
+    const signIn = props.signIn ?? 'Sign in'
 
     const HeartGlyph = ({ className }: { className?: string }) => (
       <svg
@@ -99,6 +103,11 @@ export const DatingAppNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarRouteLink
             href={loginLabel}
             className="hidden text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground sm:block"

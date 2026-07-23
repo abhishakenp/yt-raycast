@@ -13,6 +13,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * CoworkingNavbar — flat editorial navigation for a coworking / workspace
  * brand. A fixed, full-width glass bar (the one allowed backdrop blur +
@@ -55,6 +56,8 @@ export const CoworkingNavbar = defineCapsule({
     ctaLabel: z.string().optional(),
     /** Navigation target for the pill CTA. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -86,6 +89,7 @@ export const CoworkingNavbar = defineCapsule({
       typeof props.homeTarget === 'string' && props.homeTarget
         ? props.homeTarget
         : brand
+    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -120,6 +124,11 @@ export const CoworkingNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-4">
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           {phone ? (
             <a
               href={`tel:${phone.replace(/[^\d+]/g, '')}`}

@@ -11,6 +11,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * TelehealthNavbar — calm clinical + warmth sticky header for a telehealth /
  * virtual-care site, built on the shared SiteNav composite. A backdrop-blurred,
@@ -35,6 +36,8 @@ export const TelehealthNavbar = defineCapsule({
     ctaLabel: z.string().optional(),
     ctaTarget: z.string().optional(),
     homeTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -46,6 +49,7 @@ export const TelehealthNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Book a Visit'
     const ctaTarget = props.ctaTarget ?? 'Contact'
     const homeTarget = props.homeTarget ?? 'Home'
+    const signIn = props.signIn ?? 'Sign in'
 
     const PulseMark = ({ className }: { className?: string }) => (
       <span
@@ -100,6 +104,11 @@ export const TelehealthNavbar = defineCapsule({
           ))}
         </NavbarNav>
         <NavbarActions className="shrink-0 gap-2">
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           {phone ? (
             <a
               href={`tel:${phone.replace(/[^\d+]/g, '')}`}

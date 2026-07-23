@@ -11,6 +11,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import {
   LocalServiceAccountButton,
   LocalServiceBookingButton,
@@ -43,6 +44,8 @@ export const DentalNavbar = defineCapsule({
     tagline: z.string().optional(),
     /** Nav link labels; the LAST item becomes the filled primary pill CTA. */
     nav: z.array(z.string()).optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   lakebed: localServiceLakebed,
@@ -52,6 +55,7 @@ export const DentalNavbar = defineCapsule({
     const nav = props.nav?.length
       ? props.nav
       : ['Services', 'Our Team', 'Reviews', 'FAQ', 'Book Appointment']
+    const signIn = props.signIn ?? 'Sign in'
 
     const ToothMark = () => (
       <svg
@@ -127,6 +131,11 @@ export const DentalNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-2">
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <LocalServiceIntentBadge lakebed={lakebed} />
           <LocalServiceSearchButton
             lakebed={lakebed}

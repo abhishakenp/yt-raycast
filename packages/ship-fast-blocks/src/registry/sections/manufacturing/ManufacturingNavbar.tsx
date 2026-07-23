@@ -11,6 +11,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * ManufacturingNavbar — sticky, heavy-industrial top navigation bar for a
  * precision-manufacturing / industrial-fabrication B2B site. A backdrop-blurred
@@ -33,6 +34,8 @@ export const ManufacturingNavbar = defineCapsule({
     brand: z.string().optional(),
     /** Top-level navbar link labels (must match site routes for page switching); last item is the CTA. */
     nav: z.array(z.string()).optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -52,6 +55,7 @@ export const ManufacturingNavbar = defineCapsule({
       .slice(0, 2)
       .map((w) => w.charAt(0).toUpperCase())
       .join('')
+    const signIn = props.signIn ?? 'Sign in'
     return (
       <SiteNav
         position="sticky"
@@ -102,6 +106,11 @@ export const ManufacturingNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <MobileNavDrawer
             brand={brand}
             nav={nav}

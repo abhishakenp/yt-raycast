@@ -12,6 +12,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * AccountingFirmNavbar — Swiss-ledger sticky top navigation bar for a CPA /
  * accounting-firm site. A backdrop-blurred, hairline-ruled header pinned to the
@@ -37,6 +38,8 @@ export const AccountingFirmNavbar = defineCapsule({
     nav: z.array(z.string()).optional(),
     /** Filled primary CTA label on the right. */
     cta: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -45,6 +48,7 @@ export const AccountingFirmNavbar = defineCapsule({
       ? props.nav
       : ['Services', 'About', 'Team', 'Pricing', 'FAQ']
     const cta = props.cta ?? 'Schedule Consultation'
+    const signIn = props.signIn ?? 'Sign in'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <span
@@ -84,6 +88,11 @@ export const AccountingFirmNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="primary"
             href={cta}

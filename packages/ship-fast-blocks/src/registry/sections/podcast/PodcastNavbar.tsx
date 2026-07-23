@@ -12,6 +12,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 function MicWaveMark({ className }: { className?: string }) {
   return (
     <svg
@@ -57,6 +58,8 @@ export const PodcastNavbar = defineCapsule({
     homeTarget: z.string().optional(),
     ctaLabel: z.string().optional(),
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -67,6 +70,7 @@ export const PodcastNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Subscribe'
     const ctaTarget = props.ctaTarget ?? 'Subscribe'
     const homeTarget = props.homeTarget ?? nav[0]
+    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -103,6 +107,11 @@ export const PodcastNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-2.5">
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="primary-pill"
             className="hidden rounded-none border border-foreground bg-foreground px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-background transition-colors duration-150 hover:bg-background hover:text-foreground active:translate-y-px sm:inline-flex"

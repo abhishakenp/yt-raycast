@@ -12,6 +12,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * RealEstateNavbar — editorial-listings top navigation for a luxury brokerage.
  * A fixed, hairline-bottomed, backdrop-blurred bar carries a squared serif
@@ -39,6 +40,8 @@ export const RealEstateNavbar = defineCapsule({
     cta: z.string().optional(),
     /** Route label the primary CTA navigates to. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -50,6 +53,7 @@ export const RealEstateNavbar = defineCapsule({
     const cta = props.cta ?? 'List a Property'
     const ctaTarget = props.ctaTarget ?? 'List'
     const homeTarget = 'Home'
+    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -84,6 +88,11 @@ export const RealEstateNavbar = defineCapsule({
           ))}
         </NavbarNav>
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           {phone ? (
             <a
               href={`tel:${phone.replace(/[^\d+]/g, '')}`}

@@ -5,11 +5,13 @@ import { cn } from '#/lib/utils.ts'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
+  NavbarActions,
   NavbarBrand,
   NavbarNav,
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * ArchitectureFirmNavbar — blueprint drafting-header navigation bar for an
  * architecture-studio / design-practice site. A sticky, backdrop-blurred,
@@ -32,6 +34,8 @@ export const ArchitectureFirmNavbar = defineCapsule({
     brand: z.string().optional(),
     /** Top-level nav link labels (must match site routes for page switching). */
     nav: z.array(z.string()).optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -39,6 +43,7 @@ export const ArchitectureFirmNavbar = defineCapsule({
     const nav = props.nav?.length
       ? props.nav
       : ['Work', 'Philosophy', 'Studio', 'Contact']
+    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -73,6 +78,14 @@ export const ArchitectureFirmNavbar = defineCapsule({
             </NavbarNavLink>
           ))}
         </NavbarNav>
+
+        <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
+        </NavbarActions>
 
         <MobileNavDrawer
           brand={brand}

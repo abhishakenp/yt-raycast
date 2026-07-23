@@ -5,11 +5,13 @@ import { cn } from '#/lib/utils.ts'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
+  NavbarActions,
   NavbarBrand,
   NavbarNav,
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import { inquiryLakebed } from '../contact/inquiry-lakebed.ts'
 import {
   InquiryActionButton,
@@ -39,6 +41,8 @@ export const EventPlannerNavbar = defineCapsule({
     nav: z.array(z.string()).optional(),
     /** Filled primary pill CTA label. */
     ctaLabel: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props, lakebed }) => {
@@ -47,6 +51,7 @@ export const EventPlannerNavbar = defineCapsule({
       ? props.nav
       : ['Services', 'Gallery', 'Process', 'Testimonials', 'FAQ']
     const ctaLabel = props.ctaLabel ?? 'Book Consultation'
+    const signIn = props.signIn ?? 'Sign in'
 
     const Clock = ({ className }: { className?: string }) => (
       <svg
@@ -104,6 +109,14 @@ export const EventPlannerNavbar = defineCapsule({
             {ctaLabel}
           </InquiryActionButton>
         </NavbarNav>
+
+        <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
+        </NavbarActions>
 
         <MobileNavDrawer
           brand={brand}

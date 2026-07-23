@@ -9,6 +9,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAccountButton,
@@ -40,6 +41,8 @@ export const FashionStoreNavbar = defineCapsule({
     nav: z.array(z.string()).optional(),
     /** Item count shown on the shopping-bag badge. */
     bagCount: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   lakebed: commerceCartLakebed,
@@ -49,6 +52,7 @@ export const FashionStoreNavbar = defineCapsule({
       ? props.nav
       : ['Collections', 'Lookbook', 'New Arrivals', 'Our Story', 'Journal']
     const initialBagCount = Number.parseInt(props.bagCount ?? '0', 10) || 0
+    const signIn = props.signIn ?? 'Sign in'
     const SearchIcon = () => (
       <svg
         className="size-5"
@@ -123,6 +127,11 @@ export const FashionStoreNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-4">
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <CommerceMobileMenu
             brand={brand}
             nav={nav}

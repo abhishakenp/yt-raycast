@@ -9,6 +9,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import {
   LocalServiceAccountButton,
   LocalServiceBookingButton,
@@ -46,6 +47,8 @@ export const HealthcareNavbar = defineCapsule({
     cta: z.string().optional(),
     /** Navigation target for the primary CTA. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   lakebed: localServiceLakebed,
@@ -79,6 +82,7 @@ export const HealthcareNavbar = defineCapsule({
         </svg>
       </span>
     )
+    const signIn = props.signIn ?? 'Sign in'
     return (
       <SiteNav
         position="sticky"
@@ -111,6 +115,11 @@ export const HealthcareNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="shrink-0 gap-2">
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <a
             href={`tel:${phone.replace(/[^\d+]/g, '')}`}
             className="hidden shrink-0 items-center gap-2 whitespace-nowrap font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground 2xl:flex"

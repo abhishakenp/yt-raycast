@@ -10,6 +10,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAccountButton,
@@ -44,6 +45,8 @@ export const ElectronicsStoreNavbar = defineCapsule({
     homeTarget: z.string().optional(),
     /** Deprecated: cart opens the shared Lakebed drawer. */
     cartTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   lakebed: commerceCartLakebed,
@@ -56,6 +59,7 @@ export const ElectronicsStoreNavbar = defineCapsule({
     const homeTarget = props.homeTarget ?? nav[0]
     const utilityButtonClass =
       'p-2 text-muted-foreground transition-colors hover:text-foreground'
+    const signIn = props.signIn ?? 'Sign in'
 
     const BoltMark = ({ className }: { className?: string }) => (
       <span
@@ -115,6 +119,11 @@ export const ElectronicsStoreNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-4">
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <CommerceSearchButton
             lakebed={lakebed}
             buttonClassName={utilityButtonClass}

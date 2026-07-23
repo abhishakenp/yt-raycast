@@ -11,6 +11,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAccountButton,
@@ -74,6 +75,8 @@ export const WineryBreweryNavbar = defineCapsule({
     ctaTarget: z.string().optional(),
     /** Initial cart badge fallback before Lakebed state is available. */
     cartCount: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   lakebed: commerceCartLakebed,
@@ -87,6 +90,7 @@ export const WineryBreweryNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Plan a Visit'
     const ctaTarget = props.ctaTarget ?? 'Visit'
     const initialCartCount = Number.parseInt(props.cartCount ?? '0', 10) || 0
+    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -117,6 +121,11 @@ export const WineryBreweryNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <CommerceSearchButton
             lakebed={lakebed}
             buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"

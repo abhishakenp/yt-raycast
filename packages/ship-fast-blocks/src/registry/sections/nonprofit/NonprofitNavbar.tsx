@@ -12,6 +12,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * NonprofitNavbar — warm mission-editorial sticky header for a nonprofit /
  * charity / NGO landing page. A backdrop-blurred, hairline-bordered bar pins to
@@ -58,6 +59,8 @@ export const NonprofitNavbar = defineCapsule({
     ctaLabel: z.string().optional(),
     /** Navigation target for the pill CTA. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -68,6 +71,7 @@ export const NonprofitNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Donate'
     const ctaTarget = props.ctaTarget ?? 'Donate'
     const homeTarget = props.homeTarget ?? nav[0]
+    const signIn = props.signIn ?? 'Sign in'
     return (
       <SiteNav
         position="sticky"
@@ -95,6 +99,11 @@ export const NonprofitNavbar = defineCapsule({
           ))}
         </NavbarNav>
         <NavbarActions className="gap-2">
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="primary-pill"
             className="hidden rounded-none px-5 py-2.5 font-semibold transition-colors hover:bg-primary/90 active:translate-y-px sm:inline-flex"

@@ -12,6 +12,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * InteriorDesignNavbar — fixed, translucent editorial-spatial top navigation bar
  * for an upscale interior-design / architecture studio site. A backdrop-blurred,
@@ -38,6 +39,8 @@ export const InteriorDesignNavbar = defineCapsule({
     cta: z.string().optional(),
     /** Navigation target for the CTA (defaults to the last nav item / "Contact"). */
     contactTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -60,6 +63,8 @@ export const InteriorDesignNavbar = defineCapsule({
         {brand.slice(0, 2).toUpperCase()}
       </span>
     )
+
+    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -93,6 +98,11 @@ export const InteriorDesignNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="outline"
             href={contactTarget}

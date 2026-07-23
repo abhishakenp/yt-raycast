@@ -11,6 +11,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * CrowdfundingNavbar — sticky, backdrop-blurred top navigation for a
  * crowdfunding / campaign landing page in a playful-bold campaign language: a
@@ -37,6 +38,8 @@ export const CrowdfundingNavbar = defineCapsule({
     ctaLabel: z.string().optional(),
     /** Target label for the primary pill CTA (defaults to the Rewards route). */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -47,6 +50,7 @@ export const CrowdfundingNavbar = defineCapsule({
     const homeTarget = props.homeTarget ?? nav[0]
     const ctaLabel = props.ctaLabel ?? 'Back This Project'
     const ctaTarget = props.ctaTarget ?? nav[2] ?? 'Rewards'
+    const signIn = props.signIn ?? 'Sign in'
 
     const LeafMark = ({ className }: { className?: string }) => (
       <span
@@ -103,6 +107,11 @@ export const CrowdfundingNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="primary"
             href={ctaTarget}

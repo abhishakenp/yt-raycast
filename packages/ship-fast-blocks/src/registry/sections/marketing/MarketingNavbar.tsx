@@ -12,6 +12,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * MarketingNavbar — sticky bold-kinetic top navigation bar for a product-
  * marketing / SaaS landing page. A backdrop-blurred, hairline-bottomed header
@@ -40,6 +41,8 @@ export const MarketingNavbar = defineCapsule({
     ctaLabel: z.string().optional(),
     /** Navigation target for the primary CTA button. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -51,6 +54,7 @@ export const MarketingNavbar = defineCapsule({
     const loginLabel = props.loginLabel ?? 'Log in'
     const ctaLabel = props.ctaLabel ?? 'Get started'
     const ctaTarget = props.ctaTarget ?? 'Start free trial'
+    const signIn = props.signIn ?? 'Sign in'
 
     // Brand logo mark — sharp primary tile + brand initial (decorative brand asset).
     const LogoMark = ({ className }: { className?: string }) => (
@@ -94,6 +98,11 @@ export const MarketingNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-3">
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarRouteLink
             href={loginLabel}
             className="hidden items-center rounded-none border border-border bg-background px-4 py-2 font-mono text-xs font-semibold uppercase tracking-[0.14em] text-foreground transition-colors hover:bg-muted sm:inline-flex"

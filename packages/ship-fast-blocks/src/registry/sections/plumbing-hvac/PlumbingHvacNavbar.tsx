@@ -12,6 +12,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * PlumbingHvacNavbar — sticky trade-industrial top navigation bar for a local
  * plumbing & HVAC site. Thin configuration over the shared `SiteNav` composite
@@ -68,6 +69,8 @@ export const PlumbingHvacNavbar = defineCapsule({
     ctaLabel: z.string().optional(),
     /** Navigation target for the CTA button. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -79,6 +82,7 @@ export const PlumbingHvacNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Schedule Service'
     const ctaTarget = props.ctaTarget ?? 'Contact'
     const homeTarget = props.homeTarget ?? nav[0]
+    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -113,6 +117,11 @@ export const PlumbingHvacNavbar = defineCapsule({
           ))}
         </NavbarNav>
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           {phone ? (
             <a
               href={`tel:${phone.replace(/[^\d+]/g, '')}`}

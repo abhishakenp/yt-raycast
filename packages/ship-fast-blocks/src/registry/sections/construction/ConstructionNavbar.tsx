@@ -12,6 +12,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * ConstructionNavbar — industrial-brutalist sticky top navigation for a
  * construction / general contractor site. A backdrop-blurred header with a
@@ -31,6 +32,8 @@ export const ConstructionNavbar = defineCapsule({
     nav: z.array(z.string()).optional(),
     phone: z.string().optional(),
     ctaLabel: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -40,6 +43,7 @@ export const ConstructionNavbar = defineCapsule({
       : ['Services', 'Projects', 'About', 'Reviews', 'Contact']
     const phone = props.phone ?? '(555) 123-4567'
     const ctaLabel = props.ctaLabel ?? 'Get a Quote'
+    const signIn = props.signIn ?? 'Sign in'
 
     const LogoMark = ({
       className,
@@ -105,6 +109,11 @@ export const ConstructionNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <a
             href={`tel:${phone.replace(/[^\d+]/g, '')}`}
             className="hidden items-center gap-2 font-mono text-xs tabular-nums text-muted-foreground transition-colors hover:text-foreground xl:flex"

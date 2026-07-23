@@ -11,6 +11,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * ResumeCvNavbar — sticky document-editorial header for a personal resume / CV /
  * portfolio site. Thin configuration over the shared `SiteNav` composite: a
@@ -40,6 +41,8 @@ export const ResumeCvNavbar = defineCapsule({
     ctaLabel: z.string().optional(),
     /** Navigation target for the pill CTA. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -60,6 +63,7 @@ export const ResumeCvNavbar = defineCapsule({
         {initials}
       </span>
     )
+    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav position="fixed" height="default" className={props.className}>
@@ -82,6 +86,11 @@ export const ResumeCvNavbar = defineCapsule({
           ))}
         </NavbarNav>
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="primary-pill"
             className="hidden rounded-none px-5 py-2.5 font-mono text-xs uppercase tracking-[0.12em] transition-transform duration-150 active:translate-y-px sm:inline-flex"

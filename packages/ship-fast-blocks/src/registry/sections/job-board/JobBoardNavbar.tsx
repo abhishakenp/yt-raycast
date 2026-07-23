@@ -10,6 +10,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import { jobBoardLakebed } from './job-board-lakebed.ts'
 import {
   JobBoardAccountButton,
@@ -106,6 +107,11 @@ export const JobBoardNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-2 sm:gap-3">
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <JobBoardSearchButton
             lakebed={lakebed}
             buttonClassName="inline-flex size-9 items-center justify-center rounded-none border border-border text-muted-foreground transition-colors hover:border-foreground hover:text-foreground active:translate-y-px"

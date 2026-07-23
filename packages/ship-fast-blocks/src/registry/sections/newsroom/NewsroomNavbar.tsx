@@ -12,6 +12,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import {
   PublicationAccountButton,
   PublicationMobileMenu,
@@ -53,6 +54,8 @@ export const NewsroomNavbar = defineCapsule({
     subscribeCta: z.string().optional(),
     /** Text sign-in link label on the right. */
     signInCta: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   lakebed: publicationLakebed,
@@ -75,6 +78,7 @@ export const NewsroomNavbar = defineCapsule({
         ]
     const subscribeCta = props.subscribeCta ?? 'Subscribe'
     const signInCta = props.signInCta ?? 'Sign in'
+    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -149,6 +153,11 @@ export const NewsroomNavbar = defineCapsule({
           </NavbarBrand>
 
           <NavbarActions className="justify-end gap-2 sm:gap-4">
+            <SignInButton
+              variant="ghost"
+              label={signIn}
+              className="hidden sm:block"
+            />
             <PublicationAccountButton
               lakebed={lakebed}
               label={signInCta}

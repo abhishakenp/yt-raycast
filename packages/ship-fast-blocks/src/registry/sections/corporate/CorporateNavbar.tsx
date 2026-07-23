@@ -12,6 +12,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * CorporateNavbar — Swiss-corporate sticky top navigation bar for an
  * enterprise / corporate B2B marketing site. A backdrop-blurred, hairline
@@ -39,6 +40,8 @@ export const CorporateNavbar = defineCapsule({
     ctaTarget: z.string().optional(),
     /** Label + target for the secondary text link beside the CTA. */
     secondaryCta: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -49,6 +52,7 @@ export const CorporateNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Request Demo'
     const ctaTarget = props.ctaTarget ?? 'Schedule a Demo'
     const secondaryCta = props.secondaryCta ?? 'Explore Solutions'
+    const signIn = props.signIn ?? 'Sign in'
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
@@ -89,6 +93,11 @@ export const CorporateNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-3">
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarRouteLink
             href={secondaryCta}
             className="hidden whitespace-nowrap font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-foreground xl:inline-flex"

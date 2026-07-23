@@ -12,6 +12,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * CryptoNavbar — Web3-terminal sticky top navigation bar for a crypto / DeFi
  * infrastructure landing page. A backdrop-blurred, hairline-bottomed header
@@ -42,6 +43,8 @@ export const CryptoNavbar = defineCapsule({
     ctaLabel: z.string().optional(),
     /** Target label for the primary pill CTA. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -54,6 +57,7 @@ export const CryptoNavbar = defineCapsule({
     const docTarget = props.docTarget ?? 'View Documentation'
     const ctaLabel = props.ctaLabel ?? 'Launch App'
     const ctaTarget = props.ctaTarget ?? 'Start Building'
+    const signIn = props.signIn ?? 'Sign in'
 
     const BoltIcon = ({ className }: { className?: string }) => (
       <svg
@@ -108,6 +112,11 @@ export const CryptoNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarRouteLink
             href={docTarget}
             className="hidden font-mono text-[12px] uppercase tracking-[0.15em] text-muted-foreground transition-colors hover:text-foreground xl:block"

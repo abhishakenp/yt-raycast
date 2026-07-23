@@ -12,6 +12,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * PortfolioNavbar — fixed, blur-backdrop editorial-personal top navigation for a
  * creative-individual portfolio. Thin configuration over the shared `SiteNav`
@@ -40,6 +41,8 @@ export const PortfolioNavbar = defineCapsule({
     ctaLabel: z.string().optional(),
     /** Navigation target for the pill CTA. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -62,6 +65,7 @@ export const PortfolioNavbar = defineCapsule({
         {brand.charAt(0).toUpperCase()}
       </span>
     )
+    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav position="fixed" height="default" className={props.className}>
@@ -86,6 +90,11 @@ export const PortfolioNavbar = defineCapsule({
           ))}
         </NavbarNav>
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="primary-pill"
             className="hidden rounded-none border-2 border-foreground bg-foreground px-5 py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-background shadow-[4px_4px_0_0] shadow-foreground/20 transition-all duration-100 hover:-translate-y-0.5 hover:bg-foreground active:translate-x-[2px] active:translate-y-[2px] active:shadow-none sm:inline-flex"

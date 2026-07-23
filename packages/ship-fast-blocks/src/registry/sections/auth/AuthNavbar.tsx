@@ -10,6 +10,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import {
   SaasAccountButton,
   SaasMobileMenu,
@@ -59,6 +60,8 @@ export const AuthNavbar = defineCapsule({
     ctaLabel: z.string().optional(),
     /** Navigation target for the pill CTA. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   lakebed: saasLakebed,
@@ -67,6 +70,7 @@ export const AuthNavbar = defineCapsule({
       ? props.nav
       : ['Product', 'Docs', 'Pricing', 'Customers']
     const brand = props.brand ?? 'Authly'
+    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -108,6 +112,11 @@ export const AuthNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="shrink-0 gap-1.5 sm:gap-2">
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <SaasSearchButton
             lakebed={lakebed}
             buttonClassName="hidden rounded-full border border-transparent p-2.5 text-muted-foreground transition-colors hover:border-border hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"

@@ -12,6 +12,7 @@ import {
   NavbarRouteLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * KnowledgeBaseNavbar — "Terminal-docs" sticky reference-manual header for a
  * help-center / knowledge-base / support site. Built on the shared `SiteNav`
@@ -39,6 +40,8 @@ export const KnowledgeBaseNavbar = defineCapsule({
     searchLabel: z.string().optional(),
     /** Navigation target for the brand button / mobile menu (defaults to first nav item). */
     homeTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -84,6 +87,8 @@ export const KnowledgeBaseNavbar = defineCapsule({
       </svg>
     )
 
+    const signIn = props.signIn ?? 'Sign in'
+
     return (
       <SiteNav
         position="sticky"
@@ -121,6 +126,11 @@ export const KnowledgeBaseNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-2">
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarRouteLink
             href={searchLabel}
             className="hidden items-center gap-2 rounded-none border border-border bg-muted/40 px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground transition-colors duration-150 hover:border-foreground/40 hover:text-foreground active:translate-y-px sm:inline-flex"

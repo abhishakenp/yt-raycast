@@ -12,6 +12,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 function BookMark({ className }: { className?: string }) {
   return (
     <svg
@@ -66,6 +67,7 @@ export const OnlineCourseNavbar = defineCapsule({
     const ctaLabel = props.cta ?? 'Enroll'
     const ctaTarget = props.ctaTarget ?? 'Pricing'
     const homeTarget = nav[0]
+    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -97,6 +99,11 @@ export const OnlineCourseNavbar = defineCapsule({
           ))}
         </NavbarNav>
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="primary"
             className="hidden rounded-none px-5 py-2.5 font-mono text-xs font-semibold uppercase tracking-[0.12em] shadow-[4px_4px_0_0] shadow-primary/25 transition-[transform,box-shadow,background-color] duration-150 hover:bg-primary/90 active:translate-y-px active:shadow-none sm:inline-flex"

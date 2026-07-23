@@ -10,6 +10,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 function CapMark({ className }: { className?: string }) {
   return (
     <svg
@@ -41,6 +42,8 @@ export const TutoringNavbar = defineCapsule({
     ctaTarget: z.string().optional(),
     homeTarget: z.string().optional(),
     sticky: z.boolean().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -52,6 +55,7 @@ export const TutoringNavbar = defineCapsule({
     const ctaTarget = props.ctaTarget ?? 'Contact'
     const phone = props.phone ?? '(555) 240-1188'
     const homeTarget = props.homeTarget ?? nav[0]
+    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -80,6 +84,11 @@ export const TutoringNavbar = defineCapsule({
           ))}
         </NavbarNav>
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           {phone ? (
             <a
               href={`tel:${phone.replace(/[^\d+]/g, '')}`}

@@ -10,6 +10,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import { newsletterLakebed } from './newsletter-lakebed.ts'
 import {
   NewsletterAccountButton,
@@ -39,6 +40,8 @@ export const NewsletterNavbar = defineCapsule({
     brand: z.string().optional(),
     /** Nav link labels; the last becomes the outlined CTA pill (must match site routes). */
     nav: z.array(z.string()).optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   lakebed: newsletterLakebed,
@@ -59,6 +62,8 @@ export const NewsletterNavbar = defineCapsule({
         {brand.charAt(0).toUpperCase()}
       </span>
     )
+
+    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -96,6 +101,11 @@ export const NewsletterNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NewsletterMobileMenu
             brand={brand}
             homeTarget={brand}

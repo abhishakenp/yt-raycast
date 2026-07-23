@@ -12,6 +12,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * LinkInBioNavbar — minimal, mobile-first, backdrop-blurred header for a
  * single-page link-in-bio hub in the "chunky rounded stack" language: a hard
@@ -56,6 +57,8 @@ export const LinkInBioNavbar = defineCapsule({
     ctaLabel: z.string().optional(),
     /** Navigation target for the pill CTA. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -64,6 +67,7 @@ export const LinkInBioNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Follow'
     const ctaTarget = props.ctaTarget ?? 'Follow'
     const homeTarget = props.homeTarget ?? nav[0]
+    const signIn = props.signIn ?? 'Sign in'
     return (
       <SiteNav
         position="fixed"
@@ -94,6 +98,11 @@ export const LinkInBioNavbar = defineCapsule({
           ))}
         </NavbarNav>
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="primary-pill"
             className="hidden border-2 border-foreground px-5 py-2 font-bold shadow-[3px_3px_0_0] shadow-foreground/25 transition-all hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0] hover:shadow-foreground/25 active:translate-y-px active:shadow-none sm:inline-flex"

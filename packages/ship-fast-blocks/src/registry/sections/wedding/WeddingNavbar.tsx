@@ -13,6 +13,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 function Mark({ className }: { className?: string }) {
   return (
     <svg
@@ -42,6 +43,8 @@ export const WeddingNavbar = defineCapsule({
     homeTarget: z.string().optional(),
     ctaLabel: z.string().optional(),
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -54,6 +57,7 @@ export const WeddingNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'RSVP'
     const ctaTarget = props.ctaTarget ?? 'RSVP'
     const homeTarget = props.homeTarget ?? nav[0]
+    const signIn = props.signIn ?? 'Sign in'
     return (
       <SiteNav
         position="fixed"
@@ -83,6 +87,11 @@ export const WeddingNavbar = defineCapsule({
           ))}
         </NavbarNav>
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="primary-pill"
             className="hidden rounded-none px-5 py-2.5 transition-colors active:translate-y-px sm:inline-flex"

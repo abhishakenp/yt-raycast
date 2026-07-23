@@ -12,6 +12,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 const PawMark = ({ className }: { className?: string }) => (
   <span
     className={cn(
@@ -52,6 +53,8 @@ export const PetVeterinaryNavbar = defineCapsule({
     ctaTarget: z.string().optional(),
     /** Route target for the brand / home click. */
     homeTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -63,6 +66,7 @@ export const PetVeterinaryNavbar = defineCapsule({
     const ctaTarget = props.ctaTarget ?? 'Contact'
     const phone = props.phone ?? '(555) 123-4567'
     const homeTarget = props.homeTarget ?? nav[0]
+    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -91,6 +95,11 @@ export const PetVeterinaryNavbar = defineCapsule({
           ))}
         </NavbarNav>
         <NavbarActions className="gap-3">
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           {phone ? (
             <a
               href={`tel:${phone.replace(/[^\d+]/g, '')}`}

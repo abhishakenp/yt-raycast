@@ -10,6 +10,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
   CommerceAccountButton,
@@ -43,6 +44,8 @@ export const BeautyStoreNavbar = defineCapsule({
     homeTarget: z.string().optional(),
     /** Navigation target for the account icon. */
     contactTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   lakebed: commerceCartLakebed,
@@ -53,6 +56,7 @@ export const BeautyStoreNavbar = defineCapsule({
       : ['Bestsellers', 'New Arrivals', 'Skincare', 'Makeup', 'Brands']
     const initialCartCount = Number.parseInt(props.cartCount ?? '0', 10) || 0
     const homeTarget = props.homeTarget ?? nav[0]
+    const signIn = props.signIn ?? 'Sign in'
 
     const SearchIcon = () => (
       <svg
@@ -134,6 +138,11 @@ export const BeautyStoreNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <CommerceSearchButton
             lakebed={lakebed}
             buttonClassName="p-2 text-muted-foreground transition-colors hover:text-foreground"

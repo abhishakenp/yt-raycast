@@ -11,6 +11,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * InsuranceNavbar — Swiss-trust sticky site header for an insurance / fintech
  * page. A backdrop-blurred, bottom-hairline header pinned to the top with an
@@ -36,6 +37,8 @@ export const InsuranceNavbar = defineCapsule({
     phone: z.string().optional(),
     /** Primary CTA button label. */
     ctaLabel: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -84,6 +87,8 @@ export const InsuranceNavbar = defineCapsule({
       </svg>
     )
 
+    const signIn = props.signIn ?? 'Sign in'
+
     return (
       <SiteNav
         position="sticky"
@@ -119,6 +124,11 @@ export const InsuranceNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <a
             href={`tel:${phone.replace(/[^\d+]/g, '')}`}
             className="hidden items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground lg:flex"

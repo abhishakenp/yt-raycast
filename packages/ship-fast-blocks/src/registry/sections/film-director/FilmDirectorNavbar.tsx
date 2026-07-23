@@ -4,12 +4,14 @@ import { cn } from '#/lib/utils.ts'
 import { Logo as BrandLogo, LogoImage, LogoLabel } from '#/section-kit/Logo.tsx'
 import { MobileNavDrawer } from '#/section-kit/MobileNavDrawer.tsx'
 import {
+  NavbarActions,
   NavbarBrand,
   NavbarCta,
   NavbarNav,
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * FilmDirectorNavbar — fixed, backdrop-blurred cinematic top navigation bar for
  * a film director / cinematographer / DP portfolio. A hairline-bottomed
@@ -31,6 +33,8 @@ export const FilmDirectorNavbar = defineCapsule({
     brand: z.string().optional(),
     /** Nav link labels; the LAST item becomes the filled primary pill CTA. */
     nav: z.array(z.string()).optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -38,6 +42,7 @@ export const FilmDirectorNavbar = defineCapsule({
     const nav = props.nav?.length
       ? props.nav
       : ['Work', 'Services', 'About', 'Get in Touch']
+    const signIn = props.signIn ?? 'Sign in'
     return (
       <SiteNav
         position="fixed"
@@ -70,6 +75,14 @@ export const FilmDirectorNavbar = defineCapsule({
             {nav[nav.length - 1]}
           </NavbarCta>
         </NavbarNav>
+
+        <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
+        </NavbarActions>
 
         <MobileNavDrawer
           brand={brand}

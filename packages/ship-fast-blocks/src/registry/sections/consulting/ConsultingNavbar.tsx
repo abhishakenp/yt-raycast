@@ -12,6 +12,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * ConsultingNavbar — Swiss-authority sticky top navigation bar for a
  * management-consulting firm site. A hairline border-bottomed, backdrop-blurred
@@ -40,6 +41,8 @@ export const ConsultingNavbar = defineCapsule({
     ctaTarget: z.string().optional(),
     /** Navigation target for the logo and mobile hamburger (first nav item). */
     homeTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -50,6 +53,7 @@ export const ConsultingNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Contact Us'
     const ctaTarget = props.ctaTarget ?? 'View Case Studies'
     const homeTarget = props.homeTarget ?? nav[0]
+    const signIn = props.signIn ?? 'Sign in'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <span
@@ -95,6 +99,11 @@ export const ConsultingNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="dark"
             href={ctaTarget}

@@ -12,6 +12,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * DocsNavbar — "Terminal-docs" sticky reference-manual header for a developer
  * DOCUMENTATION / API-reference site. Built on the shared `SiteNav` composite:
@@ -57,6 +58,8 @@ export const DocsNavbar = defineCapsule({
     ctaLabel: z.string().optional(),
     /** Navigation target for the CTA. */
     ctaTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -67,6 +70,7 @@ export const DocsNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Get Started'
     const ctaTarget = props.ctaTarget ?? 'Getting Started'
     const homeTarget = props.homeTarget ?? nav[0]
+    const signIn = props.signIn ?? 'Sign in'
     return (
       <SiteNav
         position="sticky"
@@ -97,6 +101,11 @@ export const DocsNavbar = defineCapsule({
           ))}
         </NavbarNav>
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="primary-pill"
             className="hidden rounded-none px-4 py-2 font-mono text-xs font-semibold uppercase tracking-[0.12em] shadow-[3px_3px_0_0] shadow-foreground/20 transition-[background-color,box-shadow,transform] duration-150 active:translate-y-px active:shadow-none sm:inline-flex"

@@ -12,6 +12,7 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
+import { SignInButton } from '#/section-kit/SignInButton.tsx'
 /**
  * ChurchNavbar — serene editorial fixed top navigation bar for a church or
  * faith-community site. A backdrop-blurred, hairline-bordered header pinned to
@@ -33,6 +34,8 @@ export const ChurchNavbar = defineCapsule({
     ctaLabel: z.string().optional(),
     ctaTarget: z.string().optional(),
     homeTarget: z.string().optional(),
+    /** Label for the sign-in button. */
+    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
@@ -43,6 +46,7 @@ export const ChurchNavbar = defineCapsule({
     const homeTarget = props.homeTarget ?? 'Home'
     const ctaLabel = props.ctaLabel ?? 'Give Today'
     const ctaTarget = props.ctaTarget ?? 'Give'
+    const signIn = props.signIn ?? 'Sign in'
 
     const Star = () => (
       <span className="text-xl leading-none text-primary" aria-hidden="true">
@@ -77,6 +81,11 @@ export const ChurchNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions>
+          <SignInButton
+            variant="ghost"
+            label={signIn}
+            className="hidden sm:block"
+          />
           <NavbarCta
             variant="outline"
             href={ctaTarget}
