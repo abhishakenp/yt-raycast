@@ -666,8 +666,6 @@ export function isReservedEndpointPath(path: string): boolean {
     path === '/client.js' ||
     path === '/auth/callback' ||
     path.startsWith('/auth/') ||
-    path === '/admin' ||
-    path.startsWith('/admin/') ||
     path === '/__lakebed' ||
     path.startsWith('/__lakebed/') ||
     path === '/__span' ||

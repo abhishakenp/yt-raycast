@@ -41,7 +41,6 @@ import { Route as PreviewSlugSitemapDotxmlRouteImport } from './routes/preview.$
 import { Route as PreviewSlugRobotsDottxtRouteImport } from './routes/preview.$slug.robots[.]txt'
 import { Route as PreviewSlugLlmsDottxtRouteImport } from './routes/preview.$slug.llms[.]txt'
 import { Route as PreviewSlugSplatRouteImport } from './routes/preview.$slug.$'
-import { Route as GenerateSessionIdAdminRouteImport } from './routes/generate.$sessionId.admin'
 import { Route as GenerateSessionIdSplatRouteImport } from './routes/generate.$sessionId.$'
 import { Route as ExportSessionIdTargetRouteImport } from './routes/export.$sessionId.$target'
 import { Route as ExamplesCategorySplatRouteImport } from './routes/examples.$category.$'
@@ -245,11 +244,6 @@ const PreviewSlugSplatRoute = PreviewSlugSplatRouteImport.update({
   id: '/$',
   path: '/$',
   getParentRoute: () => PreviewSlugRoute,
-} as any)
-const GenerateSessionIdAdminRoute = GenerateSessionIdAdminRouteImport.update({
-  id: '/generate/$sessionId/admin',
-  path: '/generate/$sessionId/admin',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const GenerateSessionIdSplatRoute = GenerateSessionIdSplatRouteImport.update({
   id: '/generate/$sessionId/$',
@@ -531,7 +525,6 @@ export interface FileRoutesByFullPath {
   '/examples/$category/$': typeof ExamplesCategorySplatRoute
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
   '/generate/$sessionId/$': typeof GenerateSessionIdSplatRoute
-  '/generate/$sessionId/admin': typeof GenerateSessionIdAdminRoute
   '/preview/$slug/$': typeof PreviewSlugSplatRoute
   '/preview/$slug/llms.txt': typeof PreviewSlugLlmsDottxtRoute
   '/preview/$slug/robots.txt': typeof PreviewSlugRobotsDottxtRoute
@@ -607,7 +600,6 @@ export interface FileRoutesByTo {
   '/examples/$category/$': typeof ExamplesCategorySplatRoute
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
   '/generate/$sessionId/$': typeof GenerateSessionIdSplatRoute
-  '/generate/$sessionId/admin': typeof GenerateSessionIdAdminRoute
   '/preview/$slug/$': typeof PreviewSlugSplatRoute
   '/preview/$slug/llms.txt': typeof PreviewSlugLlmsDottxtRoute
   '/preview/$slug/robots.txt': typeof PreviewSlugRobotsDottxtRoute
@@ -685,7 +677,6 @@ export interface FileRoutesById {
   '/examples/$category/$': typeof ExamplesCategorySplatRoute
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
   '/generate/$sessionId/$': typeof GenerateSessionIdSplatRoute
-  '/generate/$sessionId/admin': typeof GenerateSessionIdAdminRoute
   '/preview/$slug/$': typeof PreviewSlugSplatRoute
   '/preview/$slug/llms.txt': typeof PreviewSlugLlmsDottxtRoute
   '/preview/$slug/robots.txt': typeof PreviewSlugRobotsDottxtRoute
@@ -764,7 +755,6 @@ export interface FileRouteTypes {
     | '/examples/$category/$'
     | '/export/$sessionId/$target'
     | '/generate/$sessionId/$'
-    | '/generate/$sessionId/admin'
     | '/preview/$slug/$'
     | '/preview/$slug/llms.txt'
     | '/preview/$slug/robots.txt'
@@ -840,7 +830,6 @@ export interface FileRouteTypes {
     | '/examples/$category/$'
     | '/export/$sessionId/$target'
     | '/generate/$sessionId/$'
-    | '/generate/$sessionId/admin'
     | '/preview/$slug/$'
     | '/preview/$slug/llms.txt'
     | '/preview/$slug/robots.txt'
@@ -917,7 +906,6 @@ export interface FileRouteTypes {
     | '/examples/$category/$'
     | '/export/$sessionId/$target'
     | '/generate/$sessionId/$'
-    | '/generate/$sessionId/admin'
     | '/preview/$slug/$'
     | '/preview/$slug/llms.txt'
     | '/preview/$slug/robots.txt'
@@ -992,7 +980,6 @@ export interface RootRouteChildren {
   ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
   ExportSessionIdTargetRoute: typeof ExportSessionIdTargetRoute
   GenerateSessionIdSplatRoute: typeof GenerateSessionIdSplatRoute
-  GenerateSessionIdAdminRoute: typeof GenerateSessionIdAdminRoute
   ApiDeploymentsDeploymentSlugMedusaConfigRoute: typeof ApiDeploymentsDeploymentSlugMedusaConfigRoute
   ApiDeploymentsDeploymentSlugMedusaProductsRoute: typeof ApiDeploymentsDeploymentSlugMedusaProductsRoute
   ApiDeploymentsDeploymentSlugMedusaPullRoute: typeof ApiDeploymentsDeploymentSlugMedusaPullRoute
@@ -1229,13 +1216,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/preview/$slug/$'
       preLoaderRoute: typeof PreviewSlugSplatRouteImport
       parentRoute: typeof PreviewSlugRoute
-    }
-    '/generate/$sessionId/admin': {
-      id: '/generate/$sessionId/admin'
-      path: '/generate/$sessionId/admin'
-      fullPath: '/generate/$sessionId/admin'
-      preLoaderRoute: typeof GenerateSessionIdAdminRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/generate/$sessionId/$': {
       id: '/generate/$sessionId/$'
@@ -1692,7 +1672,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiStripeWebhookRoute: ApiStripeWebhookRoute,
   ExportSessionIdTargetRoute: ExportSessionIdTargetRoute,
   GenerateSessionIdSplatRoute: GenerateSessionIdSplatRoute,
-  GenerateSessionIdAdminRoute: GenerateSessionIdAdminRoute,
   ApiDeploymentsDeploymentSlugMedusaConfigRoute:
     ApiDeploymentsDeploymentSlugMedusaConfigRoute,
   ApiDeploymentsDeploymentSlugMedusaProductsRoute:

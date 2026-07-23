@@ -9,9 +9,6 @@ const routeParamMocks = vi.hoisted(() => {
     '/generate/$sessionId/$': {
       sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
     },
-    '/generate/$sessionId/admin': {
-      sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
-    },
   }
 
   return {
@@ -80,11 +77,6 @@ const topLevelRouteCases = [
 
 const generateRouteCases = [
   ['./generate.$sessionId.$', '/generate/$sessionId/$', 'GenerateRoute'],
-  [
-    './generate.$sessionId.admin',
-    '/generate/$sessionId/admin',
-    'GenerateAdminRoute',
-  ],
 ] satisfies ReadonlyArray<readonly [string, string, string]>
 
 vi.mock('@tanstack/react-router', () => {
@@ -148,20 +140,12 @@ vi.mock('@/features/referrals/components/ReferralDashboard', () => ({
 }))
 
 type DashboardMockProps = {
-  initialAdminView?: boolean
   sessionId?: string
 }
 
 vi.mock('@/features/dashboard/components/Dashboard', () => {
-  function Dashboard({ initialAdminView, sessionId }: DashboardMockProps) {
-    return (
-      <section
-        data-admin={initialAdminView === true ? 'true' : 'false'}
-        data-testid="dashboard-route"
-      >
-        {sessionId}
-      </section>
-    )
+  function Dashboard({ sessionId }: DashboardMockProps) {
+    return <section data-testid="dashboard-route">{sessionId}</section>
   }
 
   return { Dashboard }
@@ -245,17 +229,6 @@ describe('top-level route behavior', () => {
 
     const dashboard = screen.getByTestId('dashboard-route')
     expect(dashboard.textContent).toBe('k574ms14ma9f94keq30r7dq24x89n1k2')
-    expect(dashboard.getAttribute('data-admin')).toBe('false')
-  })
-
-  it('passes generate admin route params and initial admin mode into the dashboard workspace', async () => {
-    const { GenerateAdminRoute } = await import('./-generate-dashboard-route')
-
-    render(<GenerateAdminRoute />)
-
-    const dashboard = screen.getByTestId('dashboard-route')
-    expect(dashboard.textContent).toBe('k574ms14ma9f94keq30r7dq24x89n1k2')
-    expect(dashboard.getAttribute('data-admin')).toBe('true')
   })
 
   it('delegates the export route with real session and target params from Convex', async () => {

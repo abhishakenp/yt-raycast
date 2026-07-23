@@ -18,17 +18,6 @@ const v1PublicationSource = `root = PageSwitch(["Home", "Admin"], [home, admin])
 home = BlogHero("Cover", "Newsroom", "Featured", "Artifact Gazette", "Audit ready story", "Maya", "5 min", "Today", "Read", "/posts")
 admin = DashboardHeader("Newsroom Admin", "Manage Artifact Gazette", "Search posts", "New post")`
 
-const v1CommerceSource = `root = PageSwitch(["Home", "Shop", "Admin"], [home, shop, admin])
-home = EcommerceHero("New season", "Artifact Store Home", "Launch-ready commerce with owner-gated operations", "Shop now", "Browse", "Storefront", "Artifact Store")
-shop = ShopOverview("Artifact Store", "Catalog", "Artifact Store Catalog", "Browse products and bundles", "Shop now", "Filter", "Catalog grid", ["New arrivals", "Bestsellers"], "stats")
-admin = DashboardHeader("Store Admin", "Manage products, orders, inventory, and customers", "Search orders", "New product")`
-
-const v1SoftwareSource = `root = PageSwitch(["Home", "Docs", "Contact", "Admin"], [home, docs, contact, admin])
-home = SaasHero("Artifact SaaS", "Artifact SaaS Home", "launch", "Software launch with docs, leads, and admin operations", "Start now", "Book demo", "Trusted by product teams")
-docs = DocsHero("Documentation", "Artifact SaaS Docs", "Guides and setup notes", "Search docs", "/search", "Quickstart", "/quickstart", "API", "/api")
-contact = ContactHero("Contact", "Talk to Artifact SaaS", "Request guidance for your workspace")
-admin = DashboardHeader("Workspace Admin", "Manage users, leads, docs, billing signals, and audit events", "Search users", "Invite user")`
-
 const siteSpecJson = JSON.stringify({ projectName: 'Artifact Demo' })
 const siteSpecJsonWithGenUI = JSON.stringify({
   projectName: 'Artifact Demo',
@@ -36,93 +25,7 @@ const siteSpecJsonWithGenUI = JSON.stringify({
     version: 1,
     category: 'publication',
     ownerEmail: 'founder@example.com',
-    adminPolicy: {
-      mode: 'baked-owner',
-      authProvider: 'shoo',
-      ownerEmail: 'founder@example.com',
-    },
     fullstackManifest: { schema: 'publication-newsroom-v1' },
-  },
-})
-
-const siteSpecJsonWithGenUIAndSeo = JSON.stringify({
-  projectName: 'Artifact Demo',
-  seo: {
-    siteUrl: 'https://artifact.example.com',
-    siteName: 'Artifact Demo',
-    description: 'Admin publication workspace.',
-  },
-  pages: [
-    { route: '/', title: 'Home', seo: { title: 'Artifact Home' } },
-    {
-      route: '/admin',
-      title: 'Admin',
-      seo: { title: 'Artifact Admin' },
-    },
-  ],
-  genui: {
-    version: 1,
-    category: 'publication',
-    ownerEmail: 'founder@example.com',
-    adminPolicy: {
-      mode: 'baked-owner',
-      authProvider: 'shoo',
-      ownerEmail: 'founder@example.com',
-    },
-    fullstackManifest: { schema: 'publication-newsroom-v1' },
-  },
-})
-
-const siteSpecJsonWithCommerceGenUI = JSON.stringify({
-  projectName: 'Artifact Store',
-  genui: {
-    version: 1,
-    category: 'commerce',
-    ownerEmail: 'store@example.com',
-    adminPolicy: {
-      mode: 'baked-owner',
-      authProvider: 'shoo',
-      ownerEmail: 'store@example.com',
-      adminEmails: ['store@example.com'],
-    },
-    fullstackManifest: {
-      schema: 'commerce-fullstack-v1',
-      tables: ['products', 'orders', 'customers', 'adminUsers'],
-    },
-    openuiManifest: {
-      pages: [
-        { id: 'home', label: 'Home', component: 'EcommerceHero' },
-        { id: 'shop', label: 'Shop', component: 'ShopOverview' },
-        { id: 'admin', label: 'Admin', component: 'DashboardHeader' },
-      ],
-    },
-  },
-})
-
-const siteSpecJsonWithSoftwareGenUI = JSON.stringify({
-  projectName: 'Artifact SaaS',
-  genui: {
-    version: 1,
-    category: 'software',
-    ownerEmail: 'saas@example.com',
-    adminPolicy: {
-      mode: 'baked-owner',
-      authProvider: 'shoo',
-      ownerEmail: 'saas@example.com',
-      adminEmails: ['saas@example.com'],
-    },
-    fullstackManifest: {
-      schema: 'software-fullstack-v1',
-      tables: ['users', 'leads', 'docs', 'auditEvents', 'adminUsers'],
-    },
-    openuiManifest: {
-      pages: [
-        { id: 'home', label: 'Home', component: 'SaasHero' },
-        { id: 'docs', label: 'Docs', component: 'DocsHero' },
-        { id: 'contact', label: 'Contact', component: 'ContactHero' },
-        { id: 'admin', label: 'Admin', component: 'DashboardHeader' },
-      ],
-    },
   },
 })
 
@@ -316,7 +219,7 @@ describe('openui artifact files', () => {
     }
   })
 
-  it('does not ship dead site-admin.js or public/site-admin.js in any export target', async () => {
+  it('does not ship site-admin files in any export target', async () => {
     for (const target of ['react', 'next', 'lakebed', 'html'] as const) {
       const { files } = await buildOpenUIArtifactFiles({
         source:
@@ -332,6 +235,12 @@ describe('openui artifact files', () => {
       )
       expect(Object.keys(files), `target=${target}`).not.toContain(
         'public/site-admin.js',
+      )
+      expect(Object.keys(files), `target=${target}`).not.toContain(
+        'src/site-admin.ts',
+      )
+      expect(Object.keys(files), `target=${target}`).not.toContain(
+        'src/lib/site-admin-gate.tsx',
       )
     }
   })
@@ -350,22 +259,6 @@ describe('openui artifact files', () => {
       renderGeneratedRouteText(files, 'HomePage'),
     ).resolves.toContain('Hello artifact')
     expect(files['vite.config.js']).toBeUndefined()
-  })
-
-  it('includes generated admin/fullstack metadata files in exported artifacts', async () => {
-    const { files } = await buildOpenUIArtifactFiles({
-      source,
-      siteSpecJson: siteSpecJsonWithGenUI,
-      sessionId: 'demo',
-      target: 'react',
-    })
-
-    expect(files['src/site-admin.ts']).toContain(
-      'export function assertSiteAdminAccess',
-    )
-    expect(files['src/site-admin.ts']).toContain(
-      'siteAdminEmails: readonly string[] = [\n  "founder@example.com"\n]',
-    )
   })
 
   it('bakes resolved stock image URLs into HTML, React, and Next export artifacts', async () => {
@@ -492,216 +385,6 @@ describe('openui artifact files', () => {
     )
     expect(files['index.html']).not.toContain('ship-fast-openui-source')
     expect(files['index.html']).not.toContain('root = Debug')
-  })
-
-  it('embeds admin bootstrap in single-file HTML exports when genui policy exists', async () => {
-    const { files, download } = await buildOpenUIArtifactFiles({
-      source,
-      siteSpecJson: siteSpecJsonWithGenUI,
-      sessionId: 'demo',
-      target: 'html',
-      includeBadge: false,
-    })
-
-    expect(download?.filename).toBe('index.html')
-    expect(files['index.html']).toContain('window.__SITE_ADMIN__')
-    expect(files['index.html']).toContain('window.assertSiteAdminAccess')
-    expect(files['index.html']).toContain('founder@example.com')
-    expect(files['index.html']).not.toMatch(/Ship Fast|SHIP_FAST|ship-fast/i)
-  })
-
-  it('exports v1 PageSwitch publication/admin source as HTML with baked admin metadata', async () => {
-    const { files, download } = await buildOpenUIArtifactFiles({
-      source: v1PublicationSource,
-      siteSpecJson: siteSpecJsonWithGenUI,
-      sessionId: 'demo',
-      target: 'html',
-      includeBadge: false,
-    })
-
-    expect(download?.filename).toBe('index.html')
-    expect(files['index.html']).toContain('Artifact Gazette')
-    expect(files['index.html']).toContain('Newsroom Admin')
-    expect(files['index.html']).toContain('window.__SITE_ADMIN__')
-    expect(files['index.html']).toContain('founder@example.com')
-    expect(files['index.html']).not.toMatch(/Ship Fast|SHIP_FAST|ship-fast/i)
-  })
-
-  it('wires baked admin access into React artifact routes', async () => {
-    const { files } = await buildOpenUIArtifactFiles({
-      source: v1PublicationSource,
-      siteSpecJson: siteSpecJsonWithGenUI,
-      sessionId: 'demo',
-      target: 'react',
-    })
-
-    expect(files['src/App.tsx']).toContain('SiteAdminGate')
-    expect(files['src/App.tsx']).toContain('isSiteAdminRoute')
-    expect(files['src/lib/site-admin-gate.tsx']).toContain(
-      'assertSiteAdminAccess',
-    )
-    expect(files['src/lib/site-admin-gate.tsx']).toContain('siteAdminEmail')
-    expect(files['src/site-admin.ts']).toContain('founder@example.com')
-  })
-
-  it('wires baked admin access into Next admin route files', async () => {
-    const { files } = await buildOpenUIArtifactFiles({
-      source: v1PublicationSource,
-      siteSpecJson: siteSpecJsonWithGenUI,
-      sessionId: 'demo',
-      target: 'next',
-    })
-
-    expect(files['app/admin/page.tsx']).toContain('SiteAdminGate')
-    expect(files['app/admin/page.tsx']).toContain('routeLabel="Admin"')
-    expect(files['src/lib/site-admin-gate.tsx']).toContain(
-      'assertSiteAdminAccess',
-    )
-    expect(files['src/lib/site-admin-gate.tsx']).toContain("'use client'")
-    expect(files['src/site-admin.ts']).toContain('founder@example.com')
-  })
-
-  it('preserves Next SEO JSON-LD when wrapping admin routes', async () => {
-    const { files } = await buildOpenUIArtifactFiles({
-      source: v1PublicationSource,
-      siteSpecJson: siteSpecJsonWithGenUIAndSeo,
-      sessionId: 'demo',
-      target: 'next',
-    })
-
-    const adminPage = files['app/admin/page.tsx']
-    expect(adminPage).toContain('SiteAdminGate')
-    expect(adminPage).toContain('routeLabel="Admin"')
-    expect(adminPage).toContain('application/ld+json')
-    expect(adminPage).toContain('</>')
-    await expect(renderGeneratedRouteText(files, 'AdminPage')).resolves.toEqual(
-      expect.any(String),
-    )
-  })
-
-  it('always includes /admin route in Next exports even without genui metadata', async () => {
-    const { files } = await buildOpenUIArtifactFiles({
-      source: 'root = SaasHero("Demo", "Hello", "artifact", "Start", "Book")',
-      siteSpecJson: JSON.stringify({ projectName: 'Demo' }),
-      sessionId: 'demo-no-genui',
-      target: 'next',
-    })
-
-    // Admin route page should always be generated
-    expect(files['app/admin/page.tsx']).toBeDefined()
-    expect(files['app/admin/page.tsx']).toContain('SiteAdminGate')
-    expect(files['app/admin/page.tsx']).toContain('routeLabel="Admin"')
-    // Admin gate module should always be present
-    expect(files['src/lib/site-admin-gate.tsx']).toBeDefined()
-    expect(files['src/site-admin.ts']).toBeDefined()
-    // Default owner email should be baked in
-    expect(files['src/site-admin.ts']).toContain('owner@site.local')
-  })
-
-  it('includes generated admin metadata in Lakebed artifact files', async () => {
-    const { files } = await buildOpenUIArtifactFiles({
-      source,
-      siteSpecJson: siteSpecJsonWithGenUI,
-      sessionId: 'demo',
-      target: 'lakebed',
-    })
-
-    expect(files['src/site-admin.ts']).toContain(
-      'siteAdminEmails: readonly string[] = [\n  "founder@example.com"\n]',
-    )
-  })
-
-  it('wires baked admin access into Lakebed generated client routes', async () => {
-    const { files } = await buildOpenUIArtifactFiles({
-      source: v1PublicationSource,
-      siteSpecJson: siteSpecJsonWithGenUI,
-      sessionId: 'demo',
-      target: 'lakebed',
-    })
-
-    expect(files['client/index.tsx']).toContain('SiteAdminGate')
-    expect(files['client/index.tsx']).toContain('siteAdminEmails')
-    expect(files['client/index.tsx']).toContain('founder@example.com')
-    expect(files['client/index.tsx']).toContain('isSiteAdminRoute(page)')
-  })
-
-  it('exports generic v1 commerce source across targets with baked admin access', async () => {
-    const html = await buildOpenUIArtifactFiles({
-      source: v1CommerceSource,
-      siteSpecJson: siteSpecJsonWithCommerceGenUI,
-      sessionId: 'commerce-demo',
-      target: 'html',
-      includeBadge: false,
-    })
-    expect(html.files['index.html']).toContain('Artifact Store')
-    expect(html.files['index.html']).toContain('Store Admin')
-    expect(html.files['index.html']).toContain('window.__SITE_ADMIN__')
-    expect(html.files['index.html']).toContain('window.assertSiteAdminAccess')
-    expect(html.files['index.html']).not.toMatch(
-      /Ship Fast|SHIP_FAST|ship-fast/i,
-    )
-
-    const react = await buildOpenUIArtifactFiles({
-      source: v1CommerceSource,
-      siteSpecJson: siteSpecJsonWithCommerceGenUI,
-      sessionId: 'commerce-demo',
-      target: 'react',
-    })
-    expect(react.files['src/App.tsx']).toContain('SiteAdminGate')
-    expect(react.files['src/App.tsx']).toContain('isSiteAdminRoute')
-    expect(react.files['src/data/pages.ts']).toContain('Artifact Store Catalog')
-    expect(react.files['src/site-admin.ts']).toContain('store@example.com')
-
-    const next = await buildOpenUIArtifactFiles({
-      source: v1CommerceSource,
-      siteSpecJson: siteSpecJsonWithCommerceGenUI,
-      sessionId: 'commerce-demo',
-      target: 'next',
-    })
-    expect(next.files['app/admin/page.tsx']).toContain('SiteAdminGate')
-    await expect(
-      renderGeneratedRouteText(next.files, 'ShopPage'),
-    ).resolves.toEqual(expect.any(String))
-    expect(next.files['src/site-admin.ts']).toContain('store@example.com')
-
-    const lakebed = await buildOpenUIArtifactFiles({
-      source: v1CommerceSource,
-      siteSpecJson: siteSpecJsonWithCommerceGenUI,
-      sessionId: 'commerce-demo',
-      target: 'lakebed',
-    })
-    expect(lakebed.files['client/index.tsx']).toContain('SiteAdminGate')
-    expect(lakebed.files['client/index.tsx']).toContain(
-      'isSiteAdminRoute(page)',
-    )
-  })
-
-  it('exports generic v1 software source with docs, contact, and admin routes', async () => {
-    const react = await buildOpenUIArtifactFiles({
-      source: v1SoftwareSource,
-      siteSpecJson: siteSpecJsonWithSoftwareGenUI,
-      sessionId: 'software-demo',
-      target: 'react',
-    })
-    expect(react.files['src/App.tsx']).toContain('SiteAdminGate')
-    expect(react.files['src/data/pages.ts']).toContain('Artifact SaaS Docs')
-    expect(react.files['src/data/pages.ts']).toContain('Talk to Artifact SaaS')
-    expect(react.files['src/site-admin.ts']).toContain('saas@example.com')
-
-    const next = await buildOpenUIArtifactFiles({
-      source: v1SoftwareSource,
-      siteSpecJson: siteSpecJsonWithSoftwareGenUI,
-      sessionId: 'software-demo',
-      target: 'next',
-    })
-    await expect(
-      renderGeneratedRouteText(next.files, 'DocsPage'),
-    ).resolves.toContain('Artifact SaaS Docs')
-    await expect(
-      renderGeneratedRouteText(next.files, 'ContactPage'),
-    ).resolves.toContain('Talk to Artifact SaaS')
-    expect(next.files['app/admin/page.tsx']).toContain('SiteAdminGate')
-    expect(next.files['src/site-admin.ts']).toContain('saas@example.com')
   })
 
   it('fails HTML artifacts when source rendering fails instead of packaging preview fallback', async () => {

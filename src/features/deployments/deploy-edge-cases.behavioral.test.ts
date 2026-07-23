@@ -539,29 +539,6 @@ export default capsule({
       ).rejects.toBeInstanceOf(AnonymousCompilerError)
     })
 
-    it('rejects the reserved admin path /admin', async () => {
-      // EXPECTED behavior: /admin is a reserved Lakebed path and MUST be
-      // rejected for user-defined endpoints. If /admin is not reserved, that
-      // is a BUG — this test MUST fail until isReservedEndpointPath covers it.
-      await expect(
-        buildLakebedAnonymousDeployRequest({
-          ...validFiles(),
-          'server/index.ts': `import { capsule, string, table, endpoint, text } from "lakebed/server";
-
-export default capsule({
-  name: "Admin Reserved",
-  schema: { notes: table({ title: string() }) },
-  queries: {},
-  mutations: {},
-  endpoints: {
-    admin: endpoint({ method: "GET", path: "/admin" }, () => text("ok")),
-  },
-});
-`,
-        }),
-      ).rejects.toBeInstanceOf(AnonymousCompilerError)
-    })
-
     it('rejects a path that does not start with /', async () => {
       await expect(
         buildLakebedAnonymousDeployRequest({

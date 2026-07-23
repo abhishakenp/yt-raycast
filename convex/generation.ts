@@ -245,19 +245,6 @@ function buildGenerationSiteSpecMetadata(
             category: result.category ?? null,
             ownerEmail: session.ownerEmail ?? null,
             artifacts: generatedArtifacts ?? {},
-            adminPolicy:
-              generatedArtifacts?.['admin-policy'] ??
-              (session.ownerEmail
-                ? {
-                    version: 1,
-                    mode: 'baked-owner',
-                    authProvider: 'shoo',
-                    ownerEmail: session.ownerEmail,
-                    adminEmails: [session.ownerEmail],
-                    roles: ['owner', 'editor', 'author'],
-                    exportRequiresVerifiedOwnerEmail: true,
-                  }
-                : undefined),
             fullstackManifest: generatedArtifacts?.['fullstack-manifest'],
             openuiManifest: generatedArtifacts?.['openui-manifest'],
           }
