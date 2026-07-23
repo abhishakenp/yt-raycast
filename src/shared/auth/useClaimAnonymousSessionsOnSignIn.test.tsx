@@ -4,27 +4,14 @@ import type { ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const claimMocks = vi.hoisted(() => ({
-  claimAnonymousSessions: vi.fn(),
+  fetch: vi.fn(),
+  getReferralAuthToken: vi.fn(),
   isSignedIn: false,
   isLoaded: true,
 }))
 
-vi.mock('convex/react', () => ({
-  useMutation: () => claimMocks.claimAnonymousSessions,
-}))
-
-vi.mock('../../../convex/_generated/api', () => ({
-  api: {
-    sessions: {
-      claimAnonymousSessionsByClientIdMutation:
-        'sessions.claimAnonymousSessionsByClientIdMutation',
-    },
-  },
-}))
-
-vi.mock('@/features/session/services/session-create-payload', () => ({
-  createAnonymousClientId: (storage: Storage) =>
-    storage.getItem('ship-fast-anon-client-id') ?? 'anon-claim-test',
+vi.mock('@/features/referrals/lib/referral-client', () => ({
+  getReferralAuthToken: () => claimMocks.getReferralAuthToken(),
 }))
 
 vi.mock('@/shared/auth/use-optional-auth', () => ({
@@ -44,21 +31,24 @@ const Probe = () => {
 
 describe('useClaimAnonymousSessionsOnSignIn', () => {
   beforeEach(() => {
-    claimMocks.claimAnonymousSessions.mockReset()
-    claimMocks.claimAnonymousSessions.mockResolvedValue({ claimed: 0 })
+    claimMocks.fetch.mockReset()
+    claimMocks.fetch.mockResolvedValue(new Response('{}', { status: 200 }))
+    claimMocks.getReferralAuthToken.mockReset()
+    claimMocks.getReferralAuthToken.mockResolvedValue('jwt-token')
     claimMocks.isSignedIn = false
     claimMocks.isLoaded = true
-    window.localStorage.clear()
+    vi.stubGlobal('fetch', claimMocks.fetch)
   })
 
   afterEach(() => {
+    vi.unstubAllGlobals()
     vi.clearAllMocks()
   })
 
   it('does not claim when not signed in', async () => {
     render(<Probe />)
     await waitFor(() => {
-      expect(claimMocks.claimAnonymousSessions).not.toHaveBeenCalled()
+      expect(claimMocks.fetch).not.toHaveBeenCalled()
     })
   })
 
@@ -69,11 +59,11 @@ describe('useClaimAnonymousSessionsOnSignIn', () => {
     render(<Probe />)
 
     await waitFor(() => {
-      expect(claimMocks.claimAnonymousSessions).not.toHaveBeenCalled()
+      expect(claimMocks.fetch).not.toHaveBeenCalled()
     })
   })
 
-  it('claims all anonymous sessions when isSignedIn flips to true', async () => {
+  it('claims all anonymous sessions via the HTTP route when isSignedIn flips to true', async () => {
     claimMocks.isSignedIn = false
     const { rerender } = render(<Probe />)
 
@@ -81,9 +71,30 @@ describe('useClaimAnonymousSessionsOnSignIn', () => {
     rerender(<Probe />)
 
     await waitFor(() => {
-      expect(claimMocks.claimAnonymousSessions).toHaveBeenCalledWith({
-        anonymousClientId: 'anon-claim-test',
-      })
+      expect(claimMocks.fetch).toHaveBeenCalledWith(
+        '/api/claim-anon-sessions',
+        {
+          method: 'POST',
+          headers: { Authorization: 'Bearer jwt-token' },
+        },
+      )
+    })
+  })
+
+  it('sends the request without an Authorization header when no token is available', async () => {
+    claimMocks.getReferralAuthToken.mockResolvedValue(null)
+    claimMocks.isSignedIn = true
+
+    render(<Probe />)
+
+    await waitFor(() => {
+      expect(claimMocks.fetch).toHaveBeenCalledWith(
+        '/api/claim-anon-sessions',
+        {
+          method: 'POST',
+          headers: {},
+        },
+      )
     })
   })
 
@@ -92,20 +103,20 @@ describe('useClaimAnonymousSessionsOnSignIn', () => {
     const { rerender } = render(<Probe />)
 
     await waitFor(() => {
-      expect(claimMocks.claimAnonymousSessions).toHaveBeenCalledTimes(1)
+      expect(claimMocks.fetch).toHaveBeenCalledTimes(1)
     })
 
     // Re-render while still signed in — should NOT claim again.
     rerender(<Probe />)
     await waitFor(() => {
-      expect(claimMocks.claimAnonymousSessions).toHaveBeenCalledTimes(1)
+      expect(claimMocks.fetch).toHaveBeenCalledTimes(1)
     })
 
     // Sign out — resets the ref.
     claimMocks.isSignedIn = false
     rerender(<Probe />)
     await waitFor(() => {
-      expect(claimMocks.claimAnonymousSessions).toHaveBeenCalledTimes(1)
+      expect(claimMocks.fetch).toHaveBeenCalledTimes(1)
     })
 
     // Sign back in — claims again.
@@ -115,21 +126,19 @@ describe('useClaimAnonymousSessionsOnSignIn', () => {
     })
 
     await waitFor(() => {
-      expect(claimMocks.claimAnonymousSessions).toHaveBeenCalledTimes(2)
+      expect(claimMocks.fetch).toHaveBeenCalledTimes(2)
     })
   })
 
-  it('swallows claim mutation errors', async () => {
-    claimMocks.claimAnonymousSessions.mockRejectedValue(
-      new Error('network down'),
-    )
+  it('swallows fetch errors', async () => {
+    claimMocks.fetch.mockRejectedValue(new Error('network down'))
     claimMocks.isSignedIn = true
 
     // Should not throw.
     expect(() => render(<Probe />)).not.toThrow()
 
     await waitFor(() => {
-      expect(claimMocks.claimAnonymousSessions).toHaveBeenCalled()
+      expect(claimMocks.fetch).toHaveBeenCalled()
     })
   })
 })

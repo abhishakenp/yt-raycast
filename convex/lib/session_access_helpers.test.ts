@@ -7,6 +7,7 @@ import {
   assertCanReadPrivateSession,
   assertCanMutateSession,
   claimAnonymousSession,
+  claimAnonymousSessionsByIp,
   deleteOwnedSessions,
   getUserId,
   hashOwnerSecret,
@@ -101,7 +102,11 @@ function mutationCtxForSessions(input: {
             eq: (field: string, value: unknown) => typeof index
           }) => void,
         ) => {
-          expect(['by_userId', 'by_anonymousClientIdHash']).toContain(indexName)
+          expect([
+            'by_userId',
+            'by_anonymousClientIdHash',
+            'by_clientIpHash',
+          ]).toContain(indexName)
           const filters = new Map<string, unknown>()
           const index = {
             eq: (field: string, value: unknown) => {
@@ -567,5 +572,145 @@ describe('assertCanMutateSession admin bypass', () => {
     await expect(
       assertCanMutateSession(ctx, sessionDoc({ userId: 'token:owner' })),
     ).resolves.toBeUndefined()
+  })
+})
+
+describe('claimAnonymousSessionsByIp', () => {
+  it('links all unclaimed anonymous sessions on the IP to the signed-in userId', async () => {
+    const { ctx, sessions, patches } = mutationCtxForSessions({
+      identity: identityFor({ tokenIdentifier: 'token:user' }),
+      sessions: [
+        sessionDoc({
+          _id: 's1' as Id<'sessions'>,
+          clientIpHash: 'ip_a',
+        }),
+        sessionDoc({
+          _id: 's2' as Id<'sessions'>,
+          clientIpHash: 'ip_a',
+        }),
+        sessionDoc({
+          _id: 's3' as Id<'sessions'>,
+          clientIpHash: 'ip_b',
+        }),
+      ],
+    })
+
+    const result = await claimAnonymousSessionsByIp(ctx, {
+      clientIpHash: 'ip_a',
+    })
+
+    expect(result).toEqual({ claimed: 2 })
+    expect(patches).toHaveLength(2)
+    expect(patches).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 's1' as Id<'sessions'>,
+          patch: expect.objectContaining({
+            userId: 'token:user',
+            anonOwnerSecretHash: undefined,
+          }),
+        }),
+        expect.objectContaining({
+          id: 's2' as Id<'sessions'>,
+          patch: expect.objectContaining({
+            userId: 'token:user',
+            anonOwnerSecretHash: undefined,
+          }),
+        }),
+      ]),
+    )
+    // s3 (different IP) is untouched.
+    expect(sessions.find((s) => s._id === 's3')?.userId).toBeUndefined()
+  })
+
+  it('skips sessions already owned by anyone (including the caller)', async () => {
+    const { ctx, patches } = mutationCtxForSessions({
+      identity: identityFor({ tokenIdentifier: 'token:user' }),
+      sessions: [
+        sessionDoc({
+          _id: 'owned_by_other' as Id<'sessions'>,
+          clientIpHash: 'ip_a',
+          userId: 'token:other',
+        }),
+        sessionDoc({
+          _id: 'owned_by_self' as Id<'sessions'>,
+          clientIpHash: 'ip_a',
+          userId: 'token:user',
+        }),
+        sessionDoc({
+          _id: 'unclaimed' as Id<'sessions'>,
+          clientIpHash: 'ip_a',
+        }),
+      ],
+    })
+
+    const result = await claimAnonymousSessionsByIp(ctx, {
+      clientIpHash: 'ip_a',
+    })
+
+    expect(result).toEqual({ claimed: 1 })
+    expect(patches).toHaveLength(1)
+    expect(patches[0]?.id).toBe('unclaimed' as Id<'sessions'>)
+  })
+
+  it('skips soft-deleted sessions', async () => {
+    const { ctx, patches } = mutationCtxForSessions({
+      identity: identityFor({ tokenIdentifier: 'token:user' }),
+      sessions: [
+        sessionDoc({
+          _id: 'deleted' as Id<'sessions'>,
+          clientIpHash: 'ip_a',
+          deletedAt: 1000,
+        }),
+        sessionDoc({
+          _id: 'alive' as Id<'sessions'>,
+          clientIpHash: 'ip_a',
+        }),
+      ],
+    })
+
+    const result = await claimAnonymousSessionsByIp(ctx, {
+      clientIpHash: 'ip_a',
+    })
+
+    expect(result).toEqual({ claimed: 1 })
+    expect(patches[0]?.id).toBe('alive' as Id<'sessions'>)
+  })
+
+  it('throws AUTH_REQUIRED when not authenticated', async () => {
+    const { ctx } = mutationCtxForSessions({
+      identity: null,
+      sessions: [],
+    })
+
+    await expect(
+      claimAnonymousSessionsByIp(ctx, { clientIpHash: 'ip_a' }),
+    ).rejects.toMatchObject({
+      data: { code: 'AUTH_REQUIRED' },
+    })
+  })
+
+  it('is idempotent: a second call claims nothing new', async () => {
+    const { ctx } = mutationCtxForSessions({
+      identity: identityFor({ tokenIdentifier: 'token:user' }),
+      sessions: [
+        sessionDoc({
+          _id: 's1' as Id<'sessions'>,
+          clientIpHash: 'ip_a',
+        }),
+      ],
+    })
+
+    const first = await claimAnonymousSessionsByIp(ctx, {
+      clientIpHash: 'ip_a',
+    })
+    expect(first).toEqual({ claimed: 1 })
+
+    // After the first claim, the session now has userId, so a second call
+    // skips it.
+    const second = await claimAnonymousSessionsByIp(ctx, {
+      clientIpHash: 'ip_a',
+    })
+    expect(second).toEqual({ claimed: 0 })
   })
 })

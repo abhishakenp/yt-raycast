@@ -151,7 +151,24 @@ export async function loadGenerationAdmission(
   const recentCutoff = args.now - RATE_WINDOW_MS
   const dailyCutoff = args.now - DAILY_WINDOW_MS
   const monthlyCutoff = args.now - MONTHLY_WINDOW_MS
-  const sameOwnerSessionsRaw =
+  const lookback = MAX_PAID_PER_MONTH + SHORT_WINDOW_LIMIT + 1
+  // Count the UNION of the IP bucket and the userId bucket (deduped by _id).
+  // The IP bucket blocks the multi-account-on-same-IP bypass (a user creating
+  // a second account to get fresh quota on the same network). The userId bucket
+  // blocks the multi-device-same-account bypass (the same user on two IPs).
+  // Together they form the effective identity for quota. Anonymous requests
+  // only have the IP bucket; authenticated requests have both.
+  const ipSessions =
+    args.clientIpHash !== undefined
+      ? await ctx.db
+          .query('sessions')
+          .withIndex('by_clientIpHash_createdAt', (index) =>
+            index.eq('clientIpHash', args.clientIpHash),
+          )
+          .order('desc')
+          .take(lookback)
+      : []
+  const userSessions =
     args.userId !== undefined
       ? await ctx.db
           .query('sessions')
@@ -159,14 +176,16 @@ export async function loadGenerationAdmission(
             index.eq('userId', args.userId),
           )
           .order('desc')
-          .take(MAX_PAID_PER_MONTH + SHORT_WINDOW_LIMIT + 1)
-      : await ctx.db
-          .query('sessions')
-          .withIndex('by_clientIpHash_createdAt', (index) =>
-            index.eq('clientIpHash', args.clientIpHash),
-          )
-          .order('desc')
-          .take(MAX_PAID_PER_MONTH + SHORT_WINDOW_LIMIT + 1)
+          .take(lookback)
+      : []
+  const seenIds = new Set<string>()
+  const sameOwnerSessionsRaw: Doc<'sessions'>[] = []
+  for (const session of [...ipSessions, ...userSessions]) {
+    const key = session._id
+    if (seenIds.has(key)) continue
+    seenIds.add(key)
+    sameOwnerSessionsRaw.push(session)
+  }
   // Draft sessions are exploratory, TTL'd at 15 minutes, and never start
   // generation — they must not consume quota. Exclude them from every count.
   const sameOwnerSessions = sameOwnerSessionsRaw.filter(
@@ -337,10 +356,13 @@ export async function createGenerationSession(
     userId === undefined && args.anonymousClientId !== undefined
       ? await hashOwnerSecret(args.anonymousClientId)
       : undefined
+  // Always record clientIpHash on every session (anon + auth). The HTTP route
+  // derives it server-side from request headers, so it is unforgeable. Storing
+  // it on auth sessions lets loadGenerationAdmission count the union of IP +
+  // userId buckets, which blocks both the multi-account-on-same-IP bypass and
+  // the multi-device-same-account bypass.
   const clientIpHash =
-    userId === undefined && args.clientIpHash !== undefined
-      ? args.clientIpHash
-      : undefined
+    args.clientIpHash !== undefined ? args.clientIpHash : undefined
   const now = Date.now()
 
   assertPrompt(prompt)

@@ -15,6 +15,7 @@ import {
   canReadPrivateSession,
   claimAnonymousSession,
   claimAnonymousSessionsByClientId,
+  claimAnonymousSessionsByIp,
   deleteOwnedSessions,
   getUserId,
   isSessionOwner,
@@ -131,6 +132,7 @@ import {
   addGenerationEventArgs,
   claimAnonymousArgs,
   claimAnonymousByClientIdArgs,
+  claimAnonymousByIpArgs,
   completeGenerationArgs,
   commerceTenantDeploymentSlugArgs,
   createGenerationSessionArgs,
@@ -515,6 +517,15 @@ export const claimAnonymous = mutation({
 export const claimAnonymousSessionsByClientIdMutation = mutation({
   args: claimAnonymousByClientIdArgs,
   handler: (ctx, args) => claimAnonymousSessionsByClientId(ctx, args),
+})
+
+// Link all anonymous sessions on the caller's IP to their signed-in userId.
+// The clientIpHash is derived server-side from request headers by the
+// /api/claim-anon-sessions HTTP route (unforgeable). Used for /mine ownership
+// across the anon→authenticated transition. Idempotent.
+export const claimAnonymousSessionsByIpMutation = mutation({
+  args: claimAnonymousByIpArgs,
+  handler: (ctx, args) => claimAnonymousSessionsByIp(ctx, args),
 })
 
 export const createExport = mutation({
