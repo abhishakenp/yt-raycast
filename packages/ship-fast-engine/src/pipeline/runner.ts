@@ -5,6 +5,7 @@ import { formatRunAllReport } from './report'
 import { loadSiteSpec } from '../spec/index'
 import { requirePromptText } from '../prompt'
 import { resolvePipelineLanguage } from './prompt-language'
+import type { TranslationCacheClient } from '../llm/translation-cache-client'
 
 interface SessionCtx {
   id?: string
@@ -16,6 +17,7 @@ interface SessionCtx {
   signalOpenuiReady?: () => void
   setElapsed?: (elapsed: number) => void
   setCost?: (cost: number) => void
+  cacheClient?: TranslationCacheClient
 }
 
 function log(sessionCtx: SessionCtx | null | undefined) {
@@ -38,6 +40,8 @@ export async function runAll({
   sessionCtx,
   integrations,
   preferredLanguage,
+  cacheClient,
+  sessionId,
 }: {
   prompt?: string
   workspace?: string
@@ -51,6 +55,8 @@ export async function runAll({
     }) => Promise<void>
   }
   preferredLanguage?: string
+  cacheClient?: TranslationCacheClient
+  sessionId?: string
 } = {}) {
   if (!workspace) {
     throw new Error('workspace is required for runAll')
@@ -100,6 +106,8 @@ export async function runAll({
       log: _log,
       sessionCtx,
       variationSeed: sessionCtx?.id || workspace,
+      cacheClient: cacheClient ?? sessionCtx?.cacheClient,
+      sessionId: sessionId ?? sessionCtx?.id,
     })
     timings.openui_end = Date.now()
     timings.preview_saved = timings.openui_end

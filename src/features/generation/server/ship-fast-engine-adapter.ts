@@ -5,6 +5,7 @@ import {
   readEngineWorkspaceArtifacts,
 } from './engine-workspace'
 import type { EngineWorkspaceArtifacts } from './engine-workspace'
+import type { TranslationCacheClient } from '@ship-fast/engine/llm/translation-cache-client.ts'
 
 export type ShipFastEngineSessionEvent =
   | { type: 'log'; message: string }
@@ -25,6 +26,7 @@ export type ShipFastEngineSessionContext = {
   signalOpenuiReady: () => void
   setElapsed: (elapsed: number) => void
   setCost: (cost: number) => void
+  cacheClient?: TranslationCacheClient
 }
 
 export type RunShipFastEngine = (input: {
@@ -41,6 +43,8 @@ export type RunShipFastEngine = (input: {
   }
   preferredLanguage?: string
   signal?: AbortSignal
+  cacheClient?: TranslationCacheClient
+  sessionId?: string
 }) => Promise<unknown>
 
 export type ShipFastEngineAdapterInput = {
@@ -48,6 +52,7 @@ export type ShipFastEngineAdapterInput = {
   prompt: string
   preferredLanguage?: string
   signal?: AbortSignal
+  cacheClient?: TranslationCacheClient
 }
 
 export type ShipFastEngineAdapterResult = EngineWorkspaceArtifacts & {
@@ -69,6 +74,7 @@ export type ShipFastEngineAdapterOptions = {
 function createSessionContext(
   sessionId: string,
   emit: (event: ShipFastEngineSessionEvent) => void,
+  cacheClient?: TranslationCacheClient,
 ): ShipFastEngineSessionContext {
   return {
     id: sessionId,
@@ -82,6 +88,7 @@ function createSessionContext(
       emit({ type: 'status', message: String(elapsed), phase: 'elapsed' }),
     setCost: (cost) =>
       emit({ type: 'status', message: String(cost), phase: 'cost' }),
+    cacheClient,
   }
 }
 
@@ -136,6 +143,7 @@ export function createShipFastEngineAdapter({
       prompt,
       preferredLanguage,
       signal,
+      cacheClient,
     }: ShipFastEngineAdapterInput) => {
       const startedAt = now()
       const events: ShipFastEngineSessionEvent[] = []
@@ -168,9 +176,11 @@ export function createShipFastEngineAdapter({
         runAll({
           prompt,
           workspace,
-          sessionCtx: createSessionContext(sessionId, emit),
+          sessionCtx: createSessionContext(sessionId, emit, cacheClient),
           preferredLanguage,
           signal,
+          cacheClient,
+          sessionId,
         }),
         signal,
       )

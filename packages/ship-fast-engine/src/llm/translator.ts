@@ -1,4 +1,5 @@
 import { groq } from './groq'
+import type { TranslationCacheClient } from './translation-cache-client'
 
 interface TargetLanguage {
   code: string
@@ -456,10 +457,20 @@ function replaceVisibleTextNodes(
 /**
  * Translate the visible text content of an HTML string into the target Indian
  * language using Groq. HTML structure, CSS, and JavaScript are never touched.
+ *
+ * When a `cacheClient` is provided, the function checks the shared translation
+ * cache (`translationCache` + `sessionTranslationOverrides`) before calling the
+ * LLM. If all extracted texts are cached, the LLM is skipped entirely. After a
+ * successful LLM translation, results are saved to the cache so all export
+ * targets (HTML, React, Next, Lakebed) can reuse the same translations.
  */
 export async function translateHtml(
   html: string,
   languageMode: LanguageMode | undefined,
+  options?: {
+    cacheClient?: TranslationCacheClient
+    sessionId?: string
+  },
 ): Promise<TranslationResult> {
   const language = resolveTargetLanguage(languageMode)
   if (!language) return { content: html, translatedCount: 0 }
@@ -469,6 +480,43 @@ export async function translateHtml(
     return { content: html, translatedCount: 0, skipped: 'already-localized' }
   }
 
+  const locale = language.code.toLowerCase()
+  const cacheClient = options?.cacheClient
+  const sessionId = options?.sessionId
+
+  // ── Cache check: skip LLM entirely if all texts are cached ──────────────
+  if (cacheClient) {
+    const cached = await cacheClient
+      .getBatch({ locale, texts, sessionId })
+      .catch(() => null)
+
+    if (cached && cached.length === texts.length) {
+      const cachedTranslations: TranslationMap = {}
+      let allCached = true
+      for (let i = 0; i < texts.length; i += 1) {
+        const translation = cached[i]
+        if (typeof translation === 'string' && translation.trim()) {
+          cachedTranslations[texts[i]] = translation
+        } else {
+          allCached = false
+          break
+        }
+      }
+
+      if (allCached && Object.keys(cachedTranslations).length > 0) {
+        const translated = replaceVisibleTextNodes(html, cachedTranslations)
+        const translatedCount =
+          Object.values(cachedTranslations).filter(Boolean).length
+        return {
+          content: translated,
+          translatedCount,
+          skipped: 'cache-hit',
+        }
+      }
+    }
+  }
+
+  // ── LLM translation pipeline (draft → polish → score → rewrite) ─────────
   const draftTranslations = await translateTexts(texts, language)
   const polishedTranslations = await polishTranslations(
     texts,
@@ -504,6 +552,21 @@ export async function translateHtml(
   if (translatedCount === 0)
     return { content: html, error: 'no translations returned' }
 
+  // ── Cache save: persist final translations for all export targets ───────
+  if (cacheClient) {
+    const cacheEntries: Array<{ text: string; translation: string }> = []
+    for (const [source, translation] of Object.entries(translations)) {
+      if (translation && translation !== source) {
+        cacheEntries.push({ text: source, translation })
+      }
+    }
+    if (cacheEntries.length > 0) {
+      await cacheClient
+        .setBatch({ locale, entries: cacheEntries })
+        .catch(() => undefined)
+    }
+  }
+
   const translated = replaceVisibleTextNodes(html, translations)
 
   return {
@@ -521,11 +584,15 @@ export async function translateHtml(
 export async function translateHtmlSequential(
   htmlArray: string[],
   indiaMode: LanguageMode | undefined,
+  options?: {
+    cacheClient?: TranslationCacheClient
+    sessionId?: string
+  },
 ): Promise<string[]> {
   const out: string[] = []
   for (let i = 0; i < htmlArray.length; i++) {
     try {
-      const result = await translateHtml(htmlArray[i], indiaMode)
+      const result = await translateHtml(htmlArray[i], indiaMode, options)
       if (result?.content && !result.error) {
         out.push(result.content)
       } else {

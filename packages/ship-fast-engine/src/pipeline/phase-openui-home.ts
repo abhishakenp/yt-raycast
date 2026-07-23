@@ -11,6 +11,7 @@ import {
 } from '../config/languages'
 // @ts-ignore - JS module without type definitions
 import { translateHtml } from '../llm/translator'
+import type { TranslationCacheClient } from '../llm/translation-cache-client'
 import { renderOpenUIToHTMLWithTheme } from '../openui-ssr'
 import { slug } from './workspace'
 
@@ -112,6 +113,8 @@ export async function generateAndWriteOpenUIHome(p: {
     nativeName?: string
     needsTranslation?: boolean
   } | null
+  cacheClient?: TranslationCacheClient
+  sessionId?: string
 }) {
   const log = p.log || console.log
   log('Starting GenUI orchestrator...')
@@ -215,6 +218,7 @@ export async function generateAndWriteOpenUIHome(p: {
         const translatedPreview = await translateHtml(
           readFileSync(previewPath, 'utf-8'),
           p.languageMode,
+          { cacheClient: p.cacheClient, sessionId: p.sessionId },
         )
         if (translatedPreview?.content && !translatedPreview.error) {
           writeFileSync(previewPath, translatedPreview.content)
@@ -223,6 +227,7 @@ export async function generateAndWriteOpenUIHome(p: {
       const translatedFinal = await translateHtml(
         renderedFinalHtml,
         p.languageMode,
+        { cacheClient: p.cacheClient, sessionId: p.sessionId },
       )
       if (translatedFinal?.content && !translatedFinal.error) {
         finalHtml = translatedFinal.content

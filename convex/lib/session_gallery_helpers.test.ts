@@ -213,6 +213,7 @@ function ctxFor(input: {
           const queryResult = {
             order: (_direction: 'asc' | 'desc') => queryResult,
             first: async () => rows()[0] ?? null,
+            unique: async () => rows()[0] ?? null,
             take: async (limit: number) => {
               takeLimits.push(limit)
               return rows().slice(0, limit)
@@ -242,6 +243,9 @@ function ctxFor(input: {
             order: (_direction: 'asc' | 'desc') => guardedResult,
             first: singleUse(
               queryResult.first as unknown as (...args: never[]) => unknown,
+            ),
+            unique: singleUse(
+              queryResult.unique as unknown as (...args: never[]) => unknown,
             ),
             take: singleUse(
               queryResult.take as unknown as (...args: never[]) => unknown,

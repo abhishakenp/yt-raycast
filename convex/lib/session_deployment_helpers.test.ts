@@ -25,6 +25,7 @@ type TableName =
   | 'siteSpecs'
   | 'edits'
   | 'translationCache'
+  | 'sessionTranslationOverrides'
 type Row =
   | Doc<'sessions'>
   | Doc<'deployments'>
@@ -112,6 +113,7 @@ function ctxFor(input: Partial<Record<TableName, Row[]>>) {
     siteSpecs: [...(input.siteSpecs ?? [])],
     edits: [...(input.edits ?? [])],
     translationCache: [...(input.translationCache ?? [])],
+    sessionTranslationOverrides: [...(input.sessionTranslationOverrides ?? [])],
   }
 
   const rowsFor = (table: TableName) => tables[table]
@@ -166,6 +168,7 @@ function ctxFor(input: Partial<Record<TableName, Row[]>>) {
           return builder
         },
         first: async () => rows[0] ?? null,
+        unique: async () => rows[0] ?? null,
         take: async (limit: number) => rows.slice(0, limit),
         collect: async () => rows,
       }
@@ -196,6 +199,7 @@ function mutationCtxFor(input: Partial<Record<TableName, Row[]>>) {
     siteSpecs: [...(input.siteSpecs ?? [])],
     edits: [...(input.edits ?? [])],
     translationCache: [...(input.translationCache ?? [])],
+    sessionTranslationOverrides: [...(input.sessionTranslationOverrides ?? [])],
   }
   const patches: Array<{ id: string; patch: Record<string, unknown> }> = []
   const inserted: Array<{ table: TableName; value: Record<string, unknown> }> =
@@ -250,6 +254,7 @@ function mutationCtxFor(input: Partial<Record<TableName, Row[]>>) {
           return builder
         },
         first: async () => rows[0] ?? null,
+        unique: async () => rows[0] ?? null,
         collect: async () => rows,
       }
 

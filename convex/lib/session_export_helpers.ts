@@ -1440,6 +1440,7 @@ export async function prepareExportArtifactBuild(
       ctx,
       session.preferredLanguage,
       editedSource,
+      args.sessionId,
     ),
   )
 
@@ -1709,6 +1710,7 @@ export async function loadOwnedExportForGitHubPush(
       ctx,
       session.preferredLanguage,
       editedSource,
+      args.sessionId,
     ),
   )
   // Only the module source gates the build — artifacts render from source,

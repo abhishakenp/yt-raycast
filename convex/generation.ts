@@ -2,7 +2,7 @@
 
 import { v } from 'convex/values'
 
-import { internal } from './_generated/api'
+import { internal, api } from './_generated/api'
 import { internalAction } from './_generated/server'
 import type { Doc, Id } from './_generated/dataModel'
 import type { ActionCtx } from './_generated/server'
@@ -17,6 +17,41 @@ import {
 const internalFunctions: typeof internal = internal
 
 export const DEFAULT_GENERATION_TIMEOUT_MS = 90_000
+
+/**
+ * Build a TranslationCacheClient backed by Convex queries/mutations.
+ * This is the single source of truth for translations: generation-time
+ * translations are saved here, and all export targets read from the same
+ * `translationCache` + `sessionTranslationOverrides` tables.
+ */
+function createGenerationTranslationCacheClient(
+  ctx: ActionCtx,
+  sessionId: Id<'sessions'>,
+): {
+  getBatch: (input: {
+    locale: string
+    texts: string[]
+    sessionId?: string
+  }) => Promise<Array<string | null>>
+  setBatch: (input: {
+    locale: string
+    entries: Array<{ text: string; translation: string }>
+  }) => Promise<unknown>
+} {
+  return {
+    getBatch: (input) =>
+      ctx.runQuery(api.translationCache.getBatch, {
+        locale: input.locale,
+        texts: input.texts,
+        sessionId,
+      }),
+    setBatch: (input) =>
+      ctx.runMutation(api.translationCache.setBatch, {
+        locale: input.locale,
+        entries: input.entries,
+      }),
+  }
+}
 
 type GenUIEvent =
   | { type: 'status'; message: string }
@@ -404,6 +439,10 @@ export const startGeneration = internalAction({
                 Date.now() - startedAt,
               ),
           },
+          cacheClient: createGenerationTranslationCacheClient(
+            ctx,
+            args.sessionId,
+          ),
           onEvent: (event) => {
             const message = engineAdapterEventMessage(event)
 
@@ -475,6 +514,10 @@ export const startGeneration = internalAction({
                 Date.now() - startedAt,
               ),
           },
+          cacheClient: createGenerationTranslationCacheClient(
+            ctx,
+            args.sessionId,
+          ),
           onEvent: (event) => {
             const message = engineAdapterEventMessage(event)
 

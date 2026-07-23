@@ -9,6 +9,7 @@ import { resolvePexelsImageHints } from './image-hints'
 import { writeSffHtmlHome } from './phase-sff-html.ts'
 import { resolvePipelineLanguage } from './prompt-language'
 import { formatRunAllReport } from './report'
+import type { TranslationCacheClient } from '../llm/translation-cache-client'
 
 type RunnerTaskStatus = 'PENDING' | 'IN_PROGRESS' | 'DONE' | 'FAILED'
 
@@ -30,6 +31,7 @@ type RunnerSessionContext = {
   signalOpenuiReady?: () => void
   setElapsed?: (elapsed: number) => void
   setCost?: (cost: number) => void
+  cacheClient?: TranslationCacheClient
 }
 
 type RunnerIntegrations = {
@@ -47,6 +49,8 @@ type RunAllV2Input = {
   sessionCtx?: RunnerSessionContext
   integrations?: RunnerIntegrations
   preferredLanguage?: string
+  cacheClient?: TranslationCacheClient
+  sessionId?: string
 }
 
 const log =
@@ -110,6 +114,8 @@ export const runAllV2 = async ({
   sessionCtx,
   integrations,
   preferredLanguage,
+  cacheClient,
+  sessionId,
 }: RunAllV2Input = {}): Promise<void> => {
   if (!workspace) throw new Error('workspace is required for runAllV2')
 
@@ -197,6 +203,8 @@ export const runAllV2 = async ({
       imageHints,
       log: _log,
       sessionCtx,
+      cacheClient: cacheClient ?? sessionCtx?.cacheClient,
+      sessionId: sessionId ?? sessionCtx?.id,
     })
     timings.html_end = Date.now()
     timings.preview_saved = timings.html_end

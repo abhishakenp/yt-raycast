@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { HOMEPAGE_MODEL, LLM_CONFIG } from '../config'
 import { groqStream } from '../llm/groq'
 import { translateHtml } from '../llm/translator'
+import type { TranslationCacheClient } from '../llm/translation-cache-client'
 import { brandProfilePromptBlock } from '../prompts/brand-profile'
 import { ensureLucideIconRuntime } from './lucide-icons'
 
@@ -71,6 +72,8 @@ type WriteSffHtmlHomeInput = {
   }
   generateHtml?: (input: GenerateHtmlInput) => Promise<GenerateHtmlResult>
   translateHtmlContent?: typeof translateHtml
+  cacheClient?: TranslationCacheClient
+  sessionId?: string
 }
 
 export const SFF_HTML_SYSTEM_PROMPT = `You are an elite web designer that outputs a single complete HTML file and nothing else.
@@ -319,6 +322,8 @@ export async function writeSffHtmlHome({
   sessionCtx,
   generateHtml = defaultGenerateHtml,
   translateHtmlContent = translateHtml,
+  cacheClient,
+  sessionId,
 }: WriteSffHtmlHomeInput) {
   const user = buildSffHtmlPrompt({
     prompt,
@@ -353,7 +358,10 @@ export async function writeSffHtmlHome({
       let finalHtml = html
       if (languageMode?.needsTranslation) {
         try {
-          const translated = await translateHtmlContent(html, languageMode)
+          const translated = await translateHtmlContent(html, languageMode, {
+            cacheClient,
+            sessionId,
+          })
           if (translated?.content && !translated.error) {
             finalHtml = translated.content
             log?.(`  sff-html: translated preview to ${languageMode.code}`)

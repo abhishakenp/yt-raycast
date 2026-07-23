@@ -124,6 +124,7 @@ export async function loadPublicGalleryArtifacts(
       resolveGalleryOpenUISource(baseArtifacts),
       baseArtifacts.edits,
     ),
+    sessionId,
   )
 
   return translations.length > 0

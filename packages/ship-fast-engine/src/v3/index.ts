@@ -13,6 +13,7 @@ import { resolvePipelineLanguage } from '../pipeline/prompt-language'
 import { renderPreviewToWorkspace } from '../renderers/index.ts'
 // @ts-ignore -- legacy JS module lacks TypeScript declarations.
 import { translateHtml } from '../llm/translator'
+import type { TranslationCacheClient } from '../llm/translation-cache-client'
 
 import type { ConfidenceResult, V3SiteSpec, ParsedSitePlan } from './types.ts'
 import { inferKind, KIND_NAMES, getDefaultFamily } from './kinds.ts'
@@ -88,12 +89,16 @@ export async function runAllV3({
   sessionCtx,
   integrations,
   preferredLanguage,
+  cacheClient,
+  sessionId,
 }: {
   prompt?: string
   workspace?: string
   sessionCtx?: any
   integrations?: any
   preferredLanguage?: string
+  cacheClient?: TranslationCacheClient
+  sessionId?: string
 } = {}): Promise<unknown> {
   const _log = log(sessionCtx)
   const _status = status(sessionCtx)
@@ -454,6 +459,7 @@ export async function runAllV3({
               script: languageMode.script,
               language: languageMode.language ?? undefined,
             },
+            { cacheClient, sessionId },
           )
           if (translatedPreview?.content && !translatedPreview.error) {
             writeFileSync(previewPath, translatedPreview.content)
