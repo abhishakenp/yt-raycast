@@ -24,7 +24,7 @@ describe('Medusa Dokploy production assets', () => {
     expect(compose).toContain('condition: service_healthy')
     expect(compose).toContain('traefik.docker.network=dokploy-network')
     expect(compose).toContain(
-      'traefik.http.routers.ship-fast-medusa-direct-websecure.priority=300',
+      'traefik.http.routers.ship-fast-medusa-direct-websecure.priority=10000',
     )
     expect(compose).toContain(
       'traefik.http.routers.ship-fast-medusa-direct-websecure.service=ship-fast-medusa-direct',
