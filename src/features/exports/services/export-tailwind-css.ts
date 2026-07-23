@@ -52,7 +52,7 @@ let tailwindCompilerPromise: Promise<TailwindCompilerContext> | undefined
 const compiledCssCache = new Map<string, string>()
 
 const runtimeImport = async <Module>(specifier: string): Promise<Module> =>
-  import(specifier) as Promise<Module>
+  import(/* @vite-ignore */ specifier) as Promise<Module>
 
 const toPosixPath = (value: string): string => value.replaceAll('\\', '/')
 
