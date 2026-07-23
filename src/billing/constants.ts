@@ -13,6 +13,9 @@ export const UNLIMITED_CREDITS = 999
 /** Per-day cap for anonymous (unauthenticated) users */
 export const MAX_ANON_PER_DAY = 2
 
+/** Per-day cap for anonymous users after claiming the share bonus (2 + 1) */
+export const MAX_ANON_PER_DAY_WITH_BONUS = 3
+
 /** Per-day cap for authenticated free users */
 export const MAX_FREE_AUTH_PER_DAY = 5
 

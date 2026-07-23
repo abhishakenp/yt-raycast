@@ -114,13 +114,13 @@ describe('createSessionCreateResponse', () => {
   })
 
   it('maps Convex quota failures to a public preview 429 response', async () => {
-    const mutation = vi
-      .fn()
-      .mockRejectedValue(
-        new Error(
-          '[Request ID: abc123] Server Error\nUncaught ConvexError: {"code":"QUOTA_EXCEEDED","message":"Anonymous daily quota exhausted. Share on social media for +1 free generation."}\n    at loadGenerationAdmission (../../convex/lib/session_creation_helpers.ts:244:10)',
-        ),
-      )
+    const mutation = vi.fn().mockRejectedValue({
+      data: {
+        code: 'ANON_DAILY_LIMIT_REACHED',
+        message:
+          'Anonymous daily quota exhausted. Share on social media for +1 free generation.',
+      },
+    })
     const response = await createSessionCreateResponse(
       new Request('http://ship-fast.test/api/sessions/create', {
         method: 'POST',
@@ -130,17 +130,41 @@ describe('createSessionCreateResponse', () => {
     )
 
     await expect(response.json()).resolves.toMatchObject({
-      code: 'QUOTA_EXCEEDED',
+      code: 'ANON_DAILY_LIMIT_REACHED',
       error:
         'Anonymous daily quota exhausted. Share on social media for +1 free generation.',
     })
     expect(response.status).toBe(429)
   })
 
+  it('maps anon daily exhausted to a 429 with sign-in message', async () => {
+    const mutation = vi.fn().mockRejectedValue({
+      data: {
+        code: 'ANON_DAILY_EXHAUSTED',
+        message:
+          'Anonymous daily quota exhausted. Sign in to get 2 more free generations.',
+      },
+    })
+    const response = await createSessionCreateResponse(
+      new Request('http://ship-fast.test/api/sessions/create', {
+        method: 'POST',
+        body: JSON.stringify({ prompt: 'Build a public preview site' }),
+      }),
+      { mutation },
+    )
+
+    await expect(response.json()).resolves.toMatchObject({
+      code: 'ANON_DAILY_EXHAUSTED',
+      error:
+        'Anonymous daily quota exhausted. Sign in to get 2 more free generations.',
+    })
+    expect(response.status).toBe(429)
+  })
+
   it('maps Convex rate-limit failures to a distinct public preview 429 response', async () => {
-    const mutation = vi
-      .fn()
-      .mockRejectedValue(new Error('ConvexError: RATE_LIMITED'))
+    const mutation = vi.fn().mockRejectedValue({
+      data: { code: 'RATE_LIMITED', message: 'Too many requests' },
+    })
     const response = await createSessionCreateResponse(
       new Request('http://ship-fast.test/api/sessions/create', {
         method: 'POST',

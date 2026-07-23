@@ -95,33 +95,35 @@ async function readJsonBody(
 }
 
 function errorPayload(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error)
-  if (/QUOTA_EXCEEDED/.test(message)) {
-    // ConvexError messages arrive as: [Request ID: ...] Server Error\nUncaught ConvexError: {"code":"QUOTA_EXCEEDED","message":"..."}\n    at ...
-    // Extract the JSON payload and pull out the human-readable message.
-    let userMessage = message
-    const jsonMatch = message.match(
-      /\{[^}]*"code"\s*:\s*"QUOTA_EXCEEDED"[^}]*\}/,
-    )
-    if (jsonMatch) {
-      try {
-        const parsed = JSON.parse(jsonMatch[0])
-        if (parsed && typeof parsed.message === 'string') {
-          userMessage = parsed.message
-        }
-      } catch {
-        // Fallback below
-      }
-    }
+  // ConvexError carries structured data in .data (e.g. {code, message}).
+  const errorData =
+    error && typeof error === 'object' && 'data' in error
+      ? (error as { data: unknown }).data
+      : undefined
+  const code =
+    errorData && typeof errorData === 'object' && 'code' in errorData
+      ? (errorData as { code: string }).code
+      : undefined
+  const dataMessage =
+    errorData && typeof errorData === 'object' && 'message' in errorData
+      ? (errorData as { message: string }).message
+      : undefined
+
+  if (
+    code === 'ANON_DAILY_LIMIT_REACHED' ||
+    code === 'ANON_DAILY_EXHAUSTED' ||
+    code === 'AUTH_DAILY_LIMIT_REACHED' ||
+    code === 'QUOTA_EXCEEDED'
+  ) {
     return {
       status: 429,
       body: {
-        code: 'QUOTA_EXCEEDED',
-        error: userMessage,
+        code,
+        error: dataMessage ?? 'Quota exceeded.',
       },
     }
   }
-  if (/RATE_LIMITED/.test(message)) {
+  if (code === 'RATE_LIMITED') {
     return {
       status: 429,
       body: {

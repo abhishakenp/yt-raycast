@@ -2,12 +2,12 @@ import {
   DAILY_WINDOW_MS,
   MAX_ANON_PER_DAY,
   MAX_ANON_PER_MONTH,
+  MAX_ANON_PER_DAY_WITH_BONUS,
   MAX_FREE_AUTH_PER_DAY,
   MAX_FREE_PER_MONTH,
   MAX_PAID_PER_MONTH,
   MONTHLY_WINDOW_MS,
   RATE_WINDOW_MS,
-  SHARE_BONUS_EXTRA,
 } from '@/billing/constants'
 import { checkPromptContentPolicy } from '@/lib/content-policy'
 import { devFlags } from '@/lib/dev-flags'
@@ -346,7 +346,7 @@ export function parseSessionAdmission(
     ? isPaid
       ? undefined
       : MAX_FREE_AUTH_PER_DAY
-    : MAX_ANON_PER_DAY + SHARE_BONUS_EXTRA
+    : MAX_ANON_PER_DAY_WITH_BONUS
 
   if (dailyLimit !== undefined) {
     const dailyUsed = monthlyTimestamps.filter(

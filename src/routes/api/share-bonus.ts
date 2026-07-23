@@ -1,6 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { shareBonusIps } from '@/lib/rate-limit'
+import { api } from '../../../../convex/_generated/api'
+import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
+import { hashClientIp } from '@/features/session/server/session-create-response'
 
 function json(body: unknown, init?: ResponseInit) {
   return new Response(JSON.stringify(body), {
@@ -23,7 +25,11 @@ function getClientIp(request: Request): string | null {
   return null
 }
 
-function getShareBonusStatus(request: Request) {
+function getToday(): string {
+  return new Date().toISOString().slice(0, 10)
+}
+
+async function getShareBonusStatus(request: Request) {
   const ip = getClientIp(request)
   if (ip === null) {
     return json(
@@ -35,14 +41,18 @@ function getShareBonusStatus(request: Request) {
       { status: 400 },
     )
   }
-  const stored = shareBonusIps.get(ip)
-  const today = new Date().toISOString().slice(0, 10)
-  const claimed = stored === today
+
+  const clientIpHash = hashClientIp(ip)
+  const client = createRuntimeConvexHttpClient()
+  const claimed = await client.query(api.shareBonus.getShareBonusStatus, {
+    clientIpHash,
+    date: getToday(),
+  })
 
   return json({ claimed })
 }
 
-function claimShareBonus(request: Request) {
+async function claimShareBonus(request: Request) {
   const ip = getClientIp(request)
   if (ip === null) {
     return json(
@@ -54,17 +64,15 @@ function claimShareBonus(request: Request) {
       { status: 400 },
     )
   }
-  const today = new Date().toISOString().slice(0, 10)
-  const stored = shareBonusIps.get(ip)
 
-  // Already claimed today
-  if (stored === today) {
-    return json({ claimed: true, success: false })
-  }
+  const clientIpHash = hashClientIp(ip)
+  const client = createRuntimeConvexHttpClient()
+  const result = await client.mutation(api.shareBonus.claimShareBonus, {
+    clientIpHash,
+    date: getToday(),
+  })
 
-  // Grant bonus
-  shareBonusIps.set(ip, today)
-  return json({ claimed: true, success: true })
+  return json(result)
 }
 
 export const Route = createFileRoute('/api/share-bonus')({

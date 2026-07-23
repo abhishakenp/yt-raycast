@@ -19,13 +19,9 @@ import {
   createSessionWorkspaceKey,
 } from '@/features/session/services/session-create-payload'
 import type { BuildCreateSessionPayloadInput } from '@/features/session/services/session-create-payload'
-import {
-  forgetReadySession,
-  readReadySessionCache,
-  rememberReadySession,
-  verifyReadySession,
-} from '@/features/session/services/ready-session-cache'
 import { AppError } from '@/shared/errors/app-error'
+
+const LAST_PROMPT_STORAGE_KEY = 'ship-fast:last-prompt'
 
 const CREATE_SESSION_TIMEOUT_MS = 12_000
 const CREATE_SESSION_RETRY_DELAY_MS = 450
@@ -73,6 +69,13 @@ const admissionErrorFromResponse = (data: unknown): AppError | null => {
   }
   if (data.code === 'QUOTA_EXCEEDED') {
     return new AppError('QUOTA_EXCEEDED', data.error)
+  }
+  if (
+    data.code === 'ANON_DAILY_LIMIT_REACHED' ||
+    data.code === 'ANON_DAILY_EXHAUSTED' ||
+    data.code === 'AUTH_DAILY_LIMIT_REACHED'
+  ) {
+    return new AppError('DAILY_LIMIT_REACHED', data.error)
   }
   return null
 }
@@ -242,7 +245,13 @@ const getGeneratedSessionPath = (sessionId: string): string =>
 export const usePromptHomeController = () => {
   const navigate = useNavigate()
   const router = useRouter()
-  const [prompt, setPrompt] = useState('')
+  const [prompt, setPromptState] = useState(() => {
+    try {
+      return window.localStorage.getItem(LAST_PROMPT_STORAGE_KEY) ?? ''
+    } catch {
+      return ''
+    }
+  })
   const [errorMessage, setErrorMessage] = useState<string>()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [shareBonusClaimed, setShareBonusClaimed] = useState(false)
@@ -286,6 +295,26 @@ export const usePromptHomeController = () => {
     },
     [invalidateSpeculativeGeneration],
   )
+
+  // Clean up stale ready-session cache entries on mount.
+  // These are no longer written, but old entries from previous visits
+  // should be purged to free up localStorage space.
+  useEffect(() => {
+    try {
+      const keysToRemove: string[] = []
+      for (let i = 0; i < window.localStorage.length; i += 1) {
+        const key = window.localStorage.key(i)
+        if (key?.startsWith('ship-fast:ready-session:v1:')) {
+          keysToRemove.push(key)
+        }
+      }
+      for (const key of keysToRemove) {
+        window.localStorage.removeItem(key)
+      }
+    } catch {
+      // Storage may be blocked; non-critical.
+    }
+  }, [])
 
   const refreshShareBonusStatus = useCallback(() => {
     if (shareBonusHydratedRef.current) return Promise.resolve()
@@ -413,50 +442,6 @@ export const usePromptHomeController = () => {
     setIsSubmitting(true)
 
     try {
-      const canUseVerifiedReadyCache =
-        !isPrivate &&
-        (opts?.designReferenceUrls ?? []).filter((url) => url.trim()).length ===
-          0 &&
-        !(opts?.designReferenceNotes ?? '').trim() &&
-        !(opts?.cloneUrl ?? '').trim() &&
-        opts?.engineVersion !== 'v2' &&
-        opts?.engineVersion !== 'v3'
-      if (canUseVerifiedReadyCache) {
-        const cached = readReadySessionCache(window.localStorage, {
-          prompt: runtimePrompt,
-          preferredLanguage,
-        })
-        if (cached !== null) {
-          void verifyReadySession({
-            sessionId: cached.sessionId,
-            prompt: runtimePrompt,
-            preferredLanguage,
-          })
-            .then((verifiedSessionId) => {
-              if (verifiedSessionId !== null) return
-              forgetReadySession(window.localStorage, {
-                prompt: runtimePrompt,
-                preferredLanguage,
-              })
-            })
-            .catch(() => {
-              forgetReadySession(window.localStorage, {
-                prompt: runtimePrompt,
-                preferredLanguage,
-              })
-            })
-          try {
-            await navigate({
-              to: '/generate/$sessionId/$',
-              params: { sessionId: cached.sessionId },
-            })
-          } catch {
-            window.location.assign(getGeneratedSessionPath(cached.sessionId))
-          }
-          return
-        }
-      }
-
       const launch = createSessionLaunch(opts, prompt)
       const speculativeGeneration =
         speculativeGenerationRef.current?.fingerprint === launch.fingerprint
@@ -495,18 +480,6 @@ export const usePromptHomeController = () => {
         }
       }
 
-      if (result.cached === true && canUseVerifiedReadyCache) {
-        try {
-          rememberReadySession(window.localStorage, {
-            sessionId,
-            prompt: runtimePrompt,
-            preferredLanguage,
-          })
-        } catch {
-          // Storage can be blocked; session launch should still continue.
-        }
-      }
-
       try {
         await navigate({
           to: '/generate/$sessionId/$',
@@ -522,23 +495,26 @@ export const usePromptHomeController = () => {
       submitInFlightRef.current = false
       const isQuotaOrAuthError =
         error instanceof AppError &&
-        (error.code === 'UNAUTHENTICATED' || error.code === 'QUOTA_EXCEEDED')
+        (error.code === 'UNAUTHENTICATED' ||
+          error.code === 'QUOTA_EXCEEDED' ||
+          error.code === 'DAILY_LIMIT_REACHED')
       if (isQuotaOrAuthError) {
-        // When the share bonus is already claimed, the anonymous daily quota
-        // message should not offer sharing again — show a sign-in CTA instead.
-        if (shareBonusClaimedRef.current) {
-          setErrorMessage(
-            'Anonymous daily quota exhausted. Sign in to get 2 more free generations.',
-          )
-        } else {
-          setErrorMessage(error.message)
-        }
+        setErrorMessage(error.message)
       } else {
         setErrorMessage('Generation could not start. Try again.')
       }
       setIsSubmitting(false)
     }
   }
+
+  const setPrompt = useCallback((value: string) => {
+    setPromptState(value)
+    try {
+      window.localStorage.setItem(LAST_PROMPT_STORAGE_KEY, value)
+    } catch {
+      // Storage may be blocked; prompt still works in-session.
+    }
+  }, [])
 
   const selectExamplePrompt = (value: string) => {
     setPrompt(value)

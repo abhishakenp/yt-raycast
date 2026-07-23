@@ -1,16 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import {
-  DAILY_WINDOW_MS,
-  MAX_ANON_PER_DAY,
-  MAX_FREE_PER_MONTH,
-  MAX_PAID_PER_MONTH,
-  SHARE_BONUS_EXTRA,
-} from './constants'
-import {
-  anonIpDailyHits,
-  shareBonusIps,
-  userMonthlyHits,
-} from '../lib/rate-limit'
+import { MAX_FREE_PER_MONTH, MAX_PAID_PER_MONTH } from './constants'
+import { userMonthlyHits } from '../lib/rate-limit'
 import {
   getUserGenerationQuota,
   setActiveSubscriptionLookupForTest,
@@ -22,29 +12,12 @@ describe('generation quota details', () => {
   beforeEach(() => {
     subscribedUids = new Set()
     userMonthlyHits.clear()
-    anonIpDailyHits.clear()
-    shareBonusIps.clear()
     setActiveSubscriptionLookupForTest((uid: string) => subscribedUids.has(uid))
   })
 
   afterEach(() => {
     setActiveSubscriptionLookupForTest(null)
   })
-
-  it('reports anonymous daily quota including share bonus', async () => {
-    const ip = '203.0.113.10'
-    const today = new Date().toISOString().slice(0, 10)
-    anonIpDailyHits.set(ip, [Date.now(), Date.now() - DAILY_WINDOW_MS - 1])
-    shareBonusIps.set(ip, today)
-
-    await expect(getUserGenerationQuota(null, ip)).resolves.toMatchObject({
-      isAnonymous: true,
-      isSubscribed: false,
-      dailyLimit: MAX_ANON_PER_DAY + SHARE_BONUS_EXTRA,
-      dailyUsed: 1,
-      dailyRemaining: MAX_ANON_PER_DAY + SHARE_BONUS_EXTRA - 1,
-    })
-  }, 120000)
 
   it('reports signed-up free monthly quota', async () => {
     userMonthlyHits.set('free-user', [Date.now(), Date.now()])

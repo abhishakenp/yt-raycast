@@ -429,124 +429,6 @@ describe('usePromptHomeController submit guard', () => {
     )
   })
 
-  it('navigates immediately from a ready prompt cache entry', async () => {
-    const state = getTestState()
-    window.localStorage.setItem(
-      'ship-fast:ready-session:v1:en:build a cached product website',
-      JSON.stringify({
-        sessionId: 'session_ready_cache',
-        prompt: 'Build a cached product website',
-        preferredLanguage: 'en',
-        createdAt: Date.now(),
-      }),
-    )
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        sessionId: 'session_ready_cache',
-        prompt: 'Build a cached product website',
-        preferredLanguage: 'en',
-        status: 'preview_ready',
-      }),
-    } as Response)
-    const { result } = renderHook(() => usePromptHomeController())
-
-    act(() => {
-      result.current.setPrompt('Build a cached product website')
-    })
-
-    await act(async () => {
-      await result.current.submitPrompt()
-    })
-
-    expect(fetch).toHaveBeenCalledWith(
-      '/api/sessions/session_ready_cache',
-      expect.objectContaining({
-        headers: { Accept: 'application/json' },
-        signal: expect.any(AbortSignal),
-      }),
-    )
-    expect(state.createSession).not.toHaveBeenCalled()
-    expect(state.navigate).toHaveBeenCalledWith({
-      to: '/generate/$sessionId/$',
-      params: { sessionId: 'session_ready_cache' },
-    })
-  })
-
-  it('does not wait for ready prompt cache verification before navigating', async () => {
-    const state = getTestState()
-    window.localStorage.setItem(
-      'ship-fast:ready-session:v1:en:build an instant cached website',
-      JSON.stringify({
-        sessionId: 'session_instant_cache',
-        prompt: 'Build an instant cached website',
-        preferredLanguage: 'en',
-        createdAt: Date.now(),
-      }),
-    )
-    vi.mocked(fetch).mockImplementationOnce(() => new Promise(() => {}))
-    const { result } = renderHook(() => usePromptHomeController())
-
-    act(() => {
-      result.current.setPrompt('Build an instant cached website')
-    })
-
-    await act(async () => {
-      await result.current.submitPrompt()
-    })
-
-    expect(state.createSession).not.toHaveBeenCalled()
-    expect(state.navigate).toHaveBeenCalledWith({
-      to: '/generate/$sessionId/$',
-      params: { sessionId: 'session_instant_cache' },
-    })
-  })
-
-  it('forgets stale ready prompt cache verification misses in the background', async () => {
-    const state = getTestState()
-    window.localStorage.setItem(
-      'ship-fast:ready-session:v1:en:build a stale product website',
-      JSON.stringify({
-        sessionId: 'session_stale_cache',
-        prompt: 'Build a stale product website',
-        preferredLanguage: 'en',
-        createdAt: Date.now(),
-      }),
-    )
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        sessionId: 'session_stale_cache',
-        prompt: 'Build another website',
-        preferredLanguage: 'en',
-        status: 'preview_ready',
-      }),
-    } as Response)
-    const { result } = renderHook(() => usePromptHomeController())
-
-    act(() => {
-      result.current.setPrompt('Build a stale product website')
-    })
-
-    await act(async () => {
-      await result.current.submitPrompt()
-    })
-    await act(async () => {
-      await Promise.resolve()
-    })
-
-    expect(state.createSession).not.toHaveBeenCalled()
-    expect(state.navigate).toHaveBeenCalledWith({
-      to: '/generate/$sessionId/$',
-      params: { sessionId: 'session_stale_cache' },
-    })
-    expect(
-      window.localStorage.getItem(
-        'ship-fast:ready-session:v1:en:build a stale product website',
-      ),
-    ).toBeNull()
-  })
-
   it('does not hydrate share bonus on the homepage load path', async () => {
     const fetchMock = vi.mocked(fetch)
 
@@ -898,30 +780,16 @@ describe('usePromptHomeController submit guard', () => {
     })
   })
 
-  it('strips share suggestion from quota error when share bonus already claimed', async () => {
+  it('shows sign-in message when server returns ANON_DAILY_EXHAUSTED', async () => {
     const { result } = renderHook(() => usePromptHomeController())
 
-    // First, hydrate share bonus as claimed
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({ claimed: true }),
-    } as Response)
-
-    await act(async () => {
-      await result.current.refreshShareBonusStatus()
-    })
-
-    expect(result.current.shareBonusClaimed).toBe(true)
-
-    // Now mock the create endpoint to return a QUOTA_EXCEEDED error
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
       status: 429,
       json: async () => ({
         error:
-          'Anonymous daily quota exhausted. Share on social media for +1 free generation.',
-        code: 'QUOTA_EXCEEDED',
+          'Anonymous daily quota exhausted. Sign in to get 2 more free generations.',
+        code: 'ANON_DAILY_EXHAUSTED',
       }),
     } as Response)
 
@@ -938,17 +806,16 @@ describe('usePromptHomeController submit guard', () => {
     )
   })
 
-  it('preserves share suggestion in quota error when share bonus not yet claimed', async () => {
+  it('shows share suggestion when server returns ANON_DAILY_LIMIT_REACHED', async () => {
     const { result } = renderHook(() => usePromptHomeController())
 
-    // Share bonus not claimed — don't hydrate, leave as false
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
       status: 429,
       json: async () => ({
         error:
           'Anonymous daily quota exhausted. Share on social media for +1 free generation.',
-        code: 'QUOTA_EXCEEDED',
+        code: 'ANON_DAILY_LIMIT_REACHED',
       }),
     } as Response)
 

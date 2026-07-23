@@ -1,17 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import {
-  checkRateLimit,
-  cleanupMap,
-  getAnonDailyLimit,
-  refundRateLimit,
-  shareBonusIps,
-} from './rate-limit'
+import { checkRateLimit, cleanupMap, refundRateLimit } from './rate-limit'
 
 describe('rate limit helpers', () => {
   afterEach(() => {
     vi.useRealTimers()
-    shareBonusIps.clear()
   })
 
   it('tracks hits inside a rolling window and permits again after expiry', () => {
@@ -38,7 +31,7 @@ describe('rate limit helpers', () => {
     expect(checkRateLimit('user:1', hits, 1, 1000)).toBe(true)
   })
 
-  it('cleans stale buckets and applies same-day share bonuses', () => {
+  it('cleans stale buckets', () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2026-02-03T12:00:00.000Z'))
     const hits = new Map([
@@ -47,12 +40,8 @@ describe('rate limit helpers', () => {
     ])
 
     cleanupMap(hits, 1000)
-    shareBonusIps.set('127.0.0.1', '2026-02-03')
 
     expect(hits.has('fresh')).toBe(true)
     expect(hits.has('stale')).toBe(false)
-    expect(getAnonDailyLimit('127.0.0.1')).toBeGreaterThan(
-      getAnonDailyLimit('missing'),
-    )
   })
 })
