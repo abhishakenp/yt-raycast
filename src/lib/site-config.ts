@@ -6,10 +6,10 @@ export const SITE_NAME = (
   process.env.NEXT_PUBLIC_SITE_NAME ?? 'Ship Fast'
 ).trim()
 export const SITE_URL = trimSlash(
-  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ship-fast.io',
+  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ship-fast.ai',
 )
 export const BASE_DOMAIN = (
-  process.env.NEXT_PUBLIC_BASE_DOMAIN ?? 'ship-fast.io'
+  process.env.NEXT_PUBLIC_BASE_DOMAIN ?? 'ship-fast.ai'
 ).trim()
 export const PLAUSIBLE_DOMAIN =
   process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN ?? new URL(SITE_URL).hostname
@@ -21,7 +21,7 @@ export const LEGAL_CONTROLLER_ADDRESS = (
   process.env.NEXT_PUBLIC_LEGAL_CONTROLLER_ADDRESS ?? ''
 ).trim()
 export const PRIVACY_CONTACT_EMAIL = (
-  process.env.NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL ?? 'hello@ship-fast.io'
+  process.env.NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL ?? 'hello@ship-fast.ai'
 ).trim()
 export const PRIVACY_POLICY_JURISDICTION = (
   process.env.NEXT_PUBLIC_PRIVACY_POLICY_JURISDICTION ?? ''

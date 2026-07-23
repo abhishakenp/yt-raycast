@@ -184,7 +184,10 @@ export async function reserveDefaultDeploymentSlug(
 }
 
 export function createDeploymentUrl(slug: string): string {
-  return `https://${slug}.ship-fast.io`
+  const baseDomain = (
+    process.env.DEPLOYMENT_BASE_DOMAIN ?? 'ship-fast.ai'
+  ).trim()
+  return `https://${slug}.${baseDomain}`
 }
 
 function readLakebedThemeName(
