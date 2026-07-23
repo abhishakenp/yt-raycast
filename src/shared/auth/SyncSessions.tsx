@@ -8,9 +8,8 @@ import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
 // the signed-in userId. Convex subscriptions then auto-refresh with the newly
 // claimed sessions. Idempotent server-side, so repeated mounts are safe.
 //
-// This is a second chance beyond the global AnonymousSessionClaimer in the
-// provider tree — it fires on every mount when authenticated, not just on the
-// sign-in transition. Mount it on pages that show the user's sessions (/mine).
+// Mounted inside ClerkConvexProvider so it runs app-wide whenever Clerk + Convex
+// are active. Fires once per signed-in session (resets on sign-out).
 export const SyncSessions = () => {
   const { isSignedIn, isLoaded } = useOptionalAuth()
   const firedRef = useRef(false)

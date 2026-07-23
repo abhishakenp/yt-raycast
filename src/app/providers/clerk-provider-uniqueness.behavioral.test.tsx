@@ -58,8 +58,8 @@ vi.mock('@/lib/chunk-load-recovery', () => ({
   installDynamicImportRecovery: () => () => {},
 }))
 
-vi.mock('@/shared/auth/useClaimAnonymousSessionsOnSignIn', () => ({
-  useClaimAnonymousSessionsOnSignIn: () => {},
+vi.mock('@/shared/auth/SyncSessions', () => ({
+  SyncSessions: () => null,
 }))
 
 vi.mock('@/components/launch-backdrop', () => ({
