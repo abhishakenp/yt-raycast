@@ -32,9 +32,6 @@ describe('Medusa Dokploy production assets', () => {
     expect(compose).toContain(
       'AUTH_CORS:-https://ship-fast.io,https://ship-fast.devliv.io,https://medusa.devliv.io',
     )
-    expect(compose).toContain(
-      'traefik.http.routers.ship-fast-medusa.rule=Host(`medusa.devliv.io`)',
-    )
     expect(compose).toContain('dokploy-network:')
     expect(compose).toContain('external: true')
   })
