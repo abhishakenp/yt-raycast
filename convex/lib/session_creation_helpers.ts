@@ -151,7 +151,7 @@ export async function loadGenerationAdmission(
   const recentCutoff = args.now - RATE_WINDOW_MS
   const dailyCutoff = args.now - DAILY_WINDOW_MS
   const monthlyCutoff = args.now - MONTHLY_WINDOW_MS
-  const sameOwnerSessions =
+  const sameOwnerSessionsRaw =
     args.userId !== undefined
       ? await ctx.db
           .query('sessions')
@@ -167,6 +167,11 @@ export async function loadGenerationAdmission(
           )
           .order('desc')
           .take(MAX_PAID_PER_MONTH + SHORT_WINDOW_LIMIT + 1)
+  // Draft sessions are exploratory, TTL'd at 15 minutes, and never start
+  // generation — they must not consume quota. Exclude them from every count.
+  const sameOwnerSessions = sameOwnerSessionsRaw.filter(
+    (session) => session.isDraft !== true,
+  )
   const recentCount = sameOwnerSessions.filter(
     (session) => session.createdAt >= recentCutoff,
   ).length
