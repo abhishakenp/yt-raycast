@@ -920,7 +920,7 @@ describe('usePromptHomeController submit guard', () => {
       status: 429,
       json: async () => ({
         error:
-          'Anonymous daily quota exhausted. Share on social media for +1 free generation, or sign in to continue.',
+          'Anonymous daily quota exhausted. Share on social media for +1 free generation.',
         code: 'QUOTA_EXCEEDED',
       }),
     } as Response)
