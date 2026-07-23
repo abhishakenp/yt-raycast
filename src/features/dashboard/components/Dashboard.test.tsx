@@ -131,9 +131,6 @@ vi.mock('@ship-fast/lakebed/react', () => ({
   ),
 }))
 
-vi.mock('@/features/admin/components/LakebedAdminPanel', () => ({
-  LakebedAdminPanel: () => null,
-}))
 vi.mock('@/features/billing/components/BillingPanel', () => ({
   BillingPanel: () => null,
 }))
@@ -275,7 +272,6 @@ describe('Dashboard missing session state', () => {
     ).toBeTruthy()
     expect(screen.queryByText('Composing the first screen')).toBeNull()
     expect(screen.queryByRole('button', { name: 'Publish preview' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Open auto admin' })).toBeNull()
   })
 
   it('does not show generated hover copy on viewport controls', () => {

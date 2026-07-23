@@ -206,12 +206,6 @@ vi.mock('@ship-fast/lakebed/react', () => ({
   ),
 }))
 
-vi.mock('@/features/admin/components/LakebedAdminPanel', () => ({
-  LakebedAdminPanel: () => (
-    <div data-testid="lakebed-admin-panel">Admin panel</div>
-  ),
-}))
-
 vi.mock('@/features/commerce/components/CommercePanel', () => ({
   CommercePanel: ({ sessionId }: { sessionId: string }) => (
     <div data-testid="commerce-panel-stub">Commerce panel {sessionId}</div>
@@ -371,9 +365,7 @@ describe('Dashboard toolbar + device switcher + status indicators', () => {
     getAuthState().openSignIn = vi.fn()
     window.localStorage.clear()
     window.sessionStorage.clear()
-    // Reset the URL so admin-view pushState from a prior test does not leak
-    // into the next test via the pathname-syncing useEffect.
-    window.history.replaceState(null, '', '/')
+    window.history.replaceState(null, '/')
     window.matchMedia = vi.fn().mockReturnValue({
       addEventListener: vi.fn(),
       matches: false,
@@ -521,31 +513,6 @@ describe('Dashboard toolbar + device switcher + status indicators', () => {
     expect(screen.getByTestId('gmp-edit-mode').textContent).toBe('false')
   })
 
-  // 3. Admin view toggle
-  it('toggles admin view via the shield icon', async () => {
-    setupReady()
-    render(<Dashboard sessionId="ready-session" />)
-
-    const shield = screen.getByRole('button', { name: 'Open auto admin' })
-    expect(shield.getAttribute('aria-pressed')).toBe('false')
-
-    fireEvent.click(shield)
-    expect(shield.getAttribute('aria-pressed')).toBe('true')
-    // label flips when admin is active
-    expect(
-      screen.getByRole('button', { name: 'View generated site' }),
-    ).toBeTruthy()
-    // admin panel mounts in place of the preview (lazy-loaded → await)
-    expect(await screen.findByTestId('lakebed-admin-panel')).toBeTruthy()
-
-    fireEvent.click(screen.getByRole('button', { name: 'View generated site' }))
-    expect(
-      screen
-        .getByRole('button', { name: 'Open auto admin' })
-        .getAttribute('aria-pressed'),
-    ).toBe('false')
-  })
-
   // 4. Back button
   it('uses home navigation when router history cannot go back', () => {
     setupReady()
@@ -578,15 +545,6 @@ describe('Dashboard toolbar + device switcher + status indicators', () => {
     expect(urlText).not.toBeNull()
     expect(urlText.textContent).toBe('/generate/ready-session')
     expect(urlText.getAttribute('aria-label')).toBe('Current preview URL')
-  })
-
-  it('updates the url pill to the admin path when admin view is active', () => {
-    setupReady()
-    render(<Dashboard sessionId="ready-session" />)
-
-    fireEvent.click(screen.getByRole('button', { name: 'Open auto admin' }))
-    const urlText = document.querySelector('#url-text') as HTMLAnchorElement
-    expect(urlText.textContent).toBe('/generate/ready-session/admin')
   })
 
   // 6. Refresh button
@@ -758,7 +716,6 @@ describe('Dashboard toolbar + device switcher + status indicators', () => {
     )
     // preview tools are hidden when session is missing
     expect(screen.queryByRole('button', { name: 'Publish preview' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Open auto admin' })).toBeNull()
     // The missing-state card and topbar both expose back buttons.
     const backButtons = screen.getAllByRole('button', { name: 'Back' })
     expect(backButtons.length).toBeGreaterThanOrEqual(2)

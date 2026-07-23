@@ -2,7 +2,7 @@
 //
 // Behavioral tests for the Dashboard session workspace. These tests assert the
 // EXPECTED, CORRECT behavior of the dashboard around generation handoff, live
-// Convex queries, ready-session caching, admin URL sync,
+// Convex queries, ready-session caching,
 // progress reporting, edit override mapping, theme resolution, and scroll
 // preservation. If any of these behaviors regress, the corresponding test MUST
 // fail — these tests never pin buggy behavior.
@@ -396,12 +396,6 @@ vi.mock('@ship-fast/lakebed/react', () => ({
     <>{children}</>
   ),
   useOptionalSessionState: () => ({ data: null }),
-}))
-
-vi.mock('@/features/admin/components/LakebedAdminPanel', () => ({
-  LakebedAdminPanel: () => (
-    <div data-testid="lakebed-admin-panel">Admin panel</div>
-  ),
 }))
 
 vi.mock('@/features/commerce/components/CommercePanel', () => ({
@@ -1900,21 +1894,7 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     expect(sessionKeys.length).toBeGreaterThanOrEqual(1)
   })
 
-  // 5. Admin URL → updates to /generate/{id}/admin
-  it('updates the URL to /generate/{id}/admin when admin view is toggled', () => {
-    setupReady()
-    render(<Dashboard sessionId="ready-session" />)
-
-    fireEvent.click(screen.getByRole('button', { name: 'Open auto admin' }))
-
-    // Expected: toggling admin pushes /generate/<id>/admin to history and the
-    // URL pill reflects it.
-    expect(window.location.pathname).toBe('/generate/ready-session/admin')
-    const urlText = document.querySelector('#url-text') as HTMLAnchorElement
-    expect(urlText.textContent).toBe('/generate/ready-session/admin')
-  })
-
-  // 6. Progress: 50% tasks → progress bar shows 50%
+  // 5. Progress: 50% tasks → progress bar shows 50%
   it('passes 50% progress to the intro loader when half the tasks are done', () => {
     setHandoffFlag('progress-session')
     getConvexState().generationView = generatingGenerationView({

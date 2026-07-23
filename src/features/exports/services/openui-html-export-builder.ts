@@ -399,24 +399,6 @@ function readThemeName(
   return typeof theme === 'string' ? theme : undefined
 }
 
-function readGenUIExportMetadata(
-  siteSpec: Record<string, unknown>,
-): Record<string, unknown> | null {
-  const genui = siteSpec.genui
-  return isPlainObjectValue(genui) ? genui : null
-}
-
-function readGenUIAdminPolicy(
-  genui: Record<string, unknown> | null,
-): Record<string, unknown> {
-  const policy = genui?.adminPolicy
-  return isPlainObjectValue(policy) ? policy : {}
-}
-
-function isString(value: unknown): value is string {
-  return typeof value === 'string'
-}
-
 function isElementNode(value: unknown): value is ElementNode {
   return (
     typeof value === 'object' &&
@@ -471,52 +453,6 @@ function unwrapObjectProps(
 
 function isStringEntry(entry: unknown[]): entry is [string, string] {
   return typeof entry[0] === 'string' && typeof entry[1] === 'string'
-}
-
-function readGenUIAdminEmails(genui: Record<string, unknown> | null): string[] {
-  const policy = readGenUIAdminPolicy(genui)
-  const values = Array.isArray(policy.adminEmails)
-    ? policy.adminEmails
-    : typeof policy.ownerEmail === 'string'
-      ? [policy.ownerEmail]
-      : typeof genui?.ownerEmail === 'string'
-        ? [genui.ownerEmail]
-        : []
-  return [
-    ...new Set(
-      values
-        .filter(isString)
-        .map((value) => value.trim().toLowerCase())
-        .filter((value) => value.includes('@')),
-    ),
-  ]
-}
-
-function buildInlineAdminBootstrap(
-  genui: Record<string, unknown> | null,
-  target: string,
-): string {
-  if (genui === null) return ''
-  const adminPolicy = readGenUIAdminPolicy(genui)
-  return `
-    window.__SITE_ADMIN__ = ${stringifyJs({
-      version: 1,
-      target,
-      authProvider:
-        typeof adminPolicy.authProvider === 'string'
-          ? adminPolicy.authProvider
-          : 'shoo',
-      adminEmails: readGenUIAdminEmails(genui),
-      policy: adminPolicy,
-    })};
-    window.assertSiteAdminAccess = function assertSiteAdminAccess(email) {
-      var normalized = String(email || '').trim().toLowerCase();
-      var allowed = (window.__SITE_ADMIN__.adminEmails || []);
-      if (!normalized || allowed.indexOf(normalized) === -1) {
-        throw new Error('Site admin access denied for this email.');
-      }
-      return { email: normalized, role: normalized === allowed[0] ? 'owner' : 'editor' };
-    };`
 }
 
 function buildThemeStyle(styles: ThemeStyles | null, isDark: boolean): string {
@@ -1459,7 +1395,6 @@ async function buildStandaloneHtmlDocument(
     : `<main id="openui-root" class="genui-preview size-full bg-background${isDark ? ' dark' : ''}" style="${escapeAttribute(`${themeStyle} color-scheme: ${isDark ? 'dark' : 'light'}`)}">${bodyMarkup}</main>`
   const css = await readPreviewCss(rootMarkup)
   const rootId = 'openui-root'
-  const genui = readGenUIExportMetadata(siteSpec)
   const seoBundle = buildExportSeoBundle(
     enrichSiteSpecJson(input.siteSpecJson, parsed.projectName),
     routes.map((label, index) => {
@@ -1502,7 +1437,6 @@ ${css}
   ${rootMarkup}
   <script>
     window.__STATIC_SITE__ = ${stringifyJs({ routes, projectName: parsed.projectName, themeName, mode: isDark ? 'dark' : 'light' })};
-    ${buildInlineAdminBootstrap(genui, input.target)}
     ${buildThemeRuntime(themeStyles, isDark, rootId)}
     ${buildRouteScript(routes, parsed.targetMap, 'data-sf-export-page', staticUiMessages(locale))}
     ${buildInteractionRuntime(staticUiMessages(locale), input.sessionId)}

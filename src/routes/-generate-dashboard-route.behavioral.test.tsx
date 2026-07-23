@@ -74,21 +74,15 @@ vi.mock('@/features/dashboard/components/Dashboard', async () => {
   const { useContext } = await import('react')
   const { PreviewUrlBridgeContext } = await import('@ship-fast/blocks/runtime')
   type DashboardProps = {
-    initialAdminView?: boolean
     initialGenerationView?: unknown
     sessionId: string
   }
 
-  function Dashboard({
-    initialAdminView,
-    initialGenerationView,
-    sessionId,
-  }: DashboardProps) {
+  function Dashboard({ initialGenerationView, sessionId }: DashboardProps) {
     const bridge = useContext(PreviewUrlBridgeContext)
     return (
       <section
         data-has-loader-data={initialGenerationView === null ? 'false' : 'true'}
-        data-initial-admin-view={initialAdminView ? 'true' : 'false'}
         data-testid="dashboard-route"
         data-page-from-url={bridge.pageFromUrl ?? ''}
       >
@@ -102,11 +96,7 @@ vi.mock('@/features/dashboard/components/Dashboard', async () => {
   }
 })
 
-import {
-  GenerateRoute,
-  GenerateAdminRoute,
-  extractSlugFromPath,
-} from './-generate-dashboard-route'
+import { GenerateRoute, extractSlugFromPath } from './-generate-dashboard-route'
 
 afterEach(() => {
   cleanup()
@@ -172,14 +162,6 @@ describe('GenerateRoute rendering', () => {
 
     expect(screen.getByTestId('dashboard-route').dataset.pageFromUrl).toBe(
       'pricing',
-    )
-  })
-
-  it('GenerateAdminRoute renders dashboard', () => {
-    render(<GenerateAdminRoute />)
-    expect(screen.getByTestId('dashboard-route')).toBeTruthy()
-    expect(screen.getByTestId('dashboard-route').dataset.initialAdminView).toBe(
-      'true',
     )
   })
 })

@@ -975,7 +975,7 @@ function buildFullstackManifest(family: Family): GeneratedArtifact {
     version: 2,
     kind: family.name,
     schema: `${family.name.toLowerCase()}-fullstack-v2`,
-    auth: { provider: 'shoo', adminPolicyKey: 'admin-policy' },
+    auth: { provider: 'shoo' },
     storage: {
       html: 'browser-storage',
       react: 'browser-storage',

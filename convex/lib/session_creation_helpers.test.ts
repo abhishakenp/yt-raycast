@@ -583,7 +583,7 @@ describe('session creation helpers', () => {
     })
   })
 
-  it('stores the authenticated owner email for generated admin policy baking', async () => {
+  it('stores the authenticated owner email for generated session metadata', async () => {
     vi.stubEnv('OPENUI_HOME_MODEL', 'gemini-2.5-flash')
     vi.stubEnv('GEMINI_API_KEY', 'test-gemini-key')
     vi.stubEnv('DISABLE_LIMIT', 'true')

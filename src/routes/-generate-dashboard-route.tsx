@@ -8,7 +8,6 @@ import {
 } from '@ship-fast/blocks/runtime'
 
 const generateRouteApi = getRouteApi('/generate/$sessionId/$')
-const generateAdminRouteApi = getRouteApi('/generate/$sessionId/admin')
 
 /**
  * Extract the page slug from the URL path after the session base.
@@ -87,18 +86,5 @@ export const GenerateRoute = () => {
         sessionId={sessionId}
       />
     </PreviewUrlBridgeContext.Provider>
-  )
-}
-
-export const GenerateAdminRoute = () => {
-  const { sessionId } = generateAdminRouteApi.useParams()
-  const initialGenerationView = generateAdminRouteApi.useLoaderData()
-
-  return (
-    <Dashboard
-      initialAdminView
-      initialGenerationView={initialGenerationView}
-      sessionId={sessionId}
-    />
   )
 }

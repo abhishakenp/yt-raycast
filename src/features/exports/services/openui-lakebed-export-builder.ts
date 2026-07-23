@@ -72,11 +72,6 @@ type LakebedRoute = {
   props: Record<string, unknown>
 }
 
-type LakebedAdminAccessConfig = {
-  emails: string[]
-  routes: Array<{ label: string; path: string }>
-}
-
 type ContentSection = {
   id: string
   title: string
@@ -1054,74 +1049,6 @@ function parseSiteSpec(
     return parseJsonRecord(siteSpecJson) ?? {}
   } catch {
     return {}
-  }
-}
-
-function readGenUIExportMetadata(
-  siteSpecJson: string | undefined,
-): Record<string, unknown> | null {
-  const siteSpec = parseSiteSpec(siteSpecJson)
-  const genui = siteSpec.genui
-  return isRecord(genui) ? genui : null
-}
-
-function readAdminPolicy(
-  genui: Record<string, unknown>,
-): Record<string, unknown> {
-  const policy = genui.adminPolicy
-  return isRecord(policy) ? policy : {}
-}
-
-function readAdminEmails(genui: Record<string, unknown>): string[] {
-  const policy = readAdminPolicy(genui)
-  const values = Array.isArray(policy.adminEmails)
-    ? policy.adminEmails
-    : typeof policy.ownerEmail === 'string'
-      ? [policy.ownerEmail]
-      : typeof genui.ownerEmail === 'string'
-        ? [genui.ownerEmail]
-        : []
-  return [
-    ...new Set(
-      values
-        .filter(isString)
-        .map((value) => value.trim().toLowerCase())
-        .filter((value) => value.includes('@')),
-    ),
-  ]
-}
-
-function readAdminRoutes(
-  genui: Record<string, unknown>,
-): Array<{ label: string; path: string }> {
-  const manifest = genui.openuiManifest
-  const pages =
-    isRecord(manifest) && Array.isArray(manifest.pages) ? manifest.pages : []
-  const routes = pages
-    .filter(isRecord)
-    .filter((page) =>
-      [page.id, page.label, page.component].some(
-        (value) => typeof value === 'string' && /admin/i.test(value),
-      ),
-    )
-    .map((page) => {
-      const label = typeof page.label === 'string' ? page.label : 'Admin'
-      return { label, path: `/${slugifyRoute(label)}` }
-    })
-
-  return routes.length > 0 ? routes : [{ label: 'Admin', path: '/admin' }]
-}
-
-function readLakebedAdminAccessConfig(
-  siteSpecJson: string | undefined,
-): LakebedAdminAccessConfig | null {
-  const genui = readGenUIExportMetadata(siteSpecJson)
-  if (genui === null) return null
-  const emails = readAdminEmails(genui)
-  if (emails.length === 0) return null
-  return {
-    emails,
-    routes: readAdminRoutes(genui),
   }
 }
 
@@ -5585,7 +5512,6 @@ export function buildLakebedClientComponentForTest(
 function renderClientIndex(
   routes: LakebedRoute[],
   components: ClientComponentDefinition[],
-  adminAccess: LakebedAdminAccessConfig | null,
   input: OpenUIExportInput,
   hasPortableLogo: boolean,
 ): string {
@@ -5646,131 +5572,6 @@ function renderClientIndex(
         `${JSON.stringify(component.name)}: ${toIdentifier(component.name)}Block`,
     )
     .join(',\n')
-  const adminEmails = adminAccess?.emails ?? []
-  const adminRouteLabels = [
-    ...new Set(
-      (adminAccess?.routes ?? []).map((route) =>
-        route.label.trim().toLowerCase(),
-      ),
-    ),
-  ]
-  const adminRoutePaths = [
-    ...new Set(
-      (adminAccess?.routes ?? []).map((route) =>
-        route.path.trim().toLowerCase(),
-      ),
-    ),
-  ]
-  const adminHooksImport = adminAccess
-    ? 'import { useMemo, useState } from "preact/hooks";'
-    : ''
-  const adminRuntime = adminAccess
-    ? `const siteAdminEmails = ${JSON.stringify(adminEmails, null, 2)};
-const siteAdminRouteLabels = ${JSON.stringify(adminRouteLabels, null, 2)};
-const siteAdminRoutePaths = ${JSON.stringify(adminRoutePaths, null, 2)};
-
-function normalizeAdminValue(value: unknown): string {
-  return String(value || "").trim().toLowerCase();
-}
-
-function isSiteAdminRoute(page: SitePage): boolean {
-  return (
-    siteAdminRouteLabels.includes(normalizeAdminValue(page.label)) ||
-    siteAdminRoutePaths.includes(normalizeAdminValue(page.path))
-  );
-}
-
-function assertSiteAdminAccess(email: string) {
-  const normalized = normalizeAdminValue(email);
-  if (!normalized || !siteAdminEmails.includes(normalized)) {
-    throw new Error("Site admin access denied for this email.");
-  }
-  return { email: normalized, role: normalized === siteAdminEmails[0] ? "owner" : "editor" };
-}
-
-function SiteAdminGate({
-  children,
-  routeLabel,
-}: {
-  children: ComponentChildren;
-  routeLabel: string;
-}) {
-  const firstAdminEmail = siteAdminEmails[0] ?? "";
-  const [email, setEmail] = useState(() =>
-    window.localStorage.getItem("siteAdminEmail") ?? firstAdminEmail,
-  );
-  const [submittedEmail, setSubmittedEmail] = useState(() =>
-    window.localStorage.getItem("siteAdminEmail") ?? "",
-  );
-  const [error, setError] = useState("");
-
-  const access = useMemo(() => {
-    if (siteAdminEmails.length === 0) return { email: "", role: "owner" };
-    try {
-      return assertSiteAdminAccess(submittedEmail);
-    } catch {
-      return null;
-    }
-  }, [submittedEmail]);
-
-  if (access) return <>{children}</>;
-
-  return (
-    <main className="grid min-h-screen place-items-center bg-slate-950 p-6 text-slate-50">
-      <form
-        className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-950/95 p-6 shadow-2xl"
-        onSubmit={(event) => {
-          event.preventDefault();
-          try {
-            const result = assertSiteAdminAccess(email);
-            window.localStorage.setItem("siteAdminEmail", result.email);
-            setSubmittedEmail(result.email);
-            setError("");
-          } catch (cause) {
-            setError(cause instanceof Error ? cause.message : "Admin access denied.");
-          }
-        }}
-      >
-        <p className="text-xs font-bold uppercase tracking-widest text-blue-300">
-          Site Admin
-        </p>
-        <h1 className="mt-3 text-3xl font-bold tracking-tight">
-          Verify access to {routeLabel}
-        </h1>
-        <p className="mt-2 text-sm leading-6 text-slate-300">
-          Use the owner email baked into this Lakebed export to open the generated admin area.
-        </p>
-        <label className="mt-5 grid gap-2 text-sm text-slate-300">
-          Email
-          <input
-            autoComplete="email"
-            className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-50 outline-none focus:border-blue-400"
-            onInput={(event) => setEmail(event.currentTarget.value)}
-            placeholder="owner@example.com"
-            type="email"
-            value={email}
-          />
-        </label>
-        {error ? <p className="mt-3 text-sm text-red-300">{error}</p> : null}
-        <button
-          className="mt-5 w-full rounded-lg bg-blue-500 px-4 py-2.5 font-bold text-white hover:bg-blue-400"
-          type="submit"
-        >
-          Open admin
-        </button>
-      </form>
-    </main>
-  );
-}
-`
-    : ''
-  const pageViewResult = adminAccess
-    ? `  return isSiteAdminRoute(page) ? (
-    <SiteAdminGate routeLabel={page.label}>{rendered}</SiteAdminGate>
-  ) : (
-    rendered
-  );`
-    : '  return rendered;'
   const appFrameClass = [
     'genui-preview',
     'min-h-screen',
@@ -5784,7 +5585,6 @@ function SiteAdminGate({
   return `import { Link, Route, Router, Routes } from "lakebed/client";
 import type { ComponentChildren } from "preact";
 import { useMemo, useState } from "preact/hooks";
-${adminHooksImport}
 import { pages, routeTargets, type SitePage } from "./routes";
 import { PageStateContext, RoutesContext } from "./vendor/blocks-runtime/src/lib/route-context";
 import { AuthRuntime, useLakebedAdapter, type LakebedAdapter } from "./lib/lakebed";
@@ -5806,13 +5606,11 @@ const pageComponents = {
 ${componentEntries}
 };
 
-${adminRuntime}
-
 function PageView({ page }: { page: SitePage }) {
   const lakebed = useLakebedAdapter();
   const Page = pageComponents[page.componentName];
   const rendered = Page ? <Page props={page.props} lakebed={lakebed} /> : <NotFoundPage />;
-${pageViewResult}
+  return rendered;
 }
 
 function PageRouteFrame({ page }: { page: SitePage }) {
@@ -7301,7 +7099,6 @@ export async function buildOpenUILakebedProjectFiles(
   await input.onProgress?.('resolving-images')
   const targetMap = buildLakebedTargetMap(routes, parsed.targetMap)
   const styleOverrides = extractStyleOverrides(input.previewHtml)
-  const adminAccess = readLakebedAdminAccessConfig(input.siteSpecJson)
   const commerceConfig = readPortableCommerceConfig(input.siteSpecJson)
   const contentRevision = createHash('sha256')
     .update(input.source)
@@ -7318,7 +7115,6 @@ export async function buildOpenUILakebedProjectFiles(
   const clientIndexSource = renderClientIndex(
     routes,
     clientComponents,
-    adminAccess,
     input,
     Boolean(files['client/section-kit/Logo.tsx']),
   )
