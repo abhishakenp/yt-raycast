@@ -130,8 +130,37 @@ const getPromptInput = () =>
 const getLanguageRow = () =>
   document.getElementById('prompt-language-row') as HTMLDivElement
 
-const getLanguageSelect = () =>
-  document.getElementById('prompt-language') as HTMLSelectElement
+// The language control is a custom dropdown (button + listbox), not a native
+// <select>. The current value is carried by a hidden input (#prompt-language)
+// for form submission; the choices render as listbox options once opened.
+const getLanguageValue = () =>
+  (document.getElementById('prompt-language') as HTMLInputElement).value
+
+const getLanguageTrigger = () =>
+  document.querySelector('.prompt-language-select') as HTMLButtonElement
+
+const openLanguageMenu = () => {
+  const trigger = getLanguageTrigger()
+  if (trigger.getAttribute('aria-expanded') !== 'true') {
+    fireEvent.click(trigger)
+  }
+}
+
+const getLanguageOptionCodes = () => {
+  openLanguageMenu()
+  return Array.from(document.querySelectorAll('.prompt-language-option')).map(
+    (el) => el.getAttribute('data-language-code'),
+  )
+}
+
+const selectLanguageOption = (code: string) => {
+  openLanguageMenu()
+  const option = document.querySelector(
+    `.prompt-language-option[data-language-code="${code}"]`,
+  ) as HTMLButtonElement | null
+  if (!option) throw new Error(`No language option for "${code}"`)
+  fireEvent.click(option)
+}
 
 describe('HomePage — language detection for short explicit-keyword prompts', () => {
   beforeEach(() => {
@@ -257,9 +286,7 @@ describe('HomePage — language detection for short explicit-keyword prompts', (
       await Promise.resolve()
     })
 
-    const select = getLanguageSelect()
-    expect(select).toBeTruthy()
-    const optionValues = Array.from(select.options).map((opt) => opt.value)
+    const optionValues = getLanguageOptionCodes()
     // BUG 2: detection effect returns early because currentPrompt.length < 65,
     // so Hindi never gets added to the dropdown options.
     expect(optionValues).toContain('hi')
@@ -281,11 +308,137 @@ describe('HomePage — language detection for short explicit-keyword prompts', (
       await Promise.resolve()
     })
 
-    const select = getLanguageSelect()
-    expect(select).toBeTruthy()
     // BUG 2 (same root cause): the min-chars gate blocks detection, so
     // preferredLanguage stays 'en' instead of being set to 'hi'.
-    expect(select.value).toBe('hi')
+    expect(getLanguageValue()).toBe('hi')
+  })
+
+  it('user can switch the language when the dropdown has more than one choice', async () => {
+    // The exact reported bug: auto-detect picks a non-English language, giving
+    // two choices, and the user cannot switch back to English. With the custom
+    // dropdown the pick must apply and stick.
+    render(<HomePage />)
+    const input = getPromptInput()
+    fireEvent.focus(input)
+    fireEvent.change(input, { target: { value: 'build a gov site in hindi' } })
+    await act(async () => {
+      vi.advanceTimersByTime(PROMPT_LANG_DETECT_DEBOUNCE_MS + 50)
+      await Promise.resolve()
+    })
+
+    // Detection settled on Hindi -> two choices are available.
+    expect(getLanguageValue()).toBe('hi')
+    expect(getLanguageOptionCodes()).toEqual(
+      expect.arrayContaining(['en', 'hi']),
+    )
+
+    // User picks English from the open menu.
+    selectLanguageOption('en')
+    expect(getLanguageValue()).toBe('en')
+  })
+
+  it('manual language selection is not overwritten by a pending auto-detect', async () => {
+    // Repro: user types, auto-detect settles on a language, user then keeps
+    // typing (queuing a fresh detect) and manually picks English from the
+    // dropdown. The in-flight detect must NOT clobber the manual choice.
+    render(<HomePage />)
+    const input = getPromptInput()
+    fireEvent.focus(input)
+
+    // Phase A: settle detection on Hindi so the dropdown exposes both options.
+    fireEvent.change(input, { target: { value: 'build a gov site in hindi' } })
+    await act(async () => {
+      vi.advanceTimersByTime(PROMPT_LANG_DETECT_DEBOUNCE_MS + 50)
+      await Promise.resolve()
+    })
+    expect(getLanguageValue()).toBe('hi')
+
+    // Phase B: keep typing -> a new detect is scheduled. Make it deferred so
+    // it is still in flight when the user changes the dropdown.
+    let resolveDetect: (value: string | null) => void = () => {}
+    mocks.detectSnippetLanguageBcp47.mockImplementationOnce(
+      () =>
+        new Promise<string | null>((resolve) => {
+          resolveDetect = resolve
+        }),
+    )
+    fireEvent.change(input, {
+      target: { value: 'build a gov site in hindi please' },
+    })
+    await act(async () => {
+      vi.advanceTimersByTime(PROMPT_LANG_DETECT_DEBOUNCE_MS + 50)
+      await Promise.resolve()
+    })
+
+    // User manually switches to English while detection is pending.
+    selectLanguageOption('en')
+    expect(getLanguageValue()).toBe('en')
+
+    // The stale in-flight detection now resolves to Hindi — it must be ignored.
+    await act(async () => {
+      resolveDetect('hi')
+      await Promise.resolve()
+    })
+    expect(getLanguageValue()).toBe('en')
+  })
+
+  it('keeps a manual language choice when the user types more (sticky override)', async () => {
+    // The reported bug: pick English, type anything, and it snaps back to the
+    // detected language. A manual choice must survive later keystrokes.
+    render(<HomePage />)
+    const input = getPromptInput()
+    fireEvent.focus(input)
+
+    fireEvent.change(input, { target: { value: 'build a gov site in hindi' } })
+    await act(async () => {
+      vi.advanceTimersByTime(PROMPT_LANG_DETECT_DEBOUNCE_MS + 50)
+      await Promise.resolve()
+    })
+    expect(getLanguageValue()).toBe('hi')
+
+    // User overrides to English.
+    selectLanguageOption('en')
+    expect(getLanguageValue()).toBe('en')
+
+    // User keeps typing — the prompt still detects Hindi, but the manual
+    // English choice must stick.
+    fireEvent.change(input, {
+      target: { value: 'build a bigger gov site in hindi with a contact form' },
+    })
+    await act(async () => {
+      vi.advanceTimersByTime(PROMPT_LANG_DETECT_DEBOUNCE_MS + 50)
+      await Promise.resolve()
+    })
+    expect(getLanguageValue()).toBe('en')
+
+    // Hindi is still offered so the user can switch back if they want.
+    expect(getLanguageOptionCodes()).toEqual(
+      expect.arrayContaining(['en', 'hi']),
+    )
+  })
+
+  it('resumes auto-detect after the prompt is cleared', async () => {
+    render(<HomePage />)
+    const input = getPromptInput()
+    fireEvent.focus(input)
+
+    fireEvent.change(input, { target: { value: 'build a gov site in hindi' } })
+    await act(async () => {
+      vi.advanceTimersByTime(PROMPT_LANG_DETECT_DEBOUNCE_MS + 50)
+      await Promise.resolve()
+    })
+    selectLanguageOption('en')
+    expect(getLanguageValue()).toBe('en')
+
+    // Clear the prompt — the manual override resets.
+    fireEvent.change(input, { target: { value: '' } })
+    // Type a fresh Hindi prompt — auto-detect should apply again.
+    fireEvent.change(input, { target: { value: 'ek naya hindi site banao' } })
+    await act(async () => {
+      vi.advanceTimersByTime(PROMPT_LANG_DETECT_DEBOUNCE_MS + 50)
+      await Promise.resolve()
+    })
+    expect(getLanguageValue()).toBe('hi')
   })
 
   it('language dropdown is hidden when prompt is empty', () => {
@@ -334,10 +487,8 @@ describe('HomePage — language detection for short explicit-keyword prompts', (
       await Promise.resolve()
     })
 
-    const select = getLanguageSelect()
-    expect(select).toBeTruthy()
     // Mock detector returns 'hi' for inputs containing "hindi"; the preferred
-    // language should be applied to the select element's value.
-    expect(select.value).toBe('hi')
+    // language should be applied to the control's value.
+    expect(getLanguageValue()).toBe('hi')
   })
 })

@@ -14,44 +14,20 @@ import { LaunchBackdrop } from '@/components/launch-backdrop'
 import { HomeGallerySection } from '@/features/gallery/components/PublicGallery'
 import { isPartnerProgramClientEnabled } from '@/features/partners/lib/partner-config'
 import { usePromptHomeController } from '@/features/home/hooks/usePromptHomeController'
-import {
-  PROMPT_LANG_DETECT_DEBOUNCE_MS,
-  PROMPT_LANG_DETECT_SNIPPET_MAX,
-  PREFERRED_LANGUAGE_KEY,
-  SUBMIT_BTN_DEFAULT_LABEL,
-} from '@/lib/home/constants'
+import { usePromptLanguage } from '@/features/home/hooks/usePromptLanguage'
+import { SUBMIT_BTN_DEFAULT_LABEL } from '@/lib/home/constants'
 import {
   getGenerateCtaLabel,
-  getLanguageDisplayName,
   getLogoTaglineText,
-  normalizeLanguageCode,
 } from '@/lib/home/prompt-language-labels'
 import { cn } from '@/lib/utils'
 import { isClerkClientEnabled } from '@/shared/auth/clerk-runtime'
 import { GlassDefs, GlassPillAnchor, GlassPillButton } from './GlassPill'
 import { CloseIcon, LogoMark, SearchIcon, ZapIcon } from './HomeIcons'
 import { PrivateGenerationModal } from './PrivateGenerationModal'
+import { PromptLanguageDropdown } from './PromptLanguageDropdown'
 import { handleShareClick, ShareBonusPanel } from './ShareBonusPanel'
 import { WaitlistGate } from './WaitlistGate'
-
-const LANGUAGE_OPTIONS = [
-  ['en', 'English'],
-  ['hinglish', 'Hinglish'],
-  ['hi-latn', 'Hindi (Roman)'],
-  ['ta-en', 'Tamil + English'],
-  ['hi', 'हिंदी'],
-  ['bn', 'বাংলা'],
-  ['mr', 'मराठी'],
-  ['ta', 'தமிழ்'],
-  ['te', 'తెలుగు'],
-  ['gu', 'ગુજરાતી'],
-  ['kn', 'ಕನ್ನಡ'],
-  ['ml', 'മലയാളം'],
-  ['pa', 'ਪੰਜਾਬੀ'],
-] as const
-
-const DEFAULT_LANGUAGE_OPTION = LANGUAGE_OPTIONS[0]
-const DEFAULT_LANGUAGE_OPTIONS = [DEFAULT_LANGUAGE_OPTION]
 
 const EXAMPLE_CHIPS = [
   [
@@ -134,27 +110,6 @@ const TopActions = () => {
   )
 }
 
-function getLanguageOptionName(code: string) {
-  return (
-    LANGUAGE_OPTIONS.find(([optionCode]) => optionCode === code)?.[1] ??
-    getLanguageDisplayName(code)
-  )
-}
-
-function buildFocusedLanguageOptions(selectedLanguage: string) {
-  const normalized = normalizeLanguageCode(selectedLanguage) || 'en'
-  if (!normalized || normalized === 'en') return DEFAULT_LANGUAGE_OPTIONS
-  const selected = [normalized, getLanguageOptionName(normalized)] as const
-  return [DEFAULT_LANGUAGE_OPTION, selected]
-}
-
-function persistPreferredLanguage(language: string) {
-  if (typeof window === 'undefined') return
-  const normalized = normalizeLanguageCode(language)
-  if (!normalized) return
-  window.localStorage.setItem(PREFERRED_LANGUAGE_KEY, normalized)
-}
-
 function collectDesignReferenceUrls(formData: FormData): string[] {
   const candidates = [
     formData.get('design-ref-url-1'),
@@ -196,15 +151,16 @@ export const HomePage = () => {
   const [privateModalOpen, setPrivateModalOpen] = useState(false)
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
   const [placeholderLength, setPlaceholderLength] = useState(0)
-  const [languageOptions, setLanguageOptions] = useState<
-    ReadonlyArray<readonly [string, string]>
-  >(DEFAULT_LANGUAGE_OPTIONS)
-  const [languageRowUnlocked, setLanguageRowUnlocked] = useState(false)
-  const [preferredLanguage, setPreferredLanguage] = useState('en')
+  const {
+    preferredLanguage,
+    languageOptions,
+    languageRowVisible,
+    languageChangeTick,
+    selectLanguage,
+  } = usePromptLanguage(prompt)
   const [submitCtaShaking, setSubmitCtaShaking] = useState(false)
   const [showSharePanel, setShowSharePanel] = useState(false)
   const partnersEnabled = isPartnerProgramClientEnabled()
-  const promptLanguageDetectTokenRef = useRef(0)
   const promptFormRef = useRef<HTMLFormElement | null>(null)
   const [generationDraftVersion, setGenerationDraftVersion] = useState(0)
 
@@ -213,8 +169,6 @@ export const HomePage = () => {
     () => placeholderText.slice(0, placeholderLength),
     [placeholderLength, placeholderText],
   )
-  const trimmedPromptLength = prompt.trim().length
-  const languageRowVisible = trimmedPromptLength > 0
   const submitCtaLabel = languageRowVisible
     ? getGenerateCtaLabel(preferredLanguage)
     : SUBMIT_BTN_DEFAULT_LABEL
@@ -288,49 +242,19 @@ export const HomePage = () => {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [privateModalOpen])
 
+  // Pulse the submit CTA whenever the effective language changes (either from
+  // auto-detect settling or a manual pick). Skips the initial mount.
   useEffect(() => {
     if (typeof window === 'undefined') return
+    if (languageChangeTick === 0) return
+    setSubmitCtaShaking(false)
+    const frame = window.requestAnimationFrame(() => setSubmitCtaShaking(true))
+    return () => window.cancelAnimationFrame(frame)
+  }, [languageChangeTick])
 
-    if (!languageRowVisible) {
-      promptLanguageDetectTokenRef.current += 1
-      setLanguageOptions(DEFAULT_LANGUAGE_OPTIONS)
-      setPreferredLanguage('en')
-      setLanguageRowUnlocked(false)
-      setSubmitCtaShaking(false)
-      if (languageRowUnlocked) persistPreferredLanguage('en')
-      return
-    }
-
-    if (!languageRowUnlocked) {
-      setLanguageOptions(DEFAULT_LANGUAGE_OPTIONS)
-      setPreferredLanguage('en')
-      setLanguageRowUnlocked(true)
-    }
-
-    const runToken = ++promptLanguageDetectTokenRef.current
-    const timeout = window.setTimeout(() => {
-      void (async () => {
-        const currentPrompt = prompt.trim()
-        if (!currentPrompt) return
-        const { detectSnippetLanguageBcp47 } =
-          await import('@/lib/home/prompt-language-core')
-        const detectedLanguage = await detectSnippetLanguageBcp47(
-          currentPrompt.slice(0, PROMPT_LANG_DETECT_SNIPPET_MAX),
-        )
-        if (!detectedLanguage) return
-        if (runToken !== promptLanguageDetectTokenRef.current) return
-        if (!prompt.trim()) return
-
-        setLanguageOptions(buildFocusedLanguageOptions(detectedLanguage))
-        setPreferredLanguage(detectedLanguage)
-        persistPreferredLanguage(detectedLanguage)
-        setSubmitCtaShaking(false)
-        window.requestAnimationFrame(() => setSubmitCtaShaking(true))
-      })()
-    }, PROMPT_LANG_DETECT_DEBOUNCE_MS)
-
-    return () => window.clearTimeout(timeout)
-  }, [languageRowUnlocked, languageRowVisible, prompt])
+  useEffect(() => {
+    if (!languageRowVisible) setSubmitCtaShaking(false)
+  }, [languageRowVisible])
 
   // Show share panel when quota is exceeded and bonus not claimed
   useEffect(() => {
@@ -369,15 +293,6 @@ export const HomePage = () => {
   const handleExamplePrompt = (value: string) => {
     selectExamplePrompt(value)
     void submitPrompt({ prompt: value, engineVersion })
-  }
-
-  const handlePreferredLanguageChange = (value: string) => {
-    const normalized = normalizeLanguageCode(value) || 'en'
-    setLanguageOptions(buildFocusedLanguageOptions(normalized))
-    setPreferredLanguage(normalized)
-    persistPreferredLanguage(normalized)
-    setSubmitCtaShaking(false)
-    window.requestAnimationFrame(() => setSubmitCtaShaking(true))
   }
 
   const handlePromptKeyDown = (
@@ -542,30 +457,12 @@ export const HomePage = () => {
                             )}
                             id="prompt-language-row"
                           >
-                            <label
-                              className="sr-only"
-                              htmlFor="prompt-language"
-                            >
-                              Preferred generation language
-                            </label>
-                            <select
-                              className="prompt-language-select"
-                              id="prompt-language"
+                            <PromptLanguageDropdown
                               name="prompt-language"
-                              aria-label="Preferred generation language"
                               value={preferredLanguage}
-                              onChange={(event) =>
-                                handlePreferredLanguageChange(
-                                  event.currentTarget.value,
-                                )
-                              }
-                            >
-                              {languageOptions.map(([code, name]) => (
-                                <option key={code} value={code}>
-                                  {name}
-                                </option>
-                              ))}
-                            </select>
+                              options={languageOptions}
+                              onSelect={selectLanguage}
+                            />
                           </div>
                         </div>
 
