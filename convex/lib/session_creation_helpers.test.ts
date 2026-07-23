@@ -401,6 +401,35 @@ describe('session creation helpers', () => {
     })
   })
 
+  it('does not count draft sessions toward anonymous daily quota', async () => {
+    const now = Date.now()
+    // MAX_ANON_PER_DAY drafts (which would normally exhaust the daily quota)
+    // plus one real, non-draft session that already consumed quota.
+    const drafts = Array.from({ length: MAX_ANON_PER_DAY }, (_, index) =>
+      sessionDoc({
+        clientIpHash: 'ip_hash',
+        createdAt: now - RATE_WINDOW_MS - 1000 - index,
+        isDraft: true,
+      }),
+    )
+    const realSession = sessionDoc({
+      clientIpHash: 'ip_hash',
+      createdAt: now - RATE_WINDOW_MS - 2000,
+    })
+
+    await expect(
+      loadGenerationAdmission(ctxFor({ sessions: [...drafts, realSession] }), {
+        clientIpHash: 'ip_hash',
+        now,
+        disableLimits: false,
+      }),
+    ).resolves.toEqual({
+      quotaLimit: MAX_ANON_PER_MONTH,
+      quotaCount: 1,
+      remaining: MAX_ANON_PER_MONTH - 1 - 1,
+    })
+  })
+
   it('allows anon 3rd generation when share bonus is claimed', async () => {
     const now = Date.now()
     const today = new Date(now).toISOString().slice(0, 10)
