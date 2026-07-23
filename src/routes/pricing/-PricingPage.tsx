@@ -5,6 +5,10 @@ import {
   requestClerkSignIn,
   useOptionalAuth,
 } from '@/shared/auth/use-optional-auth'
+import {
+  confirmRazorpaySubscriptionPayment,
+  type RazorpaySubscriptionPaymentResponse,
+} from '@/features/billing/client/razorpay-confirm'
 import '@/styles/pricing-page.css'
 
 type CheckoutStartResponse = {
@@ -18,11 +22,18 @@ type CheckoutStartResponse = {
   currency?: string
 }
 
+type BillingOverviewResponse = {
+  subscription?: { active?: boolean } | null
+  generationQuota?: {
+    canRenew?: boolean
+  } | null
+}
+
 type PricingRazorpayCheckoutOptions = {
   key: string
   name: string
   description: string
-  handler: () => void
+  handler: (response: RazorpaySubscriptionPaymentResponse) => void
   modal: { ondismiss: () => void }
   notes: Record<string, string>
   theme: { color: string }
@@ -88,7 +99,33 @@ export const PricingPage = () => {
   const { getToken, isSignedIn } = useOptionalAuth()
   const [checkoutMessage, setCheckoutMessage] = useState<string>()
   const [isCheckoutStarting, setIsCheckoutStarting] = useState(false)
+  const [billingOverview, setBillingOverview] =
+    useState<BillingOverviewResponse | null>(null)
   const pricingContentRef = useRef<HTMLDivElement>(null)
+
+  const refreshBillingOverview = useCallback(async () => {
+    if (!isSignedIn && !hasActiveClerkSession()) {
+      setBillingOverview(null)
+      return
+    }
+
+    try {
+      const token = await getToken({ template: 'convex' })
+      if (!token) {
+        setBillingOverview(null)
+        return
+      }
+      const response = await fetch('/api/billing-overview', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = (await response.json().catch(() => ({}))) as
+        | BillingOverviewResponse
+        | { error?: string }
+      setBillingOverview(response.ok ? (data as BillingOverviewResponse) : null)
+    } catch {
+      setBillingOverview(null)
+    }
+  }, [getToken, isSignedIn])
 
   useEffect(() => {
     const tick = () => {
@@ -100,6 +137,10 @@ export const PricingPage = () => {
     const interval = window.setInterval(tick, 30000)
     return () => window.clearInterval(interval)
   }, [])
+
+  useEffect(() => {
+    void refreshBillingOverview()
+  }, [refreshBillingOverview])
 
   const startCheckout = useCallback(async () => {
     if (isCheckoutStarting) return
@@ -171,8 +212,20 @@ export const PricingPage = () => {
           name: 'Ship Fast',
           description: 'Ship Fast Pro subscription',
           subscription_id: data.subscriptionId,
-          handler: () => {
-            setCheckoutMessage('Payment submitted. Refreshing billing...')
+          handler: (paymentResponse) => {
+            setCheckoutMessage('Payment submitted. Confirming Pro...')
+            void confirmRazorpaySubscriptionPayment(token, paymentResponse)
+              .then(() => {
+                setCheckoutMessage('Pro activated.')
+                void refreshBillingOverview()
+              })
+              .catch((confirmError: unknown) => {
+                setCheckoutMessage(
+                  confirmError instanceof Error
+                    ? confirmError.message
+                    : 'Razorpay payment confirmation failed.',
+                )
+              })
           },
           modal: {
             ondismiss: () => {
@@ -206,7 +259,7 @@ export const PricingPage = () => {
     } finally {
       setIsCheckoutStarting(false)
     }
-  }, [getToken, isCheckoutStarting, isSignedIn])
+  }, [getToken, isCheckoutStarting, isSignedIn, refreshBillingOverview])
 
   useEffect(() => {
     const content = pricingContentRef.current
@@ -237,6 +290,15 @@ export const PricingPage = () => {
     const content = pricingContentRef.current
     if (content === null) return
 
+    const isCurrentPlan = Boolean(
+      billingOverview?.subscription?.active &&
+      !billingOverview.generationQuota?.canRenew,
+    )
+    const label = billingOverview?.subscription?.active
+      ? billingOverview.generationQuota?.canRenew
+        ? 'Renew Pro'
+        : 'Current plan'
+      : 'Start Pro'
     const ctas = Array.from(
       content.querySelectorAll<HTMLButtonElement>(
         '[data-pricing-checkout-cta="true"]',
@@ -244,10 +306,11 @@ export const PricingPage = () => {
     )
 
     for (const cta of ctas) {
-      cta.disabled = isCheckoutStarting
+      cta.disabled = isCheckoutStarting || isCurrentPlan
       cta.setAttribute('aria-busy', String(isCheckoutStarting))
+      cta.textContent = label
     }
-  }, [isCheckoutStarting])
+  }, [billingOverview, isCheckoutStarting])
 
   useEffect(() => {
     const content = pricingContentRef.current

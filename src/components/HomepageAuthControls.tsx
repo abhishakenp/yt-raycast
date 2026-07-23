@@ -2,8 +2,10 @@ import { ClerkProvider } from '@clerk/tanstack-react-start'
 import { useEffect, useRef, useState } from 'react'
 
 import { clerkFrostedGlassAppearance } from '@/app/providers/clerk-appearance'
+import { billingStatusChangedEventName } from '@/features/billing/billing-events'
 import { GlassPillButton } from '@/features/home/components/GlassPill'
 import { getClerkPublishableKey } from '@/shared/auth/clerk-runtime'
+import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
 
 const clerkPublishableKey = getClerkPublishableKey()
 
@@ -45,7 +47,9 @@ function HomepageAuthInner({
   autoOpen = false,
   renderButton = true,
 }: HomepageAuthControlsProps) {
+  const { getToken } = useOptionalAuth()
   const [isSignedIn, setIsSignedIn] = useState(false)
+  const [hasPro, setHasPro] = useState(false)
   const hasAutoOpenedRef = useRef(false)
   const userButtonRef = useRef<HTMLDivElement | null>(null)
 
@@ -122,6 +126,45 @@ function HomepageAuthInner({
   useEffect(() => {
     if (typeof window === 'undefined') return
 
+    let cancelled = false
+    const syncProStatus = async () => {
+      if (!isSignedIn) {
+        setHasPro(false)
+        return
+      }
+
+      try {
+        const token = await getToken({ template: 'convex' })
+        if (!token) {
+          if (!cancelled) setHasPro(false)
+          return
+        }
+
+        const response = await fetch('/api/billing-overview', {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        const data = (await response.json().catch(() => ({}))) as {
+          subscription?: { active?: boolean } | null
+        }
+        if (!cancelled)
+          setHasPro(Boolean(response.ok && data.subscription?.active))
+      } catch {
+        if (!cancelled) setHasPro(false)
+      }
+    }
+
+    void syncProStatus()
+    window.addEventListener(billingStatusChangedEventName, syncProStatus)
+
+    return () => {
+      cancelled = true
+      window.removeEventListener(billingStatusChangedEventName, syncProStatus)
+    }
+  }, [getToken, isSignedIn])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
     syncAuthModalBackgroundState()
     const observer = new MutationObserver(syncAuthModalBackgroundState)
     observer.observe(document.body, { childList: true, subtree: true })
@@ -137,7 +180,17 @@ function HomepageAuthInner({
   if (!renderButton) return null
 
   return isSignedIn ? (
-    <div ref={userButtonRef} className="grid size-9 place-items-center" />
+    <div className="relative grid size-9 place-items-center">
+      <div ref={userButtonRef} className="grid size-9 place-items-center" />
+      {hasPro ? (
+        <span
+          aria-label="Pro plan active"
+          className="pointer-events-none absolute -bottom-1 -right-2 z-10 rounded-full border border-cyan-950/20 bg-cyan-300 px-1.5 py-0.5 text-[9px] font-black leading-none tracking-[0.08em] text-slate-950 shadow-[0_8px_18px_rgba(103,232,249,0.28)]"
+        >
+          PRO
+        </span>
+      ) : null}
+    </div>
   ) : (
     <GlassPillButton
       className="pill--top-actions min-h-9 px-4 py-0 font-sans text-[13px] font-medium text-[#f0f0f5] [&>span:last-child]:gap-1.5"

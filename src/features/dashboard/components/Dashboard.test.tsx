@@ -149,7 +149,9 @@ vi.mock('@/features/admin/components/LakebedAdminPanel', () => ({
   LakebedAdminPanel: () => null,
 }))
 vi.mock('@/features/billing/components/BillingPanel', () => ({
-  BillingPanel: () => null,
+  BillingPanel: ({ sessionId }: { sessionId: string }) => (
+    <div>Billing panel {sessionId}</div>
+  ),
 }))
 vi.mock('@/features/brand/components/BrandMediaPanel', () => ({
   BrandMediaPanel: ({
@@ -645,6 +647,32 @@ describe('Dashboard missing session state', () => {
     ).toMatchObject([
       { handle: 'preview-jacket', price: 149, title: 'Preview Jacket' },
     ])
+  })
+
+  it('opens billing from the rail on the generate page', async () => {
+    getConvexState().generationView = {
+      session: {
+        sessionId: 'ready-billing-session',
+        status: 'preview_ready',
+        prompt: 'A ready billing website',
+        preferredLanguage: 'en',
+        isPrivate: false,
+      },
+      tasks: [{ status: 'succeeded' }],
+      events: [],
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Ready</h1></body></html>',
+      },
+      siteSpec: null,
+    }
+
+    render(<Dashboard sessionId="ready-billing-session" />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Billing/i }))
+
+    expect(
+      await screen.findByText('Billing panel ready-billing-session'),
+    ).toBeTruthy()
   })
 
   it('opens localization from the rail and persists the selected language', async () => {

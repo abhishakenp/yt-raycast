@@ -15,12 +15,21 @@ const authState = vi.hoisted(() => ({
   requestClerkSignIn: vi.fn(),
 }))
 
+const confirmState = vi.hoisted(() => ({
+  confirmRazorpaySubscriptionPayment: vi.fn(),
+}))
+
 vi.mock('@/shared/auth/use-optional-auth', () => ({
   requestClerkSignIn: authState.requestClerkSignIn,
   useOptionalAuth: () => ({
     getToken: authState.getToken,
     isSignedIn: authState.isSignedIn,
   }),
+}))
+
+vi.mock('@/features/billing/client/razorpay-confirm', () => ({
+  confirmRazorpaySubscriptionPayment:
+    confirmState.confirmRazorpaySubscriptionPayment,
 }))
 
 vi.mock('./-MarketingShell', () => ({
@@ -50,6 +59,13 @@ describe('PricingPage', () => {
     authState.getToken.mockResolvedValue(null)
     authState.isSignedIn = false
     authState.requestClerkSignIn.mockReset()
+    confirmState.confirmRazorpaySubscriptionPayment.mockReset()
+    confirmState.confirmRazorpaySubscriptionPayment.mockResolvedValue({
+      active: true,
+      status: 'authenticated',
+      planId: 'plan_pro',
+      providerSubscriptionId: 'sub_test_123',
+    })
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 401,
@@ -183,6 +199,93 @@ describe('PricingPage', () => {
     expect(screen.getByRole('status').textContent).toContain(
       'Opening Razorpay checkout...',
     )
+  })
+
+  it('confirms Razorpay subscription payment after checkout succeeds', async () => {
+    const razorpayOptions: Record<string, unknown>[] = []
+    class RazorpayMock {
+      constructor(options: Record<string, unknown>) {
+        razorpayOptions.push(options)
+      }
+
+      open = vi.fn()
+      on = vi.fn()
+    }
+    vi.stubGlobal('Razorpay', RazorpayMock)
+    authState.isSignedIn = true
+    authState.getToken.mockResolvedValue('convex-token')
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        provider: 'razorpay',
+        keyId: 'rzp_test_key',
+        subscriptionId: 'sub_test_123',
+      }),
+    }) as unknown as typeof fetch
+    const { getByText } = render(<PricingPage />)
+
+    fireEvent.click(getByText('Start Pro'))
+
+    await waitFor(() => expect(razorpayOptions[0]).toBeDefined())
+    const handler = razorpayOptions[0]?.handler
+    expect(typeof handler).toBe('function')
+    ;(handler as (response: Record<string, string>) => void)({
+      razorpay_payment_id: 'pay_test_123',
+      razorpay_subscription_id: 'sub_test_123',
+      razorpay_signature: 'sig_test_123',
+    })
+
+    await waitFor(() => {
+      expect(
+        confirmState.confirmRazorpaySubscriptionPayment,
+      ).toHaveBeenCalledWith('convex-token', {
+        razorpay_payment_id: 'pay_test_123',
+        razorpay_subscription_id: 'sub_test_123',
+        razorpay_signature: 'sig_test_123',
+      })
+    })
+    expect(screen.getByRole('status').textContent).toContain('Pro activated.')
+  })
+
+  it('shows Current plan and disables pricing checkout when paid quota remains', async () => {
+    authState.isSignedIn = true
+    authState.getToken.mockResolvedValue('convex-token')
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        subscription: { active: true },
+        generationQuota: { canRenew: false },
+      }),
+    }) as unknown as typeof fetch
+
+    const { getByText } = render(<PricingPage />)
+
+    await waitFor(() => {
+      expect(getByText('Current plan')).toBeTruthy()
+    })
+    expect((getByText('Current plan') as HTMLButtonElement).disabled).toBe(true)
+  })
+
+  it('shows Renew Pro and keeps pricing checkout enabled when paid quota is exhausted', async () => {
+    authState.isSignedIn = true
+    authState.getToken.mockResolvedValue('convex-token')
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        subscription: { active: true },
+        generationQuota: { canRenew: true },
+      }),
+    }) as unknown as typeof fetch
+
+    const { getByText } = render(<PricingPage />)
+
+    await waitFor(() => {
+      expect(getByText('Renew Pro')).toBeTruthy()
+    })
+    expect((getByText('Renew Pro') as HTMLButtonElement).disabled).toBe(false)
   })
 
   it('exposes pricing FAQ questions as expandable button controls', () => {

@@ -23,6 +23,7 @@ import type * as gov_uploads from "../gov_uploads.js";
 import type * as lakebed from "../lakebed.js";
 import type * as lakebed_deploy from "../lakebed_deploy.js";
 import type * as lib_acquisition_attribution from "../lib/acquisition_attribution.js";
+import type * as lib_billing_generation_quota from "../lib/billing_generation_quota.js";
 import type * as lib_commerce_operation_helpers from "../lib/commerce_operation_helpers.js";
 import type * as lib_disposable_email from "../lib/disposable_email.js";
 import type * as lib_dub_outbox from "../lib/dub_outbox.js";
@@ -96,6 +97,7 @@ declare const fullApi: ApiFromModules<{
   lakebed: typeof lakebed;
   lakebed_deploy: typeof lakebed_deploy;
   "lib/acquisition_attribution": typeof lib_acquisition_attribution;
+  "lib/billing_generation_quota": typeof lib_billing_generation_quota;
   "lib/commerce_operation_helpers": typeof lib_commerce_operation_helpers;
   "lib/disposable_email": typeof lib_disposable_email;
   "lib/dub_outbox": typeof lib_dub_outbox;

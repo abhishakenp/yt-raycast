@@ -12,6 +12,7 @@ import {
   RATE_WINDOW_MS,
   SHARE_BONUS_EXTRA,
 } from '../../src/billing/constants'
+import { getActiveSubscriptionsForUser } from './billing_generation_quota'
 import {
   getUserEmail,
   getUserId,
@@ -157,15 +158,25 @@ export async function loadGenerationAdmission(
   const recentCutoff = args.now - RATE_WINDOW_MS
   const quotaCutoff =
     args.now - (args.userId === undefined ? DAILY_WINDOW_MS : MONTHLY_WINDOW_MS)
+  const userId = args.userId
+  const userActiveSubscriptionCount =
+    userId === undefined
+      ? 0
+      : (await getActiveSubscriptionsForUser(ctx, userId)).length
+  const quotaLimit =
+    userId === undefined
+      ? MAX_ANON_PER_DAY + SHARE_BONUS_EXTRA
+      : userActiveSubscriptionCount === 0
+        ? MAX_FREE_PER_MONTH
+        : userActiveSubscriptionCount * MAX_PAID_PER_MONTH
   const sameOwnerSessions =
-    args.userId !== undefined
+    userId !== undefined
       ? await ctx.db
           .query('sessions')
           .withIndex('by_userId_createdAt', (index) =>
-            index.eq('userId', args.userId),
+            index.eq('userId', userId).gte('createdAt', quotaCutoff),
           )
-          .order('desc')
-          .take(MAX_PAID_PER_MONTH + SHORT_WINDOW_LIMIT + 1)
+          .take(quotaLimit + SHORT_WINDOW_LIMIT + 1)
       : args.publicPreviewMode === true && args.clientIpHash !== undefined
         ? await ctx.db
             .query('sessions')
@@ -197,33 +208,6 @@ export async function loadGenerationAdmission(
       })
     })()
 
-  const userId = args.userId
-  const activeSubscription =
-    userId === undefined
-      ? null
-      : await ctx.db
-          .query('subscriptions')
-          .withIndex('by_userId', (index) => index.eq('userId', userId))
-          .filter((subscriptionQuery) =>
-            subscriptionQuery.or(
-              subscriptionQuery.eq(subscriptionQuery.field('status'), 'active'),
-              subscriptionQuery.eq(
-                subscriptionQuery.field('status'),
-                'trialing',
-              ),
-              subscriptionQuery.eq(
-                subscriptionQuery.field('status'),
-                'authenticated',
-              ),
-            ),
-          )
-          .first()
-  const quotaLimit =
-    args.userId === undefined
-      ? MAX_ANON_PER_DAY + SHARE_BONUS_EXTRA
-      : activeSubscription === null
-        ? MAX_FREE_PER_MONTH
-        : MAX_PAID_PER_MONTH
   const quotaCount = sameOwnerSessions.filter(
     (session) => session.createdAt >= quotaCutoff,
   ).length

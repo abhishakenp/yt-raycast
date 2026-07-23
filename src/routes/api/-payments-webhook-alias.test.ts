@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 const checkoutResponseMock = vi.hoisted(() => vi.fn())
+const checkoutConfirmResponseMock = vi.hoisted(() => vi.fn())
 const webhookResponseMock = vi.hoisted(() => vi.fn())
 
 vi.mock('@tanstack/react-router', () => ({
@@ -16,6 +17,10 @@ vi.mock('@/features/billing/server/webhook-api-response', () => ({
 
 vi.mock('@/features/billing/server/checkout-api-response', () => ({
   createCheckoutApiResponse: checkoutResponseMock,
+}))
+
+vi.mock('@/features/billing/server/checkout-confirm-api-response', () => ({
+  createCheckoutConfirmApiResponse: checkoutConfirmResponseMock,
 }))
 
 type RouteWithHandlers = {
@@ -55,22 +60,6 @@ describe('payments webhook alias routes', () => {
     )
   })
 
-  it('stripe alias maps the dashboard URL to the stripe handler', async () => {
-    webhookResponseMock.mockResolvedValue(new Response('{}'))
-    const Route = await importRoute('./payments.stripe.webhook')
-
-    expect(Route.path).toBe('/api/payments/stripe/webhook')
-    await Route.options.server.handlers.POST({
-      request: new Request(
-        'https://ship-fast.test/api/payments/stripe/webhook',
-      ),
-    })
-    expect(webhookResponseMock).toHaveBeenCalledWith(
-      expect.any(Request),
-      'stripe',
-    )
-  })
-
   it('canonical razorpay route delegates to the razorpay handler', async () => {
     webhookResponseMock.mockResolvedValue(new Response('{}'))
     const Route = await importRoute('./razorpay.webhook')
@@ -85,37 +74,32 @@ describe('payments webhook alias routes', () => {
     )
   })
 
-  it('canonical stripe route delegates to the stripe handler', async () => {
-    webhookResponseMock.mockResolvedValue(new Response('{}'))
-    const Route = await importRoute('./stripe.webhook')
-
-    expect(Route.path).toBe('/api/stripe/webhook')
-    await Route.options.server.handlers.POST({
-      request: new Request('https://ship-fast.test/api/stripe/webhook'),
-    })
-    expect(webhookResponseMock).toHaveBeenCalledWith(
-      expect.any(Request),
-      'stripe',
-    )
-  })
-
-  it('checkout start alias maps the route gateway param to the checkout handler', async () => {
+  it('razorpay checkout start route delegates to the checkout handler', async () => {
     checkoutResponseMock.mockResolvedValue(new Response('{}'))
-    const Route = await importRoute('./payments.$gateway.start')
+    const Route = await importRoute('./payments.razorpay.start')
     const request = new Request(
       'https://ship-fast.test/api/payments/razorpay/start',
     )
 
-    expect(Route.path).toBe('/api/payments/$gateway/start')
-    await Route.options.server.handlers.POST({
-      params: { gateway: 'razorpay' },
-      request,
-    })
+    expect(Route.path).toBe('/api/payments/razorpay/start')
+    await Route.options.server.handlers.POST({ request })
     expect(checkoutResponseMock).toHaveBeenCalledWith(
       request,
       process.env,
       undefined,
       'razorpay',
     )
+  })
+
+  it('razorpay confirm route delegates to the checkout confirm handler', async () => {
+    checkoutConfirmResponseMock.mockResolvedValue(new Response('{}'))
+    const Route = await importRoute('./payments.razorpay.confirm')
+    const request = new Request(
+      'https://ship-fast.test/api/payments/razorpay/confirm',
+    )
+
+    expect(Route.path).toBe('/api/payments/razorpay/confirm')
+    await Route.options.server.handlers.POST({ request })
+    expect(checkoutConfirmResponseMock).toHaveBeenCalledWith(request)
   })
 })
