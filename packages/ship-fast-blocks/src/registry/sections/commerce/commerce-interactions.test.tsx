@@ -19,7 +19,9 @@ import { commerceCartItemKey, commerceCartLakebed } from './cart-lakebed.ts'
 import type { CommerceLakebed } from './commerce-interactions.tsx'
 import type {
   CommerceAdapter,
+  CommercePaymentSessionsEnvelope,
   CommerceRuntimeCart,
+  CommerceRuntimeCartLineRef,
 } from './commerce-contracts.ts'
 
 const navigate = vi.fn()
@@ -1663,6 +1665,110 @@ describe('commerce interaction surfaces', () => {
         'cart_live',
       )
       expect(state().items).toHaveLength(0)
+    })
+  })
+
+  it('checks out a hosted Medusa cart through shipping and Razorpay', async () => {
+    const { lakebed } = createCommerceLakebedStub()
+    const line: CommerceRuntimeCartLineRef & {
+      product: { title: string }
+      quantity: number
+      total: { amount: number; currencyCode: string }
+    } = {
+      id: 'line_serum',
+      product: { title: 'Hydrating Serum' },
+      quantity: 2,
+      total: { amount: 56, currencyCode: 'usd' },
+    }
+    const cart: CommerceRuntimeCart = {
+      id: 'cart_live',
+      lines: [line],
+      total: { amount: 61, currencyCode: 'usd' },
+    }
+    const adapter = hostedAdapter(vi.fn(async () => ({ cart })))
+    adapter.getCart = vi.fn(async () => ({ cart }))
+    adapter.getShippingOptions = vi.fn(async () => ({
+      shippingOptions: [
+        {
+          amount: { amount: 5, currencyCode: 'usd' },
+          id: 'shipping_standard',
+          name: 'Standard delivery',
+        },
+      ],
+    }))
+    adapter.getPaymentProviders = vi.fn(async () => ({
+      paymentProviders: [{ id: 'pp_razorpay', name: 'Razorpay' }],
+    }))
+    adapter.createPaymentSessions = vi.fn(
+      async (): Promise<CommercePaymentSessionsEnvelope> => ({
+        paymentAction: {
+          data: {
+            amount: 6100,
+            currency: 'USD',
+            key: 'rzp_test_public',
+            order_id: 'order_rzp_1',
+          },
+          provider: 'pp_razorpay',
+          type: 'client-session',
+        },
+        paymentSessions: [
+          {
+            id: 'payses_1',
+            provider: 'pp_razorpay',
+            status: 'requires_action',
+          },
+        ],
+      }),
+    )
+    let razorpayOptions: Record<string, unknown> | undefined
+    let razorpayOpened = false
+    Object.defineProperty(window, 'Razorpay', {
+      configurable: true,
+      value: class Razorpay {
+        constructor(options: Record<string, unknown>) {
+          razorpayOptions = options
+        }
+
+        open() {
+          razorpayOpened = true
+        }
+      },
+    })
+
+    renderHostedCommerce(<CommerceCartButton lakebed={lakebed} />, adapter)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cart' }))
+    expect(await screen.findByText('Hydrating Serum')).toBeTruthy()
+    expect(screen.getByText('You have 2 items in your cart.')).toBeTruthy()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Checkout' }))
+    fireEvent.click(
+      await screen.findByRole('radio', { name: /Standard delivery/ }),
+    )
+    fireEvent.click(screen.getByRole('radio', { name: 'Razorpay' }))
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Pay with Razorpay' }),
+    )
+
+    await waitFor(() => expect(razorpayOpened).toBe(true))
+    const paymentHandler = razorpayOptions?.handler
+    expect(paymentHandler).toBeTypeOf('function')
+    if (typeof paymentHandler !== 'function') {
+      throw new Error('Razorpay handler was not configured.')
+    }
+    await paymentHandler({ razorpay_payment_id: 'pay_1' })
+
+    await waitFor(() => {
+      expect(adapter.addShippingMethod).toHaveBeenCalledWith(
+        { shippingOptionId: 'shipping_standard' },
+        'cart_live',
+      )
+      expect(adapter.createPaymentSessions).toHaveBeenCalledWith(
+        { providerId: 'pp_razorpay' },
+        'cart_live',
+      )
+      expect(adapter.completeCart).toHaveBeenCalledWith({}, 'cart_live')
+      expect(screen.getByText('Order confirmed')).toBeTruthy()
     })
   })
 

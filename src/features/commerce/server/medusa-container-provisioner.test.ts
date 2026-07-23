@@ -1,6 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const controller = vi.hoisted(() => ({
+type ProvisionerTestController = {
+  execCommands: Array<string>
+  infraOk: boolean
+  portFree: boolean
+  runningInspectStdout: string
+  runningInspectThrows: boolean
+}
+
+const controller = vi.hoisted<ProvisionerTestController>(() => ({
   // Controls the fake `docker inspect` for the shared Postgres container.
   infraOk: true,
   // Controls the fake `docker inspect` output for findRunningSessionContainer.
@@ -9,7 +17,7 @@ const controller = vi.hoisted(() => ({
   // Controls whether isPortFree reports the port as free.
   portFree: true,
   // Recorded exec commands for assertions.
-  execCommands: [] as string[],
+  execCommands: [],
 }))
 
 // Mock node:child_process exec. Node's `promisify(exec)` uses a custom
@@ -19,20 +27,21 @@ const controller = vi.hoisted(() => ({
 // promise-returning function.
 vi.mock('node:child_process', async () => {
   const { promisify } = await import('node:util')
-  const execImpl = (
+
+  function execImpl(
     _cmd: string,
     opts: unknown,
     cb?:
       | ((err: Error | null, stdout: string, stderr: string) => void)
       | undefined,
-  ) => {
+  ): void {
     // Callback-style path (not used by the provisioner, but kept for safety).
     const callback = typeof opts === 'function' ? opts : cb
     callback?.(null, '', '')
   }
 
-  const custom = (cmd: string) =>
-    new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
+  function custom(cmd: string): Promise<{ stdout: string; stderr: string }> {
+    return new Promise((resolve, reject) => {
       controller.execCommands.push(cmd)
 
       // Shared infra check.
@@ -61,26 +70,36 @@ vi.mock('node:child_process', async () => {
       // All other docker commands (rm, run, exec psql, logs) succeed.
       resolve({ stdout: '', stderr: '' })
     })
+  }
 
-  execImpl[promisify.custom] = custom
+  Object.defineProperty(execImpl, promisify.custom, { value: custom })
   return { exec: execImpl }
 })
 
 // Mock node:net so isPortFree resolves based on controller.portFree.
 vi.mock('node:net', () => {
-  const createServer = () => {
+  type FakeServer = {
+    close: (cb?: () => void) => void
+    listen: (opts: unknown) => void
+    once: (event: string, cb: () => void) => void
+    unref: () => FakeServer
+  }
+
+  function createServer(): FakeServer {
     const handlers = new Map<string, (() => void)[]>()
-    const server = {
-      unref: () => server,
-      once: (event: string, cb: () => void) => {
+    const server: FakeServer = {
+      unref() {
+        return server
+      },
+      once(event, cb) {
         const list = handlers.get(event) ?? []
         list.push(cb)
         handlers.set(event, list)
       },
-      close: (cb?: () => void) => {
+      close(cb) {
         cb?.()
       },
-      listen: (_opts: unknown) => {
+      listen(_opts) {
         process.nextTick(() => {
           const event = controller.portFree ? 'listening' : 'error'
           handlers.get(event)?.forEach((cb) => cb())
@@ -99,6 +118,10 @@ import {
 
 const SESSION_ID = 'my-session-123'
 
+function createHealthyFetchMock(): typeof fetch {
+  return vi.fn(() => Promise.resolve(Response.json({ ok: true })))
+}
+
 describe('provisionSessionMedusaContainer', () => {
   beforeEach(() => {
     controller.infraOk = true
@@ -107,12 +130,12 @@ describe('provisionSessionMedusaContainer', () => {
   })
 
   it('provisions a container with derived names, port, and urls', async () => {
-    const fetchImpl = vi.fn(
-      async () => ({ ok: true }) as Partial<Response> as Response,
-    )
+    const fetchImpl = createHealthyFetchMock()
 
     const result = await provisionSessionMedusaContainer(SESSION_ID, {
-      fetch: fetchImpl as unknown as typeof fetch,
+      adminEmail: 'admin@example.com',
+      adminPassword: 'hunter2',
+      fetch: fetchImpl,
     })
 
     // shortToken(slugify('my-session-123'), 16) → 'my-session-123'
@@ -126,12 +149,12 @@ describe('provisionSessionMedusaContainer', () => {
   })
 
   it('runs the tenant container with the derived database name and port', async () => {
-    const fetchImpl = vi.fn(
-      async () => ({ ok: true }) as Partial<Response> as Response,
-    )
+    const fetchImpl = createHealthyFetchMock()
 
     await provisionSessionMedusaContainer(SESSION_ID, {
-      fetch: fetchImpl as unknown as typeof fetch,
+      adminEmail: 'admin@example.com',
+      adminPassword: 'hunter2',
+      fetch: fetchImpl,
     })
 
     const runCmd = controller.execCommands.find((c) =>
@@ -147,12 +170,12 @@ describe('provisionSessionMedusaContainer', () => {
   })
 
   it('creates the session database before starting the container', async () => {
-    const fetchImpl = vi.fn(
-      async () => ({ ok: true }) as Partial<Response> as Response,
-    )
+    const fetchImpl = createHealthyFetchMock()
 
     await provisionSessionMedusaContainer(SESSION_ID, {
-      fetch: fetchImpl as unknown as typeof fetch,
+      adminEmail: 'admin@example.com',
+      adminPassword: 'hunter2',
+      fetch: fetchImpl,
     })
 
     const dbCmd = controller.execCommands.find((c) =>
@@ -163,22 +186,35 @@ describe('provisionSessionMedusaContainer', () => {
 
   it('throws when the shared Postgres container is not running', async () => {
     controller.infraOk = false
-    const fetchImpl = vi.fn()
+    const fetchImpl = createHealthyFetchMock()
 
     await expect(
       provisionSessionMedusaContainer(SESSION_ID, {
-        fetch: fetchImpl as unknown as typeof fetch,
+        adminEmail: 'admin@example.com',
+        adminPassword: 'hunter2',
+        fetch: fetchImpl,
       }),
     ).rejects.toThrow(/Shared Postgres container/)
   })
 
+  it('requires explicit admin credentials before starting the tenant container', async () => {
+    const fetchImpl = createHealthyFetchMock()
+
+    await expect(
+      provisionSessionMedusaContainer(SESSION_ID, {
+        fetch: fetchImpl,
+      }),
+    ).rejects.toThrow(/Medusa admin email is required/)
+    expect(
+      controller.execCommands.some((cmd) => cmd.startsWith('docker run -d')),
+    ).toBe(false)
+  })
+
   it('seeds the admin user with provided credentials via env flags', async () => {
-    const fetchImpl = vi.fn(
-      async () => ({ ok: true }) as Partial<Response> as Response,
-    )
+    const fetchImpl = createHealthyFetchMock()
 
     await provisionSessionMedusaContainer(SESSION_ID, {
-      fetch: fetchImpl as unknown as typeof fetch,
+      fetch: fetchImpl,
       adminEmail: 'admin@example.com',
       adminPassword: 'hunter2',
     })
@@ -186,8 +222,31 @@ describe('provisionSessionMedusaContainer', () => {
     const runCmd = controller.execCommands.find((c) =>
       c.startsWith('docker run -d'),
     )
-    expect(runCmd).toContain('MEDUSA_SEED_ADMIN_EMAIL=admin@example.com')
-    expect(runCmd).toContain('MEDUSA_SEED_ADMIN_PASSWORD=hunter2')
+    expect(runCmd).toContain("MEDUSA_SEED_ADMIN_EMAIL='admin@example.com'")
+    expect(runCmd).toContain("MEDUSA_SEED_ADMIN_PASSWORD='hunter2'")
+  })
+
+  it('shell-quotes user credentials and passes configured Razorpay test keys', async () => {
+    const fetchImpl = createHealthyFetchMock()
+
+    await provisionSessionMedusaContainer(SESSION_ID, {
+      adminEmail: 'admin@example.com',
+      adminPassword: "safe'; touch /tmp/owned; echo '",
+      fetch: fetchImpl,
+      razorpayKeyId: 'rzp_test_ship_fast',
+      razorpayKeySecret: "test-secret'quoted",
+      razorpayWebhookSecret: 'webhook-test-secret',
+    })
+
+    const runCmd = controller.execCommands.find((c) =>
+      c.startsWith('docker run -d'),
+    )
+    expect(runCmd).toContain(
+      `MEDUSA_SEED_ADMIN_PASSWORD='safe'"'"'; touch /tmp/owned; echo '"'"''`,
+    )
+    expect(runCmd).toContain("RAZORPAY_ID='rzp_test_ship_fast'")
+    expect(runCmd).toContain(`RAZORPAY_SECRET='test-secret'"'"'quoted'`)
+    expect(runCmd).toContain("RAZORPAY_WEBHOOK_SECRET='webhook-test-secret'")
   })
 })
 
@@ -206,6 +265,18 @@ describe('findRunningSessionContainer', () => {
     expect(result?.port).toBe(9100)
     expect(result?.backendUrl).toBe('http://localhost:9100')
     expect(result?.adminUrl).toBe('http://localhost:9100/app')
+  })
+
+  it('uses the real host port when docker inspect returns duplicated IPv4 and IPv6 bindings', async () => {
+    controller.runningInspectStdout = 'true:91169116'
+
+    const result = await findRunningSessionContainer(SESSION_ID)
+
+    expect(result).toBeDefined()
+    expect(result?.port).toBe(9116)
+    expect(result?.backendUrl).toBe('http://localhost:9116')
+    expect(result?.adminUrl).toBe('http://localhost:9116/app')
+    expect(result?.storefrontUrl).toBe('http://localhost:9116')
   })
 
   it('returns undefined when the container is not running', async () => {

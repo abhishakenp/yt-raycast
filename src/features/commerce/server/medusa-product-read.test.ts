@@ -284,6 +284,47 @@ describe('createSessionMedusaProductsResponse', () => {
     )
   })
 
+  it('resolves preview lookup ids before reading tenant products', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ regions: [{ id: 'reg_123' }] }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ products: [] }), { status: 200 }),
+      )
+    const query = vi
+      .fn()
+      .mockResolvedValueOnce({ sessionId: 'session_123' })
+      .mockResolvedValueOnce({
+        configJson: JSON.stringify({
+          medusaTenant: { publishableKey: 'pk_session_tenant' },
+        }),
+        status: 'ready',
+      })
+    const containerFinder = vi.fn().mockResolvedValue(undefined)
+
+    const response = await createSessionMedusaProductsResponse(
+      'preview_123',
+      {
+        env: {
+          MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
+          MEDUSA_PUBLISHABLE_API_KEY: 'pk_global',
+        },
+        fetch: fetchImpl,
+        containerFinder,
+        metaEnv: {},
+      },
+      { mutation: vi.fn(), query },
+    )
+
+    expect(response.status).toBe(200)
+    expect(containerFinder).toHaveBeenCalledWith('session_123')
+    expect(await response.json()).toMatchObject({ sessionId: 'session_123' })
+  })
+
   it('discovers the session tenant publishable key from Medusa Admin when config is unavailable', async () => {
     const fetchImpl = vi
       .fn()
@@ -517,6 +558,71 @@ describe('createSessionMedusaProductsResponse', () => {
       expect.stringContaining(
         'https://backend.medusa.test/store/products?limit=100&region_id=reg_123&fields=',
       ),
+      {
+        headers: { 'x-publishable-api-key': 'pk_medusa' },
+      },
+    )
+  })
+
+  it('falls back to a plain Store products query when no region pricing context exists', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ regions: [] }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            type: 'invalid_data',
+            message:
+              'Missing required pricing context to calculate prices - region_id',
+          }),
+          { status: 400 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            products: [
+              {
+                title: 'Route Test Jacket',
+                handle: 'ship-fast-session-123-route-test-jacket',
+                metadata: {
+                  ship_fast_generated_product: true,
+                  ship_fast_session_id: 'session_123',
+                },
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      )
+
+    const response = await createSessionMedusaProductsResponse('session_123', {
+      env: {
+        MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
+        MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
+      },
+      fetch: fetchImpl,
+      containerFinder: () => Promise.resolve(undefined),
+      metaEnv: {},
+    })
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({
+      products: [
+        {
+          handle: 'ship-fast-session-123-route-test-jacket',
+          title: 'Route Test Jacket',
+        },
+      ],
+      sessionId: 'session_123',
+    })
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      3,
+      'https://backend.medusa.test/store/products?limit=100',
       {
         headers: { 'x-publishable-api-key': 'pk_medusa' },
       },

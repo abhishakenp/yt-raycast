@@ -9,12 +9,15 @@ import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
 import type { GeneratedCommerceProduct } from '../services/generated-commerce-products'
 
 type CommerceHandoff = {
-  adminEmail?: string
-  adminPassword?: string
   adminUrl: string
   backendUrl: string
   storefrontUrl: string
   tenantId: string
+}
+
+export type MedusaAdminCredentials = {
+  email: string
+  password: string
 }
 
 export function useCommerceController(
@@ -29,7 +32,7 @@ export function useCommerceController(
   const [commerceHandoff, setCommerceHandoff] = useState<CommerceHandoff>()
   const [isSaving, setIsSaving] = useState(false)
 
-  const provisionCommerce = async () => {
+  const provisionCommerce = async (credentials: MedusaAdminCredentials) => {
     setCommerceError(undefined)
     setIsSaving(true)
 
@@ -54,6 +57,8 @@ export function useCommerceController(
               : { 'x-ship-fast-owner-secret': anonymousOwnerSecret }),
           },
           body: JSON.stringify({
+            adminEmail: credentials.email.trim(),
+            adminPassword: credentials.password,
             anonymousOwnerSecret,
             products: visualProducts,
           }),

@@ -23,8 +23,6 @@ type CommerceConfig = {
 }
 
 type CommerceHandoff = {
-  adminEmail?: string
-  adminPassword?: string
   adminUrl: string
   backendUrl: string
   storefrontUrl: string
@@ -54,15 +52,51 @@ function readCommerceWarning(
 ): string | undefined {
   if (!configJson?.trim()) return undefined
   try {
-    const parsed = JSON.parse(configJson) as unknown
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
-      return undefined
-    const warning = (parsed as { warning?: unknown }).warning
+    const parsed: unknown = JSON.parse(configJson)
+    if (!isRecord(parsed)) return undefined
+    const warning = parsed.warning
     return typeof warning === 'string'
       ? normalizeCommerceWarning(warning)
       : undefined
   } catch {
     return undefined
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function normalizeUrlForComparison(value: string | undefined): string {
+  return value?.trim().replace(/\/+$/, '') ?? ''
+}
+
+function createGeneratedStorefrontUrl(sessionId: string): string {
+  return `/generate/${encodeURIComponent(sessionId)}`
+}
+
+function resolveStorefrontUrl(
+  sessionId: string,
+  backendUrl: string | undefined,
+  storefrontUrl: string,
+): string {
+  return normalizeUrlForComparison(backendUrl) ===
+    normalizeUrlForComparison(storefrontUrl)
+    ? createGeneratedStorefrontUrl(sessionId)
+    : storefrontUrl
+}
+
+function createVisibleCommerceHandoff(
+  sessionId: string,
+  handoff: CommerceHandoff,
+): CommerceHandoff {
+  return {
+    ...handoff,
+    storefrontUrl: resolveStorefrontUrl(
+      sessionId,
+      handoff.backendUrl,
+      handoff.storefrontUrl,
+    ),
   }
 }
 
@@ -85,7 +119,11 @@ function createPersistedCommerceHandoff(
   return {
     adminUrl: config.adminUrl,
     backendUrl: config.backendUrl ?? '',
-    storefrontUrl: config.storefrontUrl,
+    storefrontUrl: resolveStorefrontUrl(
+      sessionId,
+      config.backendUrl,
+      config.storefrontUrl,
+    ),
     tenantId: sessionId,
   }
 }
@@ -103,14 +141,17 @@ export function CommercePanel({
     isSaving,
     provisionCommerce,
   } = useCommerceController(sessionId, visualProducts)
+  const [adminEmail, setAdminEmail] = useState('')
+  const [adminPassword, setAdminPassword] = useState('')
   const [isTransforming, setIsTransforming] = useState(false)
   const isReady = config?.status === 'ready'
   const liveCheckoutWarning =
     normalizeCommerceWarning(config?.errorMessage) ??
     readCommerceWarning(config?.configJson)
   const visibleCommerceHandoff =
-    commerceHandoff ??
-    createPersistedCommerceHandoff(sessionId, config, liveCheckoutWarning)
+    commerceHandoff === undefined
+      ? createPersistedCommerceHandoff(sessionId, config, liveCheckoutWarning)
+      : createVisibleCommerceHandoff(sessionId, commerceHandoff)
   const liveProductCount = config?.productCount ?? 0
   const displayedProductCount =
     liveProductCount > 0
@@ -121,7 +162,10 @@ export function CommercePanel({
     setIsTransforming(true)
     onTransformingChange?.(true)
     try {
-      await Promise.all([provisionCommerce(), wait(minimumTransformMs)])
+      await Promise.all([
+        provisionCommerce({ email: adminEmail, password: adminPassword }),
+        wait(minimumTransformMs),
+      ])
     } finally {
       setIsTransforming(false)
       onTransformingChange?.(false)
@@ -164,9 +208,38 @@ export function CommercePanel({
           </span>
         </div>
       </div>
+      <div className="mb-3 grid gap-3 rounded-[var(--radius-md)] border border-[var(--border-primary)] bg-[var(--bg-input)] p-3">
+        <p className="m-0 text-xs text-[var(--text-muted)]">
+          Create your Medusa admin account. Ship Fast uses these credentials
+          only during setup and does not store the password.
+        </p>
+        <label className="grid gap-1 text-xs font-semibold text-[var(--text-primary)]">
+          Admin email
+          <input
+            autoComplete="email"
+            className="rounded-[var(--radius-sm)] border border-[var(--border-primary)] bg-[var(--bg-primary)] px-3 py-2 text-sm"
+            onChange={(event) => setAdminEmail(event.target.value)}
+            required
+            type="email"
+            value={adminEmail}
+          />
+        </label>
+        <label className="grid gap-1 text-xs font-semibold text-[var(--text-primary)]">
+          Admin password
+          <input
+            autoComplete="new-password"
+            className="rounded-[var(--radius-sm)] border border-[var(--border-primary)] bg-[var(--bg-primary)] px-3 py-2 text-sm"
+            minLength={8}
+            onChange={(event) => setAdminPassword(event.target.value)}
+            required
+            type="password"
+            value={adminPassword}
+          />
+        </label>
+      </div>
       <button
         className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-[var(--bg-secondary)] px-4 py-3 font-sans text-sm font-semibold text-[var(--text-primary)] shadow-[0_0_0_1px_var(--ring),0_8px_20px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.1)] transition-all duration-[var(--dur)] ease-[var(--ease-out)] hover:not-disabled:-translate-y-px hover:not-disabled:shadow-[0_0_0_1px_var(--ring-strong),0_0_24px_var(--glow),0_12px_28px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.18)] active:not-disabled:translate-y-0 active:not-disabled:duration-120 disabled:cursor-not-allowed disabled:opacity-30"
-        disabled={isSaving}
+        disabled={isSaving || !adminEmail.trim() || adminPassword.length < 8}
         onClick={handleSave}
         type="button"
       >
@@ -215,24 +288,6 @@ export function CommercePanel({
               Open admin
             </a>
           </div>
-          {visibleCommerceHandoff.adminEmail !== undefined && (
-            <dl className="mt-3 grid gap-1 text-xs">
-              <div className="flex items-center justify-between gap-3">
-                <dt className="text-[var(--text-muted)]">Email</dt>
-                <dd className="m-0 font-mono">
-                  {visibleCommerceHandoff.adminEmail}
-                </dd>
-              </div>
-              {visibleCommerceHandoff.adminPassword !== undefined && (
-                <div className="flex items-center justify-between gap-3">
-                  <dt className="text-[var(--text-muted)]">Password</dt>
-                  <dd className="m-0 font-mono">
-                    {visibleCommerceHandoff.adminPassword}
-                  </dd>
-                </div>
-              )}
-            </dl>
-          )}
         </div>
       )}
       {isReady && visibleCommerceHandoff === undefined && (

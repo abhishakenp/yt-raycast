@@ -31,6 +31,7 @@ interface ConvexState {
     ensureArtifact: object
     exportTargets: object
     publishPreview: object
+    commerceConfig: object
   }
 }
 
@@ -48,6 +49,7 @@ const convexState = vi.hoisted<ConvexState>(function createConvexState() {
       ensureArtifact: {},
       exportTargets: {},
       publishPreview: {},
+      commerceConfig: {},
     },
   }
 })
@@ -60,6 +62,7 @@ vi.mock('../../../../convex/_generated/api', function mockConvexApi() {
         getDeploymentStatusByLookup: convexState.refs.deploymentStatus,
         getExportTargets: convexState.refs.exportTargets,
         publishPreviewByLookup: convexState.refs.publishPreview,
+        getCommerceConfig: convexState.refs.commerceConfig,
       },
     },
   }
@@ -83,6 +86,7 @@ vi.mock('convex/react', function mockConvexReact() {
     if (reference === convexState.refs.deploymentStatus) {
       return convexState.deploymentStatus
     }
+    if (reference === convexState.refs.commerceConfig) return null
     throw new Error('Unknown query reference')
   }
 

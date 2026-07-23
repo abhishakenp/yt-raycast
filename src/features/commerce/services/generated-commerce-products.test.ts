@@ -26,6 +26,41 @@ describe('countGeneratedCommerceProducts', () => {
     expect(countGeneratedCommerceProducts({ source })).toBe(3)
   })
 
+  it('counts generated ecommerce gallery argument arrays as products', () => {
+    const source = `
+      home_gallery = EcommerceGallery(
+        "Shop the Look",
+        "Browse our latest modern furniture lineup",
+        "Add to Cart",
+        [
+          {"name":"Oak Coffee Table","price":"$299","oldPrice":"$349","badge":"Sale","image":"https://cdn.example.com/oak-coffee-table.jpg","imageAlt":"Oak coffee table with clean lines"},
+          {"name":"Linen Armchair","price":"$499","imageAlt":"Linen armchair in a minimalist office"}
+        ]
+      )
+    `
+
+    const products = extractGeneratedCommerceProducts({ source })
+
+    expect(products).toMatchObject([
+      {
+        handle: 'oak-coffee-table',
+        images: [
+          {
+            alt: 'Oak coffee table with clean lines',
+            url: 'https://cdn.example.com/oak-coffee-table.jpg',
+          },
+        ],
+        price: 299,
+        title: 'Oak Coffee Table',
+      },
+      {
+        handle: 'linen-armchair',
+        price: 499,
+        title: 'Linen Armchair',
+      },
+    ])
+  })
+
   it('uses ecommerce products from the site spec when available', () => {
     expect(
       countGeneratedCommerceProducts({

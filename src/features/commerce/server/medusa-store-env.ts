@@ -1,4 +1,28 @@
+import { existsSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
 export type MedusaEnv = Record<string, string | undefined>
+
+const localMedusaEnvKeys = new Set([
+  'MEDUSA_ADMIN_URL',
+  'MEDUSA_ADMIN_EMAIL',
+  'MEDUSA_ADMIN_PASSWORD',
+  'MEDUSA_ADMIN_API_TOKEN',
+  'MEDUSA_BACKEND_URL',
+  'MEDUSA_PUBLISHABLE_API_KEY',
+  'MEDUSA_PUBLISHABLE_KEY',
+  'MEDUSA_STOREFRONT_URL',
+  'NEXT_PUBLIC_MEDUSA_ADMIN_URL',
+  'NEXT_PUBLIC_MEDUSA_BACKEND_URL',
+  'NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY',
+  'NEXT_PUBLIC_MEDUSA_STOREFRONT_URL',
+  'VITE_MEDUSA_ADMIN_URL',
+  'VITE_MEDUSA_BACKEND_URL',
+  'VITE_MEDUSA_PUBLISHABLE_KEY',
+  'VITE_MEDUSA_STOREFRONT_URL',
+])
+
+let cachedLocalEnv: MedusaEnv | undefined
 
 function runtimeEnv(): MedusaEnv {
   return typeof process === 'undefined' ? {} : process.env
@@ -33,13 +57,75 @@ function configured(value: string | undefined): string | undefined {
   return trimmed ? trimmed : undefined
 }
 
+function unquoteDotenvValue(value: string): string {
+  const trimmed = value.trim()
+  if (trimmed.length < 2) return trimmed
+
+  const quote = trimmed.at(0)
+  if ((quote !== '"' && quote !== "'") || trimmed.at(-1) !== quote) {
+    return trimmed
+  }
+
+  return trimmed.slice(1, -1)
+}
+
+function parseLocalDotenv(source: string): MedusaEnv {
+  const parsed: MedusaEnv = {}
+
+  for (const rawLine of source.split(/\r?\n/)) {
+    const line = rawLine.trim()
+    if (!line || line.startsWith('#')) continue
+
+    const normalized = line.startsWith('export ') ? line.slice(7).trim() : line
+    const separator = normalized.indexOf('=')
+    if (separator <= 0) continue
+
+    const key = normalized.slice(0, separator).trim()
+    if (!localMedusaEnvKeys.has(key)) continue
+
+    parsed[key] = unquoteDotenvValue(normalized.slice(separator + 1))
+  }
+
+  return parsed
+}
+
+function readLocalDotenvEnv(): MedusaEnv {
+  if (cachedLocalEnv !== undefined) return cachedLocalEnv
+
+  const localEnv: MedusaEnv = {}
+
+  if (typeof process === 'undefined') {
+    cachedLocalEnv = localEnv
+    return localEnv
+  }
+
+  for (const filename of ['.env', '.env.local']) {
+    const filePath = resolve(process.cwd(), filename)
+    if (!existsSync(filePath)) continue
+    Object.assign(localEnv, parseLocalDotenv(readFileSync(filePath, 'utf8')))
+  }
+
+  cachedLocalEnv = localEnv
+  return localEnv
+}
+
 export function readMedusaEnv(
   keys: Array<string>,
-  env: MedusaEnv = runtimeEnv(),
-  metaEnv: MedusaEnv = viteEnv(),
+  env?: MedusaEnv,
+  metaEnv?: MedusaEnv,
+  localEnv?: MedusaEnv,
 ): string | undefined {
+  const runtime = env ?? runtimeEnv()
+  const meta = metaEnv ?? viteEnv()
+  const local =
+    localEnv ??
+    (env === undefined && metaEnv === undefined ? readLocalDotenvEnv() : {})
+
   for (const key of keys) {
-    const value = configured(env[key]) ?? configured(metaEnv[key])
+    const value =
+      configured(runtime[key]) ??
+      configured(meta[key]) ??
+      configured(local[key])
     if (value !== undefined) return value
   }
   return undefined

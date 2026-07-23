@@ -418,6 +418,21 @@ describe('session API response helpers', () => {
     })
   })
 
+  it('loads a session API response from a preview lookup id', async () => {
+    const response = await loadSessionApiResponse(
+      ctxFor({
+        sessions: [sessionDoc()],
+        previews: [previewDoc({ _id: 'preview_lookup' as Id<'previews'> })],
+      }),
+      'preview_lookup',
+    )
+
+    expect(response).toMatchObject({
+      id: sessionId,
+      sessionId,
+    })
+  })
+
   it('serializes DB-observed stale streaming generation errors as failed API payloads', async () => {
     const failedSessionId =
       realConvexStaleStreamingFailureSession.sessionId as Id<'sessions'>

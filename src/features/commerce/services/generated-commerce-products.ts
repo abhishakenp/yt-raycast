@@ -90,12 +90,12 @@ function isProductObjectText(directObjectText: string): boolean {
 }
 
 function hasCommerceObjectContext(source: string, start: number): boolean {
-  const prefix = source.slice(Math.max(0, start - 320), start)
+  const prefix = source.slice(Math.max(0, start - 1600), start)
   return (
     /(?:products?|catalog|collections?|inventory|merchandise)\s*[:=]\s*(?:\{|\[|\()/i.test(
       prefix,
     ) ||
-    /\b(?:Store|Shop|Product|Commerce|Catalog|Cart)[A-Za-z0-9_]*\s*\([^)]*$/i.test(
+    /\b[A-Za-z0-9_]*(?:Store|Shop|Product|Commerce|Catalog|Cart|Ecommerce)[A-Za-z0-9_]*\s*\([^)]*$/i.test(
       prefix,
     )
   )
@@ -527,10 +527,34 @@ function productFromObjectText(
   const rawHandle = readStringProperty(directObjectText, 'handle') ?? title
   const handle = slugifyProductHandle(rawHandle) || 'generated-product'
   const description = readStringProperty(directObjectText, 'description')
+  const imageUrl =
+    readStringProperty(directObjectText, 'image') ??
+    readStringProperty(directObjectText, 'imageUrl') ??
+    readStringProperty(directObjectText, 'image_url') ??
+    readStringProperty(directObjectText, 'imageSrc') ??
+    readStringProperty(directObjectText, 'image_src') ??
+    readStringProperty(directObjectText, 'src') ??
+    readStringProperty(directObjectText, 'thumbnail')
+  const imageAlt =
+    readStringProperty(directObjectText, 'imageAlt') ??
+    readStringProperty(directObjectText, 'image_alt') ??
+    readStringProperty(directObjectText, 'alt') ??
+    readStringProperty(directObjectText, 'altText') ??
+    readStringProperty(directObjectText, 'alt_text')
   return normalizedLegacyProduct(
     {
       ...(description === undefined ? {} : { description }),
       handle,
+      ...(imageUrl === undefined
+        ? {}
+        : {
+            images: [
+              {
+                ...(imageAlt === undefined ? {} : { alt: imageAlt }),
+                url: imageUrl,
+              },
+            ],
+          }),
       price,
       title,
     },

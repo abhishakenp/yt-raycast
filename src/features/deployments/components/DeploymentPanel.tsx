@@ -9,6 +9,7 @@ import {
 import { useEffect, useRef, useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
+import type { Id } from '../../../../convex/_generated/dataModel'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,6 +28,11 @@ import {
   estimateObservedRemainingMs,
   formatDurationShort,
 } from '@/features/exports/services/format-progress-duration'
+import {
+  requiresRazorpayDeploymentCredentials,
+  validateRazorpayDeploymentCredentials,
+  type RazorpayDeploymentCredentials,
+} from '@/features/deployments/services/razorpay-deployment-credentials'
 
 type DeploymentPanelProps = {
   sessionId: string
@@ -63,11 +69,12 @@ type DeploymentPanelError = {
 async function publishLakebedViaApi(
   sessionId: string,
   anonymousOwnerSecret?: string,
+  razorpay?: RazorpayDeploymentCredentials,
 ): Promise<PublishResult> {
   const response = await fetch(
     `/api/sessions/${encodeURIComponent(sessionId)}/deploy/lakebed`,
     {
-      body: JSON.stringify({ anonymousOwnerSecret }),
+      body: JSON.stringify({ anonymousOwnerSecret, razorpay }),
       headers: { 'content-type': 'application/json' },
       method: 'POST',
     },
@@ -134,12 +141,23 @@ export function DeploymentPanel({ sessionId }: DeploymentPanelProps) {
   const deploymentStatus = useQuery(api.sessions.getDeploymentStatusByLookup, {
     lookup: sessionId,
   })
+  const commerceConfig = useQuery(api.sessions.getCommerceConfig, {
+    sessionId: sessionId as Id<'sessions'>,
+  })
   const [activeTarget, setActiveTarget] = useState<DeploymentTarget>()
   const [waitingTarget, setWaitingTarget] = useState<DeploymentTarget>()
   const [pendingPublicTarget, setPendingPublicTarget] =
     useState<DeploymentTarget>()
   const [error, setError] = useState<DeploymentPanelError>()
+  const [credentialTarget, setCredentialTarget] = useState<DeploymentTarget>()
+  const [credentialError, setCredentialError] = useState<string>()
+  const [razorpay, setRazorpay] = useState<RazorpayDeploymentCredentials>({
+    environment: 'test',
+    keyId: '',
+    keySecret: '',
+  })
   const actionInFlightRef = useRef(false)
+  const razorpayRef = useRef<RazorpayDeploymentCredentials>()
 
   const visibleExportTargets = exportTargets?.targets ?? []
   const lakebedTarget = visibleExportTargets.find(
@@ -254,7 +272,11 @@ export function DeploymentPanel({ sessionId }: DeploymentPanelProps) {
             lookup: sessionId,
             anonymousOwnerSecret,
           })
-        : publishLakebedViaApi(sessionId, anonymousOwnerSecret))
+        : publishLakebedViaApi(
+            sessionId,
+            anonymousOwnerSecret,
+            razorpayRef.current,
+          ))
 
       if (target === 'lakebed' && !result.url) {
         setError({
@@ -280,10 +302,15 @@ export function DeploymentPanel({ sessionId }: DeploymentPanelProps) {
     } finally {
       setActiveTarget(undefined)
       setPendingPublicTarget(undefined)
+      razorpayRef.current = undefined
     }
   }
 
-  const startPublish = (target: DeploymentTarget) => {
+  const beginPublish = (
+    target: DeploymentTarget,
+    credentials?: RazorpayDeploymentCredentials,
+  ) => {
+    razorpayRef.current = credentials
     if (isPrivate) {
       setError(undefined)
       setPendingPublicTarget(target)
@@ -294,6 +321,40 @@ export function DeploymentPanel({ sessionId }: DeploymentPanelProps) {
     void publishNow(target).finally(() => {
       actionInFlightRef.current = false
     })
+  }
+
+  const startPublish = (target: DeploymentTarget) => {
+    if (target === 'lakebed' && lakebedDeploymentUrl !== undefined) {
+      beginPublish(target)
+      return
+    }
+    if (requiresRazorpayDeploymentCredentials(commerceConfig)) {
+      setCredentialError(undefined)
+      setCredentialTarget(target)
+      return
+    }
+    beginPublish(target)
+  }
+
+  const submitRazorpayCredentials = () => {
+    if (credentialTarget === undefined) return
+    const credentialValidationError =
+      validateRazorpayDeploymentCredentials(razorpay)
+    if (credentialValidationError !== undefined) {
+      setCredentialError(credentialValidationError)
+      return
+    }
+
+    const target = credentialTarget
+    const credentials = {
+      ...razorpay,
+      keyId: razorpay.keyId.trim(),
+      keySecret: razorpay.keySecret.trim(),
+    }
+    setCredentialError(undefined)
+    setCredentialTarget(undefined)
+    setRazorpay((current) => ({ ...current, keyId: '', keySecret: '' }))
+    beginPublish(target, credentials)
   }
 
   useEffect(() => {
@@ -342,6 +403,101 @@ export function DeploymentPanel({ sessionId }: DeploymentPanelProps) {
               }}
             >
               Publish Publicly
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={credentialTarget !== undefined}
+        onOpenChange={(open) => {
+          if (!open) {
+            setCredentialTarget(undefined)
+            setCredentialError(undefined)
+            setRazorpay((current) => ({
+              ...current,
+              keyId: '',
+              keySecret: '',
+            }))
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Connect Razorpay before deployment
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Start with Razorpay test credentials. These values stay in this
+              deployment request and are not saved to ShipFast.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="grid gap-3">
+            <label className="grid gap-1 text-sm text-white/70">
+              Mode
+              <select
+                aria-label="Razorpay mode"
+                className="rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-white"
+                onChange={(event) =>
+                  setRazorpay((current) => ({
+                    ...current,
+                    environment:
+                      event.target.value === 'live' ? 'live' : 'test',
+                  }))
+                }
+                value={razorpay.environment}
+              >
+                <option value="test">Test</option>
+                <option value="live">Live</option>
+              </select>
+            </label>
+            <label className="grid gap-1 text-sm text-white/70">
+              Razorpay key ID
+              <input
+                aria-label="Razorpay key ID"
+                autoComplete="off"
+                className="rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-white"
+                onChange={(event) =>
+                  setRazorpay((current) => ({
+                    ...current,
+                    keyId: event.target.value,
+                  }))
+                }
+                placeholder="rzp_test_..."
+                value={razorpay.keyId}
+              />
+            </label>
+            <label className="grid gap-1 text-sm text-white/70">
+              Razorpay key secret
+              <input
+                aria-label="Razorpay key secret"
+                autoComplete="new-password"
+                className="rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-white"
+                onChange={(event) =>
+                  setRazorpay((current) => ({
+                    ...current,
+                    keySecret: event.target.value,
+                  }))
+                }
+                type="password"
+                value={razorpay.keySecret}
+              />
+            </label>
+            {credentialError !== undefined && (
+              <p className="m-0 text-sm text-rose-200" role="alert">
+                {credentialError}
+              </p>
+            )}
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(event) => {
+                event.preventDefault()
+                submitRazorpayCredentials()
+              }}
+            >
+              Continue deployment
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
