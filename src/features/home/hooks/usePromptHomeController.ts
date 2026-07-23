@@ -520,12 +520,23 @@ export const usePromptHomeController = () => {
     } catch (error) {
       await waitForMinimumLaunchFeedback(launchFeedbackStartedAt)
       submitInFlightRef.current = false
-      setErrorMessage(
+      const isQuotaOrAuthError =
         error instanceof AppError &&
-          (error.code === 'UNAUTHENTICATED' || error.code === 'QUOTA_EXCEEDED')
-          ? error.message
-          : 'Generation could not start. Try again.',
-      )
+        (error.code === 'UNAUTHENTICATED' || error.code === 'QUOTA_EXCEEDED')
+      if (isQuotaOrAuthError) {
+        // When the share bonus is already claimed, the anonymous daily quota
+        // message should not offer sharing again — only show the sign-in CTA.
+        const msg = error.message
+        const stripped = shareBonusClaimedRef.current
+          ? msg.replace(
+              /Share on social media for \+1 free generation, or sign in to continue\./i,
+              'Sign in to continue — logged in users get 5 generations per day.',
+            )
+          : msg
+        setErrorMessage(stripped)
+      } else {
+        setErrorMessage('Generation could not start. Try again.')
+      }
       setIsSubmitting(false)
     }
   }
