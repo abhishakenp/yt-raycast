@@ -1,4 +1,5 @@
 import type { QueryCtx } from '../_generated/server'
+import type { Id } from '../_generated/dataModel'
 
 export type CachedSourceTranslation = {
   sourceText: string
@@ -65,6 +66,7 @@ export async function loadCachedTranslationsForSource(
   ctx: Pick<QueryCtx, 'db'>,
   locale: string | undefined,
   source: string,
+  sessionId?: Id<'sessions'>,
 ): Promise<CachedSourceTranslation[]> {
   const normalizedLocale = (locale ?? 'en').trim().toLowerCase()
   if (!source.trim() || normalizedLocale === '' || normalizedLocale === 'en') {
@@ -75,12 +77,37 @@ export async function loadCachedTranslationsForSource(
   if (texts.length === 0) return []
 
   const wantedTexts = new Set(texts)
+  const translationsBySource = new Map<string, string>()
+
+  // ── Session-level overrides take priority over the global cache so
+  // locale-scoped inline edits survive exports without leaking to other
+  // sessions that share the same source text + locale.
+  if (sessionId !== undefined) {
+    for (const text of texts) {
+      const sourceText = text.trim()
+      if (!sourceText) continue
+      const override = await ctx.db
+        .query('sessionTranslationOverrides')
+        .withIndex('by_sessionId_locale_sourceText', (q) =>
+          q
+            .eq('sessionId', sessionId)
+            .eq('locale', normalizedLocale)
+            .eq('sourceText', sourceText),
+        )
+        .unique()
+        .catch(() => null)
+      if (override && override.translation) {
+        translationsBySource.set(sourceText, override.translation.trim())
+      }
+    }
+  }
+
+  // ── Global translation cache fills in any texts not covered by overrides
   const rows = await ctx.db
     .query('translationCache')
     .withIndex('by_locale', (index) => index.eq('locale', normalizedLocale))
     .take(1000)
     .catch(() => [])
-  const translationsBySource = new Map<string, string>()
   for (const row of rows) {
     const sourceText =
       typeof row.sourceText === 'string' ? row.sourceText.trim() : ''
@@ -90,7 +117,8 @@ export async function loadCachedTranslationsForSource(
       sourceText &&
       translation &&
       translation !== sourceText &&
-      wantedTexts.has(sourceText)
+      wantedTexts.has(sourceText) &&
+      !translationsBySource.has(sourceText)
     ) {
       translationsBySource.set(sourceText, translation)
     }

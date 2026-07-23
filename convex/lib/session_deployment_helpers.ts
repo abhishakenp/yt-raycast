@@ -545,6 +545,7 @@ export async function prepareLakebedSessionDeployment(
       ctx,
       session.preferredLanguage,
       editedSource,
+      args.sessionId,
     ),
   )
   const siteSpecJson =

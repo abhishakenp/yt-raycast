@@ -339,4 +339,116 @@ describe('translateHtml', () => {
     expect(result.content).toContain('aria-label="Close dialog"')
     expect(result.content).toContain('title="Close"')
   })
+
+  // ── Cache integration ───────────────────────────────────────────────────
+  //
+  // translateHtml must check the shared translation cache before calling the
+  // LLM. A full cache hit skips the LLM entirely (saves ~7.5s). After an LLM
+  // translation, results are saved to the cache so all export targets can
+  // reuse the same translations.
+
+  it('skips the LLM entirely when all texts are cached', async () => {
+    const cacheClient = {
+      getBatch: vi.fn(async () => ['Bonjour', 'Commencer maintenant']),
+      setBatch: vi.fn(async () => undefined),
+    }
+
+    const result = await translateHtml(
+      '<main><h1>Hello</h1><a href="/start">Start now</a></main>',
+      { code: 'fr', name: 'French', nativeName: 'Français' },
+      { cacheClient, sessionId: 'session-123' },
+    )
+
+    expect(groqCalls).toHaveLength(0)
+    expect(cacheClient.getBatch).toHaveBeenCalledWith({
+      locale: 'fr',
+      texts: ['Hello', 'Start now'],
+      sessionId: 'session-123',
+    })
+    expect(cacheClient.setBatch).not.toHaveBeenCalled()
+    expect(result.content).toContain('<h1>Bonjour</h1>')
+    expect(result.content).toContain(
+      '<a href="/start">Commencer maintenant</a>',
+    )
+    expect(result.skipped).toBe('cache-hit')
+  })
+
+  it('calls the LLM and saves results to cache on a cache miss', async () => {
+    const cacheClient = {
+      getBatch: vi.fn(async () => [null, null]),
+      setBatch: vi.fn(async () => undefined),
+    }
+
+    const result = await translateHtml(
+      '<main><h1>Hello</h1><a href="/start">Start now</a></main>',
+      { code: 'fr', name: 'French', nativeName: 'Français' },
+      { cacheClient },
+    )
+
+    expect(groqCalls.length).toBeGreaterThan(0)
+    expect(cacheClient.setBatch).toHaveBeenCalledTimes(1)
+    const setBatchArg = cacheClient.setBatch.mock.calls[0][0]
+    expect(setBatchArg.locale).toBe('fr')
+    const entries = setBatchArg.entries as Array<{
+      text: string
+      translation: string
+    }>
+    expect(entries).toContainEqual({
+      text: 'Hello',
+      translation: 'Bonjour',
+    })
+    expect(entries).toContainEqual({
+      text: 'Start now',
+      translation: 'Commencer maintenant',
+    })
+    expect(result.content).toContain('<h1>Bonjour</h1>')
+  })
+
+  it('falls back to the LLM when the cache returns partial results', async () => {
+    const cacheClient = {
+      getBatch: vi.fn(async () => ['Bonjour', null]),
+      setBatch: vi.fn(async () => undefined),
+    }
+
+    await translateHtml(
+      '<main><h1>Hello</h1><a href="/start">Start now</a></main>',
+      { code: 'fr', name: 'French', nativeName: 'Français' },
+      { cacheClient },
+    )
+
+    // Partial cache → still calls LLM (full pipeline runs for quality)
+    expect(groqCalls.length).toBeGreaterThan(0)
+    // Saves all results to cache
+    expect(cacheClient.setBatch).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not call the cache when no cacheClient is provided', async () => {
+    const result = await translateHtml('<main><h1>Hello</h1></main>', {
+      code: 'fr',
+      name: 'French',
+      nativeName: 'Français',
+    })
+
+    expect(groqCalls.length).toBeGreaterThan(0)
+    expect(result.content).toContain('Bonjour')
+    expect(result.skipped).not.toBe('cache-hit')
+  })
+
+  it('handles cache client errors gracefully by falling back to the LLM', async () => {
+    const cacheClient = {
+      getBatch: vi.fn(async () => {
+        throw new Error('Cache unavailable')
+      }),
+      setBatch: vi.fn(async () => undefined),
+    }
+
+    const result = await translateHtml(
+      '<main><h1>Hello</h1></main>',
+      { code: 'fr', name: 'French', nativeName: 'Français' },
+      { cacheClient },
+    )
+
+    expect(groqCalls.length).toBeGreaterThan(0)
+    expect(result.content).toContain('Bonjour')
+  })
 })

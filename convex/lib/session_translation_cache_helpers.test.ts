@@ -1,14 +1,29 @@
 import { describe, expect, it } from 'vitest'
 
 import type { QueryCtx } from '../_generated/server'
+import type { Id } from '../_generated/dataModel'
 import {
   applyCachedTranslationsToSource,
   extractOpenUISourceStrings,
   loadCachedTranslationsForSource,
 } from './session_translation_cache_helpers'
 
+type CacheRow = {
+  locale: string
+  sourceText: string
+  translation: string
+}
+
+type OverrideRow = {
+  sessionId: string
+  locale: string
+  sourceText: string
+  translation: string
+}
+
 function ctxWithTranslations(
-  rows: Array<{ locale: string; sourceText: string; translation: string }>,
+  cacheRows: CacheRow[] = [],
+  overrideRows: OverrideRow[] = [],
 ) {
   return {
     db: {
@@ -19,7 +34,6 @@ function ctxWithTranslations(
             eq: (field: string, value: unknown) => typeof index
           }) => void,
         ) => {
-          expect(table).toBe('translationCache')
           const filters = new Map<string, unknown>()
           const index = {
             eq: (field: string, value: unknown) => {
@@ -28,10 +42,29 @@ function ctxWithTranslations(
             },
           }
           applyIndex(index)
-          return {
-            take: async () =>
-              rows.filter((row) => row.locale === filters.get('locale')),
+
+          if (table === 'translationCache') {
+            return {
+              take: async () =>
+                cacheRows.filter((row) => row.locale === filters.get('locale')),
+            }
           }
+
+          if (table === 'sessionTranslationOverrides') {
+            return {
+              unique: async () => {
+                const match = overrideRows.find(
+                  (row) =>
+                    row.sessionId === filters.get('sessionId') &&
+                    row.locale === filters.get('locale') &&
+                    row.sourceText === filters.get('sourceText'),
+                )
+                return match ? { translation: match.translation } : null
+              },
+            }
+          }
+
+          return { take: async () => [], unique: async () => null }
         },
       }),
     },
@@ -73,5 +106,76 @@ describe('session translation cache helpers', () => {
     expect(translated).toContain('అనాసపండు సైసన్')
     expect(translated).not.toContain('Our Brew Selection')
     expect(translated).toContain('Chocolate Stout')
+  })
+
+  it('session overrides take priority over the global cache', async () => {
+    const source = 'root = Hero("Welcome", "Get started")'
+    const sessionId = 's1' as Id<'sessions'>
+    const translations = await loadCachedTranslationsForSource(
+      ctxWithTranslations(
+        [
+          {
+            locale: 'hi',
+            sourceText: 'Welcome',
+            translation: 'स्वागत है',
+          },
+          {
+            locale: 'hi',
+            sourceText: 'Get started',
+            translation: 'शुरू करें',
+          },
+        ],
+        [
+          {
+            sessionId: 's1',
+            locale: 'hi',
+            sourceText: 'Welcome',
+            translation: 'पधारो म्हारे देस',
+          },
+        ],
+      ),
+      'hi',
+      source,
+      sessionId,
+    )
+
+    const translated = applyCachedTranslationsToSource(source, translations)
+
+    // Override wins for "Welcome"
+    expect(translated).toContain('पधारो म्हारे देस')
+    expect(translated).not.toContain('स्वागत है')
+    // Global cache fills in "Get started"
+    expect(translated).toContain('शुरू करें')
+  })
+
+  it('returns global cache translations when no sessionId is provided', async () => {
+    const source = 'root = Hero("Welcome")'
+    const translations = await loadCachedTranslationsForSource(
+      ctxWithTranslations(
+        [
+          {
+            locale: 'hi',
+            sourceText: 'Welcome',
+            translation: 'स्वागत है',
+          },
+        ],
+        [
+          {
+            sessionId: 's1',
+            locale: 'hi',
+            sourceText: 'Welcome',
+            translation: 'पधारो म्हारे देस',
+          },
+        ],
+      ),
+      'hi',
+      source,
+    )
+
+    const translated = applyCachedTranslationsToSource(source, translations)
+
+    // No sessionId → only global cache applies
+    expect(translated).toContain('स्वागत है')
+    expect(translated).not.toContain('पधारो म्हारे देस')
   })
 })

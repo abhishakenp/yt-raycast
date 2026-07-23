@@ -14,6 +14,7 @@ import type {
   RunShipFastEngine,
   ShipFastEngineAdapterOptions,
 } from './ship-fast-engine-adapter'
+import type { TranslationCacheClient } from '@ship-fast/engine/llm/translation-cache-client.ts'
 
 export type PersistCompleteGenerationInput = {
   sessionId: string
@@ -47,6 +48,7 @@ export type RunEngineGenerationInput = {
   persistence: GenerationPersistence
   onEvent?: ShipFastEngineAdapterOptions['onEvent']
   signal?: AbortSignal
+  cacheClient?: TranslationCacheClient
 }
 
 export type RunEngineGenerationResult =
@@ -109,6 +111,7 @@ export async function runEngineGeneration({
   persistence,
   onEvent,
   signal: callerSignal,
+  cacheClient,
 }: RunEngineGenerationInput): Promise<RunEngineGenerationResult> {
   const abortScope = createGenerationAbortScope(callerSignal)
 
@@ -133,6 +136,7 @@ export async function runEngineGeneration({
             prompt,
             preferredLanguage,
             signal: abortScope.signal,
+            cacheClient,
           })
           break
         } catch (error) {

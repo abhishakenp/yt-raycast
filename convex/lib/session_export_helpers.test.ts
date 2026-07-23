@@ -481,6 +481,7 @@ function workflowCtxFor(input: {
           )
         const queryResult = {
           first: async () => matchingRows()[0] ?? null,
+          unique: async () => matchingRows()[0] ?? null,
           take: async (limit: number) => matchingRows().slice(0, limit),
           collect: async () => matchingRows(),
           order: (direction: 'asc' | 'desc') => ({
