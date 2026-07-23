@@ -1,0 +1,40 @@
+http:
+  routers:
+    medusa-ship-fast-ai-web:
+      rule: 'Host(`medusa.ship-fast.ai`)'
+      service: medusa-ship-fast
+      entryPoints:
+        - web
+      middlewares:
+        - redirect-to-https
+      priority: 70000
+    medusa-ship-fast-ai-websecure:
+      rule: 'Host(`medusa.ship-fast.ai`)'
+      service: medusa-ship-fast
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+      priority: 70000
+    medusa-devliv-io-web:
+      rule: 'Host(`medusa.devliv.io`)'
+      service: medusa-ship-fast
+      entryPoints:
+        - web
+      middlewares:
+        - redirect-to-https
+      priority: 70000
+    medusa-devliv-io-websecure:
+      rule: 'Host(`medusa.devliv.io`)'
+      service: medusa-ship-fast
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+      priority: 70000
+  services:
+    medusa-ship-fast:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+          - url: 'http://ship-fast-medusa-8szufp-server-1:9000'

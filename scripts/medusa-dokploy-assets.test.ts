@@ -9,6 +9,7 @@ function read(path: string): string {
 describe('Medusa Dokploy production assets', () => {
   it('defines a shared Medusa stack reachable through Dokploy Traefik', () => {
     const compose = read('infra/medusa/docker-compose.yml')
+    const traefik = read('infra/medusa/traefik.dynamic.yml')
 
     expect(compose).toContain('medusa-postgres:')
     expect(compose).toContain('medusa-redis:')
@@ -50,6 +51,12 @@ describe('Medusa Dokploy production assets', () => {
     )
     expect(compose).toContain('dokploy-network:')
     expect(compose).toContain('external: true')
+    expect(traefik).toContain('Host(`medusa.ship-fast.ai`)')
+    expect(traefik).toContain('Host(`medusa.devliv.io`)')
+    expect(traefik).toContain('priority: 70000')
+    expect(traefik).toContain(
+      "url: 'http://ship-fast-medusa-8szufp-server-1:9000'",
+    )
   })
 
   it('runs migrations, bootstrap, and stable admin seeding before serving', () => {
