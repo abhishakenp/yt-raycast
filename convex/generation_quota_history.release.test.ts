@@ -11,7 +11,6 @@ import {
   MAX_FREE_PER_MONTH,
   MONTHLY_WINDOW_MS,
   RATE_WINDOW_MS,
-  SHARE_BONUS_EXTRA,
 } from '../src/billing/constants'
 
 const modules = import.meta.glob('./**/*.ts')
@@ -146,7 +145,7 @@ describe('generation quota checks with long account histories', () => {
       t,
       clientIpHash,
       historicalRows,
-      MAX_ANON_PER_DAY + SHARE_BONUS_EXTRA,
+      MAX_ANON_PER_DAY,
       Date.now() - RATE_WINDOW_MS - 1_000,
     )
 

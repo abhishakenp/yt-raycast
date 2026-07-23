@@ -6,13 +6,13 @@ import { getModelConfigurationFailure } from '../generationConfig'
 import {
   DAILY_WINDOW_MS,
   MAX_ANON_PER_DAY,
+  MAX_ANON_PER_DAY_WITH_BONUS,
   MAX_ANON_PER_MONTH,
   MAX_FREE_AUTH_PER_DAY,
   MAX_FREE_PER_MONTH,
   MAX_PAID_PER_MONTH,
   MONTHLY_WINDOW_MS,
   RATE_WINDOW_MS,
-  SHARE_BONUS_EXTRA,
 } from '../../src/billing/constants'
 import {
   getUserEmail,
@@ -211,9 +211,26 @@ export async function loadGenerationAdmission(
       : isPaid
         ? MAX_PAID_PER_MONTH
         : MAX_FREE_PER_MONTH
+
+  // Check whether the anonymous user has claimed the share bonus today.
+  // This is the only way to get the 3rd daily generation.
+  const today = new Date(args.now).toISOString().slice(0, 10)
+  const shareBonus =
+    args.userId === undefined && args.clientIpHash !== undefined
+      ? await ctx.db
+          .query('shareBonuses')
+          .withIndex('by_clientIpHash_date', (q) =>
+            q.eq('clientIpHash', args.clientIpHash!).eq('date', today),
+          )
+          .first()
+      : null
+  const hasShareBonus = shareBonus !== null
+
   const dailyLimit =
     args.userId === undefined
-      ? MAX_ANON_PER_DAY + SHARE_BONUS_EXTRA
+      ? hasShareBonus
+        ? MAX_ANON_PER_DAY_WITH_BONUS
+        : MAX_ANON_PER_DAY
       : isPaid
         ? undefined
         : MAX_FREE_AUTH_PER_DAY
@@ -241,12 +258,20 @@ export async function loadGenerationAdmission(
       args.disableLimits ||
       args.isAdmin ||
       (() => {
+        if (args.userId === undefined) {
+          throw new ConvexError({
+            code: hasShareBonus
+              ? 'ANON_DAILY_EXHAUSTED'
+              : 'ANON_DAILY_LIMIT_REACHED',
+            message: hasShareBonus
+              ? 'Anonymous daily quota exhausted. Sign in to get 2 more free generations.'
+              : 'Anonymous daily quota exhausted. Share on social media for +1 free generation.',
+          })
+        }
         throw new ConvexError({
-          code: 'QUOTA_EXCEEDED',
+          code: 'AUTH_DAILY_LIMIT_REACHED',
           message:
-            args.userId === undefined
-              ? 'Anonymous daily quota exhausted. Share on social media for +1 free generation.'
-              : 'Daily limit reached. Come back tomorrow, or upgrade for unlimited daily generations.',
+            'Daily limit reached. Come back tomorrow, or upgrade for unlimited daily generations.',
         })
       })()
   }

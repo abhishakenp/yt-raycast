@@ -46,7 +46,6 @@ import { createPendingDashboardSaves } from '@/features/dashboard/lib/pending-da
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 import { extractGeneratedCommerceProducts } from '@/features/commerce/services/generated-commerce-products'
 import { takeGenerationLaunchHandoff } from '@/features/session/services/generation-launch-handoff'
-import { rememberReadySession } from '@/features/session/services/ready-session-cache'
 import { useEditController } from '@/features/editing/hooks/useEditController'
 import { useUndoRedo } from '@/features/editing/hooks/useUndoRedo'
 import { useReorderElement } from '@/features/editing/hooks/useReorderElement'
@@ -716,23 +715,15 @@ export function Dashboard({
     }
 
     const session = generationView.session
-    const readyHomeModule = generationView.homeModule
-    if (!readyHomeModule?.source) return
+    if (!session?.prompt) return
 
-    const hasReferences =
-      (session.designReferenceUrls ?? []).length > 0 ||
-      Boolean(session.designReferenceNotes?.trim()) ||
-      Boolean(session.cloneUrl?.trim())
-
-    if (session.isPrivate || session.engineVersion === 'v2' || hasReferences) {
-      return
+    // Persist the last prompt so it can be restored when the user returns
+    // (e.g. after signing in or coming back the next day).
+    try {
+      window.localStorage.setItem('ship-fast:last-prompt', session.prompt)
+    } catch {
+      // Storage may be blocked; non-critical.
     }
-
-    rememberReadySession(window.localStorage, {
-      sessionId: session.sessionId,
-      prompt: session.prompt,
-      preferredLanguage: session.preferredLanguage,
-    })
   }, [generationView, isPreviewReady])
 
   const progress = useMemo(() => {

@@ -256,15 +256,14 @@ export const HomePage = () => {
     if (!languageRowVisible) setSubmitCtaShaking(false)
   }, [languageRowVisible])
 
-  // Show share panel when quota is exceeded and bonus not claimed
+  // Show share panel only when the server says sharing is still an option
   useEffect(() => {
-    if (errorMessage?.includes('quota exhausted') && !shareBonusClaimed) {
-      void refreshShareBonusStatus()
+    if (errorMessage?.includes('Share on social media')) {
       setShowSharePanel(true)
     } else {
       setShowSharePanel(false)
     }
-  }, [errorMessage, refreshShareBonusStatus, shareBonusClaimed])
+  }, [errorMessage])
 
   const onShareClick = (platform: string) => {
     void handleShareClick(platform, claimShareBonus)

@@ -1,7 +1,3 @@
-import { MAX_ANON_PER_DAY, SHARE_BONUS_EXTRA } from '../billing/constants'
-
-export { SHARE_BONUS_EXTRA }
-
 export const userHits: Map<string, number[]> = new Map()
 export const ipHits: Map<string, number[]> = new Map()
 export const userMonthlyHits: Map<string, number[]> = new Map()
@@ -9,7 +5,6 @@ export const anonIpDailyHits: Map<string, number[]> = new Map()
 export const exportHits: Map<string, number[]> = new Map()
 export const ipMonthlyHits: Map<string, number[]> = new Map()
 export const activeGenerations: Map<string, number> = new Map()
-export const shareBonusIps: Map<string, string> = new Map()
 
 export function checkRateLimit(
   key: string,
@@ -34,16 +29,6 @@ export function refundRateLimit(
 ): void {
   const hits = hitsMap.get(key)
   if (hits?.length) hits.pop()
-}
-
-export function hasIpShareBonus(ip: string): boolean {
-  const stored = shareBonusIps.get(ip)
-  if (!stored) return false
-  return stored === new Date().toISOString().slice(0, 10)
-}
-
-export function getAnonDailyLimit(ip: string): number {
-  return MAX_ANON_PER_DAY + (hasIpShareBonus(ip) ? SHARE_BONUS_EXTRA : 0)
 }
 
 export function cleanupMap(map: Map<string, number[]>, windowMs: number): void {

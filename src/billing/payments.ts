@@ -1,19 +1,17 @@
 import { existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { createHash } from 'node:crypto'
 import { ConvexHttpClient } from 'convex/browser'
 import {
+  MAX_ANON_PER_DAY,
+  MAX_ANON_PER_DAY_WITH_BONUS,
   MAX_FREE_PER_MONTH,
   MAX_PAID_PER_MONTH,
   MONTHLY_WINDOW_MS,
   DAILY_WINDOW_MS,
   UNLIMITED_CREDITS,
 } from './constants'
-import {
-  userMonthlyHits,
-  anonIpDailyHits,
-  hasIpShareBonus,
-  getAnonDailyLimit,
-} from '../lib/rate-limit'
+import { userMonthlyHits, anonIpDailyHits } from '../lib/rate-limit'
 import {
   isGatewayConfigured,
   resolvePaymentCurrency,
@@ -24,6 +22,13 @@ import { devFlags } from '../lib/dev-flags'
 type AnyConvexClient = {
   query: (name: any, args?: any) => Promise<any>
   mutation: (name: any, args?: any) => Promise<any>
+}
+
+function hashClientIp(
+  ip: string,
+  salt = process.env.SHIP_FAST_IP_HASH_SALT ?? '',
+): string {
+  return createHash('sha256').update(`${salt}:${ip}`).digest('hex').slice(0, 48)
 }
 
 let convex: AnyConvexClient | null = null
@@ -124,16 +129,30 @@ export async function getUserGenerationQuota(
     }
   } else {
     const ip = clientIp ?? ''
-    const effectiveLimit = getAnonDailyLimit(ip)
     const currentDaily = (anonIpDailyHits.get(ip) || []).filter(
       (t) => Date.now() - t < DAILY_WINDOW_MS,
     ).length
+    // Check share bonus status from Convex (secure source of truth)
+    let shareBonusClaimed = false
+    try {
+      const clientIpHash = hashClientIp(ip)
+      const today = new Date().toISOString().slice(0, 10)
+      shareBonusClaimed = await getConvexClient().query(
+        'shareBonus:getShareBonusStatus',
+        { clientIpHash, date: today },
+      )
+    } catch {
+      // Convex unavailable; default to no bonus
+    }
+    const effectiveLimit = shareBonusClaimed
+      ? MAX_ANON_PER_DAY_WITH_BONUS
+      : MAX_ANON_PER_DAY
     return {
       isSubscribed: false,
       dailyLimit: effectiveLimit,
       dailyUsed: currentDaily,
       dailyRemaining: Math.max(0, effectiveLimit - currentDaily),
-      shareBonusClaimed: hasIpShareBonus(ip),
+      shareBonusClaimed,
       isAnonymous: true,
     }
   }

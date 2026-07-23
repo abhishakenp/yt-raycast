@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as benchEngines from "../benchEngines.js";
 import type * as billing from "../billing.js";
 import type * as brandfetch from "../brandfetch.js";
 import type * as contentCache from "../contentCache.js";
@@ -18,10 +19,10 @@ import type * as gallery_preview_images from "../gallery_preview_images.js";
 import type * as generation from "../generation.js";
 import type * as generationConfig from "../generationConfig.js";
 import type * as github from "../github.js";
-import type * as gov_uploads from "../gov_uploads.js";
 import type * as lakebed from "../lakebed.js";
 import type * as lakebed_deploy from "../lakebed_deploy.js";
 import type * as lib_acquisition_attribution from "../lib/acquisition_attribution.js";
+import type * as lib_deployment_badge_helpers from "../lib/deployment_badge_helpers.js";
 import type * as lib_disposable_email from "../lib/disposable_email.js";
 import type * as lib_dub_outbox from "../lib/dub_outbox.js";
 import type * as lib_export_progress_stages from "../lib/export_progress_stages.js";
@@ -70,6 +71,7 @@ import type * as partners_worker from "../partners_worker.js";
 import type * as referrals from "../referrals.js";
 import type * as session_completion from "../session_completion.js";
 import type * as sessions from "../sessions.js";
+import type * as shareBonus from "../shareBonus.js";
 import type * as translationCache from "../translationCache.js";
 
 import type {
@@ -79,6 +81,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  benchEngines: typeof benchEngines;
   billing: typeof billing;
   brandfetch: typeof brandfetch;
   contentCache: typeof contentCache;
@@ -89,10 +92,10 @@ declare const fullApi: ApiFromModules<{
   generation: typeof generation;
   generationConfig: typeof generationConfig;
   github: typeof github;
-  gov_uploads: typeof gov_uploads;
   lakebed: typeof lakebed;
   lakebed_deploy: typeof lakebed_deploy;
   "lib/acquisition_attribution": typeof lib_acquisition_attribution;
+  "lib/deployment_badge_helpers": typeof lib_deployment_badge_helpers;
   "lib/disposable_email": typeof lib_disposable_email;
   "lib/dub_outbox": typeof lib_dub_outbox;
   "lib/export_progress_stages": typeof lib_export_progress_stages;
@@ -141,6 +144,7 @@ declare const fullApi: ApiFromModules<{
   referrals: typeof referrals;
   session_completion: typeof session_completion;
   sessions: typeof sessions;
+  shareBonus: typeof shareBonus;
   translationCache: typeof translationCache;
 }>;
 

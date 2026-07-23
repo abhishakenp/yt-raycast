@@ -763,4 +763,10 @@ export default defineSchema({
       'sourceText',
     ])
     .index('by_sessionId', ['sessionId']),
+
+  shareBonuses: defineTable({
+    clientIpHash: v.string(),
+    date: v.string(),
+    createdAt: v.number(),
+  }).index('by_clientIpHash_date', ['clientIpHash', 'date']),
 })

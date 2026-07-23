@@ -13,11 +13,11 @@ import {
 } from './session_creation_helpers'
 import {
   MAX_ANON_PER_DAY,
+  MAX_ANON_PER_DAY_WITH_BONUS,
   MAX_ANON_PER_MONTH,
   MAX_FREE_PER_MONTH,
   MAX_PAID_PER_MONTH,
   RATE_WINDOW_MS,
-  SHARE_BONUS_EXTRA,
 } from '../../src/billing/constants'
 
 type MutationHandler<Args> = (ctx: MutationCtx, args: Args) => Promise<unknown>
@@ -41,6 +41,7 @@ type CreateGenerationSessionArgs = {
 type QueryRows = {
   sessions: Array<Doc<'sessions'>>
   subscriptions: Array<Record<string, unknown>>
+  shareBonuses: Array<Record<string, unknown>>
 }
 type InsertedRow = {
   table: string
@@ -74,21 +75,42 @@ const queryHelper = {
 }
 
 const indexHelper = {
-  eq: (field: string, value: unknown) => ({ field, value }),
+  eq: (field: string, value: unknown) => ({
+    field,
+    value,
+    eq: (field2: string, value2: unknown) => ({
+      fields: [
+        { field, value },
+        { field: field2, value: value2 },
+      ],
+    }),
+  }),
 }
 
 function chainFor(rows: Row[]) {
   return {
     withIndex: (
       _indexName: string,
-      applyIndex: (index: typeof indexHelper) => {
-        field: string
-        value: unknown
-      },
+      applyIndex: (
+        index: typeof indexHelper,
+      ) =>
+        | { field: string; value: unknown }
+        | { fields: Array<{ field: string; value: unknown }> },
     ) => {
-      const { field, value } = applyIndex(indexHelper)
+      const result = applyIndex(indexHelper)
+      if ('fields' in result) {
+        let filtered = rows
+        for (const { field, value } of result.fields) {
+          filtered = filtered.filter(
+            (row) => row[field as keyof typeof row] === value,
+          )
+        }
+        return chainFor(filtered)
+      }
       return chainFor(
-        rows.filter((row) => row[field as keyof typeof row] === value),
+        rows.filter(
+          (row) => row[result.field as keyof typeof row] === result.value,
+        ),
       )
     },
     order: (direction: 'asc' | 'desc') =>
@@ -132,6 +154,7 @@ function createMutationCtxFor(
   const rows: QueryRows = {
     sessions: [...(initialRows.sessions ?? [])],
     subscriptions: [...(initialRows.subscriptions ?? [])],
+    shareBonuses: [...(initialRows.shareBonuses ?? [])],
   }
   const inserted: InsertedRow[] = []
   const patches: Array<{ id: string; value: Record<string, unknown> }> = []
@@ -325,7 +348,7 @@ describe('session creation helpers', () => {
 
   it('computes anonymous admission with monthly quota and daily cap', async () => {
     const now = Date.now()
-    const sessionCount = MAX_ANON_PER_DAY + SHARE_BONUS_EXTRA - 1
+    const sessionCount = MAX_ANON_PER_DAY - 1
 
     await expect(
       loadGenerationAdmission(
@@ -347,6 +370,94 @@ describe('session creation helpers', () => {
       quotaLimit: MAX_ANON_PER_MONTH,
       quotaCount: sessionCount,
       remaining: MAX_ANON_PER_MONTH - sessionCount - 1,
+    })
+  })
+
+  it('rejects anon at base daily limit with ANON_DAILY_LIMIT_REACHED', async () => {
+    const now = Date.now()
+
+    await expect(
+      loadGenerationAdmission(
+        ctxFor({
+          sessions: Array.from({ length: MAX_ANON_PER_DAY }, (_, index) =>
+            sessionDoc({
+              clientIpHash: 'ip_hash',
+              createdAt: now - RATE_WINDOW_MS - 1000 - index,
+            }),
+          ),
+        }),
+        {
+          clientIpHash: 'ip_hash',
+          now,
+          disableLimits: false,
+        },
+      ),
+    ).rejects.toMatchObject({
+      data: {
+        code: 'ANON_DAILY_LIMIT_REACHED',
+        message:
+          'Anonymous daily quota exhausted. Share on social media for +1 free generation.',
+      },
+    })
+  })
+
+  it('allows anon 3rd generation when share bonus is claimed', async () => {
+    const now = Date.now()
+    const today = new Date(now).toISOString().slice(0, 10)
+
+    await expect(
+      loadGenerationAdmission(
+        ctxFor({
+          sessions: Array.from({ length: MAX_ANON_PER_DAY }, (_, index) =>
+            sessionDoc({
+              clientIpHash: 'ip_hash',
+              createdAt: now - RATE_WINDOW_MS - 1000 - index,
+            }),
+          ),
+          shareBonuses: [{ clientIpHash: 'ip_hash', date: today }],
+        }),
+        {
+          clientIpHash: 'ip_hash',
+          now,
+          disableLimits: false,
+        },
+      ),
+    ).resolves.toEqual({
+      quotaLimit: MAX_ANON_PER_MONTH,
+      quotaCount: MAX_ANON_PER_DAY,
+      remaining: MAX_ANON_PER_MONTH - MAX_ANON_PER_DAY - 1,
+    })
+  })
+
+  it('rejects anon after bonus used with ANON_DAILY_EXHAUSTED', async () => {
+    const now = Date.now()
+    const today = new Date(now).toISOString().slice(0, 10)
+
+    await expect(
+      loadGenerationAdmission(
+        ctxFor({
+          sessions: Array.from(
+            { length: MAX_ANON_PER_DAY_WITH_BONUS },
+            (_, index) =>
+              sessionDoc({
+                clientIpHash: 'ip_hash',
+                createdAt: now - RATE_WINDOW_MS - 1000 - index,
+              }),
+          ),
+          shareBonuses: [{ clientIpHash: 'ip_hash', date: today }],
+        }),
+        {
+          clientIpHash: 'ip_hash',
+          now,
+          disableLimits: false,
+        },
+      ),
+    ).rejects.toMatchObject({
+      data: {
+        code: 'ANON_DAILY_EXHAUSTED',
+        message:
+          'Anonymous daily quota exhausted. Sign in to get 2 more free generations.',
+      },
     })
   })
 

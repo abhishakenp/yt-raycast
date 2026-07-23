@@ -1871,8 +1871,8 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     }
   })
 
-  // 4. Ready session -> session id cached in localStorage
-  it('caches a ready session id in localStorage without storing preview source', () => {
+  // 4. Ready session -> last prompt persisted to localStorage
+  it('persists the last prompt to localStorage when session is ready', () => {
     setupReady()
     render(<Dashboard sessionId="ready-session" />)
 
@@ -1882,16 +1882,8 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
       ),
     ).toBeNull()
 
-    // Expected: rememberReadySession writes a session cache entry under the
-    // shared ready-session key prefix.
-    const sessionKeys = Array.from(
-      { length: window.localStorage.length },
-      (_, i) => window.localStorage.key(i),
-    ).filter(
-      (k): k is string =>
-        k !== null && k.startsWith('ship-fast:ready-session:v1:'),
-    )
-    expect(sessionKeys.length).toBeGreaterThanOrEqual(1)
+    // The last prompt should be persisted for restoration on return.
+    expect(window.localStorage.getItem('ship-fast:last-prompt')).not.toBeNull()
   })
 
   // 5. Progress: 50% tasks → progress bar shows 50%
