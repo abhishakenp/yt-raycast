@@ -303,7 +303,7 @@ async function graphCounts(
       modules: modulesForSession.length,
       previewHistory: previewHistory.length,
       previews: previews.length,
-      session: (await ctx.db.get(sessionId)) === null ? 0 : 1,
+      session: (await ctx.db.get(sessionId))?.deletedAt !== undefined ? 0 : 1,
       sessionData: sessionData.length,
       siteSpecs: siteSpecs.length,
       tasks: tasks.length,

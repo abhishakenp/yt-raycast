@@ -65,6 +65,7 @@ export async function findReusablePromptCacheSession(
   return (
     candidates.find(
       (session) =>
+        session.deletedAt === undefined &&
         session.isPrivate === false &&
         session.isDraft !== true &&
         (session.previewVersion ?? 0) > 0,
@@ -95,7 +96,7 @@ export async function findIdempotentWorkspaceSession(
     .withIndex('by_workspace', (index) => index.eq('workspace', args.workspace))
     .unique()
 
-  if (existing === null) return null
+  if (existing === null || existing.deletedAt !== undefined) return null
 
   const sameOwner =
     existing.userId === args.userId &&
@@ -504,6 +505,7 @@ async function deleteExpiredDraftSessions(
 
   for await (const session of expiredDrafts) {
     if (session.createdAt >= cutoff) break
+    if (session.deletedAt !== undefined) continue
     await deleteSessionGraph(ctx, session._id)
   }
 }

@@ -23,7 +23,6 @@ import {
   setSessionThemeOverride,
 } from './lib/session_access_helpers'
 import { loadSessionApiResponse } from './lib/session_api_response_helpers'
-import { deleteSessionGraph } from './lib/session_delete_helpers'
 import {
   authorizeDeploymentCommerceTenantProvision,
   loadDeploymentCommerceTenantBySlugForWebhook,
@@ -201,7 +200,11 @@ type CanReadSessionById = (
 
 const canReadSessionById: CanReadSessionById = async (ctx, sessionId) => {
   const session = await ctx.db.get(sessionId)
-  return session !== null && (await canReadPrivateSession(ctx, session))
+  return (
+    session !== null &&
+    session.deletedAt === undefined &&
+    (await canReadPrivateSession(ctx, session))
+  )
 }
 
 async function redactForeignSessionOwnerId<T extends { userId?: string }>(
@@ -279,7 +282,7 @@ const scheduleCurrentSessionExportAutomation: ScheduleCurrentSessionExportAutoma
 // userId or stable anonymousClientId.
 export const deleteMine = mutation({
   args: deleteMineArgs,
-  handler: (ctx, args) => deleteOwnedSessions(ctx, args, deleteSessionGraph),
+  handler: (ctx, args) => deleteOwnedSessions(ctx, args),
 })
 
 export const create = mutation({

@@ -13,6 +13,7 @@ import {
   exportGeneratorRevision,
   exportTargetFileCount,
 } from './session_export_helpers'
+import { resolveDeploymentBadgeEntitlement } from './deployment_badge_helpers'
 import {
   applyCachedTranslationsToSource,
   loadCachedTranslationsForSource,
@@ -169,7 +170,12 @@ export async function reserveDefaultDeploymentSlug(
       )
       .first()
 
-    if (!existing || existing._id === sessionId) break
+    if (
+      !existing ||
+      existing._id === sessionId ||
+      existing.deletedAt !== undefined
+    )
+      break
 
     const randomSuffix = Math.random().toString(16).slice(2, 6)
     finalSlug = `${baseSlug}-${randomSuffix}`
@@ -322,12 +328,18 @@ export async function loadDeploymentBySlug(
   const session = await ctx.db.get(deployment.sessionId)
   if (session === null) return null
 
+  const includeBadge = await resolveDeploymentBadgeEntitlement(
+    ctx,
+    session.userId,
+  )
+
   return {
     slug: deployment.slug,
     url: deployment.url,
     status: deployment.status,
     previewVersion: deployment.previewVersion,
     sessionId: deployment.sessionId,
+    includeBadge,
     ...lakebedDeploymentMetadata(deployment),
     session: {
       id: session._id,
@@ -568,6 +580,11 @@ export async function prepareLakebedSessionDeployment(
     }),
   )
 
+  const includeBadge = await resolveDeploymentBadgeEntitlement(
+    ctx,
+    session.userId,
+  )
+
   return {
     sessionId: args.sessionId,
     prompt: session.prompt,
@@ -583,6 +600,7 @@ export async function prepareLakebedSessionDeployment(
     ),
     isDark: readLakebedIsDark(session),
     locale: session.preferredLanguage || 'en',
+    includeBadge,
     selectedBrandLogo: session.selectedBrandLogo ?? null,
   }
 }

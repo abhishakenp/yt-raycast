@@ -152,5 +152,5 @@ export async function deleteSessionGraph(
   for (const storageId of storageIds) {
     await ctx.storage.delete(storageId)
   }
-  await ctx.db.delete(sessionId)
+  await ctx.db.patch(sessionId, { deletedAt: Date.now() })
 }

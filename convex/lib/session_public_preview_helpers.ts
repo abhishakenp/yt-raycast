@@ -20,7 +20,8 @@ export async function loadPublicPreview(
     directSession ??
     (deployment === null ? null : await ctx.db.get(deployment.sessionId))
 
-  if (session === null || session.isPrivate) return null
+  if (session === null || session.isPrivate || session.deletedAt !== undefined)
+    return null
 
   const previewVersion = deployment?.previewVersion
   const preview =
