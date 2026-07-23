@@ -4,11 +4,17 @@ export const MAX_FREE_PER_MONTH = 10
 /** Hard monthly cap for paid (subscribed) users */
 export const MAX_PAID_PER_MONTH = 30
 
+/** Hard monthly cap for anonymous (unauthenticated) users */
+export const MAX_ANON_PER_MONTH = 10
+
 /** Unlimited credits sentinel used for paywalled-free access */
 export const UNLIMITED_CREDITS = 999
 
 /** Per-day cap for anonymous (unauthenticated) users */
-export const MAX_ANON_PER_DAY = 2
+export const MAX_ANON_PER_DAY = 3
+
+/** Per-day cap for authenticated free users */
+export const MAX_FREE_AUTH_PER_DAY = 5
 
 /** +1 daily generation granted when anonymous user shares on social */
 export const SHARE_BONUS_EXTRA = 1
@@ -36,26 +42,3 @@ export const MONTHLY_WINDOW_MS = 30 * 24 * 60 * 60 * 1000
 
 /** Daily window (24 hours) */
 export const DAILY_WINDOW_MS = 24 * 60 * 60 * 1000
-
-/** IP addresses whitelisted from rate limiting (comma-separated in env, or array) */
-export function parseWhitelistedIps(raw: string | null | undefined): string[] {
-  return raw
-    ? raw
-        .split(',')
-        .map((ip) => ip.trim())
-        .filter(Boolean)
-    : []
-}
-
-const rawWhitelist = process.env.WHITELISTED_IPS || ''
-export const WHITELISTED_IPS = parseWhitelistedIps(rawWhitelist)
-
-export function isIpWhitelisted(
-  ip: string | null | undefined,
-  whitelist = WHITELISTED_IPS,
-): boolean {
-  if (!ip) {
-    return false
-  }
-  return whitelist.includes(ip)
-}
