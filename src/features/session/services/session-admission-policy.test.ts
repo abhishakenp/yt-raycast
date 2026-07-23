@@ -1,8 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import {
   MAX_ANON_PER_DAY,
+  MAX_ANON_PER_MONTH,
   MAX_FREE_PER_MONTH,
   MAX_PAID_PER_MONTH,
+  SHARE_BONUS_EXTRA,
 } from '@/billing/constants'
 import {
   isLikelyGibberishPrompt,
@@ -36,7 +38,12 @@ describe('session admission policy', () => {
         preferredExportTarget: 'next',
         designReferenceUrls: ['https://example.com/inspiration'],
       },
-      quota: { limit: MAX_ANON_PER_DAY, used: 1, remaining: 0, window: 'day' },
+      quota: {
+        limit: MAX_ANON_PER_MONTH,
+        used: 1,
+        remaining: MAX_ANON_PER_MONTH - 2,
+        window: 'month',
+      },
     })
   })
 
@@ -60,13 +67,19 @@ describe('session admission policy', () => {
   })
 
   it('applies anonymous, free, paid, and short-window limits', () => {
+    // Anonymous: 4 daily timestamps (MAX_ANON_PER_DAY + SHARE_BONUS_EXTRA) hits daily cap
     expect(
       parseSessionAdmission(
         {
           prompt:
             'A website for a regional bakery with catering menus and wedding cake galleries',
         },
-        { anonymousDailyTimestamps: [1, 2], now: 3 },
+        {
+          anonymousDailyTimestamps: Array(
+            MAX_ANON_PER_DAY + SHARE_BONUS_EXTRA,
+          ).fill(1),
+          now: 2,
+        },
       ),
     ).toMatchObject({ ok: false, code: 'QUOTA_EXCEEDED' })
 
@@ -122,9 +135,33 @@ describe('session admission policy', () => {
             'A website for a regional bakery with catering menus and wedding cake galleries',
         },
         {
-          anonymousDailyTimestamps: [1, 2],
+          anonymousDailyTimestamps: Array(
+            MAX_ANON_PER_DAY + SHARE_BONUS_EXTRA,
+          ).fill(1),
           recentTimestamps: [1, 2, 3, 4, 5],
           now: 6,
+        },
+      ),
+    ).toMatchObject({ ok: true })
+  })
+
+  it('bypasses rate and quota limits when bypassLimits is true', () => {
+    process.env.IS_DEV = ''
+    process.env.DISABLE_LIMIT = ''
+
+    expect(
+      parseSessionAdmission(
+        {
+          prompt:
+            'A website for a regional bakery with catering menus and wedding cake galleries',
+        },
+        {
+          anonymousDailyTimestamps: Array(
+            MAX_ANON_PER_DAY + SHARE_BONUS_EXTRA,
+          ).fill(1),
+          recentTimestamps: [1, 2, 3, 4, 5],
+          now: 6,
+          bypassLimits: true,
         },
       ),
     ).toMatchObject({ ok: true })

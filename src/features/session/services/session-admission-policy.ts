@@ -1,10 +1,13 @@
 import {
   DAILY_WINDOW_MS,
   MAX_ANON_PER_DAY,
+  MAX_ANON_PER_MONTH,
+  MAX_FREE_AUTH_PER_DAY,
   MAX_FREE_PER_MONTH,
   MAX_PAID_PER_MONTH,
   MONTHLY_WINDOW_MS,
   RATE_WINDOW_MS,
+  SHARE_BONUS_EXTRA,
 } from '@/billing/constants'
 import { checkPromptContentPolicy } from '@/lib/content-policy'
 import { devFlags } from '@/lib/dev-flags'
@@ -201,7 +204,8 @@ export function parseSessionAdmission(
   usage: SessionAdmissionUsage = {},
 ): SessionAdmissionAccepted | SessionAdmissionRejected {
   const now = usage.now ?? Date.now()
-  const disableLimits = devFlags.disableGenerationLimits
+  const disableLimits =
+    devFlags.disableGenerationLimits || usage.bypassLimits === true
   const prompt = normalizeSpaces(
     typeof input.prompt === 'string' ? input.prompt : '',
   )
@@ -317,28 +321,47 @@ export function parseSessionAdmission(
 
   const isAuthenticated = usage.isAuthenticated === true
   const isPaid = usage.isPaid === true
-  const quotaWindow = isAuthenticated ? 'month' : 'day'
-  const timestamps = isAuthenticated
+  const monthlyTimestamps = isAuthenticated
     ? (usage.authenticatedMonthlyTimestamps ?? [])
     : (usage.anonymousDailyTimestamps ?? [])
-  const windowMs = isAuthenticated ? MONTHLY_WINDOW_MS : DAILY_WINDOW_MS
-  const used = timestamps.filter(
-    (timestamp) => now - timestamp < windowMs,
+  const monthlyUsed = monthlyTimestamps.filter(
+    (timestamp) => now - timestamp < MONTHLY_WINDOW_MS,
   ).length
-  const limit = isAuthenticated
+  const monthlyLimit = isAuthenticated
     ? isPaid
       ? MAX_PAID_PER_MONTH
       : MAX_FREE_PER_MONTH
-    : MAX_ANON_PER_DAY
+    : MAX_ANON_PER_MONTH
 
-  if (!usage.bypassLimits && !disableLimits && used >= limit) {
+  if (!usage.bypassLimits && !disableLimits && monthlyUsed >= monthlyLimit) {
     return {
       ok: false,
       code: 'QUOTA_EXCEEDED',
-      message: isAuthenticated
-        ? 'Your monthly generation quota is exhausted.'
-        : 'Your anonymous daily generation quota is exhausted. Share on social media for +1 free generation, or sign in to continue.',
+      message: 'Your monthly generation quota is exhausted.',
       status: 429,
+    }
+  }
+
+  const dailyLimit = isAuthenticated
+    ? isPaid
+      ? undefined
+      : MAX_FREE_AUTH_PER_DAY
+    : MAX_ANON_PER_DAY + SHARE_BONUS_EXTRA
+
+  if (dailyLimit !== undefined) {
+    const dailyUsed = monthlyTimestamps.filter(
+      (timestamp) => now - timestamp < DAILY_WINDOW_MS,
+    ).length
+
+    if (!usage.bypassLimits && !disableLimits && dailyUsed >= dailyLimit) {
+      return {
+        ok: false,
+        code: 'QUOTA_EXCEEDED',
+        message: isAuthenticated
+          ? 'Daily limit reached. Come back tomorrow, or upgrade for unlimited daily generations.'
+          : 'Your anonymous daily generation quota is exhausted. Share on social media for +1 free generation, or sign in to continue.',
+        status: 429,
+      }
     }
   }
 
@@ -395,10 +418,10 @@ export function parseSessionAdmission(
         : undefined,
     },
     quota: {
-      limit,
-      used,
-      remaining: Math.max(0, limit - used - 1),
-      window: quotaWindow,
+      limit: monthlyLimit,
+      used: monthlyUsed,
+      remaining: Math.max(0, monthlyLimit - monthlyUsed - 1),
+      window: 'month',
     },
   }
 }

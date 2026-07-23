@@ -13,6 +13,7 @@ import {
 } from './session_creation_helpers'
 import {
   MAX_ANON_PER_DAY,
+  MAX_ANON_PER_MONTH,
   MAX_FREE_PER_MONTH,
   MAX_PAID_PER_MONTH,
   RATE_WINDOW_MS,
@@ -322,14 +323,14 @@ describe('session creation helpers', () => {
     })
   })
 
-  it('computes anonymous admission with share bonus quota', async () => {
+  it('computes anonymous admission with monthly quota and daily cap', async () => {
     const now = Date.now()
-    const quotaCount = MAX_ANON_PER_DAY + SHARE_BONUS_EXTRA - 1
+    const sessionCount = MAX_ANON_PER_DAY + SHARE_BONUS_EXTRA - 1
 
     await expect(
       loadGenerationAdmission(
         ctxFor({
-          sessions: Array.from({ length: quotaCount }, (_, index) =>
+          sessions: Array.from({ length: sessionCount }, (_, index) =>
             sessionDoc({
               clientIpHash: 'ip_hash',
               createdAt: now - RATE_WINDOW_MS - 1000 - index,
@@ -343,9 +344,9 @@ describe('session creation helpers', () => {
         },
       ),
     ).resolves.toEqual({
-      quotaLimit: MAX_ANON_PER_DAY + SHARE_BONUS_EXTRA,
-      quotaCount,
-      remaining: 0,
+      quotaLimit: MAX_ANON_PER_MONTH,
+      quotaCount: sessionCount,
+      remaining: MAX_ANON_PER_MONTH - sessionCount - 1,
     })
   })
 

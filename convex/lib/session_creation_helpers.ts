@@ -6,6 +6,8 @@ import { getModelConfigurationFailure } from '../generationConfig'
 import {
   DAILY_WINDOW_MS,
   MAX_ANON_PER_DAY,
+  MAX_ANON_PER_MONTH,
+  MAX_FREE_AUTH_PER_DAY,
   MAX_FREE_PER_MONTH,
   MAX_PAID_PER_MONTH,
   MONTHLY_WINDOW_MS,
@@ -147,8 +149,8 @@ export async function loadGenerationAdmission(
   }
 
   const recentCutoff = args.now - RATE_WINDOW_MS
-  const quotaCutoff =
-    args.now - (args.userId === undefined ? DAILY_WINDOW_MS : MONTHLY_WINDOW_MS)
+  const dailyCutoff = args.now - DAILY_WINDOW_MS
+  const monthlyCutoff = args.now - MONTHLY_WINDOW_MS
   const sameOwnerSessions =
     args.userId !== undefined
       ? await ctx.db
@@ -201,33 +203,58 @@ export async function loadGenerationAdmission(
             ),
           )
           .first()
-  const quotaLimit =
+
+  const isPaid = activeSubscription !== null
+  const monthlyLimit =
+    args.userId === undefined
+      ? MAX_ANON_PER_MONTH
+      : isPaid
+        ? MAX_PAID_PER_MONTH
+        : MAX_FREE_PER_MONTH
+  const dailyLimit =
     args.userId === undefined
       ? MAX_ANON_PER_DAY + SHARE_BONUS_EXTRA
-      : activeSubscription === null
-        ? MAX_FREE_PER_MONTH
-        : MAX_PAID_PER_MONTH
-  const quotaCount = sameOwnerSessions.filter(
-    (session) => session.createdAt >= quotaCutoff,
+      : isPaid
+        ? undefined
+        : MAX_FREE_AUTH_PER_DAY
+
+  const monthlyCount = sameOwnerSessions.filter(
+    (session) => session.createdAt >= monthlyCutoff,
   ).length
 
-  quotaCount < quotaLimit ||
+  monthlyCount < monthlyLimit ||
     args.disableLimits ||
     args.isAdmin ||
     (() => {
       throw new ConvexError({
         code: 'QUOTA_EXCEEDED',
-        message:
-          args.userId === undefined
-            ? 'Anonymous daily quota exhausted. Share on social media for +1 free generation, or sign in to continue.'
-            : 'Monthly quota exhausted',
+        message: 'Monthly quota exhausted',
       })
     })()
 
+  if (dailyLimit !== undefined) {
+    const dailyCount = sameOwnerSessions.filter(
+      (session) => session.createdAt >= dailyCutoff,
+    ).length
+
+    dailyCount < dailyLimit ||
+      args.disableLimits ||
+      args.isAdmin ||
+      (() => {
+        throw new ConvexError({
+          code: 'QUOTA_EXCEEDED',
+          message:
+            args.userId === undefined
+              ? 'Anonymous daily quota exhausted. Share on social media for +1 free generation, or sign in to continue.'
+              : 'Daily limit reached. Come back tomorrow, or upgrade for unlimited daily generations.',
+        })
+      })()
+  }
+
   return {
-    quotaLimit,
-    quotaCount,
-    remaining: Math.max(0, quotaLimit - quotaCount - 1),
+    quotaLimit: monthlyLimit,
+    quotaCount: monthlyCount,
+    remaining: Math.max(0, monthlyLimit - monthlyCount - 1),
   }
 }
 
