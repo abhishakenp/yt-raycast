@@ -116,7 +116,11 @@ describe('createSessionCreateResponse', () => {
   it('maps Convex quota failures to a public preview 429 response', async () => {
     const mutation = vi
       .fn()
-      .mockRejectedValue(new Error('ConvexError: QUOTA_EXCEEDED'))
+      .mockRejectedValue(
+        new Error(
+          '[Request ID: abc123] Server Error\nUncaught ConvexError: {"code":"QUOTA_EXCEEDED","message":"Anonymous daily quota exhausted. Share on social media for +1 free generation."}\n    at loadGenerationAdmission (../../convex/lib/session_creation_helpers.ts:244:10)',
+        ),
+      )
     const response = await createSessionCreateResponse(
       new Request('http://ship-fast.test/api/sessions/create', {
         method: 'POST',
@@ -128,7 +132,7 @@ describe('createSessionCreateResponse', () => {
     await expect(response.json()).resolves.toMatchObject({
       code: 'QUOTA_EXCEEDED',
       error:
-        'Anonymous daily quota exhausted. Share on social media for +1 free generation, or sign in to continue.',
+        'Anonymous daily quota exhausted. Share on social media for +1 free generation.',
     })
     expect(response.status).toBe(429)
   })

@@ -97,12 +97,27 @@ async function readJsonBody(
 function errorPayload(error: unknown) {
   const message = error instanceof Error ? error.message : String(error)
   if (/QUOTA_EXCEEDED/.test(message)) {
+    // ConvexError messages arrive as: [Request ID: ...] Server Error\nUncaught ConvexError: {"code":"QUOTA_EXCEEDED","message":"..."}\n    at ...
+    // Extract the JSON payload and pull out the human-readable message.
+    let userMessage = message
+    const jsonMatch = message.match(
+      /\{[^}]*"code"\s*:\s*"QUOTA_EXCEEDED"[^}]*\}/,
+    )
+    if (jsonMatch) {
+      try {
+        const parsed = JSON.parse(jsonMatch[0])
+        if (parsed && typeof parsed.message === 'string') {
+          userMessage = parsed.message
+        }
+      } catch {
+        // Fallback below
+      }
+    }
     return {
       status: 429,
       body: {
         code: 'QUOTA_EXCEEDED',
-        error:
-          'Anonymous daily quota exhausted. Share on social media for +1 free generation, or sign in to continue.',
+        error: userMessage,
       },
     }
   }
