@@ -897,4 +897,71 @@ describe('usePromptHomeController submit guard', () => {
       prompt: 'Build a different portfolio website',
     })
   })
+
+  it('strips share suggestion from quota error when share bonus already claimed', async () => {
+    const { result } = renderHook(() => usePromptHomeController())
+
+    // First, hydrate share bonus as claimed
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({ claimed: true }),
+    } as Response)
+
+    await act(async () => {
+      await result.current.refreshShareBonusStatus()
+    })
+
+    expect(result.current.shareBonusClaimed).toBe(true)
+
+    // Now mock the create endpoint to return a QUOTA_EXCEEDED error
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      status: 429,
+      json: async () => ({
+        error:
+          'Anonymous daily quota exhausted. Share on social media for +1 free generation, or sign in to continue.',
+        code: 'QUOTA_EXCEEDED',
+      }),
+    } as Response)
+
+    act(() => {
+      result.current.setPrompt('Build a product website after quota exhaustion')
+    })
+
+    await act(async () => {
+      await result.current.submitPrompt()
+    })
+
+    expect(result.current.errorMessage).toBe(
+      'Anonymous daily quota exhausted. Sign in to continue — logged in users get 5 generations per day.',
+    )
+  })
+
+  it('preserves share suggestion in quota error when share bonus not yet claimed', async () => {
+    const { result } = renderHook(() => usePromptHomeController())
+
+    // Share bonus not claimed — don't hydrate, leave as false
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      status: 429,
+      json: async () => ({
+        error:
+          'Anonymous daily quota exhausted. Share on social media for +1 free generation, or sign in to continue.',
+        code: 'QUOTA_EXCEEDED',
+      }),
+    } as Response)
+
+    act(() => {
+      result.current.setPrompt('Build a product website before share bonus')
+    })
+
+    await act(async () => {
+      await result.current.submitPrompt()
+    })
+
+    expect(result.current.errorMessage).toBe(
+      'Anonymous daily quota exhausted. Share on social media for +1 free generation, or sign in to continue.',
+    )
+  })
 })
