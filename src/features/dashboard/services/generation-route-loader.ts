@@ -55,7 +55,7 @@ export const isGenerationRouteViewReady = (
     hasRenderableGenerationSource(view))
 
 export const loadGenerationRouteView = async ({
-  client = createRuntimeConvexHttpClient(QUERY_TIMEOUT_MS),
+  client,
   maxWaitMs = DEFAULT_MAX_WAIT_MS,
   pollMs = DEFAULT_POLL_MS,
   sessionId,
@@ -63,11 +63,20 @@ export const loadGenerationRouteView = async ({
 }: LoadGenerationRouteViewOptions) => {
   const deadline = Date.now() + maxWaitMs
   let latestView: DashboardGenerationView | null | undefined
+  let routeClient = client
 
   while (!signal?.aborted) {
-    latestView = await client.query(api.sessions.getGenerationView, {
-      lookup: sessionId,
-    })
+    try {
+      routeClient ??= createRuntimeConvexHttpClient(QUERY_TIMEOUT_MS)
+      latestView = await routeClient.query(api.sessions.getGenerationView, {
+        lookup: sessionId,
+      })
+    } catch {
+      if (signal?.aborted) {
+        throw new DOMException('Route load aborted', 'AbortError')
+      }
+      return latestView
+    }
     if (isGenerationRouteViewReady(latestView)) return latestView
     if (Date.now() >= deadline) return latestView
     await delay(pollMs, signal)

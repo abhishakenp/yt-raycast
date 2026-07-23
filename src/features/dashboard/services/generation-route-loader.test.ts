@@ -123,4 +123,41 @@ describe('generation route loader', () => {
       vi.useRealTimers()
     }
   })
+
+  it('returns undefined instead of route-crashing when the first query fetch fails', async () => {
+    const query = vi.fn().mockRejectedValue(new Error('fetch failed'))
+
+    const view = await loadGenerationRouteView({
+      client: { query },
+      sessionId: 'session_network_unavailable',
+    })
+
+    expect(view).toBeUndefined()
+    expect(query).toHaveBeenCalledTimes(1)
+  })
+
+  it('returns the latest observed view when a later query fetch fails', async () => {
+    vi.useFakeTimers()
+    try {
+      const query = vi
+        .fn()
+        .mockResolvedValueOnce(runningView())
+        .mockRejectedValueOnce(new Error('fetch failed'))
+
+      const request = loadGenerationRouteView({
+        client: { query },
+        maxWaitMs: 1000,
+        pollMs: 250,
+        sessionId: 'session_transient_fetch_failure',
+      })
+
+      await vi.advanceTimersByTimeAsync(250)
+      const view = await request
+
+      expect(view?.session.status).toBe('running')
+      expect(query).toHaveBeenCalledTimes(2)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
 })
