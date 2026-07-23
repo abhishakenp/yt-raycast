@@ -63,10 +63,10 @@ services:
       REDIS_URL: ${REDIS_URL:-redis://medusa-redis:6379}
       CACHE_REDIS_URL: ${CACHE_REDIS_URL:-redis://medusa-redis:6379}
       LOCKING_REDIS_URL: ${LOCKING_REDIS_URL:-redis://medusa-redis:6379}
-      MEDUSA_BACKEND_URL: ${MEDUSA_BACKEND_URL:-https://medusa.devliv.io}
+      MEDUSA_BACKEND_URL: ${MEDUSA_BACKEND_URL:-https://medusa.ship-fast.ai}
       STORE_CORS: ${STORE_CORS:-https://ship-fast.io,https://ship-fast.devliv.io}
-      ADMIN_CORS: ${ADMIN_CORS:-https://medusa.devliv.io}
-      AUTH_CORS: ${AUTH_CORS:-https://ship-fast.io,https://ship-fast.devliv.io,https://medusa.devliv.io}
+      ADMIN_CORS: ${ADMIN_CORS:-https://medusa.ship-fast.ai,https://medusa.devliv.io}
+      AUTH_CORS: ${AUTH_CORS:-https://ship-fast.io,https://ship-fast.devliv.io,https://medusa.ship-fast.ai,https://medusa.devliv.io}
       JWT_SECRET: ${JWT_SECRET}
       COOKIE_SECRET: ${COOKIE_SECRET}
       MEDUSA_SEED_ADMIN_EMAIL: ${MEDUSA_SEED_ADMIN_EMAIL}
@@ -87,11 +87,11 @@ services:
       - traefik.http.routers.ship-fast-medusa-direct-web.entrypoints=web
       - traefik.http.routers.ship-fast-medusa-direct-web.middlewares=redirect-to-https@file
       - traefik.http.routers.ship-fast-medusa-direct-web.priority=10000
-      - traefik.http.routers.ship-fast-medusa-direct-web.rule=Host(`medusa.devliv.io`)
+      - traefik.http.routers.ship-fast-medusa-direct-web.rule=Host(`medusa.ship-fast.ai`) || Host(`medusa.devliv.io`)
       - traefik.http.routers.ship-fast-medusa-direct-web.service=ship-fast-medusa-direct
       - traefik.http.routers.ship-fast-medusa-direct-websecure.entrypoints=websecure
       - traefik.http.routers.ship-fast-medusa-direct-websecure.priority=10000
-      - traefik.http.routers.ship-fast-medusa-direct-websecure.rule=Host(`medusa.devliv.io`)
+      - traefik.http.routers.ship-fast-medusa-direct-websecure.rule=Host(`medusa.ship-fast.ai`) || Host(`medusa.devliv.io`)
       - traefik.http.routers.ship-fast-medusa-direct-websecure.service=ship-fast-medusa-direct
       - traefik.http.routers.ship-fast-medusa-direct-websecure.tls.certresolver=letsencrypt
       - traefik.http.services.ship-fast-medusa-direct.loadbalancer.server.port=9000

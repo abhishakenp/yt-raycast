@@ -32,15 +32,21 @@ describe('Medusa Dokploy production assets', () => {
     expect(compose).toContain(
       'traefik.http.services.ship-fast-medusa-direct.loadbalancer.server.port=9000',
     )
+    expect(compose).toContain(
+      'Host(`medusa.ship-fast.ai`) || Host(`medusa.devliv.io`)',
+    )
     expect(compose).toContain("RUN_MIGRATIONS: 'false'")
     expect(compose).toContain('MEDUSA_DB_CONNECTION_TIMEOUT_MS')
     expect(compose).toContain('__MEDUSA_DB_CONNECTION_MAX_RETRIES')
     expect(compose).toContain(
       'STORE_CORS:-https://ship-fast.io,https://ship-fast.devliv.io',
     )
-    expect(compose).toContain('ADMIN_CORS:-https://medusa.devliv.io')
+    expect(compose).toContain('MEDUSA_BACKEND_URL:-https://medusa.ship-fast.ai')
     expect(compose).toContain(
-      'AUTH_CORS:-https://ship-fast.io,https://ship-fast.devliv.io,https://medusa.devliv.io',
+      'ADMIN_CORS:-https://medusa.ship-fast.ai,https://medusa.devliv.io',
+    )
+    expect(compose).toContain(
+      'AUTH_CORS:-https://ship-fast.io,https://ship-fast.devliv.io,https://medusa.ship-fast.ai,https://medusa.devliv.io',
     )
     expect(compose).toContain('dokploy-network:')
     expect(compose).toContain('external: true')
