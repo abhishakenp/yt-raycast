@@ -110,18 +110,12 @@ test('Convex dev mode bypasses anonymous daily quota at the live mutation bounda
 
   const t = convexTest(schema, modules)
   const now = Date.now()
-  const anonymousClientId = 'dev-mode-anonymous-client'
+  const clientIpHash = 'dev-mode-ip-hash'
 
   await t.run(async (ctx) => {
     for (let index = 0; index < 3; index += 1) {
       await ctx.db.insert('sessions', {
-        anonymousClientIdHash: await crypto.subtle
-          .digest('SHA-256', new TextEncoder().encode(anonymousClientId))
-          .then((buffer) =>
-            Array.from(new Uint8Array(buffer), (byte) =>
-              byte.toString(16).padStart(2, '0'),
-            ).join(''),
-          ),
+        clientIpHash,
         prompt: `Seeded anonymous quota session ${index}`,
         preferredLanguage: 'en',
         preferredExportTarget: 'html',
@@ -134,7 +128,7 @@ test('Convex dev mode bypasses anonymous daily quota at the live mutation bounda
   await expect(
     t.mutation(api.sessions.create, {
       ...createPayload('anonymous-dev-mode-allowed'),
-      anonymousClientId,
+      clientIpHash,
       anonymousOwnerSecret: 'owner-secret',
     }),
   ).resolves.toMatchObject({

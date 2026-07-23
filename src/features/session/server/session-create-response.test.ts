@@ -17,26 +17,10 @@ const realConvexCraftBeerSession = {
 
 describe('createSessionCreateResponse', () => {
   afterEach(() => {
-    delete process.env.SHIP_FAST_PUBLIC_PREVIEW_MODE
     delete process.env.SHIP_FAST_IP_HASH_SALT
   })
 
-  it('stays disabled unless public preview mode is enabled', async () => {
-    const response = await createSessionCreateResponse(
-      new Request('http://ship-fast.test/api/sessions/create', {
-        method: 'POST',
-        body: JSON.stringify({ prompt: 'Build a public preview site' }),
-      }),
-    )
-
-    await expect(response.json()).resolves.toMatchObject({
-      error: 'Public preview session creation is disabled.',
-    })
-    expect(response.status).toBe(404)
-  })
-
   it('uses forwarded IP headers to call Convex with a hashed IP bucket', async () => {
-    process.env.SHIP_FAST_PUBLIC_PREVIEW_MODE = 'true'
     process.env.SHIP_FAST_IP_HASH_SALT = 'test-salt'
     const mutation = vi.fn().mockResolvedValue({
       cached: false,
@@ -76,7 +60,6 @@ describe('createSessionCreateResponse', () => {
   })
 
   it('forwards real DB-shaped session creation fields without dropping language, export target, privacy, or workspace', async () => {
-    process.env.SHIP_FAST_PUBLIC_PREVIEW_MODE = 'true'
     process.env.SHIP_FAST_IP_HASH_SALT = 'test-salt'
     const mutation = vi.fn().mockResolvedValue({
       cached: true,
@@ -115,7 +98,6 @@ describe('createSessionCreateResponse', () => {
       'Request body must be a JSON object.',
     ],
   ])('rejects invalid public preview request bodies', async (body, message) => {
-    process.env.SHIP_FAST_PUBLIC_PREVIEW_MODE = 'true'
     const mutation = vi.fn()
 
     const response = await createSessionCreateResponse(
@@ -132,7 +114,6 @@ describe('createSessionCreateResponse', () => {
   })
 
   it('maps Convex quota failures to a public preview 429 response', async () => {
-    process.env.SHIP_FAST_PUBLIC_PREVIEW_MODE = 'true'
     const mutation = vi
       .fn()
       .mockRejectedValue(new Error('ConvexError: QUOTA_EXCEEDED'))
@@ -147,13 +128,12 @@ describe('createSessionCreateResponse', () => {
     await expect(response.json()).resolves.toMatchObject({
       code: 'QUOTA_EXCEEDED',
       error:
-        'Free preview quota exhausted for this IP address. Try again tomorrow.',
+        'Anonymous daily quota exhausted. Share on social media for +1 free generation, or sign in to continue.',
     })
     expect(response.status).toBe(429)
   })
 
   it('maps Convex rate-limit failures to a distinct public preview 429 response', async () => {
-    process.env.SHIP_FAST_PUBLIC_PREVIEW_MODE = 'true'
     const mutation = vi
       .fn()
       .mockRejectedValue(new Error('ConvexError: RATE_LIMITED'))
@@ -174,7 +154,6 @@ describe('createSessionCreateResponse', () => {
   })
 
   it('returns a stable error when Convex reports success without a session id', async () => {
-    process.env.SHIP_FAST_PUBLIC_PREVIEW_MODE = 'true'
     const mutation = vi.fn().mockResolvedValue({
       prompt:
         'a food site for dogs and other pets with a polished hero, clear navigation, trust signals, featured sections, and a direct conversion path.',

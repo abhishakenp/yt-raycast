@@ -9,6 +9,7 @@ import {
   findReusablePromptCacheSession,
   loadGenerationAdmission,
   PROMPT_CACHE_LOOKBACK_LIMIT,
+  SHORT_WINDOW_LIMIT,
 } from './session_creation_helpers'
 import {
   MAX_ANON_PER_DAY,
@@ -330,13 +331,13 @@ describe('session creation helpers', () => {
         ctxFor({
           sessions: Array.from({ length: quotaCount }, (_, index) =>
             sessionDoc({
-              anonymousClientIdHash: 'anon_hash',
+              clientIpHash: 'ip_hash',
               createdAt: now - RATE_WINDOW_MS - 1000 - index,
             }),
           ),
         }),
         {
-          anonymousClientIdHash: 'anon_hash',
+          clientIpHash: 'ip_hash',
           now,
           disableLimits: false,
         },
@@ -348,13 +349,12 @@ describe('session creation helpers', () => {
     })
   })
 
-  it('requires a server IP bucket in public preview mode', async () => {
+  it('requires a server IP bucket for anonymous generation', async () => {
     await expect(
       loadGenerationAdmission(ctxFor({ sessions: [] }), {
         anonymousClientIdHash: 'anon_hash',
         now: Date.now(),
         disableLimits: false,
-        publicPreviewMode: true,
       }),
     ).rejects.toMatchObject({
       data: {
@@ -363,7 +363,7 @@ describe('session creation helpers', () => {
     })
   })
 
-  it('uses the server IP bucket for public preview anonymous admission', async () => {
+  it('uses the server IP bucket for anonymous admission', async () => {
     const now = Date.now()
 
     await expect(
@@ -382,7 +382,6 @@ describe('session creation helpers', () => {
           clientIpHash: 'ip_hash',
           now,
           disableLimits: false,
-          publicPreviewMode: true,
         },
       ),
     ).resolves.toMatchObject({
@@ -500,6 +499,34 @@ describe('session creation helpers', () => {
     })
   })
 
+  it('bypasses rate limit and quota when isAdmin is true', async () => {
+    const now = Date.now()
+
+    await expect(
+      loadGenerationAdmission(
+        ctxFor({
+          sessions: Array.from(
+            { length: MAX_FREE_PER_MONTH + SHORT_WINDOW_LIMIT },
+            (_, index) =>
+              sessionDoc({
+                userId: 'user_admin',
+                createdAt: now - index,
+              }),
+          ),
+        }),
+        {
+          userId: 'user_admin',
+          now,
+          disableLimits: false,
+          isAdmin: true,
+        },
+      ),
+    ).resolves.toMatchObject({
+      quotaLimit: MAX_FREE_PER_MONTH,
+      quotaCount: MAX_FREE_PER_MONTH + SHORT_WINDOW_LIMIT,
+    })
+  })
+
   it('creates a queued session and schedules generation with normalized inputs', async () => {
     vi.stubEnv('OPENUI_HOME_MODEL', 'gemini-2.5-flash')
     vi.stubEnv('GEMINI_API_KEY', 'test-gemini-key')
@@ -517,6 +544,7 @@ describe('session creation helpers', () => {
         workspace: 'workspace-create',
         anonymousOwnerSecret: 'owner-secret',
         anonymousClientId: 'anon-client',
+        clientIpHash: 'ip_hash_create',
         designReferenceUrls: [
           ' https://example.com/inspiration#hero ',
           'https://example.com/second',
@@ -629,6 +657,7 @@ describe('session creation helpers', () => {
         preferredExportTarget: 'html',
         isPrivate: false,
         workspace: 'workspace-config-failure',
+        clientIpHash: 'ip_hash_config_failure',
       },
       references,
     )

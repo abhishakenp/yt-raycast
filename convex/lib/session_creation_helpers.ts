@@ -16,6 +16,7 @@ import {
   getUserEmail,
   getUserId,
   hashOwnerSecret,
+  isUserAdmin,
 } from './session_access_helpers'
 import { cloneCachedGeneratedArtifacts } from './session_artifact_helpers'
 import { reserveDefaultDeploymentSlug } from './session_deployment_helpers'
@@ -47,12 +48,6 @@ export function areGenerationLimitsDisabled(
   env: GenerationLimitEnv = process.env,
 ): boolean {
   return env.DISABLE_LIMIT === 'true' || env.IS_DEV === 'true'
-}
-
-export function isPublicPreviewModeEnabled(
-  env: Record<string, string | undefined> = process.env,
-): boolean {
-  return env.SHIP_FAST_PUBLIC_PREVIEW_MODE === 'true'
 }
 
 export async function findReusablePromptCacheSession(
@@ -130,7 +125,7 @@ export type GenerationAdmissionInput = {
   clientIpHash?: string
   now: number
   disableLimits: boolean
-  publicPreviewMode?: boolean
+  isAdmin?: boolean
 }
 
 export type GenerationAdmission = {
@@ -143,14 +138,10 @@ export async function loadGenerationAdmission(
   ctx: SessionCreationCtx,
   args: GenerationAdmissionInput,
 ): Promise<GenerationAdmission> {
-  if (
-    args.publicPreviewMode === true &&
-    args.userId === undefined &&
-    args.clientIpHash === undefined
-  ) {
+  if (args.userId === undefined && args.clientIpHash === undefined) {
     throw new ConvexError({
       code: 'CLIENT_IP_REQUIRED',
-      message: 'Public preview generation requires a server IP bucket.',
+      message: 'Anonymous generation requires a server IP bucket.',
     })
   }
 
@@ -166,29 +157,20 @@ export async function loadGenerationAdmission(
           )
           .order('desc')
           .take(MAX_PAID_PER_MONTH + SHORT_WINDOW_LIMIT + 1)
-      : args.publicPreviewMode === true && args.clientIpHash !== undefined
-        ? await ctx.db
-            .query('sessions')
-            .withIndex('by_clientIpHash_createdAt', (index) =>
-              index.eq('clientIpHash', args.clientIpHash),
-            )
-            .order('desc')
-            .take(MAX_PAID_PER_MONTH + SHORT_WINDOW_LIMIT + 1)
-        : args.anonymousClientIdHash === undefined
-          ? []
-          : await ctx.db
-              .query('sessions')
-              .withIndex('by_anonymousClientIdHash_createdAt', (index) =>
-                index.eq('anonymousClientIdHash', args.anonymousClientIdHash),
-              )
-              .order('desc')
-              .take(MAX_PAID_PER_MONTH + SHORT_WINDOW_LIMIT + 1)
+      : await ctx.db
+          .query('sessions')
+          .withIndex('by_clientIpHash_createdAt', (index) =>
+            index.eq('clientIpHash', args.clientIpHash),
+          )
+          .order('desc')
+          .take(MAX_PAID_PER_MONTH + SHORT_WINDOW_LIMIT + 1)
   const recentCount = sameOwnerSessions.filter(
     (session) => session.createdAt >= recentCutoff,
   ).length
 
   recentCount < SHORT_WINDOW_LIMIT ||
     args.disableLimits ||
+    args.isAdmin ||
     (() => {
       throw new ConvexError({
         code: 'RATE_LIMITED',
@@ -230,14 +212,13 @@ export async function loadGenerationAdmission(
 
   quotaCount < quotaLimit ||
     args.disableLimits ||
+    args.isAdmin ||
     (() => {
       throw new ConvexError({
         code: 'QUOTA_EXCEEDED',
         message:
           args.userId === undefined
-            ? args.publicPreviewMode === true
-              ? 'Free preview quota exhausted for this IP address. Try again tomorrow.'
-              : 'Anonymous daily quota exhausted. Share on social media for +1 free generation, or sign in to continue.'
+            ? 'Anonymous daily quota exhausted. Share on social media for +1 free generation, or sign in to continue.'
             : 'Monthly quota exhausted',
       })
     })()
@@ -285,11 +266,11 @@ export async function createGenerationSession(
   references: CreateGenerationSessionReferences,
 ): Promise<CreateGenerationSessionResult> {
   const disableLimits = areGenerationLimitsDisabled()
-  const publicPreviewMode = isPublicPreviewModeEnabled()
   const prompt = args.prompt.trim()
   const isDraft = args.isDraft === true
   const userId = await getUserId(ctx)
   const ownerEmail = userId === undefined ? undefined : await getUserEmail(ctx)
+  const isAdmin = userId !== undefined && (await isUserAdmin(ctx))
   const anonOwnerSecretHash =
     userId === undefined && args.anonymousOwnerSecret !== undefined
       ? await hashOwnerSecret(args.anonymousOwnerSecret)
@@ -392,7 +373,7 @@ export async function createGenerationSession(
     clientIpHash,
     now,
     disableLimits,
-    publicPreviewMode,
+    isAdmin,
   })
 
   const sessionId = await ctx.db.insert('sessions', {
