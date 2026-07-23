@@ -466,6 +466,7 @@ export const HomePage = () => {
                           </div>
                         </div>
 
+                        {/* Design reference panel — hidden for now (toggle removed)
                         <div
                           className={cn(
                             'rounded-2xl border border-white/10 bg-white/[0.03] p-3',
@@ -517,6 +518,7 @@ export const HomePage = () => {
                             creates an original layout.
                           </p>
                         </div>
+                        */}
 
                         <input
                           type="hidden"
@@ -539,6 +541,7 @@ export const HomePage = () => {
 
                         <div className="mt-1.5 flex w-full flex-wrap items-center justify-between gap-3">
                           <div className="flex flex-wrap items-center gap-4">
+                            {/* Layout inspiration toggle — hidden for now
                             <div className="flex shrink-0 items-center gap-2.5">
                               <input
                                 type="checkbox"
@@ -556,6 +559,8 @@ export const HomePage = () => {
                                 Layout inspiration
                               </label>
                             </div>
+                            */}
+                            {/* Engine version v1/v2/v3 selector — hidden for now
                             <div
                               className="flex shrink-0 items-center gap-1 rounded-full border border-white/15 bg-white/[0.06] p-0.5"
                               role="group"
@@ -582,6 +587,7 @@ export const HomePage = () => {
                                 </button>
                               ))}
                             </div>
+                            */}
                           </div>
                           <GlassPillButton
                             type="submit"
