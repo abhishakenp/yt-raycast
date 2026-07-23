@@ -50,6 +50,10 @@ export type ClaimAnonymousSessionsByClientIdInput = {
   anonymousClientId: string
 }
 
+export type ClaimAnonymousSessionsByIpInput = {
+  clientIpHash: string
+}
+
 export type SetSessionThemeOverrideInput = {
   sessionId: Id<'sessions'>
   anonymousOwnerSecret?: string
@@ -321,6 +325,50 @@ export async function claimAnonymousSessionsByClientId(
     .query('sessions')
     .withIndex('by_anonymousClientIdHash', (index) =>
       index.eq('anonymousClientIdHash', anonymousClientIdHash),
+    )
+    .collect()
+
+  const now = Date.now()
+  let claimed = 0
+  for (const session of sessions) {
+    if (session.userId !== undefined) continue
+    if (session.deletedAt !== undefined) continue
+    await ctx.db.patch(session._id, {
+      userId,
+      anonOwnerSecretHash: undefined,
+      updatedAt: now,
+    })
+    claimed += 1
+  }
+
+  return { claimed }
+}
+
+// Link ALL anonymous sessions on a given IP to the signed-in userId. Called on
+// sign-in so /mine ownership follows the user across the anon→authenticated
+// transition. The clientIpHash is derived server-side from request headers
+// (unforgeable), unlike the localStorage anonymousClientId. Skips sessions
+// already owned by anyone (including the caller). Idempotent.
+//
+// Note: this is for /mine ownership only. Quota counting uses the union of the
+// IP and userId buckets directly in loadGenerationAdmission, so claiming is not
+// on the quota critical path.
+export async function claimAnonymousSessionsByIp(
+  ctx: MutationCtx,
+  args: ClaimAnonymousSessionsByIpInput,
+) {
+  const userId = await getUserId(ctx)
+  if (userId === undefined) {
+    throw new ConvexError({
+      code: 'AUTH_REQUIRED',
+      message: 'Sign in to claim anonymous sessions',
+    })
+  }
+
+  const sessions = await ctx.db
+    .query('sessions')
+    .withIndex('by_clientIpHash', (index) =>
+      index.eq('clientIpHash', args.clientIpHash),
     )
     .collect()
 

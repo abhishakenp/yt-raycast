@@ -111,6 +111,10 @@ export const claimAnonymousByClientIdArgs = {
   anonymousClientId: v.string(),
 }
 
+export const claimAnonymousByIpArgs = {
+  clientIpHash: v.string(),
+}
+
 export const publishPreviewArgs = {
   ...ownedSessionArgs,
   requestedSlug: v.optional(v.string()),

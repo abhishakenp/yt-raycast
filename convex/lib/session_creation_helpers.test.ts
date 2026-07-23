@@ -15,6 +15,7 @@ import {
   MAX_ANON_PER_DAY,
   MAX_ANON_PER_DAY_WITH_BONUS,
   MAX_ANON_PER_MONTH,
+  MAX_FREE_AUTH_PER_DAY,
   MAX_FREE_PER_MONTH,
   MAX_PAID_PER_MONTH,
   RATE_WINDOW_MS,
@@ -875,5 +876,218 @@ describe('session creation helpers', () => {
       vi.doUnmock('./session_creation_helpers')
       vi.resetModules()
     }
+  })
+
+  // ---------------------------------------------------------------------------
+  // Union (IP + userId) quota counting — blocks both the multi-account-on-same-
+  // IP bypass and the multi-device-same-account bypass.
+  // ---------------------------------------------------------------------------
+
+  it('counts the union of IP and userId buckets for authenticated users', async () => {
+    const now = Date.now()
+    // 2 anon sessions on IP-A (no userId) + 2 auth sessions for user_1 on IP-A.
+    // Union = 4 distinct sessions. Free-auth daily limit is 5, so this passes
+    // with 1 remaining in the daily window.
+    const sessions = [
+      sessionDoc({
+        _id: 'anon_1' as Doc<'sessions'>['_id'],
+        _creationTime: 4,
+        clientIpHash: 'ip_a',
+        createdAt: now - 1000,
+      }),
+      sessionDoc({
+        _id: 'anon_2' as Doc<'sessions'>['_id'],
+        _creationTime: 3,
+        clientIpHash: 'ip_a',
+        createdAt: now - 2000,
+      }),
+      sessionDoc({
+        _id: 'auth_1' as Doc<'sessions'>['_id'],
+        _creationTime: 2,
+        userId: 'user_1',
+        clientIpHash: 'ip_a',
+        createdAt: now - 3000,
+      }),
+      sessionDoc({
+        _id: 'auth_2' as Doc<'sessions'>['_id'],
+        _creationTime: 1,
+        userId: 'user_1',
+        clientIpHash: 'ip_a',
+        createdAt: now - 4000,
+      }),
+    ]
+
+    await expect(
+      loadGenerationAdmission(ctxFor({ sessions }), {
+        userId: 'user_1',
+        clientIpHash: 'ip_a',
+        now,
+        disableLimits: false,
+      }),
+    ).resolves.toMatchObject({
+      quotaCount: 4,
+    })
+  })
+
+  it('dedupes sessions that appear in both the IP and userId buckets', async () => {
+    const now = Date.now()
+    // A session owned by user_1 on IP-A appears in BOTH the by_clientIpHash and
+    // by_userId query results. It must be counted once, not twice.
+    const shared = sessionDoc({
+      _id: 'shared' as Doc<'sessions'>['_id'],
+      _creationTime: 1,
+      userId: 'user_1',
+      clientIpHash: 'ip_a',
+      createdAt: now - 1000,
+    })
+
+    await expect(
+      loadGenerationAdmission(ctxFor({ sessions: [shared] }), {
+        userId: 'user_1',
+        clientIpHash: 'ip_a',
+        now,
+        disableLimits: false,
+      }),
+    ).resolves.toMatchObject({
+      quotaCount: 1,
+    })
+  })
+
+  it('blocks multi-account bypass: a second account on the same IP inherits the IP bucket', async () => {
+    const now = Date.now()
+    // user_1 has already hit the free-auth daily limit (5 sessions on IP-A).
+    // user_2 signs in on the same IP — the union of IP-A (5) + user_2 (0) = 5,
+    // so user_2 is also blocked. This prevents creating a fresh account to get
+    // more quota on the same network.
+    const sessions = Array.from({ length: MAX_FREE_AUTH_PER_DAY }, (_, index) =>
+      sessionDoc({
+        _id: `user1_${index}` as Doc<'sessions'>['_id'],
+        _creationTime: MAX_FREE_AUTH_PER_DAY - index,
+        userId: 'user_1',
+        clientIpHash: 'ip_a',
+        createdAt: now - RATE_WINDOW_MS - 1000 - index,
+      }),
+    )
+
+    await expect(
+      loadGenerationAdmission(ctxFor({ sessions }), {
+        userId: 'user_2',
+        clientIpHash: 'ip_a',
+        now,
+        disableLimits: false,
+      }),
+    ).rejects.toMatchObject({
+      data: { code: 'AUTH_DAILY_LIMIT_REACHED' },
+    })
+  })
+
+  it('blocks multi-device bypass: anon sessions on IP-B count against the userId after login on IP-B', async () => {
+    const now = Date.now()
+    // 3 anon sessions on IP-B (phone), then the user logs in on IP-B. The union
+    // of IP-B (3) + user_1 (0) = 3, so the auth daily limit of 5 allows 2 more.
+    // After 2 more auth sessions, the union = 5 and the next is blocked.
+    const anonSessions = Array.from({ length: 3 }, (_, index) =>
+      sessionDoc({
+        _id: `anon_b_${index}` as Doc<'sessions'>['_id'],
+        _creationTime: 10 - index,
+        clientIpHash: 'ip_b',
+        createdAt: now - RATE_WINDOW_MS - 1000 - index,
+      }),
+    )
+
+    // 3 anon on IP-B → login → 2 more auth on IP-B = 5 total → next blocked.
+    const authSessions = Array.from({ length: 2 }, (_, index) =>
+      sessionDoc({
+        _id: `auth_b_${index}` as Doc<'sessions'>['_id'],
+        _creationTime: 5 - index,
+        userId: 'user_1',
+        clientIpHash: 'ip_b',
+        createdAt: now - RATE_WINDOW_MS - 5000 - index,
+      }),
+    )
+
+    await expect(
+      loadGenerationAdmission(
+        ctxFor({ sessions: [...anonSessions, ...authSessions] }),
+        {
+          userId: 'user_1',
+          clientIpHash: 'ip_b',
+          now,
+          disableLimits: false,
+        },
+      ),
+    ).rejects.toMatchObject({
+      data: { code: 'AUTH_DAILY_LIMIT_REACHED' },
+    })
+  })
+
+  it('monthly union cap blocks across devices after the daily window resets', async () => {
+    const now = Date.now()
+    // 5 sessions on IP-A (laptop) 2 days ago + 5 sessions on IP-B (phone) 1 day
+    // ago, all owned by user_1. Daily windows have reset, but the monthly union
+    // = 10 = MAX_FREE_PER_MONTH, so the next is blocked by QUOTA_EXCEEDED.
+    const laptopSessions = Array.from({ length: 5 }, (_, index) =>
+      sessionDoc({
+        _id: `laptop_${index}` as Doc<'sessions'>['_id'],
+        _creationTime: 20 - index,
+        userId: 'user_1',
+        clientIpHash: 'ip_a',
+        createdAt: now - 2 * 24 * 60 * 60 * 1000 - index,
+      }),
+    )
+    const phoneSessions = Array.from({ length: 5 }, (_, index) =>
+      sessionDoc({
+        _id: `phone_${index}` as Doc<'sessions'>['_id'],
+        _creationTime: 10 - index,
+        userId: 'user_1',
+        clientIpHash: 'ip_b',
+        createdAt: now - 24 * 60 * 60 * 1000 - index,
+      }),
+    )
+
+    await expect(
+      loadGenerationAdmission(
+        ctxFor({ sessions: [...laptopSessions, ...phoneSessions] }),
+        {
+          userId: 'user_1',
+          clientIpHash: 'ip_c',
+          now,
+          disableLimits: false,
+        },
+      ),
+    ).rejects.toMatchObject({
+      data: { code: 'QUOTA_EXCEEDED' },
+    })
+  })
+
+  it('stores clientIpHash on authenticated sessions, not just anonymous ones', async () => {
+    vi.stubEnv('OPENUI_HOME_MODEL', 'gemini-2.5-flash')
+    vi.stubEnv('GEMINI_API_KEY', 'test-gemini-key')
+    vi.stubEnv('DISABLE_LIMIT', 'true')
+    const references = createReferences()
+    const { ctx, inserted } = createMutationCtxFor({}, {
+      subject: 'user_1',
+      tokenIdentifier: 'clerk|user_1',
+      email: 'user@example.com',
+    } as TestIdentity)
+
+    await createGenerationSession(
+      ctx,
+      {
+        prompt: 'Build an authed site',
+        preferredLanguage: 'en',
+        preferredExportTarget: 'html',
+        isPrivate: false,
+        workspace: 'workspace-authed-ip',
+        clientIpHash: 'ip_hash_authed',
+      },
+      references,
+    )
+
+    const session = inserted.find((row) => row.table === 'sessions')
+    expect(session?.value).toMatchObject({
+      userId: 'clerk|user_1',
+      clientIpHash: 'ip_hash_authed',
+    })
   })
 })
