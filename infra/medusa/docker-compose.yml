@@ -81,6 +81,20 @@ services:
       timeout: 5s
       retries: 12
       start_period: 60s
+    labels:
+      - traefik.docker.network=dokploy-network
+      - traefik.enable=true
+      - traefik.http.routers.ship-fast-medusa-direct-web.entrypoints=web
+      - traefik.http.routers.ship-fast-medusa-direct-web.middlewares=redirect-to-https@file
+      - traefik.http.routers.ship-fast-medusa-direct-web.priority=300
+      - traefik.http.routers.ship-fast-medusa-direct-web.rule=Host(`medusa.devliv.io`)
+      - traefik.http.routers.ship-fast-medusa-direct-web.service=ship-fast-medusa-direct
+      - traefik.http.routers.ship-fast-medusa-direct-websecure.entrypoints=websecure
+      - traefik.http.routers.ship-fast-medusa-direct-websecure.priority=300
+      - traefik.http.routers.ship-fast-medusa-direct-websecure.rule=Host(`medusa.devliv.io`)
+      - traefik.http.routers.ship-fast-medusa-direct-websecure.service=ship-fast-medusa-direct
+      - traefik.http.routers.ship-fast-medusa-direct-websecure.tls.certresolver=letsencrypt
+      - traefik.http.services.ship-fast-medusa-direct.loadbalancer.server.port=9000
     networks:
       - medusa-internal
       - dokploy-network
