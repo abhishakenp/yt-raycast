@@ -261,6 +261,29 @@ describe('usePromptHomeController submit guard', () => {
     })
   })
 
+  it('clears the prompt after a successful generation', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        sessionId: 'session_clear_prompt',
+        cached: false,
+      }),
+    } as Response)
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.setPrompt('Build a product website')
+    })
+    expect(result.current.prompt).toBe('Build a product website')
+
+    await act(async () => {
+      await result.current.submitPrompt()
+    })
+
+    expect(result.current.prompt).toBe('')
+  })
+
   it('uses the server create route for all session creation', async () => {
     const state = getTestState()
     vi.mocked(fetch).mockResolvedValueOnce({

@@ -490,6 +490,8 @@ export const usePromptHomeController = () => {
       } catch {
         window.location.assign(getGeneratedSessionPath(sessionId))
       }
+
+      setPrompt('')
     } catch (error) {
       await waitForMinimumLaunchFeedback(launchFeedbackStartedAt)
       submitInFlightRef.current = false
