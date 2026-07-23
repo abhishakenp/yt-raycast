@@ -4,7 +4,7 @@ Shared Medusa v2 backend for generated Ship Fast commerce sessions.
 
 Production topology:
 
-- one Medusa server at `https://medusa.devliv.io`
+- one Medusa server at `https://medusa.ship-fast.ai`
 - one Medusa worker sharing the same Postgres and Redis
 - session isolation by Medusa sales channel, publishable API key, and scoped product handles
 
@@ -21,8 +21,8 @@ Required production secrets live in Dokploy environment variables, not in this r
 
 After deployment, configure Ship Fast with:
 
-- `MEDUSA_BACKEND_URL=https://medusa.devliv.io`
-- `MEDUSA_ADMIN_URL=https://medusa.devliv.io/app`
+- `MEDUSA_BACKEND_URL=https://medusa.ship-fast.ai`
+- `MEDUSA_ADMIN_URL=https://medusa.ship-fast.ai/app`
 - `MEDUSA_STOREFRONT_URL=https://ship-fast.io`
 - Medusa admin credentials or `MEDUSA_ADMIN_API_TOKEN`
 - `MEDUSA_PUBLISHABLE_API_KEY` fallback for API-root store routes
