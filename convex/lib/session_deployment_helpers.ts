@@ -326,7 +326,7 @@ export async function loadDeploymentBySlug(
   if (deployment === null) return null
 
   const session = await ctx.db.get(deployment.sessionId)
-  if (session === null) return null
+  if (session === null || session.deletedAt !== undefined) return null
 
   const includeBadge = await resolveDeploymentBadgeEntitlement(
     ctx,

@@ -121,9 +121,16 @@ export async function isSessionOwner(
 
 export async function assertCanReadOwnedSession(
   ctx: AuthCtx,
-  session: { userId?: string; anonOwnerSecretHash?: string },
+  session: {
+    userId?: string
+    anonOwnerSecretHash?: string
+    deletedAt?: number
+  },
   anonymousOwnerSecret?: string,
 ) {
+  if (session.deletedAt !== undefined) {
+    throw new ConvexError({ code: 'NOT_FOUND', message: 'Session not found' })
+  }
   if (isAuthDisabled()) return
   ;(await isSessionOwner(ctx, session, anonymousOwnerSecret)) ||
     (() => {
@@ -140,9 +147,11 @@ export async function canReadPrivateSession(
     isPrivate?: boolean
     userId?: string
     anonOwnerSecretHash?: string
+    deletedAt?: number
   },
   anonymousOwnerSecret?: string,
 ): Promise<boolean> {
+  if (session.deletedAt !== undefined) return false
   if (session.isPrivate !== true || isAuthDisabled()) return true
   if (!('auth' in ctx)) return false
   return isSessionOwner(ctx, session, anonymousOwnerSecret)
@@ -167,9 +176,16 @@ export async function assertCanReadPrivateSession(
 
 export async function assertCanMutateSession(
   ctx: AuthCtx,
-  session: { userId?: string; anonOwnerSecretHash?: string },
+  session: {
+    userId?: string
+    anonOwnerSecretHash?: string
+    deletedAt?: number
+  },
   anonymousOwnerSecret?: string,
 ) {
+  if (session.deletedAt !== undefined) {
+    throw new ConvexError({ code: 'NOT_FOUND', message: 'Session not found' })
+  }
   if (areExportPaywallsDisabled() || isAuthDisabled()) return
   if (await isUserAdmin(ctx)) return
   ;(await isSessionOwner(ctx, session, anonymousOwnerSecret)) ||

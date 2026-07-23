@@ -267,6 +267,7 @@ export async function loadSessionCommerceConfig(
   const session = await ctx.db.get(sessionId)
   if (
     session === null ||
+    session.deletedAt !== undefined ||
     (session.isPrivate === true && !(await canReadPrivateSession(ctx, session)))
   ) {
     return null

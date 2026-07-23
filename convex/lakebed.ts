@@ -100,7 +100,7 @@ async function getSessionOrThrow(
   sessionId: Id<'sessions'>,
 ) {
   const session = await ctx.db.get(sessionId)
-  if (!session) {
+  if (!session || session.deletedAt !== undefined) {
     throw new ConvexError({
       code: 'NOT_FOUND',
       message: `Session "${sessionId}" does not exist`,

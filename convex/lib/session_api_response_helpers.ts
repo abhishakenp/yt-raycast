@@ -134,7 +134,7 @@ export async function loadSessionApiResponse(
   if (sessionId === null) return null
 
   const session = await ctx.db.get(sessionId)
-  if (session === null) return null
+  if (session === null || session.deletedAt !== undefined) return null
 
   // Enforce private-session ownership: unauthenticated or wrong-user callers
   // get null instead of the session payload.

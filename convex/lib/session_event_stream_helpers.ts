@@ -30,7 +30,7 @@ export async function loadSessionEventStream(
   if (sessionId === null) return null
 
   const session = await ctx.db.get(sessionId)
-  if (session === null) return null
+  if (session === null || session.deletedAt !== undefined) return null
   await assertCanReadPrivateSession(ctx, session, args.anonymousOwnerSecret)
 
   const limit = clampEventStreamLimit(args.limit)
