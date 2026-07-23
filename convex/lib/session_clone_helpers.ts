@@ -255,7 +255,7 @@ export async function loadClonePagePreview(
 ) {
   const sessionId = ctx.db.normalizeId('sessions', lookup)
   const session = sessionId === null ? null : await ctx.db.get(sessionId)
-  if (session === null) return null
+  if (session === null || session.deletedAt !== undefined) return null
 
   // Private sessions must not be exposed through unauthenticated public
   // preview lookups.

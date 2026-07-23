@@ -119,7 +119,8 @@ export async function listUserImages(
   // Suppress uploaded images for private sessions when the caller is not
   // the owner (unauthenticated list queries return an empty array).
   const session = await ctx.db.get(args.sessionId)
-  if (session?.isPrivate === true) {
+  if (session === null || session.deletedAt !== undefined) return []
+  if (session.isPrivate === true) {
     const owner = await isSessionOwner(ctx, session, undefined)
     if (!owner) return []
   }
