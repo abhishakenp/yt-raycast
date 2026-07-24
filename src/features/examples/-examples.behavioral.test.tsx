@@ -592,7 +592,7 @@ describe('examples route behavior', () => {
     expect(pageSwitch.routes).not.toContain('Pricing')
     expect(pageSwitch.routes).not.toContain('FAQ')
     expect(site?.source).toContain(
-      'AccountingFirmNavbar("Accounting Firm Partners", ["Home","Team","Services","About"], "Team")',
+      'AccountingFirmNavbar("Accounting Firm Partners", ["Home","Team","Services","About"], "Team", "Sign in")',
     )
     expect(site?.source).not.toContain('"Pricing"')
     expect(site?.source).not.toContain('"FAQ"')

@@ -40,6 +40,20 @@ vi.mock('@ship-fast/lakebed/react', () => ({
       }),
     useQuery: () => undefined,
   }),
+  useAuth: () => ({
+    displayName: 'Guest',
+    isAuthenticated: false,
+    isGuest: true,
+    provider: 'guest',
+    user: {
+      displayName: 'Guest',
+      id: 'guest:local',
+      isGuest: true,
+      provider: 'guest',
+      userId: 'guest:local',
+    },
+    userId: 'guest:local',
+  }),
 }))
 
 function renderCapsule(component: CapsuleRenderer<P>, props: P) {

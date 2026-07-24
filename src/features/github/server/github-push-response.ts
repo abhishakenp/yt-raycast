@@ -562,6 +562,20 @@ export async function createGitHubPushResponse(
   try {
     const client = clientOverride ?? createRuntimeConvexHttpClient()
     if (authToken !== null) client.setAuth(authToken)
+
+    // Ensure the export artifact build has been kicked off before checking
+    // its status. Without this, a push attempt when no artifact exists yet
+    // would return "still being prepared" without ever starting the build.
+    try {
+      await client.mutation(api.sessions.ensureExportArtifactByLookup, {
+        lookup: sessionId,
+        target: exportTarget,
+        anonymousOwnerSecret: anonymousOwnerSecret || undefined,
+      })
+    } catch {
+      // Build may already be in flight or preview not ready — proceed
+    }
+
     const exportData = await client.query(
       api.sessions.getOwnedExportForGitHubPushByLookup,
       {

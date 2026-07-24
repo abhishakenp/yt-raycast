@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 import { convexTest } from 'convex-test'
-import { afterEach, expect, test } from 'vitest'
+import { afterEach, beforeEach, expect, test } from 'vitest'
 import { api } from './_generated/api'
 import schema from './schema'
 import {
@@ -28,6 +28,11 @@ function createPayload(stamp: string) {
     workspace: `workspace_authenticated_quota_${stamp}`,
   }
 }
+
+beforeEach(() => {
+  delete process.env.IS_DEV
+  delete process.env.DISABLE_LIMIT
+})
 
 afterEach(() => {
   delete process.env.IS_DEV

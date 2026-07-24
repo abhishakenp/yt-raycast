@@ -10,7 +10,6 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
-import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import {
   AutoAccountButton,
   AutoLeadActionButton,
@@ -47,8 +46,6 @@ export const AutoDealershipNavbar = defineCapsule({
     phone: z.string().optional(),
     /** Solid primary CTA label on the right. */
     cta: z.string().optional(),
-    /** Label for the sign-in button. */
-    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   lakebed: autoDealershipLakebed,
@@ -59,7 +56,6 @@ export const AutoDealershipNavbar = defineCapsule({
       : ['Inventory', 'Financing', 'About', 'Reviews', 'FAQ']
     const phone = props.phone ?? '(555) 0127-456'
     const cta = props.cta ?? 'Book Test Drive'
-    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -93,11 +89,6 @@ export const AutoDealershipNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-4">
-          <SignInButton
-            variant="ghost"
-            label={signIn}
-            className="hidden sm:block"
-          />
           <AutoLeadBadge lakebed={lakebed} />
           <AutoSearchButton
             lakebed={lakebed}

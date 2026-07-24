@@ -45,7 +45,7 @@ async function simulateProvisionResponse(...args: unknown[]) {
 
 function postProvision(body: string) {
   const request = new Request(
-    'https://ship-fast.io/api/sessions/session-private/provision/medusa',
+    'https://ship-fast.ai/api/sessions/session-private/provision/medusa',
     {
       body,
       headers: { 'Content-Type': 'application/json' },

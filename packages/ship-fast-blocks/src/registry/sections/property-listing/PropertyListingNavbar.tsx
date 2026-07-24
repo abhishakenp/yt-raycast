@@ -10,7 +10,6 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
-import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import { propertyListingLakebed } from './property-listing-lakebed.ts'
 import {
   PropertyListingAccountButton,
@@ -64,8 +63,6 @@ export const PropertyListingNavbar = defineCapsule({
     cta: z.string().optional(),
     /** Route label the primary CTA navigates to. */
     ctaTarget: z.string().optional(),
-    /** Label for the sign-in button. */
-    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   lakebed: propertyListingLakebed,
@@ -76,7 +73,6 @@ export const PropertyListingNavbar = defineCapsule({
       : ['For Sale', 'For Rent', 'New', 'Agents']
     const cta = props.cta ?? 'Post Listing'
     const ctaTarget = props.ctaTarget ?? 'Post'
-    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -104,11 +100,6 @@ export const PropertyListingNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-1 sm:gap-1.5">
-          <SignInButton
-            variant="ghost"
-            label={signIn}
-            className="hidden sm:block"
-          />
           <PropertyListingStatusBadge lakebed={lakebed} />
           <PropertyListingSearchButton
             lakebed={lakebed}

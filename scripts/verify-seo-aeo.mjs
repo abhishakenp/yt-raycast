@@ -18,7 +18,7 @@ const baseUrl = (
 const timeoutMs = Number(args.get('--timeout-ms') ?? 90000)
 const ownerSecret = `owner-${Date.now()}`
 const slug = args.get('--slug') ?? `verify-seo-aeo-${Date.now()}`
-const siteUrl = `https://${slug}.ship-fast.io`
+const siteUrl = `https://${slug}.ship-fast.ai`
 const prompt = `SEO AEO verifier ${Date.now()}`
 
 if (!Number.isFinite(timeoutMs) || timeoutMs < 1000) {
@@ -145,7 +145,7 @@ assert(
   'published preview missing SEO title',
 )
 assert(
-  preview.body.includes(`https://${slug}.ship-fast.io/`),
+  preview.body.includes(`https://${slug}.ship-fast.ai/`),
   'published preview missing deployment canonical URL',
 )
 assert(

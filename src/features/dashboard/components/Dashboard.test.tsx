@@ -408,11 +408,9 @@ describe('Dashboard missing session state', () => {
     render(<Dashboard sessionId="ready-cache-session" />)
 
     await waitFor(() => {
-      expect(
-        window.localStorage.getItem(
-          'ship-fast:ready-session:v1:en:a remembered cache website',
-        ),
-      ).toContain('ready-cache-session')
+      expect(window.localStorage.getItem('ship-fast:last-prompt')).toContain(
+        'A remembered cache website',
+      )
     })
   })
 

@@ -57,6 +57,7 @@ vi.mock('@/shared/auth/clerk-runtime', () => ({
 }))
 
 vi.mock('@/shared/auth/use-optional-auth', () => ({
+  useIsAdmin: () => false,
   useOptionalAuth: () => ({
     getToken: async () => null,
     isLoaded: true,
@@ -166,7 +167,9 @@ describe('HomePage rendered entry surface', () => {
       (getByRole('button', { name: /generate/i }) as HTMLButtonElement)
         .disabled,
     ).toBe(true)
-    expect(getByRole('group', { name: 'Engine version' })).toBeTruthy()
+    // The v1/v2/v3 engine selector was intentionally hidden from the
+    // homepage UI (commit 2f104c73).
+    expect(() => getByRole('group', { name: 'Engine version' })).toThrow()
     expect(getByText('Pet wellness')).toBeTruthy()
     expect(
       getAllByRole('link', { name: 'Pricing' })[0]?.getAttribute('href'),

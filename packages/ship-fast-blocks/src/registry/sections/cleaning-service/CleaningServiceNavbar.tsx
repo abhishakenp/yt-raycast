@@ -9,7 +9,6 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
-import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import {
   LocalServiceAccountButton,
   LocalServiceBookingButton,
@@ -50,8 +49,6 @@ export const CleaningServiceNavbar = defineCapsule({
     ctaTarget: z.string().optional(),
     /** Phone number displayed and routed via the phone button. */
     phone: z.string().optional(),
-    /** Label for the sign-in button. */
-    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   lakebed: localServiceLakebed,
@@ -64,7 +61,6 @@ export const CleaningServiceNavbar = defineCapsule({
     const ctaLabel = props.ctaLabel ?? 'Book Cleaning'
     const ctaTarget = props.ctaTarget ?? 'Book Your Cleaning'
     const phone = props.phone ?? '(555) 123-4567'
-    const signIn = props.signIn ?? 'Sign in'
     const SparkleMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
@@ -135,11 +131,6 @@ export const CleaningServiceNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-2.5">
-          <SignInButton
-            variant="ghost"
-            label={signIn}
-            className="hidden sm:block"
-          />
           <LocalServiceIntentBadge lakebed={lakebed} />
           <LocalServiceSearchButton
             lakebed={lakebed}

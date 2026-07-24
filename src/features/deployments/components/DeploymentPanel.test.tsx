@@ -28,6 +28,7 @@ const convexState = vi.hoisted(() => ({
     targets: Array<MockDeploymentTarget>(),
   },
   deploymentStatuses: new Map<string, MockDeploymentStatus>(),
+  lakebedEntitlement: { requiresPayment: false },
   publishPreview: vi.fn(async () => ({ url: 'https://ship-fast.test/site' })),
   ensureExportArtifact: vi.fn(async () => ({
     target: 'lakebed',
@@ -47,10 +48,29 @@ vi.mock('convex/react', () => ({
   },
   useQuery: () => {
     convexState.queryCallCount += 1
-    return convexState.queryCallCount % 2 === 1
-      ? convexState.exportTargets
-      : (convexState.deploymentStatuses.get('current') ?? null)
+    const callIndex = convexState.queryCallCount
+    // Call order: getExportTargets, getDeploymentStatus, getLakebedEntitlement
+    if (callIndex % 3 === 1) return convexState.exportTargets
+    if (callIndex % 3 === 2)
+      return convexState.deploymentStatuses.get('current') ?? null
+    return convexState.lakebedEntitlement
   },
+}))
+
+vi.mock('@/shared/auth/use-optional-auth', () => ({
+  useIsAdmin: () => false,
+  useOptionalAuth: () => ({
+    getToken: vi.fn(async () => null),
+    isSignedIn: false,
+  }),
+}))
+
+vi.mock('@/shared/auth/SignInGate', () => ({
+  useSignInGate: () => ({
+    isGated: false,
+    openSignIn: vi.fn(),
+    requireSignIn: () => true,
+  }),
 }))
 
 function setExportTargets(targets: MockDeploymentTarget[]) {
@@ -90,7 +110,9 @@ describe('DeploymentPanel', () => {
     convexState.publishPreview.mockClear()
     convexState.ensureExportArtifact.mockClear()
     convexState.mutationCallCount = 0
-    setExportTargets([])
+    setExportTargets([
+      { target: 'html', artifactReady: true, artifactStatus: 'ready' },
+    ])
     setDeploymentStatus(null)
     vi.spyOn(window, 'open').mockImplementation(() => null)
   })
@@ -302,11 +324,7 @@ describe('DeploymentPanel', () => {
     expect(button).toBeTruthy()
     if (button) fireEvent.click(button)
 
-    await waitFor(() =>
-      expect(
-        view.getByText('Lakebed app is still being prepared.'),
-      ).toBeTruthy(),
-    )
+    await waitFor(() => expect(view.getByText('Publishing...')).toBeTruthy())
     expect(fetchMock).toHaveBeenCalledWith(
       '/api/sessions/session_123/deploy/lakebed',
       expect.objectContaining({ method: 'POST' }),

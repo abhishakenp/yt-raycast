@@ -189,7 +189,7 @@ async function renderExportedBrowserEntry(
       bundle: true,
       define: {
         'import.meta.env.VITE_SERVER_URL': JSON.stringify(
-          'https://ship-fast.io',
+          'https://ship-fast.ai',
         ),
       },
       entryPoints: [join(directory, 'test-entry.tsx')],
@@ -819,7 +819,7 @@ export function useParams() { return {}; }
     expect(EXPORT_PRETTIER_OPTIONS.trailingComma).toBe('all')
   })
 
-  it('does not ship a .env.local or any ship-fast.io server URL in React exports', async () => {
+  it('does not ship a .env.local or any ship-fast.ai server URL in React exports', async () => {
     const result = await buildOpenUIExport({
       source,
       siteSpecJson,
@@ -834,7 +834,7 @@ export function useParams() { return {}; }
     )
   })
 
-  it('does not ship a .env.local or any ship-fast.io server URL in Next exports', async () => {
+  it('does not ship a .env.local or any ship-fast.ai server URL in Next exports', async () => {
     const result = await buildOpenUIExport({
       source,
       siteSpecJson,
@@ -849,7 +849,7 @@ export function useParams() { return {}; }
     expect(Object.values(files).join('\n')).not.toContain('VITE_SERVER_URL')
   })
 
-  it('whitelists only pexels, picsum, and unsplash image hosts in Next config (no ship-fast.io)', async () => {
+  it('whitelists only pexels, picsum, and unsplash image hosts in Next config (no ship-fast.ai)', async () => {
     const result = await buildOpenUIExport({
       source,
       siteSpecJson,
@@ -862,7 +862,7 @@ export function useParams() { return {}; }
     expect(nextConfig).toContain('images.pexels.com')
     expect(nextConfig).toContain('picsum.photos')
     expect(nextConfig).toContain('images.unsplash.com')
-    expect(nextConfig).not.toContain('ship-fast.io')
+    expect(nextConfig).not.toContain('ship-fast.ai')
   })
 
   // Single explicit guard: exported artifacts (standalone HTML + React/Next

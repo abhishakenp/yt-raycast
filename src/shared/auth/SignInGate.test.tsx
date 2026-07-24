@@ -18,6 +18,7 @@ const { mockAuth, mockClerk, mockClerkClientEnabled } = vi.hoisted(() => ({
 }))
 
 vi.mock('@/shared/auth/use-optional-auth', () => ({
+  useIsAdmin: () => false,
   useOptionalAuth: () => ({
     isLoaded: mockAuth.isLoaded,
     isSignedIn: mockAuth.isSignedIn,

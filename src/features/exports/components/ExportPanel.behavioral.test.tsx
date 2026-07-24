@@ -538,6 +538,104 @@ describe('ExportPanel behavioral', () => {
     expect(view.getByText(/export is still building/i)).toBeTruthy()
   })
 
+  it('clicking a non-ready target triggers ensureExportArtifact and shows progress, then auto-downloads when ready', async () => {
+    // Regression: clicking a target whose artifact hasn't been built yet
+    // must trigger the async build (ensureExportArtifact), show a progress
+    // indicator from the live subscription, and auto-download once the
+    // artifact becomes ready — NOT throw "Export is still building." as an
+    // error.
+    setExportTargets([
+      target({
+        target: 'react',
+        ready: false,
+        status: 'available',
+        artifactReady: false,
+        artifactStatus: 'not_ready',
+        downloadUrl: null,
+      }),
+    ])
+    const clickMock = silenceAnchorClick()
+    const { createObjectUrl, revokeObjectUrl } = installUrlMocks()
+    const fetchMock = vi.fn(async (url: string) => {
+      const path = String(url)
+      if (path.endsWith('/download/react')) {
+        return new Response('zip-bytes', {
+          headers: {
+            'content-disposition': 'attachment; filename="react-app.zip"',
+          },
+        })
+      }
+      return Response.json({ error: 'unexpected' }, { status: 500 })
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    exportTargetsState.ensureExportArtifact.mockResolvedValue({
+      target: 'react',
+      status: 'queued',
+      previewVersion: 1,
+    })
+
+    const view = render(<ExportPanel sessionId="session_123" />)
+    const button = view.getByText('React').closest('button')
+    expect(button).toBeTruthy()
+    if (button) fireEvent.click(button)
+
+    // ensureExportArtifact was called (triggers the async build)
+    await waitFor(() =>
+      expect(exportTargetsState.ensureExportArtifact).toHaveBeenCalledWith({
+        lookup: 'session_123',
+        target: 'react',
+        anonymousOwnerSecret: undefined,
+      }),
+    )
+
+    // No download attempted yet — artifact isn't ready
+    expect(fetchMock).not.toHaveBeenCalled()
+
+    // Subscription updates: build is in progress → progress UI shows
+    setExportTargets([
+      target({
+        target: 'react',
+        ready: false,
+        status: 'available',
+        artifactReady: false,
+        artifactStatus: 'building',
+        artifactProgressStage: 'Generating components',
+        artifactProgressPercent: 50,
+        downloadUrl: null,
+      }),
+    ])
+    view.rerender(<ExportPanel sessionId="session_123" />)
+    await waitFor(() =>
+      expect(view.getByText('Generating components · 50%')).toBeTruthy(),
+    )
+
+    // Subscription updates: artifact is ready → auto-download triggers
+    setExportTargets([
+      target({
+        target: 'react',
+        ready: true,
+        status: 'ready',
+        artifactReady: true,
+        artifactStatus: 'ready',
+        downloadUrl: '/api/sessions/session_123/download/react',
+      }),
+    ])
+    view.rerender(<ExportPanel sessionId="session_123" />)
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled())
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/sessions/session_123/download/react',
+      { headers: { Authorization: 'Bearer app-token' } },
+    )
+    expect(createObjectUrl).toHaveBeenCalled()
+    expect(clickMock).toHaveBeenCalled()
+    expect(revokeObjectUrl).toHaveBeenCalledWith('blob:export')
+
+    // No error was shown at any point
+    expect(view.queryByText(/export is still building/i)).toBeNull()
+    expect(view.container.querySelector('.border-rose-500\\/30')).toBeNull()
+  })
+
   it('sends the persisted anonymous owner secret on ready downloads and new export creation', async () => {
     persistAnonymousOwnerSecret(
       window.localStorage,
@@ -558,8 +656,8 @@ describe('ExportPanel behavioral', () => {
         target: 'react',
         ready: false,
         status: 'available',
-        artifactReady: false,
-        artifactStatus: 'not_ready',
+        artifactReady: true,
+        artifactStatus: 'ready',
         downloadUrl: null,
       }),
     ])
@@ -671,8 +769,8 @@ describe('ExportPanel behavioral', () => {
         target: 'react',
         ready: false,
         status: 'available',
-        artifactReady: false,
-        artifactStatus: 'not_ready',
+        artifactReady: true,
+        artifactStatus: 'ready',
         downloadUrl: null,
       }),
     ])
@@ -759,24 +857,13 @@ describe('ExportPanel behavioral', () => {
         downloadUrl: null,
       }),
     ])
-    const pending = deferred()
-    const fetchMock = vi.fn(async (url) => {
-      if (String(url).endsWith('/export')) return pending.promise
-      return new Response('zip-bytes')
-    })
-    vi.stubGlobal('fetch', fetchMock)
-    installUrlMocks()
 
     const view = render(<ExportPanel sessionId="session_123" />)
-    const button = view.getByText('HTML').closest('button')
-    expect(button).toBeTruthy()
-    if (button) fireEvent.click(button)
 
+    // Stage 1: loading-generator → 26% (shown from subscription, no click needed)
     await waitFor(() =>
       expect(view.getByText('Loading generator · 26%')).toBeTruthy(),
     )
-    pending.resolve(Response.json({ ok: true }))
-    await waitFor(() => expect(button?.disabled).toBe(false))
 
     // parsing → 38%
     setExportTargets([
@@ -792,18 +879,9 @@ describe('ExportPanel behavioral', () => {
       }),
     ])
     view.rerender(<ExportPanel sessionId="session_123" />)
-    const pendingParsing = deferred()
-    fetchMock.mockImplementation(async (url) => {
-      if (String(url).endsWith('/export')) return pendingParsing.promise
-      return new Response('zip-bytes')
-    })
-    const buttonParsing = view.getByText('HTML').closest('button')
-    if (buttonParsing) fireEvent.click(buttonParsing)
     await waitFor(() =>
       expect(view.getByText('Parsing source · 38%')).toBeTruthy(),
     )
-    pendingParsing.resolve(Response.json({ ok: true }))
-    await waitFor(() => expect(buttonParsing?.disabled).toBe(false))
 
     // generating → 76%
     setExportTargets([
@@ -819,17 +897,9 @@ describe('ExportPanel behavioral', () => {
       }),
     ])
     view.rerender(<ExportPanel sessionId="session_123" />)
-    const pendingGenerating = deferred()
-    fetchMock.mockImplementation(async (url) => {
-      if (String(url).endsWith('/export')) return pendingGenerating.promise
-      return new Response('zip-bytes')
-    })
-    const buttonGenerating = view.getByText('HTML').closest('button')
-    if (buttonGenerating) fireEvent.click(buttonGenerating)
     await waitFor(() =>
       expect(view.getByText('Generating components · 76%')).toBeTruthy(),
     )
-    pendingGenerating.resolve(Response.json({ ok: true }))
   })
 
   it('file count prop is accepted without breaking the target render', () => {

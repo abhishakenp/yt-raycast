@@ -60,7 +60,7 @@ const publish = convexRun('sessions:publishPreview', {
 assert(publish.slug === slug, 'publishPreview returned a different slug')
 assert(publish.status === 'ready', 'publishPreview did not return ready status')
 assert(
-  publish.url === `https://${slug}.ship-fast.io`,
+  publish.url === `https://${slug}.ship-fast.ai`,
   'publishPreview returned wrong public URL',
 )
 
@@ -91,7 +91,7 @@ assert(
   'preview HTML did not contain generated prompt',
 )
 assert(
-  preview.body.includes(`https://${slug}.ship-fast.io/`),
+  preview.body.includes(`https://${slug}.ship-fast.ai/`),
   'preview HTML did not include canonical public URL',
 )
 assertNoBackendLeak(preview.body)

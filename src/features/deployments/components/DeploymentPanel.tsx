@@ -3,6 +3,7 @@ import {
   ExternalLink,
   Globe2,
   LoaderCircle,
+  Lock,
   Rocket,
   TriangleAlert,
 } from 'lucide-react'
@@ -20,6 +21,8 @@ import {
   AlertDialogMedia,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { useIsAdmin, useOptionalAuth } from '@/shared/auth/use-optional-auth'
+import { useSignInGate } from '@/shared/auth/SignInGate'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 import { readJsonOrThrow } from '@/lib/safe-fetch'
 import { useProgressTick } from '@/features/exports/hooks/use-progress-tick'
@@ -63,12 +66,16 @@ type DeploymentPanelError = {
 async function publishLakebedViaApi(
   sessionId: string,
   anonymousOwnerSecret?: string,
+  appToken?: string | null,
 ): Promise<PublishResult> {
   const response = await fetch(
     `/api/sessions/${encodeURIComponent(sessionId)}/deploy/lakebed`,
     {
       body: JSON.stringify({ anonymousOwnerSecret }),
-      headers: { 'content-type': 'application/json' },
+      headers: {
+        'content-type': 'application/json',
+        ...(appToken ? { Authorization: `Bearer ${appToken}` } : {}),
+      },
       method: 'POST',
     },
   )
@@ -79,7 +86,11 @@ async function publishLakebedViaApi(
   if (!isPublishResponse(result)) {
     throw new Error('Lakebed publish failed')
   }
-  if (!response.ok) throw new Error(result.error ?? 'Lakebed publish failed')
+  // 202 = build kicked off but not ready yet — return the result so the
+  // caller can show progress instead of treating it as an error.
+  if (!response.ok && response.status !== 202) {
+    throw new Error(result.error ?? 'Lakebed publish failed')
+  }
   return result
 }
 
@@ -124,6 +135,8 @@ function artifactProgressPercent(
 }
 
 export function DeploymentPanel({ sessionId }: DeploymentPanelProps) {
+  const isAdmin = useIsAdmin()
+  const { getToken, isSignedIn } = useOptionalAuth()
   const publishPreview = useMutation(api.sessions.publishPreviewByLookup)
   const ensureExportArtifact = useMutation(
     api.sessions.ensureExportArtifactByLookup,
@@ -134,14 +147,23 @@ export function DeploymentPanel({ sessionId }: DeploymentPanelProps) {
   const deploymentStatus = useQuery(api.sessions.getDeploymentStatusByLookup, {
     lookup: sessionId,
   })
+  const lakebedEntitlement = useQuery(
+    api.sessions.getLakebedDeploymentEntitlementByLookup,
+    { lookup: sessionId },
+  )
+  const { openSignIn } = useSignInGate()
   const [activeTarget, setActiveTarget] = useState<DeploymentTarget>()
   const [waitingTarget, setWaitingTarget] = useState<DeploymentTarget>()
   const [pendingPublicTarget, setPendingPublicTarget] =
     useState<DeploymentTarget>()
   const [error, setError] = useState<DeploymentPanelError>()
+  const [pendingShipfastUrl, setPendingShipfastUrl] = useState<string>()
   const actionInFlightRef = useRef(false)
 
   const visibleExportTargets = exportTargets?.targets ?? []
+  const htmlTarget = visibleExportTargets.find(
+    (target: DeploymentExportTarget) => target.target === 'html',
+  )
   const lakebedTarget = visibleExportTargets.find(
     (target: DeploymentExportTarget) => target.target === 'lakebed',
   )
@@ -201,6 +223,26 @@ export function DeploymentPanel({ sessionId }: DeploymentPanelProps) {
             : ''
         }`
       : lakebedStageLabel
+  const shipfastPreparing =
+    pendingShipfastUrl !== undefined && htmlTarget?.artifactReady !== true
+  const shipfastProgressText =
+    htmlTarget?.artifactProgressStage ?? 'Preparing deployment'
+
+  useEffect(() => {
+    if (
+      pendingShipfastUrl !== undefined &&
+      htmlTarget?.artifactReady === true
+    ) {
+      const url = pendingShipfastUrl
+      setPendingShipfastUrl(undefined)
+      setWaitingTarget(undefined)
+      if (typeof window !== 'undefined') {
+        window.open(url, '_blank', 'noopener,noreferrer')
+      }
+    }
+  }, [pendingShipfastUrl, htmlTarget?.artifactReady])
+  const lakebedRequiresPayment =
+    !isAdmin && lakebedEntitlement?.requiresPayment === true
   const visibleError =
     error && !(error.target === 'lakebed' && lakebedDeploymentUrl !== undefined)
       ? error.message
@@ -249,24 +291,43 @@ export function DeploymentPanel({ sessionId }: DeploymentPanelProps) {
           ? undefined
           : readAnonymousOwnerSecret(window.localStorage, sessionId)
 
+      const appToken = isSignedIn
+        ? await getToken({ template: 'convex' })
+        : null
+
       const result = await (target === 'shipfast'
         ? publishPreview({
             lookup: sessionId,
             anonymousOwnerSecret,
           })
-        : publishLakebedViaApi(sessionId, anonymousOwnerSecret))
+        : publishLakebedViaApi(sessionId, anonymousOwnerSecret, appToken))
 
       if (target === 'lakebed' && !result.url) {
-        setError({
-          message:
-            ('error' in result ? result.error : undefined) ??
-            'Lakebed publish is still preparing.',
-          target,
-        })
+        const status = 'status' in result ? result.status : undefined
+        if (status === 'failed') {
+          setError({
+            message:
+              ('error' in result ? result.error : undefined) ??
+              'Lakebed publish failed.',
+            target,
+          })
+        } else {
+          // Build was kicked off — show progress, not an error
+          setWaitingTarget('lakebed')
+        }
         return
       }
 
-      if (typeof window !== 'undefined' && result.url) {
+      if (target === 'shipfast' && result.url) {
+        if (htmlTarget?.artifactReady === true) {
+          if (typeof window !== 'undefined') {
+            window.open(result.url, '_blank', 'noopener,noreferrer')
+          }
+        } else {
+          setWaitingTarget('shipfast')
+          setPendingShipfastUrl(result.url)
+        }
+      } else if (typeof window !== 'undefined' && result.url) {
         window.open(result.url, '_blank', 'noopener,noreferrer')
       }
     } catch (publishError) {
@@ -284,6 +345,10 @@ export function DeploymentPanel({ sessionId }: DeploymentPanelProps) {
   }
 
   const startPublish = (target: DeploymentTarget) => {
+    if (target === 'lakebed' && lakebedRequiresPayment) {
+      openSignIn()
+      return
+    }
     if (isPrivate) {
       setError(undefined)
       setPendingPublicTarget(target)
@@ -379,9 +444,11 @@ export function DeploymentPanel({ sessionId }: DeploymentPanelProps) {
           <span className="truncate text-xs text-white/48">
             {activeTarget === 'shipfast'
               ? 'Publishing...'
-              : shipfastRefreshing
-                ? 'Updating deployment...'
-                : targetDetails.shipfast.description}
+              : shipfastPreparing
+                ? shipfastProgressText
+                : shipfastRefreshing
+                  ? 'Updating deployment...'
+                  : targetDetails.shipfast.description}
           </span>
         </span>
         <span
@@ -389,7 +456,9 @@ export function DeploymentPanel({ sessionId }: DeploymentPanelProps) {
           className="grid size-9 place-items-center rounded-lg border border-white/10 bg-white/[0.06] text-white/48"
           data-deployment-action="shipfast"
         >
-          {activeTarget === 'shipfast' || shipfastRefreshing ? (
+          {activeTarget === 'shipfast' ||
+          shipfastRefreshing ||
+          shipfastPreparing ? (
             <LoaderCircle className="size-4 animate-spin" strokeWidth={1.8} />
           ) : (
             <ExternalLink className="size-4" strokeWidth={1.8} />
@@ -412,10 +481,17 @@ export function DeploymentPanel({ sessionId }: DeploymentPanelProps) {
           <Rocket className="size-4" />
         </span>
         <span className="grid min-w-0 gap-1">
-          <span className="truncate text-sm font-semibold text-white">
-            {lakebedDeploymentUrl
-              ? 'Open Lakebed'
-              : targetDetails.lakebed.label}
+          <span className="flex items-center gap-1.5">
+            <span className="truncate text-sm font-semibold text-white">
+              {lakebedDeploymentUrl
+                ? 'Open Lakebed'
+                : targetDetails.lakebed.label}
+            </span>
+            {lakebedRequiresPayment && (
+              <span className="shrink-0 rounded bg-[linear-gradient(135deg,#f5d0a8_0%,#e8b86d_100%)] px-1 py-px text-[9px] font-semibold uppercase tracking-wider text-[#0a0a0b]">
+                Pro only
+              </span>
+            )}
           </span>
           <span className="truncate text-xs text-white/48">
             {activeTarget === 'lakebed'
@@ -428,7 +504,9 @@ export function DeploymentPanel({ sessionId }: DeploymentPanelProps) {
                   ? lakebedProgressText
                   : showLakebedProgress
                     ? lakebedStageLabel
-                    : targetDetails.lakebed.description}
+                    : lakebedRequiresPayment
+                      ? 'Subscribe to Pro to deploy to Lakebed'
+                      : targetDetails.lakebed.description}
           </span>
         </span>
         <span
@@ -441,6 +519,8 @@ export function DeploymentPanel({ sessionId }: DeploymentPanelProps) {
           lakebedArtifactInFlight ||
           lakebedRefreshing ? (
             <LoaderCircle className="size-4 animate-spin" strokeWidth={1.8} />
+          ) : lakebedRequiresPayment ? (
+            <Lock className="size-4 text-amber-300" strokeWidth={1.8} />
           ) : (
             <ExternalLink className="size-4" strokeWidth={1.8} />
           )}

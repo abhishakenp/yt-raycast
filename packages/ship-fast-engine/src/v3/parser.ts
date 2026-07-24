@@ -2,6 +2,7 @@
 import type {
   CustomOperation,
   CustomTable,
+  FreeformDef,
   MacroType,
   NestedGroup,
   NestedItem,
@@ -123,6 +124,57 @@ function parsePlusLine(line: string): CustomTable | CustomOperation | null {
   return table
 }
 
+/** Parse a @freeform block into a Section with a FreeformDef.
+ *  Block format:
+ *    @freeform rolename
+ *    state: var1=initval var2=initval
+ *    actions: action1→expr action2→expr
+ *    layout: <div class="...">...</div>
+ *    @endfreeform
+ */
+function parseFreeformBlock(role: string, lines: string[]): Section | null {
+  if (role.length === 0) return null
+  const state: Record<string, string> = {}
+  const actions: Record<string, string> = {}
+  let layout = ''
+
+  for (const line of lines) {
+    if (line.startsWith('state:')) {
+      const rest = line.replace(/^state:\s*/, '').trim()
+      for (const token of rest.split(/\s+/)) {
+        const eqIdx = token.indexOf('=')
+        if (eqIdx > 0) {
+          const name = token.slice(0, eqIdx).trim()
+          const val = token.slice(eqIdx + 1).trim()
+          if (name.length > 0) state[name] = val
+        }
+      }
+    } else if (line.startsWith('actions:')) {
+      const rest = line.replace(/^actions:\s*/, '').trim()
+      // Actions are comma-separated: inc→count+1, dec→count-1
+      for (const token of rest.split(',')) {
+        const arrowIdx = token.indexOf('→')
+        if (arrowIdx > 0) {
+          const name = token.slice(0, arrowIdx).trim()
+          const expr = token.slice(arrowIdx + 1).trim()
+          if (name.length > 0) actions[name] = expr
+        }
+      }
+    } else if (line.startsWith('layout:')) {
+      // Layout may span multiple lines — collect everything after "layout:"
+      const rest = line.replace(/^layout:\s*/, '')
+      layout = layout ? layout + '\n' + rest : rest
+    } else if (layout.length > 0) {
+      // Continuation of multi-line layout
+      layout += '\n' + line
+    }
+  }
+
+  if (layout.length === 0) return null
+  const def: FreeformDef = { state, actions, layout }
+  return { role, content: [], freeform: def }
+}
+
 /** Parse raw positional DSL text into a structured ParsedSitePlan.
  *  Strips <reasoning>...</reasoning> blocks (cognitive scaffolding phase) before
  *  parsing the DSL. The reasoning is not part of the site-plan — it primes the
@@ -143,13 +195,41 @@ export function parseSitePlan(raw: string): ParsedSitePlan {
   let navLabels: Record<string, string> | undefined
 
   let kindSeen = false
+  // Freeform block collection: when inside @freeform ... @endfreeform,
+  // collect lines into a buffer keyed by the role name.
+  let freeformRole: string | null = null
+  let freeformBuf: string[] = []
   for (const rawLine of lines) {
     const line = rawLine.trim()
     if (line.length === 0) continue
     if (line.startsWith('#')) continue
 
+    // ── Freeform block collection ────────────────────────────────────────
+    if (freeformRole !== null) {
+      if (line === '@endfreeform' || line.startsWith('@endfreeform')) {
+        const def = parseFreeformBlock(freeformRole, freeformBuf)
+        if (def) sections.push(def)
+        freeformRole = null
+        freeformBuf = []
+        continue
+      }
+      freeformBuf.push(line)
+      continue
+    }
+    if (line.startsWith('@freeform')) {
+      freeformRole = line.replace(/^@freeform\s*/, '').trim()
+      freeformBuf = []
+      continue
+    }
+
+    // @type line (app vs website) — comes before kind
+    if (line.startsWith('@type')) {
+      // Parse but don't require — the presence of @freeform blocks determines app vs website
+      continue
+    }
+
     if (!kindSeen) {
-      // Line 1 = kind (one word).
+      // Kind line (first non-@type, non-@freeform line).
       kind = line.split(/\s+/)[0] ?? ''
       kindSeen = true
       continue

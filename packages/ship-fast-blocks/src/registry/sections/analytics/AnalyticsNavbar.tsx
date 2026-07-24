@@ -10,7 +10,6 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
-import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import {
   SaasAccountButton,
   SaasIntentBadge,
@@ -62,8 +61,6 @@ export const AnalyticsNavbar = defineCapsule({
     ctaTarget: z.string().optional(),
     homeTarget: z.string().optional(),
     sticky: z.boolean().optional(),
-    /** Label for the sign-in button. */
-    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   lakebed: saasLakebed,
@@ -74,7 +71,6 @@ export const AnalyticsNavbar = defineCapsule({
       : ['Product', 'Features', 'Pricing', 'Docs']
     const ctaLabel = props.ctaLabel ?? 'Start Free'
     const ctaTarget = props.ctaTarget ?? 'Pricing'
-    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -108,11 +104,6 @@ export const AnalyticsNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-3">
-          <SignInButton
-            variant="ghost"
-            label={signIn}
-            className="hidden sm:block"
-          />
           <SaasIntentBadge lakebed={lakebed} />
           <SaasSearchButton
             lakebed={lakebed}

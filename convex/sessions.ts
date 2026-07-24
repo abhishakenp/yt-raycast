@@ -19,6 +19,7 @@ import {
   deleteOwnedSessions,
   getUserId,
   isSessionOwner,
+  isUserAdmin,
   setSessionBrandLogo,
   setSessionPreferredLanguage,
   setSessionThemeOverride,
@@ -68,8 +69,11 @@ import {
   sendTelegramOperationalMessage,
 } from './lib/session_operational_notifications'
 import {
+  assertLakebedDeploymentEntitlement,
   loadDeploymentBySlug,
+  loadDeploymentHtmlArtifactBySlug,
   loadDeploymentStatus,
+  loadLakebedDeploymentEntitlement,
   loadLakebedDeploymentUpdateTarget,
   loadOwnedLakebedDeploymentArtifact,
   markSessionDeploymentUpdating,
@@ -454,7 +458,11 @@ export const getPublicPreview = query({
 
 export const publishPreview = mutation({
   args: publishPreviewArgs,
-  handler: (ctx, args) => publishSessionPreview(ctx, args),
+  handler: (ctx, args) =>
+    publishSessionPreview(ctx, {
+      ...args,
+      buildExportArtifact: sessionInternalReferences.buildExportArtifact,
+    }),
 })
 
 export const prepareLakebedDeploymentForPublish = query({
@@ -604,7 +612,12 @@ export const getExport = query({
   args: exportRecordArgs,
   handler: async (ctx, args) =>
     (await canReadSessionById(ctx, args.sessionId))
-      ? loadExportRecord(ctx, args.sessionId, args.target)
+      ? loadExportRecord(
+          ctx,
+          args.sessionId,
+          args.target,
+          await isUserAdmin(ctx),
+        )
       : null,
 })
 
@@ -671,6 +684,7 @@ export const publishPreviewByLookup = mutation({
       sessionId,
       anonymousOwnerSecret: args.anonymousOwnerSecret,
       requestedSlug: args.requestedSlug,
+      buildExportArtifact: sessionInternalReferences.buildExportArtifact,
     })
   },
 })
@@ -1011,6 +1025,12 @@ export const getDeploymentBySlug = query({
   handler: async (ctx, args) => loadDeploymentBySlug(ctx, args.slug),
 })
 
+export const getDeploymentHtmlArtifactBySlug = query({
+  args: deploymentSlugArgs,
+  handler: async (ctx, args) =>
+    loadDeploymentHtmlArtifactBySlug(ctx, args.slug),
+})
+
 export const getDeploymentStatus = query({
   args: sessionIdArgs,
   handler: async (ctx, args) =>
@@ -1036,6 +1056,37 @@ export const getOwnedLakebedDeploymentArtifactByLookup = query({
       anonymousOwnerSecret: args.anonymousOwnerSecret,
       requestedSlug: args.requestedSlug,
     })
+  },
+})
+
+export const getLakebedDeploymentEntitlementByLookup = query({
+  args: publishPreviewLookupArgs,
+  handler: (ctx, args) => {
+    const sessionId = ctx.db.normalizeId('sessions', args.lookup)
+    if (sessionId === null) {
+      throw new Error('Session not found')
+    }
+    return loadLakebedDeploymentEntitlement(ctx, {
+      sessionId,
+      anonymousOwnerSecret: args.anonymousOwnerSecret,
+      requestedSlug: args.requestedSlug,
+    })
+  },
+})
+
+export const assertLakebedDeploymentEntitlementByLookup = mutation({
+  args: publishPreviewLookupArgs,
+  handler: async (ctx, args) => {
+    const sessionId = ctx.db.normalizeId('sessions', args.lookup)
+    if (sessionId === null) {
+      throw new Error('Session not found')
+    }
+    const session = await ctx.db.get(sessionId)
+    if (session === null) {
+      throw new Error('Session not found')
+    }
+    await assertLakebedDeploymentEntitlement(ctx, session)
+    return { entitled: true }
   },
 })
 

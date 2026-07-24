@@ -10,7 +10,6 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
-import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import {
   NewsletterAccountButton,
@@ -38,8 +37,6 @@ export const ComingSoonNavbar = defineCapsule({
     brand: z.string().optional(),
     /** Nav link labels (first is the subtle link, last is the underlined CTA). */
     links: z.array(z.string()).optional(),
-    /** Label for the sign-in button. */
-    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   lakebed: newsletterLakebed,
@@ -48,7 +45,6 @@ export const ComingSoonNavbar = defineCapsule({
     const links = props.links?.length
       ? props.links
       : ['Features', 'Join Waitlist']
-    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -70,11 +66,6 @@ export const ComingSoonNavbar = defineCapsule({
         </NavbarBrand>
 
         <NavbarActions className="gap-5">
-          <SignInButton
-            variant="ghost"
-            label={signIn}
-            className="hidden sm:block"
-          />
           <NavbarNavLink
             href={links[0]}
             className="hidden font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground sm:block"

@@ -222,7 +222,7 @@ Overall average: **60-90% token reduction** on common development operations.
 
 ## Production (Ship Fast)
 
-- **Live site:** [https://ship-fast.io/](https://ship-fast.io/)
+- **Live site:** [https://ship-fast.ai/](https://ship-fast.ai/)
 - **Hosting:** [Dokploy](https://dokploy.com) on **exodus** (`ssh exodus`), panel [https://dokploy.devliv.io](https://dokploy.devliv.io). The `ship-fast` Dokploy project holds the `ship-fast-free` and `ship-fast-develop` applications plus the `convex` compose (self-hosted Convex).
 - **Operations:** Deployments and services are managed via the local Dokploy CLI (`dokploy ...`, config `~/.dokploy/config.json`): `dokploy project all`, `dokploy application deploy|redeploy|save-github-provider|read-logs`, `dokploy compose update|deploy`.
 
@@ -280,7 +280,7 @@ The following code generation engines are deprecated and no longer used:
 
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **ship-fast** (48153 symbols, 90782 relationships, 255 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **ship-fast** (48768 symbols, 91800 relationships, 258 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 

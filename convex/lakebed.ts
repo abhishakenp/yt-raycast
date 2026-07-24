@@ -1,6 +1,7 @@
 import { ConvexError, v } from 'convex/values'
 
 import { isAuthDisabled } from './lib/session_export_helpers'
+import { isUserAdmin } from './lib/session_access_helpers'
 import { internalMutation, mutation, query } from './_generated/server'
 import type { Id } from './_generated/dataModel'
 import type { MutationCtx, QueryCtx } from './_generated/server'
@@ -121,7 +122,12 @@ async function getSessionActor(
 ): Promise<SessionActor | null> {
   const auth = await createUserAuth(ctx)
   if (auth) {
-    if (session.isPrivate === true && session.userId !== auth.userId) {
+    const admin = await isUserAdmin(ctx)
+    if (
+      !admin &&
+      session.isPrivate === true &&
+      session.userId !== auth.userId
+    ) {
       throw new ConvexError({
         code: 'FORBIDDEN',
         message: 'You do not own this session',

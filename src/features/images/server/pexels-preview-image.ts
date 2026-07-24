@@ -290,11 +290,11 @@ export async function resolvePexelsPreviewImageUrl(
   const fallback = picsumUrl(seed || searchQuery, width, height)
   const seedKey = seed ?? searchQuery
 
-  return (
+  const resolved =
     (await searchPexels(searchQuery, width, height, seedKey, deps)) ??
     (await searchUnsplash(searchQuery, width, height, seedKey, deps)) ??
     fallback
-  )
+  return resolved
 }
 
 function redirect(url: string, status = 302) {

@@ -44,12 +44,17 @@ const convexState = vi.hoisted(() => ({
     ensureArtifact: { ref: 'ensureExportArtifactByLookup' },
     getExportTargets: { ref: 'getExportTargets' },
     getDeploymentStatus: { ref: 'getDeploymentStatusByLookup' },
+    getLakebedEntitlement: { ref: 'getLakebedDeploymentEntitlementByLookup' },
   },
   exportTargets: {
     isPrivate: false,
     targets: Array<MockDeploymentTarget>(),
   } as MockExportTargets,
   deploymentStatus: null as MockDeploymentStatus | null,
+  lakebedEntitlement: { requiresPayment: false } as {
+    requiresPayment: boolean
+    message?: string
+  },
   publishPreview: vi.fn(async () => ({ url: 'https://ship-fast.test/site' })),
   ensureExportArtifact: vi.fn(async () => ({
     target: 'lakebed',
@@ -65,6 +70,8 @@ vi.mock('../../../../convex/_generated/api', () => ({
       ensureExportArtifactByLookup: convexState.refs.ensureArtifact,
       getExportTargets: convexState.refs.getExportTargets,
       getDeploymentStatusByLookup: convexState.refs.getDeploymentStatus,
+      getLakebedDeploymentEntitlementByLookup:
+        convexState.refs.getLakebedEntitlement,
     },
   },
 }))
@@ -82,8 +89,26 @@ vi.mock('convex/react', () => ({
       return convexState.exportTargets
     if (ref === convexState.refs.getDeploymentStatus)
       return convexState.deploymentStatus
+    if (ref === convexState.refs.getLakebedEntitlement)
+      return convexState.lakebedEntitlement
     throw new Error(`useQuery: unknown ref ${String(ref)}`)
   },
+}))
+
+vi.mock('@/shared/auth/use-optional-auth', () => ({
+  useIsAdmin: () => false,
+  useOptionalAuth: () => ({
+    getToken: vi.fn(async () => null),
+    isSignedIn: false,
+  }),
+}))
+
+vi.mock('@/shared/auth/SignInGate', () => ({
+  useSignInGate: () => ({
+    isGated: false,
+    openSignIn: vi.fn(),
+    requireSignIn: () => true,
+  }),
 }))
 
 function setExportTargets(targets: MockDeploymentTarget[], isPrivate = false) {
@@ -128,7 +153,9 @@ describe('DeploymentPanel (behavioral)', () => {
       status: 'queued',
       previewVersion: 2,
     })
-    setExportTargets([])
+    setExportTargets([
+      { target: 'html', artifactReady: true, artifactStatus: 'ready' },
+    ])
     setDeploymentStatus(null)
     vi.spyOn(window, 'open').mockImplementation(() => null)
   })
@@ -486,7 +513,7 @@ describe('DeploymentPanel (behavioral)', () => {
       setDeploymentStatus({
         provider: 'ship-fast',
         status: 'updating',
-        url: 'https://session-123.ship-fast.io',
+        url: 'https://session-123.ship-fast.ai',
         pendingPreviewVersion: 2,
       })
 
@@ -767,7 +794,7 @@ describe('DeploymentPanel (behavioral)', () => {
   })
 
   describe('10. error state with retry option', () => {
-    it('shows an error message when the Lakebed deploy route returns no URL', async () => {
+    it('shows a preparing spinner when the Lakebed deploy route returns 202 (build kicked off)', async () => {
       setExportTargets([
         { target: 'lakebed', artifactReady: true, artifactStatus: 'ready' },
       ])
@@ -787,11 +814,7 @@ describe('DeploymentPanel (behavioral)', () => {
       const view = render(<DeploymentPanel sessionId="session_123" />)
       fireEvent.click(view.getByText('Publish Lakebed').closest('button')!)
 
-      await waitFor(() =>
-        expect(
-          view.getByText('Lakebed app is still being prepared.'),
-        ).toBeTruthy(),
-      )
+      await waitFor(() => expect(view.getByText('Publishing...')).toBeTruthy())
     })
 
     it('shows a stable Lakebed deploy error when the deploy route returns malformed HTML', async () => {

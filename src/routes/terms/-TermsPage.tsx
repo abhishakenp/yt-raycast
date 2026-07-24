@@ -78,10 +78,8 @@ export const TermsPage = () => {
           <h2 id="h-account">3. Accounts, quotas, and paid features</h2>
           <p>
             Anonymous use, signed-in use, and subscribed use may have different
-            quotas. Internal whitelisted IPs may bypass quota enforcement for
-            operational use. Private generations, paid exports without a badge,
-            and paid checkout flows require the entitlements shown in the
-            product.
+            quotas. Private generations, paid exports without a badge, and paid
+            checkout flows require the entitlements shown in the product.
           </p>
         </section>
 

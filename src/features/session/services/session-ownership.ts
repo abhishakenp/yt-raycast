@@ -31,8 +31,9 @@ export function canReadSession(
 export function assertCanMutateSession(
   session: SessionOwnerState,
   actor: SessionActor,
+  isAdmin = false,
 ): void {
-  if (devFlags.disablePaywall) return
+  if (devFlags.disablePaywall || isAdmin) return
 
   const isUserOwner =
     session.userId !== undefined && session.userId === actor.userId

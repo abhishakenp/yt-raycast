@@ -104,6 +104,11 @@ vi.mock('@/shared/convex/http-client', () => ({
   }),
 }))
 
+const referralAuthToken = vi.fn<() => Promise<string | null>>()
+vi.mock('@/features/referrals/lib/referral-client', () => ({
+  getReferralAuthToken: () => referralAuthToken(),
+}))
+
 import { usePromptHomeController } from './usePromptHomeController'
 
 describe('usePromptHomeController submit guard', () => {
@@ -119,6 +124,8 @@ describe('usePromptHomeController submit guard', () => {
     state.navigate.mockResolvedValue(undefined)
     state.preloadRoute.mockReset()
     state.preloadRoute.mockResolvedValue(undefined)
+    referralAuthToken.mockReset()
+    referralAuthToken.mockResolvedValue(null)
     originalFetch = globalThis.fetch
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,
@@ -887,6 +894,39 @@ describe('usePromptHomeController submit guard', () => {
 
     expect(result.current.errorMessage).toBe(
       'Anonymous daily quota exhausted. Share on social media for +1 free generation.',
+    )
+  })
+
+  it('sends the Clerk bearer token as Authorization when the user is signed in', async () => {
+    referralAuthToken.mockResolvedValue('clerk.convex.jwt.token')
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        sessionId: 'session_authed_http',
+        cached: false,
+      }),
+    } as Response)
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.setPrompt('Build a signed-in public preview site')
+    })
+
+    await act(async () => {
+      await result.current.submitPrompt()
+    })
+
+    expect(referralAuthToken).toHaveBeenCalled()
+    expect(fetch).toHaveBeenCalledWith(
+      '/api/sessions/create',
+      expect.objectContaining({
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer clerk.convex.jwt.token',
+        },
+      }),
     )
   })
 })

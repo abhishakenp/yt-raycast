@@ -15,6 +15,7 @@ vi.mock('@/features/referrals/lib/referral-client', () => ({
 }))
 
 vi.mock('@/shared/auth/use-optional-auth', () => ({
+  useIsAdmin: () => false,
   useOptionalAuth: () => ({
     isSignedIn: mocks.isSignedIn,
     isLoaded: mocks.isLoaded,

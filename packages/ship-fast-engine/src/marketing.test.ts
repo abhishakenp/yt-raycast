@@ -5,7 +5,7 @@ import { SHIP_FAST_SITE_URL, shipFastFooterLogoMarkup } from './marketing'
 
 describe('Ship Fast marketing markup', () => {
   it('exposes the canonical site URL used by generated footer links', () => {
-    expect(new URL(SHIP_FAST_SITE_URL).origin).toBe('https://ship-fast.io')
+    expect(new URL(SHIP_FAST_SITE_URL).origin).toBe('https://ship-fast.ai')
   })
 
   it('renders a decorative footer logo with caller-scoped gradient ids', () => {

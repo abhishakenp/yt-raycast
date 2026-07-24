@@ -10,7 +10,6 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
-import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import {
   SaasAccountButton,
   SaasIntentBadge,
@@ -51,8 +50,6 @@ export const CybersecurityNavbar = defineCapsule({
     ctaLabel: z.string().optional(),
     /** Navigation target fired by the primary CTA button. */
     ctaTarget: z.string().optional(),
-    /** Label for the sign-in button. */
-    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   lakebed: saasLakebed,
@@ -64,7 +61,6 @@ export const CybersecurityNavbar = defineCapsule({
     const contactLabel = props.contactLabel ?? 'Contact Sales'
     const ctaLabel = props.ctaLabel ?? 'Get Demo'
     const ctaTarget = props.ctaTarget ?? 'Schedule Live Demo'
-    const signIn = props.signIn ?? 'Sign in'
 
     const ShieldMark = ({ className }: { className?: string }) => (
       <svg
@@ -110,11 +106,6 @@ export const CybersecurityNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-3">
-          <SignInButton
-            variant="ghost"
-            label={signIn}
-            className="hidden sm:block"
-          />
           <SaasIntentBadge lakebed={lakebed} />
           <SaasSearchButton
             lakebed={lakebed}

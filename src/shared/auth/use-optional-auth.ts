@@ -20,17 +20,27 @@ type ClerkSession = {
   getToken?: (options?: ClerkTokenOptions) => Promise<string | null>
 }
 
+type ClerkPublicMetadata = {
+  system_role?: string
+  systemRole?: string
+}
+
+type ClerkUser = {
+  id: string
+  publicMetadata?: ClerkPublicMetadata
+}
+
 type ClerkGlobal = {
   addListener?: (
     listener: (state: {
       session?: ClerkSession | null
-      user?: unknown | null
+      user?: ClerkUser | null
     }) => void,
   ) => void | (() => void)
   openSignIn?: () => unknown
   openUserProfile?: () => unknown
   session?: ClerkSession | null
-  user?: unknown | null
+  user?: ClerkUser | null
 }
 
 type ClerkWindow = Window & {
@@ -50,7 +60,7 @@ type OptionalClerk = {
   openSignIn: () => void
   openUserProfile: () => void
   session: ClerkSession | null
-  user: unknown | null
+  user: ClerkUser | null
 }
 
 const anonymousAuth: OptionalAuth = {
@@ -201,4 +211,22 @@ export function useOptionalClerk(): OptionalClerk {
         : anonymousClerk,
     [snapshot.session, snapshot.user],
   )
+}
+
+/**
+ * Returns `true` when the signed-in Clerk user has an admin role in their
+ * `publicMetadata` (checked as both `system_role` and `systemRole`). Admins
+ * bypass sign-in gates (e.g. SignInGate) so internal tools keep working
+ * without the Clerk sign-in flow. Returns `false` when Clerk is not
+ * configured, no user is signed in, or the role is not `admin`.
+ */
+export function useIsAdmin(): boolean {
+  const snapshot = useClerkSnapshot()
+
+  return useMemo(() => {
+    if (!isClerkConfigured) return false
+    const metadata = snapshot.user?.publicMetadata
+    if (metadata === undefined) return false
+    return metadata.system_role === 'admin' || metadata.systemRole === 'admin'
+  }, [snapshot.user])
 }

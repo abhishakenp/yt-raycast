@@ -11,7 +11,6 @@ import {
   NavbarBrand,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
-import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import { Container } from '#/section-kit/Container.tsx'
 import {
   NavigationMenu,
@@ -283,8 +282,6 @@ export const GovPortalNavbar = defineCapsule({
     logoUrl: z.string().optional(),
     /** Utility-strip phone number. */
     phone: z.string().optional(),
-    /** Label for the sign-in button. */
-    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   lakebed: govPortalLakebed,
@@ -381,8 +378,6 @@ export const GovPortalNavbar = defineCapsule({
       </span>
     )
 
-    const signIn = props.signIn ?? 'Sign in'
-
     return (
       <SiteNav
         bare
@@ -452,11 +447,6 @@ export const GovPortalNavbar = defineCapsule({
               ) : null}
             </NavbarBrand>
             <NavbarActions className="gap-3">
-              <SignInButton
-                variant="ghost"
-                label={signIn}
-                className="hidden sm:block"
-              />
               {location ? (
                 <span className="hidden max-w-[14rem] text-right text-xs text-muted-foreground md:block">
                   {location}

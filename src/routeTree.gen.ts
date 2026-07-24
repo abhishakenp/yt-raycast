@@ -35,6 +35,7 @@ import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiCreditsRouteImport } from './routes/api/credits'
 import { Route as ApiCloneRouteImport } from './routes/api/clone'
 import { Route as ApiClearPromptCacheRouteImport } from './routes/api/clear-prompt-cache'
+import { Route as ApiClaimAnonSessionsRouteImport } from './routes/api/claim-anon-sessions'
 import { Route as ApiBrandProfileRouteImport } from './routes/api/brand-profile'
 import { Route as ApiBillingOverviewRouteImport } from './routes/api/billing-overview'
 import { Route as PreviewSlugSitemapDotxmlRouteImport } from './routes/preview.$slug.sitemap[.]xml'
@@ -212,6 +213,11 @@ const ApiCloneRoute = ApiCloneRouteImport.update({
 const ApiClearPromptCacheRoute = ApiClearPromptCacheRouteImport.update({
   id: '/api/clear-prompt-cache',
   path: '/api/clear-prompt-cache',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiClaimAnonSessionsRoute = ApiClaimAnonSessionsRouteImport.update({
+  id: '/api/claim-anon-sessions',
+  path: '/api/claim-anon-sessions',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiBrandProfileRoute = ApiBrandProfileRouteImport.update({
@@ -496,6 +502,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/api/billing-overview': typeof ApiBillingOverviewRoute
   '/api/brand-profile': typeof ApiBrandProfileRoute
+  '/api/claim-anon-sessions': typeof ApiClaimAnonSessionsRoute
   '/api/clear-prompt-cache': typeof ApiClearPromptCacheRoute
   '/api/clone': typeof ApiCloneRoute
   '/api/credits': typeof ApiCreditsRoute
@@ -571,6 +578,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/api/billing-overview': typeof ApiBillingOverviewRoute
   '/api/brand-profile': typeof ApiBrandProfileRoute
+  '/api/claim-anon-sessions': typeof ApiClaimAnonSessionsRoute
   '/api/clear-prompt-cache': typeof ApiClearPromptCacheRoute
   '/api/clone': typeof ApiCloneRoute
   '/api/credits': typeof ApiCreditsRoute
@@ -648,6 +656,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/api/billing-overview': typeof ApiBillingOverviewRoute
   '/api/brand-profile': typeof ApiBrandProfileRoute
+  '/api/claim-anon-sessions': typeof ApiClaimAnonSessionsRoute
   '/api/clear-prompt-cache': typeof ApiClearPromptCacheRoute
   '/api/clone': typeof ApiCloneRoute
   '/api/credits': typeof ApiCreditsRoute
@@ -726,6 +735,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/api/billing-overview'
     | '/api/brand-profile'
+    | '/api/claim-anon-sessions'
     | '/api/clear-prompt-cache'
     | '/api/clone'
     | '/api/credits'
@@ -801,6 +811,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/api/billing-overview'
     | '/api/brand-profile'
+    | '/api/claim-anon-sessions'
     | '/api/clear-prompt-cache'
     | '/api/clone'
     | '/api/credits'
@@ -877,6 +888,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/api/billing-overview'
     | '/api/brand-profile'
+    | '/api/claim-anon-sessions'
     | '/api/clear-prompt-cache'
     | '/api/clone'
     | '/api/credits'
@@ -954,6 +966,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   ApiBillingOverviewRoute: typeof ApiBillingOverviewRoute
   ApiBrandProfileRoute: typeof ApiBrandProfileRoute
+  ApiClaimAnonSessionsRoute: typeof ApiClaimAnonSessionsRoute
   ApiClearPromptCacheRoute: typeof ApiClearPromptCacheRoute
   ApiCloneRoute: typeof ApiCloneRoute
   ApiCreditsRoute: typeof ApiCreditsRoute
@@ -1173,6 +1186,13 @@ declare module '@tanstack/react-router' {
       path: '/api/clear-prompt-cache'
       fullPath: '/api/clear-prompt-cache'
       preLoaderRoute: typeof ApiClearPromptCacheRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/claim-anon-sessions': {
+      id: '/api/claim-anon-sessions'
+      path: '/api/claim-anon-sessions'
+      fullPath: '/api/claim-anon-sessions'
+      preLoaderRoute: typeof ApiClaimAnonSessionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/brand-profile': {
@@ -1646,6 +1666,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   ApiBillingOverviewRoute: ApiBillingOverviewRoute,
   ApiBrandProfileRoute: ApiBrandProfileRoute,
+  ApiClaimAnonSessionsRoute: ApiClaimAnonSessionsRoute,
   ApiClearPromptCacheRoute: ApiClearPromptCacheRoute,
   ApiCloneRoute: ApiCloneRoute,
   ApiCreditsRoute: ApiCreditsRoute,

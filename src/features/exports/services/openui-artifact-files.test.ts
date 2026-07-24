@@ -42,7 +42,7 @@ function expectNoStockProviderCredentialsOrProxy(artifact: string) {
   expect(artifact).not.toContain('VITE_PEXELS_API_KEY')
   expect(artifact).not.toContain('api.pexels.com')
   expect(artifact).not.toContain('/api/pexels')
-  expect(artifact).not.toContain('ship-fast.io/api/pexels')
+  expect(artifact).not.toContain('ship-fast.ai/api/pexels')
 }
 
 const originalStockEnv = {

@@ -218,4 +218,84 @@ footer`
     expect(plan.kind).toBe('restaurant')
     expect(plan.sections).toHaveLength(2)
   })
+
+  it('parses @freeform blocks with state, actions, and layout', () => {
+    const raw = `saas
+hero Counter App|The simplest way to count things
+@freeform counterdemo
+state: count=0 step=1
+actions: inc→count+1, dec→count-1, reset→count=0
+layout: <div class="flex flex-col items-center gap-8"><h1>{count}</h1><button onclick="inc">+</button></div>
+@endfreeform
+@pages features
+@brand Counter`
+    const plan = parseSitePlan(raw)
+    expect(plan.kind).toBe('saas')
+    expect(plan.sections).toHaveLength(2)
+    expect(plan.sections[0].role).toBe('hero')
+    expect(plan.sections[1].role).toBe('counterdemo')
+    expect(plan.sections[1].freeform).toBeDefined()
+    expect(plan.sections[1].freeform!.state).toEqual({ count: '0', step: '1' })
+    expect(plan.sections[1].freeform!.actions).toEqual({
+      inc: 'count+1',
+      dec: 'count-1',
+      reset: 'count=0',
+    })
+    expect(plan.sections[1].freeform!.layout).toContain('{count}')
+    expect(plan.sections[1].freeform!.layout).toContain('onclick="inc"')
+  })
+
+  it('parses @freeform block with multi-line layout', () => {
+    const raw = `saas
+hero Test
+@freeform widget
+state: value=0
+actions: add→value+1
+layout: <div class="p-4">
+<span>{value}</span>
+<button onclick="add">Add</button>
+</div>
+@endfreeform`
+    const plan = parseSitePlan(raw)
+    expect(plan.sections[1].freeform!.layout).toContain('\n')
+    expect(plan.sections[1].freeform!.layout).toContain('<button')
+  })
+
+  it('handles @freeform block with no state or actions', () => {
+    const raw = `saas
+hero Test
+@freeform static
+layout: <div class="p-8">Hello world</div>
+@endfreeform`
+    const plan = parseSitePlan(raw)
+    expect(plan.sections[1].freeform).toBeDefined()
+    expect(plan.sections[1].freeform!.state).toEqual({})
+    expect(plan.sections[1].freeform!.actions).toEqual({})
+    expect(plan.sections[1].freeform!.layout).toContain('Hello world')
+  })
+
+  it('skips @type line and parses kind correctly', () => {
+    const raw = `@type app
+marketing
+hero My App|A great app
+@freeform counterdemo
+state: count=0
+actions: inc→count+1
+layout: <div>{count}</div>
+@endfreeform`
+    const plan = parseSitePlan(raw)
+    expect(plan.kind).toBe('marketing')
+    expect(plan.sections).toHaveLength(2)
+    expect(plan.sections[1].role).toBe('counterdemo')
+    expect(plan.sections[1].freeform).toBeDefined()
+  })
+
+  it('skips @type website line', () => {
+    const raw = `@type website
+restaurant
+hero Test Restaurant|A fine place`
+    const plan = parseSitePlan(raw)
+    expect(plan.kind).toBe('restaurant')
+    expect(plan.sections).toHaveLength(1)
+  })
 })

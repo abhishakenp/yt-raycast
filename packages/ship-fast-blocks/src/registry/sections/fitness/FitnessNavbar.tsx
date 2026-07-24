@@ -10,7 +10,6 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
-import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import { newsletterLakebed } from '../newsletter/newsletter-lakebed.ts'
 import {
   NewsletterAccountButton,
@@ -37,8 +36,6 @@ export const FitnessNavbar = defineCapsule({
     brand: z.string().optional(),
     /** Nav link labels; the LAST item becomes the filled primary pill CTA. */
     nav: z.array(z.string()).optional(),
-    /** Label for the sign-in button. */
-    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   lakebed: newsletterLakebed,
@@ -49,7 +46,6 @@ export const FitnessNavbar = defineCapsule({
       ? props.nav
       : ['Classes', 'Trainers', 'Schedule', 'Membership', 'Start Trial']
     const navPrimary = nav[nav.length - 1] ?? 'Start Trial'
-    const signIn = props.signIn ?? 'Sign in'
     return (
       <SiteNav
         position="sticky"
@@ -91,11 +87,6 @@ export const FitnessNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions>
-          <SignInButton
-            variant="ghost"
-            label={signIn}
-            className="hidden sm:block"
-          />
           <MobileNavDrawer
             brand={brandShort}
             nav={nav.slice(0, -1)}

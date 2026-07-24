@@ -43,6 +43,7 @@ vi.mock('../../../../convex/_generated/api', () => ({
 }))
 
 vi.mock('@/shared/auth/use-optional-auth', () => ({
+  useIsAdmin: () => false,
   useOptionalAuth: () => ({
     getToken: githubState.getToken,
     isSignedIn: false,

@@ -59,6 +59,25 @@ describe('buildPrompt (high-confidence)', () => {
   it('user contains the build request', () => {
     expect(r.user).toBe('Build request: a farm-to-table restaurant')
   })
+
+  it('system contains app detection guidance in reasoning phase', () => {
+    expect(r.system).toContain('IS THIS A WEBSITE OR AN APP')
+    expect(r.system).toContain('@freeform')
+    expect(r.system).toContain('@type')
+  })
+
+  it('system has app vs website decision framework', () => {
+    expect(r.system).toContain('READ')
+    expect(r.system).toContain('INTERACT')
+    expect(r.system).toContain('WEBSITE')
+    expect(r.system).toContain('APP')
+  })
+
+  it('system has app request examples', () => {
+    expect(r.system).toContain('todo list app')
+    expect(r.system).toContain('counter app')
+    expect(r.system).toContain('tic tac toe')
+  })
 })
 
 describe('buildLowConfidenceKindPrompt (call 1)', () => {
@@ -74,6 +93,17 @@ describe('buildLowConfidenceKindPrompt (call 1)', () => {
   it('user instructs to output only the kind name', () => {
     expect(r.user).toContain('Output ONLY the kind name')
     expect(r.user).toContain('zzz florb gnarp')
+  })
+
+  it('system guides app requests to marketing', () => {
+    expect(r.system).toContain('interactive APP')
+    expect(r.system).toContain('todo list')
+    expect(r.system).toContain('@freeform')
+  })
+
+  it('user guides app requests to marketing', () => {
+    expect(r.user).toContain('app/tool request')
+    expect(r.user).toContain('marketing')
   })
 })
 
@@ -142,5 +172,58 @@ describe('renderVocabulary / renderRoleSignature', () => {
     const out = renderVocabulary(getVocabulary('saas'))
     expect(out.startsWith('Sections for saas:')).toBe(true)
     expect(out).toContain('hero:')
+  })
+})
+
+describe('@freeform format rules in prompt', () => {
+  const r = buildPrompt({
+    prompt: 'a todo list app',
+    confidence: {
+      kind: 'marketing',
+      confidence: 0,
+      top3: ['marketing', 'saas', 'restaurant'],
+    },
+    locale: 'en',
+  })
+
+  it('includes CRITICAL format rules section', () => {
+    expect(r.system).toContain('CRITICAL @freeform FORMAT RULES')
+  })
+
+  it('forbids JSX/JavaScript in layout', () => {
+    expect(r.system).toContain('NOT JSX')
+    expect(r.system).toContain('NOT JavaScript')
+    expect(r.system).toContain('NO .map()')
+    expect(r.system).toContain('NO arrow functions')
+  })
+
+  it('forbids className and function-valued event handlers', () => {
+    expect(r.system).toContain('NO className')
+    expect(r.system).toContain('onChange')
+    expect(r.system).toContain('onSubmit')
+    expect(r.system).toContain('onclick="actionName"')
+  })
+
+  it('includes WRONG/RIGHT examples', () => {
+    expect(r.system).toContain('WRONG:')
+    expect(r.system).toContain('RIGHT:')
+    expect(r.system).toContain('tasks.map')
+    expect(r.system).toContain('onChange={() => toggleTask')
+  })
+
+  it('includes todo list example in @freeform blocks', () => {
+    expect(r.system).toContain('todowidget')
+    expect(r.system).toContain('task1=Buy groceries')
+    expect(r.system).toContain('toggle1')
+  })
+
+  it('includes counter example in @freeform blocks', () => {
+    expect(r.system).toContain('counterdemo')
+    expect(r.system).toContain('count=0')
+    expect(r.system).toContain('inc')
+  })
+
+  it('OUTPUT FORMAT mentions @freeform blocks', () => {
+    expect(r.system).toContain('Then: @freeform blocks')
   })
 })

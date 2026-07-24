@@ -14,7 +14,7 @@ import { Route } from './rewrite'
 import { callRouteHandler } from './-route-handler.test-helper'
 
 function postRewrite(body: string, headers?: HeadersInit) {
-  const request = new Request('https://ship-fast.io/api/rewrite', {
+  const request = new Request('https://ship-fast.ai/api/rewrite', {
     body,
     headers: {
       'Content-Type': 'application/json',

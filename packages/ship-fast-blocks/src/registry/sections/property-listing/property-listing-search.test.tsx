@@ -43,6 +43,20 @@ vi.mock('@ship-fast/lakebed/react', () => ({
     if (!lakebedRef.current) throw new Error('Missing test Lakebed client')
     return lakebedRef.current
   }),
+  useAuth: () => ({
+    displayName: 'Guest',
+    isAuthenticated: false,
+    isGuest: true,
+    provider: 'guest',
+    user: {
+      displayName: 'Guest',
+      id: 'guest:local',
+      isGuest: true,
+      provider: 'guest',
+      userId: 'guest:local',
+    },
+    userId: 'guest:local',
+  }),
   useKeyedLakebedMutation: (lakebed: Record<string, unknown>, name: string) => {
     const mutation = (
       lakebed.useMutation as (

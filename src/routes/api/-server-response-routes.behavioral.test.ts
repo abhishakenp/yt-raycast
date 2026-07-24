@@ -135,7 +135,7 @@ describe('API server response route wrappers', () => {
     async (modulePath, routePath, method, helper, trailingArgs) => {
       helper.mockResolvedValue(new Response(`${routePath} response`))
       const Route = await importRoute(modulePath)
-      const request = new Request(`https://ship-fast.io${routePath}`, {
+      const request = new Request(`https://ship-fast.ai${routePath}`, {
         method,
       })
 
@@ -152,7 +152,7 @@ describe('API server response route wrappers', () => {
     routeMocks.lakebedPublish.mockResolvedValue(new Response('deploy response'))
     const Route = await importRoute('./sessions.$sessionId.deploy.lakebed')
     const request = new Request(
-      `https://ship-fast.io/api/sessions/${realSessionId}/deploy/lakebed`,
+      `https://ship-fast.ai/api/sessions/${realSessionId}/deploy/lakebed`,
       { method: 'POST' },
     )
 
@@ -173,7 +173,7 @@ describe('API server response route wrappers', () => {
     routeMocks.sessionDownload.mockResolvedValue(new Response('download body'))
     const Route = await importRoute('./sessions.$sessionId.download.$target')
     const request = new Request(
-      `https://ship-fast.io/api/sessions/${realSessionId}/download/html`,
+      `https://ship-fast.ai/api/sessions/${realSessionId}/download/html`,
     )
 
     const response = await Route.options.server.handlers.GET({
@@ -211,7 +211,7 @@ describe('API server response route wrappers', () => {
       helper.mockResolvedValue(new Response(body))
       const Route = await importRoute(modulePath)
       const request = new Request(
-        `https://ship-fast.io${routePath.replace('$sessionId', realSessionId)}`,
+        `https://ship-fast.ai${routePath.replace('$sessionId', realSessionId)}`,
         { method },
       )
 
@@ -230,7 +230,7 @@ describe('API server response route wrappers', () => {
     routeMocks.githubPush.mockResolvedValue(new Response('github response'))
     const Route = await importRoute('./sessions.$sessionId.github.push')
     const request = new Request(
-      `https://ship-fast.io/api/sessions/${realSessionId}/github/push`,
+      `https://ship-fast.ai/api/sessions/${realSessionId}/github/push`,
       { method: 'POST' },
     )
 
@@ -248,7 +248,7 @@ describe('API server response route wrappers', () => {
     routeMocks.previewRaw.mockResolvedValue(new Response('raw html'))
     const Route = await importRoute('./sessions.$sessionId.preview-raw')
     const request = new Request(
-      `https://ship-fast.io/api/sessions/${realSessionId}/preview-raw`,
+      `https://ship-fast.ai/api/sessions/${realSessionId}/preview-raw`,
     )
 
     const response = await Route.options.server.handlers.GET({
@@ -265,7 +265,7 @@ describe('API server response route wrappers', () => {
     routeMocks.sectionEdit.mockResolvedValue(new Response('section edit'))
     const Route = await importRoute('./sessions.$sessionId.section-edit')
     const request = new Request(
-      `https://ship-fast.io/api/sessions/${realSessionId}/section-edit`,
+      `https://ship-fast.ai/api/sessions/${realSessionId}/section-edit`,
       { method: 'POST' },
     )
 
@@ -283,7 +283,7 @@ describe('API server response route wrappers', () => {
     routeMocks.sessionApi.mockResolvedValue(new Response('session api'))
     const Route = await importRoute('./sessions.$sessionId')
     const request = new Request(
-      `https://ship-fast.io/api/sessions/${realSessionId}`,
+      `https://ship-fast.ai/api/sessions/${realSessionId}`,
     )
 
     const response = await Route.options.server.handlers.GET({

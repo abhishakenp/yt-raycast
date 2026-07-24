@@ -20,22 +20,31 @@ function identityFor(userId: string) {
   }
 }
 
+function adminIdentityFor(userId: string) {
+  return {
+    ...identityFor(userId),
+    system_role: 'admin',
+  }
+}
+
 async function createSession(
   t: any,
   {
     identity,
     anonymousClientId,
     prompt,
+    isPrivate = false,
   }: {
     identity?: ReturnType<typeof identityFor>
     anonymousClientId: string
     prompt: string
+    isPrivate?: boolean
   },
 ) {
   const args = {
     anonymousClientId,
     anonymousOwnerSecret: ownerSecret,
-    isPrivate: false,
+    isPrivate,
     preferredExportTarget: 'html',
     preferredLanguage: 'en',
     prompt,
@@ -261,4 +270,30 @@ test('lakebed writes still require auth when VITE_DISABLE_CLERK is false', async
       sessionId,
     }),
   ).rejects.toMatchObject({ data: { code: 'UNAUTHENTICATED' } })
+})
+
+test('admin can write lakebed data to a private session they do not own', async () => {
+  vi.stubEnv('VITE_DISABLE_CLERK', 'false')
+  const t = convexTest(schema, modules)
+
+  // Owner creates a private session
+  const { sessionId } = await createSession(t, {
+    identity: identityFor('owner-user'),
+    anonymousClientId: 'lakebed-admin-owner',
+    prompt: 'Lakebed admin bypass flow',
+    isPrivate: true,
+  })
+
+  // Admin (different identity) writes to the owner's private session — should
+  // succeed because isUserAdmin bypasses the private-session ownership check
+  // in getSessionActor.
+  await expect(
+    t
+      .withIdentity(adminIdentityFor('admin-user'))
+      .mutation(convexApi.lakebed.mergeSessionData, {
+        capsule: 'Cart',
+        patch: { count: 42 },
+        sessionId,
+      }),
+  ).resolves.toEqual({ count: 42 })
 })

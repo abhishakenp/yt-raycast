@@ -1411,7 +1411,7 @@ Clicking Generate with a valid sample prompt did not transition into an optimist
 
 **Status**
 
-Partially addressed in this pass. The Vite client now exposes only the public Convex URL env names (`CONVEX_URL`, `CONVEX_SELF_HOSTED_URL`) and the runtime Convex URL resolver reads browser-safe `import.meta.env`, with regression coverage in `src/shared/env/convex-runtime.test.ts`. The remaining blocker is external: the configured Doppler `dev` backend endpoint `convex-backend.ship-fast.io` is unreachable from this machine (`curl` status `000`), and the same `sessions.create` mutation fails outside the browser with `Unable to connect. Is the computer able to access the url?`. Evidence screenshots: `dogfood-output/screenshots/dogfood-54-generate-repro-before.png`, `dogfood-output/screenshots/dogfood-54-generate-repro-after-3s.png`, and `dogfood-output/screenshots/dogfood-54-generate-after-vite-envprefix-7s.png`.
+Partially addressed in this pass. The Vite client now exposes only the public Convex URL env names (`CONVEX_URL`, `CONVEX_SELF_HOSTED_URL`) and the runtime Convex URL resolver reads browser-safe `import.meta.env`, with regression coverage in `src/shared/env/convex-runtime.test.ts`. The remaining blocker is external: the configured Doppler `dev` backend endpoint `convex-backend.ship-fast.ai` is unreachable from this machine (`curl` status `000`), and the same `sessions.create` mutation fails outside the browser with `Unable to connect. Is the computer able to access the url?`. Evidence screenshots: `dogfood-output/screenshots/dogfood-54-generate-repro-before.png`, `dogfood-output/screenshots/dogfood-54-generate-repro-after-3s.png`, and `dogfood-output/screenshots/dogfood-54-generate-after-vite-envprefix-7s.png`.
 
 **Repro Steps**
 
@@ -1615,7 +1615,7 @@ Fixed in this pass. Public gallery card links now set `preload={false}`, so rend
 | Loader stays visible                  | ❌ replaced by rendered site after a few seconds |
 | Final output                          | ✅ full generated site rendered in dashboard     |
 
-This was verified on the mobile viewport (390×844) for both the example-prompt path and the typed-prompt path. The backend (`https://convex-backend.ship-fast.io`) was reachable during this run, so the original "unreachable backend → error after 1.2 s" path was not reproduced.
+This was verified on the mobile viewport (390×844) for both the example-prompt path and the typed-prompt path. The backend (`https://convex-backend.ship-fast.ai`) was reachable during this run, so the original "unreachable backend → error after 1.2 s" path was not reproduced.
 
 ### Verified: mobile homepage → pricing / gallery / home navigation
 

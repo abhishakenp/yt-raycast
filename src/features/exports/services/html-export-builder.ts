@@ -74,7 +74,7 @@ export function injectCanonicalUrl(html: string, canonicalUrl: string): string {
 
 export function injectShipFastBadge(html: string): string {
   const clean = String(html || '').replace(SHIP_FAST_BADGE_RE, '')
-  const badge = `<a ${SHIP_FAST_BADGE_MARKER} href="https://ship-fast.io" target="_blank" rel="noopener noreferrer" style="position:fixed;right:16px;bottom:16px;z-index:2147483000;display:inline-flex;align-items:center;gap:6px;padding:8px 10px;border-radius:999px;background:rgba(8,10,18,.86);color:#fff;font:600 12px/1.1 Inter,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-decoration:none;box-shadow:0 10px 30px rgba(0,0,0,.22);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)"><span style="display:inline-grid;width:16px;height:16px;place-items:center;border-radius:50%;background:#fff;color:#0b0d12">${SHIP_FAST_BADGE_LOGO_SVG}</span><span>Built with Ship Fast</span></a>`
+  const badge = `<a ${SHIP_FAST_BADGE_MARKER} href="https://ship-fast.ai" target="_blank" rel="noopener noreferrer" style="position:fixed;right:16px;bottom:16px;z-index:2147483000;display:inline-flex;align-items:center;gap:6px;padding:8px 10px;border-radius:999px;background:rgba(8,10,18,.86);color:#fff;font:600 12px/1.1 Inter,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-decoration:none;box-shadow:0 10px 30px rgba(0,0,0,.22);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)"><span style="display:inline-grid;width:16px;height:16px;place-items:center;border-radius:50%;background:#fff;color:#0b0d12">${SHIP_FAST_BADGE_LOGO_SVG}</span><span>Built with Ship Fast</span></a>`
   if (/<\/body>/i.test(clean))
     return clean.replace(/<\/body>/i, `${badge}</body>`)
   return `${clean}${badge}`

@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 
+import type { ConvexHttpClient } from 'convex/browser'
 import type { FunctionArgs } from 'convex/server'
 
 import { api } from '../../../../convex/_generated/api'
@@ -7,12 +8,8 @@ import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
 type CreateSessionArgs = FunctionArgs<typeof api.sessions.create>
 
-type SessionCreateClient = {
-  mutation: (
-    reference: unknown,
-    args: Record<string, unknown>,
-  ) => Promise<unknown>
-}
+type SessionCreateClient = Pick<ConvexHttpClient, 'mutation'> &
+  Partial<Pick<ConvexHttpClient, 'setAuth'>>
 
 const MAX_REQUEST_BODY_BYTES = 1_048_576
 const REQUEST_BODY_TOO_LARGE_ERROR = 'Request body is too large.'
@@ -49,6 +46,13 @@ export function hashClientIp(
   salt = process.env.SHIP_FAST_IP_HASH_SALT ?? '',
 ): string {
   return createHash('sha256').update(`${salt}:${ip}`).digest('hex').slice(0, 48)
+}
+
+function getBearerToken(request: Request): string | null {
+  const match = (request.headers.get('authorization') ?? '').match(
+    /^Bearer\s+(.+)$/i,
+  )
+  return match?.[1]?.trim() || null
 }
 
 async function readJsonBody(
@@ -159,6 +163,8 @@ export async function createSessionCreateResponse(
     const body = await readJsonBody(request)
     const clientIpHash = hashClientIp(getClientIp(request))
     const client = clientOverride ?? createRuntimeConvexHttpClient()
+    const token = getBearerToken(request)
+    if (token !== null) client.setAuth?.(token)
     const result = await client.mutation(api.sessions.create, {
       ...body,
       clientIpHash,
@@ -196,6 +202,7 @@ export async function createSessionCreateResponse(
     ) {
       return json({ error: error.message }, { status: 413 })
     }
+    console.error(error)
     const payload = errorPayload(error)
     return json(payload.body, { status: payload.status })
   }

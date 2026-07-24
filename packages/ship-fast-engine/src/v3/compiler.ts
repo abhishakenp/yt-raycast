@@ -225,8 +225,15 @@ export function compileSection(
     nav: nav ?? [],
   })
 
-  // Component not in registry → skip (no statements, no ref).
+  // Component not in registry → check for freeform block (LLM-generated component).
   if (!call) {
+    if (section.freeform) {
+      const freeformJson = JSON.stringify(section.freeform)
+      const callStmt = `${id} = Freeform(${JSON.stringify(freeformJson)})`
+      const anchorId = `${id}_anchor`
+      const anchorStmt = `${anchorId} = SectionAnchor("${id}", ${id}, "scroll-mt-28")`
+      return { statements: [callStmt, anchorStmt], ref: anchorId }
+    }
     return { statements: [], ref: null }
   }
 

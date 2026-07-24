@@ -25,11 +25,11 @@
 Before the test, the configured Convex backend was probed:
 
 ```bash
-$ curl -s -o /dev/null -w "HTTP %{http_code} time=%{time_total}s" https://convex-backend.ship-fast.io/
+$ curl -s -o /dev/null -w "HTTP %{http_code} time=%{time_total}s" https://convex-backend.ship-fast.ai/
 HTTP 200 time=0.128844s
 ```
 
-**Result**: the backend at `https://convex-backend.ship-fast.io` is currently reachable and returns HTTP 200. This is the environment variable configured in `.env.local` (`CONVEX_URL`, `NEXT_PUBLIC_DEPLOYMENT_URL`, etc.).
+**Result**: the backend at `https://convex-backend.ship-fast.ai` is currently reachable and returns HTTP 200. This is the environment variable configured in `.env.local` (`CONVEX_URL`, `NEXT_PUBLIC_DEPLOYMENT_URL`, etc.).
 
 ### 2. Example Prompt Path — "SaaS dashboard"
 

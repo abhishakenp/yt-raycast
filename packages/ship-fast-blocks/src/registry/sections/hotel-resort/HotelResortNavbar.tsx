@@ -10,7 +10,6 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
-import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import {
   HotelAccountButton,
   HotelBookingActionButton,
@@ -49,8 +48,6 @@ export const HotelResortNavbar = defineCapsule({
     cta: z.string().optional(),
     /** Navigation target the CTA routes to. */
     bookTarget: z.string().optional(),
-    /** Label for the sign-in button. */
-    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   lakebed: hotelResortLakebed,
@@ -74,8 +71,6 @@ export const HotelResortNavbar = defineCapsule({
         {brand.charAt(0).toUpperCase()}
       </span>
     )
-
-    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -108,11 +103,6 @@ export const HotelResortNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions>
-          <SignInButton
-            variant="ghost"
-            label={signIn}
-            className="hidden sm:block"
-          />
           <HotelBookingBadge lakebed={lakebed} />
           <HotelSearchButton
             lakebed={lakebed}

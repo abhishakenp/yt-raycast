@@ -10,7 +10,6 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
-import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import {
   PublicationAccountButton,
   PublicationMobileMenu,
@@ -62,8 +61,6 @@ export const BlogPostNavbar = defineCapsule({
     subscribeCta: z.string().optional(),
     /** Navigation target for the logo / brand click (defaults to first nav item). */
     homeTarget: z.string().optional(),
-    /** Label for the sign-in button. */
-    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   lakebed: publicationLakebed,
@@ -74,7 +71,6 @@ export const BlogPostNavbar = defineCapsule({
     const brand = props.brand ?? 'The Editorial'
     const homeTarget = props.homeTarget ?? nav[0]
     const subscribeCta = props.subscribeCta ?? 'Subscribe'
-    const signIn = props.signIn ?? 'Sign in'
 
     return (
       <SiteNav
@@ -108,11 +104,6 @@ export const BlogPostNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-3">
-          <SignInButton
-            variant="ghost"
-            label={signIn}
-            className="hidden sm:block"
-          />
           <PublicationSearchButton
             lakebed={lakebed}
             buttonClassName="hidden p-2 text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"

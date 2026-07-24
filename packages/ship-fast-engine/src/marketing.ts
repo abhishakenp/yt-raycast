@@ -1,4 +1,4 @@
-export const SHIP_FAST_SITE_URL = 'https://ship-fast.io'
+export const SHIP_FAST_SITE_URL = 'https://ship-fast.ai'
 
 export const shipFastFooterLogoMarkup = (idPrefix = 'sfb') => {
   const g1 = `${idPrefix}-fg1`

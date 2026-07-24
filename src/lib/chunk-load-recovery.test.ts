@@ -15,7 +15,7 @@ describe('chunk load recovery', () => {
     expect(
       isDynamicImportLoadError(
         new TypeError(
-          'Failed to fetch dynamically imported module: https://ship-fast.io/assets/generate._sessionId-cCxQkyc8.js',
+          'Failed to fetch dynamically imported module: https://ship-fast.ai/assets/generate._sessionId-cCxQkyc8.js',
         ),
       ),
     ).toBe(true)
@@ -30,7 +30,7 @@ describe('chunk load recovery', () => {
     const reason = new Error('error loading dynamically imported module')
 
     const first = recoverFromDynamicImportLoadError({
-      href: 'https://ship-fast.io/generate/demo',
+      href: 'https://ship-fast.ai/generate/demo',
       reason,
       reload: () => {
         reloads += 1
@@ -41,7 +41,7 @@ describe('chunk load recovery', () => {
       },
     })
     const second = recoverFromDynamicImportLoadError({
-      href: 'https://ship-fast.io/generate/demo',
+      href: 'https://ship-fast.ai/generate/demo',
       reason,
       reload: () => {
         reloads += 1
@@ -62,7 +62,7 @@ describe('chunk load recovery', () => {
     Object.defineProperty(window, 'location', {
       configurable: true,
       value: {
-        href: 'https://ship-fast.io/generate/k574ms14ma9f94keq30r7dq24x89n1k2',
+        href: 'https://ship-fast.ai/generate/k574ms14ma9f94keq30r7dq24x89n1k2',
         reload,
       },
     })
@@ -73,7 +73,7 @@ describe('chunk load recovery', () => {
       cancelable: true,
       promise: Promise.resolve(),
       reason: new TypeError(
-        'Failed to fetch dynamically imported module: https://ship-fast.io/assets/generate._sessionId-cCxQkyc8.js',
+        'Failed to fetch dynamically imported module: https://ship-fast.ai/assets/generate._sessionId-cCxQkyc8.js',
       ),
     })
     const secondEvent = new PromiseRejectionEvent('unhandledrejection', {
@@ -98,6 +98,6 @@ describe('chunk load recovery', () => {
     expect(reload).toHaveBeenCalledTimes(1)
     expect(
       window.sessionStorage.getItem('ship-fast:dynamic-import-recovered'),
-    ).toBe('https://ship-fast.io/generate/k574ms14ma9f94keq30r7dq24x89n1k2')
+    ).toBe('https://ship-fast.ai/generate/k574ms14ma9f94keq30r7dq24x89n1k2')
   })
 })

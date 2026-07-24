@@ -142,6 +142,44 @@ describe('compileSection', () => {
     expect(statements).toEqual([])
     expect(ref).toBeNull()
   })
+
+  it('emits Freeform call for sections with freeform def', () => {
+    const { statements, ref } = compileSection(
+      {
+        role: 'counterdemo',
+        content: [],
+        freeform: {
+          state: { count: '0' },
+          actions: { inc: 'count+1', dec: 'count-1' },
+          layout: '<div>{count}</div>',
+        },
+      },
+      'saas',
+      'home',
+      'Counter',
+      ['Home'],
+    )
+    expect(statements).toHaveLength(2)
+    expect(statements[0]).toContain('home_counterdemo = Freeform(')
+    // Freeform JSON is double-encoded: JSON.stringify(def) then JSON.stringify(string)
+    // so inner quotes are escaped. Verify the content is present.
+    expect(statements[0]).toContain('count')
+    expect(statements[0]).toContain('inc')
+    expect(statements[0]).toContain('layout')
+    expect(ref).toBe('home_counterdemo_anchor')
+  })
+
+  it('unknown component without freeform still returns empty', () => {
+    const { statements, ref } = compileSection(
+      { role: 'nonexistent', content: ['test'] },
+      'saas',
+      'home',
+      'Brand',
+      ['Home'],
+    )
+    expect(statements).toEqual([])
+    expect(ref).toBeNull()
+  })
 })
 
 // ── Inline array parsing (~ and ^ separators) ───────────────────────────────

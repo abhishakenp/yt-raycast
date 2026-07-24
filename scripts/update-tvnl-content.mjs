@@ -33,7 +33,7 @@ data.importantLinks = (data.importantLinks ?? []).filter(
 data.importantLinks.push({
   id: 'shipfast-partner',
   label: 'Built with ShipFast',
-  url: 'https://ship-fast.io',
+  url: 'https://ship-fast.ai',
   createdAt: '2026-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
 })

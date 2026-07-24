@@ -10,7 +10,6 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
-import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import { jobBoardLakebed } from './job-board-lakebed.ts'
 import {
   JobBoardAccountButton,
@@ -41,8 +40,6 @@ export const JobBoardNavbar = defineCapsule({
     brand: z.string().optional(),
     /** Nav link labels (should match site routes for page switching). */
     nav: z.array(z.string()).optional(),
-    /** Right-side secondary text link label. */
-    signIn: z.string().optional(),
     /** Right-side solid primary CTA label. */
     cta: z.string().optional(),
     /** Where the logo/brand click navigates. */
@@ -55,7 +52,6 @@ export const JobBoardNavbar = defineCapsule({
     const nav = props.nav?.length
       ? props.nav
       : ['Browse Jobs', 'Companies', 'Categories', 'Success Stories']
-    const signIn = props.signIn ?? 'Sign In'
     const cta = props.cta ?? 'Post a Job'
     const homeTarget = props.homeTarget ?? nav[0]
 
@@ -107,18 +103,12 @@ export const JobBoardNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-2 sm:gap-3">
-          <SignInButton
-            variant="ghost"
-            label={signIn}
-            className="hidden sm:block"
-          />
           <JobBoardSearchButton
             lakebed={lakebed}
             buttonClassName="inline-flex size-9 items-center justify-center rounded-none border border-border text-muted-foreground transition-colors hover:border-foreground hover:text-foreground active:translate-y-px"
           />
           <JobBoardAccountButton
             lakebed={lakebed}
-            label={signIn}
             buttonClassName="hidden size-9 items-center justify-center rounded-none border border-border text-muted-foreground transition-colors hover:border-foreground hover:text-foreground active:translate-y-px sm:inline-flex"
           />
           <JobBoardActionButton

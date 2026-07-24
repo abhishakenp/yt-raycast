@@ -6,7 +6,7 @@ import { callRouteHandler } from './-route-handler.test-helper'
 const originalEnv = { ...process.env }
 
 async function requestImage(query: string) {
-  const request = new Request(`https://ship-fast.io/api/pexels?${query}`)
+  const request = new Request(`https://ship-fast.ai/api/pexels?${query}`)
   return callRouteHandler(Route, 'GET', { request })
 }
 

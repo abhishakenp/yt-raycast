@@ -129,3 +129,60 @@ describe('useOptionalAuth', () => {
     expect(openSignIn).toHaveBeenCalledTimes(1)
   })
 })
+
+describe('useIsAdmin', () => {
+  afterEach(() => {
+    cleanup()
+    vi.unstubAllEnvs()
+    vi.unstubAllGlobals()
+    delete (window as Window & { Clerk?: unknown }).Clerk
+  })
+
+  it('returns true when publicMetadata.system_role is admin', async () => {
+    vi.stubEnv('VITE_DISABLE_CLERK', '')
+    vi.stubEnv('VITE_CLERK_PUBLISHABLE_KEY', 'pk_test_admin_role')
+    setClerk({
+      addListener: vi.fn(),
+      session: { getToken: vi.fn() },
+      user: { id: 'user_admin', publicMetadata: { system_role: 'admin' } },
+    })
+    const { useIsAdmin } = await importOptionalAuth()
+    const { result } = renderHook(() => useIsAdmin())
+    expect(result.current).toBe(true)
+  })
+
+  it('returns true when publicMetadata.systemRole (camelCase) is admin', async () => {
+    vi.stubEnv('VITE_DISABLE_CLERK', '')
+    vi.stubEnv('VITE_CLERK_PUBLISHABLE_KEY', 'pk_test_admin_role')
+    setClerk({
+      addListener: vi.fn(),
+      session: { getToken: vi.fn() },
+      user: { id: 'user_admin', publicMetadata: { systemRole: 'admin' } },
+    })
+    const { useIsAdmin } = await importOptionalAuth()
+    const { result } = renderHook(() => useIsAdmin())
+    expect(result.current).toBe(true)
+  })
+
+  it('returns false when publicMetadata has no admin role', async () => {
+    vi.stubEnv('VITE_DISABLE_CLERK', '')
+    vi.stubEnv('VITE_CLERK_PUBLISHABLE_KEY', 'pk_test_admin_role')
+    setClerk({
+      addListener: vi.fn(),
+      session: { getToken: vi.fn() },
+      user: { id: 'user_normal', publicMetadata: { system_role: 'user' } },
+    })
+    const { useIsAdmin } = await importOptionalAuth()
+    const { result } = renderHook(() => useIsAdmin())
+    expect(result.current).toBe(false)
+  })
+
+  it('returns false when no user is signed in', async () => {
+    vi.stubEnv('VITE_DISABLE_CLERK', '')
+    vi.stubEnv('VITE_CLERK_PUBLISHABLE_KEY', 'pk_test_admin_role')
+    setClerk({ addListener: vi.fn(), session: null, user: null })
+    const { useIsAdmin } = await importOptionalAuth()
+    const { result } = renderHook(() => useIsAdmin())
+    expect(result.current).toBe(false)
+  })
+})

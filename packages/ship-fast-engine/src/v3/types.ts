@@ -17,10 +17,22 @@ export interface NestedGroup {
   items: NestedItem[]
 }
 
+export interface FreeformDef {
+  /** State declarations: variable name → initial value (string) */
+  state: Record<string, string>
+  /** Action handlers: action name → mutation expression (e.g. "count+1") */
+  actions: Record<string, string>
+  /** JSX layout string (HTML-like with {varname} interpolations and onclick="actionName") */
+  layout: string
+}
+
 export interface Section {
   role: string
   content: string[]
   nested?: NestedGroup[]
+  /** When present, this section has no matching vocabulary component —
+   *  the LLM generated a freeform component definition to fill the gap. */
+  freeform?: FreeformDef
 }
 
 export interface CustomTable {

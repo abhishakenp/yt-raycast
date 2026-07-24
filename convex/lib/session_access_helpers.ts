@@ -26,6 +26,8 @@ type AuthIdentity = {
   tokenIdentifier?: string
   subject?: string
   email?: string
+  system_role?: string
+  systemRole?: string
 }
 
 type AuthCtx = {
@@ -87,15 +89,20 @@ export async function getUserId(ctx: AuthCtx) {
 }
 
 /**
- * Returns true when the authenticated user has `system_role: "admin"` in their
- * Clerk publicMetadata (exposed as a JWT claim via the Clerk "convex" JWT
- * template). Admin users bypass rate limits, quota, and the export paywall —
- * everything `DISABLE_LIMIT`/`DISABLE_PAYWALL` bypass, except auth/ownership
- * (which mirrors `VITE_DISABLE_CLERK` and stays enforced).
+ * Returns true when the authenticated user has an admin role in their Clerk
+ * publicMetadata (exposed as a JWT claim via the Clerk "convex" JWT template).
+ * Accepts both `system_role` and `systemRole` claim names so the Clerk JWT
+ * template can use either spelling.
+ *
+ * Admin users bypass rate limits, quota, the export paywall, AND auth/ownership
+ * checks — everything `VITE_DISABLE_CLERK`/`DISABLE_LIMIT`/`DISABLE_PAYWALL`
+ * bypass. This is safe because the JWT is signed by Clerk and verified by
+ * Convex `auth.config.ts` — no forgeable client-supplied value is involved.
  */
 export async function isUserAdmin(ctx: AuthCtx): Promise<boolean> {
   const identity = await ctx.auth.getUserIdentity()
-  return identity?.system_role === 'admin'
+  const role = identity?.system_role ?? identity?.systemRole
+  return role === 'admin'
 }
 
 export async function getUserEmail(ctx: AuthCtx): Promise<string | undefined> {
@@ -135,7 +142,7 @@ export async function assertCanReadOwnedSession(
   if (session.deletedAt !== undefined) {
     throw new ConvexError({ code: 'NOT_FOUND', message: 'Session not found' })
   }
-  if (isAuthDisabled()) return
+  if (isAuthDisabled() || (await isUserAdmin(ctx))) return
   ;(await isSessionOwner(ctx, session, anonymousOwnerSecret)) ||
     (() => {
       throw new ConvexError({
@@ -158,6 +165,7 @@ export async function canReadPrivateSession(
   if (session.deletedAt !== undefined) return false
   if (session.isPrivate !== true || isAuthDisabled()) return true
   if (!('auth' in ctx)) return false
+  if (await isUserAdmin(ctx)) return true
   return isSessionOwner(ctx, session, anonymousOwnerSecret)
 }
 
@@ -382,7 +390,7 @@ export async function claimAnonymousSessionsByIp(
   const now = Date.now()
   let claimed = 0
   for (const session of sessions) {
-    if (session.userId !== undefined) continue
+    if (session.userId?.length) continue
     if (session.deletedAt !== undefined) continue
     await ctx.db.patch(session._id, {
       userId,

@@ -15,9 +15,9 @@ describe('site-config', () => {
     const config = await importSiteConfig()
 
     expect(config.SITE_NAME).toBe('Ship Fast')
-    expect(config.SITE_URL).toBe('https://ship-fast.io')
-    expect(config.BASE_DOMAIN).toBe('ship-fast.io')
-    expect(config.PLAUSIBLE_DOMAIN).toBe('ship-fast.io')
+    expect(config.SITE_URL).toBe('https://ship-fast.ai')
+    expect(config.BASE_DOMAIN).toBe('ship-fast.ai')
+    expect(config.PLAUSIBLE_DOMAIN).toBe('ship-fast.ai')
     expect(config.HOME_TITLE).toBe('Ship Fast - AI Website Generator')
     expect(config.HOME_DESCRIPTION).toContain('Generate a public homepage')
     expect(config.HOME_KEYWORDS).toContain('ai website generator')

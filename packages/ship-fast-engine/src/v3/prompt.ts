@@ -72,7 +72,12 @@ REASONING PHASE (CRITICAL — you MUST reason before emitting any output):
 Before emitting the site-plan, you MUST think through the request inside <reasoning>...</reasoning> tags. This reasoning is your cognitive scaffolding — it primes the quality of your output. Without it, your output will be generic and templatey.
 
 Inside <reasoning>, work through:
-1. What is the user actually building? Parse the intent — is it a store, a restaurant, a SaaS tool, a portfolio, a publication, a service business, a government portal, or something else? What specific vertical/niche?
+0. IS THIS A WEBSITE OR AN APP? This is the most important question — your entire output depends on it.
+   Apply this test: imagine the finished product. Does the user primarily READ content (browsing a menu, reading articles, viewing products, learning about a service)? Or does the user primarily INTERACT with it (pressing buttons that change state, manipulating values, playing, calculating, toggling, adding/removing items)?
+   READ → WEBSITE. Use regular sections only (hero, menu, features, pricing, gallery, footer). No @freeform blocks.
+   INTERACT → APP. You MUST emit @freeform block(s) for the interactive functionality. You can still add regular sections (hero, features) as a landing page wrapper, but the @freeform block IS the deliverable. Generating a marketing landing page without @freeform blocks for an app request is a FAILURE.
+   The noun itself tells you: "calculator" is always an app (you press buttons to compute). "restaurant" is always a website (you browse a menu). "todo list" is always an app (you add/check/remove tasks). "portfolio" is always a website (you view work samples). "game" is always an app. "timer" is always an app. "store" is always a website. Do not be fooled by marketing-style phrasing — "a simple calculator for quick math" is still an app because the core activity is calculating, not reading.
+1. What is the user actually building? Parse the intent — is it a store, a restaurant, a SaaS tool, a portfolio, a publication, a service business, a government portal, an interactive app, or something else? What specific vertical/niche?
 2. What is the real brand name? Extract it from the request. If none is given, infer a plausible, specific brand name from the vertical (not generic like "Coffee Shop" — use something like "Meridian Coffee" or "Stone & Steam Cafe").
 3. What descriptive site title fits? It should include the brand AND what the site is about (e.g. "Kaveri Silks — Premium Sarees & Traditional Wear").
 4. What sections does THIS specific site need? Not all available sections — only the ones that make sense for this particular business. A restaurant needs a menu, not a pricing table. A law firm needs practice areas and attorneys, not a gallery. Think about what a real ${vocabs.length === 1 ? vocabs[0].kind : 'website of this kind'} would have.
@@ -80,11 +85,32 @@ Inside <reasoning>, work through:
 6. What navigation labels make sense? Not PascalCase role names — real, contextual labels like "Menu" not "Gallery", "Our Attorneys" not "Team".
 7. What tone and voice fits this business? A law firm is formal and authoritative. A cafe is warm and inviting. A tech startup is confident and modern. Match the tone to the vertical.
 
+When you detect an app request (from step 0):
+1. Still emit the kind line (use "marketing" as the kind — it provides the landing page shell)
+2. Emit regular sections (hero, features) that describe the app — these become the landing page
+3. Emit @freeform block(s) for the actual interactive functionality — this IS the app
+4. The @freeform block is the deliverable. The sections are the marketing wrapper.
+5. Do NOT use + table/operation lines for the app's interactive state. The @freeform block's state/actions handle all interactivity. Tables are for persistent data (e.g. saving calculations history), not for the live interactive UI.
+
+Examples of app requests → what to generate:
+- "a todo list app" → hero + features (landing page) + @freeform todowidget (the actual todo list with add/remove/toggle)
+- "a counter app" → hero + @freeform counterdemo (the actual counter with inc/dec)
+- "a calculator" → hero + @freeform calculator (the actual calculator with state)
+- "a pomodoro timer" → hero + features + @freeform timer (the actual timer)
+- "build me a tic tac toe game" → hero + @freeform game (the actual game board)
+
+Examples of website requests (NO @freeform needed):
+- "a restaurant website" → regular sections only (hero, menu, gallery, footer)
+- "a SaaS landing page" → regular sections only (hero, features, pricing, FAQ)
+- "a portfolio site" → regular sections only (hero, gallery, about, contact)
+
 After </reasoning>, emit the site-plan DSL exactly as specified below. The reasoning primes your output — take it seriously.
 
 OUTPUT FORMAT (strict — no prose, no markdown, no JSON after </reasoning>):
-Line 1: kind (the kind listed below)
+Line 1: @type website OR @type app (you MUST commit here — this determines whether you emit @freeform blocks)
+Line 2: kind (the kind listed below)
 Then: one line per section, in order
+Then: @freeform blocks (REQUIRED if line 1 was @type app — see @freeform blocks format below. FORBIDDEN if line 1 was @type website)
 Then: a @pages line listing secondary page names (REQUIRED when the site has multiple substantial sections)
 Then: metadata lines (@brand, @title, @nav)
 Then: optional + lines for custom tables/operations
@@ -128,6 +154,177 @@ role value1|value2|value3
 + tableName field1 field2 field3
 + tableName field1 field2 +
 + opName macroType tableName [key]
+
+@freeform blocks (generate custom components for things NOT in the vocabulary):
+When the user needs something that doesn't fit any vocabulary role (a counter, a calculator, a live demo, an interactive widget, a game, a tool), emit a @freeform block. The block generates a React component with reactive state and action handlers, rendered alongside the existing sections.
+
+Format:
+@freeform rolename
+state: var1=initval var2=initval
+actions: action1→mutationExpr action2→mutationExpr
+layout: <div class="tailwind-classes">...{varname}...<button onclick="actionName">...</button>...</div>
+@endfreeform
+
+CRITICAL @freeform FORMAT RULES (violation = broken render):
+- The layout is STATIC HTML with Tailwind classes. NOT JSX. NOT JavaScript. NOT React.
+- NO JavaScript expressions. NO .map(), NO arrow functions, NO ternary operators, NO template literals.
+- NO className attribute — use class (plain HTML).
+- NO onChange, onSubmit, onClick with function values — use onclick="actionName" (plain HTML attribute, string value).
+- NO curly brace expressions except {varname} for simple state interpolation.
+- State interpolation: {varname} inserts the current value of a state variable. Example: {count}, {name}, {total}
+- Action triggers: onclick="actionName" calls the action handler. Example: <button onclick="inc">+</button>
+- WRONG: <input onChange={() => toggleTask(index)} />
+- RIGHT: <input type="checkbox" onclick="toggleTask" />
+- WRONG: <ul>{tasks.map((task, i) => <li key={i}>{task.name}</li>)}</ul>
+- RIGHT: <ul><li>{task1}</li><li>{task2}</li><li>{task3}</li></ul>
+- WRONG: className={task.done ? 'line-through' : 'text-foreground'}
+- RIGHT: class="text-foreground" (static classes only)
+
+Rules for @freeform blocks:
+- Use a descriptive role name (e.g. counterdemo, calculator, livewidget) — NOT a vocabulary role name
+- state: declares reactive variables with initial values (numbers or strings). Space-separated: count=0 step=1
+  - For a todo list: state: task1=Buy groceries task2=Walk dog task3=Review PR task1done=false task2done=false task3done=false newtask=
+  - For a counter: state: count=0
+  - For a calculator: state: display=0 operand=0 operator=
+- actions: maps action names to mutation expressions, comma-separated. Expressions: var+val, var-val, var*val, var/val, var=literal, or just varname (toggle boolean)
+  Example: actions: inc→count+1, dec→count-1, reset→count=0
+  - For a todo list: actions: toggle1→task1done, toggle2→task2done, toggle3→task3done, clear→task1done=false task2done=false task3done=false
+  - For a counter: actions: inc→count+1, dec→count-1, reset→count=0
+- layout: HTML with Tailwind CSS classes. Use {varname} to interpolate state values. Use onclick="actionName" to trigger actions.
+- You can use our UI primitives by tag name: <Button variant="default">label</Button>, <Card>...</Card>, <CardHeader><CardTitle>...</CardTitle></CardHeader>, <CardContent>...</CardContent>, <Input placeholder="..." type="text" />, <Badge variant="default">label</Badge>, <Progress value="50" />
+- Available Button variants: default, destructive, outline, secondary, ghost, link. Sizes: default, xs, sm, lg.
+- Available Badge variants: default, secondary, destructive, outline, ghost.
+- Use our design tokens: bg-background, text-foreground, bg-primary, text-primary-foreground, bg-muted, text-muted-foreground, border-border, bg-card, text-card-foreground. These ensure the freeform component matches the site's theme.
+- Use our spacing/typography patterns: min-h-screen, grid place-items-center, flex flex-col items-center gap-8, text-6xl font-black tracking-tight, rounded-full, etc.
+- Keep layouts compact — one screen, no scrolling needed for simple widgets
+- Place @freeform blocks AFTER regular section lines, BEFORE @pages/metadata lines
+
+DESIGN DNA — study these patterns from our existing components. Mimic them in your @freeform layouts:
+
+Pattern 1 — Collapsed-border KPI grid (from CrmStats):
+<section class="border-y border-border bg-background py-14">
+  <div class="mx-auto max-w-5xl px-4">
+    <div class="mb-8 flex items-center gap-4">
+      <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Metrics <span class="text-primary">· live</span></span>
+      <span class="h-px flex-1 bg-border"></span>
+    </div>
+    <div class="grid grid-cols-2 gap-0 border-l border-t border-border lg:grid-cols-4">
+      <div class="border-b border-r border-border p-5 sm:p-7">
+        <span class="block text-[clamp(2.25rem,4.5vw,3.75rem)] font-extrabold leading-none tracking-tight text-foreground tabular-nums">15,000+</span>
+        <span class="mt-2 block font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Active teams</span>
+        <span class="mt-3 flex items-center gap-1"><span class="h-1 w-10 bg-primary"></span><span class="h-1 w-1 bg-foreground/20"></span><span class="h-1 w-1 bg-foreground/20"></span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+Pattern 2 — Asymmetric split with ghost type + countdown grid (from ComingSoonHero):
+<section class="relative overflow-hidden px-4 pt-14 sm:px-6 lg:px-8">
+  <div class="mx-auto max-w-4xl">
+    <div class="flex items-center gap-4">
+      <p class="font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">[ T-minus ] Launching March 15</p>
+      <span class="h-px flex-1 bg-border"></span>
+    </div>
+    <h1 class="mt-8 text-[clamp(3rem,11vw,8.5rem)] font-extrabold uppercase leading-[0.88] tracking-tighter text-foreground">The future of<br/><span class="[-webkit-text-fill-color:transparent] [-webkit-text-stroke:2px_currentColor]">collaborative work</span></h1>
+    <div class="mt-12 grid gap-10 lg:grid-cols-12">
+      <div class="lg:col-span-7">
+        <div class="grid grid-cols-2 gap-0 border-l-2 border-t-2 border-foreground sm:grid-cols-4">
+          <div class="flex flex-col items-start gap-2 border-b-2 border-r-2 border-foreground p-4"><span class="text-[clamp(2.75rem,5.5vw,5rem)] font-extrabold leading-none tracking-tighter tabular-nums">00</span><span class="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Days</span></div>
+        </div>
+      </div>
+      <div class="lg:col-span-5 lg:translate-y-6">
+        <p class="mb-6 max-w-md text-base leading-relaxed text-muted-foreground">Join 12,000+ teams on the waitlist.</p>
+        <div class="flex max-w-md flex-col gap-3 sm:flex-row">
+          <input class="min-h-12 flex-1 rounded-none border-2 border-foreground/25 bg-background px-4 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none" placeholder="Enter your email"/>
+          <button class="inline-flex min-h-12 items-center justify-center whitespace-nowrap rounded-none bg-primary px-7 font-mono text-[13px] font-semibold uppercase tracking-[0.14em] text-primary-foreground shadow-[4px_4px_0_0] shadow-foreground hover:-translate-y-0.5">Join Waitlist</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+Pattern 3 — KPI cards with spark bars + trend (from DashboardKpis):
+<section class="bg-background py-10">
+  <div class="mx-auto max-w-5xl px-4">
+    <div class="mb-6 flex items-center justify-between gap-4 border-b border-border pb-3 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+      <span class="flex items-center gap-2.5"><span class="size-1.5 bg-primary"></span>Metrics · Live</span>
+      <span class="tabular-nums text-muted-foreground/60">05 indicators</span>
+    </div>
+    <div class="grid grid-cols-2 gap-0 border-l border-t border-border lg:grid-cols-4">
+      <div class="col-span-2 border-b border-r border-border bg-card p-4 sm:p-5 lg:col-span-2">
+        <span class="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">Revenue</span>
+        <span class="mt-2 block text-4xl font-extrabold leading-none sm:text-5xl">$48.2k</span>
+        <div class="mt-3 flex items-center gap-2"><span class="font-mono text-[11px] font-semibold text-primary">↑ 12.4%</span></div>
+        <span class="mt-4 flex h-6 items-end gap-px"><span class="w-1.5 h-[34%] bg-foreground/15"></span><span class="w-1.5 h-[52%] bg-foreground/15"></span><span class="w-1.5 h-[95%] bg-primary"></span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+Pattern 4 — Bento grid with marker highlight + mono index (from CrmFeatures):
+<section class="bg-background py-16 lg:py-24">
+  <div class="mx-auto max-w-5xl px-4">
+    <div class="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+      <div class="max-w-2xl">
+        <span class="mb-4 block font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Capabilities <span class="text-primary">· 01—06</span></span>
+        <h2 class="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">Everything your <span class="relative ml-[0.12em] inline-block whitespace-nowrap"><span class="absolute inset-x-[-0.15em] inset-y-[0.05em] rotate-1 bg-primary"></span><span class="relative text-primary-foreground">team</span></span> needs</h2>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 gap-0 border-l border-t border-border md:grid-cols-12">
+      <div class="border-b border-r border-border bg-card p-6 transition-colors hover:bg-muted/60 md:col-span-7 sm:p-8">
+        <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">01<span class="text-primary"> /</span></span>
+        <h3 class="mt-3 text-xl font-bold tracking-tight">Visual Pipeline</h3>
+        <p class="mt-2 max-w-md text-sm leading-6 text-muted-foreground">Drag-and-drop Kanban boards.</p>
+        <span class="mt-6 flex items-end gap-1.5"><span class="w-4 h-3 bg-foreground/15"></span><span class="w-4 h-6 bg-foreground/15"></span><span class="w-4 h-9 bg-primary"></span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+Pattern 5 — Using primitives (Button + Card + Badge + Progress):
+<div class="mx-auto max-w-md p-8">
+  <Card>
+    <CardHeader>
+      <CardTitle class="text-2xl font-bold">Task Progress</CardTitle>
+      <CardDescription class="text-muted-foreground">3 of 5 tasks complete</CardDescription>
+    </CardHeader>
+    <CardContent class="flex flex-col gap-4">
+      <Progress value="60" class="h-2" />
+      <div class="flex items-center justify-between">
+        <Badge variant="secondary">In Progress</Badge>
+        <Button variant="outline" size="sm">Reset</Button>
+      </div>
+    </CardContent>
+  </Card>
+</div>
+
+KEY DESIGN PRINCIPLES (apply these to every @freeform layout):
+- Collapsed borders: border-l border-t on container, border-b border-r on each cell. Never rounded borders on grids.
+- Mono micro-labels: font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground. Use for section eyebrows, stat labels, metadata rails.
+- Asymmetric grids: 7/5 or 4/8 splits, never 50/50. Use lg:col-span-7 / lg:col-span-5.
+- Tabular nums: tabular-nums on all numeric displays. Essential for counters, stats, KPIs.
+- Hairline separators: h-px flex-1 bg-border. Use between metadata items.
+- Marker highlights: rotated bg-primary block behind a key word, text-primary-foreground on top.
+- Tick bars / spark bars: div-built data motifs (h-1 w-N bg-primary, h-1 w-1 bg-foreground/20). Not SVG.
+- Fluid type: text-[clamp(2rem,5vw,4rem)] for display headings. Never fixed px for hero text.
+- Sharp corners on data UI: rounded-none for grids, forms, countdown cells. Rounded only for buttons/badges.
+- Hard shadows: shadow-[4px_4px_0_0] shadow-foreground for brutalist buttons. Offset shifts on hover/active.
+- Ghost type: [-webkit-text-fill-color:transparent] [-webkit-text-stroke:2px_currentColor] for emphasis words.
+- Color tokens: bg-background, text-foreground, bg-primary, text-primary-foreground, bg-muted, text-muted-foreground, border-border, bg-card, text-card-foreground. NEVER raw colors.
+
+Example @freeform block (a counter widget using design DNA):
+@freeform counterdemo
+state: count=0
+actions: inc→count+1, dec→count-1, reset→count=0
+layout: <section class="border-y border-border bg-background py-20"><div class="mx-auto max-w-2xl px-4"><div class="mb-8 flex items-center gap-4"><span class="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Counter <span class="text-primary">· live</span></span><span class="h-px flex-1 bg-border"></span><span class="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground/60 tabular-nums">{count} clicks</span></div><div class="grid place-items-center gap-8 py-12"><span class="text-[clamp(3rem,8vw,6rem)] font-extrabold leading-none tracking-tighter text-foreground tabular-nums">{count}</span><div class="flex gap-3"><button onclick="dec" class="inline-flex h-12 w-12 items-center justify-center rounded-none border-2 border-border text-2xl font-bold text-foreground transition-colors hover:bg-muted">−</button><button onclick="inc" class="inline-flex h-12 w-12 items-center justify-center rounded-none bg-primary text-2xl font-bold text-primary-foreground transition-transform hover:-translate-y-0.5">+</button><button onclick="reset" class="inline-flex h-12 items-center justify-center rounded-none border-2 border-foreground/20 px-4 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground hover:bg-muted">Reset</button></div></div></div></section>
+@endfreeform
+
+Example @freeform block (a todo list — NOTE: static HTML, no JS, no .map, no arrow functions. Checkboxes MUST have checked="{varname}" to bind to state):
+@freeform todowidget
+state: task1=Buy groceries task2=Walk the dog task3=Review PR task1done=false task2done=false task3done=false
+actions: toggle1→task1done, toggle2→task2done, toggle3→task3done, clearall→task1done=false task2done=false task3done=false
+layout: <section class="border-y border-border bg-background py-16"><div class="mx-auto max-w-lg px-4"><div class="mb-6 flex items-center gap-4"><span class="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Tasks <span class="text-primary">· live</span></span><span class="h-px flex-1 bg-border"></span><button onclick="clearall" class="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground">Clear all</button></div><ul class="flex flex-col gap-2"><li class="flex items-center gap-3 border-b border-r border-border bg-card p-4"><input type="checkbox" onclick="toggle1" checked="{task1done}" class="h-5 w-5 rounded-none border-2 border-border" /><span class="text-foreground">{task1}</span></li><li class="flex items-center gap-3 border-b border-r border-border bg-card p-4"><input type="checkbox" onclick="toggle2" checked="{task2done}" class="h-5 w-5 rounded-none border-2 border-border" /><span class="text-foreground">{task2}</span></li><li class="flex items-center gap-3 border-b border-r border-border bg-card p-4"><input type="checkbox" onclick="toggle3" checked="{task3done}" class="h-5 w-5 rounded-none border-2 border-border" /><span class="text-foreground">{task3}</span></li></ul></div></section>
+@endfreeform
 
 ${kindHeader}
 ${kindLines}
@@ -221,8 +418,10 @@ export function buildLowConfidenceKindPrompt(prompt: string): {
 Available kinds:
 ${lines.join('\n')}
 
+IMPORTANT: If the request is for an interactive APP (todo list, counter, calculator, game, timer, tool, widget) rather than a website, output "marketing" — the engine will use @freeform blocks for the interactive functionality. Do NOT try to force-fit an app request into a non-marketing kind.
+
 Output ONLY the kind name, nothing else.`
-  const user = `Build request: ${prompt}\n\nPick the single best-fitting kind name from the list above. Output ONLY the kind name, nothing else.`
+  const user = `Build request: ${prompt}\n\nPick the single best-fitting kind name from the list above. If this is an app/tool request (not a website), output "marketing". Output ONLY the kind name, nothing else.`
   return { system, user }
 }
 

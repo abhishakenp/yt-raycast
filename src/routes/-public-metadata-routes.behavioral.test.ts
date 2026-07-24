@@ -45,7 +45,7 @@ describe('public metadata route handlers', () => {
         new Response(`${kind} metadata`),
       )
       const Route = await importRoute(modulePath)
-      const request = new Request(`https://ship-fast.io${routePath}`)
+      const request = new Request(`https://ship-fast.ai${routePath}`)
 
       const response = await Route.options.server.handlers.GET({ request })
 
@@ -85,7 +85,7 @@ describe('public metadata route handlers', () => {
         new Response(`${kind} deployment metadata`),
       )
       const Route = await importRoute(modulePath)
-      const request = new Request(`https://ship-fast.io${requestPath}`)
+      const request = new Request(`https://ship-fast.ai${requestPath}`)
 
       const response = await Route.options.server.handlers.GET({
         params: { slug: 'a-craft-beer-brewery' },

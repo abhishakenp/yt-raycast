@@ -10,7 +10,6 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
-import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import {
   LocalServiceAccountButton,
   LocalServiceBookingButton,
@@ -46,8 +45,6 @@ export const MentalHealthNavbar = defineCapsule({
     homeTarget: z.string().optional(),
     /** Label + target for the primary "Book Session" CTA button. */
     bookLabel: z.string().optional(),
-    /** Label for the sign-in button. */
-    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   lakebed: localServiceLakebed,
@@ -58,7 +55,6 @@ export const MentalHealthNavbar = defineCapsule({
       : ['Services', 'Approach', 'Team', 'Pricing', 'FAQ', 'Book Session']
     const homeTarget = props.homeTarget ?? nav[0] ?? 'Services'
     const bookLabel = props.bookLabel ?? nav[nav.length - 1] ?? 'Book Session'
-    const signIn = props.signIn ?? 'Sign in'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
@@ -119,11 +115,6 @@ export const MentalHealthNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-2">
-          <SignInButton
-            variant="ghost"
-            label={signIn}
-            className="hidden sm:block"
-          />
           <LocalServiceIntentBadge lakebed={lakebed} />
           <LocalServiceSearchButton
             lakebed={lakebed}

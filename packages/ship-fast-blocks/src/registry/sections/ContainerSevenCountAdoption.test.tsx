@@ -47,6 +47,20 @@ vi.mock('@ship-fast/lakebed/react', () => {
       useMutation: () => mutation,
       useQuery: () => null,
     })),
+    useAuth: () => ({
+      displayName: 'Guest',
+      isAuthenticated: false,
+      isGuest: true,
+      provider: 'guest',
+      user: {
+        displayName: 'Guest',
+        id: 'guest:local',
+        isGuest: true,
+        provider: 'guest',
+        userId: 'guest:local',
+      },
+      userId: 'guest:local',
+    }),
     useKeyedLakebedMutation: () => keyedMutation,
   }
 })

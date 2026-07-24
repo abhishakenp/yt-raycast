@@ -10,7 +10,6 @@ import {
   NavbarNavLink,
   SiteNav,
 } from '#/section-kit/SiteNav.tsx'
-import { SignInButton } from '#/section-kit/SignInButton.tsx'
 import {
   SaasAccountButton,
   SaasIntentBadge,
@@ -47,8 +46,6 @@ export const CrmNavbar = defineCapsule({
     cta: z.string().optional(),
     /** Navigation target for the brand button. */
     homeTarget: z.string().optional(),
-    /** Label for the sign-in button. */
-    signIn: z.string().optional(),
     className: z.string().optional(),
   }),
   lakebed: saasLakebed,
@@ -60,7 +57,6 @@ export const CrmNavbar = defineCapsule({
     const signInLabel = props.signInLabel ?? 'Sign In'
     const cta = props.cta ?? 'Start Free Trial'
     const homeTarget = props.homeTarget ?? nav[0]
-    const signIn = props.signIn ?? 'Sign in'
 
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
@@ -109,11 +105,6 @@ export const CrmNavbar = defineCapsule({
         </NavbarNav>
 
         <NavbarActions className="gap-3">
-          <SignInButton
-            variant="ghost"
-            label={signIn}
-            className="hidden sm:block"
-          />
           <SaasIntentBadge lakebed={lakebed} />
           <SaasSearchButton
             lakebed={lakebed}
