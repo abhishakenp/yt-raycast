@@ -408,48 +408,46 @@ export async function createExportResponse(
         // Build may not be possible (e.g. preview not ready) — fall through
       }
 
-      // For HTML, the export record now exists with entitlement info.
-      // Re-query to enforce the payment gate, then attempt a synchronous
-      // on-demand build so the user gets the file now instead of a 202
-      // "still being prepared" response.
-      if (normalizedTarget === 'html') {
-        try {
-          const reQuery = await client.query(
-            api.sessions.getOwnedExportArtifactDownloadByLookup,
+      // The export record now exists with entitlement info. Re-query to
+      // enforce the payment gate, then attempt a synchronous on-demand
+      // build so the user gets the file now instead of a 202 "still being
+      // prepared" response.
+      try {
+        const reQuery = await client.query(
+          api.sessions.getOwnedExportArtifactDownloadByLookup,
+          {
+            lookup: sessionId,
+            target: normalizedTarget,
+            anonymousOwnerSecret: getOwnerSecret(request),
+          },
+        )
+        const reDownload =
+          reQuery !== null && isArtifactDownloadPayload(reQuery)
+            ? reQuery
+            : null
+        if (
+          reDownload !== null &&
+          (reDownload.export.status === 'payment_required' ||
+            reDownload.export.requiresPayment === true)
+        ) {
+          return new Response(
+            reDownload.export.errorMessage ??
+              'Subscribe to Pro or purchase download credits to export ZIP files.',
             {
-              lookup: sessionId,
-              target: normalizedTarget,
-              anonymousOwnerSecret: getOwnerSecret(request),
+              status: 402,
+              headers: { 'content-type': 'text/plain' },
             },
           )
-          const reDownload =
-            reQuery !== null && isArtifactDownloadPayload(reQuery)
-              ? reQuery
-              : null
-          if (
-            reDownload !== null &&
-            (reDownload.export.status === 'payment_required' ||
-              reDownload.export.requiresPayment === true)
-          ) {
-            return new Response(
-              reDownload.export.errorMessage ??
-                'Subscribe to Pro or purchase download credits to export ZIP files.',
-              {
-                status: 402,
-                headers: { 'content-type': 'text/plain' },
-              },
-            )
-          }
-          const onDemand = await buildExportOnDemand(
-            client,
-            sessionId,
-            normalizedTarget,
-            getOwnerSecret(request),
-          )
-          if (onDemand) return onDemand
-        } catch {
-          // Preview not ready or build input unavailable — fall through to 202
         }
+        const onDemand = await buildExportOnDemand(
+          client,
+          sessionId,
+          normalizedTarget,
+          getOwnerSecret(request),
+        )
+        if (onDemand) return onDemand
+      } catch {
+        // Preview not ready or build input unavailable — fall through to 202
       }
 
       return buildingResponse('queued')
@@ -471,21 +469,19 @@ export async function createExportResponse(
     }
 
     if (exportRecord.status !== 'ready') {
-      // For HTML, the Convex artifact may still be building but the preview
-      // is ready — build synchronously instead of returning 202. Payment
-      // has already been checked above.
-      if (normalizedTarget === 'html') {
-        try {
-          const onDemand = await buildExportOnDemand(
-            client,
-            sessionId,
-            normalizedTarget,
-            getOwnerSecret(request),
-          )
-          if (onDemand) return onDemand
-        } catch {
-          // Preview not ready or build input unavailable — fall through to 202
-        }
+      // The Convex artifact may still be building but the preview is ready
+      // — build synchronously instead of returning 202. Payment has
+      // already been checked above.
+      try {
+        const onDemand = await buildExportOnDemand(
+          client,
+          sessionId,
+          normalizedTarget,
+          getOwnerSecret(request),
+        )
+        if (onDemand) return onDemand
+      } catch {
+        // Preview not ready or build input unavailable — fall through to 202
       }
       return buildingResponse(exportRecord.status)
     }
