@@ -1048,6 +1048,29 @@ describe('medusa product sync', () => {
     )
   })
 
+  it('returns a specific warning when Medusa admin credentials are rejected', async () => {
+    const fetchImpl = vi.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ message: 'Invalid email or password' }), {
+        status: 401,
+      }),
+    )
+
+    const result = await syncGeneratedProductsToMedusa({
+      adminEmail: 'admin@test.com',
+      adminPassword: 'wrong-password',
+      backendUrl: 'http://localhost:9000',
+      fetch: fetchImpl,
+      products: [{ handle: 'truffle-box', price: 79, title: 'Truffle Box' }],
+      sessionId: 'session_abc123456789',
+    })
+
+    expect(result).toEqual({
+      synced: 0,
+      warning:
+        'Medusa Admin authentication failed (401). Check the configured Medusa admin email and password.',
+    })
+  })
+
   it('returns a stable warning when Medusa defaults respond with malformed HTML', async () => {
     const fetchImpl = vi
       .fn()

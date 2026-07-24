@@ -8,8 +8,12 @@ import {
 } from '@/features/session/services/anonymous-owner-secret'
 import { useCommerceController } from './useCommerceController'
 
-const commerceState = vi.hoisted(() => ({
-  config: undefined as unknown,
+type CommerceState = {
+  config: unknown
+}
+
+const commerceState = vi.hoisted<CommerceState>(() => ({
+  config: undefined,
 }))
 
 const authState = vi.hoisted(() => ({
@@ -136,6 +140,30 @@ describe('useCommerceController', () => {
     })
     expect(result.current.commerceError).toBeUndefined()
     expect(result.current.isSaving).toBe(false)
+  })
+
+  it('omits admin credentials when hosted Medusa credentials are configured server-side', async () => {
+    const sessionId = 'k577jbx9tbkcc3bhs1fvqepf9989fm0w'
+    vi.mocked(fetch).mockResolvedValueOnce(Response.json({}))
+    const { result } = renderHook(() => useCommerceController(sessionId))
+
+    await act(async () => {
+      await result.current.provisionCommerce()
+    })
+
+    expect(fetch).toHaveBeenCalledWith(
+      `/api/sessions/${sessionId}/provision/medusa`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          products: [],
+        }),
+      },
+    )
+    expect(result.current.commerceError).toBeUndefined()
   })
 
   it('requests a Convex token and sends it when provisioning as a signed-in owner', async () => {
