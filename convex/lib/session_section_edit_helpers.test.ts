@@ -45,7 +45,9 @@ function chainFor(rows: Row[]) {
 }
 
 const mutationCtxFor = async () => {
-  process.env.DISABLE_PAYWALL = 'false'
+  // AI section edits are now Pro-gated; this suite exercises the edit logic
+  // (not entitlement), so bypass the Pro + ownership gate.
+  process.env.DISABLE_PAYWALL = 'true'
 
   const session: Doc<'sessions'> = {
     _id: sessionId,

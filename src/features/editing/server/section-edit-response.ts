@@ -27,6 +27,25 @@ import { INLINE_EDIT_TOOL_DEFINITIONS } from '@/features/editing/lib/inline-edit
 
 type SectionEditClient = Pick<ConvexHttpClient, 'query' | 'mutation'>
 
+type InlineEditEntitlementCode =
+  | 'ok'
+  | 'auth_required'
+  | 'not_found'
+  | 'forbidden'
+  | 'payment_required'
+
+type InlineEditEntitlementResult = {
+  allowed: boolean
+  code: InlineEditEntitlementCode
+  message?: string
+}
+
+type InlineEditEntitlementClient = (input: {
+  sessionId: string
+  anonymousOwnerSecret?: string
+  bearerToken: string | null
+}) => Promise<InlineEditEntitlementResult>
+
 type JsonBody = Record<string, unknown>
 
 type GenerateText = (
@@ -107,6 +126,37 @@ function getOwnerSecret(request: Request, body: JsonBody): string | undefined {
     request.headers.get('x-anonymous-owner-secret') ??
     undefined
   )
+}
+
+function getBearerToken(request: Request): string | null {
+  const auth = request.headers.get('authorization') ?? ''
+  const match = auth.match(/^Bearer\s+(.+)$/i)
+  return match?.[1]?.trim() || null
+}
+
+function isClerkAuthDisabled(): boolean {
+  return (process.env.VITE_DISABLE_CLERK ?? '').trim().toLowerCase() === 'true'
+}
+
+/**
+ * Default entitlement client: calls the Convex `checkInlineEditEntitlementQuery`
+ * with the caller's Clerk token (setAuth) so ownership + Pro status are verified
+ * server-side against signed auth identity — no forgeable client claim.
+ */
+function createDefaultInlineEditEntitlementClient(
+  client: SectionEditClient,
+): InlineEditEntitlementClient {
+  return async ({ sessionId, anonymousOwnerSecret, bearerToken }) => {
+    const httpClient = client as ConvexHttpClient
+    if (bearerToken) httpClient.setAuth?.(bearerToken)
+    return await httpClient.query(
+      api.sessions.checkInlineEditEntitlementQuery,
+      {
+        sessionId: sessionId as never,
+        anonymousOwnerSecret,
+      },
+    )
+  }
 }
 
 async function readJsonBody(request: Request): Promise<JsonBody> {
@@ -1033,6 +1083,7 @@ export async function createSectionEditResponse(
     generateWithTools?: GenerateWithTools
     model?: string
     resolveStockImage?: ResolveInlineStockImage
+    entitlementClient?: InlineEditEntitlementClient
   } = {},
 ): Promise<Response> {
   let body: JsonBody
@@ -1072,6 +1123,51 @@ export async function createSectionEditResponse(
 
   if (!generationView) {
     return json({ error: 'Session not found.' }, { status: 404 })
+  }
+
+  // Pro + same-user guard (mirrors /api/translate + export API). Fail-closed
+  // before the LLM call so non-owners / non-Pro callers can't spend LLM money.
+  // Bypassed when Clerk is disabled (dev/test).
+  if (!isClerkAuthDisabled()) {
+    const bearerToken = getBearerToken(request)
+    if (!bearerToken) {
+      return json(
+        { error: 'Authentication required', code: 'auth_required' },
+        { status: 401 },
+      )
+    }
+    const entitlementClient =
+      options.entitlementClient ??
+      createDefaultInlineEditEntitlementClient(client)
+    let entitlement: InlineEditEntitlementResult
+    try {
+      entitlement = await entitlementClient({
+        sessionId,
+        anonymousOwnerSecret,
+        bearerToken,
+      })
+    } catch {
+      return json(
+        { error: 'Could not verify entitlement.', code: 'auth_required' },
+        { status: 401 },
+      )
+    }
+    if (!entitlement.allowed) {
+      const statusByCode: Record<InlineEditEntitlementCode, number> = {
+        ok: 200,
+        auth_required: 401,
+        not_found: 404,
+        forbidden: 403,
+        payment_required: 402,
+      }
+      return json(
+        {
+          error: entitlement.message ?? 'AI inline edit not allowed',
+          code: entitlement.code,
+        },
+        { status: statusByCode[entitlement.code] ?? 403 },
+      )
+    }
   }
 
   const htmlSession = isHtmlSession(generationView)

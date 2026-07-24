@@ -618,6 +618,20 @@ export const checkTranslationEntitlementQuery = query({
     }),
 })
 
+// Pro + ownership gate for the /api/sessions/$sessionId/section-edit HTTP
+// endpoint (AI inline edits). Same logic as translation: the HTTP handler
+// calls this with the caller's Clerk token (setAuth) + anonymousOwnerSecret
+// to verify the caller owns the session AND has Pro (or admin / paywall-
+// disabled bypass) before spending LLM money on AI section edits.
+export const checkInlineEditEntitlementQuery = query({
+  args: ownedSessionArgs,
+  handler: async (ctx, args) =>
+    checkTranslationEntitlement(ctx, {
+      sessionId: args.sessionId,
+      anonymousOwnerSecret: args.anonymousOwnerSecret,
+    }),
+})
+
 export const getDeploymentStatusByLookup = query({
   args: lookupArgs,
   handler: async (ctx, args) => {

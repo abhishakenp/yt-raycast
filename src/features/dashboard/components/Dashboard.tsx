@@ -71,6 +71,7 @@ import ThemePicker from '@/genui/components/ThemePicker'
 import LanguagePicker from '@/genui/components/LanguagePicker'
 import { resolveThemeStyles } from '@/genui/theme-apply'
 import { SignInGate, useSignInGate } from '@/shared/auth/SignInGate'
+import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
 import { cn } from '#/lib/utils'
 
 const DeploymentPanel = lazy(() =>
@@ -923,6 +924,7 @@ export function Dashboard({
   const publishedUrl =
     deploymentStatus?.status === 'ready' ? deploymentStatus.url : undefined
   const activeSessionId = resolvedSessionId ?? sessionId
+  const { getToken } = useOptionalAuth()
   const activeAnonymousOwnerSecret =
     typeof window === 'undefined'
       ? undefined
@@ -1191,12 +1193,16 @@ export function Dashboard({
     setIsSectionEditing(true)
     setSectionEditError(undefined)
     try {
+      const token = await getToken({ template: 'convex' }).catch(() => null)
       const response = await trackDashboardSave(
         fetch(
           `/api/sessions/${encodeURIComponent(resolvedSessionId)}/section-edit`,
           {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
             body: JSON.stringify({
               instruction: prompt,
               selection,
