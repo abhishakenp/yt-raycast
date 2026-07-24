@@ -12,9 +12,13 @@ nixPkgs = ["nodejs_22", "bun"]
 PLAYWRIGHT_BROWSERS_PATH = "0"
 
 [phases.install]
+# Clear apt lists before Playwright's `--with-deps` runs its own apt-get update:
+# the buildx cache can serve stale/corrupted InRelease files whose signatures
+# no longer verify ("At least one invalid signature was encountered"), which
+# breaks `playwright install --with-deps chromium` intermittently per-app.
 cmds = [
   "bun install --no-save",
-  "bunx playwright install --with-deps chromium",
+  "rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/* && bunx playwright install --with-deps chromium",
 ]
 
 [phases.build]

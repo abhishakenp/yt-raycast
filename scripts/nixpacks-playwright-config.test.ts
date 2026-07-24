@@ -24,6 +24,11 @@ describe('nixpacks Playwright deployment config', () => {
     expect(installSection).toContain(
       'bunx playwright install --with-deps chromium',
     )
+    // Guard against the intermittent buildx apt-cache corruption that broke
+    // deploys: stale InRelease files in /var/lib/apt/lists make Playwright's
+    // internal apt-get update fail with "invalid signature". The install phase
+    // must clear them first.
+    expect(installSection).toContain('rm -rf /var/lib/apt/lists/*')
   })
 
   it('keeps the Playwright browser binary in the deploy artifact', async () => {
