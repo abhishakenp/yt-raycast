@@ -30,6 +30,8 @@ type GeneratedModulePreviewProps = {
   selectedBrandLogo?: BrandLogoSelection | null
   /** Inline image swaps to re-apply on render, keyed by image alt -> new src. */
   imageOverrides?: Record<string, string>
+  /** Anonymous owner secret forwarded to /api/translate for the same-user guard. */
+  anonymousOwnerSecret?: string
   /** Inline style/align edits to re-apply on render (class + occurrence -> style). */
   styleOverrides?: Array<{
     classAnchor: string
@@ -152,6 +154,7 @@ export function OpenUIModuleRenderer({
   prompt,
   selectedBrandLogo,
   imageOverrides,
+  anonymousOwnerSecret,
 }: GeneratedModulePreviewProps) {
   const brandContext = parseSiteSpecBrand(siteSpecJson)
   const hasOverrides =
@@ -172,6 +175,7 @@ export function OpenUIModuleRenderer({
         sessionId={sessionId}
         imageContext={imageContext}
         selectedBrandLogo={selectedBrandLogo}
+        anonymousOwnerSecret={anonymousOwnerSecret}
       />
     </Suspense>
   )
@@ -238,6 +242,7 @@ export function GeneratedModulePreview({
             prompt={prompt}
             selectedBrandLogo={selectedBrandLogo}
             imageOverrides={imageOverrides}
+            anonymousOwnerSecret={anonymousOwnerSecret}
           />
         ) : (
           <div

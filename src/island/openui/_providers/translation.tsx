@@ -19,17 +19,35 @@ export { setCachedTranslation } from './translation-cache'
 
 type Locale = string
 
-const I18nContext = createContext<{ locale: Locale } | null>(null)
+/**
+ * Credentials the preview runtime forwards to `/api/translate` so the server
+ * can run the Pro + same-user (session ownership) guard. `getAuthToken` lazily
+ * fetches a fresh Clerk convex JWT so expired tokens are never reused.
+ */
+export type TranslationContext = {
+  sessionId?: string
+  anonymousOwnerSecret?: string
+  getAuthToken?: () => Promise<string | null>
+}
+
+const I18nContext = createContext<{
+  locale: Locale
+  translationContext?: TranslationContext
+} | null>(null)
 
 export function I18nProvider({
   children,
   locale = 'en',
+  translationContext,
 }: {
   children?: ReactNode
   locale?: Locale
+  translationContext?: TranslationContext
 }) {
   return (
-    <I18nContext.Provider value={{ locale }}>{children}</I18nContext.Provider>
+    <I18nContext.Provider value={{ locale, translationContext }}>
+      {children}
+    </I18nContext.Provider>
   )
 }
 
@@ -43,9 +61,36 @@ const MAX_BROWSER_TRANSLATION_BATCH_TEXTS = 20
 const MAX_BROWSER_TRANSLATION_BATCH_CHARS = 1800
 const MAX_SIMULTANEOUS_SHIMMER_NODES = 24
 
+async function buildTranslateHeaders(
+  translationContext?: TranslationContext,
+): Promise<Record<string, string>> {
+  const headers: Record<string, string> = {
+    'content-type': 'application/json',
+  }
+  const token = await translationContext?.getAuthToken?.().catch(() => null)
+  if (token) headers.authorization = `Bearer ${token}`
+  return headers
+}
+
+function buildTranslateBody(
+  payload: Record<string, unknown>,
+  translationContext?: TranslationContext,
+): string {
+  return JSON.stringify({
+    ...payload,
+    ...(translationContext?.sessionId
+      ? { sessionId: translationContext.sessionId }
+      : {}),
+    ...(translationContext?.anonymousOwnerSecret
+      ? { anonymousOwnerSecret: translationContext.anonymousOwnerSecret }
+      : {}),
+  })
+}
+
 async function persistTranslationEntries(
   locale: string,
   entries: Array<{ text: string; translation: string }>,
+  translationContext?: TranslationContext,
 ): Promise<void> {
   const changedEntries = entries.filter(
     (entry) =>
@@ -56,14 +101,18 @@ async function persistTranslationEntries(
   if (changedEntries.length === 0) return
   await fetch('/api/translate', {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ locale, entries: changedEntries }),
+    headers: await buildTranslateHeaders(translationContext),
+    body: buildTranslateBody(
+      { locale, entries: changedEntries },
+      translationContext,
+    ),
   }).catch(() => undefined)
 }
 
 export async function fetchTranslationBatch(
   texts: string[],
   locale: string,
+  translationContext?: TranslationContext,
 ): Promise<string[]> {
   const translations = [...texts]
   const browserTexts: string[] = []
@@ -123,7 +172,11 @@ export async function fetchTranslationBatch(
   )
 
   if (networkTexts.length === 0) {
-    await persistTranslationEntries(locale, browserTranslationEntries)
+    await persistTranslationEntries(
+      locale,
+      browserTranslationEntries,
+      translationContext,
+    )
     return translations
   }
 
@@ -131,8 +184,11 @@ export async function fetchTranslationBatch(
   // first and only calls the model once for uncached misses.
   const res = await fetch('/api/translate', {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ texts: networkTexts, locale }),
+    headers: await buildTranslateHeaders(translationContext),
+    body: buildTranslateBody(
+      { texts: networkTexts, locale },
+      translationContext,
+    ),
   })
   if (!res.ok) return translations
 
@@ -155,7 +211,11 @@ export async function fetchTranslationBatch(
       }
     }
   })
-  await persistTranslationEntries(locale, browserTranslationEntries)
+  await persistTranslationEntries(
+    locale,
+    browserTranslationEntries,
+    translationContext,
+  )
   return translations
 }
 
@@ -414,7 +474,7 @@ function isTextNode(node: Node): node is Text {
 // serialized batch per collection window.
 export function T({ children }: React.PropsWithChildren) {
   const ref = useRef<HTMLDivElement>(null)
-  const { locale } = useI18n()
+  const { locale, translationContext } = useI18n()
   const documentLocale = locale.trim() || 'en'
   const latestDocumentLocaleRef = useRef(documentLocale)
   latestDocumentLocaleRef.current = documentLocale
@@ -521,6 +581,7 @@ export function T({ children }: React.PropsWithChildren) {
           compositeTranslations = await fetchTranslationBatch(
             compositeJobs.map(({ originalLabel }) => originalLabel),
             locale,
+            translationContext,
           )
         } catch {
           compositeTranslations = compositeJobs.map(
@@ -576,6 +637,7 @@ export function T({ children }: React.PropsWithChildren) {
           translations = await fetchTranslationBatch(
             batch.map((item) => item.text),
             locale,
+            translationContext,
           )
         } catch {
           translations = batch.map((item) => item.text)

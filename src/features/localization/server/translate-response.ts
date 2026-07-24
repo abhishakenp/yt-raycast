@@ -3,6 +3,25 @@ import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 import { api } from '../../../../convex/_generated/api'
 import { shouldPreserveTranslationText } from '../native-script'
 
+type TranslationEntitlementCode =
+  | 'ok'
+  | 'auth_required'
+  | 'not_found'
+  | 'forbidden'
+  | 'payment_required'
+
+type TranslationEntitlementResult = {
+  allowed: boolean
+  code: TranslationEntitlementCode
+  message?: string
+}
+
+type TranslationEntitlementClient = (input: {
+  sessionId: string
+  anonymousOwnerSecret?: string
+  bearerToken: string | null
+}) => Promise<TranslationEntitlementResult>
+
 type TranslateModel = (
   system: string,
   user: string,
@@ -67,6 +86,8 @@ type TranslationRequestBody = {
   texts?: unknown
   locale?: unknown
   entries?: unknown
+  sessionId?: unknown
+  anonymousOwnerSecret?: unknown
 }
 
 function isUnknownRecord(value: unknown): value is Record<string, unknown> {
@@ -180,6 +201,123 @@ function createDefaultTranslationCacheClient(): TranslationCacheClient | null {
     }
   } catch {
     return null
+  }
+}
+
+function getBearerToken(request: Request): string | null {
+  const auth = request.headers.get('authorization') ?? ''
+  const match = auth.match(/^Bearer\s+(.+)$/i)
+  return match?.[1]?.trim() || null
+}
+
+function isClerkAuthDisabled(): boolean {
+  return (process.env.VITE_DISABLE_CLERK ?? '').trim().toLowerCase() === 'true'
+}
+
+/**
+ * Default entitlement client: calls the Convex `checkTranslationEntitlementQuery`
+ * with the caller's Clerk token (setAuth) so ownership + Pro status are verified
+ * server-side against signed auth identity — no forgeable client claim.
+ */
+function createDefaultTranslationEntitlementClient(): TranslationEntitlementClient {
+  return async ({ sessionId, anonymousOwnerSecret, bearerToken }) => {
+    const client = createRuntimeConvexHttpClient()
+    if (bearerToken) client.setAuth?.(bearerToken)
+    return await client.query(api.sessions.checkTranslationEntitlementQuery, {
+      sessionId: sessionId as never,
+      anonymousOwnerSecret,
+    })
+  }
+}
+
+type EntitlementGuardOutcome = {
+  response: Response | null
+  entitlement: TranslationEntitlementResult | null
+}
+
+/**
+ * Pro + same-user guard for `/api/translate`. Mirrors the export API: requires
+ * a Bearer token (when Clerk is enabled), a sessionId, and an owner secret or
+ * matching signed-in userId. Returns a 401/403/402 response when the caller is
+ * not allowed, or `{ response: null }` when the caller is entitled (or auth is
+ * disabled). Placed AFTER the free locale-skip short-circuit so English /
+ * unsupported-locale requests never hit the entitlement check or cost LLM money.
+ */
+async function checkTranslationRequestEntitlement(
+  request: Request,
+  body: TranslationRequestBody,
+  entitlementClient: TranslationEntitlementClient,
+): Promise<EntitlementGuardOutcome> {
+  if (isClerkAuthDisabled()) {
+    return { response: null, entitlement: null }
+  }
+
+  const bearerToken = getBearerToken(request)
+  const sessionId =
+    typeof body.sessionId === 'string' ? body.sessionId.trim() : ''
+  const anonymousOwnerSecret =
+    typeof body.anonymousOwnerSecret === 'string'
+      ? body.anonymousOwnerSecret
+      : undefined
+
+  if (!bearerToken) {
+    return {
+      response: json(
+        { error: 'Authentication required', code: 'auth_required' },
+        { status: 401 },
+      ),
+      entitlement: null,
+    }
+  }
+  if (!sessionId) {
+    return {
+      response: json(
+        { error: 'Session is required', code: 'auth_required' },
+        { status: 401 },
+      ),
+      entitlement: null,
+    }
+  }
+
+  let entitlement: TranslationEntitlementResult
+  try {
+    entitlement = await entitlementClient({
+      sessionId,
+      anonymousOwnerSecret,
+      bearerToken,
+    })
+  } catch {
+    // If the entitlement check itself fails (Convex unreachable, bad token),
+    // fail closed — never spend LLM money on an unverified caller.
+    return {
+      response: json(
+        { error: 'Could not verify entitlement', code: 'auth_required' },
+        { status: 401 },
+      ),
+      entitlement: null,
+    }
+  }
+
+  if (entitlement.allowed) {
+    return { response: null, entitlement }
+  }
+
+  const statusByCode: Record<TranslationEntitlementCode, number> = {
+    ok: 200,
+    auth_required: 401,
+    not_found: 404,
+    forbidden: 403,
+    payment_required: 402,
+  }
+  return {
+    response: json(
+      {
+        error: entitlement.message ?? 'Translation not allowed',
+        code: entitlement.code,
+      },
+      { status: statusByCode[entitlement.code] ?? 403 },
+    ),
+    entitlement,
   }
 }
 
@@ -465,6 +603,7 @@ export async function createTranslateResponse(
   request: Request,
   translateModel: TranslateModel = defaultTranslateModel,
   cacheClient: TranslationCacheClient | null = createDefaultTranslationCacheClient(),
+  entitlementClient: TranslationEntitlementClient = createDefaultTranslationEntitlementClient(),
 ): Promise<Response> {
   let body: TranslationRequestBody = {}
 
@@ -483,15 +622,6 @@ export async function createTranslateResponse(
   )
 
   if (entries.length > 0) {
-    const isAuthDisabled =
-      (process.env.VITE_DISABLE_CLERK ?? '').trim().toLowerCase() === 'true'
-    if (!isAuthDisabled) {
-      const auth = request.headers.get('authorization') ?? ''
-      if (!/^Bearer\s+.+$/i.test(auth)) {
-        return json({ error: 'Authentication required' }, { status: 401 })
-      }
-    }
-
     if (!isTranslatableLocale(locale)) {
       return json({
         locale: locale || 'en',
@@ -501,6 +631,16 @@ export async function createTranslateResponse(
           locale === 'en' || locale === '' ? 'english' : 'unsupported-locale',
       })
     }
+
+    // Pro + same-user guard (mirrors the export API). Free locale skips above
+    // never reach here, so only real cache-write requests pay the check.
+    const guard = await checkTranslationRequestEntitlement(
+      request,
+      body,
+      entitlementClient,
+    )
+    if (guard.response !== null) return guard.response
+
     if (cacheableEntries.length > 0) {
       await cacheClient
         ?.setBatch({ locale, entries: cacheableEntries })
@@ -531,6 +671,15 @@ export async function createTranslateResponse(
     }
     return json(response)
   }
+
+  // Pro + same-user guard before the LLM model call — this is the real cost
+  // gate. English / unsupported-locale skips above never reach here.
+  const guard = await checkTranslationRequestEntitlement(
+    request,
+    body,
+    entitlementClient,
+  )
+  if (guard.response !== null) return guard.response
 
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 12_000)

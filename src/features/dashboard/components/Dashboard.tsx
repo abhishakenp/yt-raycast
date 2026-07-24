@@ -2295,6 +2295,15 @@ export function Dashboard({
                             generationView?.session.preferredLanguage ??
                             'default locale'
                           }
+                          badges={
+                            <span
+                              className={premiumBadgeClass}
+                              aria-label="Pro only - upgrade to unlock"
+                              tabIndex={0}
+                            >
+                              {crownIcon}
+                            </span>
+                          }
                         />
                       }
                     >
@@ -2332,10 +2341,11 @@ export function Dashboard({
                               </span>
                             </span>
                             <span
-                              className="grid size-8 shrink-0 place-items-center rounded-xl border border-white/12 bg-black/22 text-white/72"
-                              aria-hidden="true"
+                              className={premiumBadgeClass}
+                              aria-label="Pro only - upgrade to unlock"
+                              tabIndex={0}
                             >
-                              <Languages className="size-4" strokeWidth={1.8} />
+                              {crownIcon}
                             </span>
                           </button>
                         }
