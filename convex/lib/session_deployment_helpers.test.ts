@@ -3,10 +3,12 @@ import { describe, expect, it } from 'vitest'
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import {
+  assertLakebedDeploymentEntitlement,
   createDefaultDeploymentSlug,
   createDeploymentUrl,
   loadDeploymentBySlug,
   loadDeploymentStatus,
+  loadLakebedDeploymentEntitlement,
   normalizeDeploymentSlug,
   prepareLakebedSessionDeployment,
   publishSessionPreview,
@@ -26,6 +28,9 @@ type TableName =
   | 'edits'
   | 'translationCache'
   | 'sessionTranslationOverrides'
+  | 'subscriptions'
+  | 'customerCredits'
+  | 'exportArtifacts'
 type Row =
   | Doc<'sessions'>
   | Doc<'deployments'>
@@ -36,6 +41,9 @@ type Row =
   | Doc<'siteSpecs'>
   | Doc<'edits'>
   | Doc<'translationCache'>
+  | Doc<'subscriptions'>
+  | Doc<'customerCredits'>
+  | Doc<'exportArtifacts'>
 
 const sessionId = 'session_deployment' as Id<'sessions'>
 const realConvexRendererErrorPreview = {
@@ -114,6 +122,9 @@ function ctxFor(input: Partial<Record<TableName, Row[]>>) {
     edits: [...(input.edits ?? [])],
     translationCache: [...(input.translationCache ?? [])],
     sessionTranslationOverrides: [...(input.sessionTranslationOverrides ?? [])],
+    subscriptions: [...(input.subscriptions ?? [])],
+    customerCredits: [...(input.customerCredits ?? [])],
+    exportArtifacts: [...(input.exportArtifacts ?? [])],
   }
 
   const rowsFor = (table: TableName) => tables[table]
@@ -200,6 +211,9 @@ function mutationCtxFor(input: Partial<Record<TableName, Row[]>>) {
     edits: [...(input.edits ?? [])],
     translationCache: [...(input.translationCache ?? [])],
     sessionTranslationOverrides: [...(input.sessionTranslationOverrides ?? [])],
+    subscriptions: [...(input.subscriptions ?? [])],
+    customerCredits: [...(input.customerCredits ?? [])],
+    exportArtifacts: [...(input.exportArtifacts ?? [])],
   }
   const patches: Array<{ id: string; patch: Record<string, unknown> }> = []
   const inserted: Array<{ table: TableName; value: Record<string, unknown> }> =
@@ -281,6 +295,12 @@ function mutationCtxFor(input: Partial<Record<TableName, Row[]>>) {
     },
   } as unknown as MutationCtx['db']
 
+  const scheduled: Array<{
+    delayMs: number
+    reference: unknown
+    args: unknown
+  }> = []
+
   const ctx = {
     db,
     auth: {
@@ -289,9 +309,14 @@ function mutationCtxFor(input: Partial<Record<TableName, Row[]>>) {
         subject: 'user_1',
       }),
     },
+    scheduler: {
+      runAfter: async (delayMs: number, reference: unknown, args: unknown) => {
+        scheduled.push({ delayMs, reference, args })
+      },
+    },
   } as unknown as MutationCtx
 
-  return { ctx, inserted, patches, tables }
+  return { ctx, inserted, patches, tables, scheduled }
 }
 
 describe('session deployment helpers', () => {
@@ -392,6 +417,7 @@ describe('session deployment helpers', () => {
       status: 'ready',
       previewVersion: 3,
       sessionId,
+      includeBadge: true,
       session: {
         id: sessionId,
         prompt: 'Build a deployable site',
@@ -399,6 +425,56 @@ describe('session deployment helpers', () => {
         updatedAt: 140,
         status: 'preview_ready',
       },
+    })
+  })
+
+  it('sets includeBadge=false when the session owner has an active subscription', async () => {
+    await expect(
+      loadDeploymentBySlug(
+        ctxFor({
+          sessions: [sessionDoc({ userId: 'user_pro' })],
+          deployments: [deploymentDoc()],
+          subscriptions: [
+            {
+              _id: 'sub_1' as Id<'subscriptions'>,
+              userId: 'user_pro',
+              provider: 'stripe' as const,
+              status: 'active' as const,
+              planId: 'pro',
+              createdAt: 100,
+              updatedAt: 100,
+            } as Doc<'subscriptions'>,
+          ],
+        }),
+        'deployable-site',
+      ),
+    ).resolves.toMatchObject({
+      includeBadge: false,
+    })
+  })
+
+  it('sets includeBadge=true when the session owner has no active subscription', async () => {
+    await expect(
+      loadDeploymentBySlug(
+        ctxFor({
+          sessions: [sessionDoc({ userId: 'user_free' })],
+          deployments: [deploymentDoc()],
+          subscriptions: [
+            {
+              _id: 'sub_2' as Id<'subscriptions'>,
+              userId: 'user_free',
+              provider: 'stripe' as const,
+              status: 'cancelled' as const,
+              planId: 'pro',
+              createdAt: 100,
+              updatedAt: 100,
+            } as Doc<'subscriptions'>,
+          ],
+        }),
+        'deployable-site',
+      ),
+    ).resolves.toMatchObject({
+      includeBadge: true,
     })
   })
 
@@ -1254,5 +1330,160 @@ describe('session deployment helpers', () => {
           row.value.previewVersion === 6,
       ),
     ).toBe(true)
+  })
+
+  it('queues the html export artifact build when buildExportArtifact is provided', async () => {
+    const buildRef = 'internal.export_artifacts.build' as unknown
+    const { ctx, scheduled, inserted } = mutationCtxFor({
+      sessions: [sessionDoc({ userId: 'user_1' })],
+      previews: [previewDoc({ version: 7 })],
+    })
+
+    await publishSessionPreview(ctx, {
+      sessionId,
+      requestedSlug: 'artifact-queue-test',
+      buildExportArtifact: buildRef as Parameters<
+        MutationCtx['scheduler']['runAfter']
+      >[1],
+    })
+
+    expect(
+      scheduled.some(
+        (entry) =>
+          entry.delayMs === 0 &&
+          entry.reference === buildRef &&
+          (entry.args as Record<string, unknown>).target === 'html' &&
+          (entry.args as Record<string, unknown>).previewVersion === 7,
+      ),
+    ).toBe(true)
+
+    expect(
+      inserted.some(
+        (row) =>
+          row.table === 'exportArtifacts' &&
+          row.value.status === 'queued' &&
+          row.value.target === 'html' &&
+          row.value.previewVersion === 7,
+      ),
+    ).toBe(true)
+  })
+
+  it('does not queue artifact build when buildExportArtifact is omitted', async () => {
+    const { ctx, scheduled } = mutationCtxFor({
+      sessions: [sessionDoc({ userId: 'user_1' })],
+      previews: [previewDoc({ version: 8 })],
+    })
+
+    await publishSessionPreview(ctx, {
+      sessionId,
+      requestedSlug: 'no-artifact-queue',
+    })
+
+    expect(scheduled).toHaveLength(0)
+  })
+})
+
+describe('assertLakebedDeploymentEntitlement', () => {
+  const session = {
+    _id: sessionId,
+    _creationTime: 1,
+    prompt: 'test',
+    status: 'preview_ready',
+  } as Doc<'sessions'>
+
+  it('throws PAYMENT_REQUIRED for an anonymous session (no userId)', async () => {
+    const ctx = ctxFor({}) as QueryCtx
+    await expect(
+      assertLakebedDeploymentEntitlement(ctx, session),
+    ).rejects.toThrow(/PAYMENT_REQUIRED|Subscribe/i)
+  })
+
+  it('throws PAYMENT_REQUIRED for a signed-in user with no subscription or credits', async () => {
+    const ctx = ctxFor({
+      subscriptions: [],
+      customerCredits: [],
+    }) as QueryCtx
+    const userSession = {
+      ...session,
+      userId: 'user_free',
+    } as Doc<'sessions'>
+    await expect(
+      assertLakebedDeploymentEntitlement(ctx, userSession),
+    ).rejects.toThrow(/PAYMENT_REQUIRED|Subscribe/i)
+  })
+
+  it('passes for a user with an active subscription', async () => {
+    const ctx = ctxFor({
+      subscriptions: [
+        {
+          _id: 'sub_1' as Id<'subscriptions'>,
+          _creationTime: 1,
+          userId: 'user_pro',
+          status: 'active',
+        } as Doc<'subscriptions'>,
+      ],
+    }) as QueryCtx
+    const userSession = {
+      ...session,
+      userId: 'user_pro',
+    } as Doc<'sessions'>
+    await expect(
+      assertLakebedDeploymentEntitlement(ctx, userSession),
+    ).resolves.toBeUndefined()
+  })
+
+  it('passes for a user with credits (without consuming them)', async () => {
+    const creditsRow = {
+      _id: 'credits_1' as Id<'customerCredits'>,
+      _creationTime: 1,
+      userId: 'user_credits',
+      remaining: 3,
+      updatedAt: 100,
+    } as Doc<'customerCredits'>
+    const ctx = ctxFor({
+      subscriptions: [],
+      customerCredits: [creditsRow],
+    }) as QueryCtx
+    const userSession = {
+      ...session,
+      userId: 'user_credits',
+    } as Doc<'sessions'>
+    await expect(
+      assertLakebedDeploymentEntitlement(ctx, userSession),
+    ).resolves.toBeUndefined()
+    // Read-only check must NOT consume credits
+    expect(creditsRow.remaining).toBe(3)
+  })
+})
+
+describe('loadLakebedDeploymentEntitlement', () => {
+  // Regression: a non-owner used to receive a FORBIDDEN ConvexError, which
+  // the positional `useQuery` re-throws into the nearest error boundary and
+  // crash the whole DeploymentPanel side rail. Non-owners must now get a
+  // locked default so only the Lakebed button locks.
+  it('returns a locked default for a non-owner instead of throwing FORBIDDEN', async () => {
+    const ctx = ctxFor({
+      sessions: [sessionDoc({ userId: 'user_pro' })],
+    }) as QueryCtx
+    await expect(
+      loadLakebedDeploymentEntitlement(ctx, { sessionId }),
+    ).resolves.toEqual({
+      requiresPayment: true,
+      entitlement: 'payment_required',
+      message: undefined,
+    })
+  })
+
+  it('runs the real entitlement check for the session owner', async () => {
+    // Test ctx identity is `user_1`; no subscriptions or credits → the
+    // read-only check returns requiresPayment: true (payment_required),
+    // proving the ownership gate passed through to the real check.
+    const ctx = ctxFor({
+      sessions: [sessionDoc({ userId: 'user_1' })],
+    }) as QueryCtx
+    const result = await loadLakebedDeploymentEntitlement(ctx, { sessionId })
+    expect(result.requiresPayment).toBe(true)
+    expect(result.entitlement).toBe('payment_required')
+    expect(typeof result.message).toBe('string')
   })
 })

@@ -1,17 +1,25 @@
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
-
 import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
-import { isUnsafePublicPreviewHtml } from '../../../../convex/lib/openui_error_html'
-import { buildHtmlExport } from '@/features/exports/services/html-export-builder'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
 type DeploymentPreviewClient = Pick<ConvexHttpClient, 'query'>
 
-const PREVIEW_TAILWIND_CSS_MARKER = 'data-ship-fast-preview-tailwind-css="1"'
-const PREVIEW_TAILWIND_CSS_URL = '/styles/preview-tailwind.css'
+type DeploymentHtmlArtifact = {
+  slug: string
+  url: string
+  status: string
+  previewVersion: number
+  sessionId: string
+  artifact: {
+    status: string
+    generatorRevision?: string
+    errorMessage?: string
+    contentType?: string
+    storageUrl: string | null
+  } | null
+}
+
 const DEPLOYMENT_PREVIEW_CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
   "base-uri 'self'",
@@ -56,33 +64,6 @@ const createPlainTextResponse = (
     },
   })
 
-function readPreviewTailwindCss(): string {
-  try {
-    return readFileSync(
-      join(process.cwd(), 'public', 'styles', 'preview-tailwind.css'),
-      'utf8',
-    )
-  } catch {
-    return ''
-  }
-}
-
-const previewTailwindCss = readPreviewTailwindCss()
-
-function injectPreviewTailwindCss(html: string): string {
-  if (html.includes(PREVIEW_TAILWIND_CSS_MARKER)) return html
-
-  const stylesheet = previewTailwindCss
-    ? `<style ${PREVIEW_TAILWIND_CSS_MARKER}>${previewTailwindCss}</style>`
-    : `<link ${PREVIEW_TAILWIND_CSS_MARKER} rel="stylesheet" href="${PREVIEW_TAILWIND_CSS_URL}" />`
-
-  if (/<\/head>/i.test(html)) {
-    return html.replace(/<\/head>/i, `${stylesheet}</head>`)
-  }
-
-  return `${stylesheet}${html}`
-}
-
 function normalizeSlug(value: string): string {
   return value
     .trim()
@@ -92,22 +73,29 @@ function normalizeSlug(value: string): string {
     .slice(0, 64)
 }
 
-function getRequestCanonicalUrl(
-  request: Request | undefined,
-  fallbackUrl: string | undefined,
-): string | undefined {
-  if (fallbackUrl !== undefined) return `${fallbackUrl.replace(/\/+$/, '')}/`
-  if (request === undefined) return undefined
-
-  const url = new URL(request.url)
-  url.hash = ''
-  url.search = ''
-  return url.toString()
+function isDeploymentHtmlArtifact(
+  value: unknown,
+): value is DeploymentHtmlArtifact {
+  if (value === null || typeof value !== 'object' || Array.isArray(value))
+    return false
+  const record = value as Record<string, unknown>
+  if (typeof record.slug !== 'string') return false
+  if (typeof record.url !== 'string') return false
+  if (typeof record.status !== 'string') return false
+  if (typeof record.previewVersion !== 'number') return false
+  if (typeof record.sessionId !== 'string') return false
+  if (record.artifact !== null && typeof record.artifact === 'object') {
+    const artifact = record.artifact as Record<string, unknown>
+    if (typeof artifact.status !== 'string') return false
+    if (artifact.storageUrl !== null && typeof artifact.storageUrl !== 'string')
+      return false
+  }
+  return true
 }
 
 export async function createDeploymentPreviewResponse(
   slug: string,
-  request?: Request,
+  _request?: Request,
   clientOverride?: DeploymentPreviewClient,
 ): Promise<Response> {
   const normalizedSlug = normalizeSlug(slug)
@@ -117,65 +105,71 @@ export async function createDeploymentPreviewResponse(
   }
 
   const client = clientOverride ?? createRuntimeConvexHttpClient()
-  let deployment: Awaited<ReturnType<typeof client.query>>
-  let preview: Awaited<ReturnType<typeof client.query>>
+  let deployment: unknown
   try {
-    ;[deployment, preview] = await Promise.all([
-      client.query(api.sessions.getDeploymentBySlug, { slug: normalizedSlug }),
-      client.query(api.sessions.getPublicPreview, { lookup: normalizedSlug }),
-    ])
+    deployment = await client.query(
+      api.sessions.getDeploymentHtmlArtifactBySlug,
+      { slug: normalizedSlug },
+    )
   } catch {
     return createPlainTextResponse('Deployment preview is unavailable', 503, {
       retryAfterSeconds: 5,
     })
   }
 
-  if (deployment === null || deployment.status !== 'ready') {
+  if (!isDeploymentHtmlArtifact(deployment)) {
     return createPlainTextResponse('Deployment not found', 404)
   }
 
-  const previewHtml =
-    preview !== null && typeof preview?.html === 'string' ? preview.html : ''
+  const artifact = deployment.artifact
 
-  if (
-    preview === null ||
-    typeof preview?.html !== 'string' ||
-    previewHtml.trim() === '' ||
-    isUnsafePublicPreviewHtml(previewHtml)
-  ) {
-    return createPlainTextResponse(
-      isUnsafePublicPreviewHtml(previewHtml)
-        ? 'Deployment preview is not available'
-        : 'Deployment preview is not ready yet',
-      isUnsafePublicPreviewHtml(previewHtml) ? 422 : 202,
-      isUnsafePublicPreviewHtml(previewHtml) ? {} : { retryAfterSeconds: 5 },
-    )
-  }
-
-  if (
-    typeof deployment.previewVersion === 'number' &&
-    typeof preview.previewVersion === 'number' &&
-    preview.previewVersion > deployment.previewVersion
-  ) {
+  if (artifact === null) {
     return createPlainTextResponse('Deployment preview is not ready yet', 202, {
       retryAfterSeconds: 5,
     })
   }
 
   if (
-    typeof deployment.sessionId === 'string' &&
-    typeof preview.sessionId === 'string' &&
-    deployment.sessionId !== preview.sessionId
+    artifact.status === 'queued' ||
+    artifact.status === 'building' ||
+    artifact.status === 'stale'
   ) {
+    return createPlainTextResponse('Deployment preview is not ready yet', 202, {
+      retryAfterSeconds: 5,
+    })
+  }
+
+  if (artifact.status === 'failed') {
     return createPlainTextResponse('Deployment preview is not available', 422)
   }
 
-  const html = injectPreviewTailwindCss(
-    buildHtmlExport(previewHtml, {
-      includeBadge: false,
-      canonicalUrl: getRequestCanonicalUrl(request, deployment.url),
-    }),
-  )
+  if (artifact.status !== 'ready' || !artifact.storageUrl) {
+    return createPlainTextResponse('Deployment preview is not ready yet', 202, {
+      retryAfterSeconds: 5,
+    })
+  }
+
+  let artifactResponse: Response
+  try {
+    artifactResponse = await fetch(artifact.storageUrl)
+  } catch {
+    return createPlainTextResponse('Deployment preview is unavailable', 503, {
+      retryAfterSeconds: 5,
+    })
+  }
+
+  if (!artifactResponse.ok || artifactResponse.body === null) {
+    return createPlainTextResponse('Deployment preview is unavailable', 503, {
+      retryAfterSeconds: 5,
+    })
+  }
+
+  const html = await artifactResponse.text()
+  if (html.trim().length === 0) {
+    return createPlainTextResponse('Deployment preview is not ready yet', 202, {
+      retryAfterSeconds: 5,
+    })
+  }
 
   return new Response(html, {
     headers: {
@@ -184,7 +178,7 @@ export async function createDeploymentPreviewResponse(
       'content-security-policy': DEPLOYMENT_PREVIEW_CONTENT_SECURITY_POLICY,
       'content-type': 'text/html; charset=utf-8',
       'x-ship-fast-deployment': deployment.slug,
-      'x-ship-fast-preview-version': String(preview.previewVersion ?? ''),
+      'x-ship-fast-preview-version': String(deployment.previewVersion),
     },
   })
 }

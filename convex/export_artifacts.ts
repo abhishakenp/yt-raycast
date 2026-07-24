@@ -25,6 +25,7 @@ type PreparedExportArtifact = {
   themeName?: string
   isDark?: boolean
   locale?: string
+  includeBadge?: boolean
   selectedBrandLogo?: {
     name: string
     domain: string | null
@@ -116,7 +117,7 @@ async function buildGitHubFiles(
       sessionId: prepared.sessionId,
       prompt: prepared.prompt,
       target: prepared.target,
-      includeBadge: false,
+      includeBadge: prepared.includeBadge === true,
       themeName: prepared.themeName,
       isDark: prepared.isDark,
       locale: prepared.locale,
@@ -156,7 +157,7 @@ async function buildDownload(
       sessionId: prepared.sessionId,
       prompt: prepared.prompt,
       target: prepared.target,
-      includeBadge: false,
+      includeBadge: prepared.includeBadge === true,
       themeName: prepared.themeName,
       isDark: prepared.isDark,
       locale: prepared.locale,
