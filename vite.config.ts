@@ -509,8 +509,24 @@ const SUBDOMAIN_RESERVED_EXACT_PATHS = new Set([
   '/sitemap.xml',
   '/llms.txt',
 ])
-const SUBDOMAIN_RESERVED_PATH_PREFIXES = ['/api/', '/export/']
+const SUBDOMAIN_RESERVED_PATH_PREFIXES = [
+  '/api/',
+  '/export/',
+  // Vite dev server internal asset paths — must not be rewritten
+  '/@',
+  '/src/',
+  '/node_modules/',
+  '/favicon',
+  // App source modules served by Vite — must not be rewritten
+  '/convex/',
+  '/packages/',
+  '/lib/',
+  '/medusa-backend/',
+]
 const SUBDOMAIN_INTERNAL_PREFIX = '/deployed/'
+// File extensions that indicate a static asset, not a route — skip rewrite.
+// Route paths never have file extensions.
+const SUBDOMAIN_ASSET_EXTENSION = /\.[a-zA-Z0-9]{1,8}$/
 
 function resolveSubdomainSlug(host: string): string | undefined {
   const hostname = host.split(',')[0]?.trim().split(':')[0]?.toLowerCase() ?? ''
@@ -576,6 +592,11 @@ function subdomainRewriteDevMiddleware(): Plugin {
             return
           }
         }
+        // Skip paths with file extensions — they're static assets, not routes
+        if (SUBDOMAIN_ASSET_EXTENSION.test(path)) {
+          next()
+          return
+        }
         const rest = path === '/' ? '' : path
         req.url = `/deployed/${slug}${rest}${query}`
         next()
@@ -588,6 +609,14 @@ const config = defineConfig({
   define: {
     'import.meta.env.MEDUSA_BACKEND_URL': JSON.stringify(
       devEnv.MEDUSA_BACKEND_URL || process.env.MEDUSA_BACKEND_URL || '',
+    ),
+    // site-config.ts reads BASE_DOMAIN via process.env.NEXT_PUBLIC_BASE_DOMAIN.
+    // Vite's envPrefix only exposes vars via import.meta.env, not process.env,
+    // so explicitly define it for the client bundle.
+    'process.env.NEXT_PUBLIC_BASE_DOMAIN': JSON.stringify(
+      devEnv.NEXT_PUBLIC_BASE_DOMAIN ||
+        process.env.NEXT_PUBLIC_BASE_DOMAIN ||
+        'ship-fast.ai',
     ),
   },
   envPrefix: [

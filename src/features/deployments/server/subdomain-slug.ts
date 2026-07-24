@@ -1,6 +1,22 @@
 import { BASE_DOMAIN } from '@/lib/site-config'
 
 /**
+ * Client-safe base domain for subdomain slug resolution.
+ *
+ * `BASE_DOMAIN` from `site-config` reads `process.env.NEXT_PUBLIC_BASE_DOMAIN`,
+ * which Vite does NOT replace in client bundles (only `import.meta.env.*` is
+ * replaced). On the client, `BASE_DOMAIN` falls back to `'ship-fast.ai'`
+ * regardless of the actual env, so subdomain detection fails on `.ship-fast.test`
+ * or other non-default base domains.
+ *
+ * This reads `import.meta.env.NEXT_PUBLIC_BASE_DOMAIN` first (which Vite DOES
+ * replace via `envPrefix`), then falls back to `BASE_DOMAIN` for SSR.
+ */
+const CLIENT_BASE_DOMAIN: string =
+  (import.meta.env.NEXT_PUBLIC_BASE_DOMAIN as string | undefined)?.trim() ||
+  BASE_DOMAIN
+
+/**
  * Host labels that never represent a deployment slug (app infrastructure).
  * Kept in sync with the public metadata resolver.
  */
@@ -44,7 +60,7 @@ function normalizeSlug(value: string): string {
 export function getDeploymentSlugFromHostname(
   hostname: string,
 ): string | undefined {
-  const baseDomain = BASE_DOMAIN.toLowerCase().replace(/^\.+|\.+$/g, '')
+  const baseDomain = CLIENT_BASE_DOMAIN.toLowerCase().replace(/^\.+|\.+$/g, '')
   if (!hostname || !baseDomain) return undefined
   if (hostname === baseDomain || hostname === `www.${baseDomain}`) {
     return undefined

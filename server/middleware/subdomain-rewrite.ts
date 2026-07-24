@@ -44,8 +44,23 @@ const RESERVED_EXACT_PATHS = new Set([
   '/sitemap.xml',
   '/llms.txt',
 ])
-const RESERVED_PATH_PREFIXES = ['/api/', '/export/']
+const RESERVED_PATH_PREFIXES = [
+  '/api/',
+  '/export/',
+  // Vite dev server internal asset paths — must not be rewritten
+  '/@',
+  '/src/',
+  '/node_modules/',
+  '/favicon',
+  // App source modules served by Vite — must not be rewritten
+  '/convex/',
+  '/packages/',
+  '/lib/',
+  '/medusa-backend/',
+]
 const INTERNAL_PREFIX = '/deployed/'
+// File extensions that indicate a static asset, not a route — skip rewrite.
+const ASSET_EXTENSION = /\.[a-zA-Z0-9]{1,8}$/
 
 function resolveSubdomainSlug(host: string): string | undefined {
   const hostname = host.split(',')[0]?.trim().split(':')[0]?.toLowerCase() ?? ''
@@ -88,13 +103,17 @@ export default defineEventHandler((event) => {
   for (const prefix of RESERVED_PATH_PREFIXES) {
     if (path.startsWith(prefix)) return
   }
+  // Skip paths with file extensions — they're static assets, not routes
+  if (ASSET_EXTENSION.test(path)) return
 
   const rest = path === '/' ? '' : path
-  // event.path is a read-only getter derived from event.url; mutate the
-  // underlying URL object so both event.path and event.req.url reflect the
+  // FastURL (srvx) has only getters for pathname/search — can't mutate in
+  // place. Replace event.url with a new URL built from the rewritten path so
+  // event.path and downstream handlers see the internal route.
+  const newPath = `/deployed/${slug}${rest}`
+  const newUrl = new URL(newPath + query, event.url.origin)
+  event.url = newUrl
+  // Also update req.url so any code reading the raw request URL sees the
   // rewritten path.
-  event.url.pathname = `/deployed/${slug}${rest}`
-  if (query) {
-    event.url.search = query
-  }
+  event.req.url = newPath + query
 })
