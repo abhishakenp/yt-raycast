@@ -62,6 +62,7 @@ import type * as lib_session_task_helpers from "../lib/session_task_helpers.js";
 import type * as lib_session_translation_cache_helpers from "../lib/session_translation_cache_helpers.js";
 import type * as lib_session_usage_metrics_helpers from "../lib/session_usage_metrics_helpers.js";
 import type * as lib_session_user_image_helpers from "../lib/session_user_image_helpers.js";
+import type * as lib_translation_entitlement_helpers from "../lib/translation_entitlement_helpers.js";
 import type * as lib_session_validators from "../lib/session_validators.js";
 import type * as lib_session_workspace_helpers from "../lib/session_workspace_helpers.js";
 import type * as lib_testHelpers from "../lib/testHelpers.js";
@@ -135,6 +136,7 @@ declare const fullApi: ApiFromModules<{
   "lib/session_translation_cache_helpers": typeof lib_session_translation_cache_helpers;
   "lib/session_usage_metrics_helpers": typeof lib_session_usage_metrics_helpers;
   "lib/session_user_image_helpers": typeof lib_session_user_image_helpers;
+  "lib/translation_entitlement_helpers": typeof lib_translation_entitlement_helpers;
   "lib/session_validators": typeof lib_session_validators;
   "lib/session_workspace_helpers": typeof lib_session_workspace_helpers;
   "lib/testHelpers": typeof lib_testHelpers;

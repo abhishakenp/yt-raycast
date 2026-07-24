@@ -96,6 +96,7 @@ import {
   recordGitHubExportRepository,
   updateExportArtifactBuildProgress,
 } from './lib/session_export_helpers'
+import { checkTranslationEntitlement } from './lib/translation_entitlement_helpers'
 import { loadSessionEventStream } from './lib/session_event_stream_helpers'
 import {
   listOwnedGallerySessions,
@@ -602,6 +603,19 @@ export const getExportTargets = query({
         }
       : loadSessionExportTargets(ctx, sessionId)
   },
+})
+
+// Pro + ownership gate for the /api/translate HTTP endpoint. The HTTP handler
+// calls this with the caller's Clerk token (setAuth) + anonymousOwnerSecret to
+// verify the caller owns the session AND has an active Pro subscription (or
+// admin / paywall-disabled bypass) before spending LLM money on translation.
+export const checkTranslationEntitlementQuery = query({
+  args: ownedSessionArgs,
+  handler: async (ctx, args) =>
+    checkTranslationEntitlement(ctx, {
+      sessionId: args.sessionId,
+      anonymousOwnerSecret: args.anonymousOwnerSecret,
+    }),
 })
 
 export const getDeploymentStatusByLookup = query({

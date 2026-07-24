@@ -24,13 +24,18 @@ import {
 import { useQuery } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
-import { I18nProvider, T } from './_providers/translation'
+import {
+  I18nProvider,
+  T,
+  type TranslationContext,
+} from './_providers/translation'
 import { preprocessOpenUIRuntimeResponse } from './openui-runtime-preprocess'
 import {
   applyMedusaProductsToPreviewDom,
   type MedusaPreviewProduct,
 } from './medusa-preview-sync'
 import { extractGeneratedCommerceProducts } from '@/features/commerce/services/generated-commerce-products'
+import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
 
 // NOTE: We use a plain QueryClientProvider here (not PersistQueryClientProvider).
 // The persist provider from @tanstack/react-query-persist-client resolved a
@@ -226,6 +231,7 @@ export default function OpenUIViewer({
   integrations,
   imageContext,
   selectedBrandLogo,
+  anonymousOwnerSecret,
   onFirstPaint,
 }: {
   response: string
@@ -248,6 +254,8 @@ export default function OpenUIViewer({
       config?: Record<string, string | null> | null
     } | null
   } | null
+  /** Anonymous owner secret forwarded to `/api/translate` for the same-user guard. */
+  anonymousOwnerSecret?: string
   /** Fires once when the render host has painted real layout structure (not the streaming fallback text). */
   onFirstPaint?: () => void
 }) {
@@ -256,6 +264,18 @@ export default function OpenUIViewer({
   const firedRef = useRef(false)
   const rafRef = useRef<number | null>(null)
   const rafRef2 = useRef<number | null>(null)
+  // Credentials forwarded to /api/translate for the Pro + same-user guard.
+  // `getToken` lazily fetches a fresh Clerk convex JWT per request so expired
+  // tokens are never reused; the owner secret is read once from localStorage.
+  const { getToken } = useOptionalAuth()
+  const translationContext = useMemo<TranslationContext | undefined>(() => {
+    if (!sessionId) return undefined
+    return {
+      sessionId,
+      anonymousOwnerSecret,
+      getAuthToken: () => getToken({ template: 'convex' }),
+    }
+  }, [sessionId, anonymousOwnerSecret, getToken])
   // Map the merged site-spec + session theme colors (server keys: primary,
   // accent, background, …) to CSS custom properties on the viewer's root
   // element so generated components can consume them as design tokens.
@@ -486,7 +506,10 @@ export default function OpenUIViewer({
               medusa={integrations?.medusa || { enabled: false }}
               sessionId={sessionId}
             >
-              <I18nProvider locale={locale || 'en'}>
+              <I18nProvider
+                locale={locale || 'en'}
+                translationContext={translationContext}
+              >
                 <T>
                   <BrandLogoProvider value={selectedBrandLogo}>
                     <ImageContextProvider value={imageContext}>

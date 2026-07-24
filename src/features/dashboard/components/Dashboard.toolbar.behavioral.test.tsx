@@ -5,6 +5,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react'
 import type { MouseEventHandler, ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -685,6 +686,20 @@ describe('Dashboard toolbar + device switcher + status indicators', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /GitHub/i }))
     expect(await screen.findByTestId('github-panel-stub')).toBeTruthy()
+  })
+
+  it('marks the Localization siderail item as Pro-only with a crown badge', () => {
+    setupReady()
+    render(<Dashboard sessionId="ready-session" />)
+
+    const localizationButton = screen.getByRole('button', {
+      name: /Localization/i,
+    })
+    // The Pro-only crown badge is rendered inside the rail row with a shared
+    // aria-label, mirroring the Export / GitHub / Billing siderail items.
+    expect(
+      within(localizationButton).getByLabelText('Pro only - upgrade to unlock'),
+    ).toBeTruthy()
   })
 
   it('switches active panel content as different rail buttons are clicked', async () => {
