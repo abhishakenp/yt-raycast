@@ -1505,4 +1505,101 @@ describe('medusa product sync', () => {
     )
     expect(deleteCalls).toHaveLength(0)
   })
+
+  it('repairs stale generated variants that are managed and out of stock despite a matching sync signature', async () => {
+    const product = { handle: 'dark-bar', price: 12, title: 'Dark Bar' }
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ shipping_profiles: [{ id: 'sp_default' }] }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            sales_channels: [
+              { id: 'sc_tenant', name: 'Ship Fast session_abc123456789' },
+            ],
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            api_keys: [
+              {
+                id: 'apk_tenant',
+                sales_channels: [{ id: 'sc_tenant' }],
+                title: 'Ship Fast session_abc123456789',
+                token: 'pk_tenant_session',
+                type: 'publishable',
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            products: [
+              {
+                id: 'prod_existing',
+                metadata: {
+                  ship_fast_generated_sync_signature:
+                    createGeneratedProductSyncSignature(product),
+                },
+                sales_channels: [],
+                variants: [
+                  {
+                    id: 'variant_existing',
+                    inventory_quantity: 0,
+                    manage_inventory: true,
+                    metadata: {
+                      ship_fast_generated_source_id: 'variant:dark-bar:default',
+                    },
+                    prices: [{ currency_code: 'usd', id: 'price_existing' }],
+                    sku: 'SHIP-FAST-SESSION-ABC123456789-DARK-BAR-DARK-BAR-VARIANT-DARK-BAR-DEFAULT',
+                    title: 'Default',
+                  },
+                ],
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ product: { id: 'prod_existing' } }), {
+          status: 200,
+        }),
+      )
+
+    const result = await syncGeneratedProductsToMedusa({
+      adminApiToken: 'admin-token',
+      backendUrl: 'http://localhost:9000',
+      fetch: fetchImpl,
+      products: [product],
+      sessionId: 'session_abc123456789',
+    })
+
+    expect(result.synced).toBe(1)
+    const updateCall = fetchImpl.mock.calls.find(
+      ([url]) => url === 'http://localhost:9000/admin/products/prod_existing',
+    )
+    expect(updateCall).toBeTruthy()
+    expect(JSON.parse(String(requestBody(updateCall?.[1])))).toMatchObject({
+      sales_channels: [{ id: 'sc_tenant' }],
+      variants: [
+        {
+          id: 'variant_existing',
+          manage_inventory: false,
+          prices: [{ amount: 12, currency_code: 'usd', id: 'price_existing' }],
+        },
+      ],
+    })
+  })
 })
