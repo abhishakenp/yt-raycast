@@ -27,22 +27,25 @@ describe('provider config', () => {
     ).toBe('clerk_convex')
   })
 
-  it('enables authenticated providers on homepage, pricing, partners and generate routes', () => {
-    // `/` is included so AppProviders mounts ClerkConvexProvider from first
-    // paint: the homepage renders Clerk's <Waitlist /> for non-approved users,
-    // which must live inside a <ClerkProvider>. The clerkMounted flag prevents
-    // SignInModalHost from stacking a second ClerkProvider on `/`.
+  it('enables authenticated providers on all Convex routes when Clerk is configured', () => {
+    // Every route that needs Convex should also get the Clerk-backed provider
+    // so the user's identity is available everywhere — /mine, /gallery, /preview,
+    // etc. — not just /generate.
     expect(shouldUseAuthenticatedProviders('/')).toBe(true)
     expect(shouldUseAuthenticatedProviders('/pricing')).toBe(true)
     expect(shouldUseAuthenticatedProviders('/partners')).toBe(true)
     expect(shouldUseAuthenticatedProviders('/generate/session_123')).toBe(true)
+    expect(shouldUseAuthenticatedProviders('/mine')).toBe(true)
+    expect(shouldUseAuthenticatedProviders('/gallery')).toBe(true)
+    expect(shouldUseAuthenticatedProviders('/preview/session_123')).toBe(true)
+    expect(shouldUseAuthenticatedProviders('/examples')).toBe(true)
   })
 
-  it('keeps authenticated providers off other routes', () => {
-    expect(shouldUseAuthenticatedProviders('/gallery')).toBe(false)
+  it('keeps authenticated providers off non-Convex routes', () => {
     expect(shouldUseAuthenticatedProviders('/dashboard')).toBe(false)
     expect(shouldUseAuthenticatedProviders('/blog/post')).toBe(false)
     expect(shouldUseAuthenticatedProviders('/sign-in')).toBe(false)
+    expect(shouldUseAuthenticatedProviders('/referrals')).toBe(false)
   })
 
   it('loads Convex only on routes that call Convex hooks directly or need Clerk', () => {

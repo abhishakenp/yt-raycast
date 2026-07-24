@@ -16,12 +16,11 @@ export function resolveProviderMode(config: ProviderConfig): ProviderMode {
 }
 
 export function shouldUseAuthenticatedProviders(pathname: string): boolean {
-  return (
-    pathname === '/' ||
-    pathname === '/pricing' ||
-    pathname === '/partners' ||
-    pathname.startsWith('/generate/')
-  )
+  // When Clerk is configured, every Convex route should use the Clerk-backed
+  // provider so the user's identity follows them everywhere. There's no reason
+  // to give /mine or /gallery a lesser provider — the user's identity should
+  // be available on all Convex routes, not just /generate.
+  return shouldUseConvexProviders(pathname)
 }
 
 export function shouldUseConvexProviders(pathname: string): boolean {
