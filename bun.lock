@@ -85,6 +85,7 @@
         "framer-motion": "^12.40.0",
         "franc-min": "^6.2.0",
         "gsap": "^3.15.0",
+        "h3": "2.0.1-rc.22",
         "idb-keyval": "^6.2.5",
         "input-otp": "^1.4.2",
         "lakebed": "0.0.25",
