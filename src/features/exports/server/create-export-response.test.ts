@@ -10,8 +10,13 @@ vi.mock('../services/openui-artifact-files', () => artifactFileMocks)
 import { createExportResponse } from './create-export-response'
 
 const queryMock = vi.fn()
+const mutationMock = vi.fn()
 const setAuthMock = vi.fn()
-const fakeClient = { query: queryMock, setAuth: setAuthMock }
+const fakeClient = {
+  query: queryMock,
+  mutation: mutationMock,
+  setAuth: setAuthMock,
+}
 
 const readyArtifactResult = (target = 'html') => ({
   export: {
@@ -66,6 +71,7 @@ const realConvexOpenUiHandoffPreview = {
 describe('createExportResponse', () => {
   beforeEach(() => {
     queryMock.mockReset()
+    mutationMock.mockReset()
     setAuthMock.mockReset()
     artifactFileMocks.buildOpenUIArtifactFiles.mockReset()
     artifactFileMocks.buildDownloadFromArtifactFiles.mockReset()
@@ -493,6 +499,138 @@ describe('createExportResponse', () => {
       lookup: 'session_123',
       target: 'html',
       anonymousOwnerSecret: 'owner-secret',
+    })
+  })
+
+  it('builds HTML on-demand when no export record exists yet instead of returning 202', async () => {
+    // Regression: first download request for HTML would return 202 "still
+    // being prepared" because no export record existed. HTML can be built
+    // synchronously from the preview, so the route should do that after
+    // ensuring the export record (and checking payment).
+    mutationMock.mockResolvedValueOnce({})
+    queryMock
+      .mockResolvedValueOnce(null) // initial download lookup: no record
+      .mockResolvedValueOnce({
+        // re-query after ensure: export record exists, payment OK
+        export: {
+          status: 'ready',
+          requiresPayment: false,
+          previewVersion: 1,
+        },
+        artifact: { status: 'building', previewVersion: 1 },
+        storageUrl: null,
+        latestPreviewVersion: 1,
+      })
+      .mockResolvedValueOnce({
+        // build input for on-demand build
+        sessionId: 'session_123',
+        target: 'html',
+        source: '<main>On-demand source</main>',
+        html: '<!doctype html><html><body>On-demand preview</body></html>',
+        themeName: 'darkmatter',
+        isDark: true,
+        locale: 'en',
+      })
+
+    const response = await createExportResponse(
+      'session_123',
+      'html',
+      fakeClient,
+    )
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-type')).toBe(
+      'text/html; charset=utf-8',
+    )
+    expect(await response.text()).toContain('Generated fallback')
+    expect(mutationMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('returns 402 when HTML export record is payment-required after ensure, not 202', async () => {
+    mutationMock.mockResolvedValueOnce({})
+    queryMock
+      .mockResolvedValueOnce(null) // initial download lookup: no record
+      .mockResolvedValueOnce({
+        // re-query after ensure: payment required
+        export: {
+          status: 'payment_required',
+          requiresPayment: true,
+          errorMessage: 'Subscribe to download.',
+        },
+      })
+
+    const response = await createExportResponse(
+      'session_123',
+      'html',
+      fakeClient,
+    )
+
+    expect(response.status).toBe(402)
+    expect(await response.text()).toBe('Subscribe to download.')
+  })
+
+  it('builds HTML on-demand when export status is not ready instead of returning 202', async () => {
+    // Regression: export record exists but status is "building" (Convex
+    // artifact still being prepared). HTML can be built synchronously from
+    // the preview, so the route should do that instead of returning 202.
+    queryMock
+      .mockResolvedValueOnce({
+        export: {
+          status: 'building',
+          requiresPayment: false,
+          previewVersion: 1,
+        },
+        artifact: { status: 'building', previewVersion: 1 },
+        storageUrl: null,
+        latestPreviewVersion: 1,
+      })
+      .mockResolvedValueOnce({
+        // build input for on-demand build
+        sessionId: 'session_123',
+        target: 'html',
+        source: '<main>On-demand source</main>',
+        html: '<!doctype html><html><body>On-demand preview</body></html>',
+        themeName: 'darkmatter',
+        isDark: false,
+        locale: 'en',
+      })
+
+    const response = await createExportResponse(
+      'session_123',
+      'html',
+      fakeClient,
+    )
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-type')).toBe(
+      'text/html; charset=utf-8',
+    )
+    expect(await response.text()).toContain('Generated fallback')
+  })
+
+  it('returns 202 for non-HTML targets when export status is not ready', async () => {
+    // Non-HTML targets cannot build on-demand (no Tailwind compile in
+    // server runtime), so they still get 202 while the artifact builds.
+    queryMock.mockResolvedValueOnce({
+      export: {
+        status: 'building',
+        requiresPayment: false,
+        previewVersion: 1,
+      },
+      artifact: { status: 'building', previewVersion: 1 },
+      storageUrl: null,
+      latestPreviewVersion: 1,
+    })
+
+    const response = await createExportResponse(
+      'session_123',
+      'next',
+      fakeClient,
+    )
+
+    expect(response.status).toBe(202)
+    await expect(response.json()).resolves.toMatchObject({
+      status: 'building',
     })
   })
 })
