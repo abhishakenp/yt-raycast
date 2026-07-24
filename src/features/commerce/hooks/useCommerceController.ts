@@ -1,5 +1,5 @@
 import { useQuery } from 'convex/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
@@ -13,6 +13,11 @@ type CommerceHandoff = {
   backendUrl: string
   storefrontUrl: string
   tenantId: string
+}
+
+type HostedMedusaConfig = {
+  backendUrl?: string
+  enabled?: boolean
 }
 
 export type MedusaAdminCredentials = {
@@ -36,6 +41,55 @@ async function readProvisionError(response: Response): Promise<string> {
   }
 
   return fallback
+}
+
+const hostedMedusaConfig = (value: unknown): HostedMedusaConfig => {
+  if (!isRecord(value)) {
+    return {}
+  }
+
+  return {
+    ...(typeof value.backendUrl === 'string'
+      ? { backendUrl: value.backendUrl }
+      : {}),
+    ...(typeof value.enabled === 'boolean' ? { enabled: value.enabled } : {}),
+  }
+}
+
+export const useHostedMedusaConfig = () => {
+  const [config, setConfig] = useState<HostedMedusaConfig>({})
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    const loadConfig = async () => {
+      try {
+        const response = await fetch('/api/medusa-store/config', {
+          signal: controller.signal,
+        })
+        if (!response.ok) return
+        const payload: unknown = await response.json()
+        if (!controller.signal.aborted) {
+          setConfig(hostedMedusaConfig(payload))
+        }
+      } catch {
+        // Hosted Medusa config is optional; per-session setup still works.
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    void loadConfig()
+
+    return () => {
+      controller.abort()
+    }
+  }, [])
+
+  return { config, isLoading }
 }
 
 export function useCommerceController(

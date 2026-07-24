@@ -25,7 +25,7 @@ type CommerceConfigState = {
 }
 
 type FetchState = {
-  impl: null | (() => Promise<Response>)
+  impl: null | ((input: RequestInfo | URL) => Promise<Response>)
 }
 
 const commerceConfig = vi.hoisted<CommerceConfigState>(() => ({
@@ -103,24 +103,28 @@ function fillAdminCredentials(): void {
 describe('CommercePanel (behavioral)', () => {
   beforeEach(() => {
     commerceConfig.current = undefined
-    fetchState.impl = () =>
+    fetchState.impl = (input) =>
       Promise.resolve(
-        okResponse({
-          handoff: {
-            adminEmail: 'admin@store.test',
-            adminPassword: 'secret-password',
-            adminUrl: 'https://admin.medusa.test',
-            backendUrl: 'https://backend.medusa.test',
-            storefrontUrl: 'https://store.medusa.test',
-            tenantId: 'session_123',
-          },
-        }),
+        okResponse(
+          String(input) === '/api/medusa-store/config'
+            ? { enabled: false }
+            : {
+                handoff: {
+                  adminEmail: 'admin@store.test',
+                  adminPassword: 'secret-password',
+                  adminUrl: 'https://admin.medusa.test',
+                  backendUrl: 'https://backend.medusa.test',
+                  storefrontUrl: 'https://store.medusa.test',
+                  tenantId: 'session_123',
+                },
+              },
+        ),
       )
     vi.stubGlobal(
       'fetch',
       vi.fn((...args) => {
         void args
-        return fetchState.impl?.()
+        return fetchState.impl?.(args[0])
       }),
     )
   })
@@ -267,6 +271,49 @@ describe('CommercePanel (behavioral)', () => {
     expect(refreshButton).toHaveProperty('disabled', false)
 
     fireEvent.click(refreshButton)
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/sessions/session_123/provision/medusa',
+        expect.objectContaining({ method: 'POST' }),
+      )
+    })
+    const requestBody = readLastFetchBody()
+    expect(requestBody).not.toHaveProperty('adminEmail')
+    expect(requestBody).not.toHaveProperty('adminPassword')
+  })
+
+  it('enables hosted Medusa without asking for admin credentials when session config has no backend yet', async () => {
+    commerceConfig.current = { status: 'setup', productCount: 4 }
+    fetchState.impl = (input) =>
+      Promise.resolve(
+        okResponse(
+          String(input) === '/api/medusa-store/config'
+            ? { backendUrl: 'https://medusa.devliv.io', enabled: true }
+            : {
+                handoff: {
+                  adminUrl: 'https://medusa.devliv.io/app',
+                  backendUrl: 'https://medusa.devliv.io',
+                  storefrontUrl: 'https://ship-fast.devliv.io',
+                  tenantId: 'session_123',
+                },
+              },
+        ),
+      )
+
+    render(<CommercePanel sessionId="session_123" />)
+
+    await waitFor(() => {
+      expect(screen.queryByLabelText('Admin email')).toBeNull()
+    })
+    expect(screen.queryByLabelText('Admin password')).toBeNull()
+
+    const enableButton = screen.getByRole('button', {
+      name: /Enable Commerce/,
+    })
+    expect(enableButton).toHaveProperty('disabled', false)
+
+    fireEvent.click(enableButton)
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
