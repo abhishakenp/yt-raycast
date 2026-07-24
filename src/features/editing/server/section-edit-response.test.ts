@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   createSectionEditResponse,
@@ -34,6 +34,18 @@ function expectOnlyCodeModeTool(
   expect(tools.map((tool) => tool.name)).toEqual(['execute_typescript'])
   expect(typeof tools[0]?.execute).toBe('function')
 }
+
+// The section-edit endpoint is now Pro/auth-gated; this suite exercises the
+// edit logic (not auth), so bypass the entitlement gate.
+const originalClerk = process.env.VITE_DISABLE_CLERK
+
+beforeEach(() => {
+  process.env.VITE_DISABLE_CLERK = 'true'
+})
+
+afterEach(() => {
+  process.env.VITE_DISABLE_CLERK = originalClerk
+})
 
 describe('patchOpenUiSourceWithAiCapsule', () => {
   it('replaces capsule reference with AI capsule name when varName is provided', () => {

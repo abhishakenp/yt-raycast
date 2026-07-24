@@ -2,12 +2,21 @@ import { ConvexError } from 'convex/values'
 
 import type { Id } from '../_generated/dataModel'
 import type { MutationCtx } from '../_generated/server'
-import { assertCanMutateSession } from './session_access_helpers'
+import {
+  assertCanMutateSession,
+  getUserId,
+  isUserAdmin,
+} from './session_access_helpers'
 import { upsertSessionAiCapsule } from './session_ai_capsule_helpers'
 import {
   applyOpenUiVarReplace,
   applySectionHtmlReplace,
 } from './session_edit_helpers'
+import {
+  areExportPaywallsDisabled,
+  checkExportEntitlementReadOnly,
+  isAuthDisabled,
+} from './session_export_helpers'
 
 export type ApplySectionEditInput = {
   sessionId: Id<'sessions'>
@@ -63,6 +72,28 @@ export async function applySectionEditToArtifacts(
   }
 
   await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
+
+  // AI section edits are Pro-only (like exports + translation). The ownership
+  // check above already passed, so here we verify the owner has an active Pro
+  // subscription or credits. Admin / paywall-disabled / auth-disabled bypass.
+  if (!areExportPaywallsDisabled() && !isAuthDisabled()) {
+    const isAdmin = await isUserAdmin(ctx)
+    if (!isAdmin) {
+      const userId = await getUserId(ctx)
+      const entitlement = await checkExportEntitlementReadOnly(
+        ctx,
+        userId,
+        isAdmin,
+      )
+      if (entitlement.status !== 'ready') {
+        throw new ConvexError({
+          code: 'PAYMENT_REQUIRED',
+          message:
+            entitlement.message ?? 'Subscribe to Pro to use AI inline edits.',
+        })
+      }
+    }
+  }
 
   // Fetch current artifacts
   const [homeModule, latestPreview] = await Promise.all([
