@@ -2,7 +2,7 @@ import { convexTest } from 'convex-test'
 import type { FunctionArgs } from 'convex/server'
 import { expect, test } from 'vitest'
 
-import { api } from './_generated/api'
+import { api, internal } from './_generated/api'
 import schema from './schema'
 
 const modules = import.meta.glob('./**/*.ts')
@@ -80,51 +80,67 @@ test('public gallery excludes renderable draft sessions', async () => {
   expect(detail).toBeNull()
 })
 
-test('submitting a real generation deletes draft sessions older than fifteen minutes', async () => {
+test('creating a draft session schedules a one-shot cleanup that hard-deletes it when still a draft', async () => {
   const t = convexTest(schema, modules)
-  const staleDraftId = await t.run(async (ctx) => {
-    const createdAt = Date.now() - 16 * 60 * 1_000
-    const sessionId = await ctx.db.insert('sessions', {
-      prompt: 'Expired speculative draft',
-      preferredLanguage: 'en',
-      preferredExportTarget: 'html',
-      isPrivate: false,
-      isDraft: true,
-      status: 'queued',
-      previewVersion: 0,
-      workspace: 'workspace_expired_draft',
-      createdAt,
-      updatedAt: createdAt,
-    })
 
-    await ctx.db.insert('tasks', {
-      sessionId,
-      taskKey: 'homepage',
-      title: 'Generate homepage',
-      status: 'pending',
-      order: 0,
-      createdAt,
-      updatedAt: createdAt,
-    })
-
-    return sessionId
-  })
-
-  await t.mutation(api.sessions.create, {
+  const draft = await t.mutation(api.sessions.create, {
     ...createArgs,
-    prompt: 'Build a submitted public site',
-    anonymousClientId: 'anon-submitted-client',
-    workspace: 'workspace_submitted_public',
+    isDraft: true,
   })
 
-  const staleDraft = await t.run((ctx) => ctx.db.get(staleDraftId))
-  const staleDraftTasks = await t.run((ctx) =>
+  // A scheduled cleanup must be registered for this draft session.
+  const scheduled = await t.run((ctx) =>
+    ctx.db.system.query('_scheduled_functions').take(20),
+  )
+  expect(scheduled).toContainEqual(
+    expect.objectContaining({
+      name: 'sessions:deleteDraftSessionIfStillDraft',
+      state: expect.objectContaining({ kind: 'pending' }),
+    }),
+  )
+
+  // Simulate the scheduler firing after the TTL.
+  await t.mutation(internal.sessions.deleteDraftSessionIfStillDraft, {
+    sessionId: draft.sessionId,
+  })
+
+  const gone = await t.run((ctx) => ctx.db.get(draft.sessionId))
+  const orphanTasks = await t.run((ctx) =>
     ctx.db
       .query('tasks')
-      .withIndex('by_sessionId', (index) => index.eq('sessionId', staleDraftId))
+      .withIndex('by_sessionId', (index) =>
+        index.eq('sessionId', draft.sessionId),
+      )
       .collect(),
   )
 
-  expect(staleDraft).toBeNull()
-  expect(staleDraftTasks).toEqual([])
+  // Draft sessions are hard-deleted (no tombstone), and their graph is removed.
+  expect(gone).toBeNull()
+  expect(orphanTasks).toEqual([])
+})
+
+test('the scheduled draft cleanup is a no-op once the draft has been promoted to a real session', async () => {
+  const t = convexTest(schema, modules)
+
+  const draft = await t.mutation(api.sessions.create, {
+    ...createArgs,
+    isDraft: true,
+  })
+
+  // Promote the draft by submitting a real generation for the same workspace.
+  await t.mutation(api.sessions.create, {
+    ...createArgs,
+    isDraft: false,
+  })
+
+  // Firing the scheduled cleanup that was registered at draft creation must
+  // NOT touch the now-promoted session.
+  await t.mutation(internal.sessions.deleteDraftSessionIfStillDraft, {
+    sessionId: draft.sessionId,
+  })
+
+  const promoted = await t.run((ctx) => ctx.db.get(draft.sessionId))
+  expect(promoted).not.toBeNull()
+  expect(promoted?.isDraft).toBe(false)
+  expect(promoted?.deletedAt).toBeUndefined()
 })

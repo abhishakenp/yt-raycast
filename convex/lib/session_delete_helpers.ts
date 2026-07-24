@@ -10,9 +10,18 @@ async function deleteRows<TableName extends TableNames>(
   }
 }
 
+export type DeleteSessionGraphOptions = {
+  // Draft sessions are exploratory and never published — they should be
+  // fully removed (row + graph) rather than soft-deleted, so they cannot be
+  // resurrected and do not linger as tombstones. Non-draft sessions keep the
+  // default soft-delete (`deletedAt`) to preserve quota-bypass protection.
+  hardDeleteSession?: boolean
+}
+
 export async function deleteSessionGraph(
   ctx: MutationCtx,
   sessionId: Id<'sessions'>,
+  options: DeleteSessionGraphOptions = {},
 ): Promise<void> {
   const storageIds = new Set<Id<'_storage'>>()
 
@@ -152,5 +161,9 @@ export async function deleteSessionGraph(
   for (const storageId of storageIds) {
     await ctx.storage.delete(storageId)
   }
-  await ctx.db.patch(sessionId, { deletedAt: Date.now() })
+  if (options.hardDeleteSession === true) {
+    await ctx.db.delete(sessionId)
+  } else {
+    await ctx.db.patch(sessionId, { deletedAt: Date.now() })
+  }
 }
