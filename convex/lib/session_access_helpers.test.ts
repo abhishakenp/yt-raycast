@@ -310,6 +310,81 @@ describe('session access helpers', () => {
     ).toBeUndefined()
   })
 
+  it('admin bypasses ownership and soft-deletes any session by id', async () => {
+    const foreign = sessionDoc({
+      _id: 'session_admin_target' as Id<'sessions'>,
+      userId: 'token:other',
+    })
+    const { ctx, patches, sessions } = mutationCtxForSessions({
+      identity: identityFor({
+        tokenIdentifier: 'token:admin',
+        system_role: 'admin',
+      }),
+      sessions: [foreign],
+    })
+
+    await expect(
+      deleteOwnedSessions(ctx, { sessionId: foreign._id }),
+    ).resolves.toEqual({ deleted: 1 })
+
+    expect(patches).toContainEqual({
+      id: foreign._id,
+      patch: expect.objectContaining({ deletedAt: expect.any(Number) }),
+    })
+    expect(sessions.find((s) => s._id === foreign._id)?.deletedAt).toBeDefined()
+  })
+
+  it('admin cannot delete an already soft-deleted session', async () => {
+    const alreadyDeleted = sessionDoc({
+      _id: 'session_admin_gone' as Id<'sessions'>,
+      userId: 'token:other',
+      deletedAt: 1234,
+    })
+    const { ctx, patches } = mutationCtxForSessions({
+      identity: identityFor({
+        tokenIdentifier: 'token:admin',
+        system_role: 'admin',
+      }),
+      sessions: [alreadyDeleted],
+    })
+
+    await expect(
+      deleteOwnedSessions(ctx, { sessionId: alreadyDeleted._id }),
+    ).resolves.toEqual({ deleted: 0 })
+
+    expect(patches).not.toContainEqual(
+      expect.objectContaining({ id: alreadyDeleted._id }),
+    )
+  })
+
+  it('admin bulk delete (no sessionId) stays scoped to own sessions, not all', async () => {
+    const own = sessionDoc({
+      _id: 'session_admin_own' as Id<'sessions'>,
+      userId: 'token:admin',
+    })
+    const others = sessionDoc({
+      _id: 'session_admin_others' as Id<'sessions'>,
+      userId: 'token:other',
+    })
+    const { ctx, patches } = mutationCtxForSessions({
+      identity: identityFor({
+        tokenIdentifier: 'token:admin',
+        system_role: 'admin',
+      }),
+      sessions: [own, others],
+    })
+
+    await expect(deleteOwnedSessions(ctx, {})).resolves.toEqual({ deleted: 1 })
+
+    expect(patches).toContainEqual({
+      id: own._id,
+      patch: expect.objectContaining({ deletedAt: expect.any(Number) }),
+    })
+    expect(patches).not.toContainEqual(
+      expect.objectContaining({ id: others._id }),
+    )
+  })
+
   it('deletes one anonymous session when the session id and client id match', async () => {
     const anonymousClientIdHash = await hashOwnerSecret('anon-client')
     const owned = sessionDoc({
