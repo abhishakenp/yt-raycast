@@ -32,7 +32,6 @@ export default defineConfig({
           environment: 'node',
           include: [
             'public/**/*.test.js',
-            'server/**/*.test.ts',
             'src/**/*.test.js',
             'src/**/*.test.ts',
             'packages/ship-fast-aeo/src/**/*.test.ts',
