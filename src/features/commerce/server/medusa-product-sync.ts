@@ -52,6 +52,8 @@ type ExistingMedusaPrice = {
 
 type ExistingMedusaVariant = {
   id?: string
+  inventoryQuantity?: number
+  manageInventory?: boolean
   metadata: Record<string, unknown>
   prices: Array<ExistingMedusaPrice>
   sku?: string
@@ -61,7 +63,8 @@ type ExistingMedusaVariant = {
 type ExistingMedusaProduct = {
   id: string
   metadata: Record<string, unknown>
-  variants: Array<ExistingMedusaVariant>
+  salesChannels?: Array<{ id?: string }>
+  variants?: Array<ExistingMedusaVariant>
 }
 
 function normalizeBackendUrl(backendUrl: string): string {
@@ -163,6 +166,16 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function stringValue(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim() ? value.trim() : undefined
+}
+
+function booleanValue(value: unknown): boolean | undefined {
+  return typeof value === 'boolean' ? value : undefined
+}
+
+function nonNegativeNumber(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0
+    ? value
+    : undefined
 }
 
 function stableJson(value: unknown): string {
@@ -576,7 +589,7 @@ async function findExistingProductId({
     `${backendUrl}/admin/products?handle=${encodeURIComponent(
       handle,
     )}&limit=1&fields=${encodeURIComponent(
-      '+metadata,*variants,+variants.metadata,*variants.prices,+variants.sku',
+      '+metadata,*sales_channels,*variants,+variants.metadata,*variants.prices,+variants.sku,+variants.manage_inventory,+variants.inventory_quantity',
     )}`,
     { headers: createAdminHeaders(token) },
   )
@@ -593,9 +606,16 @@ async function findExistingProductId({
   return {
     id: productId,
     metadata: isRecord(product.metadata) ? product.metadata : {},
-    variants: Array.isArray(product.variants)
-      ? product.variants.flatMap(normalizeExistingMedusaVariant)
-      : [],
+    ...(Array.isArray(product.sales_channels)
+      ? {
+          salesChannels: product.sales_channels.flatMap((channel) =>
+            isRecord(channel) ? [{ id: stringValue(channel.id) }] : [],
+          ),
+        }
+      : {}),
+    ...(Array.isArray(product.variants)
+      ? { variants: product.variants.flatMap(normalizeExistingMedusaVariant) }
+      : {}),
   }
 }
 
@@ -620,11 +640,15 @@ function normalizeExistingMedusaVariant(
 ): Array<ExistingMedusaVariant> {
   if (!isRecord(variant)) return []
   const id = stringValue(variant.id)
+  const inventoryQuantity = nonNegativeNumber(variant.inventory_quantity)
+  const manageInventory = booleanValue(variant.manage_inventory)
   const sku = stringValue(variant.sku)
   const title = stringValue(variant.title)
   return [
     {
       ...(id === undefined ? {} : { id }),
+      ...(inventoryQuantity === undefined ? {} : { inventoryQuantity }),
+      ...(manageInventory === undefined ? {} : { manageInventory }),
       metadata: isRecord(variant.metadata) ? variant.metadata : {},
       prices: Array.isArray(variant.prices)
         ? variant.prices.flatMap(normalizeExistingMedusaPrice)
@@ -633,6 +657,53 @@ function normalizeExistingMedusaVariant(
       ...(title === undefined ? {} : { title }),
     },
   ]
+}
+
+function findExistingVariant(
+  existingProduct: ExistingMedusaProduct | undefined,
+  variant: CommerceProductVariant,
+): ExistingMedusaVariant | undefined {
+  return existingProduct?.variants?.find((candidate) => {
+    const sourceId = stringValue(
+      candidate.metadata.ship_fast_generated_source_id,
+    )
+    return (
+      sourceId === variant.sourceId ||
+      candidate.sku === variant.sku ||
+      candidate.title === variant.title
+    )
+  })
+}
+
+function productNeedsOperationalRepair({
+  currencyCode,
+  existingProduct,
+  product,
+  salesChannelId,
+}: {
+  currencyCode: string
+  existingProduct: ExistingMedusaProduct
+  product: GeneratedCommerceProduct
+  salesChannelId: string
+}): boolean {
+  if (
+    existingProduct.salesChannels !== undefined &&
+    !existingProduct.salesChannels.some(
+      (channel) => channel.id === salesChannelId,
+    )
+  ) {
+    return true
+  }
+
+  if (existingProduct.variants === undefined) return false
+
+  return generatedProductVariants(product, currencyCode).some((variant) => {
+    const existingVariant = findExistingVariant(existingProduct, variant)
+    return (
+      existingVariant === undefined ||
+      existingVariant.manageInventory !== variant.manageInventory
+    )
+  })
 }
 
 async function resolveProductCollectionId({
@@ -1051,16 +1122,7 @@ function createProductBody({
     title: product.title,
     variants: variants.map((variant) => {
       const inventory = preparedInventory.get(variant.sourceId)
-      const existingVariant = existingProduct?.variants.find((candidate) => {
-        const sourceId = stringValue(
-          candidate.metadata.ship_fast_generated_source_id,
-        )
-        return (
-          sourceId === variant.sourceId ||
-          candidate.sku === variant.sku ||
-          candidate.title === variant.title
-        )
-      })
+      const existingVariant = findExistingVariant(existingProduct, variant)
       const generatedSku =
         inventory?.generatedSku ??
         deterministicVariantSku(product.handle, variant)
@@ -1215,7 +1277,15 @@ export async function syncGeneratedProductsToMedusa({
             fetchImpl,
             headers,
           })
-        } else if (existingSignature !== syncSignature) {
+        } else if (
+          existingSignature !== syncSignature ||
+          productNeedsOperationalRepair({
+            currencyCode,
+            existingProduct,
+            product,
+            salesChannelId: defaults.tenant.salesChannelId,
+          })
+        ) {
           const collectionId = await resolveProductCollectionId({
             backendUrl: normalizedBackendUrl,
             fetchImpl,

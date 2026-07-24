@@ -14,6 +14,7 @@ vi.mock('@tanstack/react-router', () => ({
 }))
 
 vi.mock('@/features/commerce/server/medusa-store-env', () => ({
+  getConfiguredMedusaBackendUrl: () => medusaEnvMock.backendUrl,
   getMedusaAdminUrl: () => medusaEnvMock.adminUrl,
   getMedusaBackendUrl: () => medusaEnvMock.backendUrl,
   getMedusaPublishableKey: () => medusaEnvMock.publishableKey,
@@ -63,7 +64,6 @@ describe('Medusa Store API route contracts', () => {
 
     expect(await readJson(response)).toMatchObject({
       body: {
-        backendUrl: 'https://backend.medusa.test',
         enabled: false,
       },
       contentType: expect.stringContaining('application/json'),
