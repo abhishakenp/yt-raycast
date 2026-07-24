@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  type MouseEvent as ReactMouseEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import { MarketingShell } from './-MarketingShell'
 import { PRICING_PAGE_MAIN_HTML } from './-pricing-main-html'
 import {
@@ -261,30 +267,21 @@ export const PricingPage = () => {
     }
   }, [getToken, isCheckoutStarting, isSignedIn, refreshBillingOverview])
 
-  useEffect(() => {
-    const content = pricingContentRef.current
-    if (content === null) return
+  const handlePricingContentClick = useCallback(
+    (event: ReactMouseEvent<HTMLDivElement>) => {
+      const target = event.target
+      if (!(target instanceof Element)) return
 
-    const ctas = Array.from(
-      content.querySelectorAll<HTMLButtonElement>(
+      const cta = target.closest<HTMLButtonElement>(
         '[data-pricing-checkout-cta="true"]',
-      ),
-    )
-    const handleCheckoutClick = (event: MouseEvent) => {
+      )
+      if (cta === null || !event.currentTarget.contains(cta)) return
+
       event.preventDefault()
       void startCheckout()
-    }
-
-    for (const cta of ctas) {
-      cta.addEventListener('click', handleCheckoutClick)
-    }
-
-    return () => {
-      for (const cta of ctas) {
-        cta.removeEventListener('click', handleCheckoutClick)
-      }
-    }
-  }, [startCheckout])
+    },
+    [startCheckout],
+  )
 
   useEffect(() => {
     const content = pricingContentRef.current
@@ -346,6 +343,7 @@ export const PricingPage = () => {
     <MarketingShell footer>
       <div
         ref={pricingContentRef}
+        onClickCapture={handlePricingContentClick}
         dangerouslySetInnerHTML={{ __html: PRICING_PAGE_MAIN_HTML }}
       />
       {checkoutMessage ? (
