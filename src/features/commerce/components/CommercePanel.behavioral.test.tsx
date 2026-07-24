@@ -10,8 +10,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { CommercePanel } from './CommercePanel'
 
-const commerceConfig = vi.hoisted(() => ({
-  current: undefined as
+type CommerceConfigState = {
+  current:
     | {
         adminUrl?: string
         backendUrl?: string
@@ -21,11 +21,19 @@ const commerceConfig = vi.hoisted(() => ({
         status?: string
         storefrontUrl?: string
       }
-    | undefined,
+    | undefined
+}
+
+type FetchState = {
+  impl: null | (() => Promise<Response>)
+}
+
+const commerceConfig = vi.hoisted<CommerceConfigState>(() => ({
+  current: undefined,
 }))
 
-const fetchState = vi.hoisted(() => ({
-  impl: null as null | (() => Promise<Response>),
+const fetchState = vi.hoisted<FetchState>(() => ({
+  impl: null,
 }))
 
 vi.mock('convex/react', () => ({
@@ -44,17 +52,43 @@ vi.mock('@/features/session/services/anonymous-owner-secret', () => ({
 }))
 
 function okResponse(body: unknown): Response {
-  return {
-    ok: true,
-    json: async () => body,
-  } as Response
+  return Response.json(body)
 }
 
 function errorResponse(body: unknown): Response {
-  return {
-    ok: false,
-    json: async () => body,
-  } as Response
+  return Response.json(body, { status: 500 })
+}
+
+function fillMedusaAdminCredentials() {
+  fireEvent.change(screen.getByLabelText('Admin email'), {
+    target: { value: 'owner@store.test' },
+  })
+  fireEvent.change(screen.getByLabelText('Admin password'), {
+    target: { value: 'admin-password' },
+  })
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function readLastFetchBody(): Record<string, unknown> {
+  const fetchCall = vi.mocked(global.fetch).mock.calls.at(-1)
+  if (fetchCall === undefined) {
+    throw new Error('Expected fetch to be called before reading request body')
+  }
+
+  const requestInit = fetchCall[1]
+  if (!isRecord(requestInit) || typeof requestInit.body !== 'string') {
+    throw new Error('Expected fetch to be called with a string JSON body')
+  }
+
+  const parsed: unknown = JSON.parse(requestInit.body)
+  if (!isRecord(parsed)) {
+    throw new Error('Expected fetch request body to parse as an object')
+  }
+
+  return parsed
 }
 
 function fillAdminCredentials(): void {
@@ -126,7 +160,7 @@ describe('CommercePanel (behavioral)', () => {
 
     render(<CommercePanel sessionId="session_123" />)
 
-    fillAdminCredentials()
+    fillMedusaAdminCredentials()
     fireEvent.click(screen.getByRole('button', { name: /Enable Commerce/ }))
 
     await waitFor(() => {
@@ -142,7 +176,7 @@ describe('CommercePanel (behavioral)', () => {
 
     render(<CommercePanel sessionId="session_123" />)
 
-    fillAdminCredentials()
+    fillMedusaAdminCredentials()
     fireEvent.click(screen.getByRole('button', { name: /Enable Commerce/ }))
 
     expect(await screen.findByText('Medusa handoff')).toBeTruthy()
@@ -161,7 +195,7 @@ describe('CommercePanel (behavioral)', () => {
 
     render(<CommercePanel sessionId="session_123" />)
 
-    fillAdminCredentials()
+    fillMedusaAdminCredentials()
     fireEvent.click(screen.getByRole('button', { name: /Enable Commerce/ }))
 
     const storefront = await screen.findByRole('link', {
@@ -212,17 +246,52 @@ describe('CommercePanel (behavioral)', () => {
     expect(screen.queryByText('Visual ready')).toBeNull()
   })
 
+  it('refreshes hosted Medusa without asking for admin credentials', async () => {
+    commerceConfig.current = {
+      adminUrl: 'https://admin.medusa.test',
+      backendUrl: 'https://backend.medusa.test',
+      errorMessage: 'Medusa product sync failed.',
+      productCount: 4,
+      status: 'ready',
+      storefrontUrl: 'https://store.medusa.test',
+    }
+
+    render(<CommercePanel sessionId="session_123" />)
+
+    expect(screen.queryByLabelText('Admin email')).toBeNull()
+    expect(screen.queryByLabelText('Admin password')).toBeNull()
+
+    const refreshButton = screen.getByRole('button', {
+      name: /Refresh Commerce/,
+    })
+    expect(refreshButton).toHaveProperty('disabled', false)
+
+    fireEvent.click(refreshButton)
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/sessions/session_123/provision/medusa',
+        expect.objectContaining({ method: 'POST' }),
+      )
+    })
+    const requestBody = readLastFetchBody()
+    expect(requestBody).not.toHaveProperty('adminEmail')
+    expect(requestBody).not.toHaveProperty('adminPassword')
+  })
+
   it('shows a provisioning progress label while the provision request is in flight', async () => {
     commerceConfig.current = { status: 'pending', productCount: 0 }
     let resolveFetch!: () => void
     fetchState.impl = () =>
       new Promise<Response>((resolve) => {
-        resolveFetch = () => resolve(okResponse({ handoff: undefined })) as void
+        resolveFetch = () => {
+          resolve(okResponse({ handoff: undefined }))
+        }
       })
 
     render(<CommercePanel sessionId="session_123" />)
 
-    fillAdminCredentials()
+    fillMedusaAdminCredentials()
     fireEvent.click(screen.getByRole('button', { name: /Enable Commerce/ }))
 
     expect(await screen.findByText('Enabling...')).toBeTruthy()
@@ -240,7 +309,7 @@ describe('CommercePanel (behavioral)', () => {
 
     render(<CommercePanel sessionId="session_123" />)
 
-    fillAdminCredentials()
+    fillMedusaAdminCredentials()
     fireEvent.click(screen.getByRole('button', { name: /Enable Commerce/ }))
 
     expect(await screen.findByText('Medusa provisioning blew up')).toBeTruthy()
@@ -251,12 +320,14 @@ describe('CommercePanel (behavioral)', () => {
     let resolveFetch!: () => void
     fetchState.impl = () =>
       new Promise<Response>((resolve) => {
-        resolveFetch = () => resolve(okResponse({ handoff: undefined })) as void
+        resolveFetch = () => {
+          resolve(okResponse({ handoff: undefined }))
+        }
       })
 
     render(<CommercePanel sessionId="session_123" />)
 
-    fillAdminCredentials()
+    fillMedusaAdminCredentials()
     fireEvent.click(screen.getByRole('button', { name: /Enable Commerce/ }))
 
     expect(
