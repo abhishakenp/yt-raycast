@@ -13,7 +13,7 @@ import {
   buildOpenUIArtifactFiles,
 } from '../services/openui-artifact-files'
 
-type ExportConvexClient = Pick<ConvexHttpClient, 'query'> &
+type ExportConvexClient = Pick<ConvexHttpClient, 'query' | 'mutation'> &
   Partial<Pick<ConvexHttpClient, 'setAuth'>>
 
 type ArtifactDownloadPayload = {
@@ -396,10 +396,18 @@ export async function createExportResponse(
           : null
 
     if (download === null) {
-      return new Response('Export not found. Generate the export first.', {
-        status: 404,
-        headers: { 'content-type': 'text/plain' },
-      })
+      // No export record exists yet — kick off the build so the next request
+      // finds a ready artifact instead of returning 404 again.
+      try {
+        await client.mutation(api.sessions.ensureExportArtifactByLookup, {
+          lookup: sessionId,
+          target: normalizedTarget,
+          anonymousOwnerSecret: getOwnerSecret(request),
+        })
+      } catch {
+        // Build may not be possible (e.g. preview not ready) — fall through
+      }
+      return buildingResponse('queued')
     }
 
     const exportRecord = download.export
@@ -458,6 +466,24 @@ export async function createExportResponse(
           headers: { 'content-type': 'text/plain' },
         },
       )
+    }
+
+    // HTML exports require a Tailwind CSS compile pass that only works in the
+    // server runtime (where @tailwindcss/node can read src/styles.css and the
+    // project source tree). The Convex action builds artifacts in a Node
+    // environment without access to those files, producing HTML with empty
+    // CSS. Always rebuild HTML on-demand so the CSS is compiled correctly.
+    if (normalizedTarget === 'html') {
+      const onDemand = await buildExportOnDemand(
+        client,
+        sessionId,
+        normalizedTarget,
+        getOwnerSecret(request),
+      )
+      if (onDemand) return onDemand
+      if (download.artifact?.status !== 'ready' || !download.storageUrl) {
+        return buildingResponse(download.artifact?.status)
+      }
     }
 
     if (download.artifact?.status !== 'ready' || !download.storageUrl) {

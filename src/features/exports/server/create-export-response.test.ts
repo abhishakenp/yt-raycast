@@ -127,6 +127,45 @@ describe('createExportResponse', () => {
     expect(fetch).toHaveBeenCalledWith('https://storage.test/html.zip')
   })
 
+  it('prefers on-demand build over stored artifact for HTML target so CSS is compiled in the server runtime', async () => {
+    // Regression: the Convex action builds HTML artifacts without Tailwind CSS
+    // (no access to src/styles.css). The download route must rebuild HTML
+    // on-demand in the server runtime where the Tailwind compiler works.
+    queryMock
+      .mockResolvedValueOnce(readyArtifactResult('html'))
+      .mockResolvedValueOnce({
+        sessionId: 'session_123',
+        target: 'html',
+        source: '<main>On-demand source</main>',
+        html: '<!doctype html><html><body>On-demand preview</body></html>',
+        themeName: 'darkmatter',
+        isDark: true,
+        locale: 'en',
+      })
+    const fetchMock = vi.fn(async () => new Response('stored-artifact'))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const response = await createExportResponse(
+      'session_123',
+      'html',
+      fakeClient,
+    )
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-type')).toBe(
+      'text/html; charset=utf-8',
+    )
+    expect(await response.text()).toContain('Generated fallback')
+    // The stored artifact fetch must NOT be called for HTML target.
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(artifactFileMocks.buildOpenUIArtifactFiles).toHaveBeenCalledWith(
+      expect.objectContaining({
+        target: 'html',
+        source: '<main>On-demand source</main>',
+      }),
+    )
+  })
+
   it('returns 202 while the artifact is still building', async () => {
     queryMock
       .mockResolvedValueOnce({
