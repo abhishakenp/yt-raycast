@@ -120,6 +120,18 @@ assert(
   'second Medusa product sync did not remain idempotent',
 )
 
+const products = await requestJson(
+  `/api/sessions/${encodeURIComponent(sessionId)}/medusa-products`,
+)
+assert(products.status === 200, `Medusa products returned ${products.status}`)
+const syncedVariantId = products.json.products
+  ?.flatMap((product) => product.variants ?? [])
+  ?.find((variant) => typeof variant.id === 'string')?.id
+assert(
+  typeof syncedVariantId === 'string' && syncedVariantId.length > 0,
+  'Medusa product read did not return a synced variant id',
+)
+
 const storeConfig = await requestJson('/api/medusa-store/config')
 assert(
   storeConfig.status === 200,
@@ -153,7 +165,7 @@ const cartUpdate = await requestJson('/api/medusa-store/cart/line-items', {
   headers: { 'content-type': 'application/json' },
   body: JSON.stringify({
     cart_id: cartId,
-    variant_id: 'variant_verify_1',
+    variant_id: syncedVariantId,
     quantity: 2,
   }),
 })

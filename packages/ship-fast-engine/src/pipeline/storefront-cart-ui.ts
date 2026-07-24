@@ -96,7 +96,7 @@ header .utilities>a[href*="search"],header .utilities button[aria-label="Search"
   if(root.hasAttribute('${MARKER}'))return;
   root.setAttribute('${MARKER}','');
   var MEDUSA_MAP=${medusaMapJson};
-  var API_BASE='/api/storefront/medusa';
+  var API_BASE='/api/medusa-store';
   var LS_CART='sf_medusa_cart_id';
   var cartBtn=document.getElementById('cart-toggle')||document.querySelector('header .utilities button[aria-label="Cart"]')||document.querySelector('.utilities button[aria-label="Cart"]');
   var backdrop=document.getElementById('sf-cart-backdrop');

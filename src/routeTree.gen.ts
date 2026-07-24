@@ -57,6 +57,8 @@ import { Route as ApiMedusaStoreCartRouteImport } from './routes/api/medusa-stor
 import { Route as ApiMedusaAdminConfigRouteImport } from './routes/api/medusa-admin.config'
 import { Route as ApiImagesSessionIdRouteImport } from './routes/api/images.$sessionId'
 import { Route as ApiCheckoutStartRouteImport } from './routes/api/checkout.start'
+import { Route as ApiStorefrontMedusaConfigRouteImport } from './routes/api/storefront.medusa.config'
+import { Route as ApiStorefrontMedusaCartRouteImport } from './routes/api/storefront.medusa.cart'
 import { Route as ApiSessionsSessionIdStreamRouteImport } from './routes/api/sessions.$sessionId.stream'
 import { Route as ApiSessionsSessionIdSectionEditRouteImport } from './routes/api/sessions.$sessionId.section-edit'
 import { Route as ApiSessionsSessionIdPreviewRawRouteImport } from './routes/api/sessions.$sessionId.preview-raw'
@@ -78,6 +80,8 @@ import { Route as ApiDeploymentsDeploymentSlugMedusaWebhookRouteImport } from '.
 import { Route as ApiDeploymentsDeploymentSlugMedusaPullRouteImport } from './routes/api/deployments.$deploymentSlug.medusa-pull'
 import { Route as ApiDeploymentsDeploymentSlugMedusaProductsRouteImport } from './routes/api/deployments.$deploymentSlug.medusa-products'
 import { Route as ApiDeploymentsDeploymentSlugMedusaConfigRouteImport } from './routes/api/deployments.$deploymentSlug.medusa-config'
+import { Route as ApiStorefrontMedusaCartLineItemsRouteImport } from './routes/api/storefront.medusa.cart.line-items'
+import { Route as ApiStorefrontMedusaCartIdRouteImport } from './routes/api/storefront.medusa.cart.$id'
 import { Route as ApiSessionsSessionIdProvisionMedusaRouteImport } from './routes/api/sessions.$sessionId.provision.medusa'
 import { Route as ApiSessionsSessionIdGithubPushRouteImport } from './routes/api/sessions.$sessionId.github.push'
 import { Route as ApiSessionsSessionIdDownloadTargetRouteImport } from './routes/api/sessions.$sessionId.download.$target'
@@ -336,6 +340,17 @@ const ApiCheckoutStartRoute = ApiCheckoutStartRouteImport.update({
   path: '/api/checkout/start',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiStorefrontMedusaConfigRoute =
+  ApiStorefrontMedusaConfigRouteImport.update({
+    id: '/api/storefront/medusa/config',
+    path: '/api/storefront/medusa/config',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiStorefrontMedusaCartRoute = ApiStorefrontMedusaCartRouteImport.update({
+  id: '/api/storefront/medusa/cart',
+  path: '/api/storefront/medusa/cart',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiSessionsSessionIdStreamRoute =
   ApiSessionsSessionIdStreamRouteImport.update({
     id: '/stream',
@@ -459,6 +474,18 @@ const ApiDeploymentsDeploymentSlugMedusaConfigRoute =
     id: '/api/deployments/$deploymentSlug/medusa-config',
     path: '/api/deployments/$deploymentSlug/medusa-config',
     getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiStorefrontMedusaCartLineItemsRoute =
+  ApiStorefrontMedusaCartLineItemsRouteImport.update({
+    id: '/line-items',
+    path: '/line-items',
+    getParentRoute: () => ApiStorefrontMedusaCartRoute,
+  } as any)
+const ApiStorefrontMedusaCartIdRoute =
+  ApiStorefrontMedusaCartIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => ApiStorefrontMedusaCartRoute,
   } as any)
 const ApiSessionsSessionIdProvisionMedusaRoute =
   ApiSessionsSessionIdProvisionMedusaRouteImport.update({
@@ -627,6 +654,8 @@ export interface FileRoutesByFullPath {
   '/api/sessions/$sessionId/preview-raw': typeof ApiSessionsSessionIdPreviewRawRoute
   '/api/sessions/$sessionId/section-edit': typeof ApiSessionsSessionIdSectionEditRoute
   '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
+  '/api/storefront/medusa/cart': typeof ApiStorefrontMedusaCartRouteWithChildren
+  '/api/storefront/medusa/config': typeof ApiStorefrontMedusaConfigRoute
   '/api/commerce/$scope/$tenant/carts': typeof ApiCommerceScopeTenantCartsRouteWithChildren
   '/api/commerce/$scope/$tenant/catalog': typeof ApiCommerceScopeTenantCatalogRoute
   '/api/deployments/$deploymentSlug/provision/medusa': typeof ApiDeploymentsDeploymentSlugProvisionMedusaRoute
@@ -634,6 +663,8 @@ export interface FileRoutesByFullPath {
   '/api/sessions/$sessionId/download/$target': typeof ApiSessionsSessionIdDownloadTargetRoute
   '/api/sessions/$sessionId/github/push': typeof ApiSessionsSessionIdGithubPushRoute
   '/api/sessions/$sessionId/provision/medusa': typeof ApiSessionsSessionIdProvisionMedusaRoute
+  '/api/storefront/medusa/cart/$id': typeof ApiStorefrontMedusaCartIdRoute
+  '/api/storefront/medusa/cart/line-items': typeof ApiStorefrontMedusaCartLineItemsRoute
   '/api/commerce/$scope/$tenant/carts/$cartId': typeof ApiCommerceScopeTenantCartsCartIdRouteWithChildren
   '/api/sessions/$sessionId/history/$version/restore': typeof ApiSessionsSessionIdHistoryVersionRestoreRoute
   '/api/commerce/$scope/$tenant/carts/$cartId/complete': typeof ApiCommerceScopeTenantCartsCartIdCompleteRoute
@@ -713,6 +744,8 @@ export interface FileRoutesByTo {
   '/api/sessions/$sessionId/preview-raw': typeof ApiSessionsSessionIdPreviewRawRoute
   '/api/sessions/$sessionId/section-edit': typeof ApiSessionsSessionIdSectionEditRoute
   '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
+  '/api/storefront/medusa/cart': typeof ApiStorefrontMedusaCartRouteWithChildren
+  '/api/storefront/medusa/config': typeof ApiStorefrontMedusaConfigRoute
   '/api/commerce/$scope/$tenant/carts': typeof ApiCommerceScopeTenantCartsRouteWithChildren
   '/api/commerce/$scope/$tenant/catalog': typeof ApiCommerceScopeTenantCatalogRoute
   '/api/deployments/$deploymentSlug/provision/medusa': typeof ApiDeploymentsDeploymentSlugProvisionMedusaRoute
@@ -720,6 +753,8 @@ export interface FileRoutesByTo {
   '/api/sessions/$sessionId/download/$target': typeof ApiSessionsSessionIdDownloadTargetRoute
   '/api/sessions/$sessionId/github/push': typeof ApiSessionsSessionIdGithubPushRoute
   '/api/sessions/$sessionId/provision/medusa': typeof ApiSessionsSessionIdProvisionMedusaRoute
+  '/api/storefront/medusa/cart/$id': typeof ApiStorefrontMedusaCartIdRoute
+  '/api/storefront/medusa/cart/line-items': typeof ApiStorefrontMedusaCartLineItemsRoute
   '/api/commerce/$scope/$tenant/carts/$cartId': typeof ApiCommerceScopeTenantCartsCartIdRouteWithChildren
   '/api/sessions/$sessionId/history/$version/restore': typeof ApiSessionsSessionIdHistoryVersionRestoreRoute
   '/api/commerce/$scope/$tenant/carts/$cartId/complete': typeof ApiCommerceScopeTenantCartsCartIdCompleteRoute
@@ -801,6 +836,8 @@ export interface FileRoutesById {
   '/api/sessions/$sessionId/preview-raw': typeof ApiSessionsSessionIdPreviewRawRoute
   '/api/sessions/$sessionId/section-edit': typeof ApiSessionsSessionIdSectionEditRoute
   '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
+  '/api/storefront/medusa/cart': typeof ApiStorefrontMedusaCartRouteWithChildren
+  '/api/storefront/medusa/config': typeof ApiStorefrontMedusaConfigRoute
   '/api/commerce/$scope/$tenant/carts': typeof ApiCommerceScopeTenantCartsRouteWithChildren
   '/api/commerce/$scope/$tenant/catalog': typeof ApiCommerceScopeTenantCatalogRoute
   '/api/deployments/$deploymentSlug/provision/medusa': typeof ApiDeploymentsDeploymentSlugProvisionMedusaRoute
@@ -808,6 +845,8 @@ export interface FileRoutesById {
   '/api/sessions/$sessionId/download/$target': typeof ApiSessionsSessionIdDownloadTargetRoute
   '/api/sessions/$sessionId/github/push': typeof ApiSessionsSessionIdGithubPushRoute
   '/api/sessions/$sessionId/provision/medusa': typeof ApiSessionsSessionIdProvisionMedusaRoute
+  '/api/storefront/medusa/cart/$id': typeof ApiStorefrontMedusaCartIdRoute
+  '/api/storefront/medusa/cart/line-items': typeof ApiStorefrontMedusaCartLineItemsRoute
   '/api/commerce/$scope/$tenant/carts/$cartId': typeof ApiCommerceScopeTenantCartsCartIdRouteWithChildren
   '/api/sessions/$sessionId/history/$version/restore': typeof ApiSessionsSessionIdHistoryVersionRestoreRoute
   '/api/commerce/$scope/$tenant/carts/$cartId/complete': typeof ApiCommerceScopeTenantCartsCartIdCompleteRoute
@@ -890,6 +929,8 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/preview-raw'
     | '/api/sessions/$sessionId/section-edit'
     | '/api/sessions/$sessionId/stream'
+    | '/api/storefront/medusa/cart'
+    | '/api/storefront/medusa/config'
     | '/api/commerce/$scope/$tenant/carts'
     | '/api/commerce/$scope/$tenant/catalog'
     | '/api/deployments/$deploymentSlug/provision/medusa'
@@ -897,6 +938,8 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/download/$target'
     | '/api/sessions/$sessionId/github/push'
     | '/api/sessions/$sessionId/provision/medusa'
+    | '/api/storefront/medusa/cart/$id'
+    | '/api/storefront/medusa/cart/line-items'
     | '/api/commerce/$scope/$tenant/carts/$cartId'
     | '/api/sessions/$sessionId/history/$version/restore'
     | '/api/commerce/$scope/$tenant/carts/$cartId/complete'
@@ -976,6 +1019,8 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/preview-raw'
     | '/api/sessions/$sessionId/section-edit'
     | '/api/sessions/$sessionId/stream'
+    | '/api/storefront/medusa/cart'
+    | '/api/storefront/medusa/config'
     | '/api/commerce/$scope/$tenant/carts'
     | '/api/commerce/$scope/$tenant/catalog'
     | '/api/deployments/$deploymentSlug/provision/medusa'
@@ -983,6 +1028,8 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/download/$target'
     | '/api/sessions/$sessionId/github/push'
     | '/api/sessions/$sessionId/provision/medusa'
+    | '/api/storefront/medusa/cart/$id'
+    | '/api/storefront/medusa/cart/line-items'
     | '/api/commerce/$scope/$tenant/carts/$cartId'
     | '/api/sessions/$sessionId/history/$version/restore'
     | '/api/commerce/$scope/$tenant/carts/$cartId/complete'
@@ -1063,6 +1110,8 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/preview-raw'
     | '/api/sessions/$sessionId/section-edit'
     | '/api/sessions/$sessionId/stream'
+    | '/api/storefront/medusa/cart'
+    | '/api/storefront/medusa/config'
     | '/api/commerce/$scope/$tenant/carts'
     | '/api/commerce/$scope/$tenant/catalog'
     | '/api/deployments/$deploymentSlug/provision/medusa'
@@ -1070,6 +1119,8 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/download/$target'
     | '/api/sessions/$sessionId/github/push'
     | '/api/sessions/$sessionId/provision/medusa'
+    | '/api/storefront/medusa/cart/$id'
+    | '/api/storefront/medusa/cart/line-items'
     | '/api/commerce/$scope/$tenant/carts/$cartId'
     | '/api/sessions/$sessionId/history/$version/restore'
     | '/api/commerce/$scope/$tenant/carts/$cartId/complete'
@@ -1132,6 +1183,8 @@ export interface RootRouteChildren {
   ApiPaymentsRazorpayConfirmRoute: typeof ApiPaymentsRazorpayConfirmRoute
   ApiPaymentsRazorpayStartRoute: typeof ApiPaymentsRazorpayStartRoute
   ApiPaymentsRazorpayWebhookRoute: typeof ApiPaymentsRazorpayWebhookRoute
+  ApiStorefrontMedusaCartRoute: typeof ApiStorefrontMedusaCartRouteWithChildren
+  ApiStorefrontMedusaConfigRoute: typeof ApiStorefrontMedusaConfigRoute
   ApiCommerceScopeTenantCartsRoute: typeof ApiCommerceScopeTenantCartsRouteWithChildren
   ApiCommerceScopeTenantCatalogRoute: typeof ApiCommerceScopeTenantCatalogRoute
   ApiDeploymentsDeploymentSlugProvisionMedusaRoute: typeof ApiDeploymentsDeploymentSlugProvisionMedusaRoute
@@ -1475,6 +1528,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCheckoutStartRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/storefront/medusa/config': {
+      id: '/api/storefront/medusa/config'
+      path: '/api/storefront/medusa/config'
+      fullPath: '/api/storefront/medusa/config'
+      preLoaderRoute: typeof ApiStorefrontMedusaConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/storefront/medusa/cart': {
+      id: '/api/storefront/medusa/cart'
+      path: '/api/storefront/medusa/cart'
+      fullPath: '/api/storefront/medusa/cart'
+      preLoaderRoute: typeof ApiStorefrontMedusaCartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/sessions/$sessionId/stream': {
       id: '/api/sessions/$sessionId/stream'
       path: '/stream'
@@ -1621,6 +1688,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/deployments/$deploymentSlug/medusa-config'
       preLoaderRoute: typeof ApiDeploymentsDeploymentSlugMedusaConfigRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/storefront/medusa/cart/line-items': {
+      id: '/api/storefront/medusa/cart/line-items'
+      path: '/line-items'
+      fullPath: '/api/storefront/medusa/cart/line-items'
+      preLoaderRoute: typeof ApiStorefrontMedusaCartLineItemsRouteImport
+      parentRoute: typeof ApiStorefrontMedusaCartRoute
+    }
+    '/api/storefront/medusa/cart/$id': {
+      id: '/api/storefront/medusa/cart/$id'
+      path: '/$id'
+      fullPath: '/api/storefront/medusa/cart/$id'
+      preLoaderRoute: typeof ApiStorefrontMedusaCartIdRouteImport
+      parentRoute: typeof ApiStorefrontMedusaCartRoute
     }
     '/api/sessions/$sessionId/provision/medusa': {
       id: '/api/sessions/$sessionId/provision/medusa'
@@ -1853,6 +1934,23 @@ const ApiSessionsSessionIdRouteChildren: ApiSessionsSessionIdRouteChildren = {
 const ApiSessionsSessionIdRouteWithChildren =
   ApiSessionsSessionIdRoute._addFileChildren(ApiSessionsSessionIdRouteChildren)
 
+interface ApiStorefrontMedusaCartRouteChildren {
+  ApiStorefrontMedusaCartIdRoute: typeof ApiStorefrontMedusaCartIdRoute
+  ApiStorefrontMedusaCartLineItemsRoute: typeof ApiStorefrontMedusaCartLineItemsRoute
+}
+
+const ApiStorefrontMedusaCartRouteChildren: ApiStorefrontMedusaCartRouteChildren =
+  {
+    ApiStorefrontMedusaCartIdRoute: ApiStorefrontMedusaCartIdRoute,
+    ApiStorefrontMedusaCartLineItemsRoute:
+      ApiStorefrontMedusaCartLineItemsRoute,
+  }
+
+const ApiStorefrontMedusaCartRouteWithChildren =
+  ApiStorefrontMedusaCartRoute._addFileChildren(
+    ApiStorefrontMedusaCartRouteChildren,
+  )
+
 interface ApiCommerceScopeTenantCartsCartIdItemsRouteChildren {
   ApiCommerceScopeTenantCartsCartIdItemsLineIdRoute: typeof ApiCommerceScopeTenantCartsCartIdItemsLineIdRoute
 }
@@ -1968,6 +2066,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPaymentsRazorpayConfirmRoute: ApiPaymentsRazorpayConfirmRoute,
   ApiPaymentsRazorpayStartRoute: ApiPaymentsRazorpayStartRoute,
   ApiPaymentsRazorpayWebhookRoute: ApiPaymentsRazorpayWebhookRoute,
+  ApiStorefrontMedusaCartRoute: ApiStorefrontMedusaCartRouteWithChildren,
+  ApiStorefrontMedusaConfigRoute: ApiStorefrontMedusaConfigRoute,
   ApiCommerceScopeTenantCartsRoute:
     ApiCommerceScopeTenantCartsRouteWithChildren,
   ApiCommerceScopeTenantCatalogRoute: ApiCommerceScopeTenantCatalogRoute,

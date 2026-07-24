@@ -88,6 +88,88 @@ describe('Medusa Store API route contracts', () => {
     expect(JSON.stringify(body)).not.toContain('pk_medusa')
   })
 
+  it('keeps generated storefront Medusa aliases wired to the Store API compatibility routes', async () => {
+    medusaEnvMock.publishableKey = 'pk_medusa'
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({ regions: [{ id: 'reg_123' }] }))
+      .mockResolvedValueOnce(jsonResponse({ cart: { id: 'cart_alias' } }))
+      .mockResolvedValueOnce(jsonResponse({ cart: { id: 'cart_alias' } }))
+      .mockResolvedValueOnce(
+        jsonResponse({ cart: { id: 'cart_alias', items: [{}] } }),
+      )
+    vi.stubGlobal('fetch', fetchMock)
+    const { Route: ConfigRoute } = await import('./storefront.medusa.config')
+    const { Route: CartRoute } = await import('./storefront.medusa.cart')
+    const { Route: CartIdRoute } = await import('./storefront.medusa.cart.$id')
+    const { Route: LineItemsRoute } =
+      await import('./storefront.medusa.cart.line-items')
+
+    const configResponse = await (
+      ConfigRoute as unknown as RouteWithHandlers
+    ).options.server.handlers.GET({})
+    const cartResponse = await (
+      CartRoute as unknown as RouteWithHandlers
+    ).options.server.handlers.POST({})
+    const cartReadResponse = await (
+      CartIdRoute as unknown as RouteWithHandlers
+    ).options.server.handlers.GET({
+      params: { id: 'cart_alias' },
+    })
+    const lineItemResponse = await (
+      LineItemsRoute as unknown as RouteWithHandlers
+    ).options.server.handlers.POST({
+      request: new Request(
+        'https://ship-fast.test/api/storefront/medusa/cart/line-items',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            cart_id: 'cart_alias',
+            quantity: 1,
+            variant_id: 'variant_alias',
+          }),
+        },
+      ),
+    })
+
+    expect(await readJson(configResponse)).toMatchObject({
+      body: {
+        backendUrl: 'https://backend.medusa.test',
+        enabled: true,
+      },
+      status: 200,
+    })
+    expect(await readJson(cartResponse)).toMatchObject({
+      body: { cart: { id: 'cart_alias' } },
+      status: 200,
+    })
+    expect(await readJson(cartReadResponse)).toMatchObject({
+      body: { cart: { id: 'cart_alias' } },
+      status: 200,
+    })
+    expect(await readJson(lineItemResponse)).toMatchObject({
+      body: { cart: { id: 'cart_alias', items: [{}] } },
+      status: 200,
+    })
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      3,
+      'https://backend.medusa.test/store/carts/cart_alias',
+      { headers: { 'x-publishable-api-key': 'pk_medusa' } },
+    )
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      4,
+      'https://backend.medusa.test/store/carts/cart_alias/line-items',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-publishable-api-key': 'pk_medusa',
+        },
+        body: JSON.stringify({ variant_id: 'variant_alias', quantity: 1 }),
+      },
+    )
+  })
+
   it('reports disabled admin config until an admin URL is configured', async () => {
     const { Route } = await import('./medusa-admin.config')
 
