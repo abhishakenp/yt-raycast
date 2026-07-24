@@ -923,13 +923,22 @@ export function Dashboard({
 
   const publishedUrl =
     deploymentStatus?.status === 'ready' ? deploymentStatus.url : undefined
+  // The URL pill always shows the shipfast subdomain URL — never the lakebed
+  // deploy URL, even when the latest deployment was to lakebed. The slug is
+  // shared across providers, so the server derives the shipfast URL from it
+  // via DEPLOYMENT_BASE_DOMAIN (the same env that produced the publish URL).
+  const shipfastSubdomainUrl =
+    deploymentStatus?.status === 'ready' && deploymentStatus.shipfastUrl
+      ? deploymentStatus.shipfastUrl
+      : undefined
   const activeSessionId = resolvedSessionId ?? sessionId
   const { getToken } = useOptionalAuth()
   const activeAnonymousOwnerSecret =
     typeof window === 'undefined'
       ? undefined
       : readAnonymousOwnerSecret(window.localStorage, activeSessionId)
-  const basePreviewUrl = publishedUrl ?? `/generate/${sessionId}`
+  const basePreviewUrl =
+    shipfastSubdomainUrl ?? publishedUrl ?? `/generate/${sessionId}`
   const currentUrl = basePreviewUrl
   const renderedPreviewSource =
     clonePageNav.isClone && clonePageNav.currentHtml

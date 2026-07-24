@@ -40,7 +40,12 @@ type GenerationView = {
 
 type ConvexTestState = {
   generationView: GenerationView | null
-  sidePanelData: { status?: string; url?: string; slug?: string } | null
+  sidePanelData: {
+    status?: string
+    url?: string
+    slug?: string
+    shipfastUrl?: string
+  } | null
   publishMutation: ReturnType<typeof vi.fn>
   themeMutation: ReturnType<typeof vi.fn>
 }
@@ -130,6 +135,7 @@ vi.mock('@/shared/auth/clerk-runtime', () => ({
 }))
 
 vi.mock('@/shared/auth/use-optional-auth', () => ({
+  useIsAdmin: () => false,
   useOptionalAuth: () => ({
     getToken: async () => null,
     isLoaded: true,
@@ -546,6 +552,37 @@ describe('Dashboard toolbar + device switcher + status indicators', () => {
     expect(urlText).not.toBeNull()
     expect(urlText.textContent).toBe('/generate/ready-session')
     expect(urlText.getAttribute('aria-label')).toBe('Current preview URL')
+  })
+
+  it('shows the shipfast subdomain URL when a shipfast deploy is ready', () => {
+    setupReady()
+    getConvexState().sidePanelData = {
+      status: 'ready',
+      slug: 'my-fancy-site',
+      url: 'https://my-fancy-site.ship-fast.test',
+      shipfastUrl: 'https://my-fancy-site.ship-fast.test',
+    }
+    render(<Dashboard sessionId="ready-session" />)
+
+    const urlText = document.querySelector('#url-text') as HTMLAnchorElement
+    expect(urlText.textContent).toBe('https://my-fancy-site.ship-fast.test')
+  })
+
+  it('shows the shipfast subdomain URL, never the lakebed URL, when latest deploy is lakebed', () => {
+    setupReady()
+    getConvexState().sidePanelData = {
+      status: 'ready',
+      slug: 'my-fancy-site',
+      url: 'https://lakebed.example.com/deploys/abc123',
+      shipfastUrl: 'https://my-fancy-site.ship-fast.test',
+    }
+    render(<Dashboard sessionId="ready-session" />)
+
+    const urlText = document.querySelector('#url-text') as HTMLAnchorElement
+    expect(urlText.textContent).toBe('https://my-fancy-site.ship-fast.test')
+    expect(urlText.getAttribute('href')).toBe(
+      'https://my-fancy-site.ship-fast.test',
+    )
   })
 
   // 6. Refresh button
