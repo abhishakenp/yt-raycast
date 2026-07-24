@@ -1,18 +1,26 @@
 import { ConvexError } from 'convex/values'
 
-import type { Id } from '../_generated/dataModel'
+import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import { isUnsafePublicPreviewHtml } from './openui_error_html'
 import {
   assertCanMutateSession,
   assertCanReadOwnedSession,
+  isSessionOwner,
+  isUserAdmin,
 } from './session_access_helpers'
 import {
   applyEditsToSource,
+  checkExportEntitlementReadOnly,
   exportDownloadUrl,
   exportGeneratorRevision,
   exportTargetFileCount,
+  isAuthDisabled,
+  loadLocaleScopedExportArtifactRecord,
+  queueSessionExportArtifactBuild,
+  type ExportArtifactBuildReference,
 } from './session_export_helpers'
+// isSessionOwner, isAuthDisabled, isUserAdmin are used in loadLakebedDeploymentEntitlement below.
 import { resolveDeploymentBadgeEntitlement } from './deployment_badge_helpers'
 import {
   applyCachedTranslationsToSource,
@@ -25,6 +33,7 @@ export type PublishSessionPreviewInput = {
   sessionId: Id<'sessions'>
   anonymousOwnerSecret?: string
   requestedSlug?: string
+  buildExportArtifact?: ExportArtifactBuildReference
 }
 
 export type LakebedDeploymentSuccessInput = {
@@ -351,6 +360,61 @@ export async function loadDeploymentBySlug(
   }
 }
 
+export async function loadDeploymentHtmlArtifactBySlug(
+  ctx: QueryCtx,
+  slug: string,
+) {
+  const deployment = await ctx.db
+    .query('deployments')
+    .withIndex('by_slug', (index) => index.eq('slug', slug))
+    .first()
+
+  if (deployment === null || deployment.status !== 'ready') return null
+
+  const session = await ctx.db.get(deployment.sessionId)
+  if (session === null || session.deletedAt !== undefined) return null
+
+  const previewVersion = deployment.previewVersion
+  if (typeof previewVersion !== 'number') return null
+
+  const locale = session.preferredLanguage?.trim().toLowerCase() || 'en'
+  const artifact = await loadLocaleScopedExportArtifactRecord(
+    ctx,
+    deployment.sessionId,
+    'html',
+    previewVersion,
+    locale,
+  )
+
+  const expectedRevision = exportGeneratorRevision('html')
+  const revisionIsCurrent = artifact?.generatorRevision === expectedRevision
+
+  const storageUrl =
+    artifact?.status === 'ready' &&
+    revisionIsCurrent &&
+    artifact.storageId !== undefined
+      ? await ctx.storage.getUrl(artifact.storageId)
+      : null
+
+  return {
+    slug: deployment.slug,
+    url: deployment.url,
+    status: deployment.status,
+    previewVersion,
+    sessionId: deployment.sessionId,
+    artifact:
+      artifact === null
+        ? null
+        : {
+            status: revisionIsCurrent ? artifact.status : 'stale',
+            generatorRevision: artifact.generatorRevision,
+            errorMessage: artifact.errorMessage,
+            contentType: artifact.contentType,
+            storageUrl,
+          },
+  }
+}
+
 export async function loadDeploymentStatus(
   ctx: DeploymentReadCtx,
   sessionId: Id<'sessions'>,
@@ -379,6 +443,75 @@ export async function loadDeploymentStatus(
         updatedAt: deployment.updatedAt,
         ...lakebedDeploymentMetadata(deployment),
       }
+}
+
+/**
+ * Server-side payment gate for lakebed deploys — mirrors the export
+ * entitlement check but is read-only (does NOT consume credits). Throws a
+ * `PAYMENT_REQUIRED` ConvexError when the caller is not entitled, so the
+ * deploy action never starts and no compute is wasted building/deploying.
+ */
+export async function assertLakebedDeploymentEntitlement(
+  ctx: Pick<QueryCtx, 'db' | 'auth'>,
+  session: Doc<'sessions'>,
+) {
+  const isAdmin = await isUserAdmin(ctx)
+  const userId = session.userId ?? undefined
+  const entitlement = await checkExportEntitlementReadOnly(ctx, userId, isAdmin)
+  if (entitlement.requiresPayment) {
+    throw new ConvexError({
+      code: 'PAYMENT_REQUIRED',
+      message:
+        entitlement.message ??
+        'Subscribe to Pro or purchase download credits to deploy to Lakebed.',
+    })
+  }
+}
+
+/**
+ * Read-only entitlement status for lakebed deploy — returns whether the
+ * caller is entitled without throwing. Used by the DeploymentPanel to show
+ * a lock icon (like the ExportPanel) instead of attempting the deploy.
+ *
+ * Non-owners receive a locked default (`requiresPayment: true`) instead of
+ * a `FORBIDDEN` error. This query runs unconditionally when the deployment
+ * popover opens, and the positional `useQuery` re-throws server errors to
+ * the nearest error boundary — there is none around `DeploymentPanel`, so a
+ * thrown error would crash the entire side rail. Returning a locked default
+ * keeps the panel rendering and only locks the Lakebed button, matching the
+ * sibling queries (`getExportTargets` / `getDeploymentStatusByLookup`) which
+ * also return safe defaults for non-readable sessions.
+ */
+export async function loadLakebedDeploymentEntitlement(
+  ctx: QueryCtx,
+  args: PublishSessionPreviewInput,
+) {
+  const session = await ctx.db.get(args.sessionId)
+  if (session === null) {
+    throw new ConvexError({
+      code: 'NOT_FOUND',
+      message: 'Session not found',
+    })
+  }
+  const canReadOwned =
+    isAuthDisabled() ||
+    (await isUserAdmin(ctx)) ||
+    (await isSessionOwner(ctx, session, args.anonymousOwnerSecret))
+  if (!canReadOwned) {
+    return {
+      requiresPayment: true,
+      entitlement: 'payment_required',
+      message: undefined,
+    }
+  }
+  const isAdmin = await isUserAdmin(ctx)
+  const userId = session.userId ?? undefined
+  const entitlement = await checkExportEntitlementReadOnly(ctx, userId, isAdmin)
+  return {
+    requiresPayment: entitlement.requiresPayment,
+    entitlement: entitlement.entitlement,
+    message: entitlement.requiresPayment ? entitlement.message : undefined,
+  }
 }
 
 export async function loadOwnedLakebedDeploymentArtifact(
@@ -691,7 +824,12 @@ export async function recordLakebedSessionDeploymentSuccess(
       existingDeployment.status === 'ready' &&
       args.previewVersion <= persistedVersion
 
-    if (isStaleCompletion || isReadyReplay) {
+    // Only short-circuit when the existing deployment is also lakebed — a
+    // ship-fast deployment must not block recording a new lakebed deploy.
+    if (
+      existingDeployment.provider === 'lakebed' &&
+      (isStaleCompletion || isReadyReplay)
+    ) {
       return {
         sessionId: args.sessionId,
         slug: existingDeployment.slug,
@@ -1003,6 +1141,18 @@ export async function publishSessionPreview(
     previewVersion: preview.version,
     createdAt: now,
   })
+
+  if (args.buildExportArtifact !== undefined) {
+    await queueSessionExportArtifactBuild(ctx, {
+      sessionId: args.sessionId,
+      target: 'html',
+      previewVersion: preview.version,
+      isPrivate: false,
+      now,
+      buildExportArtifact: args.buildExportArtifact,
+      force: true,
+    })
+  }
 
   return {
     sessionId: args.sessionId,

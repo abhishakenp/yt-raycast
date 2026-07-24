@@ -7,6 +7,7 @@ import {
   assertCanMutateSession,
   assertCanReadOwnedSession,
   getUserId,
+  isUserAdmin,
 } from './session_access_helpers'
 import {
   applyPreviewTextEdit,
@@ -18,6 +19,7 @@ import {
   loadCachedTranslationsForSource,
 } from './session_translation_cache_helpers'
 import { isUnsafePublicPreviewHtml } from './openui_error_html'
+import { resolveDeploymentBadgeEntitlement } from './deployment_badge_helpers'
 import { progressForStage } from './export_progress_stages'
 
 export type ExportTarget = 'html' | 'react' | 'next' | 'lakebed'
@@ -141,7 +143,7 @@ export type ExportArtifactFailureInput = ExportArtifactBuildInput & {
   errorMessage: string
 }
 
-type ExportArtifactBuildReference = Parameters<
+export type ExportArtifactBuildReference = Parameters<
   MutationCtx['scheduler']['runAfter']
 >[1]
 type ExportArtifactStalledReference = Parameters<
@@ -360,6 +362,7 @@ export async function loadExportRecord(
   ctx: Pick<QueryCtx, 'db'>,
   sessionId: Id<'sessions'>,
   target: ExportTarget,
+  isAdmin = false,
 ) {
   const exportRecord = await ctx.db
     .query('exports')
@@ -368,12 +371,12 @@ export async function loadExportRecord(
     )
     .first()
 
-  return exportRecord === null ? null : toExportPayload(exportRecord)
+  return exportRecord === null ? null : toExportPayload(exportRecord, isAdmin)
 }
 
-function toExportPayload(exportRecord: Doc<'exports'>) {
+function toExportPayload(exportRecord: Doc<'exports'>, isAdmin = false) {
   const paymentBypassed =
-    areExportPaywallsDisabled() &&
+    (areExportPaywallsDisabled() || isAdmin) &&
     (exportRecord.status === 'payment_required' ||
       exportRecord.requiresPayment === true)
 
@@ -468,7 +471,7 @@ async function resolveExportArtifactLocale(
   return normalizeExportLocale(session?.preferredLanguage)
 }
 
-async function loadLocaleScopedExportArtifactRecord(
+export async function loadLocaleScopedExportArtifactRecord(
   ctx: Pick<QueryCtx, 'db'>,
   sessionId: Id<'sessions'>,
   target: ExportTarget,
@@ -567,6 +570,7 @@ export async function loadSessionExportTargets(
   const previewReady = session?.status === 'preview_ready'
   const currentPreviewVersion = session?.previewVersion
   const currentLocale = normalizeExportLocale(session?.preferredLanguage)
+  const isAdmin = await isUserAdmin(ctx)
 
   const targets = await Promise.all(
     exportTargets.map(async (target) => {
@@ -591,7 +595,8 @@ export async function loadSessionExportTargets(
         record?.previewVersion !== undefined &&
         currentPreviewVersion !== undefined &&
         record.previewVersion !== currentPreviewVersion
-      const ready = record?.status === 'ready' && !isStale
+      const paywallBypassed = areExportPaywallsDisabled() || isAdmin
+      const ready = (record?.status === 'ready' || paywallBypassed) && !isStale
       const artifactPayload = toArtifactPayload(artifact)
 
       return {
@@ -607,14 +612,18 @@ export async function loadSessionExportTargets(
         ready,
         status: isStale
           ? 'stale'
-          : (record?.status ?? (previewReady ? 'available' : 'not_ready')),
-        requiresPayment: record?.requiresPayment ?? false,
+          : paywallBypassed && record?.status === 'payment_required'
+            ? 'ready'
+            : (record?.status ?? (previewReady ? 'available' : 'not_ready')),
+        requiresPayment: paywallBypassed
+          ? false
+          : (record?.requiresPayment ?? false),
         fileCount: record?.fileCount ?? artifactPayload?.fileCount ?? null,
         previewVersion: record?.previewVersion ?? null,
         currentPreviewVersion: currentPreviewVersion ?? null,
         downloadUrl:
           ready && artifactPayload?.status === 'ready'
-            ? (record.downloadUrl ?? exportDownloadUrl(sessionId, target))
+            ? (record?.downloadUrl ?? exportDownloadUrl(sessionId, target))
             : null,
         githubUrl: record?.githubUrl ?? record?.url ?? null,
         githubRepoUrl: record?.githubUrl ?? record?.url ?? null,
@@ -1012,8 +1021,9 @@ export async function getExportEntitlement(
   ctx: Pick<MutationCtx, 'db'>,
   userId: string | undefined,
   sessionId: Id<'sessions'>,
+  isAdmin = false,
 ): Promise<ExportEntitlement> {
-  if (areExportPaywallsDisabled()) {
+  if (areExportPaywallsDisabled() || isAdmin) {
     return {
       status: 'ready',
       requiresPayment: false,
@@ -1085,6 +1095,74 @@ export async function getExportEntitlement(
   }
 }
 
+/**
+ * Read-only entitlement check — mirrors `getExportEntitlement` but does NOT
+ * consume credits. Used by lakebed deploy (and other non-download actions) to
+ * gate access without spending a credit. Returns the same `ExportEntitlement`
+ * shape so callers can reuse the same `payment_required` / `ready` branching.
+ */
+export async function checkExportEntitlementReadOnly(
+  ctx: Pick<QueryCtx, 'db'>,
+  userId: string | undefined,
+  isAdmin = false,
+): Promise<ExportEntitlement> {
+  if (areExportPaywallsDisabled() || isAdmin) {
+    return {
+      status: 'ready',
+      requiresPayment: false,
+      entitlement: 'disabled_paywall',
+    }
+  }
+
+  if (userId === undefined) {
+    return {
+      status: 'payment_required',
+      requiresPayment: true,
+      entitlement: 'anonymous',
+      message:
+        'Sign in and subscribe to Pro or purchase download credits to deploy to Lakebed.',
+    }
+  }
+
+  const subscriptions = await ctx.db
+    .query('subscriptions')
+    .withIndex('by_userId', (index) => index.eq('userId', userId))
+    .take(20)
+  const activeSubscription = subscriptions.find((subscription) =>
+    activeExportSubscriptionStatuses.has(subscription.status),
+  )
+
+  if (activeSubscription !== undefined) {
+    return {
+      status: 'ready',
+      requiresPayment: false,
+      entitlement: 'subscription',
+    }
+  }
+
+  const credits = await ctx.db
+    .query('customerCredits')
+    .withIndex('by_userId', (index) => index.eq('userId', userId))
+    .first()
+
+  if (credits !== null && credits.remaining > 0) {
+    return {
+      status: 'ready',
+      requiresPayment: false,
+      entitlement: 'credits',
+      remainingCredits: credits.remaining,
+    }
+  }
+
+  return {
+    status: 'payment_required',
+    requiresPayment: true,
+    entitlement: 'payment_required',
+    message:
+      'Subscribe to Pro or purchase download credits to deploy to Lakebed.',
+  }
+}
+
 export async function createSessionExport(
   ctx: MutationCtx,
   args: CreateSessionExportInput,
@@ -1109,6 +1187,8 @@ export async function createSessionExport(
         message: 'Preview is not ready to export',
       })
     })()
+
+  const isAdmin = await isUserAdmin(ctx)
 
   const preview = await ctx.db
     .query('previews')
@@ -1172,7 +1252,7 @@ export async function createSessionExport(
         requiresPayment: existingExportRequiresPayment,
         entitlement: existingExportEntitlement,
       }
-    : await getExportEntitlement(ctx, session.userId, args.sessionId)
+    : await getExportEntitlement(ctx, session.userId, args.sessionId, isAdmin)
 
   const exportId =
     existingExport !== null
@@ -1484,6 +1564,7 @@ export async function prepareExportArtifactBuild(
     locale,
     selectedBrandLogo: session.selectedBrandLogo ?? null,
     isPrivate: session.isPrivate === true,
+    includeBadge: await resolveDeploymentBadgeEntitlement(ctx, session.userId),
   }
 
   return prepared
@@ -1503,7 +1584,8 @@ export async function loadOwnedExportBuildInput(
       })
     })()
 
-  if (!areExportPaywallsDisabled()) {
+  const isAdmin = await isUserAdmin(ctx)
+  if (!areExportPaywallsDisabled() && !isAdmin) {
     await assertCanReadOwnedSession(ctx, session, args.anonymousOwnerSecret)
   }
 
@@ -1544,7 +1626,8 @@ export async function loadOwnedExportArtifactDownload(
       })
     })()
 
-  if (!areExportPaywallsDisabled()) {
+  const isAdmin = await isUserAdmin(ctx)
+  if (!areExportPaywallsDisabled() && !isAdmin) {
     await assertCanReadOwnedSession(ctx, session, args.anonymousOwnerSecret)
   }
 
@@ -1557,7 +1640,7 @@ export async function loadOwnedExportArtifactDownload(
 
   if (exportRecord === null) return null
 
-  const exportPayload = toExportPayload(exportRecord)
+  const exportPayload = toExportPayload(exportRecord, isAdmin)
   const latestPreview = await ctx.db
     .query('previews')
     .withIndex('by_sessionId_version', (index) =>
@@ -1622,7 +1705,10 @@ export async function loadOwnedExportForGitHubPush(
       })
     })()
 
-  await assertCanReadOwnedSession(ctx, session, args.anonymousOwnerSecret)
+  const isAdmin = await isUserAdmin(ctx)
+  if (!areExportPaywallsDisabled() && !isAdmin) {
+    await assertCanReadOwnedSession(ctx, session, args.anonymousOwnerSecret)
+  }
 
   const exportRecord = await ctx.db
     .query('exports')
@@ -1639,7 +1725,7 @@ export async function loadOwnedExportForGitHubPush(
       })
     })()
 
-  const exportPayload = toExportPayload(exportRecord)
+  const exportPayload = toExportPayload(exportRecord, isAdmin)
 
   exportPayload.status === 'ready' ||
     (() => {

@@ -19,6 +19,7 @@ type PreparedLakebedDeployment = {
   themeName?: string
   isDark?: boolean
   locale?: string
+  includeBadge?: boolean
   selectedBrandLogo?: {
     name: string
     domain: string | null
@@ -140,6 +141,18 @@ export const deploy = action({
       logLakebedDeploy(args.sessionId, 'action:start', {
         requestedSlug: args.requestedSlug,
       })
+
+      // Defense-in-depth payment gate — the primary gate is in
+      // lakebed-publish-response.ts, but this ensures the action itself
+      // refuses to run for non-entitled users regardless of caller.
+      await ctx.runMutation(
+        api.sessions.assertLakebedDeploymentEntitlementByLookup,
+        {
+          lookup: args.sessionId,
+          anonymousOwnerSecret: args.anonymousOwnerSecret,
+        },
+      )
+
       const artifactResult = await ctx.runQuery(
         api.sessions.getOwnedLakebedDeploymentArtifact,
         args,
@@ -244,6 +257,7 @@ export const deploy = action({
           themeName: prepared.themeName,
           isDark: prepared.isDark,
           locale: prepared.locale,
+          includeBadge: prepared.includeBadge,
           selectedBrandLogo: prepared.selectedBrandLogo,
         })
       }
