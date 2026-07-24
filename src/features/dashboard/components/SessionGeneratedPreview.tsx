@@ -17,7 +17,7 @@ export type SessionGeneratedPreviewProps = {
   commerceMode?: CommerceRuntimeMode
   source: string
   sourceUrl?: string | null
-  sessionId: string
+  sessionId?: string
   siteSpecJson?: string
   locale?: string
   prompt?: string

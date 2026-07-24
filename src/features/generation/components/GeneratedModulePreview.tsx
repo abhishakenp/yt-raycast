@@ -23,7 +23,7 @@ type GeneratedModulePreviewProps = {
   commerceMode?: CommerceRuntimeMode
   source: string
   sourceUrl?: string | null
-  sessionId: string
+  sessionId?: string
   siteSpecJson?: string
   locale?: string
   /** User's original build prompt — biases generated stock images toward the business. */
@@ -177,7 +177,7 @@ export function OpenUIModuleRenderer({
             : { anonymousOwnerSecret }),
           mode: commerceMode,
           scope: 'sessions',
-          tenant: sessionId,
+          tenant: sessionId ?? 'preview',
         }}
         response={source}
         theme={parseSiteSpecTheme(siteSpecJson)}
@@ -217,7 +217,7 @@ export function GeneratedModulePreview({
   onSectionSelect,
 }: GeneratedModulePreviewProps) {
   const anonymousOwnerSecret =
-    typeof window === 'undefined'
+    typeof window === 'undefined' || !sessionId
       ? undefined
       : readAnonymousOwnerSecret(window.localStorage, sessionId)
 
