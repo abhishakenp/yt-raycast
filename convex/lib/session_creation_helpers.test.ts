@@ -5,6 +5,7 @@ import type { MutationCtx } from '../_generated/server'
 import {
   areGenerationLimitsDisabled,
   createGenerationSession,
+  DRAFT_SESSION_TTL_MS,
   findIdempotentWorkspaceSession,
   findReusablePromptCacheSession,
   loadGenerationAdmission,
@@ -204,6 +205,10 @@ const createReferences = () => ({
   >[1],
   sendOperationalNotification:
     'sendOperationalNotification' as unknown as Parameters<
+      MutationCtx['scheduler']['runAfter']
+    >[1],
+  deleteDraftSessionIfStillDraft:
+    'deleteDraftSessionIfStillDraft' as unknown as Parameters<
       MutationCtx['scheduler']['runAfter']
     >[1],
 })
@@ -751,6 +756,66 @@ describe('session creation helpers', () => {
       sessionId: session?.id,
       anonymousOwnerSecret: 'owner-secret',
     })
+  })
+
+  it('schedules a one-shot draft cleanup when creating a draft session', async () => {
+    vi.stubEnv('OPENUI_HOME_MODEL', 'gemini-2.5-flash')
+    vi.stubEnv('GEMINI_API_KEY', 'test-gemini-key')
+    vi.stubEnv('DISABLE_LIMIT', 'true')
+    const references = createReferences()
+    const { ctx, inserted, runAfter } = createMutationCtxFor()
+
+    await createGenerationSession(
+      ctx,
+      {
+        prompt: 'Build a speculative draft site',
+        preferredLanguage: 'en',
+        preferredExportTarget: 'html',
+        isPrivate: false,
+        workspace: 'workspace-draft-schedule',
+        anonymousClientId: 'anon-draft-client',
+        clientIpHash: 'ip_hash_draft',
+        isDraft: true,
+      },
+      references,
+    )
+
+    const session = inserted.find((row) => row.table === 'sessions')
+    expect(session?.value).toMatchObject({ isDraft: true })
+
+    expect(runAfter).toHaveBeenCalledWith(
+      DRAFT_SESSION_TTL_MS,
+      references.deleteDraftSessionIfStillDraft,
+      { sessionId: session?.id },
+    )
+  })
+
+  it('does not schedule draft cleanup for a real (non-draft) submission', async () => {
+    vi.stubEnv('OPENUI_HOME_MODEL', 'gemini-2.5-flash')
+    vi.stubEnv('GEMINI_API_KEY', 'test-gemini-key')
+    vi.stubEnv('DISABLE_LIMIT', 'true')
+    const references = createReferences()
+    const { ctx, runAfter } = createMutationCtxFor()
+
+    await createGenerationSession(
+      ctx,
+      {
+        prompt: 'Build a real submitted site',
+        preferredLanguage: 'en',
+        preferredExportTarget: 'html',
+        isPrivate: false,
+        workspace: 'workspace-real-no-schedule',
+        anonymousClientId: 'anon-real-client',
+        clientIpHash: 'ip_hash_real',
+      },
+      references,
+    )
+
+    expect(runAfter).not.toHaveBeenCalledWith(
+      DRAFT_SESSION_TTL_MS,
+      references.deleteDraftSessionIfStillDraft,
+      expect.anything(),
+    )
   })
 
   it('stores the authenticated owner email for generated session metadata', async () => {

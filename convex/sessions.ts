@@ -41,6 +41,7 @@ import {
   upsertSessionAiCapsule,
 } from './lib/session_ai_capsule_helpers'
 import { applySectionEditToArtifacts } from './lib/session_section_edit_helpers'
+import { deleteSessionGraph } from './lib/session_delete_helpers'
 import {
   applyCloneBriefAndGenerate as applyCloneBriefAndGenerateHelper,
   finalizeSessionClonePreview,
@@ -298,6 +299,8 @@ export const create = mutation({
         startGeneration: internal.generation.startGeneration,
         sendOperationalNotification:
           sessionInternalReferences.sendOperationalNotification,
+        deleteDraftSessionIfStillDraft:
+          internal.sessions.deleteDraftSessionIfStillDraft,
       },
     )
     return result
@@ -313,6 +316,21 @@ export const markGenerationStarted = internalMutation({
   args: sessionIdArgs,
   handler: async (ctx, args) => {
     return markSessionGenerationStarted(ctx, args.sessionId, Date.now())
+  },
+})
+
+// Scheduled DRAFT_SESSION_TTL_MS after a draft session is created. If the
+// session is still a draft (never promoted to a real submission), hard-delete
+// it and its entire graph. If it was promoted (isDraft flipped to false) or
+// already removed, do nothing.
+export const deleteDraftSessionIfStillDraft = internalMutation({
+  args: sessionIdArgs,
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId)
+    if (session === null) return
+    if (session.deletedAt !== undefined) return
+    if (session.isDraft !== true) return
+    await deleteSessionGraph(ctx, args.sessionId, { hardDeleteSession: true })
   },
 })
 

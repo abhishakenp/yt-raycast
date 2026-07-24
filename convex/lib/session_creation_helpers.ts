@@ -22,7 +22,6 @@ import {
 } from './session_access_helpers'
 import { cloneCachedGeneratedArtifacts } from './session_artifact_helpers'
 import { reserveDefaultDeploymentSlug } from './session_deployment_helpers'
-import { deleteSessionGraph } from './session_delete_helpers'
 import { recordOperationalGenerationEvent } from './session_operational_notifications'
 import {
   assertPrompt,
@@ -44,7 +43,7 @@ type GenerationLimitEnv = {
 
 export const SHORT_WINDOW_LIMIT = 5
 export const PROMPT_CACHE_LOOKBACK_LIMIT = 12
-const DRAFT_SESSION_TTL_MS = 15 * 60 * 1_000
+export const DRAFT_SESSION_TTL_MS = 15 * 60 * 1_000
 
 export function areGenerationLimitsDisabled(
   env: GenerationLimitEnv = process.env,
@@ -141,7 +140,11 @@ export async function loadGenerationAdmission(
   ctx: SessionCreationCtx,
   args: GenerationAdmissionInput,
 ): Promise<GenerationAdmission> {
-  if (args.userId === undefined && args.clientIpHash === undefined) {
+  if (
+    !args.disableLimits &&
+    args.userId === undefined &&
+    args.clientIpHash === undefined
+  ) {
     throw new ConvexError({
       code: 'CLIENT_IP_REQUIRED',
       message: 'Anonymous generation requires a server IP bucket.',
@@ -326,6 +329,7 @@ export type CreateGenerationSessionInput = {
 export type CreateGenerationSessionReferences = {
   startGeneration: ScheduledFunctionReference
   sendOperationalNotification: ScheduledFunctionReference
+  deleteDraftSessionIfStillDraft: ScheduledFunctionReference
 }
 
 export type CreateGenerationSessionResult = {
@@ -366,10 +370,6 @@ export async function createGenerationSession(
   const now = Date.now()
 
   assertPrompt(prompt)
-
-  if (!isDraft) {
-    await deleteExpiredDraftSessions(ctx, now)
-  }
 
   const designReferenceUrls = (args.designReferenceUrls ?? [])
     .slice(0, 4)
@@ -484,6 +484,19 @@ export async function createGenerationSession(
     updatedAt: now,
   })
 
+  // Draft sessions are speculative and never start generation. Schedule a
+  // one-shot cleanup DRAFT_SESSION_TTL_MS later: if the session is still a
+  // draft at that point (never promoted by a real submission), it is
+  // hard-deleted along with its graph. If it was promoted, the scheduled job
+  // is a no-op.
+  if (isDraft) {
+    await ctx.scheduler.runAfter(
+      DRAFT_SESSION_TTL_MS,
+      references.deleteDraftSessionIfStillDraft,
+      { sessionId },
+    )
+  }
+
   const homepageTaskId = await ctx.db.insert('tasks', {
     sessionId,
     taskKey: 'homepage',
@@ -569,22 +582,5 @@ export async function createGenerationSession(
     sessionId,
     cached: false,
     remaining: admission.remaining,
-  }
-}
-
-async function deleteExpiredDraftSessions(
-  ctx: MutationCtx,
-  now: number,
-): Promise<void> {
-  const cutoff = now - DRAFT_SESSION_TTL_MS
-  const expiredDrafts = ctx.db
-    .query('sessions')
-    .withIndex('by_isDraft_createdAt', (index) => index.eq('isDraft', true))
-    .order('asc')
-
-  for await (const session of expiredDrafts) {
-    if (session.createdAt >= cutoff) break
-    if (session.deletedAt !== undefined) continue
-    await deleteSessionGraph(ctx, session._id)
   }
 }
