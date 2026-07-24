@@ -571,12 +571,23 @@ export async function createSessionMedusaProvisionResponse(
       body,
     )
     const fetchImpl = options.fetch ?? fetch
-    const adminEmail =
-      stringValue(body, 'adminEmail') ??
-      getMedusaAdminEmail(options.env, options.metaEnv)
-    const adminPassword =
-      stringValue(body, 'adminPassword') ??
-      getMedusaAdminPassword(options.env, options.metaEnv)
+    const configuredAdminEmail = getMedusaAdminEmail(
+      options.env,
+      options.metaEnv,
+    )
+    const configuredAdminPassword = getMedusaAdminPassword(
+      options.env,
+      options.metaEnv,
+    )
+    const hasConfiguredAdminCredentials =
+      configuredAdminEmail !== undefined &&
+      configuredAdminPassword !== undefined
+    const adminEmail = hasConfiguredAdminCredentials
+      ? configuredAdminEmail
+      : (stringValue(body, 'adminEmail') ?? configuredAdminEmail)
+    const adminPassword = hasConfiguredAdminCredentials
+      ? configuredAdminPassword
+      : (stringValue(body, 'adminPassword') ?? configuredAdminPassword)
     const containerProvider = options.containerProvider ?? {
       findRunning: findRunningSessionContainer,
       provision: async (sid, opts) =>

@@ -256,6 +256,20 @@ export function createGeneratedProductSyncSignature(
   return `v1:${stableHash(stableJson(payload))}`
 }
 
+function medusaProductSyncWarning(error: unknown): string {
+  if (error instanceof Error) {
+    const adminAuthStatus = error.message.match(
+      /^Medusa Admin authentication failed \((\d{3})\)\.$/,
+    )?.[1]
+
+    if (adminAuthStatus !== undefined) {
+      return `Medusa Admin authentication failed (${adminAuthStatus}). Check the configured Medusa admin email and password.`
+    }
+  }
+
+  return 'Medusa product sync failed.'
+}
+
 async function authenticateAdmin({
   adminApiToken,
   adminEmail,
@@ -1281,10 +1295,10 @@ export async function syncGeneratedProductsToMedusa({
     }
 
     return { synced, tenant: defaults.tenant }
-  } catch {
+  } catch (error) {
     return {
       synced: 0,
-      warning: 'Medusa product sync failed.',
+      warning: medusaProductSyncWarning(error),
     }
   }
 }
