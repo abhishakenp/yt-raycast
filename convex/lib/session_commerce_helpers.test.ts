@@ -509,6 +509,34 @@ describe('session commerce helpers', () => {
     })
   })
 
+  it('admin bypasses ownership for session commerce gateway resolution', async () => {
+    const ownerId = 'https://auth.test|owner'
+    const session = {
+      ...(await sessionDoc()),
+      userId: ownerId,
+    }
+    const { ctx } = await ctxFor({
+      configs: [
+        commerceDoc({
+          configJson: JSON.stringify({
+            medusaTenant: { publishableKey: 'pk_session' },
+          }),
+        }),
+      ],
+      identity: { tokenIdentifier: 'token:admin', system_role: 'admin' },
+      session,
+    })
+
+    await expect(
+      resolveSessionCommerceGatewayConfig(ctx, { sessionId }),
+    ).resolves.toEqual({
+      backendUrl: 'https://backend.old.test',
+      publishableKey: 'pk_session',
+      scope: 'sessions',
+      tenant: sessionId,
+    })
+  })
+
   it('provisions a Medusa tenant config with zero products by default', async () => {
     const { ctx, configs } = await ctxFor()
 

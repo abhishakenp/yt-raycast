@@ -345,7 +345,9 @@ export async function resolveSessionCommerceGatewayConfig(
     })
   }
 
-  if (!(await isSessionOwner(ctx, session, args.anonymousOwnerSecret))) {
+  if (isAuthDisabled() || (await isUserAdmin(ctx))) {
+    // Admins bypass ownership — see authorizeSessionCommerceProvision.
+  } else if (!(await isSessionOwner(ctx, session, args.anonymousOwnerSecret))) {
     throw new ConvexError({
       code: 'FORBIDDEN',
       message: 'You do not own this session',
