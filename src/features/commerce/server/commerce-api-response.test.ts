@@ -1616,6 +1616,110 @@ describe('createSessionMedusaProvisionResponse', () => {
     expect(payload).not.toHaveProperty('persisted')
   })
 
+  it('uses configured admin token instead of user credentials for hosted Medusa product sync', async () => {
+    const mutation = vi.fn().mockResolvedValue({ sessionId: 'session_123' })
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ shipping_profiles: [{ id: 'sp_default' }] }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ sales_channels: [] }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ api_keys: [] }), { status: 200 }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ sales_channel: { id: 'sc_tenant' } }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            api_key: {
+              id: 'apk_tenant',
+              token: 'pk_tenant_session',
+              title: 'Ship Fast session_123',
+              type: 'publishable',
+            },
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ api_key: { id: 'apk_tenant' } }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ products: [] }), { status: 200 }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ product: { id: 'prod_1' } }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ regions: [{ currency_code: 'usd' }] }), {
+          status: 200,
+        }),
+      )
+
+    const response = await createSessionMedusaProvisionResponse(
+      'session_123',
+      new Request(
+        'http://ship-fast.test/api/sessions/session_123/provision/medusa',
+        {
+          body: JSON.stringify({
+            adminEmail: 'not-a-shared-admin@store.test',
+            adminPassword: 'user-created-password',
+            products: [
+              { handle: 'truffle-box', price: 79, title: 'Truffle Box' },
+            ],
+          }),
+          method: 'POST',
+        },
+      ),
+      { mutation, query: vi.fn(), setAuth: vi.fn() },
+      {
+        env: {
+          MEDUSA_ADMIN_API_TOKEN: 'configured-admin-token',
+          MEDUSA_BACKEND_URL: 'https://medusa.devliv.io',
+          MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
+        },
+        containerProvider: mockContainerProvider({
+          MEDUSA_BACKEND_URL: 'https://medusa.devliv.io',
+        }),
+        fetch: fetchImpl,
+        metaEnv: {},
+      },
+    )
+
+    expect(response.status).toBe(200)
+    expect(fetchImpl).not.toHaveBeenCalledWith(
+      'https://medusa.devliv.io/auth/user/emailpass',
+      expect.anything(),
+    )
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'https://medusa.devliv.io/admin/shipping-profiles',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          authorization: 'Bearer configured-admin-token',
+        }),
+      }),
+    )
+    expect(await response.json()).toMatchObject({
+      liveStoreApiReady: true,
+      syncedProducts: 1,
+    })
+  })
+
   it('retries the Convex config upsert without productCount for older validators', async () => {
     const mutation = vi
       .fn()

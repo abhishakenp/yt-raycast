@@ -571,6 +571,14 @@ export async function createSessionMedusaProvisionResponse(
       body,
     )
     const fetchImpl = options.fetch ?? fetch
+    const configuredAdminApiToken = getMedusaAdminApiToken(
+      options.env,
+      options.metaEnv,
+    )
+    const hasConfiguredBackend = hasConfiguredMedusaBackendUrl(
+      options.env,
+      options.metaEnv,
+    )
     const configuredAdminEmail = getMedusaAdminEmail(
       options.env,
       options.metaEnv,
@@ -582,12 +590,19 @@ export async function createSessionMedusaProvisionResponse(
     const hasConfiguredAdminCredentials =
       configuredAdminEmail !== undefined &&
       configuredAdminPassword !== undefined
+    const shouldUseRequestAdminCredentials =
+      !hasConfiguredAdminCredentials &&
+      !(hasConfiguredBackend && configuredAdminApiToken !== undefined)
     const adminEmail = hasConfiguredAdminCredentials
       ? configuredAdminEmail
-      : (stringValue(body, 'adminEmail') ?? configuredAdminEmail)
+      : shouldUseRequestAdminCredentials
+        ? stringValue(body, 'adminEmail')
+        : undefined
     const adminPassword = hasConfiguredAdminCredentials
       ? configuredAdminPassword
-      : (stringValue(body, 'adminPassword') ?? configuredAdminPassword)
+      : shouldUseRequestAdminCredentials
+        ? stringValue(body, 'adminPassword')
+        : undefined
     const containerProvider = options.containerProvider ?? {
       findRunning: findRunningSessionContainer,
       provision: async (sid, opts) =>
@@ -622,7 +637,7 @@ export async function createSessionMedusaProvisionResponse(
     const productSync =
       generatedProducts.length > 0 && backendUrl !== undefined
         ? await syncGeneratedProductsToMedusa({
-            adminApiToken: getMedusaAdminApiToken(options.env, options.metaEnv),
+            adminApiToken: configuredAdminApiToken,
             adminEmail,
             adminPassword,
             backendUrl,
@@ -637,7 +652,7 @@ export async function createSessionMedusaProvisionResponse(
       generatedProducts.length > 0
         ? {}
         : await ensureMedusaSessionTenant({
-            adminApiToken: getMedusaAdminApiToken(options.env, options.metaEnv),
+            adminApiToken: configuredAdminApiToken,
             adminEmail,
             adminPassword,
             backendUrl,

@@ -33,6 +33,10 @@ describe('Medusa config API routes', () => {
     delete process.env.MEDUSA_BACKEND_URL
     delete process.env.MEDUSA_PUBLISHABLE_API_KEY
     delete process.env.MEDUSA_PUBLISHABLE_KEY
+    delete process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
+    delete process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
+    delete process.env.VITE_MEDUSA_BACKEND_URL
+    delete process.env.VITE_MEDUSA_PUBLISHABLE_KEY
   })
 
   afterEach(() => {
@@ -54,6 +58,23 @@ describe('Medusa config API routes', () => {
       enabled: true,
       backendUrl: 'https://backend.medusa.test',
     })
+    expect(JSON.stringify(body)).not.toContain('pk_live_public_brewery')
+  })
+
+  it('does not report hosted Store API readiness from the local default backend', async () => {
+    process.env.NODE_ENV = 'production'
+    process.env.MEDUSA_BACKEND_URL = 'http://localhost:9000'
+    process.env.MEDUSA_PUBLISHABLE_API_KEY = 'pk_live_public_brewery'
+
+    const Route = await importRoute('./medusa-store.config')
+    const response = await Route.options.server.handlers.GET()
+
+    expect(response.status).toBe(200)
+    const body = await response.json()
+    expect(body).toEqual({
+      enabled: false,
+    })
+    expect(JSON.stringify(body)).not.toContain('localhost:9000')
     expect(JSON.stringify(body)).not.toContain('pk_live_public_brewery')
   })
 

@@ -3,7 +3,10 @@ import { useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { EcommercifyTransformOverlay } from './EcommercifyTransformOverlay'
-import { useCommerceController } from '../hooks/useCommerceController'
+import {
+  useCommerceController,
+  useHostedMedusaConfig,
+} from '../hooks/useCommerceController'
 import type { GeneratedCommerceProduct } from '../services/generated-commerce-products'
 
 type CommercePanelProps = {
@@ -141,12 +144,17 @@ export function CommercePanel({
     isSaving,
     provisionCommerce,
   } = useCommerceController(sessionId, visualProducts)
+  const { config: hostedMedusaConfig } = useHostedMedusaConfig()
   const [adminEmail, setAdminEmail] = useState('')
   const [adminPassword, setAdminPassword] = useState('')
   const [isTransforming, setIsTransforming] = useState(false)
   const isReady = config?.status === 'ready'
   const hasConfiguredBackend = (config?.backendUrl?.trim().length ?? 0) > 0
-  const requiresAdminCredentials = !hasConfiguredBackend
+  const hasHostedMedusaBackend =
+    hostedMedusaConfig.enabled === true &&
+    (hostedMedusaConfig.backendUrl?.trim().length ?? 0) > 0
+  const requiresAdminCredentials =
+    !hasConfiguredBackend && !hasHostedMedusaBackend
   const canSave =
     !isSaving &&
     (!requiresAdminCredentials ||

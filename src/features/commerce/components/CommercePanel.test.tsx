@@ -24,6 +24,11 @@ type CommercePanelHandoff = {
 type CommercePanelTestState = {
   config: CommercePanelConfig
   handoff: CommercePanelHandoff | undefined
+  hostedMedusaConfig: {
+    backendUrl?: string
+    enabled?: boolean
+  }
+  isHostedMedusaConfigLoading: boolean
   provisionCommerce: Mock
   useCommerceController: Mock
 }
@@ -35,6 +40,8 @@ const commerceState = vi.hoisted<CommercePanelTestState>(() => ({
     status: 'ready',
   },
   handoff: undefined,
+  hostedMedusaConfig: {},
+  isHostedMedusaConfigLoading: false,
   provisionCommerce: vi.fn(),
   useCommerceController: vi.fn(),
 }))
@@ -50,6 +57,10 @@ vi.mock('../hooks/useCommerceController', () => ({
       provisionCommerce: commerceState.provisionCommerce,
     }
   },
+  useHostedMedusaConfig: () => ({
+    config: commerceState.hostedMedusaConfig,
+    isLoading: commerceState.isHostedMedusaConfigLoading,
+  }),
 }))
 
 describe('CommercePanel', () => {
@@ -61,6 +72,8 @@ describe('CommercePanel', () => {
       status: 'ready',
     }
     commerceState.handoff = undefined
+    commerceState.hostedMedusaConfig = {}
+    commerceState.isHostedMedusaConfigLoading = false
     commerceState.useCommerceController.mockClear()
     commerceState.provisionCommerce.mockReset()
   })
@@ -156,6 +169,25 @@ describe('CommercePanel', () => {
       email: 'owner@store.test',
       password: 'user-created-password',
     })
+  })
+
+  it('uses hosted Medusa setup without asking for a user-created admin account', () => {
+    commerceState.config = { productCount: 0, status: 'setup' }
+    commerceState.hostedMedusaConfig = {
+      backendUrl: 'https://medusa.devliv.io',
+      enabled: true,
+    }
+
+    render(<CommercePanel sessionId="session_123" />)
+
+    expect(screen.queryByLabelText('Admin email')).toBeNull()
+    expect(screen.queryByLabelText('Admin password')).toBeNull()
+    const button = screen.getByRole('button', { name: 'Enable Commerce' })
+    expect(button.hasAttribute('disabled')).toBe(false)
+
+    fireEvent.click(button)
+
+    expect(commerceState.provisionCommerce).toHaveBeenCalledWith(undefined)
   })
 
   it('keeps Medusa studio links available from persisted tenant config', () => {
