@@ -12,6 +12,20 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { Dashboard } from './Dashboard'
 
+vi.mock('@tanstack/react-router', () => ({
+  Link: ({ children, to, ...props }: { children: ReactNode; to?: string }) => (
+    <a href={to ?? '#'} {...props}>
+      {children}
+    </a>
+  ),
+  useCanGoBack: () => false,
+  useNavigate: () => vi.fn(),
+  useRouter: () => ({
+    history: { back: vi.fn() },
+    state: { location: { pathname: '/' } },
+  }),
+}))
+
 type DashboardConvexTestState = {
   generationView: unknown
   queryArgs: unknown[]
@@ -132,7 +146,9 @@ vi.mock('@ship-fast/lakebed/react', () => ({
 }))
 
 vi.mock('@/features/billing/components/BillingPanel', () => ({
-  BillingPanel: () => null,
+  BillingPanel: ({ sessionId }: { sessionId: string }) => (
+    <div>Billing panel {sessionId}</div>
+  ),
 }))
 vi.mock('@/features/brand/components/BrandMediaPanel', () => ({
   BrandMediaPanel: ({
@@ -586,7 +602,71 @@ describe('Dashboard missing session state', () => {
         (await screen.findByTestId('commerce-visual-products')).textContent ??
           '[]',
       ),
-    ).toEqual([{ handle: 'truffle-box', price: 79, title: 'Truffle Box' }])
+    ).toMatchObject([
+      { handle: 'truffle-box', price: 79, title: 'Truffle Box' },
+    ])
+  })
+
+  it('passes preview OpenUI products into the Medusa commerce panel when home module is HTML', async () => {
+    getConvexState().generationView = {
+      session: {
+        sessionId: 'openui-preview-commerce-session',
+        status: 'preview_ready',
+        prompt: 'A ready commerce website',
+        preferredLanguage: 'en',
+        isPrivate: false,
+      },
+      tasks: [{ status: 'succeeded' }],
+      events: [],
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Ready</h1></body></html>',
+      },
+      latestPreview: {
+        html: '<!doctype html><html><body><h1>Ready</h1></body></html>',
+        openUiSource:
+          'root = EcommerceGallery({ products: [{ name: "Preview Jacket", price: "$149" }] })',
+      },
+      siteSpec: null,
+    }
+
+    render(<Dashboard sessionId="openui-preview-commerce-session" />)
+
+    fireEvent.click(screen.getByRole('button', { name: /E-commerce/i }))
+
+    expect(
+      JSON.parse(
+        (await screen.findByTestId('commerce-visual-products')).textContent ??
+          '[]',
+      ),
+    ).toMatchObject([
+      { handle: 'preview-jacket', price: 149, title: 'Preview Jacket' },
+    ])
+  })
+
+  it('opens billing from the rail on the generate page', async () => {
+    getConvexState().generationView = {
+      session: {
+        sessionId: 'ready-billing-session',
+        status: 'preview_ready',
+        prompt: 'A ready billing website',
+        preferredLanguage: 'en',
+        isPrivate: false,
+      },
+      tasks: [{ status: 'succeeded' }],
+      events: [],
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Ready</h1></body></html>',
+      },
+      siteSpec: null,
+    }
+
+    render(<Dashboard sessionId="ready-billing-session" />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Billing/i }))
+
+    expect(
+      await screen.findByText('Billing panel ready-billing-session'),
+    ).toBeTruthy()
   })
 
   it('opens localization from the rail and persists the selected language', async () => {

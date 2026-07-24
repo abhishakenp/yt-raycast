@@ -1,24 +1,47 @@
 import { ConvexHttpClient } from 'convex/browser'
+import type { FunctionReference } from 'convex/server'
 
 import { api } from '../../../../convex/_generated/api'
-import type { Id } from '../../../../convex/_generated/dataModel'
 import {
+  getConfiguredMedusaAdminUrl,
+  getConfiguredMedusaBackendUrl,
+  getConfiguredMedusaStorefrontUrl,
   getMedusaAdminApiToken,
   getMedusaAdminEmail,
   getMedusaAdminPassword,
   getMedusaPublishableKey,
   hasConfiguredMedusaBackendUrl,
+  readMedusaEnv,
   type MedusaEnv,
 } from './medusa-store-env'
-import { syncGeneratedProductsToMedusa } from './medusa-product-sync'
+import {
+  ensureMedusaSessionTenant,
+  syncGeneratedProductsToMedusa,
+} from './medusa-product-sync'
 import {
   findRunningSessionContainer,
   provisionSessionMedusaContainer,
 } from './medusa-container-provisioner'
-import type { GeneratedCommerceProduct } from '../services/generated-commerce-products'
+import {
+  type GeneratedCommerceProduct,
+  extractGeneratedCommerceProducts,
+  normalizeGeneratedCommerceProductInput,
+} from '../services/generated-commerce-products'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
-type CommerceApiClient = Pick<ConvexHttpClient, 'query' | 'mutation'>
+type PublicQueryReference = FunctionReference<'query'>
+type PublicMutationReference = FunctionReference<'mutation'>
+type CommerceApiClient = {
+  query: (
+    query: PublicQueryReference,
+    args: Record<string, unknown>,
+  ) => Promise<unknown>
+  mutation: (
+    mutation: PublicMutationReference,
+    args: Record<string, unknown>,
+  ) => Promise<unknown>
+  setAuth: ConvexHttpClient['setAuth']
+}
 type FetchLike = typeof fetch
 type MedusaContainerInfo = {
   backendUrl: string
@@ -33,6 +56,9 @@ type MedusaContainerProvider = {
       adminEmail?: string
       adminPassword?: string
       fetch?: FetchLike
+      razorpayKeyId?: string
+      razorpayKeySecret?: string
+      razorpayWebhookSecret?: string
     },
   ) => Promise<MedusaContainerInfo>
 }
@@ -50,15 +76,37 @@ type MedusaStoreApiAvailability = {
   status?: number
 }
 type MedusaHandoff = {
-  adminEmail?: string
-  adminPassword?: string
   adminUrl: string
   backendUrl: string
   storefrontUrl: string
   tenantId: string
 }
+type MedusaProvisionTarget = {
+  adminUrl?: string
+  backendUrl?: string
+  storefrontUrl?: string
+}
+type CommerceConfigMutationArgs = {
+  sessionId: string
+  anonymousOwnerSecret?: string
+  backendUrl?: string
+  adminUrl?: string
+  storefrontUrl?: string
+  errorMessage?: string
+  productCount: number
+  configJson: string
+}
+
+type SessionLookupResponse = {
+  sessionId?: unknown
+  id?: unknown
+}
 
 const medusaStoreApiUnavailableWarning = 'Medusa Store API is unavailable.'
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
 
 function normalizeMedusaStoreApiWarning(
   warning: string | undefined,
@@ -85,10 +133,8 @@ async function readJsonBody(
 ): Promise<Record<string, unknown>> {
   const text = await request.text()
   if (!text.trim()) return {}
-  const parsed = JSON.parse(text) as unknown
-  return parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)
-    ? (parsed as Record<string, unknown>)
-    : {}
+  const parsed: unknown = JSON.parse(text)
+  return isRecord(parsed) ? parsed : {}
 }
 
 function stringValue(
@@ -111,32 +157,16 @@ function getOwnerSecret(
   )
 }
 
+function getBearerToken(request: Request): string | null {
+  const auth = request.headers.get('authorization') ?? ''
+  const match = auth.match(/^Bearer\s+(.+)$/i)
+  return match?.[1]?.trim() || null
+}
+
 function generatedProductValue(
   value: unknown,
 ): GeneratedCommerceProduct | undefined {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return undefined
-  }
-
-  const product = value as Record<string, unknown>
-  const title = typeof product.title === 'string' ? product.title.trim() : ''
-  const handle = typeof product.handle === 'string' ? product.handle.trim() : ''
-  const price = typeof product.price === 'number' ? product.price : undefined
-  const description =
-    typeof product.description === 'string' && product.description.trim()
-      ? product.description.trim()
-      : undefined
-
-  if (!title || !handle || price === undefined || !Number.isFinite(price)) {
-    return undefined
-  }
-
-  return {
-    ...(description === undefined ? {} : { description }),
-    handle,
-    price,
-    title,
-  }
+  return normalizeGeneratedCommerceProductInput(value)
 }
 
 function getGeneratedProducts(
@@ -150,6 +180,97 @@ function getGeneratedProducts(
     .slice(0, 25)
 }
 
+function extractGeneratedProductsFromSessionView(
+  value: unknown,
+): Array<GeneratedCommerceProduct> {
+  if (!isRecord(value)) return []
+
+  const latestPreview = isRecord(value.latestPreview)
+    ? value.latestPreview
+    : undefined
+  const homeModule = isRecord(value.homeModule) ? value.homeModule : undefined
+  const siteSpec = isRecord(value.siteSpec) ? value.siteSpec : undefined
+
+  return extractGeneratedCommerceProducts({
+    source:
+      (latestPreview === undefined
+        ? undefined
+        : stringValue(latestPreview, 'openUiSource')) ??
+      (homeModule === undefined
+        ? undefined
+        : stringValue(homeModule, 'source')),
+    siteSpecJson:
+      (siteSpec === undefined
+        ? undefined
+        : stringValue(siteSpec, 'specJson')) ??
+      (latestPreview === undefined
+        ? undefined
+        : stringValue(latestPreview, 'siteSpecJson')),
+  }).slice(0, 25)
+}
+
+async function resolveGeneratedProducts(
+  client: CommerceApiClient,
+  sessionId: string,
+  body: Record<string, unknown>,
+): Promise<Array<GeneratedCommerceProduct>> {
+  const requestProducts = getGeneratedProducts(body)
+  if (requestProducts.length > 0) return requestProducts
+
+  try {
+    const generationView = await client.query(api.sessions.getGenerationView, {
+      lookup: sessionId,
+    })
+    return extractGeneratedProductsFromSessionView(generationView)
+  } catch {
+    return []
+  }
+}
+
+async function resolveProvisionSessionId(
+  client: CommerceApiClient,
+  lookup: string,
+): Promise<string> {
+  try {
+    const response = await client.query(api.sessions.getSessionApiResponse, {
+      lookup,
+    })
+    const lookupResponse = sessionLookupResponse(response)
+    const resolved = lookupResponse?.sessionId ?? lookupResponse?.id
+    return typeof resolved === 'string' && resolved.trim() ? resolved : lookup
+  } catch {
+    return lookup
+  }
+}
+
+function sessionLookupResponse(value: unknown): SessionLookupResponse | null {
+  if (!isRecord(value)) return null
+  return {
+    id: value.id,
+    sessionId: value.sessionId,
+  }
+}
+
+function firstRegionCurrencyCode(payload: unknown): string | undefined {
+  if (!isRecord(payload) || !Array.isArray(payload.regions)) return undefined
+  const region = payload.regions.find(
+    (item) => isRecord(item) && typeof item.currency_code === 'string',
+  )
+  return isRecord(region) && typeof region.currency_code === 'string'
+    ? region.currency_code
+    : undefined
+}
+
+function medusaContainerInfo(
+  provision: Awaited<ReturnType<typeof provisionSessionMedusaContainer>>,
+): MedusaContainerInfo {
+  return {
+    adminUrl: provision.adminUrl,
+    backendUrl: provision.backendUrl,
+    storefrontUrl: provision.storefrontUrl,
+  }
+}
+
 function createClient(clientOverride?: CommerceApiClient): CommerceApiClient {
   return clientOverride ?? createRuntimeConvexHttpClient()
 }
@@ -159,11 +280,33 @@ function isUnsupportedProductCountError(error: unknown): boolean {
   return /extra field [`"]?productCount|productCount.*validator/i.test(message)
 }
 
+function isMissingProvisionAuthorizationQuery(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error)
+  return /Could not find public function for ['"]sessions:authorizeSessionCommerceProvision['"]/i.test(
+    message,
+  )
+}
+
 function errorStatus(error: unknown): number {
   const message = error instanceof Error ? error.message : String(error)
   if (/FORBIDDEN/i.test(message)) return 403
   if (/NOT_FOUND|Validator: v\.id\("sessions"\)/i.test(message)) return 404
   return 500
+}
+
+function commerceProvisionErrorCode(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error)
+  if (/FORBIDDEN/i.test(message)) return 'FORBIDDEN'
+  if (/NOT_FOUND|Validator: v\.id\("sessions"\)/i.test(message)) {
+    return 'NOT_FOUND'
+  }
+  if (/Could not find public function/i.test(message)) {
+    return 'CONVEX_FUNCTION_MISSING'
+  }
+  if (/Medusa admin (email|password) is required to provision/i.test(message)) {
+    return 'MEDUSA_ADMIN_CREDENTIALS_MISSING'
+  }
+  return 'COMMERCE_PROVISION_FAILED'
 }
 
 async function validateMedusaStoreApi(
@@ -197,12 +340,8 @@ async function validateMedusaStoreApi(
       }
     }
 
-    const payload = (await response.json().catch(() => ({}))) as {
-      regions?: Array<{ currency_code?: unknown }>
-    }
-    const currencyCode = payload.regions?.find(
-      (region) => typeof region.currency_code === 'string',
-    )?.currency_code
+    const payload: unknown = await response.json().catch(() => ({}))
+    const currencyCode = firstRegionCurrencyCode(payload)
 
     return {
       ...(typeof currencyCode === 'string' ? { currencyCode } : {}),
@@ -221,6 +360,7 @@ async function validateMedusaStoreApi(
 function createDefaultMedusaConfigJson(
   sessionId: string,
   availability: MedusaStoreApiAvailability,
+  publishableKey: string,
   productSync?: {
     medusaTenant?: {
       apiKeyId: string
@@ -231,10 +371,16 @@ function createDefaultMedusaConfigJson(
     synced: number
   },
 ): string {
+  const effectivePublishableKey =
+    productSync?.medusaTenant?.publishableKey ?? publishableKey.trim()
+
   return JSON.stringify({
     provider: 'medusa',
     tenantMode: 'session',
     tenantId: sessionId,
+    ...(effectivePublishableKey
+      ? { publishableKey: effectivePublishableKey }
+      : {}),
     publishableKeyConfigured: availability.publishableKeyConfigured,
     liveStoreApiReady: availability.liveStoreApiReady,
     ...(productSync === undefined
@@ -257,6 +403,33 @@ function createDefaultMedusaConfigJson(
   })
 }
 
+function normalizeUrlForComparison(value: string | undefined): string {
+  return value?.trim().replace(/\/+$/, '') ?? ''
+}
+
+function createGeneratedStorefrontUrl(
+  sessionId: string,
+  request: Request,
+): string {
+  return new URL(
+    `/generate/${encodeURIComponent(sessionId)}`,
+    request.url,
+  ).toString()
+}
+
+function resolveStorefrontUrl(
+  sessionId: string,
+  request: Request,
+  backendUrl: string | undefined,
+  storefrontUrl: string | undefined,
+): string | undefined {
+  if (storefrontUrl === undefined) return undefined
+  return normalizeUrlForComparison(backendUrl) ===
+    normalizeUrlForComparison(storefrontUrl)
+    ? createGeneratedStorefrontUrl(sessionId, request)
+    : storefrontUrl
+}
+
 function createMedusaHandoff(
   sessionId: string,
   backendUrl: string | undefined,
@@ -274,16 +447,69 @@ function createMedusaHandoff(
     return undefined
   }
 
-  const adminEmail = getMedusaAdminEmail(env, metaEnv)
-  const adminPassword = getMedusaAdminPassword(env, metaEnv)
-
   return {
-    ...(adminEmail === undefined ? {} : { adminEmail }),
-    ...(adminPassword === undefined ? {} : { adminPassword }),
     adminUrl,
     backendUrl,
     storefrontUrl,
     tenantId: sessionId,
+  }
+}
+
+async function resolveMedusaProvisionTarget({
+  adminEmail,
+  adminPassword,
+  containerProvider,
+  env,
+  fetchImpl,
+  metaEnv,
+  sessionId,
+}: {
+  adminEmail?: string
+  adminPassword?: string
+  containerProvider: MedusaContainerProvider
+  env?: MedusaEnv
+  fetchImpl: FetchLike
+  metaEnv?: MedusaEnv
+  sessionId: string
+}): Promise<MedusaProvisionTarget> {
+  const configuredBackendUrl = getConfiguredMedusaBackendUrl(env, metaEnv)
+  if (configuredBackendUrl !== undefined) {
+    return {
+      adminUrl: getConfiguredMedusaAdminUrl(env, metaEnv),
+      backendUrl: configuredBackendUrl,
+      storefrontUrl:
+        getConfiguredMedusaStorefrontUrl(env, metaEnv) ?? configuredBackendUrl,
+    }
+  }
+
+  const runningContainer = await containerProvider.findRunning(sessionId)
+  const container =
+    runningContainer ??
+    (await containerProvider.provision(sessionId, {
+      adminEmail,
+      adminPassword,
+      fetch: fetchImpl,
+      razorpayKeyId: readMedusaEnv(
+        ['RAZORPAY_ID', 'RAZORPAY_KEY_ID'],
+        env,
+        metaEnv,
+      ),
+      razorpayKeySecret: readMedusaEnv(
+        ['RAZORPAY_SECRET', 'RAZORPAY_KEY_SECRET'],
+        env,
+        metaEnv,
+      ),
+      razorpayWebhookSecret: readMedusaEnv(
+        ['RAZORPAY_WEBHOOK_SECRET'],
+        env,
+        metaEnv,
+      ),
+    }))
+
+  return {
+    adminUrl: container.adminUrl,
+    backendUrl: container.backendUrl,
+    storefrontUrl: container.storefrontUrl,
   }
 }
 
@@ -292,14 +518,18 @@ export async function createSessionMedusaConfigResponse(
   clientOverride?: CommerceApiClient,
 ): Promise<Response> {
   try {
-    const config = await createClient(clientOverride).query(
-      api.sessions.getCommerceConfig,
-      { sessionId: sessionId as Id<'sessions'> },
+    const client = createClient(clientOverride)
+    const provisionSessionId = await resolveProvisionSessionId(
+      client,
+      sessionId,
     )
+    const config = await client.query(api.sessions.getCommerceConfig, {
+      sessionId: provisionSessionId,
+    })
 
     return json({
-      enabled: config?.status === 'ready',
-      sessionId,
+      enabled: isRecord(config) && config.status === 'ready',
+      sessionId: provisionSessionId,
       config,
     })
   } catch {
@@ -318,95 +548,136 @@ export async function createSessionMedusaProvisionResponse(
 ): Promise<Response> {
   try {
     const body = await readJsonBody(request)
-    const generatedProducts = getGeneratedProducts(body)
-    const fetchImpl = options.fetch ?? fetch
-    const adminEmail = getMedusaAdminEmail(options.env, options.metaEnv)
-    const adminPassword = getMedusaAdminPassword(options.env, options.metaEnv)
+    const anonymousOwnerSecret = getOwnerSecret(request, body)
+    const client = createClient(clientOverride)
+    const authToken = getBearerToken(request)
+    if (authToken !== null) client.setAuth(authToken)
+    const provisionSessionId = await resolveProvisionSessionId(
+      client,
+      sessionId,
+    )
+    try {
+      await client.query(api.sessions.authorizeSessionCommerceProvision, {
+        sessionId: provisionSessionId,
+        anonymousOwnerSecret,
+      })
+    } catch (error) {
+      if (!isMissingProvisionAuthorizationQuery(error)) throw error
+    }
 
-    // Container-per-tenant: each session gets its own isolated Medusa
-    // instance with its own database, admin UI, and products. Reuse an
-    // already-running container if the session re-provisions. Tests can
-    // inject a mock containerProvider to bypass Docker.
+    const generatedProducts = await resolveGeneratedProducts(
+      client,
+      provisionSessionId,
+      body,
+    )
+    const fetchImpl = options.fetch ?? fetch
+    const adminEmail =
+      stringValue(body, 'adminEmail') ??
+      getMedusaAdminEmail(options.env, options.metaEnv)
+    const adminPassword =
+      stringValue(body, 'adminPassword') ??
+      getMedusaAdminPassword(options.env, options.metaEnv)
     const containerProvider = options.containerProvider ?? {
       findRunning: findRunningSessionContainer,
-      provision: (sid, opts) =>
-        provisionSessionMedusaContainer(
-          sid,
-          opts,
-        ) as Promise<MedusaContainerInfo>,
+      provision: async (sid, opts) =>
+        medusaContainerInfo(await provisionSessionMedusaContainer(sid, opts)),
     }
-    let container = await containerProvider.findRunning(sessionId)
-    if (container === undefined) {
-      container = await containerProvider.provision(sessionId, {
-        adminEmail,
-        adminPassword,
-        fetch: fetchImpl,
-      })
-    }
+    const target = await resolveMedusaProvisionTarget({
+      adminEmail,
+      adminPassword,
+      containerProvider,
+      env: options.env,
+      fetchImpl,
+      metaEnv: options.metaEnv,
+      sessionId: provisionSessionId,
+    })
 
-    const backendUrl = container.backendUrl
-    const adminUrl = container.adminUrl
-    const storefrontUrl = container.storefrontUrl
-    const publishableKey = getMedusaPublishableKey(options.env, options.metaEnv)
+    const backendUrl = target.backendUrl
+    const adminUrl = target.adminUrl
+    const storefrontUrl = resolveStorefrontUrl(
+      provisionSessionId,
+      request,
+      backendUrl,
+      target.storefrontUrl,
+    )
     const handoff = createMedusaHandoff(
-      sessionId,
+      provisionSessionId,
       backendUrl,
       adminUrl,
       storefrontUrl,
       options.env,
       options.metaEnv,
     )
-    let availability = await validateMedusaStoreApi(
-      backendUrl,
-      publishableKey,
-      fetchImpl,
-    )
     const productSync =
-      generatedProducts.length > 0
+      generatedProducts.length > 0 && backendUrl !== undefined
         ? await syncGeneratedProductsToMedusa({
             adminApiToken: getMedusaAdminApiToken(options.env, options.metaEnv),
             adminEmail,
             adminPassword,
             backendUrl,
-            currencyCode: availability.currencyCode,
             fetch: fetchImpl,
             products: generatedProducts,
-            sessionId,
+            sessionId: provisionSessionId,
           })
         : { synced: 0 }
-    if (productSync.tenant !== undefined && !availability.liveStoreApiReady) {
-      availability = await validateMedusaStoreApi(
-        backendUrl,
-        productSync.tenant.publishableKey,
-        fetchImpl,
-      )
-    }
+    const tenantSetup =
+      backendUrl === undefined ||
+      productSync.tenant !== undefined ||
+      generatedProducts.length > 0
+        ? {}
+        : await ensureMedusaSessionTenant({
+            adminApiToken: getMedusaAdminApiToken(options.env, options.metaEnv),
+            adminEmail,
+            adminPassword,
+            backendUrl,
+            fetch: fetchImpl,
+            sessionId: provisionSessionId,
+          })
+    const publishableKey =
+      productSync.tenant?.publishableKey ??
+      tenantSetup.tenant?.publishableKey ??
+      getMedusaPublishableKey(options.env, options.metaEnv)
+    const availability =
+      backendUrl === undefined
+        ? {
+            liveStoreApiReady: false,
+            publishableKeyConfigured: false,
+            warning: 'Medusa Store API not configured.',
+          }
+        : await validateMedusaStoreApi(backendUrl, publishableKey, fetchImpl)
     const warning = normalizeMedusaStoreApiWarning(
-      availability.warning ?? productSync.warning,
+      availability.warning ?? productSync.warning ?? tenantSetup.warning,
     )
 
-    const client = createClient(clientOverride)
-    const mutationArgs = {
-      sessionId: sessionId as Id<'sessions'>,
-      anonymousOwnerSecret: getOwnerSecret(request, body),
-      backendUrl,
-      adminUrl,
-      storefrontUrl,
-      errorMessage: warning,
+    const mutationArgs: CommerceConfigMutationArgs = {
+      sessionId: provisionSessionId,
+      ...(anonymousOwnerSecret === undefined ? {} : { anonymousOwnerSecret }),
+      ...(backendUrl === undefined ? {} : { backendUrl }),
+      ...(adminUrl === undefined ? {} : { adminUrl }),
+      ...(storefrontUrl === undefined ? {} : { storefrontUrl }),
+      ...(warning === undefined ? {} : { errorMessage: warning }),
       productCount: generatedProducts.length,
       configJson:
         body.config === undefined
           ? (stringValue(body, 'configJson') ??
-            createDefaultMedusaConfigJson(sessionId, availability, {
-              ...(productSync.tenant === undefined
-                ? {}
-                : { medusaTenant: productSync.tenant }),
-              requested: generatedProducts.length,
-              synced: productSync.synced,
-            }))
+            createDefaultMedusaConfigJson(
+              provisionSessionId,
+              availability,
+              publishableKey,
+              {
+                ...(productSync.tenant === undefined
+                  ? {}
+                  : { medusaTenant: productSync.tenant }),
+                ...(productSync.tenant !== undefined ||
+                tenantSetup.tenant === undefined
+                  ? {}
+                  : { medusaTenant: tenantSetup.tenant }),
+                requested: generatedProducts.length,
+                synced: productSync.synced,
+              },
+            ))
           : JSON.stringify(body.config),
     }
-    let persisted = true
     const result = await client
       .mutation(api.sessions.upsertCommerceConfig, mutationArgs)
       .catch(async (error) => {
@@ -418,23 +689,25 @@ export async function createSessionMedusaProvisionResponse(
             compatibleArgs,
           )
         }
-        if (errorStatus(error) === 403 && generatedProducts.length > 0) {
-          persisted = false
-          return { sessionId }
-        }
         throw error
       })
 
     return json({
-      ...result,
+      ...(isRecord(result) ? result : {}),
       handoff,
       liveStoreApiReady: availability.liveStoreApiReady,
-      persisted,
       syncedProducts: productSync.synced,
       status: 'ready',
       ...(warning === undefined ? {} : { warning }),
     })
-  } catch {
-    return json({ error: 'Commerce provisioning failed.' }, { status: 503 })
+  } catch (error) {
+    const status = errorStatus(error)
+    return json(
+      {
+        error: 'Commerce provisioning failed.',
+        code: commerceProvisionErrorCode(error),
+      },
+      { status: status === 500 ? 503 : status },
+    )
   }
 }

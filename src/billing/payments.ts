@@ -76,8 +76,6 @@ const EARLY_ADOPTER_MAX = parseInt(
   10,
 )
 const EARLY_ADOPTER_PLAN_ID = process.env.RAZORPAY_EARLY_ADOPTER_PLAN_ID || ''
-const STRIPE_EARLY_ADOPTER_PRICE_ID =
-  process.env.STRIPE_EARLY_ADOPTER_PRICE_ID || ''
 
 type EarlyAdopterData = { count: number; users: string[] }
 
@@ -189,8 +187,7 @@ export const getEarlyAdopterStatus = async () => {
     const data = await getConvexClient().query('billing:getEarlyAdopterStatus')
     return {
       eligible:
-        data.count < EARLY_ADOPTER_MAX &&
-        Boolean(EARLY_ADOPTER_PLAN_ID || STRIPE_EARLY_ADOPTER_PRICE_ID),
+        data.count < EARLY_ADOPTER_MAX && Boolean(EARLY_ADOPTER_PLAN_ID),
       slotsRemaining: data.slotsRemaining,
       totalSlots: EARLY_ADOPTER_MAX,
       priceId: EARLY_ADOPTER_PLAN_ID,
@@ -203,8 +200,7 @@ export const getEarlyAdopterStatus = async () => {
     const data = await readEarlyAdopterCount()
     return {
       eligible:
-        data.count < EARLY_ADOPTER_MAX &&
-        Boolean(EARLY_ADOPTER_PLAN_ID || STRIPE_EARLY_ADOPTER_PRICE_ID),
+        data.count < EARLY_ADOPTER_MAX && Boolean(EARLY_ADOPTER_PLAN_ID),
       slotsRemaining: Math.max(0, EARLY_ADOPTER_MAX - data.count),
       totalSlots: EARLY_ADOPTER_MAX,
       priceId: EARLY_ADOPTER_PLAN_ID,
@@ -215,7 +211,6 @@ export const getEarlyAdopterStatus = async () => {
 const PRO_PLAN = {
   name: 'Pro',
   priceId: process.env.RAZORPAY_PRO_PLAN_ID || '',
-  stripePriceId: process.env.STRIPE_PRO_PRICE_ID || '',
   features: [
     '30 generations/month',
     'Unlimited ZIP downloads',
@@ -236,7 +231,6 @@ const CREDIT_PACKS = [
     name: '3 Downloads',
     credits: 3,
     priceId: '3_credits',
-    stripePriceId: process.env.STRIPE_CREDITS_3_PRICE_ID || '',
     pricing: {
       inr: { amount: 199, display: '\u20B9199' },
       usd: { amount: 3, display: '$3' },
@@ -247,7 +241,6 @@ const CREDIT_PACKS = [
     name: '10 Downloads',
     credits: 10,
     priceId: '10_credits',
-    stripePriceId: process.env.STRIPE_CREDITS_10_PRICE_ID || '',
     pricing: {
       inr: { amount: 399, display: '\u20B9399' },
       usd: { amount: 5, display: '$5' },
@@ -260,10 +253,6 @@ const credits3Configured = Boolean(
 )
 const credits10Configured = Boolean(
   parseInt(process.env.RAZORPAY_CREDITS_10_PAISE || '0', 10),
-)
-const stripeCredits3Configured = Boolean(process.env.STRIPE_CREDITS_3_PRICE_ID)
-const stripeCredits10Configured = Boolean(
-  process.env.STRIPE_CREDITS_10_PRICE_ID,
 )
 
 const GEO_HEADERS = [
@@ -598,9 +587,8 @@ export async function getSessionPaymentDetails(
   const resolvedCountry =
     countryCode || resolveCountryCodeFromHeaders(headers) || 'GLOBAL'
   const isIndianUser = resolvedCountry === 'IN'
-  const gateway = resolvePaymentGateway(resolvedCountry)
+  const gateway = resolvePaymentGateway()
   const currency = resolvePaymentCurrency(gateway)
-  const isStripe = gateway === 'stripe'
   const resolvedIp = ip
   const [isSubscribedRaw, earlyAdopter, credits, quota] = await Promise.all([
     hasActiveSubscription(session?.userId),
@@ -619,28 +607,26 @@ export async function getSessionPaymentDetails(
     currency,
     plan: {
       name: PRO_PLAN.name,
-      priceId: isStripe ? PRO_PLAN.stripePriceId : PRO_PLAN.priceId,
+      priceId: PRO_PLAN.priceId,
       features: PRO_PLAN.features,
     },
     pricing: PRO_PLAN.pricing,
     creditPacks: CREDIT_PACKS.filter((p) => {
-      if (p.id === '3_credits')
-        return isStripe ? stripeCredits3Configured : credits3Configured
-      if (p.id === '10_credits')
-        return isStripe ? stripeCredits10Configured : credits10Configured
+      if (p.id === '3_credits') return credits3Configured
+      if (p.id === '10_credits') return credits10Configured
       return false
     }).map((p) => ({
       id: p.id,
       name: p.name,
       credits: p.credits,
-      priceId: isStripe ? p.stripePriceId : p.priceId,
+      priceId: p.priceId,
       pricing: p.pricing,
     })),
     earlyAdopter: {
       eligible: earlyAdopter.eligible,
       slotsRemaining: earlyAdopter.slotsRemaining,
       totalSlots: earlyAdopter.totalSlots,
-      priceId: isStripe ? STRIPE_EARLY_ADOPTER_PRICE_ID : earlyAdopter.priceId,
+      priceId: earlyAdopter.priceId,
       pricing: {
         inr: { amount: 199, display: '\u20B9199/month' },
         usd: { amount: 5, display: '$5/month' },

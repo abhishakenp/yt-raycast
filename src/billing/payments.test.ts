@@ -183,15 +183,16 @@ describe('billing export target decoration', () => {
 })
 
 describe('session payment details', () => {
-  it('returns Stripe pricing, credit packs, quota, and unlock state for international users', async () => {
+  it('returns Razorpay pricing, credit packs, quota, and unlock state for all users', async () => {
     const { getSessionPaymentDetails, setActiveSubscriptionLookupForTest } =
       await loadPayments({
         EARLY_ADOPTER_MAX_USERS: '10',
-        STRIPE_SECRET_KEY: 'sk_test',
-        STRIPE_PRO_PRICE_ID: 'price_pro_stripe',
-        STRIPE_EARLY_ADOPTER_PRICE_ID: 'price_early_stripe',
-        STRIPE_CREDITS_3_PRICE_ID: 'price_credits_3',
-        STRIPE_CREDITS_10_PRICE_ID: 'price_credits_10',
+        RAZORPAY_KEY_ID: 'rzp_key',
+        RAZORPAY_KEY_SECRET: 'rzp_secret',
+        RAZORPAY_PRO_PLAN_ID: 'plan_pro',
+        RAZORPAY_EARLY_ADOPTER_PLAN_ID: 'plan_early',
+        RAZORPAY_CREDITS_3_PAISE: '19900',
+        RAZORPAY_CREDITS_10_PAISE: '39900',
       })
     setActiveSubscriptionLookupForTest(() => false)
     convexMock.query.mockImplementation(async (name) => {
@@ -211,24 +212,24 @@ describe('session payment details', () => {
         },
       ),
     ).resolves.toMatchObject({
-      gateway: 'stripe',
+      gateway: 'razorpay',
       countryCode: 'US',
       isIndianUser: false,
       configured: true,
-      currency: 'usd',
+      currency: 'inr',
       plan: {
         name: 'Pro',
-        priceId: 'price_pro_stripe',
+        priceId: 'plan_pro',
       },
       creditPacks: [
-        { id: '3_credits', credits: 3, priceId: 'price_credits_3' },
-        { id: '10_credits', credits: 10, priceId: 'price_credits_10' },
+        { id: '3_credits', credits: 3, priceId: '3_credits' },
+        { id: '10_credits', credits: 10, priceId: '10_credits' },
       ],
       earlyAdopter: {
         eligible: true,
         slotsRemaining: 6,
         totalSlots: 10,
-        priceId: 'price_early_stripe',
+        priceId: 'plan_early',
       },
       subscription: {
         active: false,

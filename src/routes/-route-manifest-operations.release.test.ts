@@ -43,7 +43,6 @@ describe('generated route manifest release operations', () => {
     expect(methodsByPath.get('/api/health')).toEqual(['GET'])
     expect(methodsByPath.get('/api/sessions/create')).toEqual(['POST'])
     expect(methodsByPath.get('/api/checkout/start')).toEqual(['POST'])
-    expect(methodsByPath.get('/api/payments/stripe/webhook')).toEqual(['POST'])
     expect(methodsByPath.get('/api/payments/razorpay/webhook')).toEqual([
       'POST',
     ])

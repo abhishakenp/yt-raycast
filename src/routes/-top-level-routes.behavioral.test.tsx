@@ -3,7 +3,6 @@ import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const createExportResponseMock = vi.hoisted(() => vi.fn())
-const convexClientQueryMock = vi.hoisted(() => vi.fn())
 const routeParamMocks = vi.hoisted(() => {
   const paramsByPath: Record<string, Record<string, string>> = {
     '/generate/$sessionId/$': {
@@ -194,10 +193,6 @@ vi.mock('@/features/exports/server/create-export-response', () => ({
   createExportResponse: createExportResponseMock,
 }))
 
-vi.mock('@/shared/convex/http-client', () => ({
-  createRuntimeConvexHttpClient: () => ({ query: convexClientQueryMock }),
-}))
-
 async function importRoute(path: string): Promise<RouteWithHandlers> {
   const mod: RouteModule = await import(path)
   return mod.Route
@@ -318,53 +313,13 @@ describe('top-level route behavior', () => {
     expect(screen.getByTestId('lazy-route').textContent).toBe('PreviewRoute')
   })
 
-  it('redirects a Ship Fast subdomain to the live preview route by session ID', async () => {
-    const sessionId = 'k574ms14ma9f94keq30r7dq24x89n1k2'
-    convexClientQueryMock.mockResolvedValue({
-      slug: 'a-craft-beer-brewery',
-      url: 'https://a-craft-beer-brewery.ship-fast.ai',
-      status: 'ready',
-      sessionId,
-    })
+  it('does not handle subdomains at the root route (rewrite owns that)', async () => {
     const Route = await importRoute('./index')
-    const request = new Request('https://a-craft-beer-brewery.ship-fast.ai/')
-    const handler = Route.options.server?.handlers.GET
 
-    expect(handler).toBeTypeOf('function')
-
-    const response = await handler?.({ params: {}, request })
-
-    expect(response?.status).toBe(302)
-    expect(response?.headers.get('location')).toBe(`/preview/${sessionId}`)
-    expect(response?.headers.get('cache-control')).toBe('no-store')
-    expect(convexClientQueryMock).toHaveBeenCalledWith(expect.anything(), {
-      slug: 'a-craft-beer-brewery',
-    })
-  })
-
-  it('returns 404 for a subdomain with no ready deployment', async () => {
-    convexClientQueryMock.mockResolvedValue(null)
-    const Route = await importRoute('./index')
-    const request = new Request('https://nonexistent-site.ship-fast.ai/')
-    const handler = Route.options.server?.handlers.GET
-
-    const response = await handler?.({ params: {}, request })
-
-    expect(response?.status).toBe(404)
-  })
-
-  it('returns 404 for a subdomain with a non-ready deployment', async () => {
-    convexClientQueryMock.mockResolvedValue({
-      slug: 'building-site',
-      status: 'building',
-      sessionId: 'some-session-id',
-    })
-    const Route = await importRoute('./index')
-    const request = new Request('https://building-site.ship-fast.ai/')
-    const handler = Route.options.server?.handlers.GET
-
-    const response = await handler?.({ params: {}, request })
-
-    expect(response?.status).toBe(404)
+    // Subdomain requests are rewritten to /deployed/$slug by the router-level
+    // `rewrite` pair before route matching, so the `/` route must not carry a
+    // server handler that redirects or resolves deployments.
+    expect(Route.options.server).toBeUndefined()
+    expect(Route.options.component).toBeTypeOf('function')
   })
 })

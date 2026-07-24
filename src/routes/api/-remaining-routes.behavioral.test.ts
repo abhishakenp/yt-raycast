@@ -262,17 +262,17 @@ describe('remaining API route behavior', () => {
 
     expect(Route.path).toBe('/api/sessions/$sessionId/medusa-products')
     expect(await response.text()).toBe('medusa products')
-    expect(routeMocks.medusaProducts).toHaveBeenCalledWith(realSessionId, {
-      env: process.env,
-      fetch,
-      metaEnv: {},
-    })
+    expect(routeMocks.medusaProducts).toHaveBeenCalledWith(
+      realSessionId,
+      { fetch },
+      expect.objectContaining({
+        mutation: expect.any(Function),
+        query: expect.any(Function),
+      }),
+    )
   })
 
   it('replays the Medusa provision body and supplies a Convex-backed client', async () => {
-    routeMocks.convexClient.mutation.mockRejectedValueOnce(
-      new Error('FORBIDDEN: not owner'),
-    )
     routeMocks.medusaProvision.mockImplementation(
       async (_sessionId, request, client, deps) => {
         expect(await request.text()).toBe(
@@ -282,7 +282,7 @@ describe('remaining API route behavior', () => {
         await expect(client.mutation('session:update', {})).resolves.toEqual({
           sessionId: realSessionId,
         })
-        expect(deps).toMatchObject({ env: process.env, fetch, metaEnv: {} })
+        expect(deps).toMatchObject({ fetch })
         return new Response('provisioned')
       },
     )
@@ -309,7 +309,7 @@ describe('remaining API route behavior', () => {
         mutation: expect.any(Function),
         query: expect.any(Function),
       }),
-      { env: process.env, fetch, metaEnv: {} },
+      { fetch },
     )
   })
 

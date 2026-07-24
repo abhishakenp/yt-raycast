@@ -57,6 +57,15 @@ function errorResponse(body: unknown): Response {
   } as Response
 }
 
+function fillAdminCredentials(): void {
+  fireEvent.change(screen.getByLabelText('Admin email'), {
+    target: { value: 'admin@store.test' },
+  })
+  fireEvent.change(screen.getByLabelText('Admin password'), {
+    target: { value: 'secret-password' },
+  })
+}
+
 describe('CommercePanel (behavioral)', () => {
   beforeEach(() => {
     commerceConfig.current = undefined
@@ -117,6 +126,7 @@ describe('CommercePanel (behavioral)', () => {
 
     render(<CommercePanel sessionId="session_123" />)
 
+    fillAdminCredentials()
     fireEvent.click(screen.getByRole('button', { name: /Enable Commerce/ }))
 
     await waitFor(() => {
@@ -132,6 +142,7 @@ describe('CommercePanel (behavioral)', () => {
 
     render(<CommercePanel sessionId="session_123" />)
 
+    fillAdminCredentials()
     fireEvent.click(screen.getByRole('button', { name: /Enable Commerce/ }))
 
     expect(await screen.findByText('Medusa handoff')).toBeTruthy()
@@ -150,6 +161,7 @@ describe('CommercePanel (behavioral)', () => {
 
     render(<CommercePanel sessionId="session_123" />)
 
+    fillAdminCredentials()
     fireEvent.click(screen.getByRole('button', { name: /Enable Commerce/ }))
 
     const storefront = await screen.findByRole('link', {
@@ -210,6 +222,7 @@ describe('CommercePanel (behavioral)', () => {
 
     render(<CommercePanel sessionId="session_123" />)
 
+    fillAdminCredentials()
     fireEvent.click(screen.getByRole('button', { name: /Enable Commerce/ }))
 
     expect(await screen.findByText('Enabling...')).toBeTruthy()
@@ -227,6 +240,7 @@ describe('CommercePanel (behavioral)', () => {
 
     render(<CommercePanel sessionId="session_123" />)
 
+    fillAdminCredentials()
     fireEvent.click(screen.getByRole('button', { name: /Enable Commerce/ }))
 
     expect(await screen.findByText('Medusa provisioning blew up')).toBeTruthy()
@@ -242,6 +256,7 @@ describe('CommercePanel (behavioral)', () => {
 
     render(<CommercePanel sessionId="session_123" />)
 
+    fillAdminCredentials()
     fireEvent.click(screen.getByRole('button', { name: /Enable Commerce/ }))
 
     expect(

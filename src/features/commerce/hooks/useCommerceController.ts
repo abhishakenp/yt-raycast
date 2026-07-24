@@ -5,21 +5,26 @@ import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 import { readJsonOrThrow } from '@/lib/safe-fetch'
+import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
 import type { GeneratedCommerceProduct } from '../services/generated-commerce-products'
 
 type CommerceHandoff = {
-  adminEmail?: string
-  adminPassword?: string
   adminUrl: string
   backendUrl: string
   storefrontUrl: string
   tenantId: string
 }
 
+export type MedusaAdminCredentials = {
+  email: string
+  password: string
+}
+
 export function useCommerceController(
   sessionId: string,
   visualProducts: Array<GeneratedCommerceProduct> = [],
 ) {
+  const { getToken, isSignedIn } = useOptionalAuth()
   const config = useQuery(api.sessions.getCommerceConfig, {
     sessionId: sessionId as Id<'sessions'>,
   })
@@ -27,7 +32,7 @@ export function useCommerceController(
   const [commerceHandoff, setCommerceHandoff] = useState<CommerceHandoff>()
   const [isSaving, setIsSaving] = useState(false)
 
-  const provisionCommerce = async () => {
+  const provisionCommerce = async (credentials: MedusaAdminCredentials) => {
     setCommerceError(undefined)
     setIsSaving(true)
 
@@ -36,18 +41,24 @@ export function useCommerceController(
         typeof window === 'undefined'
           ? undefined
           : readAnonymousOwnerSecret(window.localStorage, sessionId)
+      const authToken = isSignedIn
+        ? await getToken({ template: 'convex' })
+        : null
 
       const response = await fetch(
         `/api/sessions/${encodeURIComponent(sessionId)}/provision/medusa`,
         {
           method: 'POST',
           headers: {
+            ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
             'Content-Type': 'application/json',
             ...(anonymousOwnerSecret === undefined
               ? {}
               : { 'x-ship-fast-owner-secret': anonymousOwnerSecret }),
           },
           body: JSON.stringify({
+            adminEmail: credentials.email.trim(),
+            adminPassword: credentials.password,
             anonymousOwnerSecret,
             products: visualProducts,
           }),

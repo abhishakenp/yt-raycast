@@ -27,6 +27,12 @@ export async function resolveGenerationViewSessionId(
   const exportRecord = exportId === null ? null : await ctx.db.get(exportId)
 
   if (exportRecord !== null) return exportRecord.sessionId
+
+  const previewId =
+    lookup === undefined ? null : ctx.db.normalizeId('previews', lookup)
+  const preview = previewId === null ? null : await ctx.db.get(previewId)
+
+  if (preview !== null) return preview.sessionId
   if (lookup === undefined) return null
 
   const deployment = await ctx.db

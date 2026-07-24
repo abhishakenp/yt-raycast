@@ -3,9 +3,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createCheckoutApiResponse } from './checkout-api-response'
 
 const env = {
-  STRIPE_SECRET_KEY: 'sk_test_123',
-  STRIPE_PRO_PRICE_ID: 'price_pro',
-  STRIPE_CREDITS_3_PRICE_ID: 'price_credits_3',
   RAZORPAY_KEY_ID: 'rzp_key',
   RAZORPAY_KEY_SECRET: 'rzp_secret',
   RAZORPAY_PRO_PLAN_ID: 'plan_pro',
@@ -46,12 +43,8 @@ describe('createCheckoutApiResponse', () => {
     expect(response.status).toBe(401)
   })
 
-  it('creates a Stripe checkout session', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(
-        JSON.stringify({ id: 'cs_test', url: 'https://stripe.test/checkout' }),
-      ),
-    )
+  it('rejects Stripe checkout before calling any payment provider', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
 
     const response = await createCheckoutApiResponse(
       new Request('https://ship-fast.test/api/checkout/start', {
@@ -63,137 +56,11 @@ describe('createCheckoutApiResponse', () => {
       client,
     )
 
-    expect(response.status).toBe(200)
-    expect(client.setAuth).toHaveBeenCalledWith('token_123')
-    expect(await response.json()).toMatchObject({
-      provider: 'stripe',
-      checkoutSessionId: 'cs_test',
-      url: 'https://stripe.test/checkout',
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: 'Invalid payment gateway.',
     })
-  })
-
-  it('omits subscription_data from Stripe credit-pack (payment mode) checkout', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(
-        JSON.stringify({
-          id: 'cs_pack',
-          url: 'https://stripe.test/checkout',
-        }),
-      ),
-    )
-
-    const response = await createCheckoutApiResponse(
-      new Request('https://ship-fast.test/api/checkout/start', {
-        method: 'POST',
-        headers: { authorization: 'Bearer token_123' },
-        body: JSON.stringify({
-          mode: 'credit_pack',
-          gateway: 'stripe',
-          packId: '3_credits',
-        }),
-      }),
-      env,
-      client,
-    )
-
-    expect(response.status).toBe(200)
-    const stripeBody = String(fetchSpy.mock.calls[0]?.[1]?.body)
-    expect(stripeBody).toContain('mode=payment')
-    expect(stripeBody).not.toContain('subscription_data')
-  })
-
-  it('includes subscription_data metadata on Stripe subscription checkout', async () => {
-    const fetchSpy = vi
-      .spyOn(globalThis, 'fetch')
-      .mockResolvedValue(
-        new Response(
-          JSON.stringify({ id: 'cs_sub', url: 'https://stripe.test/checkout' }),
-        ),
-      )
-
-    const response = await createCheckoutApiResponse(
-      new Request('https://ship-fast.test/api/checkout/start', {
-        method: 'POST',
-        headers: { authorization: 'Bearer token_123' },
-        body: JSON.stringify({ mode: 'subscription', gateway: 'stripe' }),
-      }),
-      env,
-      client,
-    )
-
-    expect(response.status).toBe(200)
-    const stripeBody = String(fetchSpy.mock.calls[0]?.[1]?.body)
-    expect(stripeBody).toContain('mode=subscription')
-    expect(stripeBody).toContain(
-      encodeURIComponent('subscription_data[metadata][userId]'),
-    )
-  })
-
-  it('adds Dub customer metadata only to enabled Stripe subscriptions', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      Response.json({
-        id: 'cs_dub',
-        url: 'https://stripe.test/checkout',
-      }),
-    )
-
-    await createCheckoutApiResponse(
-      new Request('https://ship-fast.test/api/checkout/start', {
-        body: JSON.stringify({ gateway: 'stripe', mode: 'subscription' }),
-        headers: { authorization: 'Bearer token_123' },
-        method: 'POST',
-      }),
-      { ...env, DUB_PARTNERS_ENABLED: 'true' },
-      client,
-    )
-
-    const enabledBody = new URLSearchParams(
-      String(fetchSpy.mock.calls[0]?.[1]?.body),
-    )
-    expect(enabledBody.get('metadata[dubCustomerExternalId]')).toBe('user_123')
-
-    fetchSpy.mockClear()
-    await createCheckoutApiResponse(
-      new Request('https://ship-fast.test/api/checkout/start', {
-        body: JSON.stringify({ gateway: 'stripe', mode: 'subscription' }),
-        headers: { authorization: 'Bearer token_123' },
-        method: 'POST',
-      }),
-      { ...env, DUB_PARTNERS_ENABLED: 'false' },
-      client,
-    )
-    const disabledBody = new URLSearchParams(
-      String(fetchSpy.mock.calls[0]?.[1]?.body),
-    )
-    expect(disabledBody.get('metadata[dubCustomerExternalId]')).toBeNull()
-  })
-
-  it('never adds Dub customer metadata to Stripe credit packs', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      Response.json({
-        id: 'cs_dub_pack',
-        url: 'https://stripe.test/checkout',
-      }),
-    )
-
-    await createCheckoutApiResponse(
-      new Request('https://ship-fast.test/api/checkout/start', {
-        body: JSON.stringify({
-          gateway: 'stripe',
-          mode: 'credit_pack',
-          packId: '3_credits',
-        }),
-        headers: { authorization: 'Bearer token_123' },
-        method: 'POST',
-      }),
-      { ...env, DUB_PARTNERS_ENABLED: 'true' },
-      client,
-    )
-
-    const stripeBody = new URLSearchParams(
-      String(fetchSpy.mock.calls[0]?.[1]?.body),
-    )
-    expect(stripeBody.get('metadata[dubCustomerExternalId]')).toBeNull()
+    expect(fetchSpy).not.toHaveBeenCalled()
   })
 
   it('creates a Razorpay credit-pack order', async () => {
@@ -225,6 +92,88 @@ describe('createCheckoutApiResponse', () => {
     })
   })
 
+  it('lets route params override a conflicting checkout body gateway', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          id: 'order_override',
+          amount: 19900,
+          currency: 'INR',
+        }),
+      ),
+    )
+
+    const response = await createCheckoutApiResponse(
+      new Request('https://ship-fast.test/api/payments/razorpay/start', {
+        method: 'POST',
+        headers: { authorization: 'Bearer token_123' },
+        body: JSON.stringify({
+          mode: 'credit_pack',
+          gateway: 'stripe',
+          packId: '3_credits',
+        }),
+      }),
+      env,
+      client,
+      'razorpay',
+    )
+
+    expect(response.status).toBe(200)
+    expect(String(fetchSpy.mock.calls[0]?.[0])).toBe(
+      'https://api.razorpay.com/v1/orders',
+    )
+    expect(await response.json()).toMatchObject({
+      provider: 'razorpay',
+      orderId: 'order_override',
+    })
+  })
+
+  it('rejects an unsupported gateway route override with 400 before calling any payment provider', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+
+    const response = await createCheckoutApiResponse(
+      new Request('https://ship-fast.test/api/payments/paypal/start', {
+        method: 'POST',
+        headers: { authorization: 'Bearer token_123' },
+        body: JSON.stringify({ mode: 'subscription' }),
+      }),
+      env,
+      client,
+      'paypal',
+    )
+
+    expect(response.status).toBe(400)
+    expect(response.headers.get('Content-Type')).toContain('application/json')
+    await expect(response.json()).resolves.toEqual({
+      error: 'Invalid payment gateway.',
+    })
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+
+  it('rejects an unsupported checkout body gateway instead of falling back to country routing', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+
+    const response = await createCheckoutApiResponse(
+      new Request('https://ship-fast.test/api/checkout/start', {
+        method: 'POST',
+        headers: { authorization: 'Bearer token_123' },
+        body: JSON.stringify({
+          mode: 'subscription',
+          gateway: 'paypal',
+          countryCode: 'US',
+        }),
+      }),
+      env,
+      client,
+    )
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: 'Invalid payment gateway.',
+    })
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+
   it('returns JSON instead of throwing when an authenticated checkout request has malformed JSON', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch')
 
@@ -252,7 +201,7 @@ describe('createCheckoutApiResponse', () => {
       new Request('https://ship-fast.test/api/checkout/start', {
         method: 'POST',
         headers: { authorization: 'Bearer token_123' },
-        body: JSON.stringify({ mode: 'lifetime_deal', gateway: 'stripe' }),
+        body: JSON.stringify({ mode: 'lifetime_deal', gateway: 'razorpay' }),
       }),
       env,
       client,
@@ -265,84 +214,6 @@ describe('createCheckoutApiResponse', () => {
     })
     expect(client.setAuth).not.toHaveBeenCalled()
     expect(fetchSpy).not.toHaveBeenCalled()
-  })
-
-  it('returns JSON when Stripe checkout returns a malformed upstream body', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response('<html>stripe unavailable</html>', {
-        headers: { 'Content-Type': 'text/html' },
-        status: 502,
-      }),
-    )
-
-    const response = await createCheckoutApiResponse(
-      new Request('https://ship-fast.test/api/checkout/start', {
-        method: 'POST',
-        headers: { authorization: 'Bearer token_123' },
-        body: JSON.stringify({ mode: 'subscription', gateway: 'stripe' }),
-      }),
-      env,
-      client,
-    )
-
-    expect(response.status).toBe(502)
-    expect(response.headers.get('Content-Type')).toContain('application/json')
-    await expect(response.json()).resolves.toEqual({
-      error: 'Stripe checkout failed.',
-    })
-  })
-
-  it('does not treat a malformed 200 Stripe checkout response as a successful checkout', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response('<html>stripe gateway returned a login page</html>', {
-        headers: { 'Content-Type': 'text/html' },
-        status: 200,
-      }),
-    )
-
-    const response = await createCheckoutApiResponse(
-      new Request('https://ship-fast.test/api/checkout/start', {
-        method: 'POST',
-        headers: { authorization: 'Bearer token_123' },
-        body: JSON.stringify({ mode: 'subscription', gateway: 'stripe' }),
-      }),
-      env,
-      client,
-    )
-
-    expect(response.status).toBe(502)
-    expect(response.headers.get('Content-Type')).toContain('application/json')
-    await expect(response.json()).resolves.toEqual({
-      error: 'Stripe checkout failed.',
-    })
-  })
-
-  it('returns stable JSON when Stripe checkout network request rejects', async () => {
-    vi.spyOn(globalThis, 'fetch').mockRejectedValue(
-      new Error(
-        'stripe network unavailable for k571fbfbggczv4pfz2evtrxdzx89qqbb',
-      ),
-    )
-
-    const response = await createCheckoutApiResponse(
-      new Request('https://ship-fast.test/api/checkout/start', {
-        method: 'POST',
-        headers: { authorization: 'Bearer token_123' },
-        body: JSON.stringify({
-          mode: 'subscription',
-          gateway: 'stripe',
-          sessionId: 'k571fbfbggczv4pfz2evtrxdzx89qqbb',
-        }),
-      }),
-      env,
-      client,
-    )
-
-    expect(response.status).toBe(502)
-    expect(response.headers.get('Content-Type')).toContain('application/json')
-    await expect(response.json()).resolves.toEqual({
-      error: 'Stripe checkout failed.',
-    })
   })
 
   it('returns stable JSON when Convex billing overview lookup fails before checkout starts', async () => {
@@ -359,7 +230,7 @@ describe('createCheckoutApiResponse', () => {
         headers: { authorization: 'Bearer token_123' },
         body: JSON.stringify({
           mode: 'subscription',
-          gateway: 'stripe',
+          gateway: 'razorpay',
           sessionId: dbObservedReadySessionId,
         }),
       }),
@@ -376,12 +247,10 @@ describe('createCheckoutApiResponse', () => {
     expect(fetchSpy).not.toHaveBeenCalled()
   })
 
-  it('does not treat a Stripe 200 response without a checkout URL or session id as successful checkout', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify({ object: 'checkout.session' }), {
-        headers: { 'Content-Type': 'application/json' },
-        status: 200,
-      }),
+  it('returns 401 when Convex rejects the Clerk billing token before checkout starts', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+    client.query.mockRejectedValueOnce(
+      new Error('ConvexError: UNAUTHENTICATED'),
     )
 
     const response = await createCheckoutApiResponse(
@@ -390,19 +259,19 @@ describe('createCheckoutApiResponse', () => {
         headers: { authorization: 'Bearer token_123' },
         body: JSON.stringify({
           mode: 'subscription',
-          gateway: 'stripe',
-          sessionId: dbObservedReadySessionId,
+          gateway: 'razorpay',
         }),
       }),
       env,
       client,
     )
 
-    expect(response.status).toBe(502)
-    expect(response.headers.get('Content-Type')).toContain('application/json')
+    expect(response.status).toBe(401)
     await expect(response.json()).resolves.toEqual({
-      error: 'Stripe checkout failed.',
+      error: 'Sign in before checkout.',
     })
+    expect(client.setAuth).toHaveBeenCalledWith('token_123')
+    expect(fetchSpy).not.toHaveBeenCalled()
   })
 
   it('returns JSON when Razorpay checkout returns a malformed upstream body', async () => {

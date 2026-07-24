@@ -3,6 +3,7 @@ import type { CapsuleTextChange } from '@/features/editing/hooks/useCapsulePropR
 import type { InspectorSelection } from '@/features/editing/element-path'
 import type { ThemeStyles } from '@/genui/theme-presets'
 import { GeneratedModulePreview } from '@/features/generation/components/GeneratedModulePreview'
+import type { CommerceRuntimeMode } from '@ship-fast/blocks/commerce'
 
 type BrandLogoSelection = {
   name: string
@@ -13,6 +14,7 @@ type BrandLogoSelection = {
 }
 
 export type SessionGeneratedPreviewProps = {
+  commerceMode?: CommerceRuntimeMode
   source: string
   sourceUrl?: string | null
   sessionId: string
@@ -49,6 +51,7 @@ export type SessionGeneratedPreviewProps = {
 }
 
 export const SessionGeneratedPreview = ({
+  commerceMode = 'disabled',
   source,
   sourceUrl = null,
   sessionId,
@@ -71,6 +74,7 @@ export const SessionGeneratedPreview = ({
   onSectionSelect,
 }: SessionGeneratedPreviewProps) => (
   <GeneratedModulePreview
+    commerceMode={commerceMode}
     source={source}
     sourceUrl={sourceUrl}
     sessionId={sessionId}

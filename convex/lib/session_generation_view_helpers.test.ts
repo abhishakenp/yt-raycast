@@ -183,7 +183,7 @@ function ctxFor(input: Partial<Record<TableName, Row[]>>) {
 }
 
 describe('session generation view helpers', () => {
-  it('resolves session ids directly, through exports, and through deployment slugs', async () => {
+  it('resolves session ids directly, through exports, previews, and deployment slugs', async () => {
     const exportId = 'export_generation_view' as Id<'exports'>
     const ctx = ctxFor({
       sessions: [sessionDoc()],
@@ -210,6 +210,17 @@ describe('session generation view helpers', () => {
           updatedAt: 1,
         } as Doc<'deployments'>,
       ],
+      previews: [
+        {
+          _id: 'preview_generation_view' as Id<'previews'>,
+          _creationTime: 1,
+          sessionId,
+          version: 1,
+          html: '<main></main>',
+          createdAt: 1,
+          source: 'generation',
+        } as Doc<'previews'>,
+      ],
     })
 
     await expect(
@@ -217,6 +228,11 @@ describe('session generation view helpers', () => {
     ).resolves.toBe(sessionId)
     await expect(
       resolveGenerationViewSessionId(ctx, { lookup: exportId }),
+    ).resolves.toBe(sessionId)
+    await expect(
+      resolveGenerationViewSessionId(ctx, {
+        lookup: 'preview_generation_view',
+      }),
     ).resolves.toBe(sessionId)
     await expect(
       resolveGenerationViewSessionId(ctx, { lookup: 'generation-view-slug' }),

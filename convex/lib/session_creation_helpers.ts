@@ -14,6 +14,7 @@ import {
   MONTHLY_WINDOW_MS,
   RATE_WINDOW_MS,
 } from '../../src/billing/constants'
+import { getActiveSubscriptionsForUser } from './billing_generation_quota'
 import {
   getUserEmail,
   getUserId,
@@ -128,6 +129,7 @@ export type GenerationAdmissionInput = {
   now: number
   disableLimits: boolean
   isAdmin?: boolean
+  publicPreviewMode?: boolean
 }
 
 export type GenerationAdmission = {
@@ -155,6 +157,11 @@ export async function loadGenerationAdmission(
   const dailyCutoff = args.now - DAILY_WINDOW_MS
   const monthlyCutoff = args.now - MONTHLY_WINDOW_MS
   const lookback = MAX_PAID_PER_MONTH + SHORT_WINDOW_LIMIT + 1
+  const userId = args.userId
+  const userActiveSubscriptionCount =
+    userId === undefined
+      ? 0
+      : (await getActiveSubscriptionsForUser(ctx, userId)).length
   // Count the UNION of the IP bucket and the userId bucket (deduped by _id).
   // The IP bucket blocks the multi-account-on-same-IP bypass (a user creating
   // a second account to get fresh quota on the same network). The userId bucket
@@ -176,7 +183,7 @@ export async function loadGenerationAdmission(
       ? await ctx.db
           .query('sessions')
           .withIndex('by_userId_createdAt', (index) =>
-            index.eq('userId', args.userId),
+            index.eq('userId', userId),
           )
           .order('desc')
           .take(lookback)
@@ -209,34 +216,12 @@ export async function loadGenerationAdmission(
       })
     })()
 
-  const userId = args.userId
-  const activeSubscription =
-    userId === undefined
-      ? null
-      : await ctx.db
-          .query('subscriptions')
-          .withIndex('by_userId', (index) => index.eq('userId', userId))
-          .filter((subscriptionQuery) =>
-            subscriptionQuery.or(
-              subscriptionQuery.eq(subscriptionQuery.field('status'), 'active'),
-              subscriptionQuery.eq(
-                subscriptionQuery.field('status'),
-                'trialing',
-              ),
-              subscriptionQuery.eq(
-                subscriptionQuery.field('status'),
-                'authenticated',
-              ),
-            ),
-          )
-          .first()
-
-  const isPaid = activeSubscription !== null
+  const isPaid = userActiveSubscriptionCount > 0
   const monthlyLimit =
     args.userId === undefined
       ? MAX_ANON_PER_MONTH
       : isPaid
-        ? MAX_PAID_PER_MONTH
+        ? userActiveSubscriptionCount * MAX_PAID_PER_MONTH
         : MAX_FREE_PER_MONTH
 
   // Check whether the anonymous user has claimed the share bonus today.

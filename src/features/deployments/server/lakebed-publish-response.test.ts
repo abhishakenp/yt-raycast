@@ -37,6 +37,55 @@ const dbObservedOpenUiHandoffHtml =
   '<!DOCTYPE html><html lang="en"><head><title>Boutique Coffee Roastery - Preview</title></head><body><main id="openui-root" data-openui-ready="source"><section><p>Generated OpenUI source is ready.</p><h1>Boutique Coffee Roastery</h1><p>The interactive source is available for export and deployment.</p></section></main><script type="application/json" id="ship-fast-openui-source">"home_hero = EcommerceHero(\\"Boutique Coffee Roastery\\")"</script></body></html>'
 
 describe('createLakebedPublishResponse', () => {
+  it('rejects malformed credential payloads instead of silently dropping them', async () => {
+    const client = {
+      query: vi.fn(),
+      action: vi.fn(),
+      setAuth: vi.fn(),
+    }
+
+    const response = await createLakebedPublishResponse(
+      requestFor({
+        razorpay: { environment: 'test', keyId: 'rzp_test_store' },
+      }),
+      'session_123',
+      client,
+    )
+
+    expect(response.status).toBe(400)
+    expect(client.action).not.toHaveBeenCalled()
+    await expect(response.json()).resolves.toEqual({
+      error: 'Invalid Lakebed publish request.',
+    })
+  })
+
+  it('rejects invalid Razorpay credentials before any deployment call', async () => {
+    const client = {
+      query: vi.fn(),
+      action: vi.fn(),
+      setAuth: vi.fn(),
+    }
+
+    const response = await createLakebedPublishResponse(
+      requestFor({
+        razorpay: {
+          environment: 'test',
+          keyId: 'rzp_live_store',
+          keySecret: 'store-secret',
+        },
+      }),
+      'session_123',
+      client,
+    )
+
+    expect(response.status).toBe(400)
+    expect(client.query).not.toHaveBeenCalled()
+    expect(client.action).not.toHaveBeenCalled()
+    await expect(response.json()).resolves.toEqual({
+      error: 'Use a rzp_test_ key ID for test mode.',
+    })
+  })
+
   it('updates an existing ready Lakebed deployment when the current artifact is ready', async () => {
     const client = {
       query: vi

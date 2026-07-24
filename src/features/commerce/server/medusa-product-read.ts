@@ -11,10 +11,19 @@ import type { ConvexHttpClient } from 'convex/browser'
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
+import {
+  type MedusaCommerceProduct,
+  medusaStoreProductFields,
+  normalizeMedusaStoreProduct,
+} from './medusa-store-product'
 
 type FetchLike = typeof fetch
 type CommerceApiClient = Pick<ConvexHttpClient, 'query' | 'mutation'>
 type ContainerInfo = { backendUrl: string }
+type SessionLookupResponse = {
+  sessionId?: unknown
+  id?: unknown
+}
 
 type MedusaProductReadOptions = {
   env?: MedusaEnv
@@ -25,14 +34,7 @@ type MedusaProductReadOptions = {
   containerFinder?: (sessionId: string) => Promise<ContainerInfo | undefined>
 }
 
-export type SessionMedusaProduct = {
-  currencyCode?: string
-  description?: string
-  handle: string
-  price?: number
-  sourceHandle: string
-  title: string
-}
+export type SessionMedusaProduct = MedusaCommerceProduct
 
 function json(body: unknown, init?: ResponseInit) {
   return new Response(JSON.stringify(body), {
@@ -56,12 +58,23 @@ function stringValue(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim() ? value.trim() : undefined
 }
 
-function numberValue(value: unknown): number | undefined {
-  return typeof value === 'number' && Number.isFinite(value) ? value : undefined
-}
-
 function createClient(clientOverride?: CommerceApiClient): CommerceApiClient {
   return clientOverride ?? createRuntimeConvexHttpClient()
+}
+
+async function resolveProductReadSessionId(
+  client: CommerceApiClient,
+  lookup: string,
+): Promise<string> {
+  try {
+    const response = (await client.query(api.sessions.getSessionApiResponse, {
+      lookup,
+    })) as SessionLookupResponse | null
+    const resolved = response?.sessionId ?? response?.id
+    return typeof resolved === 'string' && resolved.trim() ? resolved : lookup
+  } catch {
+    return lookup
+  }
 }
 
 function createTenantName(sessionId: string): string {
@@ -175,28 +188,6 @@ async function discoverTenantPublishableKey({
   return stringValue(key?.token)
 }
 
-function readProductPrice(product: Record<string, unknown>): {
-  currencyCode?: string
-  price?: number
-} {
-  const variants = Array.isArray(product.variants) ? product.variants : []
-  for (const variant of variants) {
-    if (!isRecord(variant)) continue
-    const calculatedPrice = isRecord(variant.calculated_price)
-      ? variant.calculated_price
-      : undefined
-    const price = numberValue(calculatedPrice?.calculated_amount)
-    const currencyCode = stringValue(calculatedPrice?.currency_code)
-    if (price !== undefined) {
-      return {
-        ...(currencyCode === undefined ? {} : { currencyCode }),
-        price,
-      }
-    }
-  }
-  return {}
-}
-
 async function readDefaultRegionId({
   backendUrl,
   fetchImpl,
@@ -220,63 +211,26 @@ async function readDefaultRegionId({
   return region?.id
 }
 
-function normalizeProduct(
-  sessionId: string,
-  value: unknown,
-): SessionMedusaProduct | undefined {
-  if (!isRecord(value)) return undefined
-
-  const metadata = isRecord(value.metadata) ? value.metadata : {}
-  const taggedSessionId = stringValue(metadata.ship_fast_session_id)
-
-  // Cross-tenant guard: exclude products explicitly tagged as belonging to a
-  // different session. Products with no session tag (created directly in the
-  // Medusa admin) are included — the publishable key already scopes the store
-  // API to the session's sales channel, so untagged products are admin-created
-  // items in this tenant that should flow back to the generated UI.
-  if (taggedSessionId !== undefined && taggedSessionId !== sessionId) {
-    return undefined
-  }
-
-  const title = stringValue(value.title)
-  const handle = stringValue(value.handle)
-  if (!title || !handle) return undefined
-
-  // For ship-fast generated products, sourceHandle maps back to the original
-  // generated product handle so the preview sync can find the DOM element.
-  // For admin-created products (no ship-fast metadata), the product is its own
-  // source — sourceHandle falls back to the Medusa product handle.
-  const isShipFastGenerated = metadata.ship_fast_generated_product === true
-  const sourceHandle = isShipFastGenerated
-    ? (stringValue(metadata.ship_fast_generated_handle) ?? handle)
-    : handle
-
-  const description = stringValue(value.description)
-  const price = readProductPrice(value)
-
-  return {
-    ...(description === undefined ? {} : { description }),
-    ...price,
-    handle,
-    sourceHandle,
-    title,
-  }
-}
-
 export async function createSessionMedusaProductsResponse(
   sessionId: string,
   options: MedusaProductReadOptions = {},
   clientOverride?: CommerceApiClient,
 ): Promise<Response> {
   const fetchImpl = options.fetch ?? fetch
+  const client =
+    clientOverride === undefined ? undefined : createClient(clientOverride)
+  const resolvedSessionId =
+    client === undefined
+      ? sessionId
+      : await resolveProductReadSessionId(client, sessionId)
 
   // Resolve the per-session container URL. Priority:
   //   1. backendUrl stored in commerce config (set during provisioning)
   //   2. running container discovered via docker inspect (or injected mock)
   //   3. MEDUSA_BACKEND_URL from env (fallback, shared backend)
-  const tenantConfig = await readTenantConfig(sessionId, clientOverride)
+  const tenantConfig = await readTenantConfig(resolvedSessionId, client)
   const containerFinder = options.containerFinder ?? findRunningSessionContainer
-  const runningContainer = await containerFinder(sessionId)
+  const runningContainer = await containerFinder(resolvedSessionId)
   const backendUrl = normalizeBackendUrl(
     tenantConfig.backendUrl ??
       runningContainer?.backendUrl ??
@@ -291,14 +245,14 @@ export async function createSessionMedusaProductsResponse(
         backendUrl,
         fetchImpl,
         options,
-        sessionId,
+        sessionId: resolvedSessionId,
       })) ??
       getMedusaPublishableKey(options.env, options.metaEnv)
   } catch {
     return json(
       {
         products: [],
-        sessionId,
+        sessionId: resolvedSessionId,
         warning: 'Medusa Store API product read failed.',
       },
       { status: 200 },
@@ -307,7 +261,7 @@ export async function createSessionMedusaProductsResponse(
   if (!publishableKey.trim()) {
     return json({
       products: [],
-      sessionId,
+      sessionId: resolvedSessionId,
       warning: 'Medusa Store API not configured.',
     })
   }
@@ -320,20 +274,25 @@ export async function createSessionMedusaProductsResponse(
     })
     const regionQuery =
       regionId === undefined ? '' : `&region_id=${encodeURIComponent(regionId)}`
-    const response = await fetchImpl(
+    let response = await fetchImpl(
       `${backendUrl}/store/products?limit=100${regionQuery}&fields=${encodeURIComponent(
-        '+metadata,*variants.calculated_price',
+        medusaStoreProductFields,
       )}`,
       {
         headers: { 'x-publishable-api-key': publishableKey.trim() },
       },
     )
+    if (regionId === undefined && response.status === 400) {
+      response = await fetchImpl(`${backendUrl}/store/products?limit=100`, {
+        headers: { 'x-publishable-api-key': publishableKey.trim() },
+      })
+    }
 
     if (!response.ok) {
       return json(
         {
           products: [],
-          sessionId,
+          sessionId: resolvedSessionId,
           warning: `Medusa Store API product read failed (${response.status}).`,
         },
         { status: 200 },
@@ -345,22 +304,22 @@ export async function createSessionMedusaProductsResponse(
       return json(
         {
           products: [],
-          sessionId,
+          sessionId: resolvedSessionId,
           warning: 'Medusa Store API product read failed.',
         },
         { status: 200 },
       )
     }
     const products = payload.products
-      .map((product) => normalizeProduct(sessionId, product))
+      .map((product) => normalizeMedusaStoreProduct(resolvedSessionId, product))
       .filter((product) => product !== undefined)
 
-    return json({ products, sessionId })
+    return json({ products, sessionId: resolvedSessionId })
   } catch {
     return json(
       {
         products: [],
-        sessionId,
+        sessionId: resolvedSessionId,
         warning: 'Medusa Store API product read failed.',
       },
       { status: 200 },

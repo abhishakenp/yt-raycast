@@ -470,6 +470,120 @@ function galleryImageRouteDevProxy(): Plugin {
   }
 }
 
+// --- Subdomain rewrite (dev server) -----------------------------------------
+// TanStack Router's `rewrite.input` only receives a URL object whose host is
+// `localhost:3000` in the Vite dev server — it cannot see the `Host` header
+// that carries the deployment subdomain. This middleware rewrites `req.url`
+// from `/<path>` to `/deployed/<slug>/<path>` BEFORE the Nitro/TanStack handler
+// sees it, so SSR matches the `/deployed/$slug/$` route. The router's
+// `rewrite.output` then maps the internal path back to `/<path>` for the
+// browser URL. In production, a Nitro middleware does the same thing (see
+// `server/middleware/subdomain-rewrite.ts`).
+const SUBDOMAIN_BASE_DOMAIN = (
+  devEnv.NEXT_PUBLIC_BASE_DOMAIN ||
+  process.env.NEXT_PUBLIC_BASE_DOMAIN ||
+  'ship-fast.ai'
+)
+  .toLowerCase()
+  .replace(/^\.+|\.+$/g, '')
+const SUBDOMAIN_RESERVED_HOST_LABELS = new Set([
+  'admin',
+  'agent',
+  'api',
+  'app',
+  'assets',
+  'canva',
+  'cdn',
+  'convex',
+  'convex-backend',
+  'convex-dashboard',
+  'convex-studio',
+  'dashboard',
+  'free-preview',
+  'medusa',
+  'partners',
+  'www',
+])
+const SUBDOMAIN_RESERVED_EXACT_PATHS = new Set([
+  '/robots.txt',
+  '/sitemap.xml',
+  '/llms.txt',
+])
+const SUBDOMAIN_RESERVED_PATH_PREFIXES = ['/api/', '/export/']
+const SUBDOMAIN_INTERNAL_PREFIX = '/deployed/'
+
+function resolveSubdomainSlug(host: string): string | undefined {
+  const hostname = host.split(',')[0]?.trim().split(':')[0]?.toLowerCase() ?? ''
+  if (!hostname || !SUBDOMAIN_BASE_DOMAIN) return undefined
+  if (
+    hostname === SUBDOMAIN_BASE_DOMAIN ||
+    hostname === `www.${SUBDOMAIN_BASE_DOMAIN}`
+  ) {
+    return undefined
+  }
+  if (!hostname.endsWith(`.${SUBDOMAIN_BASE_DOMAIN}`)) return undefined
+  const label = hostname.slice(0, -1 * `.${SUBDOMAIN_BASE_DOMAIN}`.length)
+  if (
+    !label ||
+    label.includes('.') ||
+    SUBDOMAIN_RESERVED_HOST_LABELS.has(label)
+  ) {
+    return undefined
+  }
+  const slug = label
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 64)
+  return slug || undefined
+}
+
+function subdomainRewriteDevMiddleware(): Plugin {
+  return {
+    name: 'ship-fast-subdomain-rewrite-dev',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        if (req.method !== 'GET' && req.method !== 'HEAD') {
+          next()
+          return
+        }
+        const forwardedHost = req.headers['x-forwarded-host'] as
+          | string
+          | undefined
+        const host = forwardedHost ?? req.headers.host ?? ''
+        const slug = resolveSubdomainSlug(host)
+        if (slug === undefined) {
+          next()
+          return
+        }
+        const pathname = req.url ?? '/'
+        const queryIndex = pathname.indexOf('?')
+        const path =
+          queryIndex === -1 ? pathname : pathname.slice(0, queryIndex)
+        const query = queryIndex === -1 ? '' : pathname.slice(queryIndex)
+        if (path.startsWith(SUBDOMAIN_INTERNAL_PREFIX)) {
+          next()
+          return
+        }
+        if (SUBDOMAIN_RESERVED_EXACT_PATHS.has(path)) {
+          next()
+          return
+        }
+        for (const prefix of SUBDOMAIN_RESERVED_PATH_PREFIXES) {
+          if (path.startsWith(prefix)) {
+            next()
+            return
+          }
+        }
+        const rest = path === '/' ? '' : path
+        req.url = `/deployed/${slug}${rest}${query}`
+        next()
+      })
+    },
+  }
+}
+
 const config = defineConfig({
   define: {
     'import.meta.env.MEDUSA_BACKEND_URL': JSON.stringify(
@@ -523,12 +637,14 @@ const config = defineConfig({
     devtools(),
     pexelsDevApi(),
     galleryImageRouteDevProxy(),
+    subdomainRewriteDevMiddleware(),
     nitro({
       rollupConfig: {
         external: [/^@sentry\//],
         plugins: [cjsDirnameShim()],
       },
       preset: 'nodeServer',
+      serverDir: './server',
     }),
     tailwindcss(),
     tanstackStart(),

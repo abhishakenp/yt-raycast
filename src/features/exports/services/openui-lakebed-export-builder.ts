@@ -3808,6 +3808,12 @@ function applyLakebedVendorCompatibility(
       'PortableLakebedDefinition',
     )
   }
+  if (relativeToNodeModules === '@tanstack/query-core/build/modern/utils.js') {
+    return source.replace(
+      'Object.prototype.toString.call(o)',
+      'Object.prototype.toString.apply(o, [])',
+    )
+  }
   if (relativeToNodeModules !== '@radix-ui/react-presence/dist/index.mjs') {
     return source
   }

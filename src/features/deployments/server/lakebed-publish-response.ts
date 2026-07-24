@@ -3,6 +3,10 @@ import { ConvexHttpClient } from 'convex/browser'
 import { api } from '../../../../convex/_generated/api'
 import { containsOpenUiHandoffMarkers } from '../../../../convex/lib/openui_error_html'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
+import {
+  validateRazorpayDeploymentCredentials,
+  type RazorpayDeploymentCredentials,
+} from '@/features/deployments/services/razorpay-deployment-credentials'
 
 type LakebedPublishClient = Pick<
   ConvexHttpClient,
@@ -12,6 +16,7 @@ type LakebedPublishClient = Pick<
 
 type LakebedPublishBody = {
   anonymousOwnerSecret?: string
+  razorpay?: RazorpayDeploymentCredentials
 }
 
 function json(body: unknown, init?: ResponseInit) {
@@ -36,7 +41,18 @@ function isLakebedPublishBody(value: unknown): value is LakebedPublishBody {
     typeof value === 'object' &&
     !Array.isArray(value) &&
     (!('anonymousOwnerSecret' in value) ||
-      typeof value.anonymousOwnerSecret === 'string')
+      typeof value.anonymousOwnerSecret === 'string') &&
+    (!('razorpay' in value) ||
+      (value.razorpay !== null &&
+        typeof value.razorpay === 'object' &&
+        !Array.isArray(value.razorpay) &&
+        'environment' in value.razorpay &&
+        (value.razorpay.environment === 'test' ||
+          value.razorpay.environment === 'live') &&
+        'keyId' in value.razorpay &&
+        typeof value.razorpay.keyId === 'string' &&
+        'keySecret' in value.razorpay &&
+        typeof value.razorpay.keySecret === 'string'))
   )
 }
 
@@ -65,12 +81,25 @@ export async function createLakebedPublishResponse(
   clientOverride?: LakebedPublishClient,
 ): Promise<Response> {
   let body: LakebedPublishBody = {}
+  let invalidBody = false
 
   try {
     const parsed = await request.json()
-    body = isLakebedPublishBody(parsed) ? parsed : {}
+    if (isLakebedPublishBody(parsed)) body = parsed
+    else invalidBody = true
   } catch {
     body = {}
+  }
+
+  if (invalidBody) {
+    return json({ error: 'Invalid Lakebed publish request.' }, { status: 400 })
+  }
+
+  if (body.razorpay !== undefined) {
+    const credentialError = validateRazorpayDeploymentCredentials(body.razorpay)
+    if (credentialError !== undefined) {
+      return json({ error: credentialError }, { status: 400 })
+    }
   }
 
   try {

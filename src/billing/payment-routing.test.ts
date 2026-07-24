@@ -7,34 +7,20 @@ import {
 } from './payment-routing'
 
 describe('payment routing', () => {
-  it('routes Indian country hints to Razorpay and all other hints to Stripe', () => {
+  it('routes every checkout to Razorpay', () => {
     expect(resolvePaymentGateway('IN')).toBe('razorpay')
     expect(resolvePaymentGateway('in')).toBe('razorpay')
-    expect(resolvePaymentGateway(' In ')).toBe('stripe')
-    expect(resolvePaymentGateway('US')).toBe('stripe')
-    expect(resolvePaymentGateway('GLOBAL')).toBe('stripe')
-    expect(resolvePaymentGateway(null)).toBe('stripe')
-    expect(resolvePaymentGateway(undefined)).toBe('stripe')
+    expect(resolvePaymentGateway('US')).toBe('razorpay')
+    expect(resolvePaymentGateway('GLOBAL')).toBe('razorpay')
+    expect(resolvePaymentGateway(null)).toBe('razorpay')
+    expect(resolvePaymentGateway(undefined)).toBe('razorpay')
   })
 
-  it('keeps each gateway paired with its checkout currency', () => {
-    expect(resolvePaymentCurrency('stripe')).toBe('usd')
+  it('uses INR for checkout currency', () => {
     expect(resolvePaymentCurrency('razorpay')).toBe('inr')
   })
 
-  it('requires the gateway-specific secret and plan configuration', () => {
-    expect(
-      isGatewayConfigured('stripe', {
-        STRIPE_SECRET_KEY: 'sk_test',
-        STRIPE_PRO_PRICE_ID: 'price_pro',
-      }),
-    ).toBe(true)
-    expect(
-      isGatewayConfigured('stripe', {
-        STRIPE_SECRET_KEY: 'sk_test',
-      }),
-    ).toBe(false)
-
+  it('requires Razorpay secret and plan configuration', () => {
     expect(
       isGatewayConfigured('razorpay', {
         RAZORPAY_KEY_ID: 'rzp_key',

@@ -62,6 +62,8 @@ describe('provider config', () => {
     expect(shouldUseConvexProviders('/generate/session_123')).toBe(true)
     expect(shouldUseConvexProviders('/generate/missing-session')).toBe(true)
     expect(shouldUseConvexProviders('/preview/session_123')).toBe(true)
+    expect(shouldUseConvexProviders('/deployed/my-site')).toBe(true)
+    expect(shouldUseConvexProviders('/deployed/my-site/about')).toBe(true)
     expect(shouldUseConvexProviders('/examples')).toBe(true)
     expect(shouldUseConvexProviders('/examples/saas')).toBe(true)
     expect(shouldUseConvexProviders('/gallery')).toBe(true)

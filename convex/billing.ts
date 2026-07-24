@@ -3,13 +3,12 @@ import { ConvexError, v } from 'convex/values'
 import type { Doc } from './_generated/dataModel'
 import { internalMutation, mutation, query } from './_generated/server'
 import type { MutationCtx, QueryCtx } from './_generated/server'
+import {
+  activeSubscriptionStatuses,
+  getActiveSubscriptionsForUser,
+  getGenerationQuotaForUser,
+} from './lib/billing_generation_quota'
 import { qualifyReferralOnPayment } from './lib/referral_qualification'
-
-const activeSubscriptionStatuses = new Set<Doc<'subscriptions'>['status']>([
-  'active',
-  'trialing',
-  'authenticated',
-])
 
 async function getUserId(ctx: QueryCtx | MutationCtx): Promise<string> {
   const identity = await ctx.auth.getUserIdentity()
@@ -29,26 +28,8 @@ async function getActiveSubscription(
   ctx: QueryCtx | MutationCtx,
   userId: string,
 ) {
-  const candidates = await Promise.all(
-    [...activeSubscriptionStatuses].map((status) =>
-      ctx.db
-        .query('subscriptions')
-        .withIndex('by_userId_status', (index) =>
-          index.eq('userId', userId).eq('status', status),
-        )
-        .order('desc')
-        .first(),
-    ),
-  )
-
-  return candidates.reduce<Doc<'subscriptions'> | null>(
-    (latest, candidate) =>
-      candidate !== null &&
-      (latest === null || candidate.updatedAt > latest.updatedAt)
-        ? candidate
-        : latest,
-    null,
-  )
+  const subscriptions = await getActiveSubscriptionsForUser(ctx, userId)
+  return subscriptions[0] ?? null
 }
 
 async function getCredits(ctx: QueryCtx | MutationCtx, userId: string) {
@@ -127,9 +108,10 @@ export const getBillingOverview = query({
   args: {},
   handler: async (ctx) => {
     const userId = await getUserId(ctx)
-    const [subscription, credits] = await Promise.all([
+    const [subscription, credits, generationQuota] = await Promise.all([
       getActiveSubscription(ctx, userId),
       getCredits(ctx, userId),
+      getGenerationQuotaForUser(ctx, userId),
     ])
 
     return {
@@ -143,6 +125,7 @@ export const getBillingOverview = query({
       credits: {
         remaining: credits,
       },
+      generationQuota,
       exportAccess: {
         unlocked: subscription !== null || credits > 0,
         viaSubscription: subscription !== null,
@@ -241,6 +224,59 @@ export const upsertSubscriptionForUser = internalMutation({
 
     const subscriptionId = await ctx.db.insert('subscriptions', {
       userId: args.userId,
+      provider: args.provider,
+      status: args.status,
+      planId: args.planId,
+      providerSubscriptionId: args.providerSubscriptionId,
+      providerCheckoutId: args.providerCheckoutId,
+      createdAt: now,
+      updatedAt: now,
+      canceledAt: args.status === 'cancelled' ? now : undefined,
+    })
+
+    return { subscriptionId }
+  },
+})
+
+export const confirmCheckoutSubscription = mutation({
+  args: {
+    provider: v.union(v.literal('stripe'), v.literal('razorpay')),
+    status: v.union(
+      v.literal('active'),
+      v.literal('trialing'),
+      v.literal('authenticated'),
+      v.literal('past_due'),
+      v.literal('cancelled'),
+    ),
+    planId: v.string(),
+    providerSubscriptionId: v.string(),
+    providerCheckoutId: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx)
+    const now = Date.now()
+    const existing = await ctx.db
+      .query('subscriptions')
+      .withIndex('by_providerSubscriptionId', (index) =>
+        index.eq('providerSubscriptionId', args.providerSubscriptionId),
+      )
+      .first()
+
+    if (existing !== null) {
+      await ctx.db.patch(existing._id, {
+        userId,
+        provider: args.provider,
+        status: args.status,
+        planId: args.planId,
+        providerCheckoutId: args.providerCheckoutId,
+        updatedAt: now,
+        canceledAt: args.status === 'cancelled' ? now : undefined,
+      })
+      return { subscriptionId: existing._id }
+    }
+
+    const subscriptionId = await ctx.db.insert('subscriptions', {
+      userId,
       provider: args.provider,
       status: args.status,
       planId: args.planId,

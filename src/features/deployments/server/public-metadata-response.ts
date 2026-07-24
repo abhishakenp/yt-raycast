@@ -16,6 +16,7 @@ import {
   SITE_URL,
 } from '@/lib/site-config'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
+import { getDeploymentSlugFromHostname } from './subdomain-slug'
 
 type PublicMetadataKind = 'llms' | 'robots' | 'sitemap'
 type PublicMetadataClient = Pick<ConvexHttpClient, 'query'>
@@ -24,17 +25,6 @@ type PublicMetadataOptions = {
   slug?: string
   client?: PublicMetadataClient
 }
-
-const RESERVED_HOST_LABELS = new Set([
-  'admin',
-  'api',
-  'app',
-  'assets',
-  'cdn',
-  'convex',
-  'dashboard',
-  'www',
-])
 
 const contentTypes: Record<PublicMetadataKind, string> = {
   llms: 'text/plain; charset=utf-8',
@@ -68,21 +58,12 @@ function requestHostname(request: Request): string {
 export function getDeploymentSlugFromRequest(
   request: Request,
 ): string | undefined {
-  const hostname = requestHostname(request)
-  const baseDomain = BASE_DOMAIN.toLowerCase().replace(/^\.+|\.+$/g, '')
-  if (!hostname || !baseDomain) return undefined
-  if (hostname === baseDomain || hostname === `www.${baseDomain}`) {
-    return undefined
-  }
-  if (!hostname.endsWith(`.${baseDomain}`)) return undefined
-
-  const label = hostname.slice(0, -1 * `.${baseDomain}`.length)
-  if (!label || label.includes('.') || RESERVED_HOST_LABELS.has(label)) {
-    return undefined
-  }
-
-  return normalizeSlug(label)
+  return getDeploymentSlugFromHostname(requestHostname(request))
 }
+
+// Re-exported for callers that historically imported the hostname resolver
+// from this module.
+export { getDeploymentSlugFromHostname } from './subdomain-slug'
 
 function createAppLlmsTxt(): string {
   return `# ${SITE_NAME}\n\n> ${HOME_DESCRIPTION}\n\n- Site URL: ${SITE_URL}/\n- Primary page: /\n- Public gallery: /gallery\n- Pricing: /pricing\n- Generated deployments expose robots.txt, sitemap.xml, and llms.txt metadata from their published preview.\n`

@@ -33,6 +33,7 @@ interface ConvexState {
     exportTargets: object
     lakebedEntitlement: object
     publishPreview: object
+    commerceConfig: object
   }
 }
 
@@ -52,6 +53,7 @@ const convexState = vi.hoisted<ConvexState>(function createConvexState() {
       exportTargets: {},
       lakebedEntitlement: {},
       publishPreview: {},
+      commerceConfig: {},
     },
   }
 })
@@ -66,6 +68,7 @@ vi.mock('../../../../convex/_generated/api', function mockConvexApi() {
         getLakebedDeploymentEntitlementByLookup:
           convexState.refs.lakebedEntitlement,
         publishPreviewByLookup: convexState.refs.publishPreview,
+        getCommerceConfig: convexState.refs.commerceConfig,
       },
     },
   }
@@ -92,6 +95,7 @@ vi.mock('convex/react', function mockConvexReact() {
     if (reference === convexState.refs.lakebedEntitlement) {
       return convexState.lakebedEntitlement
     }
+    if (reference === convexState.refs.commerceConfig) return null
     throw new Error('Unknown query reference')
   }
 
