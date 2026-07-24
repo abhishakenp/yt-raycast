@@ -608,19 +608,29 @@ describe('createExportResponse', () => {
     expect(await response.text()).toContain('Generated fallback')
   })
 
-  it('returns 202 for non-HTML targets when export status is not ready', async () => {
-    // Non-HTML targets cannot build on-demand (no Tailwind compile in
-    // server runtime), so they still get 202 while the artifact builds.
-    queryMock.mockResolvedValueOnce({
-      export: {
-        status: 'building',
-        requiresPayment: false,
-        previewVersion: 1,
-      },
-      artifact: { status: 'building', previewVersion: 1 },
-      storageUrl: null,
-      latestPreviewVersion: 1,
-    })
+  it('builds on-demand for non-HTML targets when export status is not ready', async () => {
+    // All targets now attempt on-demand build before returning 202.
+    queryMock
+      .mockResolvedValueOnce({
+        export: {
+          status: 'building',
+          requiresPayment: false,
+          previewVersion: 1,
+        },
+        artifact: { status: 'building', previewVersion: 1 },
+        storageUrl: null,
+        latestPreviewVersion: 1,
+      })
+      .mockResolvedValueOnce({
+        // build input for on-demand build
+        sessionId: 'session_123',
+        target: 'next',
+        source: '<main>On-demand source</main>',
+        html: '<!doctype html><html><body>On-demand preview</body></html>',
+        themeName: 'darkmatter',
+        isDark: false,
+        locale: 'en',
+      })
 
     const response = await createExportResponse(
       'session_123',
@@ -628,9 +638,12 @@ describe('createExportResponse', () => {
       fakeClient,
     )
 
-    expect(response.status).toBe(202)
-    await expect(response.json()).resolves.toMatchObject({
-      status: 'building',
-    })
+    expect(response.status).toBe(200)
+    expect(artifactFileMocks.buildOpenUIArtifactFiles).toHaveBeenCalledWith(
+      expect.objectContaining({
+        target: 'next',
+        source: '<main>On-demand source</main>',
+      }),
+    )
   })
 })
