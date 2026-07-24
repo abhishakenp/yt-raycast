@@ -1,9 +1,234 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { createSessionMedusaProductsResponse } from './medusa-product-read'
+import { normalizeMedusaStoreProduct } from './medusa-store-product'
 
 describe('createSessionMedusaProductsResponse', () => {
   const realSessionId = 'k574ms14ma9f94keq30r7dq24x89n1k2'
+
+  it('rejects products when either present tenant metadata key conflicts', () => {
+    expect(
+      normalizeMedusaStoreProduct('session_123', {
+        handle: 'conflicting-product',
+        metadata: {
+          ship_fast_session_id: 'session_123',
+          ship_fast_tenant_id: 'other_tenant',
+        },
+        title: 'Conflicting Product',
+      }),
+    ).toBeUndefined()
+  })
+
+  it('requests rich Store fields and preserves every provider variant losslessly', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ regions: [{ id: 'reg_123' }] }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            products: [
+              {
+                collection: {
+                  handle: 'ship-fast-session-123-summer-edit',
+                  id: 'pcol_summer',
+                  metadata: {
+                    ship_fast_generated_handle: 'summer-edit',
+                    ship_fast_generated_source_id: 'collection_summer',
+                    ship_fast_session_id: 'session_123',
+                  },
+                  title: 'Summer Edit',
+                },
+                description: 'A breathable everyday tee',
+                handle: 'ship-fast-session-123-linen-tee',
+                id: 'prod_linen',
+                images: [
+                  {
+                    id: 'pimg_front',
+                    url: 'https://cdn.example.com/linen-front.jpg',
+                  },
+                  {
+                    id: 'pimg_back',
+                    url: 'https://cdn.example.com/linen-back.jpg',
+                  },
+                ],
+                metadata: {
+                  ship_fast_generated_handle: 'linen-tee',
+                  ship_fast_generated_product: true,
+                  ship_fast_generated_source_id: 'product_linen_tee',
+                  ship_fast_session_id: 'session_123',
+                },
+                options: [
+                  {
+                    id: 'popt_size',
+                    title: 'Size',
+                    values: [{ value: 'Small' }, { value: 'Large' }],
+                  },
+                ],
+                tags: [{ id: 'ptag_linen', value: 'Linen' }],
+                thumbnail: 'https://cdn.example.com/linen-thumb.jpg',
+                title: 'Linen Tee',
+                variants: [
+                  {
+                    calculated_price: {
+                      calculated_amount: 29,
+                      currency_code: 'USD',
+                      original_amount: 35,
+                    },
+                    id: 'variant_small_provider',
+                    inventory_quantity: 7,
+                    manage_inventory: true,
+                    metadata: {
+                      ship_fast_generated_sku: 'LINEN-S',
+                      ship_fast_generated_source_id: 'variant_small',
+                    },
+                    options: [
+                      {
+                        option_id: 'popt_size',
+                        value: 'Small',
+                      },
+                    ],
+                    prices: [
+                      { amount: 29, currency_code: 'USD' },
+                      { amount: 27, currency_code: 'EUR' },
+                    ],
+                    sku: 'SHIP-FAST-SESSION-123-LINEN-TEE-LINEN-S',
+                    title: 'Small',
+                  },
+                  {
+                    calculated_price: {
+                      calculated_amount: 32,
+                      currency_code: 'GBP',
+                      original_amount: 32,
+                    },
+                    id: 'variant_large_provider',
+                    inventory_quantity: 0,
+                    manage_inventory: false,
+                    metadata: {
+                      ship_fast_generated_source_id: 'variant_large',
+                    },
+                    options: [
+                      {
+                        option_id: 'popt_size',
+                        value: 'Large',
+                      },
+                    ],
+                    prices: [{ amount: 32, currency_code: 'GBP' }],
+                    sku: 'LINEN-L',
+                    title: 'Large',
+                  },
+                ],
+              },
+              {
+                handle: 'other-tenant-product',
+                id: 'prod_other',
+                metadata: { ship_fast_session_id: 'other_session' },
+                title: 'Other Tenant Product',
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      )
+
+    const response = await createSessionMedusaProductsResponse('session_123', {
+      containerFinder: () => Promise.resolve(undefined),
+      env: {
+        MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
+        MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
+      },
+      fetch: fetchImpl,
+      metaEnv: {},
+    })
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({
+      products: [
+        {
+          collections: [
+            {
+              handle: 'summer-edit',
+              sourceId: 'collection_summer',
+              title: 'Summer Edit',
+            },
+          ],
+          currencyCode: 'usd',
+          description: 'A breathable everyday tee',
+          handle: 'ship-fast-session-123-linen-tee',
+          id: 'prod_linen',
+          images: [
+            {
+              sourceId: 'pimg_front',
+              url: 'https://cdn.example.com/linen-front.jpg',
+            },
+            {
+              sourceId: 'pimg_back',
+              url: 'https://cdn.example.com/linen-back.jpg',
+            },
+          ],
+          options: [
+            {
+              sourceId: 'popt_size',
+              title: 'Size',
+              values: ['Small', 'Large'],
+            },
+          ],
+          price: 29,
+          sourceHandle: 'linen-tee',
+          sourceId: 'product_linen_tee',
+          tags: [{ sourceId: 'ptag_linen', value: 'Linen' }],
+          thumbnail: 'https://cdn.example.com/linen-thumb.jpg',
+          title: 'Linen Tee',
+          variants: [
+            {
+              available: true,
+              calculatedPrice: { amount: 29, currencyCode: 'usd' },
+              id: 'variant_small_provider',
+              inventoryQuantity: 7,
+              manageInventory: true,
+              optionValues: { Size: 'Small' },
+              originalPrice: { amount: 35, currencyCode: 'usd' },
+              prices: [
+                { amount: 29, currencyCode: 'usd' },
+                { amount: 27, currencyCode: 'eur' },
+              ],
+              sku: 'LINEN-S',
+              sourceId: 'variant_small',
+              title: 'Small',
+            },
+            {
+              available: true,
+              calculatedPrice: { amount: 32, currencyCode: 'gbp' },
+              id: 'variant_large_provider',
+              inventoryQuantity: 0,
+              manageInventory: false,
+              optionValues: { Size: 'Large' },
+              originalPrice: { amount: 32, currencyCode: 'gbp' },
+              prices: [{ amount: 32, currencyCode: 'gbp' }],
+              sku: 'LINEN-L',
+              sourceId: 'variant_large',
+              title: 'Large',
+            },
+          ],
+        },
+      ],
+      sessionId: 'session_123',
+    })
+    const productsUrl = String(fetchImpl.mock.calls[1]?.[0])
+    const fields = new URL(productsUrl).searchParams.get('fields') ?? ''
+    expect(fields).toContain('+metadata')
+    expect(fields).toContain('*images')
+    expect(fields).toContain('*options')
+    expect(fields).toContain('*variants.options')
+    expect(fields).toContain('+variants.inventory_quantity')
+    expect(fields).toContain('+variants.manage_inventory')
+    expect(fields).toContain('+variants.sku')
+    expect(fields).toContain('*variants.calculated_price')
+    expect(fields).toContain('*variants.prices')
+  })
 
   it('uses the session tenant publishable key from commerce config when available', async () => {
     const fetchImpl = vi
@@ -50,11 +275,54 @@ describe('createSessionMedusaProductsResponse', () => {
     )
     expect(fetchImpl).toHaveBeenNthCalledWith(
       2,
-      'https://backend.medusa.test/store/products?limit=100&region_id=reg_123&fields=%2Bmetadata%2C*variants.calculated_price',
+      expect.stringContaining(
+        'https://backend.medusa.test/store/products?limit=100&region_id=reg_123&fields=',
+      ),
       {
         headers: { 'x-publishable-api-key': 'pk_session_tenant' },
       },
     )
+  })
+
+  it('resolves preview lookup ids before reading tenant products', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ regions: [{ id: 'reg_123' }] }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ products: [] }), { status: 200 }),
+      )
+    const query = vi
+      .fn()
+      .mockResolvedValueOnce({ sessionId: 'session_123' })
+      .mockResolvedValueOnce({
+        configJson: JSON.stringify({
+          medusaTenant: { publishableKey: 'pk_session_tenant' },
+        }),
+        status: 'ready',
+      })
+    const containerFinder = vi.fn().mockResolvedValue(undefined)
+
+    const response = await createSessionMedusaProductsResponse(
+      'preview_123',
+      {
+        env: {
+          MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
+          MEDUSA_PUBLISHABLE_API_KEY: 'pk_global',
+        },
+        fetch: fetchImpl,
+        containerFinder,
+        metaEnv: {},
+      },
+      { mutation: vi.fn(), query },
+    )
+
+    expect(response.status).toBe(200)
+    expect(containerFinder).toHaveBeenCalledWith('session_123')
+    expect(await response.json()).toMatchObject({ sessionId: 'session_123' })
   })
 
   it('discovers the session tenant publishable key from Medusa Admin when config is unavailable', async () => {
@@ -187,7 +455,7 @@ describe('createSessionMedusaProductsResponse', () => {
     const body = await response.json()
 
     expect(response.status).toBe(200)
-    expect(body).toEqual({
+    expect(body).toMatchObject({
       products: [
         {
           currencyCode: 'usd',
@@ -265,7 +533,7 @@ describe('createSessionMedusaProductsResponse', () => {
     })
 
     expect(response.status).toBe(200)
-    expect(await response.json()).toEqual({
+    expect(await response.json()).toMatchObject({
       products: [
         {
           currencyCode: 'eur',
@@ -287,7 +555,74 @@ describe('createSessionMedusaProductsResponse', () => {
     )
     expect(fetchImpl).toHaveBeenNthCalledWith(
       2,
-      'https://backend.medusa.test/store/products?limit=100&region_id=reg_123&fields=%2Bmetadata%2C*variants.calculated_price',
+      expect.stringContaining(
+        'https://backend.medusa.test/store/products?limit=100&region_id=reg_123&fields=',
+      ),
+      {
+        headers: { 'x-publishable-api-key': 'pk_medusa' },
+      },
+    )
+  })
+
+  it('falls back to a plain Store products query when no region pricing context exists', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ regions: [] }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            type: 'invalid_data',
+            message:
+              'Missing required pricing context to calculate prices - region_id',
+          }),
+          { status: 400 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            products: [
+              {
+                title: 'Route Test Jacket',
+                handle: 'ship-fast-session-123-route-test-jacket',
+                metadata: {
+                  ship_fast_generated_product: true,
+                  ship_fast_session_id: 'session_123',
+                },
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      )
+
+    const response = await createSessionMedusaProductsResponse('session_123', {
+      env: {
+        MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
+        MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
+      },
+      fetch: fetchImpl,
+      containerFinder: () => Promise.resolve(undefined),
+      metaEnv: {},
+    })
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({
+      products: [
+        {
+          handle: 'ship-fast-session-123-route-test-jacket',
+          title: 'Route Test Jacket',
+        },
+      ],
+      sessionId: 'session_123',
+    })
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      3,
+      'https://backend.medusa.test/store/products?limit=100',
       {
         headers: { 'x-publishable-api-key': 'pk_medusa' },
       },
@@ -578,7 +913,7 @@ describe('createSessionMedusaProductsResponse', () => {
     })
 
     expect(response.status).toBe(200)
-    expect(await response.json()).toEqual({
+    expect(await response.json()).toMatchObject({
       products: [
         {
           currencyCode: 'eur',
@@ -653,7 +988,7 @@ describe('createSessionMedusaProductsResponse', () => {
     })
 
     expect(response.status).toBe(200)
-    expect(await response.json()).toEqual({
+    expect(await response.json()).toMatchObject({
       products: [
         {
           currencyCode: 'usd',

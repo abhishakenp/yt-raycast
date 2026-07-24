@@ -50,7 +50,7 @@ describe('BillingPanel — Convex JWT usage', () => {
           }),
         )
       }
-      // checkout/start — return a subscription id so the component sets
+      // payments/razorpay/start — return a subscription id so the component sets
       // checkoutState instead of navigating via window.location.href.
       return Promise.resolve(json({ subscriptionId: 'sub_123' }))
     })
@@ -107,7 +107,7 @@ describe('BillingPanel — Convex JWT usage', () => {
     // The checkout POST must carry the Convex JWT as a bearer token.
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith(
-        '/api/checkout/start',
+        '/api/payments/razorpay/start',
         expect.objectContaining({
           method: 'POST',
           headers: expect.objectContaining({

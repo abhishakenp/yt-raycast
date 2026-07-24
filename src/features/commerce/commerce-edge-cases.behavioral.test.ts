@@ -5,7 +5,7 @@
 // Covers three layers in one file:
 //   1. CommercePanel UI (jsdom + @testing-library/react, real component)
 //   2. convex/lib/session_commerce_helpers (real functions, mocked ctx)
-//   3. src/island/openui/medusa-preview-sync (real functions, real DOM)
+//   3. commerce product binding (real functions, pure data binding)
 //
 // PHILOSOPHY: Assert EXPECTED/CORRECT behavior. If the implementation is
 // buggy, the test MUST fail — current behavior is never pinned.
@@ -21,7 +21,15 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { CommercePanel } from './components/CommercePanel'
-import { applyMedusaProductsToPreviewDom } from '@/island/openui/medusa-preview-sync'
+import {
+  bindCommerceCatalog,
+  bindCommerceProductSlot,
+} from './services/commerce-product-binding'
+import type {
+  CommerceCatalogProduct,
+  CommerceProductSlot,
+  CommerceProductVariant,
+} from './services/commerce-product-binding'
 import {
   loadSessionCommerceConfig,
   provisionSessionMedusaTenant,
@@ -264,6 +272,14 @@ describe('CommercePanel edge cases (UI)', () => {
 
     render(h(CommercePanel, { sessionId: 'session_123' }))
 
+    // Fill in required admin credentials to enable the provision button.
+    fireEvent.change(screen.getByLabelText('Admin email'), {
+      target: { value: 'admin@test.com' },
+    })
+    fireEvent.change(screen.getByLabelText('Admin password'), {
+      target: { value: 'password123' },
+    })
+
     fireEvent.click(screen.getByRole('button', { name: /Enable Commerce/ }))
 
     // The error message must be surfaced to the user.
@@ -299,6 +315,14 @@ describe('CommercePanel edge cases (UI)', () => {
 
     render(h(CommercePanel, { sessionId: 'session_123' }))
 
+    // Fill in required admin credentials to enable the provision button.
+    fireEvent.change(screen.getByLabelText('Admin email'), {
+      target: { value: 'admin@test.com' },
+    })
+    fireEvent.change(screen.getByLabelText('Admin password'), {
+      target: { value: 'password123' },
+    })
+
     fireEvent.click(screen.getByRole('button', { name: /Enable Commerce/ }))
 
     expect(await screen.findByText('Medusa handoff')).toBeTruthy()
@@ -325,6 +349,14 @@ describe('CommercePanel edge cases (UI)', () => {
       })
 
     render(h(CommercePanel, { sessionId: 'session_123' }))
+
+    // Fill in required admin credentials to enable the provision button.
+    fireEvent.change(screen.getByLabelText('Admin email'), {
+      target: { value: 'admin@test.com' },
+    })
+    fireEvent.change(screen.getByLabelText('Admin password'), {
+      target: { value: 'password123' },
+    })
 
     fireEvent.click(screen.getByRole('button', { name: /Enable Commerce/ }))
 
@@ -485,237 +517,197 @@ describe('session commerce helpers edge cases (real functions)', () => {
 })
 
 /* -------------------------------------------------------------------------- */
-/* 11-18. medusa-preview-sync                                                 */
+/* 11-18. commerce product binding                                            */
 /* -------------------------------------------------------------------------- */
 
-function makeProductDom(html: string): HTMLElement {
-  const container = document.createElement('div')
-  container.innerHTML = html
-  return container
+function makeVariant(
+  sourceId: string,
+  price: number,
+  currencyCode = 'usd',
+  overrides: Partial<CommerceProductVariant> = {},
+): CommerceProductVariant {
+  return {
+    available: true,
+    id: `variant_${sourceId}`,
+    manageInventory: false,
+    optionValues: {},
+    prices: [{ amount: price, currencyCode }],
+    sourceId: `variant:${sourceId}`,
+    title: 'Default',
+    ...overrides,
+  }
 }
 
-describe('medusa-preview-sync edge cases (real DOM)', () => {
-  it('11. product handle matches → generated title is replaced in the DOM', () => {
-    const root = makeProductDom(
-      '<article><h2>Generated Tee</h2><span>$12.00</span></article>',
+function makeProduct(
+  sourceId: string,
+  handle: string,
+  title: string,
+  price = 0,
+  currencyCode = 'usd',
+  overrides: Partial<CommerceCatalogProduct> = {},
+): CommerceCatalogProduct {
+  return {
+    collections: [],
+    handle,
+    images: [],
+    options: [],
+    sourceId,
+    tags: [],
+    title,
+    variants: [makeVariant(sourceId, price, currencyCode)],
+    ...overrides,
+  }
+}
+
+function makeSlot(
+  sourceId: string,
+  handle: string,
+  title: string,
+  price = 0,
+  currencyCode = 'usd',
+): CommerceProductSlot {
+  return {
+    fallback: makeProduct(sourceId, handle, title, price, currencyCode),
+    handle,
+    sourceId,
+  }
+}
+
+describe('commerce product binding edge cases (real functions)', () => {
+  it('11. product handle matches → slot binds to the live product title', () => {
+    const slot = makeSlot('product:tee', 'tee', 'Generated Tee', 12)
+    const liveProduct = makeProduct(
+      'medusa_tee',
+      'tee',
+      'Medusa Awesome Tee',
+      12,
+      'usd',
+      { sourceHandle: 'tee' },
     )
 
-    applyMedusaProductsToPreviewDom(root, {
-      generatedProducts: [{ handle: 'tee', title: 'Generated Tee', price: 12 }],
-      medusaProducts: [
-        {
-          sourceHandle: 'tee',
-          handle: 'tee',
-          title: 'Medusa Awesome Tee',
-          price: 12,
-          currencyCode: 'USD',
-        },
-      ],
-    })
+    const bound = bindCommerceProductSlot(slot, [liveProduct], 'ready')
 
-    expect(root.querySelector('h2')?.textContent).toBe('Medusa Awesome Tee')
-    expect(root.textContent).not.toContain('Generated Tee')
+    expect(bound.product.title).toBe('Medusa Awesome Tee')
+    expect(bound.availability).toBe('live')
+    // The generated fallback title is no longer surfaced once a live match is bound.
+    expect(bound.product.title).not.toBe('Generated Tee')
   })
 
-  it('12. product not found (no matching sourceHandle) → DOM is untouched', () => {
-    const root = makeProductDom(
-      '<article><h2>Generated Tee</h2><span>$12.00</span></article>',
-    )
-    const before = root.innerHTML
+  it('12. product not found (no matching handle) → slot is unavailable with fallback', () => {
+    const slot = makeSlot('product:tee', 'tee', 'Generated Tee', 12)
+    const liveProduct = makeProduct('medusa_other', 'other', 'Other', 5, 'usd')
 
-    applyMedusaProductsToPreviewDom(root, {
-      generatedProducts: [{ handle: 'tee', title: 'Generated Tee', price: 12 }],
-      medusaProducts: [
-        {
-          sourceHandle: 'nonexistent',
-          handle: 'other',
-          title: 'Other',
-          price: 5,
-          currencyCode: 'USD',
-        },
-      ],
-    })
+    const bound = bindCommerceProductSlot(slot, [liveProduct], 'ready')
 
-    expect(root.innerHTML).toBe(before)
+    expect(bound.availability).toBe('unavailable')
+    expect(bound.product.title).toBe('Generated Tee')
+    expect(bound.purchasable).toBe(false)
   })
 
-  it('13. price formatting: EUR prices SHOULD be locale-aware "15,00 €" (not en-US "€15.00")', () => {
-    // EUR prices should be formatted using a locale-appropriate format where
-    // the currency symbol follows the amount with a comma decimal separator
-    // (e.g. de-DE "15,00 €"). If the code hardcodes en-US and produces
-    // "€15.00", that is a BUG and this test MUST fail.
-    const eurRoot = makeProductDom(
-      '<article><h2>Mug</h2><span>€15.00</span></article>',
-    )
-    applyMedusaProductsToPreviewDom(eurRoot, {
-      generatedProducts: [{ handle: 'mug', title: 'Mug', price: 15 }],
-      medusaProducts: [
-        {
-          sourceHandle: 'mug',
-          handle: 'mug',
-          title: 'Mug',
-          price: 15,
-          currencyCode: 'EUR',
-        },
-      ],
+  it('13. currency handling: EUR product prices preserve their currency code through binding', () => {
+    // The bound product must carry the live product's EUR currency code
+    // through binding so downstream rendering can format it locale-appropriately
+    // (e.g. de-DE "15,00 €"). If the currency code is lost or overwritten with
+    // USD, that is a BUG and this test MUST fail.
+    const slot = makeSlot('product:mug', 'mug', 'Mug', 15, 'eur')
+    const liveProduct = makeProduct('medusa_mug', 'mug', 'Mug', 15, 'eur', {
+      sourceHandle: 'mug',
     })
 
-    expect(eurRoot.querySelector('span')?.textContent).toBe('15,00 €')
+    const bound = bindCommerceProductSlot(slot, [liveProduct], 'ready')
+
+    expect(bound.product.variants[0]?.prices[0]?.currencyCode).toBe('eur')
+    expect(bound.product.variants[0]?.prices[0]?.amount).toBe(15)
   })
 
-  it('14. price candidates "$12", "$12.00", and "12 USD" → ALL should be matched', () => {
-    // All three price string formats for price 12 should be recognized as
-    // candidates and rewritten to the Medusa-formatted price. If "12 USD" is
-    // not matched (because priceCandidates only emits $/€-prefixed forms),
-    // that is a BUG and this test MUST fail.
-    const root = makeProductDom(
-      '<article>' +
-        '<h2>Tee</h2>' +
-        '<span class="a">$12</span>' +
-        '<span class="b">$12.00</span>' +
-        '<span class="c">12 USD</span>' +
-        '</article>',
-    )
-
-    applyMedusaProductsToPreviewDom(root, {
-      generatedProducts: [{ handle: 'tee', title: 'Tee', price: 12 }],
-      medusaProducts: [
-        {
-          sourceHandle: 'tee',
-          handle: 'tee',
-          title: 'Tee',
-          price: 12.99,
-          currencyCode: 'USD',
-        },
-      ],
+  it('14. price data: bound product carries the live price amount and currency', () => {
+    // Regardless of the fallback/slot price, the bound product must reflect the
+    // live product's actual price. If the fallback price leaks through, that is
+    // a BUG and this test MUST fail.
+    const slot = makeSlot('product:tee', 'tee', 'Tee', 12, 'usd')
+    const liveProduct = makeProduct('medusa_tee', 'tee', 'Tee', 12.99, 'usd', {
+      sourceHandle: 'tee',
     })
 
-    expect(root.querySelector('.a')?.textContent).toBe('$12.99')
-    expect(root.querySelector('.b')?.textContent).toBe('$12.99')
-    expect(root.querySelector('.c')?.textContent).toBe('$12.99')
+    const bound = bindCommerceProductSlot(slot, [liveProduct], 'ready')
+
+    expect(bound.product.variants[0]?.prices[0]?.amount).toBe(12.99)
+    expect(bound.product.variants[0]?.prices[0]?.currencyCode).toBe('usd')
   })
 
-  it('15. multiple products: all matching products are synced in a single pass', () => {
-    const root = makeProductDom(
-      '<article><h2>Alpha</h2><span>$10.00</span></article>' +
-        '<article><h2>Beta</h2><span>$20.00</span></article>' +
-        '<article><h2>Gamma</h2><span>$30.00</span></article>',
-    )
+  it('15. multiple products: all matching slots are bound in a single call', () => {
+    const slots = [
+      makeSlot('product:alpha', 'alpha', 'Alpha', 10),
+      makeSlot('product:beta', 'beta', 'Beta', 20),
+      makeSlot('product:gamma', 'gamma', 'Gamma', 30),
+    ]
+    const liveProducts = [
+      makeProduct('medusa_alpha', 'alpha', 'Medusa Alpha', 10.5, 'usd', {
+        sourceHandle: 'alpha',
+      }),
+      makeProduct('medusa_gamma', 'gamma', 'Medusa Gamma', 30.5, 'usd', {
+        sourceHandle: 'gamma',
+      }),
+    ]
 
-    applyMedusaProductsToPreviewDom(root, {
-      generatedProducts: [
-        { handle: 'alpha', title: 'Alpha', price: 10 },
-        { handle: 'beta', title: 'Beta', price: 20 },
-        { handle: 'gamma', title: 'Gamma', price: 30 },
-      ],
-      medusaProducts: [
-        {
-          sourceHandle: 'alpha',
-          handle: 'alpha',
-          title: 'Medusa Alpha',
-          price: 10.5,
-          currencyCode: 'USD',
-        },
-        {
-          sourceHandle: 'gamma',
-          handle: 'gamma',
-          title: 'Medusa Gamma',
-          price: 30.5,
-          currencyCode: 'USD',
-        },
-      ],
-    })
+    const bound = bindCommerceCatalog(slots, liveProducts, 'ready')
 
-    const headings = Array.from(root.querySelectorAll('h2')).map(
-      (el) => el.textContent,
-    )
-    expect(headings).toEqual(['Medusa Alpha', 'Beta', 'Medusa Gamma'])
-    expect(root.querySelectorAll('span')[0]?.textContent).toBe('$10.50')
-    expect(root.querySelectorAll('span')[1]?.textContent).toBe('$20.00')
-    expect(root.querySelectorAll('span')[2]?.textContent).toBe('$30.50')
+    // Alpha and Gamma bound to live products; Beta has no match so it's dropped.
+    expect(bound.map((b) => b.product.title)).toEqual([
+      'Medusa Alpha',
+      'Medusa Gamma',
+    ])
+    expect(bound.map((b) => b.availability)).toEqual(['live', 'live'])
+    expect(bound.map((b) => b.product.variants[0]?.prices[0]?.amount)).toEqual([
+      10.5, 30.5,
+    ])
   })
 
-  it('16. idempotency: running sync twice yields the same DOM (no double replacement)', () => {
-    // The Medusa title contains the generated title as a substring. After the
-    // first pass "Tee" → "Medusa Tee". On the second pass the code must NOT
-    // re-find "Tee" inside "Medusa Tee" and produce "Medusa Medusa Tee".
-    // If substring matching causes double replacement, that is a BUG and this
-    // test MUST fail.
-    const root = makeProductDom(
-      '<article><h2>Tee</h2><span>$12.00</span></article>',
-    )
+  it('16. idempotency: calling bindCommerceCatalog twice yields the same result', () => {
+    // Binding is a pure function — calling it twice with the same inputs must
+    // produce identical output. If state leaks between calls (e.g. consumed
+    // products set mutated in place), that is a BUG and this test MUST fail.
+    const slots = [makeSlot('product:tee', 'tee', 'Tee', 12)]
+    const liveProducts = [
+      makeProduct('medusa_tee', 'tee', 'Medusa Tee', 12.99, 'usd', {
+        sourceHandle: 'tee',
+      }),
+    ]
 
-    const input = {
-      generatedProducts: [{ handle: 'tee', title: 'Tee', price: 12 }],
-      medusaProducts: [
-        {
-          sourceHandle: 'tee',
-          handle: 'tee',
-          title: 'Medusa Tee',
-          price: 12.99,
-          currencyCode: 'USD',
-        },
-      ],
-    }
+    const first = bindCommerceCatalog(slots, liveProducts, 'ready')
+    const second = bindCommerceCatalog(slots, liveProducts, 'ready')
 
-    applyMedusaProductsToPreviewDom(root, input)
-    const afterFirst = root.innerHTML
-
-    applyMedusaProductsToPreviewDom(root, input)
-    const afterSecond = root.innerHTML
-
-    expect(afterSecond).toBe(afterFirst)
-    expect(root.querySelector('h2')?.textContent).toBe('Medusa Tee')
-    expect(root.textContent).not.toContain('Medusa Medusa Tee')
+    expect(second).toEqual(first)
+    expect(first[0]?.product.title).toBe('Medusa Tee')
   })
 
-  it('17. empty product list → no DOM changes', () => {
-    const root = makeProductDom(
-      '<article><h2>Tee</h2><span>$12.00</span></article>',
-    )
-    const before = root.innerHTML
+  it('17. empty live product list → no slots are bound', () => {
+    const slots = [makeSlot('product:tee', 'tee', 'Tee', 12)]
 
-    applyMedusaProductsToPreviewDom(root, {
-      generatedProducts: [{ handle: 'tee', title: 'Tee', price: 12 }],
-      medusaProducts: [],
-    })
+    const bound = bindCommerceCatalog(slots, [], 'ready')
 
-    expect(root.innerHTML).toBe(before)
+    expect(bound).toEqual([])
   })
 
-  it('18. product scope finding: narrows to the correct container, leaving siblings untouched', () => {
-    // Two product cards share the same root; the scope finder must locate the
-    // specific card whose text contains the generated title and only mutate it.
-    const root = makeProductDom(
-      '<section>' +
-        '<article class="card-a"><h2>Alpha</h2><span>$10.00</span></article>' +
-        '<article class="card-b"><h2>Beta</h2><span>$20.00</span></article>' +
-        '</section>',
-    )
+  it('18. slot independence: binding one slot does not affect another slot', () => {
+    // Two slots share the same catalog; binding Alpha must not consume or
+    // alter Beta's product. Beta has no live match and is dropped, while
+    // Alpha binds correctly to its live product.
+    const slots = [
+      makeSlot('product:alpha', 'alpha', 'Alpha', 10),
+      makeSlot('product:beta', 'beta', 'Beta', 20),
+    ]
+    const liveProducts = [
+      makeProduct('medusa_alpha', 'alpha', 'Medusa Alpha', 10.5, 'usd', {
+        sourceHandle: 'alpha',
+      }),
+    ]
 
-    applyMedusaProductsToPreviewDom(root, {
-      generatedProducts: [
-        { handle: 'alpha', title: 'Alpha', price: 10 },
-        { handle: 'beta', title: 'Beta', price: 20 },
-      ],
-      medusaProducts: [
-        {
-          sourceHandle: 'alpha',
-          handle: 'alpha',
-          title: 'Medusa Alpha',
-          price: 10.5,
-          currencyCode: 'USD',
-        },
-      ],
-    })
+    const bound = bindCommerceCatalog(slots, liveProducts, 'ready')
 
-    const cardA = root.querySelector('.card-a')
-    const cardB = root.querySelector('.card-b')
-
-    expect(cardA?.querySelector('h2')?.textContent).toBe('Medusa Alpha')
-    expect(cardA?.querySelector('span')?.textContent).toBe('$10.50')
-    // Beta card is untouched: its title and price remain as generated.
-    expect(cardB?.querySelector('h2')?.textContent).toBe('Beta')
-    expect(cardB?.querySelector('span')?.textContent).toBe('$20.00')
+    // Only Alpha is bound; Beta is untouched (no live match → dropped).
+    expect(bound).toHaveLength(1)
+    expect(bound[0]?.product.title).toBe('Medusa Alpha')
+    expect(bound[0]?.product.variants[0]?.prices[0]?.amount).toBe(10.5)
   })
 })

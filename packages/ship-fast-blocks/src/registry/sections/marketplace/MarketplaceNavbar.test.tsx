@@ -106,6 +106,8 @@ const { setSectionKitNavClickFallback } =
 const { MarketplaceHero } = await import('./MarketplaceHero.tsx')
 const { MarketplaceNavbar } = await import('./MarketplaceNavbar.tsx')
 const { EcommerceGallery } = await import('../ecommerce/EcommerceGallery.tsx')
+const { DemoCommerceProvider } =
+  await import('../commerce/commerce-test-wrapper.tsx')
 
 function createCommerceLakebedStub() {
   let version = 0
@@ -292,7 +294,7 @@ describe('MarketplaceNavbar fullstack commerce behavior', () => {
     const Gallery = EcommerceGallery.client.component
 
     render(
-      <>
+      <DemoCommerceProvider>
         <Navbar
           props={{
             brand: 'Maker Market',
@@ -326,7 +328,7 @@ describe('MarketplaceNavbar fullstack commerce behavior', () => {
           }}
           statementId="marketplace_gallery"
         />
-      </>,
+      </DemoCommerceProvider>,
     )
 
     await waitFor(() => {

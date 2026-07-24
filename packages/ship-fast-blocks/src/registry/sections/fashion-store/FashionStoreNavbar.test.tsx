@@ -8,8 +8,10 @@ import {
 } from '@ship-fast/lakebed/test-helpers'
 import { guestAuthContext } from '@ship-fast/lakebed/server'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import type { CommerceLakebed } from '../commerce/commerce-interactions.tsx'
+import { CommerceProvider } from '../commerce/commerce-provider.tsx'
 
 type TestCartItem = {
   createdAt: string
@@ -55,6 +57,21 @@ type MutationResult<TMutation> = TMutation extends (
 const timestamp = '2026-06-26T00:00:00.000Z'
 const navigate = vi.fn()
 const lakebedRef: { current: CommerceLakebed | null } = { current: null }
+const authRuntime = vi.hoisted(() => ({
+  signInWithGoogle: vi.fn(async () => ({
+    bundle: { challenge: '', state: '', verifier: '' },
+    url: '',
+  })),
+  signOut: vi.fn(),
+  state: {
+    displayName: '',
+    email: '',
+    isAuthenticated: false,
+    isGuest: true,
+    isLoading: false,
+    picture: '',
+  },
+}))
 
 vi.mock('@ship-fast/lakebed/react', async () => {
   const actual = await vi.importActual<
@@ -69,6 +86,9 @@ vi.mock('@ship-fast/lakebed/react', async () => {
       }
       return lakebedRef.current
     }),
+    signInWithGoogle: authRuntime.signInWithGoogle,
+    signOut: authRuntime.signOut,
+    useAuth: () => authRuntime.state,
   }
 })
 
@@ -169,11 +189,8 @@ function createCommerceLakebedStub() {
     },
   }
   const listeners = new Set<() => void>()
-  const signInWithGoogle = vi.fn(async () => ({
-    bundle: { challenge: '', state: '', verifier: '' },
-    url: '',
-  }))
-  const signOut = vi.fn()
+  const signInWithGoogle = authRuntime.signInWithGoogle
+  const signOut = authRuntime.signOut
   const notify = () => {
     version += 1
     for (const listener of listeners) listener()
@@ -569,6 +586,8 @@ afterEach(() => {
   cleanup()
   setSectionKitNavClickFallback(null)
   navigate.mockReset()
+  authRuntime.signInWithGoogle.mockReset()
+  authRuntime.signOut.mockReset()
   lakebedRef.current = null
   document.body.removeAttribute('style')
 })
@@ -580,34 +599,41 @@ describe('FashionStore fullstack commerce behavior', () => {
     setSectionKitNavClickFallback(navigate)
 
     render(
-      <>
-        <FashionStoreNavbar.component
-          props={{ bagCount: '0', nav: ['Collections', 'Lookbook'] }}
-        />
-        <FashionStoreHero.component
-          props={{
-            featuredName: 'Archive Linen Capsule',
-            featuredPrice: '$485',
-            featuredVariant: 'Cream · XS-XL',
-            imageAlt: 'Cream linen capsule wardrobe editorial',
-            primaryCta: 'Shop the Collection',
-            secondaryCta: 'View Lookbook',
-          }}
-        />
-        <FashionStoreProducts.component
-          props={{
-            items: [
-              {
-                imageAlt: 'Black wool coat on model',
-                name: 'Black Wool Coat',
-                price: '$420',
-                variant: 'Black · S-L',
-              },
-            ],
-            quickAdd: 'Quick Add',
-          }}
-        />
-      </>,
+      <QueryClientProvider client={new QueryClient()}>
+        <CommerceProvider
+          fallbackProducts={[]}
+          mode="demo"
+          scope="sessions"
+          tenant="fashion-store-test"
+        >
+          <FashionStoreNavbar.component
+            props={{ bagCount: '0', nav: ['Collections', 'Lookbook'] }}
+          />
+          <FashionStoreHero.component
+            props={{
+              featuredName: 'Archive Linen Capsule',
+              featuredPrice: '$485',
+              featuredVariant: 'Cream · XS-XL',
+              imageAlt: 'Cream linen capsule wardrobe editorial',
+              primaryCta: 'Shop the Collection',
+              secondaryCta: 'View Lookbook',
+            }}
+          />
+          <FashionStoreProducts.component
+            props={{
+              items: [
+                {
+                  imageAlt: 'Black wool coat on model',
+                  name: 'Black Wool Coat',
+                  price: '$420',
+                  variant: 'Black · S-L',
+                },
+              ],
+              quickAdd: 'Quick Add',
+            }}
+          />
+        </CommerceProvider>
+      </QueryClientProvider>,
     )
 
     await waitFor(() => {
@@ -630,7 +656,7 @@ describe('FashionStore fullstack commerce behavior', () => {
     })
     expect(navigate).not.toHaveBeenCalledWith('Black Wool Coat')
 
-    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
+    fireEvent.click(screen.getAllByRole('button', { name: 'Sign in' })[0])
     expect(signInWithGoogle).toHaveBeenCalledTimes(1)
 
     fireEvent.click(
@@ -673,21 +699,34 @@ describe('FashionStore fullstack commerce behavior', () => {
     setSectionKitNavClickFallback(navigate)
 
     render(
-      <FashionStoreHero.component
-        props={{
-          featuredName: 'Tailored Travel Capsule',
-          featuredPrice: '$520',
-          primaryCta: 'Shop the Collection',
-          secondaryCta: 'View Lookbook',
-        }}
-      />,
+      <QueryClientProvider client={new QueryClient()}>
+        <CommerceProvider
+          fallbackProducts={[]}
+          mode="demo"
+          scope="sessions"
+          tenant="fashion-store-hero-test"
+        >
+          <FashionStoreHero.component
+            props={{
+              featuredName: 'Tailored Travel Capsule',
+              featuredPrice: '$520',
+              primaryCta: 'Shop the Collection',
+              secondaryCta: 'View Lookbook',
+            }}
+          />
+        </CommerceProvider>
+      </QueryClientProvider>,
     )
 
-    fireEvent.click(screen.getByRole('link', { name: 'Shop the Collection' }))
-    fireEvent.click(screen.getByRole('link', { name: 'View Lookbook' }))
+    const collectionLink = screen.getByRole('link', {
+      name: 'Shop the Collection',
+    })
+    const lookbookLink = screen.getByRole('link', { name: 'View Lookbook' })
 
-    expect(navigate).toHaveBeenCalledWith('Shop the Collection')
-    expect(navigate).toHaveBeenCalledWith('View Lookbook')
+    expect(collectionLink.getAttribute('href')).toBe('#shop-the-collection')
+    expect(lookbookLink.getAttribute('href')).toBe('#view-lookbook')
+    expect(navigate).not.toHaveBeenCalledWith('Shop the Collection')
+    expect(navigate).not.toHaveBeenCalledWith('View Lookbook')
     expect(state().items).toEqual([])
 
     fireEvent.click(

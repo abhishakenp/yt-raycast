@@ -14,8 +14,20 @@ const clerkMocks = vi.hoisted(() => ({
   )),
 }))
 
+const authMocks = vi.hoisted(() => ({
+  getToken: vi.fn(),
+}))
+
 vi.mock('@clerk/tanstack-react-start', () => ({
   ClerkProvider: clerkMocks.provider,
+}))
+
+vi.mock('@/shared/auth/use-optional-auth', () => ({
+  useOptionalAuth: () => ({
+    getToken: authMocks.getToken,
+    isLoaded: true,
+    isSignedIn: Boolean((window as Window & { Clerk?: TestClerk }).Clerk?.user),
+  }),
 }))
 
 vi.mock('@/app/providers/clerk-appearance', () => ({
@@ -60,6 +72,7 @@ describe('HomepageAuthControls', () => {
     delete (window as Window & { Clerk?: TestClerk }).Clerk
     document.body.replaceChildren()
     clerkMocks.provider.mockClear()
+    authMocks.getToken.mockReset()
   })
 
   it('does not render auth UI when Clerk is not configured', async () => {
@@ -153,6 +166,59 @@ describe('HomepageAuthControls', () => {
     unmount()
 
     expect(unmountUserButton).toHaveBeenCalledWith(mountedElement)
+  })
+
+  it('shows a Pro badge on the mounted Clerk user button when billing is active', async () => {
+    const mountUserButton = vi.fn()
+    authMocks.getToken.mockResolvedValue('convex-token')
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ subscription: { active: true } }),
+    }) as unknown as typeof fetch
+    setClerk({
+      user: { id: 'user_123' },
+      mountUserButton,
+    })
+    const { HomepageAuthControls } = await importControls('pk_test_homepage')
+
+    render(<HomepageAuthControls wrapProvider={false} />)
+
+    await waitFor(() => expect(screen.getByText('PRO')).toBeTruthy())
+    expect(screen.getByLabelText('Pro plan active')).toBeTruthy()
+    expect(fetch).toHaveBeenCalledWith('/api/billing-overview', {
+      headers: { Authorization: 'Bearer convex-token' },
+    })
+  })
+
+  it('refreshes the Pro badge when billing status changes after checkout', async () => {
+    authMocks.getToken.mockResolvedValue('convex-token')
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ subscription: { active: false } }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ subscription: { active: true } }),
+      }) as unknown as typeof fetch
+    setClerk({
+      user: { id: 'user_123' },
+      mountUserButton: vi.fn(),
+    })
+    const { HomepageAuthControls } = await importControls('pk_test_homepage')
+    const { billingStatusChangedEventName } =
+      await import('@/features/billing/billing-events')
+
+    render(<HomepageAuthControls wrapProvider={false} />)
+
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1))
+    expect(screen.queryByText('PRO')).toBeNull()
+
+    window.dispatchEvent(new CustomEvent(billingStatusChangedEventName))
+
+    await waitFor(() => expect(screen.getByText('PRO')).toBeTruthy())
+    expect(fetch).toHaveBeenCalledTimes(2)
   })
 
   it('hides the app content from assistive tech while the Clerk modal is open', async () => {

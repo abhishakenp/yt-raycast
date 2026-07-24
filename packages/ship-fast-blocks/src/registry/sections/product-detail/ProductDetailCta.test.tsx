@@ -79,6 +79,8 @@ const { cleanup, fireEvent, render, screen, waitFor } =
 const { setSectionKitNavClickFallback } =
   await import('#/section-kit/nav-href.tsx')
 const { ProductDetailCta } = await import('./ProductDetailCta.tsx')
+const { DemoCommerceProvider } =
+  await import('../commerce/commerce-test-wrapper.tsx')
 
 function createCommerceLakebedStub() {
   let version = 0
@@ -199,7 +201,7 @@ describe('ProductDetailCta commerce behavior', () => {
     const Component = ProductDetailCta.client.component as ComponentType<any>
 
     render(
-      <>
+      <DemoCommerceProvider>
         <Component
           props={{
             actions: [
@@ -212,7 +214,7 @@ describe('ProductDetailCta commerce behavior', () => {
           statementId="product_detail_cta"
         />
         <CartCountProbe lakebed={lakebed} />
-      </>,
+      </DemoCommerceProvider>,
     )
 
     fireEvent.click(screen.getByRole('button', { name: 'Add to Cart' }))

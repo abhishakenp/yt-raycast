@@ -2,15 +2,28 @@
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { persistAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
+import {
+  persistAnonymousOwnerSecret,
+  resetAnonymousOwnerSecretPersistenceForTest,
+} from '@/features/session/services/anonymous-owner-secret'
 import { useCommerceController } from './useCommerceController'
 
 const commerceState = vi.hoisted(() => ({
   config: undefined as unknown,
 }))
 
+const authState = vi.hoisted(() => ({
+  getToken: vi.fn(),
+  isLoaded: true,
+  isSignedIn: false,
+}))
+
 vi.mock('convex/react', () => ({
   useQuery: () => commerceState.config,
+}))
+
+vi.mock('@/shared/auth/use-optional-auth', () => ({
+  useOptionalAuth: () => authState,
 }))
 
 vi.mock('../../../../convex/_generated/api', () => ({
@@ -38,13 +51,17 @@ const originalFetch = globalThis.fetch
 
 describe('useCommerceController', () => {
   beforeEach(() => {
+    authState.getToken.mockReset()
+    authState.isSignedIn = false
     commerceState.config = undefined
+    resetAnonymousOwnerSecretPersistenceForTest()
     window.localStorage.clear()
     globalThis.fetch = vi.fn()
   })
 
   afterEach(() => {
     cleanup()
+    resetAnonymousOwnerSecretPersistenceForTest()
     window.localStorage.clear()
     globalThis.fetch = originalFetch
   })
@@ -91,7 +108,10 @@ describe('useCommerceController', () => {
     )
 
     await act(async () => {
-      await result.current.provisionCommerce()
+      await result.current.provisionCommerce({
+        email: 'owner@store.test',
+        password: 'admin-password',
+      })
     })
 
     expect(fetch).toHaveBeenCalledWith(
@@ -103,16 +123,52 @@ describe('useCommerceController', () => {
           'x-ship-fast-owner-secret': 'owner-secret-from-storage',
         },
         body: JSON.stringify({
+          adminEmail: 'owner@store.test',
+          adminPassword: 'admin-password',
           anonymousOwnerSecret: 'owner-secret-from-storage',
           products,
         }),
       },
     )
+    expect(authState.getToken).not.toHaveBeenCalled()
     await waitFor(() => {
       expect(result.current.commerceHandoff?.tenantId).toBe(sessionId)
     })
     expect(result.current.commerceError).toBeUndefined()
     expect(result.current.isSaving).toBe(false)
+  })
+
+  it('requests a Convex token and sends it when provisioning as a signed-in owner', async () => {
+    const sessionId = 'k577jbx9tbkcc3bhs1fvqepf9989fm0w'
+    authState.isSignedIn = true
+    authState.getToken.mockResolvedValue('convex-token')
+    vi.mocked(fetch).mockResolvedValueOnce(Response.json({}))
+    const { result } = renderHook(() => useCommerceController(sessionId))
+
+    await act(async () => {
+      await result.current.provisionCommerce({
+        email: 'owner@store.test',
+        password: 'admin-password',
+      })
+    })
+
+    expect(authState.getToken).toHaveBeenCalledWith({ template: 'convex' })
+    expect(fetch).toHaveBeenCalledWith(
+      `/api/sessions/${sessionId}/provision/medusa`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer convex-token',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          adminEmail: 'owner@store.test',
+          adminPassword: 'admin-password',
+          products: [],
+        }),
+      },
+    )
+    expect(result.current.commerceError).toBeUndefined()
   })
 
   it('surfaces Medusa provision errors and clears the saving state', async () => {
@@ -127,7 +183,10 @@ describe('useCommerceController', () => {
     )
 
     await act(async () => {
-      await result.current.provisionCommerce()
+      await result.current.provisionCommerce({
+        email: 'owner@store.test',
+        password: 'admin-password',
+      })
     })
 
     expect(result.current.commerceError).toBe('Medusa Store API is unavailable')
@@ -147,7 +206,10 @@ describe('useCommerceController', () => {
     )
 
     await act(async () => {
-      await result.current.provisionCommerce()
+      await result.current.provisionCommerce({
+        email: 'owner@store.test',
+        password: 'admin-password',
+      })
     })
 
     expect(result.current.commerceError).toBe('Commerce provisioning failed')

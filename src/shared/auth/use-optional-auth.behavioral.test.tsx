@@ -98,7 +98,29 @@ describe('useOptionalAuth', () => {
     expect(dispatched).toEqual(['ship-fast:open-sign-in'])
   })
 
-  it('exposes Clerk profile actions and falls back to sign-in when profile UI is unavailable', async () => {
+  it('does not open Clerk sign-in when a single-session user is already signed in', async () => {
+    vi.stubEnv('VITE_DISABLE_CLERK', '')
+    vi.stubEnv('VITE_CLERK_PUBLISHABLE_KEY', 'pk_test_optional_auth')
+    const openSignIn = vi.fn()
+    const dispatched: string[] = []
+    setClerk({
+      openSignIn,
+      session: { getToken: vi.fn() },
+      user: { id: 'user_123' },
+    })
+    window.addEventListener('ship-fast:open-sign-in', (event) => {
+      dispatched.push(event.type)
+    })
+
+    const { requestClerkSignIn } = await importOptionalAuth()
+
+    requestClerkSignIn()
+
+    expect(openSignIn).not.toHaveBeenCalled()
+    expect(dispatched).toEqual([])
+  })
+
+  it('exposes Clerk profile actions without opening sign-in for signed-in users', async () => {
     vi.stubEnv('VITE_DISABLE_CLERK', '')
     vi.stubEnv('VITE_CLERK_PUBLISHABLE_KEY', 'pk_test_optional_auth')
     const openUserProfile = vi.fn()
@@ -126,7 +148,7 @@ describe('useOptionalAuth', () => {
     rerender()
 
     result.current.openUserProfile()
-    expect(openSignIn).toHaveBeenCalledTimes(1)
+    expect(openSignIn).not.toHaveBeenCalled()
   })
 })
 

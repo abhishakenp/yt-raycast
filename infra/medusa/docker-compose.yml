@@ -1,0 +1,146 @@
+services:
+  medusa-postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${MEDUSA_POSTGRES_DB:-medusa}
+      POSTGRES_USER: ${MEDUSA_POSTGRES_USER:-medusa}
+      POSTGRES_PASSWORD: ${MEDUSA_POSTGRES_PASSWORD}
+    volumes:
+      - medusa-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - medusa-internal
+
+  medusa-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - medusa-redis-data:/data
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - ping
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - medusa-internal
+
+  server:
+    build:
+      context: ../../medusa-backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      medusa-postgres:
+        condition: service_healthy
+      medusa-redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: 9000
+      MEDUSA_WORKER_MODE: server
+      DISABLE_MEDUSA_ADMIN: 'false'
+      DATABASE_URL: ${DATABASE_URL}
+      MEDUSA_DB_CONNECTION_TIMEOUT_MS: ${MEDUSA_DB_CONNECTION_TIMEOUT_MS:-30000}
+      MEDUSA_DB_KEEPALIVE_INITIAL_DELAY_MS: ${MEDUSA_DB_KEEPALIVE_INITIAL_DELAY_MS:-10000}
+      MEDUSA_DB_POOL_MIN: ${MEDUSA_DB_POOL_MIN:-0}
+      MEDUSA_DB_POOL_MAX: ${MEDUSA_DB_POOL_MAX:-5}
+      MEDUSA_DB_POOL_CREATE_RETRY_INTERVAL_MS: ${MEDUSA_DB_POOL_CREATE_RETRY_INTERVAL_MS:-3000}
+      __MEDUSA_DB_CONNECTION_MAX_RETRIES: ${__MEDUSA_DB_CONNECTION_MAX_RETRIES:-10}
+      __MEDUSA_DB_CONNECTION_RETRY_DELAY: ${__MEDUSA_DB_CONNECTION_RETRY_DELAY:-3000}
+      REDIS_URL: ${REDIS_URL:-redis://medusa-redis:6379}
+      CACHE_REDIS_URL: ${CACHE_REDIS_URL:-redis://medusa-redis:6379}
+      LOCKING_REDIS_URL: ${LOCKING_REDIS_URL:-redis://medusa-redis:6379}
+      MEDUSA_BACKEND_URL: ${MEDUSA_BACKEND_URL:-https://medusa.ship-fast.ai}
+      STORE_CORS: ${STORE_CORS:-https://ship-fast.ai,https://ship-fast.devliv.io}
+      ADMIN_CORS: ${ADMIN_CORS:-https://medusa.ship-fast.ai,https://medusa.devliv.io}
+      AUTH_CORS: ${AUTH_CORS:-https://ship-fast.ai,https://ship-fast.devliv.io,https://medusa.ship-fast.ai,https://medusa.devliv.io}
+      JWT_SECRET: ${JWT_SECRET}
+      COOKIE_SECRET: ${COOKIE_SECRET}
+      MEDUSA_SEED_ADMIN_EMAIL: ${MEDUSA_SEED_ADMIN_EMAIL}
+      MEDUSA_SEED_ADMIN_PASSWORD: ${MEDUSA_SEED_ADMIN_PASSWORD}
+    expose:
+      - 9000
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -q -O- http://127.0.0.1:9000/health >/dev/null 2>&1
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+    labels:
+      - traefik.docker.network=dokploy-network
+      - traefik.enable=true
+      - traefik.http.routers.ship-fast-medusa-direct-web.entrypoints=web
+      - traefik.http.routers.ship-fast-medusa-direct-web.middlewares=redirect-to-https@file
+      - traefik.http.routers.ship-fast-medusa-direct-web.priority=10000
+      - traefik.http.routers.ship-fast-medusa-direct-web.rule=Host(`medusa.ship-fast.ai`) || Host(`medusa.devliv.io`)
+      - traefik.http.routers.ship-fast-medusa-direct-web.service=ship-fast-medusa-direct
+      - traefik.http.routers.ship-fast-medusa-direct-websecure.entrypoints=websecure
+      - traefik.http.routers.ship-fast-medusa-direct-websecure.priority=10000
+      - traefik.http.routers.ship-fast-medusa-direct-websecure.rule=Host(`medusa.ship-fast.ai`) || Host(`medusa.devliv.io`)
+      - traefik.http.routers.ship-fast-medusa-direct-websecure.service=ship-fast-medusa-direct
+      - traefik.http.routers.ship-fast-medusa-direct-websecure.tls.certresolver=letsencrypt
+      - traefik.http.services.ship-fast-medusa-direct.loadbalancer.server.port=9000
+    networks:
+      - medusa-internal
+      - dokploy-network
+
+  medusa-worker:
+    build:
+      context: ../../medusa-backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      medusa-postgres:
+        condition: service_healthy
+      medusa-redis:
+        condition: service_healthy
+      server:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: 9000
+      MEDUSA_WORKER_MODE: worker
+      DISABLE_MEDUSA_ADMIN: 'true'
+      RUN_MIGRATIONS: 'false'
+      DATABASE_URL: ${DATABASE_URL}
+      MEDUSA_DB_CONNECTION_TIMEOUT_MS: ${MEDUSA_DB_CONNECTION_TIMEOUT_MS:-30000}
+      MEDUSA_DB_KEEPALIVE_INITIAL_DELAY_MS: ${MEDUSA_DB_KEEPALIVE_INITIAL_DELAY_MS:-10000}
+      MEDUSA_DB_POOL_MIN: ${MEDUSA_DB_POOL_MIN:-0}
+      MEDUSA_DB_POOL_MAX: ${MEDUSA_DB_POOL_MAX:-5}
+      MEDUSA_DB_POOL_CREATE_RETRY_INTERVAL_MS: ${MEDUSA_DB_POOL_CREATE_RETRY_INTERVAL_MS:-3000}
+      __MEDUSA_DB_CONNECTION_MAX_RETRIES: ${__MEDUSA_DB_CONNECTION_MAX_RETRIES:-10}
+      __MEDUSA_DB_CONNECTION_RETRY_DELAY: ${__MEDUSA_DB_CONNECTION_RETRY_DELAY:-3000}
+      REDIS_URL: ${REDIS_URL:-redis://medusa-redis:6379}
+      CACHE_REDIS_URL: ${CACHE_REDIS_URL:-redis://medusa-redis:6379}
+      LOCKING_REDIS_URL: ${LOCKING_REDIS_URL:-redis://medusa-redis:6379}
+      JWT_SECRET: ${JWT_SECRET}
+      COOKIE_SECRET: ${COOKIE_SECRET}
+      RUN_BOOTSTRAP: 'false'
+    networks:
+      - medusa-internal
+
+volumes:
+  medusa-postgres-data:
+  medusa-redis-data:
+
+networks:
+  medusa-internal:
+  dokploy-network:
+    external: true

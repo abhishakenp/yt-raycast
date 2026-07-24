@@ -51,6 +51,11 @@ type InsertedRow = {
   value: Record<string, unknown>
 }
 type Row = Doc<'sessions'> | Record<string, unknown>
+type Predicate = (row: Row) => boolean
+type IndexConstraint = {
+  equals: Array<{ field: string; value: unknown }>
+  lowerBounds: Array<{ field: string; value: number }>
+}
 
 function sessionDoc(overrides: Partial<Doc<'sessions'>> = {}) {
   return {
@@ -76,68 +81,65 @@ const queryHelper = {
       predicates.some((predicate) => predicate(row)),
 }
 
-const indexHelper = {
-  eq: (field: string, value: unknown) => ({
-    field,
-    value,
-    eq: (field2: string, value2: unknown) => ({
-      fields: [
-        { field, value },
-        { field: field2, value: value2 },
-      ],
+const createIndexHelper = (
+  constraint: IndexConstraint = { equals: [], lowerBounds: [] },
+) => ({
+  constraint,
+  eq: (field: string, value: unknown) =>
+    createIndexHelper({
+      ...constraint,
+      equals: [...constraint.equals, { field, value }],
     }),
+  gte: (field: string, value: number) => ({
+    ...constraint,
+    lowerBounds: [...constraint.lowerBounds, { field, value }],
   }),
-}
+})
 
-function chainFor(rows: Row[]) {
-  return {
-    withIndex: (
-      _indexName: string,
-      applyIndex: (
-        index: typeof indexHelper,
-      ) =>
-        | { field: string; value: unknown }
-        | { fields: Array<{ field: string; value: unknown }> },
-    ) => {
-      const result = applyIndex(indexHelper)
-      if ('fields' in result) {
-        let filtered = rows
-        for (const { field, value } of result.fields) {
-          filtered = filtered.filter(
-            (row) => row[field as keyof typeof row] === value,
-          )
-        }
-        return chainFor(filtered)
-      }
-      return chainFor(
-        rows.filter(
-          (row) => row[result.field as keyof typeof row] === result.value,
-        ),
-      )
-    },
-    order: (direction: 'asc' | 'desc') =>
-      chainFor(
-        [...rows].sort((left, right) => {
-          const leftTime = Number(left._creationTime ?? 0)
-          const rightTime = Number(right._creationTime ?? 0)
-          return direction === 'desc'
-            ? rightTime - leftTime
-            : leftTime - rightTime
-        }),
+const chainFor = (rows: Row[]) => ({
+  withIndex: (
+    _indexName: string,
+    applyIndex: (
+      index: ReturnType<typeof createIndexHelper>,
+    ) => IndexConstraint | ReturnType<typeof createIndexHelper>,
+  ) => {
+    const indexResult = applyIndex(createIndexHelper())
+    const constraint =
+      'constraint' in indexResult ? indexResult.constraint : indexResult
+    return chainFor(
+      rows.filter(
+        (row) =>
+          constraint.equals.every(
+            ({ field, value }) => row[field as keyof typeof row] === value,
+          ) &&
+          constraint.lowerBounds.every(
+            ({ field, value }) =>
+              Number(row[field as keyof typeof row]) >= value,
+          ),
       ),
-    filter: (
-      applyFilter: (helper: typeof queryHelper) => (row: Row) => boolean,
-    ) => chainFor(rows.filter(applyFilter(queryHelper))),
-    take: async (limit: number) => rows.slice(0, limit),
-    unique: async () => rows[0] ?? null,
-    first: async () => rows[0] ?? null,
-    [Symbol.asyncIterator]: async function* () {
-      for (const row of rows) {
-        yield row
-      }
-    },
-  }
-}
+    )
+  },
+  order: (direction: 'asc' | 'desc') =>
+    chainFor(
+      [...rows].sort((left, right) => {
+        const leftTime = Number(left._creationTime ?? 0)
+        const rightTime = Number(right._creationTime ?? 0)
+        return direction === 'desc'
+          ? rightTime - leftTime
+          : leftTime - rightTime
+      }),
+    ),
+  filter: (applyFilter: (query: typeof queryHelper) => Predicate) =>
+    chainFor(rows.filter(applyFilter(queryHelper))),
+  take: async (limit: number) => rows.slice(0, limit),
+  unique: async () => rows[0] ?? null,
+  first: async () => rows[0] ?? null,
+  [Symbol.asyncIterator]: async function* () {
+    for (const row of rows) {
+      yield row
+    }
+  },
+})
 
 function ctxFor(rows: Partial<QueryRows>) {
   return {
@@ -617,6 +619,46 @@ describe('session creation helpers', () => {
       quotaLimit: MAX_PAID_PER_MONTH,
       quotaCount: MAX_FREE_PER_MONTH,
       remaining: MAX_PAID_PER_MONTH - MAX_FREE_PER_MONTH - 1,
+    })
+  })
+
+  it('lets paid users renew for another monthly generation allowance', async () => {
+    const now = Date.now()
+
+    await expect(
+      loadGenerationAdmission(
+        ctxFor({
+          sessions: Array.from({ length: MAX_PAID_PER_MONTH }, (_, index) =>
+            sessionDoc({
+              userId: 'user_1',
+              createdAt: now - RATE_WINDOW_MS - 1000 - index,
+            }),
+          ),
+          subscriptions: [
+            {
+              userId: 'user_1',
+              status: 'active',
+              createdAt: now - 1000,
+              updatedAt: now - 1000,
+            },
+            {
+              userId: 'user_1',
+              status: 'authenticated',
+              createdAt: now,
+              updatedAt: now,
+            },
+          ],
+        }),
+        {
+          userId: 'user_1',
+          now,
+          disableLimits: false,
+        },
+      ),
+    ).resolves.toEqual({
+      quotaLimit: MAX_PAID_PER_MONTH * 2,
+      quotaCount: MAX_PAID_PER_MONTH,
+      remaining: MAX_PAID_PER_MONTH - 1,
     })
   })
 

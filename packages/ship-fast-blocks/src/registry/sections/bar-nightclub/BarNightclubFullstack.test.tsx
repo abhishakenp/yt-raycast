@@ -121,6 +121,8 @@ const { setSectionKitNavClickFallback } =
 const { BarNightclubHero } = await import('./BarNightclubHero.tsx')
 const { BarNightclubMenu } = await import('./BarNightclubMenu.tsx')
 const { BarNightclubNavbar } = await import('./BarNightclubNavbar.tsx')
+const { DemoCommerceProvider } =
+  await import('../commerce/commerce-test-wrapper.tsx')
 
 function createBarNightclubLakebedStub() {
   let version = 0
@@ -301,7 +303,7 @@ describe('Bar/nightclub fullstack commerce behavior', () => {
     const Menu = BarNightclubMenu.client.component
 
     render(
-      <>
+      <DemoCommerceProvider>
         <Navbar
           props={{
             brand: 'NOIR',
@@ -339,7 +341,7 @@ describe('Bar/nightclub fullstack commerce behavior', () => {
           }}
           statementId="bar_menu"
         />
-      </>,
+      </DemoCommerceProvider>,
     )
 
     await waitFor(() => {

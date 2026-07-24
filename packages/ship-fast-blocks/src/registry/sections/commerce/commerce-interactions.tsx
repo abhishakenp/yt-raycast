@@ -58,6 +58,11 @@ import type {
   CommerceSearchInput,
 } from './cart-lakebed.ts'
 import { commerceCartItemKey } from './cart-lakebed.ts'
+import { useCommerce } from './commerce-provider.tsx'
+import type {
+  CommerceRuntimeCart,
+  PaymentAction,
+} from './commerce-contracts.ts'
 
 export type CommerceLakebed = LakebedClientRuntime<typeof commerceCartLakebed>
 
@@ -68,6 +73,91 @@ type CommerceCartItem = CommerceCartSummary['items'][number]
 type CommerceCatalogProduct = NonNullable<
   ReturnType<typeof commerceCartLakebed.queries.productCatalog>
 >[number]
+
+type RazorpayCheckout = { open: () => void }
+type RazorpayConstructor = new (
+  options: Record<string, unknown>,
+) => RazorpayCheckout
+
+declare global {
+  interface Window {
+    Razorpay?: RazorpayConstructor
+  }
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
+const hostedCartLines = (cart: CommerceRuntimeCart | undefined) =>
+  (cart?.lines ?? cart?.items ?? []).map((line) => {
+    const record: Record<string, unknown> = isRecord(line) ? line : {}
+    const product = isRecord(record.product) ? record.product : {}
+    const total = isRecord(record.total) ? record.total : {}
+    const quantity =
+      typeof record.quantity === 'number' && Number.isFinite(record.quantity)
+        ? Math.max(1, Math.floor(record.quantity))
+        : 1
+    return {
+      id: line.id,
+      label:
+        typeof product.title === 'string' && product.title.trim()
+          ? product.title
+          : 'Cart item',
+      quantity,
+      total:
+        typeof total.amount === 'number' &&
+        typeof total.currencyCode === 'string'
+          ? `${total.currencyCode.toUpperCase()} ${total.amount.toFixed(2)}`
+          : '',
+    }
+  })
+
+const loadRazorpay = async (): Promise<RazorpayConstructor> => {
+  if (window.Razorpay !== undefined) return window.Razorpay
+
+  await new Promise<void>((resolve, reject) => {
+    const existing = document.querySelector<HTMLScriptElement>(
+      'script[data-commerce-razorpay]',
+    )
+    const script = existing ?? document.createElement('script')
+    script.addEventListener('load', () => resolve(), { once: true })
+    script.addEventListener(
+      'error',
+      () => reject(new Error('Razorpay checkout failed to load.')),
+      { once: true },
+    )
+    if (existing === null) {
+      script.dataset.commerceRazorpay = 'true'
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+      document.head.append(script)
+    }
+  })
+
+  if (window.Razorpay === undefined) {
+    throw new Error('Razorpay checkout is unavailable.')
+  }
+  return window.Razorpay
+}
+
+export const runCommercePaymentAction = async (
+  action: PaymentAction,
+  onSuccess: (response?: unknown) => Promise<void>,
+) => {
+  if (action.type === 'none') {
+    await onSuccess()
+    return
+  }
+  if (action.type === 'redirect') {
+    window.location.assign(action.url)
+    return
+  }
+  if (!action.provider.toLowerCase().includes('razorpay')) {
+    throw new Error(`Unsupported client payment provider: ${action.provider}`)
+  }
+
+  const Razorpay = await loadRazorpay()
+  new Razorpay({ ...action.data, handler: onSuccess }).open()
+}
 
 export function commerceProduct({
   imageAlt,
@@ -108,9 +198,45 @@ export function CommerceAddItemButton({
   lakebed: CommerceLakebed
   pendingChildren?: ReactNode
 }) {
+  const commerce = useCommerce()
   const addItem = useKeyedLakebedMutation(lakebed, 'addItem')
+  const [livePending, setLivePending] = useState(false)
   const itemKey = commerceCartItemKey(item)
-  const isButtonPending = addItem.isPending(itemKey)
+  const liveVariantId = useMemo(() => {
+    const stableKey = item.itemKey?.trim()
+    if (!stableKey || commerce.mode === 'demo') return undefined
+
+    for (const { product, purchasable } of commerce.catalog) {
+      if (!purchasable) continue
+
+      const productMatches =
+        product.sourceId === stableKey ||
+        product.id === stableKey ||
+        product.handle === stableKey ||
+        product.sourceHandle === stableKey
+      if (productMatches) {
+        return product.variants.find((variant) => variant.id !== undefined)?.id
+      }
+
+      const matchingVariant = product.variants.find(
+        (variant) =>
+          variant.id === stableKey ||
+          variant.sourceId === stableKey ||
+          variant.sku === stableKey,
+      )
+      if (matchingVariant?.id !== undefined) return matchingVariant.id
+    }
+
+    return undefined
+  }, [commerce.catalog, commerce.mode, item.itemKey])
+  const demoPurchasingEnabled = commerce.mode === 'demo'
+  const livePurchasingEnabled =
+    !demoPurchasingEnabled &&
+    commerce.status === 'ready' &&
+    liveVariantId !== undefined
+  const isButtonPending = demoPurchasingEnabled
+    ? addItem.isPending(itemKey)
+    : livePending
   const mutationInput = { ...item, itemKey }
 
   return (
@@ -118,9 +244,22 @@ export function CommerceAddItemButton({
       {...buttonProps}
       type={type}
       aria-busy={isButtonPending}
-      disabled={disabled || isButtonPending}
+      disabled={
+        disabled ||
+        isButtonPending ||
+        (!demoPurchasingEnabled && !livePurchasingEnabled)
+      }
       onClick={() => {
-        void addItem.run(itemKey, mutationInput).catch(() => {})
+        if (demoPurchasingEnabled) {
+          void addItem.run(itemKey, mutationInput).catch(() => {})
+          return
+        }
+        if (liveVariantId === undefined) return
+        setLivePending(true)
+        void commerce
+          .addItem({ quantity: 1, variantId: liveVariantId })
+          .catch(() => {})
+          .finally(() => setLivePending(false))
       }}
     >
       {isButtonPending
@@ -179,8 +318,8 @@ export function useCommerceSearch(lakebed: CommerceLakebed) {
     })
   }, [setCommerceSearch])
 
-  const chooseSearch = useCallback(
-    (input: CommerceSearchInput) => {
+  const chooseSearch = useCallback<(input: CommerceSearchInput) => void>(
+    (input) => {
       if (!input.selectedLabel) {
         latestQueryRef.current = input
         flushLatestQuery()
@@ -432,6 +571,153 @@ function CommerceClearCartButton({
   )
 }
 
+function HostedCommerceCheckout({ onBegin }: { onBegin: () => void }) {
+  const commerce = useCommerce()
+  const [open, setOpen] = useState(false)
+  const [selectedShipping, setSelectedShipping] = useState('')
+  const [selectedProvider, setSelectedProvider] = useState('')
+  const [paymentRequested, setPaymentRequested] = useState(false)
+  const [paymentError, setPaymentError] = useState('')
+
+  useEffect(() => {
+    if (!paymentRequested) return
+    const action = commerce.checkout.paymentAction
+    if (
+      action.type === 'none' &&
+      commerce.checkout.paymentSessions.length < 1
+    ) {
+      return
+    }
+    setPaymentRequested(false)
+    void runCommercePaymentAction(action, async () => {
+      await commerce.completeCart()
+    }).catch((error: unknown) => {
+      setPaymentError(
+        error instanceof Error ? error.message : 'Payment could not start.',
+      )
+    })
+  }, [commerce, paymentRequested])
+
+  if (commerce.checkout.order !== undefined) {
+    return (
+      <div className="rounded-lg border border-primary/30 bg-primary/5 p-4">
+        <p className="font-semibold text-foreground">Order confirmed</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Order{' '}
+          {commerce.checkout.order.displayId ?? commerce.checkout.order.id}
+        </p>
+      </div>
+    )
+  }
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        disabled={
+          commerce.cartPending || hostedCartLines(commerce.cart).length < 1
+        }
+        onClick={() => {
+          setOpen(true)
+          onBegin()
+          void Promise.all([
+            commerce.loadShippingOptions(),
+            commerce.loadPaymentProviders(),
+          ]).catch(() => {})
+        }}
+        className="inline-flex items-center justify-center rounded-[0.65rem] bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
+      >
+        Checkout
+      </button>
+    )
+  }
+
+  const selectedPaymentProvider = commerce.checkout.paymentProviders.find(
+    (provider) => provider.id === selectedProvider,
+  )
+
+  return (
+    <div className="grid gap-4">
+      <fieldset className="grid gap-2">
+        <legend className="text-sm font-semibold text-foreground">
+          Delivery
+        </legend>
+        {commerce.checkout.shippingOptions.map((option) => (
+          <label
+            key={option.id}
+            className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-border p-3 text-sm"
+          >
+            <span className="flex items-center gap-2">
+              <input
+                type="radio"
+                name="commerce-shipping"
+                checked={selectedShipping === option.id}
+                onChange={() => {
+                  setSelectedShipping(option.id)
+                  void commerce.selectShippingMethod(option.id).catch(() => {})
+                }}
+              />
+              {option.name}
+            </span>
+            <span className="text-muted-foreground">
+              {option.amount.currencyCode.toUpperCase()}{' '}
+              {option.amount.amount.toFixed(2)}
+            </span>
+          </label>
+        ))}
+      </fieldset>
+
+      <fieldset className="grid gap-2">
+        <legend className="text-sm font-semibold text-foreground">
+          Payment
+        </legend>
+        {commerce.checkout.paymentProviders.map((provider) => (
+          <label
+            key={provider.id}
+            className="flex cursor-pointer items-center gap-2 rounded-lg border border-border p-3 text-sm"
+          >
+            <input
+              type="radio"
+              name="commerce-payment-provider"
+              checked={selectedProvider === provider.id}
+              onChange={() => setSelectedProvider(provider.id)}
+            />
+            {provider.name}
+          </label>
+        ))}
+      </fieldset>
+
+      {commerce.checkoutError !== undefined || paymentError ? (
+        <p role="alert" className="text-sm text-destructive">
+          {paymentError || commerce.checkoutError?.message}
+        </p>
+      ) : null}
+
+      <button
+        type="button"
+        disabled={
+          commerce.checkoutPending ||
+          !selectedShipping ||
+          selectedPaymentProvider === undefined
+        }
+        onClick={() => {
+          if (selectedPaymentProvider === undefined) return
+          setPaymentError('')
+          setPaymentRequested(true)
+          void commerce
+            .createPaymentSession(selectedPaymentProvider.id)
+            .catch(() => setPaymentRequested(false))
+        }}
+        className="inline-flex items-center justify-center rounded-[0.65rem] bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
+      >
+        {commerce.checkoutPending
+          ? 'Preparing payment…'
+          : `Pay with ${selectedPaymentProvider?.name ?? 'payment provider'}`}
+      </button>
+    </div>
+  )
+}
+
 export function CommerceCartButton({
   badgeClassName,
   buttonClassName,
@@ -449,17 +735,26 @@ export function CommerceCartButton({
   lakebed: CommerceLakebed
   label?: string
 }) {
+  const commerce = useCommerce()
   const [open, setOpen] = useState(false)
   const summary = lakebed.useQuery('cartSummary')
-  const items: CommerceCartItem[] = summary?.items ?? []
-  const count = summary?.count ?? fallbackCount
+  const demoItems: CommerceCartItem[] = summary?.items ?? []
+  const hostedLines = hostedCartLines(commerce.cart)
+  const isHosted = commerce.mode === 'hosted' || commerce.mode === 'sdk'
+  const items = isHosted ? hostedLines : demoItems
+  const count = isHosted
+    ? hostedLines.reduce((total, item) => total + item.quantity, 0)
+    : (summary?.count ?? fallbackCount)
 
   return (
     <>
       <button
         type="button"
         aria-label={label}
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setOpen(true)
+          if (isHosted) void commerce.refreshCart().catch(() => {})
+        }}
         className={buttonClassName}
       >
         {children ?? <ShoppingBagIcon className="size-5" aria-hidden="true" />}
@@ -505,14 +800,41 @@ export function CommerceCartButton({
                 : `You have ${count} item${count === 1 ? '' : 's'} in your cart.`}
             </SheetDescription>
             {items.length ? (
-              <div className="mt-3 divide-y divide-border border-y border-border">
-                {items.map((item) => (
-                  <CommerceCartItemRow
-                    key={item.id}
-                    item={item}
-                    lakebed={lakebed}
-                  />
-                ))}
+              <div
+                className={
+                  isHosted
+                    ? 'space-y-3'
+                    : 'mt-3 divide-y divide-border border-y border-border'
+                }
+              >
+                {isHosted
+                  ? hostedLines.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-start justify-between gap-3 border-b border-border pb-3"
+                      >
+                        <div>
+                          <p className="text-sm font-medium text-foreground">
+                            {item.label}
+                          </p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            Quantity {item.quantity}
+                          </p>
+                        </div>
+                        {item.total ? (
+                          <span className="text-sm text-muted-foreground">
+                            {item.total}
+                          </span>
+                        ) : null}
+                      </div>
+                    ))
+                  : demoItems.map((item) => (
+                      <CommerceCartItemRow
+                        key={item.id}
+                        item={item}
+                        lakebed={lakebed}
+                      />
+                    ))}
               </div>
             ) : (
               <div className="mt-4 grid gap-2 rounded-none border border-dashed border-border px-5 py-10 text-center">
@@ -527,7 +849,15 @@ export function CommerceCartButton({
           </div>
 
           <SheetFooter className="gap-3 border-t border-border px-5 py-4">
-            {fullCartTarget ? (
+            {isHosted ? (
+              <HostedCommerceCheckout onBegin={() => undefined} />
+            ) : (
+              <CommerceClearCartButton
+                disabled={!items.length}
+                lakebed={lakebed}
+              />
+            )}
+            {!isHosted && fullCartTarget ? (
               <NavbarRouteLink
                 disabled={!items.length}
                 className="inline-flex items-center justify-center rounded-none bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 active:translate-y-px disabled:pointer-events-none disabled:opacity-50"
@@ -539,10 +869,6 @@ export function CommerceCartButton({
                 View full cart
               </NavbarRouteLink>
             ) : null}
-            <CommerceClearCartButton
-              disabled={!items.length}
-              lakebed={lakebed}
-            />
           </SheetFooter>
         </SheetContent>
       </Sheet>

@@ -101,6 +101,8 @@ const { setSectionKitNavClickFallback } =
 const { FurnitureStoreHero } = await import('./FurnitureStoreHero.tsx')
 const { FurnitureStoreNavbar } = await import('./FurnitureStoreNavbar.tsx')
 const { FurnitureStoreProducts } = await import('./FurnitureStoreProducts.tsx')
+const { DemoCommerceProvider } =
+  await import('../commerce/commerce-test-wrapper.tsx')
 
 function publicCartItem({ id, label, price, quantity }: TestCartItem) {
   return {
@@ -564,7 +566,7 @@ describe('FurnitureStore fullstack commerce behavior', () => {
     setSectionKitNavClickFallback(navigate)
 
     render(
-      <>
+      <DemoCommerceProvider>
         <FurnitureStoreNavbar.component
           props={{
             brand: 'Haven Test',
@@ -593,7 +595,7 @@ describe('FurnitureStore fullstack commerce behavior', () => {
             ],
           }}
         />
-      </>,
+      </DemoCommerceProvider>,
     )
 
     await waitFor(() => {
@@ -652,14 +654,16 @@ describe('FurnitureStore fullstack commerce behavior', () => {
     setSectionKitNavClickFallback(navigate)
 
     render(
-      <FurnitureStoreHero.component
-        props={{
-          featuredName: 'Walnut Lounge Chair',
-          featuredPrice: '$749',
-          primaryCta: 'Explore Rooms',
-          secondaryCta: 'New Arrivals',
-        }}
-      />,
+      <DemoCommerceProvider>
+        <FurnitureStoreHero.component
+          props={{
+            featuredName: 'Walnut Lounge Chair',
+            featuredPrice: '$749',
+            primaryCta: 'Explore Rooms',
+            secondaryCta: 'New Arrivals',
+          }}
+        />
+      </DemoCommerceProvider>,
     )
 
     fireEvent.click(screen.getByRole('link', { name: 'Explore Rooms' }))

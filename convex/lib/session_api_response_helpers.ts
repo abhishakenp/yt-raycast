@@ -127,10 +127,14 @@ export async function loadSessionApiResponse(
   ctx: SessionApiResponseCtx,
   lookup: string,
 ) {
-  const sessionId: Id<'sessions'> | null = ctx.db.normalizeId(
-    'sessions',
-    lookup,
-  )
+  let sessionId: Id<'sessions'> | null = ctx.db.normalizeId('sessions', lookup)
+
+  if (sessionId === null) {
+    const previewId = ctx.db.normalizeId('previews', lookup)
+    const preview = previewId === null ? null : await ctx.db.get(previewId)
+    sessionId = preview?.sessionId ?? null
+  }
+
   if (sessionId === null) return null
 
   const session = await ctx.db.get(sessionId)

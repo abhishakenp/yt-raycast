@@ -7,6 +7,15 @@ vi.mock('@/shared/auth/use-optional-auth', () => ({
   useOptionalAuth: vi.fn(),
 }))
 
+const confirmState = vi.hoisted(() => ({
+  confirmRazorpaySubscriptionPayment: vi.fn(),
+}))
+
+vi.mock('@/features/billing/client/razorpay-confirm', () => ({
+  confirmRazorpaySubscriptionPayment:
+    confirmState.confirmRazorpaySubscriptionPayment,
+}))
+
 import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
 import { BillingPanel } from './BillingPanel'
 
@@ -18,6 +27,14 @@ type Overview = {
     status?: string | null
   } | null
   credits?: { remaining: number }
+  generationQuota?: {
+    limit: number
+    used: number
+    remaining: number
+    exhausted: boolean
+    activeSubscriptionCount: number
+    canRenew: boolean
+  }
   exportAccess?: { unlocked: boolean; reason?: string; viaCredits?: boolean }
 }
 
@@ -51,6 +68,13 @@ describe('BillingPanel: behavioral', () => {
     vi.mocked(useOptionalAuth).mockReturnValue(authed)
     authed.getToken.mockReset()
     authed.getToken.mockResolvedValue('convex-token')
+    confirmState.confirmRazorpaySubscriptionPayment.mockReset()
+    confirmState.confirmRazorpaySubscriptionPayment.mockResolvedValue({
+      active: true,
+      status: 'authenticated',
+      planId: 'plan_pro',
+      providerSubscriptionId: 'sub_test_123',
+    })
     fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)
     // prevent window.location.href redirect from throwing in jsdom
@@ -412,7 +436,89 @@ describe('BillingPanel: behavioral', () => {
     expect(scope.getByText('Unlocked')).not.toBeNull()
   })
 
-  it('checkout POST is sent to /api/checkout/start with Bearer token', async () => {
+  it('shows Current plan and disables subscription checkout while Pro quota remains', async () => {
+    fetchMock.mockResolvedValue(
+      overviewResponse({
+        subscription: {
+          active: true,
+          planId: 'pro_monthly',
+          provider: 'razorpay',
+          status: 'active',
+        },
+        credits: { remaining: 0 },
+        generationQuota: {
+          limit: 30,
+          used: 12,
+          remaining: 18,
+          exhausted: false,
+          activeSubscriptionCount: 1,
+          canRenew: false,
+        },
+        exportAccess: { unlocked: true },
+      }),
+    )
+
+    const { container } = render(<BillingPanel sessionId="sess-current" />)
+    const scope = within(container)
+
+    const currentPlan = await scope.findByRole('button', {
+      name: /current plan/i,
+    })
+    expect((currentPlan as HTMLButtonElement).disabled).toBe(true)
+    expect(scope.getByText('12/30 used')).toBeTruthy()
+    expect(scope.getByText('18 generations remaining this month.')).toBeTruthy()
+  })
+
+  it('shows Renew Pro and starts subscription checkout when paid quota is exhausted', async () => {
+    fetchMock.mockResolvedValue(
+      overviewResponse({
+        subscription: {
+          active: true,
+          planId: 'pro_monthly',
+          provider: 'razorpay',
+          status: 'active',
+        },
+        credits: { remaining: 0 },
+        generationQuota: {
+          limit: 30,
+          used: 30,
+          remaining: 0,
+          exhausted: true,
+          activeSubscriptionCount: 1,
+          canRenew: true,
+        },
+        exportAccess: { unlocked: true },
+      }),
+    )
+
+    const { container } = render(<BillingPanel sessionId="sess-renew" />)
+    const scope = within(container)
+    const renew = await scope.findByRole('button', { name: /renew pro/i })
+    expect((renew as HTMLButtonElement).disabled).toBe(false)
+    expect(scope.getByText('30/30 used')).toBeTruthy()
+    expect(
+      scope.getByText('Renew Pro to add another 30 generations.'),
+    ).toBeTruthy()
+
+    fetchMock.mockResolvedValueOnce(
+      checkoutResponse({ subscriptionId: 'sub_renew' }),
+    )
+
+    fireEvent.click(renew)
+
+    await waitFor(() => {
+      expect(
+        fetchMock.mock.calls.some(
+          (c) =>
+            (c[1] as RequestInit)?.method === 'POST' &&
+            JSON.parse((c[1] as RequestInit).body as string).mode ===
+              'subscription',
+        ),
+      ).toBe(true)
+    })
+  })
+
+  it('checkout POST is sent to Razorpay checkout with Bearer token', async () => {
     fetchMock.mockResolvedValue(
       overviewResponse({
         subscription: { active: false },
@@ -437,7 +543,7 @@ describe('BillingPanel: behavioral', () => {
       expect(
         fetchMock.mock.calls.some(
           (c) =>
-            c[0] === '/api/checkout/start' &&
+            c[0] === '/api/payments/razorpay/start' &&
             (c[1] as RequestInit)?.method === 'POST',
         ),
       ).toBe(true)
@@ -445,7 +551,7 @@ describe('BillingPanel: behavioral', () => {
 
     const postCall = fetchMock.mock.calls.find(
       (c) =>
-        c[0] === '/api/checkout/start' &&
+        c[0] === '/api/payments/razorpay/start' &&
         (c[1] as RequestInit)?.method === 'POST',
     )!
     const headers = (postCall[1] as RequestInit).headers as Record<
@@ -480,6 +586,196 @@ describe('BillingPanel: behavioral', () => {
     await waitFor(() => {
       expect(window.location.href).toBe('https://checkout.example.com/pay')
     })
+  })
+
+  it('opens Razorpay Checkout for a Clerk-authenticated subscription checkout', async () => {
+    const checkoutOpen = vi.fn()
+    const checkoutOn = vi.fn()
+    const razorpayOptions: Record<string, unknown>[] = []
+    class RazorpayMock {
+      constructor(options: Record<string, unknown>) {
+        razorpayOptions.push(options)
+      }
+
+      open = checkoutOpen
+      on = checkoutOn
+    }
+    vi.stubGlobal('Razorpay', RazorpayMock)
+    fetchMock.mockResolvedValue(
+      overviewResponse({
+        subscription: { active: false },
+        credits: { remaining: 0 },
+        exportAccess: { unlocked: false },
+      }),
+    )
+
+    const { container } = render(<BillingPanel sessionId="sess-razorpay-sub" />)
+    const scope = within(container)
+    const upgrade = await scope.findByRole('button', {
+      name: /upgrade to pro/i,
+    })
+
+    fetchMock.mockResolvedValueOnce(
+      checkoutResponse({
+        provider: 'razorpay',
+        keyId: 'rzp_test_key',
+        subscriptionId: 'sub_test_123',
+      }),
+    )
+
+    fireEvent.click(upgrade)
+
+    await waitFor(() => expect(checkoutOpen).toHaveBeenCalledTimes(1))
+    expect(razorpayOptions[0]).toMatchObject({
+      key: 'rzp_test_key',
+      subscription_id: 'sub_test_123',
+      notes: {
+        mode: 'subscription',
+        sessionId: 'sess-razorpay-sub',
+      },
+    })
+    expect(checkoutOn).toHaveBeenCalledWith(
+      'payment.failed',
+      expect.any(Function),
+    )
+
+    const postCall = fetchMock.mock.calls.find(
+      (c) => (c[1] as RequestInit)?.method === 'POST',
+    )!
+    const headers = (postCall[1] as RequestInit).headers as Record<
+      string,
+      string
+    >
+    expect(headers.Authorization).toBe('Bearer convex-token')
+  })
+
+  it('confirms Razorpay subscription payments and refreshes billing', async () => {
+    const razorpayOptions: Record<string, unknown>[] = []
+    class RazorpayMock {
+      constructor(options: Record<string, unknown>) {
+        razorpayOptions.push(options)
+      }
+
+      open = vi.fn()
+      on = vi.fn()
+    }
+    vi.stubGlobal('Razorpay', RazorpayMock)
+    fetchMock.mockResolvedValueOnce(
+      overviewResponse({
+        subscription: { active: false },
+        credits: { remaining: 0 },
+        exportAccess: { unlocked: false },
+      }),
+    )
+
+    const { container } = render(<BillingPanel sessionId="sess-confirm-sub" />)
+    const scope = within(container)
+    const upgrade = await scope.findByRole('button', {
+      name: /upgrade to pro/i,
+    })
+
+    fetchMock
+      .mockResolvedValueOnce(
+        checkoutResponse({
+          provider: 'razorpay',
+          keyId: 'rzp_test_key',
+          subscriptionId: 'sub_test_123',
+        }),
+      )
+      .mockResolvedValueOnce(
+        overviewResponse({
+          subscription: {
+            active: true,
+            planId: 'plan_pro',
+            provider: 'razorpay',
+            status: 'authenticated',
+          },
+          credits: { remaining: 0 },
+          exportAccess: { unlocked: true },
+        }),
+      )
+
+    fireEvent.click(upgrade)
+
+    await waitFor(() => expect(razorpayOptions[0]).toBeDefined())
+    const handler = razorpayOptions[0]?.handler
+    expect(typeof handler).toBe('function')
+    ;(handler as (response: Record<string, string>) => void)({
+      razorpay_payment_id: 'pay_test_123',
+      razorpay_subscription_id: 'sub_test_123',
+      razorpay_signature: 'sig_test_123',
+    })
+
+    await waitFor(() => {
+      expect(
+        confirmState.confirmRazorpaySubscriptionPayment,
+      ).toHaveBeenCalledWith('convex-token', {
+        razorpay_payment_id: 'pay_test_123',
+        razorpay_subscription_id: 'sub_test_123',
+        razorpay_signature: 'sig_test_123',
+      })
+    })
+    await waitFor(() => expect(scope.getByText('plan_pro')).toBeTruthy())
+    expect(scope.getByText('razorpay')).toBeTruthy()
+  })
+
+  it('opens Razorpay Checkout for Clerk-authenticated credit pack orders', async () => {
+    const checkoutOpen = vi.fn()
+    const checkoutOn = vi.fn()
+    const razorpayOptions: Record<string, unknown>[] = []
+    class RazorpayMock {
+      constructor(options: Record<string, unknown>) {
+        razorpayOptions.push(options)
+      }
+
+      open = checkoutOpen
+      on = checkoutOn
+    }
+    vi.stubGlobal('Razorpay', RazorpayMock)
+    fetchMock.mockResolvedValue(
+      overviewResponse({
+        subscription: { active: false },
+        credits: { remaining: 0 },
+        exportAccess: { unlocked: false },
+      }),
+    )
+
+    const { container } = render(
+      <BillingPanel sessionId="sess-razorpay-pack" />,
+    )
+    const scope = within(container)
+    const threeCreditBtn = await scope.findByRole('button', {
+      name: /3 credits/i,
+    })
+
+    fetchMock.mockResolvedValueOnce(
+      checkoutResponse({
+        provider: 'razorpay',
+        keyId: 'rzp_test_key',
+        orderId: 'order_test_123',
+        amount: 19900,
+        currency: 'INR',
+      }),
+    )
+
+    fireEvent.click(threeCreditBtn)
+
+    await waitFor(() => expect(checkoutOpen).toHaveBeenCalledTimes(1))
+    expect(razorpayOptions[0]).toMatchObject({
+      key: 'rzp_test_key',
+      order_id: 'order_test_123',
+      amount: 19900,
+      currency: 'INR',
+      notes: {
+        mode: 'credit_pack',
+        packId: '3_credits',
+        sessionId: 'sess-razorpay-pack',
+      },
+    })
+    expect(checkoutOn).toHaveBeenCalledWith(
+      'payment.failed',
+      expect.any(Function),
+    )
   })
 
   it('shows a stable checkout error when checkout returns malformed JSON', async () => {

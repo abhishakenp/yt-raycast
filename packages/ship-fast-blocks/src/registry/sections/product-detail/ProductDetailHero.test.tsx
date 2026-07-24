@@ -99,6 +99,8 @@ if (typeof ResizeObserver === 'undefined') {
 const { cleanup, fireEvent, render, screen, waitFor } =
   await import('@testing-library/react')
 const { ProductDetailHero } = await import('./ProductDetailHero.tsx')
+const { DemoCommerceProvider } =
+  await import('../commerce/commerce-test-wrapper.tsx')
 
 function createCommerceLakebedStub() {
   let version = 0
@@ -237,7 +239,7 @@ describe('ProductDetailHero commerce behavior', () => {
     const Component = ProductDetailHero.client.component
 
     render(
-      <>
+      <DemoCommerceProvider>
         <Component
           props={{
             description: 'Portable studio monitoring with low-latency audio.',
@@ -249,7 +251,7 @@ describe('ProductDetailHero commerce behavior', () => {
           statementId="product_detail_hero"
         />
         <CartCountProbe lakebed={lakebed} />
-      </>,
+      </DemoCommerceProvider>,
     )
 
     await waitFor(() => {
@@ -285,7 +287,7 @@ describe('ProductDetailHero commerce behavior', () => {
     const Component = ProductDetailHero.client.component
 
     render(
-      <>
+      <DemoCommerceProvider>
         <Component
           props={{
             price: '$299',
@@ -296,7 +298,7 @@ describe('ProductDetailHero commerce behavior', () => {
           statementId="product_detail_hero"
         />
         <CartCountProbe lakebed={lakebed} />
-      </>,
+      </DemoCommerceProvider>,
     )
 
     fireEvent.click(screen.getByRole('button', { name: 'Buy Now' }))

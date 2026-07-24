@@ -101,6 +101,8 @@ const { setSectionKitNavClickFallback } =
 const { BeautyStoreHero } = await import('./BeautyStoreHero.tsx')
 const { BeautyStoreNavbar } = await import('./BeautyStoreNavbar.tsx')
 const { BeautyStoreProducts } = await import('./BeautyStoreProducts.tsx')
+const { DemoCommerceProvider } =
+  await import('../commerce/commerce-test-wrapper.tsx')
 
 function publicCartItem({ id, label, price, quantity }: TestCartItem) {
   return {
@@ -564,7 +566,7 @@ describe('BeautyStore fullstack commerce behavior', () => {
     setSectionKitNavClickFallback(navigate)
 
     render(
-      <>
+      <DemoCommerceProvider>
         <BeautyStoreNavbar.component
           props={{
             brand: 'Lumi Test',
@@ -595,7 +597,7 @@ describe('BeautyStore fullstack commerce behavior', () => {
             ],
           }}
         />
-      </>,
+      </DemoCommerceProvider>,
     )
 
     await waitFor(() => {
@@ -654,14 +656,16 @@ describe('BeautyStore fullstack commerce behavior', () => {
     setSectionKitNavClickFallback(navigate)
 
     render(
-      <BeautyStoreHero.component
-        props={{
-          heroProductName: 'Clean Skin Starter',
-          heroProductPrice: '$48.00',
-          primaryCta: 'Shop Bestsellers',
-          secondaryCta: 'Explore New Arrivals',
-        }}
-      />,
+      <DemoCommerceProvider>
+        <BeautyStoreHero.component
+          props={{
+            heroProductName: 'Clean Skin Starter',
+            heroProductPrice: '$48.00',
+            primaryCta: 'Shop Bestsellers',
+            secondaryCta: 'Explore New Arrivals',
+          }}
+        />
+      </DemoCommerceProvider>,
     )
 
     fireEvent.click(screen.getByRole('link', { name: 'Shop Bestsellers' }))

@@ -109,6 +109,8 @@ const { setSectionKitNavClickFallback } =
   await import('#/section-kit/nav-href.tsx')
 const { BakeryMenu } = await import('./BakeryMenu.tsx')
 const { BakeryNavbar } = await import('./BakeryNavbar.tsx')
+const { DemoCommerceProvider } =
+  await import('../commerce/commerce-test-wrapper.tsx')
 
 type RenderPath = 'capsule' | 'renderer'
 
@@ -144,15 +146,19 @@ async function renderBakery(path: RenderPath) {
     const NavbarCapsule = BakeryNavbar.client.component
     const MenuCapsule = BakeryMenu.client.component
     return render(
-      <>
+      <DemoCommerceProvider>
         <NavbarCapsule props={navbarProps} statementId="bakery_navbar" />
         <MenuCapsule props={menuProps} statementId="bakery_menu" />
-      </>,
+      </DemoCommerceProvider>,
     )
   }
 
   const library = await loadOpenUIRuntimeLibrary(source)
-  return render(React.createElement(Renderer, { library, response: source }))
+  return render(
+    <DemoCommerceProvider>
+      {React.createElement(Renderer, { library, response: source })}
+    </DemoCommerceProvider>,
+  )
 }
 
 beforeAll(() => {

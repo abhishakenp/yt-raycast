@@ -3,6 +3,12 @@ import { z } from 'zod/v4'
 
 import { cn } from '#/lib/utils.ts'
 import { Container } from '#/section-kit/Container.tsx'
+import {
+  GalleryGrid,
+  GalleryGridItems,
+  GalleryTile,
+  GalleryTileImage,
+} from '#/section-kit/GalleryGrid.tsx'
 import { SectionHeading } from '#/section-kit/SectionHeading.tsx'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import {
@@ -12,12 +18,11 @@ import {
   useCommerceFilteredProducts,
   useSyncCommerceCatalog,
 } from '../commerce/commerce-interactions.tsx'
+import { useCommerce } from '../commerce/commerce-provider.tsx'
 import {
-  GalleryGrid,
-  GalleryGridItems,
-  GalleryTile,
-  GalleryTileImage,
-} from '#/section-kit/GalleryGrid.tsx'
+  resolveEcommerceGalleryProducts,
+  type EcommerceGalleryVisualProduct,
+} from './ecommerce-gallery-commerce.ts'
 
 /**
  * EcommerceGallery — editorial-commerce featured products spread for a general
@@ -45,6 +50,8 @@ export const EcommerceGallery = defineCapsule({
       .array(
         z.object({
           name: z.string(),
+          handle: z.string().optional(),
+          sourceId: z.string().optional(),
           price: z.string(),
           oldPrice: z.string().optional(),
           badge: z.string().optional(),
@@ -61,7 +68,8 @@ export const EcommerceGallery = defineCapsule({
       props.subheading ??
       'Shop our best sellers — handpicked favorites loved by thousands of customers.'
     const addToCartLabel = props.addToCartLabel ?? 'Add to cart'
-    const galleryProducts = props.products?.length
+    const galleryProducts: Array<EcommerceGalleryVisualProduct> = props.products
+      ?.length
       ? props.products
       : [
           {
@@ -121,20 +129,28 @@ export const EcommerceGallery = defineCapsule({
               'Premium hardcover dotted notebook in charcoal on a clean studio background, online store product photo',
           },
         ]
+    const commerce = useCommerce()
     useSyncCommerceCatalog(
       lakebed,
-      galleryProducts.map((product) =>
-        commerceProduct({
-          imageAlt: product.imageAlt,
-          label: product.name,
-          price: product.price,
-          subtitle: product.badge,
-        }),
-      ),
+      commerce.mode === 'demo'
+        ? galleryProducts.map((product) =>
+            commerceProduct({
+              imageAlt: product.imageAlt,
+              itemKey: product.sourceId ?? product.handle,
+              label: product.name,
+              price: product.price,
+              subtitle: product.badge,
+            }),
+          )
+        : [],
+    )
+    const runtimeProducts = resolveEcommerceGalleryProducts(
+      galleryProducts,
+      commerce,
     )
     const visibleProducts = useCommerceFilteredProducts(
       lakebed,
-      galleryProducts,
+      runtimeProducts,
       (product) => [
         product.name,
         product.price,
@@ -173,76 +189,73 @@ export const EcommerceGallery = defineCapsule({
               columns={3}
               className="items-start gap-x-6 gap-y-12 sm:gap-y-10"
             >
-              {visibleProducts.map((p, i) => {
-                const __iv__ = p as {
-                  name: string
-                  price: string
-                  oldPrice?: string
-                  badge?: string
-                  imageAlt?: string
-                }
-                return (
-                  <div
-                    key={__iv__.name}
-                    className={cn(
-                      'flex flex-col',
-                      i % 2 === 1 && 'sm:translate-y-8 lg:translate-y-0',
-                      i % 3 === 1 && 'lg:translate-y-10',
-                    )}
-                  >
-                    <div className="relative mr-2.5">
-                      <div
-                        aria-hidden="true"
-                        className="pointer-events-none absolute inset-0 translate-x-2.5 translate-y-2.5 border border-border"
+              {visibleProducts.map((product, index) => (
+                <div
+                  key={product.productSourceId}
+                  className={cn(
+                    'flex flex-col',
+                    index % 2 === 1 && 'sm:translate-y-8 lg:translate-y-0',
+                    index % 3 === 1 && 'lg:translate-y-10',
+                  )}
+                >
+                  <div className="relative mr-2.5">
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 translate-x-2.5 translate-y-2.5 border border-border"
+                    />
+                    <GalleryTile className="aspect-square rounded-none border-foreground/15 bg-muted">
+                      <GalleryTileImage
+                        src={product.imageSrc}
+                        alt={product.imageAlt ?? product.name}
+                        w={600}
+                        h={600}
+                        className="group-hover:scale-[1.03]"
                       />
-                      <GalleryTile className="aspect-square rounded-none border-foreground/15 bg-muted">
-                        <GalleryTileImage
-                          alt={__iv__.imageAlt ?? __iv__.name}
-                          w={600}
-                          h={600}
-                          className="group-hover:scale-[1.03]"
-                        />
-                        {__iv__.badge && (
-                          <span className="absolute left-0 top-0 border-b border-r border-foreground bg-background px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-foreground">
-                            {__iv__.badge}
-                          </span>
-                        )}
-                      </GalleryTile>
-                    </div>
-                    <div className="mt-5 flex items-end justify-between gap-3 border-b border-border pb-3">
-                      <div className="min-w-0">
-                        <p
-                          aria-hidden="true"
-                          className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground/60 tabular-nums"
-                        >
-                          {String(i + 1).padStart(2, '0')}
-                        </p>
-                        <h3 className="mt-1 truncate text-sm font-semibold tracking-tight text-foreground">
-                          {__iv__.name}
-                        </h3>
-                      </div>
-                      <div className="flex shrink-0 items-baseline gap-2">
-                        {__iv__.oldPrice && (
-                          <s className="font-mono text-xs text-muted-foreground">
-                            {__iv__.oldPrice}
-                          </s>
-                        )}
-                        <span className="text-3xl font-extrabold leading-none tracking-tighter text-foreground tabular-nums">
-                          {__iv__.price}
+                      {product.badge ? (
+                        <span className="absolute left-0 top-0 border-b border-r border-foreground bg-background px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-foreground">
+                          {product.badge}
                         </span>
-                      </div>
-                    </div>
-                    <CommerceAddItemButton
-                      lakebed={lakebed}
-                      item={{ label: __iv__.name, price: __iv__.price }}
-                      pendingChildren={<CommerceMutationSpinner />}
-                      className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-none border border-foreground bg-background px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.15em] text-foreground transition-all duration-150 hover:bg-foreground hover:text-background active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
-                    >
-                      {addToCartLabel}
-                    </CommerceAddItemButton>
+                      ) : null}
+                    </GalleryTile>
                   </div>
-                )
-              })}
+                  <div className="mt-5 flex items-end justify-between gap-3 border-b border-border pb-3">
+                    <div className="min-w-0">
+                      <p
+                        aria-hidden="true"
+                        className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground/60 tabular-nums"
+                      >
+                        {String(index + 1).padStart(2, '0')}
+                      </p>
+                      <h3 className="mt-1 truncate text-sm font-semibold tracking-tight text-foreground">
+                        {product.name}
+                      </h3>
+                    </div>
+                    <div className="flex shrink-0 items-baseline gap-2">
+                      {product.oldPrice ? (
+                        <s className="font-mono text-xs text-muted-foreground">
+                          {product.oldPrice}
+                        </s>
+                      ) : null}
+                      <span className="text-3xl font-extrabold leading-none tracking-tighter text-foreground tabular-nums">
+                        {product.price}
+                      </span>
+                    </div>
+                  </div>
+                  <CommerceAddItemButton
+                    disabled={!product.purchasable && commerce.mode !== 'demo'}
+                    lakebed={lakebed}
+                    item={{
+                      itemKey: product.productSourceId,
+                      label: product.name,
+                      price: product.price,
+                    }}
+                    pendingChildren={<CommerceMutationSpinner />}
+                    className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-none border border-foreground bg-background px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.15em] text-foreground transition-all duration-150 hover:bg-foreground hover:text-background active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
+                  >
+                    {addToCartLabel}
+                  </CommerceAddItemButton>
+                </div>
+              ))}
             </GalleryGridItems>
           </GalleryGrid>
         </Container>

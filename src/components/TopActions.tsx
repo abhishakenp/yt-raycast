@@ -1,5 +1,5 @@
-import { lazy, Suspense, useState } from 'react'
 import { Show, SignInButton, UserButton } from '@clerk/tanstack-react-start'
+import { lazy, Suspense, useState } from 'react'
 import {
   GlassPillAnchor,
   GlassPillButton,
@@ -49,7 +49,16 @@ export const TopActions = () => {
                 <UserButton />
               </div>
             </Show>
-            <Suspense fallback={null}>
+            <Suspense
+              fallback={
+                <GlassPillButton
+                  className="pill--top-actions"
+                  onClick={() => setAuthRequested(true)}
+                >
+                  Sign in
+                </GlassPillButton>
+              }
+            >
               <LazyHomepageAuthControls
                 autoOpen={authRequested}
                 renderButton={false}

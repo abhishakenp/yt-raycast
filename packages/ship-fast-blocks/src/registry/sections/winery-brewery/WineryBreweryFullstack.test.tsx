@@ -121,6 +121,8 @@ const { setSectionKitNavClickFallback } =
 const { WineryBreweryHero } = await import('./WineryBreweryHero.tsx')
 const { WineryBreweryMenu } = await import('./WineryBreweryMenu.tsx')
 const { WineryBreweryNavbar } = await import('./WineryBreweryNavbar.tsx')
+const { DemoCommerceProvider } =
+  await import('../commerce/commerce-test-wrapper.tsx')
 
 function createWineryBreweryLakebedStub() {
   let version = 0
@@ -302,7 +304,7 @@ describe('Winery/brewery fullstack commerce behavior', () => {
     const Menu = WineryBreweryMenu.client.component
 
     render(
-      <>
+      <DemoCommerceProvider>
         <Navbar
           props={{
             brand: 'Cask Room',
@@ -342,7 +344,7 @@ describe('Winery/brewery fullstack commerce behavior', () => {
           }}
           statementId="winery_menu"
         />
-      </>,
+      </DemoCommerceProvider>,
     )
 
     await waitFor(() => {

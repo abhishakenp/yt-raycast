@@ -25,6 +25,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ExamplesIndexRouteImport } from './routes/examples.index'
 import { Route as PreviewSlugRouteImport } from './routes/preview.$slug'
 import { Route as ExamplesCategoryRouteImport } from './routes/examples.$category'
+import { Route as DeployedSlugRouteImport } from './routes/deployed.$slug'
 import { Route as ApiTranslateRouteImport } from './routes/api/translate'
 import { Route as ApiSubscriptionStatusRouteImport } from './routes/api/subscription-status'
 import { Route as ApiShareBonusRouteImport } from './routes/api/share-bonus'
@@ -45,7 +46,7 @@ import { Route as PreviewSlugSplatRouteImport } from './routes/preview.$slug.$'
 import { Route as GenerateSessionIdSplatRouteImport } from './routes/generate.$sessionId.$'
 import { Route as ExportSessionIdTargetRouteImport } from './routes/export.$sessionId.$target'
 import { Route as ExamplesCategorySplatRouteImport } from './routes/examples.$category.$'
-import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe.webhook'
+import { Route as DeployedSlugSplatRouteImport } from './routes/deployed.$slug.$'
 import { Route as ApiSessionsCreateRouteImport } from './routes/api/sessions.create'
 import { Route as ApiSessionsSessionIdRouteImport } from './routes/api/sessions.$sessionId'
 import { Route as ApiReferralsStatusRouteImport } from './routes/api/referrals.status'
@@ -58,6 +59,8 @@ import { Route as ApiMedusaStoreCartRouteImport } from './routes/api/medusa-stor
 import { Route as ApiMedusaAdminConfigRouteImport } from './routes/api/medusa-admin.config'
 import { Route as ApiImagesSessionIdRouteImport } from './routes/api/images.$sessionId'
 import { Route as ApiCheckoutStartRouteImport } from './routes/api/checkout.start'
+import { Route as ApiStorefrontMedusaConfigRouteImport } from './routes/api/storefront.medusa.config'
+import { Route as ApiStorefrontMedusaCartRouteImport } from './routes/api/storefront.medusa.cart'
 import { Route as ApiSessionsSessionIdStreamRouteImport } from './routes/api/sessions.$sessionId.stream'
 import { Route as ApiSessionsSessionIdSectionEditRouteImport } from './routes/api/sessions.$sessionId.section-edit'
 import { Route as ApiSessionsSessionIdPreviewRawRouteImport } from './routes/api/sessions.$sessionId.preview-raw'
@@ -68,8 +71,9 @@ import { Route as ApiSessionsSessionIdMedusaProductsRouteImport } from './routes
 import { Route as ApiSessionsSessionIdMedusaConfigRouteImport } from './routes/api/sessions.$sessionId.medusa-config'
 import { Route as ApiSessionsSessionIdHistoryRouteImport } from './routes/api/sessions.$sessionId.history'
 import { Route as ApiSessionsSessionIdExportRouteImport } from './routes/api/sessions.$sessionId.export'
-import { Route as ApiPaymentsStripeWebhookRouteImport } from './routes/api/payments.stripe.webhook'
 import { Route as ApiPaymentsRazorpayWebhookRouteImport } from './routes/api/payments.razorpay.webhook'
+import { Route as ApiPaymentsRazorpayStartRouteImport } from './routes/api/payments.razorpay.start'
+import { Route as ApiPaymentsRazorpayConfirmRouteImport } from './routes/api/payments.razorpay.confirm'
 import { Route as ApiMedusaStoreCartLineItemsRouteImport } from './routes/api/medusa-store.cart.line-items'
 import { Route as ApiMedusaStoreCartIdRouteImport } from './routes/api/medusa-store.cart.$id'
 import { Route as ApiGithubConnectStartRouteImport } from './routes/api/github.connect.start'
@@ -78,12 +82,24 @@ import { Route as ApiDeploymentsDeploymentSlugMedusaWebhookRouteImport } from '.
 import { Route as ApiDeploymentsDeploymentSlugMedusaPullRouteImport } from './routes/api/deployments.$deploymentSlug.medusa-pull'
 import { Route as ApiDeploymentsDeploymentSlugMedusaProductsRouteImport } from './routes/api/deployments.$deploymentSlug.medusa-products'
 import { Route as ApiDeploymentsDeploymentSlugMedusaConfigRouteImport } from './routes/api/deployments.$deploymentSlug.medusa-config'
+import { Route as ApiStorefrontMedusaCartLineItemsRouteImport } from './routes/api/storefront.medusa.cart.line-items'
+import { Route as ApiStorefrontMedusaCartIdRouteImport } from './routes/api/storefront.medusa.cart.$id'
 import { Route as ApiSessionsSessionIdProvisionMedusaRouteImport } from './routes/api/sessions.$sessionId.provision.medusa'
 import { Route as ApiSessionsSessionIdGithubPushRouteImport } from './routes/api/sessions.$sessionId.github.push'
 import { Route as ApiSessionsSessionIdDownloadTargetRouteImport } from './routes/api/sessions.$sessionId.download.$target'
 import { Route as ApiSessionsSessionIdDeployLakebedRouteImport } from './routes/api/sessions.$sessionId.deploy.lakebed'
 import { Route as ApiDeploymentsDeploymentSlugProvisionMedusaRouteImport } from './routes/api/deployments.$deploymentSlug.provision.medusa'
+import { Route as ApiCommerceScopeTenantCatalogRouteImport } from './routes/api/commerce.$scope.$tenant.catalog'
+import { Route as ApiCommerceScopeTenantCartsRouteImport } from './routes/api/commerce.$scope.$tenant.carts'
 import { Route as ApiSessionsSessionIdHistoryVersionRestoreRouteImport } from './routes/api/sessions.$sessionId.history.$version.restore'
+import { Route as ApiCommerceScopeTenantCartsCartIdRouteImport } from './routes/api/commerce.$scope.$tenant.carts.$cartId'
+import { Route as ApiCommerceScopeTenantCartsCartIdShippingOptionsRouteImport } from './routes/api/commerce.$scope.$tenant.carts.$cartId.shipping-options'
+import { Route as ApiCommerceScopeTenantCartsCartIdShippingMethodsRouteImport } from './routes/api/commerce.$scope.$tenant.carts.$cartId.shipping-methods'
+import { Route as ApiCommerceScopeTenantCartsCartIdPaymentSessionsRouteImport } from './routes/api/commerce.$scope.$tenant.carts.$cartId.payment-sessions'
+import { Route as ApiCommerceScopeTenantCartsCartIdPaymentProvidersRouteImport } from './routes/api/commerce.$scope.$tenant.carts.$cartId.payment-providers'
+import { Route as ApiCommerceScopeTenantCartsCartIdItemsRouteImport } from './routes/api/commerce.$scope.$tenant.carts.$cartId.items'
+import { Route as ApiCommerceScopeTenantCartsCartIdCompleteRouteImport } from './routes/api/commerce.$scope.$tenant.carts.$cartId.complete'
+import { Route as ApiCommerceScopeTenantCartsCartIdItemsLineIdRouteImport } from './routes/api/commerce.$scope.$tenant.carts.$cartId.items.$lineId'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -164,6 +180,11 @@ const ExamplesCategoryRoute = ExamplesCategoryRouteImport.update({
   id: '/$category',
   path: '/$category',
   getParentRoute: () => ExamplesRoute,
+} as any)
+const DeployedSlugRoute = DeployedSlugRouteImport.update({
+  id: '/deployed/$slug',
+  path: '/deployed/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiTranslateRoute = ApiTranslateRouteImport.update({
   id: '/api/translate',
@@ -266,10 +287,10 @@ const ExamplesCategorySplatRoute = ExamplesCategorySplatRouteImport.update({
   path: '/$',
   getParentRoute: () => ExamplesCategoryRoute,
 } as any)
-const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
-  id: '/api/stripe/webhook',
-  path: '/api/stripe/webhook',
-  getParentRoute: () => rootRouteImport,
+const DeployedSlugSplatRoute = DeployedSlugSplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => DeployedSlugRoute,
 } as any)
 const ApiSessionsCreateRoute = ApiSessionsCreateRouteImport.update({
   id: '/api/sessions/create',
@@ -329,6 +350,17 @@ const ApiImagesSessionIdRoute = ApiImagesSessionIdRouteImport.update({
 const ApiCheckoutStartRoute = ApiCheckoutStartRouteImport.update({
   id: '/api/checkout/start',
   path: '/api/checkout/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStorefrontMedusaConfigRoute =
+  ApiStorefrontMedusaConfigRouteImport.update({
+    id: '/api/storefront/medusa/config',
+    path: '/api/storefront/medusa/config',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiStorefrontMedusaCartRoute = ApiStorefrontMedusaCartRouteImport.update({
+  id: '/api/storefront/medusa/cart',
+  path: '/api/storefront/medusa/cart',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiSessionsSessionIdStreamRoute =
@@ -391,16 +423,22 @@ const ApiSessionsSessionIdExportRoute =
     path: '/export',
     getParentRoute: () => ApiSessionsSessionIdRoute,
   } as any)
-const ApiPaymentsStripeWebhookRoute =
-  ApiPaymentsStripeWebhookRouteImport.update({
-    id: '/api/payments/stripe/webhook',
-    path: '/api/payments/stripe/webhook',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiPaymentsRazorpayWebhookRoute =
   ApiPaymentsRazorpayWebhookRouteImport.update({
     id: '/api/payments/razorpay/webhook',
     path: '/api/payments/razorpay/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPaymentsRazorpayStartRoute =
+  ApiPaymentsRazorpayStartRouteImport.update({
+    id: '/api/payments/razorpay/start',
+    path: '/api/payments/razorpay/start',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPaymentsRazorpayConfirmRoute =
+  ApiPaymentsRazorpayConfirmRouteImport.update({
+    id: '/api/payments/razorpay/confirm',
+    path: '/api/payments/razorpay/confirm',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiMedusaStoreCartLineItemsRoute =
@@ -449,6 +487,18 @@ const ApiDeploymentsDeploymentSlugMedusaConfigRoute =
     path: '/api/deployments/$deploymentSlug/medusa-config',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiStorefrontMedusaCartLineItemsRoute =
+  ApiStorefrontMedusaCartLineItemsRouteImport.update({
+    id: '/line-items',
+    path: '/line-items',
+    getParentRoute: () => ApiStorefrontMedusaCartRoute,
+  } as any)
+const ApiStorefrontMedusaCartIdRoute =
+  ApiStorefrontMedusaCartIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => ApiStorefrontMedusaCartRoute,
+  } as any)
 const ApiSessionsSessionIdProvisionMedusaRoute =
   ApiSessionsSessionIdProvisionMedusaRouteImport.update({
     id: '/provision/medusa',
@@ -479,11 +529,71 @@ const ApiDeploymentsDeploymentSlugProvisionMedusaRoute =
     path: '/api/deployments/$deploymentSlug/provision/medusa',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiCommerceScopeTenantCatalogRoute =
+  ApiCommerceScopeTenantCatalogRouteImport.update({
+    id: '/api/commerce/$scope/$tenant/catalog',
+    path: '/api/commerce/$scope/$tenant/catalog',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiCommerceScopeTenantCartsRoute =
+  ApiCommerceScopeTenantCartsRouteImport.update({
+    id: '/api/commerce/$scope/$tenant/carts',
+    path: '/api/commerce/$scope/$tenant/carts',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiSessionsSessionIdHistoryVersionRestoreRoute =
   ApiSessionsSessionIdHistoryVersionRestoreRouteImport.update({
     id: '/$version/restore',
     path: '/$version/restore',
     getParentRoute: () => ApiSessionsSessionIdHistoryRoute,
+  } as any)
+const ApiCommerceScopeTenantCartsCartIdRoute =
+  ApiCommerceScopeTenantCartsCartIdRouteImport.update({
+    id: '/$cartId',
+    path: '/$cartId',
+    getParentRoute: () => ApiCommerceScopeTenantCartsRoute,
+  } as any)
+const ApiCommerceScopeTenantCartsCartIdShippingOptionsRoute =
+  ApiCommerceScopeTenantCartsCartIdShippingOptionsRouteImport.update({
+    id: '/shipping-options',
+    path: '/shipping-options',
+    getParentRoute: () => ApiCommerceScopeTenantCartsCartIdRoute,
+  } as any)
+const ApiCommerceScopeTenantCartsCartIdShippingMethodsRoute =
+  ApiCommerceScopeTenantCartsCartIdShippingMethodsRouteImport.update({
+    id: '/shipping-methods',
+    path: '/shipping-methods',
+    getParentRoute: () => ApiCommerceScopeTenantCartsCartIdRoute,
+  } as any)
+const ApiCommerceScopeTenantCartsCartIdPaymentSessionsRoute =
+  ApiCommerceScopeTenantCartsCartIdPaymentSessionsRouteImport.update({
+    id: '/payment-sessions',
+    path: '/payment-sessions',
+    getParentRoute: () => ApiCommerceScopeTenantCartsCartIdRoute,
+  } as any)
+const ApiCommerceScopeTenantCartsCartIdPaymentProvidersRoute =
+  ApiCommerceScopeTenantCartsCartIdPaymentProvidersRouteImport.update({
+    id: '/payment-providers',
+    path: '/payment-providers',
+    getParentRoute: () => ApiCommerceScopeTenantCartsCartIdRoute,
+  } as any)
+const ApiCommerceScopeTenantCartsCartIdItemsRoute =
+  ApiCommerceScopeTenantCartsCartIdItemsRouteImport.update({
+    id: '/items',
+    path: '/items',
+    getParentRoute: () => ApiCommerceScopeTenantCartsCartIdRoute,
+  } as any)
+const ApiCommerceScopeTenantCartsCartIdCompleteRoute =
+  ApiCommerceScopeTenantCartsCartIdCompleteRouteImport.update({
+    id: '/complete',
+    path: '/complete',
+    getParentRoute: () => ApiCommerceScopeTenantCartsCartIdRoute,
+  } as any)
+const ApiCommerceScopeTenantCartsCartIdItemsLineIdRoute =
+  ApiCommerceScopeTenantCartsCartIdItemsLineIdRouteImport.update({
+    id: '/$lineId',
+    path: '/$lineId',
+    getParentRoute: () => ApiCommerceScopeTenantCartsCartIdItemsRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -513,6 +623,7 @@ export interface FileRoutesByFullPath {
   '/api/share-bonus': typeof ApiShareBonusRoute
   '/api/subscription-status': typeof ApiSubscriptionStatusRoute
   '/api/translate': typeof ApiTranslateRoute
+  '/deployed/$slug': typeof DeployedSlugRouteWithChildren
   '/examples/$category': typeof ExamplesCategoryRouteWithChildren
   '/preview/$slug': typeof PreviewSlugRouteWithChildren
   '/examples/': typeof ExamplesIndexRoute
@@ -528,7 +639,7 @@ export interface FileRoutesByFullPath {
   '/api/referrals/status': typeof ApiReferralsStatusRoute
   '/api/sessions/$sessionId': typeof ApiSessionsSessionIdRouteWithChildren
   '/api/sessions/create': typeof ApiSessionsCreateRoute
-  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
+  '/deployed/$slug/$': typeof DeployedSlugSplatRoute
   '/examples/$category/$': typeof ExamplesCategorySplatRoute
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
   '/generate/$sessionId/$': typeof GenerateSessionIdSplatRoute
@@ -544,8 +655,9 @@ export interface FileRoutesByFullPath {
   '/api/github/connect/start': typeof ApiGithubConnectStartRoute
   '/api/medusa-store/cart/$id': typeof ApiMedusaStoreCartIdRoute
   '/api/medusa-store/cart/line-items': typeof ApiMedusaStoreCartLineItemsRoute
+  '/api/payments/razorpay/confirm': typeof ApiPaymentsRazorpayConfirmRoute
+  '/api/payments/razorpay/start': typeof ApiPaymentsRazorpayStartRoute
   '/api/payments/razorpay/webhook': typeof ApiPaymentsRazorpayWebhookRoute
-  '/api/payments/stripe/webhook': typeof ApiPaymentsStripeWebhookRoute
   '/api/sessions/$sessionId/export': typeof ApiSessionsSessionIdExportRoute
   '/api/sessions/$sessionId/history': typeof ApiSessionsSessionIdHistoryRouteWithChildren
   '/api/sessions/$sessionId/medusa-config': typeof ApiSessionsSessionIdMedusaConfigRoute
@@ -556,12 +668,26 @@ export interface FileRoutesByFullPath {
   '/api/sessions/$sessionId/preview-raw': typeof ApiSessionsSessionIdPreviewRawRoute
   '/api/sessions/$sessionId/section-edit': typeof ApiSessionsSessionIdSectionEditRoute
   '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
+  '/api/storefront/medusa/cart': typeof ApiStorefrontMedusaCartRouteWithChildren
+  '/api/storefront/medusa/config': typeof ApiStorefrontMedusaConfigRoute
+  '/api/commerce/$scope/$tenant/carts': typeof ApiCommerceScopeTenantCartsRouteWithChildren
+  '/api/commerce/$scope/$tenant/catalog': typeof ApiCommerceScopeTenantCatalogRoute
   '/api/deployments/$deploymentSlug/provision/medusa': typeof ApiDeploymentsDeploymentSlugProvisionMedusaRoute
   '/api/sessions/$sessionId/deploy/lakebed': typeof ApiSessionsSessionIdDeployLakebedRoute
   '/api/sessions/$sessionId/download/$target': typeof ApiSessionsSessionIdDownloadTargetRoute
   '/api/sessions/$sessionId/github/push': typeof ApiSessionsSessionIdGithubPushRoute
   '/api/sessions/$sessionId/provision/medusa': typeof ApiSessionsSessionIdProvisionMedusaRoute
+  '/api/storefront/medusa/cart/$id': typeof ApiStorefrontMedusaCartIdRoute
+  '/api/storefront/medusa/cart/line-items': typeof ApiStorefrontMedusaCartLineItemsRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId': typeof ApiCommerceScopeTenantCartsCartIdRouteWithChildren
   '/api/sessions/$sessionId/history/$version/restore': typeof ApiSessionsSessionIdHistoryVersionRestoreRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/complete': typeof ApiCommerceScopeTenantCartsCartIdCompleteRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/items': typeof ApiCommerceScopeTenantCartsCartIdItemsRouteWithChildren
+  '/api/commerce/$scope/$tenant/carts/$cartId/payment-providers': typeof ApiCommerceScopeTenantCartsCartIdPaymentProvidersRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/payment-sessions': typeof ApiCommerceScopeTenantCartsCartIdPaymentSessionsRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/shipping-methods': typeof ApiCommerceScopeTenantCartsCartIdShippingMethodsRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/shipping-options': typeof ApiCommerceScopeTenantCartsCartIdShippingOptionsRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/items/$lineId': typeof ApiCommerceScopeTenantCartsCartIdItemsLineIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -589,6 +715,7 @@ export interface FileRoutesByTo {
   '/api/share-bonus': typeof ApiShareBonusRoute
   '/api/subscription-status': typeof ApiSubscriptionStatusRoute
   '/api/translate': typeof ApiTranslateRoute
+  '/deployed/$slug': typeof DeployedSlugRouteWithChildren
   '/examples/$category': typeof ExamplesCategoryRouteWithChildren
   '/preview/$slug': typeof PreviewSlugRouteWithChildren
   '/examples': typeof ExamplesIndexRoute
@@ -604,7 +731,7 @@ export interface FileRoutesByTo {
   '/api/referrals/status': typeof ApiReferralsStatusRoute
   '/api/sessions/$sessionId': typeof ApiSessionsSessionIdRouteWithChildren
   '/api/sessions/create': typeof ApiSessionsCreateRoute
-  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
+  '/deployed/$slug/$': typeof DeployedSlugSplatRoute
   '/examples/$category/$': typeof ExamplesCategorySplatRoute
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
   '/generate/$sessionId/$': typeof GenerateSessionIdSplatRoute
@@ -620,8 +747,9 @@ export interface FileRoutesByTo {
   '/api/github/connect/start': typeof ApiGithubConnectStartRoute
   '/api/medusa-store/cart/$id': typeof ApiMedusaStoreCartIdRoute
   '/api/medusa-store/cart/line-items': typeof ApiMedusaStoreCartLineItemsRoute
+  '/api/payments/razorpay/confirm': typeof ApiPaymentsRazorpayConfirmRoute
+  '/api/payments/razorpay/start': typeof ApiPaymentsRazorpayStartRoute
   '/api/payments/razorpay/webhook': typeof ApiPaymentsRazorpayWebhookRoute
-  '/api/payments/stripe/webhook': typeof ApiPaymentsStripeWebhookRoute
   '/api/sessions/$sessionId/export': typeof ApiSessionsSessionIdExportRoute
   '/api/sessions/$sessionId/history': typeof ApiSessionsSessionIdHistoryRouteWithChildren
   '/api/sessions/$sessionId/medusa-config': typeof ApiSessionsSessionIdMedusaConfigRoute
@@ -632,12 +760,26 @@ export interface FileRoutesByTo {
   '/api/sessions/$sessionId/preview-raw': typeof ApiSessionsSessionIdPreviewRawRoute
   '/api/sessions/$sessionId/section-edit': typeof ApiSessionsSessionIdSectionEditRoute
   '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
+  '/api/storefront/medusa/cart': typeof ApiStorefrontMedusaCartRouteWithChildren
+  '/api/storefront/medusa/config': typeof ApiStorefrontMedusaConfigRoute
+  '/api/commerce/$scope/$tenant/carts': typeof ApiCommerceScopeTenantCartsRouteWithChildren
+  '/api/commerce/$scope/$tenant/catalog': typeof ApiCommerceScopeTenantCatalogRoute
   '/api/deployments/$deploymentSlug/provision/medusa': typeof ApiDeploymentsDeploymentSlugProvisionMedusaRoute
   '/api/sessions/$sessionId/deploy/lakebed': typeof ApiSessionsSessionIdDeployLakebedRoute
   '/api/sessions/$sessionId/download/$target': typeof ApiSessionsSessionIdDownloadTargetRoute
   '/api/sessions/$sessionId/github/push': typeof ApiSessionsSessionIdGithubPushRoute
   '/api/sessions/$sessionId/provision/medusa': typeof ApiSessionsSessionIdProvisionMedusaRoute
+  '/api/storefront/medusa/cart/$id': typeof ApiStorefrontMedusaCartIdRoute
+  '/api/storefront/medusa/cart/line-items': typeof ApiStorefrontMedusaCartLineItemsRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId': typeof ApiCommerceScopeTenantCartsCartIdRouteWithChildren
   '/api/sessions/$sessionId/history/$version/restore': typeof ApiSessionsSessionIdHistoryVersionRestoreRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/complete': typeof ApiCommerceScopeTenantCartsCartIdCompleteRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/items': typeof ApiCommerceScopeTenantCartsCartIdItemsRouteWithChildren
+  '/api/commerce/$scope/$tenant/carts/$cartId/payment-providers': typeof ApiCommerceScopeTenantCartsCartIdPaymentProvidersRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/payment-sessions': typeof ApiCommerceScopeTenantCartsCartIdPaymentSessionsRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/shipping-methods': typeof ApiCommerceScopeTenantCartsCartIdShippingMethodsRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/shipping-options': typeof ApiCommerceScopeTenantCartsCartIdShippingOptionsRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/items/$lineId': typeof ApiCommerceScopeTenantCartsCartIdItemsLineIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -667,6 +809,7 @@ export interface FileRoutesById {
   '/api/share-bonus': typeof ApiShareBonusRoute
   '/api/subscription-status': typeof ApiSubscriptionStatusRoute
   '/api/translate': typeof ApiTranslateRoute
+  '/deployed/$slug': typeof DeployedSlugRouteWithChildren
   '/examples/$category': typeof ExamplesCategoryRouteWithChildren
   '/preview/$slug': typeof PreviewSlugRouteWithChildren
   '/examples/': typeof ExamplesIndexRoute
@@ -682,7 +825,7 @@ export interface FileRoutesById {
   '/api/referrals/status': typeof ApiReferralsStatusRoute
   '/api/sessions/$sessionId': typeof ApiSessionsSessionIdRouteWithChildren
   '/api/sessions/create': typeof ApiSessionsCreateRoute
-  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
+  '/deployed/$slug/$': typeof DeployedSlugSplatRoute
   '/examples/$category/$': typeof ExamplesCategorySplatRoute
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
   '/generate/$sessionId/$': typeof GenerateSessionIdSplatRoute
@@ -698,8 +841,9 @@ export interface FileRoutesById {
   '/api/github/connect/start': typeof ApiGithubConnectStartRoute
   '/api/medusa-store/cart/$id': typeof ApiMedusaStoreCartIdRoute
   '/api/medusa-store/cart/line-items': typeof ApiMedusaStoreCartLineItemsRoute
+  '/api/payments/razorpay/confirm': typeof ApiPaymentsRazorpayConfirmRoute
+  '/api/payments/razorpay/start': typeof ApiPaymentsRazorpayStartRoute
   '/api/payments/razorpay/webhook': typeof ApiPaymentsRazorpayWebhookRoute
-  '/api/payments/stripe/webhook': typeof ApiPaymentsStripeWebhookRoute
   '/api/sessions/$sessionId/export': typeof ApiSessionsSessionIdExportRoute
   '/api/sessions/$sessionId/history': typeof ApiSessionsSessionIdHistoryRouteWithChildren
   '/api/sessions/$sessionId/medusa-config': typeof ApiSessionsSessionIdMedusaConfigRoute
@@ -710,12 +854,26 @@ export interface FileRoutesById {
   '/api/sessions/$sessionId/preview-raw': typeof ApiSessionsSessionIdPreviewRawRoute
   '/api/sessions/$sessionId/section-edit': typeof ApiSessionsSessionIdSectionEditRoute
   '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
+  '/api/storefront/medusa/cart': typeof ApiStorefrontMedusaCartRouteWithChildren
+  '/api/storefront/medusa/config': typeof ApiStorefrontMedusaConfigRoute
+  '/api/commerce/$scope/$tenant/carts': typeof ApiCommerceScopeTenantCartsRouteWithChildren
+  '/api/commerce/$scope/$tenant/catalog': typeof ApiCommerceScopeTenantCatalogRoute
   '/api/deployments/$deploymentSlug/provision/medusa': typeof ApiDeploymentsDeploymentSlugProvisionMedusaRoute
   '/api/sessions/$sessionId/deploy/lakebed': typeof ApiSessionsSessionIdDeployLakebedRoute
   '/api/sessions/$sessionId/download/$target': typeof ApiSessionsSessionIdDownloadTargetRoute
   '/api/sessions/$sessionId/github/push': typeof ApiSessionsSessionIdGithubPushRoute
   '/api/sessions/$sessionId/provision/medusa': typeof ApiSessionsSessionIdProvisionMedusaRoute
+  '/api/storefront/medusa/cart/$id': typeof ApiStorefrontMedusaCartIdRoute
+  '/api/storefront/medusa/cart/line-items': typeof ApiStorefrontMedusaCartLineItemsRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId': typeof ApiCommerceScopeTenantCartsCartIdRouteWithChildren
   '/api/sessions/$sessionId/history/$version/restore': typeof ApiSessionsSessionIdHistoryVersionRestoreRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/complete': typeof ApiCommerceScopeTenantCartsCartIdCompleteRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/items': typeof ApiCommerceScopeTenantCartsCartIdItemsRouteWithChildren
+  '/api/commerce/$scope/$tenant/carts/$cartId/payment-providers': typeof ApiCommerceScopeTenantCartsCartIdPaymentProvidersRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/payment-sessions': typeof ApiCommerceScopeTenantCartsCartIdPaymentSessionsRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/shipping-methods': typeof ApiCommerceScopeTenantCartsCartIdShippingMethodsRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/shipping-options': typeof ApiCommerceScopeTenantCartsCartIdShippingOptionsRoute
+  '/api/commerce/$scope/$tenant/carts/$cartId/items/$lineId': typeof ApiCommerceScopeTenantCartsCartIdItemsLineIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -746,6 +904,7 @@ export interface FileRouteTypes {
     | '/api/share-bonus'
     | '/api/subscription-status'
     | '/api/translate'
+    | '/deployed/$slug'
     | '/examples/$category'
     | '/preview/$slug'
     | '/examples/'
@@ -761,7 +920,7 @@ export interface FileRouteTypes {
     | '/api/referrals/status'
     | '/api/sessions/$sessionId'
     | '/api/sessions/create'
-    | '/api/stripe/webhook'
+    | '/deployed/$slug/$'
     | '/examples/$category/$'
     | '/export/$sessionId/$target'
     | '/generate/$sessionId/$'
@@ -777,8 +936,9 @@ export interface FileRouteTypes {
     | '/api/github/connect/start'
     | '/api/medusa-store/cart/$id'
     | '/api/medusa-store/cart/line-items'
+    | '/api/payments/razorpay/confirm'
+    | '/api/payments/razorpay/start'
     | '/api/payments/razorpay/webhook'
-    | '/api/payments/stripe/webhook'
     | '/api/sessions/$sessionId/export'
     | '/api/sessions/$sessionId/history'
     | '/api/sessions/$sessionId/medusa-config'
@@ -789,12 +949,26 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/preview-raw'
     | '/api/sessions/$sessionId/section-edit'
     | '/api/sessions/$sessionId/stream'
+    | '/api/storefront/medusa/cart'
+    | '/api/storefront/medusa/config'
+    | '/api/commerce/$scope/$tenant/carts'
+    | '/api/commerce/$scope/$tenant/catalog'
     | '/api/deployments/$deploymentSlug/provision/medusa'
     | '/api/sessions/$sessionId/deploy/lakebed'
     | '/api/sessions/$sessionId/download/$target'
     | '/api/sessions/$sessionId/github/push'
     | '/api/sessions/$sessionId/provision/medusa'
+    | '/api/storefront/medusa/cart/$id'
+    | '/api/storefront/medusa/cart/line-items'
+    | '/api/commerce/$scope/$tenant/carts/$cartId'
     | '/api/sessions/$sessionId/history/$version/restore'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/complete'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/items'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/payment-providers'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/payment-sessions'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/shipping-methods'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/shipping-options'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/items/$lineId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -822,6 +996,7 @@ export interface FileRouteTypes {
     | '/api/share-bonus'
     | '/api/subscription-status'
     | '/api/translate'
+    | '/deployed/$slug'
     | '/examples/$category'
     | '/preview/$slug'
     | '/examples'
@@ -837,7 +1012,7 @@ export interface FileRouteTypes {
     | '/api/referrals/status'
     | '/api/sessions/$sessionId'
     | '/api/sessions/create'
-    | '/api/stripe/webhook'
+    | '/deployed/$slug/$'
     | '/examples/$category/$'
     | '/export/$sessionId/$target'
     | '/generate/$sessionId/$'
@@ -853,8 +1028,9 @@ export interface FileRouteTypes {
     | '/api/github/connect/start'
     | '/api/medusa-store/cart/$id'
     | '/api/medusa-store/cart/line-items'
+    | '/api/payments/razorpay/confirm'
+    | '/api/payments/razorpay/start'
     | '/api/payments/razorpay/webhook'
-    | '/api/payments/stripe/webhook'
     | '/api/sessions/$sessionId/export'
     | '/api/sessions/$sessionId/history'
     | '/api/sessions/$sessionId/medusa-config'
@@ -865,12 +1041,26 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/preview-raw'
     | '/api/sessions/$sessionId/section-edit'
     | '/api/sessions/$sessionId/stream'
+    | '/api/storefront/medusa/cart'
+    | '/api/storefront/medusa/config'
+    | '/api/commerce/$scope/$tenant/carts'
+    | '/api/commerce/$scope/$tenant/catalog'
     | '/api/deployments/$deploymentSlug/provision/medusa'
     | '/api/sessions/$sessionId/deploy/lakebed'
     | '/api/sessions/$sessionId/download/$target'
     | '/api/sessions/$sessionId/github/push'
     | '/api/sessions/$sessionId/provision/medusa'
+    | '/api/storefront/medusa/cart/$id'
+    | '/api/storefront/medusa/cart/line-items'
+    | '/api/commerce/$scope/$tenant/carts/$cartId'
     | '/api/sessions/$sessionId/history/$version/restore'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/complete'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/items'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/payment-providers'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/payment-sessions'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/shipping-methods'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/shipping-options'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/items/$lineId'
   id:
     | '__root__'
     | '/'
@@ -899,6 +1089,7 @@ export interface FileRouteTypes {
     | '/api/share-bonus'
     | '/api/subscription-status'
     | '/api/translate'
+    | '/deployed/$slug'
     | '/examples/$category'
     | '/preview/$slug'
     | '/examples/'
@@ -914,7 +1105,7 @@ export interface FileRouteTypes {
     | '/api/referrals/status'
     | '/api/sessions/$sessionId'
     | '/api/sessions/create'
-    | '/api/stripe/webhook'
+    | '/deployed/$slug/$'
     | '/examples/$category/$'
     | '/export/$sessionId/$target'
     | '/generate/$sessionId/$'
@@ -930,8 +1121,9 @@ export interface FileRouteTypes {
     | '/api/github/connect/start'
     | '/api/medusa-store/cart/$id'
     | '/api/medusa-store/cart/line-items'
+    | '/api/payments/razorpay/confirm'
+    | '/api/payments/razorpay/start'
     | '/api/payments/razorpay/webhook'
-    | '/api/payments/stripe/webhook'
     | '/api/sessions/$sessionId/export'
     | '/api/sessions/$sessionId/history'
     | '/api/sessions/$sessionId/medusa-config'
@@ -942,12 +1134,26 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/preview-raw'
     | '/api/sessions/$sessionId/section-edit'
     | '/api/sessions/$sessionId/stream'
+    | '/api/storefront/medusa/cart'
+    | '/api/storefront/medusa/config'
+    | '/api/commerce/$scope/$tenant/carts'
+    | '/api/commerce/$scope/$tenant/catalog'
     | '/api/deployments/$deploymentSlug/provision/medusa'
     | '/api/sessions/$sessionId/deploy/lakebed'
     | '/api/sessions/$sessionId/download/$target'
     | '/api/sessions/$sessionId/github/push'
     | '/api/sessions/$sessionId/provision/medusa'
+    | '/api/storefront/medusa/cart/$id'
+    | '/api/storefront/medusa/cart/line-items'
+    | '/api/commerce/$scope/$tenant/carts/$cartId'
     | '/api/sessions/$sessionId/history/$version/restore'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/complete'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/items'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/payment-providers'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/payment-sessions'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/shipping-methods'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/shipping-options'
+    | '/api/commerce/$scope/$tenant/carts/$cartId/items/$lineId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -977,6 +1183,7 @@ export interface RootRouteChildren {
   ApiShareBonusRoute: typeof ApiShareBonusRoute
   ApiSubscriptionStatusRoute: typeof ApiSubscriptionStatusRoute
   ApiTranslateRoute: typeof ApiTranslateRoute
+  DeployedSlugRoute: typeof DeployedSlugRouteWithChildren
   PreviewSlugRoute: typeof PreviewSlugRouteWithChildren
   ApiCheckoutStartRoute: typeof ApiCheckoutStartRoute
   ApiImagesSessionIdRoute: typeof ApiImagesSessionIdRoute
@@ -990,7 +1197,6 @@ export interface RootRouteChildren {
   ApiReferralsStatusRoute: typeof ApiReferralsStatusRoute
   ApiSessionsSessionIdRoute: typeof ApiSessionsSessionIdRouteWithChildren
   ApiSessionsCreateRoute: typeof ApiSessionsCreateRoute
-  ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
   ExportSessionIdTargetRoute: typeof ExportSessionIdTargetRoute
   GenerateSessionIdSplatRoute: typeof GenerateSessionIdSplatRoute
   ApiDeploymentsDeploymentSlugMedusaConfigRoute: typeof ApiDeploymentsDeploymentSlugMedusaConfigRoute
@@ -999,8 +1205,13 @@ export interface RootRouteChildren {
   ApiDeploymentsDeploymentSlugMedusaWebhookRoute: typeof ApiDeploymentsDeploymentSlugMedusaWebhookRoute
   ApiGithubConnectCallbackRoute: typeof ApiGithubConnectCallbackRoute
   ApiGithubConnectStartRoute: typeof ApiGithubConnectStartRoute
+  ApiPaymentsRazorpayConfirmRoute: typeof ApiPaymentsRazorpayConfirmRoute
+  ApiPaymentsRazorpayStartRoute: typeof ApiPaymentsRazorpayStartRoute
   ApiPaymentsRazorpayWebhookRoute: typeof ApiPaymentsRazorpayWebhookRoute
-  ApiPaymentsStripeWebhookRoute: typeof ApiPaymentsStripeWebhookRoute
+  ApiStorefrontMedusaCartRoute: typeof ApiStorefrontMedusaCartRouteWithChildren
+  ApiStorefrontMedusaConfigRoute: typeof ApiStorefrontMedusaConfigRoute
+  ApiCommerceScopeTenantCartsRoute: typeof ApiCommerceScopeTenantCartsRouteWithChildren
+  ApiCommerceScopeTenantCatalogRoute: typeof ApiCommerceScopeTenantCatalogRoute
   ApiDeploymentsDeploymentSlugProvisionMedusaRoute: typeof ApiDeploymentsDeploymentSlugProvisionMedusaRoute
 }
 
@@ -1117,6 +1328,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/examples/$category'
       preLoaderRoute: typeof ExamplesCategoryRouteImport
       parentRoute: typeof ExamplesRoute
+    }
+    '/deployed/$slug': {
+      id: '/deployed/$slug'
+      path: '/deployed/$slug'
+      fullPath: '/deployed/$slug'
+      preLoaderRoute: typeof DeployedSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/translate': {
       id: '/api/translate'
@@ -1258,12 +1476,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExamplesCategorySplatRouteImport
       parentRoute: typeof ExamplesCategoryRoute
     }
-    '/api/stripe/webhook': {
-      id: '/api/stripe/webhook'
-      path: '/api/stripe/webhook'
-      fullPath: '/api/stripe/webhook'
-      preLoaderRoute: typeof ApiStripeWebhookRouteImport
-      parentRoute: typeof rootRouteImport
+    '/deployed/$slug/$': {
+      id: '/deployed/$slug/$'
+      path: '/$'
+      fullPath: '/deployed/$slug/$'
+      preLoaderRoute: typeof DeployedSlugSplatRouteImport
+      parentRoute: typeof DeployedSlugRoute
     }
     '/api/sessions/create': {
       id: '/api/sessions/create'
@@ -1349,6 +1567,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCheckoutStartRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/storefront/medusa/config': {
+      id: '/api/storefront/medusa/config'
+      path: '/api/storefront/medusa/config'
+      fullPath: '/api/storefront/medusa/config'
+      preLoaderRoute: typeof ApiStorefrontMedusaConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/storefront/medusa/cart': {
+      id: '/api/storefront/medusa/cart'
+      path: '/api/storefront/medusa/cart'
+      fullPath: '/api/storefront/medusa/cart'
+      preLoaderRoute: typeof ApiStorefrontMedusaCartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/sessions/$sessionId/stream': {
       id: '/api/sessions/$sessionId/stream'
       path: '/stream'
@@ -1419,18 +1651,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSessionsSessionIdExportRouteImport
       parentRoute: typeof ApiSessionsSessionIdRoute
     }
-    '/api/payments/stripe/webhook': {
-      id: '/api/payments/stripe/webhook'
-      path: '/api/payments/stripe/webhook'
-      fullPath: '/api/payments/stripe/webhook'
-      preLoaderRoute: typeof ApiPaymentsStripeWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/payments/razorpay/webhook': {
       id: '/api/payments/razorpay/webhook'
       path: '/api/payments/razorpay/webhook'
       fullPath: '/api/payments/razorpay/webhook'
       preLoaderRoute: typeof ApiPaymentsRazorpayWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/payments/razorpay/start': {
+      id: '/api/payments/razorpay/start'
+      path: '/api/payments/razorpay/start'
+      fullPath: '/api/payments/razorpay/start'
+      preLoaderRoute: typeof ApiPaymentsRazorpayStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/payments/razorpay/confirm': {
+      id: '/api/payments/razorpay/confirm'
+      path: '/api/payments/razorpay/confirm'
+      fullPath: '/api/payments/razorpay/confirm'
+      preLoaderRoute: typeof ApiPaymentsRazorpayConfirmRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/medusa-store/cart/line-items': {
@@ -1489,6 +1728,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDeploymentsDeploymentSlugMedusaConfigRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/storefront/medusa/cart/line-items': {
+      id: '/api/storefront/medusa/cart/line-items'
+      path: '/line-items'
+      fullPath: '/api/storefront/medusa/cart/line-items'
+      preLoaderRoute: typeof ApiStorefrontMedusaCartLineItemsRouteImport
+      parentRoute: typeof ApiStorefrontMedusaCartRoute
+    }
+    '/api/storefront/medusa/cart/$id': {
+      id: '/api/storefront/medusa/cart/$id'
+      path: '/$id'
+      fullPath: '/api/storefront/medusa/cart/$id'
+      preLoaderRoute: typeof ApiStorefrontMedusaCartIdRouteImport
+      parentRoute: typeof ApiStorefrontMedusaCartRoute
+    }
     '/api/sessions/$sessionId/provision/medusa': {
       id: '/api/sessions/$sessionId/provision/medusa'
       path: '/provision/medusa'
@@ -1524,12 +1777,82 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDeploymentsDeploymentSlugProvisionMedusaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/commerce/$scope/$tenant/catalog': {
+      id: '/api/commerce/$scope/$tenant/catalog'
+      path: '/api/commerce/$scope/$tenant/catalog'
+      fullPath: '/api/commerce/$scope/$tenant/catalog'
+      preLoaderRoute: typeof ApiCommerceScopeTenantCatalogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/commerce/$scope/$tenant/carts': {
+      id: '/api/commerce/$scope/$tenant/carts'
+      path: '/api/commerce/$scope/$tenant/carts'
+      fullPath: '/api/commerce/$scope/$tenant/carts'
+      preLoaderRoute: typeof ApiCommerceScopeTenantCartsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/sessions/$sessionId/history/$version/restore': {
       id: '/api/sessions/$sessionId/history/$version/restore'
       path: '/$version/restore'
       fullPath: '/api/sessions/$sessionId/history/$version/restore'
       preLoaderRoute: typeof ApiSessionsSessionIdHistoryVersionRestoreRouteImport
       parentRoute: typeof ApiSessionsSessionIdHistoryRoute
+    }
+    '/api/commerce/$scope/$tenant/carts/$cartId': {
+      id: '/api/commerce/$scope/$tenant/carts/$cartId'
+      path: '/$cartId'
+      fullPath: '/api/commerce/$scope/$tenant/carts/$cartId'
+      preLoaderRoute: typeof ApiCommerceScopeTenantCartsCartIdRouteImport
+      parentRoute: typeof ApiCommerceScopeTenantCartsRoute
+    }
+    '/api/commerce/$scope/$tenant/carts/$cartId/shipping-options': {
+      id: '/api/commerce/$scope/$tenant/carts/$cartId/shipping-options'
+      path: '/shipping-options'
+      fullPath: '/api/commerce/$scope/$tenant/carts/$cartId/shipping-options'
+      preLoaderRoute: typeof ApiCommerceScopeTenantCartsCartIdShippingOptionsRouteImport
+      parentRoute: typeof ApiCommerceScopeTenantCartsCartIdRoute
+    }
+    '/api/commerce/$scope/$tenant/carts/$cartId/shipping-methods': {
+      id: '/api/commerce/$scope/$tenant/carts/$cartId/shipping-methods'
+      path: '/shipping-methods'
+      fullPath: '/api/commerce/$scope/$tenant/carts/$cartId/shipping-methods'
+      preLoaderRoute: typeof ApiCommerceScopeTenantCartsCartIdShippingMethodsRouteImport
+      parentRoute: typeof ApiCommerceScopeTenantCartsCartIdRoute
+    }
+    '/api/commerce/$scope/$tenant/carts/$cartId/payment-sessions': {
+      id: '/api/commerce/$scope/$tenant/carts/$cartId/payment-sessions'
+      path: '/payment-sessions'
+      fullPath: '/api/commerce/$scope/$tenant/carts/$cartId/payment-sessions'
+      preLoaderRoute: typeof ApiCommerceScopeTenantCartsCartIdPaymentSessionsRouteImport
+      parentRoute: typeof ApiCommerceScopeTenantCartsCartIdRoute
+    }
+    '/api/commerce/$scope/$tenant/carts/$cartId/payment-providers': {
+      id: '/api/commerce/$scope/$tenant/carts/$cartId/payment-providers'
+      path: '/payment-providers'
+      fullPath: '/api/commerce/$scope/$tenant/carts/$cartId/payment-providers'
+      preLoaderRoute: typeof ApiCommerceScopeTenantCartsCartIdPaymentProvidersRouteImport
+      parentRoute: typeof ApiCommerceScopeTenantCartsCartIdRoute
+    }
+    '/api/commerce/$scope/$tenant/carts/$cartId/items': {
+      id: '/api/commerce/$scope/$tenant/carts/$cartId/items'
+      path: '/items'
+      fullPath: '/api/commerce/$scope/$tenant/carts/$cartId/items'
+      preLoaderRoute: typeof ApiCommerceScopeTenantCartsCartIdItemsRouteImport
+      parentRoute: typeof ApiCommerceScopeTenantCartsCartIdRoute
+    }
+    '/api/commerce/$scope/$tenant/carts/$cartId/complete': {
+      id: '/api/commerce/$scope/$tenant/carts/$cartId/complete'
+      path: '/complete'
+      fullPath: '/api/commerce/$scope/$tenant/carts/$cartId/complete'
+      preLoaderRoute: typeof ApiCommerceScopeTenantCartsCartIdCompleteRouteImport
+      parentRoute: typeof ApiCommerceScopeTenantCartsCartIdRoute
+    }
+    '/api/commerce/$scope/$tenant/carts/$cartId/items/$lineId': {
+      id: '/api/commerce/$scope/$tenant/carts/$cartId/items/$lineId'
+      path: '/$lineId'
+      fullPath: '/api/commerce/$scope/$tenant/carts/$cartId/items/$lineId'
+      preLoaderRoute: typeof ApiCommerceScopeTenantCartsCartIdItemsLineIdRouteImport
+      parentRoute: typeof ApiCommerceScopeTenantCartsCartIdItemsRoute
     }
   }
 }
@@ -1557,6 +1880,18 @@ const ExamplesRouteChildren: ExamplesRouteChildren = {
 
 const ExamplesRouteWithChildren = ExamplesRoute._addFileChildren(
   ExamplesRouteChildren,
+)
+
+interface DeployedSlugRouteChildren {
+  DeployedSlugSplatRoute: typeof DeployedSlugSplatRoute
+}
+
+const DeployedSlugRouteChildren: DeployedSlugRouteChildren = {
+  DeployedSlugSplatRoute: DeployedSlugSplatRoute,
+}
+
+const DeployedSlugRouteWithChildren = DeployedSlugRoute._addFileChildren(
+  DeployedSlugRouteChildren,
 )
 
 interface PreviewSlugRouteChildren {
@@ -1650,6 +1985,83 @@ const ApiSessionsSessionIdRouteChildren: ApiSessionsSessionIdRouteChildren = {
 const ApiSessionsSessionIdRouteWithChildren =
   ApiSessionsSessionIdRoute._addFileChildren(ApiSessionsSessionIdRouteChildren)
 
+interface ApiStorefrontMedusaCartRouteChildren {
+  ApiStorefrontMedusaCartIdRoute: typeof ApiStorefrontMedusaCartIdRoute
+  ApiStorefrontMedusaCartLineItemsRoute: typeof ApiStorefrontMedusaCartLineItemsRoute
+}
+
+const ApiStorefrontMedusaCartRouteChildren: ApiStorefrontMedusaCartRouteChildren =
+  {
+    ApiStorefrontMedusaCartIdRoute: ApiStorefrontMedusaCartIdRoute,
+    ApiStorefrontMedusaCartLineItemsRoute:
+      ApiStorefrontMedusaCartLineItemsRoute,
+  }
+
+const ApiStorefrontMedusaCartRouteWithChildren =
+  ApiStorefrontMedusaCartRoute._addFileChildren(
+    ApiStorefrontMedusaCartRouteChildren,
+  )
+
+interface ApiCommerceScopeTenantCartsCartIdItemsRouteChildren {
+  ApiCommerceScopeTenantCartsCartIdItemsLineIdRoute: typeof ApiCommerceScopeTenantCartsCartIdItemsLineIdRoute
+}
+
+const ApiCommerceScopeTenantCartsCartIdItemsRouteChildren: ApiCommerceScopeTenantCartsCartIdItemsRouteChildren =
+  {
+    ApiCommerceScopeTenantCartsCartIdItemsLineIdRoute:
+      ApiCommerceScopeTenantCartsCartIdItemsLineIdRoute,
+  }
+
+const ApiCommerceScopeTenantCartsCartIdItemsRouteWithChildren =
+  ApiCommerceScopeTenantCartsCartIdItemsRoute._addFileChildren(
+    ApiCommerceScopeTenantCartsCartIdItemsRouteChildren,
+  )
+
+interface ApiCommerceScopeTenantCartsCartIdRouteChildren {
+  ApiCommerceScopeTenantCartsCartIdCompleteRoute: typeof ApiCommerceScopeTenantCartsCartIdCompleteRoute
+  ApiCommerceScopeTenantCartsCartIdItemsRoute: typeof ApiCommerceScopeTenantCartsCartIdItemsRouteWithChildren
+  ApiCommerceScopeTenantCartsCartIdPaymentProvidersRoute: typeof ApiCommerceScopeTenantCartsCartIdPaymentProvidersRoute
+  ApiCommerceScopeTenantCartsCartIdPaymentSessionsRoute: typeof ApiCommerceScopeTenantCartsCartIdPaymentSessionsRoute
+  ApiCommerceScopeTenantCartsCartIdShippingMethodsRoute: typeof ApiCommerceScopeTenantCartsCartIdShippingMethodsRoute
+  ApiCommerceScopeTenantCartsCartIdShippingOptionsRoute: typeof ApiCommerceScopeTenantCartsCartIdShippingOptionsRoute
+}
+
+const ApiCommerceScopeTenantCartsCartIdRouteChildren: ApiCommerceScopeTenantCartsCartIdRouteChildren =
+  {
+    ApiCommerceScopeTenantCartsCartIdCompleteRoute:
+      ApiCommerceScopeTenantCartsCartIdCompleteRoute,
+    ApiCommerceScopeTenantCartsCartIdItemsRoute:
+      ApiCommerceScopeTenantCartsCartIdItemsRouteWithChildren,
+    ApiCommerceScopeTenantCartsCartIdPaymentProvidersRoute:
+      ApiCommerceScopeTenantCartsCartIdPaymentProvidersRoute,
+    ApiCommerceScopeTenantCartsCartIdPaymentSessionsRoute:
+      ApiCommerceScopeTenantCartsCartIdPaymentSessionsRoute,
+    ApiCommerceScopeTenantCartsCartIdShippingMethodsRoute:
+      ApiCommerceScopeTenantCartsCartIdShippingMethodsRoute,
+    ApiCommerceScopeTenantCartsCartIdShippingOptionsRoute:
+      ApiCommerceScopeTenantCartsCartIdShippingOptionsRoute,
+  }
+
+const ApiCommerceScopeTenantCartsCartIdRouteWithChildren =
+  ApiCommerceScopeTenantCartsCartIdRoute._addFileChildren(
+    ApiCommerceScopeTenantCartsCartIdRouteChildren,
+  )
+
+interface ApiCommerceScopeTenantCartsRouteChildren {
+  ApiCommerceScopeTenantCartsCartIdRoute: typeof ApiCommerceScopeTenantCartsCartIdRouteWithChildren
+}
+
+const ApiCommerceScopeTenantCartsRouteChildren: ApiCommerceScopeTenantCartsRouteChildren =
+  {
+    ApiCommerceScopeTenantCartsCartIdRoute:
+      ApiCommerceScopeTenantCartsCartIdRouteWithChildren,
+  }
+
+const ApiCommerceScopeTenantCartsRouteWithChildren =
+  ApiCommerceScopeTenantCartsRoute._addFileChildren(
+    ApiCommerceScopeTenantCartsRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ExamplesRoute: ExamplesRouteWithChildren,
@@ -1677,6 +2089,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiShareBonusRoute: ApiShareBonusRoute,
   ApiSubscriptionStatusRoute: ApiSubscriptionStatusRoute,
   ApiTranslateRoute: ApiTranslateRoute,
+  DeployedSlugRoute: DeployedSlugRouteWithChildren,
   PreviewSlugRoute: PreviewSlugRouteWithChildren,
   ApiCheckoutStartRoute: ApiCheckoutStartRoute,
   ApiImagesSessionIdRoute: ApiImagesSessionIdRoute,
@@ -1690,7 +2103,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiReferralsStatusRoute: ApiReferralsStatusRoute,
   ApiSessionsSessionIdRoute: ApiSessionsSessionIdRouteWithChildren,
   ApiSessionsCreateRoute: ApiSessionsCreateRoute,
-  ApiStripeWebhookRoute: ApiStripeWebhookRoute,
   ExportSessionIdTargetRoute: ExportSessionIdTargetRoute,
   GenerateSessionIdSplatRoute: GenerateSessionIdSplatRoute,
   ApiDeploymentsDeploymentSlugMedusaConfigRoute:
@@ -1703,8 +2115,14 @@ const rootRouteChildren: RootRouteChildren = {
     ApiDeploymentsDeploymentSlugMedusaWebhookRoute,
   ApiGithubConnectCallbackRoute: ApiGithubConnectCallbackRoute,
   ApiGithubConnectStartRoute: ApiGithubConnectStartRoute,
+  ApiPaymentsRazorpayConfirmRoute: ApiPaymentsRazorpayConfirmRoute,
+  ApiPaymentsRazorpayStartRoute: ApiPaymentsRazorpayStartRoute,
   ApiPaymentsRazorpayWebhookRoute: ApiPaymentsRazorpayWebhookRoute,
-  ApiPaymentsStripeWebhookRoute: ApiPaymentsStripeWebhookRoute,
+  ApiStorefrontMedusaCartRoute: ApiStorefrontMedusaCartRouteWithChildren,
+  ApiStorefrontMedusaConfigRoute: ApiStorefrontMedusaConfigRoute,
+  ApiCommerceScopeTenantCartsRoute:
+    ApiCommerceScopeTenantCartsRouteWithChildren,
+  ApiCommerceScopeTenantCatalogRoute: ApiCommerceScopeTenantCatalogRoute,
   ApiDeploymentsDeploymentSlugProvisionMedusaRoute:
     ApiDeploymentsDeploymentSlugProvisionMedusaRoute,
 }

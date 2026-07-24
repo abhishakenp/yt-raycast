@@ -102,6 +102,8 @@ const { setSectionKitNavClickFallback } =
 const { CafeHero } = await import('./CafeHero.tsx')
 const { CafeMenu } = await import('./CafeMenu.tsx')
 const { CafeNavbar } = await import('./CafeNavbar.tsx')
+const { DemoCommerceProvider } =
+  await import('../commerce/commerce-test-wrapper.tsx')
 
 const CAFE_ROUTES = ['Home', 'Menu', 'Location', 'View Menu', 'Find Us']
 function RoutesProvider({
@@ -595,7 +597,7 @@ describe('Cafe fullstack commerce behavior', () => {
 
     render(
       <RoutesProvider>
-        <>
+        <DemoCommerceProvider>
           <CafeNavbar.component
             props={{
               brand: 'Cafe Test',
@@ -625,7 +627,7 @@ describe('Cafe fullstack commerce behavior', () => {
               teas: [],
             }}
           />
-        </>
+        </DemoCommerceProvider>
       </RoutesProvider>,
     )
 
@@ -686,14 +688,16 @@ describe('Cafe fullstack commerce behavior', () => {
 
     render(
       <RoutesProvider>
-        <CafeHero.component
-          props={{
-            featuredItemName: 'Seasonal Cold Brew',
-            featuredItemPrice: '$5.75',
-            primaryCta: 'View Menu',
-            secondaryCta: 'Find Us',
-          }}
-        />
+        <DemoCommerceProvider>
+          <CafeHero.component
+            props={{
+              featuredItemName: 'Seasonal Cold Brew',
+              featuredItemPrice: '$5.75',
+              primaryCta: 'View Menu',
+              secondaryCta: 'Find Us',
+            }}
+          />
+        </DemoCommerceProvider>
       </RoutesProvider>,
     )
 

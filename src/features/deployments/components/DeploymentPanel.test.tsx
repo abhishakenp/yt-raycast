@@ -49,11 +49,12 @@ vi.mock('convex/react', () => ({
   useQuery: () => {
     convexState.queryCallCount += 1
     const callIndex = convexState.queryCallCount
-    // Call order: getExportTargets, getDeploymentStatus, getLakebedEntitlement
-    if (callIndex % 3 === 1) return convexState.exportTargets
-    if (callIndex % 3 === 2)
+    // Call order: getExportTargets, getDeploymentStatus, getLakebedEntitlement, getCommerceConfig
+    if (callIndex % 4 === 1) return convexState.exportTargets
+    if (callIndex % 4 === 2)
       return convexState.deploymentStatuses.get('current') ?? null
-    return convexState.lakebedEntitlement
+    if (callIndex % 4 === 3) return convexState.lakebedEntitlement
+    return null
   },
 }))
 

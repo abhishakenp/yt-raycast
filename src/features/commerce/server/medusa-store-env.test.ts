@@ -44,6 +44,28 @@ describe('medusa store env', () => {
     )
   })
 
+  it('uses local env fallback when runtime and meta env are missing', () => {
+    expect(
+      readMedusaEnv(
+        ['MEDUSA_ADMIN_EMAIL'],
+        {},
+        {},
+        { MEDUSA_ADMIN_EMAIL: 'admin@example.test' },
+      ),
+    ).toBe('admin@example.test')
+  })
+
+  it('keeps runtime env ahead of local env fallback', () => {
+    expect(
+      readMedusaEnv(
+        ['MEDUSA_ADMIN_EMAIL'],
+        { MEDUSA_ADMIN_EMAIL: 'runtime@example.test' },
+        {},
+        { MEDUSA_ADMIN_EMAIL: 'local@example.test' },
+      ),
+    ).toBe('runtime@example.test')
+  })
+
   it('distinguishes fallback localhost defaults from configured backend urls', () => {
     expect(hasConfiguredMedusaBackendUrl({}, {})).toBe(false)
     expect(

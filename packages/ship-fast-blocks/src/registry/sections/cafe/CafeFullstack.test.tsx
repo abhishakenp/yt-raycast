@@ -120,6 +120,8 @@ const { setSectionKitNavClickFallback } =
   await import('#/section-kit/nav-href.tsx')
 const { CafeMenu } = await import('./CafeMenu.tsx')
 const { CafeNavbar } = await import('./CafeNavbar.tsx')
+const { DemoCommerceProvider } =
+  await import('../commerce/commerce-test-wrapper.tsx')
 
 function createCafeLakebedStub() {
   let version = 0
@@ -287,7 +289,7 @@ describe('Cafe fullstack commerce behavior', () => {
     const Menu = CafeMenu.client.component
 
     render(
-      <>
+      <DemoCommerceProvider>
         <Navbar
           props={{
             brand: 'Owl Cup',
@@ -311,7 +313,7 @@ describe('Cafe fullstack commerce behavior', () => {
           }}
           statementId="cafe_menu"
         />
-      </>,
+      </DemoCommerceProvider>,
     )
 
     await waitFor(() => {

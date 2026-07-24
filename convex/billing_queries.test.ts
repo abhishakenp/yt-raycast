@@ -83,6 +83,14 @@ describe('billing read and internal mutation contracts', () => {
           viaSubscription: false,
           viaCredits: false,
         },
+        generationQuota: {
+          activeSubscriptionCount: 0,
+          canRenew: false,
+          exhausted: false,
+          limit: 10,
+          remaining: 10,
+          used: 0,
+        },
       },
     )
   })

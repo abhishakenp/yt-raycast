@@ -27,12 +27,15 @@ import {
 import { loadSessionApiResponse } from './lib/session_api_response_helpers'
 import {
   authorizeDeploymentCommerceTenantProvision,
+  authorizeSessionCommerceProvision as authorizeSessionCommerceProvisionHelper,
   loadDeploymentCommerceTenantBySlugForWebhook,
   loadDeploymentCommerceTenantBySlug,
   loadOwnedDeploymentCommerceTenantBySlug,
   loadSessionCommerceConfig,
   recordDeploymentCommerceTenantPull,
   provisionSessionMedusaTenant,
+  resolveDeploymentCommerceGatewayConfig,
+  resolveSessionCommerceGatewayConfig,
   syncSessionMedusaProducts,
   upsertDeploymentCommerceTenant,
   upsertSessionCommerceConfig,
@@ -966,9 +969,19 @@ export const upsertCommerceConfig = mutation({
   handler: (ctx, args) => upsertSessionCommerceConfig(ctx, args),
 })
 
+export const authorizeSessionCommerceProvision = query({
+  args: ownedSessionArgs,
+  handler: (ctx, args) => authorizeSessionCommerceProvisionHelper(ctx, args),
+})
+
 export const getCommerceConfig = query({
   args: sessionIdArgs,
   handler: (ctx, args) => loadSessionCommerceConfig(ctx, args.sessionId),
+})
+
+export const resolveCommerceSessionGateway = query({
+  args: ownedSessionArgs,
+  handler: (ctx, args) => resolveSessionCommerceGatewayConfig(ctx, args),
 })
 
 export const upsertCommerceTenant = mutation({
@@ -980,6 +993,12 @@ export const getCommerceTenantByDeploymentSlug = query({
   args: commerceTenantDeploymentSlugArgs,
   handler: (ctx, args) =>
     loadDeploymentCommerceTenantBySlug(ctx, args.deploymentSlug),
+})
+
+export const resolveCommerceDeploymentGateway = query({
+  args: commerceTenantDeploymentSlugArgs,
+  handler: (ctx, args) =>
+    resolveDeploymentCommerceGatewayConfig(ctx, args.deploymentSlug),
 })
 
 export const authorizeCommerceTenantProvision = query({

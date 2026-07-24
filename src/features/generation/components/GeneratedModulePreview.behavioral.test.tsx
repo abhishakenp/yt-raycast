@@ -39,10 +39,12 @@ if (typeof IntersectionObserver === 'undefined') {
 vi.mock('@/island/openui/OpenUIViewer', () => ({
   default: ({
     response,
+    commerce,
     imageContext,
     selectedBrandLogo,
   }: {
     response: string
+    commerce?: unknown
     imageContext?: {
       prompt?: string
       brandContext?: string
@@ -54,7 +56,11 @@ vi.mock('@/island/openui/OpenUIViewer', () => ({
       logo?: string | null
     } | null
   }) => (
-    <div data-testid="openui-viewer" data-response={response}>
+    <div
+      data-testid="openui-viewer"
+      data-response={response}
+      data-commerce={JSON.stringify(commerce ?? null)}
+    >
       <div className="hero-anchor" data-testid="hero-anchor">
         Hero
       </div>
@@ -104,6 +110,23 @@ describe('GeneratedModulePreview (real component)', () => {
     expect(iframe.getAttribute('srcdoc')).toBe(HTML_DOC)
     expect(iframe.hasAttribute('src')).toBe(false)
     expect(screen.queryByTestId('openui-viewer')).toBeNull()
+  })
+
+  it('passes an explicit hosted session runtime to OpenUI previews', async () => {
+    render(
+      <GeneratedModulePreview
+        commerceMode="hosted"
+        source='root = Text("OpenUI store")'
+        sessionId="session-1"
+      />,
+    )
+
+    const viewer = await screen.findByTestId('openui-viewer')
+    expect(JSON.parse(viewer.getAttribute('data-commerce')!)).toEqual({
+      mode: 'hosted',
+      scope: 'sessions',
+      tenant: 'session-1',
+    })
   })
 
   it('renders edited HTML fragment previews in an iframe instead of sending them to OpenUI', () => {

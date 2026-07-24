@@ -45,6 +45,8 @@ describe('storefront cart UI injection', () => {
     const html = injectStorefrontCartUi(themedStorefrontHtml)
     const style = injectedStyle(html)
 
+    expect(html).toContain("var API_BASE='/api/medusa-store';")
+    expect(html).not.toContain('/api/storefront/medusa')
     expect(style).toContain('background:var(--background,Canvas)')
     expect(style).toContain('color:var(--foreground,CanvasText)')
     expect(style).toContain('background:var(--primary,ButtonText)')

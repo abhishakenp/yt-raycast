@@ -31,6 +31,7 @@ export function shouldUseConvexProviders(pathname: string): boolean {
     pathname === '/referrals' ||
     pathname.startsWith('/generate/') ||
     pathname.startsWith('/preview/') ||
+    pathname.startsWith('/deployed/') ||
     pathname.startsWith('/examples') ||
     pathname.startsWith('/gallery') ||
     pathname.startsWith('/mine')

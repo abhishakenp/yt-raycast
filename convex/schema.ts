@@ -443,6 +443,38 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index('by_sessionId', ['sessionId']),
 
+  commerceOperations: defineTable({
+    scope: v.union(v.literal('sessions'), v.literal('deployments')),
+    tenant: v.string(),
+    cartId: v.string(),
+    kind: v.union(v.literal('payment-session'), v.literal('complete')),
+    idempotencyKeyHash: v.string(),
+    requestHash: v.string(),
+    state: v.union(
+      v.literal('started'),
+      v.literal('succeeded'),
+      v.literal('failed'),
+      v.literal('unknown'),
+    ),
+    attempt: v.number(),
+    retryable: v.optional(v.boolean()),
+    failureCode: v.optional(v.string()),
+    resultJson: v.optional(v.string()),
+    startedAt: v.number(),
+    updatedAt: v.number(),
+    leaseExpiresAt: v.number(),
+    retryAfterAt: v.optional(v.number()),
+    expiresAt: v.number(),
+  })
+    .index('by_scope_and_tenant_and_cartId_and_kind_and_idempotencyKeyHash', [
+      'scope',
+      'tenant',
+      'cartId',
+      'kind',
+      'idempotencyKeyHash',
+    ])
+    .index('by_expiresAt', ['expiresAt']),
+
   commerceTenants: defineTable({
     deploymentId: v.id('deployments'),
     sessionId: v.id('sessions'),

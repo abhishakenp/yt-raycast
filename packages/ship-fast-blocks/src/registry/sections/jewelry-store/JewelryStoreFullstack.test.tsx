@@ -101,6 +101,8 @@ const { setSectionKitNavClickFallback } =
 const { JewelryStoreHero } = await import('./JewelryStoreHero.tsx')
 const { JewelryStoreNavbar } = await import('./JewelryStoreNavbar.tsx')
 const { JewelryStorePieces } = await import('./JewelryStorePieces.tsx')
+const { DemoCommerceProvider } =
+  await import('../commerce/commerce-test-wrapper.tsx')
 
 function publicCartItem({ id, label, price, quantity }: TestCartItem) {
   return {
@@ -564,7 +566,7 @@ describe('JewelryStore fullstack commerce behavior', () => {
     setSectionKitNavClickFallback(navigate)
 
     render(
-      <>
+      <DemoCommerceProvider>
         <JewelryStoreNavbar.component
           props={{
             brand: 'Maison Test',
@@ -594,7 +596,7 @@ describe('JewelryStore fullstack commerce behavior', () => {
             ],
           }}
         />
-      </>,
+      </DemoCommerceProvider>,
     )
 
     await waitFor(() => {
@@ -652,14 +654,16 @@ describe('JewelryStore fullstack commerce behavior', () => {
     setSectionKitNavClickFallback(navigate)
 
     render(
-      <JewelryStoreHero.component
-        props={{
-          featuredName: 'Archive Diamond Bracelet',
-          featuredPrice: '$12,500',
-          primaryCta: 'Explore Collections',
-          secondaryCta: 'Private Viewing',
-        }}
-      />,
+      <DemoCommerceProvider>
+        <JewelryStoreHero.component
+          props={{
+            featuredName: 'Archive Diamond Bracelet',
+            featuredPrice: '$12,500',
+            primaryCta: 'Explore Collections',
+            secondaryCta: 'Private Viewing',
+          }}
+        />
+      </DemoCommerceProvider>,
     )
 
     fireEvent.click(screen.getByRole('link', { name: 'Explore Collections' }))

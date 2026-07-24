@@ -1,32 +1,41 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import type { Mock } from 'vitest'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { CommercePanel } from './CommercePanel'
 
-const commerceState = vi.hoisted(() => ({
+type CommercePanelConfig = {
+  adminUrl?: string
+  backendUrl?: string
+  errorMessage?: string
+  productCount: number
+  status: string
+  storefrontUrl?: string
+}
+
+type CommercePanelHandoff = {
+  adminUrl: string
+  backendUrl: string
+  storefrontUrl: string
+  tenantId: string
+}
+
+type CommercePanelTestState = {
+  config: CommercePanelConfig
+  handoff: CommercePanelHandoff | undefined
+  provisionCommerce: Mock
+  useCommerceController: Mock
+}
+
+const commerceState = vi.hoisted<CommercePanelTestState>(() => ({
   config: {
     errorMessage: 'Medusa Store API is unavailable: fetch failed',
     productCount: 0,
     status: 'ready',
-  } as {
-    adminUrl?: string
-    backendUrl?: string
-    errorMessage?: string
-    productCount: number
-    status: string
-    storefrontUrl?: string
   },
-  handoff: undefined as
-    | {
-        adminEmail: string
-        adminPassword: string
-        adminUrl: string
-        backendUrl: string
-        storefrontUrl: string
-        tenantId: string
-      }
-    | undefined,
+  handoff: undefined,
+  provisionCommerce: vi.fn(),
   useCommerceController: vi.fn(),
 }))
 
@@ -38,7 +47,7 @@ vi.mock('../hooks/useCommerceController', () => ({
       commerceHandoff: commerceState.handoff,
       config: commerceState.config,
       isSaving: false,
-      provisionCommerce: vi.fn(),
+      provisionCommerce: commerceState.provisionCommerce,
     }
   },
 }))
@@ -53,6 +62,7 @@ describe('CommercePanel', () => {
     }
     commerceState.handoff = undefined
     commerceState.useCommerceController.mockClear()
+    commerceState.provisionCommerce.mockReset()
   })
 
   it('shows visual readiness with a live checkout warning', () => {
@@ -106,10 +116,8 @@ describe('CommercePanel', () => {
     )
   })
 
-  it('offers Medusa storefront and admin credentials when provisioning returns a handoff', () => {
+  it('offers Medusa storefront and admin links without exposing credentials', () => {
     commerceState.handoff = {
-      adminEmail: 'admin@store.test',
-      adminPassword: 'secret-password',
       adminUrl: 'https://admin.medusa.test',
       backendUrl: 'https://backend.medusa.test',
       storefrontUrl: 'https://store.medusa.test',
@@ -126,8 +134,28 @@ describe('CommercePanel', () => {
     expect(
       screen.getByRole('link', { name: 'Open admin' }).getAttribute('href'),
     ).toBe('https://admin.medusa.test')
-    expect(screen.getByText('admin@store.test')).toBeTruthy()
-    expect(screen.getByText('secret-password')).toBeTruthy()
+  })
+
+  it('requires a user-created admin account before enabling commerce', () => {
+    commerceState.config = { productCount: 0, status: 'setup' }
+    render(<CommercePanel sessionId="session_123" />)
+
+    const button = screen.getByRole('button', { name: 'Enable Commerce' })
+    expect(button.hasAttribute('disabled')).toBe(true)
+
+    fireEvent.change(screen.getByLabelText('Admin email'), {
+      target: { value: 'owner@store.test' },
+    })
+    fireEvent.change(screen.getByLabelText('Admin password'), {
+      target: { value: 'user-created-password' },
+    })
+    expect(button.hasAttribute('disabled')).toBe(false)
+    fireEvent.click(button)
+
+    expect(commerceState.provisionCommerce).toHaveBeenCalledWith({
+      email: 'owner@store.test',
+      password: 'user-created-password',
+    })
   })
 
   it('keeps Medusa studio links available from persisted tenant config', () => {
@@ -154,6 +182,27 @@ describe('CommercePanel', () => {
         'Set Medusa backend, admin, and storefront URLs to unlock links.',
       ),
     ).toBeNull()
+  })
+
+  it('opens the generated storefront when persisted Medusa storefront points at the API root', () => {
+    commerceState.config = {
+      adminUrl: 'http://localhost:9116/app',
+      backendUrl: 'http://localhost:9116',
+      productCount: 3,
+      status: 'ready',
+      storefrontUrl: 'http://localhost:9116',
+    }
+
+    render(<CommercePanel sessionId="session_123" />)
+
+    expect(
+      screen
+        .getByRole('link', { name: 'Open storefront' })
+        .getAttribute('href'),
+    ).toBe('/generate/session_123')
+    expect(
+      screen.getByRole('link', { name: 'Open admin' }).getAttribute('href'),
+    ).toBe('http://localhost:9116/app')
   })
 
   it('does not show persisted fallback localhost links when Medusa is not reachable', () => {

@@ -121,6 +121,8 @@ const { setSectionKitNavClickFallback } =
 const { BakeryHero } = await import('./BakeryHero.tsx')
 const { BakeryMenu } = await import('./BakeryMenu.tsx')
 const { BakeryNavbar } = await import('./BakeryNavbar.tsx')
+const { DemoCommerceProvider } =
+  await import('../commerce/commerce-test-wrapper.tsx')
 
 function createBakeryLakebedStub() {
   let version = 0
@@ -301,7 +303,7 @@ describe('Bakery fullstack commerce behavior', () => {
     const Menu = BakeryMenu.client.component
 
     render(
-      <>
+      <DemoCommerceProvider>
         <Navbar
           props={{ brand: 'Batch House', cartCount: '0' }}
           statementId="bakery_navbar"
@@ -332,7 +334,7 @@ describe('Bakery fullstack commerce behavior', () => {
           }}
           statementId="bakery_menu"
         />
-      </>,
+      </DemoCommerceProvider>,
     )
 
     await waitFor(() => {

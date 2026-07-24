@@ -3,6 +3,10 @@ import { useEffect, useRef, useState } from 'react'
 
 import { readJsonOrThrow } from '@/lib/safe-fetch'
 import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
+import {
+  confirmRazorpaySubscriptionPayment,
+  type RazorpaySubscriptionPaymentResponse,
+} from '@/features/billing/client/razorpay-confirm'
 
 type BillingPanelProps = {
   sessionId: string
@@ -19,6 +23,14 @@ type BillingOverview = {
   credits?: {
     remaining: number
   }
+  generationQuota?: {
+    limit: number
+    used: number
+    remaining: number
+    exhausted: boolean
+    activeSubscriptionCount: number
+    canRenew: boolean
+  }
   exportAccess?: {
     unlocked: boolean
     reason?: string
@@ -27,6 +39,93 @@ type BillingOverview = {
 }
 
 type CheckoutMode = 'subscription' | 'credit_pack'
+
+type RazorpayCheckoutData = {
+  keyId: string
+  orderId?: string
+  subscriptionId?: string
+  amount?: number
+  currency?: string
+}
+
+type RazorpayCheckoutOptions = {
+  key: string
+  name: string
+  description: string
+  handler: (response: RazorpaySubscriptionPaymentResponse) => void
+  modal: { ondismiss: () => void }
+  notes: Record<string, string>
+  theme: { color: string }
+  amount?: number
+  currency?: string
+  order_id?: string
+  subscription_id?: string
+}
+
+type RazorpayCheckout = {
+  open: () => void
+  on: (event: 'payment.failed', handler: () => void) => void
+}
+
+type RazorpayConstructor = new (
+  options: RazorpayCheckoutOptions,
+) => RazorpayCheckout
+
+declare global {
+  interface Window {
+    Razorpay?: RazorpayConstructor
+  }
+}
+
+let razorpayScriptPromise: Promise<void> | null = null
+
+const stringField = (value: unknown): string | undefined =>
+  typeof value === 'string' && value.length > 0 ? value : undefined
+
+const numberField = (value: unknown): number | undefined =>
+  typeof value === 'number' && Number.isFinite(value) ? value : undefined
+
+const razorpayCheckoutDataFrom = (
+  data: Record<string, unknown>,
+): RazorpayCheckoutData | null => {
+  if (data.provider !== 'razorpay') return null
+
+  const keyId = stringField(data.keyId)
+  const orderId = stringField(data.orderId)
+  const subscriptionId = stringField(data.subscriptionId)
+  if (!keyId || (!orderId && !subscriptionId)) return null
+
+  return {
+    keyId,
+    orderId,
+    subscriptionId,
+    amount: numberField(data.amount),
+    currency: stringField(data.currency),
+  }
+}
+
+const loadRazorpayCheckout = async (): Promise<RazorpayConstructor> => {
+  if (typeof window === 'undefined') {
+    throw new Error('Razorpay checkout is unavailable.')
+  }
+  if (window.Razorpay) return window.Razorpay
+
+  razorpayScriptPromise ??= new Promise<void>((resolve, reject) => {
+    const script = document.createElement('script')
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+    script.async = true
+    script.onload = () => resolve()
+    script.onerror = () => {
+      razorpayScriptPromise = null
+      reject(new Error('Unable to load Razorpay checkout.'))
+    }
+    document.body.appendChild(script)
+  })
+
+  await razorpayScriptPromise
+  if (!window.Razorpay) throw new Error('Razorpay checkout is unavailable.')
+  return window.Razorpay
+}
 
 export function BillingPanel({ sessionId }: BillingPanelProps) {
   const { getToken, isSignedIn } = useOptionalAuth()
@@ -91,7 +190,7 @@ export function BillingPanel({ sessionId }: BillingPanelProps) {
       const token = await getToken({ template: 'convex' })
       if (!token || !isSignedIn) throw new Error('Sign in before checkout.')
 
-      const response = await fetch('/api/checkout/start', {
+      const response = await fetch('/api/payments/razorpay/start', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -118,6 +217,66 @@ export function BillingPanel({ sessionId }: BillingPanelProps) {
         return
       }
 
+      const razorpayData = razorpayCheckoutDataFrom(data)
+      if (razorpayData) {
+        const Razorpay = await loadRazorpayCheckout()
+        const description =
+          mode === 'subscription'
+            ? 'Ship Fast Pro subscription'
+            : `${packId === '10_credits' ? 10 : 3} export credits`
+        const checkout = new Razorpay({
+          key: razorpayData.keyId,
+          name: 'Ship Fast',
+          description,
+          handler: (paymentResponse) => {
+            if (!razorpayData.subscriptionId) {
+              setCheckoutState('Payment submitted. Refreshing billing...')
+              void loadOverview()
+              return
+            }
+
+            setCheckoutState('Payment submitted. Confirming Pro...')
+            void confirmRazorpaySubscriptionPayment(token, paymentResponse)
+              .then(() => {
+                setCheckoutState('Pro activated. Refreshing billing...')
+                void loadOverview()
+              })
+              .catch((confirmError: unknown) => {
+                setCheckoutState(undefined)
+                setError(
+                  confirmError instanceof Error
+                    ? confirmError.message
+                    : 'Razorpay payment confirmation failed.',
+                )
+              })
+          },
+          modal: {
+            ondismiss: () => {
+              setCheckoutState('Checkout closed.')
+            },
+          },
+          notes: {
+            mode,
+            sessionId,
+            ...(packId ? { packId } : {}),
+          },
+          theme: { color: '#67e8f9' },
+          ...(razorpayData.subscriptionId
+            ? { subscription_id: razorpayData.subscriptionId }
+            : {
+                order_id: razorpayData.orderId,
+                amount: razorpayData.amount,
+                currency: razorpayData.currency ?? 'INR',
+              }),
+        })
+        checkout.on('payment.failed', () => {
+          setCheckoutState(undefined)
+          setError('Razorpay payment failed.')
+        })
+        checkout.open()
+        return
+      }
+
       setCheckoutState(
         data.subscriptionId
           ? `Razorpay subscription created: ${data.subscriptionId}`
@@ -140,7 +299,16 @@ export function BillingPanel({ sessionId }: BillingPanelProps) {
 
   const credits = overview?.credits?.remaining ?? 0
   const subscription = overview?.subscription
+  const generationQuota = overview?.generationQuota
   const exportAccess = overview?.exportAccess
+  const canRenewSubscription = Boolean(
+    subscription?.active && generationQuota?.canRenew,
+  )
+  const subscriptionActionLabel = subscription?.active
+    ? canRenewSubscription
+      ? 'Renew Pro'
+      : 'Current plan'
+    : 'Upgrade to Pro'
 
   return (
     <div className="grid gap-4">
@@ -210,14 +378,45 @@ export function BillingPanel({ sessionId }: BillingPanelProps) {
           </div>
         </section>
 
+        <section className="rounded-2xl border border-white/10 bg-white/[0.035] p-3">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="m-0 text-[0.7rem] font-bold uppercase tracking-[0.1em] text-white/42">
+                Generations
+              </p>
+              <p className="m-0 mt-2 text-sm font-semibold text-white">
+                {generationQuota
+                  ? `${generationQuota.used}/${generationQuota.limit} used`
+                  : 'Usage unavailable'}
+              </p>
+            </div>
+            {canRenewSubscription ? (
+              <span className="shrink-0 rounded-md border border-amber-300/25 bg-amber-300/10 px-2 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.08em] text-amber-100">
+                Exhausted
+              </span>
+            ) : null}
+          </div>
+          <p className="m-0 mt-1 text-xs leading-5 text-white/48">
+            {canRenewSubscription
+              ? 'Renew Pro to add another 30 generations.'
+              : generationQuota
+                ? `${generationQuota.remaining} generations remaining this month.`
+                : 'Refresh billing to load generation usage.'}
+          </p>
+        </section>
+
         <button
           className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-cyan-300 px-4 py-2 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-45"
-          disabled={isLoading || isCheckoutPending}
+          disabled={
+            isLoading ||
+            isCheckoutPending ||
+            (subscription?.active && !canRenewSubscription)
+          }
           onClick={() => void startCheckout('subscription')}
           type="button"
         >
           <CreditCard className="size-4" />
-          Upgrade to Pro
+          {subscriptionActionLabel}
         </button>
         <div className="grid grid-cols-2 gap-2">
           <button

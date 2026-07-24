@@ -1,6 +1,13 @@
 // @vitest-environment jsdom
 
-import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
+import {
+  type ReactNode,
+  useCallback,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { LakebedMutationFunction } from '@ship-fast/lakebed/react'
 import {
   createLakebedMutationStub,
@@ -10,6 +17,12 @@ import { JSDOM } from 'jsdom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { commerceCartItemKey, commerceCartLakebed } from './cart-lakebed.ts'
 import type { CommerceLakebed } from './commerce-interactions.tsx'
+import type {
+  CommerceAdapter,
+  CommercePaymentSessionsEnvelope,
+  CommerceRuntimeCart,
+  CommerceRuntimeCartLineRef,
+} from './commerce-contracts.ts'
 
 const navigate = vi.fn()
 
@@ -118,6 +131,103 @@ const {
   CommerceSearchButton,
   useCommerceFilteredProducts,
 } = await import('./commerce-interactions.tsx')
+const { CommerceProvider } = await import('./commerce-provider.tsx')
+
+const renderDemoCommerce: (children: ReactNode) => ReturnType<typeof render> = (
+  children,
+) =>
+  render(
+    <QueryClientProvider client={new QueryClient()}>
+      <CommerceProvider
+        fallbackProducts={[]}
+        mode="demo"
+        scope="sessions"
+        tenant="commerce-interactions-test"
+      >
+        {children}
+      </CommerceProvider>
+    </QueryClientProvider>,
+  )
+
+const hostedCart: (id?: string) => CommerceRuntimeCart = (
+  id = 'cart_live',
+) => ({
+  id,
+  lines: [],
+})
+
+const hostedAdapter: (onAdd: CommerceAdapter['addItem']) => CommerceAdapter = (
+  onAdd,
+) => ({
+  addItem: onAdd,
+  addShippingMethod: vi.fn(async () => ({ cart: hostedCart() })),
+  catalog: vi.fn(async () => ({
+    products: [
+      {
+        collections: [],
+        handle: 'serum',
+        id: 'prod_live',
+        images: [],
+        options: [],
+        sourceId: 'product:serum',
+        tags: [],
+        title: 'Hydrating Serum',
+        variants: [
+          {
+            available: true,
+            id: 'variant_live_serum',
+            manageInventory: false,
+            optionValues: {},
+            prices: [{ amount: 28, currencyCode: 'usd' }],
+            sourceId: 'variant:serum',
+            title: 'Default',
+          },
+        ],
+      },
+    ],
+  })),
+  completeCart: vi.fn(async () => ({
+    order: {
+      id: 'order_live',
+      lines: [],
+      status: 'completed',
+      store: { kind: 'sessions', sessionId: 'session-live' },
+      subtotal: { amount: 0, currencyCode: 'usd' },
+      total: { amount: 0, currencyCode: 'usd' },
+    },
+  })),
+  createCart: vi.fn(async () => ({ cart: hostedCart() })),
+  createPaymentSessions: vi.fn(async () => ({
+    paymentAction: { type: 'none' },
+    paymentSessions: [],
+  })),
+  getCart: vi.fn(async () => {
+    throw new Error('No stored cart')
+  }),
+  getPaymentProviders: vi.fn(async () => ({ paymentProviders: [] })),
+  getShippingOptions: vi.fn(async () => ({ shippingOptions: [] })),
+  removeItem: vi.fn(async () => ({ cart: hostedCart() })),
+  updateCart: vi.fn(async () => ({ cart: hostedCart() })),
+  updateItem: vi.fn(async () => ({ cart: hostedCart() })),
+})
+
+const renderHostedCommerce: (
+  children: ReactNode,
+  adapter: CommerceAdapter,
+) => ReturnType<typeof render> = (children, adapter) =>
+  render(
+    <QueryClientProvider client={new QueryClient()}>
+      <CommerceProvider
+        adapter={adapter}
+        fallbackProducts={[]}
+        mode="hosted"
+        scope="sessions"
+        tenant="session-live"
+      >
+        {children}
+      </CommerceProvider>
+    </QueryClientProvider>,
+  )
 
 type TestCartItem = {
   createdAt: string
@@ -316,10 +426,11 @@ function createCommerceLakebedStub({
   products?: TestProductInput[]
 } = {}) {
   let version = 0
+  const searches: TestCommerceSearch[] = []
   const state = {
     items: items.map(testCartItem),
     products: products.map(testProduct),
-    searches: [] as TestCommerceSearch[],
+    searches,
     searchState: {
       query: '',
       selectedLabel: '',
@@ -1234,11 +1345,14 @@ describe('commerce interaction surfaces', () => {
         reset: vi.fn(),
       },
     )
+    const { lakebed: baseLakebed } = createCommerceLakebedStub()
+    const useQueryWithoutItems: CommerceLakebed['useQuery'] = (name) =>
+      name === 'cartSummary' ? { count: 3 } : baseLakebed.useQuery(name)
     const lakebed = {
+      ...baseLakebed,
       useMutation: () => noopMutation,
-      useQuery: (name: string) =>
-        name === 'cartSummary' ? { count: 3 } : null,
-    } as unknown as CommerceLakebed
+      useQuery: useQueryWithoutItems,
+    } satisfies CommerceLakebed
 
     render(<CommerceCartButton lakebed={lakebed} />)
 
@@ -1250,8 +1364,9 @@ describe('commerce interaction surfaces', () => {
       screen.getByText('Add a product to see it here instantly.'),
     ).toBeTruthy()
     expect(
-      (screen.getByRole('button', { name: 'Clear cart' }) as HTMLButtonElement)
-        .disabled,
+      screen
+        .getByRole('button', { name: 'Clear cart' })
+        .hasAttribute('disabled'),
     ).toBe(true)
   })
 
@@ -1503,6 +1618,160 @@ describe('commerce interaction surfaces', () => {
     })
   })
 
+  it('adds hosted catalog products through the live commerce controller by stable source ID', async () => {
+    const { lakebed, state } = createCommerceLakebedStub()
+    const addItem = vi.fn<CommerceAdapter['addItem']>(
+      async (input, cartId) => ({
+        cart: {
+          ...hostedCart(cartId),
+          lines: [{ id: `line:${input.variantId}` }],
+        },
+      }),
+    )
+    const adapter = hostedAdapter(addItem)
+
+    renderHostedCommerce(
+      <CommerceAddItemButton
+        lakebed={lakebed}
+        item={{
+          itemKey: 'product:serum',
+          label: 'Hydrating Serum',
+          price: '$28',
+        }}
+        pendingChildren={
+          <>
+            <CommerceMutationSpinner />
+            Adding hosted serum
+          </>
+        }
+      >
+        Add hosted serum
+      </CommerceAddItemButton>,
+      adapter,
+    )
+
+    const button = await screen.findByRole('button', {
+      name: 'Add hosted serum',
+    })
+    await waitFor(() => {
+      expect(button.hasAttribute('disabled')).toBe(false)
+    })
+
+    fireEvent.click(button)
+
+    await waitFor(() => {
+      expect(addItem).toHaveBeenCalledWith(
+        { quantity: 1, variantId: 'variant_live_serum' },
+        'cart_live',
+      )
+      expect(state().items).toHaveLength(0)
+    })
+  })
+
+  it('checks out a hosted Medusa cart through shipping and Razorpay', async () => {
+    const { lakebed } = createCommerceLakebedStub()
+    const line: CommerceRuntimeCartLineRef & {
+      product: { title: string }
+      quantity: number
+      total: { amount: number; currencyCode: string }
+    } = {
+      id: 'line_serum',
+      product: { title: 'Hydrating Serum' },
+      quantity: 2,
+      total: { amount: 56, currencyCode: 'usd' },
+    }
+    const cart: CommerceRuntimeCart = {
+      id: 'cart_live',
+      lines: [line],
+      total: { amount: 61, currencyCode: 'usd' },
+    }
+    const adapter = hostedAdapter(vi.fn(async () => ({ cart })))
+    adapter.getCart = vi.fn(async () => ({ cart }))
+    adapter.getShippingOptions = vi.fn(async () => ({
+      shippingOptions: [
+        {
+          amount: { amount: 5, currencyCode: 'usd' },
+          id: 'shipping_standard',
+          name: 'Standard delivery',
+        },
+      ],
+    }))
+    adapter.getPaymentProviders = vi.fn(async () => ({
+      paymentProviders: [{ id: 'pp_razorpay', name: 'Razorpay' }],
+    }))
+    adapter.createPaymentSessions = vi.fn(
+      async (): Promise<CommercePaymentSessionsEnvelope> => ({
+        paymentAction: {
+          data: {
+            amount: 6100,
+            currency: 'USD',
+            key: 'rzp_test_public',
+            order_id: 'order_rzp_1',
+          },
+          provider: 'pp_razorpay',
+          type: 'client-session',
+        },
+        paymentSessions: [
+          {
+            id: 'payses_1',
+            provider: 'pp_razorpay',
+            status: 'requires_action',
+          },
+        ],
+      }),
+    )
+    let razorpayOptions: Record<string, unknown> | undefined
+    let razorpayOpened = false
+    Object.defineProperty(window, 'Razorpay', {
+      configurable: true,
+      value: class Razorpay {
+        constructor(options: Record<string, unknown>) {
+          razorpayOptions = options
+        }
+
+        open() {
+          razorpayOpened = true
+        }
+      },
+    })
+
+    renderHostedCommerce(<CommerceCartButton lakebed={lakebed} />, adapter)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cart' }))
+    expect(await screen.findByText('Hydrating Serum')).toBeTruthy()
+    expect(screen.getByText('You have 2 items in your cart.')).toBeTruthy()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Checkout' }))
+    fireEvent.click(
+      await screen.findByRole('radio', { name: /Standard delivery/ }),
+    )
+    fireEvent.click(screen.getByRole('radio', { name: 'Razorpay' }))
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Pay with Razorpay' }),
+    )
+
+    await waitFor(() => expect(razorpayOpened).toBe(true))
+    const paymentHandler = razorpayOptions?.handler
+    expect(paymentHandler).toBeTypeOf('function')
+    if (typeof paymentHandler !== 'function') {
+      throw new Error('Razorpay handler was not configured.')
+    }
+    await paymentHandler({ razorpay_payment_id: 'pay_1' })
+
+    await waitFor(() => {
+      expect(adapter.addShippingMethod).toHaveBeenCalledWith(
+        { shippingOptionId: 'shipping_standard' },
+        'cart_live',
+      )
+      expect(adapter.createPaymentSessions).toHaveBeenCalledWith(
+        { providerId: 'pp_razorpay' },
+        'cart_live',
+      )
+      expect(adapter.completeCart).toHaveBeenCalledWith({}, 'cart_live')
+      expect(screen.getByText('Order confirmed')).toBeTruthy()
+    })
+  })
+
   it('scopes add-to-cart loading state to the clicked product button', async () => {
     const add = createDeferred()
     const { lakebed } = createCommerceLakebedStub({
@@ -1511,7 +1780,7 @@ describe('commerce interaction surfaces', () => {
       },
     })
 
-    render(
+    renderDemoCommerce(
       <>
         <CommerceAddItemButton
           lakebed={lakebed}
@@ -1564,7 +1833,7 @@ describe('commerce interaction surfaces', () => {
   it('adds duplicate product labels as distinct cart rows when item keys differ', async () => {
     const { lakebed, state } = createCommerceLakebedStub()
 
-    render(
+    renderDemoCommerce(
       <>
         <CommerceAddItemButton
           lakebed={lakebed}
@@ -1637,7 +1906,7 @@ describe('commerce interaction surfaces', () => {
       },
     })
 
-    render(
+    renderDemoCommerce(
       <>
         <CommerceAddItemButton
           lakebed={lakebed}
@@ -1727,27 +1996,28 @@ describe('commerce interaction surfaces', () => {
 
   it('opens product search when the Lakebed catalog query returns DB-shaped records with malformed rows', async () => {
     const { lakebed } = createCommerceLakebedStub()
+    const malformedUseQuery: CommerceLakebed['useQuery'] = (name) => {
+      if (name === 'productCatalog') {
+        return {
+          missing: null,
+          product_1: {
+            id: 123,
+            label: null,
+            price: false,
+          },
+          product_2: {
+            id: 'product_2',
+            label: 'Truffle Box',
+            price: '$12.50',
+            subtitle: 'Gift set',
+          },
+        }
+      }
+      return lakebed.useQuery(name)
+    }
     const malformedCatalogLakebed = {
       ...lakebed,
-      useQuery: ((name) => {
-        if (name === 'productCatalog') {
-          return {
-            missing: null,
-            product_1: {
-              id: 123,
-              label: null,
-              price: false,
-            },
-            product_2: {
-              id: 'product_2',
-              label: 'Truffle Box',
-              price: '$12.50',
-              subtitle: 'Gift set',
-            },
-          }
-        }
-        return lakebed.useQuery(name as never)
-      }) as CommerceLakebed['useQuery'],
+      useQuery: malformedUseQuery,
     } satisfies CommerceLakebed
 
     expect(() =>
@@ -1923,7 +2193,10 @@ describe('commerce interaction surfaces', () => {
     expect(screen.getByRole('dialog')).toBeTruthy()
     expect(screen.getByText('Lumiere')).toBeTruthy()
 
-    const skincareLink = screen.getByRole('link', { name: 'Skincare' })
+    const drawer = screen.getByRole('dialog')
+    const skincareLink = within(drawer).getByRole('link', {
+      name: 'Skincare',
+    })
     expect(skincareLink.getAttribute('href')).toBe('#skincare')
     fireEvent.click(skincareLink)
 

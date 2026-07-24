@@ -9,9 +9,11 @@ import {
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { commerceCartLakebed } from '../commerce/cart-lakebed.ts'
 import type { CommerceLakebed } from '../commerce/commerce-interactions.tsx'
-import { ProductDetailCta } from './ProductDetailCta.tsx'
-import { ProductDetailHero } from './ProductDetailHero.tsx'
-import { ProductDetailNavbar } from './ProductDetailNavbar.tsx'
+const { ProductDetailCta } = await import('./ProductDetailCta.tsx')
+const { ProductDetailHero } = await import('./ProductDetailHero.tsx')
+const { ProductDetailNavbar } = await import('./ProductDetailNavbar.tsx')
+const { DemoCommerceProvider } =
+  await import('../commerce/commerce-test-wrapper.tsx')
 
 type TestCartItem = {
   createdAt: string
@@ -407,7 +409,7 @@ describe('product detail add-to-cart loading state', () => {
     setSectionKitNavClickFallback(navigate)
 
     render(
-      <>
+      <DemoCommerceProvider>
         <ProductDetailCta.component
           props={{
             actions: [
@@ -434,7 +436,7 @@ describe('product detail add-to-cart loading state', () => {
             productTitle: 'Aurora Pro Headphones',
           }}
         />
-      </>,
+      </DemoCommerceProvider>,
     )
 
     await waitFor(() => {
@@ -480,7 +482,7 @@ describe('product detail add-to-cart loading state', () => {
     setSectionKitNavClickFallback(navigate)
 
     render(
-      <>
+      <DemoCommerceProvider>
         <ProductDetailCta.component
           props={{
             actions: [
@@ -499,7 +501,7 @@ describe('product detail add-to-cart loading state', () => {
             productTitle: 'Aurora Mini',
           }}
         />
-      </>,
+      </DemoCommerceProvider>,
     )
 
     fireEvent.click(screen.getByRole('button', { name: 'Add to bag' }))
@@ -540,14 +542,16 @@ describe('product detail add-to-cart loading state', () => {
     setSectionKitNavClickFallback(navigate)
 
     render(
-      <ProductDetailHero.component
-        props={{
-          price: '$299',
-          primaryCta: 'Add to Cart',
-          title: 'Aurora Pro Headphones',
-          variants: ['Midnight Black', 'Arctic Silver'],
-        }}
-      />,
+      <DemoCommerceProvider>
+        <ProductDetailHero.component
+          props={{
+            price: '$299',
+            primaryCta: 'Add to Cart',
+            title: 'Aurora Pro Headphones',
+            variants: ['Midnight Black', 'Arctic Silver'],
+          }}
+        />
+      </DemoCommerceProvider>,
     )
 
     fireEvent.click(screen.getByRole('button', { name: 'Arctic Silver' }))
@@ -574,14 +578,16 @@ describe('product detail add-to-cart loading state', () => {
     setSectionKitNavClickFallback(navigate)
 
     render(
-      <ProductDetailHero.component
-        props={{
-          price: '$299',
-          primaryCta: 'View details',
-          secondaryCta: 'Compare specs',
-          title: 'Aurora Pro Headphones',
-        }}
-      />,
+      <DemoCommerceProvider>
+        <ProductDetailHero.component
+          props={{
+            price: '$299',
+            primaryCta: 'View details',
+            secondaryCta: 'Compare specs',
+            title: 'Aurora Pro Headphones',
+          }}
+        />
+      </DemoCommerceProvider>,
     )
 
     fireEvent.click(screen.getByRole('link', { name: 'View details' }))

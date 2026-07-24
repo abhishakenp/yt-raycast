@@ -101,6 +101,11 @@ const BrandMediaPanel = lazy(() =>
     default: module.BrandMediaPanel,
   })),
 )
+const BillingPanel = lazy(() =>
+  import('@/features/billing/components/BillingPanel').then((module) => ({
+    default: module.BillingPanel,
+  })),
+)
 interface DashboardProps {
   sessionId: string
   initialGenerationView?: DashboardGenerationView | null
@@ -739,12 +744,14 @@ export function Dashboard({
   const visualProducts = useMemo(
     () =>
       extractGeneratedCommerceProducts({
-        source: homeModule?.source,
+        source:
+          generationView?.latestPreview?.openUiSource ?? homeModule?.source,
         siteSpecJson:
           generationView?.siteSpec?.specJson ??
           generationView?.latestPreview?.siteSpecJson,
       }),
     [
+      generationView?.latestPreview?.openUiSource,
       generationView?.latestPreview?.siteSpecJson,
       generationView?.siteSpec?.specJson,
       homeModule?.source,
@@ -2016,6 +2023,11 @@ export function Dashboard({
                         (homeModule?.source || clonePageNav.currentUrl) &&
                         generationView ? (
                           <SessionGeneratedPreview
+                            commerceMode={
+                              commerceConfig?.status === 'ready'
+                                ? 'hosted'
+                                : 'disabled'
+                            }
                             // Use homeModule.updatedAt for normal previews to avoid remounting on
                             // unrelated previewVersion bumps. CMS-promoted HTML is versioned by the
                             // latest preview because that HTML is now the displayed source.
@@ -2442,23 +2454,43 @@ export function Dashboard({
                         />
                       }
                     >
-                      <button
-                        type="button"
-                        className={railRowClass}
-                        data-rail-action="billing"
-                      >
-                        <span className={railIconClass} aria-hidden="true">
-                          <CreditCard className="size-3.5" strokeWidth={1.9} />
-                        </span>
-                        <span className="min-w-0 flex-1 truncate">Billing</span>
-                        <span
-                          className={premiumBadgeClass}
-                          aria-label="Pro only - upgrade to unlock"
-                          tabIndex={0}
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            className={railRowClass}
+                            data-rail-action="billing"
+                            aria-haspopup="dialog"
+                          >
+                            <span className={railIconClass} aria-hidden="true">
+                              <CreditCard
+                                className="size-3.5"
+                                strokeWidth={1.9}
+                              />
+                            </span>
+                            <span className="min-w-0 flex-1 truncate">
+                              Billing
+                            </span>
+                            <span
+                              className={premiumBadgeClass}
+                              aria-label="Pro only - upgrade to unlock"
+                              tabIndex={0}
+                            >
+                              {crownIcon}
+                            </span>
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          align="start"
+                          side="left"
+                          sideOffset={12}
+                          className="z-[140] w-[min(360px,calc(100vw-24px))] border-white/10 bg-[#0d111b]/96 p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
                         >
-                          {crownIcon}
-                        </span>
-                      </button>
+                          <Suspense fallback={<ToolPopoverFallback />}>
+                            <BillingPanel sessionId={sessionId} />
+                          </Suspense>
+                        </PopoverContent>
+                      </Popover>
                     </SignInGate>
                     <SignInGate
                       locked={

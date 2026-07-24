@@ -120,6 +120,8 @@ const { setSectionKitNavClickFallback } =
 const { IllustratorHero } = await import('./IllustratorHero.tsx')
 const { IllustratorNavbar } = await import('./IllustratorNavbar.tsx')
 const { IllustratorShop } = await import('./IllustratorShop.tsx')
+const { DemoCommerceProvider } =
+  await import('../commerce/commerce-test-wrapper.tsx')
 
 function createIllustratorLakebedStub() {
   let version = 0
@@ -312,7 +314,7 @@ describe('Illustrator fullstack commerce behavior', () => {
     const Shop = IllustratorShop.client.component
 
     render(
-      <>
+      <DemoCommerceProvider>
         <Navbar
           props={{
             brand: 'Mira Studio',
@@ -350,7 +352,7 @@ describe('Illustrator fullstack commerce behavior', () => {
           }}
           statementId="illustrator_shop"
         />
-      </>,
+      </DemoCommerceProvider>,
     )
 
     await waitFor(() => {

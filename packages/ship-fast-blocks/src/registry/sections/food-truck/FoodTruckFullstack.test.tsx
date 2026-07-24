@@ -122,6 +122,8 @@ const { FoodTruckHero } = await import('./FoodTruckHero.tsx')
 const { FoodTruckMenu } = await import('./FoodTruckMenu.tsx')
 const { FoodTruckNavbar } = await import('./FoodTruckNavbar.tsx')
 const { FoodTruckTestimonials } = await import('./FoodTruckTestimonials.tsx')
+const { DemoCommerceProvider } =
+  await import('../commerce/commerce-test-wrapper.tsx')
 
 function createFoodTruckLakebedStub() {
   let version = 0
@@ -299,14 +301,14 @@ describe('Food-truck fullstack commerce behavior', () => {
     const Testimonials = FoodTruckTestimonials.client.component
 
     const { container } = render(
-      <>
+      <DemoCommerceProvider>
         <Navbar
           props={{ brand: 'Curb Club' }}
           statementId="food_truck_navbar"
         />
         <Hero props={{}} statementId="food_truck_hero" />
         <Testimonials props={{}} statementId="food_truck_testimonials" />
-      </>,
+      </DemoCommerceProvider>,
     )
 
     const navbar = container.querySelector('[data-slot="site-nav"]')
@@ -336,7 +338,7 @@ describe('Food-truck fullstack commerce behavior', () => {
     const Menu = FoodTruckMenu.client.component
 
     render(
-      <>
+      <DemoCommerceProvider>
         <Navbar
           props={{
             brand: 'Curb Club',
@@ -375,7 +377,7 @@ describe('Food-truck fullstack commerce behavior', () => {
           }}
           statementId="food_truck_menu"
         />
-      </>,
+      </DemoCommerceProvider>,
     )
 
     await waitFor(() => {

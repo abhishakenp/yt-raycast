@@ -103,6 +103,8 @@ const { ElectronicsStoreHero } = await import('./ElectronicsStoreHero.tsx')
 const { ElectronicsStoreProducts } =
   await import('./ElectronicsStoreProducts.tsx')
 const { ElectronicsStoreDeals } = await import('./ElectronicsStoreDeals.tsx')
+const { DemoCommerceProvider } =
+  await import('../commerce/commerce-test-wrapper.tsx')
 
 function publicCartItem({ id, label, price, quantity }: TestCartItem) {
   return {
@@ -610,7 +612,7 @@ describe('ElectronicsStore fullstack commerce behavior', () => {
     setSectionKitNavClickFallback(navigate)
 
     render(
-      <>
+      <DemoCommerceProvider>
         <ElectronicsStoreNavbar.component
           props={{ brand: 'Tech Test', nav: ['Products', 'Deals'] }}
         />
@@ -624,7 +626,7 @@ describe('ElectronicsStore fullstack commerce behavior', () => {
         />
         <ElectronicsStoreProducts.component props={{ items: productItems }} />
         <ElectronicsStoreDeals.component props={{ items: dealItems }} />
-      </>,
+      </DemoCommerceProvider>,
     )
 
     await waitFor(() => {
@@ -704,10 +706,10 @@ describe('ElectronicsStore fullstack commerce behavior', () => {
     setSectionKitNavClickFallback(navigate)
 
     render(
-      <>
+      <DemoCommerceProvider>
         <ElectronicsStoreNavbar.component props={{}} />
         <ElectronicsStoreProducts.component props={{ items: productItems }} />
-      </>,
+      </DemoCommerceProvider>,
     )
 
     const addButton = screen.getByRole('button', {

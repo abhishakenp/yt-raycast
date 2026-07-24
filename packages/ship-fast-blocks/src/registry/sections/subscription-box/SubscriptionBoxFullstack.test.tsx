@@ -123,6 +123,8 @@ const { setSectionKitNavClickFallback } =
 const { SubscriptionBoxHero } = await import('./SubscriptionBoxHero.tsx')
 const { SubscriptionBoxNavbar } = await import('./SubscriptionBoxNavbar.tsx')
 const { SubscriptionBoxPricing } = await import('./SubscriptionBoxPricing.tsx')
+const { DemoCommerceProvider } =
+  await import('../commerce/commerce-test-wrapper.tsx')
 
 function createSubscriptionBoxLakebedStub() {
   let version = 0
@@ -319,7 +321,7 @@ describe('Subscription-box fullstack commerce behavior', () => {
     const Pricing = SubscriptionBoxPricing.client.component
 
     render(
-      <>
+      <DemoCommerceProvider>
         <Navbar
           props={{
             brand: 'BoxJoy',
@@ -361,7 +363,7 @@ describe('Subscription-box fullstack commerce behavior', () => {
           }}
           statementId="subscription_pricing"
         />
-      </>,
+      </DemoCommerceProvider>,
     )
 
     await waitFor(() => {

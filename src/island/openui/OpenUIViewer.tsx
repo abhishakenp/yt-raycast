@@ -1,6 +1,7 @@
 import {
   ImageContextProvider,
   BrandLogoProvider,
+  CommerceProvider,
   OpenUIIntegrationProviders,
   QueryClient,
   QueryClientProvider,
@@ -9,6 +10,8 @@ import {
   loadOpenUIRuntimeLibrary,
   type AiCapsuleRecord,
   type BrandLogoSelection,
+  type CommerceRuntimeMode,
+  type CommerceScope,
   type ImageContext,
   type Library,
 } from '@ship-fast/blocks/runtime'
@@ -30,12 +33,10 @@ import {
   type TranslationContext,
 } from './_providers/translation'
 import { preprocessOpenUIRuntimeResponse } from './openui-runtime-preprocess'
-import {
-  applyMedusaProductsToPreviewDom,
-  type MedusaPreviewProduct,
-} from './medusa-preview-sync'
 import { extractGeneratedCommerceProducts } from '@/features/commerce/services/generated-commerce-products'
 import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
+import { HostedCommerceAdapter } from '@/features/commerce/services/hosted-commerce-adapter'
+import { useCommerceBearerToken } from '@/features/commerce/hooks/use-commerce-bearer-token'
 
 // NOTE: We use a plain QueryClientProvider here (not PersistQueryClientProvider).
 // The persist provider from @tanstack/react-query-persist-client resolved a
@@ -232,6 +233,7 @@ export default function OpenUIViewer({
   imageContext,
   selectedBrandLogo,
   anonymousOwnerSecret,
+  commerce,
   onFirstPaint,
 }: {
   response: string
@@ -244,6 +246,13 @@ export default function OpenUIViewer({
   imageContext?: ImageContext | null
   /** Dashboard-selected logo that replaces generated brand marks in block previews. */
   selectedBrandLogo?: BrandLogoSelection | null
+  commerce?: {
+    anonymousOwnerSecret?: string
+    mode: CommerceRuntimeMode
+    regionId?: string
+    scope: CommerceScope
+    tenant: string
+  }
   /** Full-bleed session iframe: no rounded corners, no streaming border/dot overlay */
   embed?: boolean
   /** Session id used by integration providers (for storefront and CMS scope). */
@@ -293,6 +302,44 @@ export default function OpenUIViewer({
   const preparedResponse = useMemo(
     () => preprocessOpenUIRuntimeResponse(response),
     [response],
+  )
+  const generatedCommerceProducts = useMemo(
+    () =>
+      extractGeneratedCommerceProducts({
+        source: preparedResponse,
+      }),
+    [preparedResponse],
+  )
+  const commerceRuntime = commerce ?? {
+    mode: 'disabled' as const,
+    scope: 'sessions' as const,
+    tenant: sessionId ?? 'preview',
+  }
+  const commerceAuth = useCommerceBearerToken(commerceRuntime.mode === 'hosted')
+  const commerceAdapter = useMemo(
+    () =>
+      commerceRuntime.mode === 'hosted' && commerceAuth.isReady
+        ? new HostedCommerceAdapter({
+            ...(commerceRuntime.anonymousOwnerSecret === undefined
+              ? {}
+              : {
+                  anonymousOwnerSecret: commerceRuntime.anonymousOwnerSecret,
+                }),
+            ...(commerceAuth.bearerToken === undefined
+              ? {}
+              : { bearerToken: commerceAuth.bearerToken }),
+            scope: commerceRuntime.scope,
+            tenant: commerceRuntime.tenant,
+          })
+        : undefined,
+    [
+      commerceAuth.bearerToken,
+      commerceAuth.isReady,
+      commerceRuntime.anonymousOwnerSecret,
+      commerceRuntime.mode,
+      commerceRuntime.scope,
+      commerceRuntime.tenant,
+    ],
   )
   // Fetch AI capsules for this session (OpenUI section edits)
   const aiCapsulesQuery = useQuery(
@@ -367,60 +414,6 @@ export default function OpenUIViewer({
     runtimeLibraryState.key === runtimeLibraryKey
       ? runtimeLibraryState.library
       : null
-  const medusaDeploymentSlug = useMemo(() => {
-    const raw = integrations?.medusa?.config?.deploymentSlug
-    return typeof raw === 'string' && raw.trim() ? raw.trim() : undefined
-  }, [integrations?.medusa?.config?.deploymentSlug])
-
-  useEffect(() => {
-    const productsPath =
-      medusaDeploymentSlug !== undefined
-        ? `/api/deployments/${encodeURIComponent(medusaDeploymentSlug)}/medusa-products`
-        : sessionId
-          ? `/api/sessions/${encodeURIComponent(sessionId)}/medusa-products`
-          : undefined
-
-    if (!productsPath || !runtimeLibrary || !renderHostRef.current) return
-
-    const generatedProducts = extractGeneratedCommerceProducts({
-      source: preparedResponse,
-    })
-    if (generatedProducts.length === 0) return
-
-    let cancelled = false
-    const syncPreviewProducts = async () => {
-      try {
-        const medusaProductsResponse = await fetch(productsPath, {
-          headers: { Accept: 'application/json' },
-        })
-        if (!medusaProductsResponse.ok || cancelled) return
-
-        const payload = (await medusaProductsResponse.json()) as {
-          products?: Array<MedusaPreviewProduct>
-        }
-        if (cancelled || !Array.isArray(payload.products)) return
-
-        requestAnimationFrame(() => {
-          if (cancelled || !renderHostRef.current) return
-          applyMedusaProductsToPreviewDom(renderHostRef.current, {
-            generatedProducts,
-            medusaProducts: payload.products ?? [],
-          })
-        })
-      } catch {
-        // The generated preview remains usable when Medusa is unavailable.
-      }
-    }
-
-    void syncPreviewProducts()
-    const interval = window.setInterval(syncPreviewProducts, 5000)
-
-    return () => {
-      cancelled = true
-      window.clearInterval(interval)
-    }
-  }, [medusaDeploymentSlug, preparedResponse, runtimeLibrary, sessionId])
-
   useEffect(() => {
     if (!onFirstPaint) return
     // Real content, not empty structural divs: the streamed program first paints
@@ -502,38 +495,47 @@ export default function OpenUIViewer({
           fallback={<OpenUIRenderFallback isStreaming={isStreaming} />}
         >
           <QueryClientProvider client={openUIQueryClient}>
-            <OpenUIIntegrationProviders
-              medusa={integrations?.medusa || { enabled: false }}
-              sessionId={sessionId}
+            <CommerceProvider
+              adapter={commerceAdapter}
+              fallbackProducts={generatedCommerceProducts}
+              mode={commerceRuntime.mode}
+              regionId={commerceRuntime.regionId}
+              scope={commerceRuntime.scope}
+              tenant={commerceRuntime.tenant}
             >
-              <I18nProvider
-                locale={locale || 'en'}
-                translationContext={translationContext}
+              <OpenUIIntegrationProviders
+                medusa={integrations?.medusa || { enabled: false }}
+                sessionId={sessionId}
               >
-                <T>
-                  <BrandLogoProvider value={selectedBrandLogo}>
-                    <ImageContextProvider value={imageContext}>
-                      {runtimeLibrary ? (
-                        <Renderer
-                          response={preparedResponse}
-                          library={runtimeLibrary}
-                          isStreaming={isStreaming}
-                        />
-                      ) : (
-                        <OpenUIRenderFallback
-                          isStreaming={isStreaming}
-                          message={
-                            runtimeLibraryState.error
-                              ? 'Unable to load preview components.'
-                              : undefined
-                          }
-                        />
-                      )}
-                    </ImageContextProvider>
-                  </BrandLogoProvider>
-                </T>
-              </I18nProvider>
-            </OpenUIIntegrationProviders>
+                <I18nProvider
+                  locale={locale || 'en'}
+                  translationContext={translationContext}
+                >
+                  <T>
+                    <BrandLogoProvider value={selectedBrandLogo}>
+                      <ImageContextProvider value={imageContext}>
+                        {runtimeLibrary ? (
+                          <Renderer
+                            response={preparedResponse}
+                            library={runtimeLibrary}
+                            isStreaming={isStreaming}
+                          />
+                        ) : (
+                          <OpenUIRenderFallback
+                            isStreaming={isStreaming}
+                            message={
+                              runtimeLibraryState.error
+                                ? 'Unable to load preview components.'
+                                : undefined
+                            }
+                          />
+                        )}
+                      </ImageContextProvider>
+                    </BrandLogoProvider>
+                  </T>
+                </I18nProvider>
+              </OpenUIIntegrationProviders>
+            </CommerceProvider>
           </QueryClientProvider>
         </RendererErrorBoundary>
       </div>

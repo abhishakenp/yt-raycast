@@ -19,15 +19,21 @@ describe('getRouter', () => {
 
     const router = getRouter()
 
-    expect(router).toEqual({
-      kind: 'router',
-      options: {
-        routeTree: routerMocks.routeTree,
-        scrollRestoration: true,
-        defaultPreload: 'intent',
-        defaultPreloadStaleTime: 0,
-      },
-    })
+    expect(router).toEqual(
+      expect.objectContaining({
+        kind: 'router',
+        options: expect.objectContaining({
+          routeTree: routerMocks.routeTree,
+          scrollRestoration: true,
+          defaultPreload: 'intent',
+          defaultPreloadStaleTime: 0,
+          rewrite: expect.objectContaining({
+            input: expect.any(Function),
+            output: expect.any(Function),
+          }),
+        }),
+      }),
+    )
     expect(routerMocks.createRouter).toHaveBeenCalledTimes(1)
   })
 })

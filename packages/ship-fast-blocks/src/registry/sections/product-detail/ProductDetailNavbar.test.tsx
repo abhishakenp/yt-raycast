@@ -101,6 +101,8 @@ const { cleanup, fireEvent, render, screen, waitFor } =
 const { setSectionKitNavClickFallback } =
   await import('#/section-kit/nav-href.tsx')
 const { ProductDetailNavbar } = await import('./ProductDetailNavbar.tsx')
+const { DemoCommerceProvider } =
+  await import('../commerce/commerce-test-wrapper.tsx')
 
 function createCommerceLakebedStub() {
   let version = 0
@@ -260,7 +262,7 @@ describe('ProductDetailNavbar commerce behavior', () => {
     const Component = ProductDetailNavbar.client.component as ComponentType<any>
 
     render(
-      <>
+      <DemoCommerceProvider>
         <Component
           props={{
             nav: ['Overview', 'Features'],
@@ -270,7 +272,7 @@ describe('ProductDetailNavbar commerce behavior', () => {
           statementId="product_detail_navbar"
         />
         <CartCountProbe lakebed={lakebed} />
-      </>,
+      </DemoCommerceProvider>,
     )
 
     fireEvent.click(screen.getByRole('button', { name: 'Add to Cart' }))
@@ -305,10 +307,12 @@ describe('ProductDetailNavbar commerce behavior', () => {
     const Component = ProductDetailNavbar.client.component as ComponentType<any>
 
     render(
-      <Component
-        props={{ nav: ['Overview', 'Features'] }}
-        statementId="product_detail_navbar"
-      />,
+      <DemoCommerceProvider>
+        <Component
+          props={{ nav: ['Overview', 'Features'] }}
+          statementId="product_detail_navbar"
+        />
+      </DemoCommerceProvider>,
     )
 
     const header = screen.getByRole('banner')
