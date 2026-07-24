@@ -206,21 +206,28 @@ export async function deleteOwnedSessions(
   args: DeleteOwnedSessionsInput,
 ) {
   const userId = await getUserId(ctx)
+  const isAdmin = await isUserAdmin(ctx)
 
   if (args.sessionId !== undefined) {
     const session = await ctx.db.get(args.sessionId)
     if (session === null || session.deletedAt !== undefined)
       return { deleted: 0 }
 
-    if (userId !== undefined) {
-      if (session.userId !== userId) return { deleted: 0 }
-    } else {
-      if (args.anonymousClientId === undefined) return { deleted: 0 }
-      const anonymousClientIdHash = await hashOwnerSecret(
-        args.anonymousClientId,
-      )
-      if (session.anonymousClientIdHash !== anonymousClientIdHash) {
-        return { deleted: 0 }
+    // Admins bypass ownership on the single-session delete path (hover+D on
+    // any gallery card). The bulk "delete all my sessions" branch below stays
+    // owner-scoped — admin bulk-delete-all-everyone is a catastrophic footgun
+    // and is not exposed by any UI. Soft-delete only (deletedAt patch).
+    if (!isAdmin) {
+      if (userId !== undefined) {
+        if (session.userId !== userId) return { deleted: 0 }
+      } else {
+        if (args.anonymousClientId === undefined) return { deleted: 0 }
+        const anonymousClientIdHash = await hashOwnerSecret(
+          args.anonymousClientId,
+        )
+        if (session.anonymousClientIdHash !== anonymousClientIdHash) {
+          return { deleted: 0 }
+        }
       }
     }
 
