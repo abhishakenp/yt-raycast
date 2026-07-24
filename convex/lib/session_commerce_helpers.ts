@@ -7,7 +7,9 @@ import {
   canReadPrivateSession,
   hashOwnerSecret,
   isSessionOwner,
+  isUserAdmin,
 } from './session_access_helpers'
+import { isAuthDisabled } from './session_export_helpers'
 
 type CommerceMutationCtx = MutationCtx
 type CommerceQueryCtx = Pick<QueryCtx, 'auth' | 'db'>
@@ -301,6 +303,9 @@ export async function authorizeSessionCommerceProvision(
     })
   }
 
+  if (isAuthDisabled() || (await isUserAdmin(ctx))) {
+    return { sessionId: args.sessionId }
+  }
   if (!(await isSessionOwner(ctx, session, args.anonymousOwnerSecret))) {
     throw new ConvexError({
       code: 'FORBIDDEN',

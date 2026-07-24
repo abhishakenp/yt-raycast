@@ -139,7 +139,7 @@ function commerceTenantDoc(
 async function ctxFor(
   options: {
     session?: Doc<'sessions'> | null
-    identity?: { tokenIdentifier: string } | null
+    identity?: { tokenIdentifier: string; system_role?: string } | null
     configs?: CommerceConfigDoc[]
     deployments?: DeploymentDoc[]
     tenants?: CommerceTenantDoc[]
@@ -298,6 +298,22 @@ describe('session commerce helpers', () => {
         code: 'FORBIDDEN',
       },
     })
+  })
+
+  it('admin bypasses ownership for session commerce provisioning', async () => {
+    const ownerId = 'https://auth.test|owner'
+    const session = {
+      ...(await sessionDoc()),
+      userId: ownerId,
+    }
+    const { ctx } = await ctxFor({
+      identity: { tokenIdentifier: 'token:admin', system_role: 'admin' },
+      session,
+    })
+
+    await expect(
+      authorizeSessionCommerceProvision(ctx, { sessionId }),
+    ).resolves.toEqual({ sessionId })
   })
 
   it('rejects session commerce provisioning when the session is missing', async () => {
