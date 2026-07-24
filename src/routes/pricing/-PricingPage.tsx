@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { MarketingShell } from './-MarketingShell'
-import { PRICING_PAGE_MAIN_HTML } from './-pricing-main-html'
+import { PricingContent } from './PricingContent'
 import {
   requestClerkSignIn,
   useOptionalAuth,
 } from '@/shared/auth/use-optional-auth'
+import { handleShareClick } from '@/features/home/components/ShareBonusPanel'
+import { useReferralCode } from '@/features/referrals/hooks/useReferralCode'
 import '@/styles/pricing-page.css'
 
 type CheckoutStartResponse = {
@@ -18,18 +20,7 @@ export const PricingPage = () => {
   const { getToken } = useOptionalAuth()
   const [checkoutMessage, setCheckoutMessage] = useState<string>()
   const [isCheckoutStarting, setIsCheckoutStarting] = useState(false)
-  const pricingContentRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const tick = () => {
-      const countdown = document.getElementById('countdown-text')
-      if (countdown) countdown.textContent = 'Early adopter slots still open'
-    }
-
-    tick()
-    const interval = window.setInterval(tick, 30000)
-    return () => window.clearInterval(interval)
-  }, [])
+  const { code: referralCode } = useReferralCode()
 
   const startCheckout = useCallback(async () => {
     if (isCheckoutStarting) return
@@ -88,77 +79,27 @@ export const PricingPage = () => {
   }, [getToken, isCheckoutStarting])
 
   useEffect(() => {
-    const content = pricingContentRef.current
-    if (content === null) return
-
-    const ctas = Array.from(
-      content.querySelectorAll<HTMLButtonElement>(
-        '[data-pricing-checkout-cta="true"]',
-      ),
-    )
-    const handleCtaClick = (event: MouseEvent) => {
-      event.preventDefault()
-      void startCheckout()
+    const tick = () => {
+      const countdown = document.getElementById('countdown-text')
+      if (countdown) countdown.textContent = 'Early adopter slots still open'
     }
 
-    for (const cta of ctas) cta.addEventListener('click', handleCtaClick)
-
-    return () => {
-      for (const cta of ctas) cta.removeEventListener('click', handleCtaClick)
-    }
-  }, [startCheckout])
-
-  useEffect(() => {
-    const content = pricingContentRef.current
-    if (content === null) return
-
-    const ctas = Array.from(
-      content.querySelectorAll<HTMLButtonElement>(
-        '[data-pricing-checkout-cta="true"]',
-      ),
-    )
-
-    for (const cta of ctas) {
-      cta.disabled = isCheckoutStarting
-      cta.setAttribute('aria-busy', String(isCheckoutStarting))
-    }
-  }, [isCheckoutStarting])
-
-  useEffect(() => {
-    const content = pricingContentRef.current
-    if (content === null) return
-
-    const faqTriggers = Array.from(
-      content.querySelectorAll<HTMLButtonElement>('[data-faq-trigger]'),
-    )
-    const handleFaqClick = (event: MouseEvent) => {
-      const trigger = event.currentTarget as HTMLButtonElement
-      const item = trigger.closest<HTMLElement>('[data-faq-item]')
-      const panelId = trigger.getAttribute('aria-controls')
-      const panel = panelId === null ? null : document.getElementById(panelId)
-      const nextExpanded = trigger.getAttribute('aria-expanded') !== 'true'
-
-      trigger.setAttribute('aria-expanded', String(nextExpanded))
-      item?.toggleAttribute('data-open', nextExpanded)
-      if (panel !== null) panel.hidden = !nextExpanded
-    }
-
-    for (const trigger of faqTriggers) {
-      trigger.addEventListener('click', handleFaqClick)
-    }
-
-    return () => {
-      for (const trigger of faqTriggers) {
-        trigger.removeEventListener('click', handleFaqClick)
-      }
-    }
+    tick()
+    const interval = window.setInterval(tick, 30000)
+    return () => window.clearInterval(interval)
   }, [])
+
+  const onShareClick = (platform: string) => {
+    void handleShareClick(platform, async () => {}, referralCode)
+  }
 
   return (
     <MarketingShell footer>
-      <div
-        ref={pricingContentRef}
-        dangerouslySetInnerHTML={{ __html: PRICING_PAGE_MAIN_HTML }}
+      <PricingContent
+        onCheckoutClick={startCheckout}
+        isCheckoutStarting={isCheckoutStarting}
+        onShareClick={onShareClick}
+        referralCode={referralCode}
       />
       {checkoutMessage ? (
         <div

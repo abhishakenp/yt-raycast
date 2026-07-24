@@ -2,11 +2,14 @@ import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
+import { applyReferralDiscountForUser } from '@/features/referrals/server/referral-discount'
 
 type ReferralConvexClient = Pick<
   ConvexHttpClient,
   'query' | 'mutation' | 'setAuth'
 >
+
+type ApplyReferralDiscount = typeof applyReferralDiscountForUser
 
 function json(body: unknown, init?: ResponseInit) {
   return new Response(JSON.stringify(body), {
@@ -50,6 +53,7 @@ export async function createReferralStatusApiResponse(
 export async function createReferralRecordApiResponse(
   request: Request,
   clientOverride?: ReferralConvexClient,
+  applyDiscount: ApplyReferralDiscount = applyReferralDiscountForUser,
 ): Promise<Response> {
   const token = getBearerToken(request)
   if (token === null) {
@@ -73,7 +77,23 @@ export async function createReferralRecordApiResponse(
     const result = (await client.mutation(api.referrals.recordReferralSignup, {
       code,
       email,
-    })) as { recorded: boolean; reason: string }
+    })) as {
+      recorded: boolean
+      reason: string
+      referrerJustUnlocked?: string | null
+    }
+
+    // If the referrer's reward just unlocked (referred user already had an
+    // active subscription), apply the provider discount best-effort. For
+    // Stripe this attaches the forever coupon to the referrer's existing
+    // subscription → discount applies from the next billing period. For
+    // Razorpay the discount applies at the referrer's next checkout. Never
+    // blocks the response — the referral is already recorded.
+    if (result.referrerJustUnlocked) {
+      void applyDiscount(process.env, result.referrerJustUnlocked).catch(
+        () => ({ applied: false, reason: 'unhandled' }),
+      )
+    }
 
     return json(result)
   } catch {

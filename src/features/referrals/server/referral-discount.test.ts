@@ -121,7 +121,118 @@ describe('applyReferralDiscountForUser', () => {
     ).toBe('no_active_subscription')
   })
 
-  it('defers Razorpay subscriptions to checkout', async () => {
+  it('issues a 50% refund for Razorpay subscriptions on each renewal', async () => {
+    const razorpayEnv = {
+      ...stripeEnv,
+      RAZORPAY_KEY_ID: 'rzp_key',
+      RAZORPAY_KEY_SECRET: 'rzp_secret',
+    } as unknown as NodeJS.ProcessEnv
+
+    const fetchMock = vi.fn(async (url, init) => {
+      const u = String(url)
+      const method = (init as RequestInit)?.method ?? 'GET'
+      // GET subscription payments
+      if (u.includes('/subscriptions/sub_rzp/payments') && method === 'GET') {
+        return new Response(
+          JSON.stringify({
+            items: [
+              {
+                id: 'pay_1',
+                amount: 99900,
+                status: 'captured',
+                amount_refunded: 0,
+              },
+            ],
+          }),
+          { status: 200 },
+        )
+      }
+      // POST refund
+      if (u.includes('/payments/pay_1/refund') && method === 'POST') {
+        const body = String((init as RequestInit)?.body ?? '')
+        expect(body).toContain('amount=49950') // 50% of 99900
+        return new Response(JSON.stringify({ id: 'rfd_1' }), { status: 200 })
+      }
+      return new Response(JSON.stringify({}), { status: 404 })
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const client = {
+      query: vi.fn(async () => ({
+        unlocked: true,
+        discountApplied: false,
+        subscription: {
+          provider: 'razorpay',
+          providerSubscriptionId: 'sub_rzp',
+        },
+      })),
+      mutation: vi.fn(),
+    }
+
+    const result = await applyReferralDiscountForUser(
+      razorpayEnv,
+      'user1',
+      client,
+    )
+    expect(result).toEqual({ applied: true, reason: 'razorpay_refund_issued' })
+    // markReferralDiscountApplied should NOT be called for Razorpay
+    expect(client.mutation).not.toHaveBeenCalled()
+  })
+
+  it('skips Razorpay refund when payment already refunded', async () => {
+    const razorpayEnv = {
+      ...stripeEnv,
+      RAZORPAY_KEY_ID: 'rzp_key',
+      RAZORPAY_KEY_SECRET: 'rzp_secret',
+    } as unknown as NodeJS.ProcessEnv
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url) => {
+        const u = String(url)
+        if (u.includes('/subscriptions/sub_rzp/payments')) {
+          return new Response(
+            JSON.stringify({
+              items: [
+                {
+                  id: 'pay_1',
+                  amount: 99900,
+                  status: 'captured',
+                  amount_refunded: 49950, // already refunded 50%
+                },
+              ],
+            }),
+            { status: 200 },
+          )
+        }
+        return new Response(JSON.stringify({}), { status: 404 })
+      }),
+    )
+
+    const client = {
+      query: vi.fn(async () => ({
+        unlocked: true,
+        discountApplied: false,
+        subscription: {
+          provider: 'razorpay',
+          providerSubscriptionId: 'sub_rzp',
+        },
+      })),
+      mutation: vi.fn(),
+    }
+
+    const result = await applyReferralDiscountForUser(
+      razorpayEnv,
+      'user1',
+      client,
+    )
+    expect(result).toEqual({
+      applied: false,
+      reason: 'razorpay_already_refunded',
+    })
+  })
+
+  it('returns razorpay_not_configured when Razorpay keys are missing', async () => {
     const client = {
       query: vi.fn(async () => ({
         unlocked: true,
@@ -135,7 +246,7 @@ describe('applyReferralDiscountForUser', () => {
     }
     expect(
       (await applyReferralDiscountForUser(stripeEnv, 'user1', client)).reason,
-    ).toBe('razorpay_apply_at_checkout')
+    ).toBe('razorpay_not_configured')
   })
 
   it('attaches the coupon and records it for an unlocked Stripe subscriber', async () => {

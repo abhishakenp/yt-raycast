@@ -106,7 +106,26 @@ vi.mock('@tanstack/react-router', () => {
     useRouterState({ select }: UseRouterStateOptions) {
       return select({ location: { pathname: routeParamMocks.pathname } })
     },
-  } satisfies TanStackRouterMock
+    useRouter() {
+      return {
+        preloadRoute: () => Promise.resolve(),
+      }
+    },
+    Link({
+      children,
+      to,
+      ...props
+    }: {
+      children: React.ReactNode
+      to: string
+    } & React.AnchorHTMLAttributes<HTMLAnchorElement>) {
+      return (
+        <a href={to} {...props}>
+          {children}
+        </a>
+      )
+    },
+  } satisfies TanStackRouterMock & Record<string, unknown>
 
   return routerMock
 })
@@ -127,6 +146,12 @@ vi.mock('./terms/-TermsPage', () => ({
   TermsPage: () => <main>Terms page route</main>,
 }))
 
+vi.mock('./pricing/-MarketingShell', () => ({
+  MarketingShell: ({ children }: { children: React.ReactNode }) => (
+    <main>{children}</main>
+  ),
+}))
+
 vi.mock('@/features/gallery/components/GalleryPage', () => ({
   GalleryPage: () => <main>Gallery page route</main>,
 }))
@@ -138,6 +163,20 @@ vi.mock('@/features/gallery/components/MinePage', () => ({
 vi.mock('@/features/referrals/components/ReferralDashboard', () => ({
   ReferralDashboard: () => <section>Referral dashboard route</section>,
 }))
+
+vi.mock('@clerk/tanstack-react-start', async () => {
+  const actual = await vi.importActual<
+    typeof import('@clerk/tanstack-react-start')
+  >('@clerk/tanstack-react-start')
+  return {
+    ...actual,
+    useAuth: () => ({
+      isLoaded: true,
+      isSignedIn: true,
+      getToken: async () => 'test-token',
+    }),
+  }
+})
 
 type DashboardMockProps = {
   sessionId?: string
@@ -205,9 +244,6 @@ describe('top-level route behavior', () => {
     expect(Route.path).toBe('/referrals')
     render(<Component />)
     expect(screen.getByText('Referral dashboard route')).toBeTruthy()
-    expect(
-      screen.getByText('Referral dashboard route').closest('main')?.className,
-    ).toContain('min-h-screen')
   })
 
   it.each(generateRouteCases)(

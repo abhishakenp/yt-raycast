@@ -30,10 +30,11 @@ describe('provider config', () => {
   it('enables authenticated providers on all Convex routes when Clerk is configured', () => {
     // Every route that needs Convex should also get the Clerk-backed provider
     // so the user's identity is available everywhere — /mine, /gallery, /preview,
-    // etc. — not just /generate.
+    // /referrals, etc. — not just /generate.
     expect(shouldUseAuthenticatedProviders('/')).toBe(true)
     expect(shouldUseAuthenticatedProviders('/pricing')).toBe(true)
     expect(shouldUseAuthenticatedProviders('/partners')).toBe(true)
+    expect(shouldUseAuthenticatedProviders('/referrals')).toBe(true)
     expect(shouldUseAuthenticatedProviders('/generate/session_123')).toBe(true)
     expect(shouldUseAuthenticatedProviders('/mine')).toBe(true)
     expect(shouldUseAuthenticatedProviders('/gallery')).toBe(true)
@@ -45,18 +46,19 @@ describe('provider config', () => {
     expect(shouldUseAuthenticatedProviders('/dashboard')).toBe(false)
     expect(shouldUseAuthenticatedProviders('/blog/post')).toBe(false)
     expect(shouldUseAuthenticatedProviders('/sign-in')).toBe(false)
-    expect(shouldUseAuthenticatedProviders('/referrals')).toBe(false)
   })
 
   it('loads Convex only on routes that call Convex hooks directly or need Clerk', () => {
     // `/` and `/pricing` both need ClerkConvexProvider (Clerk + Convex):
     // `/` renders <Waitlist /> and `/pricing` uses Clerk's <Show>/<SignInButton>.
+    // `/referrals` uses Clerk auth to fetch the user's referral status.
     // `shouldLoadClerk` in AppProviders depends on `shouldLoadConvex`, so any
     // route in shouldUseAuthenticatedProviders must also be in
     // shouldUseConvexProviders to get a ClerkProvider mounted.
     expect(shouldUseConvexProviders('/')).toBe(true)
     expect(shouldUseConvexProviders('/pricing')).toBe(true)
     expect(shouldUseConvexProviders('/partners')).toBe(true)
+    expect(shouldUseConvexProviders('/referrals')).toBe(true)
     expect(shouldUseConvexProviders('/generate/session_123')).toBe(true)
     expect(shouldUseConvexProviders('/generate/missing-session')).toBe(true)
     expect(shouldUseConvexProviders('/preview/session_123')).toBe(true)
@@ -64,7 +66,6 @@ describe('provider config', () => {
     expect(shouldUseConvexProviders('/examples/saas')).toBe(true)
     expect(shouldUseConvexProviders('/gallery')).toBe(true)
     expect(shouldUseConvexProviders('/mine')).toBe(true)
-    expect(shouldUseConvexProviders('/referrals')).toBe(false)
   })
 
   it('provides a frosted glass Clerk appearance theme', () => {

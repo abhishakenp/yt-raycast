@@ -32,7 +32,7 @@ async function buildSignedStripeRequest(event: unknown) {
   const rawBody = JSON.stringify(event)
   const t = '1700000000'
   const v1 = await hmacSha256Hex(WEBHOOK_SECRET, `${t}.${rawBody}`)
-  return new Request('https://ship-fast.io/api/stripe/webhook', {
+  return new Request('https://ship-fast.ai/api/stripe/webhook', {
     method: 'POST',
     headers: { 'stripe-signature': `t=${t},v1=${v1}` },
     body: rawBody,
@@ -121,7 +121,7 @@ describe('billing webhook → referral discount wiring', () => {
   })
 
   it('rejects an invalid signature without calling Convex', async () => {
-    const request = new Request('https://ship-fast.io/api/stripe/webhook', {
+    const request = new Request('https://ship-fast.ai/api/stripe/webhook', {
       method: 'POST',
       headers: { 'stripe-signature': 't=1,v1=deadbeef' },
       body: JSON.stringify({ id: 'evt_bad' }),

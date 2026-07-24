@@ -42,6 +42,9 @@ export const TopActions = () => {
               </SignInButton>
             </Show>
             <Show when="signed-in">
+              <GlassPillAnchor className="pill--top-actions" href="/referrals">
+                Referrals
+              </GlassPillAnchor>
               <div className="grid size-9 place-items-center">
                 <UserButton />
               </div>

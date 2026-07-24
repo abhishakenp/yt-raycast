@@ -27,6 +27,7 @@ import { CloseIcon, LogoMark, SearchIcon, ZapIcon } from './HomeIcons'
 import { PrivateGenerationModal } from './PrivateGenerationModal'
 import { PromptLanguageDropdown } from './PromptLanguageDropdown'
 import { handleShareClick, ShareBonusPanel } from './ShareBonusPanel'
+import { useReferralCode } from '@/features/referrals/hooks/useReferralCode'
 import { WaitlistGate } from './WaitlistGate'
 
 const EXAMPLE_CHIPS = [
@@ -160,6 +161,7 @@ export const HomePage = () => {
   } = usePromptLanguage(prompt)
   const [submitCtaShaking, setSubmitCtaShaking] = useState(false)
   const [showSharePanel, setShowSharePanel] = useState(false)
+  const { code: referralCode } = useReferralCode()
   const partnersEnabled = isPartnerProgramClientEnabled()
   const promptFormRef = useRef<HTMLFormElement | null>(null)
   const [generationDraftVersion, setGenerationDraftVersion] = useState(0)
@@ -266,7 +268,7 @@ export const HomePage = () => {
   }, [errorMessage])
 
   const onShareClick = (platform: string) => {
-    void handleShareClick(platform, claimShareBonus)
+    void handleShareClick(platform, claimShareBonus, referralCode)
   }
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -633,6 +635,8 @@ export const HomePage = () => {
                       <ShareBonusPanel
                         visible={showSharePanel}
                         onShareClick={onShareClick}
+                        referralCode={referralCode}
+                        label="Share for +1 free preview"
                       />
 
                       <div className="hidden" id="private-gen-row">

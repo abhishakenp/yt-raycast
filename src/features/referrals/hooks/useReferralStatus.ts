@@ -1,9 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useAuth } from '@clerk/tanstack-react-start'
 
-import {
-  getReferralAuthToken,
-  waitForClerkReady,
-} from '@/features/referrals/lib/referral-client'
 import { readJsonOrThrow } from '@/lib/safe-fetch'
 
 export type ReferralListItem = {
@@ -36,6 +33,7 @@ type UseReferralStatus = {
 }
 
 export function useReferralStatus(): UseReferralStatus {
+  const { isLoaded, isSignedIn, getToken } = useAuth()
   const [status, setStatus] = useState<ReferralStatus | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -44,13 +42,10 @@ export function useReferralStatus(): UseReferralStatus {
     setError(null)
     setIsLoading(true)
     try {
-      // Wait for the Clerk SDK to finish hydrating so a signed-in user who lands
-      // here directly isn't shown the signed-out state on first paint.
-      await waitForClerkReady()
-      const token = await getReferralAuthToken()
+      const token = await getToken({ template: 'convex' })
       if (!token) {
         setStatus(null)
-        setError('Sign in to see your referral rewards.')
+        setIsLoading(false)
         return
       }
       const response = await fetch('/api/referrals/status', {
@@ -73,11 +68,16 @@ export function useReferralStatus(): UseReferralStatus {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [getToken])
 
   useEffect(() => {
+    if (!isLoaded || !isSignedIn) {
+      setStatus(null)
+      setIsLoading(false)
+      return
+    }
     void reload()
-  }, [reload])
+  }, [isLoaded, isSignedIn, reload])
 
   return { status, isLoading, error, reload }
 }

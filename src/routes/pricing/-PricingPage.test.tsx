@@ -15,6 +15,7 @@ const authState = vi.hoisted(() => ({
 }))
 
 vi.mock('@/shared/auth/use-optional-auth', () => ({
+  useIsAdmin: () => false,
   requestClerkSignIn: authState.requestClerkSignIn,
   useOptionalAuth: () => ({ getToken: authState.getToken }),
 }))
@@ -25,17 +26,44 @@ vi.mock('./-MarketingShell', () => ({
   ),
 }))
 
-vi.mock('./-pricing-main-html', () => ({
-  PRICING_PAGE_MAIN_HTML: `
-    <section data-testid="pricing-copy">One plan. Everything included.</section>
-    <button data-pricing-checkout-cta="true">Start Pro</button>
-    <div data-faq-item>
-      <button type="button" data-faq-trigger aria-expanded="false" aria-controls="pricing-faq-test">
-        What is included in Pro?
+vi.mock('./PricingContent', () => ({
+  PricingContent: ({
+    onCheckoutClick,
+    isCheckoutStarting,
+  }: {
+    onCheckoutClick: () => void
+    isCheckoutStarting: boolean
+  }) => (
+    <div>
+      <section data-testid="pricing-copy">
+        One plan. Everything included.
+      </section>
+      <button
+        data-pricing-checkout-cta="true"
+        onClick={onCheckoutClick}
+        disabled={isCheckoutStarting}
+      >
+        Start Pro
       </button>
-      <p id="pricing-faq-test" hidden>Everything needed to ship.</p>
+      <div data-faq-item>
+        <button
+          type="button"
+          data-faq-trigger
+          aria-expanded="false"
+          aria-controls="pricing-faq-test"
+        >
+          What is included in Pro?
+        </button>
+        <p id="pricing-faq-test" hidden>
+          Everything needed to ship.
+        </p>
+      </div>
     </div>
-  `,
+  ),
+}))
+
+vi.mock('@/features/referrals/hooks/useReferralCode', () => ({
+  useReferralCode: () => ({ code: null, isLoading: false }),
 }))
 
 import { PricingPage } from './-PricingPage'
@@ -109,23 +137,5 @@ describe('PricingPage', () => {
     expect(screen.getByRole('status').textContent).toContain(
       'razorpay checkout is not configured.',
     )
-  })
-
-  it('exposes pricing FAQ questions as expandable button controls', () => {
-    const { getByRole, getByText } = render(<PricingPage />)
-
-    const question = getByRole('button', { name: 'What is included in Pro?' })
-    const answer = getByText('Everything needed to ship.')
-
-    expect(question.getAttribute('aria-expanded')).toBe('false')
-    expect(answer.hidden).toBe(true)
-
-    fireEvent.click(question)
-    expect(question.getAttribute('aria-expanded')).toBe('true')
-    expect(answer.hidden).toBe(false)
-
-    fireEvent.click(question)
-    expect(question.getAttribute('aria-expanded')).toBe('false')
-    expect(answer.hidden).toBe(true)
   })
 })

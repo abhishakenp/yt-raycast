@@ -15,7 +15,6 @@ interface ReferralHookState {
   error: string | null
   isLoading: boolean
   reload: ReturnType<typeof vi.fn>
-  requestClerkSignIn: ReturnType<typeof vi.fn>
   status: ReferralStatus | null
 }
 
@@ -23,7 +22,6 @@ const referralState = vi.hoisted<ReferralHookState>(() => ({
   error: null,
   isLoading: false,
   reload: vi.fn(async () => undefined),
-  requestClerkSignIn: vi.fn(),
   status: null,
 }))
 
@@ -34,10 +32,6 @@ vi.mock('../hooks/useReferralStatus', () => ({
     reload: referralState.reload,
     status: referralState.status,
   }),
-}))
-
-vi.mock('@/shared/auth/use-optional-auth', () => ({
-  requestClerkSignIn: referralState.requestClerkSignIn,
 }))
 
 import { ReferralDashboard } from './ReferralDashboard'
@@ -90,7 +84,6 @@ describe('ReferralDashboard release boundaries', () => {
     referralState.error = null
     referralState.isLoading = false
     referralState.reload.mockClear()
-    referralState.requestClerkSignIn.mockClear()
     referralState.status = baseStatus
     clipboard.writeText.mockReset()
     clipboard.writeText.mockResolvedValue(undefined)
@@ -146,19 +139,6 @@ describe('ReferralDashboard release boundaries', () => {
     expect(screen.getByRole('alert').textContent).toContain(
       'Unable to load referral rewards.',
     )
-  })
-
-  it('cancels delayed sign-in reloads after the dashboard unmounts', async () => {
-    vi.useFakeTimers()
-    referralState.error = 'Sign in to see your referral rewards.'
-    referralState.status = null
-    const view = render(<ReferralDashboard />)
-
-    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
-    view.unmount()
-    await act(async () => vi.advanceTimersByTimeAsync(3_000))
-
-    expect(referralState.reload).not.toHaveBeenCalled()
   })
 
   it('publishes referral progress with determinate progressbar semantics', () => {
