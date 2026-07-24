@@ -97,7 +97,7 @@ describe('Medusa storefront route failure modes', () => {
       .mockResolvedValue(Response.json({ cart: { id: 'unexpected' } }))
     vi.stubGlobal('fetch', fetchMock)
     const request = new Request(
-      'https://ship-fast.io/api/medusa-store/cart/line-items',
+      'https://ship-fast.ai/api/medusa-store/cart/line-items',
       {
         body: JSON.stringify({
           cart_id: 'cart_123/../../admin',

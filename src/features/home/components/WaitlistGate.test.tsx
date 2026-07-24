@@ -32,6 +32,7 @@ vi.mock('@clerk/tanstack-react-start', () => ({
 }))
 
 vi.mock('@/shared/auth/use-optional-auth', () => ({
+  useIsAdmin: () => false,
   useOptionalAuth: () => ({
     isLoaded: mockAuth.isLoaded,
     isSignedIn: mockAuth.isSignedIn,

@@ -1,9 +1,50 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: (path: string) => (options: Record<string, unknown>) => ({
     options,
     path,
+  }),
+}))
+
+// In-memory store that mimics the Convex shareBonuses table so tests are
+// isolated from the real backend and deterministic across repeated runs.
+const shareBonusStore = new Map<string, boolean>()
+
+vi.mock('../../../convex/_generated/api', () => ({
+  api: {
+    shareBonus: {
+      getShareBonusStatus: 'shareBonus.getShareBonusStatus',
+      claimShareBonus: 'shareBonus.claimShareBonus',
+    },
+  },
+}))
+
+vi.mock('@/shared/convex/http-client', () => ({
+  createRuntimeConvexHttpClient: () => ({
+    query: async (
+      ref: string,
+      args: { clientIpHash: string; date: string },
+    ) => {
+      if (ref === 'shareBonus.getShareBonusStatus') {
+        return shareBonusStore.has(`${args.clientIpHash}:${args.date}`)
+      }
+      return false
+    },
+    mutation: async (
+      ref: string,
+      args: { clientIpHash: string; date: string },
+    ) => {
+      if (ref === 'shareBonus.claimShareBonus') {
+        const key = `${args.clientIpHash}:${args.date}`
+        if (shareBonusStore.has(key)) {
+          return { claimed: true, success: false }
+        }
+        shareBonusStore.set(key, true)
+        return { claimed: true, success: true }
+      }
+      return { claimed: false, success: false }
+    },
   }),
 }))
 
@@ -27,6 +68,10 @@ function requestWithIp(ip: string, method: 'GET' | 'POST' = 'GET') {
 }
 
 describe('/api/share-bonus route', () => {
+  beforeEach(() => {
+    shareBonusStore.clear()
+  })
+
   it('registers GET and POST handlers at /api/share-bonus', async () => {
     const { Route } = await import('./share-bonus')
     const route = Route as unknown as RouteWithHandlers
@@ -136,37 +181,45 @@ describe('/api/share-bonus route', () => {
     expect(await status.json()).toEqual({ claimed: true })
   })
 
-  it('does not grant a share bonus to requests without an attributable client IP', async () => {
+  it('uses x-real-ip fallback so the share bonus IP matches session-create IP', async () => {
     const { Route } = await import('./share-bonus')
     const route = Route as unknown as RouteWithHandlers
 
-    const response = await route.options.server.handlers.POST({
+    const claim = await route.options.server.handlers.POST({
+      request: new Request('https://ship-fast.test/api/share-bonus', {
+        method: 'POST',
+        headers: { 'x-real-ip': '203.0.113.30' },
+      }),
+    })
+    expect(claim.status).toBe(200)
+    expect(await claim.json()).toEqual({ claimed: true, success: true })
+
+    const status = await route.options.server.handlers.GET({
+      request: new Request('https://ship-fast.test/api/share-bonus', {
+        headers: { 'x-real-ip': '203.0.113.30' },
+      }),
+    })
+    expect(await status.json()).toEqual({ claimed: true })
+  })
+
+  it('falls back to "unknown" IP when no headers are present (matching session-create)', async () => {
+    const { Route } = await import('./share-bonus')
+    const route = Route as unknown as RouteWithHandlers
+
+    // No IP headers at all — local dev scenario. The route must still
+    // succeed (hashing 'unknown') so the share bonus is recorded under
+    // the same bucket the session-create route uses.
+    const claim = await route.options.server.handlers.POST({
       request: new Request('https://ship-fast.test/api/share-bonus', {
         method: 'POST',
       }),
     })
+    expect(claim.status).toBe(200)
+    expect(await claim.json()).toEqual({ claimed: true, success: true })
 
-    expect(response.status).toBe(400)
-    expect(await response.json()).toEqual({
-      claimed: false,
-      error: 'Unable to identify client IP.',
-      success: false,
-    })
-  })
-
-  it('does not report share bonus status for requests without an attributable client IP', async () => {
-    const { Route } = await import('./share-bonus')
-    const route = Route as unknown as RouteWithHandlers
-
-    const response = await route.options.server.handlers.GET({
+    const status = await route.options.server.handlers.GET({
       request: new Request('https://ship-fast.test/api/share-bonus'),
     })
-
-    expect(response.status).toBe(400)
-    expect(await response.json()).toEqual({
-      claimed: false,
-      error: 'Unable to identify client IP.',
-      success: false,
-    })
+    expect(await status.json()).toEqual({ claimed: true })
   })
 })

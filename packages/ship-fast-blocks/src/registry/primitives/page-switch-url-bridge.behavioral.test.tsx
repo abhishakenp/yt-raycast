@@ -33,6 +33,20 @@ vi.mock('@ship-fast/lakebed/react', () => ({
     url: '',
   })),
   signOut: vi.fn(),
+  useAuth: () => ({
+    displayName: 'Guest',
+    isAuthenticated: false,
+    isGuest: true,
+    provider: 'guest',
+    user: {
+      displayName: 'Guest',
+      id: 'guest:local',
+      isGuest: true,
+      provider: 'guest',
+      userId: 'guest:local',
+    },
+    userId: 'guest:local',
+  }),
 }))
 
 // Mock defineCapsule to bypass lakebed client creation (which needs Convex).

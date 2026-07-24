@@ -2542,3 +2542,24 @@
 [INFO] 2026-07-21T23:10:02.267Z [session=f3d9d441-6698-46e1-b462-d3374e7a35ac] Resolved stateDir: /Users/abhi/.a5c/state
 [INFO] 2026-07-21T23:10:02.268Z [session=f3d9d441-6698-46e1-b462-d3374e7a35ac] Checking session file at: /Users/abhi/.a5c/state/f3d9d441-6698-46e1-b462-d3374e7a35ac.md
 [INFO] 2026-07-21T23:10:02.405Z [session=f3d9d441-6698-46e1-b462-d3374e7a35ac] No run associated with session — allowing exit
+[INFO] 2026-07-22T18:29:47.453Z handleHookRunStop started
+[INFO] 2026-07-22T18:29:47.456Z Hook input received
+[INFO] 2026-07-22T18:29:47.456Z [session=45958ad8-9990-49a8-9384-31974c9489b0] Session ID: 45958ad8-9990-49a8-9384-31974c9489b0
+[INFO] 2026-07-22T18:29:47.456Z [session=45958ad8-9990-49a8-9384-31974c9489b0] Resolved pluginRoot: /Users/abhi/.claude/plugins/cache/a5c-ai/babysitter/4.0.157
+[INFO] 2026-07-22T18:29:47.456Z [session=45958ad8-9990-49a8-9384-31974c9489b0] Resolved stateDir: /Users/abhi/.a5c/state
+[INFO] 2026-07-22T18:29:47.456Z [session=45958ad8-9990-49a8-9384-31974c9489b0] Checking session file at: /Users/abhi/.a5c/state/45958ad8-9990-49a8-9384-31974c9489b0.md
+[INFO] 2026-07-22T18:29:47.461Z [session=45958ad8-9990-49a8-9384-31974c9489b0] No run associated with session — allowing exit
+[INFO] 2026-07-22T19:07:55.276Z handleHookRunStop started
+[INFO] 2026-07-22T19:07:55.279Z Hook input received
+[INFO] 2026-07-22T19:07:55.279Z [session=45958ad8-9990-49a8-9384-31974c9489b0] Session ID: 45958ad8-9990-49a8-9384-31974c9489b0
+[INFO] 2026-07-22T19:07:55.279Z [session=45958ad8-9990-49a8-9384-31974c9489b0] Resolved pluginRoot: /Users/abhi/.claude/plugins/cache/a5c-ai/babysitter/4.0.157
+[INFO] 2026-07-22T19:07:55.279Z [session=45958ad8-9990-49a8-9384-31974c9489b0] Resolved stateDir: /Users/abhi/.a5c/state
+[INFO] 2026-07-22T19:07:55.279Z [session=45958ad8-9990-49a8-9384-31974c9489b0] Checking session file at: /Users/abhi/.a5c/state/45958ad8-9990-49a8-9384-31974c9489b0.md
+[INFO] 2026-07-22T19:07:55.280Z [session=45958ad8-9990-49a8-9384-31974c9489b0] No active loop found for session 45958ad8-9990-49a8-9384-31974c9489b0 — allowing exit
+[INFO] 2026-07-22T19:21:18.184Z handleHookRunStop started
+[INFO] 2026-07-22T19:21:18.187Z Hook input received
+[INFO] 2026-07-22T19:21:18.187Z [session=45958ad8-9990-49a8-9384-31974c9489b0] Session ID: 45958ad8-9990-49a8-9384-31974c9489b0
+[INFO] 2026-07-22T19:21:18.187Z [session=45958ad8-9990-49a8-9384-31974c9489b0] Resolved pluginRoot: /Users/abhi/.claude/plugins/cache/a5c-ai/babysitter/4.0.157
+[INFO] 2026-07-22T19:21:18.187Z [session=45958ad8-9990-49a8-9384-31974c9489b0] Resolved stateDir: /Users/abhi/.a5c/state
+[INFO] 2026-07-22T19:21:18.187Z [session=45958ad8-9990-49a8-9384-31974c9489b0] Checking session file at: /Users/abhi/.a5c/state/45958ad8-9990-49a8-9384-31974c9489b0.md
+[INFO] 2026-07-22T19:21:18.188Z [session=45958ad8-9990-49a8-9384-31974c9489b0] No active loop found for session 45958ad8-9990-49a8-9384-31974c9489b0 — allowing exit

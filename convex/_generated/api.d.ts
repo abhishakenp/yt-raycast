@@ -8,7 +8,6 @@
  * @module
  */
 
-import type * as benchEngines from "../benchEngines.js";
 import type * as billing from "../billing.js";
 import type * as brandfetch from "../brandfetch.js";
 import type * as contentCache from "../contentCache.js";
@@ -62,10 +61,10 @@ import type * as lib_session_task_helpers from "../lib/session_task_helpers.js";
 import type * as lib_session_translation_cache_helpers from "../lib/session_translation_cache_helpers.js";
 import type * as lib_session_usage_metrics_helpers from "../lib/session_usage_metrics_helpers.js";
 import type * as lib_session_user_image_helpers from "../lib/session_user_image_helpers.js";
-import type * as lib_translation_entitlement_helpers from "../lib/translation_entitlement_helpers.js";
 import type * as lib_session_validators from "../lib/session_validators.js";
 import type * as lib_session_workspace_helpers from "../lib/session_workspace_helpers.js";
 import type * as lib_testHelpers from "../lib/testHelpers.js";
+import type * as lib_translation_entitlement_helpers from "../lib/translation_entitlement_helpers.js";
 import type * as openui_ssr_health from "../openui_ssr_health.js";
 import type * as partners from "../partners.js";
 import type * as partners_worker from "../partners_worker.js";
@@ -82,7 +81,6 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  benchEngines: typeof benchEngines;
   billing: typeof billing;
   brandfetch: typeof brandfetch;
   contentCache: typeof contentCache;
@@ -136,10 +134,10 @@ declare const fullApi: ApiFromModules<{
   "lib/session_translation_cache_helpers": typeof lib_session_translation_cache_helpers;
   "lib/session_usage_metrics_helpers": typeof lib_session_usage_metrics_helpers;
   "lib/session_user_image_helpers": typeof lib_session_user_image_helpers;
-  "lib/translation_entitlement_helpers": typeof lib_translation_entitlement_helpers;
   "lib/session_validators": typeof lib_session_validators;
   "lib/session_workspace_helpers": typeof lib_session_workspace_helpers;
   "lib/testHelpers": typeof lib_testHelpers;
+  "lib/translation_entitlement_helpers": typeof lib_translation_entitlement_helpers;
   openui_ssr_health: typeof openui_ssr_health;
   partners: typeof partners;
   partners_worker: typeof partners_worker;

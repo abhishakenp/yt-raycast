@@ -19,6 +19,7 @@ vi.mock('axios', () => ({
 }))
 
 vi.mock('@/shared/auth/use-optional-auth', () => ({
+  useIsAdmin: () => false,
   requestClerkSignIn: mocks.requestSignIn,
   useOptionalAuth: () => mocks.auth,
 }))

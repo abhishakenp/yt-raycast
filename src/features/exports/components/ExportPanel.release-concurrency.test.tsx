@@ -34,12 +34,22 @@ vi.mock('convex/react', function mockConvexReact() {
     useQuery: function useQuery() {
       return exportTargetsState.queryResult
     },
+    useMutation: function useMutation() {
+      return vi.fn(async function ensureExportArtifact() {
+        return { status: 'ready' }
+      })
+    },
   }
 })
 
 vi.mock('../../../../convex/_generated/api', function mockConvexApi() {
   return {
-    api: { sessions: { getExportTargets: 'getExportTargets' } },
+    api: {
+      sessions: {
+        getExportTargets: 'getExportTargets',
+        ensureExportArtifactByLookup: 'ensureExportArtifactByLookup',
+      },
+    },
   }
 })
 
@@ -53,6 +63,7 @@ vi.mock('@/shared/auth/use-optional-auth', function mockOptionalAuth() {
         isSignedIn: false,
       }
     },
+    useIsAdmin: () => false,
   }
 })
 

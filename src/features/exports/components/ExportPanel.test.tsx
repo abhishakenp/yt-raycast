@@ -38,6 +38,7 @@ vi.mock('convex/react', () => ({
 }))
 
 vi.mock('@/shared/auth/use-optional-auth', () => ({
+  useIsAdmin: () => false,
   useOptionalAuth: () => authState,
 }))
 
@@ -121,7 +122,7 @@ describe('ExportPanel', () => {
     expect(view.queryByText('queued')).toBeNull()
   })
 
-  it('downloads through the API when a clicked artifact is still building', async () => {
+  it('calls ensureExportArtifact and waits when a clicked artifact is still building', async () => {
     setExportTargets([
       {
         target: 'html',
@@ -164,29 +165,22 @@ describe('ExportPanel', () => {
     const view = render(<ExportPanel sessionId="session_123" />)
     const button = view.getByText('HTML').closest('button')
     expect(button).toBeTruthy()
-    expect(view.queryByText('72%')).toBeNull()
     if (button) fireEvent.click(button)
 
-    await waitFor(() => {
-      expect(
-        view.container.querySelector(
-          '[data-export-action="html"] .animate-spin',
-        ),
-      ).toBeTruthy()
-    })
-    expect(
-      view.container.querySelector('.export-target-glyph .animate-spin'),
-    ).toBeNull()
-    await waitFor(() => expect(clickMock).toHaveBeenCalled())
-    expect(exportTargetsState.ensureExportArtifact).not.toHaveBeenCalled()
-    expect(view.queryByText('72%')).toBeNull()
-    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
-      '/api/sessions/session_123/export',
-      '/api/sessions/session_123/download/html',
-    ])
+    // ensureExportArtifact is called to trigger the async build
+    await waitFor(() =>
+      expect(exportTargetsState.ensureExportArtifact).toHaveBeenCalledWith({
+        lookup: 'session_123',
+        target: 'html',
+        anonymousOwnerSecret: undefined,
+      }),
+    )
+    // No download attempted yet — artifact isn't ready, build was just queued
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(clickMock).not.toHaveBeenCalled()
   })
 
-  it('continues the same click when a pending artifact is already ready', async () => {
+  it('continues to download when ensureExportArtifact reports the build is already ready', async () => {
     setExportTargets([
       {
         target: 'html',
@@ -235,7 +229,13 @@ describe('ExportPanel', () => {
     if (button) fireEvent.click(button)
 
     await waitFor(() => expect(clickMock).toHaveBeenCalled())
-    expect(exportTargetsState.ensureExportArtifact).not.toHaveBeenCalled()
+    // ensureExportArtifact was called and returned 'ready', so the flow
+    // continued to createExport + downloadFromUrl
+    expect(exportTargetsState.ensureExportArtifact).toHaveBeenCalledWith({
+      lookup: 'session_123',
+      target: 'html',
+      anonymousOwnerSecret: undefined,
+    })
     expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
       '/api/sessions/session_123/export',
       '/download/html',

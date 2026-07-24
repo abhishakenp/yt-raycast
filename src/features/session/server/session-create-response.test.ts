@@ -204,4 +204,63 @@ describe('createSessionCreateResponse', () => {
       error: 'Generation could not start. Try again.',
     })
   })
+
+  it('forwards the Clerk bearer token to Convex via setAuth so signed-in users are not treated as anonymous', async () => {
+    process.env.SHIP_FAST_IP_HASH_SALT = 'test-salt'
+    const mutation = vi.fn().mockResolvedValue({
+      cached: false,
+      remaining: 1,
+      sessionId: 'session_authed',
+    })
+    const setAuth = vi.fn()
+    const request = new Request('http://ship-fast.test/api/sessions/create', {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer clerk.convex.jwt.token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        prompt: 'Build a public preview site for a design studio',
+        preferredLanguage: 'en',
+        preferredExportTarget: 'html',
+        isPrivate: false,
+        workspace: 'workspace_authed',
+      }),
+    })
+
+    const response = await createSessionCreateResponse(request, {
+      mutation,
+      setAuth,
+    })
+
+    expect(response.status).toBe(200)
+    expect(setAuth).toHaveBeenCalledWith('clerk.convex.jwt.token')
+    expect(mutation).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        clientIpHash: hashClientIp('unknown', 'test-salt'),
+        workspace: 'workspace_authed',
+      }),
+    )
+  })
+
+  it('does not call setAuth when no bearer token is present (anonymous flow)', async () => {
+    const mutation = vi.fn().mockResolvedValue({
+      cached: false,
+      remaining: 1,
+      sessionId: 'session_anon',
+    })
+    const setAuth = vi.fn()
+
+    await createSessionCreateResponse(
+      new Request('http://ship-fast.test/api/sessions/create', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ prompt: 'Build a public preview site' }),
+      }),
+      { mutation, setAuth },
+    )
+
+    expect(setAuth).not.toHaveBeenCalled()
+  })
 })

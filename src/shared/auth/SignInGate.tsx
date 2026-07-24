@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 
 import { isClerkClientEnabled } from '@/shared/auth/clerk-runtime'
 import {
+  useIsAdmin,
   useOptionalAuth,
   useOptionalClerk,
 } from '@/shared/auth/use-optional-auth'
@@ -26,10 +27,11 @@ type SignInGateValue = {
  */
 export function useSignInGate(): SignInGateValue {
   const clerkEnabled = isClerkClientEnabled()
+  const isAdmin = useIsAdmin()
   const { isLoaded, isSignedIn } = useOptionalAuth()
   const clerk = useOptionalClerk()
 
-  const isGated = clerkEnabled && !(isLoaded && isSignedIn)
+  const isGated = clerkEnabled && !isAdmin && !(isLoaded && isSignedIn)
   const openSignIn = () => {
     if (clerkEnabled) clerk.openSignIn()
   }

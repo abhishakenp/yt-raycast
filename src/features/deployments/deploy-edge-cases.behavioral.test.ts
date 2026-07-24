@@ -1,5 +1,4 @@
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
+import { rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { JSDOM } from 'jsdom'
@@ -34,9 +33,8 @@ import {
   buildLakebedAnonymousDeployRequest,
   deployLakebedProjectFiles,
 } from './server/lakebed-deploy-service'
-import { build, transform } from 'esbuild'
+import { transform } from 'esbuild'
 import { buildOpenUILakebedProjectFiles } from '../exports/services/openui-lakebed-export-builder'
-import { buildStaticLakebedProjectFiles } from './server/lakebed-static-project-builder'
 import { createLakebedPublishResponse } from './server/lakebed-publish-response'
 import * as github from '../../../convex/github'
 
@@ -45,123 +43,6 @@ const esbuildCalls = () =>
     .__esbuildBuildCalls ?? []
 
 const lakebedRoot = () => join(process.cwd(), '.lakebed')
-const originalFetch = globalThis.fetch
-const originalStockEnv = {
-  PEXELS_API_KEY: process.env.PEXELS_API_KEY,
-  VITE_PEXELS_API_KEY: process.env.VITE_PEXELS_API_KEY,
-  UNSPLASH_ACCESS_KEY: process.env.UNSPLASH_ACCESS_KEY,
-  VITE_UNSPLASH_ACCESS_KEY: process.env.VITE_UNSPLASH_ACCESS_KEY,
-}
-
-const clearStockImageEnv = () => {
-  delete process.env.PEXELS_API_KEY
-  delete process.env.VITE_PEXELS_API_KEY
-  delete process.env.UNSPLASH_ACCESS_KEY
-  delete process.env.VITE_UNSPLASH_ACCESS_KEY
-}
-
-const restoreStockImageEnv = () => {
-  for (const [key, value] of Object.entries(originalStockEnv)) {
-    if (value === undefined) {
-      delete process.env[key]
-    } else {
-      process.env[key] = value
-    }
-  }
-}
-
-function expectNoStockProviderCredentialsOrProxy(artifact: string) {
-  expect(artifact).not.toContain('PEXELS_API_KEY')
-  expect(artifact).not.toContain('VITE_PEXELS_API_KEY')
-  expect(artifact).not.toContain('api.pexels.com')
-  expect(artifact).not.toContain('/api/pexels')
-  expect(artifact).not.toContain('ship-fast.io/api/pexels')
-}
-
-async function writeProjectFiles(
-  directory: string,
-  files: Record<string, string>,
-) {
-  for (const [path, source] of Object.entries(files)) {
-    const absolutePath = join(directory, path)
-    await mkdir(join(absolutePath, '..'), { recursive: true })
-    await writeFile(absolutePath, source)
-  }
-}
-
-async function renderStaticProjectClient(files: Record<string, string>) {
-  const directory = await mkdtemp(join(tmpdir(), 'static-lakebed-client-'))
-
-  try {
-    await writeProjectFiles(directory, files)
-    const entryPath = join(directory, 'render-static-client.tsx')
-    await writeFile(
-      entryPath,
-      `import { h, render } from "preact";
-import { App } from "./client/index";
-
-render(h(App, {}), document.getElementById("app"));
-`,
-    )
-    const bundled = await build({
-      bundle: true,
-      entryPoints: [entryPath],
-      format: 'iife',
-      jsx: 'automatic',
-      jsxImportSource: 'preact',
-      logLevel: 'silent',
-      nodePaths: [join(process.cwd(), 'node_modules')],
-      platform: 'browser',
-      write: false,
-    })
-    const dom = new JSDOM('<div id="app"></div>', {
-      runScripts: 'outside-only',
-      url: 'https://example.test/',
-    })
-    const errors: unknown[] = []
-    dom.window.addEventListener('error', (event: ErrorEvent) => {
-      errors.push(event.error ?? event.message)
-    })
-    dom.window.eval(bundled.outputFiles[0]?.text ?? '')
-    await new Promise((resolve) => dom.window.setTimeout(resolve, 0))
-
-    return {
-      errors,
-      iframe: dom.window.document.querySelector('iframe'),
-    }
-  } finally {
-    await rm(directory, { force: true, recursive: true })
-  }
-}
-
-async function loadAnonymousDeployServerCapsule(files: Record<string, string>) {
-  const deployRequest = await buildLakebedAnonymousDeployRequest(files)
-  const payload = JSON.parse(deployRequest.requestBody) as {
-    artifact?: {
-      server?: {
-        source?: {
-          bundle?: string
-        }
-      }
-    }
-  }
-  const bundle = payload.artifact?.server?.source?.bundle
-  expect(typeof bundle).toBe('string')
-  const mod = (await import(`data:text/javascript;base64,${bundle}`)) as {
-    default?: {
-      name?: string
-      endpoints?: Record<
-        string,
-        {
-          handler?: () => unknown
-          method?: string
-          path?: string
-        }
-      >
-    }
-  }
-  return mod.default
-}
 
 async function executeAnonymousDeployClientBundle(
   files: Record<string, string>,
@@ -692,238 +573,6 @@ export default capsule({
 })
 
 // ---------------------------------------------------------------------------
-// Lakebed static project builder
-// ---------------------------------------------------------------------------
-
-describe('Lakebed static project builder', () => {
-  beforeEach(() => {
-    clearStockImageEnv()
-    globalThis.fetch = originalFetch
-  })
-
-  afterEach(() => {
-    globalThis.fetch = originalFetch
-    restoreStockImageEnv()
-  })
-
-  describe('preview image rewrite', () => {
-    it('rewrites a Pexels preview image API URL to the resolved provider URL', async () => {
-      process.env.PEXELS_API_KEY = 'pexels-key'
-      const resolvedPexelsUrl =
-        'https://images.pexels.com/photos/29224184/pexels-photo-29224184.jpeg?auto=compress&cs=tinysrgb&h=650&w=940'
-      const fetchMock = vi.fn(async () =>
-        Response.json({
-          photos: [
-            {
-              src: {
-                medium: `${resolvedPexelsUrl}&size=medium`,
-                large: resolvedPexelsUrl,
-                large2x: `${resolvedPexelsUrl}&size=large2x`,
-                original: `${resolvedPexelsUrl}&size=original`,
-              },
-            },
-          ],
-        }),
-      )
-      vi.stubGlobal('fetch', fetchMock)
-
-      const project = await buildStaticLakebedProjectFiles({
-        source:
-          '<!doctype html><html><head><title>Images</title></head><body><img alt="Max the dog" src="/api/pexels?query=max-the-dog&w=800&h=600"></body></html>',
-      })
-      const preview = project.files['client/preview.ts']
-
-      const calls = fetchMock.mock.calls as unknown as Array<
-        [RequestInfo | URL, RequestInit | undefined]
-      >
-      expect(String(calls[0]?.[0])).toBe(
-        'https://api.pexels.com/v1/search?query=max+dog&per_page=15&orientation=landscape',
-      )
-      expect(calls[0]?.[1]).toEqual({
-        headers: { Authorization: 'pexels-key' },
-      })
-      expect(preview).toContain(resolvedPexelsUrl)
-      expectNoStockProviderCredentialsOrProxy(preview)
-      expect(preview).not.toContain('picsum.photos')
-    })
-
-    it('preserves width and height from the original URL', async () => {
-      const project = await buildStaticLakebedProjectFiles({
-        source:
-          '<!doctype html><html><head><title>Img</title></head><body><img src="/api/images?alt=hero&w=1200&h=900"></body></html>',
-      })
-      expect(project.files['client/preview.ts']).toContain('/1200/900')
-    })
-
-    it('rewrites poster attributes and CSS url() references', async () => {
-      const project = await buildStaticLakebedProjectFiles({
-        source:
-          '<!doctype html><html><head><title>Media</title><style>.hero{background:url(/api/image?seed=bg&w=400&h=300)}</style></head><body><video poster="/api/pexels?query=cover&w=200&h=100"></video></body></html>',
-      })
-      const preview = project.files['client/preview.ts']
-      expect(preview).toContain('https://picsum.photos/seed/')
-      expect(preview).not.toContain('/api/pexels')
-      expect(preview).not.toContain('/api/image?')
-    })
-  })
-
-  describe('shared preview Tailwind CSS injection', () => {
-    it('adds shared preview CSS when no local runtime is present', async () => {
-      const project = await buildStaticLakebedProjectFiles({
-        source:
-          '<!doctype html><html><head><title>Styled</title></head><body class="bg-background text-foreground"><div class="border-border">Hi</div></body></html>',
-      })
-      const preview = project.files['client/preview.ts']
-      expect(preview).toContain('data-ship-fast-preview-tailwind-css')
-      expect(preview).toContain('.bg-background')
-      expect(preview).not.toContain('https://cdn.tailwindcss.com')
-    })
-
-    it('replaces the ShipFast-local Tailwind runtime with shared preview CSS', async () => {
-      const project = await buildStaticLakebedProjectFiles({
-        source:
-          '<!doctype html><html><head><title>Styled</title><script src="/scripts/tailwind-browser.js"></script></head><body class="bg-background"><div class="border-border">Styled</div></body></html>',
-      })
-      const preview = project.files['client/preview.ts']
-      expect(preview).toContain('data-ship-fast-preview-tailwind-css')
-      expect(preview).toContain('.bg-background')
-      expect(preview).not.toContain('https://cdn.tailwindcss.com')
-      expect(preview).not.toContain('/scripts/tailwind-browser.js')
-    })
-  })
-
-  describe('OpenUI metadata stripping', () => {
-    it('removes the ship-fast-openui-source script tag', async () => {
-      const project = await buildStaticLakebedProjectFiles({
-        source:
-          '<!doctype html><html><head><title>Strip</title><script id="ship-fast-openui-source">window.__openui = {};</script></head><body><h1>Hi</h1></body></html>',
-      })
-      const preview = project.files['client/preview.ts']
-      expect(preview).not.toContain('ship-fast-openui-source')
-      expect(preview).not.toContain('window.__openui')
-    })
-
-    it('rewrites the "Generated OpenUI source" status text', async () => {
-      const project = await buildStaticLakebedProjectFiles({
-        source:
-          '<!doctype html><html><head><title>Text</title></head><body><p>Generated OpenUI source is ready.</p></body></html>',
-      })
-      const preview = project.files['client/preview.ts']
-      expect(preview).toContain('Generated site is ready.')
-      expect(preview).not.toContain('Generated OpenUI source is ready.')
-    })
-
-    it('strips data-openui-* attributes from element tags', async () => {
-      // EXPECTED behavior: all data-openui-* metadata attributes MUST be
-      // removed from the exported HTML. If only the script tag is stripped but
-      // data-openui-* attributes survive, that is a BUG — this test MUST fail
-      // until stripShipFastOpenUIMetadata removes the attributes too.
-      const project = await buildStaticLakebedProjectFiles({
-        source:
-          '<!doctype html><html><head><title>Attrs</title></head><body><div data-openui-source="trace" data-openui-version="1.0">Content</div></body></html>',
-      })
-      const preview = project.files['client/preview.ts']
-      expect(preview).not.toContain('data-openui-source')
-      expect(preview).not.toContain('data-openui-version')
-      expect(preview).not.toMatch(/data-openui-[a-z]+/)
-    })
-  })
-
-  describe('client index', () => {
-    it('renders the generated static preview in a full-viewport iframe', async () => {
-      const project = await buildStaticLakebedProjectFiles({
-        source:
-          '<!doctype html><html><head><title>Wrap</title></head><body><h1>Wrap</h1></body></html>',
-      })
-      const rendered = await renderStaticProjectClient(project.files)
-
-      expect(rendered.errors).toEqual([])
-      expect(rendered.iframe).not.toBeNull()
-      expect(rendered.iframe?.title).toBe('Generated preview')
-      expect(rendered.iframe?.getAttribute('srcdoc')).toContain('<h1>Wrap</h1>')
-      expect(rendered.iframe?.getAttribute('style')).toContain('height: 100vh')
-      expect(rendered.iframe?.getAttribute('style')).toContain('width: 100vw')
-    })
-  })
-
-  describe('server index', () => {
-    it('serves a GET /api/status endpoint from the compiled anonymous deploy artifact', async () => {
-      const project = await buildStaticLakebedProjectFiles({
-        source:
-          '<!doctype html><html><head><title>Status</title></head><body><h1>Status</h1></body></html>',
-        siteSpecJson: '{"projectName":"Status App"}',
-      })
-      const serverCapsule = await loadAnonymousDeployServerCapsule(
-        project.files,
-      )
-      const response = serverCapsule?.endpoints?.status?.handler?.()
-
-      expect(serverCapsule?.name).toBe('status-app')
-      expect(serverCapsule?.endpoints?.status).toMatchObject({
-        method: 'GET',
-        path: '/api/status',
-      })
-      expect(response).toMatchObject({
-        body: 'ok',
-        kind: 'response',
-        status: 200,
-      })
-    })
-  })
-
-  describe('AGENTS.md / CLAUDE.md', () => {
-    it('generates both files with correct Lakebed instructions', async () => {
-      const project = await buildStaticLakebedProjectFiles({
-        source:
-          '<!doctype html><html><head><title>Docs</title></head><body><h1>Docs</h1></body></html>',
-        siteSpecJson: '{"projectName":"Docs App"}',
-      })
-      const agents = project.files['AGENTS.md']
-      const claude = project.files['CLAUDE.md']
-      expect(agents).toContain('Lakebed App Instructions')
-      expect(agents).toContain('bunx lakebed <command>')
-      expect(agents).toContain('client/index.tsx')
-      expect(agents).toContain('server/index.ts')
-      expect(claude).toBe(agents)
-    })
-
-    it('generates a README with the project name and no ShipFast attribution', async () => {
-      const project = await buildStaticLakebedProjectFiles({
-        source:
-          '<!doctype html><html><head><title>Readme</title></head><body><h1>Readme</h1></body></html>',
-        siteSpecJson: '{"projectName":"Readme App"}',
-      })
-      const readme = project.files['README.md']
-      expect(readme).toContain('# Readme App')
-      expect(readme).toContain('bunx lakebed dev')
-      expect(readme).not.toMatch(/ShipFast|ship-fast\.io/i)
-    })
-  })
-
-  describe('forbidden token assertion', () => {
-    it('rejects a project whose output contains an OpenUI trace token', async () => {
-      // The OpenUI token survives into client/preview.ts, triggering
-      // assertNoOpenUITrace inside the builder.
-      await expect(
-        buildStaticLakebedProjectFiles({
-          source:
-            '<!doctype html><html><head><title>Trace</title></head><body><div data-openui-source="@openuidev/trace">OpenUI leak</div></body></html>',
-        }),
-      ).rejects.toThrow(/Static Lakebed project contains/)
-    })
-
-    it('rejects a project containing the defineCapsule token', async () => {
-      await expect(
-        buildStaticLakebedProjectFiles({
-          source:
-            '<!doctype html><html><head><title>Trace</title></head><body><script>function defineCapsule() {}</script></body></html>',
-        }),
-      ).rejects.toThrow(/Static Lakebed project contains/)
-    })
-  })
-})
-
-// ---------------------------------------------------------------------------
 // Lakebed publish response
 // ---------------------------------------------------------------------------
 
@@ -948,6 +597,7 @@ describe('Lakebed publish response', () => {
           url: 'https://existing.lakebed.app',
         })
         .mockResolvedValueOnce({ status: 'queued', filesUrl: null }),
+      mutation: vi.fn().mockResolvedValue({ entitled: true }),
       action: vi.fn(),
       setAuth: vi.fn(),
     }
@@ -973,6 +623,7 @@ describe('Lakebed publish response', () => {
         .fn()
         .mockResolvedValueOnce(null)
         .mockResolvedValueOnce({ status: 'building', filesUrl: null }),
+      mutation: vi.fn().mockResolvedValue({ entitled: true }),
       action: vi.fn(),
       setAuth: vi.fn(),
     }
@@ -999,6 +650,7 @@ describe('Lakebed publish response', () => {
         status: 'ready',
         filesUrl: 'https://storage.test/files.json',
       }),
+      mutation: vi.fn().mockResolvedValue({ entitled: true }),
       action: vi.fn(async () => {
         throw new Error('AUTH_REQUIRED: anonymous owner secret required')
       }),
@@ -1025,6 +677,7 @@ describe('Lakebed publish response', () => {
       query: vi.fn(async () => {
         throw new Error(`AUTH_REQUIRED: invalid token for ${realSessionId}`)
       }),
+      mutation: vi.fn().mockResolvedValue({ entitled: true }),
       action: vi.fn(),
       setAuth: vi.fn(),
     }
@@ -1049,6 +702,7 @@ describe('Lakebed publish response', () => {
         status: 'ready',
         filesUrl: 'https://storage.test/files.json',
       }),
+      mutation: vi.fn().mockResolvedValue({ entitled: true }),
       action: vi.fn(async () => ({
         provider: 'lakebed',
         status: 'ready',

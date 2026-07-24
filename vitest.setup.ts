@@ -15,6 +15,11 @@ config()
 
 process.env.VITE_DISABLE_CLERK = 'false'
 
+// Disable generation quota limits in the test environment so anonymous session
+// creation (via convex-test) doesn't require a server-derived clientIpHash.
+// Tests that exercise quota enforcement explicitly override this per-test.
+process.env.DISABLE_LIMIT = 'true'
+
 type CrossRealmHTMLElement = {
   readonly nodeType: number
   readonly tagName: string

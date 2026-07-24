@@ -96,7 +96,7 @@ function deploymentDoc(overrides: Partial<DeploymentDoc> = {}): DeploymentDoc {
     _creationTime: 1,
     sessionId,
     slug: deploymentSlug,
-    url: 'https://deployed-store.ship-fast.io',
+    url: 'https://deployed-store.ship-fast.ai',
     status: 'ready',
     provider: 'lakebed',
     previewVersion: 1,

@@ -16,6 +16,7 @@ const auth = vi.hoisted(() => ({
 }))
 
 vi.mock('@/shared/auth/use-optional-auth', () => ({
+  useIsAdmin: () => false,
   useOptionalAuth: () => ({
     getToken: auth.getToken,
     isSignedIn: auth.isSignedIn,

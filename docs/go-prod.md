@@ -42,18 +42,13 @@ browser -> api.sessions.create -> Convex
 
 Because the app server is not in the middle of that mutation, Convex does not receive a trustworthy request IP for `sessions.create`.
 
-## Whitelisted IPs
+## Admin Role Bypass
 
-`WHITELISTED_IPS` can only be trusted in code paths where the Ship Fast server receives the HTTP request and reads the real client IP from trusted infrastructure headers.
+Per-user bypass is granted via Clerk `publicMetadata.system_role = "admin"` (or `systemRole = "admin"`), exposed as a JWT claim through the Clerk "convex" JWT template. Convex reads the admin role via `isUserAdmin(ctx)`, which accepts both `system_role` and `systemRole` claim names.
 
-Do not pass a whitelisted-IP decision from the browser to Convex. That would be forgeable.
+Admin users bypass rate limits, quota, the export paywall, AND auth/ownership checks — everything `VITE_DISABLE_CLERK`/`DISABLE_LIMIT`/`DISABLE_PAYWALL` bypass. This means an admin can generate without quota, export without payment, and read/mutate any session (including private ones they do not own).
 
-If production needs IP-based generation bypass, implement one of these server-owned designs:
-
-- Route generation creation through a Ship Fast server endpoint that checks the request IP and calls Convex from the server.
-- Or have the server issue a short-lived signed bypass token after checking the request IP, then have Convex verify the signature before bypassing quota.
-
-Until one of those exists, whitelisted IPs do not safely bypass `sessions.create`.
+This is safe because the JWT is signed by Clerk and verified by Convex `auth.config.ts` — no forgeable client-supplied value is involved.
 
 ## Required Production Check
 

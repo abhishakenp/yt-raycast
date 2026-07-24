@@ -6,6 +6,7 @@ import {
   assertCanReadOwnedSession,
   assertCanReadPrivateSession,
   assertCanMutateSession,
+  canReadPrivateSession,
   claimAnonymousSession,
   claimAnonymousSessionsByIp,
   deleteOwnedSessions,
@@ -33,7 +34,9 @@ type TestIdentity = NonNullable<
 
 function identityFor(
   values: Partial<
-    Pick<TestIdentity, 'subject' | 'tokenIdentifier' | 'system_role'>
+    Pick<TestIdentity, 'subject' | 'tokenIdentifier' | 'system_role'> & {
+      systemRole?: string
+    }
   >,
 ): TestIdentity {
   return {
@@ -42,6 +45,9 @@ function identityFor(
     tokenIdentifier: values.tokenIdentifier,
     ...(values.system_role !== undefined
       ? { system_role: values.system_role }
+      : {}),
+    ...(values.systemRole !== undefined
+      ? { systemRole: values.systemRole }
       : {}),
   } as TestIdentity
 }
@@ -612,6 +618,13 @@ describe('isUserAdmin', () => {
     await expect(isUserAdmin(ctx)).resolves.toBe(true)
   })
 
+  it('returns true when systemRole (camelCase) is admin', async () => {
+    const ctx = authCtx(
+      identityFor({ tokenIdentifier: 'token:admin', systemRole: 'admin' }),
+    )
+    await expect(isUserAdmin(ctx)).resolves.toBe(true)
+  })
+
   it('returns false when system_role is not admin', async () => {
     const ctx = authCtx(
       identityFor({ tokenIdentifier: 'token:user', system_role: 'user' }),
@@ -647,6 +660,78 @@ describe('assertCanMutateSession admin bypass', () => {
     await expect(
       assertCanMutateSession(ctx, sessionDoc({ userId: 'token:owner' })),
     ).resolves.toBeUndefined()
+  })
+})
+
+describe('assertCanReadOwnedSession admin bypass', () => {
+  it('bypasses read ownership check when user is admin', async () => {
+    ;(isAuthDisabled as ReturnType<typeof vi.fn>).mockReturnValue(false)
+    const ctx = authCtx(
+      identityFor({
+        tokenIdentifier: 'token:admin',
+        system_role: 'admin',
+      }),
+    )
+
+    await expect(
+      assertCanReadOwnedSession(ctx, { userId: 'token:owner' }, undefined),
+    ).resolves.toBeUndefined()
+  })
+
+  it('bypasses read ownership check when systemRole is admin (camelCase)', async () => {
+    ;(isAuthDisabled as ReturnType<typeof vi.fn>).mockReturnValue(false)
+    const ctx = authCtx(
+      identityFor({
+        tokenIdentifier: 'token:admin',
+        systemRole: 'admin',
+      }),
+    )
+
+    await expect(
+      assertCanReadOwnedSession(ctx, { userId: 'token:owner' }, undefined),
+    ).resolves.toBeUndefined()
+  })
+
+  it('rejects non-admin non-owner from reading owned session', async () => {
+    ;(isAuthDisabled as ReturnType<typeof vi.fn>).mockReturnValue(false)
+    const ctx = authCtx(identityFor({ tokenIdentifier: 'token:other' }))
+
+    await expect(
+      assertCanReadOwnedSession(ctx, { userId: 'token:owner' }, undefined),
+    ).rejects.toThrow()
+  })
+})
+
+describe('canReadPrivateSession admin bypass', () => {
+  it('returns true for admin reading a private session they do not own', async () => {
+    ;(isAuthDisabled as ReturnType<typeof vi.fn>).mockReturnValue(false)
+    const ctx = authCtx(
+      identityFor({
+        tokenIdentifier: 'token:admin',
+        system_role: 'admin',
+      }),
+    )
+
+    await expect(
+      canReadPrivateSession(
+        ctx,
+        { isPrivate: true, userId: 'token:owner' },
+        undefined,
+      ),
+    ).resolves.toBe(true)
+  })
+
+  it('returns false for non-admin reading a private session they do not own', async () => {
+    ;(isAuthDisabled as ReturnType<typeof vi.fn>).mockReturnValue(false)
+    const ctx = authCtx(identityFor({ tokenIdentifier: 'token:other' }))
+
+    await expect(
+      canReadPrivateSession(
+        ctx,
+        { isPrivate: true, userId: 'token:owner' },
+        undefined,
+      ),
+    ).resolves.toBe(false)
   })
 })
 

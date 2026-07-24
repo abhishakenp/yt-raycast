@@ -78,7 +78,7 @@ const dbObservedBreweryNextExport = {
 
 const htmlPrebuiltFiles = {
   'README.md':
-    '# Atlas Notes\n\nGenerated with [ShipFast](https://ship-fast.io) 🚀.\n',
+    '# Atlas Notes\n\nGenerated with [ShipFast](https://ship-fast.ai) 🚀.\n',
   'index.html': '<main>Atlas Notes</main>',
   'llms.txt': 'Atlas Notes',
   'robots.txt': 'User-agent: *',
@@ -537,7 +537,7 @@ describe('createGitHubPushResponse', () => {
     })
     expect(requests).toEqual([])
     expect(tokenResolver).not.toHaveBeenCalled()
-    expect(client.mutation).not.toHaveBeenCalled()
+    expect(client.mutation).toHaveBeenCalledTimes(1)
   })
 
   it('surfaces failed prebuilt export artifacts before touching GitHub', async () => {
@@ -574,7 +574,7 @@ describe('createGitHubPushResponse', () => {
     })
     expect(requests).toEqual([])
     expect(tokenResolver).not.toHaveBeenCalled()
-    expect(client.mutation).not.toHaveBeenCalled()
+    expect(client.mutation).toHaveBeenCalledTimes(1)
   })
 
   it('treats malformed prebuilt export file manifests as not ready before touching GitHub', async () => {
@@ -612,7 +612,7 @@ describe('createGitHubPushResponse', () => {
     })
     expect(requests).toEqual([])
     expect(tokenResolver).not.toHaveBeenCalled()
-    expect(client.mutation).not.toHaveBeenCalled()
+    expect(client.mutation).toHaveBeenCalledTimes(1)
   })
 
   it('does not push a DB-observed ready HTML artifact when the file manifest lacks index.html', async () => {
@@ -650,7 +650,7 @@ describe('createGitHubPushResponse', () => {
     })
     expect(requests).toEqual([])
     expect(tokenResolver).not.toHaveBeenCalled()
-    expect(client.mutation).not.toHaveBeenCalled()
+    expect(client.mutation).toHaveBeenCalledTimes(1)
   })
 
   it('does not push a DB-observed ready HTML artifact when index.html is blank', async () => {
@@ -692,7 +692,7 @@ describe('createGitHubPushResponse', () => {
     })
     expect(requests).toEqual([])
     expect(tokenResolver).not.toHaveBeenCalled()
-    expect(client.mutation).not.toHaveBeenCalled()
+    expect(client.mutation).toHaveBeenCalledTimes(1)
   })
 
   it('does not push a DB-observed ready Lakebed artifact when required project entrypoints are missing', async () => {
@@ -733,7 +733,7 @@ describe('createGitHubPushResponse', () => {
     })
     expect(requests).toEqual([])
     expect(tokenResolver).not.toHaveBeenCalled()
-    expect(client.mutation).not.toHaveBeenCalled()
+    expect(client.mutation).toHaveBeenCalledTimes(1)
   })
 
   it('does not push a ready artifact whose index.html is the DB-observed OpenUI handoff placeholder', async () => {
@@ -786,7 +786,7 @@ describe('createGitHubPushResponse', () => {
     expect(JSON.stringify(body)).not.toContain('ship-fast-openui-source')
     expect(requests).toEqual([])
     expect(tokenResolver).not.toHaveBeenCalled()
-    expect(client.mutation).not.toHaveBeenCalled()
+    expect(client.mutation).toHaveBeenCalledTimes(1)
   })
 
   it('returns a stable JSON error when GitHub responds with malformed HTML', async () => {
@@ -830,7 +830,7 @@ describe('createGitHubPushResponse', () => {
       error: 'GitHub request failed.',
     })
     expect(requests).toEqual([{ method: 'GET', path: '/user' }])
-    expect(client.mutation).not.toHaveBeenCalled()
+    expect(client.mutation).toHaveBeenCalledTimes(1)
   })
 
   it('returns a stable JSON error when the GitHub API request rejects', async () => {
@@ -866,7 +866,7 @@ describe('createGitHubPushResponse', () => {
       'k571fbfbggczv4pfz2evtrxdzx89qqbb',
     )
     expect(response.status).toBe(502)
-    expect(client.mutation).not.toHaveBeenCalled()
+    expect(client.mutation).toHaveBeenCalledTimes(1)
   })
 
   it('pushes React target files when requested', async () => {
@@ -1098,7 +1098,7 @@ describe('createGitHubPushResponse', () => {
     })
     expect(requests).toEqual([])
     expect(tokenResolver).not.toHaveBeenCalled()
-    expect(client.mutation).not.toHaveBeenCalled()
+    expect(client.mutation).toHaveBeenCalledTimes(1)
   })
 
   it('maps Convex ownership errors to forbidden responses', async () => {
@@ -1157,7 +1157,7 @@ describe('createGitHubPushResponse', () => {
     expect(JSON.stringify(body)).not.toContain('owner_secret')
     expect(JSON.stringify(body)).not.toContain('Pineapple Saison')
     expect(tokenResolver).not.toHaveBeenCalled()
-    expect(client.mutation).not.toHaveBeenCalled()
+    expect(client.mutation).toHaveBeenCalledTimes(1)
   })
 
   it('maps missing paid export access to an actionable payment response', async () => {

@@ -19,6 +19,7 @@ import {
   createSessionWorkspaceKey,
 } from '@/features/session/services/session-create-payload'
 import type { BuildCreateSessionPayloadInput } from '@/features/session/services/session-create-payload'
+import { getReferralAuthToken } from '@/features/referrals/lib/referral-client'
 import { AppError } from '@/shared/errors/app-error'
 
 const LAST_PROMPT_STORAGE_KEY = 'ship-fast:last-prompt'
@@ -196,11 +197,14 @@ function createSessionLaunch(
 async function createSessionFromHttp(
   payload: CreateSessionPayload,
 ): Promise<CreateSessionResult> {
+  const token = await getReferralAuthToken()
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  }
+  if (token) headers.Authorization = `Bearer ${token}`
   const response = await fetch('/api/sessions/create', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers,
     body: JSON.stringify(payload),
   })
 

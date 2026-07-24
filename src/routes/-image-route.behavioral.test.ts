@@ -35,7 +35,7 @@ describe('image route', () => {
 
     const mod = await import('./api/images.$sessionId')
     const Route = mod.Route as unknown as RouteWithHandlers
-    const request = new Request('https://ship-fast.io/api/images/session-1')
+    const request = new Request('https://ship-fast.ai/api/images/session-1')
     const response = await Route.options.server.handlers.GET({
       params: { sessionId: 'session-1' },
       request,
@@ -53,7 +53,7 @@ describe('image route', () => {
 
     const mod = await import('./api/images.$sessionId')
     const Route = mod.Route as unknown as RouteWithHandlers
-    const request = new Request('https://ship-fast.io/api/images/session-1?v=9')
+    const request = new Request('https://ship-fast.ai/api/images/session-1?v=9')
     await Route.options.server.handlers.GET({
       params: { sessionId: 'session-1' },
       request,

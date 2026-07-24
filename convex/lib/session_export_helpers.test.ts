@@ -646,7 +646,7 @@ describe('loadSessionExportTargets', () => {
           target: 'html',
           downloadUrl: '/api/sessions/session_export_helpers/download/html',
           githubUrl: 'https://github.com/acme/html-site',
-          deployedUrl: 'https://html-site.ship-fast.io',
+          deployedUrl: 'https://html-site.ship-fast.ai',
         }),
         exportDoc({
           _id: 'export_react' as Id<'exports'>,
@@ -654,7 +654,7 @@ describe('loadSessionExportTargets', () => {
           artifactPath: 'preview-2.react.zip',
           downloadUrl: '/api/sessions/session_export_helpers/download/react',
           githubUrl: 'https://github.com/acme/react-site',
-          deployedUrl: 'https://react-site.ship-fast.io',
+          deployedUrl: 'https://react-site.ship-fast.ai',
         }),
       ],
       exportArtifacts: [
@@ -676,14 +676,14 @@ describe('loadSessionExportTargets', () => {
       downloadUrl: '/api/sessions/session_export_helpers/download/html',
       githubUrl: 'https://github.com/acme/html-site',
       githubRepoUrl: 'https://github.com/acme/html-site',
-      deployedUrl: 'https://html-site.ship-fast.io',
+      deployedUrl: 'https://html-site.ship-fast.ai',
     })
     expect(react).toMatchObject({
       ready: true,
       downloadUrl: '/api/sessions/session_export_helpers/download/react',
       githubUrl: 'https://github.com/acme/react-site',
       githubRepoUrl: 'https://github.com/acme/react-site',
-      deployedUrl: 'https://react-site.ship-fast.io',
+      deployedUrl: 'https://react-site.ship-fast.ai',
     })
   })
 
@@ -825,6 +825,27 @@ describe('loadExportRecord', () => {
       ),
     ).resolves.toBeNull()
   })
+
+  it('treats payment-required export records as ready when isAdmin is true', async () => {
+    await expect(
+      loadExportRecord(
+        queryCtxFor([
+          exportDoc({
+            status: 'payment_required',
+            requiresPayment: true,
+            errorMessage: 'Subscribe first',
+          }),
+        ]),
+        sessionId,
+        'html',
+        true,
+      ),
+    ).resolves.toMatchObject({
+      status: 'ready',
+      requiresPayment: false,
+      errorMessage: undefined,
+    })
+  })
 })
 
 describe('getExportEntitlement', () => {
@@ -882,6 +903,19 @@ describe('getExportEntitlement', () => {
       status: 'payment_required',
       requiresPayment: true,
       entitlement: 'anonymous',
+    })
+  })
+
+  it('unlocks exports for admin users even when paywall is enabled', async () => {
+    vi.stubEnv('DISABLE_PAYWALL', 'false')
+    const { ctx } = ctxFor({})
+
+    await expect(
+      getExportEntitlement(ctx, userId, sessionId, true),
+    ).resolves.toEqual({
+      status: 'ready',
+      requiresPayment: false,
+      entitlement: 'disabled_paywall',
     })
   })
 

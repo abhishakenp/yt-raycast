@@ -232,7 +232,7 @@ describe('HTML export builder edge cases', () => {
 
   it('2. badge: HTML with existing badge → old removed, new added', () => {
     const html =
-      '<html><body><h1>T</h1><a data-ship-fast-export-badge="1" href="https://ship-fast.io">Old Badge</a></body></html>'
+      '<html><body><h1>T</h1><a data-ship-fast-export-badge="1" href="https://ship-fast.ai">Old Badge</a></body></html>'
     const result = injectShipFastBadge(html)
     const document = parseHtmlDocument(result)
     const badges = document.querySelectorAll('[data-ship-fast-export-badge]')

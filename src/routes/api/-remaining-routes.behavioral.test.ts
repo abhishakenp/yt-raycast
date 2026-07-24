@@ -136,7 +136,7 @@ describe('remaining API route behavior', () => {
     async (modulePath, routePath, method, helper, body) => {
       helper.mockResolvedValue(new Response(body))
       const Route = await importRoute(modulePath)
-      const request = new Request(`https://ship-fast.io${routePath}`, {
+      const request = new Request(`https://ship-fast.ai${routePath}`, {
         method,
       })
 
@@ -187,7 +187,7 @@ describe('remaining API route behavior', () => {
       helper.mockResolvedValue(new Response(body))
       const Route = await importRoute(modulePath)
       const request = new Request(
-        `https://ship-fast.io${routePath.replace('$sessionId', realSessionId)}`,
+        `https://ship-fast.ai${routePath.replace('$sessionId', realSessionId)}`,
         { method },
       )
 
@@ -210,7 +210,7 @@ describe('remaining API route behavior', () => {
       './sessions.$sessionId.history.$version.restore',
     )
     const request = new Request(
-      `https://ship-fast.io/api/sessions/${realSessionId}/history/1/restore`,
+      `https://ship-fast.ai/api/sessions/${realSessionId}/history/1/restore`,
       {
         body: JSON.stringify({ anonymousOwnerSecret: 'secret' }),
         method: 'POST',
@@ -235,7 +235,7 @@ describe('remaining API route behavior', () => {
     routeMocks.medusaConfig.mockResolvedValue(new Response('medusa config'))
     const Route = await importRoute('./sessions.$sessionId.medusa-config')
     const request = new Request(
-      `https://ship-fast.io/api/sessions/${realSessionId}/medusa-config`,
+      `https://ship-fast.ai/api/sessions/${realSessionId}/medusa-config`,
     )
 
     const response = await Route.options.server.handlers.GET({
@@ -252,7 +252,7 @@ describe('remaining API route behavior', () => {
     routeMocks.medusaProducts.mockResolvedValue(new Response('medusa products'))
     const Route = await importRoute('./sessions.$sessionId.medusa-products')
     const request = new Request(
-      `https://ship-fast.io/api/sessions/${realSessionId}/medusa-products`,
+      `https://ship-fast.ai/api/sessions/${realSessionId}/medusa-products`,
     )
 
     const response = await Route.options.server.handlers.GET({
@@ -288,7 +288,7 @@ describe('remaining API route behavior', () => {
     )
     const Route = await importRoute('./sessions.$sessionId.provision.medusa')
     const request = new Request(
-      `https://ship-fast.io/api/sessions/${realSessionId}/provision/medusa`,
+      `https://ship-fast.ai/api/sessions/${realSessionId}/provision/medusa`,
       {
         body: '{"products":[{"title":"Portland Pale Ale"}]}',
         method: 'POST',
@@ -315,7 +315,7 @@ describe('remaining API route behavior', () => {
 
   it('rejects clone requests with missing seed URL before starting the clone job', async () => {
     const Route = await importRoute('./clone')
-    const request = new Request('https://ship-fast.io/api/clone', {
+    const request = new Request('https://ship-fast.ai/api/clone', {
       body: JSON.stringify({ sessionId: realSessionId }),
       method: 'POST',
     })
@@ -332,7 +332,7 @@ describe('remaining API route behavior', () => {
 
   it('starts a clone job for a real session id and returns 202 immediately', async () => {
     const Route = await importRoute('./clone')
-    const request = new Request('https://ship-fast.io/api/clone', {
+    const request = new Request('https://ship-fast.ai/api/clone', {
       body: JSON.stringify({
         anonymousOwnerSecret: 'real-session-owner-secret-placeholder',
         brief:
@@ -363,7 +363,7 @@ describe('remaining API route behavior', () => {
       new Error('Chromium launch failed'),
     )
     const Route = await importRoute('./clone')
-    const request = new Request('https://ship-fast.io/api/clone', {
+    const request = new Request('https://ship-fast.ai/api/clone', {
       body: JSON.stringify({
         anonymousOwnerSecret: 'real-session-owner-secret-placeholder',
         brief: 'a real cloned brewery homepage',
@@ -411,7 +411,7 @@ describe('remaining API route behavior', () => {
     delete process.env.VITE_UNSPLASH_ACCESS_KEY
     const Route = await importRoute('./pexels')
     const request = new Request(
-      'https://ship-fast.io/api/pexels?query=a%20craft%20beer%20brewery%20with%20taproom%20tours&w=5000&h=50&seed=a-craft-beer-brewery',
+      'https://ship-fast.ai/api/pexels?query=a%20craft%20beer%20brewery%20with%20taproom%20tours&w=5000&h=50&seed=a-craft-beer-brewery',
     )
 
     const response = await Route.options.server.handlers.GET({ request })
@@ -447,7 +447,7 @@ describe('remaining API route behavior', () => {
     vi.stubGlobal('fetch', fetchMock)
     const Route = await importRoute('./pexels')
     const request = new Request(
-      'https://ship-fast.io/api/pexels?q=taproom%20tour&w=1600&h=900&seed=hero',
+      'https://ship-fast.ai/api/pexels?q=taproom%20tour&w=1600&h=900&seed=hero',
     )
 
     const response = await Route.options.server.handlers.GET({ request })
@@ -486,7 +486,7 @@ describe('remaining API route behavior', () => {
     vi.stubGlobal('fetch', fetchMock)
     const Route = await importRoute('./pexels')
     const request = new Request(
-      'https://ship-fast.io/api/pexels?query=seasonal%20beer%20release&w=1200&h=700&seed=release',
+      'https://ship-fast.ai/api/pexels?query=seasonal%20beer%20release&w=1200&h=700&seed=release',
     )
 
     const response = await Route.options.server.handlers.GET({ request })
@@ -525,7 +525,7 @@ describe('remaining API route behavior', () => {
     vi.stubGlobal('fetch', fetchMock)
     const Route = await importRoute('./pexels')
     const request = new Request(
-      'https://ship-fast.io/api/pexels?query=taproom%20tour&w=640&h=480&seed=hero',
+      'https://ship-fast.ai/api/pexels?query=taproom%20tour&w=640&h=480&seed=hero',
     )
 
     const response = await Route.options.server.handlers.GET({ request })

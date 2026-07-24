@@ -215,12 +215,29 @@ export async function rewritePreviewImageUrls(html: string): Promise<string> {
     },
   )
 
-  return await replaceAsync(
+  const withCssUrls = await replaceAsync(
     withAttributes,
     /url\((["']?)([^"')]+)\1\)/gi,
     async (match, quote, value) => {
       const rewritten = await resolvePreviewImageUrl(decodeHtmlEntities(value))
       return rewritten ? `url(${quote}${rewritten}${quote})` : match
+    },
+  )
+
+  // Strip loading-placeholder classes (animate-pulse, bg-accent) from <img>
+  // tags. These are added at runtime by the ImgElement wrapper to show a
+  // pulsing skeleton until the image loads. In exported/deployed artifacts
+  // the images resolve immediately, so the placeholder classes must be
+  // removed to avoid a permanent pulse animation.
+  return withCssUrls.replace(
+    /(<img\b[^>]*\sclass\s*=\s*)(["'])([^"']*)\2/gi,
+    (match, prefix, quote, classValue) => {
+      const cleaned = classValue
+        .split(/\s+/)
+        .filter((cls) => cls !== 'animate-pulse' && cls !== 'bg-accent')
+        .join(' ')
+        .trim()
+      return `${prefix}${quote}${cleaned}${quote}`
     },
   )
 }

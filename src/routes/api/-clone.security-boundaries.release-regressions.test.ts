@@ -22,7 +22,7 @@ import { callRouteHandler } from './-route-handler.test-helper'
 const sessionId = 'k574ms14ma9f94keq30r7dq24x89n1k2'
 
 function postClone(body: unknown, headers?: HeadersInit) {
-  const request = new Request('https://ship-fast.io/api/clone', {
+  const request = new Request('https://ship-fast.ai/api/clone', {
     body: JSON.stringify(body),
     headers: { 'Content-Type': 'application/json', ...headers },
     method: 'POST',

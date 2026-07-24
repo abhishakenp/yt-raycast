@@ -83,6 +83,7 @@ vi.mock('@/shared/auth/clerk-runtime', () => ({
 }))
 
 vi.mock('@/shared/auth/use-optional-auth', () => ({
+  useIsAdmin: () => false,
   useOptionalAuth: () => ({
     isLoaded: true,
     isSignedIn: true,

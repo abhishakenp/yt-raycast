@@ -43,7 +43,7 @@ describe('GitHub connect API routes', () => {
     githubOAuthMocks.start.mockResolvedValue(new Response('start'))
     const Route = await importRoute('./github.connect.start')
     const request = new Request(
-      'https://ship-fast.io/api/github/connect/start',
+      'https://ship-fast.ai/api/github/connect/start',
       {
         method: 'POST',
       },
@@ -60,7 +60,7 @@ describe('GitHub connect API routes', () => {
     githubOAuthMocks.callback.mockResolvedValue(new Response('callback'))
     const Route = await importRoute('./github.connect.callback')
     const request = new Request(
-      'https://ship-fast.io/api/github/connect/callback?code=callback-code&state=state_123',
+      'https://ship-fast.ai/api/github/connect/callback?code=callback-code&state=state_123',
     )
 
     const response = await Route.options.server.handlers.GET({ request })

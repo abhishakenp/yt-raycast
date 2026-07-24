@@ -238,7 +238,7 @@ ${routes.map((route) => `- \`${route}\``).join('\n')}
 
 ## Built with ShipFast
 
-Generate your own SaaS starter: https://ship-fast.io
+Generate your own SaaS starter: https://ship-fast.ai
 `
 }
 

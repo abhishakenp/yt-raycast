@@ -1,6 +1,6 @@
 import { Download, LoaderCircle, Lock, TriangleAlert } from 'lucide-react'
-import { useQuery } from 'convex/react'
-import { useRef, useState } from 'react'
+import { useMutation, useQuery } from 'convex/react'
+import { useEffect, useRef, useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
 import { useIsAdmin, useOptionalAuth } from '@/shared/auth/use-optional-auth'
@@ -150,8 +150,12 @@ export function ExportPanel({ sessionId }: ExportPanelProps) {
   const exportTargets = useQuery(api.sessions.getExportTargets, {
     lookup: sessionId,
   })
+  const ensureExportArtifact = useMutation(
+    api.sessions.ensureExportArtifactByLookup,
+  )
   const [error, setError] = useState<string>()
   const [activeTarget, setActiveTarget] = useState<ExportTarget['target']>()
+  const [waitingTarget, setWaitingTarget] = useState<ExportTarget['target']>()
   const [downloadingTarget, setDownloadingTarget] =
     useState<ExportTarget['target']>()
   const actionInFlightRef = useRef(false)
@@ -283,6 +287,27 @@ export function ExportPanel({ sessionId }: ExportPanelProps) {
     if (actionInFlightRef.current) return
     actionInFlightRef.current = true
     try {
+      if (!targetConfig.artifactReady) {
+        setWaitingTarget(targetConfig.target)
+        setError(undefined)
+        try {
+          const result = await ensureExportArtifact({
+            lookup: sessionId,
+            target: targetConfig.target,
+            anonymousOwnerSecret: readOwnerSecret(sessionId),
+          })
+          if (result?.status !== 'ready') return
+          setWaitingTarget(undefined)
+        } catch (ensureError) {
+          setWaitingTarget(undefined)
+          setError(
+            ensureError instanceof Error
+              ? ensureError.message
+              : 'Export failed',
+          )
+          return
+        }
+      }
       if (targetConfig.requiresPayment && !isAdmin) {
         await createExport(targetConfig.target)
         return
@@ -307,6 +332,25 @@ export function ExportPanel({ sessionId }: ExportPanelProps) {
     : loadingTargets
   const hasActiveBuild = visibleTargets.some((item) => isArtifactInFlight(item))
   const now = useProgressTick(hasActiveBuild)
+
+  useEffect(() => {
+    if (waitingTarget === undefined) return
+    const item = visibleTargets.find(
+      (target) => target.target === waitingTarget,
+    )
+    if (item === undefined) {
+      setWaitingTarget(undefined)
+      return
+    }
+    if (item.artifactReady) {
+      setWaitingTarget(undefined)
+      void runTargetAction(item)
+      return
+    }
+    if (item.artifactStatus === 'failed' || item.status === 'stale') {
+      setWaitingTarget(undefined)
+    }
+  }, [visibleTargets, waitingTarget])
 
   return (
     <div className="grid gap-3">
@@ -333,7 +377,9 @@ export function ExportPanel({ sessionId }: ExportPanelProps) {
                   ? NextIcon
                   : LakebedIcon
           const isBusy =
-            activeTarget === item.target || downloadingTarget === item.target
+            activeTarget === item.target ||
+            waitingTarget === item.target ||
+            downloadingTarget === item.target
           const isBuildPending =
             !item.artifactReady &&
             (item.artifactStatus === 'queued' ||
@@ -343,14 +389,18 @@ export function ExportPanel({ sessionId }: ExportPanelProps) {
           const artifactInFlight = isArtifactInFlight(item)
           const progressPercent = artifactProgressPercent(item)
           const showProgress =
-            artifactInFlight || (activeTarget === item.target && isBuildPending)
+            artifactInFlight ||
+            waitingTarget === item.target ||
+            (activeTarget === item.target && isBuildPending)
           const progressBackground =
             showProgress && progressPercent > 0
               ? `linear-gradient(110deg, rgba(34, 211, 238, 0.16) 0%, rgba(34, 211, 238, 0.08) ${progressPercent}%, transparent ${progressPercent}%, transparent 100%)`
               : undefined
           const statusText = showProgress
             ? exportProgressText(item, now)
-            : activeTarget === item.target || downloadingTarget === item.target
+            : activeTarget === item.target ||
+                downloadingTarget === item.target ||
+                waitingTarget === item.target
               ? 'Working...'
               : item.artifactStatus === 'failed'
                 ? (item.artifactError ?? 'Export failed')
@@ -365,7 +415,8 @@ export function ExportPanel({ sessionId }: ExportPanelProps) {
               disabled={
                 !hasResolvedTargets ||
                 activeTarget !== undefined ||
-                downloadingTarget !== undefined
+                downloadingTarget !== undefined ||
+                waitingTarget !== undefined
               }
               key={item.target}
               onClick={() => void runTargetAction(item)}

@@ -69,6 +69,7 @@ vi.mock('@/shared/auth/clerk-runtime', () => ({
 }))
 
 vi.mock('@/shared/auth/use-optional-auth', () => ({
+  useIsAdmin: () => false,
   useOptionalAuth: () => ({
     isLoaded: true,
     isSignedIn: true,
@@ -156,57 +157,23 @@ describe('HomePage — secondary features', () => {
     cleanup()
   })
 
-  it('design reference toggle shows #design-ref-panel when checked, hides when unchecked', () => {
+  it('design reference toggle and panel are hidden from the homepage UI', () => {
     render(<HomePage />)
-    const toggle = document.getElementById(
-      'design-ref-toggle',
-    ) as HTMLInputElement
-    const panel = document.getElementById('design-ref-panel') as HTMLDivElement
-
-    expect(panel.classList.contains('hidden')).toBe(true)
-    expect(toggle.checked).toBe(false)
-
-    fireEvent.click(toggle)
-    expect(toggle.checked).toBe(true)
-    expect(panel.classList.contains('hidden')).toBe(false)
-    expect(panel.classList.contains('grid')).toBe(true)
-
-    fireEvent.click(toggle)
-    expect(toggle.checked).toBe(false)
-    expect(panel.classList.contains('hidden')).toBe(true)
+    // The design-ref toggle and panel were intentionally hidden from the
+    // homepage UI (commit 2f104c73). State vars and hidden form inputs are
+    // preserved for easy re-enable, but the visible toggle and panel are
+    // no longer rendered.
+    expect(document.getElementById('design-ref-toggle')).toBeNull()
+    expect(document.getElementById('design-ref-panel')).toBeNull()
   })
 
-  it('engine toggle group switches between v1/v2/v3 (aria-pressed flips)', () => {
+  it('engine version selector is hidden from the homepage UI', () => {
     render(<HomePage />)
-    const group = document.querySelector(
-      '[role="group"][aria-label="Engine version"]',
-    ) as HTMLElement
-    const buttons = Array.from(
-      group.querySelectorAll('button'),
-    ) as HTMLButtonElement[]
-
-    // 3 buttons: v1, v2, v3
-    expect(buttons).toHaveLength(3)
-
-    // v1 is active by default
-    expect(buttons[0].getAttribute('aria-pressed')).toBe('true')
-    expect(buttons[1].getAttribute('aria-pressed')).toBe('false')
-    expect(buttons[2].getAttribute('aria-pressed')).toBe('false')
-
-    // Click v2
-    fireEvent.click(buttons[1])
-    expect(buttons[1].getAttribute('aria-pressed')).toBe('true')
-    expect(buttons[0].getAttribute('aria-pressed')).toBe('false')
-
-    // Click v3
-    fireEvent.click(buttons[2])
-    expect(buttons[2].getAttribute('aria-pressed')).toBe('true')
-    expect(buttons[1].getAttribute('aria-pressed')).toBe('false')
-
-    // Click v1 again
-    fireEvent.click(buttons[0])
-    expect(buttons[0].getAttribute('aria-pressed')).toBe('true')
-    expect(buttons[2].getAttribute('aria-pressed')).toBe('false')
+    // The v1/v2/v3 engine selector was intentionally hidden from the
+    // homepage UI (commit 2f104c73).
+    expect(
+      document.querySelector('[role="group"][aria-label="Engine version"]'),
+    ).toBeNull()
   })
 
   it('private generation checkbox opens PrivateGenerationModal, Escape closes it', () => {
@@ -239,15 +206,15 @@ describe('HomePage — secondary features', () => {
     expect(modalClosed.getAttribute('aria-hidden')).toBe('true')
   })
 
-  it('share bonus panel visible when errorMessage includes "quota exhausted", hidden when no error', () => {
-    controller.errorMessage = 'Your quota exhausted for today'
+  it('share bonus panel visible when errorMessage includes "Share on social media", hidden when no error', () => {
+    controller.errorMessage =
+      'Your quota exhausted. Share on social media for +1 free preview'
     controller.shareBonusClaimed = false
     const { rerender } = render(<HomePage />)
 
     const panel = document.getElementById('share-bonus-panel') as HTMLDivElement
     expect(panel.classList.contains('flex')).toBe(true)
     expect(panel.classList.contains('hidden')).toBe(false)
-    expect(controller.refreshShareBonusStatus).toHaveBeenCalled()
 
     // Clearing the error message hides the panel.
     controller.errorMessage = undefined

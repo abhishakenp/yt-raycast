@@ -4,7 +4,10 @@ import { api } from '../../../../convex/_generated/api'
 import { containsOpenUiHandoffMarkers } from '../../../../convex/lib/openui_error_html'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
-type LakebedPublishClient = Pick<ConvexHttpClient, 'action' | 'query'> &
+type LakebedPublishClient = Pick<
+  ConvexHttpClient,
+  'action' | 'mutation' | 'query'
+> &
   Partial<Pick<ConvexHttpClient, 'setAuth'>>
 
 type LakebedPublishBody = {
@@ -51,6 +54,11 @@ function isLakebedArtifactStatus(
   )
 }
 
+function isPaymentRequiredError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error)
+  return /PAYMENT_REQUIRED|Subscribe|purchase/i.test(message)
+}
+
 export async function createLakebedPublishResponse(
   request: Request,
   sessionId: string,
@@ -70,6 +78,33 @@ export async function createLakebedPublishResponse(
     const token = getBearerToken(request)
     if (token !== null) client.setAuth?.(token)
 
+    // Server-side payment gate — block non-entitled users before any deploy
+    // compute starts. Mirrors the export entitlement check pattern.
+    try {
+      await client.mutation(
+        api.sessions.assertLakebedDeploymentEntitlementByLookup,
+        {
+          lookup: sessionId,
+          anonymousOwnerSecret: body.anonymousOwnerSecret,
+        },
+      )
+    } catch (error) {
+      if (isPaymentRequiredError(error)) {
+        const message = error instanceof Error ? error.message : undefined
+        return json(
+          {
+            error: /Subscribe to Pro|purchase download credits/i.test(
+              message ?? '',
+            )
+              ? message
+              : 'Subscribe to Pro or purchase download credits to deploy to Lakebed.',
+          },
+          { status: 402 },
+        )
+      }
+      throw error
+    }
+
     const existing = await client.query(
       api.sessions.getDeploymentStatusByLookup,
       {
@@ -84,6 +119,21 @@ export async function createLakebedPublishResponse(
         },
         { status: 500 },
       )
+    }
+
+    // Ensure the lakebed artifact build has been kicked off before checking
+    // its status. Without this, a direct publish attempt (e.g. admin bypassing
+    // the client-side prepare flow) would see a non-ready artifact and return
+    // "still being prepared" without ever starting the build.
+    try {
+      await client.mutation(api.sessions.ensureExportArtifactByLookup, {
+        lookup: sessionId,
+        target: 'lakebed' as const,
+        anonymousOwnerSecret: body.anonymousOwnerSecret,
+      })
+    } catch {
+      // Build may already be in flight or the artifact is already ready —
+      // proceed to check the artifact status below.
     }
 
     const artifactResult = await client.query(
@@ -132,6 +182,19 @@ export async function createLakebedPublishResponse(
     return json(result)
   } catch (error) {
     console.error('[lakebed_publish]', error)
+    if (isPaymentRequiredError(error)) {
+      const message = error instanceof Error ? error.message : undefined
+      return json(
+        {
+          error: /Subscribe to Pro|purchase download credits/i.test(
+            message ?? '',
+          )
+            ? message
+            : 'Subscribe to Pro or purchase download credits to deploy to Lakebed.',
+        },
+        { status: 402 },
+      )
+    }
     return json({ error: 'Lakebed publish failed.' }, { status: 500 })
   }
 }

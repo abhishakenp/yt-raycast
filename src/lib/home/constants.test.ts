@@ -25,7 +25,7 @@ describe('home constants', () => {
     vi.stubGlobal('window', { location: { hostname: 'localhost' } })
     expect(isLocalDevHost()).toBe(true)
 
-    vi.stubGlobal('window', { location: { hostname: 'ship-fast.io' } })
+    vi.stubGlobal('window', { location: { hostname: 'ship-fast.ai' } })
     expect(isLocalDevHost()).toBe(false)
   })
 })

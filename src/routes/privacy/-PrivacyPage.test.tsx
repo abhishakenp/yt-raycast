@@ -33,9 +33,9 @@ describe('PrivacyPage legal content', () => {
     expect(view.getByText('Surya Remanan and Abhishek Pandey')).toBeTruthy()
     expect(
       view
-        .getAllByRole('link', { name: 'hello@ship-fast.io' })[0]
+        .getAllByRole('link', { name: 'hello@ship-fast.ai' })[0]
         ?.getAttribute('href'),
-    ).toBe('mailto:hello%40ship-fast.io')
+    ).toBe('mailto:hello%40ship-fast.ai')
     expect(
       view.getByRole('heading', { name: '3. What we collect' }),
     ).toBeTruthy()

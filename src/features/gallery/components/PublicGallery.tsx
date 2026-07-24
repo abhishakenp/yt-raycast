@@ -99,6 +99,8 @@ export type GalleryPayload = {
   availableCategories?: GalleryCategoryOption[]
 }
 
+const galleryPreviewImageCacheRevision = 'preview-html-export-v6'
+
 function getPromptTitle(prompt?: string) {
   const cleaned = prompt?.trim()
   if (cleaned === undefined || cleaned.length === 0) return 'Generated website'
@@ -155,7 +157,9 @@ function getGalleryPreviewImageSrc(session: GallerySession): string {
     return base
   }
 
-  return `${base}?v=${encodeURIComponent(String(session.updatedAt))}`
+  return `${base}?v=${encodeURIComponent(
+    `${session.updatedAt}.${galleryPreviewImageCacheRevision}`,
+  )}`
 }
 
 function GalleryCardPreview({ session }: { session: GallerySession }) {

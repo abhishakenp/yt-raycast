@@ -426,12 +426,16 @@ describe('inline edit export artifact invalidation release regressions', () => {
   it('treats an unchanged edit as a no-op without invalidating the artifact', async () => {
     const t = artifactLifecycleTest()
     const sessionId = await createReadySession(t, { key: 'no_op' })
-    const seeded = await seedReadyArtifact(t, sessionId, 'html', 1, 'no-op-v1')
+    await seedReadyArtifact(t, sessionId, 'html', 1, 'no-op-v1')
     await t.mutation(api.sessions.publishPreviewByLookup, {
       lookup: sessionId,
       anonymousOwnerSecret: OWNER_SECRET,
       requestedSlug: 'artifact-no-op-preview',
     })
+    // publishPreviewByLookup forces a rebuild to inject the "Built with Ship
+    // Fast" badge; re-seed the ready artifact so the no-op edit test starts
+    // from a known-ready state.
+    const seeded = await seedReadyArtifact(t, sessionId, 'html', 1, 'no-op-v1')
 
     const result = await t.mutation(api.sessions.createEdit, {
       sessionId,

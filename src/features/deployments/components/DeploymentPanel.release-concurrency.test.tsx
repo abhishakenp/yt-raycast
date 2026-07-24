@@ -21,15 +21,17 @@ interface ConvexState {
     targets: Array<{
       artifactReady: boolean
       artifactStatus: string
-      deployedUrl: null
-      target: 'lakebed'
+      deployedUrl?: null
+      target: 'html' | 'lakebed'
     }>
   }
+  lakebedEntitlement: { requiresPayment: boolean }
   publishPreview: ReturnType<typeof vi.fn>
   refs: {
     deploymentStatus: object
     ensureArtifact: object
     exportTargets: object
+    lakebedEntitlement: object
     publishPreview: object
   }
 }
@@ -42,11 +44,13 @@ const convexState = vi.hoisted<ConvexState>(function createConvexState() {
       isPrivate: false,
       targets: [],
     },
+    lakebedEntitlement: { requiresPayment: false },
     publishPreview: vi.fn(),
     refs: {
       deploymentStatus: {},
       ensureArtifact: {},
       exportTargets: {},
+      lakebedEntitlement: {},
       publishPreview: {},
     },
   }
@@ -59,6 +63,8 @@ vi.mock('../../../../convex/_generated/api', function mockConvexApi() {
         ensureExportArtifactByLookup: convexState.refs.ensureArtifact,
         getDeploymentStatusByLookup: convexState.refs.deploymentStatus,
         getExportTargets: convexState.refs.exportTargets,
+        getLakebedDeploymentEntitlementByLookup:
+          convexState.refs.lakebedEntitlement,
         publishPreviewByLookup: convexState.refs.publishPreview,
       },
     },
@@ -83,6 +89,9 @@ vi.mock('convex/react', function mockConvexReact() {
     if (reference === convexState.refs.deploymentStatus) {
       return convexState.deploymentStatus
     }
+    if (reference === convexState.refs.lakebedEntitlement) {
+      return convexState.lakebedEntitlement
+    }
     throw new Error('Unknown query reference')
   }
 
@@ -91,6 +100,22 @@ vi.mock('convex/react', function mockConvexReact() {
     useQuery,
   }
 })
+
+vi.mock('@/shared/auth/use-optional-auth', () => ({
+  useIsAdmin: () => false,
+  useOptionalAuth: () => ({
+    getToken: vi.fn(async () => null),
+    isSignedIn: false,
+  }),
+}))
+
+vi.mock('@/shared/auth/SignInGate', () => ({
+  useSignInGate: () => ({
+    isGated: false,
+    openSignIn: vi.fn(),
+    requireSignIn: () => true,
+  }),
+}))
 
 import { DeploymentPanel } from './DeploymentPanel'
 
@@ -113,6 +138,11 @@ describe('DeploymentPanel release concurrency', () => {
     convexState.exportTargets = {
       isPrivate: false,
       targets: [
+        {
+          artifactReady: true,
+          artifactStatus: 'ready',
+          target: 'html',
+        },
         {
           artifactReady: false,
           artifactStatus: 'building',

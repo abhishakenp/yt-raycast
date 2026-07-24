@@ -35,7 +35,7 @@ const realFailedLakebedDeployment = {
   sessionId: 'k572nbkrw902ef81nn4ha1yq7989njsg',
   slug: 'gov-site-in-hindi',
   status: 'failed',
-  url: 'https://gov-site-in-hindi.ship-fast.io',
+  url: 'https://gov-site-in-hindi.ship-fast.ai',
   errorMessage:
     'Build failed with 3 errors:\nlakebed-source:client/section-kit/SignInButton.tsx:3:9: ERROR: No matching export in "lakebed-source:client/lib/lakebed.ts" for import "useAuth"',
 }
@@ -44,7 +44,7 @@ describe('public metadata responses', () => {
   it('serves app-level llms.txt on the base domain', async () => {
     const response = await createPublicMetadataResponse(
       'llms',
-      new Request('https://ship-fast.io/llms.txt'),
+      new Request('https://ship-fast.ai/llms.txt'),
     )
     const body = await response.text()
 
@@ -57,30 +57,30 @@ describe('public metadata responses', () => {
   it('serves app-level sitemap.xml with public app pages', async () => {
     const response = await createPublicMetadataResponse(
       'sitemap',
-      new Request('https://ship-fast.io/sitemap.xml'),
+      new Request('https://ship-fast.ai/sitemap.xml'),
     )
     const body = await response.text()
 
     expect(response.status).toBe(200)
     expect(response.headers.get('content-type')).toContain('application/xml')
-    expect(body).toContain('<loc>https://ship-fast.io/</loc>')
-    expect(body).toContain('<loc>https://ship-fast.io/gallery</loc>')
+    expect(body).toContain('<loc>https://ship-fast.ai/</loc>')
+    expect(body).toContain('<loc>https://ship-fast.ai/gallery</loc>')
   })
 
   it('infers deployment slugs from public subdomain hosts', () => {
     expect(
       getDeploymentSlugFromRequest(
-        new Request('https://atlas-notes.ship-fast.io/robots.txt'),
+        new Request('https://atlas-notes.ship-fast.ai/robots.txt'),
       ),
     ).toBe('atlas-notes')
     expect(
       getDeploymentSlugFromRequest(
-        new Request('https://ship-fast.io/robots.txt'),
+        new Request('https://ship-fast.ai/robots.txt'),
       ),
     ).toBeUndefined()
     expect(
       getDeploymentSlugFromRequest(
-        new Request('https://www.ship-fast.io/robots.txt'),
+        new Request('https://www.ship-fast.ai/robots.txt'),
       ),
     ).toBeUndefined()
   })
@@ -91,7 +91,7 @@ describe('public metadata responses', () => {
         new Request('https://internal.vercel.app/robots.txt', {
           headers: {
             'x-forwarded-host':
-              'a-craft-beer-brewery.ship-fast.io, internal.vercel.app',
+              'a-craft-beer-brewery.ship-fast.ai, internal.vercel.app',
           },
         }),
       ),
@@ -107,7 +107,7 @@ describe('public metadata responses', () => {
           return {
             slug: 'atlas-notes',
             status: 'ready',
-            url: 'https://atlas-notes.ship-fast.io',
+            url: 'https://atlas-notes.ship-fast.ai',
           }
         }
         return {
@@ -119,7 +119,7 @@ describe('public metadata responses', () => {
 
     const response = await createPublicMetadataResponse(
       'llms',
-      new Request('https://atlas-notes.ship-fast.io/llms.txt'),
+      new Request('https://atlas-notes.ship-fast.ai/llms.txt'),
       { client },
     )
     const body = await response.text()
@@ -129,7 +129,7 @@ describe('public metadata responses', () => {
     expect(response.headers.get('x-ship-fast-preview-version')).toBe('4')
     expect(body).toContain('# Atlas Notes')
     expect(body).toContain('Shared launch docs for operators.')
-    expect(body).toContain('Site URL: https://atlas-notes.ship-fast.io/')
+    expect(body).toContain('Site URL: https://atlas-notes.ship-fast.ai/')
     expect(calls).toEqual([{ slug: 'atlas-notes' }, { lookup: 'atlas-notes' }])
   })
 
@@ -140,7 +140,7 @@ describe('public metadata responses', () => {
           return {
             slug: 'atlas-notes',
             status: 'ready',
-            url: 'https://atlas-notes.ship-fast.io',
+            url: 'https://atlas-notes.ship-fast.ai',
           }
         }
         return {
@@ -152,13 +152,13 @@ describe('public metadata responses', () => {
 
     const response = await createPublicMetadataResponse(
       'sitemap',
-      new Request('https://ship-fast.io/preview/atlas-notes/sitemap.xml'),
+      new Request('https://ship-fast.ai/preview/atlas-notes/sitemap.xml'),
       { slug: 'Atlas Notes', client },
     )
     const body = await response.text()
 
     expect(response.status).toBe(200)
-    expect(body).toContain('<loc>https://atlas-notes.ship-fast.io/</loc>')
+    expect(body).toContain('<loc>https://atlas-notes.ship-fast.ai/</loc>')
   })
 
   it('serves llms.txt for a real ready Lakebed deployment using its stored preview metadata', async () => {
@@ -173,7 +173,7 @@ describe('public metadata responses', () => {
 
     const response = await createPublicMetadataResponse(
       'llms',
-      new Request('https://a-craft-beer-brewery.ship-fast.io/llms.txt'),
+      new Request('https://a-craft-beer-brewery.ship-fast.ai/llms.txt'),
       { client },
     )
     const body = await response.text()
@@ -204,7 +204,7 @@ describe('public metadata responses', () => {
 
     const response = await createPublicMetadataResponse(
       'llms',
-      new Request('https://a-craft-beer-brewery.ship-fast.io/llms.txt'),
+      new Request('https://a-craft-beer-brewery.ship-fast.ai/llms.txt'),
       { client },
     )
 
@@ -226,7 +226,7 @@ describe('public metadata responses', () => {
 
     const response = await createPublicMetadataResponse(
       'robots',
-      new Request('https://gov-site-in-hindi.ship-fast.io/robots.txt'),
+      new Request('https://gov-site-in-hindi.ship-fast.ai/robots.txt'),
       { client },
     )
     const body = await response.text()
@@ -254,7 +254,7 @@ describe('public metadata responses', () => {
 
     const response = await createPublicMetadataResponse(
       'llms',
-      new Request('https://a-craft-beer-brewery.ship-fast.io/llms.txt'),
+      new Request('https://a-craft-beer-brewery.ship-fast.ai/llms.txt'),
       { client },
     )
 
@@ -282,7 +282,7 @@ describe('public metadata responses', () => {
 
     const response = await createPublicMetadataResponse(
       'llms',
-      new Request('https://a-craft-beer-brewery.ship-fast.io/llms.txt'),
+      new Request('https://a-craft-beer-brewery.ship-fast.ai/llms.txt'),
       { client: client },
     )
     const body = await response.text()
@@ -311,7 +311,7 @@ describe('public metadata responses', () => {
 
     const response = await createPublicMetadataResponse(
       'llms',
-      new Request('https://a-craft-beer-brewery.ship-fast.io/llms.txt'),
+      new Request('https://a-craft-beer-brewery.ship-fast.ai/llms.txt'),
       { client },
     )
     const body = await response.text()
@@ -340,7 +340,7 @@ describe('public metadata responses', () => {
     const response = await createPublicMetadataResponse(
       'llms',
       new Request(
-        `https://${realOpenUiHandoffPreview.slug}.ship-fast.io/llms.txt`,
+        `https://${realOpenUiHandoffPreview.slug}.ship-fast.ai/llms.txt`,
       ),
       { client },
     )
@@ -367,7 +367,7 @@ describe('public metadata responses', () => {
     const response = await createPublicMetadataResponse(
       'llms',
       new Request(
-        `https://${realReadyLakebedDeployment.slug}.ship-fast.io/llms.txt`,
+        `https://${realReadyLakebedDeployment.slug}.ship-fast.ai/llms.txt`,
       ),
       { client },
     )
@@ -400,7 +400,7 @@ describe('public metadata responses', () => {
 
     const response = await createPublicMetadataResponse(
       'llms',
-      new Request('https://a-craft-beer-brewery.ship-fast.io/llms.txt'),
+      new Request('https://a-craft-beer-brewery.ship-fast.ai/llms.txt'),
       { client },
     )
     const body = await response.text()
@@ -416,7 +416,7 @@ describe('public metadata responses', () => {
 
     const response = await createPublicMetadataResponse(
       'robots',
-      new Request('https://missing.ship-fast.io/robots.txt'),
+      new Request('https://missing.ship-fast.ai/robots.txt'),
       { client },
     )
 

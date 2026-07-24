@@ -8,7 +8,7 @@ import {
 } from './session-preview-edit-response'
 
 function jsonRequest(body: unknown, headers?: HeadersInit) {
-  return new Request('https://ship-fast.io/api/preview-edit', {
+  return new Request('https://ship-fast.ai/api/preview-edit', {
     body: JSON.stringify(body),
     headers: { 'Content-Type': 'application/json', ...headers },
     method: 'POST',

@@ -16,11 +16,18 @@ function requestFor(body: unknown = {}) {
   )
 }
 
+function paymentRequiredError(
+  message = 'Subscribe to Pro or purchase download credits to deploy to Lakebed.',
+) {
+  const err = new Error(JSON.stringify({ code: 'PAYMENT_REQUIRED', message }))
+  return err
+}
+
 const realConvexFailedLakebedDeployment = {
   deploymentId: 'js7bs1688tg9art1de6x9jc4ys89m106',
   sessionId: 'k572nbkrw902ef81nn4ha1yq7989njsg',
   slug: 'gov-site-in-hindi',
-  url: 'https://gov-site-in-hindi.ship-fast.io',
+  url: 'https://gov-site-in-hindi.ship-fast.ai',
   status: 'failed',
   errorMessage:
     'Build failed with 3 errors:\nlakebed-source:client/section-kit/SignInButton.tsx:3:9: ERROR: No matching export in "lakebed-source:client/lib/lakebed.ts" for import "useAuth"\nlakebed-source:client/section-kit/SignInButton.tsx:3:18: ERROR: No matching export in "lakebed-source:client/lib/lakebed.ts" for import "signInWithGoogle"\nlakebed-source:client/section-kit/SignInButton.tsx:3:36: ERROR: No matching export in "lakebed-source:client/lib/lakebed.ts" for import "signOut"',
@@ -43,6 +50,7 @@ describe('createLakebedPublishResponse', () => {
           status: 'ready',
           filesUrl: 'https://storage.test/lakebed-files.json',
         }),
+      mutation: vi.fn().mockResolvedValue({ entitled: true }),
       action: vi.fn(async () => ({
         provider: 'lakebed',
         status: 'ready',
@@ -80,6 +88,7 @@ describe('createLakebedPublishResponse', () => {
           url: 'https://old-site.lakebed.app',
         })
         .mockResolvedValueOnce({ status: 'building', filesUrl: null }),
+      mutation: vi.fn().mockResolvedValue({ entitled: true }),
       action: vi.fn(),
       setAuth: vi.fn(),
     }
@@ -104,6 +113,7 @@ describe('createLakebedPublishResponse', () => {
         .fn()
         .mockResolvedValueOnce(null)
         .mockResolvedValueOnce({ status: 'building', filesUrl: null }),
+      mutation: vi.fn().mockResolvedValue({ entitled: true }),
       action: vi.fn(),
       setAuth: vi.fn(),
     }
@@ -134,6 +144,7 @@ describe('createLakebedPublishResponse', () => {
         url: realConvexFailedLakebedDeployment.url,
         errorMessage: realConvexFailedLakebedDeployment.errorMessage,
       }),
+      mutation: vi.fn().mockResolvedValue({ entitled: true }),
       action: vi.fn(),
       setAuth: vi.fn(),
     }
@@ -164,6 +175,7 @@ describe('createLakebedPublishResponse', () => {
         status: 'ready',
         filesUrl: 'https://storage.test/lakebed-files.json',
       }),
+      mutation: vi.fn().mockResolvedValue({ entitled: true }),
       action: vi.fn(async () => ({
         provider: 'lakebed',
         status: 'ready',
@@ -207,6 +219,7 @@ describe('createLakebedPublishResponse', () => {
         status: 'ready',
         filesUrl,
       }),
+      mutation: vi.fn().mockResolvedValue({ entitled: true }),
       action: vi.fn(async () => ({
         provider: 'lakebed',
         status: 'ready',
@@ -242,6 +255,7 @@ describe('createLakebedPublishResponse', () => {
         status: 'ready',
         filesUrl: 'https://storage.test/gov-site-in-hindi-files.json',
       }),
+      mutation: vi.fn().mockResolvedValue({ entitled: true }),
       action: vi.fn(async () => {
         throw new Error(realConvexFailedLakebedDeployment.errorMessage)
       }),
@@ -266,5 +280,105 @@ describe('createLakebedPublishResponse', () => {
     expect(JSON.stringify(body)).not.toContain(
       realConvexFailedLakebedDeployment.sessionId,
     )
+  })
+
+  it('blocks lakebed deploy with 402 when the entitlement check fails for an anonymous user', async () => {
+    const mutation = vi.fn().mockRejectedValue(paymentRequiredError())
+    const query = vi.fn()
+    const action = vi.fn()
+    const client = {
+      query,
+      mutation,
+      action,
+      setAuth: vi.fn(),
+    }
+
+    const response = await createLakebedPublishResponse(
+      requestFor(),
+      'session_123',
+      client,
+    )
+
+    expect(response.status).toBe(402)
+    expect(action).not.toHaveBeenCalled()
+    expect(query).not.toHaveBeenCalled()
+    const body = await response.json()
+    expect(body).toMatchObject({
+      error: expect.stringContaining('Subscribe to Pro'),
+    })
+  })
+
+  it('blocks lakebed deploy with 402 when the entitlement check fails for a free user', async () => {
+    const mutation = vi
+      .fn()
+      .mockRejectedValue(
+        paymentRequiredError(
+          'Subscribe to Pro or purchase download credits to deploy to Lakebed.',
+        ),
+      )
+    const query = vi.fn()
+    const action = vi.fn()
+    const client = {
+      query,
+      mutation,
+      action,
+      setAuth: vi.fn(),
+    }
+
+    const response = await createLakebedPublishResponse(
+      requestFor({ anonymousOwnerSecret: 'owner-secret' }),
+      'session_123',
+      client,
+    )
+
+    expect(response.status).toBe(402)
+    expect(action).not.toHaveBeenCalled()
+    expect(query).not.toHaveBeenCalled()
+    const body = await response.json()
+    expect(body).toMatchObject({
+      error: expect.stringContaining('Subscribe to Pro'),
+    })
+  })
+
+  it('does not call the deploy action or artifact queries when payment is required', async () => {
+    const mutation = vi.fn().mockRejectedValue(paymentRequiredError())
+    const query = vi.fn()
+    const action = vi.fn()
+    const client = {
+      query,
+      mutation,
+      action,
+      setAuth: vi.fn(),
+    }
+
+    await createLakebedPublishResponse(requestFor(), 'session_123', client)
+
+    expect(mutation).toHaveBeenCalledTimes(1)
+    expect(query).not.toHaveBeenCalled()
+    expect(action).not.toHaveBeenCalled()
+  })
+
+  it('passes the anonymousOwnerSecret to the entitlement mutation', async () => {
+    const mutation = vi.fn().mockResolvedValue({ entitled: true })
+    const client = {
+      query: vi
+        .fn()
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce({ status: 'building', filesUrl: null }),
+      mutation,
+      action: vi.fn(),
+      setAuth: vi.fn(),
+    }
+
+    await createLakebedPublishResponse(
+      requestFor({ anonymousOwnerSecret: 'my-secret' }),
+      'session_123',
+      client,
+    )
+
+    expect(mutation).toHaveBeenCalledWith(expect.anything(), {
+      lookup: 'session_123',
+      anonymousOwnerSecret: 'my-secret',
+    })
   })
 })

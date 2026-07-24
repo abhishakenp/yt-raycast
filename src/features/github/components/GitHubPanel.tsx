@@ -10,6 +10,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
 import {
+  useIsAdmin,
   useOptionalAuth,
   useOptionalClerk,
 } from '@/shared/auth/use-optional-auth'
@@ -204,6 +205,7 @@ function consumePendingPush(sessionId: string): GitHubTarget['target'] | null {
 export function GitHubPanel({ sessionId }: GitHubPanelProps) {
   const auth = useOptionalAuth()
   const clerk = useOptionalClerk()
+  const isAdmin = useIsAdmin()
   const exportTargets = useQuery(api.sessions.getExportTargets, {
     lookup: sessionId,
   })
@@ -246,13 +248,13 @@ export function GitHubPanel({ sessionId }: GitHubPanelProps) {
     target: GitHubTarget['target'],
     appToken?: string,
   ) => {
-    if (!isClerkDisabled() && !auth.isSignedIn) {
+    if (!isClerkDisabled() && !isAdmin && !auth.isSignedIn) {
       void clerk.openSignIn?.()
       return
     }
 
     const token = appToken ?? (await auth.getToken({ template: 'convex' }))
-    if (!token && !isClerkDisabled())
+    if (!token && !isClerkDisabled() && !isAdmin)
       throw new Error('Sign in before connecting GitHub.')
 
     const response = await fetch('/api/github/connect/start', {
@@ -326,7 +328,7 @@ export function GitHubPanel({ sessionId }: GitHubPanelProps) {
         return
       }
 
-      if (!isClerkDisabled() && !auth.isSignedIn) {
+      if (!isClerkDisabled() && !isAdmin && !auth.isSignedIn) {
         void clerk.openSignIn?.()
         setError('Sign in before pushing to GitHub.')
         return
@@ -354,8 +356,9 @@ export function GitHubPanel({ sessionId }: GitHubPanelProps) {
       }
 
       if (
-        targetConfig.requiresPayment ||
-        targetConfig.status === 'payment_required'
+        !isAdmin &&
+        (targetConfig.requiresPayment ||
+          targetConfig.status === 'payment_required')
       ) {
         setError('Subscribe to Pro or use a download credit before pushing.')
         return
@@ -364,7 +367,7 @@ export function GitHubPanel({ sessionId }: GitHubPanelProps) {
       setActiveTarget(targetConfig.target)
       try {
         const appToken = await auth.getToken({ template: 'convex' })
-        if (!appToken && !isClerkDisabled())
+        if (!appToken && !isClerkDisabled() && !isAdmin)
           throw new Error('Sign in before pushing to GitHub.')
         const anonymousOwnerSecret = readOwnerSecret(sessionId)
 
@@ -405,6 +408,11 @@ export function GitHubPanel({ sessionId }: GitHubPanelProps) {
             targetConfig.target,
             appToken ?? undefined,
           )
+          return
+        }
+        if (response.status === 202) {
+          // Build was kicked off — show progress, not an error
+          setWaitingTarget(targetConfig.target)
           return
         }
         if (!response.ok) {
@@ -568,7 +576,7 @@ export function GitHubPanel({ sessionId }: GitHubPanelProps) {
                     className="size-4 animate-spin"
                     strokeWidth={1.8}
                   />
-                ) : item.requiresPayment ? (
+                ) : item.requiresPayment && !isAdmin ? (
                   <Lock className="size-4 text-amber-300" strokeWidth={1.8} />
                 ) : item.status === 'stale' ? (
                   <TriangleAlert
