@@ -31,7 +31,6 @@ import {
 } from '../lib/examples-data'
 import { parseExamplesThemeSearch } from '../lib/examples-theme-search'
 
-const EXAMPLES_PREVIEW_SESSION_ID = 'k574ms14ma9f94keq30r7dq24x89n1k2'
 const SHORTCUT_WINDOW_MS = 2000
 const SHORTCUT_PRESS_COUNT = 5
 
@@ -242,7 +241,6 @@ export const ExamplesCategoryPage = () => {
         <SessionGeneratedPreview
           key={previewKey}
           source={site.source}
-          sessionId={EXAMPLES_PREVIEW_SESSION_ID}
           prompt={`${site.label} full site examples`}
           siteSpecJson={JSON.stringify({
             brand: site.label,

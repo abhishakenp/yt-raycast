@@ -10,7 +10,7 @@ vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
     source,
   }: {
     locale?: string
-    sessionId: string
+    sessionId?: string
     source: string
   }) => (
     <section data-locale={locale} data-testid="generated-preview">

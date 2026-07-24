@@ -176,7 +176,7 @@ export function withSectionRealtime(
     const session = useOptionalLakebedSession()
     const statementId = renderProps.statementId
 
-    if (!session || !statementId) {
+    if (!session?.sessionId || !statementId) {
       return createElement(Section, renderProps)
     }
 

@@ -62,7 +62,7 @@ export type {
 
 type LakebedSessionContextValue = {
   anonymousOwnerSecret?: string
-  sessionId: Id<'sessions'>
+  sessionId: Id<'sessions'> | undefined
 }
 
 type QueryResult<TQuery> = TQuery extends (
@@ -269,12 +269,14 @@ export function LakebedSessionProvider({
 }: {
   anonymousOwnerSecret?: string
   children?: ReactNode
-  sessionId: string
+  sessionId?: string
 }) {
   const value = useMemo(
     () => ({
       ...(anonymousOwnerSecret === undefined ? {} : { anonymousOwnerSecret }),
-      sessionId: sessionId as Id<'sessions'>,
+      ...(sessionId === undefined
+        ? {}
+        : { sessionId: sessionId as Id<'sessions'> }),
     }),
     [anonymousOwnerSecret, sessionId],
   )
@@ -322,7 +324,7 @@ export function useSessionState<TData extends JsonRecord = JsonRecord>(
   const session = useLakebedSession()
   const state = useConvexQuery(
     lakebedApi.getSessionState,
-    lakebedSessionArgs({ ...session, capsule }),
+    session.sessionId ? lakebedSessionArgs({ ...session, capsule }) : 'skip',
   ) as { auth: LakebedAuthContext; canWrite?: boolean; data: TData } | undefined
 
   return state === undefined
@@ -377,7 +379,7 @@ export function useOptionalSessionState<TData extends JsonRecord = JsonRecord>(
   const session = useOptionalLakebedSession()
   const state = useOptionalConvexQuery(
     lakebedApi?.getSessionState,
-    session ? lakebedSessionArgs({ ...session, capsule }) : 'skip',
+    session?.sessionId ? lakebedSessionArgs({ ...session, capsule }) : 'skip',
   ) as { auth: LakebedAuthContext; canWrite?: boolean; data: TData } | undefined
 
   return state === undefined
