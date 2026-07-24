@@ -208,3 +208,48 @@ describe('useIsAdmin', () => {
     expect(result.current).toBe(false)
   })
 })
+
+describe('isCurrentUserAdmin', () => {
+  afterEach(() => {
+    cleanup()
+    vi.unstubAllEnvs()
+    vi.unstubAllGlobals()
+    delete (window as Window & { Clerk?: unknown }).Clerk
+  })
+
+  it('returns true synchronously when the signed-in user is an admin', async () => {
+    vi.stubEnv('VITE_DISABLE_CLERK', '')
+    vi.stubEnv('VITE_CLERK_PUBLISHABLE_KEY', 'pk_test_admin_role')
+    setClerk({
+      addListener: vi.fn(),
+      session: { getToken: vi.fn() },
+      user: { id: 'user_admin', publicMetadata: { system_role: 'admin' } },
+    })
+    const { isCurrentUserAdmin } = await importOptionalAuth()
+    expect(isCurrentUserAdmin()).toBe(true)
+  })
+
+  it('returns false synchronously for a non-admin user', async () => {
+    vi.stubEnv('VITE_DISABLE_CLERK', '')
+    vi.stubEnv('VITE_CLERK_PUBLISHABLE_KEY', 'pk_test_admin_role')
+    setClerk({
+      addListener: vi.fn(),
+      session: { getToken: vi.fn() },
+      user: { id: 'user_normal', publicMetadata: { system_role: 'user' } },
+    })
+    const { isCurrentUserAdmin } = await importOptionalAuth()
+    expect(isCurrentUserAdmin()).toBe(false)
+  })
+
+  it('returns false when Clerk is not configured', async () => {
+    vi.stubEnv('VITE_DISABLE_CLERK', 'true')
+    vi.stubEnv('VITE_CLERK_PUBLISHABLE_KEY', 'pk_test_ignored')
+    setClerk({
+      addListener: vi.fn(),
+      session: { getToken: vi.fn() },
+      user: { id: 'user_admin', publicMetadata: { system_role: 'admin' } },
+    })
+    const { isCurrentUserAdmin } = await importOptionalAuth()
+    expect(isCurrentUserAdmin()).toBe(false)
+  })
+})

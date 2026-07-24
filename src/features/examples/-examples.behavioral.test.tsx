@@ -156,7 +156,7 @@ import {
   hasExampleCategory,
 } from './lib/examples-categories'
 import { getExampleCapsules, getExampleCategorySite } from './lib/examples-data'
-import { isExamplesEnabled } from './lib/examples-gate'
+import { isExamplesAccessible, isExamplesEnabled } from './lib/examples-gate'
 import {
   DEFAULT_EXAMPLES_THEME,
   parseExamplesThemeSearch,
@@ -272,6 +272,7 @@ describe('examples route behavior', () => {
   afterEach(() => {
     cleanup()
     vi.unstubAllEnvs()
+    delete (window as Window & { Clerk?: unknown }).Clerk
   })
 
   it('enables examples only when VITE_DISABLE_CLERK is true', () => {
@@ -317,6 +318,53 @@ describe('examples route behavior', () => {
     expect(() =>
       Route.options.beforeLoad?.({ params: { category: 'saas' } }),
     ).toThrow(RouteNotFoundError)
+  })
+
+  it('lets super admins through /examples even when Clerk is enabled', async () => {
+    vi.stubEnv('VITE_DISABLE_CLERK', 'false')
+    vi.stubEnv('VITE_CLERK_PUBLISHABLE_KEY', 'pk_test_examples_admin')
+    ;(window as Window & { Clerk?: unknown }).Clerk = {
+      addListener: vi.fn(),
+      session: { getToken: vi.fn() },
+      user: { id: 'user_admin', publicMetadata: { system_role: 'admin' } },
+    }
+
+    expect(isExamplesAccessible()).toBe(true)
+
+    const Route = await importExamplesRoute()
+    expect(() => Route.options.beforeLoad?.({ params: {} })).not.toThrow()
+  })
+
+  it('lets super admins through /examples/$category even when Clerk is enabled', async () => {
+    vi.stubEnv('VITE_DISABLE_CLERK', 'false')
+    vi.stubEnv('VITE_CLERK_PUBLISHABLE_KEY', 'pk_test_examples_admin')
+    ;(window as Window & { Clerk?: unknown }).Clerk = {
+      addListener: vi.fn(),
+      session: { getToken: vi.fn() },
+      user: { id: 'user_admin', publicMetadata: { systemRole: 'admin' } },
+    }
+
+    const Route = await importExamplesCategoryRoute()
+    expect(() =>
+      Route.options.beforeLoad?.({ params: { category: 'saas' } }),
+    ).not.toThrow()
+  })
+
+  it('still 404s for non-admin signed-in users when Clerk is enabled', async () => {
+    vi.stubEnv('VITE_DISABLE_CLERK', 'false')
+    vi.stubEnv('VITE_CLERK_PUBLISHABLE_KEY', 'pk_test_examples_user')
+    ;(window as Window & { Clerk?: unknown }).Clerk = {
+      addListener: vi.fn(),
+      session: { getToken: vi.fn() },
+      user: { id: 'user_normal', publicMetadata: { system_role: 'user' } },
+    }
+
+    expect(isExamplesAccessible()).toBe(false)
+
+    const Route = await importExamplesRoute()
+    expect(() => Route.options.beforeLoad?.({ params: {} })).toThrow(
+      RouteNotFoundError,
+    )
   })
 
   it('returns not found for unknown categories even when examples are enabled', async () => {
