@@ -41,7 +41,7 @@ vi.mock('./-MarketingShell', () => ({
 vi.mock('./-pricing-main-html', () => ({
   PRICING_PAGE_MAIN_HTML: `
     <section data-testid="pricing-copy">One plan. Everything included.</section>
-    <button data-pricing-checkout-cta="true">Start Pro</button>
+    <button data-pricing-checkout-cta="true"><span>Start Pro</span></button>
     <div data-faq-item>
       <button type="button" data-faq-trigger aria-expanded="false" aria-controls="pricing-faq-test">
         What is included in Pro?
