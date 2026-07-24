@@ -19,13 +19,15 @@ type LinkMockProps = Omit<ComponentPropsWithoutRef<'a'>, 'href'> & {
 }
 
 const topActionMocks = vi.hoisted(() => ({
-  authControls: vi.fn(({ autoOpen, renderButton, wrapProvider }) => (
-    <div
+  authControls: vi.fn(({ autoOpen, wrapProvider }) => (
+    <button
+      type="button"
       data-testid="homepage-auth-controls"
       data-auto-open={String(autoOpen)}
-      data-render-button={String(renderButton)}
       data-wrap-provider={String(wrapProvider)}
-    />
+    >
+      Sign in
+    </button>
   )),
 }))
 
@@ -125,18 +127,17 @@ describe('TopActions', () => {
     expect(topActionMocks.authControls).not.toHaveBeenCalled()
   })
 
-  it('loads the homepage auth controls and auto-opens sign-in when Clerk is configured', async () => {
+  it('renders one sign-in control through homepage auth controls when Clerk is configured', async () => {
     const { TopActions } = await importTopActions('pk_test_top_actions')
 
     render(<TopActions />)
-    fireEvent.click(screen.getByRole('button', { name: /sign in/i }))
 
     await waitFor(() =>
       expect(
         screen
           .getByTestId('homepage-auth-controls')
           .getAttribute('data-auto-open'),
-      ).toBe('true'),
+      ).toBe('false'),
     )
     // AppProviders mounts ClerkConvexProvider on `/` from first paint, so the
     // homepage's auth controls must NOT wrap their own ClerkProvider (otherwise
@@ -144,14 +145,10 @@ describe('TopActions', () => {
     expect(
       screen.getByTestId('homepage-auth-controls').dataset.wrapProvider,
     ).toBe('false')
-    expect(
-      screen.getByTestId('homepage-auth-controls').dataset.renderButton,
-    ).toBe('false')
     expect(screen.getAllByRole('button', { name: /sign in/i })).toHaveLength(1)
     expect(topActionMocks.authControls).toHaveBeenCalledWith(
       expect.objectContaining({
-        autoOpen: true,
-        renderButton: false,
+        autoOpen: false,
         wrapProvider: false,
       }),
       undefined,

@@ -1,5 +1,4 @@
 import { lazy, Suspense, useState } from 'react'
-import { Show, SignInButton, UserButton } from '@clerk/tanstack-react-start'
 import {
   GlassPillAnchor,
   GlassPillButton,
@@ -30,30 +29,21 @@ export const TopActions = () => {
           </GlassPillAnchor>
         ) : null}
         {isClerkConfigured ? (
-          <>
-            <Show when="signed-out">
-              <SignInButton mode="modal">
-                <GlassPillButton
-                  className="pill--top-actions"
-                  onClick={() => setAuthRequested(true)}
-                >
-                  Sign in
-                </GlassPillButton>
-              </SignInButton>
-            </Show>
-            <Show when="signed-in">
-              <div className="grid size-9 place-items-center">
-                <UserButton />
-              </div>
-            </Show>
-            <Suspense fallback={null}>
-              <LazyHomepageAuthControls
-                autoOpen={authRequested}
-                renderButton={false}
-                wrapProvider={false}
-              />
-            </Suspense>
-          </>
+          <Suspense
+            fallback={
+              <GlassPillButton
+                className="pill--top-actions"
+                onClick={() => setAuthRequested(true)}
+              >
+                Sign in
+              </GlassPillButton>
+            }
+          >
+            <LazyHomepageAuthControls
+              autoOpen={authRequested}
+              wrapProvider={false}
+            />
+          </Suspense>
         ) : (
           <GlassPillButton className="pill--top-actions">
             Sign in
