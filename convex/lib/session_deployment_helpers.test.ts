@@ -427,6 +427,7 @@ describe('session deployment helpers', () => {
     ).resolves.toEqual({
       slug: 'deployable-site',
       url: 'https://deployable-site.example.test',
+      shipfastUrl: 'https://deployable-site.ship-fast.ai',
       status: 'ready',
       previewVersion: 3,
       createdAt: 120,

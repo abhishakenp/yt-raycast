@@ -365,6 +365,13 @@ export async function loadDeploymentStatus(
     : {
         slug: deployment.slug,
         url: deployment.url,
+        // The shipfast subdomain URL is always derivable from the slug via
+        // DEPLOYMENT_BASE_DOMAIN, regardless of which provider the latest
+        // deploy used. The `url` field above reflects the latest provider
+        // (which may be a lakebed URL), so we expose `shipfastUrl` separately
+        // for surfaces that must always show the shipfast subdomain (e.g. the
+        // dashboard URL pill).
+        shipfastUrl: createDeploymentUrl(deployment.slug),
         status: deployment.status,
         previewVersion: deployment.previewVersion,
         pendingPreviewVersion: deployment.pendingPreviewVersion,
