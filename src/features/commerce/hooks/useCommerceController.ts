@@ -16,8 +16,26 @@ type CommerceHandoff = {
 }
 
 export type MedusaAdminCredentials = {
-  email: string
-  password: string
+  email?: string
+  password?: string
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+async function readProvisionError(response: Response): Promise<string> {
+  const fallback = 'Commerce provisioning failed'
+  try {
+    const payload: unknown = await response.json()
+    if (isRecord(payload) && typeof payload.error === 'string') {
+      return payload.error
+    }
+  } catch {
+    return fallback
+  }
+
+  return fallback
 }
 
 export function useCommerceController(
@@ -32,7 +50,9 @@ export function useCommerceController(
   const [commerceHandoff, setCommerceHandoff] = useState<CommerceHandoff>()
   const [isSaving, setIsSaving] = useState(false)
 
-  const provisionCommerce = async (credentials: MedusaAdminCredentials) => {
+  const provisionCommerce = async (
+    credentials: MedusaAdminCredentials = {},
+  ) => {
     setCommerceError(undefined)
     setIsSaving(true)
 
@@ -44,6 +64,10 @@ export function useCommerceController(
       const authToken = isSignedIn
         ? await getToken({ template: 'convex' })
         : null
+      const adminEmail = credentials.email?.trim()
+      const adminPassword = credentials.password
+      const adminCredentialPayload =
+        adminEmail && adminPassword ? { adminEmail, adminPassword } : {}
 
       const response = await fetch(
         `/api/sessions/${encodeURIComponent(sessionId)}/provision/medusa`,
@@ -57,8 +81,7 @@ export function useCommerceController(
               : { 'x-ship-fast-owner-secret': anonymousOwnerSecret }),
           },
           body: JSON.stringify({
-            adminEmail: credentials.email.trim(),
-            adminPassword: credentials.password,
+            ...adminCredentialPayload,
             anonymousOwnerSecret,
             products: visualProducts,
           }),
@@ -66,10 +89,7 @@ export function useCommerceController(
       )
 
       if (!response.ok) {
-        const payload = (await response.json().catch(() => ({}))) as {
-          error?: string
-        }
-        throw new Error(payload.error ?? 'Commerce provisioning failed')
+        throw new Error(await readProvisionError(response))
       }
 
       const payload = await readJsonOrThrow<{ handoff?: CommerceHandoff }>(
