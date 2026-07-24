@@ -218,6 +218,22 @@ export function useOptionalClerk(): OptionalClerk {
 }
 
 /**
+ * Synchronous, non-hook variant of {@link useIsAdmin}. Reads the current
+ * Clerk snapshot from `window.Clerk` and returns `true` when the signed-in
+ * user has an admin role in their `publicMetadata` (checked as both
+ * `system_role` and `systemRole`). Safe to call from `beforeLoad` route
+ * guards, server-side renders (returns `false` when `window` is undefined),
+ * and any non-React code path. Returns `false` when Clerk is not configured,
+ * no user is signed in, or the role is not `admin`.
+ */
+export function isCurrentUserAdmin(): boolean {
+  if (!isClerkConfigured) return false
+  const metadata = readClerkSnapshot().user?.publicMetadata
+  if (metadata === undefined) return false
+  return metadata.system_role === 'admin' || metadata.systemRole === 'admin'
+}
+
+/**
  * Returns `true` when the signed-in Clerk user has an admin role in their
  * `publicMetadata` (checked as both `system_role` and `systemRole`). Admins
  * bypass sign-in gates (e.g. SignInGate) so internal tools keep working
