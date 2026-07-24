@@ -308,7 +308,7 @@ describe('app provider loading', () => {
       expect(screen.queryByTestId('clerk-provider')).toBeNull()
     })
 
-    it('loads anonymous Convex on gallery routes that render Convex hook consumers', async () => {
+    it('loads Clerk-backed Convex on gallery and mine routes when Clerk is configured', async () => {
       appProviderMocks.pathname = '/gallery'
       vi.stubEnv('VITE_CONVEX_URL', 'http://localhost:3001')
       const { AppProviders } = await import('@/app/providers/AppProviders')
@@ -319,10 +319,9 @@ describe('app provider loading', () => {
         </AppProviders>,
       )
 
-      expect(await screen.findByTestId('convex-anonymous')).toBeTruthy()
+      expect(await screen.findByTestId('convex-with-clerk')).toBeTruthy()
       expect(screen.getByText('Gallery page')).toBeTruthy()
-      expect(screen.queryByTestId('convex-with-clerk')).toBeNull()
-      expect(screen.queryByTestId('clerk-provider')).toBeNull()
+      expect(screen.queryByTestId('convex-anonymous')).toBeNull()
 
       appProviderMocks.pathname = '/mine'
       rerender(
@@ -331,10 +330,9 @@ describe('app provider loading', () => {
         </AppProviders>,
       )
 
-      expect(await screen.findByTestId('convex-anonymous')).toBeTruthy()
+      expect(await screen.findByTestId('convex-with-clerk')).toBeTruthy()
       expect(screen.getByText('Mine page')).toBeTruthy()
-      expect(screen.queryByTestId('convex-with-clerk')).toBeNull()
-      expect(screen.queryByTestId('clerk-provider')).toBeNull()
+      expect(screen.queryByTestId('convex-anonymous')).toBeNull()
     })
 
     it('does not mount generation route children outside Convex when Convex is not configured', async () => {
