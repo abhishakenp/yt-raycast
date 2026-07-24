@@ -3,7 +3,7 @@ import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const createExportResponseMock = vi.hoisted(() => vi.fn())
-const createDeploymentPreviewResponseMock = vi.hoisted(() => vi.fn())
+const convexClientQueryMock = vi.hoisted(() => vi.fn())
 const routeParamMocks = vi.hoisted(() => {
   const paramsByPath: Record<string, Record<string, string>> = {
     '/generate/$sessionId/$': {
@@ -155,8 +155,8 @@ vi.mock('@/features/exports/server/create-export-response', () => ({
   createExportResponse: createExportResponseMock,
 }))
 
-vi.mock('@/features/deployments/server/deployment-preview-response', () => ({
-  createDeploymentPreviewResponse: createDeploymentPreviewResponseMock,
+vi.mock('@/shared/convex/http-client', () => ({
+  createRuntimeConvexHttpClient: () => ({ query: convexClientQueryMock }),
 }))
 
 async function importRoute(path: string): Promise<RouteWithHandlers> {
@@ -235,7 +235,7 @@ describe('top-level route behavior', () => {
     createExportResponseMock.mockResolvedValue(new Response('export body'))
     const Route = await importRoute('./export.$sessionId.$target')
     const request = new Request(
-      'https://ship-fast.io/export/k574ms14ma9f94keq30r7dq24x89n1k2/html',
+      'https://ship-fast.ai/export/k574ms14ma9f94keq30r7dq24x89n1k2/html',
     )
 
     const response = await Route.options.server?.handlers.GET({
@@ -282,23 +282,53 @@ describe('top-level route behavior', () => {
     expect(screen.getByTestId('lazy-route').textContent).toBe('PreviewRoute')
   })
 
-  it('serves a deployment preview from its Ship Fast subdomain root', async () => {
-    createDeploymentPreviewResponseMock.mockResolvedValue(
-      new Response('<h1>Craft Beer Brewery</h1>'),
-    )
+  it('redirects a Ship Fast subdomain to the live preview route by session ID', async () => {
+    const sessionId = 'k574ms14ma9f94keq30r7dq24x89n1k2'
+    convexClientQueryMock.mockResolvedValue({
+      slug: 'a-craft-beer-brewery',
+      url: 'https://a-craft-beer-brewery.ship-fast.ai',
+      status: 'ready',
+      sessionId,
+    })
     const Route = await importRoute('./index')
-    const request = new Request('https://a-craft-beer-brewery.ship-fast.io/')
+    const request = new Request('https://a-craft-beer-brewery.ship-fast.ai/')
     const handler = Route.options.server?.handlers.GET
 
     expect(handler).toBeTypeOf('function')
 
     const response = await handler?.({ params: {}, request })
 
-    expect(response?.status).toBe(200)
-    expect(await response?.text()).toContain('Craft Beer Brewery')
-    expect(createDeploymentPreviewResponseMock).toHaveBeenCalledWith(
-      'a-craft-beer-brewery',
-      request,
-    )
+    expect(response?.status).toBe(302)
+    expect(response?.headers.get('location')).toBe(`/preview/${sessionId}`)
+    expect(response?.headers.get('cache-control')).toBe('no-store')
+    expect(convexClientQueryMock).toHaveBeenCalledWith(expect.anything(), {
+      slug: 'a-craft-beer-brewery',
+    })
+  })
+
+  it('returns 404 for a subdomain with no ready deployment', async () => {
+    convexClientQueryMock.mockResolvedValue(null)
+    const Route = await importRoute('./index')
+    const request = new Request('https://nonexistent-site.ship-fast.ai/')
+    const handler = Route.options.server?.handlers.GET
+
+    const response = await handler?.({ params: {}, request })
+
+    expect(response?.status).toBe(404)
+  })
+
+  it('returns 404 for a subdomain with a non-ready deployment', async () => {
+    convexClientQueryMock.mockResolvedValue({
+      slug: 'building-site',
+      status: 'building',
+      sessionId: 'some-session-id',
+    })
+    const Route = await importRoute('./index')
+    const request = new Request('https://building-site.ship-fast.ai/')
+    const handler = Route.options.server?.handlers.GET
+
+    const response = await handler?.({ params: {}, request })
+
+    expect(response?.status).toBe(404)
   })
 })
