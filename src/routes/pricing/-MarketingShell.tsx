@@ -146,6 +146,9 @@ export function MarketingShell({
             <Link to="/pricing" preload="intent">
               Pricing
             </Link>
+            <Link to="/referrals" preload="intent">
+              Referrals
+            </Link>
             {partnersEnabled ? (
               <Link to="/partners" preload="intent">
                 Partners

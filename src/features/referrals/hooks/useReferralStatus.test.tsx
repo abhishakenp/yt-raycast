@@ -6,9 +6,19 @@ import { useReferralStatus, type ReferralStatus } from './useReferralStatus'
 
 const originalFetch = globalThis.fetch
 
-function setClerk(clerk: unknown) {
-  ;(window as Window & { Clerk?: unknown }).Clerk = clerk
-}
+const clerkState = vi.hoisted(() => ({
+  isLoaded: true,
+  isSignedIn: false,
+  getToken: vi.fn(async () => null as string | null),
+}))
+
+vi.mock('@clerk/tanstack-react-start', () => ({
+  useAuth: () => ({
+    isLoaded: clerkState.isLoaded,
+    isSignedIn: clerkState.isSignedIn,
+    getToken: clerkState.getToken,
+  }),
+}))
 
 const realEmptyReferralStatus: ReferralStatus = {
   code: null,
@@ -28,34 +38,31 @@ const realEmptyReferralStatus: ReferralStatus = {
 describe('useReferralStatus', () => {
   beforeEach(() => {
     globalThis.fetch = vi.fn()
-    delete (window as Window & { Clerk?: unknown }).Clerk
+    clerkState.isLoaded = true
+    clerkState.isSignedIn = false
+    clerkState.getToken = vi.fn(async () => null as string | null)
   })
 
   afterEach(() => {
     cleanup()
     vi.useRealTimers()
     globalThis.fetch = originalFetch
-    delete (window as Window & { Clerk?: unknown }).Clerk
   })
 
-  it('waits for Clerk and shows a signed-out error without calling the status API', async () => {
-    setClerk({ loaded: true, user: null, session: null })
+  it('does not call the status API when signed out', async () => {
+    clerkState.isSignedIn = false
 
     const { result } = renderHook(() => useReferralStatus())
 
     await waitFor(() => expect(result.current.isLoading).toBe(false))
     expect(result.current.status).toBeNull()
-    expect(result.current.error).toBe('Sign in to see your referral rewards.')
+    expect(result.current.error).toBeNull()
     expect(fetch).not.toHaveBeenCalled()
   })
 
   it('loads the real empty referral-status shape with a bearer token', async () => {
-    const getToken = vi.fn(async () => 'convex-token')
-    setClerk({
-      loaded: true,
-      user: { id: 'user_123' },
-      session: { getToken },
-    })
+    clerkState.isSignedIn = true
+    clerkState.getToken = vi.fn(async () => 'convex-token')
     vi.mocked(fetch).mockResolvedValueOnce(
       Response.json(realEmptyReferralStatus),
     )
@@ -67,48 +74,15 @@ describe('useReferralStatus', () => {
     })
     expect(result.current.error).toBeNull()
     expect(result.current.isLoading).toBe(false)
-    expect(getToken).toHaveBeenCalledWith({ template: 'convex' })
-    expect(fetch).toHaveBeenCalledWith('/api/referrals/status', {
-      headers: { Authorization: 'Bearer convex-token' },
-    })
-  })
-
-  it('keeps the dashboard loading while Clerk hydrates before fetching status', async () => {
-    const getToken = vi.fn(async () => 'convex-token')
-    setClerk({ loaded: false, user: null, session: null })
-    vi.mocked(fetch).mockResolvedValueOnce(
-      Response.json(realEmptyReferralStatus),
-    )
-
-    const { result } = renderHook(() => useReferralStatus())
-
-    expect(result.current.isLoading).toBe(true)
-    expect(result.current.error).toBeNull()
-    expect(fetch).not.toHaveBeenCalled()
-
-    setClerk({
-      loaded: true,
-      user: { id: 'user_123' },
-      session: { getToken },
-    })
-
-    await waitFor(() => {
-      expect(result.current.status).toEqual(realEmptyReferralStatus)
-    })
-    expect(result.current.error).toBeNull()
-    expect(result.current.isLoading).toBe(false)
-    expect(getToken).toHaveBeenCalledWith({ template: 'convex' })
+    expect(clerkState.getToken).toHaveBeenCalledWith({ template: 'convex' })
     expect(fetch).toHaveBeenCalledWith('/api/referrals/status', {
       headers: { Authorization: 'Bearer convex-token' },
     })
   })
 
   it('falls back to the server error message and supports manual reload', async () => {
-    setClerk({
-      loaded: true,
-      user: { id: 'user_123' },
-      session: { getToken: vi.fn(async () => 'convex-token') },
-    })
+    clerkState.isSignedIn = true
+    clerkState.getToken = vi.fn(async () => 'convex-token')
     vi.mocked(fetch)
       .mockResolvedValueOnce(
         Response.json(
@@ -134,11 +108,8 @@ describe('useReferralStatus', () => {
   })
 
   it('surfaces a stable error when the referral status API returns malformed JSON', async () => {
-    setClerk({
-      loaded: true,
-      user: { id: 'user_123' },
-      session: { getToken: vi.fn(async () => 'convex-token') },
-    })
+    clerkState.isSignedIn = true
+    clerkState.getToken = vi.fn(async () => 'convex-token')
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response('<html>bad gateway</html>', {
         headers: { 'Content-Type': 'text/html' },

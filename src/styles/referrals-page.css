@@ -1,0 +1,307 @@
+@import url('./space-shell.css');
+@import url('./liquid-glass-button.css');
+
+:root {
+  --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Archivo Black', Impact, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+/* ─── Page layout (matches .page from pricing) ─── */
+.referrals-page {
+  position: relative;
+  z-index: 1;
+  width: min(1160px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 88px 0 80px;
+}
+
+/* ─── Hero ─── */
+.referrals-hero {
+  text-align: center;
+  padding: 48px 0 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+.referrals-hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  max-width: 16ch;
+  color: #fffdf6;
+  text-wrap: balance;
+}
+.referrals-hero p {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  color: #c4c9d4;
+  line-height: 1.6;
+  max-width: 52ch;
+}
+
+/* ─── Glass cards (shared with pricing) ─── */
+.referral-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow:
+    var(--glass-shadow),
+    0 0 60px rgba(100, 80, 200, 0.04);
+  border-radius: 26px;
+  padding: 32px 28px;
+  transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.referral-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-hover);
+  box-shadow:
+    var(--glass-shadow),
+    0 0 48px rgba(28, 171, 255, 0.06),
+    0 28px 80px rgba(0, 0, 0, 0.4);
+}
+
+/* ─── Section spacing ─── */
+.referral-section {
+  margin-bottom: 28px;
+}
+
+/* ─── Card labels ─── */
+.referral-card-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #c4c9d4;
+  margin: 0 0 16px;
+}
+
+/* ─── Share link row ─── */
+.referral-link-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.referral-link-input {
+  min-width: 0;
+  flex: 1;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  background: var(--bg-input);
+  padding: 12px 16px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: #ededef;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.referral-link-input:focus {
+  border-color: var(--border-accent);
+}
+.referral-link-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* ─── Progress bar ─── */
+.referral-progress-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.referral-progress-count {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: #ededef;
+}
+.referral-progress-track {
+  height: 10px;
+  width: 100%;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.referral-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #6dfbff, #6ee7b7);
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.referral-progress-status {
+  margin-top: 14px;
+  font-size: 14px;
+  color: #c4c9d4;
+  line-height: 1.55;
+}
+.referral-progress-status.unlocked {
+  color: #6ee7b7;
+}
+
+/* ─── Referral list ─── */
+.referral-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.referral-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 12px 16px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+.referral-list-item:hover {
+  border-color: var(--border-hover);
+}
+.referral-list-email {
+  color: #cdd1d8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.referral-list-status {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.referral-list-status.qualified {
+  color: #6ee7b7;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+.referral-list-status.pending {
+  color: #c4c9d4;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.referral-list-status.disqualified {
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+.referral-list-empty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* ─── Error banner ─── */
+.referral-error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.1);
+  padding: 14px 18px;
+  margin-bottom: 28px;
+}
+.referral-error p {
+  margin: 0;
+  font-size: 14px;
+  color: #fca5a5;
+}
+
+/* ─── Refresh button ─── */
+.referral-refresh {
+  appearance: none;
+  border: 1px solid var(--glass-border);
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  cursor: pointer;
+  color: var(--text-secondary);
+  display: grid;
+  place-items: center;
+  transition: all 0.2s;
+}
+.referral-refresh:hover:not(:disabled) {
+  background: var(--bg-tertiary);
+  color: #ededef;
+  border-color: var(--border-hover);
+}
+.referral-refresh:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ─── Hero header row ─── */
+.referral-hero-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* ─── Copy button (glass pill style) ─── */
+.referral-copy-btn.pill {
+  width: auto;
+  flex-shrink: 0;
+}
+.referral-copy-btn.pill .pill__body {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  gap: 6px;
+}
+
+/* ─── Sign-in CTA in error ─── */
+.referral-signin-btn.pill {
+  width: auto;
+  flex-shrink: 0;
+}
+.referral-signin-btn.pill .pill__body {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 720px) {
+  .referrals-page {
+    width: calc(100% - 32px);
+    padding: 64px 0 48px;
+  }
+  .referral-card {
+    padding: 24px 20px;
+    border-radius: 20px;
+  }
+  .referral-link-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .referral-link-input {
+    width: 100%;
+  }
+  .referral-copy-btn.pill {
+    width: 100%;
+    justify-content: center;
+  }
+}

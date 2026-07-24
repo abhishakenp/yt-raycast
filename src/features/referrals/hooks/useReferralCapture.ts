@@ -11,20 +11,23 @@ import {
   REFERRAL_QUERY_PARAM,
   storePendingReferral,
 } from '@/features/referrals/lib/referral-client'
-import { getEarliestPendingAcquisition } from '@/features/partners/lib/acquisition-client'
 
 const POLL_INTERVAL_MS = 2000
 const MAX_ATTEMPT_WINDOW_MS = 120000
 
 /**
  * App-wide hook (mounted once at the root):
- *  1. Captures a `?ref=CODE` query param into localStorage the moment a visitor
+ *   1. Captures a `?ref=CODE` query param into localStorage the moment a visitor
  *     lands from a referral link.
  *  2. Once the visitor signs in (global Clerk SDK reports a user), attributes
  *     them to that code via the server, exactly once.
  *
  * Sign-in happens through the global Clerk modal which doesn't re-render React,
  * so we poll for a bounded window rather than relying on a hook dependency.
+ *
+ * This hook is independent of the Dub partner attribution system
+ * (`useDubAttributionCapture`). The two systems serve different audiences
+ * (users vs influencers) and must not block each other.
  */
 export function useReferralCapture(): void {
   // 1. Capture the ref param and clean the URL.
@@ -58,13 +61,6 @@ export function useReferralCapture(): void {
       }
       if (Date.now() - startedAt > MAX_ATTEMPT_WINDOW_MS) {
         stop()
-        return
-      }
-      const acquisition = getEarliestPendingAcquisition()
-      if (
-        acquisition?.source !== 'native_referral' ||
-        acquisition.sourceKey !== code
-      ) {
         return
       }
       if (!isClerkSignedIn()) return

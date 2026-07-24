@@ -229,7 +229,11 @@ export const recordReferralSignup = mutation({
 
     // Edge case: the referred user already pays (e.g. ref captured after
     // checkout). Qualify immediately so the reward isn't lost, unless their
-    // email is disposable.
+    // email is disposable. If this qualification pushes the referrer over the
+    // threshold, return the referrer's id so the API route can apply the
+    // provider discount (Stripe coupon attaches to the next invoice; Razorpay
+    // applies at the referrer's next checkout).
+    let referrerJustUnlocked: string | null = null
     if (classified.acceptable) {
       const subscription = await getActiveSubscriptionForUser(
         ctx,
@@ -248,12 +252,19 @@ export const recordReferralSignup = mutation({
             paidAt: now,
             updatedAt: now,
           })
-          await refreshReferralReward(ctx, owner.userId)
+          const rewardResult = await refreshReferralReward(ctx, owner.userId)
+          if (rewardResult.justUnlocked) {
+            referrerJustUnlocked = owner.userId
+          }
         }
       }
     }
 
-    return { recorded: true, reason: 'ok' as const }
+    return {
+      recorded: true,
+      reason: 'ok' as const,
+      referrerJustUnlocked,
+    }
   },
 })
 

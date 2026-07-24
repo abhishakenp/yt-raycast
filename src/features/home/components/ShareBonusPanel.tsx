@@ -1,9 +1,15 @@
 import { GlassPillButton } from './GlassPill'
 import { ShareIcon } from './HomeIcons'
 
-const buildShareMessages = () => {
-  const siteUrl = 'https://ship-fast.ai'
-  return {
+const BASE_SITE_URL = 'https://ship-fast.ai'
+
+function buildShareUrl(referralCode?: string | null): string {
+  if (!referralCode) return BASE_SITE_URL
+  return `${BASE_SITE_URL}/?ref=${referralCode}`
+}
+
+const buildShareMessages = (siteUrl: string) =>
+  ({
     en: `I just built a site in seconds with Ship Fast — try it free: ${siteUrl}`,
     hi: `मैंने Ship Fast से सेकंडों में साइट बनाई — आप भी बनाएं: ${siteUrl}`,
     ta: `Ship Fast மூலம் விநாடிகளில் தளம் உருவாக்கினேன் — நீங்களும் முயற்சிக்கவும்: ${siteUrl}`,
@@ -14,16 +20,16 @@ const buildShareMessages = () => {
     ml: `Ship Fast ഉപയോഗിച്ച് സെക്കൻഡുകളിൽ സൈറ്റ് ഉണ്ടാക്കി — നിങ്ങളും ചെയ്യൂ: ${siteUrl}`,
     pa: `Ship Fast ਨਾਲ ਸਕਿੰਟਾਂ 'ਚ ਸਾਈਟ ਬਣਾਈ — ਤੁਸੀਂ ਵੀ ਬਣਾਓ: ${siteUrl}`,
     gu: `Ship Fast વડે સેકંડોમાં સાઇટ બનાવી — તમે પણ બનાવો: ${siteUrl}`,
-  } as Record<string, string>
-}
+  }) as Record<string, string>
 
 export async function handleShareClick(
   platform: string,
   claimShareBonus: () => Promise<void>,
+  referralCode?: string | null,
 ) {
   await claimShareBonus()
-  const siteUrl = 'https://ship-fast.ai'
-  const messages = buildShareMessages()
+  const siteUrl = buildShareUrl(referralCode)
+  const messages = buildShareMessages(siteUrl)
 
   const langs = navigator.languages?.length
     ? navigator.languages
@@ -64,16 +70,22 @@ export async function handleShareClick(
 export function ShareBonusPanel({
   visible,
   onShareClick,
+  referralCode,
+  label = 'Share for +1 free preview · bring 2 people for 50% discount for life',
+  className,
 }: {
   visible: boolean
   onShareClick: (platform: string) => void
+  referralCode?: string | null
+  label?: string
+  className?: string
 }) {
   return (
     <div
-      className={`${visible ? 'flex' : 'hidden'} items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-sm text-white/65`}
+      className={`${visible ? 'flex' : 'hidden'} items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-sm text-white/65${className ? ` ${className}` : ''}`}
       id="share-bonus-panel"
     >
-      <span>Share for +1 free preview</span>
+      <span>{label}</span>
       <div className="flex flex-wrap items-center gap-2">
         <ShareIcon
           className="text-[#25d366]"

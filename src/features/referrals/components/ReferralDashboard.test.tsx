@@ -10,7 +10,6 @@ const state = vi.hoisted(() => ({
   isLoading: false,
   error: null as string | null,
   reload: vi.fn(),
-  requestClerkSignIn: vi.fn(),
 }))
 
 vi.mock('../hooks/useReferralStatus', () => ({
@@ -20,10 +19,6 @@ vi.mock('../hooks/useReferralStatus', () => ({
     error: state.error,
     reload: state.reload,
   }),
-}))
-
-vi.mock('@/shared/auth/use-optional-auth', () => ({
-  requestClerkSignIn: state.requestClerkSignIn,
 }))
 
 const baseStatus: ReferralStatus = {
@@ -47,7 +42,6 @@ afterEach(() => {
   state.error = null
   state.isLoading = false
   state.reload.mockReset()
-  state.requestClerkSignIn.mockReset()
   vi.useRealTimers()
 })
 
@@ -108,33 +102,19 @@ describe('ReferralDashboard', () => {
     }
     render(<ReferralDashboard />)
     expect(screen.getByText('jo****@gmail.com')).toBeTruthy()
-    expect(screen.getByText('Paid ✓')).toBeTruthy()
+    expect(screen.getByText('Paid')).toBeTruthy()
     expect(screen.getByText('Signed up')).toBeTruthy()
   })
 
-  it('surfaces an error message', () => {
-    state.error = 'Sign in to see your referral rewards.'
+  it('surfaces a load error message', () => {
+    state.error = 'Unable to load referrals.'
     render(<ReferralDashboard />)
-    expect(
-      screen.getByText('Sign in to see your referral rewards.'),
-    ).toBeTruthy()
+    expect(screen.getByText('Unable to load referrals.')).toBeTruthy()
   })
 
-  it('opens sign-in on demand from the signed-out referral state', () => {
-    vi.useFakeTimers()
-    state.error = 'Sign in to see your referral rewards.'
-
-    render(<ReferralDashboard />)
-    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
-
-    expect(state.requestClerkSignIn).toHaveBeenCalledTimes(1)
-    vi.advanceTimersByTime(3000)
-    expect(state.reload).toHaveBeenCalledTimes(2)
-  })
-
-  it('does not expose refresh as an active no-op while signed out', () => {
+  it('does not expose refresh as an active no-op while loading', () => {
     state.status = null
-    state.error = 'Sign in to see your referral rewards.'
+    state.isLoading = true
 
     render(<ReferralDashboard />)
     const refresh = screen.getByRole('button', { name: 'Refresh referrals' })

@@ -96,7 +96,11 @@ describe('referrals', () => {
         api.referrals.recordReferralSignup,
         { code },
       ),
-    ).toEqual({ recorded: true, reason: 'ok' })
+    ).toEqual({
+      recorded: true,
+      reason: 'ok',
+      referrerJustUnlocked: null,
+    })
 
     // already referred
     expect(
@@ -291,12 +295,48 @@ describe('referrals', () => {
       api.referrals.recordReferralSignup,
       { code },
     )
-    expect(res).toEqual({ recorded: true, reason: 'ok' })
+    expect(res).toEqual({
+      recorded: true,
+      reason: 'ok',
+      referrerJustUnlocked: null,
+    })
 
     const status = await asUser(t, 'alice').query(
       api.referrals.getMyReferralStatus,
       {},
     )
     expect(status.qualifiedCount).toBe(1)
+  })
+
+  it('returns referrerJustUnlocked when 2 already-paying users record referrals', async () => {
+    const t = convexTest(schema, modules)
+    const { code } = await asUser(t, 'alice').mutation(
+      api.referrals.getOrCreateMyReferralCode,
+      {},
+    )
+
+    // Bob and Carol both pay BEFORE recording the ref code.
+    await paySubscription(t, 'bob', 'sub_bob', 'evt_bob')
+    await paySubscription(t, 'carol', 'sub_carol', 'evt_carol')
+
+    await asUser(t, 'bob', 'bob@gmail.com').mutation(
+      api.referrals.recordReferralSignup,
+      { code },
+    )
+    const res2 = await asUser(t, 'carol', 'carol@gmail.com').mutation(
+      api.referrals.recordReferralSignup,
+      { code },
+    )
+
+    // Second qualification pushes referrer over threshold → justUnlocked.
+    expect(res2.recorded).toBe(true)
+    expect(res2.referrerJustUnlocked).toBe(id('alice'))
+
+    const status = await asUser(t, 'alice').query(
+      api.referrals.getMyReferralStatus,
+      {},
+    )
+    expect(status.qualifiedCount).toBe(2)
+    expect(status.unlocked).toBe(true)
   })
 })

@@ -33,6 +33,25 @@ async function stripeRequest(
   })
 }
 
+async function razorpayRequest(
+  env: ReferralDiscountEnv,
+  method: 'GET' | 'POST',
+  path: string,
+  body?: URLSearchParams,
+) {
+  const auth = Buffer.from(
+    `${env.RAZORPAY_KEY_ID ?? ''}:${env.RAZORPAY_KEY_SECRET ?? ''}`,
+  ).toString('base64')
+  return await fetch(`https://api.razorpay.com/v1${path}`, {
+    method,
+    headers: {
+      Authorization: `Basic ${auth}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body,
+  })
+}
+
 /**
  * Resolve the Stripe coupon id for the lifetime referral discount.
  * Prefers an explicit env override; otherwise lazily creates a single reusable
@@ -81,11 +100,71 @@ export async function applyStripeReferralDiscountToSubscription(
   return response.ok
 }
 
+type RazorpayPayment = {
+  id: string
+  amount: number
+  status: string
+  amount_refunded?: number
+}
+
+/**
+ * Fetch the most recent captured payment for a Razorpay subscription.
+ * Returns null if no captured payment is found or the API call fails.
+ */
+async function fetchLatestRazorpayPayment(
+  env: ReferralDiscountEnv,
+  subscriptionId: string,
+): Promise<RazorpayPayment | null> {
+  const response = await razorpayRequest(
+    env,
+    'GET',
+    `/subscriptions/${encodeURIComponent(subscriptionId)}/payments?count=1`,
+  )
+  if (!response.ok) return null
+  const data = (await response.json().catch(() => ({
+    items: [],
+  }))) as { items?: RazorpayPayment[] }
+  const captured = (data.items ?? []).find((p) => p.status === 'captured')
+  return captured ?? null
+}
+
+/**
+ * Issue a partial refund for 50% of the payment amount on Razorpay.
+ * Skips payments that have already been refunded for the discount amount.
+ */
+async function refundRazorpayReferralDiscount(
+  env: ReferralDiscountEnv,
+  payment: RazorpayPayment,
+): Promise<boolean> {
+  const refundAmount = Math.floor(
+    (payment.amount * REFERRAL_DISCOUNT_PERCENT) / 100,
+  )
+  const alreadyRefunded = payment.amount_refunded ?? 0
+  if (alreadyRefunded >= refundAmount) return false
+
+  const response = await razorpayRequest(
+    env,
+    'POST',
+    `/payments/${encodeURIComponent(payment.id)}/refund`,
+    formBody({ amount: String(refundAmount) }),
+  )
+  return response.ok
+}
+
 /**
  * Best-effort: if `userId` has unlocked the referral reward and has an active
  * subscription that has not yet received the discount, attach it at the provider
  * and record it. NEVER throws — discount application must not break payment
  * processing; failures are returned for logging and retried on the next event.
+ *
+ * Provider behaviour:
+ * - Stripe: attaches the `forever` coupon to the subscription once → discount
+ *   applies automatically on all future invoices.
+ * - Razorpay: offers can't be attached to existing subscriptions, so on each
+ *   call we issue a 50% partial refund on the most recent captured payment.
+ *   This runs on every renewal webhook, applying the discount from each billing
+ *   cycle. `markReferralDiscountApplied` is NOT called for Razorpay so the
+ *   refund repeats on every renewal for life.
  */
 export async function applyReferralDiscountForUser(
   env: ReferralDiscountEnv,
@@ -110,38 +189,54 @@ export async function applyReferralDiscountForUser(
     }
 
     if (!context.unlocked) return { applied: false, reason: 'not_unlocked' }
-    if (context.discountApplied)
-      return { applied: false, reason: 'already_applied' }
     if (
       context.subscription === null ||
       !context.subscription.providerSubscriptionId
     )
       return { applied: false, reason: 'no_active_subscription' }
 
-    // Razorpay offers can only be attached at subscription creation, so the
-    // discount is applied at the referrer's next checkout instead.
-    if (context.subscription.provider !== 'stripe')
-      return { applied: false, reason: 'razorpay_apply_at_checkout' }
+    // ── Stripe: attach coupon once, mark as applied ──────────────────────
+    if (context.subscription.provider === 'stripe') {
+      if (context.discountApplied)
+        return { applied: false, reason: 'already_applied' }
 
-    const couponId = await ensureStripeReferralCoupon(env)
-    if (!couponId) return { applied: false, reason: 'coupon_unavailable' }
+      const couponId = await ensureStripeReferralCoupon(env)
+      if (!couponId) return { applied: false, reason: 'coupon_unavailable' }
 
-    const ok = await applyStripeReferralDiscountToSubscription(
+      const ok = await applyStripeReferralDiscountToSubscription(
+        env,
+        context.subscription.providerSubscriptionId,
+        couponId,
+      )
+      if (!ok) return { applied: false, reason: 'provider_rejected' }
+
+      await client.mutation(api.referrals.markReferralDiscountApplied, {
+        secret,
+        userId,
+        provider: 'stripe',
+        providerDiscountId: couponId,
+        subscriptionId: context.subscription.providerSubscriptionId,
+      })
+
+      return { applied: true, reason: 'ok' }
+    }
+
+    // ── Razorpay: issue 50% refund on each renewal payment ───────────────
+    // Don't check discountApplied — we want the refund on every billing cycle.
+    if (!env.RAZORPAY_KEY_ID || !env.RAZORPAY_KEY_SECRET)
+      return { applied: false, reason: 'razorpay_not_configured' }
+
+    const payment = await fetchLatestRazorpayPayment(
       env,
       context.subscription.providerSubscriptionId,
-      couponId,
     )
-    if (!ok) return { applied: false, reason: 'provider_rejected' }
+    if (payment === null)
+      return { applied: false, reason: 'no_captured_payment' }
 
-    await client.mutation(api.referrals.markReferralDiscountApplied, {
-      secret,
-      userId,
-      provider: 'stripe',
-      providerDiscountId: couponId,
-      subscriptionId: context.subscription.providerSubscriptionId,
-    })
-
-    return { applied: true, reason: 'ok' }
+    const refunded = await refundRazorpayReferralDiscount(env, payment)
+    return refunded
+      ? { applied: true, reason: 'razorpay_refund_issued' }
+      : { applied: false, reason: 'razorpay_already_refunded' }
   } catch (error) {
     return {
       applied: false,

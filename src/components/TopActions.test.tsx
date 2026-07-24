@@ -115,6 +115,17 @@ describe('TopActions', () => {
     )
   })
 
+  it('shows a referrals link when Clerk is configured', async () => {
+    const { TopActions } = await importTopActions('pk_test_referrals')
+
+    render(<TopActions />)
+
+    expect(screen.getByRole('link', { name: 'Referrals' })).toHaveProperty(
+      'pathname',
+      '/referrals',
+    )
+  })
+
   it('keeps sign-in inert when Clerk is not configured', async () => {
     const { TopActions } = await importTopActions(undefined)
 

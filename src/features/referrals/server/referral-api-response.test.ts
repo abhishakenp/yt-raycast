@@ -98,10 +98,15 @@ describe('referral API responses', () => {
 
   it('records the submitted referral code and email through the authenticated Convex mutation', async () => {
     const client = {
-      mutation: vi.fn(async () => ({ recorded: true, reason: 'ok' })),
+      mutation: vi.fn(async () => ({
+        recorded: true,
+        reason: 'ok',
+        referrerJustUnlocked: null,
+      })),
       query: vi.fn(),
       setAuth: vi.fn(),
     }
+    const applyDiscount = vi.fn()
 
     const response = await createReferralRecordApiResponse(
       new Request('https://ship-fast.test/api/referrals/record', {
@@ -113,6 +118,7 @@ describe('referral API responses', () => {
         method: 'POST',
       }),
       client,
+      applyDiscount,
     )
 
     expect(response.status).toBe(200)
@@ -124,7 +130,45 @@ describe('referral API responses', () => {
     await expect(readJson(response)).resolves.toEqual({
       recorded: true,
       reason: 'ok',
+      referrerJustUnlocked: null,
     })
+    // No unlock → no discount application.
+    expect(applyDiscount).not.toHaveBeenCalled()
+  })
+
+  it('applies the referral discount when the referrer just unlocked', async () => {
+    const referrerUserId = 'https://clerk.test|alice'
+    const client = {
+      mutation: vi.fn(async () => ({
+        recorded: true,
+        reason: 'ok',
+        referrerJustUnlocked: referrerUserId,
+      })),
+      query: vi.fn(),
+      setAuth: vi.fn(),
+    }
+    const applyDiscount = vi.fn().mockResolvedValue({
+      applied: true,
+      reason: 'ok',
+    })
+
+    const response = await createReferralRecordApiResponse(
+      new Request('https://ship-fast.test/api/referrals/record', {
+        body: JSON.stringify({
+          code: 'abc12345',
+          email: 'new.customer@gmail.com',
+        }),
+        headers: { Authorization: 'Bearer convex-jwt' },
+        method: 'POST',
+      }),
+      client,
+      applyDiscount,
+    )
+
+    expect(response.status).toBe(200)
+    // Discount application is fire-and-forget but we can await the response.
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    expect(applyDiscount).toHaveBeenCalledWith(process.env, referrerUserId)
   })
 
   it('returns a stable unavailable status response when Convex referral reads fail', async () => {

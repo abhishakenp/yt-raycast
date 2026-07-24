@@ -2,24 +2,24 @@ import { Check, Copy, Gift, RefreshCw, Share2 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { useReferralStatus } from '@/features/referrals/hooks/useReferralStatus'
-import { requestClerkSignIn } from '@/shared/auth/use-optional-auth'
+import { GlassPillButton } from '@/features/home/components/GlassPill'
 
 function buildReferralLink(code: string | null): string {
   if (!code) return ''
-  if (typeof window === 'undefined') return `https://ship-fast.io/?ref=${code}`
+  if (typeof window === 'undefined') return `https://ship-fast.ai/?ref=${code}`
   return `${window.location.origin}/?ref=${code}`
 }
 
 const statusLabel: Record<string, string> = {
-  qualified: 'Paid ✓',
+  qualified: 'Paid',
   pending: 'Signed up',
   disqualified: 'Not eligible',
 }
 
 const statusClass: Record<string, string> = {
-  qualified: 'text-emerald-300',
-  pending: 'text-white/60',
-  disqualified: 'text-rose-300',
+  qualified: 'qualified',
+  pending: 'pending',
+  disqualified: 'disqualified',
 }
 
 export const ReferralDashboard = () => {
@@ -29,7 +29,6 @@ export const ReferralDashboard = () => {
   const copyInFlightRef = useRef(false)
   const copyResetTimerRef = useRef<number | null>(null)
   const isMountedRef = useRef(true)
-  const reloadTimerRefs = useRef<number[]>([])
 
   useEffect(() => {
     isMountedRef.current = true
@@ -38,24 +37,8 @@ export const ReferralDashboard = () => {
       if (copyResetTimerRef.current !== null) {
         window.clearTimeout(copyResetTimerRef.current)
       }
-      for (const timerId of reloadTimerRefs.current) {
-        window.clearTimeout(timerId)
-      }
-      reloadTimerRefs.current = []
     }
   }, [])
-
-  const signInForReferrals = () => {
-    requestClerkSignIn()
-    for (const timerId of reloadTimerRefs.current) {
-      window.clearTimeout(timerId)
-    }
-    reloadTimerRefs.current = [1_200, 3_000].map((delay) =>
-      window.setTimeout(() => {
-        if (isMountedRef.current) void reload()
-      }, delay),
-    )
-  }
 
   const link = useMemo(
     () => buildReferralLink(status?.code ?? null),
@@ -92,155 +75,154 @@ export const ReferralDashboard = () => {
   const progressValue = Math.min(qualified, threshold)
   const progress = Math.round((progressValue / threshold) * 100)
   const refreshDisabled = isLoading || !status
+  const discountPercent = status?.discountPercent ?? 50
 
   return (
-    <div className="mx-auto grid w-full max-w-2xl gap-5 p-6">
-      <header className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <span className="grid size-11 place-items-center rounded-2xl border border-cyan-300/30 bg-cyan-300/10 text-cyan-200">
-            <Gift className="size-5" />
-          </span>
-          <div>
-            <h1 className="m-0 text-lg font-bold text-white">
-              Refer friends, get {status?.discountPercent ?? 50}% off for life
-            </h1>
-            <p className="m-0 mt-1 text-sm text-white/55">
-              When {threshold} people you invite become paying subscribers, your
-              subscription is {status?.discountPercent ?? 50}% off — for life.
-            </p>
-          </div>
-        </div>
-        <button
-          aria-label="Refresh referrals"
-          className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-white/60 hover:bg-white/[0.08] hover:text-white disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-white/[0.04] disabled:hover:text-white/60"
-          disabled={refreshDisabled}
-          onClick={() => void reload()}
-          type="button"
-        >
-          <RefreshCw className={`size-4 ${isLoading ? 'animate-spin' : ''}`} />
-        </button>
-      </header>
+    <div className="referrals-page">
+      {/* Hero */}
+      <section className="referrals-hero" aria-labelledby="referrals-heading">
+        <span className="kicker">Referrals</span>
+        <h1 id="referrals-heading">
+          Refer friends,
+          <br />
+          get {discountPercent}% off for life
+        </h1>
+        <p>
+          When {threshold} people you invite become paying subscribers, your
+          subscription is {discountPercent}% off — for life.
+        </p>
+      </section>
 
       {error && (
-        <div
-          className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-rose-500/30 bg-rose-500/12 p-3"
-          role="alert"
-        >
-          <p className="m-0 text-sm text-rose-200">{error}</p>
-          <button
-            className="inline-flex h-9 shrink-0 items-center rounded-xl bg-cyan-300 px-3 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-px"
-            onClick={signInForReferrals}
-            type="button"
-          >
-            Sign in
-          </button>
+        <div className="referral-error" role="alert">
+          <p>{error}</p>
         </div>
       )}
 
       {/* Share link */}
-      <section className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
-        <p className="m-0 text-[0.7rem] font-bold uppercase tracking-[0.1em] text-white/42">
-          Your referral link
-        </p>
-        <div className="mt-3 flex items-center gap-2">
-          <input
-            className="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white/85"
-            readOnly
-            value={
-              link || (isLoading ? 'Loading…' : 'Sign in to get your link')
-            }
-            onFocus={(event) => event.currentTarget.select()}
-          />
-          <button
-            className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-cyan-300 px-3 py-2 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-px disabled:opacity-45"
-            disabled={!link}
-            onClick={() => void copyLink()}
-            type="button"
-          >
-            {copied ? (
-              <Check className="size-4" />
-            ) : (
-              <Copy className="size-4" />
-            )}
-            {copied ? 'Copied' : 'Copy'}
-          </button>
+      <section className="referral-section">
+        <div className="referral-card">
+          <div className="referral-hero-row">
+            <div className="flex items-center gap-3">
+              <span
+                className="grid size-11 place-items-center rounded-2xl border border-cyan-300/30 bg-cyan-300/10 text-cyan-200"
+                aria-hidden="true"
+              >
+                <Gift className="size-5" />
+              </span>
+              <p className="referral-card-label">Your referral link</p>
+            </div>
+            <button
+              aria-label="Refresh referrals"
+              className="referral-refresh"
+              disabled={refreshDisabled}
+              onClick={() => void reload()}
+              type="button"
+            >
+              <RefreshCw
+                className={`size-4 ${isLoading ? 'animate-spin' : ''}`}
+              />
+            </button>
+          </div>
+          <div className="referral-link-row mt-4">
+            <input
+              className="referral-link-input"
+              readOnly
+              value={
+                link || (isLoading ? 'Loading…' : 'Sign in to get your link')
+              }
+              onFocus={(event) => event.currentTarget.select()}
+            />
+            <GlassPillButton
+              className="referral-copy-btn"
+              disabled={!link}
+              onClick={() => void copyLink()}
+            >
+              {copied ? (
+                <Check className="size-4" />
+              ) : (
+                <Copy className="size-4" />
+              )}
+              {copied ? 'Copied' : 'Copy'}
+            </GlassPillButton>
+          </div>
+          {copyError && (
+            <p className="mt-3 text-sm text-rose-300" role="alert">
+              {copyError}
+            </p>
+          )}
         </div>
-        {copyError && (
-          <p className="m-0 mt-3 text-sm text-rose-200" role="alert">
-            {copyError}
-          </p>
-        )}
       </section>
 
       {/* Progress */}
-      <section className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
-        <div className="flex items-center justify-between">
-          <p className="m-0 text-[0.7rem] font-bold uppercase tracking-[0.1em] text-white/42">
-            Progress
-          </p>
-          <p className="m-0 text-sm font-semibold text-white">
-            {qualified} / {threshold} paid
-          </p>
-        </div>
-        <div
-          aria-label="Referral progress"
-          aria-valuemax={threshold}
-          aria-valuemin={0}
-          aria-valuenow={progressValue}
-          className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-white/10"
-          role="progressbar"
-        >
+      <section className="referral-section">
+        <div className="referral-card">
+          <div className="referral-progress-header">
+            <p className="referral-card-label">Progress</p>
+            <p className="referral-progress-count">
+              {qualified} / {threshold} paid
+            </p>
+          </div>
           <div
-            className="h-full rounded-full bg-gradient-to-r from-cyan-300 to-emerald-300 transition-all"
-            style={{ width: `${progress}%` }}
-          />
+            aria-label="Referral progress"
+            aria-valuemax={threshold}
+            aria-valuemin={0}
+            aria-valuenow={progressValue}
+            className="referral-progress-track"
+            role="progressbar"
+          >
+            <div
+              className="referral-progress-fill"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <p
+            className={`referral-progress-status${status?.unlocked ? ' unlocked' : ''}`}
+          >
+            {status?.unlocked
+              ? status.discountActive
+                ? `Unlocked! Your ${discountPercent}% lifetime discount is active.`
+                : status?.hasActiveSubscription === false
+                  ? `Unlocked! Subscribe and your ${discountPercent}% lifetime discount applies automatically.`
+                  : `Unlocked! Applying your ${discountPercent}% lifetime discount…`
+              : `Invite ${status?.remaining ?? threshold} more paying ${
+                  (status?.remaining ?? threshold) === 1
+                    ? 'subscriber'
+                    : 'subscribers'
+                } to unlock your lifetime discount.`}
+          </p>
         </div>
-        <p className="m-0 mt-3 text-sm text-white/65">
-          {status?.unlocked
-            ? status.discountActive
-              ? `🎉 Unlocked! Your ${status.discountPercent}% lifetime discount is active.`
-              : status?.hasActiveSubscription === false
-                ? `🎉 Unlocked! Subscribe and your ${status.discountPercent}% lifetime discount applies automatically.`
-                : `🎉 Unlocked! Applying your ${status?.discountPercent}% lifetime discount…`
-            : `Invite ${status?.remaining ?? threshold} more paying ${
-                (status?.remaining ?? threshold) === 1
-                  ? 'subscriber'
-                  : 'subscribers'
-              } to unlock your lifetime discount.`}
-        </p>
       </section>
 
       {/* Referral list */}
-      <section className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
-        <p className="m-0 text-[0.7rem] font-bold uppercase tracking-[0.1em] text-white/42">
-          Your referrals
-        </p>
-        {status && status.referrals.length > 0 ? (
-          <ul className="m-0 mt-3 grid list-none gap-2 p-0">
-            {status.referrals.map((referral, index) => (
-              <li
-                key={`${referral.email ?? 'anon'}-${index}`}
-                className="flex items-center justify-between rounded-xl border border-white/8 bg-black/20 px-3 py-2 text-sm"
-              >
-                <span className="truncate text-white/80">
-                  {referral.email ?? 'Pending account'}
-                </span>
-                <span
-                  className={`shrink-0 font-semibold ${
-                    statusClass[referral.status] ?? 'text-white/60'
-                  }`}
+      <section className="referral-section">
+        <div className="referral-card">
+          <p className="referral-card-label">Your referrals</p>
+          {status && status.referrals.length > 0 ? (
+            <ul className="referral-list">
+              {status.referrals.map((referral, index) => (
+                <li
+                  key={`${referral.email ?? 'anon'}-${index}`}
+                  className="referral-list-item"
                 >
-                  {statusLabel[referral.status] ?? referral.status}
-                </span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="m-0 mt-3 flex items-center gap-2 text-sm text-white/55">
-            <Share2 className="size-4" />
-            No referrals yet — share your link to get started.
-          </p>
-        )}
+                  <span className="referral-list-email">
+                    {referral.email ?? 'Pending account'}
+                  </span>
+                  <span
+                    className={`referral-list-status ${statusClass[referral.status] ?? 'pending'}`}
+                  >
+                    {statusLabel[referral.status] ?? referral.status}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="referral-list-empty">
+              <Share2 className="size-4" />
+              No referrals yet — share your link to get started.
+            </p>
+          )}
+        </div>
       </section>
     </div>
   )

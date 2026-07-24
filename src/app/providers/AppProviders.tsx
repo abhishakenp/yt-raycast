@@ -44,6 +44,7 @@ const PUBLIC_LAUNCH_BACKDROP_PATHS = new Set([
   '/pricing',
   '/privacy',
   '/terms',
+  '/referrals',
 ])
 
 const appQueryClient = new QueryClient({

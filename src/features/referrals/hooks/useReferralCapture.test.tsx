@@ -131,7 +131,7 @@ describe('useReferralCapture', () => {
     expect(window.location.search).toBe('')
   })
 
-  it('waits when an earlier Dub attribution candidate exists', async () => {
+  it('records native referral even when a Dub attribution was captured first', async () => {
     vi.stubEnv('VITE_DUB_PARTNERS_ENABLED', 'true')
     writeMarketingConsent('accepted')
     window.localStorage.setItem(REFERRAL_PENDING_KEY, 'NATIVE01')
@@ -143,11 +143,14 @@ describe('useReferralCapture', () => {
       user: { primaryEmailAddress: { emailAddress: 'new-user@example.com' } },
       session: { getToken },
     })
+    vi.mocked(fetch).mockResolvedValueOnce(
+      Response.json({ recorded: true, reason: 'ok' }),
+    )
 
     renderHook(() => useReferralCapture())
 
-    await new Promise((resolve) => setTimeout(resolve, 10))
-    expect(getToken).not.toHaveBeenCalled()
-    expect(fetch).not.toHaveBeenCalled()
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1))
+    expect(getToken).toHaveBeenCalled()
+    expect(window.localStorage.getItem(REFERRAL_DONE_KEY)).toBe('1')
   })
 })

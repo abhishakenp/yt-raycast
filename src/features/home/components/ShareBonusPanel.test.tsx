@@ -127,4 +127,51 @@ describe('handleShareClick', () => {
     })
     expect(window.open).not.toHaveBeenCalled()
   })
+
+  it('appends ?ref=CODE to the shared URL when a referral code is provided', async () => {
+    Object.defineProperty(navigator, 'languages', {
+      configurable: true,
+      value: ['en-US'],
+    })
+    const claimShareBonus = vi.fn(async () => undefined)
+
+    await handleShareClick('whatsapp', claimShareBonus, 'ABC123')
+
+    const openedUrl = String(vi.mocked(window.open).mock.calls[0]?.[0])
+    expect(decodeURIComponent(openedUrl)).toContain('?ref=ABC123')
+  })
+
+  it('passes the referral URL to the native share sheet', async () => {
+    const share = vi.fn(async () => undefined)
+    Object.defineProperty(navigator, 'share', {
+      configurable: true,
+      value: share,
+    })
+    Object.defineProperty(navigator, 'languages', {
+      configurable: true,
+      value: ['en-US'],
+    })
+    const claimShareBonus = vi.fn(async () => undefined)
+
+    await handleShareClick('native', claimShareBonus, 'XYZ789')
+
+    expect(share).toHaveBeenCalledWith({
+      title: 'Ship Fast',
+      text: expect.stringContaining('I just built a site in seconds'),
+      url: 'https://ship-fast.ai/?ref=XYZ789',
+    })
+  })
+
+  it('falls back to the bare URL when no referral code is provided', async () => {
+    Object.defineProperty(navigator, 'languages', {
+      configurable: true,
+      value: ['en-US'],
+    })
+    const claimShareBonus = vi.fn(async () => undefined)
+
+    await handleShareClick('facebook', claimShareBonus)
+
+    const openedUrl = String(vi.mocked(window.open).mock.calls[0]?.[0])
+    expect(openedUrl).not.toContain('?ref=')
+  })
 })

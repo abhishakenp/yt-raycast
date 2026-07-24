@@ -82,7 +82,7 @@ async function buildSignedStripeRequest(event: unknown) {
   const rawBody = JSON.stringify(event)
   const t = '1700000000'
   const v1 = await hmacSha256Hex(STRIPE_SECRET, `${t}.${rawBody}`)
-  return new Request('https://ship-fast.io/api/stripe/webhook', {
+  return new Request('https://ship-fast.ai/api/stripe/webhook', {
     method: 'POST',
     headers: { 'stripe-signature': `t=${t},v1=${v1}` },
     body: rawBody,
@@ -92,7 +92,7 @@ async function buildSignedStripeRequest(event: unknown) {
 async function buildSignedRazorpayRequest(event: unknown) {
   const rawBody = JSON.stringify(event)
   const signature = await hmacSha256Hex(RAZORPAY_SECRET, rawBody)
-  return new Request('https://ship-fast.io/api/razorpay/webhook', {
+  return new Request('https://ship-fast.ai/api/razorpay/webhook', {
     method: 'POST',
     headers: { 'x-razorpay-signature': signature },
     body: rawBody,
@@ -202,7 +202,7 @@ describe('billing webhooks', () => {
     })
 
     it('invalid signature → rejected (400, mutation NOT called)', async () => {
-      const request = new Request('https://ship-fast.io/api/stripe/webhook', {
+      const request = new Request('https://ship-fast.ai/api/stripe/webhook', {
         method: 'POST',
         headers: { 'stripe-signature': 't=1,v1=deadbeef' },
         body: JSON.stringify(stripeSubscriptionEvent()),
@@ -328,7 +328,7 @@ describe('billing webhooks', () => {
     })
 
     it('invalid signature → rejected (400, mutation NOT called)', async () => {
-      const request = new Request('https://ship-fast.io/api/razorpay/webhook', {
+      const request = new Request('https://ship-fast.ai/api/razorpay/webhook', {
         method: 'POST',
         headers: { 'x-razorpay-signature': 'deadbeef' },
         body: JSON.stringify(razorpaySubscriptionEvent()),
@@ -843,7 +843,7 @@ describe('referrals', () => {
       expect(markArgs.subscriptionId).toBe('sub_alice')
     })
 
-    it('applyReferralDiscountForUser defers Razorpay referrers to checkout (no Stripe call)', async () => {
+    it('applyReferralDiscountForUser returns razorpay_not_configured without Razorpay keys (no Stripe call)', async () => {
       const fetchMock = vi.fn()
       vi.stubGlobal('fetch', fetchMock)
 
@@ -865,7 +865,7 @@ describe('referrals', () => {
         convexClient,
       )
 
-      expect(result.reason).toBe('razorpay_apply_at_checkout')
+      expect(result.reason).toBe('razorpay_not_configured')
       expect(fetchMock).not.toHaveBeenCalled()
       expect(convexClient.mutation).not.toHaveBeenCalled()
     })
