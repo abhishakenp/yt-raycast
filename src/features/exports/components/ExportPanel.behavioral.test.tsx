@@ -55,6 +55,7 @@ vi.mock('../../../../convex/_generated/api', () => ({
 }))
 
 vi.mock('@/shared/auth/use-optional-auth', () => ({
+  useIsAdmin: () => false,
   useOptionalAuth: () => authState,
 }))
 
@@ -431,6 +432,45 @@ describe('ExportPanel behavioral', () => {
     expect(createObjectUrl).toHaveBeenCalled()
     expect(clickMock).toHaveBeenCalled()
     expect(revokeObjectUrl).toHaveBeenCalledWith('blob:export')
+  })
+
+  it('html export with text/html content-type and attachment disposition downloads successfully', async () => {
+    // Regression: the HTML export target legitimately returns
+    // `content-type: text/html` with `content-disposition: attachment`. The
+    // panel must not mistake this for a rendered error page.
+    setExportTargets([
+      target({
+        target: 'html',
+        ready: true,
+        status: 'ready',
+        artifactReady: true,
+        artifactStatus: 'ready',
+        downloadUrl: '/api/sessions/session_123/download/html',
+      }),
+    ])
+    const clickMock = silenceAnchorClick()
+    const { createObjectUrl, revokeObjectUrl } = installUrlMocks()
+    const fetchMock = vi.fn(
+      async () =>
+        new Response('<!doctype html><html><body>site</body></html>', {
+          headers: {
+            'content-type': 'text/html; charset=utf-8',
+            'content-disposition': 'attachment; filename="index.html"',
+          },
+        }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const view = render(<ExportPanel sessionId="session_123" />)
+    const button = view.getByText('HTML').closest('button')
+    expect(button).toBeTruthy()
+    if (button) fireEvent.click(button)
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled())
+    expect(createObjectUrl).toHaveBeenCalled()
+    expect(clickMock).toHaveBeenCalled()
+    expect(revokeObjectUrl).toHaveBeenCalledWith('blob:export')
+    expect(view.queryByText(/download failed/i)).toBeNull()
   })
 
   it('shows a stable download error and does not create a browser download when the ready download route returns HTML', async () => {

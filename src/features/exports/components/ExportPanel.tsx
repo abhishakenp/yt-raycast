@@ -3,7 +3,7 @@ import { useQuery } from 'convex/react'
 import { useRef, useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
-import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
+import { useIsAdmin, useOptionalAuth } from '@/shared/auth/use-optional-auth'
 
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 import { readJsonOrThrow } from '@/lib/safe-fetch'
@@ -146,6 +146,7 @@ function exportProgressText(target: ExportTarget, now: number): string {
 
 export function ExportPanel({ sessionId }: ExportPanelProps) {
   const { getToken, isSignedIn } = useOptionalAuth()
+  const isAdmin = useIsAdmin()
   const exportTargets = useQuery(api.sessions.getExportTargets, {
     lookup: sessionId,
   })
@@ -178,7 +179,16 @@ export function ExportPanel({ sessionId }: ExportPanelProps) {
         headers: await createAuthHeaders(),
       })
       const contentType = response.headers.get('content-type') ?? ''
-      if (contentType.includes('json')) {
+      const disposition = response.headers.get('content-disposition') ?? ''
+      // A real export download always carries `content-disposition: attachment`.
+      // The HTML/JSON guards below exist to surface rendered error pages (which
+      // never set an attachment disposition) as a stable "Download failed"
+      // message instead of dumping the error body into a file. The HTML export
+      // target legitimately returns `content-type: text/html`, so we must key
+      // the error-page detection on the disposition header, not the content
+      // type.
+      const isAttachmentDownload = /attachment/i.test(disposition)
+      if (!isAttachmentDownload && contentType.includes('json')) {
         const data = await readJsonOrThrow<Record<string, unknown>>(
           response,
           'Download failed',
@@ -191,7 +201,7 @@ export function ExportPanel({ sessionId }: ExportPanelProps) {
               : 'Download failed',
         )
       }
-      if (contentType.includes('text/html')) {
+      if (!isAttachmentDownload && contentType.includes('text/html')) {
         throw new Error('Download failed')
       }
       if (!response.ok) {
@@ -254,7 +264,8 @@ export function ExportPanel({ sessionId }: ExportPanelProps) {
   }
 
   const downloadExport = async (targetConfig: ExportTarget) => {
-    if (!targetConfig.downloadUrl || targetConfig.requiresPayment) return
+    if (!targetConfig.downloadUrl || (targetConfig.requiresPayment && !isAdmin))
+      return
 
     setError(undefined)
     try {
@@ -272,7 +283,7 @@ export function ExportPanel({ sessionId }: ExportPanelProps) {
     if (actionInFlightRef.current) return
     actionInFlightRef.current = true
     try {
-      if (targetConfig.requiresPayment) {
+      if (targetConfig.requiresPayment && !isAdmin) {
         await createExport(targetConfig.target)
         return
       }
@@ -395,7 +406,7 @@ export function ExportPanel({ sessionId }: ExportPanelProps) {
                     className="size-4 animate-spin"
                     strokeWidth={1.8}
                   />
-                ) : item.requiresPayment ? (
+                ) : item.requiresPayment && !isAdmin ? (
                   <Lock className="size-4 text-amber-300" strokeWidth={1.8} />
                 ) : item.status === 'stale' ? (
                   <TriangleAlert
