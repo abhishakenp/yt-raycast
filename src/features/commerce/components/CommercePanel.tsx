@@ -145,6 +145,12 @@ export function CommercePanel({
   const [adminPassword, setAdminPassword] = useState('')
   const [isTransforming, setIsTransforming] = useState(false)
   const isReady = config?.status === 'ready'
+  const hasConfiguredBackend = (config?.backendUrl?.trim().length ?? 0) > 0
+  const requiresAdminCredentials = !hasConfiguredBackend
+  const canSave =
+    !isSaving &&
+    (!requiresAdminCredentials ||
+      (adminEmail.trim().length > 0 && adminPassword.length >= 8))
   const liveCheckoutWarning =
     normalizeCommerceWarning(config?.errorMessage) ??
     readCommerceWarning(config?.configJson)
@@ -162,8 +168,11 @@ export function CommercePanel({
     setIsTransforming(true)
     onTransformingChange?.(true)
     try {
+      const credentials = requiresAdminCredentials
+        ? { email: adminEmail, password: adminPassword }
+        : undefined
       await Promise.all([
-        provisionCommerce({ email: adminEmail, password: adminPassword }),
+        provisionCommerce(credentials),
         wait(minimumTransformMs),
       ])
     } finally {
@@ -208,38 +217,40 @@ export function CommercePanel({
           </span>
         </div>
       </div>
-      <div className="mb-3 grid gap-3 rounded-[var(--radius-md)] border border-[var(--border-primary)] bg-[var(--bg-input)] p-3">
-        <p className="m-0 text-xs text-[var(--text-muted)]">
-          Create your Medusa admin account. Ship Fast uses these credentials
-          only during setup and does not store the password.
-        </p>
-        <label className="grid gap-1 text-xs font-semibold text-[var(--text-primary)]">
-          Admin email
-          <input
-            autoComplete="email"
-            className="rounded-[var(--radius-sm)] border border-[var(--border-primary)] bg-[var(--bg-primary)] px-3 py-2 text-sm"
-            onChange={(event) => setAdminEmail(event.target.value)}
-            required
-            type="email"
-            value={adminEmail}
-          />
-        </label>
-        <label className="grid gap-1 text-xs font-semibold text-[var(--text-primary)]">
-          Admin password
-          <input
-            autoComplete="new-password"
-            className="rounded-[var(--radius-sm)] border border-[var(--border-primary)] bg-[var(--bg-primary)] px-3 py-2 text-sm"
-            minLength={8}
-            onChange={(event) => setAdminPassword(event.target.value)}
-            required
-            type="password"
-            value={adminPassword}
-          />
-        </label>
-      </div>
+      {requiresAdminCredentials && (
+        <div className="mb-3 grid gap-3 rounded-[var(--radius-md)] border border-[var(--border-primary)] bg-[var(--bg-input)] p-3">
+          <p className="m-0 text-xs text-[var(--text-muted)]">
+            Create your Medusa admin account. Ship Fast uses these credentials
+            only during setup and does not store the password.
+          </p>
+          <label className="grid gap-1 text-xs font-semibold text-[var(--text-primary)]">
+            Admin email
+            <input
+              autoComplete="email"
+              className="rounded-[var(--radius-sm)] border border-[var(--border-primary)] bg-[var(--bg-primary)] px-3 py-2 text-sm"
+              onChange={(event) => setAdminEmail(event.target.value)}
+              required
+              type="email"
+              value={adminEmail}
+            />
+          </label>
+          <label className="grid gap-1 text-xs font-semibold text-[var(--text-primary)]">
+            Admin password
+            <input
+              autoComplete="new-password"
+              className="rounded-[var(--radius-sm)] border border-[var(--border-primary)] bg-[var(--bg-primary)] px-3 py-2 text-sm"
+              minLength={8}
+              onChange={(event) => setAdminPassword(event.target.value)}
+              required
+              type="password"
+              value={adminPassword}
+            />
+          </label>
+        </div>
+      )}
       <button
         className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-[var(--bg-secondary)] px-4 py-3 font-sans text-sm font-semibold text-[var(--text-primary)] shadow-[0_0_0_1px_var(--ring),0_8px_20px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.1)] transition-all duration-[var(--dur)] ease-[var(--ease-out)] hover:not-disabled:-translate-y-px hover:not-disabled:shadow-[0_0_0_1px_var(--ring-strong),0_0_24px_var(--glow),0_12px_28px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.18)] active:not-disabled:translate-y-0 active:not-disabled:duration-120 disabled:cursor-not-allowed disabled:opacity-30"
-        disabled={isSaving || !adminEmail.trim() || adminPassword.length < 8}
+        disabled={!canSave}
         onClick={handleSave}
         type="button"
       >
