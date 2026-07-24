@@ -23,6 +23,6 @@ After deployment, configure Ship Fast with:
 
 - `MEDUSA_BACKEND_URL=https://medusa.ship-fast.ai`
 - `MEDUSA_ADMIN_URL=https://medusa.ship-fast.ai/app`
-- `MEDUSA_STOREFRONT_URL=https://ship-fast.io`
+- `MEDUSA_STOREFRONT_URL=https://ship-fast.ai`
 - Medusa admin credentials or `MEDUSA_ADMIN_API_TOKEN`
 - `MEDUSA_PUBLISHABLE_API_KEY` fallback for API-root store routes

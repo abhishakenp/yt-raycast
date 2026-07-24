@@ -64,9 +64,9 @@ services:
       CACHE_REDIS_URL: ${CACHE_REDIS_URL:-redis://medusa-redis:6379}
       LOCKING_REDIS_URL: ${LOCKING_REDIS_URL:-redis://medusa-redis:6379}
       MEDUSA_BACKEND_URL: ${MEDUSA_BACKEND_URL:-https://medusa.ship-fast.ai}
-      STORE_CORS: ${STORE_CORS:-https://ship-fast.io,https://ship-fast.devliv.io}
+      STORE_CORS: ${STORE_CORS:-https://ship-fast.ai,https://ship-fast.devliv.io}
       ADMIN_CORS: ${ADMIN_CORS:-https://medusa.ship-fast.ai,https://medusa.devliv.io}
-      AUTH_CORS: ${AUTH_CORS:-https://ship-fast.io,https://ship-fast.devliv.io,https://medusa.ship-fast.ai,https://medusa.devliv.io}
+      AUTH_CORS: ${AUTH_CORS:-https://ship-fast.ai,https://ship-fast.devliv.io,https://medusa.ship-fast.ai,https://medusa.devliv.io}
       JWT_SECRET: ${JWT_SECRET}
       COOKIE_SECRET: ${COOKIE_SECRET}
       MEDUSA_SEED_ADMIN_EMAIL: ${MEDUSA_SEED_ADMIN_EMAIL}
