@@ -19,8 +19,6 @@ function plan(overrides: Partial<ParsedSitePlan> = {}): ParsedSitePlan {
       { role: 'footer', content: [] },
     ],
     pages: [],
-    tables: [],
-    operations: [],
     ...overrides,
   }
 }
@@ -82,20 +80,6 @@ describe('validatePlan', () => {
     })
     const result = validatePlan(p, 'restaurant')
     expect(result.errors.some((e) => e.rule === 'nested_unbalanced')).toBe(true)
-  })
-
-  it('rule 5: plus_malformed for bad macroType', () => {
-    const p = plan({
-      operations: [{ name: 'badOp', macroType: 'bogus' as never, table: 't' }],
-    })
-    const result = validatePlan(p, 'restaurant')
-    expect(result.errors.some((e) => e.rule === 'plus_malformed')).toBe(true)
-  })
-
-  it('rule 5: plus_malformed for table with no fields', () => {
-    const p = plan({ tables: [{ name: 'empty', fields: [], seeded: false }] })
-    const result = validatePlan(p, 'restaurant')
-    expect(result.errors.some((e) => e.rule === 'plus_malformed')).toBe(true)
   })
 
   it('rule 6: no_sections when empty', () => {

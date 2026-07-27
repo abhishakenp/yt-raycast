@@ -64,8 +64,6 @@ function plan(
     kind: 'restaurant',
     sections,
     pages: [],
-    tables: [],
-    operations: [],
     ...extra,
   }
 }
@@ -112,46 +110,11 @@ describe('inferLakebed', () => {
         { role: 'menu', content: ['Menu 2'] },
       ],
       pages: [],
-      tables: [],
-      operations: [],
     }
     const def = inferLakebed(p2, 'restaurant')
     // Two menu sections both generate menuItems — should dedupe to 1
     const menuTables = def.tables.filter((t) => t.name === 'menuItems')
     expect(menuTables).toHaveLength(1)
-  })
-
-  it('integrates custom + tables and + operations', () => {
-    const p: ParsedSitePlan = {
-      kind: 'restaurant',
-      sections: [{ role: 'reservations', content: ['Book'] }],
-      pages: [],
-      tables: [
-        { name: 'pets', fields: ['name', 'species', 'breed'], seeded: true },
-        { name: 'vaccinations', fields: ['petName', 'vaccine'], seeded: false },
-      ],
-      operations: [
-        {
-          name: 'scheduleAppointment',
-          macroType: 'submission',
-          table: 'vaccinations',
-        },
-      ],
-    }
-    const def = inferLakebed(p, 'restaurant')
-    // custom table: pets (seeded)
-    const petsTable = def.tables.find((t) => t.name === 'pets')
-    expect(petsTable).toBeDefined()
-    expect(petsTable!.fields.name.seedFromProps).toBe(true)
-    // custom table: vaccinations (not seeded)
-    const vaccTable = def.tables.find((t) => t.name === 'vaccinations')
-    expect(vaccTable).toBeDefined()
-    expect(vaccTable!.fields.petName.seedFromProps).toBe(false)
-    // custom operation: scheduleAppointment (submission macro, first query+mutation renamed)
-    expect(def.queries.some((q) => q.name === 'scheduleAppointment')).toBe(true)
-    expect(def.mutations.some((m) => m.name === 'scheduleAppointment')).toBe(
-      true,
-    )
   })
 
   it('skips sections with none profile', () => {

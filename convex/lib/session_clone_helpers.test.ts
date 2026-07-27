@@ -292,7 +292,6 @@ describe('session clone helpers', () => {
             value: expect.objectContaining({
               sessionId,
               version: 2,
-              html: '<main>Cloned home</main>',
               openUiSource: '',
               source: 'generation',
             }),
@@ -352,7 +351,7 @@ describe('session clone helpers', () => {
           {
             table: 'previews',
             value: expect.objectContaining({
-              html: '<main>Root order zero</main>',
+              openUiSource: '',
             }),
           },
         ]),
@@ -400,14 +399,9 @@ describe('session clone helpers', () => {
           }),
         },
       ])
-      expect(ctx.scheduler.runAfter).toHaveBeenCalledWith(
-        0,
-        expect.anything(),
-        {
-          sessionId,
-          anonymousOwnerSecret: 'owner-secret',
-        },
-      )
+      // Generation is now kicked off by the VPS API route — Convex no longer
+      // schedules a generation action for clone briefs.
+      expect(ctx.scheduler.runAfter).not.toHaveBeenCalled()
     })
 
     it('rejects clone brief generation when the owner secret does not match', async () => {

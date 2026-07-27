@@ -21,9 +21,6 @@ import {
 
 type EngineInput = Parameters<RunShipFastEngine>[0]
 
-const VALID_HTML =
-  '<!doctype html><html lang="en"><head><title>Generated</title></head><body><main><h1>Generated</h1></main></body></html>'
-
 function createTempRoot(): string {
   return mkdtempSync(join(tmpdir(), 'ship-fast-generation-release-'))
 }
@@ -33,7 +30,10 @@ function writeArtifacts(
   status: EngineTaskStatus = 'DONE',
 ): void {
   mkdirSync(input.workspace, { recursive: true })
-  writeFileSync(join(input.workspace, 'index.html'), VALID_HTML)
+  writeFileSync(
+    join(input.workspace, 'site-spec.json'),
+    JSON.stringify({ brand: 'Generated' }),
+  )
   writeFileSync(join(input.workspace, 'home.openui'), 'export default "home"')
   writeFileSync(
     join(input.workspace, 'tasks.json'),
@@ -163,7 +163,7 @@ describe('generation runtime release hard gates', () => {
     expect(failed).toHaveLength(1)
   })
 
-  it('does not publish preview-ready events from a generation that later fails', async () => {
+  it('emits preview-ready events immediately even if generation later fails', async () => {
     const { persistence } = createPersistenceHarness()
     const persistedEvents: ShipFastEngineSessionEvent[] = []
 
@@ -182,7 +182,11 @@ describe('generation runtime release hard gates', () => {
     })
 
     expect(result.status).toBe('failed')
-    expect(persistedEvents).not.toContainEqual({ type: 'preview_ready' })
+    // Preview-ready events are emitted immediately so the dashboard can show
+    // the first frame as soon as it's available. A later failure is handled
+    // separately — the user sees the partial preview and the failed portion
+    // can be retried in the background.
+    expect(persistedEvents).toContainEqual({ type: 'preview_ready' })
   })
 
   it('redacts provider secrets and internal paths from persisted failures', async () => {
@@ -272,7 +276,6 @@ describe('generation runtime release hard gates', () => {
 
     expect(result.status).toBe('completed')
     expect(completed).toHaveLength(1)
-    expect(completed[0]?.html).toBe(VALID_HTML)
   })
 
   it('deduplicates replayed engine events before persistence', async () => {

@@ -4,12 +4,21 @@ import type { ConvexHttpClient } from 'convex/browser'
 import type { FunctionArgs } from 'convex/server'
 
 import { api } from '../../../../convex/_generated/api'
+import type { Id } from '../../../../convex/_generated/dataModel'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
+import { startVpsGeneration } from '@/features/generation/server/vps-generation-handler'
 
 type CreateSessionArgs = FunctionArgs<typeof api.sessions.create>
 
 type SessionCreateClient = Pick<ConvexHttpClient, 'mutation'> &
   Partial<Pick<ConvexHttpClient, 'setAuth'>>
+
+type SessionCreateResult = {
+  sessionId: Id<'sessions'>
+  cached?: boolean
+  cloned?: boolean
+  remaining?: number
+}
 
 const MAX_REQUEST_BODY_BYTES = 1_048_576
 const REQUEST_BODY_TOO_LARGE_ERROR = 'Request body is too large.'
@@ -143,6 +152,78 @@ function errorPayload(error: unknown) {
   }
 }
 
+const VALID_EXPORT_TARGETS = ['html', 'react', 'next', 'lakebed'] as const
+type ExportTarget = (typeof VALID_EXPORT_TARGETS)[number]
+
+function isExportTarget(value: unknown): value is ExportTarget {
+  return (
+    typeof value === 'string' &&
+    VALID_EXPORT_TARGETS.some((target) => target === value)
+  )
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((v) => typeof v === 'string')
+}
+
+function parseCreateSessionArgs(
+  body: Record<string, unknown>,
+  clientIpHash: string,
+): CreateSessionArgs {
+  const prompt = typeof body.prompt === 'string' ? body.prompt : ''
+  const preferredLanguage =
+    typeof body.preferredLanguage === 'string' ? body.preferredLanguage : 'en'
+  const preferredExportTarget: ExportTarget = isExportTarget(
+    body.preferredExportTarget,
+  )
+    ? body.preferredExportTarget
+    : 'html'
+  const isPrivate = body.isPrivate === true
+  const workspace = typeof body.workspace === 'string' ? body.workspace : ''
+
+  const args: CreateSessionArgs = {
+    prompt,
+    preferredLanguage,
+    preferredExportTarget,
+    isPrivate,
+    workspace,
+    clientIpHash,
+  }
+
+  if (typeof body.anonymousOwnerSecret === 'string') {
+    args.anonymousOwnerSecret = body.anonymousOwnerSecret
+  }
+  if (typeof body.anonymousClientId === 'string') {
+    args.anonymousClientId = body.anonymousClientId
+  }
+  if (isStringArray(body.designReferenceUrls)) {
+    args.designReferenceUrls = body.designReferenceUrls
+  }
+  if (typeof body.designReferenceNotes === 'string') {
+    args.designReferenceNotes = body.designReferenceNotes
+  }
+  if (typeof body.cloneUrl === 'string') {
+    args.cloneUrl = body.cloneUrl
+  }
+  if (typeof body.engineVersion === 'string') {
+    args.engineVersion = body.engineVersion
+  }
+  if (body.isDraft === true) {
+    args.isDraft = true
+  }
+  return args
+}
+
+function isSessionCreateResult(value: unknown): value is SessionCreateResult {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'sessionId' in value &&
+    typeof value.sessionId === 'string' &&
+    value.sessionId.length > 0
+  )
+}
+
 export async function createSessionCreateResponse(
   request: Request,
   clientOverride?: SessionCreateClient,
@@ -165,22 +246,34 @@ export async function createSessionCreateResponse(
     const client = clientOverride ?? createRuntimeConvexHttpClient()
     const token = getBearerToken(request)
     if (token !== null) client.setAuth?.(token)
-    const result = await client.mutation(api.sessions.create, {
-      ...body,
-      clientIpHash,
-    } as CreateSessionArgs)
+    const args = parseCreateSessionArgs(body, clientIpHash)
+    const result = await client.mutation(api.sessions.create, args)
 
-    if (
-      result === null ||
-      typeof result !== 'object' ||
-      typeof (result as { sessionId?: unknown }).sessionId !== 'string' ||
-      !(result as { sessionId?: string }).sessionId
-    ) {
+    if (!isSessionCreateResult(result)) {
       return json(
         { error: 'Generation could not start. Try again.' },
         { status: 502 },
       )
     }
+
+    const anonymousOwnerSecret =
+      typeof body.anonymousOwnerSecret === 'string'
+        ? body.anonymousOwnerSecret
+        : undefined
+
+    // Session admitted — kick off generation on the VPS (warm Node process).
+    // Fire-and-forget: the client subscribes to getGenerationView on Convex
+    // and sees progress reactively. No data flows through the client.
+    void startVpsGeneration({
+      sessionId: result.sessionId,
+      anonymousOwnerSecret,
+      bearerToken: token,
+    }).catch((error) => {
+      console.error('[session-create] VPS generation failed', {
+        sessionId: result.sessionId,
+        error: error instanceof Error ? error.message : String(error),
+      })
+    })
 
     return json(result)
   } catch (error) {

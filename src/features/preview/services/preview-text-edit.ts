@@ -33,7 +33,7 @@ export function applyPreviewTextEdit(
   html: string,
   { oldText, newText }: { oldText?: string; newText?: string },
 ): { html: string; replaced: boolean } {
-  const source = String(html ?? '')
+  const source = html
   const from = String(oldText ?? '')
   const to = String(newText ?? '')
   if (!source.trim() || !from.trim()) return { html: source, replaced: false }

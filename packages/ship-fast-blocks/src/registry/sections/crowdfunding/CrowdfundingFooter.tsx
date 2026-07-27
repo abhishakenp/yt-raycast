@@ -99,9 +99,14 @@ export const CrowdfundingFooter = defineCapsule({
               .map((col) => (
                 <FooterColumn key={col.title}>
                   <FooterColumnTitle>{col.title}</FooterColumnTitle>
-                  <FooterColumnList>
+                  <FooterColumnList className="mt-4 space-y-2.5">
                     {col.links.map((link) => (
-                      <FooterLink key={link}>{link}</FooterLink>
+                      <FooterLink
+                        key={link}
+                        className="block w-fit text-sm text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        {link}
+                      </FooterLink>
                     ))}
                   </FooterColumnList>
                 </FooterColumn>

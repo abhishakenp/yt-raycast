@@ -1,6 +1,5 @@
 import type {
   LakebedDefinition,
-  LakebedTable,
   MacroType,
   MacroParams,
   MacroOutput,
@@ -11,7 +10,7 @@ import type {
 import { INTERACTIONS, getInteraction } from './interactions.ts'
 import { getDefaultFamily } from './kinds.ts'
 import { runMacro } from './macros/index.ts'
-import { pascalCase, buildFields } from './macros/helpers.ts'
+import { pascalCase } from './macros/helpers.ts'
 
 /** Operation key mapping: which generic operation name each generated query/mutation corresponds to. */
 const OPERATION_KEYS: Record<
@@ -136,44 +135,6 @@ function processSection(
   }
 }
 
-/** Apply custom `+` tables from the plan. */
-function applyCustomTables(
-  tables: ParsedSitePlan['tables'],
-  acc: LakebedDefinition,
-): void {
-  for (const t of tables) {
-    const lakebedTable: LakebedTable = {
-      name: t.name,
-      fields: buildFields(t.fields, t.seeded),
-    }
-    const existing = acc.tables.find((x) => x.name === t.name)
-    if (existing) {
-      existing.fields = { ...existing.fields, ...lakebedTable.fields }
-    } else {
-      acc.tables.push(lakebedTable)
-    }
-  }
-}
-
-/** Apply custom `+` operations from the plan. */
-function applyCustomOperations(
-  operations: ParsedSitePlan['operations'],
-  acc: LakebedDefinition,
-): void {
-  for (const op of operations) {
-    const params: MacroParams = { tableName: op.table, fields: [], key: op.key }
-    const output = runMacro(op.macroType, params)
-    // Use the operation name from the plan for the first query/mutation
-    if (output.queries.length > 0) {
-      output.queries[0] = { ...output.queries[0], name: op.name }
-    }
-    if (output.mutations.length > 0) {
-      output.mutations[0] = { ...output.mutations[0], name: op.name }
-    }
-    mergeOutput(acc, output)
-  }
-}
-
 /**
  * Infer a LakebedDefinition from a parsed site plan.
  * Reads interaction profiles for each section, runs macros, merges outputs.
@@ -186,8 +147,6 @@ export function inferLakebed(
   for (const section of plan.sections) {
     processSection(section, kind, acc)
   }
-  applyCustomTables(plan.tables, acc)
-  applyCustomOperations(plan.operations, acc)
   return acc
 }
 

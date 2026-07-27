@@ -10,28 +10,24 @@ import {
 describe('preview versions', () => {
   it('appends preview versions monotonically', () => {
     const first = appendPreviewVersion(createEmptyPreviewState(), {
-      html: '<main>First</main>',
       source: 'generation',
       createdAt: 1,
     })
     const second = appendPreviewVersion(first, {
-      html: '<main>Second</main>',
       source: 'edit',
       createdAt: 2,
     })
 
     expect(second.currentVersion).toBe(2)
-    expect(getCurrentPreview(second)?.html).toBe('<main>Second</main>')
+    expect(getCurrentPreview(second)?.source).toBe('edit')
   })
 
   it('restores history by creating a new version', () => {
     const first = appendPreviewVersion(createEmptyPreviewState(), {
-      html: '<main>First</main>',
       source: 'generation',
       createdAt: 1,
     })
     const second = appendPreviewVersion(first, {
-      html: '<main>Second</main>',
       source: 'edit',
       createdAt: 2,
     })
@@ -39,7 +35,6 @@ describe('preview versions', () => {
 
     expect(restored.currentVersion).toBe(3)
     expect(getCurrentPreview(restored)?.source).toBe('history_restore')
-    expect(getCurrentPreview(restored)?.html).toBe('<main>First</main>')
   })
 
   it('rejects missing history restores', () => {

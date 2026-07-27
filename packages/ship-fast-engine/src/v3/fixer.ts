@@ -1,23 +1,8 @@
 // v3 engine — best-effort repair of a parsed site-plan from validation errors.
-import type {
-  CustomOperation,
-  CustomTable,
-  NestedGroup,
-  ParsedSitePlan,
-  Section,
-} from './types.ts'
+import type { NestedGroup, ParsedSitePlan, Section } from './types.ts'
 import type { ValidationError } from './validator.ts'
 import { KIND_NAMES, inferKind } from './kinds.ts'
 import { getVocabulary, roleFieldOrder } from './vocabulary.ts'
-
-const MACRO_TYPE_SET = new Set([
-  'collection',
-  'cart',
-  'submission',
-  'search',
-  'favorites',
-  'auth',
-])
 
 const EMPTY_ROLES = new Set(['footer'])
 
@@ -91,20 +76,6 @@ function fixNested(plan: ParsedSitePlan): ParsedSitePlan {
   return { ...plan, sections }
 }
 
-/** Drop malformed tables/operations. */
-function fixPlus(plan: ParsedSitePlan): ParsedSitePlan {
-  const tables: CustomTable[] = plan.tables.filter(
-    (t) => t.fields.length > 0 && t.name.length > 0,
-  )
-  const operations: CustomOperation[] = plan.operations.filter(
-    (op) =>
-      op.name.length > 0 &&
-      MACRO_TYPE_SET.has(op.macroType) &&
-      op.table.length > 0,
-  )
-  return { ...plan, tables, operations }
-}
-
 /** Drop pages referencing invalid roles. */
 function fixPages(plan: ParsedSitePlan, kind: string): ParsedSitePlan {
   if (!KIND_NAMES.includes(kind)) return plan
@@ -133,8 +104,6 @@ export function fixPlan(
     kind: plan.kind,
     sections: plan.sections.slice(),
     pages: plan.pages.slice(),
-    tables: plan.tables.slice(),
-    operations: plan.operations.slice(),
   }
 
   // Missing/unknown kind → infer (use validated kind as fallback).
@@ -152,10 +121,6 @@ export function fixPlan(
 
   if (errorRules.has('nested_unbalanced')) {
     next = fixNested(next)
-  }
-
-  if (errorRules.has('plus_malformed')) {
-    next = fixPlus(next)
   }
 
   if (errorRules.has('page_invalid')) {

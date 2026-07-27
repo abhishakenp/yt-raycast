@@ -57,7 +57,6 @@ async function createReadySessionWithFixture(
 
   await t.action(internal.sessions.completeGeneration, {
     sessionId,
-    html,
     openUiSource: source,
     siteSpecJson: JSON.stringify({ projectName: prompt }),
     tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],
@@ -197,7 +196,9 @@ describe('inline edit persistence — <br> separated text nodes', () => {
       lookup: sessionId,
     })
     expect(reloaded?.homeModule?.source).toContain('Pizza Delivered NOW')
-    expect(reloaded?.latestPreview?.html).toContain('Pizza Delivered NOW')
+    expect(reloaded?.latestPreview?.openUiSource).toContain(
+      'Pizza Delivered NOW',
+    )
   })
 
   it('createEdit with flattened textContent spanning <br> on real pizza fixture', async () => {

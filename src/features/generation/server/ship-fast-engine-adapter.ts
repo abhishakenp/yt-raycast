@@ -6,6 +6,7 @@ import {
 } from './engine-workspace'
 import type { EngineWorkspaceArtifacts } from './engine-workspace'
 import type { TranslationCacheClient } from '@ship-fast/engine/llm/translation-cache-client.ts'
+import type { PlanCacheClient } from '@ship-fast/engine/v3/plan-cache-client.ts'
 
 export type ShipFastEngineSessionEvent =
   | { type: 'log'; message: string }
@@ -44,6 +45,8 @@ export type RunShipFastEngine = (input: {
   preferredLanguage?: string
   signal?: AbortSignal
   cacheClient?: TranslationCacheClient
+  planCacheClient?: PlanCacheClient
+  promptCacheKey?: string
   sessionId?: string
 }) => Promise<unknown>
 
@@ -53,6 +56,8 @@ export type ShipFastEngineAdapterInput = {
   preferredLanguage?: string
   signal?: AbortSignal
   cacheClient?: TranslationCacheClient
+  planCacheClient?: PlanCacheClient
+  promptCacheKey?: string
 }
 
 export type ShipFastEngineAdapterResult = EngineWorkspaceArtifacts & {
@@ -100,9 +105,6 @@ const eventKey = (event: ShipFastEngineSessionEvent): string | undefined => {
   }
 }
 
-const isReadinessEvent = (event: ShipFastEngineSessionEvent): boolean =>
-  event.type === 'preview_ready' || event.type === 'openui_ready'
-
 const abortReason = (signal: AbortSignal): Error => {
   if (signal.reason instanceof Error) return signal.reason
   if (typeof signal.reason === 'string' && signal.reason.trim()) {
@@ -144,10 +146,11 @@ export function createShipFastEngineAdapter({
       preferredLanguage,
       signal,
       cacheClient,
+      planCacheClient,
+      promptCacheKey,
     }: ShipFastEngineAdapterInput) => {
       const startedAt = now()
       const events: ShipFastEngineSessionEvent[] = []
-      const deferredEvents: ShipFastEngineSessionEvent[] = []
       const seenEvents = new Set<string>()
       const pendingEventWrites: Promise<void>[] = []
       const workspace = createEngineWorkspacePath(workspaceRoot, sessionId)
@@ -165,9 +168,11 @@ export function createShipFastEngineAdapter({
         if (key && seenEvents.has(key)) return
         if (key) seenEvents.add(key)
         events.push(event)
-
-        if (isReadinessEvent(event)) deferredEvents.push(event)
-        else persistEvent(event)
+        // All events — including preview_ready — are emitted immediately so
+        // the dashboard can show the first frame as soon as it's available.
+        // A later generation failure is handled separately; the user keeps
+        // the partial preview and the failed portion can be retried.
+        persistEvent(event)
       }
 
       if (signal?.aborted) throw abortReason(signal)
@@ -180,6 +185,8 @@ export function createShipFastEngineAdapter({
           preferredLanguage,
           signal,
           cacheClient,
+          planCacheClient,
+          promptCacheKey,
           sessionId,
         }),
         signal,
@@ -187,7 +194,6 @@ export function createShipFastEngineAdapter({
       const artifacts = readEngineWorkspaceArtifacts(workspace)
       assertCompletedEngineWorkspaceArtifacts(artifacts)
 
-      for (const event of deferredEvents) persistEvent(event)
       await Promise.all(pendingEventWrites)
 
       return {

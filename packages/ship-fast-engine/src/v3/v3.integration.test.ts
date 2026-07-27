@@ -11,9 +11,26 @@ reservations Book a Table|Parties up to 8 for larger groups call us
 footer
 @pages menu reservations`
 
-// Mock generateText to return the restaurant DSL.
+// Mock generateText/generateTextStream to return the restaurant DSL.
 const generateTextMock = vi.hoisted(() =>
   vi.fn(async (_modelId, _system, _user, _signal, _retries?) => restaurantDsl),
+)
+const generateTextStreamMock = vi.hoisted(() =>
+  vi.fn(
+    async (
+      _modelId: unknown,
+      _system: unknown,
+      _user: unknown,
+      _signal: unknown,
+      onLine?: (line: string) => void,
+      _retries?: unknown,
+    ) => {
+      for (const line of restaurantDsl.split('\n')) {
+        onLine?.(line + '\n')
+      }
+      return restaurantDsl
+    },
+  ),
 )
 
 // Mock resolvePipelineLanguage to return a fixed English mode.
@@ -30,6 +47,7 @@ const resolvePipelineLanguageMock = vi.hoisted(() =>
 
 vi.mock('../generate.ts', () => ({
   generateText: generateTextMock,
+  generateTextStream: generateTextStreamMock,
 }))
 vi.mock('../pipeline/prompt-language.js', () => ({
   resolvePipelineLanguage: resolvePipelineLanguageMock,
@@ -170,8 +188,11 @@ const streamingParserCtor = vi.hoisted(() =>
   vi.fn(function (this: any) {
     this.onSectionStart = vi.fn()
     this.onSectionComplete = vi.fn()
+    this.onMetadata = vi.fn()
     this.feed = vi.fn()
     this.flush = vi.fn()
+    this.pages = []
+    this.navLabels = {}
   }),
 )
 const inferLakebedMock = vi.hoisted(() =>
@@ -263,17 +284,6 @@ describe('runAllV3', () => {
     // openui-manifest.json written.
     expect(existsSync(join(workspace, 'openui-manifest.json'))).toBe(true)
 
-    // index.html written by SSR step (required by engine adapter) must be the
-    // final static OpenUI document, not a live preview-client shell.
-    expect(existsSync(join(workspace, 'index.html'))).toBe(true)
-    const indexHtml = readFileSync(join(workspace, 'index.html'), 'utf8')
-    expect(indexHtml.length).toBeGreaterThan(0)
-    expect(indexHtml).toContain('data-sf-export-page')
-    expect(indexHtml).not.toContain('openui-preview-client.js')
-    expect(indexHtml).not.toContain('<div id="openui-root"></div>')
-    expect(indexHtml).not.toContain('Generated OpenUI source is ready')
-    expect(indexHtml).not.toContain('ship-fast-openui-source')
-
     // tasks.json shows DONE.
     const tasks = JSON.parse(
       readFileSync(join(workspace, 'tasks.json'), 'utf8'),
@@ -282,8 +292,9 @@ describe('runAllV3', () => {
       'DONE',
     ])
 
-    // generateText was called (high-confidence restaurant prompt).
-    expect(generateTextMock).toHaveBeenCalled()
+    // generateTextStream was called (high-confidence restaurant prompt uses
+    // the streaming path).
+    expect(generateTextStreamMock).toHaveBeenCalled()
 
     // signalHomepageReady fired (plan says: when first section's OpenUI emits).
     expect(sessionCtx.signalHomepageReady).toHaveBeenCalled()

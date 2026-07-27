@@ -62,7 +62,7 @@ describe('buildPrompt (high-confidence)', () => {
 
   it('system contains app detection guidance in reasoning phase', () => {
     expect(r.system).toContain('IS THIS A WEBSITE OR AN APP')
-    expect(r.system).toContain('@freeform')
+    expect(r.system).toContain('@svelte')
     expect(r.system).toContain('@type')
   })
 
@@ -98,7 +98,7 @@ describe('buildLowConfidenceKindPrompt (call 1)', () => {
   it('system guides app requests to marketing', () => {
     expect(r.system).toContain('interactive APP')
     expect(r.system).toContain('todo list')
-    expect(r.system).toContain('@freeform')
+    expect(r.system).toContain('@svelte')
   })
 
   it('user guides app requests to marketing', () => {
@@ -175,7 +175,7 @@ describe('renderVocabulary / renderRoleSignature', () => {
   })
 })
 
-describe('@freeform format rules in prompt', () => {
+describe('@svelte format rules in prompt', () => {
   const r = buildPrompt({
     prompt: 'a todo list app',
     confidence: {
@@ -186,44 +186,58 @@ describe('@freeform format rules in prompt', () => {
     locale: 'en',
   })
 
-  it('includes CRITICAL format rules section', () => {
-    expect(r.system).toContain('CRITICAL @freeform FORMAT RULES')
+  it('includes @svelte blocks instruction section', () => {
+    expect(r.system).toContain('@svelte blocks')
+    expect(r.system).toContain('Svelte 4')
   })
 
-  it('forbids JSX/JavaScript in layout', () => {
-    expect(r.system).toContain('NOT JSX')
-    expect(r.system).toContain('NOT JavaScript')
-    expect(r.system).toContain('NO .map()')
-    expect(r.system).toContain('NO arrow functions')
+  it('mentions Svelte 4 syntax (not Svelte 5 runes)', () => {
+    expect(r.system).toContain('Svelte 4 syntax')
+    expect(r.system).toContain('NOT Svelte 5 runes')
   })
 
-  it('forbids className and function-valued event handlers', () => {
-    expect(r.system).toContain('NO className')
-    expect(r.system).toContain('onChange')
-    expect(r.system).toContain('onSubmit')
-    expect(r.system).toContain('onclick="actionName"')
+  it('mentions on:click and bind:value', () => {
+    expect(r.system).toContain('on:click')
+    expect(r.system).toContain('bind:value')
   })
 
-  it('includes WRONG/RIGHT examples', () => {
-    expect(r.system).toContain('WRONG:')
-    expect(r.system).toContain('RIGHT:')
-    expect(r.system).toContain('tasks.map')
-    expect(r.system).toContain('onChange={() => toggleTask')
+  it('mentions $lakebed import for data access', () => {
+    expect(r.system).toContain('$lakebed')
+    expect(r.system).toContain('queries')
+    expect(r.system).toContain('mutations')
   })
 
-  it('includes todo list example in @freeform blocks', () => {
+  it('includes todo list example in @svelte blocks', () => {
     expect(r.system).toContain('todowidget')
-    expect(r.system).toContain('task1=Buy groceries')
-    expect(r.system).toContain('toggle1')
+    expect(r.system).toContain('Buy groceries')
+    expect(r.system).toContain('toggle')
   })
 
-  it('includes counter example in @freeform blocks', () => {
+  it('includes counter example in @svelte blocks', () => {
     expect(r.system).toContain('counterdemo')
-    expect(r.system).toContain('count=0')
-    expect(r.system).toContain('inc')
+    expect(r.system).toContain('let count = 0')
+    expect(r.system).toContain('count++')
   })
 
-  it('OUTPUT FORMAT mentions @freeform blocks', () => {
-    expect(r.system).toContain('Then: @freeform blocks')
+  it('OUTPUT FORMAT mentions @svelte blocks', () => {
+    expect(r.system).toContain('Then: @svelte blocks')
+  })
+
+  it('uses @svelte/@endsvelte markers', () => {
+    expect(r.system).toContain('@svelte')
+    expect(r.system).toContain('@endsvelte')
+  })
+
+  it('does NOT reference old @freeform grammar', () => {
+    expect(r.system).not.toContain('@freeform')
+    expect(r.system).not.toContain('@endfreeform')
+    expect(r.system).not.toContain('state: var1=initval')
+    expect(r.system).not.toContain('actions: action1')
+  })
+
+  it('does NOT reference + line grammar', () => {
+    expect(r.system).not.toContain('+ tableName')
+    expect(r.system).not.toContain('+ opName macroType')
+    expect(r.system).not.toContain('macroType must be one of')
   })
 })

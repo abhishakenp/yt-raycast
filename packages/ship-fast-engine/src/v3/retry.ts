@@ -25,8 +25,6 @@ export function retryLoop(
     kind,
     sections: [],
     pages: [],
-    tables: [],
-    operations: [],
   }
   let errors: ValidationError[] = []
   let valid = false

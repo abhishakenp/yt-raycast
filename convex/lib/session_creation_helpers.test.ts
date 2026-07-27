@@ -202,9 +202,6 @@ function createMutationCtxFor(
 }
 
 const createReferences = () => ({
-  startGeneration: 'startGeneration' as unknown as Parameters<
-    MutationCtx['scheduler']['runAfter']
-  >[1],
   sendOperationalNotification:
     'sendOperationalNotification' as unknown as Parameters<
       MutationCtx['scheduler']['runAfter']
@@ -794,10 +791,9 @@ describe('session creation helpers', () => {
         deploymentSlug: 'build-a-luxury-ski',
       }),
     })
-    expect(runAfter).toHaveBeenCalledWith(0, references.startGeneration, {
-      sessionId: session?.id,
-      anonymousOwnerSecret: 'owner-secret',
-    })
+    // Generation is now kicked off by the VPS API route — Convex no longer
+    // schedules a generation action.
+    expect(runAfter).not.toHaveBeenCalled()
   })
 
   it('schedules a one-shot draft cleanup when creating a draft session', async () => {
@@ -976,8 +972,8 @@ describe('session creation helpers', () => {
       expect(callCtx).toBe(ctx)
       expect(callArgs).toBe(args)
       expect(refs).toMatchObject({
-        startGeneration: expect.anything(),
         sendOperationalNotification: expect.anything(),
+        deleteDraftSessionIfStillDraft: expect.anything(),
       })
     } finally {
       vi.doUnmock('./session_creation_helpers')

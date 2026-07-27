@@ -7,7 +7,6 @@ import {
   upsertSiteSpec,
 } from './session_artifact_helpers'
 import { queueSessionExportArtifactBuilds } from './session_export_helpers'
-import { isUnsafePublicPreviewHtml } from './openui_error_html'
 import { scheduleOperationalNotification } from './session_operational_notifications'
 import { type EngineTaskInput, upsertTask } from './session_task_helpers'
 
@@ -35,7 +34,6 @@ export async function completeGeneratedSession(
   ctx: GenerationStateCtx,
   args: {
     sessionId: Id<'sessions'>
-    html: string
     siteSpecJson?: string
     openUiSource?: string
     tasks: EngineTaskInput[]
@@ -50,13 +48,6 @@ export async function completeGeneratedSession(
   const session = assertSessionExists(await ctx.db.get(args.sessionId))
   const cost = args.cost ?? 0
   const provider = args.provider ?? 'ship-fast-engine'
-
-  if (isUnsafePublicPreviewHtml(args.html)) {
-    throw new ConvexError({
-      code: 'PREVIEW_NOT_READY',
-      message: 'Preview HTML is not renderable',
-    })
-  }
 
   await Promise.all(
     args.tasks.map((task, index) =>
@@ -76,7 +67,6 @@ export async function completeGeneratedSession(
   await ctx.db.insert('previews', {
     sessionId: args.sessionId,
     version: previewVersion,
-    html: args.html,
     openUiSource: args.openUiSource,
     siteSpecJson: args.siteSpecJson,
     source: 'generation',

@@ -25,32 +25,11 @@ vi.mock('@/features/session/services/anonymous-owner-secret', () => ({
   readAnonymousOwnerSecret: () => undefined,
 }))
 
-import {
-  GeneratedModulePreview,
-  isHtmlDocumentSource,
-} from './GeneratedModulePreview'
+import { GeneratedModulePreview } from './GeneratedModulePreview'
 
 describe('GeneratedModulePreview', () => {
   afterEach(() => {
     cleanup()
-  })
-
-  it('detects complete HTML document sources', () => {
-    expect(
-      isHtmlDocumentSource('<!DOCTYPE html><html><body></body></html>'),
-    ).toBe(true)
-    expect(isHtmlDocumentSource('root = Text("Hello")')).toBe(false)
-  })
-
-  it('renders raw generated HTML in an iframe', () => {
-    const html = '<!DOCTYPE html><html><body><h1>SFF site</h1></body></html>'
-
-    render(<GeneratedModulePreview source={html} sessionId="session-1" />)
-
-    const iframe = screen.getByTitle('Generated website preview')
-    expect(iframe).toBeInstanceOf(HTMLIFrameElement)
-    expect(iframe.getAttribute('srcdoc')).toBe(html)
-    expect(screen.queryByTestId('openui-viewer')).toBeNull()
   })
 
   it('renders storage-backed clone HTML from an iframe URL', () => {
@@ -69,7 +48,7 @@ describe('GeneratedModulePreview', () => {
     expect(screen.queryByTestId('openui-viewer')).toBeNull()
   })
 
-  it('keeps OpenUI sources on the OpenUI renderer', async () => {
+  it('renders OpenUI sources on the OpenUI renderer', async () => {
     render(
       <GeneratedModulePreview
         source='root = Text("OpenUI site")'
@@ -80,6 +59,14 @@ describe('GeneratedModulePreview', () => {
     expect((await screen.findByTestId('openui-viewer')).textContent).toContain(
       'OpenUI site',
     )
+    expect(screen.queryByTitle('Generated website preview')).toBeNull()
+  })
+
+  it('shows generating placeholder when source is empty', () => {
+    render(<GeneratedModulePreview source="" sessionId="session-1" />)
+
+    expect(screen.getByText('Generating preview…')).toBeDefined()
+    expect(screen.queryByTestId('openui-viewer')).toBeNull()
     expect(screen.queryByTitle('Generated website preview')).toBeNull()
   })
 })

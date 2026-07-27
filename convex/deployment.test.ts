@@ -45,7 +45,6 @@ function persistGeneratedPreview(
 ) {
   return t.action(internal.sessions.completeGeneration, {
     sessionId,
-    html: `<html><body><main><h1>${prompt}</h1></main></body></html>`,
     openUiSource: `$page = "Home"\nroot = Text("${prompt}")`,
     siteSpecJson: JSON.stringify({
       projectName: prompt,
@@ -176,7 +175,7 @@ test('owner-secret sessions clone cached public previews without reusing another
   expect(secondView?.session.status).toBe('preview_ready')
   expect(secondView?.session.canClaimAnonymous).toBe(true)
   expect(secondView?.homeModule?.source).toContain(prompt)
-  expect(secondView?.latestPreview?.html).toContain(prompt)
+  expect(secondView?.latestPreview?.openUiSource).toContain(prompt)
   expect(secondView?.tasks).toHaveLength(1)
   expect(secondView?.tasks[0]?.status).toBe('succeeded')
 
@@ -218,7 +217,8 @@ test('publishPreview repoints an existing deployment to the latest preview versi
     sessionId,
     anonymousOwnerSecret: 'owner-secret',
     editType: 'text',
-    afterHtml: '<html><body><h1>Updated deployment</h1></body></html>',
+    beforeText: 'Test site',
+    afterText: 'Updated deployment',
   })
 
   const republish = await t.mutation(api.sessions.publishPreview, {
@@ -250,7 +250,8 @@ test('public preview by deployment slug auto-refreshes after an edited preview r
     sessionId,
     anonymousOwnerSecret: 'owner-secret',
     editType: 'text',
-    afterHtml: '<html><body><h1>Auto-published edit</h1></body></html>',
+    beforeText: 'Test site',
+    afterText: 'Auto-published edit',
   })
 
   const queuedStatus = await t.query(api.sessions.getDeploymentStatus, {
@@ -269,9 +270,7 @@ test('public preview by deployment slug auto-refreshes after an edited preview r
     pendingPreviewVersion: 2,
   })
   expect(publicBeforeRebuild?.previewVersion).toBe(1)
-  expect(publicBeforeRebuild?.html).not.toContain('Auto-published edit')
   expect(directLatestPreview?.previewVersion).toBe(2)
-  expect(directLatestPreview?.html).toContain('Auto-published edit')
 
   await t.mutation(internal.sessions.rebuildEditedSessionExports, {
     sessionId,
@@ -291,7 +290,7 @@ test('public preview by deployment slug auto-refreshes after an edited preview r
   })
   expect(statusAfterRebuild).not.toHaveProperty('pendingPreviewVersion')
   expect(publicAfterRebuild?.previewVersion).toBe(2)
-  expect(publicAfterRebuild?.html).toContain('Auto-published edit')
+  expect(publicAfterRebuild?.openUiSource).toContain('Auto-published edit')
 })
 
 test.each([

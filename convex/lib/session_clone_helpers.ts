@@ -1,6 +1,5 @@
 import { ConvexError } from 'convex/values'
 
-import { internal } from '../_generated/api'
 import type { Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import { upsertHomeGeneratedModule } from './session_artifact_helpers'
@@ -123,10 +122,8 @@ export async function applyCloneBriefAndGenerate(
     updatedAt: Date.now(),
   })
 
-  await ctx.scheduler.runAfter(0, internal.generation.startGeneration, {
-    sessionId: args.sessionId,
-    anonymousOwnerSecret: args.anonymousOwnerSecret,
-  })
+  // Generation is now kicked off by the VPS API route — Convex no longer
+  // schedules a generation action for clone briefs either.
 
   return { sessionId: args.sessionId }
 }
@@ -166,22 +163,18 @@ export async function finalizeSessionClonePreview(
   // When the home doc lives in file storage, we can't fetch its bytes inside a
   // mutation (no network). Store an empty placeholder for generatedModules/previews
   // and let the client render from the storage url via getCloneHomePreview.
-  const html = homePage.html ?? ''
-
-  await upsertHomeGeneratedModule(ctx, args.sessionId, html, now)
+  await upsertHomeGeneratedModule(ctx, args.sessionId, homePage.html ?? '', now)
 
   const previewVersion = (session.previewVersion ?? 0) + 1
 
   // A verbatim clone doc carries the full inlined CSS and can approach the
-  // ~1 MiB cap on its own. Storing it in BOTH `html` and `openUiSource` would
-  // double the previews document and blow Convex's 1 MiB per-document limit, so
-  // the finalize silently fails and the preview never paints. The clone renders
-  // from `html` (isHtmlDocumentSource → iframe srcDoc) and from clonePages, so
-  // keep `openUiSource` empty for clones.
+  // ~1 MiB cap on its own. Storing it in `openUiSource` would blow Convex's
+  // 1 MiB per-document limit, so the finalize silently fails and the preview
+  // never paints. The clone renders from the generated module and from
+  // clonePages, so keep `openUiSource` empty for clones.
   await ctx.db.insert('previews', {
     sessionId: args.sessionId,
     version: previewVersion,
-    html,
     openUiSource: '',
     source: 'generation',
     createdAt: now,

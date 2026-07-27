@@ -28,7 +28,6 @@ async function createGeneratedSession(
 
   await t.mutation(internal.sessions.completeGenerationInternal, {
     sessionId,
-    html: `<html><body><main><h1>${prompt}</h1></main></body></html>`,
     siteSpecJson: JSON.stringify({ brand: prompt, modules: {} }),
     openUiSource: `$page = "Home"\nroot = Text("${prompt}")`,
     tasks: [
@@ -138,7 +137,6 @@ test("listOwnedSessions returns the caller's sessions (signed-in owner) and excl
     internal.sessions.completeGenerationInternal,
     {
       sessionId: minePublic.sessionId,
-      html: `<html><body><main><h1>Alice public</h1></main></body></html>`,
       siteSpecJson: JSON.stringify({ brand: 'Alice', modules: {} }),
       openUiSource: `$page = "Home"\nroot = Text("Alice")`,
       tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],
@@ -158,7 +156,6 @@ test("listOwnedSessions returns the caller's sessions (signed-in owner) and excl
     internal.sessions.completeGenerationInternal,
     {
       sessionId: bobSession.sessionId,
-      html: `<html><body><main><h1>Bob</h1></main></body></html>`,
       siteSpecJson: JSON.stringify({ brand: 'Bob', modules: {} }),
       openUiSource: `$page = "Home"\nroot = Text("Bob")`,
       tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],
@@ -264,7 +261,6 @@ test('claimAnonymousSessionsByClientIdMutation links all anon sessions to signed
     internal.sessions.completeGenerationInternal,
     {
       sessionId: bobSession.sessionId,
-      html: '<html><body><main><h1>Bob</h1></main></body></html>',
       siteSpecJson: JSON.stringify({ brand: 'Bob', modules: {} }),
       openUiSource: '$page = "Home"',
       tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],

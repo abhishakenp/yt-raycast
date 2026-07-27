@@ -2021,10 +2021,6 @@
       "sourceFile": "src/registry/sections/food-truck/FoodTruckTestimonials.tsx"
     },
     {
-      "name": "Freeform",
-      "sourceFile": "src/registry/primitives/freeform.tsx"
-    },
-    {
       "name": "FurnitureStoreDesign",
       "sourceFile": "src/registry/sections/furniture-store/FurnitureStoreDesign.tsx"
     },
@@ -4127,6 +4123,10 @@
     {
       "name": "SubscriptionBoxTestimonials",
       "sourceFile": "src/registry/sections/subscription-box/SubscriptionBoxTestimonials.tsx"
+    },
+    {
+      "name": "SvelteIsland",
+      "sourceFile": "src/registry/primitives/svelte-island.tsx"
     },
     {
       "name": "Switch",

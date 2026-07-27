@@ -56,7 +56,6 @@ async function createReadySession(
 
   await t.mutation(internal.sessions.completeGenerationInternal, {
     sessionId,
-    html: `<html><body><main><h1>${SOURCE_TEXT}</h1></main></body></html>`,
     openUiSource: `$page = "Home"\nroot = Text("${SOURCE_TEXT}")`,
     siteSpecJson: JSON.stringify({ hero: { headline: SOURCE_TEXT } }),
     tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],

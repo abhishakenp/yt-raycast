@@ -12,7 +12,6 @@ export type EngineWorkspaceTask = {
 }
 
 export type EngineWorkspaceArtifacts = {
-  html: string
   siteSpecJson?: string
   openUiSource?: string
   tasks: EngineWorkspaceTask[]
@@ -70,14 +69,7 @@ export function prepareEngineWorkspace(workspace: string): void {
 export function readEngineWorkspaceArtifacts(
   workspace: string,
 ): EngineWorkspaceArtifacts {
-  const html = readOptionalTextFile(workspace, 'index.html')
-
-  if (!html) {
-    throw new Error('Ship Fast engine did not write index.html')
-  }
-
   return {
-    html,
     siteSpecJson: readOptionalTextFile(workspace, 'site-spec.json'),
     openUiSource: readOptionalTextFile(workspace, 'home.openui'),
     tasks: parseTasks(readOptionalTextFile(workspace, 'tasks.json')),

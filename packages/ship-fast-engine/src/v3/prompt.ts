@@ -74,8 +74,8 @@ Before emitting the site-plan, you MUST think through the request inside <reason
 Inside <reasoning>, work through:
 0. IS THIS A WEBSITE OR AN APP? This is the most important question — your entire output depends on it.
    Apply this test: imagine the finished product. Does the user primarily READ content (browsing a menu, reading articles, viewing products, learning about a service)? Or does the user primarily INTERACT with it (pressing buttons that change state, manipulating values, playing, calculating, toggling, adding/removing items)?
-   READ → WEBSITE. Use regular sections only (hero, menu, features, pricing, gallery, footer). No @freeform blocks.
-   INTERACT → APP. You MUST emit @freeform block(s) for the interactive functionality. You can still add regular sections (hero, features) as a landing page wrapper, but the @freeform block IS the deliverable. Generating a marketing landing page without @freeform blocks for an app request is a FAILURE.
+   READ → WEBSITE. Use regular sections only (hero, menu, features, pricing, gallery, footer). No @svelte blocks.
+   INTERACT → APP. You MUST emit @svelte block(s) for the interactive functionality. You can still add regular sections (hero, features) as a landing page wrapper, but the @svelte block IS the deliverable. Generating a marketing landing page without @svelte blocks for an app request is a FAILURE.
    The noun itself tells you: "calculator" is always an app (you press buttons to compute). "restaurant" is always a website (you browse a menu). "todo list" is always an app (you add/check/remove tasks). "portfolio" is always a website (you view work samples). "game" is always an app. "timer" is always an app. "store" is always a website. Do not be fooled by marketing-style phrasing — "a simple calculator for quick math" is still an app because the core activity is calculating, not reading.
 1. What is the user actually building? Parse the intent — is it a store, a restaurant, a SaaS tool, a portfolio, a publication, a service business, a government portal, an interactive app, or something else? What specific vertical/niche?
 2. What is the real brand name? Extract it from the request. If none is given, infer a plausible, specific brand name from the vertical (not generic like "Coffee Shop" — use something like "Meridian Coffee" or "Stone & Steam Cafe").
@@ -88,18 +88,18 @@ Inside <reasoning>, work through:
 When you detect an app request (from step 0):
 1. Still emit the kind line (use "marketing" as the kind — it provides the landing page shell)
 2. Emit regular sections (hero, features) that describe the app — these become the landing page
-3. Emit @freeform block(s) for the actual interactive functionality — this IS the app
-4. The @freeform block is the deliverable. The sections are the marketing wrapper.
-5. Do NOT use + table/operation lines for the app's interactive state. The @freeform block's state/actions handle all interactivity. Tables are for persistent data (e.g. saving calculations history), not for the live interactive UI.
+3. Emit @svelte block(s) for the actual interactive functionality — this IS the app
+4. The @svelte block is the deliverable. The sections are the marketing wrapper.
+5. The @svelte block handles all interactivity via Svelte's native reactivity. Use $lakebed imports for persistent data (e.g. saving calculations history).
 
 Examples of app requests → what to generate:
-- "a todo list app" → hero + features (landing page) + @freeform todowidget (the actual todo list with add/remove/toggle)
-- "a counter app" → hero + @freeform counterdemo (the actual counter with inc/dec)
-- "a calculator" → hero + @freeform calculator (the actual calculator with state)
-- "a pomodoro timer" → hero + features + @freeform timer (the actual timer)
-- "build me a tic tac toe game" → hero + @freeform game (the actual game board)
+- "a todo list app" → hero + features (landing page) + @svelte todowidget (the actual todo list with add/remove/toggle)
+- "a counter app" → hero + @svelte counterdemo (the actual counter with inc/dec)
+- "a calculator" → hero + @svelte calculator (the actual calculator with state)
+- "a pomodoro timer" → hero + features + @svelte timer (the actual timer)
+- "build me a tic tac toe game" → hero + @svelte game (the actual game board)
 
-Examples of website requests (NO @freeform needed):
+Examples of website requests (NO @svelte needed):
 - "a restaurant website" → regular sections only (hero, menu, gallery, footer)
 - "a SaaS landing page" → regular sections only (hero, features, pricing, FAQ)
 - "a portfolio site" → regular sections only (hero, gallery, about, contact)
@@ -107,21 +107,18 @@ Examples of website requests (NO @freeform needed):
 After </reasoning>, emit the site-plan DSL exactly as specified below. The reasoning primes your output — take it seriously.
 
 OUTPUT FORMAT (strict — no prose, no markdown, no JSON after </reasoning>):
-Line 1: @type website OR @type app (you MUST commit here — this determines whether you emit @freeform blocks)
+Line 1: @type website OR @type app (you MUST commit here — this determines whether you emit @svelte blocks)
 Line 2: kind (the kind listed below)
 Then: one line per section, in order
-Then: @freeform blocks (REQUIRED if line 1 was @type app — see @freeform blocks format below. FORBIDDEN if line 1 was @type website)
+Then: @svelte blocks (REQUIRED if line 1 was @type app — see @svelte blocks format below. FORBIDDEN if line 1 was @type website)
 Then: a @pages line listing secondary page names (REQUIRED when the site has multiple substantial sections)
 Then: metadata lines (@brand, @title, @nav)
-Then: optional + lines for custom tables/operations
 
 CRITICAL FORMAT RULES (violation = broken output):
 - Section lines use a SPACE after the role name, NOT a colon. Write "hero value1|value2" NOT "hero: value1|value2". NEVER use colons after role names.
 - The role name is the first word on the line, followed by a space, then values separated by |.
-- + table lines use SPACES between field names, NOT pipes. Write "+ customers name email phone" NOT "+ customers name|email|phone".
-- + operation lines: "+ opName macroType tableName [key]" — macroType must be one of: collection, cart, submission, search, favorites, auth. Do NOT invent macro types like "sql".
 
-METADATA LINES (emit these AFTER the @pages line, BEFORE any + lines):
+METADATA LINES (emit these AFTER the @pages line):
 @brand <the real brand/business/person name extracted from the build request — the proper noun the site is FOR, e.g. "Acme Cafe", "Kaveri Silks", "Dr. Pepper"; if none, infer a short plausible brand from the vertical/topic, e.g. "Coffee House" for a coffee shop; NEVER use the verb "generate"/"build"/"create" or generic words like "website"/"app" as the brand>
 @title <a concise, descriptive site title for the <title> tag — include the brand AND what the site is about, e.g. "Kaveri Silks — Premium Sarees & Traditional Wear", NOT just the brand name>
 @nav home:<Home label> <pageId>:<label> <pageId>:<label> ... (English navigation labels for the site's pages; "home" is always first; only include page ids relevant to the chosen kind and your @pages line; use the page id before the colon and the display label after)
@@ -150,56 +147,37 @@ role value1|value2|value3
 - Example: @pages pricing features
 - If the site is a single-page site with no secondary sections, you may omit the @pages line
 
-+ lines (custom data model, only if inference can't cover your needs):
-+ tableName field1 field2 field3
-+ tableName field1 field2 +
-+ opName macroType tableName [key]
-
-@freeform blocks (generate custom components for things NOT in the vocabulary):
-When the user needs something that doesn't fit any vocabulary role (a counter, a calculator, a live demo, an interactive widget, a game, a tool), emit a @freeform block. The block generates a React component with reactive state and action handlers, rendered alongside the existing sections.
+@svelte blocks (generate custom Svelte 4 components for things NOT in the vocabulary):
+When the user needs something that doesn't fit any vocabulary role (a counter, a calculator, a live demo, an interactive widget, a game, a tool), emit a @svelte block with a complete Svelte 4 component. The engine compiles it server-side using the Svelte compiler — you write idiomatic Svelte, no custom DSL to learn.
 
 Format:
-@freeform rolename
-state: var1=initval var2=initval
-actions: action1→mutationExpr action2→mutationExpr
-layout: <div class="tailwind-classes">...{varname}...<button onclick="actionName">...</button>...</div>
-@endfreeform
+@svelte rolename
+<script>
+  let count = 0
+  $: doubled = count * 2
+  // Import lakebed data: import { queries, mutations } from '$lakebed'
+</script>
 
-CRITICAL @freeform FORMAT RULES (violation = broken render):
-- The layout is STATIC HTML with Tailwind classes. NOT JSX. NOT JavaScript. NOT React.
-- NO JavaScript expressions. NO .map(), NO arrow functions, NO ternary operators, NO template literals.
-- NO className attribute — use class (plain HTML).
-- NO onChange, onSubmit, onClick with function values — use onclick="actionName" (plain HTML attribute, string value).
-- NO curly brace expressions except {varname} for simple state interpolation.
-- State interpolation: {varname} inserts the current value of a state variable. Example: {count}, {name}, {total}
-- Action triggers: onclick="actionName" calls the action handler. Example: <button onclick="inc">+</button>
-- WRONG: <input onChange={() => toggleTask(index)} />
-- RIGHT: <input type="checkbox" onclick="toggleTask" />
-- WRONG: <ul>{tasks.map((task, i) => <li key={i}>{task.name}</li>)}</ul>
-- RIGHT: <ul><li>{task1}</li><li>{task2}</li><li>{task3}</li></ul>
-- WRONG: className={task.done ? 'line-through' : 'text-foreground'}
-- RIGHT: class="text-foreground" (static classes only)
+<div class="tailwind-classes">
+  <button on:click={() => count++}>+</button>
+  <span>{count}</span>
+</div>
 
-Rules for @freeform blocks:
+<style>
+  /* optional scoped CSS */
+</style>
+@endsvelte
+
+Rules for @svelte blocks:
+- Use Svelte 4 syntax: let, $:, on:click, bind:value, each blocks, if blocks — NOT Svelte 5 runes
+- Use Tailwind CSS classes for styling (class="..." not className)
+- Use our design tokens: bg-background, text-foreground, bg-primary, text-primary-foreground, bg-muted, text-muted-foreground, border-border, bg-card, text-card-foreground
+- You can import from '$lakebed' for database access: queries.listX(), mutations.addX(args)
 - Use a descriptive role name (e.g. counterdemo, calculator, livewidget) — NOT a vocabulary role name
-- state: declares reactive variables with initial values (numbers or strings). Space-separated: count=0 step=1
-  - For a todo list: state: task1=Buy groceries task2=Walk dog task3=Review PR task1done=false task2done=false task3done=false newtask=
-  - For a counter: state: count=0
-  - For a calculator: state: display=0 operand=0 operator=
-- actions: maps action names to mutation expressions, comma-separated. Expressions: var+val, var-val, var*val, var/val, var=literal, or just varname (toggle boolean)
-  Example: actions: inc→count+1, dec→count-1, reset→count=0
-  - For a todo list: actions: toggle1→task1done, toggle2→task2done, toggle3→task3done, clear→task1done=false task2done=false task3done=false
-  - For a counter: actions: inc→count+1, dec→count-1, reset→count=0
-- layout: HTML with Tailwind CSS classes. Use {varname} to interpolate state values. Use onclick="actionName" to trigger actions.
-- You can use our UI primitives by tag name: <Button variant="default">label</Button>, <Card>...</Card>, <CardHeader><CardTitle>...</CardTitle></CardHeader>, <CardContent>...</CardContent>, <Input placeholder="..." type="text" />, <Badge variant="default">label</Badge>, <Progress value="50" />
-- Available Button variants: default, destructive, outline, secondary, ghost, link. Sizes: default, xs, sm, lg.
-- Available Badge variants: default, secondary, destructive, outline, ghost.
-- Use our design tokens: bg-background, text-foreground, bg-primary, text-primary-foreground, bg-muted, text-muted-foreground, border-border, bg-card, text-card-foreground. These ensure the freeform component matches the site's theme.
-- Use our spacing/typography patterns: min-h-screen, grid place-items-center, flex flex-col items-center gap-8, text-6xl font-black tracking-tight, rounded-full, etc.
-- Keep layouts compact — one screen, no scrolling needed for simple widgets
-- Place @freeform blocks AFTER regular section lines, BEFORE @pages/metadata lines
+- Keep layouts compact — one screen for simple widgets
+- Place @svelte blocks AFTER regular section lines, BEFORE @pages/metadata lines
 
-DESIGN DNA — study these patterns from our existing components. Mimic them in your @freeform layouts:
+DESIGN DNA — study these patterns from our existing components. Mimic them in your @svelte layouts:
 
 Pattern 1 — Collapsed-border KPI grid (from CrmStats):
 <section class="border-y border-border bg-background py-14">
@@ -298,7 +276,7 @@ Pattern 5 — Using primitives (Button + Card + Badge + Progress):
   </Card>
 </div>
 
-KEY DESIGN PRINCIPLES (apply these to every @freeform layout):
+KEY DESIGN PRINCIPLES (apply these to every @svelte layout):
 - Collapsed borders: border-l border-t on container, border-b border-r on each cell. Never rounded borders on grids.
 - Mono micro-labels: font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground. Use for section eyebrows, stat labels, metadata rails.
 - Asymmetric grids: 7/5 or 4/8 splits, never 50/50. Use lg:col-span-7 / lg:col-span-5.
@@ -312,19 +290,61 @@ KEY DESIGN PRINCIPLES (apply these to every @freeform layout):
 - Ghost type: [-webkit-text-fill-color:transparent] [-webkit-text-stroke:2px_currentColor] for emphasis words.
 - Color tokens: bg-background, text-foreground, bg-primary, text-primary-foreground, bg-muted, text-muted-foreground, border-border, bg-card, text-card-foreground. NEVER raw colors.
 
-Example @freeform block (a counter widget using design DNA):
-@freeform counterdemo
-state: count=0
-actions: inc→count+1, dec→count-1, reset→count=0
-layout: <section class="border-y border-border bg-background py-20"><div class="mx-auto max-w-2xl px-4"><div class="mb-8 flex items-center gap-4"><span class="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Counter <span class="text-primary">· live</span></span><span class="h-px flex-1 bg-border"></span><span class="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground/60 tabular-nums">{count} clicks</span></div><div class="grid place-items-center gap-8 py-12"><span class="text-[clamp(3rem,8vw,6rem)] font-extrabold leading-none tracking-tighter text-foreground tabular-nums">{count}</span><div class="flex gap-3"><button onclick="dec" class="inline-flex h-12 w-12 items-center justify-center rounded-none border-2 border-border text-2xl font-bold text-foreground transition-colors hover:bg-muted">−</button><button onclick="inc" class="inline-flex h-12 w-12 items-center justify-center rounded-none bg-primary text-2xl font-bold text-primary-foreground transition-transform hover:-translate-y-0.5">+</button><button onclick="reset" class="inline-flex h-12 items-center justify-center rounded-none border-2 border-foreground/20 px-4 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground hover:bg-muted">Reset</button></div></div></div></section>
-@endfreeform
+Example @svelte block (a counter widget using design DNA):
+@svelte counterdemo
+<script>
+  let count = 0
+</script>
 
-Example @freeform block (a todo list — NOTE: static HTML, no JS, no .map, no arrow functions. Checkboxes MUST have checked="{varname}" to bind to state):
-@freeform todowidget
-state: task1=Buy groceries task2=Walk the dog task3=Review PR task1done=false task2done=false task3done=false
-actions: toggle1→task1done, toggle2→task2done, toggle3→task3done, clearall→task1done=false task2done=false task3done=false
-layout: <section class="border-y border-border bg-background py-16"><div class="mx-auto max-w-lg px-4"><div class="mb-6 flex items-center gap-4"><span class="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Tasks <span class="text-primary">· live</span></span><span class="h-px flex-1 bg-border"></span><button onclick="clearall" class="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground">Clear all</button></div><ul class="flex flex-col gap-2"><li class="flex items-center gap-3 border-b border-r border-border bg-card p-4"><input type="checkbox" onclick="toggle1" checked="{task1done}" class="h-5 w-5 rounded-none border-2 border-border" /><span class="text-foreground">{task1}</span></li><li class="flex items-center gap-3 border-b border-r border-border bg-card p-4"><input type="checkbox" onclick="toggle2" checked="{task2done}" class="h-5 w-5 rounded-none border-2 border-border" /><span class="text-foreground">{task2}</span></li><li class="flex items-center gap-3 border-b border-r border-border bg-card p-4"><input type="checkbox" onclick="toggle3" checked="{task3done}" class="h-5 w-5 rounded-none border-2 border-border" /><span class="text-foreground">{task3}</span></li></ul></div></section>
-@endfreeform
+<section class="border-y border-border bg-background py-20">
+  <div class="mx-auto max-w-2xl px-4">
+    <div class="mb-8 flex items-center gap-4">
+      <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Counter <span class="text-primary">· live</span></span>
+      <span class="h-px flex-1 bg-border"></span>
+      <span class="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground/60 tabular-nums">{count} clicks</span>
+    </div>
+    <div class="grid place-items-center gap-8 py-12">
+      <span class="text-[clamp(3rem,8vw,6rem)] font-extrabold leading-none tracking-tighter text-foreground tabular-nums">{count}</span>
+      <div class="flex gap-3">
+        <button on:click={() => count--} class="inline-flex h-12 w-12 items-center justify-center rounded-none border-2 border-border text-2xl font-bold text-foreground transition-colors hover:bg-muted">−</button>
+        <button on:click={() => count++} class="inline-flex h-12 w-12 items-center justify-center rounded-none bg-primary text-2xl font-bold text-primary-foreground transition-transform hover:-translate-y-0.5">+</button>
+        <button on:click={() => count = 0} class="inline-flex h-12 items-center justify-center rounded-none border-2 border-foreground/20 px-4 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground hover:bg-muted">Reset</button>
+      </div>
+    </div>
+  </div>
+</section>
+@endsvelte
+
+Example @svelte block (a todo list):
+@svelte todowidget
+<script>
+  let tasks = [
+    { text: 'Buy groceries', done: false },
+    { text: 'Walk the dog', done: false },
+    { text: 'Review PR', done: false },
+  ]
+  function toggle(i) { tasks[i].done = !tasks[i].done; tasks = tasks }
+  function clearAll() { tasks = tasks.map(t => ({ ...t, done: false })) }
+</script>
+
+<section class="border-y border-border bg-background py-16">
+  <div class="mx-auto max-w-lg px-4">
+    <div class="mb-6 flex items-center gap-4">
+      <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Tasks <span class="text-primary">· live</span></span>
+      <span class="h-px flex-1 bg-border"></span>
+      <button on:click={clearAll} class="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground">Clear all</button>
+    </div>
+    <ul class="flex flex-col gap-2">
+      {#each tasks as task, i}
+        <li class="flex items-center gap-3 border-b border-r border-border bg-card p-4">
+          <input type="checkbox" checked={task.done} on:change={() => toggle(i)} class="h-5 w-5 rounded-none border-2 border-border" />
+          <span class="text-foreground">{task.text}</span>
+        </li>
+      {/each}
+    </ul>
+  </div>
+</section>
+@endsvelte
 
 ${kindHeader}
 ${kindLines}
@@ -342,21 +362,14 @@ Example metadata lines for a restaurant:
 @brand Acme Cafe
 @title Acme Cafe — Artisan Coffee & Fresh Bakes
 @nav home:Home menu:Menu reservations:Reserve about:Our Story
-Example + lines for custom data:
-+ customers name email phone +
-+ syncCustomers collection customers name
 
 WRONG (do NOT do this — output will be broken):
 hero: Trusted by 10,000+ Businesses|Simplify Customer Management
 features: Key Features|Streamline customer interactions
-+ customers name|email|phone
-+ getCustomerById sql customers [id]
 
 RIGHT (do this instead):
 hero Trusted by 10,000+ Businesses|Simplify Customer Management
 features Key Features|Streamline customer interactions
-+ customers name email phone
-+ syncCustomers collection customers name
 
 Rules:
 - ${vocabs.length === 1 ? 'Use the pre-selected kind listed above' : 'Pick the kind that best fits the build request'}
@@ -385,6 +398,10 @@ Content Quality (CRITICAL — generic, templatey content is a failure):
 
 Footer (always generate):
 - Always generate a footer section with meaningful columns. Include a 'Pages' column linking to your @pages, a 'Company' column (About, Contact), and a 'Legal' column (Privacy, Terms). Include social links.
+- The vocabulary signature \`columns[title~links[]]\` is the SCHEMA, not content. NEVER copy \`title~links[]\` or \`social[]\` verbatim into the output. Fill in real values.
+- CORRECT footer line: \`footer Brewing happiness|Pages~Home~Menu~Reservations^Company~About~Contact^Legal~Privacy~Terms|Twitter~Instagram\`
+- WRONG (schema leak — renders literal "title" / "links[]" on the site): \`footer Brewing happiness|title~links[]^title~links[]^title~links[]|social[]\`
+- Each column is \`columnTitle~link1~link2~link3\`, columns separated by \`^\`. Social links separated by \`~\`.
 `
 }
 
@@ -418,7 +435,7 @@ export function buildLowConfidenceKindPrompt(prompt: string): {
 Available kinds:
 ${lines.join('\n')}
 
-IMPORTANT: If the request is for an interactive APP (todo list, counter, calculator, game, timer, tool, widget) rather than a website, output "marketing" — the engine will use @freeform blocks for the interactive functionality. Do NOT try to force-fit an app request into a non-marketing kind.
+IMPORTANT: If the request is for an interactive APP (todo list, counter, calculator, game, timer, tool, widget) rather than a website, output "marketing" — the engine will use @svelte blocks for the interactive functionality. Do NOT try to force-fit an app request into a non-marketing kind.
 
 Output ONLY the kind name, nothing else.`
   const user = `Build request: ${prompt}\n\nPick the single best-fitting kind name from the list above. If this is an app/tool request (not a website), output "marketing". Output ONLY the kind name, nothing else.`

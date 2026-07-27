@@ -31,7 +31,7 @@ type ReadySessionApiResponse = {
   status?: unknown
   homepageReady?: unknown
   openuiReady?: unknown
-  preview?: { html?: unknown; source?: unknown } | null
+  preview?: { openUiSource?: unknown; source?: unknown } | null
   homeModule?: { source?: unknown } | null
 }
 
@@ -323,9 +323,9 @@ export async function verifyReadySession(
     return null
   }
 
-  // Reject sessions whose preview HTML is real OpenUI renderer-error output
-  // or whose preview content is entirely empty (no renderable HTML or module
-  // source). These are broken or incomplete artifacts that must not be reused.
+  // Reject sessions whose preview source is real OpenUI renderer-error output
+  // or whose preview content is entirely empty (no renderable module source).
+  // These are broken or incomplete artifacts that must not be reused.
   // Only apply this check when the API response explicitly includes preview or
   // homeModule fields — a minimal response without them is still valid.
   const hasPreview = data.preview !== undefined && data.preview !== null
@@ -333,20 +333,22 @@ export async function verifyReadySession(
     data.homeModule !== undefined && data.homeModule !== null
 
   if (hasPreview || hasHomeModule) {
-    const previewHtml =
-      typeof data.preview?.html === 'string' ? data.preview.html : ''
+    const previewOpenUiSource =
+      typeof data.preview?.openUiSource === 'string'
+        ? data.preview.openUiSource
+        : ''
     const homeModuleSource =
       typeof data.homeModule?.source === 'string' ? data.homeModule.source : ''
 
     if (
-      isUnsafePublicPreviewHtml(previewHtml) ||
+      isUnsafePublicPreviewHtml(previewOpenUiSource) ||
       isUnsafePublicPreviewHtml(homeModuleSource)
     ) {
       return null
     }
 
     if (
-      previewHtml.trim().length === 0 &&
+      previewOpenUiSource.trim().length === 0 &&
       homeModuleSource.trim().length === 0
     ) {
       return null

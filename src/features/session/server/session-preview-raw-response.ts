@@ -1,10 +1,12 @@
 import { api } from '../../../../convex/_generated/api'
 import { isUnsafePublicPreviewHtml } from '../../../../convex/lib/openui_error_html'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
+import { buildOpenUIHtmlExport } from '../../exports/services/openui-html-export-builder'
 
 /**
- * Serve a public session's stored preview HTML as a standalone document.
+ * Serve a public session's preview as a standalone HTML document.
  * Used as the screenshot target for gallery thumbnail capture.
+ * Renders from OpenUI source (moduleSource) via the HTML export builder.
  */
 export async function createSessionPreviewRawResponse(
   sessionId: string,
@@ -15,10 +17,33 @@ export async function createSessionPreviewRawResponse(
       sessionId,
     })
 
-    const html = session?.html
-    if (typeof html !== 'string' || html.trim().length === 0) {
+    if (session === null) {
       return new Response('Preview not found or not public', { status: 404 })
     }
+
+    const moduleSource = session.moduleSource
+    if (typeof moduleSource !== 'string' || moduleSource.trim().length === 0) {
+      return new Response('Preview not found or not public', { status: 404 })
+    }
+
+    const rendered = await buildOpenUIHtmlExport({
+      source: moduleSource,
+      previewHtml: undefined,
+      prompt: session.prompt ?? undefined,
+      siteSpecJson: session.siteSpecJson ?? undefined,
+      sessionId,
+      target: 'html',
+      themeName: session.themeOverride ?? session.genuiTheme ?? undefined,
+      isDark: session.themeMode !== 'light',
+      locale: session.preferredLanguage ?? 'en',
+      includeBadge: false,
+      selectedBrandLogo: session.selectedBrandLogo ?? null,
+    })
+
+    const html =
+      typeof rendered.body === 'string'
+        ? rendered.body
+        : new TextDecoder().decode(rendered.body)
 
     if (isUnsafePublicPreviewHtml(html)) {
       return new Response('Preview not found or not public', { status: 404 })

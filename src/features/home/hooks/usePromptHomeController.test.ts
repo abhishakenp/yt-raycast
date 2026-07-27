@@ -221,7 +221,6 @@ describe('usePromptHomeController submit guard', () => {
     await act(async () => {
       await second.result.current.submitPrompt({
         prompt: 'Build another fast product website',
-        engineVersion: 'v2',
       })
     })
 
@@ -817,7 +816,6 @@ describe('usePromptHomeController submit guard', () => {
       result.current.scheduleSpeculativeGeneration({
         prompt: 'Build a different portfolio website',
         preferredLanguage: 'en',
-        engineVersion: 'v2',
       })
     })
 
@@ -840,7 +838,6 @@ describe('usePromptHomeController submit guard', () => {
       .mock.calls.filter(([input]) => input === '/api/sessions/create')
     expect(publicCreateCallsAfter).toHaveLength(1)
     expect(fetchRequestBodyAt(0)).toMatchObject({
-      engineVersion: 'v2',
       prompt: 'Build a different portfolio website',
     })
   })
@@ -928,5 +925,181 @@ describe('usePromptHomeController submit guard', () => {
         },
       }),
     )
+  })
+})
+
+describe('usePromptHomeController speculative substance gate', () => {
+  beforeEach(() => {
+    const state = getTestState()
+    state.createSession.mockReset()
+    state.createSession.mockResolvedValue({
+      sessionId: 'session_substance_gate',
+      cached: false,
+    })
+    state.mutationRefs = []
+    state.navigate.mockReset()
+    state.navigate.mockResolvedValue(undefined)
+    state.preloadRoute.mockReset()
+    state.preloadRoute.mockResolvedValue(undefined)
+    referralAuthToken.mockReset()
+    referralAuthToken.mockResolvedValue(null)
+    originalFetch = globalThis.fetch
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        sessionId: 'session_substance_gate',
+        cached: false,
+      }),
+    }) as unknown as typeof globalThis.fetch
+    window.localStorage.clear()
+    window.sessionStorage.clear()
+    document.body.innerHTML = ''
+  })
+
+  afterEach(() => {
+    cleanup()
+    vi.useRealTimers()
+    globalThis.fetch = originalFetch
+  })
+
+  it('does not fire speculative for prompts shorter than 3 words', async () => {
+    vi.useFakeTimers()
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.setPrompt('build website')
+    })
+    act(() => {
+      result.current.scheduleSpeculativeGeneration()
+    })
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600)
+    })
+
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('does not fire speculative for gibberish prompts', async () => {
+    vi.useFakeTimers()
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.setPrompt('test test test test test test')
+    })
+    act(() => {
+      result.current.scheduleSpeculativeGeneration()
+    })
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600)
+    })
+
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('fires speculative for substantive prompts', async () => {
+    vi.useFakeTimers()
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.setPrompt('a blog about dogs with photo galleries')
+    })
+    act(() => {
+      result.current.scheduleSpeculativeGeneration()
+    })
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600)
+    })
+
+    expect(fetch).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('usePromptHomeController speculative fingerprint cache', () => {
+  beforeEach(() => {
+    const state = getTestState()
+    state.createSession.mockReset()
+    state.createSession.mockResolvedValue({
+      sessionId: 'session_fingerprint_cache',
+      cached: false,
+    })
+    state.mutationRefs = []
+    state.navigate.mockReset()
+    state.navigate.mockResolvedValue(undefined)
+    state.preloadRoute.mockReset()
+    state.preloadRoute.mockResolvedValue(undefined)
+    referralAuthToken.mockReset()
+    referralAuthToken.mockResolvedValue(null)
+    originalFetch = globalThis.fetch
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        sessionId: 'session_fingerprint_cache',
+        cached: false,
+      }),
+    }) as unknown as typeof globalThis.fetch
+    window.localStorage.clear()
+    window.sessionStorage.clear()
+    document.body.innerHTML = ''
+  })
+
+  afterEach(() => {
+    cleanup()
+    vi.useRealTimers()
+    globalThis.fetch = originalFetch
+  })
+
+  it('does not re-fire speculative for a completed fingerprint when typing away and back', async () => {
+    vi.useFakeTimers()
+    const { result } = renderHook(() => usePromptHomeController())
+
+    // Type a substantive prompt and let speculative complete.
+    act(() => {
+      result.current.setPrompt('a blog about dogs with photo galleries')
+    })
+    act(() => {
+      result.current.scheduleSpeculativeGeneration()
+    })
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600)
+      await Promise.resolve()
+    })
+
+    expect(fetch).toHaveBeenCalledTimes(1)
+
+    // Type something different.
+    act(() => {
+      result.current.setPrompt('a saas landing page for analytics')
+    })
+    act(() => {
+      result.current.scheduleSpeculativeGeneration()
+    })
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600)
+      await Promise.resolve()
+    })
+
+    expect(fetch).toHaveBeenCalledTimes(2)
+
+    // Type back to the original prompt — should NOT re-fire (completed fingerprint).
+    act(() => {
+      result.current.setPrompt('a blog about dogs with photo galleries')
+    })
+    act(() => {
+      result.current.scheduleSpeculativeGeneration()
+    })
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600)
+      await Promise.resolve()
+    })
+
+    expect(fetch).toHaveBeenCalledTimes(2)
   })
 })

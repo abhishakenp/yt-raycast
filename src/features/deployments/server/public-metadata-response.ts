@@ -87,11 +87,11 @@ function appMetadataBody(kind: PublicMetadataKind): string {
 function deploymentMetadataBody(
   kind: PublicMetadataKind,
   siteUrl: string,
-  previewHtml: string,
+  previewSource: string,
 ): string {
   if (kind === 'robots') return createRobotsTxt(siteUrl)
   if (kind === 'sitemap') return createSitemapXml(siteUrl)
-  return createLlmsTxt(siteUrl, extractExportMetadata(previewHtml))
+  return createLlmsTxt(siteUrl, extractExportMetadata(previewSource))
 }
 
 export async function createPublicMetadataResponse(
@@ -130,21 +130,22 @@ export async function createPublicMetadataResponse(
     })
   }
 
-  const previewHtml = typeof preview?.html === 'string' ? preview.html : ''
+  const previewOpenUiSource =
+    typeof preview?.openUiSource === 'string' ? preview.openUiSource : ''
 
   if (
     preview === null ||
-    preview.html === undefined ||
-    typeof preview.html !== 'string' ||
-    previewHtml.trim() === '' ||
-    isUnsafePublicPreviewHtml(previewHtml)
+    preview.openUiSource === undefined ||
+    typeof preview.openUiSource !== 'string' ||
+    previewOpenUiSource.trim() === '' ||
+    isUnsafePublicPreviewHtml(previewOpenUiSource)
   ) {
     return new Response(
-      isUnsafePublicPreviewHtml(previewHtml)
+      isUnsafePublicPreviewHtml(previewOpenUiSource)
         ? 'Deployment metadata is not available'
         : 'Deployment metadata is not ready yet',
       {
-        status: isUnsafePublicPreviewHtml(previewHtml) ? 422 : 202,
+        status: isUnsafePublicPreviewHtml(previewOpenUiSource) ? 422 : 202,
         headers: { 'content-type': 'text/plain; charset=utf-8' },
       },
     )
@@ -176,11 +177,14 @@ export async function createPublicMetadataResponse(
     normalizeSiteUrl(deployment.url) ??
     `https://${deployment.slug}.${BASE_DOMAIN}`
 
-  return new Response(deploymentMetadataBody(kind, siteUrl, previewHtml), {
-    headers: {
-      ...responseHeaders(kind),
-      'x-ship-fast-deployment': deployment.slug,
-      'x-ship-fast-preview-version': String(preview.previewVersion ?? ''),
+  return new Response(
+    deploymentMetadataBody(kind, siteUrl, previewOpenUiSource),
+    {
+      headers: {
+        ...responseHeaders(kind),
+        'x-ship-fast-deployment': deployment.slug,
+        'x-ship-fast-preview-version': String(preview.previewVersion ?? ''),
+      },
     },
-  })
+  )
 }

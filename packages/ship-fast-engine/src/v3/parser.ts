@@ -1,23 +1,10 @@
 // v3 engine — positional DSL parser. Transforms raw text into a structured site-plan.
 import type {
-  CustomOperation,
-  CustomTable,
-  FreeformDef,
-  MacroType,
   NestedGroup,
   NestedItem,
   ParsedSitePlan,
   Section,
 } from './types.ts'
-
-const MACRO_TYPES: ReadonlySet<MacroType> = new Set([
-  'collection',
-  'cart',
-  'submission',
-  'search',
-  'favorites',
-  'auth',
-])
 
 /** Parse a single nested-group value (`groupName>item~field~field^item~field`). */
 function parseNestedValue(value: string): NestedGroup | null {
@@ -94,85 +81,21 @@ export function parseSectionLine(line: string): Section {
   return section
 }
 
-/** Parse a `+` custom data-model line into either a CustomTable or CustomOperation. */
-function parsePlusLine(line: string): CustomTable | CustomOperation | null {
-  const body = line.replace(/^\+\s*/, '').trim()
-  if (body.length === 0) return null
-  const tokens = body.split(/\s+/)
-  if (tokens.length < 2) return null
-
-  // Operation: `+ opName macroType tableName [key]` — 2nd token is a MacroType.
-  if (MACRO_TYPES.has(tokens[1] as MacroType)) {
-    const macroType = tokens[1] as MacroType
-    const name = tokens[0]
-    const table = tokens[2] ?? ''
-    if (table.length === 0) return null
-    const op: CustomOperation = { name, macroType, table }
-    if (tokens[3] !== undefined && tokens[3].length > 0) op.key = tokens[3]
-    return op
-  }
-
-  // Table: `+ tableName field1 field2 [+]` — trailing `+` marks seeded.
-  let seeded = false
-  let fields = tokens.slice(1)
-  if (fields.length > 0 && fields[fields.length - 1] === '+') {
-    seeded = true
-    fields = fields.slice(0, -1)
-  }
-  if (fields.length === 0) return null
-  const table: CustomTable = { name: tokens[0], fields, seeded }
-  return table
-}
-
-/** Parse a @freeform block into a Section with a FreeformDef.
+/** Parse a @svelte block into a Section with a SvelteBlockDef.
  *  Block format:
- *    @freeform rolename
- *    state: var1=initval var2=initval
- *    actions: action1→expr action2→expr
- *    layout: <div class="...">...</div>
- *    @endfreeform
+ *    @svelte rolename
+ *    <script>...</script>
+ *    <div>...</div>
+ *    <style>...</style>
+ *    @endsvelte
+ *
+ *  Everything between @svelte and @endsvelte is collected as raw Svelte 4 source.
  */
-function parseFreeformBlock(role: string, lines: string[]): Section | null {
+function parseSvelteBlock(role: string, lines: string[]): Section | null {
   if (role.length === 0) return null
-  const state: Record<string, string> = {}
-  const actions: Record<string, string> = {}
-  let layout = ''
-
-  for (const line of lines) {
-    if (line.startsWith('state:')) {
-      const rest = line.replace(/^state:\s*/, '').trim()
-      for (const token of rest.split(/\s+/)) {
-        const eqIdx = token.indexOf('=')
-        if (eqIdx > 0) {
-          const name = token.slice(0, eqIdx).trim()
-          const val = token.slice(eqIdx + 1).trim()
-          if (name.length > 0) state[name] = val
-        }
-      }
-    } else if (line.startsWith('actions:')) {
-      const rest = line.replace(/^actions:\s*/, '').trim()
-      // Actions are comma-separated: inc→count+1, dec→count-1
-      for (const token of rest.split(',')) {
-        const arrowIdx = token.indexOf('→')
-        if (arrowIdx > 0) {
-          const name = token.slice(0, arrowIdx).trim()
-          const expr = token.slice(arrowIdx + 1).trim()
-          if (name.length > 0) actions[name] = expr
-        }
-      }
-    } else if (line.startsWith('layout:')) {
-      // Layout may span multiple lines — collect everything after "layout:"
-      const rest = line.replace(/^layout:\s*/, '')
-      layout = layout ? layout + '\n' + rest : rest
-    } else if (layout.length > 0) {
-      // Continuation of multi-line layout
-      layout += '\n' + line
-    }
-  }
-
-  if (layout.length === 0) return null
-  const def: FreeformDef = { state, actions, layout }
-  return { role, content: [], freeform: def }
+  const source = lines.join('\n').trim()
+  if (source.length === 0) return null
+  return { role, content: [], svelte: { source } }
 }
 
 /** Parse raw positional DSL text into a structured ParsedSitePlan.
@@ -187,49 +110,50 @@ export function parseSitePlan(raw: string): ParsedSitePlan {
   const lines = stripped.split('\n')
   const sections: Section[] = []
   const pages: string[] = []
-  const tables: CustomTable[] = []
-  const operations: CustomOperation[] = []
   let kind = ''
   let brand: string | undefined
   let title: string | undefined
   let navLabels: Record<string, string> | undefined
 
   let kindSeen = false
-  // Freeform block collection: when inside @freeform ... @endfreeform,
-  // collect lines into a buffer keyed by the role name.
-  let freeformRole: string | null = null
-  let freeformBuf: string[] = []
+  // Svelte block collection: when inside @svelte ... @endsvelte,
+  // collect raw lines as Svelte source.
+  let svelteRole: string | null = null
+  let svelteBuf: string[] = []
   for (const rawLine of lines) {
+    // Inside a @svelte block — collect everything verbatim (no trimming
+    // since Svelte source is whitespace-sensitive inside <script>/<style>).
+    if (svelteRole !== null) {
+      if (
+        rawLine.trim() === '@endsvelte' ||
+        rawLine.trim().startsWith('@endsvelte')
+      ) {
+        const def = parseSvelteBlock(svelteRole, svelteBuf)
+        if (def) sections.push(def)
+        svelteRole = null
+        svelteBuf = []
+        continue
+      }
+      svelteBuf.push(rawLine)
+      continue
+    }
+    if (rawLine.trim().startsWith('@svelte')) {
+      svelteRole = rawLine.replace(/^\s*@svelte\s*/, '').trim()
+      svelteBuf = []
+      continue
+    }
+
     const line = rawLine.trim()
     if (line.length === 0) continue
     if (line.startsWith('#')) continue
 
-    // ── Freeform block collection ────────────────────────────────────────
-    if (freeformRole !== null) {
-      if (line === '@endfreeform' || line.startsWith('@endfreeform')) {
-        const def = parseFreeformBlock(freeformRole, freeformBuf)
-        if (def) sections.push(def)
-        freeformRole = null
-        freeformBuf = []
-        continue
-      }
-      freeformBuf.push(line)
-      continue
-    }
-    if (line.startsWith('@freeform')) {
-      freeformRole = line.replace(/^@freeform\s*/, '').trim()
-      freeformBuf = []
-      continue
-    }
-
     // @type line (app vs website) — comes before kind
     if (line.startsWith('@type')) {
-      // Parse but don't require — the presence of @freeform blocks determines app vs website
       continue
     }
 
     if (!kindSeen) {
-      // Kind line (first non-@type, non-@freeform line).
+      // Kind line (first non-@type, non-@svelte line).
       kind = line.split(/\s+/)[0] ?? ''
       kindSeen = true
       continue
@@ -276,15 +200,6 @@ export function parseSitePlan(raw: string): ParsedSitePlan {
       continue
     }
 
-    if (line.startsWith('+')) {
-      const parsed = parsePlusLine(line)
-      if (parsed) {
-        if ('macroType' in parsed) operations.push(parsed)
-        else tables.push(parsed)
-      }
-      continue
-    }
-
     // Section line — but only if it starts with a role token (alphabetic-ish).
     const firstChar = line[0] ?? ''
     if (/[A-Za-z_]/.test(firstChar)) {
@@ -295,7 +210,7 @@ export function parseSitePlan(raw: string): ParsedSitePlan {
     // Unknown line shape: skip silently.
   }
 
-  const plan: ParsedSitePlan = { kind, sections, pages, tables, operations }
+  const plan: ParsedSitePlan = { kind, sections, pages }
   if (brand) plan.brand = brand
   if (title) plan.title = title
   if (navLabels) plan.navLabels = navLabels

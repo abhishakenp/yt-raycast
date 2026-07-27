@@ -674,7 +674,6 @@ const runtimeComponentModulePaths = {
   FoodTruckStats: '../registry/sections/food-truck/FoodTruckStats.tsx',
   FoodTruckTestimonials:
     '../registry/sections/food-truck/FoodTruckTestimonials.tsx',
-  Freeform: '../registry/primitives/freeform.tsx',
   FurnitureStoreDesign:
     '../registry/sections/furniture-store/FurnitureStoreDesign.tsx',
   FurnitureStoreFeatures:
@@ -1390,6 +1389,7 @@ const runtimeComponentModulePaths = {
     '../registry/sections/subscription-box/SubscriptionBoxSteps.tsx',
   SubscriptionBoxTestimonials:
     '../registry/sections/subscription-box/SubscriptionBoxTestimonials.tsx',
+  SvelteIsland: '../registry/primitives/svelte-island.tsx',
   Switch: '../registry/primitives/switch.tsx',
   Table: '../registry/primitives/table.tsx',
   Tabs: '../registry/primitives/tabs.tsx',

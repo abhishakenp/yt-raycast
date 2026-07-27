@@ -50,7 +50,6 @@ async function createReadySession(
 
   await t.action(internal.sessions.completeGeneration, {
     sessionId,
-    html: `<html><body><main><h1>${prompt}</h1></main></body></html>`,
     openUiSource: `$page = "Home"\nroot = Text("${prompt}")`,
     siteSpecJson: JSON.stringify({
       hero: { headline: prompt },
@@ -88,8 +87,8 @@ describe('session edit mutation helpers', () => {
       lookup: sessionId,
     })
 
-    // Preview html is updated.
-    expect(preview?.html).toContain('Updated headline')
+    // Preview openUiSource is updated.
+    expect(preview?.openUiSource).toContain('Updated headline')
     // Canonical source MUST be patched — the Dashboard renders from
     // homeModule.source, so an unpatched source makes the edit vanish on
     // reload (regression introduced by the master/develop reconcile).
@@ -178,7 +177,9 @@ describe('session edit mutation helpers', () => {
     expect(reloaded?.homeModule?.source).not.toContain('अपडेट किया गया शीर्षक')
     expect(reloaded?.siteSpec?.specJson).toContain('Original English headline')
     expect(reloaded?.siteSpec?.specJson).not.toContain('अपडेट किया गया शीर्षक')
-    expect(reloaded?.latestPreview?.html).toContain('Original English headline')
+    expect(reloaded?.latestPreview?.openUiSource).toContain(
+      'Original English headline',
+    )
 
     await expect(
       t.query(api.translationCache.getBatch, {
@@ -278,13 +279,6 @@ describe('session edit mutation helpers', () => {
 
     await t.action(internal.sessions.completeGeneration, {
       sessionId,
-      html: [
-        '<html><body>',
-        '<header>Polished Glass</header>',
-        '<main><h1>Polished Glass</h1></main>',
-        '<footer>Polished Glass</footer>',
-        '</body></html>',
-      ].join(''),
       openUiSource: [
         '$page = "Home"',
         'header = Text("Polished Glass")',
@@ -337,14 +331,14 @@ describe('session edit mutation helpers', () => {
     expect(reloaded?.homeModule?.source).toContain(
       'footer = Text("Polished Glass")',
     )
-    expect(reloaded?.latestPreview?.html).toContain(
-      'data-openui-var="header">Polished Glass</p>',
+    expect(reloaded?.latestPreview?.openUiSource).toContain(
+      'header = Text("Polished Glass")',
     )
-    expect(reloaded?.latestPreview?.html).toContain(
-      'data-openui-var="hero">एजेंट सत्यापन शीर्षक</p>',
+    expect(reloaded?.latestPreview?.openUiSource).toContain(
+      'hero = Text("एजेंट सत्यापन शीर्षक")',
     )
-    expect(reloaded?.latestPreview?.html).toContain(
-      'data-openui-var="footer">Polished Glass</p>',
+    expect(reloaded?.latestPreview?.openUiSource).toContain(
+      'footer = Text("Polished Glass")',
     )
   })
 
@@ -406,12 +400,6 @@ describe('session edit mutation helpers', () => {
     const capsuleName = 'AICustom_FashionStoreHero_home_hero'
     await t.mutation(internal.sessions.completeGenerationInternal, {
       sessionId,
-      html: [
-        '<!DOCTYPE html><html lang="en"><head><title>AI Capsule Preview</title></head><body>',
-        '<main id="openui-root" data-openui-ready="source">',
-        '<p>AI capsule shell loaded.</p>',
-        '</main></body></html>',
-      ].join(''),
       openUiSource: [
         '$page = "Home"',
         `home_hero = ${capsuleName}("New Collection")`,
@@ -460,7 +448,7 @@ describe('session edit mutation helpers', () => {
     })
     const capsules = await t.query(api.sessions.listAiCapsules, { sessionId })
 
-    expect(reloaded?.latestPreview?.html).toContain('AI capsule shell loaded.')
+    expect(reloaded?.latestPreview?.openUiSource).toContain(capsuleName)
     expect(reloaded?.homeModule?.source).toContain(capsuleName)
     expect(capsules).toHaveLength(2)
     for (const capsule of capsules) {
@@ -593,7 +581,6 @@ describe('session edit mutation helpers', () => {
       // "Shared banner" is in the rendered preview html (so the FIRST gate
       // passes) but not in the OpenUI source or siteSpec — only sessionData
       // carries it, exercising the second (artifact) gate's fallback.
-      html: '<html><body><h1>Gate two page</h1><p>Shared banner</p></body></html>',
       openUiSource: '$page = "Home"\nroot = Text("Gate two page")',
       siteSpecJson: JSON.stringify({ hero: { headline: 'Gate two page' } }),
       tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],

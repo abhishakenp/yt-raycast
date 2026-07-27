@@ -3,11 +3,7 @@ import { ConvexError } from 'convex/values'
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx } from '../_generated/server'
 import { assertCanMutateSession } from './session_access_helpers'
-import {
-  applyImageSwap,
-  applyPreviewTextEdit,
-  applyStyleEdit,
-} from './session_edit_helpers'
+import { applyPreviewTextEdit } from './session_edit_helpers'
 import { extractOpenUISourceStrings } from './session_translation_cache_helpers'
 
 type JsonObject = Record<string, unknown>
@@ -591,6 +587,7 @@ export async function applyTextEditToCurrentArtifacts(
   afterText: string | undefined,
   now: number,
   occurrenceIndex?: number,
+  skipSourcePatch = false,
 ): Promise<{
   openUiSource?: string
   siteSpecJson?: string
@@ -608,7 +605,7 @@ export async function applyTextEditToCurrentArtifacts(
   let siteSpecReplaced = false
   let aiCapsuleReplaced = false
 
-  if (homeModule !== null) {
+  if (homeModule !== null && !skipSourcePatch) {
     const sourceEdit = applyPreviewTextEdit(
       homeModule.source,
       beforeText,
@@ -820,9 +817,7 @@ export async function applySessionEdit(
 
   const unchangedText =
     args.afterText !== undefined && args.beforeText === args.afterText
-  const unchangedHtml =
-    args.afterHtml !== undefined && args.afterHtml === preview.html
-  if (unchangedText || unchangedHtml) {
+  if (unchangedText) {
     return {
       sessionId,
       previewVersion: preview.version,
@@ -879,33 +874,7 @@ export async function applySessionEdit(
     canonicalized.translatedEdit !== undefined &&
     !canonicalized.patchCanonicalArtifacts
 
-  let editedPreview =
-    args.afterHtml !== undefined
-      ? { html: args.afterHtml, replaced: true }
-      : isLocaleScopedTranslatedTextEdit
-        ? { html: preview.html, replaced: true }
-        : patchArgs.editType === 'image'
-          ? applyImageSwap(
-              preview.html,
-              patchArgs.beforeText,
-              patchArgs.afterText,
-              patchArgs.occurrenceIndex,
-            )
-          : patchArgs.editType === 'style'
-            ? applyStyleEdit(
-                preview.html,
-                patchArgs.beforeText,
-                patchArgs.afterText,
-                patchArgs.occurrenceIndex,
-              )
-            : applyPreviewTextEdit(
-                preview.html,
-                patchArgs.beforeText,
-                patchArgs.afterText,
-                patchArgs.occurrenceIndex,
-                true, // preview.html is genuine HTML — escape literal <, >, & in the replacement
-              )
-
+  let editSucceeded = false
   let sourceAlreadyPatched = false
   // Set when the edited text was found (and patched) in the session's Lakebed
   // sessionData rows — the only store that holds library-capsule content
@@ -913,79 +882,88 @@ export async function applySessionEdit(
   // fully successful edit: the capsule re-renders live from the patched row,
   // so neither TEXT_NOT_FOUND gate may throw for it.
   let sessionDataPatched = false
-  if (!editedPreview.replaced) {
-    // Style edits: the stored preview.html is OpenUI source code, not rendered
-    // HTML — it has no `class="..."` attributes for applyStyleEdit to anchor on.
-    // Style edits are reapplied client-side from the edit history (via
-    // styleOverrides in DirectPreview), so we just need to save the edit record
-    // and create a new preview version. Don't throw TEXT_NOT_FOUND for styles.
-    // Image edits: same pattern — applyImageSwap may fail on preview.html if the
-    // img tag format doesn't match (e.g., OpenUI source stored as preview.html,
-    // or the alt doesn't match). Image swaps are reapplied client-side via
-    // imageOverrides (alt → newSrc), so just save the edit record. Do NOT fall
-    // back to applyPreviewTextEdit — that would replace the alt TEXT in the
-    // OpenUI source with the image URL, corrupting the source.
-    if (patchArgs.editType === 'style' || patchArgs.editType === 'image') {
-      editedPreview = { html: preview.html, replaced: true }
-    } else {
-      // Text edits: fall back to searching the OpenUI source directly.
-      const [homeModuleForFallback] = await getCurrentHomeModuleAndSiteSpec(
+
+  if (isLocaleScopedTranslatedTextEdit) {
+    // Locale-scoped translated text edit: don't modify canonical artifacts.
+    // The translation override is persisted separately; the preview is
+    // re-rendered from the (unchanged) source + override on reload.
+    editSucceeded = true
+  } else if (patchArgs.editType === 'style' || patchArgs.editType === 'image') {
+    // Style/image edits are reapplied client-side from edit history
+    // (styleOverrides / imageOverrides in DirectPreview), so we just need
+    // to save the edit record and create a new preview version. Don't throw
+    // TEXT_NOT_FOUND for these.
+    editSucceeded = true
+  } else if (
+    patchArgs.editType === 'ai_rewrite' &&
+    args.afterHtml !== undefined &&
+    patchArgs.beforeText !== undefined &&
+    patchArgs.afterText !== undefined
+  ) {
+    // AI rewrite with afterHtml: the AI generated new HTML with the rewritten
+    // text. Don't edit the source here — applyAiRewriteToCurrentArtifacts
+    // (below) replaces ALL occurrences in the source + siteSpec.
+    editSucceeded = true
+  } else {
+    // Text edits (and ai_rewrite without afterHtml): edit homeModule.source
+    // directly with applyPreviewTextEdit. This IS the primary edit path —
+    // preview.html is no longer used.
+    const [homeModuleForEdit] = await getCurrentHomeModuleAndSiteSpec(
+      ctx,
+      sessionId,
+    )
+    if (homeModuleForEdit !== null) {
+      const sourceEdit = applyPreviewTextEdit(
+        homeModuleForEdit.source,
+        patchArgs.beforeText,
+        patchArgs.afterText,
+        patchArgs.occurrenceIndex,
+      )
+      if (sourceEdit.replaced) {
+        await ctx.db.patch(homeModuleForEdit._id, {
+          source: sourceEdit.html,
+          status: 'succeeded',
+          errorMessage: undefined,
+          updatedAt: now,
+        })
+        sourceAlreadyPatched = true
+        openUiSource = sourceEdit.html
+        editSucceeded = true
+      }
+    }
+    if (!editSucceeded) {
+      // Text not in source — try AI capsule compiled JS.
+      const aiCapsuleEdits = await findAiCapsuleTextEdits(
         ctx,
         sessionId,
+        patchArgs.beforeText,
+        patchArgs.afterText,
+        patchArgs.occurrenceIndex,
       )
-      if (homeModuleForFallback !== null) {
-        const sourceEdit = applyPreviewTextEdit(
-          homeModuleForFallback.source,
-          patchArgs.beforeText,
-          patchArgs.afterText,
-          patchArgs.occurrenceIndex,
-        )
-        if (sourceEdit.replaced) {
-          await ctx.db.patch(homeModuleForFallback._id, {
-            source: sourceEdit.html,
-            status: 'succeeded',
-            errorMessage: undefined,
-            updatedAt: now,
-          })
-          editedPreview = { html: sourceEdit.html, replaced: true }
-          sourceAlreadyPatched = true
-          openUiSource = sourceEdit.html
-        }
+      if (aiCapsuleEdits.length > 0) {
+        editSucceeded = true
       }
-      if (!editedPreview.replaced) {
-        const aiCapsuleEdits = await findAiCapsuleTextEdits(
-          ctx,
-          sessionId,
-          patchArgs.beforeText,
-          patchArgs.afterText,
-          patchArgs.occurrenceIndex,
-        )
-        if (aiCapsuleEdits.length > 0) {
-          editedPreview = { html: preview.html, replaced: true }
-        }
-      }
-      if (!editedPreview.replaced) {
-        // Last store: Lakebed sessionData (library-capsule content). This is
-        // where gov-portal boards/tenders/directory text actually lives —
-        // preview.html is an SSR shell (Lakebed stubbed out) and the source
-        // only contains the capsule call, so for this content every earlier
-        // matcher is guaranteed to miss.
-        sessionDataPatched = await patchTextEditIntoSessionData(
-          ctx,
-          sessionId,
-          [args.beforeText, patchArgs.beforeText],
-          patchArgs.afterText,
-          now,
-          true, // exactLeafOnly — see patchTextEditIntoSessionData
-        )
-        if (sessionDataPatched) {
-          editedPreview = { html: preview.html, replaced: true }
-        }
+    }
+    if (!editSucceeded) {
+      // Last store: Lakebed sessionData (library-capsule content). This is
+      // where gov-portal boards/tenders/directory text actually lives —
+      // the source only contains the capsule call, so for this content
+      // every earlier matcher is guaranteed to miss.
+      sessionDataPatched = await patchTextEditIntoSessionData(
+        ctx,
+        sessionId,
+        [args.beforeText, patchArgs.beforeText],
+        patchArgs.afterText,
+        now,
+        true, // exactLeafOnly — see patchTextEditIntoSessionData
+      )
+      if (sessionDataPatched) {
+        editSucceeded = true
       }
     }
   }
 
-  if (!editedPreview.replaced) {
+  if (!editSucceeded) {
     throw new ConvexError({
       code: 'TEXT_NOT_FOUND',
       message:
@@ -999,12 +977,14 @@ export async function applySessionEdit(
 
   // Text edits must patch the canonical generated artifacts (homeModule.source
   // + siteSpec) in addition to the preview, because the Dashboard renders from
-  // homeModule.source — patching only preview.html makes edits vanish on
+  // homeModule.source — patching only the preview makes edits vanish on
   // reload. ai_rewrite edits that carry beforeText/afterText also patch the
   // source for the same reason; ai_rewrite edits that only provide afterHtml
   // (and image/style edits) keep the snapshot pattern: their overrides are
   // reapplied client-side from the recorded edit history.
-  // If sourceAlreadyPatched is true (source fallback matched), skip this step.
+  // If sourceAlreadyPatched is true (source was patched in the primary edit
+  // step above), skip re-patching the source (would double-apply
+  // occurrenceIndex edits) but still patch the siteSpec.
   const isTextPatchEdit =
     args.afterHtml === undefined &&
     patchArgs.editType !== 'style' &&
@@ -1016,7 +996,21 @@ export async function applySessionEdit(
     patchArgs.beforeText !== undefined &&
     patchArgs.afterText !== undefined
   if (sourceAlreadyPatched) {
-    // Source was already patched in the fallback above — nothing more to do.
+    // Source was already patched in the primary edit step above. Still patch
+    // the siteSpec so edits don't vanish from the spec on reload, but skip
+    // re-patching the source (would double-apply occurrenceIndex edits).
+    if (isTextPatchEdit) {
+      const artifactSnapshot = await applyTextEditToCurrentArtifacts(
+        ctx,
+        sessionId,
+        patchArgs.beforeText,
+        patchArgs.afterText,
+        now,
+        patchArgs.occurrenceIndex,
+        true, // skipSourcePatch — source already patched in fallback
+      )
+      siteSpecJson = artifactSnapshot.siteSpecJson
+    }
   } else if (isAiRewriteTextPatchEdit) {
     const artifactSnapshot = await applyAiRewriteToCurrentArtifacts(
       ctx,
@@ -1041,7 +1035,7 @@ export async function applySessionEdit(
       !artifactSnapshot.aiCapsuleReplaced &&
       !sessionDataPatched
     ) {
-      // The text matched preview.html but no generated artifact. Before
+      // The text matched an AI capsule but not the source. Before
       // giving up, try the Lakebed sessionData rows — library-capsule
       // content lives only there (see patchTextEditIntoSessionData).
       sessionDataPatched = await patchTextEditIntoSessionData(
@@ -1101,7 +1095,6 @@ export async function applySessionEdit(
   await ctx.db.insert('previews', {
     sessionId,
     version: nextPreviewVersion,
-    html: editedPreview.html,
     openUiSource,
     siteSpecJson,
     source: args.editType === 'ai_rewrite' ? 'rewrite' : 'edit',
@@ -1144,7 +1137,7 @@ export async function applySessionEdit(
   return {
     sessionId,
     previewVersion: nextPreviewVersion,
-    saved: editedPreview.replaced,
+    saved: editSucceeded,
     translatedEdit:
       isLocaleScopedTranslatedTextEdit && canonicalized.translatedEdit
         ? {

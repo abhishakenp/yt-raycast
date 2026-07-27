@@ -312,7 +312,6 @@ export const addGenerationEventArgs = {
 export const completeGenerationArgs = {
   sessionId: v.id('sessions'),
   anonymousOwnerSecret: v.optional(v.string()),
-  html: v.string(),
   siteSpecJson: v.optional(v.string()),
   openUiSource: v.optional(v.string()),
   tasks: v.array(engineTask),

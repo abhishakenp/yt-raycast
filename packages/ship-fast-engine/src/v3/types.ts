@@ -17,13 +17,9 @@ export interface NestedGroup {
   items: NestedItem[]
 }
 
-export interface FreeformDef {
-  /** State declarations: variable name → initial value (string) */
-  state: Record<string, string>
-  /** Action handlers: action name → mutation expression (e.g. "count+1") */
-  actions: Record<string, string>
-  /** JSX layout string (HTML-like with {varname} interpolations and onclick="actionName") */
-  layout: string
+export interface SvelteBlockDef {
+  /** Raw Svelte 4 source code emitted by the LLM. */
+  source: string
 }
 
 export interface Section {
@@ -31,29 +27,14 @@ export interface Section {
   content: string[]
   nested?: NestedGroup[]
   /** When present, this section has no matching vocabulary component —
-   *  the LLM generated a freeform component definition to fill the gap. */
-  freeform?: FreeformDef
-}
-
-export interface CustomTable {
-  name: string
-  fields: string[]
-  seeded: boolean
-}
-
-export interface CustomOperation {
-  name: string
-  macroType: MacroType
-  table: string
-  key?: string
+   *  the LLM generated a Svelte component to fill the gap. */
+  svelte?: SvelteBlockDef
 }
 
 export interface ParsedSitePlan {
   kind: string
   sections: Section[]
   pages: string[]
-  tables: CustomTable[]
-  operations: CustomOperation[]
   /** LLM-extracted brand name (from @brand metadata line). */
   brand?: string
   /** LLM-decided descriptive site title (from @title metadata line). */

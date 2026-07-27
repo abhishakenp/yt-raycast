@@ -238,7 +238,6 @@ describe('HomePage — language detection for short explicit-keyword prompts', (
 
     expect(mocks.scheduleSpeculativeGeneration).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        engineVersion: 'v1',
         preferredLanguage: 'en',
         prompt: 'Build a fast customer onboarding website',
       }),

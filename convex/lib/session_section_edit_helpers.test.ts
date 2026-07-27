@@ -135,7 +135,7 @@ describe('applySectionEditToArtifacts', () => {
 
     expect(result).toEqual({ previewVersion: 2, saved: true, sessionId })
     expect(rows.previews.at(-1)).toMatchObject({
-      html: '<html><body>New</body></html>',
+      openUiSource: '<html><body>New</body></html>',
       source: 'edit',
       version: 2,
     })
@@ -204,12 +204,12 @@ describe('applySectionEditToArtifacts', () => {
 
     expect(result).toEqual({ previewVersion: 2, saved: true, sessionId })
     const persisted = rows.previews.at(-1)
-    expect(persisted?.html).toContain('<nav>Site Nav</nav>')
-    expect(persisted?.html).toContain('<footer>Site Footer</footer>')
-    expect(persisted?.html).toContain(
+    expect(persisted?.openUiSource).toContain('<nav>Site Nav</nav>')
+    expect(persisted?.openUiSource).toContain('<footer>Site Footer</footer>')
+    expect(persisted?.openUiSource).toContain(
       '<section class="hero">Sharper Hero</section>',
     )
-    expect(persisted?.html).not.toContain(
+    expect(persisted?.openUiSource).not.toContain(
       'Hero</section></main><footer>Site Footer</footer></body></html><section',
     )
     expect(rows.generatedModules.at(-1)?.source).toContain('Site Nav')

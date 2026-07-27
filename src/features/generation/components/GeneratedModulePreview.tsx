@@ -66,15 +66,6 @@ type GeneratedModulePreviewProps = {
 
 const LazyOpenUIViewer = lazy(() => import('@/island/openui/OpenUIViewer'))
 
-export function isHtmlDocumentSource(source: string): boolean {
-  const trimmed = source.trim()
-  return (
-    /^<!doctype\s+html/i.test(trimmed) ||
-    /^<html[\s>]/i.test(trimmed) ||
-    /^<[a-z][\w:-]*(?:\s|>|\/>)/i.test(trimmed)
-  )
-}
-
 /** Best-effort brand/tagline descriptor from the persisted site spec, used as
  *  extra image-search context alongside the prompt. */
 function parseSiteSpecBrand(
@@ -122,30 +113,6 @@ function parseSiteSpecTheme(
   } catch {
     return null
   }
-}
-
-export function HtmlModuleRenderer({
-  source,
-}: Pick<GeneratedModulePreviewProps, 'source'>) {
-  return (
-    <iframe
-      title="Generated website preview"
-      className="size-full border-0 bg-white"
-      sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-scripts"
-      srcDoc={source}
-    />
-  )
-}
-
-export function HtmlModuleUrlRenderer({ sourceUrl }: { sourceUrl: string }) {
-  return (
-    <iframe
-      title="Generated website preview"
-      className="size-full border-0 bg-white"
-      sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-scripts"
-      src={sourceUrl}
-    />
-  )
 }
 
 export function OpenUIModuleRenderer({
@@ -242,9 +209,12 @@ export function GeneratedModulePreview({
         textOverrides={textOverrides}
       >
         {sourceUrl ? (
-          <HtmlModuleUrlRenderer sourceUrl={sourceUrl} />
-        ) : isHtmlDocumentSource(source) ? (
-          <HtmlModuleRenderer source={source} />
+          <iframe
+            title="Generated website preview"
+            className="size-full border-0 bg-white"
+            sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-scripts"
+            src={sourceUrl}
+          />
         ) : source && source.trim().length > 0 ? (
           <OpenUIModuleRenderer
             anonymousOwnerSecret={anonymousOwnerSecret}
@@ -256,7 +226,6 @@ export function GeneratedModulePreview({
             prompt={prompt}
             selectedBrandLogo={selectedBrandLogo}
             imageOverrides={imageOverrides}
-            anonymousOwnerSecret={anonymousOwnerSecret}
           />
         ) : (
           <div

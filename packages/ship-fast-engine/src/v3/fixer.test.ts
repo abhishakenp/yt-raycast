@@ -20,8 +20,6 @@ function plan(overrides: Partial<ParsedSitePlan> = {}): ParsedSitePlan {
       { role: 'footer', content: [] },
     ],
     pages: [],
-    tables: [],
-    operations: [],
     ...overrides,
   }
 }
@@ -90,16 +88,6 @@ describe('fixPlan', () => {
     const fixed = fixPlan(p, [err('nested_unbalanced', 'menu')], 'restaurant')
     const menu = fixed.sections.find((s) => s.role === 'menu')
     expect(menu?.nested).toBeUndefined()
-  })
-
-  it('drops malformed tables/operations', () => {
-    const p = plan({
-      tables: [{ name: 'empty', fields: [], seeded: false }],
-      operations: [{ name: 'bad', macroType: 'bogus' as never, table: 't' }],
-    })
-    const fixed = fixPlan(p, [err('plus_malformed')], 'restaurant')
-    expect(fixed.tables).toHaveLength(0)
-    expect(fixed.operations).toHaveLength(0)
   })
 
   it('drops invalid pages', () => {

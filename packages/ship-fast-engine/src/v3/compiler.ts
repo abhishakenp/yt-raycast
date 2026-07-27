@@ -15,6 +15,7 @@ import { inferLakebed } from './inference.ts'
 import { buildComponentCall } from '../genui/openui-signature.ts'
 import { getInteraction } from './interactions.ts'
 import { generateConvexBackend } from './convex-codegen.ts'
+import { compileSvelteBlock, type CompiledSvelte } from './svelte-compiler.ts'
 import type { DataBinding } from './types.ts'
 
 export interface CompileOptions {
@@ -33,6 +34,8 @@ export interface CompileResult {
   siteSpec: V3SiteSpec
   skeleton: string
   pageSources: Record<string, string>
+  /** Compiled Svelte DOM JS scripts: script path → JS source. */
+  svelteScripts: Record<string, string>
 }
 
 /** Capitalize first letter (PascalCase a single role word). */
@@ -189,6 +192,7 @@ export function compileSection(
   pageId: string,
   brand?: string,
   nav?: string[],
+  svelteCompiled?: CompiledSvelte | null,
 ): { statements: string[]; ref: string | null } {
   const role = section.role
   const id = `${pageId}_${role.toLowerCase()}`
@@ -204,6 +208,29 @@ export function compileSection(
   // with non-routing placeholder defaults. Also force social to [] (not null)
   // so the component doesn't render its baked-in default social links.
   if (role.toLowerCase() === 'footer') {
+    // Schema-leak guard: the LLM sometimes copies the vocabulary signature
+    // (`columns[title~links[]]`, `social[]`) verbatim instead of filling in
+    // real content. The parser turns that into columns like
+    // { title: 'title', links: ['links[]'] } and social like ['social[]'].
+    // Detect these leaks and reset to empty so the auto-fill below kicks in.
+    if (Array.isArray(props.columns)) {
+      const isLeakedColumn = (c: unknown): boolean => {
+        if (!c || typeof c !== 'object') return false
+        const col = c as Record<string, unknown>
+        const links = Array.isArray(col.links) ? col.links : []
+        return (
+          col.title === 'title' &&
+          (links.includes('links[]') ||
+            links.length === 0 ||
+            (links.length === 1 &&
+              typeof links[0] === 'string' &&
+              (links[0] as string).includes('links[')))
+        )
+      }
+      if (props.columns.length === 0 || props.columns.every(isLeakedColumn)) {
+        props.columns = []
+      }
+    }
     if (Array.isArray(props.columns) && props.columns.length === 0) {
       props.columns = [
         { title: 'Pages', links: nav ?? [] },
@@ -213,6 +240,31 @@ export function compileSection(
     }
     if (props.social == null) {
       props.social = []
+    }
+    if (
+      Array.isArray(props.social) &&
+      props.social.some(
+        (s) =>
+          typeof s === 'string' && (s === 'social[]' || s.includes('social[')),
+      )
+    ) {
+      props.social = []
+    }
+    // Some kinds use `socials` (with 's') — same null/leak guards apply.
+    if (props.socials == null) {
+      props.socials = []
+    }
+    if (
+      Array.isArray(props.socials) &&
+      props.socials.some(
+        (s) =>
+          typeof s === 'string' &&
+          (s === 'socials[]' ||
+            s.includes('social[') ||
+            s.includes('socials[')),
+      )
+    ) {
+      props.socials = []
     }
   }
 
@@ -225,11 +277,14 @@ export function compileSection(
     nav: nav ?? [],
   })
 
-  // Component not in registry → check for freeform block (LLM-generated component).
+  // Component not in registry → check for svelte block (LLM-generated component).
   if (!call) {
-    if (section.freeform) {
-      const freeformJson = JSON.stringify(section.freeform)
-      const callStmt = `${id} = Freeform(${JSON.stringify(freeformJson)})`
+    if (section.svelte && svelteCompiled) {
+      const scriptPath = `/scripts/svelte-${pageId}-${role.toLowerCase()}.js`
+      const htmlJson = JSON.stringify(svelteCompiled.ssrHtml)
+      const scriptPathJson = JSON.stringify(scriptPath)
+      const cssJson = JSON.stringify(svelteCompiled.css)
+      const callStmt = `${id} = SvelteIsland(${htmlJson}, ${scriptPathJson}, ${cssJson})`
       const anchorId = `${id}_anchor`
       const anchorStmt = `${anchorId} = SectionAnchor("${id}", ${id}, "scroll-mt-28")`
       return { statements: [callStmt, anchorStmt], ref: anchorId }
@@ -248,10 +303,10 @@ export function compileSection(
 }
 
 /** Compile a full site-plan into OpenUI source + lakebed + siteSpec. */
-export function compileSitePlan(
+export async function compileSitePlan(
   plan: ParsedSitePlan,
   opts: CompileOptions,
-): CompileResult {
+): Promise<CompileResult> {
   const kind = opts.kind
 
   const navbarSection: Section = plan.sections.find(
@@ -260,6 +315,29 @@ export function compileSitePlan(
   const footerSection: Section = plan.sections.find(
     (s) => s.role === 'footer',
   ) ?? { role: 'footer', content: [] }
+
+  // ── Pre-compile all Svelte blocks (async) ──────────────────────────────
+  // Svelte compilation is async (dynamic import for SSR evaluation).
+  // Pre-compile all blocks upfront so compileSection stays synchronous.
+  const svelteCompiledMap: Record<string, CompiledSvelte> = {}
+  const svelteScripts: Record<string, string> = {}
+  for (const section of plan.sections) {
+    if (section.svelte) {
+      try {
+        const compiled = await compileSvelteBlock(
+          section.svelte.source,
+          section.role,
+        )
+        svelteCompiledMap[section.role] = compiled
+        const scriptPath = `scripts/svelte-home-${section.role.toLowerCase()}.js`
+        svelteScripts[scriptPath] = compiled.domJs
+      } catch {
+        // Compile error — skip this block; it will be silently dropped
+        // in compileSection. The retry loop in the generation runner
+        // handles re-prompting the LLM for corrections.
+      }
+    }
+  }
 
   // FIRST PASS: determine which pages have a matching focused section so we
   // can build a filtered nav that only references valid pages.  Without this,
@@ -325,6 +403,7 @@ export function compileSitePlan(
       'home',
       opts.brand,
       filteredNav,
+      svelteCompiledMap[navbarToUse.role] ?? null,
     )
     if (ref) {
       homeStmts.push(...statements)
@@ -341,6 +420,7 @@ export function compileSitePlan(
       'home',
       opts.brand,
       filteredNav,
+      svelteCompiledMap[section.role] ?? null,
     )
     if (ref) {
       homeStmts.push(...statements)
@@ -358,6 +438,7 @@ export function compileSitePlan(
       'home',
       opts.brand,
       filteredNav,
+      svelteCompiledMap[footerToUse.role] ?? null,
     )
     if (ref) {
       homeStmts.push(...statements)
@@ -382,6 +463,7 @@ export function compileSitePlan(
         pageId,
         opts.brand,
         filteredNav,
+        svelteCompiledMap[section.role] ?? null,
       )
       if (ref) {
         pageStmts.push(...statements)
@@ -402,9 +484,7 @@ export function compileSitePlan(
 
   const source = `${allStmts.join('\n')}\n${skeleton}`
   const lakebed = inferLakebed(plan, kind)
-  const hasAuth =
-    plan.operations.some((o) => o.macroType === 'auth') ||
-    lakebed.tables.some((t) => t.name === 'authSessions')
+  const hasAuth = lakebed.tables.some((t) => t.name === 'authSessions')
 
   // ── Fullstack wiring: generate data bindings for interactive components ──
   // For each section, check if its component has an interaction profile. If so,
@@ -488,5 +568,5 @@ export function compileSitePlan(
     sitePlan: plan,
   }
 
-  return { source, lakebed, siteSpec, skeleton, pageSources }
+  return { source, lakebed, siteSpec, skeleton, pageSources, svelteScripts }
 }

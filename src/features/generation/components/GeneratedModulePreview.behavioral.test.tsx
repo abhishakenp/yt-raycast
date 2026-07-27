@@ -95,21 +95,9 @@ vi.mock('@/features/session/services/anonymous-owner-secret', () => ({
 import { defaultPresets } from '@/genui/theme-presets'
 import { GeneratedModulePreview } from './GeneratedModulePreview'
 
-const HTML_DOC = '<!DOCTYPE html><html><body><h1>SFF site</h1></body></html>'
-
 describe('GeneratedModulePreview (real component)', () => {
   afterEach(() => {
     cleanup()
-  })
-
-  it('renders an HTML document source in an iframe via srcDoc', () => {
-    render(<GeneratedModulePreview source={HTML_DOC} sessionId="session-1" />)
-
-    const iframe = screen.getByTitle('Generated website preview')
-    expect(iframe).toBeInstanceOf(HTMLIFrameElement)
-    expect(iframe.getAttribute('srcdoc')).toBe(HTML_DOC)
-    expect(iframe.hasAttribute('src')).toBe(false)
-    expect(screen.queryByTestId('openui-viewer')).toBeNull()
   })
 
   it('passes an explicit hosted session runtime to OpenUI previews', async () => {
@@ -127,18 +115,6 @@ describe('GeneratedModulePreview (real component)', () => {
       scope: 'sessions',
       tenant: 'session-1',
     })
-  })
-
-  it('renders edited HTML fragment previews in an iframe instead of sending them to OpenUI', () => {
-    const fragment =
-      '<h1 class="hero-title">Dreamy Pastel Whisper of Stars</h1>'
-
-    render(<GeneratedModulePreview source={fragment} sessionId="session-1" />)
-
-    const iframe = screen.getByTitle('Generated website preview')
-    expect(iframe).toBeInstanceOf(HTMLIFrameElement)
-    expect(iframe.getAttribute('srcdoc')).toBe(fragment)
-    expect(screen.queryByTestId('openui-viewer')).toBeNull()
   })
 
   it('renders an HTML URL source in an iframe via src', () => {
@@ -191,7 +167,7 @@ describe('GeneratedModulePreview (real component)', () => {
 
     render(
       <GeneratedModulePreview
-        source={HTML_DOC}
+        source='root = Text("OpenUI site")'
         sessionId="session-1"
         themeStyles={themeStyles}
         isDark
@@ -216,7 +192,7 @@ describe('GeneratedModulePreview (real component)', () => {
 
     render(
       <GeneratedModulePreview
-        source={HTML_DOC}
+        source='root = Text("OpenUI site")'
         sessionId="session-1"
         themeStyles={themeStyles}
         isDark={false}
@@ -235,7 +211,7 @@ describe('GeneratedModulePreview (real component)', () => {
   it('records the device mode on the preview container (drives dimension CSS)', () => {
     const { rerender } = render(
       <GeneratedModulePreview
-        source={HTML_DOC}
+        source='root = Text("OpenUI site")'
         sessionId="session-1"
         deviceMode="mobile"
       />,
@@ -246,7 +222,7 @@ describe('GeneratedModulePreview (real component)', () => {
 
     rerender(
       <GeneratedModulePreview
-        source={HTML_DOC}
+        source='root = Text("OpenUI site")'
         sessionId="session-1"
         deviceMode="tablet"
       />,
@@ -256,7 +232,7 @@ describe('GeneratedModulePreview (real component)', () => {
 
     rerender(
       <GeneratedModulePreview
-        source={HTML_DOC}
+        source='root = Text("OpenUI site")'
         sessionId="session-1"
         deviceMode="desktop"
       />,
@@ -352,7 +328,7 @@ describe('GeneratedModulePreview (real component)', () => {
   it('shows editing controls (inspector overlays) when editMode is enabled', () => {
     render(
       <GeneratedModulePreview
-        source={HTML_DOC}
+        source='root = Text("OpenUI site")'
         sessionId="session-1"
         editMode
       />,
@@ -369,7 +345,7 @@ describe('GeneratedModulePreview (real component)', () => {
   it('hides editing controls when editMode is disabled', () => {
     render(
       <GeneratedModulePreview
-        source={HTML_DOC}
+        source='root = Text("OpenUI site")'
         sessionId="session-1"
         editMode={false}
       />,

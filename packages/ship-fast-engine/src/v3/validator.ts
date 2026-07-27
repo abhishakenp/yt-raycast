@@ -1,5 +1,5 @@
-// v3 engine — 7 validation rules over a parsed site-plan.
-import type { MacroType, ParsedSitePlan, Section } from './types.ts'
+// v3 engine — validation rules over a parsed site-plan.
+import type { ParsedSitePlan, Section } from './types.ts'
 import { KIND_NAMES } from './kinds.ts'
 import { getVocabulary, roleFieldOrder } from './vocabulary.ts'
 
@@ -13,15 +13,6 @@ export interface ValidationResult {
   valid: boolean
   errors: ValidationError[]
 }
-
-const MACRO_TYPES: ReadonlySet<MacroType> = new Set([
-  'collection',
-  'cart',
-  'submission',
-  'search',
-  'favorites',
-  'auth',
-])
 
 /** Roles where field-count checking is skipped (no content fields). */
 const EMPTY_ROLES = new Set(['footer'])
@@ -115,24 +106,6 @@ export function validatePlan(
           })
         }
       }
-    }
-  }
-
-  // Rule 5: `+` lines well-formed.
-  for (const op of plan.operations) {
-    if (!MACRO_TYPES.has(op.macroType)) {
-      errors.push({
-        rule: 'plus_malformed',
-        message: `Operation "${op.name}" has invalid macroType "${op.macroType}"`,
-      })
-    }
-  }
-  for (const table of plan.tables) {
-    if (table.fields.length < 1) {
-      errors.push({
-        rule: 'plus_malformed',
-        message: `Table "${table.name}" has no fields`,
-      })
     }
   }
 

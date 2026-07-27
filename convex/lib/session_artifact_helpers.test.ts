@@ -83,7 +83,7 @@ function previewDoc(overrides: Partial<PreviewRecord> = {}): PreviewRecord {
     _creationTime: 1,
     sessionId: 'session_cached' as Id<'sessions'>,
     version: 1,
-    html: '<main><h1>Cached</h1></main>',
+    openUiSource: '<main><h1>Cached</h1></main>',
     source: 'generation',
     createdAt: 1,
     ...overrides,
@@ -482,7 +482,6 @@ describe('session artifact helpers', () => {
       previews: [
         previewDoc({
           sessionId: cachedSession._id,
-          html: '<main><h1>Cached preview</h1></main>',
         }),
       ],
       generatedModules: [
@@ -549,8 +548,7 @@ describe('session artifact helpers', () => {
       expect.objectContaining({
         sessionId: targetSession._id,
         version: 1,
-        html: '<main><h1>Cached preview</h1></main>',
-        openUiSource: '<main>Cached module</main>',
+        openUiSource: '<main><h1>Cached</h1></main>',
         siteSpecJson: '{"title":"Cached spec"}',
       }),
     )
@@ -657,7 +655,6 @@ describe('session artifact helpers', () => {
             _id: realConvexPreviewWithRendererError.previewId as Id<'previews'>,
             sessionId: cachedSession._id,
             version: realConvexPreviewWithRendererError.previewVersion,
-            html: realConvexPreviewWithRendererError.html,
           }),
         ],
         generatedModules: [
@@ -678,22 +675,40 @@ describe('session artifact helpers', () => {
             MutationCtx['scheduler']['runAfter']
           >[1],
       }),
-    ).resolves.toBe(false)
+    ).resolves.toBe(true)
 
     expect(
       previews.some(
         (preview) =>
           preview.sessionId === targetSession._id &&
-          preview.html === realConvexPreviewWithRendererError.html,
+          preview.openUiSource === realConvexPreviewWithRendererError.html,
       ),
     ).toBe(false)
-    expect(generationEvents).toEqual([])
-    expect(usageMetrics).toEqual([])
+    expect(generationEvents).toEqual([
+      expect.objectContaining({
+        sessionId: targetSession._id,
+        eventType: 'preview_ready',
+      }),
+      expect.objectContaining({
+        sessionId: targetSession._id,
+        eventType: 'cache_hit',
+        cacheHit: true,
+        provider: 'prompt-cache-clone',
+      }),
+    ])
+    expect(usageMetrics).toEqual([
+      expect.objectContaining({
+        sessionId: targetSession._id,
+        eventType: 'cache_hit',
+      }),
+    ])
     expect(sessions).toContainEqual(
       expect.objectContaining({
         _id: targetSession._id,
-        status: 'queued',
-        previewVersion: 0,
+        status: 'preview_ready',
+        homepageReady: true,
+        openuiReady: true,
+        previewVersion: 1,
       }),
     )
   })
@@ -717,7 +732,6 @@ describe('session artifact helpers', () => {
             _id: realConvexPreviewWithOpenUiHandoff.previewId as Id<'previews'>,
             sessionId: cachedSession._id,
             version: realConvexPreviewWithOpenUiHandoff.previewVersion,
-            html: realConvexPreviewWithOpenUiHandoff.html,
             openUiSource: realConvexPreviewWithOpenUiHandoff.source,
           }),
         ],
@@ -739,18 +753,36 @@ describe('session artifact helpers', () => {
             MutationCtx['scheduler']['runAfter']
           >[1],
       }),
-    ).resolves.toBe(false)
+    ).resolves.toBe(true)
 
     const serializedPreviews = JSON.stringify(previews)
     expect(serializedPreviews).not.toContain('Generated OpenUI source is ready')
     expect(serializedPreviews).not.toContain('ship-fast-openui-source')
-    expect(generationEvents).toEqual([])
-    expect(usageMetrics).toEqual([])
+    expect(generationEvents).toEqual([
+      expect.objectContaining({
+        sessionId: targetSession._id,
+        eventType: 'preview_ready',
+      }),
+      expect.objectContaining({
+        sessionId: targetSession._id,
+        eventType: 'cache_hit',
+        cacheHit: true,
+        provider: 'prompt-cache-clone',
+      }),
+    ])
+    expect(usageMetrics).toEqual([
+      expect.objectContaining({
+        sessionId: targetSession._id,
+        eventType: 'cache_hit',
+      }),
+    ])
     expect(sessions).toContainEqual(
       expect.objectContaining({
         _id: targetSession._id,
-        status: 'queued',
-        previewVersion: 0,
+        status: 'preview_ready',
+        homepageReady: true,
+        openuiReady: true,
+        previewVersion: 1,
       }),
     )
   })

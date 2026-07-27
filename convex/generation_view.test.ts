@@ -50,7 +50,6 @@ function persistGeneratedPreview(
 ) {
   return t.action(internal.sessions.completeGeneration, {
     sessionId,
-    html: `<html><body><main><h1>${prompt}</h1></main></body></html>`,
     openUiSource: `$page = "Home"\nroot = Text("${prompt}")`,
     siteSpecJson: JSON.stringify({
       projectName: prompt,
@@ -387,7 +386,6 @@ test('inline preview edits patch canonical source artifacts and history restore 
   })
 
   expect(editedPreview?.previewVersion).toBe(2)
-  expect(editedPreview?.html).toContain('Edited dashboard artifact headline')
   // Text edits patch the canonical source (Dashboard renders from it, so an
   // unpatched source makes edits vanish on reload).
   expect(editedView?.homeModule?.source).toContain(
@@ -428,10 +426,6 @@ test('inline preview edits patch canonical source artifacts and history restore 
   })
 
   expect(restoredPreview?.previewVersion).toBe(3)
-  expect(restoredPreview?.html).toContain('Dashboard artifact alignment site')
-  expect(restoredPreview?.html).not.toContain(
-    'Edited dashboard artifact headline',
-  )
   expect(restoredView?.homeModule?.source).toContain(
     'Dashboard artifact alignment site',
   )
@@ -461,7 +455,6 @@ test('inline preview edits patch canonical artifacts even when rendered text nor
 
   await t.action(internal.sessions.completeGeneration, {
     sessionId,
-    html: '<html><body><main><h1>Luxury Car Rental</h1></main></body></html>',
     openUiSource: '$page = "Home"\nroot = Text("Luxury   Car Rental")',
     siteSpecJson: JSON.stringify({
       hero: { headline: 'Luxury   Car Rental' },
@@ -484,11 +477,7 @@ test('inline preview edits patch canonical artifacts even when rendered text nor
   const editedView = await t.query(api.sessions.getGenerationView, {
     lookup: sessionId,
   })
-  const editedPreview = await t.query(api.sessions.getPublicPreview, {
-    lookup: sessionId,
-  })
 
-  expect(editedPreview?.html).toContain('Premium Fleet Rentals')
   // The rendered DOM collapses whitespace ("Luxury Car Rental") but the source
   // keeps the original spacing ("Luxury   Car Rental"). applyPreviewTextEdit
   // uses a whitespace-tolerant fallback, so the source IS patched and the edit
@@ -651,7 +640,6 @@ test('late generation jobs cannot clobber an existing preview', async () => {
     t.action(internal.sessions.completeGeneration, {
       sessionId,
       anonymousOwnerSecret: 'owner-secret',
-      html: '<html><body><main><h1>Late overwrite</h1></main></body></html>',
       siteSpecJson: JSON.stringify({ brand: 'Late overwrite' }),
       openUiSource: '$page = "Home"\nroot = Text("Late overwrite")',
       tasks: [
@@ -676,8 +664,6 @@ test('late generation jobs cannot clobber an existing preview', async () => {
   })
 
   expect(preview?.previewVersion).toBe(1)
-  expect(preview?.html).toContain('Already ready generated site')
-  expect(preview?.html).not.toContain('Late overwrite')
   expect(view?.session.status).toBe('preview_ready')
   expect(view?.homeModule?.source).toContain('Already ready generated site')
   expect(view?.homeModule?.source).not.toContain('Late overwrite')

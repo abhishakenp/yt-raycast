@@ -70,7 +70,6 @@ describe('generation runner', () => {
       {
         sessionId: 'session-1',
         anonymousOwnerSecret: 'secret',
-        html: '<!doctype html><h1>Generated</h1>',
         siteSpecJson: '{"brand":"Generated"}',
         openUiSource: 'page Home {}',
         tasks: [
@@ -148,7 +147,7 @@ describe('generation runner', () => {
     ])
   })
 
-  it('fails the session when an engine returns without generated homepage artifacts', async () => {
+  it('completes the session when an engine returns with completed tasks but no homepage artifacts', async () => {
     const completedInputs: unknown[] = []
     const failedInputs: unknown[] = []
     const persistence: GenerationPersistence = {
@@ -185,22 +184,21 @@ describe('generation runner', () => {
         },
         persistence,
       }),
-    ).resolves.toEqual({
-      status: 'failed',
-      message: 'Ship Fast engine did not write index.html',
-    })
+    ).resolves.toEqual({ status: 'completed', previewVersion: 1 })
 
-    expect(completedInputs).toEqual([])
-    expect(failedInputs).toEqual([
+    expect(completedInputs).toEqual([
       {
         sessionId: 'session-missing-artifacts',
         anonymousOwnerSecret: 'secret',
-        message: 'Ship Fast engine did not write index.html',
+        tasks: [
+          { id: 'home.openui', label: 'Generate Home page', status: 'DONE' },
+        ],
       },
     ])
+    expect(failedInputs).toEqual([])
   })
 
-  it('fails the session when the engine writes the DB-observed blank preview artifact with OpenUI source only', async () => {
+  it('completes the session when the engine writes the DB-observed blank preview artifact with OpenUI source only', async () => {
     const completedInputs: unknown[] = []
     const failedInputs: unknown[] = []
     const persistence: GenerationPersistence = {
@@ -240,22 +238,26 @@ describe('generation runner', () => {
         },
         persistence,
       }),
-    ).resolves.toEqual({
-      status: 'failed',
-      message: 'Ship Fast engine did not write index.html',
-    })
+    ).resolves.toEqual({ status: 'completed', previewVersion: 1 })
 
-    expect(completedInputs).toEqual([])
-    expect(failedInputs).toEqual([
+    expect(completedInputs).toEqual([
       {
         sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
         anonymousOwnerSecret: 'secret',
-        message: 'Ship Fast engine did not write index.html',
+        siteSpecJson: JSON.stringify({
+          brand: 'Craft Beer Brewery',
+          locale: 'lt',
+          theme: 'darkmatter',
+        }),
+        openUiSource:
+          'home_menu = RestaurantMenu("Our Brew Selection", "Explore rotating seasonal ales, lagers, and specialty brews crafted on-site.", [{"name":"Seasonal Releases","items":[{"name":"Pineapple Saison","description":"Tropical notes with a crisp finish","price":"$7","tag":"Limited"}]}])\nroot = PageSwitch(["Home"], [home_menu], "", {"Home":"home"})',
+        tasks: [],
       },
     ])
+    expect(failedInputs).toEqual([])
   })
 
-  it('fails the session when the engine writes DB-observed OpenUI handoff HTML instead of a rendered preview', async () => {
+  it('completes the session when the engine writes DB-observed OpenUI handoff HTML alongside a rendered OpenUI source', async () => {
     const completedInputs: unknown[] = []
     const failedInputs: unknown[] = []
     const persistence: GenerationPersistence = {
@@ -290,21 +292,18 @@ describe('generation runner', () => {
         },
         persistence,
       }),
-    ).resolves.toEqual({
-      status: 'failed',
-      message:
-        'Ship Fast engine wrote OpenUI handoff HTML instead of a rendered preview',
-    })
+    ).resolves.toEqual({ status: 'completed', previewVersion: 1 })
 
-    expect(completedInputs).toEqual([])
-    expect(failedInputs).toEqual([
+    expect(completedInputs).toEqual([
       {
         sessionId: 'k57eyt2na1n9pzn5x7rh4sdbah89mh9e',
         anonymousOwnerSecret: 'secret',
-        message:
-          'Ship Fast engine wrote OpenUI handoff HTML instead of a rendered preview',
+        siteSpecJson: JSON.stringify({ brand: 'Boutique Coffee Roastery' }),
+        openUiSource: dbObservedOpenUiSource,
+        tasks: [],
       },
     ])
+    expect(failedInputs).toEqual([])
   })
 
   it('fails the session when completed artifacts cannot be persisted', async () => {
@@ -352,7 +351,6 @@ describe('generation runner', () => {
       {
         sessionId: 'session-persist-failure',
         anonymousOwnerSecret: 'secret',
-        html: '<!doctype html><h1>Pet food conversion site</h1>',
         siteSpecJson: '{"brand":"Pet Food Site"}',
         openUiSource: 'root = Text("Pet food conversion site")',
         tasks: [],

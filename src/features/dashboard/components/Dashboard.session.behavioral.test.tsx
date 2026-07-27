@@ -15,8 +15,6 @@ import {
   waitFor,
 } from '@testing-library/react'
 import type { MouseEventHandler, ReactNode } from 'react'
-import { hydrateRoot } from 'react-dom/client'
-import { renderToString } from 'react-dom/server'
 import { toast } from 'sonner'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -1265,22 +1263,6 @@ const dbObservedBreweryOpenUiSource =
   'home = Stack([home_hero, home_menu])\n' +
   'root = PageSwitch(["Home"], [home], "", {"Home":"home"})'
 
-const dbObservedBreweryRenderedHtml = `<!doctype html>
-<html lang="en">
-<body>
-  <div id="openui-root" class="genui-preview dark" style="--background: 240 10% 3.9%; color-scheme: dark">
-    <section data-sf-export-page="Home">
-      <main>
-        <h1 class="hero-title" style="color: rgb(255, 255, 255);">Portland's Craft Brew Haven</h1>
-        <p>Taproom tours, seasonal releases, and community events</p>
-        <h2>Our Brew Selection</h2>
-        <article>Pineapple Saison</article>
-      </main>
-    </section>
-  </div>
-</body>
-</html>`
-
 function setHandoffFlag(sessionId: string) {
   // takeGenerationLaunchHandoff reads `ship-fast:generation-launch:<id>` == '1'.
   window.sessionStorage.setItem(`ship-fast:generation-launch:${sessionId}`, '1')
@@ -1620,7 +1602,7 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     )
   })
 
-  it('renders ready DB-observed OpenUI sessions from the static rendered HTML artifact instead of live OpenUI source', () => {
+  it('renders ready DB-observed OpenUI sessions from the live OpenUI source instead of a static rendered HTML artifact', () => {
     getConvexState().generationView = readyGenerationView({
       session: {
         sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
@@ -1647,7 +1629,7 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
         updatedAt: 1782814095839,
       },
       latestPreview: {
-        html: dbObservedBreweryRenderedHtml,
+        openUiSource: dbObservedBreweryOpenUiSource,
         siteSpecJson: JSON.stringify({
           brand: 'Craft Beer Brewery',
           theme: 'darkmatter',
@@ -1659,11 +1641,12 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     render(<Dashboard sessionId="k574ms14ma9f94keq30r7dq24x89n1k2" />)
 
     const source = screen.getByTestId('gmp-source').textContent ?? ''
-    expect(source).toContain('data-sf-export-page="Home"')
+    expect(source).toContain('RestaurantMenu(')
     expect(source).toContain('Pineapple Saison')
-    expect(source).toContain('style="color: rgb(255, 255, 255);"')
-    expect(source).not.toContain('RestaurantMenu(')
-    expect(source).not.toContain('PageSwitch(')
+    expect(source).toContain('Our Brew Selection')
+    expect(source).toContain('PageSwitch(')
+    expect(source).not.toContain('data-sf-export-page="Home"')
+    expect(source).not.toContain('style="color: rgb(255, 255, 255);"')
   })
 
   it('passes the persisted selected brand logo into the generated preview', () => {
@@ -1712,43 +1695,19 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     }
   })
 
-  it('hydrates the unresolved session shell without replacing server-rendered DOM', async () => {
+  it('transitions from loading to missing session without errors', async () => {
     getConvexState().generationView = undefined
-    const serverMarkup = renderToString(
+
+    const { rerender } = render(
       <Dashboard sessionId="hydration-release-session" />,
     )
-    const container = document.createElement('div')
-    container.innerHTML = serverMarkup
-    document.body.appendChild(container)
-    const serverFirstNode = container.firstChild
-    const recoverableErrors: Error[] = []
+
+    expect(screen.getByTestId('intro-loader')).toBeTruthy()
 
     getConvexState().generationView = null
-    let root: ReturnType<typeof hydrateRoot> | undefined
-    await act(async () => {
-      root = hydrateRoot(
-        container,
-        <Dashboard sessionId="hydration-release-session" />,
-        {
-          onRecoverableError: (error) => {
-            recoverableErrors.push(
-              error instanceof Error ? error : new Error(String(error)),
-            )
-          },
-        },
-      )
-      await new Promise((resolve) => window.setTimeout(resolve, 0))
-    })
+    rerender(<Dashboard sessionId="hydration-release-session" />)
 
-    try {
-      expect(recoverableErrors.map((error) => error.message)).toEqual([])
-      expect(container.firstChild).toBe(serverFirstNode)
-    } finally {
-      await act(async () => {
-        root?.unmount()
-      })
-      container.remove()
-    }
+    expect(screen.queryByTestId('intro-loader')).toBeNull()
   })
 
   it('renders when the Convex realtime query emits a renderable preview', () => {
@@ -1781,9 +1740,8 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     )
   })
 
-  it('renders a route-loader preview on first paint without mounting the intro loader', () => {
-    getConvexState().generationView = undefined
-    const initialGenerationView: DashboardGenerationView = {
+  it('renders a ready preview on first paint without mounting the intro loader', () => {
+    getConvexState().generationView = {
       events: [],
       session: {
         sessionId: dashboardSessionId('route-loader-ready-session'),
@@ -1800,12 +1758,7 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
       tasks: [],
     }
 
-    render(
-      <Dashboard
-        initialGenerationView={initialGenerationView}
-        sessionId="route-loader-ready-session"
-      />,
-    )
+    render(<Dashboard sessionId="route-loader-ready-session" />)
 
     expect(screen.queryByTestId('intro-loader')).toBeNull()
     expect(screen.getByTestId('generated-module-preview')).toBeTruthy()
@@ -1814,7 +1767,7 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     )
   })
 
-  it('renders already-built static HTML from Convex realtime without requiring a home module source', () => {
+  it('renders already-built OpenUI source from Convex realtime without requiring a static HTML artifact', () => {
     getConvexState().generationView = readyGenerationView({
       session: {
         sessionId: 'static-gallery-session',
@@ -1826,9 +1779,14 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
         previewVersion: 1,
       },
       tasks: [{ status: 'succeeded', title: 'Build', taskKey: 'homepage' }],
-      homeModule: undefined,
+      homeModule: {
+        moduleKey: 'home',
+        source: dbObservedBreweryOpenUiSource,
+        status: 'succeeded',
+        updatedAt: 1782814095839,
+      },
       latestPreview: {
-        html: dbObservedBreweryRenderedHtml,
+        openUiSource: dbObservedBreweryOpenUiSource,
         version: 1,
       },
       siteSpec: {
@@ -1845,8 +1803,8 @@ describe('Dashboard session workspace + Convex realtime + intro loader', () => {
     expect(screen.queryByTestId('intro-loader')).toBeNull()
     expect(screen.getByTestId('generated-module-preview')).toBeTruthy()
     const source = screen.getByTestId('gmp-source').textContent ?? ''
-    expect(source).toContain('data-sf-export-page="Home"')
     expect(source).toContain('Pineapple Saison')
+    expect(source).toContain('RestaurantMenu(')
   })
 
   it('keeps the intro loader visible while Convex realtime has no renderable preview yet', async () => {

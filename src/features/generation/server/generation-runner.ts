@@ -1,4 +1,3 @@
-import { isUnsafePublicPreviewHtml } from '../../../../convex/lib/openui_error_html'
 import {
   assertCompletedEngineWorkspaceArtifacts,
   createEngineWorkspacePath,
@@ -15,11 +14,11 @@ import type {
   ShipFastEngineAdapterOptions,
 } from './ship-fast-engine-adapter'
 import type { TranslationCacheClient } from '@ship-fast/engine/llm/translation-cache-client.ts'
+import type { PlanCacheClient } from '@ship-fast/engine/v3/plan-cache-client.ts'
 
 export type PersistCompleteGenerationInput = {
   sessionId: string
   anonymousOwnerSecret?: string
-  html: string
   siteSpecJson?: string
   openUiSource?: string
   tasks: EngineWorkspaceTask[]
@@ -49,6 +48,8 @@ export type RunEngineGenerationInput = {
   onEvent?: ShipFastEngineAdapterOptions['onEvent']
   signal?: AbortSignal
   cacheClient?: TranslationCacheClient
+  planCacheClient?: PlanCacheClient
+  promptCacheKey?: string
 }
 
 export type RunEngineGenerationResult =
@@ -94,8 +95,13 @@ const readCompletedWorkspace = (
 ): EngineWorkspaceArtifacts | undefined => {
   try {
     const artifacts = readEngineWorkspaceArtifacts(workspace)
+    // An empty (or non-existent) workspace must not be treated as a completed
+    // run. Previously `readEngineWorkspaceArtifacts` threw when `index.html`
+    // was missing; now that html is out of the generation chain, site-spec.json
+    // is the primary output artifact, so require it before recovering.
+    if (!artifacts.siteSpecJson) return undefined
     assertCompletedEngineWorkspaceArtifacts(artifacts)
-    return isUnsafePublicPreviewHtml(artifacts.html) ? undefined : artifacts
+    return artifacts
   } catch {
     return undefined
   }
@@ -112,6 +118,8 @@ export async function runEngineGeneration({
   onEvent,
   signal: callerSignal,
   cacheClient,
+  planCacheClient,
+  promptCacheKey,
 }: RunEngineGenerationInput): Promise<RunEngineGenerationResult> {
   const abortScope = createGenerationAbortScope(callerSignal)
 
@@ -137,6 +145,8 @@ export async function runEngineGeneration({
             preferredLanguage,
             signal: abortScope.signal,
             cacheClient,
+            planCacheClient,
+            promptCacheKey,
           })
           break
         } catch (error) {
@@ -150,16 +160,9 @@ export async function runEngineGeneration({
       if (!result) throw lastError ?? new Error('Generation failed')
     }
 
-    if (isUnsafePublicPreviewHtml(result.html)) {
-      throw new Error(
-        'Ship Fast engine wrote OpenUI handoff HTML instead of a rendered preview',
-      )
-    }
-
     const persisted = await persistence.completeGeneration({
       sessionId,
       anonymousOwnerSecret,
-      html: result.html,
       siteSpecJson: result.siteSpecJson,
       openUiSource: result.openUiSource,
       tasks: result.tasks,

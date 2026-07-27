@@ -278,6 +278,115 @@ export async function generateText(
   throw last instanceof Error ? last : new Error('generation failed')
 }
 
+/**
+ * Streaming variant of generateText. Calls onLine for each complete line
+ * (newline-delimited) as it arrives from the provider stream, enabling
+ * incremental parsing/compilation. Returns the full accumulated text for
+ * backward compatibility.
+ *
+ * Same retry/backoff logic as generateText. onLine is only called for the
+ * successful attempt (retries restart accumulation).
+ */
+export async function generateTextStream(
+  modelId: string,
+  system: string,
+  user: string,
+  signal: AbortSignal,
+  onLine: (line: string) => void,
+  retries = 4,
+  onRetry?: (attempt: number) => void,
+): Promise<string> {
+  let last: unknown
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    if (signal.aborted) throw new DOMException('aborted', 'AbortError')
+    try {
+      const text = await onceStream(modelId, system, user, signal, onLine)
+      if (text.trim()) {
+        return text
+      }
+      last = new Error('empty model output')
+    } catch (e) {
+      if ((e as { name?: string })?.name === 'AbortError') throw e
+      last = e
+      const msg = String((e as { message?: string })?.message ?? e)
+      if (!RETRYABLE.test(msg)) throw e
+    }
+    if (attempt < retries) {
+      onRetry?.(attempt + 1)
+      await sleep(
+        Math.min(8000, 600 * 2 ** attempt) + Math.floor(Math.random() * 300),
+        signal,
+      )
+    }
+  }
+  throw last instanceof Error ? last : new Error('generation failed')
+}
+
+/**
+ * Like once(), but calls onLine for each complete line as it streams.
+ * Accumulates and returns the full text.
+ */
+async function onceStream(
+  modelId: string,
+  system: string,
+  user: string,
+  signal: AbortSignal,
+  onLine: (line: string) => void,
+): Promise<string> {
+  const ac = new AbortController()
+  const onAbort = () => ac.abort()
+  signal.addEventListener('abort', onAbort, { once: true })
+  try {
+    const provider = getProvider(modelId)
+    const stream =
+      provider === 'talaas'
+        ? talaasChat(modelId, system, user, ac.signal)
+        : chat({
+            adapter: getAdapter(modelId),
+            systemPrompts: [system],
+            messages: [{ role: 'user', content: user }],
+            modelOptions: {
+              ...(supportsReasoningEffort(modelId)
+                ? { reasoning_effort: 'low', include_reasoning: false }
+                : {}),
+              citation_options: 'disabled',
+              top_p: 1,
+            },
+            abortController: ac,
+          })
+    let text = ''
+    let lineBuffer = ''
+    let runError: string | null = null
+    for await (const chunk of stream) {
+      if (chunk.type === 'TEXT_MESSAGE_CONTENT' && chunk.delta) {
+        text += chunk.delta
+        lineBuffer += chunk.delta
+        // Emit complete lines as they arrive
+        let nl: number
+        while ((nl = lineBuffer.indexOf('\n')) !== -1) {
+          const line = lineBuffer.slice(0, nl)
+          lineBuffer = lineBuffer.slice(nl + 1)
+          onLine(line)
+        }
+      } else if (chunk.type === 'RUN_ERROR') {
+        runError = chunk.message ?? 'run error'
+      }
+    }
+    // Flush any remaining partial line
+    if (lineBuffer.length > 0) {
+      onLine(lineBuffer)
+    }
+    if (runError && !text.trim()) throw new Error(runError)
+
+    return text
+  } catch (e) {
+    console.error(e)
+    throw e
+  } finally {
+    signal.removeEventListener('abort', onAbort)
+  }
+}
+
 export async function generateWithTools(
   modelId: string,
   system: string,

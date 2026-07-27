@@ -141,7 +141,7 @@ export const CleaningServiceFooter = defineCapsule({
                   {col.links.map((link) => (
                     <FooterLink
                       key={link}
-                      className="text-sm text-muted-foreground transition-colors hover:text-foreground active:translate-y-px"
+                      className="block w-fit text-sm text-muted-foreground transition-colors hover:text-foreground active:translate-y-px"
                     >
                       {link}
                     </FooterLink>

@@ -581,6 +581,7 @@ const SERVICE: RoleVocabulary[] = [
     fields: [
       f('tagline'),
       fa('columns', COLUMN_ITEMS),
+      fa('socials'),
       f('copyright'),
       f('location'),
     ],

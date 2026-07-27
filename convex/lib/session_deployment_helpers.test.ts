@@ -104,7 +104,8 @@ function previewDoc(overrides: Partial<Doc<'previews'>> = {}): Doc<'previews'> {
     _creationTime: 1,
     sessionId,
     version: 3,
-    html: '<html><body><h1>Ready</h1></body></html>',
+    openUiSource: '<html><body><h1>Ready</h1></body></html>',
+    source: 'generation',
     createdAt: 110,
     ...overrides,
   } as Doc<'previews'>
@@ -525,7 +526,6 @@ describe('session deployment helpers', () => {
       ],
       previews: [
         previewDoc({
-          html: '<!doctype html><html><body><h1>Static Preview</h1></body></html>',
           openUiSource: undefined,
           siteSpecJson: '{"themeName":"vintage-paper"}',
           version: 9,
@@ -537,7 +537,8 @@ describe('session deployment helpers', () => {
           _creationTime: 1,
           sessionId,
           moduleKey: 'home',
-          source: 'root = ShouldNotUseForHtmlSession()',
+          source:
+            '<!doctype html><html><body><h1>Static Home</h1></body></html>',
           status: 'succeeded',
           createdAt: 100,
           updatedAt: 110,
@@ -568,7 +569,6 @@ describe('session deployment helpers', () => {
       ],
       previews: [
         previewDoc({
-          html: '<!doctype html><html><body><h1>Rendered Preview</h1></body></html>',
           openUiSource,
           version: 10,
         }),
@@ -592,8 +592,6 @@ describe('session deployment helpers', () => {
     ).resolves.toMatchObject({
       source: openUiSource,
       sourceKind: 'openui',
-      previewHtml:
-        '<!doctype html><html><body><h1>Rendered Preview</h1></body></html>',
       previewVersion: 10,
     })
   })
@@ -619,7 +617,6 @@ describe('session deployment helpers', () => {
       ],
       previews: [
         previewDoc({
-          html: '<!doctype html><html><body><h1>Stale English brewery preview</h1></body></html>',
           openUiSource: '$page = "Home"\nroot = Text("Original brewery copy")',
           siteSpecJson: undefined,
           version: 10,
@@ -712,7 +709,6 @@ describe('session deployment helpers', () => {
         previewDoc({
           _id: realConvexRendererErrorPreview.previewId as Id<'previews'>,
           sessionId: realConvexRendererErrorPreview.sessionId as Id<'sessions'>,
-          html: realConvexRendererErrorPreview.html,
           openUiSource: undefined,
           version: realConvexRendererErrorPreview.version,
         }),
@@ -740,8 +736,8 @@ describe('session deployment helpers', () => {
       sourceKind: 'openui',
       previewVersion: realConvexRendererErrorPreview.version,
     })
-    expect(result.previewHtml.toLowerCase()).not.toContain('openui-error')
-    expect(result.previewHtml.toLowerCase()).not.toContain('failed to render')
+    expect(result.source.toLowerCase()).not.toContain('openui-error')
+    expect(result.source.toLowerCase()).not.toContain('failed to render')
   })
 
   it('never prepares Lakebed deployment payloads with DB-observed OpenUI handoff HTML', async () => {
@@ -760,7 +756,6 @@ describe('session deployment helpers', () => {
         previewDoc({
           _id: realConvexOpenUiHandoffPreview.previewId as Id<'previews'>,
           sessionId: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
-          html: realConvexOpenUiHandoffPreview.html,
           openUiSource: realConvexOpenUiHandoffPreview.openUiSource,
           version: realConvexOpenUiHandoffPreview.version,
         }),
@@ -788,8 +783,8 @@ describe('session deployment helpers', () => {
       sourceKind: 'openui',
       previewVersion: realConvexOpenUiHandoffPreview.version,
     })
-    expect(result.previewHtml).not.toContain('Generated OpenUI source is ready')
-    expect(result.previewHtml).not.toContain('ship-fast-openui-source')
+    expect(result.source).not.toContain('Generated OpenUI source is ready')
+    expect(result.source).not.toContain('ship-fast-openui-source')
   })
 
   it('records Lakebed deployment metadata without using the local build folder', async () => {
@@ -956,8 +951,16 @@ describe('session deployment helpers', () => {
     const { ctx, inserted } = mutationCtxFor({
       sessions: [sessionDoc({ userId: 'user_1' })],
       previews: [
-        previewDoc({ _id: 'preview_old' as Id<'previews'>, version: 1 }),
-        previewDoc({ _id: 'preview_latest' as Id<'previews'>, version: 4 }),
+        previewDoc({
+          _id: 'preview_old' as Id<'previews'>,
+          version: 1,
+          openUiSource: '<main>OpenUI v1</main>',
+        }),
+        previewDoc({
+          _id: 'preview_latest' as Id<'previews'>,
+          version: 4,
+          openUiSource: '<main>OpenUI v4</main>',
+        }),
       ],
     })
 
@@ -1012,7 +1015,9 @@ describe('session deployment helpers', () => {
     })
     const { ctx, patches } = mutationCtxFor({
       sessions: [sessionDoc({ userId: 'user_1' })],
-      previews: [previewDoc({ version: 5 })],
+      previews: [
+        previewDoc({ version: 5, openUiSource: '<main>OpenUI</main>' }),
+      ],
       deployments: [existingDeployment],
     })
 
@@ -1040,7 +1045,7 @@ describe('session deployment helpers', () => {
   it('publishes confirmed private sessions and rejects not-ready, missing-preview, and conflicting-slug publishes', async () => {
     const privatePublish = mutationCtxFor({
       sessions: [sessionDoc({ userId: 'user_1', isPrivate: true })],
-      previews: [previewDoc()],
+      previews: [previewDoc({ openUiSource: '<main>OpenUI</main>' })],
     })
 
     await expect(
@@ -1086,7 +1091,7 @@ describe('session deployment helpers', () => {
       publishSessionPreview(
         mutationCtxFor({
           sessions: [sessionDoc({ userId: 'user_1' })],
-          previews: [previewDoc()],
+          previews: [previewDoc({ openUiSource: '<main>OpenUI</main>' })],
           deployments: [
             deploymentDoc({
               _id: 'deployment_other' as Id<'deployments'>,
@@ -1105,7 +1110,7 @@ describe('session deployment helpers', () => {
   it('rejects publishing an empty latest preview as a ready public deployment', async () => {
     const { ctx, inserted } = mutationCtxFor({
       sessions: [sessionDoc({ userId: 'user_1' })],
-      previews: [previewDoc({ html: '', version: 11 })],
+      previews: [previewDoc({ openUiSource: '', version: 11 })],
     })
 
     await expect(
@@ -1141,8 +1146,8 @@ describe('session deployment helpers', () => {
         previewDoc({
           _id: realConvexRendererErrorPreview.previewId as Id<'previews'>,
           sessionId: realConvexRendererErrorPreview.sessionId as Id<'sessions'>,
-          html: realConvexRendererErrorPreview.html,
           version: realConvexRendererErrorPreview.version,
+          openUiSource: realConvexRendererErrorPreview.html,
         }),
       ],
     })
@@ -1180,8 +1185,8 @@ describe('session deployment helpers', () => {
         previewDoc({
           _id: realConvexOpenUiHandoffPreview.previewId as Id<'previews'>,
           sessionId: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
-          html: realConvexOpenUiHandoffPreview.html,
           version: realConvexOpenUiHandoffPreview.version,
+          openUiSource: realConvexOpenUiHandoffPreview.html,
         }),
       ],
     })
@@ -1310,7 +1315,9 @@ describe('session deployment helpers', () => {
       sessions: [
         sessionDoc({ userId: 'user_1', deploymentSlug: reservedSlug }),
       ],
-      previews: [previewDoc({ version: 6 })],
+      previews: [
+        previewDoc({ version: 6, openUiSource: '<main>OpenUI</main>' }),
+      ],
       deployments: [collidingDeployment],
     })
 
@@ -1336,7 +1343,9 @@ describe('session deployment helpers', () => {
     const buildRef = 'internal.export_artifacts.build' as unknown
     const { ctx, scheduled, inserted } = mutationCtxFor({
       sessions: [sessionDoc({ userId: 'user_1' })],
-      previews: [previewDoc({ version: 7 })],
+      previews: [
+        previewDoc({ version: 7, openUiSource: '<main>OpenUI</main>' }),
+      ],
     })
 
     await publishSessionPreview(ctx, {
@@ -1371,7 +1380,9 @@ describe('session deployment helpers', () => {
   it('does not queue artifact build when buildExportArtifact is omitted', async () => {
     const { ctx, scheduled } = mutationCtxFor({
       sessions: [sessionDoc({ userId: 'user_1' })],
-      previews: [previewDoc({ version: 8 })],
+      previews: [
+        previewDoc({ version: 8, openUiSource: '<main>OpenUI</main>' }),
+      ],
     })
 
     await publishSessionPreview(ctx, {

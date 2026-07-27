@@ -62,52 +62,6 @@ menu Autumn Menu|Three courses from Chef Marco|Starters>Roasted Beet Tartare~Cha
     expect(plan.pages).toEqual(['menu', 'reservations', 'contact'])
   })
 
-  it('parses + table unseeded', () => {
-    const plan = parseSitePlan(
-      'healthcare\nfooter\n+ pets name species breed ownerName birthDate',
-    )
-    expect(plan.tables).toHaveLength(1)
-    expect(plan.tables[0]).toEqual({
-      name: 'pets',
-      fields: ['name', 'species', 'breed', 'ownerName', 'birthDate'],
-      seeded: false,
-    })
-  })
-
-  it('parses + table seeded (trailing +)', () => {
-    const plan = parseSitePlan(
-      'healthcare\nfooter\n+ vaccinations petName vaccine date nextDue +',
-    )
-    expect(plan.tables[0]).toEqual({
-      name: 'vaccinations',
-      fields: ['petName', 'vaccine', 'date', 'nextDue'],
-      seeded: true,
-    })
-  })
-
-  it('parses + operation with key', () => {
-    const plan = parseSitePlan(
-      'healthcare\nfooter\n+ markVaccinated favorites vaccinations petName',
-    )
-    expect(plan.operations[0]).toEqual({
-      name: 'markVaccinated',
-      macroType: 'favorites',
-      table: 'vaccinations',
-      key: 'petName',
-    })
-  })
-
-  it('parses + operation without key', () => {
-    const plan = parseSitePlan(
-      'healthcare\nfooter\n+ scheduleAppointment submission reservations',
-    )
-    expect(plan.operations[0]).toEqual({
-      name: 'scheduleAppointment',
-      macroType: 'submission',
-      table: 'reservations',
-    })
-  })
-
   it('parses footer-only section (no content)', () => {
     const section = parseSectionLine('footer')
     expect(section).toEqual({ role: 'footer', content: [] })
@@ -128,8 +82,6 @@ footer`
     expect(plan.kind).toBe('')
     expect(plan.sections).toEqual([])
     expect(plan.pages).toEqual([])
-    expect(plan.tables).toEqual([])
-    expect(plan.operations).toEqual([])
   })
 
   it('ignores blank lines and comments', () => {
@@ -219,14 +171,23 @@ footer`
     expect(plan.sections).toHaveLength(2)
   })
 
-  it('parses @freeform blocks with state, actions, and layout', () => {
+  it('parses @svelte blocks with script and markup', () => {
     const raw = `saas
 hero Counter App|The simplest way to count things
-@freeform counterdemo
-state: count=0 step=1
-actions: inc→count+1, dec→count-1, reset→count=0
-layout: <div class="flex flex-col items-center gap-8"><h1>{count}</h1><button onclick="inc">+</button></div>
-@endfreeform
+@svelte counterdemo
+<script>
+  let count = 0
+  let step = 1
+  function inc() { count += step }
+  function dec() { count -= step }
+  function reset() { count = 0 }
+</script>
+
+<div class="flex flex-col items-center gap-8">
+  <h1>{count}</h1>
+  <button on:click={inc}>+</button>
+</div>
+@endsvelte
 @pages features
 @brand Counter`
     const plan = parseSitePlan(raw)
@@ -234,60 +195,59 @@ layout: <div class="flex flex-col items-center gap-8"><h1>{count}</h1><button on
     expect(plan.sections).toHaveLength(2)
     expect(plan.sections[0].role).toBe('hero')
     expect(plan.sections[1].role).toBe('counterdemo')
-    expect(plan.sections[1].freeform).toBeDefined()
-    expect(plan.sections[1].freeform!.state).toEqual({ count: '0', step: '1' })
-    expect(plan.sections[1].freeform!.actions).toEqual({
-      inc: 'count+1',
-      dec: 'count-1',
-      reset: 'count=0',
-    })
-    expect(plan.sections[1].freeform!.layout).toContain('{count}')
-    expect(plan.sections[1].freeform!.layout).toContain('onclick="inc"')
+    expect(plan.sections[1].svelte).toBeDefined()
+    expect(plan.sections[1].svelte!.source).toContain('let count = 0')
+    expect(plan.sections[1].svelte!.source).toContain('on:click={inc}')
+    expect(plan.sections[1].svelte!.source).toContain('{count}')
   })
 
-  it('parses @freeform block with multi-line layout', () => {
+  it('parses @svelte block with multi-line source', () => {
     const raw = `saas
 hero Test
-@freeform widget
-state: value=0
-actions: add→value+1
-layout: <div class="p-4">
-<span>{value}</span>
-<button onclick="add">Add</button>
+@svelte widget
+<script>
+  let value = 0
+  function add() { value++ }
+</script>
+
+<div class="p-4">
+  <span>{value}</span>
+  <button on:click={add}>Add</button>
 </div>
-@endfreeform`
+@endsvelte`
     const plan = parseSitePlan(raw)
-    expect(plan.sections[1].freeform!.layout).toContain('\n')
-    expect(plan.sections[1].freeform!.layout).toContain('<button')
+    expect(plan.sections[1].svelte!.source).toContain('\n')
+    expect(plan.sections[1].svelte!.source).toContain('<button')
   })
 
-  it('handles @freeform block with no state or actions', () => {
+  it('handles @svelte block with markup only (no script)', () => {
     const raw = `saas
 hero Test
-@freeform static
-layout: <div class="p-8">Hello world</div>
-@endfreeform`
+@svelte static
+<div class="p-8">Hello world</div>
+@endsvelte`
     const plan = parseSitePlan(raw)
-    expect(plan.sections[1].freeform).toBeDefined()
-    expect(plan.sections[1].freeform!.state).toEqual({})
-    expect(plan.sections[1].freeform!.actions).toEqual({})
-    expect(plan.sections[1].freeform!.layout).toContain('Hello world')
+    expect(plan.sections[1].svelte).toBeDefined()
+    expect(plan.sections[1].svelte!.source).toContain('Hello world')
   })
 
   it('skips @type line and parses kind correctly', () => {
     const raw = `@type app
 marketing
 hero My App|A great app
-@freeform counterdemo
-state: count=0
-actions: inc→count+1
-layout: <div>{count}</div>
-@endfreeform`
+@svelte counterdemo
+<script>
+  let count = 0
+  function inc() { count++ }
+</script>
+
+<div>{count}</div>
+@endsvelte`
     const plan = parseSitePlan(raw)
     expect(plan.kind).toBe('marketing')
     expect(plan.sections).toHaveLength(2)
     expect(plan.sections[1].role).toBe('counterdemo')
-    expect(plan.sections[1].freeform).toBeDefined()
+    expect(plan.sections[1].svelte).toBeDefined()
   })
 
   it('skips @type website line', () => {
