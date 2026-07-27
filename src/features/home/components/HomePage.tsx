@@ -148,7 +148,6 @@ export const HomePage = () => {
     submitPrompt,
   } = usePromptHomeController()
   const [designRefOpen, setDesignRefOpen] = useState(false)
-  const [engineVersion, setEngineVersion] = useState<'v1' | 'v2' | 'v3'>('v1')
   const [privateModalOpen, setPrivateModalOpen] = useState(false)
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
   const [placeholderLength, setPlaceholderLength] = useState(0)
@@ -195,10 +194,8 @@ export const HomePage = () => {
       designReferenceUrls,
       designReferenceNotes,
       cloneUrl: designReferenceUrls[0],
-      engineVersion,
     })
   }, [
-    engineVersion,
     generationDraftVersion,
     preferredLanguage,
     prompt,
@@ -287,13 +284,12 @@ export const HomePage = () => {
       designReferenceUrls,
       designReferenceNotes,
       cloneUrl: designReferenceUrls[0],
-      engineVersion,
     })
   }
 
   const handleExamplePrompt = (value: string) => {
     selectExamplePrompt(value)
-    void submitPrompt({ prompt: value, engineVersion })
+    void submitPrompt({ prompt: value })
   }
 
   const handlePromptKeyDown = (
@@ -559,34 +555,6 @@ export const HomePage = () => {
                               >
                                 Layout inspiration
                               </label>
-                            </div>
-                            */}
-                            {/* Engine version v1/v2/v3 selector — hidden for now
-                            <div
-                              className="flex shrink-0 items-center gap-1 rounded-full border border-white/15 bg-white/[0.06] p-0.5"
-                              role="group"
-                              aria-label="Engine version"
-                            >
-                              {(['v1', 'v2', 'v3'] as const).map((ver) => (
-                                <button
-                                  key={ver}
-                                  type="button"
-                                  onClick={() => setEngineVersion(ver)}
-                                  className={cn(
-                                    'rounded-full px-3 py-1 text-xs font-semibold transition-all duration-200',
-                                    engineVersion === ver
-                                      ? 'bg-[linear-gradient(135deg,#6dfbff_0%,#25dff5_45%,#38a8ff_100%)] text-[#00121a] shadow-[0_0_12px_rgba(38,231,255,0.3)]'
-                                      : 'text-[rgba(219,237,255,0.6)] hover:text-[rgba(219,237,255,0.9)]',
-                                  )}
-                                  aria-pressed={engineVersion === ver}
-                                >
-                                  {ver === 'v1'
-                                    ? 'v1'
-                                    : ver === 'v2'
-                                      ? 'v2'
-                                      : 'v3'}
-                                </button>
-                              ))}
                             </div>
                             */}
                           </div>

@@ -44,7 +44,6 @@ async function createReadySession(
 
   await t.mutation(internal.sessions.completeGenerationInternal, {
     sessionId: created.sessionId,
-    html: '<html><body><main><h1>Export entitlement</h1></main></body></html>',
     openUiSource: '$page = "Home"\nroot = Text("Export entitlement")',
     siteSpecJson: JSON.stringify({
       projectName: 'Export entitlement',

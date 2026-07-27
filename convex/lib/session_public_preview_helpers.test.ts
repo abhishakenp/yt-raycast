@@ -53,7 +53,7 @@ function previewDoc(
     _creationTime: version,
     sessionId,
     version,
-    html: `<main>Preview ${version}</main>`,
+    openUiSource: `<main>Preview ${version}</main>`,
     createdAt: version,
     source: 'generation',
     ...overrides,
@@ -67,6 +67,7 @@ const realConvexPreviewWithRendererError = {
   previewVersion: 1,
   title: 'Nyx',
   html: '<!doctype html><html lang="en"><head><title>Nyx</title></head><body><div id="openui-root"><div class="openui-error">Failed to render: te is not a function</div></div></body></html>',
+  openUiSource: '$page = "Home"\nroot = Text("Nyx")',
 } as const
 
 const realConvexPreviewWithOpenUiHandoff = {
@@ -77,6 +78,8 @@ const realConvexPreviewWithOpenUiHandoff = {
   status: 'preview_ready',
   previewVersion: 1,
   html: '<!DOCTYPE html><html lang="en"><head><title>Boutique Coffee Roastery - Preview</title></head><body><main id="openui-root" data-openui-ready="source"><section><p>Generated OpenUI source is ready.</p><h1>Boutique Coffee Roastery</h1><p>The interactive source is available for export and deployment.</p></section></main><script type="application/json" id="ship-fast-openui-source">"home_hero = EcommerceHero(\\"Boutique Coffee Roastery\\")"</script></body></html>',
+  openUiSource:
+    'home_hero = EcommerceHero("Boutique Coffee Roastery", "Crafted for Connoisseurs", "Subscribe for fresh beans delivered to your door")\nroot = PageSwitch(["Home"], [home_hero], "", {"Home":"home"})',
 } as const
 
 function ctxFor(input: Partial<Record<TableName, Row[]>>) {
@@ -159,7 +162,7 @@ describe('session public preview helpers', () => {
       slug: undefined,
       status: 'preview_ready',
       previewVersion: 2,
-      html: '<main>Preview 2</main>',
+      openUiSource: '<main>Preview 2</main>',
     })
   })
 
@@ -178,7 +181,7 @@ describe('session public preview helpers', () => {
       slug: 'public-preview',
       status: 'preview_ready',
       previewVersion: 1,
-      html: '<main>Preview 1</main>',
+      openUiSource: '<main>Preview 1</main>',
     })
   })
 
@@ -207,7 +210,7 @@ describe('session public preview helpers', () => {
       slug: undefined,
       status: 'streaming',
       previewVersion: 0,
-      html: undefined,
+      openUiSource: undefined,
     })
   })
 
@@ -228,7 +231,7 @@ describe('session public preview helpers', () => {
             {
               sessionId:
                 realConvexPreviewWithRendererError.sessionId as Id<'sessions'>,
-              html: realConvexPreviewWithRendererError.html,
+              openUiSource: realConvexPreviewWithRendererError.openUiSource,
             },
           ),
         ],
@@ -238,8 +241,10 @@ describe('session public preview helpers', () => {
 
     expect(result).not.toBeNull()
     expect(result?.status).toBe('preview_ready')
-    expect(result?.html?.toLowerCase()).not.toContain('openui-error')
-    expect(result?.html?.toLowerCase()).not.toContain('failed to render')
+    expect(result?.openUiSource?.toLowerCase()).not.toContain('openui-error')
+    expect(result?.openUiSource?.toLowerCase()).not.toContain(
+      'failed to render',
+    )
   })
 
   it('never exposes a preview_ready stored preview that contains DB-observed OpenUI handoff HTML', async () => {
@@ -260,7 +265,7 @@ describe('session public preview helpers', () => {
             {
               sessionId:
                 realConvexPreviewWithOpenUiHandoff.sessionId as Id<'sessions'>,
-              html: realConvexPreviewWithOpenUiHandoff.html,
+              openUiSource: realConvexPreviewWithOpenUiHandoff.openUiSource,
             },
           ),
         ],
@@ -270,9 +275,8 @@ describe('session public preview helpers', () => {
 
     expect(result).not.toBeNull()
     expect(result?.status).toBe('preview_ready')
-    const html = result?.html ?? ''
-    expect(html).not.toContain('Generated OpenUI source is ready')
-    expect(html).not.toContain('ship-fast-openui-source')
-    expect(html).not.toContain('Boutique Coffee Roastery')
+    const openUiSource = result?.openUiSource ?? ''
+    expect(openUiSource).not.toContain('Generated OpenUI source is ready')
+    expect(openUiSource).not.toContain('ship-fast-openui-source')
   })
 })

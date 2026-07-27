@@ -77,7 +77,7 @@ function previewDoc(overrides: Partial<PreviewRecord> = {}): PreviewRecord {
     _creationTime: 1,
     sessionId,
     version: 3,
-    html: '<main>Gallery preview</main>',
+    openUiSource: '<main>Gallery preview</main>',
     source: 'generation',
     createdAt: 100,
     ...overrides,
@@ -302,7 +302,7 @@ describe('loadPublicGalleryArtifacts', () => {
 
     await expect(loadPublicGalleryArtifacts(ctx, sessionId)).resolves.toEqual({
       preview: expect.objectContaining({
-        html: '<main>Gallery preview</main>',
+        openUiSource: '<main>Gallery preview</main>',
       }),
       homeModule: null,
       siteSpec: expect.objectContaining({ specJson: '{"brand":"Gallery"}' }),
@@ -329,7 +329,6 @@ describe('serializePublicGallerySession', () => {
       }),
       {
         preview: previewDoc({
-          html: '<main><h1>Stale brewery preview</h1></main>',
           openUiSource: 'root = Text("Original brewery headline")',
         }),
         homeModule: generatedModuleDoc({
@@ -420,17 +419,17 @@ describe('listPublicGallerySessions', () => {
         previewDoc({
           _id: 'preview_analytics' as Id<'previews'>,
           sessionId: analyticsSessionId,
-          html: '<main>Analytics</main>',
+          openUiSource: 'root = Text("Analytics")',
         }),
         previewDoc({
           _id: 'preview_blog' as Id<'previews'>,
           sessionId: blogSessionId,
-          html: '<main>Blog</main>',
+          openUiSource: 'root = Text("Blog")',
         }),
         previewDoc({
           _id: 'preview_service' as Id<'previews'>,
           sessionId: serviceSessionId,
-          html: '<main>Service</main>',
+          openUiSource: 'root = Text("Service")',
         }),
       ],
     })
@@ -492,14 +491,17 @@ describe('listPublicGallerySessions', () => {
         previewDoc({
           _id: 'preview_collect_1' as Id<'previews'>,
           sessionId: firstSessionId,
+          openUiSource: 'root = Text("SaaS analytics")',
         }),
         previewDoc({
           _id: 'preview_collect_2' as Id<'previews'>,
           sessionId: secondSessionId,
+          openUiSource: 'root = Text("Blog publication")',
         }),
         previewDoc({
           _id: 'preview_collect_3' as Id<'previews'>,
           sessionId: thirdSessionId,
+          openUiSource: 'root = Text("Local service")',
         }),
       ],
     })
@@ -573,14 +575,19 @@ describe('listPublicGallerySessions', () => {
         }),
       ],
       previews: [
-        previewDoc({ sessionId: analyticsSessionId }),
+        previewDoc({
+          sessionId: analyticsSessionId,
+          openUiSource: 'root = Text("SaaS analytics platform")',
+        }),
         previewDoc({
           _id: 'preview_dashboard' as Id<'previews'>,
           sessionId: dashboardSessionId,
+          openUiSource: 'root = Text("AI dashboard software")',
         }),
         previewDoc({
           _id: 'preview_blog' as Id<'previews'>,
           sessionId: blogSessionId,
+          openUiSource: 'root = Text("Blog publication")',
         }),
       ],
     })
@@ -621,7 +628,6 @@ describe('listPublicGallerySessions', () => {
       previewDoc({
         _id: `preview_translated_${index}` as Id<'previews'>,
         sessionId: session._id,
-        html: '<main>Stale English preview</main>',
         openUiSource: 'root = Text("Launch headline")',
       }),
     )
@@ -729,7 +735,6 @@ describe('listPublicGallerySessions', () => {
           _id: realConvexRendererErrorGalleryPreview.previewId as Id<'previews'>,
           sessionId: brokenSessionId,
           version: realConvexRendererErrorGalleryPreview.previewVersion,
-          html: realConvexRendererErrorGalleryPreview.html,
         }),
       ],
     })
@@ -798,7 +803,6 @@ describe('listPublicGallerySessions', () => {
           _id: realConvexOpenUiHandoffGalleryPreview.previewId as Id<'previews'>,
           sessionId: handoffSessionId,
           version: realConvexOpenUiHandoffGalleryPreview.previewVersion,
-          html: realConvexOpenUiHandoffGalleryPreview.html,
         }),
       ],
       generatedModules: [
@@ -843,7 +847,6 @@ describe('loadPublicGallerySession', () => {
       loadPublicGallerySession(ctx, sessionId),
     ).resolves.toMatchObject({
       sessionId,
-      html: null,
       moduleSource: '$page = "Home"',
       siteSpecJson: '{"brand":"Gallery"}',
     })
@@ -896,7 +899,6 @@ describe('loadPublicGallerySession', () => {
           _id: realConvexRendererErrorGalleryPreview.previewId as Id<'previews'>,
           sessionId: brokenSessionId,
           version: realConvexRendererErrorGalleryPreview.previewVersion,
-          html: realConvexRendererErrorGalleryPreview.html,
         }),
       ],
     })
@@ -940,13 +942,12 @@ describe('listOwnedGallerySessions', () => {
           _id: realConvexRendererErrorGalleryPreview.previewId as Id<'previews'>,
           sessionId: brokenSessionId,
           version: realConvexRendererErrorGalleryPreview.previewVersion,
-          html: realConvexRendererErrorGalleryPreview.html,
         }),
         previewDoc({
           _id: 'preview_owned_good' as Id<'previews'>,
           sessionId: goodSessionId,
           version: 1,
-          html: '<main>Coffee shop</main>',
+          openUiSource: '<main>Coffee shop</main>',
         }),
       ],
     }) as unknown as QueryCtx
@@ -1063,7 +1064,6 @@ describe('serializePublicGallerySession', () => {
       updatedAt: 100,
       elapsed: 123,
       cost: 0,
-      html: '<main>Gallery preview</main>',
       moduleSource: '$page = "Home"',
       siteSpecJson: '{"legacy":"Gallery"}',
       readiness: {
@@ -1112,7 +1112,6 @@ describe('serializePublicGallerySession', () => {
           sessionId:
             realConvexOpenUiHandoffGalleryPreview.sessionId as Id<'sessions'>,
           version: realConvexOpenUiHandoffGalleryPreview.previewVersion,
-          html: realConvexOpenUiHandoffGalleryPreview.html,
         }),
         homeModule: generatedModuleDoc({
           sessionId:
@@ -1127,7 +1126,6 @@ describe('serializePublicGallerySession', () => {
       },
     )
 
-    expect(result.html).toBeNull()
     expect(result.moduleSource).toBe(
       realConvexOpenUiHandoffGalleryPreview.moduleSource,
     )
@@ -1159,7 +1157,6 @@ describe('serializePublicGallerySession', () => {
         previewDoc({
           sessionId: editedSessionId,
           version: 1,
-          html: '<main><h1>Stale preview before edits</h1></main>',
           openUiSource: source,
         }),
       ],

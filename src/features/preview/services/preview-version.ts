@@ -12,7 +12,6 @@ export type PreviewSource = (typeof previewSourceValues)[number]
 
 export type PreviewVersion = {
   version: number
-  html: string
   source: PreviewSource
   createdAt: number
 }
@@ -40,7 +39,6 @@ export function getCurrentPreview(
 export function appendPreviewVersion(
   state: PreviewState,
   input: {
-    html: string
     source: PreviewSource
     createdAt: number
   },
@@ -53,7 +51,6 @@ export function appendPreviewVersion(
       ...state.versions,
       {
         version: nextVersion,
-        html: input.html,
         source: input.source,
         createdAt: input.createdAt,
       },
@@ -72,7 +69,6 @@ export function restorePreviewVersion(
 
   return preview
     ? appendPreviewVersion(state, {
-        html: preview.html,
         source: 'history_restore',
         createdAt,
       })

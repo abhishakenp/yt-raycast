@@ -67,7 +67,6 @@ async function createReadySession(
     await ctx.db.insert('previews', {
       sessionId,
       version: 1,
-      html: HTML_SOURCE,
       openUiSource: source,
       siteSpecJson: JSON.stringify({ hero: { headline: SOURCE_TEXT } }),
       createdAt: now,

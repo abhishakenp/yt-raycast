@@ -19,7 +19,8 @@ const realReadyLakebedPreview = {
   sessionId: 'k574ms14ma9f94keq30r7dq24x89n1k2',
   slug: 'a-craft-beer-brewery',
   status: 'preview_ready',
-  html: '<!DOCTYPE html><html lang="en"><head><title>Craft Beer Brewery - Preview</title><meta name="description" content="Brewery" /><meta property="og:site_name" content="Craft Beer Brewery" /></head><body><main id="openui-root" data-openui-ready="source"><h1>Craft Beer Brewery</h1><p>Portland&apos;s Craft Brew Haven</p></main></body></html>',
+  openUiSource:
+    '<!DOCTYPE html><html lang="en"><head><title>Craft Beer Brewery - Preview</title><meta name="description" content="Brewery" /><meta property="og:site_name" content="Craft Beer Brewery" /></head><body><main id="openui-root" data-openui-ready="source"><h1>Craft Beer Brewery</h1><p>Portland&apos;s Craft Brew Haven</p></main></body></html>',
 }
 
 const realOpenUiHandoffPreview = {
@@ -27,7 +28,8 @@ const realOpenUiHandoffPreview = {
   sessionId: 'k57eyt2na1n9pzn5x7rh4sdbah89mh9e',
   slug: 'a-boutique-coffee-roastery',
   status: 'preview_ready',
-  html: '<!DOCTYPE html><html lang="en"><head><title>Boutique Coffee Roastery - Preview</title><meta name="description" content="Boutique Coffee Roastery" /></head><body><main id="openui-root" data-openui-ready="source"><section><p>Generated OpenUI source is ready.</p><h1>Boutique Coffee Roastery</h1><p>The interactive source is available for export and deployment.</p></section></main><script type="application/json" id="ship-fast-openui-source">"home_hero = EcommerceHero(\\"Boutique Coffee Roastery\\")"</script></body></html>',
+  openUiSource:
+    '<!DOCTYPE html><html lang="en"><head><title>Boutique Coffee Roastery - Preview</title><meta name="description" content="Boutique Coffee Roastery" /></head><body><main id="openui-root" data-openui-ready="source"><section><p>Generated OpenUI source is ready.</p><h1>Boutique Coffee Roastery</h1><p>The interactive source is available for export and deployment.</p></section></main><script type="application/json" id="ship-fast-openui-source">"home_hero = EcommerceHero(\\"Boutique Coffee Roastery\\")"</script></body></html>',
 }
 
 const realFailedLakebedDeployment = {
@@ -112,7 +114,8 @@ describe('public metadata responses', () => {
         }
         return {
           previewVersion: 4,
-          html: '<html><head><title>Atlas Notes</title><meta name="description" content="Shared launch docs for operators."></head><body><h1>Atlas</h1></body></html>',
+          openUiSource:
+            '<html><head><title>Atlas Notes</title><meta name="description" content="Shared launch docs for operators."></head><body><h1>Atlas</h1></body></html>',
         }
       },
     }
@@ -145,7 +148,8 @@ describe('public metadata responses', () => {
         }
         return {
           previewVersion: 2,
-          html: '<html><head><title>Atlas</title></head><body></body></html>',
+          openUiSource:
+            '<html><head><title>Atlas</title></head><body></body></html>',
         }
       },
     }
@@ -219,7 +223,8 @@ describe('public metadata responses', () => {
         if ('slug' in args) return realFailedLakebedDeployment
         return {
           previewVersion: 1,
-          html: '<html><head><title>Gov Site</title></head><body>Hindi government site</body></html>',
+          openUiSource:
+            '<html><head><title>Gov Site</title></head><body>Hindi government site</body></html>',
         }
       },
     }
@@ -247,7 +252,7 @@ describe('public metadata responses', () => {
           sessionId: realReadyLakebedDeployment.sessionId,
           slug: realReadyLakebedDeployment.slug,
           status: 'preview_ready',
-          html: '',
+          openUiSource: '',
         }
       },
     }
@@ -272,8 +277,8 @@ describe('public metadata responses', () => {
           sessionId: realReadyLakebedDeployment.sessionId,
           slug: realReadyLakebedDeployment.slug,
           status: 'preview_ready',
-          html: {
-            body: realReadyLakebedPreview.html,
+          openUiSource: {
+            body: realReadyLakebedPreview.openUiSource,
             source: 'DB-observed preview row was not serialized as a string',
           },
         }
@@ -304,7 +309,8 @@ describe('public metadata responses', () => {
           sessionId: realReadyLakebedDeployment.sessionId,
           slug: realReadyLakebedDeployment.slug,
           status: 'preview_ready',
-          html: '<!doctype html><html><head><title>Broken</title></head><body><div class="openui-error">Failed to render: te is not a function</div></body></html>',
+          openUiSource:
+            '<!doctype html><html><head><title>Broken</title></head><body><div class="openui-error">Failed to render: te is not a function</div></body></html>',
         }
       },
     }
@@ -359,7 +365,8 @@ describe('public metadata responses', () => {
         if ('slug' in args) return realReadyLakebedDeployment
         return {
           ...realOpenUiHandoffPreview,
-          html: '<!doctype html><html><head><title>Wrong Session</title><meta name="description" content="Coffee roastery"></head><body><h1>Boutique Coffee Roastery</h1></body></html>',
+          openUiSource:
+            '<!doctype html><html><head><title>Wrong Session</title><meta name="description" content="Coffee roastery"></head><body><h1>Boutique Coffee Roastery</h1></body></html>',
         }
       },
     }
@@ -393,7 +400,8 @@ describe('public metadata responses', () => {
           sessionId: realReadyLakebedDeployment.sessionId,
           slug: realReadyLakebedDeployment.slug,
           status: 'preview_ready',
-          html: '<!doctype html><html><head><title>Unpublished</title><meta name="description" content="Unpublished edit"></head><body><h1>Unpublished edit</h1></body></html>',
+          openUiSource:
+            '<!doctype html><html><head><title>Unpublished</title><meta name="description" content="Unpublished edit"></head><body><h1>Unpublished edit</h1></body></html>',
         }
       },
     }

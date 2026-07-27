@@ -312,7 +312,6 @@ export type CreateGenerationSessionInput = {
 }
 
 export type CreateGenerationSessionReferences = {
-  startGeneration: ScheduledFunctionReference
   sendOperationalNotification: ScheduledFunctionReference
   deleteDraftSessionIfStillDraft: ScheduledFunctionReference
 }
@@ -556,12 +555,8 @@ export async function createGenerationSession(
     }
   }
 
-  const generationArgs =
-    args.anonymousOwnerSecret === undefined
-      ? { sessionId }
-      : { sessionId, anonymousOwnerSecret: args.anonymousOwnerSecret }
-
-  await ctx.scheduler.runAfter(0, references.startGeneration, generationArgs)
+  // Generation is now kicked off by the VPS API route after session
+  // admission — Convex no longer schedules a generation action.
 
   return {
     sessionId,

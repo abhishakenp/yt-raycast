@@ -44,7 +44,6 @@ async function createReadySession(
 
   await t.action(internal.sessions.completeGeneration, {
     sessionId,
-    html: `<html><body><main><h1>${prompt}</h1></main></body></html>`,
     siteSpecJson: JSON.stringify({ hero: { headline: prompt } }),
     tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],
     elapsed: 1000,

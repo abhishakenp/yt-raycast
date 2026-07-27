@@ -97,7 +97,6 @@ export async function forkSessionForOwner(
     await ctx.db.insert('previews', {
       sessionId: targetSessionId,
       version: 1,
-      html: latestPreview.html,
       openUiSource: latestPreview.openUiSource,
       siteSpecJson: latestPreview.siteSpecJson,
       source: 'generation',

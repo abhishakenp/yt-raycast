@@ -1,6 +1,5 @@
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx } from '../_generated/server'
-import { isUnsafePublicPreviewHtml } from './openui_error_html'
 import { recordOperationalGenerationEvent } from './session_operational_notifications'
 
 type OperationalNotificationReference = Parameters<
@@ -99,11 +98,6 @@ export async function cloneCachedGeneratedArtifacts(
     return false
   }
 
-  if (isUnsafePublicPreviewHtml(latestPreview.html)) {
-    await ctx.db.patch(latestPreview._id, { html: '' })
-    return false
-  }
-
   const openUiSource = latestPreview.openUiSource ?? homeModule.source
   const siteSpecJson =
     latestPreview.siteSpecJson ?? siteSpec?.specJson ?? siteSpec?.spec
@@ -186,7 +180,6 @@ export async function cloneCachedGeneratedArtifacts(
   await ctx.db.insert('previews', {
     sessionId: args.targetSessionId,
     version: 1,
-    html: latestPreview.html,
     openUiSource,
     siteSpecJson,
     source: 'generation',

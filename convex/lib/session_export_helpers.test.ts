@@ -175,7 +175,6 @@ function previewDoc(overrides: Partial<PreviewRecord> = {}): PreviewRecord {
     _creationTime: 1,
     sessionId,
     version: 2,
-    html: '<main>Preview</main>',
     openUiSource,
     source: 'generation',
     createdAt: 110,
@@ -1083,7 +1082,7 @@ describe('createSessionExport', () => {
     const emptyPreview = workflowCtxFor({
       identityUserId: userId,
       subscriptions: [subscriptionDoc()],
-      previews: [previewDoc({ html: '', version: 7 })],
+      previews: [previewDoc({ openUiSource: '', version: 7 })],
     })
 
     await expect(
@@ -1105,7 +1104,6 @@ describe('createSessionExport', () => {
         previewDoc({
           _id: realConvexRendererErrorPreview.previewId as Id<'previews'>,
           sessionId: realConvexRendererErrorPreview.sessionId as Id<'sessions'>,
-          html: realConvexRendererErrorPreview.html,
           version: realConvexRendererErrorPreview.version,
         }),
       ],
@@ -1140,7 +1138,6 @@ describe('createSessionExport', () => {
         previewDoc({
           _id: realConvexOpenUiHandoffPreview.previewId as Id<'previews'>,
           sessionId: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
-          html: realConvexOpenUiHandoffPreview.html,
           openUiSource: realConvexOpenUiHandoffPreview.source,
           version: realConvexOpenUiHandoffPreview.version,
         }),
@@ -1295,7 +1292,7 @@ describe('ensureExportArtifactBuild', () => {
   it('rejects empty previews but queues artifact builds for renderer-error/handoff previews with healthy source', async () => {
     const emptyPreview = workflowCtxFor({
       identityUserId: userId,
-      previews: [previewDoc({ html: '', version: 8 })],
+      previews: [previewDoc({ openUiSource: '', version: 8 })],
     })
 
     await expect(
@@ -1321,7 +1318,6 @@ describe('ensureExportArtifactBuild', () => {
         previewDoc({
           _id: realConvexRendererErrorPreview.previewId as Id<'previews'>,
           sessionId: realConvexRendererErrorPreview.sessionId as Id<'sessions'>,
-          html: realConvexRendererErrorPreview.html,
           version: realConvexRendererErrorPreview.version,
         }),
       ],
@@ -1356,7 +1352,6 @@ describe('ensureExportArtifactBuild', () => {
         previewDoc({
           _id: realConvexOpenUiHandoffPreview.previewId as Id<'previews'>,
           sessionId: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
-          html: realConvexOpenUiHandoffPreview.html,
           openUiSource: realConvexOpenUiHandoffPreview.source,
           version: realConvexOpenUiHandoffPreview.version,
         }),
@@ -1582,7 +1577,6 @@ describe('prepareExportArtifactBuild', () => {
       ],
       previews: [
         previewDoc({
-          html: '<main>Preview</main>',
           siteSpecJson: '{"title":"Preview"}',
         }),
       ],
@@ -1600,7 +1594,6 @@ describe('prepareExportArtifactBuild', () => {
       previewVersion: 2,
       source: openUiSource,
       html: '',
-      previewHtml: '<main>Preview</main>',
       isDark: true,
       locale: 'en',
       isPrivate: false,
@@ -1618,7 +1611,6 @@ describe('prepareExportArtifactBuild', () => {
     const { ctx } = workflowCtxFor({
       previews: [
         previewDoc({
-          html: '<main>Lakebed Tailwind CSS patched canary 1784728272712</main>',
           openUiSource: stalePreviewSource,
         }),
       ],
@@ -1637,8 +1629,6 @@ describe('prepareExportArtifactBuild', () => {
 
     expect(result).toMatchObject({
       source: generatedHomeSource,
-      previewHtml:
-        '<main>Lakebed Tailwind CSS patched canary 1784728272712</main>',
     })
   })
 
@@ -1660,11 +1650,7 @@ describe('prepareExportArtifactBuild', () => {
           selectedBrandLogo,
         }),
       ],
-      previews: [
-        previewDoc({
-          html: '<main><h1>Preview</h1><p>Stale English preview</p></main>',
-        }),
-      ],
+      previews: [previewDoc()],
       edits: [
         editDoc({
           beforeText: 'Preview',
@@ -1695,7 +1681,6 @@ describe('prepareExportArtifactBuild', () => {
       source:
         'root = SaasHero("Redaguota lietuviška peržiūra", ["Home"], {"heading":"Preview"})',
       html: '',
-      previewHtml: '<main><h1>Preview</h1><p>Stale English preview</p></main>',
     })
     expect(JSON.stringify(result)).not.toContain('Redaguota peržiūra"')
   })
@@ -1713,7 +1698,6 @@ describe('prepareExportArtifactBuild', () => {
         previewDoc({
           _id: realConvexRendererErrorPreview.previewId as Id<'previews'>,
           sessionId: realConvexRendererErrorPreview.sessionId as Id<'sessions'>,
-          html: realConvexRendererErrorPreview.html,
           openUiSource: undefined,
           siteSpecJson: undefined,
           version: realConvexRendererErrorPreview.version,
@@ -1861,11 +1845,7 @@ describe('loadOwnedExportForGitHubPush', () => {
         }),
       ],
       exports: [exportDoc()],
-      previews: [
-        previewDoc({
-          html: '<main><h1>Preview</h1><p>Stale English preview</p></main>',
-        }),
-      ],
+      previews: [previewDoc()],
       edits: [
         editDoc({
           beforeText: 'Preview',
@@ -2029,8 +2009,7 @@ describe('loadOwnedExportForGitHubPush', () => {
         previewDoc({
           _id: realConvexRendererErrorPreview.previewId as Id<'previews'>,
           sessionId: realConvexRendererErrorPreview.sessionId as Id<'sessions'>,
-          html: realConvexRendererErrorPreview.html,
-          openUiSource: undefined,
+          openUiSource: realConvexRendererErrorPreview.html,
           siteSpecJson: undefined,
           version: realConvexRendererErrorPreview.version,
         }),
@@ -2080,7 +2059,6 @@ describe('loadOwnedExportForGitHubPush', () => {
         previewDoc({
           _id: realConvexOpenUiHandoffPreview.previewId as Id<'previews'>,
           sessionId: realConvexOpenUiHandoffPreview.sessionId as Id<'sessions'>,
-          html: realConvexOpenUiHandoffPreview.html,
           openUiSource: realConvexOpenUiHandoffPreview.source,
           siteSpecJson: undefined,
           version: realConvexOpenUiHandoffPreview.version,

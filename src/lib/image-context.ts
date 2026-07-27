@@ -1,6 +1,5 @@
 /**
  * Context-aware image query generation
- * Ported from packages/ship-fast-engine/src/pipeline/image-hints.js
  */
 
 const STOP_WORDS = new Set([

@@ -73,7 +73,6 @@ describe('ship fast engine adapter', () => {
 
     expect(seenLanguages).toEqual(['fr'])
     expect(result.workspace).toMatch(/session-123-demo$/)
-    expect(result.html).toContain('<h1>Generated</h1>')
     expect(result.siteSpecJson).toBe('{"brand":"Generated"}')
     expect(result.openUiSource).toContain('Landing page for a billing tool')
     expect(result.tasks).toEqual([
@@ -96,10 +95,6 @@ describe('ship fast engine adapter', () => {
         { id: 'home.openui', label: 'Generate Home page', status: 'PENDING' },
       ])
       sessionCtx.signalHomepageReady()
-      writeFileSync(
-        join(workspace, 'index.html'),
-        '<!doctype html><h1>Pet food conversion site</h1>',
-      )
       writeFileSync(
         join(workspace, 'site-spec.json'),
         JSON.stringify({ brand: 'Pet Food Site' }),
@@ -125,7 +120,6 @@ describe('ship fast engine adapter', () => {
         prompt: dbObservedPrompt,
       }),
     ).resolves.toMatchObject({
-      html: '<!doctype html><h1>Pet food conversion site</h1>',
       siteSpecJson: '{"brand":"Pet Food Site"}',
       openUiSource: 'root = Text("Pet food conversion site")',
       events: [

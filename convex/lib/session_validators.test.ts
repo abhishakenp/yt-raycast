@@ -124,7 +124,6 @@ describe('session validators boundary', () => {
     })
     expect(completeGenerationArgs).toMatchObject({
       sessionId: expect.any(Object),
-      html: expect.any(Object),
       tasks: expect.any(Object),
     })
     expect(failGenerationArgs).toMatchObject({

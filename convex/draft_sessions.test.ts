@@ -60,7 +60,6 @@ test('public gallery excludes renderable draft sessions', async () => {
     await ctx.db.insert('previews', {
       sessionId: draftSessionId,
       version: 1,
-      html: '<main>Draft should stay hidden</main>',
       source: 'generation',
       createdAt: Date.now(),
     })

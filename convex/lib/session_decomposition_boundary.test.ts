@@ -43,7 +43,6 @@ async function createReadySession(
 
   await t.action(internal.sessions.completeGeneration, {
     sessionId,
-    html: `<html><body><main><h1>${prompt}</h1></main></body></html>`,
     openUiSource: `$page = "Home"\nroot = Text("${prompt}")`,
     siteSpecJson: JSON.stringify({ hero: { headline: prompt } }),
     tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],

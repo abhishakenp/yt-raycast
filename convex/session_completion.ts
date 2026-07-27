@@ -8,12 +8,6 @@ import {
 import { sessionInternalReferences } from './lib/session_internal_references'
 import { completeGenerationArgs } from './lib/session_validators'
 
-const loadOpenUISSR = async () => {
-  const { renderOpenUIToHTMLWithTheme } =
-    await import('@ship-fast/engine/openui-ssr.js')
-  return { renderOpenUIToHTMLWithTheme }
-}
-
 export const completeGeneration = internalAction({
   args: completeGenerationArgs,
   handler: async (ctx, args): Promise<CompleteGenerationActionResult> =>
@@ -21,6 +15,5 @@ export const completeGeneration = internalAction({
       getGenerationSession: sessionInternalReferences.getGenerationSession,
       completeGenerationInternal:
         sessionInternalReferences.completeGenerationInternal,
-      loadOpenUISSR,
     }),
 })

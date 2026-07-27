@@ -1,7 +1,6 @@
 import type { Doc, Id } from '../_generated/dataModel'
 import type { QueryCtx } from '../_generated/server'
 import { isSessionOwner } from './session_access_helpers'
-import { isUnsafePublicPreviewHtml } from './openui_error_html'
 import { normalizeSessionStatus } from './session_serialization_helpers'
 
 type SessionApiResponseCtx = Pick<QueryCtx, 'db' | 'auth'>
@@ -72,9 +71,6 @@ export function serializeSessionApiResponse(
         ? null
         : {
             version: artifacts.latestPreview.version,
-            html: isUnsafePublicPreviewHtml(artifacts.latestPreview.html)
-              ? ''
-              : artifacts.latestPreview.html,
             openUiSource: artifacts.latestPreview.openUiSource,
             siteSpecJson: artifacts.latestPreview.siteSpecJson,
             createdAt: artifacts.latestPreview.createdAt,

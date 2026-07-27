@@ -18,16 +18,6 @@ type UsageMetricRecord = Doc<'usageMetrics'>
 
 const sessionId = 'session_generation_state' as Id<'sessions'>
 
-const realConvexOpenUiHandoffCompletion = {
-  previewId: 'ns79pp36cdnxp2znd343t2tjw589n4yq',
-  sessionId: 'k57eyt2na1n9pzn5x7rh4sdbah89mh9e',
-  prompt:
-    'a boutique coffee roastery with subscription delivery and tasting events',
-  html: '<!DOCTYPE html><html lang="en"><head><title>Boutique Coffee Roastery - Preview</title></head><body><main id="openui-root" data-openui-ready="source"><section><p>Generated OpenUI source is ready.</p><h1>Boutique Coffee Roastery</h1><p>The interactive source is available for export and deployment.</p></section></main><script type="application/json" id="ship-fast-openui-source">"home_hero = EcommerceHero(\\"Boutique Coffee Roastery\\")"</script></body></html>',
-  source:
-    'home_hero = EcommerceHero("Boutique Coffee Roastery", "Crafted for Connoisseurs", "Subscribe for fresh beans delivered to your door")\nroot = PageSwitch(["Home"], [home_hero], "", {"Home":"home"})',
-} as const
-
 function sessionDoc(overrides: Partial<SessionRecord> = {}): SessionRecord {
   return {
     _id: sessionId,
@@ -204,7 +194,6 @@ describe('session generation state helpers', () => {
     await expect(
       completeGeneratedSession(ctx, {
         sessionId,
-        html: '<main><h1>Done</h1></main>',
         siteSpecJson: '{"title":"Done"}',
         openUiSource: '<main>OpenUI</main>',
         tasks: [{ id: 'home.openui', label: 'Render home', status: 'DONE' }],
@@ -255,7 +244,6 @@ describe('session generation state helpers', () => {
       expect.objectContaining({
         sessionId,
         version: 3,
-        html: '<main><h1>Done</h1></main>',
         openUiSource: '<main>OpenUI</main>',
         siteSpecJson: '{"title":"Done"}',
         source: 'generation',
@@ -385,7 +373,6 @@ describe('session generation state helpers', () => {
     await expect(
       completeGeneratedSession(ctx, {
         sessionId,
-        html: '<main><h1>Recovered preview</h1></main>',
         openUiSource: 'root = Text("Recovered preview")',
         tasks: [{ id: 'home.openui', label: 'Render home', status: 'DONE' }],
         now: 900,
@@ -405,67 +392,6 @@ describe('session generation state helpers', () => {
         errorCode: undefined,
         errorMessage: undefined,
         previewVersion: 1,
-      }),
-    )
-  })
-
-  it('does not complete a generation with DB-observed OpenUI handoff HTML', async () => {
-    const {
-      ctx,
-      sessions,
-      tasks,
-      siteSpecs,
-      generatedModules,
-      previews,
-      generationEvents,
-      usageMetrics,
-      schedulerCalls,
-      exportArtifacts,
-    } = ctxFor({
-      sessions: [
-        sessionDoc({
-          _id: realConvexOpenUiHandoffCompletion.sessionId as Id<'sessions'>,
-          prompt: realConvexOpenUiHandoffCompletion.prompt,
-          previewVersion: 0,
-        }),
-      ],
-    })
-
-    await expect(
-      completeGeneratedSession(ctx, {
-        sessionId:
-          realConvexOpenUiHandoffCompletion.sessionId as Id<'sessions'>,
-        html: realConvexOpenUiHandoffCompletion.html,
-        siteSpecJson: '{"title":"Boutique Coffee Roastery"}',
-        openUiSource: realConvexOpenUiHandoffCompletion.source,
-        tasks: [{ id: 'home.openui', label: 'Render home', status: 'DONE' }],
-        elapsed: 5580,
-        cost: 0,
-        provider: 'ship-fast-engine-v3',
-        now: 1782812244731,
-        sendOperationalNotification:
-          'sendOperationalNotification' as unknown as Parameters<
-            MutationCtx['scheduler']['runAfter']
-          >[1],
-        buildExportArtifact: 'buildExportArtifact' as unknown as Parameters<
-          MutationCtx['scheduler']['runAfter']
-        >[1],
-      }),
-    ).rejects.toMatchObject({ data: { code: 'PREVIEW_NOT_READY' } })
-
-    expect(previews).toEqual([])
-    expect(siteSpecs).toEqual([])
-    expect(generatedModules).toEqual([])
-    expect(exportArtifacts).toEqual([])
-    expect(generationEvents).toEqual([])
-    expect(usageMetrics).toEqual([])
-    expect(schedulerCalls).toEqual([])
-    expect(tasks).toEqual([])
-    expect(sessions).toContainEqual(
-      expect.objectContaining({
-        _id: realConvexOpenUiHandoffCompletion.sessionId,
-        status: 'streaming',
-        previewVersion: 0,
       }),
     )
   })

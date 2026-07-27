@@ -170,7 +170,7 @@ function truncate(value: string, max: number): string {
 
 type GenerationViewSnapshot = {
   homeModule?: { source: string } | null
-  latestPreview?: { html: string; version?: number } | null
+  latestPreview?: { version?: number } | null
 }
 
 type InlineToolExecutionResult = {
@@ -1186,7 +1186,7 @@ export async function createSectionEditResponse(
   try {
     if (htmlSession) {
       // ─── HTML Session: generate replacement HTML ───
-      const previewHtml = generationView.latestPreview?.html ?? ''
+      const previewHtml = generationView.homeModule?.source ?? ''
       const toolPrompt = buildHtmlToolOnlyEditPrompt(
         selection,
         instruction,

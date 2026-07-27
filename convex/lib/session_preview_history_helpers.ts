@@ -7,7 +7,6 @@ import {
   upsertSiteSpec,
 } from './session_artifact_helpers'
 import { assertCanMutateSession } from './session_access_helpers'
-import { isUnsafePublicPreviewHtml } from './openui_error_html'
 
 export function serializePreviewHistoryItem(preview: Doc<'previews'>) {
   return {
@@ -78,13 +77,6 @@ export async function restorePreviewHistoryVersion(
   const nextPreviewVersion =
     (args.session.previewVersion ?? args.preview.version) + 1
 
-  if (isUnsafePublicPreviewHtml(args.preview.html)) {
-    throw new ConvexError({
-      code: 'PREVIEW_NOT_READY',
-      message: 'Preview is not ready to restore',
-    })
-  }
-
   if (args.preview.openUiSource !== undefined) {
     await upsertHomeGeneratedModule(
       ctx,
@@ -106,7 +98,6 @@ export async function restorePreviewHistoryVersion(
   await ctx.db.insert('previews', {
     sessionId: args.sessionId,
     version: nextPreviewVersion,
-    html: args.preview.html,
     openUiSource: args.preview.openUiSource,
     siteSpecJson: args.preview.siteSpecJson,
     source: 'history_restore',

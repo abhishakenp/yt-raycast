@@ -45,7 +45,6 @@ test('getSessionReadiness returns computed readiness through the public Convex q
     await ctx.db.insert('previews', {
       sessionId,
       version: 1,
-      html: '<main>Ready</main>',
       createdAt: 122,
       source: 'generation',
     })

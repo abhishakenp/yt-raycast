@@ -9,6 +9,7 @@ import {
   examplePrompts,
   normalizePromptDraft,
 } from '@/features/home/services/home-prompts'
+import { isGibberishPromptClient } from '@/lib/home/generation-prefetch'
 import {
   createAnonymousOwnerSecret,
   persistAnonymousOwnerSecret,
@@ -28,6 +29,8 @@ const CREATE_SESSION_TIMEOUT_MS = 12_000
 const CREATE_SESSION_RETRY_DELAY_MS = 450
 const MIN_LAUNCH_FEEDBACK_MS = 1_200
 const SPECULATIVE_GENERATION_DELAY_MS = 500
+const SPECULATIVE_MIN_PROMPT_WORDS = 3
+const SPECULATIVE_COMPLETED_FINGERPRINT_LIMIT = 8
 
 type CreateSessionPayload = ReturnType<typeof buildCreateSessionPayload>
 type RunSubmitOptions = Partial<
@@ -39,7 +42,6 @@ type RunSubmitOptions = Partial<
     | 'designReferenceUrls'
     | 'designReferenceNotes'
     | 'cloneUrl'
-    | 'engineVersion'
   >
 >
 type CreateSessionResult = {
@@ -161,12 +163,10 @@ function createSessionLaunch(
     .slice(0, 4)
   const designReferenceNotes = (opts?.designReferenceNotes ?? '').trim()
   const cloneUrl = (opts?.cloneUrl ?? '').trim()
-  const engineVersion = opts?.engineVersion
   const fingerprint = JSON.stringify({
     cloneUrl,
     designReferenceNotes,
     designReferenceUrls,
-    engineVersion: engineVersion ?? 'v1',
     isPrivate,
     preferredLanguage,
     prompt,
@@ -188,7 +188,6 @@ function createSessionLaunch(
       designReferenceUrls,
       designReferenceNotes,
       cloneUrl,
-      engineVersion,
       isDraft,
     }),
   }
@@ -267,6 +266,7 @@ export const usePromptHomeController = () => {
   const speculativeGenerationRef = useRef<SpeculativeGeneration | null>(null)
   const speculativeGenerationTimerRef = useRef<number | null>(null)
   const speculativeGenerationTimerFingerprintRef = useRef<string | null>(null)
+  const completedSpeculativeFingerprintsRef = useRef<string[]>([])
 
   const preloadGenerationRoute = useCallback(
     (sessionId: string) => {
@@ -379,11 +379,29 @@ export const usePromptHomeController = () => {
         invalidateSpeculativeGeneration()
         return
       }
+      // Substance gate: skip speculative for gibberish or too-short prompts.
+      // Thin prompts waste Convex writes + LLM calls on sessions the user will
+      // never submit.
+      const wordCount = runtimePrompt
+        .toLowerCase()
+        .split(/\s+/)
+        .filter(Boolean).length
+      if (
+        wordCount < SPECULATIVE_MIN_PROMPT_WORDS ||
+        isGibberishPromptClient(runtimePrompt)
+      ) {
+        invalidateSpeculativeGeneration()
+        return
+      }
       const launch = createSessionLaunch(opts, prompt, true)
 
+      // Fingerprint cache: skip if the same fingerprint is already in-flight,
+      // pending a timer, or has already completed successfully.
       if (
         speculativeGenerationRef.current?.fingerprint === launch.fingerprint ||
-        speculativeGenerationTimerFingerprintRef.current === launch.fingerprint
+        speculativeGenerationTimerFingerprintRef.current ===
+          launch.fingerprint ||
+        completedSpeculativeFingerprintsRef.current.includes(launch.fingerprint)
       ) {
         return
       }
@@ -413,6 +431,15 @@ export const usePromptHomeController = () => {
           .then((result) => {
             if (typeof result.sessionId === 'string' && result.sessionId) {
               preloadGenerationRoute(result.sessionId)
+              // Track completed fingerprints so typing away and back doesn't
+              // re-fire. Bounded to prevent unbounded growth.
+              const completed = completedSpeculativeFingerprintsRef.current
+              if (!completed.includes(launch.fingerprint)) {
+                completedSpeculativeFingerprintsRef.current = [
+                  ...completed,
+                  launch.fingerprint,
+                ].slice(-SPECULATIVE_COMPLETED_FINGERPRINT_LIMIT)
+              }
             }
           })
           .catch(() => {

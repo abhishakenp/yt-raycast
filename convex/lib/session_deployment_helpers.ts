@@ -664,7 +664,9 @@ export async function prepareLakebedSessionDeployment(
     ? homeModule.source
     : undefined
   const siteSpecOpenUiSource = readOpenUiSourceFromSiteSpec(siteSpec)
-  const previewHasOpenUiError = containsOpenUiErrorMarker(preview.html)
+  const previewHasOpenUiError = containsOpenUiErrorMarker(
+    previewOpenUiSource ?? '',
+  )
   const openUiSource =
     previewOpenUiSource ??
     siteSpecOpenUiSource ??
@@ -672,7 +674,8 @@ export async function prepareLakebedSessionDeployment(
     homeModule?.source
   const shouldUseOpenUiSource =
     previewOpenUiSource !== undefined ||
-    (previewHasOpenUiError && homeModuleOpenUiSource !== undefined) ||
+    homeModuleOpenUiSource !== undefined ||
+    siteSpecOpenUiSource !== undefined ||
     session.openuiReady === true ||
     session.preferredExportTarget !== 'html'
   if (!shouldUseOpenUiSource) {
@@ -715,7 +718,6 @@ export async function prepareLakebedSessionDeployment(
       hasPreviewOpenUiSource: previewOpenUiSource !== undefined,
       hasHomeModuleOpenUiSource: homeModuleOpenUiSource !== undefined,
       previewHasOpenUiError,
-      previewHtmlBytes: preview.html.length,
       previewVersion: preview.version,
     }),
   )
@@ -731,7 +733,6 @@ export async function prepareLakebedSessionDeployment(
     source,
     sourceKind,
     siteSpecJson,
-    previewHtml: isUnsafePublicPreviewHtml(preview.html) ? '' : preview.html,
     previewVersion: preview.version,
     projectName: session.prompt,
     themeName: readLakebedThemeName(
@@ -1023,13 +1024,19 @@ export async function publishSessionPreview(
       })
     })()
 
-  const [preview, existingDeployment] = await Promise.all([
+  const [preview, homeModule, existingDeployment] = await Promise.all([
     ctx.db
       .query('previews')
       .withIndex('by_sessionId_version', (index) =>
         index.eq('sessionId', args.sessionId),
       )
       .order('desc')
+      .first(),
+    ctx.db
+      .query('generatedModules')
+      .withIndex('by_sessionId_moduleKey', (index) =>
+        index.eq('sessionId', args.sessionId).eq('moduleKey', 'home'),
+      )
       .first(),
     ctx.db
       .query('deployments')
@@ -1047,10 +1054,10 @@ export async function publishSessionPreview(
       })
     })()
 
-  if (
-    preview.html.trim().length === 0 ||
-    isUnsafePublicPreviewHtml(preview.html)
-  ) {
+  const hasRenderableSource =
+    (preview.openUiSource ?? '').trim().length > 0 ||
+    (homeModule?.source ?? '').trim().length > 0
+  if (!hasRenderableSource || isUnsafePublicPreviewHtml(preview.openUiSource)) {
     throw new ConvexError({
       code: 'PREVIEW_NOT_READY',
       message: 'Preview is not ready to publish',
@@ -1221,10 +1228,7 @@ export async function refreshShipFastDeploymentIfPresent(
     return { status: skippedStatus() }
   }
 
-  if (
-    preview.html.trim().length === 0 ||
-    isUnsafePublicPreviewHtml(preview.html)
-  ) {
+  if ((preview.openUiSource ?? '').trim().length === 0) {
     return { status: skippedStatus() }
   }
 

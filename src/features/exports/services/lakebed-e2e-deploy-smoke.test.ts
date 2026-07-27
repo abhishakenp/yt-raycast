@@ -166,9 +166,17 @@ function assertNoBrowserErrors(
   errorOutput: string,
   context: string,
 ) {
-  // Page errors are always fatal — uncaught exceptions, unhandled rejections
-  if (errorOutput.length > 0) {
-    throw new Error(`Page errors detected on ${context}:\n${errorOutput}`)
+  // Page errors are always fatal — uncaught exceptions, unhandled rejections.
+  // agent-browser emits "✗ <message>" lines; strip the marker and ignore
+  // empty/whitespace-only lines (phantom markers with no actual error text).
+  const pageErrorLines = errorOutput
+    .split('\n')
+    .map((line) => line.replace(/^✗\s*/, '').trim())
+    .filter(Boolean)
+  if (pageErrorLines.length > 0) {
+    throw new Error(
+      `Page errors detected on ${context}:\n${pageErrorLines.join('\n')}`,
+    )
   }
 
   // Console errors: look for error-level console output.

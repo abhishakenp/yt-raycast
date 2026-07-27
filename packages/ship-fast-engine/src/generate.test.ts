@@ -348,4 +348,64 @@ describe('generateText model dispatch', () => {
     )
     expect(result).toBe(structuredOperations)
   })
+
+  it('generateTextStream calls onLine per line boundary and returns full text', async () => {
+    const multiLineOutput = 'line one\nline two\nline three'
+    llmMocks.chat.mockImplementation(() => textChunks(multiLineOutput))
+
+    const { generateTextStream } = await import('./generate')
+    const lines: string[] = []
+    const result = await generateTextStream(
+      'openai/gpt-oss-120b',
+      'Build the generated homepage.',
+      DB_OBSERVED_PROMPT,
+      new AbortController().signal,
+      (line) => lines.push(line),
+      0,
+    )
+
+    expect(result).toBe(multiLineOutput)
+    expect(lines).toEqual(['line one', 'line two', 'line three'])
+  })
+
+  it('generateTextStream flushes trailing partial line without newline', async () => {
+    llmMocks.chat.mockImplementation(() =>
+      textChunks('line one\nline two no newline'),
+    )
+
+    const { generateTextStream } = await import('./generate')
+    const lines: string[] = []
+    await generateTextStream(
+      'openai/gpt-oss-120b',
+      'Build the generated homepage.',
+      DB_OBSERVED_PROMPT,
+      new AbortController().signal,
+      (line) => lines.push(line),
+      0,
+    )
+
+    expect(lines).toEqual(['line one', 'line two no newline'])
+  })
+
+  it('generateTextStream handles chunked deltas that split lines', async () => {
+    async function* chunkedStream() {
+      yield { type: 'TEXT_MESSAGE_CONTENT' as const, delta: 'hello' }
+      yield { type: 'TEXT_MESSAGE_CONTENT' as const, delta: ' world\nfoo' }
+      yield { type: 'TEXT_MESSAGE_CONTENT' as const, delta: 'bar\nbaz' }
+    }
+    llmMocks.chat.mockImplementation(() => chunkedStream())
+
+    const { generateTextStream } = await import('./generate')
+    const lines: string[] = []
+    await generateTextStream(
+      'openai/gpt-oss-120b',
+      'Build the generated homepage.',
+      DB_OBSERVED_PROMPT,
+      new AbortController().signal,
+      (line) => lines.push(line),
+      0,
+    )
+
+    expect(lines).toEqual(['hello world', 'foobar', 'baz'])
+  })
 })

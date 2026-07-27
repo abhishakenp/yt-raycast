@@ -307,7 +307,6 @@ describe('forkSessionForOwner', () => {
     expect(store.previews.at(-1)).toMatchObject({
       sessionId: targetSessionId,
       version: 1,
-      html: '<main><h1>Old headline</h1></main>',
       openUiSource: '<main><h1>Old headline</h1></main>',
       siteSpecJson: '{"headline":"Old headline"}',
       source: 'generation',
@@ -351,7 +350,7 @@ describe('forkSessionForOwner', () => {
     expect(store.previews.at(-1)).toMatchObject({
       sessionId: targetSessionId,
       version: 2,
-      html: '<main><h1>New headline</h1></main>',
+      openUiSource: '<main><h1>New headline</h1></main>',
       source: 'edit',
     })
     expect(store.generationEvents).toEqual(

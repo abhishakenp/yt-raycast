@@ -1,6 +1,5 @@
 import type { Doc, Id } from '../_generated/dataModel'
 import type { QueryCtx } from '../_generated/server'
-import { isUnsafePublicPreviewHtml } from './openui_error_html'
 import { canReadPrivateSession } from './session_access_helpers'
 import { serializeSession } from './session_serialization_helpers'
 
@@ -105,16 +104,7 @@ export async function loadGenerationView(
     events: [...events].reverse(),
     homeModule: homeModule as Doc<'generatedModules'> | null,
     siteSpec: siteSpec as Doc<'siteSpecs'> | null,
-    latestPreview: latestPreview
-      ? {
-          ...(latestPreview as Doc<'previews'>),
-          html: isUnsafePublicPreviewHtml(
-            (latestPreview as Doc<'previews'>).html,
-          )
-            ? ''
-            : (latestPreview as Doc<'previews'>).html,
-        }
-      : null,
+    latestPreview: latestPreview ? (latestPreview as Doc<'previews'>) : null,
     aiCapsules: aiCapsules as Doc<'aiCapsules'>[],
   }
 }

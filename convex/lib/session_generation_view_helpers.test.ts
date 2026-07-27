@@ -281,7 +281,8 @@ describe('session generation view helpers', () => {
           _creationTime: 1,
           sessionId,
           version: 1,
-          html: '<main>Old</main>',
+          openUiSource: '<main>Old</main>',
+          source: 'generation',
           createdAt: 1,
         } as Doc<'previews'>,
         {
@@ -289,7 +290,8 @@ describe('session generation view helpers', () => {
           _creationTime: 2,
           sessionId,
           version: 2,
-          html: '<main>Latest</main>',
+          openUiSource: '<main>Latest</main>',
+          source: 'generation',
           createdAt: 2,
         } as Doc<'previews'>,
       ],
@@ -314,7 +316,7 @@ describe('session generation view helpers', () => {
     ])
     expect(view?.homeModule?.source).toBe('<main>Home</main>')
     expect(view?.siteSpec?.specJson).toContain('Generation View')
-    expect(view?.latestPreview?.html).toBe('<main>Latest</main>')
+    expect(view?.latestPreview?.openUiSource).toBe('<main>Latest</main>')
   })
 
   it('loads AI capsules referenced by edited OpenUI source for runtime rendering', async () => {
@@ -405,7 +407,6 @@ describe('session generation view helpers', () => {
             _creationTime: 1,
             sessionId: handoffSessionId,
             version: realConvexOpenUiHandoffGenerationView.version,
-            html: realConvexOpenUiHandoffGenerationView.html,
             openUiSource: realConvexOpenUiHandoffGenerationView.source,
             createdAt: 1,
           } as Doc<'previews'>,

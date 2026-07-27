@@ -69,7 +69,8 @@ function previewDoc(id: string, version: number): Doc<'previews'> {
     _creationTime: version,
     sessionId,
     version,
-    html: `<main>Preview ${version}</main>`,
+    openUiSource: `<main>Preview ${version}</main>`,
+    source: 'generation',
     createdAt: version,
   } as Doc<'previews'>
 }
@@ -206,7 +207,7 @@ describe('session workspace helpers', () => {
       'First',
       'Second',
     ])
-    expect(workspace?.preview?.html).toBe('<main>Preview 2</main>')
+    expect(workspace?.preview?.openUiSource).toBe('<main>Preview 2</main>')
     expect(workspace?.deployment?.slug).toBe('workspace-site')
     expect(workspace?.events.map((event) => event.message)).toEqual([
       'Oldest',
@@ -235,7 +236,7 @@ describe('session workspace helpers', () => {
             _creationTime: 1,
             sessionId: handoffSessionId,
             version: realConvexOpenUiHandoffWorkspacePreview.version,
-            html: realConvexOpenUiHandoffWorkspacePreview.html,
+            source: 'generation',
             createdAt: 1,
           } as Doc<'previews'>,
         ],

@@ -279,7 +279,7 @@ describe('ready session cache', () => {
         preferredLanguage: realRendererErrorReadyPreview.preferredLanguage,
         status: 'preview_ready',
         preview: {
-          html: realRendererErrorReadyPreview.html,
+          openUiSource: realRendererErrorReadyPreview.html,
           version: 1,
         },
       }),
@@ -311,7 +311,7 @@ describe('ready session cache', () => {
           status: 'succeeded',
         },
         preview: {
-          html: realOpenUiHandoffReadyPreview.html,
+          openUiSource: realOpenUiHandoffReadyPreview.html,
           version: 1,
         },
       }),
@@ -343,7 +343,7 @@ describe('ready session cache', () => {
           status: 'succeeded',
         },
         preview: {
-          html: '',
+          openUiSource: '',
           version: 1,
         },
       }),

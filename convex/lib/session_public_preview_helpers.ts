@@ -1,5 +1,4 @@
 import type { QueryCtx } from '../_generated/server'
-import { isUnsafePublicPreviewHtml } from './openui_error_html'
 
 type SessionPublicPreviewCtx = Pick<QueryCtx, 'db'>
 
@@ -46,13 +45,13 @@ export async function loadPublicPreview(
         slug: deployment?.slug,
         status: session.status,
         previewVersion: session.previewVersion,
-        html: undefined,
+        openUiSource: undefined,
       }
     : {
         sessionId: session._id,
         slug: deployment?.slug,
         status: session.status,
         previewVersion: preview.version,
-        html: isUnsafePublicPreviewHtml(preview.html) ? '' : preview.html,
+        openUiSource: preview.openUiSource,
       }
 }

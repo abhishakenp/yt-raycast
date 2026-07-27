@@ -31,7 +31,6 @@ export function extractSlugFromPath(
 
 export const GenerateRoute = () => {
   const { sessionId } = generateRouteApi.useParams()
-  const initialGenerationView = generateRouteApi.useLoaderData()
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   })
@@ -81,10 +80,7 @@ export const GenerateRoute = () => {
 
   return (
     <PreviewUrlBridgeContext.Provider value={bridgeValue}>
-      <Dashboard
-        initialGenerationView={initialGenerationView}
-        sessionId={sessionId}
-      />
+      <Dashboard sessionId={sessionId} />
     </PreviewUrlBridgeContext.Provider>
   )
 }

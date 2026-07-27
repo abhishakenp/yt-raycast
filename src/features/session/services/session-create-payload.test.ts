@@ -91,7 +91,7 @@ describe('session create payload', () => {
     })
   })
 
-  it('includes the selected engine version when provided', () => {
+  it('does not include an engineVersion field (v3 is the sole engine)', () => {
     expect(
       buildCreateSessionPayload({
         prompt: 'build a portfolio',
@@ -99,11 +99,8 @@ describe('session create payload', () => {
         isPrivate: false,
         anonymousOwnerSecret: 'owner-secret',
         workspace: 'workspace_abc123',
-        engineVersion: 'v2',
       }),
-    ).toMatchObject({
-      engineVersion: 'v2',
-    })
+    ).not.toHaveProperty('engineVersion')
   })
 
   it('includes draft mode only for speculative session creation', () => {
@@ -130,18 +127,5 @@ describe('session create payload', () => {
         isDraft: false,
       }),
     ).not.toHaveProperty('isDraft')
-  })
-
-  it('omits the default engine version for v1 compatibility', () => {
-    expect(
-      buildCreateSessionPayload({
-        prompt: 'build a portfolio',
-        preferredLanguage: 'en',
-        isPrivate: false,
-        anonymousOwnerSecret: 'owner-secret',
-        workspace: 'workspace_abc123',
-        engineVersion: 'v1',
-      }),
-    ).not.toHaveProperty('engineVersion')
   })
 })

@@ -167,13 +167,29 @@ describe('HomePage — secondary features', () => {
     expect(document.getElementById('design-ref-panel')).toBeNull()
   })
 
-  it('engine version selector is hidden from the homepage UI', () => {
+  it('engine version selector is not rendered on the homepage UI', () => {
     render(<HomePage />)
-    // The v1/v2/v3 engine selector was intentionally hidden from the
-    // homepage UI (commit 2f104c73).
+    // The v1/v2/v3 engine selector has been fully removed — v3 is the sole
+    // engine and there is no version choice in the UI.
     expect(
       document.querySelector('[role="group"][aria-label="Engine version"]'),
     ).toBeNull()
+  })
+
+  it('submits without an engineVersion field (v3 is the sole engine)', () => {
+    controller.prompt = 'Build a fast product website'
+    controller.canSubmit = true
+    render(<HomePage />)
+
+    const form = document.getElementById('prompt-form') as HTMLFormElement
+    fireEvent.submit(form)
+
+    expect(controller.submitPrompt).toHaveBeenCalledTimes(1)
+    const callArg = controller.submitPrompt.mock.calls[0][0] as Record<
+      string,
+      unknown
+    >
+    expect(callArg).not.toHaveProperty('engineVersion')
   })
 
   it('private generation checkbox opens PrivateGenerationModal, Escape closes it', () => {

@@ -240,7 +240,6 @@ function resolveExportOpenUISource(
     isLikelyOpenUISource(preview.openUiSource)
       ? preview.openUiSource
       : undefined) ??
-    preview?.html ??
     ''
   )
 }
@@ -1206,9 +1205,9 @@ export async function createSessionExport(
       })
     })()
 
-  // A stale handoff/error preview must not block exporting: builders render
-  // from the module source and only use preview HTML when it is usable.
-  if (preview.html.trim().length === 0) {
+  // Exports render from OpenUI source (homeModule.source or preview.openUiSource).
+  // A stale/empty preview without source cannot be exported.
+  if ((preview.openUiSource ?? '').trim().length === 0) {
     throw new ConvexError({
       code: 'PREVIEW_NOT_READY',
       message: 'Preview is not ready to export',
@@ -1405,9 +1404,9 @@ export async function ensureExportArtifactBuild(
       })
     })()
 
-  // A stale handoff/error preview must not block exporting: builders render
-  // from the module source and only use preview HTML when it is usable.
-  if (preview.html.trim().length === 0) {
+  // Exports render from OpenUI source (homeModule.source or preview.openUiSource).
+  // A stale/empty preview without source cannot be exported.
+  if ((preview.openUiSource ?? '').trim().length === 0) {
     throw new ConvexError({
       code: 'PREVIEW_NOT_READY',
       message: 'Preview is not ready to export',
@@ -1547,9 +1546,6 @@ export async function prepareExportArtifactBuild(
   const themeName = readAppliedThemeName(session)
   const isDark = readAppliedIsDark(session)
   const html = isHtmlDocumentSource(source) ? source : ''
-  const previewHtml = isUnsafePublicPreviewHtml(preview.html)
-    ? undefined
-    : preview.html
   const prepared = {
     sessionId: args.sessionId,
     prompt: session.prompt,
@@ -1558,7 +1554,6 @@ export async function prepareExportArtifactBuild(
     source,
     html,
     ...(siteSpecJson === undefined ? {} : { siteSpecJson }),
-    ...(previewHtml === undefined ? {} : { previewHtml }),
     ...(themeName === undefined ? {} : { themeName }),
     isDark,
     locale,

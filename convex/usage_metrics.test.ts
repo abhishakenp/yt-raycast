@@ -162,7 +162,6 @@ test('completeGeneration records runtime usage metrics and a replayable completi
 
   await t.action(internal.sessions.completeGeneration, {
     sessionId,
-    html: '<html><body><h1>Done</h1></body></html>',
     tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],
     elapsed: 4321,
   })
@@ -214,7 +213,6 @@ test('duplicate public prompt cache hits record replayable alert metadata', asyn
 
   await t.action(internal.sessions.completeGeneration, {
     sessionId,
-    html: '<html><body><h1>Cached</h1></body></html>',
     tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],
     elapsed: 1000,
   })

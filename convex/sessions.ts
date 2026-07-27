@@ -196,6 +196,7 @@ import {
   userUsageMetricsArgs,
   webhookCommerceTenantDeploymentSlugArgs,
   writeClonePageArgs,
+  taskStatus,
 } from './lib/session_validators'
 import { loadSessionWorkspace } from './lib/session_workspace_helpers'
 
@@ -303,7 +304,6 @@ export const create = mutation({
       ctx,
       args,
       {
-        startGeneration: internal.generation.startGeneration,
         sendOperationalNotification:
           sessionInternalReferences.sendOperationalNotification,
         deleteDraftSessionIfStillDraft:
@@ -391,6 +391,149 @@ export const setPreferredLanguageInternal = internalMutation({
     await ctx.db.patch(args.sessionId, {
       preferredLanguage: args.preferredLanguage,
       updatedAt: Date.now(),
+    })
+  },
+})
+
+// ── VPS generation: public functions ─────────────────────────────────────
+// The VPS runs the engine (warm Node process) and writes results back to
+// Convex via these public functions. Each verifies session ownership via
+// anonymousOwnerSecret or admin auth.
+
+export const getGenerationSessionPublic = query({
+  args: sessionIdArgs,
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId)
+    if (session === null || session.deletedAt !== undefined) return null
+    const canRead = await canReadPrivateSession(ctx, session)
+    if (!canRead) return null
+    return session
+  },
+})
+
+async function assertGenerationOwnership(
+  ctx: MutationCtx,
+  sessionId: Id<'sessions'>,
+  anonymousOwnerSecret?: string,
+): Promise<void> {
+  const session = await ctx.db.get(sessionId)
+  if (session === null || session.deletedAt !== undefined) {
+    throw new ConvexError({ code: 'NOT_FOUND', message: 'Session not found' })
+  }
+  const isOwner = await isSessionOwner(ctx, session, anonymousOwnerSecret)
+  if (!isOwner) {
+    const isAdmin = await isUserAdmin(ctx)
+    if (!isAdmin) {
+      throw new ConvexError({
+        code: 'FORBIDDEN',
+        message: 'Not authorized to modify this session',
+      })
+    }
+  }
+}
+
+export const markGenerationStartedPublic = mutation({
+  args: {
+    sessionId: v.id('sessions'),
+    anonymousOwnerSecret: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await assertGenerationOwnership(
+      ctx,
+      args.sessionId,
+      args.anonymousOwnerSecret,
+    )
+    return markSessionGenerationStarted(ctx, args.sessionId, Date.now())
+  },
+})
+
+export const addGenerationEventPublic = mutation({
+  args: {
+    sessionId: v.id('sessions'),
+    eventType: v.string(),
+    message: v.optional(v.string()),
+    previewVersion: v.optional(v.number()),
+    anonymousOwnerSecret: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await assertGenerationOwnership(
+      ctx,
+      args.sessionId,
+      args.anonymousOwnerSecret,
+    )
+    await addGenerationProgressEvent(ctx, {
+      sessionId: args.sessionId,
+      eventType: args.eventType,
+      message: args.message,
+      previewVersion: args.previewVersion,
+      now: Date.now(),
+    })
+  },
+})
+
+export const upsertGeneratedModulePublic = mutation({
+  args: {
+    sessionId: v.id('sessions'),
+    moduleKey: v.string(),
+    source: v.string(),
+    status: v.optional(taskStatus),
+    anonymousOwnerSecret: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await assertGenerationOwnership(
+      ctx,
+      args.sessionId,
+      args.anonymousOwnerSecret,
+    )
+    await upsertGeneratedModuleRecord(ctx, {
+      sessionId: args.sessionId,
+      moduleKey: args.moduleKey,
+      source: args.source,
+      status: args.status,
+      now: Date.now(),
+    })
+  },
+})
+
+export const completeGenerationPublic = mutation({
+  args: completeGenerationArgs,
+  handler: async (ctx, args) => {
+    await assertGenerationOwnership(
+      ctx,
+      args.sessionId,
+      args.anonymousOwnerSecret,
+    )
+    return completeGeneratedSession(ctx, {
+      sessionId: args.sessionId,
+      siteSpecJson: args.siteSpecJson,
+      openUiSource: args.openUiSource,
+      tasks: args.tasks,
+      elapsed: args.elapsed,
+      cost: args.cost,
+      provider: args.provider,
+      now: Date.now(),
+      sendOperationalNotification:
+        sessionInternalReferences.sendOperationalNotification,
+      buildExportArtifact: sessionInternalReferences.buildExportArtifact,
+    })
+  },
+})
+
+export const failGenerationPublic = mutation({
+  args: failGenerationArgs,
+  handler: async (ctx, args) => {
+    await assertGenerationOwnership(
+      ctx,
+      args.sessionId,
+      args.anonymousOwnerSecret,
+    )
+    return failGeneratedSession(ctx, {
+      sessionId: args.sessionId,
+      message: args.message,
+      elapsed: args.elapsed,
+      now: Date.now(),
+      sendOperationalNotification:
+        sessionInternalReferences.sendOperationalNotification,
     })
   },
 })
@@ -507,7 +650,6 @@ export const completeGenerationInternal = internalMutation({
 
     return completeGeneratedSession(ctx, {
       sessionId: args.sessionId,
-      html: args.html,
       siteSpecJson: args.siteSpecJson,
       openUiSource: args.openUiSource,
       tasks: args.tasks,

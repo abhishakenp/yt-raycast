@@ -87,7 +87,6 @@ async function insertSessionGraph(
     await ctx.db.insert('previews', {
       sessionId,
       version: 1,
-      html: '<main>Release</main>',
       createdAt: now,
       source: 'generation',
     })

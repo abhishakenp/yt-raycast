@@ -145,7 +145,6 @@ function previewDoc(overrides: Partial<Doc<'previews'>> = {}): Doc<'previews'> {
     _creationTime: 1,
     sessionId,
     version: 1,
-    html: '<main><h1>Ready preview</h1></main>',
     openUiSource: '$page = "Home"',
     siteSpecJson: '{"projectName":"Ready"}',
     createdAt: 210,
@@ -304,7 +303,6 @@ describe('session API response helpers', () => {
       },
       preview: {
         version: 3,
-        html: '<main><h1>Ready preview</h1></main>',
         openUiSource: '$page = "Home"',
         siteSpecJson: '{"projectName":"Ready"}',
       },
@@ -484,7 +482,8 @@ describe('session API response helpers', () => {
       tasks: [taskDoc('task_private_home', 'succeeded', 0, 'Private home')],
       previews: [
         previewDoc({
-          html: '<main><h1>Private revenue dashboard</h1></main>',
+          openUiSource:
+            '$page = "Home"\nroot = Text("Private revenue dashboard")',
         }),
       ],
     }
@@ -508,7 +507,8 @@ describe('session API response helpers', () => {
     expect(ownerResponse).toMatchObject({
       prompt: 'Private customer analytics dashboard',
       preview: {
-        html: '<main><h1>Private revenue dashboard</h1></main>',
+        openUiSource:
+          '$page = "Home"\nroot = Text("Private revenue dashboard")',
       },
       taskCount: 1,
     })
@@ -535,7 +535,6 @@ describe('session API response helpers', () => {
             _id: realConvexRendererErrorSessionApiPreview.previewId as Id<'previews'>,
             sessionId: brokenSessionId,
             version: realConvexRendererErrorSessionApiPreview.previewVersion,
-            html: realConvexRendererErrorSessionApiPreview.html,
           }),
         ],
       }),
@@ -543,8 +542,10 @@ describe('session API response helpers', () => {
     )
 
     expect(response).not.toBeNull()
-    expect(response?.preview?.html?.toLowerCase()).not.toContain('openui-error')
-    expect(response?.preview?.html?.toLowerCase()).not.toContain(
+    expect(response?.preview?.openUiSource?.toLowerCase()).not.toContain(
+      'openui-error',
+    )
+    expect(response?.preview?.openUiSource?.toLowerCase()).not.toContain(
       'failed to render',
     )
   })
@@ -571,7 +572,6 @@ describe('session API response helpers', () => {
             _id: realConvexOpenUiHandoffSessionApiPreview.previewId as Id<'previews'>,
             sessionId: handoffSessionId,
             version: realConvexOpenUiHandoffSessionApiPreview.previewVersion,
-            html: realConvexOpenUiHandoffSessionApiPreview.html,
           }),
         ],
       }),

@@ -2,7 +2,6 @@ import { ConvexError } from 'convex/values'
 
 import type { Doc, Id } from '../_generated/dataModel'
 import type { QueryCtx } from '../_generated/server'
-import { isUnsafePublicPreviewHtml } from './openui_error_html'
 import {
   applyImageSwap,
   applyPreviewTextEdit,
@@ -201,16 +200,6 @@ function hasBareOpenUiComponentCall(source: string): boolean {
 export function hasRenderablePublicGalleryArtifact(
   artifacts: PublicGalleryArtifacts,
 ): boolean {
-  const previewHtml = artifacts.preview?.html
-  if (
-    typeof previewHtml === 'string' &&
-    previewHtml.trim().length > 0 &&
-    !isUnsafePublicPreviewHtml(previewHtml) &&
-    !containsPublicGalleryBlockedPreviewText(previewHtml)
-  ) {
-    return true
-  }
-
   const source = resolveGalleryOpenUISource(artifacts).trim()
   if (!source) return false
   if (containsPublicGalleryBlockedPreviewText(source)) return false
@@ -279,10 +268,6 @@ export function serializePublicGallerySession(
     ),
     artifacts.translations,
   )
-  const previewHtml = isUnsafePublicPreviewHtml(artifacts.preview?.html)
-    ? null
-    : (artifacts.preview?.html ?? null)
-
   return {
     id: session._id,
     sessionId: session._id,
@@ -296,7 +281,6 @@ export function serializePublicGallerySession(
     previewVersion: artifacts.preview?.version ?? session.previewVersion ?? 0,
     createdAt: session.createdAt,
     updatedAt: session.updatedAt ?? session.createdAt,
-    html: previewHtml,
     moduleSource: moduleSource.trim().length > 0 ? moduleSource : null,
     siteSpecJson,
     categories: getGalleryCategories(session.prompt),
@@ -424,13 +408,6 @@ export async function loadPublicGallerySession(
   )
   if (!hasRenderablePublicGalleryArtifact(artifacts)) return null
 
-  if (
-    artifacts.preview !== null &&
-    isUnsafePublicPreviewHtml(artifacts.preview.html) &&
-    resolveGalleryOpenUISource(artifacts).trim().length === 0
-  ) {
-    return null
-  }
   return serializePublicGallerySession(session, artifacts)
 }
 

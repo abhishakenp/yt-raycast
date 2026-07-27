@@ -125,8 +125,8 @@ describe('registered session access boundaries', () => {
       await ctx.db.insert('previews', {
         sessionId,
         version: 1,
-        html: '<main>Public preview</main>',
         source: 'generation',
+        openUiSource: '<main>Public preview</main>',
         createdAt: 1,
       })
     })
@@ -139,7 +139,7 @@ describe('registered session access boundaries', () => {
         prompt: 'Public release workspace',
         isPrivate: false,
       },
-      preview: { html: '<main>Public preview</main>' },
+      preview: { openUiSource: '<main>Public preview</main>' },
     })
   })
 
@@ -154,7 +154,6 @@ describe('registered session access boundaries', () => {
       await ctx.db.insert('previews', {
         sessionId,
         version: 1,
-        html: '<main>Confidential customer preview</main>',
         source: 'generation',
         createdAt: 1,
       })
@@ -269,7 +268,6 @@ describe('registered session access boundaries', () => {
       await ctx.db.insert('previews', {
         sessionId,
         version: 1,
-        html: '<main>Confidential preview</main>',
         source: 'generation',
         createdAt: 1,
       })

@@ -7,7 +7,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 const routeParamMocks = vi.hoisted(() => ({
   sessionId: 'test-sess-123',
   pathname: '/generate/test-sess-123',
-  loaderData: null as unknown,
 }))
 
 type MockRouterState = {
@@ -35,7 +34,6 @@ type TanStackRouterMock = {
     useParams(): {
       sessionId: string
     }
-    useLoaderData(): unknown
   }
   lazyRouteComponent(importer: unknown, exportName: string): ComponentType
   useRouterState(options: UseRouterStateOptions): string
@@ -53,7 +51,6 @@ vi.mock('@tanstack/react-router', () => {
     getRouteApi(_path) {
       return {
         useParams: () => ({ sessionId: routeParamMocks.sessionId }),
-        useLoaderData: () => routeParamMocks.loaderData,
       }
     },
     lazyRouteComponent(_importer, exportName) {
@@ -74,15 +71,13 @@ vi.mock('@/features/dashboard/components/Dashboard', async () => {
   const { useContext } = await import('react')
   const { PreviewUrlBridgeContext } = await import('@ship-fast/blocks/runtime')
   type DashboardProps = {
-    initialGenerationView?: unknown
     sessionId: string
   }
 
-  function Dashboard({ initialGenerationView, sessionId }: DashboardProps) {
+  function Dashboard({ sessionId }: DashboardProps) {
     const bridge = useContext(PreviewUrlBridgeContext)
     return (
       <section
-        data-has-loader-data={initialGenerationView === null ? 'false' : 'true'}
         data-testid="dashboard-route"
         data-page-from-url={bridge.pageFromUrl ?? ''}
       >
@@ -106,7 +101,6 @@ afterEach(() => {
 beforeEach(() => {
   vi.clearAllMocks()
   routeParamMocks.pathname = '/generate/test-sess-123'
-  routeParamMocks.loaderData = null
 })
 
 describe('extractSlugFromPath', () => {
@@ -142,16 +136,6 @@ describe('GenerateRoute rendering', () => {
     render(<GenerateRoute />)
     expect(screen.getByTestId('dashboard-route').textContent).toContain(
       'test-sess-123',
-    )
-  })
-
-  it('passes route loader data into the dashboard', () => {
-    routeParamMocks.loaderData = { session: { sessionId: 'test-sess-123' } }
-
-    render(<GenerateRoute />)
-
-    expect(screen.getByTestId('dashboard-route').dataset.hasLoaderData).toBe(
-      'true',
     )
   })
 

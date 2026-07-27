@@ -10,7 +10,6 @@ export type BuildCreateSessionPayloadInput = {
   designReferenceUrls?: string[]
   designReferenceNotes?: string
   cloneUrl?: string
-  engineVersion?: 'v1' | 'v2' | 'v3'
   isDraft?: boolean
 }
 
@@ -52,7 +51,6 @@ export function buildCreateSessionPayload({
   designReferenceUrls = [],
   designReferenceNotes = '',
   cloneUrl = '',
-  engineVersion,
   isDraft,
 }: BuildCreateSessionPayloadInput) {
   const refs = designReferenceUrls
@@ -74,8 +72,5 @@ export function buildCreateSessionPayload({
     ...(refs.length > 0 ? { designReferenceUrls: refs } : {}),
     ...(notes ? { designReferenceNotes: notes } : {}),
     ...(clone ? { cloneUrl: clone } : {}),
-    ...(engineVersion === 'v2' || engineVersion === 'v3'
-      ? { engineVersion }
-      : {}),
   }
 }

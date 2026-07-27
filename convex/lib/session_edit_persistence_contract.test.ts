@@ -79,14 +79,8 @@ async function createReadySessionWithFixture(
     anonymousOwnerSecret: 'owner-secret',
   })
 
-  // Render the fixture to HTML via the SSR renderer so the preview has real
-  // HTML content (not just the raw OpenUI source).
-  const { renderOpenUIToHTML } = await import('@ship-fast/engine/openui-ssr.js')
-  const html = await renderOpenUIToHTML(source, undefined, language)
-
   await t.action(internal.sessions.completeGeneration, {
     sessionId,
-    html,
     openUiSource: source,
     siteSpecJson: JSON.stringify({ projectName: prompt }),
     tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],
@@ -121,8 +115,8 @@ async function reloadAndRender(
     lookup: sessionId,
   })
   const source = reloaded?.homeModule?.source
-  const html = reloaded?.latestPreview?.html
-  return { reloaded, source, html }
+  const openUiSource = reloaded?.latestPreview?.openUiSource
+  return { reloaded, source, openUiSource }
 }
 
 describe('inline edit persistence contract (real engine fixtures)', () => {
@@ -171,8 +165,10 @@ describe('inline edit persistence contract (real engine fixtures)', () => {
     expect(heroLine).toContain(newHeadline)
     expect(heroLine).not.toContain(headline)
 
-    // The preview HTML must also contain the new headline (not just the source).
-    expect(reloaded?.latestPreview?.html).toContain(newHeadline)
+    // The preview's openUiSource (the patched source) must also contain the
+    // new headline (not just homeModule.source). preview.html is now optional
+    // and often empty/undefined for OpenUI sessions.
+    expect(reloaded?.latestPreview?.openUiSource).toContain(newHeadline)
   })
 
   it('sequential text edits on a real source find the already-patched text', async () => {
@@ -214,7 +210,7 @@ describe('inline edit persistence contract (real engine fixtures)', () => {
     )
     expect(reloadedSource).toContain(secondEdit)
     expect(reloadedSource).not.toContain(firstEdit)
-    expect(reloaded?.latestPreview?.html).toContain(secondEdit)
+    expect(reloaded?.latestPreview?.openUiSource).toContain(secondEdit)
   })
 
   it('text edit on a real ecommerce source with URLs in targetMap persists', async () => {
@@ -248,7 +244,7 @@ describe('inline edit persistence contract (real engine fixtures)', () => {
       sessionId,
     )
     expect(reloadedSource).toContain(newText)
-    expect(reloaded?.latestPreview?.html).toContain(newText)
+    expect(reloaded?.latestPreview?.openUiSource).toContain(newText)
   })
 
   it('text edit on a non-English (Hindi) source persists', async () => {
@@ -282,7 +278,7 @@ describe('inline edit persistence contract (real engine fixtures)', () => {
       sessionId,
     )
     expect(reloadedSource).toContain(newText)
-    expect(reloaded?.latestPreview?.html).toContain(newText)
+    expect(reloaded?.latestPreview?.openUiSource).toContain(newText)
   })
 
   it('edited source still parses and exports after a text edit', async () => {
@@ -386,9 +382,9 @@ describe('inline edit persistence contract (real engine fixtures)', () => {
     expect(reloadedSource).toContain(newHeadline)
     expect(reloadedSource).not.toContain(headline)
 
-    // The preview HTML should contain the new headline (this passes —
-    // the preview is updated even though the source isn't).
-    expect(reloaded?.latestPreview?.html).toContain(newHeadline)
+    // The preview's openUiSource (the patched source) must also contain the
+    // new headline — html is no longer stored in the previews table.
+    expect(reloaded?.latestPreview?.openUiSource).toContain(newHeadline)
   })
 
   it('AI rewrite edit survives a full reload — source matches preview', async () => {

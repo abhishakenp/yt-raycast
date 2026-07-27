@@ -14,6 +14,19 @@ vi.mock('@/shared/convex/http-client', () => ({
   createRuntimeConvexHttpClient: () => ({ query }),
 }))
 
+const buildOpenUIHtmlExportMock = vi.hoisted(() =>
+  vi.fn(async () => ({
+    body: '<!doctype html><html><body><main><h1>Preview</h1></main></body></html>',
+    contentType: 'text/html; charset=utf-8',
+    filename: 'index.html',
+    fileCount: 1,
+  })),
+)
+
+vi.mock('../../exports/services/openui-html-export-builder', () => ({
+  buildOpenUIHtmlExport: buildOpenUIHtmlExportMock,
+}))
+
 const { createSessionPreviewRawResponse } =
   await import('./session-preview-raw-response')
 
@@ -36,8 +49,15 @@ describe('createSessionPreviewRawResponse', () => {
   })
 
   it('serves stored public preview HTML as a standalone document', async () => {
+    buildOpenUIHtmlExportMock.mockResolvedValueOnce({
+      body: '<!doctype html><html><body><main><h1>Preview</h1></main></body></html>',
+      contentType: 'text/html; charset=utf-8',
+      filename: 'index.html',
+      fileCount: 1,
+    })
     query.mockResolvedValueOnce({
-      html: '<main><h1>Preview</h1></main>',
+      moduleSource: 'home = Stack([Hero("Preview")])',
+      prompt: 'a test prompt',
     })
 
     const response = await createSessionPreviewRawResponse('session-1')
@@ -49,10 +69,17 @@ describe('createSessionPreviewRawResponse', () => {
     expect(query).toHaveBeenCalledWith('getPublicGallerySession', {
       sessionId: 'session-1',
     })
+    expect(buildOpenUIHtmlExportMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        source: 'home = Stack([Hero("Preview")])',
+        sessionId: 'session-1',
+        target: 'html',
+      }),
+    )
   })
 
   it('returns 404 when no stored preview HTML exists', async () => {
-    query.mockResolvedValueOnce({ html: '' })
+    query.mockResolvedValueOnce({ moduleSource: '' })
 
     const response = await createSessionPreviewRawResponse('missing-preview')
 

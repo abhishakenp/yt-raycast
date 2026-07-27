@@ -26,10 +26,6 @@ describe('engine workspace', () => {
     const workspace = join(createTempRoot(), 'session')
     mkdirSync(workspace, { recursive: true })
     writeFileSync(
-      join(workspace, 'index.html'),
-      '<!doctype html><h1>Preview</h1>',
-    )
-    writeFileSync(
       join(workspace, 'site-spec.json'),
       JSON.stringify({ brand: 'Preview' }),
     )
@@ -44,7 +40,6 @@ describe('engine workspace', () => {
     )
 
     expect(readEngineWorkspaceArtifacts(workspace)).toEqual({
-      html: '<!doctype html><h1>Preview</h1>',
       siteSpecJson: '{"brand":"Preview"}',
       openUiSource: 'page Home {}',
       tasks: [
@@ -56,12 +51,10 @@ describe('engine workspace', () => {
   it('clears stale files before engine generation starts', () => {
     const workspace = join(createTempRoot(), 'session')
     mkdirSync(workspace, { recursive: true })
-    writeFileSync(join(workspace, 'index.html'), '<h1>Stale</h1>')
+    writeFileSync(join(workspace, 'site-spec.json'), '{"brand":"Stale"}')
 
     prepareEngineWorkspace(workspace)
 
-    expect(() => readEngineWorkspaceArtifacts(workspace)).toThrow(
-      'Ship Fast engine did not write index.html',
-    )
+    expect(readEngineWorkspaceArtifacts(workspace).siteSpecJson).toBeUndefined()
   })
 })

@@ -9,7 +9,6 @@ import {
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
 } from 'react'
 import {
   Box,
@@ -40,6 +39,7 @@ import {
 } from '@/features/editing/element-path'
 import { IntroLoader } from '@/components/GenUI/IntroLoader'
 import { SessionGeneratedPreview } from '@/features/dashboard/components/SessionGeneratedPreview'
+import { PreviewErrorBoundary } from '@/features/dashboard/components/PreviewErrorBoundary'
 import { useClonePageNav } from '@/features/clone/hooks/useClonePageNav'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { createPendingDashboardSaves } from '@/features/dashboard/lib/pending-dashboard-saves'
@@ -108,7 +108,6 @@ const BillingPanel = lazy(() =>
 )
 interface DashboardProps {
   sessionId: string
-  initialGenerationView?: DashboardGenerationView | null
 }
 
 export type DashboardGenerationView = {
@@ -353,24 +352,6 @@ function readSiteThemeName(specJson: string | undefined): string | null {
   }
 }
 
-function isFullHtmlDocument(html: string | undefined): boolean {
-  return (
-    typeof html === 'string' &&
-    (/^\s*<!doctype\s+html/i.test(html) || /^\s*<html[\s>]/i.test(html))
-  )
-}
-
-function isOpenUIHandoffHtml(html: string | undefined): boolean {
-  return (
-    typeof html === 'string' &&
-    isFullHtmlDocument(html) &&
-    (((/id=["']ship-fast-openui-source["']/i.test(html) ||
-      /Generated OpenUI source is ready/i.test(html)) &&
-      /data-openui-ready=["']source["']/i.test(html)) ||
-      /id=["']openui-client-source["']/i.test(html))
-  )
-}
-
 const ToolPopoverFallback = () => (
   <div className="grid gap-3" aria-hidden="true">
     <div className="h-7 w-1/2 rounded-lg bg-white/[0.08]" />
@@ -462,10 +443,6 @@ function GenerationFailureState({ errorMessage }: { errorMessage: string }) {
   )
 }
 
-const subscribeToHydration = () => () => undefined
-const getHydratedClientSnapshot = () => true
-const getHydratedServerSnapshot = () => false
-
 /** Resolve the section-edit selection to send to the AI patcher.
  *  Prefers the inspector's current selection (when the section inspector
  *  already selected something); otherwise builds one from the inline toolbar's
@@ -486,10 +463,7 @@ export function resolveSectionEditSelection({
   return buildInspectorSelection(previewRoot, activeElement)
 }
 
-export function Dashboard({
-  initialGenerationView,
-  sessionId,
-}: DashboardProps) {
+export function Dashboard({ sessionId }: DashboardProps) {
   const [startedFromGenerationFlow] = useState(() =>
     typeof window === 'undefined'
       ? false
@@ -605,20 +579,13 @@ export function Dashboard({
   const [publishError, setPublishError] = useState<string>()
   const [isSectionEditing, setIsSectionEditing] = useState(false)
   const [sectionEditError, setSectionEditError] = useState<string>()
-  const liveGenerationView = useQuery(api.sessions.getGenerationView, {
+  // Last-known-good streaming: track the last source that rendered without
+  // crashing. When a new streaming chunk crashes, we fall back to this.
+  const lastGoodSourceRef = useRef<string | null>(null)
+  const [crashedSource, setCrashedSource] = useState<string | null>(null)
+  const generationView = useQuery(api.sessions.getGenerationView, {
     lookup: sessionId,
   }) as DashboardGenerationView | null | undefined
-  const hasHydrated = useSyncExternalStore(
-    subscribeToHydration,
-    getHydratedClientSnapshot,
-    getHydratedServerSnapshot,
-  )
-  const generationView =
-    !hasHydrated && initialGenerationView === undefined
-      ? undefined
-      : liveGenerationView === undefined
-        ? initialGenerationView
-        : liveGenerationView
   const resolvedSessionId = generationView?.session.sessionId
   const clonePageNav = useClonePageNav(resolvedSessionId ?? sessionId)
   const isMissingSession = generationView === null
@@ -628,31 +595,21 @@ export function Dashboard({
     Boolean(generationView.session.errorCode) &&
     generationView.session.status !== 'preview_ready'
   const homeModule = generationView?.homeModule
-  const cmsPreviewHtml = generationView?.latestPreview?.html
-  const cmsPreviewSource =
-    typeof cmsPreviewHtml === 'string' &&
-    cmsPreviewHtml.length > 0 &&
-    !isOpenUIHandoffHtml(cmsPreviewHtml) &&
-    (cmsPreviewHtml.includes('ship-fast-cms:') ||
-      isFullHtmlDocument(cmsPreviewHtml))
-      ? cmsPreviewHtml
-      : undefined
   const hasRenderableClonePage = Boolean(
     clonePageNav.currentHtml || clonePageNav.currentUrl,
   )
   const hasRenderableHomeSource =
     (typeof homeModule?.source === 'string' &&
       homeModule.source.trim().length > 0) ||
-    Boolean(cmsPreviewSource) ||
     hasRenderableClonePage
   const isPreviewReady =
     !isMissingSession &&
     generationView?.session.status === 'preview_ready' &&
     hasRenderableHomeSource
-  const isPreviewRenderable =
-    !isMissingSession &&
-    hasRenderableHomeSource &&
-    (isPreviewReady || homeModule?.status === 'running')
+  // Render as soon as any source is available — the PreviewErrorBoundary
+  // catches render crashes and the last-known-good logic keeps the previous
+  // frame if a streaming chunk breaks. No need to wait for preview_ready.
+  const isPreviewRenderable = !isMissingSession && hasRenderableHomeSource
   const sidePanelQueryArgs =
     resolvedSessionId === undefined || !isPreviewReady
       ? 'skip'
@@ -950,19 +907,40 @@ export function Dashboard({
   const renderedPreviewSource =
     clonePageNav.isClone && clonePageNav.currentHtml
       ? clonePageNav.currentHtml
-      : (cmsPreviewSource ?? homeModule?.source ?? '')
+      : (homeModule?.source ?? '')
   const activePreviewIdentity = JSON.stringify([
     activeSessionId,
     activePreviewLocale,
     activePreviewPage,
   ])
-  const renderedPreviewRevision = cmsPreviewSource
-    ? `cms:${generationView?.latestPreview?.version ?? generationView?.session.previewVersion ?? homeModule?.updatedAt ?? 'latest'}`
-    : `${homeModule?.updatedAt ?? generationView?.session.previewVersion}`
+  const renderedPreviewRevision = `${homeModule?.updatedAt ?? generationView?.session.previewVersion}`
   const renderedPreviewKey = `${renderedPreviewRevision}:${JSON.stringify([
     activeSessionId,
     activePreviewPage,
   ])}`
+  // Last-known-good: if the current source crashed during render, fall back
+  // to the last source that rendered successfully. This enables incremental
+  // streaming — a broken chunk doesn't blank the preview.
+  const effectivePreviewSource =
+    crashedSource && lastGoodSourceRef.current
+      ? lastGoodSourceRef.current
+      : renderedPreviewSource
+  // Reset crash state when a new source arrives (different from the crashed one)
+  useEffect(() => {
+    if (crashedSource !== null && renderedPreviewSource !== crashedSource) {
+      setCrashedSource(null)
+    }
+  }, [crashedSource, renderedPreviewSource])
+  // Track last good source after a successful render (no crash)
+  useEffect(() => {
+    if (
+      effectivePreviewSource &&
+      effectivePreviewSource.trim().length > 0 &&
+      !crashedSource
+    ) {
+      lastGoodSourceRef.current = effectivePreviewSource
+    }
+  }, [effectivePreviewSource, crashedSource])
   const activePreviewIdentityRef = useRef(activePreviewIdentity)
   activePreviewIdentityRef.current = activePreviewIdentity
   const previousPreviewIdentityRef = useRef(activePreviewIdentity)
@@ -2022,41 +2000,56 @@ export function Dashboard({
                         {isPreviewRenderable &&
                         (homeModule?.source || clonePageNav.currentUrl) &&
                         generationView ? (
-                          <SessionGeneratedPreview
-                            commerceMode={
-                              commerceConfig?.status === 'ready'
-                                ? 'hosted'
-                                : 'disabled'
+                          <PreviewErrorBoundary
+                            sourceKey={effectivePreviewSource}
+                            onError={() =>
+                              setCrashedSource(effectivePreviewSource)
                             }
-                            // Use homeModule.updatedAt for normal previews to avoid remounting on
-                            // unrelated previewVersion bumps. CMS-promoted HTML is versioned by the
-                            // latest preview because that HTML is now the displayed source.
-                            key={renderedPreviewKey}
-                            source={renderedPreviewSource}
-                            sourceUrl={
-                              clonePageNav.isClone
-                                ? clonePageNav.currentUrl
-                                : null
+                            fallback={
+                              <div
+                                role="status"
+                                className="flex size-full items-center justify-center bg-background p-8 text-center text-sm text-muted-foreground"
+                              >
+                                Generating preview…
+                              </div>
                             }
-                            sessionId={activeSessionId}
-                            siteSpecJson={generationView.siteSpec?.specJson}
-                            locale={activePreviewLocale}
-                            prompt={generationView.session.prompt}
-                            selectedBrandLogo={activeBrand}
-                            imageOverrides={imageOverrides}
-                            styleOverrides={styleOverrides}
-                            textOverrides={textOverrides}
-                            isDark={isDark}
-                            themeStyles={themeStyles}
-                            deviceMode={currentDevice}
-                            onPreviewSelect={handlePreviewSelect}
-                            editMode={editMode}
-                            onTextChange={handleTextChange}
-                            onImageChange={handleImageChange}
-                            onElementActivate={handleElementActivate}
-                            onCommitText={handleCommitTextReady}
-                            onSectionSelect={handleSectionSelect}
-                          />
+                          >
+                            <SessionGeneratedPreview
+                              commerceMode={
+                                commerceConfig?.status === 'ready'
+                                  ? 'hosted'
+                                  : 'disabled'
+                              }
+                              // Use homeModule.updatedAt for normal previews to avoid remounting on
+                              // unrelated previewVersion bumps. CMS-promoted HTML is versioned by the
+                              // latest preview because that HTML is now the displayed source.
+                              key={renderedPreviewKey}
+                              source={effectivePreviewSource}
+                              sourceUrl={
+                                clonePageNav.isClone
+                                  ? clonePageNav.currentUrl
+                                  : null
+                              }
+                              sessionId={activeSessionId}
+                              siteSpecJson={generationView.siteSpec?.specJson}
+                              locale={activePreviewLocale}
+                              prompt={generationView.session.prompt}
+                              selectedBrandLogo={activeBrand}
+                              imageOverrides={imageOverrides}
+                              styleOverrides={styleOverrides}
+                              textOverrides={textOverrides}
+                              isDark={isDark}
+                              themeStyles={themeStyles}
+                              deviceMode={currentDevice}
+                              onPreviewSelect={handlePreviewSelect}
+                              editMode={editMode}
+                              onTextChange={handleTextChange}
+                              onImageChange={handleImageChange}
+                              onElementActivate={handleElementActivate}
+                              onCommitText={handleCommitTextReady}
+                              onSectionSelect={handleSectionSelect}
+                            />
+                          </PreviewErrorBoundary>
                         ) : null}
                       </div>
                     </div>

@@ -51,18 +51,6 @@ const editAppliesToLocale = (edit: object, locale: string): boolean => {
   )
 }
 
-const isFullHtmlDocument = (html: string | undefined): boolean =>
-  typeof html === 'string' &&
-  (/^\s*<!doctype\s+html/i.test(html) || /^\s*<html[\s>]/i.test(html))
-
-const isOpenUIHandoffHtml = (html: string | undefined): boolean =>
-  typeof html === 'string' &&
-  isFullHtmlDocument(html) &&
-  (((/id=["']ship-fast-openui-source["']/i.test(html) ||
-    /Generated OpenUI source is ready/i.test(html)) &&
-    /data-openui-ready=["']source["']/i.test(html)) ||
-    /id=["']openui-client-source["']/i.test(html))
-
 const readSiteThemeName = (specJson: string | undefined): string | null => {
   if (!specJson) return null
   try {
@@ -87,22 +75,12 @@ export const SessionPreviewPage = ({ sessionId }: { sessionId: string }) => {
   const clonePageNav = useClonePageNav(activeSessionId)
   const editController = useEditController(activeSessionId)
   const homeModule = generationView?.homeModule
-  const cmsPreviewHtml = generationView?.latestPreview?.html
-  const cmsPreviewSource =
-    typeof cmsPreviewHtml === 'string' &&
-    cmsPreviewHtml.length > 0 &&
-    !isOpenUIHandoffHtml(cmsPreviewHtml) &&
-    (cmsPreviewHtml.includes('ship-fast-cms:') ||
-      isFullHtmlDocument(cmsPreviewHtml))
-      ? cmsPreviewHtml
-      : undefined
   const hasRenderableClonePage = Boolean(
     clonePageNav.currentHtml || clonePageNav.currentUrl,
   )
   const hasRenderableHomeSource =
     (typeof homeModule?.source === 'string' &&
       homeModule.source.trim().length > 0) ||
-    Boolean(cmsPreviewSource) ||
     hasRenderableClonePage
   const isPreviewReady =
     generationView?.session.status === 'preview_ready' &&
@@ -195,10 +173,8 @@ export const SessionPreviewPage = ({ sessionId }: { sessionId: string }) => {
   const renderedPreviewSource =
     clonePageNav.isClone && clonePageNav.currentHtml
       ? clonePageNav.currentHtml
-      : (cmsPreviewSource ?? homeModule?.source ?? '')
-  const renderedPreviewRevision = cmsPreviewSource
-    ? `cms:${generationView.latestPreview?.version ?? generationView.session.previewVersion ?? homeModule?.updatedAt ?? 'latest'}`
-    : `${homeModule?.updatedAt ?? generationView.session.previewVersion}`
+      : (homeModule?.source ?? '')
+  const renderedPreviewRevision = `${homeModule?.updatedAt ?? generationView.session.previewVersion}`
   const renderedPreviewKey = `${renderedPreviewRevision}:${JSON.stringify([
     activeSessionId,
     activePreviewPage,
