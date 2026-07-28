@@ -531,7 +531,7 @@ function SplitHeroInner(props: Record<string, unknown>) {
                     key={i}
                     className="flex flex-col gap-3 border-b border-r border-border p-5 sm:p-7"
                   >
-                    <dt className="text-[clamp(2.25rem,4.5vw,3.75rem)] font-extrabold leading-none tracking-tight tabular-nums text-foreground">
+                    <dt className="text-[clamp(2.25rem,4.5vw,3.75rem)] font-extralight leading-none tracking-tight tabular-nums text-foreground">
                       {s.value}
                     </dt>
                     <dd>
@@ -1021,60 +1021,61 @@ function CardGridInner(props: Record<string, unknown>) {
   const decor = (props.decor as DecorVariant) ?? 'none'
   const columns = cols === 2 ? 2 : cols === 4 ? 4 : 3
 
-  // ── Editorial: MarketingAgencyServices-style with clip-path seam, sticker heading, hard shadow cards ──
+  // ── Editorial: ArchitectureFirm-style hairline ledger grid — collapsed-border cells, ghost numerals ──
   if (chrome === 'editorial') {
     return (
-      <P.Section
-        className={cn(
-          'relative overflow-hidden bg-muted/40 pt-20 pb-20 lg:pt-28 lg:pb-28',
-          diagonalSeamClass,
-        )}
-      >
-        <Container className="relative">
+      <P.Section className="relative overflow-hidden py-16 sm:py-24 lg:py-28">
+        <Container>
           <EditorialSectionHeader
             index="01 /"
             eyebrow="Services"
             heading={heading}
             description={subheading}
+            metaLabel="Catalog"
             meta={String(cards.length).padStart(2, '0')}
           />
           <div
             className={cn(
-              'grid gap-6 lg:gap-8',
-              columns === 2 && 'md:grid-cols-2',
-              columns === 3 && 'md:grid-cols-3',
-              columns === 4 && 'grid-cols-2 md:grid-cols-4',
+              'grid gap-0 border-l border-t border-border',
+              columns === 2 && 'grid-cols-1 sm:grid-cols-2',
+              columns === 3 && 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+              columns === 4 && 'grid-cols-2 lg:grid-cols-4',
             )}
           >
             {cards.map((card, i) => (
               <div
                 key={i}
-                className="group flex flex-col gap-0 rounded-none border border-foreground/80 bg-card p-6 shadow-[6px_6px_0_0] shadow-foreground/10 transition-[transform,box-shadow,border-color] duration-150 hover:-translate-y-0.5 hover:border-foreground hover:shadow-[8px_8px_0_0] hover:shadow-foreground/15 motion-reduce:transform-none"
+                className="group relative overflow-hidden border-b border-r border-border p-6 sm:p-8"
               >
-                {card.imageAlt && (
-                  <div className="mb-4 overflow-hidden border-b border-foreground/80">
-                    <P.ImageBlock
-                      alt={card.imageAlt}
-                      src={card.imageSrc}
-                      className="aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </div>
-                )}
-                <MonoTag className="flex items-center gap-2" tone="faint">
-                  <span
-                    aria-hidden="true"
-                    className="size-1.5 shrink-0 bg-primary"
-                  />
-                  {String(i + 1).padStart(2, '0')} / Service
-                </MonoTag>
-                <h3 className="mt-4 text-xl font-bold tracking-tight text-card-foreground">
-                  {card.title}
-                </h3>
-                {card.description && (
-                  <p className="mt-2 leading-relaxed text-muted-foreground">
-                    {card.description}
-                  </p>
-                )}
+                {/* Giant ghost numeral */}
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -right-2 -top-6 select-none text-[6rem] font-extralight leading-none tracking-tighter text-foreground/[0.06] sm:text-[7rem]"
+                >
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <div className="relative">
+                  {card.imageAlt && (
+                    <div className="mb-4 overflow-hidden border border-foreground/25 bg-muted">
+                      <P.ImageBlock
+                        alt={card.imageAlt}
+                        src={card.imageSrc}
+                        className="aspect-video w-full object-cover grayscale transition-[filter,transform] duration-500 group-hover:scale-[1.03] group-hover:grayscale-0"
+                      />
+                    </div>
+                  )}
+                  <MonoTag className="text-foreground">
+                    {String(i + 1).padStart(2, '0')} / Service
+                  </MonoTag>
+                  <h3 className="mt-3 text-xl font-light tracking-tight text-foreground">
+                    {card.title}
+                  </h3>
+                  {card.description && (
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                      {card.description}
+                    </p>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -1688,25 +1689,28 @@ function TestimonialRowInner(props: Record<string, unknown>) {
   const index = props.index as string | undefined
   const columns = cols === 2 ? 2 : 3
 
-  // ── Editorial: MarketingAgency-style with clip-path seam, sticker heading, hard shadow cards ──
+  // ── Editorial: ArchitectureFirmTestimonials-style — hairline cards, ghost quote, grayscale portraits ──
   if (chrome === 'editorial') {
     return (
-      <P.Section
-        className={cn(
-          'relative overflow-hidden bg-muted/40 pt-20 pb-20 lg:pt-28 lg:pb-28',
-          diagonalSeamClass,
-        )}
-      >
+      <P.Section className="relative overflow-hidden bg-card py-16 sm:py-24 lg:py-28">
+        {/* Giant ghost serif quotation mark */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-16 right-0 select-none font-serif text-[14rem] leading-none text-foreground/[0.04] sm:text-[20rem] lg:-top-24 lg:text-[26rem]"
+        >
+          &rdquo;
+        </span>
         <Container className="relative">
           <EditorialSectionHeader
-            index="02 /"
-            eyebrow="Testimonials"
+            index="04 /"
+            eyebrow="Client Words"
             heading={heading}
+            metaLabel="Transcripts"
             meta={String(testimonials.length).padStart(2, '0')}
           />
           <div
             className={cn(
-              'grid gap-6 lg:gap-8',
+              'grid gap-6 [&>*]:gap-6 lg:[&>*]:gap-8',
               columns === 2 ? 'md:grid-cols-2' : 'md:grid-cols-3',
             )}
           >
@@ -1714,31 +1718,34 @@ function TestimonialRowInner(props: Record<string, unknown>) {
               <div
                 key={i}
                 className={cn(
-                  'group flex flex-col rounded-none border border-foreground/80 bg-card p-6 shadow-[6px_6px_0_0] shadow-foreground/10 transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-[9px_9px_0_0] hover:shadow-foreground/20 motion-reduce:transform-none',
-                  i % 3 === 1 && 'lg:translate-y-8',
+                  'group flex flex-col gap-6 rounded-none border border-border bg-background p-6 transition-colors duration-200 hover:border-foreground/40 sm:p-8',
+                  i % 3 === 1 && 'lg:translate-y-10',
                 )}
               >
-                <QuoteMark className="mb-3" />
-                <StarRating count={5} className="mb-4" />
-                <p className="flex-1 text-base leading-relaxed text-card-foreground">
+                <MonoTag className="text-foreground">
+                  Client {String(i + 1).padStart(2, '0')}
+                </MonoTag>
+                <p className="flex-1 text-base font-light leading-relaxed text-foreground">
                   {t.quote}
                 </p>
-                <div className="mt-6 border-t border-border pt-4">
-                  <MonoTag
-                    aria-hidden="true"
-                    tone="faint"
-                    className="mb-3 block"
-                  >
-                    No. {String(i + 1).padStart(2, '0')}
-                  </MonoTag>
-                  <p className="text-lg font-bold tracking-tight text-card-foreground">
-                    {t.author}
-                  </p>
-                  {t.role && (
-                    <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-                      {t.role}
-                    </p>
-                  )}
+                <div className="border-t border-border pt-5">
+                  <div className="flex items-center gap-3">
+                    <P.ImageBlock
+                      alt={`${t.author} portrait`}
+                      src={undefined}
+                      className="size-10 shrink-0 border border-border object-cover grayscale transition-[filter] duration-500 group-hover:grayscale-0"
+                    />
+                    <span className="flex flex-col gap-1">
+                      <span className="font-normal text-foreground">
+                        {t.author}
+                      </span>
+                      {t.role && (
+                        <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                          {t.role}
+                        </span>
+                      )}
+                    </span>
+                  </div>
                 </div>
               </div>
             ))}
@@ -2337,59 +2344,64 @@ function StatsStripInner(props: Record<string, unknown>) {
     )
   }
 
-  // Editorial: inverted dark band with slanted seam + giant serif numerals + watermark
+  // Editorial: ArchitectureFirmStats-style — inverted ink band, clip-path seam, inverted graph paper, measurement ticks
   if (chrome === 'editorial') {
     return (
       <P.Section
         className={cn(
-          'relative overflow-hidden bg-foreground text-background [clip-path:polygon(0_3rem,100%_0,100%_100%,0_100%)] pt-20 sm:pt-28 lg:pt-36',
+          'relative overflow-hidden bg-foreground py-14 pt-20 text-background [clip-path:polygon(0_3rem,100%_0,100%_100%,0_100%)] sm:py-20 sm:pt-28 lg:py-24 lg:pt-32',
         )}
       >
-        <WatermarkDecor
-          watermark={watermark ?? '§'}
-          className="-bottom-20 right-0 text-[18rem] text-background/[0.04]"
-        />
-        <Container size="xl" className="relative py-16">
-          <div className="mb-12 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            {heading && (
-              <h2 className="text-3xl font-serif font-light tracking-tight text-background sm:text-4xl">
-                {heading}
-              </h2>
-            )}
-            {index && (
-              <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-background/40">
-                {index}
-              </span>
-            )}
+        <GraphPaper className="inset-0 text-background/[0.07]" />
+        <Container className="relative">
+          {/* Mono annotation rail */}
+          <div
+            aria-hidden="true"
+            className="mb-10 flex items-center gap-4 font-mono text-[10px] uppercase tracking-[0.2em] text-background/50"
+          >
+            <span className="shrink-0 text-background/80">Site data</span>
+            <span className="shrink-0">/ Survey</span>
+            <span className="h-px flex-1 bg-background/20" />
+            <span className="hidden shrink-0 sm:inline">Sheet 04</span>
           </div>
+          {heading && (
+            <h2 className="mb-10 text-3xl font-extralight tracking-tight text-background sm:text-4xl lg:text-5xl">
+              {heading}
+            </h2>
+          )}
           <div
             className={cn(
-              'grid gap-0',
-              columns === 2 && 'grid-cols-2',
-              columns === 3 && 'grid-cols-3',
-              columns === 4 && 'grid-cols-2 sm:grid-cols-4',
+              'grid grid-cols-2 gap-0 border-l border-t border-background/20 lg:grid-cols-4',
+              columns === 2 && 'lg:grid-cols-2',
+              columns === 3 && 'lg:grid-cols-3',
             )}
           >
             {stats.map((s, i) => (
               <div
                 key={i}
-                className={cn(
-                  'p-6 sm:p-8',
-                  i < stats.length - 1 && 'border-border/20',
-                  columns === 4 && i < 2 && 'border-b',
-                  columns === 4 && i % 2 === 0 && 'sm:border-r',
-                  columns === 2 && i === 0 && 'border-r',
-                  columns === 3 && i < 2 && 'border-r',
-                )}
+                className="flex flex-col gap-3 border-b border-r border-background/20 p-5 sm:p-8"
               >
-                <dt className="text-4xl font-serif font-light tabular-nums tracking-tight text-background sm:text-5xl">
+                <dt className="text-[clamp(2.75rem,6vw,5.5rem)] font-extralight leading-none tracking-tight tabular-nums text-background">
                   {s.value}
                 </dt>
-                <dd className="mt-2">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-background/50">
+                <dd>
+                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-background/60 sm:text-[11px]">
                     {s.label}
                   </span>
                 </dd>
+                {/* Measurement tick motif */}
+                <span aria-hidden="true" className="mt-1 flex items-end gap-1">
+                  <span className="h-3 w-px bg-background/60" />
+                  <span className="h-1.5 w-px bg-background/30" />
+                  <span className="h-1.5 w-px bg-background/30" />
+                  <span className="h-1.5 w-px bg-background/30" />
+                  <span
+                    className={cn(
+                      'h-3 w-px bg-background/60',
+                      i % 2 === 1 && 'bg-primary',
+                    )}
+                  />
+                </span>
               </div>
             ))}
           </div>
@@ -2734,61 +2746,61 @@ function NumberedListInner(props: Record<string, unknown>) {
   const chrome = (props.chrome as ChromeVariant) ?? 'editorial'
   const index = props.index as string | undefined
 
-  // ── Editorial: staggered process grid with ghost numerals + sticker highlight heading ──
+  // ── Editorial: ArchitectureFirmProcess-style — collapsed-border hairline cells, ghost numerals, graph paper ──
   if (chrome === 'editorial') {
-    const headingWords = heading.split(' ')
-    const headingMark = headingWords.at(-1) ?? ''
-    const headingLead = headingWords.slice(0, -1).join(' ')
     return (
-      <P.Section
-        className={cn(
-          'relative overflow-hidden bg-muted/40 pt-20 pb-20 lg:pt-28 lg:pb-28',
-          diagonalSeamClass,
-        )}
-      >
+      <P.Section className="relative overflow-hidden py-16 sm:py-24 lg:py-28">
+        <GraphPaper className="inset-y-0 right-0 w-1/2 [mask-image:linear-gradient(to_left,black,transparent)]" />
         <Container className="relative">
           <EditorialSectionHeader
             index="03 /"
-            eyebrow="Process"
+            eyebrow="How We Work"
             heading={heading}
-            description={subheading}
-            meta={`${String(steps.length).padStart(2, '0')} steps`}
+            metaLabel="Scale 1:100"
+            meta="Rev. C"
           />
-          <div className="grid gap-6 lg:gap-8 md:grid-cols-3">
+          {/* Full-width measurement dimension line above the phase cells. */}
+          <span
+            aria-hidden="true"
+            className="mb-0 flex items-center gap-2 pb-8 text-border"
+          >
+            <span className="h-2.5 w-px bg-current" />
+            <span className="h-px flex-1 bg-current" />
+            <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+              {String(steps.length).padStart(2, '0')} phases
+            </span>
+            <span className="h-px flex-1 bg-current" />
+            <span className="h-2.5 w-px bg-current" />
+          </span>
+          <div className="grid grid-cols-1 gap-0 border-l border-t border-border sm:grid-cols-3">
             {steps.map((step, i) => (
               <div
                 key={i}
-                className={cn(
-                  'group flex flex-col gap-0 rounded-none border border-foreground/80 bg-card p-6 shadow-[6px_6px_0_0] shadow-foreground/10 transition-[transform,box-shadow,border-color] duration-150 hover:-translate-y-0.5 hover:border-foreground hover:shadow-[8px_8px_0_0] hover:shadow-foreground/15 motion-reduce:transform-none',
-                  i % 3 === 1 && 'lg:translate-y-8',
-                )}
+                className="relative overflow-hidden border-b border-r border-border p-6 sm:p-8"
               >
-                <CardGhostNumeral index={i} />
-                <MonoTag className="flex items-center gap-2" tone="faint">
-                  <span
-                    aria-hidden="true"
-                    className="size-1.5 shrink-0 bg-primary"
-                  />
-                  Step {String(i + 1).padStart(2, '0')}
-                </MonoTag>
-                <h3 className="mt-4 text-xl font-bold tracking-tight text-card-foreground">
-                  {step.title}
-                </h3>
-                {step.description && (
-                  <p className="mt-2 leading-relaxed text-muted-foreground">
-                    {step.description}
-                  </p>
-                )}
+                {/* Giant ghost ordinal */}
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -right-2 -top-6 select-none text-[6rem] font-extralight leading-none tracking-tighter text-foreground/[0.06] sm:text-[7rem]"
+                >
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <div className="relative">
+                  <MonoTag className="text-foreground">
+                    Phase {String(i + 1).padStart(2, '0')}
+                  </MonoTag>
+                  <h3 className="mb-3 mt-5 text-xl font-light tracking-tight text-foreground">
+                    {step.title}
+                  </h3>
+                  {step.description && (
+                    <p className="text-sm leading-relaxed text-muted-foreground">
+                      {step.description}
+                    </p>
+                  )}
+                </div>
               </div>
             ))}
           </div>
-          <MonoTag
-            aria-hidden="true"
-            tone="faint"
-            className="mt-12 block md:mt-24"
-          >
-            [ {steps.map((s) => s.title.toLowerCase()).join(' → ')} ]
-          </MonoTag>
         </Container>
       </P.Section>
     )
@@ -4376,54 +4388,51 @@ function ValuePropsInner(props: Record<string, unknown>) {
   const index = props.index as string | undefined
   const columns = cols === 2 ? 2 : cols === 4 ? 4 : 3
 
-  // ── Editorial: clip-path seam, sticker heading, hard shadow cards ──
+  // ── Editorial: ArchitectureFirm-style hairline ledger grid — collapsed-border cells, ghost numerals ──
   if (chrome === 'editorial') {
     return (
-      <P.Section
-        className={cn(
-          'relative overflow-hidden bg-muted/40 pt-20 pb-20 lg:pt-28 lg:pb-28',
-          diagonalSeamClass,
-        )}
-      >
-        <Container className="relative">
+      <P.Section className="relative overflow-hidden py-16 sm:py-24 lg:py-28">
+        <Container>
           <EditorialSectionHeader
             index="01 /"
             eyebrow="Principles"
             heading={heading}
+            metaLabel="Catalog"
             meta={String(values.length).padStart(2, '0')}
           />
           <div
             className={cn(
-              'grid gap-6 lg:gap-8',
-              columns === 2 && 'md:grid-cols-2',
-              columns === 3 && 'md:grid-cols-3',
-              columns === 4 && 'grid-cols-2 md:grid-cols-4',
+              'grid gap-0 border-l border-t border-border',
+              columns === 2 && 'grid-cols-1 sm:grid-cols-2',
+              columns === 3 && 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+              columns === 4 && 'grid-cols-2 lg:grid-cols-4',
             )}
           >
             {values.map((v, i) => (
               <div
                 key={i}
-                className={cn(
-                  'group flex flex-col gap-0 rounded-none border border-foreground/80 bg-card p-6 shadow-[6px_6px_0_0] shadow-foreground/10 transition-[transform,box-shadow,border-color] duration-150 hover:-translate-y-0.5 hover:border-foreground hover:shadow-[8px_8px_0_0] hover:shadow-foreground/15 motion-reduce:transform-none',
-                  i % 3 === 1 && 'lg:translate-y-8',
-                )}
+                className="group relative overflow-hidden border-b border-r border-border p-6 sm:p-8"
               >
-                <CardGhostNumeral index={i} />
-                <MonoTag className="flex items-center gap-2" tone="faint">
-                  <span
-                    aria-hidden="true"
-                    className="size-1.5 shrink-0 bg-primary"
-                  />
-                  {String(i + 1).padStart(2, '0')} / Principle
-                </MonoTag>
-                <h3 className="mt-4 text-xl font-bold tracking-tight text-card-foreground">
-                  {v.title}
-                </h3>
-                {v.description && (
-                  <p className="mt-2 leading-relaxed text-muted-foreground">
-                    {v.description}
-                  </p>
-                )}
+                {/* Giant ghost numeral */}
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -right-2 -top-6 select-none text-[6rem] font-extralight leading-none tracking-tighter text-foreground/[0.06] sm:text-[7rem]"
+                >
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <div className="relative">
+                  <MonoTag className="text-foreground">
+                    A.{String(i + 1).padStart(2, '0')}
+                  </MonoTag>
+                  <h3 className="mb-2 mt-5 text-xl font-light tracking-tight text-foreground">
+                    {v.title}
+                  </h3>
+                  {v.description && (
+                    <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
+                      {v.description}
+                    </p>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -5107,6 +5116,7 @@ function ProjectGalleryInner(props: Record<string, unknown>) {
             eyebrow="Selected Work"
             heading={heading}
             description="A selection of completed and ongoing work spanning residential, commercial, and cultural typologies."
+            metaLabel="Projects"
             meta={String(projects.length).padStart(2, '0')}
           />
           <div
