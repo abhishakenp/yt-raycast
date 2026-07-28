@@ -1524,23 +1524,24 @@ export function VaryingTickBar({ index }: { index: number }) {
   )
 }
 
-/** Section header with mono annotation rail + sticker heading + description
- *  on a hairline left rule. From ArchitectureFirmWork/MarketingAgency. */
+/** Section header with mono annotation rail + ultra-thin heading + description
+ *  on a hairline left rule. From ArchitectureFirmWork/Philosophy/Process/
+ *  Testimonials. Editorial style — font-extralight, NOT sticker. */
 export function EditorialSectionHeader({
   index,
   eyebrow,
   heading,
-  highlight,
   description,
   meta,
+  metaLabel,
   className,
 }: {
   index?: string
   eyebrow?: string
   heading: string
-  highlight?: string
   description?: string
   meta?: string
+  metaLabel?: string
   className?: string
 }) {
   return (
@@ -1560,23 +1561,30 @@ export function EditorialSectionHeader({
             <span aria-hidden="true" className="h-px w-16 bg-border" />
           </div>
         )}
-        <StickerHeading heading={heading} highlight={highlight} />
-        {description && (
-          <p className="mt-4 text-lg text-muted-foreground">{description}</p>
-        )}
+        <h2 className="text-4xl font-extralight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+          {heading}
+        </h2>
       </div>
       {description && (
-        <p className="hidden max-w-md border-l border-border pl-5 text-sm leading-relaxed text-muted-foreground md:block">
+        <p className="max-w-md border-l border-border pl-5 text-sm leading-relaxed text-muted-foreground">
           {description}
         </p>
       )}
-      {meta && (
-        <p
+      {metaLabel && (
+        <MonoTag
           aria-hidden="true"
-          className="shrink-0 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60"
+          className="shrink-0 text-muted-foreground/50"
         >
-          [ {meta} ]
-        </p>
+          {metaLabel} / {meta}
+        </MonoTag>
+      )}
+      {!metaLabel && meta && (
+        <MonoTag
+          aria-hidden="true"
+          className="shrink-0 text-muted-foreground/50"
+        >
+          {meta}
+        </MonoTag>
       )}
     </div>
   )

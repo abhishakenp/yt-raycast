@@ -581,15 +581,19 @@ describe('ChromeSystem — subscriber forms', () => {
     expect(screen.getByText('Initech')).toBeTruthy()
   })
 
-  it('TestimonialRow with chrome:editorial renders quote marks and star ratings', () => {
+  it('TestimonialRow with chrome:editorial renders quote marks and client labels', () => {
     const { container } = renderCapsule(TestimonialRow, {
       heading: 'Reviews',
       chrome: 'editorial',
       testimonials: [{ quote: 'Great!', author: 'Jane', role: 'CEO' }],
     })
     expect(screen.getByText('Great!')).toBeTruthy()
-    // Star rating SVGs (5 stars)
-    const stars = container.querySelectorAll('svg')
-    expect(stars.length).toBeGreaterThanOrEqual(5)
+    // Editorial testimonials use "Client 01" mono labels (ArchitectureFirmTestimonials style)
+    expect(screen.getByText('Client 01')).toBeTruthy()
+    // Giant ghost quotation mark watermark
+    const quoteMark = container.querySelector(
+      '.font-serif.text-foreground\\/\\[0\\.04\\]',
+    )
+    expect(quoteMark).toBeTruthy()
   })
 })
