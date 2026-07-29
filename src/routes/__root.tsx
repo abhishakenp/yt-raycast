@@ -14,6 +14,7 @@ import { MarketingConsentController } from '@/features/partners/components/Marke
 import { useAcquisitionCapture } from '@/features/partners/hooks/useAcquisitionCapture'
 import { installDynamicImportRecovery } from '@/lib/chunk-load-recovery'
 import { initLogRocket, isLogRocketEnabled } from '@/features/logrocket/client/logrocket-init'
+import { useLogRocketIdentify } from '@/features/logrocket/client/use-logrocket-identify'
 
 import appCss from '../styles.css?url'
 
@@ -53,6 +54,8 @@ function RootDocument({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (isLogRocketEnabled()) initLogRocket()
   }, [])
+
+  useLogRocketIdentify()
 
   return (
     <html lang="en" suppressHydrationWarning>
