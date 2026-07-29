@@ -34,7 +34,7 @@ export const SHIP_FAST_MODELS: readonly ShipFastModel[] = [
 // Default to GPT-OSS 120B via Groq — the strongest reliable reasoning model
 // available. `reasoning_effort: 'low'` is sent for these models (see
 // supportsReasoningEffort / generate.ts).
-export const DEFAULT_MODEL = 'llama-3.3-70b-versatile'
+export const DEFAULT_MODEL = 'openai/gpt-oss-120b'
 
 export function isKnownModel(id: string): boolean {
   return SHIP_FAST_MODELS.some((m) => m.id === id)

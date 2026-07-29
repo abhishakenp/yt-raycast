@@ -25,164 +25,111 @@ describe('route target resolution', () => {
     expect(parseRouteTarget('')).toBeNull()
   })
 
-  it('resolves exact routes and explicit target aliases', () => {
+  it('resolves exact route names (case-insensitive)', () => {
     const routes = ['Home', 'Pricing']
-    const targetMap = {
-      'Get Started': 'Pricing#pricing_pricing',
-      'get started': 'Pricing#pricing_pricing',
-    }
 
-    expect(resolveRouteTarget('Pricing', routes, targetMap)).toEqual({
+    expect(resolveRouteTarget('Pricing', routes)).toEqual({
       page: 'Pricing',
       type: 'page',
     })
-    expect(resolveRouteTarget('Get Started', routes, targetMap)).toEqual({
+    expect(resolveRouteTarget('pricing', routes)).toEqual({
       page: 'Pricing',
-      sectionId: 'pricing_pricing',
-      type: 'section',
-    })
-  })
-
-  it('maps semantic CTA labels to meaningful page or section targets', () => {
-    const routes = ['Home', 'Plans', 'Contact']
-    const targetMap = {
-      'Book demo': 'Contact#contact_form',
-      subscribe: 'Plans#plans_pricing',
-    }
-
-    expect(resolveRouteTarget('Upgrade now', routes, targetMap)).toEqual({
-      page: 'Plans',
       type: 'page',
     })
-    expect(resolveRouteTarget('Book demo', routes, targetMap)).toEqual({
-      page: 'Contact',
-      sectionId: 'contact_form',
-      type: 'section',
-    })
-  })
-
-  it('resolves generated bespoke role labels through the shared semantic vocabulary', () => {
-    const routes = [
-      'Home',
-      'Lookbook',
-      'Programs',
-      'Booking',
-      'Speakers',
-      'Amenities',
-    ]
-    const targetMap = {
-      lookbook: 'Lookbook#lookbook_lookbook',
-      programs: 'Programs#programs_programs',
-      booking: 'Booking#booking_booking',
-      speakers: 'Speakers#speakers_speakers',
-      amenities: 'Amenities#amenities_amenities',
-    }
-
-    expect(
-      resolveRouteTarget('Explore Full Lookbook', routes, targetMap),
-    ).toEqual({
-      page: 'Lookbook',
-      type: 'page',
-    })
-    expect(resolveRouteTarget('Explore program', routes, targetMap)).toEqual({
-      page: 'Programs',
-      type: 'page',
-    })
-    expect(resolveRouteTarget('Book a room', routes, targetMap)).toEqual({
-      page: 'Booking',
-      type: 'page',
-    })
-    expect(resolveRouteTarget('Meet speakers', routes, targetMap)).toEqual({
-      page: 'Speakers',
-      type: 'page',
-    })
-    expect(resolveRouteTarget('View amenities', routes, targetMap)).toEqual({
-      page: 'Amenities',
-      type: 'page',
-    })
-  })
-
-  it('keeps unresolved targets on single-page sites on the single route', () => {
-    expect(resolveRouteTarget('Definitely missing', ['Home'], {})).toEqual({
+    expect(resolveRouteTarget('HOME', routes)).toEqual({
       page: 'Home',
       type: 'page',
     })
-    expect(resolveRouteHref('Missing', ['Home'], {})).toBe('/')
+  })
+
+  it('returns null for labels that are not exact routes (no semantic guessing)', () => {
+    const routes = ['Home', 'Plans', 'Contact']
+
+    // "Upgrade now" is not an exact route → null (falls back to hash)
+    expect(resolveRouteTarget('Upgrade now', routes)).toBe(null)
+    // "Book demo" is not an exact route → null
+    expect(resolveRouteTarget('Book demo', routes)).toBe(null)
+    // "Get Started" is not an exact route → null
+    expect(resolveRouteTarget('Get Started', routes)).toBe(null)
+  })
+
+  it('keeps unresolved targets on single-page sites on the single route', () => {
+    expect(resolveRouteTarget('Definitely missing', ['Home'])).toEqual({
+      page: 'Home',
+      type: 'page',
+    })
+    expect(resolveRouteHref('Missing', ['Home'])).toBe('/')
     expect(
-      resolveRouteHref(
-        'Stripe',
-        ['Home'],
-        {},
-        {
-          currentPage: 'Home',
-          currentPathname: '/examples/job-board',
-          previewBase: true,
-        },
-      ),
+      resolveRouteHref('Stripe', ['Home'], {
+        currentPage: 'Home',
+        currentPathname: '/examples/job-board',
+        previewBase: true,
+      }),
     ).toBe('/examples/job-board')
   })
 
   it('keeps commerce mutations out of navigation resolution', () => {
     expect(
-      resolveRouteTarget('Add Hydrating Serum to cart', ['Home', 'Cart'], {}),
+      resolveRouteTarget('Add Hydrating Serum to cart', ['Home', 'Cart']),
     ).toBe(null)
   })
 
   it('resolves page targets to exported route hrefs', () => {
-    expect(resolveRouteHref('Home', ['Home', 'Pricing'], {})).toBe('/')
-    expect(resolveRouteHref('Pricing', ['Home', 'Pricing'], {})).toBe(
-      '/pricing',
-    )
-  })
-
-  it('resolves section targets to route hrefs with hashes', () => {
-    expect(
-      resolveRouteHref('Get Started', ['Home', 'Pricing'], {
-        'Get Started': 'Pricing#pricing_pricing',
-      }),
-    ).toBe('/pricing#pricing_pricing')
+    expect(resolveRouteHref('Home', ['Home', 'Pricing'])).toBe('/')
+    expect(resolveRouteHref('Pricing', ['Home', 'Pricing'])).toBe('/pricing')
   })
 
   it('resolves preview route hrefs relative to the generate session base', () => {
     expect(
-      resolveRouteHref(
-        'Pricing',
-        ['Home', 'Pricing'],
-        {},
-        {
-          currentPage: 'Home',
-          currentPathname: '/generate/session-123',
-          previewBase: true,
-        },
-      ),
+      resolveRouteHref('Pricing', ['Home', 'Pricing'], {
+        currentPage: 'Home',
+        currentPathname: '/generate/session-123',
+        previewBase: true,
+      }),
     ).toBe('/generate/session-123/pricing')
 
     expect(
-      resolveRouteHref(
-        'Home',
-        ['Home', 'Pricing'],
-        {},
-        {
-          currentPage: 'Pricing',
-          currentPathname: '/generate/session-123/pricing',
-          previewBase: true,
-        },
-      ),
+      resolveRouteHref('Home', ['Home', 'Pricing'], {
+        currentPage: 'Pricing',
+        currentPathname: '/generate/session-123/pricing',
+        previewBase: true,
+      }),
     ).toBe('/generate/session-123')
   })
 
   it('passes through absolute, hash, and explicit path hrefs without route context', () => {
-    expect(resolveRouteHref('https://example.test', [], {})).toBe(
+    expect(resolveRouteHref('https://example.test', [])).toBe(
       'https://example.test',
     )
-    expect(resolveRouteHref('#details', [], {})).toBe('#details')
-    expect(resolveRouteHref('/pricing', [], {})).toBe('/pricing')
+    expect(resolveRouteHref('#details', [])).toBe('#details')
+    expect(resolveRouteHref('/pricing', [])).toBe('/pricing')
   })
 
   it('falls back unresolved labels to hash hrefs', () => {
-    expect(resolveRouteHref('Pricing Plans', [], {})).toBe('#pricing-plans')
-    expect(resolveRouteHref('Missing', ['Home', 'Pricing'], {})).toBe(
-      '#missing',
-    )
+    expect(resolveRouteHref('Pricing Plans', [])).toBe('#pricing-plans')
+    expect(resolveRouteHref('Missing', ['Home', 'Pricing'])).toBe('#missing')
+  })
+
+  it('does not cross-map About to Team when both are semantic matches', () => {
+    // When routes include "team" but not "about", "About" should NOT
+    // resolve to the "team" page — they are distinct concepts.
+    const routes = ['Home', 'Projects', 'Team', 'Newsletter']
+
+    // "About" has no matching route → should fall back to hash, not /team
+    const aboutHref = resolveRouteHref('About', routes)
+    expect(aboutHref).toBe('#about')
+
+    // "Team" should resolve to the team page
+    const teamHref = resolveRouteHref('Team', routes)
+    expect(teamHref).toBe('/team')
+  })
+
+  it('resolves Philosophy route when it is in the routes array', () => {
+    // The routes array IS the source of truth. When "Philosophy" is a route,
+    // it resolves directly — no targetMap needed.
+    const routes = ['Home', 'Philosophy', 'Projects', 'Team', 'Newsletter']
+
+    const philosophyHref = resolveRouteHref('Philosophy', routes)
+    expect(philosophyHref).toBe('/philosophy')
   })
 })

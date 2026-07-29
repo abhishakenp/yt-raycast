@@ -380,6 +380,239 @@ function forceGaplessSectionBandStack(code: string): string {
   )
 }
 
+/**
+ * Fix sub-page Stacks that incorrectly contain hero components.
+ *
+ * When the composition compiler's `findFocusedSection` fallback picked the
+ * first non-navbar/footer section (which was often the hero), sub-pages like
+ * /projects and /newsletter would render the home page's hero instead of
+ * relevant content. This scans the source for non-home page Stacks that
+ * contain hero components (SplitHero, CenteredHero, PosterHero) and replaces
+ * them with the matching content section from the home page.
+ *
+ * Detected structurally (generic, not per-site): parses all `X = Y(...)` and
+ * `X = SectionAnchor(...)` assignments, identifies the home page's Stack
+ * children, then for non-home pages, swaps hero refs for the best matching
+ * content section from home. Runs on the named form so existing persisted
+ * programs are fixed on next render (no regeneration needed).
+ */
+function fixSubPageHeroStacks(code: string): string {
+  // Parse all variable assignments: `varName = ComponentName(...)`
+  const assignments = new Map<string, string>()
+  for (const m of code.matchAll(
+    /^\s*([A-Za-z_$][\w$]*)\s*=\s*([A-Za-z_$][\w$]*)\s*\(/gm,
+  )) {
+    assignments.set(m[1], m[2])
+  }
+
+  // Parse SectionAnchor wrappers: `ref_anchor = SectionAnchor("id", ref, ...)`
+  // The first arg is a string id, the second is the inner ref variable.
+  const anchorToInner = new Map<string, string>()
+  for (const m of code.matchAll(
+    /^\s*([A-Za-z_$][\w$]*)\s*=\s*SectionAnchor\s*\(\s*"[^"]*"\s*,\s*([A-Za-z_$][\w$]*)/gm,
+  )) {
+    anchorToInner.set(m[1], m[2])
+  }
+
+  // Resolve a ref to its actual component type, following SectionAnchor wrappers
+  function resolveComponentType(ref: string): string | undefined {
+    // Direct assignment
+    const direct = assignments.get(ref)
+    if (direct && direct !== 'SectionAnchor') return direct
+    // SectionAnchor wrapper → resolve inner ref
+    const inner = anchorToInner.get(ref)
+    if (inner) return assignments.get(inner)
+    return direct
+  }
+
+  // Parse all Stack page assignments: `pageId = Stack([ref1, ref2, ...])`
+  const stackPages = new Map<string, string[]>()
+  for (const m of code.matchAll(
+    /^\s*([A-Za-z_$][\w$]*)\s*=\s*Stack\(\s*\[([^[\]]*)\]\s*(?:,\s*"col"\s*,\s*"[^"]*")?\s*\)/gm,
+  )) {
+    const pageId = m[1]
+    const refs = m[2]
+      .split(',')
+      .map((c: string) => c.trim())
+      .filter(Boolean)
+    stackPages.set(pageId, refs)
+  }
+
+  if (stackPages.size <= 1) return code
+
+  // Identify the home page (first Stack, usually "home")
+  const pageIds = [...stackPages.keys()]
+  const homePageId = pageIds.find((p) => p === 'home') ?? pageIds[0]
+  const homeRefs = stackPages.get(homePageId) ?? []
+
+  // Collect home page's non-hero, non-navbar, non-footer sections by component type
+  const HERO_COMPONENTS = new Set([
+    'SplitHero',
+    'CenteredHero',
+    'PosterHero',
+    'ComingSoonHero',
+  ])
+  const SKIP_COMPONENTS = new Set(['Navbar', 'Footer', 'SiteNav'])
+
+  // Map component type → ref name for home page sections (resolving through anchors)
+  // Also extract heading text from the component call for better matching
+  const homeContentByType = new Map<string, string>()
+  const homeContentHeadings = new Map<string, string>() // ref → heading text
+  for (const ref of homeRefs) {
+    const comp = resolveComponentType(ref)
+    if (!comp) continue
+    if (SKIP_COMPONENTS.has(comp)) continue
+    if (HERO_COMPONENTS.has(comp)) continue
+    if (!homeContentByType.has(comp)) {
+      homeContentByType.set(comp, ref)
+      // Extract heading text from the component call for matching
+      const innerRef = anchorToInner.get(ref) ?? ref
+      const callLine = code.match(
+        new RegExp(
+          `^\\s*${innerRef.replace(/[.*+?^()[\]{}|]/g, '\\$&')}\\s*=\\s*[^\\n]+`,
+          'm',
+        ),
+      )
+      if (callLine) {
+        // Extract all quoted strings from the call — the heading is usually
+        // one of the first few string arguments
+        const strings = [...callLine[0].matchAll(/"([^"]{3,})"/g)]
+          .map((m) => m[1])
+          .filter(
+            (s) =>
+              !/^(https?:\/\/|scroll-|font-|text-|border-|bg-|flex|grid|gap|p-|m-|w-|h-|text\[|leading|tracking|uppercase|lowercase|capitalize|none|auto|hidden|block|inline|absolute|relative|fixed|sticky)/.test(
+                s,
+              ),
+          )
+        homeContentHeadings.set(ref, strings.join(' ').toLowerCase())
+      }
+    }
+  }
+
+  // For each non-home page, replace hero refs with matching content
+  let result = code
+  for (const [pageId, refs] of stackPages) {
+    if (pageId === homePageId) continue
+
+    const hasHero = refs.some((r) => {
+      const comp = resolveComponentType(r)
+      return comp && HERO_COMPONENTS.has(comp)
+    })
+    if (!hasHero) continue
+
+    // Build replacement refs: swap heroes for home page content sections
+    const newRefs = refs.map((ref) => {
+      const comp = resolveComponentType(ref)
+      if (!comp || !HERO_COMPONENTS.has(comp)) return ref
+
+      // Try to find a content section on home page that matches the page name
+      const pageName = pageId.toLowerCase().replace(/_?page$/, '')
+
+      // Strategy 1: Match by heading text (most accurate)
+      // The heading text is extracted from the component call's string arguments
+      let bestMatch: string | null = null
+      let bestScore = 0
+      for (const [, homeRef] of homeContentByType) {
+        const heading = homeContentHeadings.get(homeRef) ?? ''
+        if (!heading) continue
+        // Check if the page name appears in the heading text
+        if (heading.includes(pageName)) {
+          // Score by how early in the heading the match is (earlier = better)
+          const score = 100 - heading.indexOf(pageName)
+          if (score > bestScore) {
+            bestScore = score
+            bestMatch = homeRef
+          }
+        }
+        // Also try singular form (projects → project)
+        const singular = pageName.replace(/s$/, '')
+        if (singular.length > 2 && heading.includes(singular)) {
+          const score = 50 - heading.indexOf(singular)
+          if (score > bestScore) {
+            bestScore = score
+            bestMatch = homeRef
+          }
+        }
+      }
+      if (bestMatch) return bestMatch
+
+      // Strategy 2: Match by component type or ref name
+      for (const [compType, homeRef] of homeContentByType) {
+        const innerRef = anchorToInner.get(homeRef) ?? homeRef
+        const innerLower = innerRef.toLowerCase()
+        const compLower = compType.toLowerCase()
+        if (
+          innerLower.includes(pageName) ||
+          compLower.includes(pageName) ||
+          innerLower.includes(pageName.replace(/s$/, ''))
+        ) {
+          return homeRef
+        }
+      }
+
+      // Fallback: use the first non-skip content section from home
+      for (const [, homeRef] of homeContentByType) {
+        return homeRef
+      }
+      return ref
+    })
+
+    // Replace the Stack line
+    const stackPattern = new RegExp(
+      `^(\\s*${pageId.replace(/[.$*+?^()[\]{}|]/g, '\\$&')}\\s*=\\s*Stack\\(\\s*\\[)[^\\]]*\\]\\s*(?:,\\s*"col"\\s*,\\s*"[^"]*")?\\s*\\)`,
+      'm',
+    )
+    result = result.replace(stackPattern, `$1${newRefs.join(', ')}])`)
+  }
+
+  return result
+}
+
+/**
+ * Patch Navbar `links` props to match the PageSwitch `routes` array, and
+ * strip the targetMap from PageSwitch calls.
+ *
+ * The routes array IS the source of truth for navigation — display labels
+ * are route names, URL slugs are derived via slugifyRoute, pages are
+ * positional. The targetMap was a redundant compile-time lookup table that
+ * mapped display labels to page variable names, which broke navigation when
+ * they didn't match. This strips it from older sessions.
+ *
+ * Navbar links are patched to match the routes array so that
+ * resolveRouteTarget can find them via exact match.
+ */
+function fixNavbarLinksToMatchRoutes(code: string): string {
+  // Extract the PageSwitch routes array: root = PageSwitch(["Home",...], ...)
+  const pageSwitchMatch = code.match(/root\s*=\s*PageSwitch\(\s*\[([^\]]*)\]/)
+  if (!pageSwitchMatch) return code
+  const routesStr = '[' + pageSwitchMatch[1] + ']'
+  let routes: string[]
+  try {
+    routes = JSON.parse(routesStr)
+  } catch {
+    return code
+  }
+  if (!Array.isArray(routes) || routes.length === 0) return code
+
+  const canonicalLinks = JSON.stringify(routes)
+
+  // Replace Navbar links (flat array): Navbar("Brand", [...], ...)
+  let result = code.replace(
+    /Navbar\(\s*("(?:[^"\\]|\\.)*"|null)\s*,\s*\[[^\]]*\]/g,
+    (match) => match.replace(/\[[^\]]*\]/, canonicalLinks),
+  )
+
+  // Strip the targetMap (4th argument) from PageSwitch calls.
+  // PageSwitch(["Home",...], [home, ...], "", {"Home":"home",...})
+  // → PageSwitch(["Home",...], [home, ...], "")
+  result = result.replace(
+    /root\s*=\s*PageSwitch\(\s*(\[[^\]]*\])\s*,\s*(\[[^\]]*\])\s*,\s*("[^"]*"|'[^']*')\s*,\s*\{[^}]*\}\s*\)/g,
+    'root = PageSwitch($1, $2, $3)',
+  )
+
+  return result
+}
+
 export function preprocessOpenUIRuntimeResponse(source: string): string {
   const withoutFences = stripActionCalls(
     String(source || '')
@@ -388,11 +621,15 @@ export function preprocessOpenUIRuntimeResponse(source: string): string {
   )
 
   return forceGaplessSectionBandStack(
-    balancePartial(
-      sanitizePartialImages(
-        balanceStatements(
-          repairObjectNullArgumentBoundaries(
-            repairMalformedQuotedObjectKeys(withoutFences),
+    fixSubPageHeroStacks(
+      fixNavbarLinksToMatchRoutes(
+        balancePartial(
+          sanitizePartialImages(
+            balanceStatements(
+              repairObjectNullArgumentBoundaries(
+                repairMalformedQuotedObjectKeys(withoutFences),
+              ),
+            ),
           ),
         ),
       ),

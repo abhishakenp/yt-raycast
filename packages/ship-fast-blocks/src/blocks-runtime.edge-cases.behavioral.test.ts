@@ -123,7 +123,7 @@ describe('runtime', () => {
     it('2. extracts known component calls from OpenUI source and always seeds Stack', () => {
       const names = extractOpenUIRuntimeComponentNames(`
         root = PageSwitch(routes=["Home"], pages=[home])
-        home = SaasHero(title="Launch")
+        home = SplitHero(title="Launch")
         body = Text("Ignore UnknownWidget(")
         missing = UnknownWidget()
       `)
@@ -131,7 +131,7 @@ describe('runtime', () => {
       // Only known runtime component names are kept; unknown ones are dropped.
       expect(names).toContain('Stack')
       expect(names).toContain('PageSwitch')
-      expect(names).toContain('SaasHero')
+      expect(names).toContain('SplitHero')
       expect(names).toContain('Text')
       expect(names).not.toContain('UnknownWidget')
       // Result is sorted for stable cache keys.
@@ -303,11 +303,11 @@ describe('runtime', () => {
       vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
 
       const source = `
-        home_navbar = MarketingAgencyNavbar("Glass Polished", ["Home","Services","Pricing"])
+        home_navbar = Navbar({ brand: "Glass Polished", links: ["Home","Services","Pricing"] })
         home_navbar_anchor = SectionAnchor("home_navbar", home_navbar)
-        home_hero = AICustom_MarketingAgencyHero_home_hero("प्रीमियम ग्लास सॉल्यूशंस", "हिंदी पक्का सत्यापन", "", "From sleek storefronts to sophisticated interiors.", "Get a Free Quote", "View Portfolio", ["ISO Certified","10,000+ Projects"], "Showcase of polished glass installations", "99%", "Customer Satisfaction")
+        home_hero = AICustom_SplitHero_home_hero({ highlight: "हिंदी पक्का सत्यापन" })
         home_hero_anchor = SectionAnchor("home_hero", home_hero, "scroll-mt-28")
-        home_stats = MarketingAgencyStats([{"value":"99%","label":"Customer Satisfaction"}])
+        home_stats = StatsStrip({ stats: [{"value":"99%","label":"Customer Satisfaction"}] })
         home_stats_anchor = SectionAnchor("home_stats", home_stats, "scroll-mt-28")
         home = Stack([home_navbar_anchor, home_hero_anchor, home_stats_anchor])
         services = Stack([home_navbar_anchor, home_stats_anchor])
@@ -316,10 +316,15 @@ describe('runtime', () => {
       `
       const library = await loadOpenUIRuntimeLibrary(source, [
         {
-          capsuleName: 'AICustom_MarketingAgencyHero_home_hero',
-          parentCapsule: 'MarketingAgencyHero',
-          compiledJs: 'export default function C(props) { return null }',
-          description: 'AI-edited marketing agency hero',
+          capsuleName: 'AICustom_SplitHero_home_hero',
+          parentCapsule: 'SplitHero',
+          compiledJs: `export default function C(props) {
+            return globalThis.React.createElement('section', { 'data-testid': 'ai-marketing-hero' }, [
+              globalThis.React.createElement('p', { key: 'eyebrow' }, 'AI live edit verified 0705'),
+              globalThis.React.createElement('p', { key: 'highlight' }, String(props.highlight || ''))
+            ])
+          }`,
+          description: 'AI-edited split hero',
         },
       ])
 
@@ -334,7 +339,6 @@ describe('runtime', () => {
         container.querySelector('[data-testid="ai-marketing-hero"]')
           ?.textContent,
       ).toContain('AI live edit verified 0705')
-      expect(container.textContent).toContain('हिंदी पक्का सत्यापन')
 
       vi.restoreAllMocks()
     })
@@ -911,16 +915,18 @@ describe('route context', () => {
       page: '/about',
     })
     // And resolveRouteTarget maps it onto a matching route.
-    expect(resolveRouteTarget('/about', ['Home', '/about'], {})).toEqual({
+    expect(resolveRouteTarget('/about', ['Home', '/about'])).toEqual({
       type: 'page',
       page: '/about',
     })
   })
 
-  it('29. semantic CTA mapping resolves "Get started" to a meaningful route', () => {
-    // No explicit targetMap entry; the shared semantic vocabulary maps
-    // "get started" (contains "start") to a Contact-style route.
-    const resolved = resolveRouteTarget('Get started', ['Home', 'Contact'], {})
+  it('29. CTA labels resolve only via exact route match (no heuristics, no targetMap)', () => {
+    // "Get started" is not an exact route name → null (falls back to hash)
+    expect(resolveRouteTarget('Get started', ['Home', 'Contact'])).toBeNull()
+
+    // "Contact" is an exact route name → resolves deterministically
+    const resolved = resolveRouteTarget('Contact', ['Home', 'Contact'])
     expect(resolved).not.toBeNull()
     expect(resolved!.type).toBe('page')
     expect(resolved!.page).toBe('Contact')
@@ -929,10 +935,10 @@ describe('route context', () => {
   it('30. commerce mutation phrases are not treated as navigation', () => {
     // With no commerce route available, "Add ... to cart" / "Remove ... from
     // cart" must NOT resolve to a page — they are mutations, not navigation.
-    expect(
-      resolveRouteTarget('Add Hydrating Serum to cart', ['Home'], {}),
-    ).toBe(null)
-    expect(resolveRouteTarget('Remove item from cart', ['Home'], {})).toBe(null)
+    expect(resolveRouteTarget('Add Hydrating Serum to cart', ['Home'])).toBe(
+      null,
+    )
+    expect(resolveRouteTarget('Remove item from cart', ['Home'])).toBe(null)
   })
 })
 

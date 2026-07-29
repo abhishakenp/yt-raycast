@@ -58,6 +58,22 @@ describe('Image + ImageContextProvider', () => {
     expect(srcOf(markup)).toBe('https://cdn.example.com/p.jpg')
   })
 
+  it('falls back to Pexels when src is a bare filename (not a URL)', () => {
+    const markup = renderToStaticMarkup(
+      <Image alt="team collaborating" src="async-standup.jpg" />,
+    )
+    // Should NOT use the bare filename — should resolve via Pexels proxy
+    expect(srcOf(markup)).not.toBe('async-standup.jpg')
+    expect(srcOf(markup)).toContain('/api/pexels')
+  })
+
+  it('uses http/https/data URLs verbatim', () => {
+    const markup = renderToStaticMarkup(
+      <Image alt="test" src="https://example.com/photo.jpg" />,
+    )
+    expect(srcOf(markup)).toBe('https://example.com/photo.jpg')
+  })
+
   it('uses a src-key override for an explicit generated src', () => {
     const currentSrc = '/api/pexels?query=glass+display&w=800&h=600'
     const replacementSrc = 'https://images.pexels.com/photos/7195588/photo.jpeg'

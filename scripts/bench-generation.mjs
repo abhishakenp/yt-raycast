@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Standalone generation benchmark — runs the V3 engine (runAllV3) directly
+ * Standalone generation benchmark — runs the V3 engine (runComposition) directly
  * with a mock session context, capturing per-phase timings. This is the same
  * engine code that runs inside the Convex `startGeneration` action, so the
  * timings reflect the real production path minus Convex overhead (session
@@ -21,7 +21,7 @@ const prompt =
   'A cozy neighborhood coffee shop with online ordering and a blog about brewing techniques'
 
 // The engine auto-loads .env / .env.local via env.ts on import.
-const { runAllV3 } = await import('@ship-fast/engine')
+const { runComposition } = await import('@ship-fast/engine')
 
 const workspace = mkdtempSync(join(tmpdir(), 'ship-fast-bench-'))
 
@@ -57,7 +57,7 @@ const t_start = Date.now()
 let result
 let error
 try {
-  result = await runAllV3({
+  result = await runComposition({
     prompt,
     workspace,
     sessionCtx,

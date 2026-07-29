@@ -20,7 +20,6 @@ export const PageSwitch = defineCapsule({
     routes: z.array(z.string()),
     pages: z.array(z.any()),
     className: z.string().optional(),
-    targetMap: z.record(z.string(), z.string()).optional(),
   }),
   component: ({ props, renderNode }) => {
     const routes = props.routes ?? []
@@ -69,13 +68,12 @@ export const PageSwitch = defineCapsule({
     const contextValue = useMemo(
       () => ({
         routes,
-        targetMap: props.targetMap ?? {},
         currentPage,
         setCurrentPage,
         pendingSectionId,
         setPendingSectionId,
       }),
-      [currentPage, pendingSectionId, props.targetMap, routes],
+      [currentPage, pendingSectionId, routes],
     )
     const pageStateValue = useMemo(() => ({ setPage: page.setValue }), [page])
     return (

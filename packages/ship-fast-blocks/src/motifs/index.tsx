@@ -482,15 +482,15 @@ function SplitHeroInner(props: Record<string, unknown>) {
         />
         <Container className="relative py-16 sm:py-20 lg:py-28">
           <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
-            <div className="lg:col-span-7">
+            <div className="lg:col-span-8">
               {/* Mono annotation rail: figure index — rule — eyebrow. */}
               <MonoAnnotationRail index="Fig. 01" eyebrow={badge} />
-              <h1 className="mb-8 text-[clamp(2.75rem,6.5vw,6rem)] font-extralight leading-[0.98] tracking-tight text-foreground">
+              <h1 className="mb-8 text-[clamp(3rem,8vw,8rem)] font-extralight leading-[0.92] tracking-tight text-foreground">
                 {headingLine1}
                 <br />
                 <span className="inline-block pl-[0.75em]">{headingLine2}</span>
               </h1>
-              <RuledLead className="mb-10">{subheading}</RuledLead>
+              <RuledLead className="mb-10 max-w-xl">{subheading}</RuledLead>
               <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
                 <span className="inline-flex items-center justify-center rounded-none bg-primary px-7 py-3.5 text-sm font-medium tracking-wide text-primary-foreground transition-all duration-150 hover:bg-primary/90 active:translate-y-px">
                   {primaryCta}
@@ -500,7 +500,7 @@ function SplitHeroInner(props: Record<string, unknown>) {
                 </span>
               </div>
             </div>
-            <div className="lg:col-span-5">
+            <div className="lg:col-span-4">
               <EditorialImagePlate
                 alt={imageAlt}
                 src={props.imageSrc as string | undefined}
@@ -815,7 +815,9 @@ export const CenteredHero = defineCapsule({
 })
 
 function CenteredHeroInner(props: Record<string, unknown>) {
-  const heading = (props.heading as string) ?? 'Build faster, ship smarter'
+  const heading = P.stripHlTags(
+    (props.heading as string) ?? 'Build faster, ship smarter',
+  )
   const subheading =
     (props.subheading as string) ??
     'The platform that turns ideas into production-ready websites in seconds.'
@@ -873,7 +875,9 @@ export const PosterHero = defineCapsule({
 })
 
 function PosterHeroInner(props: Record<string, unknown>) {
-  const heading = (props.heading as string) ?? 'Visual stories that captivate'
+  const heading = P.stripHlTags(
+    (props.heading as string) ?? 'Visual stories that captivate',
+  )
   const subheading =
     (props.subheading as string) ?? 'Crafting moments that last.'
   const cta = (props.cta as string) ?? 'Explore'
@@ -1850,6 +1854,9 @@ export const PersonGrid = defineCapsule({
       )
       .optional(),
     cols: z.number().optional(),
+    chrome: z
+      .enum(['none', 'hairline', 'brutalist', 'terminal', 'editorial'])
+      .optional(),
     className: z.string().optional(),
     design: z.string().optional(),
   }),
@@ -1889,24 +1896,166 @@ function PersonGridInner(props: Record<string, unknown>) {
     },
   ]
   const cols = (props.cols as number) ?? 3
+  const chrome = (props.chrome as ChromeVariant) ?? 'none'
+
+  // Editorial: asymmetric ledger — first person featured large, rest in
+  // smaller cells. Grayscale portraits with hover color reveal, ghost
+  // numerals, mono labels, hairline borders, oversized watermark.
+  if (chrome === 'editorial') {
+    const [first, ...rest] = people
+    return (
+      <P.Section className="relative overflow-hidden">
+        <GraphPaper className="inset-0" />
+        {/* Oversized watermark behind the grid */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-8 right-0 select-none font-serif text-[8rem] font-extralight leading-none text-foreground/[0.04] sm:text-[12rem] lg:text-[18rem]"
+        >
+          {heading.slice(0, 1).toUpperCase()}
+        </span>
+        <P.Container size="xl" className="relative">
+          <EditorialSectionHeader
+            metaLabel="Team"
+            heading={heading}
+            description=""
+          />
+          {/* Featured person — large 2-col cell with 4:5 portrait */}
+          {first && (
+            <div className="mb-px border-l border-t border-border">
+              <div className="grid grid-cols-1 border-r border-b border-border md:grid-cols-2">
+                <div className="relative overflow-hidden border-b border-border md:border-b-0 md:border-r">
+                  <P.ImageBlock
+                    alt={first.imageAlt ?? first.name}
+                    src={first.imageSrc}
+                    className="aspect-[4/5] w-full object-cover grayscale transition-all duration-500 hover:grayscale-0"
+                  />
+                  {/* Figure caption bar */}
+                  <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between border-t border-background/20 bg-background/80 px-4 py-2 backdrop-blur-sm">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/70">
+                      {first.name}
+                    </span>
+                    <span className="font-mono text-[10px] text-foreground/40">
+                      fig. 01
+                    </span>
+                  </div>
+                </div>
+                <div className="relative flex flex-col justify-end p-8 lg:p-12">
+                  {/* Ghost numeral */}
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute right-6 top-6 font-extralight text-7xl leading-none text-foreground/[0.06]"
+                  >
+                    01
+                  </span>
+                  <span className="mb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                    Principal
+                  </span>
+                  <h3 className="text-3xl font-light tracking-tight text-foreground lg:text-4xl">
+                    {first.name}
+                  </h3>
+                  {first.role && (
+                    <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
+                      {first.role}
+                    </p>
+                  )}
+                  <div className="mt-6 h-px w-16 bg-border" />
+                </div>
+              </div>
+            </div>
+          )}
+          {/* Rest of team — smaller hairline cells */}
+          {rest.length > 0 && (
+            <div className="grid grid-cols-1 border-l border-r border-b border-border sm:grid-cols-2 lg:grid-cols-3">
+              {rest.map((p, i) => (
+                <div
+                  key={i}
+                  className="group relative border-b border-border p-6 last:border-b-0 sm:border-b sm:[&:nth-last-child(-n+2)]:border-b-0 sm:[&:nth-child(odd)]:border-r lg:[&:nth-child(odd)]:border-r-0 lg:[&:nth-child(3n+1)]:border-r lg:[&:nth-child(3n)]:border-r-0"
+                >
+                  <div className="mb-4 flex items-start justify-between">
+                    <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                      {String(i + 2).padStart(2, '0')}
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="font-extralight text-2xl text-foreground/[0.06]"
+                    >
+                      {String(i + 2).padStart(2, '0')}
+                    </span>
+                  </div>
+                  <div className="relative mb-4 overflow-hidden">
+                    <P.ImageBlock
+                      alt={p.imageAlt ?? p.name}
+                      src={p.imageSrc}
+                      className="aspect-square w-full object-cover grayscale transition-all duration-500 group-hover:grayscale-0"
+                    />
+                  </div>
+                  <h3 className="text-lg font-light tracking-tight text-foreground">
+                    {p.name}
+                  </h3>
+                  {p.role && (
+                    <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                      {p.role}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </P.Container>
+      </P.Section>
+    )
+  }
+
+  // Default: asymmetric layout with featured first person
+  const [first, ...rest] = people
   return (
     <P.Section>
-      <P.Container size="xl" className="flex flex-col gap-12">
+      <P.Container size="xl" className="flex flex-col gap-10">
         <P.Heading level="h2" text={heading} />
-        <P.Grid cols={cols}>
-          {people.map((p, i) => (
-            <P.Card
-              key={i}
-              title={p.name}
-              imageAlt={p.imageAlt ?? p.name}
-              imageUrl={p.imageSrc}
-            >
-              {p.role && (
-                <p className="mt-1 text-sm text-muted-foreground">{p.role}</p>
-              )}
-            </P.Card>
-          ))}
-        </P.Grid>
+        {first && (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="relative overflow-hidden rounded-lg">
+              <P.ImageBlock
+                alt={first.imageAlt ?? first.name}
+                src={first.imageSrc}
+                className="aspect-[4/5] w-full object-cover"
+              />
+            </div>
+            <div className="flex flex-col justify-end pb-4">
+              <span className="mb-3 text-sm font-medium uppercase tracking-wider text-primary">
+                {first.role}
+              </span>
+              <h3 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                {first.name}
+              </h3>
+            </div>
+          </div>
+        )}
+        {rest.length > 0 && (
+          <div
+            className={cn(
+              'grid gap-6',
+              cols === 2
+                ? 'grid-cols-1 sm:grid-cols-2'
+                : cols === 4
+                  ? 'grid-cols-2 sm:grid-cols-4'
+                  : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+            )}
+          >
+            {rest.map((p, i) => (
+              <P.Card
+                key={i}
+                title={p.name}
+                imageAlt={p.imageAlt ?? p.name}
+                imageUrl={p.imageSrc}
+              >
+                {p.role && (
+                  <p className="mt-1 text-sm text-muted-foreground">{p.role}</p>
+                )}
+              </P.Card>
+            ))}
+          </div>
+        )}
       </P.Container>
     </P.Section>
   )
@@ -3549,7 +3698,7 @@ function NewsletterCtaInner(props: Record<string, unknown>) {
     )
   }
 
-  // Editorial: serif + watermark
+  // Editorial: extralight heading + watermark + mono label
   if (chrome === 'editorial') {
     return (
       <P.Section className="relative overflow-hidden border-y border-border bg-card py-20">
@@ -3561,7 +3710,13 @@ function NewsletterCtaInner(props: Record<string, unknown>) {
           size="sm"
           className="relative flex flex-col items-center gap-6 text-center"
         >
-          <h2 className="font-serif text-4xl font-bold tracking-tight sm:text-5xl">
+          <span
+            aria-hidden="true"
+            className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+          >
+            Newsletter · Vol. 01
+          </span>
+          <h2 className="text-4xl font-extralight tracking-tight sm:text-5xl">
             {heading}
           </h2>
           {subheading && (
@@ -4967,6 +5122,9 @@ export const TeamShowcase = defineCapsule({
       )
       .optional(),
     cols: z.number().optional(),
+    chrome: z
+      .enum(['none', 'hairline', 'brutalist', 'terminal', 'editorial'])
+      .optional(),
     className: z.string().optional(),
     design: z.string().optional(),
   }),
@@ -5003,6 +5161,114 @@ function TeamShowcaseInner(props: Record<string, unknown>) {
     },
   ]
   const cols = (props.cols as number) ?? 2
+  const chrome = (props.chrome as ChromeVariant) ?? 'none'
+
+  // Editorial: asymmetric ledger — first person featured large with bio,
+  // rest in smaller cells. Grayscale portraits with hover color reveal,
+  // ghost numerals, mono labels, hairline borders, oversized watermark.
+  if (chrome === 'editorial') {
+    const [first, ...rest] = people
+    return (
+      <P.Section className="relative overflow-hidden">
+        <GraphPaper className="inset-0" />
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-8 right-0 select-none font-serif text-[8rem] font-extralight leading-none text-foreground/[0.04] sm:text-[12rem] lg:text-[18rem]"
+        >
+          {heading.slice(0, 1).toUpperCase()}
+        </span>
+        <P.Container size="xl" className="relative">
+          <EditorialSectionHeader
+            metaLabel="Team"
+            heading={heading}
+            description=""
+          />
+          {first && (
+            <div className="mb-px border-l border-t border-border">
+              <div className="grid grid-cols-1 border-r border-b border-border md:grid-cols-2">
+                <div className="relative overflow-hidden border-b border-border md:border-b-0 md:border-r">
+                  <P.ImageBlock
+                    alt={first.imageAlt ?? first.name}
+                    src={first.imageSrc}
+                    className="aspect-[4/5] w-full object-cover grayscale transition-all duration-500 hover:grayscale-0"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between border-t border-background/20 bg-background/80 px-4 py-2 backdrop-blur-sm">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/70">
+                      {first.name}
+                    </span>
+                    <span className="font-mono text-[10px] text-foreground/40">
+                      fig. 01
+                    </span>
+                  </div>
+                </div>
+                <div className="relative flex flex-col justify-end p-8 lg:p-12">
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute right-6 top-6 font-extralight text-7xl leading-none text-foreground/[0.06]"
+                  >
+                    01
+                  </span>
+                  <span className="mb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                    {first.role ?? 'Principal'}
+                  </span>
+                  <h3 className="text-3xl font-light tracking-tight text-foreground lg:text-4xl">
+                    {first.name}
+                  </h3>
+                  {first.bio && (
+                    <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
+                      {first.bio}
+                    </p>
+                  )}
+                  <div className="mt-6 h-px w-16 bg-border" />
+                </div>
+              </div>
+            </div>
+          )}
+          {rest.length > 0 && (
+            <div className="grid grid-cols-1 border-l border-r border-b border-border md:grid-cols-2">
+              {rest.map((p, i) => (
+                <div
+                  key={i}
+                  className="group relative border-b border-border p-8 last:border-b-0 md:border-b md:[&:nth-last-child(-n+2)]:border-b-0 md:[&:nth-child(odd)]:border-r"
+                >
+                  <div className="mb-4 flex items-start justify-between">
+                    <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                      {String(i + 2).padStart(2, '0')}
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="font-extralight text-3xl text-foreground/[0.06]"
+                    >
+                      {String(i + 2).padStart(2, '0')}
+                    </span>
+                  </div>
+                  <P.ImageBlock
+                    alt={p.imageAlt ?? p.name}
+                    src={p.imageSrc}
+                    className="mb-5 aspect-[4/5] w-full object-cover grayscale transition-all duration-500 group-hover:grayscale-0"
+                  />
+                  <h3 className="text-2xl font-light tracking-tight text-foreground">
+                    {p.name}
+                  </h3>
+                  {p.role && (
+                    <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                      {p.role}
+                    </p>
+                  )}
+                  {p.bio && (
+                    <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                      {p.bio}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </P.Container>
+      </P.Section>
+    )
+  }
+
   return (
     <P.Section>
       <P.Container size="xl" className="flex flex-col gap-12">

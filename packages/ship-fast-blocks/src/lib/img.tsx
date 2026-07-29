@@ -399,10 +399,15 @@ export function Image({
     )
   }
   const resolvedOverrideSrc = overrideSrcs?.[0] ?? overrideSrc
+  // Only treat src as a real URL if it starts with http/https/data/blob —
+  // the LLM often emits filenames like "async-standup.jpg" which are not
+  // valid URLs and would produce broken images. Fall back to Pexels.
+  const isRealUrl = (s: string) =>
+    /^(https?:)?\/\//.test(s) || s.startsWith('data:') || s.startsWith('blob:')
   const imageSrc =
     typeof resolvedOverrideSrc === 'string' && resolvedOverrideSrc.trim()
       ? resolvedOverrideSrc
-      : trimmedSrc
+      : trimmedSrc && isRealUrl(trimmedSrc)
         ? trimmedSrc
         : getPexelsProxyUrl(normalizedAlt, w, h, effectiveContext)
 

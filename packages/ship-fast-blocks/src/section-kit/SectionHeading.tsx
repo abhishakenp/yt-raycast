@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Slot } from '@radix-ui/react-slot'
 
 import { cn } from '#/lib/utils.ts'
+import { stripHlTags } from '#/primitives/index.tsx'
 
 const SectionHeading = React.forwardRef<
   HTMLDivElement,
@@ -38,6 +39,7 @@ const SectionHeading = React.forwardRef<
     const Comp = asChild ? Slot : 'div'
     const centered = align === 'center'
     const TitleTag = titleAs as 'h1' | 'h2' | 'h3'
+    const cleanTitle = stripHlTags(title)
     return (
       <Comp
         ref={ref}
@@ -68,7 +70,7 @@ const SectionHeading = React.forwardRef<
             titleClassName,
           )}
         >
-          {title}
+          {cleanTitle}
         </TitleTag>
         {subtitle ? (
           <p

@@ -205,6 +205,95 @@ export function arrayFieldNames(name: string): string[] {
 }
 
 // ---------------------------------------------------------------------------
+// Recursive type tree — parse TS-like type strings into a structured tree
+// ---------------------------------------------------------------------------
+
+export type TypeTree =
+  | { kind: 'primitive'; tsType: string }
+  | { kind: 'stringArray' }
+  | { kind: 'objectArray'; fields: TypeField[] }
+  | { kind: 'object'; fields: TypeField[] }
+
+export interface TypeField {
+  name: string
+  optional: boolean
+  type: TypeTree
+}
+
+/**
+ * Parse a TS-like type string into a TypeTree.
+ *
+ * Examples:
+ *   "string" → { kind: 'primitive', tsType: 'string' }
+ *   "string[]" → { kind: 'stringArray' }
+ *   "{name: string, items: {...}[]}[]" → { kind: 'objectArray', fields: [...] }
+ *   "{title: string, price?: string}" → { kind: 'object', fields: [...] }
+ */
+export function parseTypeTree(typeStr: string): TypeTree {
+  const t = typeStr.trim()
+
+  // Array of objects: {...}[]
+  if (t.endsWith('[]')) {
+    const inner = t.slice(0, -2).trim()
+    if (inner.startsWith('{') && inner.endsWith('}')) {
+      return { kind: 'objectArray', fields: parseObjectFields(inner) }
+    }
+    // string[] or primitive[]
+    if (inner === 'string' || inner === 'number' || inner === 'boolean') {
+      return { kind: 'stringArray' }
+    }
+    // Nested array — e.g. SomeType[][]
+    return { kind: 'stringArray' }
+  }
+
+  // Object literal: {...}
+  if (t.startsWith('{') && t.endsWith('}')) {
+    return { kind: 'object', fields: parseObjectFields(t) }
+  }
+
+  // Primitive
+  return { kind: 'primitive', tsType: t }
+}
+
+/**
+ * Parse `{field: type, field2?: type2}` into TypeField[].
+ */
+function parseObjectFields(objLiteral: string): TypeField[] {
+  // Strip outer braces
+  const inner = objLiteral.trim().slice(1, -1).trim()
+  if (inner.length === 0) return []
+
+  const parts = splitTopLevel(inner)
+  const fields: TypeField[] = []
+
+  for (const part of parts) {
+    const parsed = splitField(part)
+    if (!parsed) continue
+    fields.push({
+      name: parsed.name,
+      optional: part.includes('?:') || part.trim().endsWith('?'),
+      type: parseTypeTree(parsed.type),
+    })
+  }
+
+  return fields
+}
+
+/**
+ * Get the TypeTree for a specific top-level argument of a component.
+ * Returns null if the component or argument doesn't exist.
+ */
+export function argTypeTree(
+  component: string,
+  argName: string,
+): TypeTree | null {
+  const args = topLevelArgs(component)
+  const arg = args.find((a) => a.name === argName)
+  if (!arg) return null
+  return parseTypeTree(arg.type)
+}
+
+// ---------------------------------------------------------------------------
 // Value synthesis
 // ---------------------------------------------------------------------------
 

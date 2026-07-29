@@ -1,55 +1,28 @@
-import { z } from 'zod'
-
 import { api } from '../../../../convex/_generated/api'
 import { isUnsafePublicPreviewHtml } from '../../../../convex/lib/openui_error_html'
+import type { PublicGallerySession } from '../../../../convex/lib/session_gallery_helpers'
 import { createRuntimeConvexHttpClient } from '../../../shared/convex/http-client'
 import { buildOpenUIHtmlExport } from '../../exports/services/openui-html-export-builder'
-
-const gallerySessionSchema = z.object({
-  html: z.string().nullable(),
-  moduleSource: z.string().nullable(),
-  prompt: z.string().nullable().optional(),
-  siteSpecJson: z.string().nullable().optional(),
-  preferredLanguage: z.string().nullable().optional(),
-  themeOverride: z.string().nullable().optional(),
-  themeMode: z.enum(['light', 'dark']).nullable().optional(),
-  genuiTheme: z.string().nullable().optional(),
-  selectedBrandLogo: z
-    .object({
-      name: z.string(),
-      domain: z.string().nullable().optional(),
-      brandId: z.string().nullable().optional(),
-      icon: z.string().nullable().optional(),
-      logo: z.string().nullable().optional(),
-    })
-    .nullable()
-    .optional(),
-})
-
-type GallerySessionData = z.infer<typeof gallerySessionSchema>
 
 export async function resolveGalleryPreviewHtml(
   sessionId: string,
 ): Promise<string | null> {
   try {
     const client = createRuntimeConvexHttpClient()
-    const raw = await client.query(api.sessions.getPublicGallerySession, {
-      sessionId,
-    })
+    const raw: PublicGallerySession | null = await client.query(
+      api.sessions.getPublicGallerySession,
+      { sessionId },
+    )
 
     if (raw === null) return null
 
-    const session = gallerySessionSchema.parse(raw)
+    // The Convex serializer (serializePublicGallerySession) is the single
+    // source of truth for this shape. v3-only engine always emits moduleSource
+    // (OpenUI source) and never a pre-rendered html blob, so we render from
+    // source via the same buildOpenUIHtmlExport path the live preview uses.
+    if (raw.moduleSource === null) return null
 
-    if (session.moduleSource !== null) {
-      return await renderOpenUiHtml(sessionId, session, session.moduleSource)
-    }
-
-    if (session.html === null || isUnsafePublicPreviewHtml(session.html)) {
-      return null
-    }
-
-    return session.html
+    return await renderOpenUiHtml(sessionId, raw, raw.moduleSource)
   } catch {
     return null
   }
@@ -57,7 +30,7 @@ export async function resolveGalleryPreviewHtml(
 
 const renderOpenUiHtml = async (
   sessionId: string,
-  session: GallerySessionData,
+  session: PublicGallerySession,
   source: string,
 ): Promise<string | null> => {
   try {

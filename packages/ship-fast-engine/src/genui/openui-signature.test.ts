@@ -14,20 +14,19 @@ const ctx: SynthesisContext = {
   pageLabel: 'Home',
 }
 
-// Section-family components present in the generated spec spanning marketing,
-// hospitality, community, ops, commerce, and software grammars.
+// Motif capsules present in the generated spec.
 const COMPONENTS = [
-  'PortfolioHero',
-  'PhotographyHero',
-  'RestaurantHero',
-  'CafeHero',
-  'CommunityForumHero',
-  'NonprofitHero',
-  'ContactHero',
-  'AnalyticsHero',
-  'EcommerceHero',
-  'SaasHero',
-  'BlogHero',
+  'SplitHero',
+  'CenteredHero',
+  'CardGrid',
+  'PricingTable',
+  'TestimonialRow',
+  'GroupedList',
+  'Footer',
+  'Navbar',
+  'MediaSplit',
+  'FaqAccordion',
+  'ContactForm',
 ]
 
 describe('synthesizeComponentCall', () => {
@@ -44,10 +43,10 @@ describe('synthesizeComponentCall', () => {
 })
 
 describe('topLevelArgNames', () => {
-  it('parses ordered top-level arg names and drops className', () => {
-    const args = topLevelArgNames('EcommerceHero')
-    expect(args.slice(0, 3)).toEqual(['eyebrow', 'heading', 'subheading'])
-    expect(args).not.toContain('className')
+  it('parses ordered top-level arg names', () => {
+    const args = topLevelArgNames('SplitHero')
+    expect(args).toContain('heading')
+    expect(args).toContain('primaryCta')
   })
 
   it('returns [] for an absent component', () => {
@@ -57,7 +56,7 @@ describe('topLevelArgNames', () => {
 
 describe('getComponentSignature', () => {
   it('returns a signature string for a present component', () => {
-    expect(getComponentSignature('EcommerceHero')).toContain('EcommerceHero(')
+    expect(getComponentSignature('SplitHero')).toContain('SplitHero(')
   })
 
   it('returns null for a component missing from the spec', () => {

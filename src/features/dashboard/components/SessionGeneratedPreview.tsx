@@ -3,7 +3,7 @@ import type { CapsuleTextChange } from '@/features/editing/hooks/useCapsulePropR
 import type { InspectorSelection } from '@/features/editing/element-path'
 import type { ThemeStyles } from '@/genui/theme-presets'
 import { GeneratedModulePreview } from '@/features/generation/components/GeneratedModulePreview'
-import type { CommerceRuntimeMode } from '@ship-fast/blocks/commerce'
+import type { CommerceRuntimeMode } from '@/features/commerce/contracts'
 
 type BrandLogoSelection = {
   name: string

@@ -120,7 +120,6 @@ describe('section-kit grids and footer', () => {
       <RoutesContext.Provider
         value={{
           routes,
-          targetMap: {},
           currentPage: 'Home',
           setCurrentPage: vi.fn(),
           pendingSectionId: null,

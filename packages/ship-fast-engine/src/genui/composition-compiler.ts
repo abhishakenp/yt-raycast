@@ -1,0 +1,498 @@
+/**
+ * composition-compiler.ts — compiles a ParsedComposition into OpenUI source.
+ *
+ * Takes the parsed composition (motif sections + design intent) and produces
+ * the OpenUI-lang source string that the existing renderer consumes:
+ *
+ *   home_splitHero = SplitHero(heading="...", primaryCta="...", design="...")
+ *   home_splitHero_anchor = SectionAnchor("home_splitHero", home_splitHero, "scroll-mt-28")
+ *   home = Stack([home_splitHero_anchor, ...])
+ *   root = PageSwitch(["Home", ...], [home, ...], "", {...})
+ *
+ * The motif capsules are OpenUI-registered components, so the existing
+ * buildComponentCall mechanism works — we just pass the motif name directly
+ * instead of constructing `family+Role`.
+ */
+import type {
+  ParsedComposition,
+  CompositionSection,
+} from './composition-parser.ts'
+import { sectionToProps } from './composition-parser.ts'
+import { serializeDesignIntent } from '../../../ship-fast-blocks/src/primitives/design-system.ts'
+import { buildComponentCall } from './openui-signature.ts'
+import { inferLakebedFromComposition } from './inference.ts'
+import { getInteraction } from './interactions.ts'
+import { generateConvexBackend } from './convex-codegen.ts'
+import { compileSvelteBlock, type CompiledSvelte } from './svelte-compiler.ts'
+import type { LakebedDefinition, DataBinding } from './types.ts'
+
+export interface CompositionCompileResult {
+  /** Full OpenUI source string (all pages + skeleton). */
+  source: string
+  /** Per-page source statements. */
+  pageSources: Record<string, string>
+  /** Skeleton line (root = PageSwitch(...)). */
+  skeleton: string
+  /** Brand name. */
+  brand: string
+  /** Site title. */
+  title: string
+  /** Design intent (serialized for the renderer). */
+  design: string
+  /** Pages list. */
+  pages: string[]
+  /** Nav labels. */
+  navLabels?: Record<string, string>
+  /** Lakebed definition (tables, queries, mutations). */
+  lakebed: LakebedDefinition
+  /** Convex backend files (path → content). */
+  convexBackend: Record<string, string>
+  /** Data bindings (componentId → binding). */
+  dataBindings: Record<string, DataBinding>
+  /** Svelte scripts (path → JS). */
+  svelteScripts: Record<string, string>
+  /** Fullstack manifest. */
+  fullstackManifest: {
+    tables: string[]
+    schemaVersion: number
+    auth: boolean
+  }
+}
+
+export interface CompositionCompileOptions {
+  /** Override brand (falls back to parsed brand, then "Brand"). */
+  brand?: string
+  /** Override title. */
+  title?: string
+}
+
+/**
+ * Compile a parsed composition into OpenUI source.
+ */
+export async function compileComposition(
+  parsed: ParsedComposition,
+  opts: CompositionCompileOptions = {},
+): Promise<CompositionCompileResult> {
+  const brand = opts.brand ?? parsed.brand ?? 'Brand'
+  const title = opts.title ?? parsed.title ?? brand
+  const designStr = serializeDesignIntent(parsed.design)
+  const pages = parsed.pages.length > 0 ? parsed.pages : ['home']
+
+  // Build nav labels from pages
+  const navLabels = parsed.navLabels ?? defaultNavLabels(pages)
+  const navLinkLabels = pages.map((p) => navLabels[p] ?? capitalize(p))
+
+  // ── Compile each section into OpenUI statements ───────────────────
+
+  const allStmts: string[] = []
+  const pageSources: Record<string, string> = {}
+
+  // Group sections by page. Sections without a page tag (or page="home")
+  // go to the home page. Sections with @page tags go to their respective pages.
+  const hasPageTags = parsed.sections.some((s) => s.page && s.page !== 'home')
+  const homeSections = parsed.sections.filter(
+    (s) => !s.page || s.page === 'home',
+  )
+
+  // Home page: all home sections in order
+  const homeStmts: string[] = []
+  const homeRefs: string[] = []
+
+  for (const section of homeSections) {
+    const { statements, ref } = await compileCompositionSection(
+      section,
+      'home',
+      brand,
+      navLinkLabels,
+    )
+    if (ref) {
+      homeStmts.push(...statements)
+      homeRefs.push(ref)
+    }
+  }
+
+  homeStmts.push(`home = Stack([${homeRefs.join(', ')}])`)
+  pageSources.home = homeStmts.join('\n')
+  allStmts.push(...homeStmts)
+
+  // ── Secondary pages ───────────────────────────────────────────────
+  // If the LLM used @page directives, use the page-tagged sections directly.
+  // Otherwise, fall back to findFocusedSection (legacy behavior).
+
+  const validPageIds = pages.filter((p) => p !== 'home')
+
+  // Find navbar and footer from home page for reuse on sub-pages
+  const navbarSection = homeSections.find((s) => s.motif === 'Navbar')
+  const footerSection = homeSections.find((s) => s.motif === 'Footer')
+
+  for (const pageId of validPageIds) {
+    const pageStmts: string[] = []
+    const pageRefs: string[] = []
+
+    if (hasPageTags) {
+      // New behavior: use @page-tagged sections directly
+      const pageSections = parsed.sections.filter((s) => s.page === pageId)
+
+      // Navbar (reuse from home if not already on this page)
+      const pageHasNavbar = pageSections.some((s) => s.motif === 'Navbar')
+      if (!pageHasNavbar && navbarSection) {
+        const { statements, ref } = await compileCompositionSection(
+          navbarSection,
+          pageId,
+          brand,
+          navLinkLabels,
+        )
+        if (ref) {
+          pageStmts.push(...statements)
+          pageRefs.push(ref)
+        }
+      }
+
+      // Page-specific sections
+      for (const section of pageSections) {
+        const { statements, ref } = await compileCompositionSection(
+          section,
+          pageId,
+          brand,
+          navLinkLabels,
+        )
+        if (ref) {
+          pageStmts.push(...statements)
+          pageRefs.push(ref)
+        }
+      }
+
+      // Footer (reuse from home if not already on this page)
+      const pageHasFooter = pageSections.some((s) => s.motif === 'Footer')
+      if (!pageHasFooter && footerSection) {
+        const { statements, ref } = await compileCompositionSection(
+          footerSection,
+          pageId,
+          brand,
+          navLinkLabels,
+        )
+        if (ref) {
+          pageStmts.push(...statements)
+          pageRefs.push(ref)
+        }
+      }
+
+      // Skip this page if it has no content sections (only navbar/footer)
+      const contentRefs = pageRefs.filter(
+        (r) => !r.includes('navbar') && !r.includes('footer'),
+      )
+      if (contentRefs.length === 0) continue
+    } else {
+      // Legacy behavior: find a focused section from the home page
+      const focused = findFocusedSection(parsed.sections, pageId)
+      if (!focused) continue
+
+      // Navbar
+      if (navbarSection) {
+        const { statements, ref } = await compileCompositionSection(
+          navbarSection,
+          pageId,
+          brand,
+          navLinkLabels,
+        )
+        if (ref) {
+          pageStmts.push(...statements)
+          pageRefs.push(ref)
+        }
+      }
+
+      // Focused section
+      {
+        const { statements, ref } = await compileCompositionSection(
+          focused,
+          pageId,
+          brand,
+          navLinkLabels,
+        )
+        if (ref) {
+          pageStmts.push(...statements)
+          pageRefs.push(ref)
+        }
+      }
+
+      // Footer
+      if (footerSection) {
+        const { statements, ref } = await compileCompositionSection(
+          footerSection,
+          pageId,
+          brand,
+          navLinkLabels,
+        )
+        if (ref) {
+          pageStmts.push(...statements)
+          pageRefs.push(ref)
+        }
+      }
+    }
+
+    pageStmts.push(`${pageId} = Stack([${pageRefs.join(', ')}])`)
+    pageSources[pageId] = pageStmts.join('\n')
+    allStmts.push(...pageStmts)
+  }
+
+  // ── Skeleton ──────────────────────────────────────────────────────
+  const validAllPageIds = ['home', ...validPageIds]
+
+  const skeleton = `root = PageSwitch(${JSON.stringify(navLinkLabels)}, [${validAllPageIds.join(', ')}], "")`
+
+  const source = `${allStmts.join('\n')}\n${skeleton}`
+
+  // ── Infer lakebed from composition sections ───────────────────────
+  const lakebed = inferLakebedFromComposition(homeSections)
+  const hasAuth = lakebed.tables.some((t) => t.name === 'authSessions')
+
+  // ── Generate data bindings for interactive motifs ─────────────────
+  const dataBindings: Record<string, DataBinding> = {}
+  const seedData: Record<string, unknown[]> = {}
+
+  for (const section of homeSections) {
+    const profile = getInteraction(section.motif)
+    if (!profile || profile.profiles[0] === 'none') continue
+
+    const componentId = `home_${section.motif.toLowerCase().replace(/[^a-z0-9]/g, '')}`
+    const binding: DataBinding = {
+      componentId,
+      component: section.motif,
+      profiles: profile.profiles,
+      queries: {},
+      mutations: {},
+    }
+
+    for (const [opKey, opName] of Object.entries(profile.operations)) {
+      if (
+        opKey.startsWith('list') ||
+        opKey.startsWith('saved') ||
+        opKey.startsWith('session') ||
+        opKey.startsWith('search') ||
+        opKey.startsWith('order') ||
+        opKey.startsWith('submission')
+      ) {
+        binding.queries[opKey] = opName
+      } else {
+        binding.mutations[opKey] = opName
+      }
+    }
+
+    if (profile.seedTable) {
+      binding.seedTable = profile.seedTable
+      binding.seedPath = profile.seedPath
+      const props = sectionToProps(section)
+      if (profile.seedPath && props) {
+        const pathParts = profile.seedPath.split('.')
+        let extracted: unknown = props
+        for (const part of pathParts) {
+          extracted = (extracted as Record<string, unknown>)?.[part]
+        }
+        if (Array.isArray(extracted)) {
+          seedData[profile.seedTable] = extracted
+        }
+      }
+    }
+
+    dataBindings[componentId] = binding
+  }
+
+  // ── Generate Convex backend ───────────────────────────────────────
+  const convexBackend = generateConvexBackend(lakebed, seedData)
+
+  // ── Compile svelte blocks (if any sections have @svelte) ──────────
+  const svelteScripts: Record<string, string> = {}
+  for (const section of parsed.sections) {
+    if (section.svelte?.source) {
+      try {
+        const compiled = await compileSvelteBlock(
+          section.svelte.source,
+          section.motif,
+        )
+        const scriptPath = `scripts/svelte-home-${section.motif.toLowerCase()}.js`
+        svelteScripts[scriptPath] = compiled.domJs
+      } catch {
+        // Svelte compilation failed — skip, the runner will validate and retry
+      }
+    }
+  }
+
+  return {
+    source,
+    pageSources,
+    skeleton,
+    brand,
+    title,
+    design: designStr,
+    pages: validAllPageIds,
+    navLabels,
+    lakebed,
+    convexBackend,
+    dataBindings,
+    svelteScripts,
+    fullstackManifest: {
+      tables: lakebed.tables.map((t) => t.name),
+      schemaVersion: 1,
+      auth: hasAuth,
+    },
+  }
+}
+
+// ─── Section compilation ─────────────────────────────────────────────────
+
+async function compileCompositionSection(
+  section: CompositionSection,
+  pageId: string,
+  brand: string,
+  nav: string[],
+): { statements: string[]; ref: string | null } {
+  const id = `${pageId}_${section.motif.toLowerCase().replace(/[^a-z0-9]/g, '')}`
+  const props = sectionToProps(section)
+
+  // Inject brand for Navbar/Footer motifs
+  if (section.motif === 'Navbar' && !props.brand) {
+    props.brand = brand
+  }
+  if (section.motif === 'Footer' && !props.brand) {
+    props.brand = brand
+  }
+
+  // Inject nav links for Navbar — always use the canonical navLinkLabels
+  // (derived from @navLabels or page names). The targetMap is generated from
+  // these same labels, so they must match deterministically. The LLM should
+  // use the @navLabels directive to customize display labels, not provide
+  // custom links in the Navbar section.
+  if (section.motif === 'Navbar') {
+    props.links = nav
+  }
+  // Inject nav links for Footer only when the LLM didn't provide columns.
+  // Footer columns are intentionally different from Navbar links (Product,
+  // Company, Legal, etc.) so we preserve LLM-provided columns as-is.
+  if (section.motif === 'Footer') {
+    const llmColumns = props.columns as
+      | Array<{ title: string; links: string[] }>
+      | undefined
+    if (!llmColumns || llmColumns.length === 0) {
+      props.columns = [{ title: 'Pages', links: nav }]
+    }
+  }
+
+  // Build the OpenUI call — buildComponentCall maps named props to positional
+  // args in the correct order defined by the component spec signature.
+  const call = buildComponentCall({
+    component: section.motif,
+    props,
+    brand,
+    nav,
+  })
+
+  if (!call) {
+    // Motif not recognized — check for svelte block (LLM-generated component)
+    if (section.svelte?.source) {
+      try {
+        const compiledSvelte = await compileSvelteBlock(
+          section.svelte.source,
+          section.motif,
+        )
+        const scriptPath = `/scripts/svelte-${pageId}-${section.motif.toLowerCase()}.js`
+        const htmlJson = JSON.stringify(compiledSvelte.ssrHtml)
+        const scriptPathJson = JSON.stringify(scriptPath)
+        const cssJson = JSON.stringify(compiledSvelte.css)
+        const callStmt = `${id} = SvelteIsland(${htmlJson}, ${scriptPathJson}, ${cssJson})`
+        const anchorId = `${id}_anchor`
+        const anchorStmt = `${anchorId} = SectionAnchor("${id}", ${id}, "scroll-mt-28")`
+        return { statements: [callStmt, anchorStmt], ref: anchorId }
+      } catch {
+        // Svelte compilation failed — skip
+        return { statements: [], ref: null }
+      }
+    }
+    // Motif not recognized and no svelte — skip silently
+    return { statements: [], ref: null }
+  }
+
+  const callStmt = `${id} = ${call}`
+  const anchorId = `${id}_anchor`
+  const isNavbar = section.motif === 'Navbar'
+  const anchorStmt = isNavbar
+    ? `${anchorId} = SectionAnchor("${id}", ${id})`
+    : `${anchorId} = SectionAnchor("${id}", ${id}, "scroll-mt-28")`
+
+  return { statements: [callStmt, anchorStmt], ref: anchorId }
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────
+
+function findFocusedSection(
+  sections: CompositionSection[],
+  pageId: string,
+): CompositionSection | null {
+  // Try to find a section whose motif matches the page name
+  const pageMotif = capitalize(pageId)
+  const exact = sections.find((s) => s.motif === pageMotif)
+  if (exact) return exact
+
+  // Try common page→motif mappings
+  const PAGE_MOTIF_MAP: Record<string, string[]> = {
+    about: ['MediaSplit', 'AboutStory', 'PersonGrid', 'TeamShowcase'],
+    philosophy: ['MediaSplit', 'AboutStory', 'ValueProps', 'CardGrid'],
+    values: ['ValueProps', 'CardGrid', 'MediaSplit'],
+    pricing: ['PricingTable'],
+    contact: ['ContactForm', 'MapBlock', 'BookingForm'],
+    menu: ['GroupedList'],
+    services: ['CardGrid', 'ValueProps', 'SimpleList'],
+    team: ['PersonGrid', 'TeamShowcase'],
+    gallery: ['ImageGallery', 'ProjectGallery'],
+    work: ['ProjectGallery', 'ImageGallery'],
+    projects: ['ProjectGallery', 'ImageGallery', 'CardGrid'],
+    products: ['ProductGrid'],
+    shop: ['ProductGrid'],
+    store: ['ProductGrid'],
+    blog: ['ArticlePreview'],
+    faq: ['FaqAccordion'],
+    newsletter: ['NewsletterCta'],
+  }
+
+  const motifNames = PAGE_MOTIF_MAP[pageId.toLowerCase()]
+  if (motifNames) {
+    for (const name of motifNames) {
+      const found = sections.find((s) => s.motif === name)
+      if (found) return found
+    }
+  }
+
+  // Fallback: first non-navbar, non-footer, non-hero section — sub-pages
+  // should never render the home page's hero as their focused section.
+  const HERO_MOTIFS = new Set([
+    'SplitHero',
+    'CenteredHero',
+    'PosterHero',
+    'ComingSoonHero',
+  ])
+  return (
+    sections.find(
+      (s) =>
+        s.motif !== 'Navbar' &&
+        s.motif !== 'Footer' &&
+        !HERO_MOTIFS.has(s.motif),
+    ) ?? null
+  )
+}
+
+function defaultNavLabels(pages: string[]): Record<string, string> {
+  const labels: Record<string, string> = {}
+  for (const page of pages) {
+    labels[page] = capitalize(page)
+  }
+  return labels
+}
+
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
+// ─── Motif call builder ──────────────────────────────────────────────────
+// (Removed — now using buildComponentCall from openui-signature.ts which
+// maps named props to positional args in the correct order from the component
+// spec. The old buildMotifCall emitted named args which the OpenUI parser
+// doesn't understand — it treated them as positional and dropped "excess".)

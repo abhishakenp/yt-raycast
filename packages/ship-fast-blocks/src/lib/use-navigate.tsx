@@ -16,7 +16,6 @@ export type RouteTarget = {
 
 export type RoutesContextValue = {
   routes: string[]
-  targetMap: Record<string, string | null | undefined>
   currentPage: string
   setCurrentPage: (page: string) => void
   pendingSectionId: string | null
@@ -25,7 +24,6 @@ export type RoutesContextValue = {
 
 export const RoutesContext = createContext<RoutesContextValue>({
   routes: [],
-  targetMap: {},
   currentPage: '',
   setCurrentPage: () => {},
   pendingSectionId: null,
@@ -70,94 +68,20 @@ export function parseRouteTarget(
 export function resolveRouteTarget(
   target: string | null | undefined,
   routes: string[],
-  targetMap: Record<string, string | null | undefined>,
 ): RouteTarget | null {
   const normalized = normalizeTarget(target)
   if (!normalized) return null
-  const rawTarget = typeof target === 'string' ? target.trim() : ''
-  const mapped = targetMap[rawTarget] ?? targetMap[normalized]
-  if (mapped) return parseRouteTarget(mapped)
 
+  // 1. Exact case-insensitive match against route names.
   function isExactRoute(route: string) {
     return normalizeTarget(route) === normalized
   }
-
   const exact = routes.find(isExactRoute)
   if (exact) return { type: 'page', page: exact }
 
-  function find(
-    routePattern: RegExp,
-    sectionPattern?: RegExp,
-  ): RouteTarget | null {
-    function matchesRoute(route: string) {
-      return routePattern.test(normalizeTarget(route))
-    }
-
-    const route = routes.find(matchesRoute)
-    if (route) return { type: 'page', page: route }
-    if (sectionPattern) {
-      function isMatchingSection(
-        candidate: RouteTarget | null,
-      ): candidate is RouteTarget {
-        return (
-          candidate !== null &&
-          typeof candidate.sectionId === 'string' &&
-          sectionPattern.test(normalizeTarget(candidate.sectionId))
-        )
-      }
-
-      const entry = Object.values(targetMap)
-        .map(parseRouteTarget)
-        .find(isMatchingSection)
-      if (entry) return entry
-    }
-    return null
-  }
-
-  return (
-    (/program|course|curriculum/.test(normalized) &&
-      find(/program|course|curriculum/, /program|curriculum/)) ||
-    (/lookbook|collection/.test(normalized) &&
-      find(
-        /lookbook|collection|shop|product/,
-        /lookbook|collection|product/,
-      )) ||
-    (/speaker|agenda|venue|ticket/.test(normalized) &&
-      find(
-        /speaker|agenda|venue|ticket|schedule/,
-        /speaker|agenda|venue|ticket|schedule/,
-      )) ||
-    (/amenit/.test(normalized) && find(/amenit/, /amenit/)) ||
-    (/room/.test(normalized) && find(/room|booking|reserve/, /room|booking/)) ||
-    (/\b(?:book|booking|reserve)\b/.test(normalized) &&
-      find(/\b(?:book|booking|reserve)\b|room/, /\bbooking\b|room|contact/)) ||
-    (/shop|store|product|buy|cart|order|browse|collection/.test(normalized) &&
-      find(
-        /shop|store|product|collection|lookbook|menu|work|gallery/,
-        /shop|product|collection|lookbook|menu|work|gallery/,
-      )) ||
-    (/price|plan|pricing|subscribe|upgrade|tier|membership/.test(normalized) &&
-      find(/pric|plan|member/, /pricing|membership/)) ||
-    (/contact|reach|get in touch|book|reserve|demo|quote|start|join|get started|register/.test(
-      normalized,
-    ) &&
-      find(
-        /contact|book|booking|reserve|demo|start|join|ticket|apply/,
-        /contact|booking|tickets|apply|cta|subscribe/,
-      )) ||
-    (/about|story|team|who we are|mission/.test(normalized) &&
-      find(/about|team|story/, /about|team|story/)) ||
-    (/blog|news|post|article|read|stories|journal|tips/.test(normalized) &&
-      find(/blog|news|post|article|stories|tips/, /story|stories|topics/)) ||
-    (/feature|service|how it works|learn|explore|tour|class|schedule|trainer|program|course|curriculum|speaker|agenda|venue|amenit|room|lookbook/.test(
-      normalized,
-    ) &&
-      find(
-        /feature|service|how|class|schedule|program|course|curriculum|speaker|agenda|venue|amenit|room|lookbook/,
-        /feature|service|steps|process|schedule|program|curriculum|speaker|agenda|venue|amenit|room|lookbook/,
-      )) ||
-    null
-  )
+  // 2. Single-route sites: everything resolves to the one route.
+  const singleRoute = routes.length === 1 ? routes[0] : undefined
+  return singleRoute ? { type: 'page', page: singleRoute } : null
 }
 
 export function slugifyRoute(value: string): string {
@@ -185,7 +109,6 @@ function previewBasePath(currentPathname: string, currentPage: string): string {
 export function resolveRouteHref(
   target: string | null | undefined,
   routes: string[],
-  targetMap: Record<string, string | null | undefined>,
   options: {
     currentPage?: string
     currentPathname?: string
@@ -202,7 +125,7 @@ export function resolveRouteHref(
   }
   if (!routes.length) return rawTarget.startsWith('/') ? rawTarget : rawTarget
 
-  const resolved = resolveRouteTarget(rawTarget, routes, targetMap)
+  const resolved = resolveRouteTarget(rawTarget, routes)
   if (!resolved) return rawTarget.startsWith('/') ? rawTarget : undefined
 
   function isResolvedPage(route: string) {
@@ -231,7 +154,7 @@ export function useRouteHref(
 ): string | undefined {
   const routing = useContext(RoutesContext)
   const urlBridge = useContext(PreviewUrlBridgeContext)
-  return resolveRouteHref(target, routing.routes, routing.targetMap, {
+  return resolveRouteHref(target, routing.routes, {
     currentPage: routing.currentPage,
     currentPathname:
       typeof window === 'undefined' ? undefined : window.location.pathname,
@@ -247,7 +170,7 @@ export function useIsActiveRoute(): (
 
   function isActiveRoute(target: string | null | undefined) {
     if (typeof window === 'undefined') return false
-    const href = resolveRouteHref(target, routing.routes, routing.targetMap, {
+    const href = resolveRouteHref(target, routing.routes, {
       currentPage: routing.currentPage,
       currentPathname: window.location.pathname,
       previewBase: urlBridge.navigateToPage !== null,
@@ -286,11 +209,7 @@ export function useNavigate() {
     }
     if (!routing.routes.length) return
 
-    const resolved = resolveRouteTarget(
-      rawTarget,
-      routing.routes,
-      routing.targetMap,
-    )
+    const resolved = resolveRouteTarget(rawTarget, routing.routes)
     if (!resolved) {
       console.warn(`[ShipFast] Unresolved navigation target: ${target ?? ''}`)
       return

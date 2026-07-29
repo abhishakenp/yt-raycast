@@ -4,6 +4,7 @@ import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '#/lib/utils.ts'
+import { useDesign } from '#/primitives/design-context.tsx'
 
 import type { KitAction } from './types.ts'
 import { kitActionClasses } from './types.ts'
@@ -138,26 +139,36 @@ const NavbarNavLink = React.forwardRef<
   ) => {
     const navHref = typeof href === 'string' ? href : undefined
     const resolvedHref = useSectionKitNavHref(navHref)
-    const Comp = asChild ? Slot : resolvedHref ? RouterLink : 'a'
     const isActive = useIsActiveSectionKitNavHref()(navHref)
     const onNavClick = useSectionKitNavClick(navHref)
 
-    return (
-      <Comp
-        data-slot="navbar-nav-link"
-        href={resolvedHref}
-        aria-current={isActive ? 'page' : ariaCurrent}
-        onClick={onNavClick}
-        className={cn(
-          'whitespace-nowrap rounded-md px-2.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
-          className,
-          isActive &&
-            'bg-muted text-foreground underline decoration-primary underline-offset-8',
-        )}
-        ref={ref}
-        {...props}
-      />
-    )
+    // When resolvedHref is truthy we use RouterLink (TanStack Router). Pass
+    // exactActive so TanStack's Link only marks itself active on an exact
+    // pathname match — otherwise the home route is "active" on every sub-page
+    // because it's a parent route. Our custom isActive hook is the source of
+    // truth for the aria-current attribute.
+    const linkProps = {
+      'data-slot': 'navbar-nav-link',
+      href: resolvedHref,
+      'aria-current': isActive ? 'page' : ariaCurrent,
+      onClick: onNavClick,
+      className: cn(
+        'whitespace-nowrap rounded-md px-2.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
+        className,
+        isActive &&
+          'bg-muted text-foreground underline decoration-primary underline-offset-8',
+      ),
+      ref,
+      ...props,
+    }
+
+    if (asChild) {
+      return <Slot {...linkProps} />
+    }
+    if (resolvedHref) {
+      return <RouterLink exactActive {...linkProps} />
+    }
+    return <a {...linkProps} />
   },
 )
 NavbarNavLink.displayName = 'NavbarNavLink'
@@ -271,6 +282,7 @@ export function SiteNav(props: SiteNavProps) {
 /* --- Legacy implementation (unchanged) --- */
 
 function LegacySiteNav(props: SiteNavProps) {
+  const d = useDesign()
   const sticky = props.sticky ?? true
   const cta = props.cta
   const ctaIsAuth = Boolean(
@@ -279,80 +291,128 @@ function LegacySiteNav(props: SiteNavProps) {
   const homeHref = useSectionKitNavHref(props.homeTarget ?? 'Home')
   const ctaHref = useSectionKitNavHref(cta?.target ?? cta?.label)
 
+  // Design-aware nav height: compact=h-16, balanced=h-20, airy=h-24
+  const heightClass = d.density.section.includes('py-10')
+    ? 'h-16'
+    : d.density.section.includes('py-24')
+      ? 'h-24'
+      : 'h-20'
+
+  // Design-aware border: brutalist=border-2, sharp=border-b-2, others=border-b
+  const borderClass = d.shadow.card.includes('shadow-[8px_8px_0')
+    ? 'border-b-2 border-foreground'
+    : d.radius.btn.includes('rounded-none')
+      ? 'border-b-2 border-border'
+      : 'border-b border-border'
+
   const headerClasses = sticky
-    ? 'fixed inset-x-0 top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border'
-    : 'relative z-50 bg-background border-b border-border'
+    ? `fixed inset-x-0 top-0 z-50 bg-background/95 backdrop-blur-sm ${borderClass}`
+    : `relative z-50 bg-background ${borderClass}`
+
+  // Design-aware brand font: detect typography from display classes
+  const isTechnical = d.typography.display.includes('tabular-nums')
+  const isEditorial =
+    d.typography.display.includes('uppercase') &&
+    d.typography.display.includes('font-extrabold')
+  const isDisplay = d.typography.display.includes('font-black')
+  const brandFontClass = isEditorial
+    ? 'font-serif italic'
+    : isTechnical
+      ? 'font-mono'
+      : isDisplay
+        ? 'font-black uppercase tracking-tight'
+        : ''
+
+  const isHomeActive = useIsActiveSectionKitNavHref()(
+    props.homeTarget ?? 'Home',
+  )
 
   return (
-    <header className={cn(headerClasses, props.className)}>
-      <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
-        <RouterLink href={homeHref ?? '/'} className="flex items-center gap-3">
-          <Logo brand={props.brand ?? ''}>
-            <LogoImage className="size-8" fallback={props.brandMark} />
-            <LogoLabel
-              className={cn(
-                'text-xl font-medium text-foreground',
-                props.brandClassName,
-              )}
+    <>
+      <header className={cn(headerClasses, props.className)}>
+        <nav
+          className={cn(
+            'mx-auto flex max-w-7xl items-center justify-between px-6 lg:px-8',
+            heightClass,
+          )}
+        >
+          <RouterLink
+            href={homeHref ?? '/'}
+            exactActive
+            aria-current={isHomeActive ? 'page' : undefined}
+            className="flex items-center gap-3"
+          >
+            <Logo brand={props.brand ?? ''}>
+              <LogoImage className="size-8" fallback={props.brandMark} />
+              <LogoLabel
+                className={cn(
+                  'text-xl font-medium text-foreground',
+                  brandFontClass,
+                  props.brandClassName,
+                )}
+              />
+            </Logo>
+          </RouterLink>
+
+          <div className="hidden items-center gap-8 md:flex">
+            {props.nav?.map((label) => (
+              <NavbarNavLink key={label} href={label}>
+                {label}
+              </NavbarNavLink>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-4">
+            {typeof props.phone === 'string' && props.phone.trim() ? (
+              <a
+                href={`tel:${props.phone.replace(/[^\d+]/g, '')}`}
+                className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline"
+              >
+                {props.phone}
+              </a>
+            ) : null}
+
+            {cta && ctaIsAuth ? (
+              <SignInButton
+                label={cta.label}
+                variant={cta.variant}
+                className="hidden sm:inline-flex"
+              />
+            ) : cta ? (
+              <RouterLink
+                href={ctaHref ?? '#'}
+                className={cn(
+                  kitActionClasses(cta.variant),
+                  d.radius.btn,
+                  'hidden sm:inline-flex',
+                )}
+              >
+                {cta.label}
+              </RouterLink>
+            ) : null}
+
+            <MobileNavDrawer
+              brand={props.brand ?? ''}
+              nav={props.nav ?? []}
+              homeTarget={props.homeTarget}
+              cta={cta && !ctaIsAuth ? cta : undefined}
+              buttonClassName="p-2 text-muted-foreground hover:text-foreground md:hidden"
+              footer={
+                cta && ctaIsAuth ? (
+                  <SignInButton
+                    label={cta.label}
+                    variant={cta.variant}
+                    className="min-h-11 w-full"
+                  />
+                ) : null
+              }
             />
-          </Logo>
-        </RouterLink>
-
-        <div className="hidden items-center gap-8 md:flex">
-          {props.nav?.map((label) => (
-            <NavbarNavLink key={label} href={label}>
-              {label}
-            </NavbarNavLink>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-4">
-          {typeof props.phone === 'string' && props.phone.trim() ? (
-            <a
-              href={`tel:${props.phone.replace(/[^\d+]/g, '')}`}
-              className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline"
-            >
-              {props.phone}
-            </a>
-          ) : null}
-
-          {cta && ctaIsAuth ? (
-            <SignInButton
-              label={cta.label}
-              variant={cta.variant}
-              className="hidden sm:inline-flex"
-            />
-          ) : cta ? (
-            <RouterLink
-              href={ctaHref ?? '#'}
-              className={cn(
-                kitActionClasses(cta.variant),
-                'hidden sm:inline-flex',
-              )}
-            >
-              {cta.label}
-            </RouterLink>
-          ) : null}
-
-          <MobileNavDrawer
-            brand={props.brand ?? ''}
-            nav={props.nav ?? []}
-            homeTarget={props.homeTarget}
-            cta={cta && !ctaIsAuth ? cta : undefined}
-            buttonClassName="p-2 text-muted-foreground hover:text-foreground md:hidden"
-            footer={
-              cta && ctaIsAuth ? (
-                <SignInButton
-                  label={cta.label}
-                  variant={cta.variant}
-                  className="min-h-11 w-full"
-                />
-              ) : null
-            }
-          />
-        </div>
-      </nav>
-    </header>
+          </div>
+        </nav>
+      </header>
+      {/* Spacer to offset fixed header so page content isn't hidden behind nav */}
+      {sticky && <div aria-hidden="true" className="h-20" />}
+    </>
   )
 }
 

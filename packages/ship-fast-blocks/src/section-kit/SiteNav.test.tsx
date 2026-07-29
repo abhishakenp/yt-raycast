@@ -49,7 +49,6 @@ describe('SiteNav', () => {
       <RoutesContext.Provider
         value={{
           routes: ['Home', 'Services', 'Pricing', 'Contact'],
-          targetMap: {},
           currentPage: 'Home',
           setCurrentPage: vi.fn(),
           pendingSectionId: null,
@@ -148,5 +147,28 @@ describe('SiteNav', () => {
     expect(
       screen.getByRole('link', { name: 'Northridge' }).getAttribute('href'),
     ).toBe('/')
+  })
+
+  it('renders a spacer div after the header when sticky to offset fixed positioning', () => {
+    renderWithRoutes(<SiteNav brand="Test" nav={['Home']} sticky />)
+    const header = document.querySelector('header')
+    expect(header).toBeTruthy()
+    expect(header?.className).toContain('fixed')
+    // The spacer div should follow the header
+    const spacer = header?.nextElementSibling
+    expect(spacer).toBeTruthy()
+    expect(spacer?.tagName).toBe('DIV')
+    expect(spacer?.className).toContain('h-20')
+    expect(spacer?.getAttribute('aria-hidden')).toBe('true')
+  })
+
+  it('does not render a spacer div when not sticky', () => {
+    renderWithRoutes(<SiteNav brand="Test" nav={['Home']} sticky={false} />)
+    const header = document.querySelector('header')
+    expect(header).toBeTruthy()
+    expect(header?.className).toContain('relative')
+    // No spacer div should follow
+    const spacer = header?.nextElementSibling
+    expect(spacer?.tagName).not.toBe('DIV')
   })
 })

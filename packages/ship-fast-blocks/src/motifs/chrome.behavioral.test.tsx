@@ -25,6 +25,8 @@ import {
   ComingSoonHero,
   ImageGallery,
   LogoStrip,
+  PersonGrid,
+  TeamShowcase,
 } from './index.tsx'
 
 function renderCapsule(
@@ -541,7 +543,7 @@ describe('ChromeSystem — subscriber forms', () => {
     expect(heading.className).toContain('uppercase')
   })
 
-  it('NewsletterCta with chrome:editorial renders serif heading with watermark', () => {
+  it('NewsletterCta with chrome:editorial renders extralight heading with watermark', () => {
     const { container } = renderCapsule(NewsletterCta, {
       heading: 'Subscribe',
       chrome: 'editorial',
@@ -550,9 +552,9 @@ describe('ChromeSystem — subscriber forms', () => {
     // Multiple "Subscribe" texts (heading + sticker) — use getAllByText
     const subscribes = screen.getAllByText('Subscribe')
     expect(subscribes.length).toBeGreaterThanOrEqual(1)
-    // Serif heading
+    // Extralight heading (editorial ArchitectureFirm aesthetic)
     const heading = screen.getByRole('heading')
-    expect(heading.className).toContain('font-serif')
+    expect(heading.className).toContain('font-extralight')
     // Inline email capture
     expect(screen.getByPlaceholderText('you@example.com')).toBeTruthy()
   })
@@ -595,5 +597,47 @@ describe('ChromeSystem — subscriber forms', () => {
       '.font-serif.text-foreground\\/\\[0\\.04\\]',
     )
     expect(quoteMark).toBeTruthy()
+  })
+
+  it('PersonGrid with chrome:editorial renders asymmetric ledger with grayscale portraits and mono labels', () => {
+    const { container } = renderCapsule(PersonGrid, {
+      heading: 'Our Team',
+      chrome: 'editorial',
+      people: [{ name: 'Jane Doe', role: 'Principal' }],
+    })
+    // Featured person name appears in heading and caption bar
+    expect(screen.getAllByText('Jane Doe').length).toBeGreaterThanOrEqual(1)
+    // Editorial PersonGrid uses "Principal" as mono label and role
+    expect(screen.getAllByText('Principal').length).toBeGreaterThanOrEqual(1)
+    // Collapsed-border hairline grid
+    const grid = container.querySelector('.border-l.border-t.border-border')
+    expect(grid).toBeTruthy()
+    // Grayscale images
+    const img = container.querySelector('img.grayscale')
+    expect(img).toBeTruthy()
+    // Ghost numeral for featured person
+    expect(screen.getByText('01')).toBeTruthy()
+    // Figure caption bar
+    expect(screen.getByText('fig. 01')).toBeTruthy()
+  })
+
+  it('TeamShowcase with chrome:editorial renders asymmetric ledger with ghost numerals', () => {
+    const { container } = renderCapsule(TeamShowcase, {
+      heading: 'Leadership',
+      chrome: 'editorial',
+      people: [{ name: 'Jane Doe', role: 'Director', bio: 'Expert' }],
+    })
+    // Featured person name appears in heading and caption bar
+    expect(screen.getAllByText('Jane Doe').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getByText('Expert')).toBeTruthy()
+    // Editorial TeamShowcase uses "Director" as mono label for featured person
+    expect(screen.getAllByText('Director').length).toBeGreaterThanOrEqual(1)
+    // Ghost numeral for featured person
+    expect(screen.getByText('01')).toBeTruthy()
+    // Figure caption bar
+    expect(screen.getByText('fig. 01')).toBeTruthy()
+    // Collapsed-border hairline grid
+    const grid = container.querySelector('.border-l.border-t.border-border')
+    expect(grid).toBeTruthy()
   })
 })

@@ -16,7 +16,6 @@
     "./theme": "./src/theme.ts",
     "./multi-image-src": "./src/lib/multi-image-src.ts",
     "./runtime": "./src/runtime.ts",
-    "./commerce": "./src/registry/sections/commerce/commerce-contracts.ts",
     "./portal": "./src/components/ui/portal-container.tsx"
   },
   "dependencies": {
